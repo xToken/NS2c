@@ -1,0 +1,7 @@
+<game>
+	<name>ns2c</name>
+	<description>Natural Selection 2 C</description>
+	<client>lua/Client.lua</client>
+	<server>lua/DAKLoader.lua</server>
+	<soundinfo>sound/NS2.soundinfo</soundinfo>
+</game>

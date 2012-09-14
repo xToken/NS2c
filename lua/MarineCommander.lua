@@ -1,0 +1,147 @@
+// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+//
+// lua\MarineCommander.lua
+//
+//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+//
+// Handled Commander movement and actions.
+//
+// ========= For more information, visit us at http://www.unknownworlds.com =====================
+
+Script.Load("lua/Commander.lua")
+
+class 'MarineCommander' (Commander)
+
+MarineCommander.kMapName = "marine_commander"
+
+if Client then
+    Script.Load("lua/MarineCommander_Client.lua")
+elseif Server then    
+    Script.Load("lua/MarineCommander_Server.lua")
+end
+
+MarineCommander.kSentryFiringSoundName = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/sentry_firing")
+MarineCommander.kSentryTakingDamageSoundName = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/sentry_taking_damage")
+MarineCommander.kSentryLowAmmoSoundName = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/sentry_low_ammo")
+MarineCommander.kSentryNoAmmoSoundName = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/sentry_no_ammo")
+MarineCommander.kSoldierLostSoundName = PrecacheAsset("sound/NS2.fev/marine/voiceovers/soldier_lost")
+MarineCommander.kSoldierAcknowledgesSoundName = PrecacheAsset("sound/NS2.fev/marine/voiceovers/ack")
+MarineCommander.kSoldierNeedsAmmoSoundName = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/soldier_needs_ammo")
+MarineCommander.kSoldierNeedsHealthSoundName = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/soldier_needs_health")
+MarineCommander.kSoldierNeedsOrderSoundName = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/soldier_needs_order")
+MarineCommander.kUpgradeCompleteSoundName = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/upgrade_complete")
+MarineCommander.kResearchCompleteSoundName = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/research_complete")
+MarineCommander.kManufactureCompleteSoundName = PrecacheAsset("sound/NS2.fev/marine/voiceovers/all_clear")
+MarineCommander.kObjectiveCompletedSoundName = PrecacheAsset("sound/NS2.fev/marine/voiceovers/complete")
+MarineCommander.kMoveToWaypointSoundName = PrecacheAsset("sound/NS2.fev/marine/voiceovers/move")
+MarineCommander.kAttackOrderSoundName = PrecacheAsset("sound/NS2.fev/marine/voiceovers/move")
+MarineCommander.kStructureUnderAttackSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/base_under_attack")
+MarineCommander.kSoldierUnderAttackSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/soldier_under_attack")
+MarineCommander.kBuildStructureSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/build")
+MarineCommander.kWeldOrderSound = PrecacheAsset("sound/NS2.fev/marine/structures/mac/weld")
+MarineCommander.kDefendTargetSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/defend")
+MarineCommander.kCommanderEjectedSoundName = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/commander_ejected")
+MarineCommander.kCommandStationCompletedSoundName = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/online")
+
+MarineCommander.kOrderClickedEffect = PrecacheAsset("cinematics/marine/order.cinematic")
+MarineCommander.kSelectSound = PrecacheAsset("sound/NS2.fev/marine/commander/select")
+MarineCommander.kChatSound = PrecacheAsset("sound/NS2.fev/marine/common/chat")
+
+local kHoverSound = PrecacheAsset("sound/NS2.fev/marine/commander/hover")
+
+function MarineCommander:OnDestroy()
+
+    Commander.OnDestroy(self)
+    
+    if Client then
+        
+        if self.guiDistressBeacon then
+            GetGUIManager():DestroyGUIScript(self.guiDistressBeacon)
+            self.guiDistressBeacon = nil
+        end
+        
+        if self.sensorBlips then
+            GetGUIManager():DestroyGUIScript(self.sensorBlips)
+            self.sensorBlips = nil
+        end
+        
+        if self.waypoints then
+            GetGUIManager():DestroyGUIScript(self.waypoints)
+            self.waypoints = nil
+        end
+        
+    end
+
+end
+
+function MarineCommander:GetSelectionSound()
+    return MarineCommander.kSelectSound
+end
+
+function MarineCommander:GetHoverSound()
+    return kHoverSound
+end
+
+function MarineCommander:GetTeamType()
+    return kMarineTeamType
+end
+
+function MarineCommander:GetOrderConfirmedEffect()
+    return MarineCommander.kOrderClickedEffect
+end
+
+function MarineCommander:GetIsInQuickMenu(techId)
+    return Commander.GetIsInQuickMenu(self, techId) or techId == kTechId.WeaponsMenu
+end
+
+// Top row always the same. Alien commander can override to replace. 
+function MarineCommander:GetQuickMenuTechButtons(techId)
+
+    // Top row always for quick access
+    local marineTechButtons = { kTechId.BuildMenu, kTechId.AdvancedMenu, kTechId.AssistMenu, kTechId.RootMenu }
+    local menuButtons = nil    
+    
+    // Ignore selected and use set tech buttons when in a quick-access menu
+    if techId == kTechId.BuildMenu then 
+    
+        menuButtons = { kTechId.Extractor, kTechId.InfantryPortal, kTechId.Armory, kTechId.CommandStation,
+                        kTechId.RoboticsFactory, kTechId.Sentry, kTechId.ARC, kTechId.None}
+                        
+    elseif techId == kTechId.AdvancedMenu then 
+    
+        menuButtons = { kTechId.Observatory, kTechId.ArmsLab, kTechId.PrototypeLab, kTechId.PhaseGate, 
+                              kTechId.None, kTechId.None, kTechId.None, kTechId.None}
+        
+    elseif techId == kTechId.AssistMenu then
+    
+        menuButtons = { kTechId.AmmoPack, kTechId.MedPack, kTechId.CatPack, kTechId.None,
+                        kTechId.WeaponsMenu, kTechId.None, kTechId.None, kTechId.None}
+        
+    elseif techId == kTechId.WeaponsMenu then
+    
+        menuButtons = { kTechId.Mines, kTechId.Shotgun, kTechId.HeavyMachineGun, kTechId.GrenadeLauncher,
+                        kTechId.Welder, kTechId.Jetpack, kTechId.HeavyArmor, kTechId.None}
+        
+    else
+    
+        // Make sure all slots are initialized so entities can override simply
+        menuButtons = {kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+        
+    end
+
+    table.copy(menuButtons, marineTechButtons, true)        
+
+    // Return buttons and true/false if we are in a quick-access menu
+    return marineTechButtons
+    
+end
+
+function MarineCommander:GetChatSound()
+    return MarineCommander.kChatSound
+end
+
+function MarineCommander:GetPlayerStatusDesc()
+    return kPlayerStatus.Commander
+end
+
+Shared.LinkClassToMap( "MarineCommander", MarineCommander.kMapName, {} )
