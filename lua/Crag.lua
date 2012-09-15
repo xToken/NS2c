@@ -216,7 +216,7 @@ function Crag:OnOverrideOrder(order)
 end
 
 function Crag:GetCanBeUsed(player, useSuccessTable)
-
+    
     if self:GetCanConstruct() then
         useSuccessTable.useSuccess = false
     end

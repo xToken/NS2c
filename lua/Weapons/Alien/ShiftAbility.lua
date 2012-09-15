@@ -1,8 +1,5 @@
-// lua\Weapons\Alien\ShiftStructureAbility.lua
 //
-//    Created by:   
-//
-// Gorge builds shift.
+// lua\Weapons\Alien\ShiftAbility.lua
 
 Script.Load("lua/Weapons/Alien/StructureAbility.lua")
 

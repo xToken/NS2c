@@ -1,6 +1,5 @@
-
-// lua\Web.lua
 //
+// lua\Web.lua
 
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/TriggerMixin.lua")
@@ -18,7 +17,7 @@ kWebActivateTime = 2
 
 Web.kMapName = "web"
 
-Web.kModelName = PrecacheAsset("models/alien/gorge/goowallnode.model")
+Web.kModelName = PrecacheAsset("models/alien/gorge/goowall.model")
 
 local networkVars = { }
 

@@ -1,12 +1,5 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
 // lua\UmbraCloud.lua
-//
-// Created by: Andreas Urwalek (andi@unknownworlds.com)
-//
-// Protects friendly units from bullets.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/CommAbilities/CommanderAbility.lua")
 

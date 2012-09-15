@@ -51,9 +51,7 @@ local networkVars =
     // if wallChecking is enabled. Means that the next time you press use
     wallGripCheckEnabled = "private compensated boolean",
     
-    prevInputMove = "private boolean",
-    
-    bombPoseParam = "float (0 to 1 by 0.05)"
+    prevInputMove = "private boolean"
 }
 
 AddMixinNetworkVars(BaseMoveMixin, networkVars)
@@ -112,8 +110,6 @@ function Lerk:OnCreate()
     self.wallGripTime = 0
     self.wallGripRecheckDone = false
     self.wallGripCheckEnabled = false
-    
-    self.bombPoseParam = 0
     
     if Client then   
     

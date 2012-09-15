@@ -538,10 +538,6 @@ function Marine:GetMaxBackwardSpeedScalar()
     return Marine.kWalkBackwardSpeedScalar
 end
 
-function Marine:GetAirMoveScalar()
-    return 0.1
-end
-
 function Marine:GetAirFrictionForce()
     return 2 * self.slowAmount
 end

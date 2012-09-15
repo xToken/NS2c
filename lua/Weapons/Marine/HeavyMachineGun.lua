@@ -1,11 +1,5 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
 // lua\Weapons\HeavyMachineGun.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
 Script.Load("lua/PickupableWeaponMixin.lua")
@@ -21,30 +15,14 @@ local kViewModelName = PrecacheAsset("models/marine/rifle/rifle_view.model")
 local kAnimationGraph = PrecacheAsset("models/marine/heavymachinegun/heavymachinegun_view.animation_graph")
 
 local kRange = 250
-// 15 degrees in NS1
 local kSpread = ClipWeapon.kCone10Degrees
-
-local kButtRange = 1.4
-
-local kNumberOfVariants = 3
-
-local kSingleShotSounds = { "sound/NS2.fev/marine/rifle/fire_single", "sound/NS2.fev/marine/rifle/fire_single_2", "sound/NS2.fev/marine/rifle/fire_single_3" }
-for k, v in ipairs(kSingleShotSounds) do PrecacheAsset(v) end
-
-//local kSpinUpSoundName = PrecacheAsset("sound/NS2.fev/marine/heavy/spin_up")
-//local kSpinDownSoundName = PrecacheAsset("sound/NS2.fev/marine/heavy/spin_down")
-//local kSpinSoundName = PrecacheAsset("sound/NS2.fev/marine/heavy/spin")
-
-//local kLoopingSounds = { "sound/NS2.fev/marine/rifle/fire_14_sec_loop", "sound/NS2.fev/marine/rifle/fire_loop_2", "sound/NS2.fev/marine/rifle/fire_loop_3" }
-local kLoopingSounds = { "sound/NS2.fev/marine/heavy/spin", "sound/NS2.fev/marine/heavy/spin" , "sound/NS2.fev/marine/heavy/spin"  }
-for k, v in ipairs(kLoopingSounds) do PrecacheAsset(v) end
-
-//local kHeavyMachineGunEndSound = PrecacheAsset("sound/NS2.fev/marine/rifle/end")
+local kSingleShotSound = PrecacheAsset("sound/NS2.fev/marine/rifle/fire_single")
+local kLoopingSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin")
 local kHeavyMachineGunEndSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin_down")
 
 local networkVars =
 {
-    soundType = "integer (1 to 3)"
+    lastfiredtime = "private time"
 }
 
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/rifle/muzzle_flash.cinematic")
@@ -66,9 +44,7 @@ end
 function HeavyMachineGun:OnInitialized()
 
     ClipWeapon.OnInitialized(self)
-    
-    self.soundType = Shared.GetRandomInt(1, kNumberOfVariants)
-    
+    self.lastfiredtime = 0
     if Client then
     
         self:SetUpdates(true)
@@ -81,9 +57,7 @@ function HeavyMachineGun:OnInitialized()
 end
 
 function HeavyMachineGun:OnHolsterClient()
-
     ClipWeapon.OnHolsterClient(self)
-
 end
 
 function HeavyMachineGun:OnDestroy()
@@ -91,11 +65,19 @@ function HeavyMachineGun:OnDestroy()
 end
 
 function HeavyMachineGun:OnPrimaryAttack(player)
-
-    if not self:GetIsReloading() then
-        ClipWeapon.OnPrimaryAttack(self, player)
+    if not self:GetIsReloading() and not self:GetHasAttackDelay() then
+        if player and self.clip > 0 then
+        
+            self:FirePrimary(player)
+            // Don't decrement ammo in Darwin mode
+            if not player or not player:GetDarwinMode() then
+                self.clip = self.clip - 1
+            end
+            self:CreatePrimaryAttackEffect(player)
+            Weapon.OnPrimaryAttack(self, player)
+            
+        end
     end    
-
 end
 
 function HeavyMachineGun:GetNumStartClips()
@@ -117,12 +99,9 @@ function HeavyMachineGun:GetIsValidRecipient(player)
     return false
 end
 */
+
 function HeavyMachineGun:GetMaxAmmo()
     return 3 * self:GetClipSize()
-end
-
-function HeavyMachineGun:OnSecondaryAttack(player)
-    
 end
 
 function HeavyMachineGun:GetAnimationGraphName()
@@ -131,6 +110,14 @@ end
 
 function HeavyMachineGun:GetViewModelName()
     return kViewModelName
+end
+
+function HeavyMachineGun:GetFireDelay()
+    return kHeavyMachineGunROF
+end
+
+function HeavyMachineGun:GetHasAttackDelay()
+    return self.lastfiredtime + self:GetFireDelay() > Shared.GetTime()
 end
 
 function HeavyMachineGun:GetDeathIconIndex()
@@ -239,16 +226,16 @@ if Client then
     function HeavyMachineGun:OnClientPrimaryAttackStart()
     
         // Fire off a single shot on the first shot. Pew.
-        Shared.PlaySound(self, kSingleShotSounds[self.soundType])
+        Shared.PlaySound(self, kSingleShotSound)
         // Start the looping sound for the rest of the shooting. Pew pew pew...
-        Shared.PlaySound(self, kLoopingSounds[self.soundType])
+        Shared.PlaySound(self, kLoopingSound)
     
     end
     
     function HeavyMachineGun:OnClientPrimaryAttackEnd()
     
         // Just assume the looping sound is playing.
-        Shared.StopSound(self, kLoopingSounds[self.soundType])
+        Shared.StopSound(self, kLoopingSound)
         Shared.PlaySound(self, kHeavyMachineGunEndSound)
 
     end

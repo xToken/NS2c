@@ -1,13 +1,7 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
 //    
-// lua\PowerSourceMixin.lua    
-//    
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+// lua\TurretFactoryMixin.lua    
 
 Script.Load("lua/FunctionContracts.lua")
-//Script.Load("lua/PowerUtility.lua")
 
 TurretFactoryMixin = CreateMixin( TurretFactoryMixin )
 TurretFactoryMixin.type = "TurretFactory"

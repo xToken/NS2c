@@ -31,7 +31,6 @@ Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
-Script.Load("lua/CatalystMixin.lua")
 Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
@@ -75,7 +74,6 @@ AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
-AddMixinNetworkVars(CatalystMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
@@ -101,7 +99,6 @@ function Shift:OnCreate()
     InitMixin(self, ResearchMixin)
     InitMixin(self, RagdollMixin)
     InitMixin(self, ObstacleMixin)
-    InitMixin(self, CatalystMixin)
     InitMixin(self, UmbraMixin)
     InitMixin(self, CombatMixin)
     
@@ -143,7 +140,16 @@ end
 
 function Shift:GetCanBeUsedConstructed()
     return true
-end    
+end   
+
+function Shift:GetCanBeUsed(player, useSuccessTable)
+
+    local hasupg, level = GetHasRedeploymentUpgrade(player)
+    if self:GetCanConstruct() or (hasupg and level > 0) then
+        useSuccessTable.useSuccess = false
+    end
+    
+end
 
 function Shift:EnergizeInRange()
 

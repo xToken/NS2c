@@ -178,21 +178,15 @@ function Skulk:GetMaxViewOffsetHeight()
     return Skulk.kViewOffsetHeight
 end
 
+function Skulk:GetCanClimb()
+    return false
+end
+
 function Skulk:GetCrouchShrinkAmount()
     return 0
 end
 
 function Skulk:GetExtentsCrouchShrinkAmount()
-    return 0
-end
-
-function Skulk:GetAirMoveScalar()
-    if self:GetVelocityLength() < 8 then
-        return 1.0
-    elseif self.leaping then
-        return 0.3
-    end
-    
     return 0
 end
 
@@ -578,10 +572,6 @@ end
  */
 function Skulk:ConstrainMoveVelocity(wishVelocity)
 
-end
-
-function Skulk:OverrideStrafeJump()
-    return true
 end
 
 function Skulk:GetGroundFrictionForce()   

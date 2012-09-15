@@ -8,10 +8,8 @@
 
 Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
-
 Script.Load("lua/ResourceTower.lua")
 Script.Load("lua/UnitStatusMixin.lua")
-Script.Load("lua/CatalystMixin.lua")
 Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
@@ -28,7 +26,6 @@ local networkVars = { }
 
 AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
-AddMixinNetworkVars(CatalystMixin, networkVars)
 AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(HiveVisionMixin, networkVars)
@@ -39,8 +36,6 @@ function Harvester:OnCreate()
     
     InitMixin(self, CloakableMixin)
     InitMixin(self, DetectableMixin)
-    
-    InitMixin(self, CatalystMixin)
     InitMixin(self, UmbraMixin)
     InitMixin(self, DissolveMixin)
         

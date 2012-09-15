@@ -13,7 +13,6 @@ Script.Load("lua/Weapons/Alien/DropStructureAbility.lua")
 Script.Load("lua/Weapons/Alien/DropStructureAbility2.lua")
 Script.Load("lua/Weapons/Alien/Web.lua")
 Script.Load("lua/Weapons/Alien/BileBomb.lua")
-Script.Load("lua/Weapons/Alien/Absorb.lua")
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
 Script.Load("lua/Mixins/GroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
@@ -288,6 +287,10 @@ function Gorge:OnUpdatePoseParameters(viewModel)
     
 end
 
+function Gorge:OverrideStrafeJump()
+    return false
+end
+
 function Gorge:ConstrainMoveVelocity(moveVelocity)   
 
     Alien.ConstrainMoveVelocity(self, moveVelocity)
@@ -335,10 +338,6 @@ function Gorge:OnUpdateAnimationInput(modelMixin)
         modelMixin:SetAnimationInput("move", "belly")
     end
     
-end
-
-function Gorge:GetAirMoveScalar()
-    return 0
 end
 
 function Gorge:GetCanCloakOverride()

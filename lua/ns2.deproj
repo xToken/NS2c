@@ -753,4 +753,37 @@
   <file>
     <filename>Weapons\Alien\DropStructureAbility2.lua</filename>
   </file>
+  <file>
+    <filename>AFKKick.lua</filename>
+  </file>
+  <file>
+    <filename>BaseAdminCommands.lua</filename>
+  </file>
+  <file>
+    <filename>DAKLoader.lua</filename>
+  </file>
+  <file>
+    <filename>EnhancedLogging.lua</filename>
+  </file>
+  <file>
+    <filename>MapVote.lua</filename>
+  </file>
+  <file>
+    <filename>MOTD.lua</filename>
+  </file>
+  <file>
+    <filename>ReservedSlots.lua</filename>
+  </file>
+  <file>
+    <filename>Sentry_Server.lua</filename>
+  </file>
+  <file>
+    <filename>TournamentMode.lua</filename>
+  </file>
+  <file>
+    <filename>VoteRandom.lua</filename>
+  </file>
+  <file>
+    <filename>BindingsDialog.lua</filename>
+  </file>
 </project>

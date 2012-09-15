@@ -1,5 +1,5 @@
-// lua\Weapons\Alien\Metabolize.lua
 //
+// lua\Weapons\Alien\Metabolize.lua
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/Blink.lua")

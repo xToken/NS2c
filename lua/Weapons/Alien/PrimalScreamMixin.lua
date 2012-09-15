@@ -1,6 +1,5 @@
-
-// lua\Weapons\Alien\PrimalScreamMixin.lua
 //
+// lua\Weapons\Alien\PrimalScreamMixin.lua
 
 PrimalScreamMixin = CreateMixin( PrimalScreamMixin )
 PrimalScreamMixin.type = "PrimalScream"

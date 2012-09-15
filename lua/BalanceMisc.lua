@@ -59,7 +59,7 @@ kScanRadius = 20
 kMotionTrackingDetectionRange = 25
 kObservatoryInitialEnergy = 25  kObservatoryMaxEnergy = 100
 kDistressBeaconRange = 15
-kDistressBeaconTime = 3
+kDistressBeaconTime = 5
 
 //Shift Energize
 kEnergizeRange = 15

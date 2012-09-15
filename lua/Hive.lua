@@ -10,7 +10,6 @@
 Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/CommandStructure.lua")
-Script.Load("lua/CatalystMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/UmbraMixin.lua")
@@ -26,7 +25,6 @@ local networkVars =
 }
 
 AddMixinNetworkVars(CloakableMixin, networkVars)
-AddMixinNetworkVars(CatalystMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
@@ -80,8 +78,6 @@ function Hive:OnCreate()
     CommandStructure.OnCreate(self)
     
     InitMixin(self, CloakableMixin)
-    
-    InitMixin(self, CatalystMixin)
     InitMixin(self, UmbraMixin)
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
@@ -193,6 +189,15 @@ function Hive:GetTechButtons(techId)
 end
 
 function Hive:OnManufactured(createdEntity)
+end
+
+function Hive:OnUpdateAnimationInput(modelMixin)
+
+    PROFILE("Hive:OnUpdateAnimationInput")
+    if self:GetIsBuilt() then
+        modelMixin:SetAnimationInput("hive_deploy", false)
+    end
+    
 end
 
 function Hive:OnSighted(sighted)

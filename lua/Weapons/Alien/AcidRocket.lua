@@ -1,10 +1,6 @@
-// ======= Copyright © 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
 // lua\Weapons\Alien\AcidRocket.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/Rocket.lua")
 Script.Load("lua/Weapons/Alien/Blink.lua")

@@ -17,22 +17,10 @@ function CommandStructure:OnKill(attacker, doer, point, direction)
 
     self:Logout()
     ScriptActor.OnKill(self, attacker, doer, point, direction)
-    
-    if self.objectiveInfoEntId and self.objectiveInfoEntId ~= Entity.invalidId then
-    
-        DestroyEntity(Shared.GetEntity(self.objectiveInfoEntId))
-        self.objectiveInfoEntId = Entity.invalidId
-        
-    end
 
 end
 
 function CommandStructure:OnSighted(sighted)
-
-    local attached = self:GetAttached()
-    if attached and sighted then
-        attached.showObjective = true
-    end
 
 end
 
@@ -56,28 +44,13 @@ function CommandStructure:OnInitialized()
     self.occupied = false    
     self.closedTime = 0    
     self:AddTimedCallback(CheckForLogin, kCheckForLoginTimer)
-    
-    if Server then
-    
-        local objectiveInfoEnt = CreateEntity(ObjectiveInfo.kMapName, self:GetOrigin(), self:GetTeamNumber())
-        objectiveInfoEnt:SetOwner(self:GetId())
-        self.objectiveInfoEntId = objectiveInfoEnt:GetId()
-    
-    end
-    
+
 end
 
 function CommandStructure:OnDestroy()
 
     if self.occupied then
         self:Logout()
-    end
-    
-    if self.objectiveInfoEntId and self.objectiveInfoEntId ~= Entity.invalidId then
-    
-        DestroyEntity(Shared.GetEntity(self.objectiveInfoEntId))
-        self.objectiveInfoEntId = Entity.invalidId
-        
     end
 
     ScriptActor.OnDestroy(self)                        

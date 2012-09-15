@@ -714,10 +714,6 @@ function CommanderUI_GetDynamicMapBlips()
     
 end
 
-function CommanderUI_GetPheromones()
-    return EntityListToTable(Shared.GetEntitiesWithClassname("Pheromone"))
-end
-
 function Commander:GetAndClearAlertMessages()
 
     local alertMessages = {}

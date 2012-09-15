@@ -361,7 +361,6 @@ function AlienTeam:InitTechTree()
     self.techTree:AddBuyNode(kTechId.Egg,                      kTechId.None,                kTechId.None)
     
     // Tier 2 Abilities
-    
     self.techTree:AddUpgradeNode(kTechId.Leap,                kTechId.TwoHives,              kTechId.None)
     self.techTree:AddUpgradeNode(kTechId.Umbra,               kTechId.TwoHives,              kTechId.None)
     self.techTree:AddUpgradeNode(kTechId.BileBomb,            kTechId.TwoHives,              kTechId.None)

@@ -1,10 +1,5 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
 // lua\Weapons\Alien\SporesMixin.lua
-//
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 SporesMixin = CreateMixin( SporesMixin )
 SporesMixin.type = "Spores"

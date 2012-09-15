@@ -313,9 +313,9 @@ kMetabolizeDelay = 1.3
 
 kAcidRocketDamage = 25
 kAcidRocketDamageType = kDamageType.Heavy
-kAcidRocketFireDelay = .6
+kAcidRocketFireDelay = 1
 kAcidRocketEnergyCost = 10
-kAcidRocketRadius = 3
+kAcidRocketRadius = 5
 
 kGoreDamage = 90
 kGoreDamageType = kDamageType.Normal

@@ -335,18 +335,6 @@ kAlienStructureEffects =
         {sound = "sound/NS2.fev/alien/structures/shade/cloak_start"},
     },
 
-    create_pheromone =
-    {
-        createPheromoneEffects =
-        {
-            // Play different effects for friendlies vs. enemies
-            {sound = "sound/NS2.fev/alien/structures/crag/umbra"/*, sameteam = true*/},            
-            {cinematic = "cinematics/alien/crag/umbra.cinematic", /*sameteam = true,*/ done = true},
-            
-            //{sound = "sound/NS2.fev/alien/structures/crag/umbra", sameteam = false, volume = .3, done = true},            
-        },
-    },    
-
     death_hallucination =
     {
         deathHallucinationEffect =
@@ -355,24 +343,6 @@ kAlienStructureEffects =
             {cinematic = "cinematics/alien/shade/death_halluzination.cinematic", done = true},         
         },
     },     
-
-    babbler_jump =
-    {
-        babblerJumpEffect =
-        {
-            {sound = "sound/NS2.fev/alien/drifter/attack" },
-            {cinematic = "cinematics/alien/crag/babbler_jump.cinematic", done = true},         
-        },
-    }, 
-    
-    babbler_attack =
-    {
-        babblerAttackEffect =
-        {
-            {sound = "sound/NS2.fev/alien/fade/impale" },
-            {cinematic = "cinematics/alien/crag/babbler_attack.cinematic", done = true},         
-        },
-    }, 
     
     teleport_start =
     {

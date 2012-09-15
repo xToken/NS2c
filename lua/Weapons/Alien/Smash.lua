@@ -1,14 +1,5 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
 // lua\Weapons\Alien\Smash.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com) and
-//                  Urwalek Andreas (andi@unknownworlds.com)
-//
-// Basic goring attack. Can also be used to smash down locked or welded doors.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/StompMixin.lua")

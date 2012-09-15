@@ -683,9 +683,6 @@ end
 
 function Player:UpdateMisc(input)
 
-    // Set near death mask so we can add sound/visual effects
-    self:SetGameEffectMask(kGameEffect.NearDeath, self:GetHealth() < 0.2 * self:GetMaxHealth())
-    
     // Check if the player wants to go to the ready room.
     if bit.band(input.commands, Move.ReadyRoom) ~= 0 and not self:isa("ReadyRoomPlayer") then
         self:SetCameraDistance(0)

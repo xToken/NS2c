@@ -31,7 +31,7 @@ function GorgeBuild_Close()
     local player = Client.GetLocalPlayer()
     
     local activeWeapon = player:GetActiveWeapon()
-    
+
     if activeWeapon.DestroyBuildMenu then
         activeWeapon:DestroyBuildMenu()
     end    

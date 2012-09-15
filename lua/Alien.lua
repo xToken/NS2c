@@ -11,7 +11,6 @@ Script.Load("lua/Player.lua")
 Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/RegenerationMixin.lua")
-Script.Load("lua/CatalystMixin.lua")
 Script.Load("lua/ScoringMixin.lua")
 Script.Load("lua/Alien_Upgrade.lua")
 Script.Load("lua/UnitStatusMixin.lua")
@@ -90,7 +89,6 @@ local networkVars =
 
 AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(UmbraMixin, networkVars)
-AddMixinNetworkVars(CatalystMixin, networkVars)
 AddMixinNetworkVars(EnergizeMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
@@ -102,7 +100,6 @@ function Alien:OnCreate()
     InitMixin(self, AlienDetectorMixin)
     InitMixin(self, UmbraMixin)
     InitMixin(self, RegenerationMixin)
-    InitMixin(self, CatalystMixin)
     InitMixin(self, AlienActionFinderMixin)
     InitMixin(self, EnergizeMixin)
     InitMixin(self, CombatMixin)
@@ -327,6 +324,10 @@ function Alien:GetCarapaceMovementScalar()
 
 end
 
+function  Alien:OverrideStrafeJump()
+    return true
+end
+
 function Alien:GetSlowSpeedModifier()
     return Player.GetSlowSpeedModifier(self)
 end
@@ -520,7 +521,7 @@ end
  * Aliens cannot climb ladders.
  */
 function Alien:GetCanClimb()
-    return false
+    return true
 end
 
 function Alien:GetHasSayings()

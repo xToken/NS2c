@@ -113,6 +113,7 @@ kDamageTypeDesc = {
 }
 
 kBaseArmorUseFraction = 0.7
+kHeavyDamageArmorUseFraction = 0.5
 kHeavyArmorUseFraction = 0.95
 kStructuralDamageScalar = 2
 kHalfStructureDamageReduction = 2
@@ -137,7 +138,7 @@ local function ApplyHighArmorUseFractionForHA(target, attacker, doer, damage, ar
 end
 
 local function HalfHealthPerArmor(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType)
-    return damage, armorFractionUsed, healthPerArmor * (kHeavyHealthPerArmor / kHealthPointsPerArmor)
+    return damage, kHeavyDamageArmorUseFraction, healthPerArmor * (kHeavyHealthPerArmor / kHealthPointsPerArmor)
 end
 
 local function ApplyDefaultHealthPerArmor(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType)
@@ -402,10 +403,9 @@ function GetDamageByType(target, attacker, doer, damage, damageType)
         // Thanks Harimau!
         local healthPointsBlocked = math.min(healthPerArmor * target.armor, armorFractionUsed * damage)
         armorUsed = healthPointsBlocked / healthPerArmor
-        
         // Anything left over comes off of health
         healthUsed = damage - healthPointsBlocked
-    
+        
     end
     
     return damage, armorUsed, healthUsed

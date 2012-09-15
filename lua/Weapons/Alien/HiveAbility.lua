@@ -1,5 +1,5 @@
-// lua\Weapons\Alien\HydraStructureAbility.lua
 //
+// lua\Weapons\Alien\HiveAbility.lua
 
 Script.Load("lua/Weapons/Alien/StructureAbility.lua")
 

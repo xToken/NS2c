@@ -1,0 +1,5 @@
+shader = "shaders/Model.surface_shader"
+albedoMap = "models/alien/gorge/goowall.dds"
+emissiveMap = "models/alien/gorge/goowall.dds"
+opacityMap = "models/alien/gorge/goowall_alpha.dds"
+surface = "organic"

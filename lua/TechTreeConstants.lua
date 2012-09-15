@@ -96,9 +96,6 @@ kTechId = enum({
     'AlienAlertOrderComplete',
     'AlienAlertNotEnoughResources', 'AlienAlertResearchComplete', 'AlienAlertManufactureComplete', 'AlienAlertUpgradeComplete', 'AlienAlertHiveComplete',
     
-    // Pheromones
-    'ThreatMarker', 'LargeThreatMarker', 'NeedHealingMarker', 'WeakMarker', 'ExpandingMarker',
-   
     // Voting commands
     'VoteDownCommander1', 'VoteDownCommander2', 'VoteDownCommander3',
     

@@ -400,16 +400,6 @@ function JetpackMarine:AdjustGravityForce(input, gravity)
       
 end
 
-function JetpackMarine:GetAirMoveScalar()
-
-    if self:GetIsJetpacking() then
-        return 1.0
-    else    
-        return 0.3   
-    end
-
-end
-
 function JetpackMarine:GetIsTakingOffFromGround()
     return self.startedFromGround and (self.timeJetpackingChanged + JetpackMarine.kJetpackTakeOffTime > Shared.GetTime())
 end

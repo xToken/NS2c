@@ -26,34 +26,35 @@ function Onos:GetTierThreeTechId()
 end
 
 function Onos:DevourUpdate()
-    local devourWeapon = self:GetWeapon("devour")
-    if devourWeapon and devourWeapon:IsAlreadyEating() then
-        local food = Shared.GetEntity(devourWeapon.devouring)
-        if food then
-        
-            if devourWeapon.timeSinceLastDevourUpdate + Devour.kDigestionSpeed < Shared.GetTime() then   
-                //Player still being eaten, damage them
-                devourWeapon.timeSinceLastDevourUpdate = Shared.GetTime()
-                if devourWeapon:DoDamage(kDevourDamage , food, nil, nil, "none" ) then
-                    devourWeapon:OnDevourEnd()
-                    return
-                end
-            end
-    
-            //Always update players POS relative to the onos
-            if Server then
-                atOrigin = self:GetOrigin()
-                atOrigin.y = atOrigin.y + 0.5
-                SpawnPlayerAtPoint(food, atOrigin)
-            end
-            if food.physicsModel then
-                Shared.DestroyCollisionObject(food.physicsModel)
-                food.physicsModel = nil
-            end
+    if self.GetWeapon then
+        local devourWeapon = self:GetWeapon("devour")
+        if devourWeapon and devourWeapon:IsAlreadyEating() then
+            local food = Shared.GetEntity(devourWeapon.devouring)
+            if food then
             
-        else
-            devourWeapon:OnDevourEnd()
-        end        
+                if devourWeapon.timeSinceLastDevourUpdate + Devour.kDigestionSpeed < Shared.GetTime() then   
+                    //Player still being eaten, damage them
+                    devourWeapon.timeSinceLastDevourUpdate = Shared.GetTime()
+                    if devourWeapon:DoDamage(kDevourDamage , food, nil, nil, "none" ) then
+                        devourWeapon:OnDevourEnd()
+                        return
+                    end
+                end
+        
+                //Always update players POS relative to the onos
+                if Server then
+                    atOrigin = self:GetOrigin()
+                    atOrigin.y = atOrigin.y + 0.5
+                    SpawnPlayerAtPoint(food, atOrigin)
+                end
+                if food.physicsModel then
+                    Shared.DestroyCollisionObject(food.physicsModel)
+                    food.physicsModel = nil
+                end
+                
+            else
+                devourWeapon:OnDevourEnd()
+            end        
+        end
     end
-
 end

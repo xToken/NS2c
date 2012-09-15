@@ -353,22 +353,13 @@ function Alien:OnInitLocalClient()
         if self.alienHUD == nil then
             self.alienHUD = GetGUIManager():CreateGUIScript("GUIAlienHUD")
         end
-        
-        if self.waypoints == nil then
-            self.waypoints = GetGUIManager():CreateGUIScript("GUIWaypoints")
-            self.waypoints:InitAlienTexture()          
-        end
-        
-        if self.eggInfo == nil then
-            self.eggInfo = GetGUIManager():CreateGUIScript("GUIEggDisplay")
-        end
-        
+
         if self.regenFeedback == nil then
             self.regenFeedback = GetGUIManager():CreateGUIScript("GUIRegenerationFeedback")
         end
         
         if self.objectiveDisplay == nil then
-            self.objectiveDisplay = GetGUIManager():CreateGUIScript("GUIObjectiveDisplay")
+            //self.objectiveDisplay = GetGUIManager():CreateGUIScript("GUIObjectiveDisplay")
         end
         
     end

@@ -33,7 +33,6 @@ Script.Load("lua/TechNode.lua")
 Script.Load("lua/TechTree.lua")
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/Order.lua")
-//Script.Load("lua/PropDynamic.lua")
 Script.Load("lua/Blip.lua")
 Script.Load("lua/MapBlip.lua")
 Script.Load("lua/ParticleEffect.lua")
@@ -65,7 +64,6 @@ Script.Load("lua/NS2Gamerules.lua")
 Script.Load("lua/TechPoint.lua")
 Script.Load("lua/BaseSpawn.lua")
 Script.Load("lua/ReadyRoomSpawn.lua")
-Script.Load("lua/Pheromone.lua")
 Script.Load("lua/Weapons/ViewModel.lua")
 
 // Marine structures
@@ -87,7 +85,6 @@ Script.Load("lua/AmmoPack.lua")
 Script.Load("lua/MedPack.lua")
 Script.Load("lua/CatPack.lua")
 Script.Load("lua/Effect.lua")
-Script.Load("lua/AmbientSound.lua")
 Script.Load("lua/Particles.lua")
 
 // Alien structures
@@ -100,7 +97,6 @@ Script.Load("lua/Whip.lua")
 Script.Load("lua/Hydra.lua")
 Script.Load("lua/Egg.lua")
 Script.Load("lua/Embryo.lua")
-Script.Load("lua/Hallucination.lua")
 
 // Base players
 Script.Load("lua/ReadyRoomPlayer.lua")

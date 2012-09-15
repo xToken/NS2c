@@ -157,7 +157,6 @@ function BuildTechData()
         { [kTechDataId] = kTechId.BuildMenu,             [kTechDataDisplayName] = "BUILD", [kTechDataHotkey] = Move.W, [kTechDataTooltipInfo] = "BUILD_TOOLTIP"},
         { [kTechDataId] = kTechId.AdvancedMenu,          [kTechDataDisplayName] = "ADVANCED", [kTechDataHotkey] = Move.E, [kTechDataTooltipInfo] = "ADVANCED_TOOLTIP"},
         { [kTechDataId] = kTechId.AssistMenu,            [kTechDataDisplayName] = "ASSIST", [kTechDataHotkey] = Move.R, [kTechDataTooltipInfo] = "ASSIST_TOOLTIP"},
-        { [kTechDataId] = kTechId.MarkersMenu,           [kTechDataDisplayName] = "MARKERS", [kTechDataHotkey] = Move.M, [kTechDataTooltipInfo] = "PHEROMONE_TOOLTIP"},
         { [kTechDataId] = kTechId.UpgradesMenu,          [kTechDataDisplayName] = "UPGRADES", [kTechDataHotkey] = Move.U, [kTechDataTooltipInfo] = "TEAM_UPGRADES_TOOLTIP"},
         { [kTechDataId] = kTechId.WeaponsMenu,           [kTechDataDisplayName] = "WEAPONS_MENU", [kTechDataTooltipInfo] = "WEAPONS_MENU_TOOLTIP"},
 
@@ -253,12 +252,12 @@ function BuildTechData()
 
         // tier 3 abilities
         { [kTechDataId] = kTechId.Xenocide,               [kTechDataMapName] = XenocideLeap.kMapName,    [kTechDataDamageType] = kXenocideDamageType,   [kTechDataDisplayName] = "XENOCIDE", [kTechDataCostKey] = kXenocideResearchCost, [kTechDataResearchTimeKey] = kXenocideResearchTime, [kTechDataTooltipInfo] = "XENOCIDE_TOOLTIP"},
-        { [kTechDataId] = kTechId.Spikes,                 [kTechDataDisplayName] = "SPIKES", [kTechDataCostKey] = kSpikesResearchCost, [kTechDataResearchTimeKey] = kSpikesResearchTime, [kTechDataTooltipInfo] = "SPIKES_TOOLTIP"},
-        { [kTechDataId] = kTechId.AcidRocket ,            [kTechDataMapName] = AcidRocket.kMapName,   [kTechDataDisplayName] = "ACID_ROCKET", [kTechDataCostKey] = kAcidRocketResearchCost, [kTechDataResearchTimeKey] = kAcidRocketResearchTime, [kTechDataTooltipInfo] = "ACID_ROCKET_TOOLTIP"},
+        { [kTechDataId] = kTechId.Web,         			  [kTechDataMapName] = Web.kMapName,             [kTechDataHint] = "WEB_HINT", [kTechDataDisplayName] = "WEB", [kTechDataEngagementDistance] = kWebEngagementRange, [kTechDataMaxHealth] = kWebHealth, [kTechDataMaxArmor] = kWebArmor, [kTechDataModel] = Web.kModelName, [kTechDataPointValue] = kWebPointValue, },
+        //{ [kTechDataId] = kTechId.Spikes,                 [kTechDataDisplayName] = "SPIKES", [kTechDataCostKey] = kSpikesResearchCost, [kTechDataResearchTimeKey] = kSpikesResearchTime, [kTechDataTooltipInfo] = "SPIKES_TOOLTIP"},
         { [kTechDataId] = kTechId.PrimalScream ,          [kTechDataDisplayName] = "PRIMAL_SCREAM", [kTechDataCostKey] = kPrimalScreamResearchCost, [kTechDataResearchTimeKey] = kPrimalScreamResearchTime, [kTechDataTooltipInfo] = "PRIMAL_SCREAM_TOOLTIP"},
+        { [kTechDataId] = kTechId.AcidRocket ,            [kTechDataMapName] = AcidRocket.kMapName,   [kTechDataDisplayName] = "ACID_ROCKET", [kTechDataCostKey] = kAcidRocketResearchCost, [kTechDataResearchTimeKey] = kAcidRocketResearchTime, [kTechDataTooltipInfo] = "ACID_ROCKET_TOOLTIP"},
         { [kTechDataId] = kTechId.Smash,                  [kTechDataMapName] = Smash.kMapName,            [kTechDataDamageType] = kSmashDamageType,        [kTechDataDisplayName] = "SMASH"},
-        { [kTechDataId] = kTechId.Charge,                 [kTechDataDisplayName] = "CHARGE"},
-		{ [kTechDataId] = kTechId.Web,         			  [kTechDataMapName] = Web.kMapName,             [kTechDataHint] = "WEB_HINT", [kTechDataDisplayName] = "WEB", [kTechDataEngagementDistance] = kWebEngagementRange, [kTechDataMaxHealth] = kWebHealth, [kTechDataMaxArmor] = kWebArmor, [kTechDataModel] = Web.kModelName, [kTechDataPointValue] = kWebPointValue, },
+        //{ [kTechDataId] = kTechId.Charge,                 [kTechDataDisplayName] = "CHARGE"},
 		
         // Alien structures (spawn hive at 110 units off ground = 2.794 meters)
         { [kTechDataId] = kTechId.Hive, [kTechDataHint] = "HIVE_HINT", [kTechDataAllowStacking] = true, [kTechDataGhostModelClass] = "AlienGhostModel",  [kTechDataMapName] = Hive.kMapName,   [kTechDataDisplayName] = "HIVE", [kTechDataCostKey] = kHiveCost,                     [kTechDataBuildTime] = kHiveBuildTime, [kTechDataModel] = Hive.kModelName,  [kTechDataHotkey] = Move.V,                [kTechDataMaxHealth] = kHiveHealth,  [kTechDataMaxArmor] = kHiveArmor,              [kStructureAttachClass] = "TechPoint",         [kTechDataSpawnHeightOffset] = kHiveYOffset,    [kTechDataPointValue] = kHivePointValue, [kTechDataTooltipInfo] = "HIVE_TOOLTIP"}, 
@@ -311,7 +310,7 @@ function BuildTechData()
         
         { [kTechDataId] = kTechId.Focus,            [kTechDataCategory] = kTechId.WhipHive,      [kTechDataKeyStructure] = kTechId.Whip,    [kTechDataDisplayName] = "FOCUS", [kTechDataTooltipInfo] = "FOCUS_TOOLTIP", [kTechDataCostKey] = kFocusCost },
         { [kTechDataId] = kTechId.Fury,            [kTechDataCategory] = kTechId.WhipHive,      [kTechDataKeyStructure] = kTechId.Whip,    [kTechDataDisplayName] = "FURY", [kTechDataTooltipInfo] = "FURY_TOOLTIP", [kTechDataCostKey] = kFuryCost },
-        { [kTechDataId] = kTechId.Echo,         [kTechDataImplemented] = false,        [kTechDataCategory] = kTechId.WhipHive,      [kTechDataKeyStructure] = kTechId.Whip,    [kTechDataDisplayName] = "ECHO", [kTechDataTooltipInfo] = "ECHO_TOOLTIP", [kTechDataCostKey] = kEchoCost },
+        { [kTechDataId] = kTechId.Echo,         [kTechDataImplemented] = true,        [kTechDataCategory] = kTechId.WhipHive,      [kTechDataKeyStructure] = kTechId.Whip,    [kTechDataDisplayName] = "ECHO", [kTechDataTooltipInfo] = "ECHO_TOOLTIP", [kTechDataCostKey] = kEchoCost },
         
         // Alerts
         { [kTechDataId] = kTechId.MarineAlertSentryUnderAttack,                 [kTechDataAlertSound] = Sentry.kUnderAttackSound,                           [kTechDataAlertType] = kAlertType.Info,   [kTechDataAlertPriority] = 0, [kTechDataAlertText] = "MARINE_ALERT_SENTRY_UNDERATTACK", [kTechDataAlertTeam] = false},

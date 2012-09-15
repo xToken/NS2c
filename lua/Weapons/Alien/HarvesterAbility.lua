@@ -1,8 +1,5 @@
-// lua\Weapons\Alien\HarvesterStructureAbility.lua
 //
-//    Created by:   
-//
-// Gorge builds Harvester.
+// lua\Weapons\Alien\HarvesterAbility.lua
 
 Script.Load("lua/Weapons/Alien/StructureAbility.lua")
 

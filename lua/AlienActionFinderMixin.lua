@@ -56,7 +56,7 @@ if Client then
             
             local success = false
             
-            //if Client.GetOptionBoolean("showHints", true) then
+            if Client.GetOptionBoolean("showHints", true) then
             
                 if self:GetIsAlive() then
             
@@ -66,11 +66,12 @@ if Client then
                         if GetPlayerCanUseEntity(self, ent) and not self:GetIsUsing() then
                         
                             local hintText = nil
-                            
                             if ent:isa("Hive") and ent:GetIsBuilt() then
                                 hintText = "TELEPORT_HIVE"
                             elseif ent:isa("Hive") and not ent:GetIsBuilt() then
                                 hintText = "ALERT_DANGER"
+							elseif ent:isa("Shift") and ent:GetIsBuilt() then
+							    hintText = "REDEPLOYMENT_UPGRADE"
 							else
 								hintText = "ALIEN_CONSTRUCT"
                             end
@@ -81,7 +82,7 @@ if Client then
                         end
                     end
                 end
-            //end
+            end
             if not success then
                 self.actionIconGUI:Hide()
             end

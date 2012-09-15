@@ -1,7 +1,5 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
 // lua\Weapons\Marine\HandGrenades.lua
-//
 
 Script.Load("lua/Weapons/Weapon.lua")
 Script.Load("lua/Weapons/Marine/HandGrenade.lua")

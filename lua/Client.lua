@@ -246,13 +246,7 @@ function OnMapLoadEntity(className, groupName, values)
         cinematic:SetRepeatStyle(repeatStyle)
         table.insert(Client.cinematics, cinematic)
         
-    elseif className == AmbientSound.kMapName then
-    
-        local entity = AmbientSound()
-        LoadEntityFromValues(entity, values)
-        // Precache the ambient sound effects
-        Shared.PrecacheSound(entity.eventName)
-        table.insert(Client.ambientSoundList, entity)
+    elseif className == "ambient_sound" then
         
     elseif className == Particles.kMapName then
     
@@ -293,26 +287,6 @@ function SetCommanderPropState(isComm)
         end
     end
 
-end
-
-function UpdateAmbientSounds(deltaTime)
-    
-    PROFILE("Client:UpdateAmbientSounds")
-
-    //for index, ambientSound in ipairs(Client.ambientSoundList) do
-        //ambientSound:OnUpdate(deltaTime)
-    //end
-    
-end
-
-function UpdateParticles(deltaTime)
-
-    PROFILE("Client:UpdateParticles")
-
-    //for index, particles in ipairs(Client.particlesList) do
-        //particles:OnUpdate(deltaTime)
-    //end
-    
 end
 
 local function ExpireDebugText()
@@ -378,15 +352,8 @@ function OnUpdateClient(deltaTime)
     
     local player = Client.GetLocalPlayer()
     if player ~= nil then
-    
-        //UpdateAmbientSounds(deltaTime)
-        
-        //UpdateDSPEffects()
-        
         //UpdateParticles(deltaTime)
-        
-        UpdateTracers(deltaTime)
-        
+        UpdateTracers(deltaTime) 
     end
     
     GetEffectManager():OnUpdate(deltaTime)

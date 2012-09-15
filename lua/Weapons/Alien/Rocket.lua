@@ -1,13 +1,5 @@
-//=============================================================================
 //
 // lua\Weapons\Alien\Rocket.lua
-//
-// Created by Charlie Cleveland (charlie@unknownworlds.com)
-// Copyright (c) 2011, Unknown Worlds Entertainment, Inc.
-//
-// Acid Rocket projectile
-//
-//=============================================================================
 
 Script.Load("lua/Weapons/Projectile.lua")
 Script.Load("lua/TeamMixin.lua")
@@ -56,6 +48,10 @@ end
 
 function Rocket:GetDeathIconIndex()
     return kDeathMessageIcon.BileBomb
+end
+
+function Rocket:GetDamageType()
+    return kAcidRocketDamageType
 end
 
 if Server then

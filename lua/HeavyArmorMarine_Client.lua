@@ -1,5 +1,5 @@
-// lua\HeavyArmorMarine_Client.lua
 //
+// lua\HeavyArmorMarine_Client.lua
 
 function HeavyArmorMarine:TriggerFootstep()
 

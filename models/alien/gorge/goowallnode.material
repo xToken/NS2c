@@ -1,0 +1,6 @@
+shader = "shaders/Model.surface_shader"
+albedoMap = "materials/infestation/infestation_decal.dds"
+emissiveMap = "materials/infestation/infestation_decal.dds"
+normalMap = "materials/dev/dev_normal.dds"
+specularMap = "materials/dev/black.dds"
+surface = "organic"

@@ -1,6 +1,5 @@
 //
-// lua\Weapons\Alien\CragStructureAbility.lua
-//
+// lua\Weapons\Alien\WhipAbility.lua
 
 Script.Load("lua/Weapons/Alien/StructureAbility.lua")
 

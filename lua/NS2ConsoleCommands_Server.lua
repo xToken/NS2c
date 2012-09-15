@@ -934,24 +934,6 @@ local function OnCommandCommanderPing(client, classname)
     
 end
 
-local function OnCommandThreat(client)
-
-    if Shared.GetCheatsEnabled() then
-    
-        local player = client:GetControllingPlayer()
-        if player then
-        
-            local startPoint = player:GetEyePos()
-            local endPoint = startPoint + player:GetViewCoords().zAxis * 100
-            local trace = Shared.TraceRay(startPoint, endPoint,  CollisionRep.Default, PhysicsMask.Bullets, EntityFilterAll())
-            CreatePheromone(kTechId.ThreatMarker, trace.endPoint, 2)
-            
-        end
-        
-    end
-    
-end
-
 local function OnCommandDeployARCs()
 
     if Shared.GetCheatsEnabled() then
@@ -989,10 +971,6 @@ local function OnCommandRespawnTeam(client, teamNum)
         
     end
     
-end
-
-local function OnCommandGameMode(client, mode)
-    Getgamerules:SetGameMode(mode)
 end
 
 // GC commands
@@ -1076,6 +1054,3 @@ Event.Hook("Console_eggspawntimes", OnCommandEggSpawnTimes)
 Event.Hook("Console_gothere", OnCommandGoThere)
 
 Event.Hook("Console_commanderping", OnCommandCommanderPing)
-Event.Hook("Console_threat", OnCommandThreat)
-
-Event.Hook("Console_gamemode", OnCommandGameMode)

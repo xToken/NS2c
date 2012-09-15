@@ -1,12 +1,5 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
-// lua\Weapons\Exosuit.lua
-//
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com.at)
-//
-//    Pickupable entity.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+// lua\HeavyArmor.lua
 
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")

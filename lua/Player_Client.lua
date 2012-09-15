@@ -183,52 +183,12 @@ function PlayerUI_GetHasNewOrder()
 
 end
 
-local function GetMostRelevantPheromone(toOrigin)
-
-    local pheromones = GetEntitiesWithinRange("Pheromone", toOrigin, 100)
-    local bestPheromone = nil
-    local bestDistSq = math.huge
-    for p = 1, #pheromones do
-    
-        local currentPheromone = pheromones[p]
-        local currentDistSq = currentPheromone:GetDistanceSquared(toOrigin)
-        local currentLevel = currentPheromone:GetLevel()
-        // Each additional level gives a Pheromone more power, it will score higher.
-        // Modify the distance to achieve this here.
-        currentDistSq = currentDistSq - ((currentLevel - 1) * 100)
-        if currentDistSq < bestDistSq then
-        
-            bestDistSq = currentDistSq
-            bestPheromone = currentPheromone
-            
-        end
-        
-    end
-    
-    return bestPheromone
-    
-end
-
 function PlayerUI_GetOrderPath()
 
     local player = Client.GetLocalPlayer()
     if player then
     
-        if player:isa("Alien") then
-        
-            local playerOrigin = player:GetOrigin()
-            local pheromone = GetMostRelevantPheromone(playerOrigin)
-            if pheromone then
-            
-                local points = { }
-                local isReachable = Pathing.GetPathPoints(playerOrigin, pheromone:GetOrigin(), points)
-                if isReachable then
-                    return points
-                end
-                
-            end
-            
-        else
+        if not player:isa("Alien") then
         
             local currentOrder = player:GetCurrentOrder()
             if currentOrder then
@@ -462,9 +422,7 @@ function PlayerUI_GetFinalWaypointInScreenspace()
         
     else
     
-        if player:isa("Alien") then
-            currentOrder = GetMostRelevantPheromone(player:GetOrigin())
-        else
+        if not player:isa("Alien") then
             currentOrder = player:GetCurrentOrder()
         end
         
@@ -490,11 +448,7 @@ function PlayerUI_GetFinalWaypointInScreenspace()
     end
     
     local orderWayPoint = nil
-    if currentOrder:isa("Pheromone") then
-        orderWayPoint = currentOrder:GetOrigin()
-    else
-        orderWayPoint = currentOrder:GetLocation()
-    end
+    orderWayPoint = currentOrder:GetLocation()
     
     if not isCommander then
         orderWayPoint = orderWayPoint + Vector(0, 1.5, 0)

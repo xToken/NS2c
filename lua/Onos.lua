@@ -116,9 +116,7 @@ end
 function Onos:OnInitialized()
 
     Alien.OnInitialized(self)
-    
     self:SetModel(Onos.kModelName, kOnosAnimationGraph)
-    
     self:AddTimedCallback(Onos.UpdateStooping, Onos.kStoopingCheckInterval)
 
 end
@@ -333,16 +331,6 @@ function Onos:GetMaxSpeed(possible)
 
 end
 
-function Onos:GetAirMoveScalar()
-
-    if self:GetVelocity():GetLength() < 5 then
-        return 1.0
-    end
-    
-    return 0
-    
-end
-
 // Half a ton
 function Onos:GetMass()
     return Onos.kMass
@@ -351,33 +339,6 @@ end
 function Onos:GetJumpHeight()
     return Onos.kJumpHeight
 end
-
-/*
-function Onos:UpdatePosition(velocity, time, move)
-
-    local requestedVelocity = Vector(velocity)
-    local velocity = Alien.UpdatePosition(self, velocity, time)
-    
-    if Server or not Shared.GetIsRunningPrediction() then
-    
-        if not self.timeLastAutoCrouchCheck or self.timeLastAutoCrouchCheck + kAutoCrouchCheckInterval < Shared.GetTime() then
-        
-            self.timeLastAutoCrouchCheck = Shared.GetTime()
-        
-            self.autoCrouching = false
-            
-            if velocity:GetLength() < requestedVelocity:GetLength() then
-                self:UpdateAutoCrouch(move)                
-            end
-        
-        end
-    
-    end
-    
-    return velocity
-
-end
-*/
 
 local kStoopPos = Vector(0, 2.6, 0)
 function Onos:UpdateStooping(deltaTime)
@@ -426,10 +387,6 @@ function Onos:UpdateAutoCrouch(move)
     
     local startPos2 = self:GetOrigin() + frontLeft + Vector(0, extents.y * (1 - self:GetCrouchShrinkAmount()), 0)
     local startPos3 = self:GetOrigin() + backRight + Vector(0, extents.y * (1 - self:GetCrouchShrinkAmount()), 0)
-    
-    //DebugLine(startPos1, startPos1 + moveDirection * 3, 3, 1,1,1,1)
-    //DebugLine(startPos2, startPos2 + moveDirection * 3, 3, 1,1,1,1)
-    //DebugLine(startPos3, startPos3 + moveDirection * 3, 3, 1,1,1,1)
     
     local trace1 = Shared.TraceRay(startPos1, startPos1 + moveDirection * 3, CollisionRep.Move, PhysicsMask.Movement, EntityFilterOne(self))
     local trace2 = Shared.TraceRay(startPos2, startPos2 + moveDirection * 3, CollisionRep.Move, PhysicsMask.Movement, EntityFilterOne(self))
@@ -510,10 +467,6 @@ end
 local kOnosEngageOffset = Vector(0, 1.3, 0)
 function Onos:GetEngagementPointOverride()
     return self:GetOrigin() + kOnosEngageOffset
-end
-
-function Onos:OnClampSpeed(input, velocity)
-    Player.OnClampSpeed(self, input, velocity)
 end
 
 Shared.LinkClassToMap("Onos", Onos.kMapName, networkVars)

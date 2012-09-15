@@ -23,7 +23,6 @@ Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-Script.Load("lua/ObjectiveInfo.lua")
 
 class 'CommandStructure' (ScriptActor)
 CommandStructure.kMapName = "commandstructure"

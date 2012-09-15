@@ -1,5 +1,5 @@
-// lua\HeavyArmorMarine.lua
 //
+// lua\HeavyArmorMarine.lua
 
 Script.Load("lua/Marine.lua")
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
@@ -157,10 +157,6 @@ end
 // Maximum speed a player can move backwards
 function HeavyArmorMarine:GetMaxBackwardSpeedScalar()
     return HeavyArmorMarine.kWalkBackwardSpeedScalar
-end
-
-function HeavyArmorMarine:GetAirMoveScalar()
-    return 0.1
 end
 
 function HeavyArmorMarine:GetAirFrictionForce()

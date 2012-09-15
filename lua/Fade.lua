@@ -45,6 +45,7 @@ Fade.kMaxSpeed = 7.0
 Fade.kWalkSpeed = 4
 Fade.kMaxBlinkSpeed = 20
 Fade.kAcceleration = 52
+Fade.kWalkingAcceleration = 30
 Fade.kBlinkAcceleration = 72
 Fade.kBlinkFriction = 3.5
 Fade.kAirAccelerationFraction = .8
@@ -61,7 +62,6 @@ end
 
 local networkVars =
 {
-    hasDoubleJumped = "private compensated boolean",     
     landedAfterBlink = "compensated boolean",    
     
     etherealStartTime = "private time",
@@ -89,7 +89,6 @@ function Fade:OnCreate()
 
     if Server then
         self.isBlinking = false
-        self.hasDoubleJumped = false
         self.landedAfterBlink = false
     end
     
@@ -167,16 +166,7 @@ function Fade:OnJumpLand(landIntensity, slowDown)
 
     Alien.OnJumpLand(self, landIntensity, slowDown)
     
-    self.hasDoubleJumped = false
     self.landedAfterBlink = true
-    
-end
-
-function Fade:OnJump()
-
-    if not self:GetIsOnGround() then
-        self.hasDoubleJumped = true
-    end
     
 end
 
@@ -193,7 +183,7 @@ function Fade:GetGroundFrictionForce()
 end  
 
 function Fade:GetCanJump()
-    return (Alien.GetCanJump(self) or not self.hasDoubleJumped)
+    return Alien.GetCanJump(self)
 end
 
 function Fade:ConstrainMoveVelocity(moveVelocity)
@@ -260,8 +250,10 @@ function Fade:GetAcceleration()
     if self:GetIsBlinking() then
         return Fade.kBlinkAcceleration * self:GetMovementSpeedModifier()
     end
-
-    return Fade.kAcceleration * self:GetMovementSpeedModifier() * ( 1 - self:GetCrouchAmount() * Player.kCrouchSpeedScalar )
+    
+    local acceleration = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Fade.kWalkingAcceleration, Fade.kAcceleration)
+    
+    return acceleration * self:GetMovementSpeedModifier() * ( 1 - self:GetCrouchAmount() * Player.kCrouchSpeedScalar )
 
 end
 

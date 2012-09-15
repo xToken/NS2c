@@ -1,8 +1,5 @@
-// lua\Weapons\Alien\ShadeStructureAbility.lua
 //
-//    Created by:  
-//
-// Gorge builds Shade.
+// lua\Weapons\Alien\ShadeAbility.lua
 
 Script.Load("lua/Weapons/Alien/StructureAbility.lua")
 

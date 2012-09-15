@@ -102,8 +102,8 @@ local function LoadServerMapEntity(mapName, groupName, values)
        and mapName ~= "cinematic"
        and mapName ~= "skybox"
        and mapName ~= "pathing_settings"
+	   and mapName ~= "ambient_sound"
        and mapName ~= ReadyRoomSpawn.kMapName
-       and mapName ~= AmbientSound.kMapName
        and mapName ~= Reverb.kMapName
        and mapName ~= Hive.kMapName
        and mapName ~= CommandStation.kMapName
@@ -159,11 +159,6 @@ local function LoadServerMapEntity(mapName, groupName, values)
         entity:OnCreate()
         LoadEntityFromValues(entity, values)
         table.insert(Server.readyRoomSpawnList, entity)
-
-    elseif (mapName == AmbientSound.kMapName) then
-
-        // Make sure sound index is precached but only create ambient sound object on client
-        Shared.PrecacheSound(values.eventName)
 
     elseif (mapName == Particles.kMapName) then
         Shared.PrecacheCinematic(values.cinematicName)
