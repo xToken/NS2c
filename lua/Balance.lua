@@ -183,6 +183,7 @@ kHeavyMachineGunDamage = 20
 kHeavyMachineGunDamageType = kDamageType.HalfStructure
 kHeavyMachineGunClipSize = 125
 kHeavyMachineGunWeight = 0.20
+kHeavyMachineGunROF = 0.05
 
 kMineDamage = 125
 kMineDamageType = kDamageType.Normal
@@ -303,8 +304,8 @@ kSwipeDamageType = kDamageType.Normal
 kSwipeEnergyCost = 7.2
 kSwipeDelay = 0.5
 
-kStartBlinkEnergyCost = 10
-kBlinkEnergyCost = 50
+kStartBlinkEnergyCost = 12
+kBlinkEnergyCost = 60
 
 kMetabolizeEnergyCost = 25
 kMetabolizeEnergyGain = 35

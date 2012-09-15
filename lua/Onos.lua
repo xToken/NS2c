@@ -39,19 +39,20 @@ Onos.XExtents = .7
 Onos.YExtents = 1.2
 Onos.ZExtents = .4
 Onos.kMass = 453 // Half a ton
-Onos.kJumpHeight = 1.15
+Onos.kJumpHeight = 1.2
 
 // triggered when the momentum value has changed by this amount (negative because we trigger the effect when the onos stops, not accelerates)
 Onos.kMomentumEffectTriggerDiff = 3
 Onos.kClampedMaxSpeed = 13
-Onos.kGroundFrictionForce = 3
-Onos.kBaseAcceleration = 21
+Onos.kGroundFrictionForce = 8
+Onos.kBaseAcceleration = 55
+Onos.kAirAcceleration = 40
 Onos.kMaxSpeed = 7
 
 Onos.kHealth = kOnosHealth
 Onos.kArmor = kOnosArmor
 Onos.kChargeEnergyCost = 45
-Onos.kChargeAcceleration = 50
+Onos.kChargeAcceleration = 100
 Onos.kChargeUpDuration = .25
 Onos.kChargeDelay = .1
 Onos.kMinChargeDamage = kChargeMinDamage
@@ -148,14 +149,14 @@ end
 function Onos:GetAcceleration()
 
     local acceleration = Onos.kBaseAcceleration
-    
-    if self.charging then
-    
-        acceleration = Onos.kBaseAcceleration + (Onos.kChargeAcceleration - Onos.kBaseAcceleration) * self:GetChargeFraction() 
-    
+    if not self:GetIsOnGround() then
+        acceleration = Onos.kAirAcceleration
     end
-
-    return ( 1 - self:GetCrouchAmount() * Player.kCrouchSpeedScalar ) * acceleration * self:GetMovementSpeedModifier()
+    if self.charging then
+        acceleration = Onos.kBaseAcceleration + (Onos.kChargeAcceleration - Onos.kBaseAcceleration) * self:GetChargeFraction() 
+    end
+    
+    return acceleration * self:GetMovementSpeedModifier()
     
 end
 
@@ -288,7 +289,6 @@ end
 
 function Onos:CheckEndDevour()
     if self:GetWeapon("devour") and self:GetWeapon("devour"):IsAlreadyEating() then
-        Print("NOFOODFORYOU")
         self:GetWeapon("devour"):OnDevourEnd()
     end
 end
@@ -316,10 +316,6 @@ end
 function Onos:GetGroundFrictionForce()
     return Onos.kGroundFrictionForce
 end
-
-function Onos:GetAirFrictionForce()
-    return 0.2
-end  
 
 function Onos:GetMaxSpeed(possible)
 

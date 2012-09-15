@@ -74,10 +74,6 @@ function Skulk:PlayerCameraCoordsAdjustment(cameraCoords)
 
 end
 
-function Skulk:GetSpeedDebugSpecial()
-    return 0
-end
-
 function OnCommandSkulkViewTilt(enableTilt)
 
     gEnableTilt = enableTilt ~= "false"

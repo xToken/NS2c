@@ -67,9 +67,10 @@ Marine.kArmorPerUpgradeLevel = kArmorPerUpgradeLevel
 Marine.kPlayerPhaseDelay = 2
 Marine.kStunDuration = 2
 Marine.kAcceleration = 60
+Marine.kAirAcceleration = 25
 Marine.kWalkMaxSpeed = 4.0                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
 Marine.kRunMaxSpeed = 7
-Marine.kDoubleJumpMinHeightChange = 0.5
+Marine.kDoubleJumpMinHeightChange = 0.4
 Marine.kGroundFriction = 8
 
 // How fast does our armor get repaired by welders
@@ -500,35 +501,6 @@ function Marine:GetMaxSpeed(possible)
     
 end
 
-function Marine:OnClampSpeed(input, velocity)
-
-    PROFILE("Marine:OnClampSpeed")
-    
-    if self:PerformsVerticalMove() then
-        moveSpeed = velocity:GetLength()   
-    else
-        moveSpeed = velocity:GetLengthXZ()   
-    end
-    
-    local maxSpeed = self:GetMaxSpeed()
-    
-    // Players moving backwards can't go full speed.
-    if input.move.z < 0 then
-        maxSpeed = maxSpeed * self:GetMaxBackwardSpeedScalar()
-    end
-    
-    if moveSpeed > maxSpeed then
-    
-        local velocityY = velocity.y
-        velocity:Scale((maxSpeed / moveSpeed))
-        
-        if not self:PerformsVerticalMove() then
-            velocity.y = velocityY
-        end
-    end
-    
-end
-
 function Marine:GetFootstepSpeedScalar()
     return Clamp(self:GetVelocityLength() / (Marine.kRunMaxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier()), 0, 1)
 end
@@ -539,7 +511,7 @@ function Marine:GetMaxBackwardSpeedScalar()
 end
 
 function Marine:GetAirFrictionForce()
-    return 2 * self.slowAmount
+    return 0.5
 end
 
 function Marine:GetCanBeWeldedOverride()
@@ -547,13 +519,13 @@ function Marine:GetCanBeWeldedOverride()
 end
 
 function Marine:GetAcceleration()
-
     local acceleration = Marine.kAcceleration
-
+    if not self:GetIsOnGround() then
+        acceleration = Marine.kAirAcceleration
+    end
     acceleration = acceleration * self:GetSlowSpeedModifier() * self:GetInventorySpeedScalar()
 
     return acceleration * self:GetCatalystMoveSpeedModifier()
-
 end
 
 // Returns -1 to 1
@@ -847,33 +819,6 @@ function Marine:OnUpdateAnimationInput(modelMixin)
     
 end
 
-function Marine:ModifyVelocity(input, velocity)
-
-    Player.ModifyVelocity(self, input, velocity)
-    
-    if not self:GetIsOnGround() and input.move:GetLength() ~= 0 then
-    
-        local moveLengthXZ = velocity:GetLengthXZ()
-        local previousY = velocity.y
-        local adjustedZ = false
-        local viewCoords = self:GetViewCoords()
-        
-        if input.move.x ~= 0  then
-        
-            local redirectedVelocityX = GetNormalizedVectorXZ(self:GetViewCoords().xAxis) * input.move.x
-            redirectedVelocityX = redirectedVelocityX * input.time * Marine.kAirStrafeWeight + GetNormalizedVectorXZ(velocity)
-            
-            redirectedVelocityX:Normalize()            
-            redirectedVelocityX:Scale(moveLengthXZ)
-            redirectedVelocityX.y = previousY            
-            VectorCopy(redirectedVelocityX,  velocity)
-            
-        end
-        
-    end
-    
-end
-
 function Marine:OnProcessMove(input)
 
     if Server then
@@ -885,9 +830,7 @@ function Marine:OnProcessMove(input)
 end
 
 function Marine:OnUpdateCamera(deltaTime)
-
     Player.OnUpdateCamera(self, deltaTime)
-
 end
 
 function Marine:GetHasCatpackBoost()

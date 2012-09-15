@@ -11,7 +11,7 @@ class 'HeavyMachineGun' (ClipWeapon)
 HeavyMachineGun.kMapName = "heavymachinegun"
 
 HeavyMachineGun.kModelName = PrecacheAsset("models/marine/heavymachinegun/heavymachinegun.model")
-local kViewModelName = PrecacheAsset("models/marine/rifle/rifle_view.model")
+local kViewModelName = PrecacheAsset("models/marine/heavymachinegun/heavymachinegun_view.model")
 local kAnimationGraph = PrecacheAsset("models/marine/heavymachinegun/heavymachinegun_view.animation_graph")
 
 local kRange = 250
@@ -73,10 +73,13 @@ function HeavyMachineGun:OnPrimaryAttack(player)
             if not player or not player:GetDarwinMode() then
                 self.clip = self.clip - 1
             end
+            self.lastfiredtime = Shared.GetTime()
             self:CreatePrimaryAttackEffect(player)
             Weapon.OnPrimaryAttack(self, player)
             
         end
+    else
+         self.blockingPrimary = false
     end    
 end
 
@@ -176,8 +179,14 @@ end
 function HeavyMachineGun:OnTag(tagName)
 
     PROFILE("HeavyMachineGun:OnTag")
-
-    ClipWeapon.OnTag(self, tagName)
+    if tagName == "end" then
+        self.reloading = false
+        self.ammo = self.ammo + self.clip
+        
+        // Transfer bullets from our ammo pool to the weapon's clip
+        self.clip = math.min(self.ammo, self:GetClipSize())
+        self.ammo = self.ammo - self.clip
+    end
 
 end
 
@@ -241,7 +250,7 @@ if Client then
     end
 
     function HeavyMachineGun:GetPrimaryEffectRate()
-        return 0.03
+        return 0.1
     end
     
     function HeavyMachineGun:GetPreventCameraAnimation()

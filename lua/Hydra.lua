@@ -40,6 +40,7 @@ class 'Hydra' (ScriptActor)
 
 Hydra.kMapName = "hydra"
 
+Hydra.kModelName = PrecacheAsset("models/alien/offense_chamber/offense_chamber.model")
 Hydra.kModelName = PrecacheAsset("models/alien/hydra/hydra.model")
 Hydra.kAnimationGraph = PrecacheAsset("models/alien/hydra/hydra.animation_graph")
 

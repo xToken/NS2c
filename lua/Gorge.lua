@@ -58,6 +58,7 @@ local kViewOffsetHeight = 0.6
 Gorge.kMaxGroundSpeed = 7
 Gorge.kMaxSlidingSpeed = 13
 Gorge.kAcceleration = 55
+Gorge.kAirAcceleration = 25
 Gorge.kSlidingAccelBoost = 10
 Gorge.kGorgeCreateDistance = 3
 Gorge.kBellySlideCost = 25
@@ -165,14 +166,16 @@ function Gorge:GetIsBellySliding()
 end
 
 function Gorge:GetAcceleration()
-
     if self.sliding then
         local softaccelcap = math.max(self:GetVelocity():GetLengthXZ() - Gorge.kMaxGroundSpeed, 0) * 2.5
         return (Gorge.kAcceleration + Gorge.kSlidingAccelBoost - softaccelcap) * self:GetMovementSpeedModifier()
     end
-
-    return Gorge.kAcceleration * self:GetMovementSpeedModifier()
     
+    if self:GetIsOnGround() then
+        return Gorge.kAcceleration * self:GetMovementSpeedModifier()
+    else
+        return Gorge.kAirAcceleration * self:GetMovementSpeedModifier()
+    end
 end
 
 function Gorge:HandleJump(input, velocity)
@@ -342,87 +345,6 @@ end
 
 function Gorge:GetCanCloakOverride()
     return not self:GetIsBellySliding()
-end
-
-Gorge.kSlideControl = 1
-
-function Gorge:ModifyVelocity(input, velocity)
-
-    Alien.ModifyVelocity(self, input, velocity)
-
-    if not self:GetIsOnGround() and input.move:GetLength() ~= 0 or self:GetIsBellySliding() then
-    
-        local moveLengthXZ = velocity:GetLengthXZ()
-        local previousY = velocity.y
-        local adjustedZ = false
-        local bellySliding = self:GetIsBellySliding()
-
-        if input.move.z ~= 0 then
-        
-            local redirectedVelocityZ = GetNormalizedVectorXZ(self:GetViewCoords().zAxis) * input.move.z
-            
-            if input.move.z < 0 then
-            
-                redirectedVelocityZ = GetNormalizedVectorXZ(velocity)
-                redirectedVelocityZ:Normalize()
-                
-                local xzVelocity = Vector(velocity)
-                xzVelocity.y = 0
-                
-                VectorCopy(velocity - (xzVelocity * input.time * Gorge.kAirBrakeWeight), velocity)
-                
-            else
-            
-                redirectedVelocityZ = redirectedVelocityZ * input.time * ConditionalValue(bellySliding, Gorge.kSlideControl, Gorge.kAirZMoveWeight) + GetNormalizedVectorXZ(velocity)
-                redirectedVelocityZ:Normalize()
-                redirectedVelocityZ:Scale(moveLengthXZ)
-                redirectedVelocityZ.y = previousY
-                VectorCopy(redirectedVelocityZ,  velocity)
-                adjustedZ = true
-            
-            end
-        
-        end
-    
-        if input.move.x ~= 0  then
-    
-            local redirectedVelocityX = GetNormalizedVectorXZ(self:GetViewCoords().xAxis) * input.move.x
-        
-            if adjustedZ then
-                redirectedVelocityX = redirectedVelocityX * input.time * ConditionalValue(bellySliding, Gorge.kSlideControl, Gorge.kAirStrafeWeight) + GetNormalizedVectorXZ(velocity)
-            else
-                redirectedVelocityX = redirectedVelocityX * input.time * ConditionalValue(bellySliding, Gorge.kSlideControl, 2) + GetNormalizedVectorXZ(velocity)
-            end
-            
-            redirectedVelocityX:Normalize()            
-            redirectedVelocityX:Scale(moveLengthXZ)
-            redirectedVelocityX.y = previousY            
-            VectorCopy(redirectedVelocityX,  velocity)
-            
-        end    
-    
-    end
-    
-    // Give a little push forward to make sliding useful
-    if self.startedSliding then
-    
-        if self:GetIsOnGround() then
-    
-            local pushDirection = GetNormalizedVectorXZ(self:GetViewCoords().zAxis)
-            local force = kStartSlideForce * self:GetSlowSpeedModifier()
-            
-            local impulse = pushDirection * force
-
-            velocity.x = velocity.x * 0.5 + impulse.x
-            velocity.y = velocity.y * 0.5 + impulse.y
-            velocity.z = velocity.z * 0.5 + impulse.z
-        
-        end
-        
-        self.startedSliding = false
-
-    end
-    
 end
 
 function Gorge:GetPitchSmoothRate()

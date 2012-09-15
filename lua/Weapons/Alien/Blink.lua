@@ -138,11 +138,7 @@ function Blink:SetEthereal(player, state)
         if state then
         
             player.etherealStartTime = Shared.GetTime()
-            self:TriggerBlinkOutEffects(player)
-            
-            local newVelocity = player:GetViewCoords().zAxis * kEtherealForce * player:GetMovementSpeedModifier()
-            player:SetVelocity(player:GetVelocity() + newVelocity)
-            
+            self:TriggerBlinkOutEffects(player)            
         else
             self:TriggerBlinkInEffects(player)     
             player.etherealEndTime = Shared.GetTime() 
@@ -183,7 +179,6 @@ function Blink:ProcessMoveOnWeapon(player, input)
             player:DeductAbilityEnergy(energyCost)
             
         end
-        
     end
     
     // End blink mode if out of energy

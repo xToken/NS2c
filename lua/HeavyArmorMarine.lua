@@ -57,7 +57,8 @@ HeavyArmorMarine.kArmorPerUpgradeLevel = kHeavyArmorPerUpgradeLevel
 HeavyArmorMarine.kPlayerPhaseDelay = 2
 HeavyArmorMarine.kStunDuration = 2
 HeavyArmorMarine.kMass = 200
-HeavyArmorMarine.kAcceleration = 40
+HeavyArmorMarine.kAcceleration = 45
+HeavyArmorMarine.kAirAcceleration = 17
 HeavyArmorMarine.kAirStrafeWeight = 4
 HeavyArmorMarine.kWalkMaxSpeed = 3.5
 HeavyArmorMarine.kRunMaxSpeed = 6
@@ -174,10 +175,8 @@ end
 function HeavyArmorMarine:OnWeldOverride(doer, elapsedTime)
 
     if self:GetArmor() < self:GetMaxArmor() then
-    
         local addArmor = HeavyArmorMarine.kArmorWeldRate * elapsedTime
         self:SetArmor(self:GetArmor() + addArmor)
-        
     end
     
 end
@@ -189,6 +188,16 @@ end
 function HeavyArmorMarine:GetMass()
     return HeavyArmorMarine.kMass
 end
+
+function HeavyArmorMarine:GetAcceleration()
+    local acceleration = HeavyArmorMarine.kAcceleration
+    if not self:GetIsOnGround() then
+        acceleration = HeavyArmorMarine.kAirAcceleration
+    end
+    acceleration = acceleration * self:GetSlowSpeedModifier() * self:GetInventorySpeedScalar()
+
+    return acceleration * self:GetCatalystMoveSpeedModifier()
+end
     
 function HeavyArmorMarine:GetOverrideMaxDisruptDuration()
     return HeavyArmorMarine.kStunDuration
@@ -197,9 +206,7 @@ end
 function HeavyArmorMarine:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("HeavyArmorMarine:OnUpdateAnimationInput")
-    
     Marine.OnUpdateAnimationInput(self, modelMixin)
-    
     modelMixin:SetAnimationInput("attack_speed", self:GetCatalystFireModifier())
     
 end

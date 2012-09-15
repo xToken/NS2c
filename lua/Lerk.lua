@@ -74,19 +74,19 @@ local kViewOffsetHeight = 0.5
 Lerk.XZExtents = 0.4
 Lerk.YExtents = 0.4
 local kJumpImpulse = 4
-local kFlapStraightUpImpulse = 4.5
-local kFlapThrustMoveScalar = 7.6
+local kFlapStraightUpImpulse = 4.3
+local kFlapThrustMoveScalar = 6.3
 // ~120 pounds
 Lerk.kLerkFlapEnergyCost = 3
 local kMass = 54
 local kJumpHeight = 1.5
-local kSwoopGravityScalar = -30.0
+local kSwoopGravityScalar = -20.0
 local kRegularGravityScalar = -7
 local kFlightGravityScalar = -4
 // Lerks walk slowly to encourage flight
 local kMaxWalkSpeed = 2.8
 local kMaxSpeed = 12
-local kAirAcceleration = 3
+local kAirAcceleration = 2.7
 local flying2DSound = PrecacheAsset("sound/NS2.fev/alien/lerk/flying")
 local flying3DSound = PrecacheAsset("sound/NS2.fev/alien/lerk/flying")
 local kDefaultAttackSpeed = 1.65
@@ -601,10 +601,6 @@ function Lerk:PreUpdateMove(input, runningPrediction)
         
     end
     
-end
-
-function Lerk:OnClampSpeed(input, velocity)
-    Player.OnClampSpeed(self, input, velocity)
 end
 
 function Lerk:HandleAttacks(input)

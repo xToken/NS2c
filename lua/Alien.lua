@@ -325,7 +325,7 @@ function Alien:GetCarapaceMovementScalar()
 end
 
 function  Alien:OverrideStrafeJump()
-    return true
+    return false
 end
 
 function Alien:GetSlowSpeedModifier()
@@ -508,14 +508,6 @@ end
 function Alien:GetCanBeHealedOverride()
     return self:GetIsAlive()
 end    
-
-
-function Alien:MovementModifierChanged(newMovementModifierState, input)
-end
-
-// aliens don't clamp their speed
-function Alien:OnClampSpeed(input, velocity)
-end
 
 /**
  * Aliens cannot climb ladders.
