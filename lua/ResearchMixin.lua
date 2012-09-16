@@ -49,7 +49,7 @@ function ResearchMixin:UpdateResearch(deltaTime)
 
     local researchNode = self:GetTeam():GetTechTree():GetTechNode(self.researchingId)
     if researchNode then
-    
+
         local researchDuration = LookupTechData(researchNode:GetTechId(), kTechDataResearchTimeKey, 0.01)
         
         if GetGamerules():GetAutobuild() then
@@ -93,7 +93,7 @@ local function SharedUpdate(self, deltaTime)
 
     if Server then
    
-        if self.researchingId ~= kTechId.None and ( GetIsUnitActive(self) or ( HasMixin(self, "Recycle") and self.researchingId == kTechId.Recycle ) ) then
+        if self.researchingId ~= kTechId.None or ( HasMixin(self, "Recycle") and self.researchingId == kTechId.Recycle ) then
             self:UpdateResearch(deltaTime)
         end
 

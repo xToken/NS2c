@@ -181,7 +181,7 @@ local function ApplyTargetModifiers(target, attacker, doer, damage, armorFractio
 
     // The host can provide an override for this function.
     if target.ComputeDamageOverride then
-        damage = target:ComputeDamageOverride(attacker, damage, damageType)
+        damage = target:ComputeDamageOverride(attacker, damage, damageType, doer)
     end
 
     // Used by mixins.

@@ -43,7 +43,7 @@ local function DisruptInCone(self, player, origin, direction, range, disruptDura
             
             // Disrupt everything in a cone in front
             if dotProduct > .8 and verticalDistance < kStompVerticalRange then
-                ent:SetDisruptDuration(disruptDuration)
+                ent:SetDisruptDuration(disruptDuration, false)
             end
             
         end

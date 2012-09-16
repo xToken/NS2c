@@ -103,7 +103,7 @@ function GetIsUnitActive(unit, debug)
 
     local alive = not HasMixin(unit, "Live") or unit:GetIsAlive()
     local isBuilt = not HasMixin(unit, "Construct") or unit:GetIsBuilt()
-    local isRecycled = not HasMixin(unit, "Recycle") or not unit:GetIsRecycled()
+    local isRecycled = not HasMixin(unit, "Recycle") or (not unit:GetIsRecycled() and not unit:GetRecycleActive())
     local powered = not HasMixin(unit, "TurretMixin") or unit:GetIsPowered()
         
     if debug then
@@ -1392,10 +1392,6 @@ function CanEntityDoDamageTo(attacker, target, cheats, devMode, friendlyFire, da
     if not HasMixin(target, "Live") then
         return false
     end
-    
-    if target:isa("ARC") and damageType == kDamageType.Splash then
-        return true
-    end    
 
     if (not target:GetCanTakeDamage()) then
         return false

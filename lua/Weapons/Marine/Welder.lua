@@ -235,7 +235,7 @@ function Welder:PerformWeld(player)
     if didHit and target and HasMixin(target, "Live") then
         
         if GetAreEnemies(player, target) then
-            self:DoDamage(kWelderDamagePerSecond * kWelderFireDelay, target, endPoint, attackDirection)
+            self:DoDamage(kWelderDamage, target, endPoint, attackDirection)
             success = true     
         elseif player:GetTeamNumber() == target:GetTeamNumber() and HasMixin(target, "Weldable") then
         

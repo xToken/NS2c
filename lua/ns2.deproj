@@ -10,9 +10,6 @@
     <filename>Weapons\Alien\Ability.lua</filename>
   </file>
   <file>
-    <filename>..\..\core\lua\Actor.lua</filename>
-  </file>
-  <file>
     <filename>Alien.lua</filename>
   </file>
   <file>
@@ -67,12 +64,6 @@
     <filename>BalanceMisc.lua</filename>
   </file>
   <file>
-    <filename>..\..\core\lua\Mixins\BaseModelMixin.lua</filename>
-  </file>
-  <file>
-    <filename>..\..\core\lua\Mixins\BaseMoveMixin.lua</filename>
-  </file>
-  <file>
     <filename>Weapons\Alien\BileBomb.lua</filename>
   </file>
   <file>
@@ -88,16 +79,10 @@
     <filename>BuildUtility.lua</filename>
   </file>
   <file>
-    <filename>..\..\core\lua\Mixins\CameraHolderMixin.lua</filename>
-  </file>
-  <file>
     <filename>CatPack.lua</filename>
   </file>
   <file>
     <filename>Client.lua</filename>
-  </file>
-  <file>
-    <filename>..\..\core\lua\Mixins\ClientModelMixin.lua</filename>
   </file>
   <file>
     <filename>Weapons\Marine\ClipWeapon.lua</filename>
@@ -133,13 +118,7 @@
     <filename>Commander_Server.lua</filename>
   </file>
   <file>
-    <filename>..\..\core\lua\ConsoleBindings.lua</filename>
-  </file>
-  <file>
     <filename>ConstructMixin.lua</filename>
-  </file>
-  <file>
-    <filename>..\..\core\lua\Mixins\ControllerMixin.lua</filename>
   </file>
   <file>
     <filename>Crag.lua</filename>
@@ -152,9 +131,6 @@
   </file>
   <file>
     <filename>DamageTypes.lua</filename>
-  </file>
-  <file>
-    <filename>..\..\core\lua\DataStructure.lua</filename>
   </file>
   <file>
     <filename>DeathMessage_Client.lua</filename>
@@ -191,12 +167,6 @@
   </file>
   <file>
     <filename>Fade_Server.lua</filename>
-  </file>
-  <file>
-    <filename>..\..\core\lua\Mixins\FreeLookMoveMixin.lua</filename>
-  </file>
-  <file>
-    <filename>..\..\core\lua\FunctionContracts.lua</filename>
   </file>
   <file>
     <filename>GUIActionIcon.lua</filename>
@@ -304,9 +274,6 @@
     <filename>Weapons\Marine\GrenadeLauncher.lua</filename>
   </file>
   <file>
-    <filename>..\..\core\lua\Mixins\GroundMoveMixin.lua</filename>
-  </file>
-  <file>
     <filename>Harvester.lua</filename>
   </file>
   <file>
@@ -358,12 +325,6 @@
     <filename>MapBlipMixin.lua</filename>
   </file>
   <file>
-    <filename>..\..\core\lua\MapCycle.lua</filename>
-  </file>
-  <file>
-    <filename>..\..\core\lua\MapEntityLoader.lua</filename>
-  </file>
-  <file>
     <filename>Marine.lua</filename>
   </file>
   <file>
@@ -403,12 +364,6 @@
     <filename>Mine.lua</filename>
   </file>
   <file>
-    <filename>..\..\core\lua\MixinUtility.lua</filename>
-  </file>
-  <file>
-    <filename>..\..\core\lua\Mixins\ModelMixin.lua</filename>
-  </file>
-  <file>
     <filename>NS2ConsoleCommands_Server.lua</filename>
   </file>
   <file>
@@ -442,13 +397,7 @@
     <filename>OrdersMixin.lua</filename>
   </file>
   <file>
-    <filename>..\..\core\lua\Mixins\OverheadMoveMixin.lua</filename>
-  </file>
-  <file>
     <filename>ParasiteMixin.lua</filename>
-  </file>
-  <file>
-    <filename>..\..\core\lua\ParticleEffect.lua</filename>
   </file>
   <file>
     <filename>PhaseGate.lua</filename>
@@ -505,9 +454,6 @@
     <filename>Weapons\Marine\Rifle.lua</filename>
   </file>
   <file>
-    <filename>..\..\core\lua\RingBuffer.lua</filename>
-  </file>
-  <file>
     <filename>RoboticsFactory.lua</filename>
   </file>
   <file>
@@ -529,9 +475,6 @@
     <filename>Server.lua</filename>
   </file>
   <file>
-    <filename>..\..\core\lua\ServerAdmin.lua</filename>
-  </file>
-  <file>
     <filename>ServerBrowser_Test.lua</filename>
   </file>
   <file>
@@ -545,12 +488,6 @@
   </file>
   <file>
     <filename>Weapons\Marine\Shotgun.lua</filename>
-  </file>
-  <file>
-    <filename>..\..\core\lua\Mixins\SignalEmitterMixin.lua</filename>
-  </file>
-  <file>
-    <filename>..\..\core\lua\Mixins\SignalListenerMixin.lua</filename>
   </file>
   <file>
     <filename>Skulk.lua</filename>
@@ -601,13 +538,7 @@
     <filename>TechTree_Server.lua</filename>
   </file>
   <file>
-    <filename>..\..\core\lua\TimedEmitter.lua</filename>
-  </file>
-  <file>
     <filename>Tracer_Client.lua</filename>
-  </file>
-  <file>
-    <filename>..\..\core\lua\tweener\Tweener.lua</filename>
   </file>
   <file>
     <filename>UmbraMixin.lua</filename>
@@ -641,9 +572,6 @@
   </file>
   <file>
     <filename>Weapons\Alien\XenocideLeap.lua</filename>
-  </file>
-  <file>
-    <filename>..\..\core\lua\dkjson.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\CragAbility.lua</filename>
@@ -784,6 +712,12 @@
     <filename>VoteRandom.lua</filename>
   </file>
   <file>
-    <filename>BindingsDialog.lua</filename>
+    <filename>Hud\GUIPlayerResource.lua</filename>
+  </file>
+  <file>
+    <filename>GUISpeedDebug.lua</filename>
+  </file>
+  <file>
+    <filename>DisruptMixin.lua</filename>
   </file>
 </project>

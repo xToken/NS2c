@@ -198,10 +198,6 @@ function HeavyArmorMarine:GetAcceleration()
 
     return acceleration * self:GetCatalystMoveSpeedModifier()
 end
-    
-function HeavyArmorMarine:GetOverrideMaxDisruptDuration()
-    return HeavyArmorMarine.kStunDuration
-end
 
 function HeavyArmorMarine:OnUpdateAnimationInput(modelMixin)
 

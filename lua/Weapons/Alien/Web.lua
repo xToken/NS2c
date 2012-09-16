@@ -51,7 +51,7 @@ function Web:OnCreate()
 end
 
 function Web:GetReceivesStructuralDamage()
-    return true
+    return false
 end    
 
 local function CheckEntityTriggers(self, entity)
@@ -80,7 +80,7 @@ local function CheckEntityTriggers(self, entity)
     local targetPos = entity:GetEngagementPoint()
     // Do not trigger through walls. But do trigger through other entities.
     if not GetWallBetween(webPos, targetPos, entity) then
-        entity:SetDisruptDuration(kWebImobilizeTime)
+        entity:SetDisruptDuration(kWebImobilizeTime, true)
         self:TriggerEffects("death")
         DestroyEntity(self)
         return true      
@@ -116,7 +116,7 @@ function Web:OnInitialized()
         self:SetArmor(self:GetMaxArmor())
         
         InitMixin(self, TriggerMixin)
-        self:SetBox(Vector(6,6,6))
+        //self:SetBox(Vector(4,2,10))
         
     end
     
@@ -128,6 +128,8 @@ if Server then
 
     function Web:OnKill(attacker, doer, point, direction)
         ScriptActor.OnKill(self, attacker, doer, point, direction)
+        self:TriggerEffects("death")
+        DestroyEntity(self)
     end
     
     function Web:OnTriggerEntered(entity)
@@ -161,6 +163,15 @@ end
 
 function Web:GetAttachPointOriginHardcoded(attachPointName)
     return self:GetOrigin() + self:GetCoords().yAxis * 0.01
+end
+
+function Web:ComputeDamageOverride(attacker, damage, damageType, doer)
+    //Print(ToString(doer.kMapName))
+    if doer.kMapName ~= "welder" and doer.kMapName ~= "grenade" and doer.kMapName ~= "handgrenade" then
+        return 0
+    else
+        return damage
+    end
 end
 
 function Web:OnDestroy()

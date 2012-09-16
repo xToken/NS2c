@@ -25,7 +25,6 @@ TechMixin.networkVars =
 function TechMixin:__initmixin()
     self.techId = LookupTechId(self:GetMapName(), kTechDataMapName, kTechId.None)
     self.techAdded = false
-    self.destroyed = false
     self.timeTechIdChanged = 0
     //Print("assigned tech id %s", EnumToString(kTechId, self.techId))
 end
@@ -187,10 +186,7 @@ if Server then
     end
 
     function TechMixin:OnKill()
-        if not self.destroyed then
-            self.destroyed = true
-            self:UpdateTechAvailability()
-        end
+        self:UpdateTechAvailability()
     end
     
     function TechMixin:OnRecycled()
@@ -200,8 +196,7 @@ if Server then
     function TechMixin:OnDestroy()
     
         if self.techAdded then
-			//and not self.destroyed then
-            self.destroyed = true
+        
             local team = HasMixin(self, "Team") and self:GetTeam()
             if team then
                 team:TechRemoved(self)

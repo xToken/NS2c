@@ -83,7 +83,7 @@ function HandGrenades:GetDropMapName()
 end
 
 function HandGrenades:GetHUDSlot()
-    return 5
+    return 4
 end
 
 function HandGrenades:GetWeight()

@@ -103,8 +103,10 @@ if Client then
                             if GetPlayerCanUseEntity(self, ent) and not self:GetIsUsing() then
                             
                                 local hintText = nil
-                                if ent:isa("CommandStation") then
+                                if ent:isa("CommandStation") and ent:GetIsBuilt() then
                                     hintText = "START_COMMANDING"
+                                else
+								    hintText = "MARINE_CONSTRUCT"
                                 end
 
                                 self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Use"), nil, hintText)

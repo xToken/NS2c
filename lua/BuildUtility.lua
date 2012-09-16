@@ -124,7 +124,7 @@ local function CheckBuildEntityRequirements(techId, position, player, ignoreEnti
     // Build tech can't be built on top of non-attachment entities.
     if techNode and techNode:GetIsBuild() then
     
-        local trace = Shared.TraceBox(GetExtents(techId), position + Vector(0, 1, 0), position - Vector(0, 3, 0), CollisionRep.Default, PhysicsMask.AllButPCs, EntityFilterOne(ignoreEntity))
+        local trace = Shared.TraceBox(GetExtents(techId), position + Vector(2, 2, 2), position - Vector(2, 3, 2), CollisionRep.Default, PhysicsMask.AllButPCs, EntityFilterOne(ignoreEntity))
         
         // $AS - We special case Drop Packs you should not be able to build on top of them.
         if trace.entity and HasMixin(trace.entity, "Pathing") then

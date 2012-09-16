@@ -19,7 +19,7 @@ function Alien:TeleportToHive(usedhive)
         if hive.lastHiveFlinchEffectTime ~= nil and hive.lastHiveFlinchEffectTime + kHiveUnderAttackTime > Shared.GetTime() then
             hiveinfo.underattack = true
         end
-        if hiveinfo.underattack or hive:GetIsBuilt() and usedhive ~= hive then
+        if (hiveinfo.underattack or hive:GetIsBuilt()) and usedhive ~= hive then
             table.insert(HivesInfo, hiveinfo)
         end
      end
@@ -151,6 +151,16 @@ function Alien:UpdateNumUpgradeStructures()
                         self.shades = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
 					elseif kAlienUpgradeChambers[i] == kTechId.Whip then
                         self.whips = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
+                    end
+                else
+                    if kAlienUpgradeChambers[i] == kTechId.Crag then
+                        self.crags = 0
+                    elseif kAlienUpgradeChambers[i] == kTechId.Shift then
+                        self.shifts = 0
+                    elseif kAlienUpgradeChambers[i] == kTechId.Shade then
+                        self.shades = 0
+					elseif kAlienUpgradeChambers[i] == kTechId.Whip then
+                        self.whips = 0
                     end
                 end
             end

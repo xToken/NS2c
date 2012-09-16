@@ -25,19 +25,7 @@ function CreateStatusDisplay(scriptHandle, hudLayer, frame)
     
 end
 
-
-
-NO_PARASITE = 1
-PARASITED = 2
-
-GUIMarineStatus.kParasiteTextureName = "ui/parasite_hud.dds"
-GUIMarineStatus.kParasiteTextureCoords = { 0, 0, 64, 64 }
-GUIMarineStatus.kParasiteSize = Vector(54, 54, 0)
-GUIMarineStatus.kParasitePos = Vector(70, 0, 0)
-
-GUIMarineStatus.kParasiteColor = {}
-GUIMarineStatus.kParasiteColor[NO_PARASITE] = Color(0,0,0,0)
-GUIMarineStatus.kParasiteColor[PARASITED] = Color(0xFF / 0xFF, 0xFF / 0xFF, 0xFF / 0xFF, 0.8)
+GUIMarineStatus.kParasiteColor = Color(0xFF / 0xFF, 0xFF / 0xFF, 0xFF / 0xFF, 0.8)
 
 GUIMarineStatus.kStatusTexture = "ui/marine_HUD_status.dds"
 
@@ -58,8 +46,8 @@ GUIMarineStatus.kScanLinesForeGroundPos = Vector(-80, -30, 0)
 GUIMarineStatus.kFontName = "fonts/AgencyFB_large_bold.fnt"
 
 GUIMarineStatus.kArmorBarColor = Color(32/255, 222/255, 253/255, 0.8)
-GUIMarineStatus.kHealthBarColor = Color(163/255, 210/255, 220/255, 0.8)
-
+GUIMarineStatus.kHealthBarColor = Color(32/255, 222/255, 253/255, 0.8)
+GUIMarineStatus.kLowAmmoWarning = .3
 GUIMarineStatus.kAnimSpeedDown = 0.2
 GUIMarineStatus.kAnimSpeedUp = 0.5
 
@@ -90,7 +78,7 @@ function GUIMarineStatus:Initialize()
     self.healthText:SetTextAlignmentX(GUIItem.Align_Min)
     self.healthText:SetTextAlignmentY(GUIItem.Align_Center)
     self.healthText:SetPosition(Vector(10 , GUIScale(kHealthTextYOffset), 0))
-    self.healthText:SetColor(Color(1, 1, 1, 1))
+    self.healthText:SetColor(GUIMarineStatus.kHealthBarColor)
     self.healthText:SetText("HEALTH :")
     
     self.armorText = self.script:CreateAnimatedTextItem()
@@ -99,7 +87,7 @@ function GUIMarineStatus:Initialize()
     self.armorText:SetTextAlignmentX(GUIItem.Align_Min)
     self.armorText:SetTextAlignmentY(GUIItem.Align_Center)
     self.armorText:SetPosition(Vector(10 , GUIScale(kArmorTextYOffset), 0))
-    self.armorText:SetColor(Color(1, 1, 1, 1))
+    self.armorText:SetColor(GUIMarineStatus.kArmorBarColor)
     self.armorText:SetText("ARMOR :")
 
     self.ammoText = self.script:CreateAnimatedTextItem()
@@ -151,6 +139,11 @@ function GUIMarineStatus:Update(deltaTime, parameters)
     if activeWeapon then
         self.ammoText:SetText(ToString(activeWeapon.clip or "--") .. " / " .. ToString(activeWeapon.ammo or "--"))
         self.ammoText:SetIsVisible(true)
+        if activeWeapon.clip and activeWeapon.GetClipSize and activeWeapon.clip < activeWeapon:GetClipSize() * GUIMarineStatus.kLowAmmoWarning then
+            self.ammoText:SetColor(Color(1, 0, 0, 1)) 
+        else
+            self.ammoText:SetColor(Color(1, 1, 1, 1)) 
+        end
     else
         self.ammoText:SetText("--/--")    
         self.ammoText:SetIsVisible(true)
@@ -165,28 +158,22 @@ function GUIMarineStatus:Update(deltaTime, parameters)
 	    if self.lastHealth < kLowHealth  then
             self.healthText:SetColor(Color(1, 0, 0, 1))	        
 	    else
-            self.healthText:SetColor(GUIMarineStatus.kHealthBarColor)    
+	    	if parasiteState then
+                self.healthText:SetColor(GUIMarineStatus.kHealthBarColor)
+            else
+                self.healthText:SetColor(kParasiteColor)
+            end
         end    
     end
     
     if currentArmor ~= self.lastArmor then
         self.armorText:SetText("ARMOR: " .. tostring(math.ceil(currentArmor))) 
         self.lastArmor = currentArmor
-    end
-    
-    // update parasite state
-    if self.lastParasiteState ~= parasiteState then
-
-        self.parasiteState:DestroyAnimations()
-        self.parasiteState:SetColor(GUIMarineStatus.kParasiteColor[parasiteState], 0.3)
-        
-        if self.lastParasiteState < parasiteState then
-            self.parasiteState:SetSize(GUIMarineStatus.kParasiteSize * 1.55)
-            self.parasiteState:SetSize(GUIMarineStatus.kParasiteSize, 0.4)
+        if currentArmor == 0 then
+            self.armorText:SetColor(Color(1, 1, 1, 1))
+        else
+            self.armorText:SetColor(GUIMarineStatus.kArmorBarColor)
         end
-        
-        self.lastParasiteState = parasiteState
-    
     end
        
 end

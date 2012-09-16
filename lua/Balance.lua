@@ -155,9 +155,9 @@ kPistolDamageType = kDamageType.Normal
 kPistolClipSize = 10
 kPistolWeight = 0.03
 
-kWelderDamagePerSecond = 5
+kWelderDamage = 5
 kWelderDamageType = kDamageType.Normal
-kWelderFireDelay = 0.1
+kWelderFireDelay = 0.5
 kWelderWeight = 0.035
 
 kAxeDamage = 30
@@ -189,7 +189,7 @@ kMineDamageType = kDamageType.Normal
 kMineActiveTime = 4
 kMineAlertTime = 8
 kMineDetonateRange = 3
-kMineTriggerRange = 1.5
+kMineTriggerRange = 1.0
 kMineCount = 3
 kMinesWeight = 0.05
 

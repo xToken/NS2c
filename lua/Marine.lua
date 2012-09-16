@@ -769,10 +769,6 @@ function Marine:OnUseEnd()
 
 end
 
-function Marine:GetOverrideMaxDisruptDuration()
-    return Marine.kStunDuration 
-end
-
 function Marine:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Marine:OnUpdateAnimationInput")

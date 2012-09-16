@@ -44,9 +44,9 @@ Hydra.kModelName = PrecacheAsset("models/alien/offense_chamber/offense_chamber.m
 Hydra.kModelName = PrecacheAsset("models/alien/hydra/hydra.model")
 Hydra.kAnimationGraph = PrecacheAsset("models/alien/hydra/hydra.animation_graph")
 
-Hydra.kSpikeSpeed = 50
+Hydra.kSpikeSpeed = 40
 Hydra.kSpread = Math.Radians(16)
-Hydra.kTargetVelocityFactor = 2.4 // Don't always hit very fast moving targets (jetpackers).
+Hydra.kTargetVelocityFactor = 2.0 // Don't always hit very fast moving targets (jetpackers).
 Hydra.kRange = 17.78              // From NS1 (also "alert" range)
 Hydra.kDamage = kHydraDamage
 Hydra.kAlertCheckInterval = 2
