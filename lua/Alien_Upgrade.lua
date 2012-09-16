@@ -84,7 +84,7 @@ end
 local function HasUpgrade(callingEntity, techId)
 
     if not callingEntity then
-        return false
+        return false, 0
     end
 
     local techtree = GetTechTree(callingEntity:GetTeamNumber())
@@ -103,7 +103,7 @@ local function HasUpgrade(callingEntity, techId)
         structurecount = callingEntity:GetUpgradeChambers(GetChamberTypeForUpgrade(techId))
     end
     if techtree then
-        return callingEntity:GetHasUpgrade(techId), structurecount
+        return callingEntity:GetHasUpgrade(techId) and structurecount > 0, structurecount
     else
         return false, 0
     end
@@ -146,8 +146,8 @@ function GetHasRedemptionUpgrade(callingEntity)
     return HasUpgrade(callingEntity, kTechId.Redemption)
 end
 
-function GetHasReconnaissanceUpgrade(callingEntity)
-    return HasUpgrade(callingEntity, kTechId.Reconnaissance)
+function GetHasGhostUpgrade(callingEntity)
+    return HasUpgrade(callingEntity, kTechId.Ghost)
 end
 
 function GetHasRedeploymentUpgrade(callingEntity)
@@ -158,8 +158,8 @@ function GetHasFuryUpgrade(callingEntity)
     return HasUpgrade(callingEntity, kTechId.Fury)
 end
 
-function GetHasEchoUpgrade(callingEntity)
-    return HasUpgrade(callingEntity, kTechId.Echo)
+function GetHasBombardUpgrade(callingEntity)
+    return HasUpgrade(callingEntity, kTechId.Bombard)
 end
 
 function GetHiveTypeForUpgrade(upgradeId)

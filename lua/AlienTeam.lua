@@ -387,12 +387,12 @@ function AlienTeam:InitTechTree()
     self.techTree:AddBuyNode(kTechId.Redeployment, kTechId.Shift, kTechId.None, kTechId.AllAliens)
     
     self.techTree:AddBuyNode(kTechId.Silence, kTechId.Shade, kTechId.None, kTechId.AllAliens)
-    self.techTree:AddBuyNode(kTechId.Reconnaissance , kTechId.Shade, kTechId.None, kTechId.AllAliens)
+    self.techTree:AddBuyNode(kTechId.Ghost , kTechId.Shade, kTechId.None, kTechId.AllAliens)
     self.techTree:AddBuyNode(kTechId.Aura, kTechId.Shade, kTechId.None, kTechId.AllAliens)
 	
 	self.techTree:AddBuyNode(kTechId.Focus, kTechId.Whip, kTechId.None, kTechId.AllAliens)
 	self.techTree:AddBuyNode(kTechId.Fury, kTechId.Whip, kTechId.None, kTechId.AllAliens)
-	self.techTree:AddBuyNode(kTechId.Echo, kTechId.Whip, kTechId.None, kTechId.AllAliens)
+	self.techTree:AddBuyNode(kTechId.Bombard, kTechId.Whip, kTechId.None, kTechId.AllAliens)
     
     self.techTree:AddPassive(kTechId.ShiftTeleport,               kTechId.Shift,         kTechId.None)
     
@@ -637,7 +637,7 @@ local function AssignPlayerToEgg(self, player, spawntime)
         end
         
         //If hive has eggs, randomly select one
-        if localhiveeggs ~= { } then
+        if localhiveeggs ~= { } and (localhiveeggs ~= nil or #localhiveeggs == 0) then
             localhiveeggs[math.random(1, #localhiveeggs)]:SetQueuedPlayerId(player:GetId(), spawntime)
             success = true
         else

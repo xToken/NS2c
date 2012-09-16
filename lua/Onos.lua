@@ -36,18 +36,17 @@ Onos.kJumpVerticalVelocity = 8
 Onos.kJumpRepeatTime = .25
 Onos.kViewOffsetHeight = 2.5
 Onos.XExtents = .7
-Onos.YExtents = 1.2
+Onos.YExtents = 1.0
 Onos.ZExtents = .4
 Onos.kMass = 453 // Half a ton
 Onos.kJumpHeight = 1.2
 
 // triggered when the momentum value has changed by this amount (negative because we trigger the effect when the onos stops, not accelerates)
 Onos.kMomentumEffectTriggerDiff = 3
-Onos.kClampedMaxSpeed = 13
 Onos.kGroundFrictionForce = 8
 Onos.kBaseAcceleration = 55
-Onos.kAirAcceleration = 40
-Onos.kMaxSpeed = 7
+Onos.kAirAcceleration = 25
+Onos.kMaxSpeed = 15
 
 Onos.kHealth = kOnosHealth
 Onos.kArmor = kOnosArmor
@@ -60,7 +59,7 @@ Onos.kMaxChargeDamage = kChargeMaxDamage
 Onos.kChargeKnockbackForce = 4
 Onos.kStoopingCheckInterval = 0.3
 Onos.kStoopingAnimationSpeed = 2
-Onos.kYHeadExtents = 0.7
+Onos.kYHeadExtents = 0.0
 Onos.kYHeadExtentsLowered = 0.0
 
 local kAutoCrouchCheckInterval = 0.4
@@ -77,7 +76,7 @@ local networkVars =
     stooping = "boolean",
     stoopIntensity = "compensated float",
     charging = "private boolean",
-    food = "entityid"
+    devouring = "private entityid"
 }
 
 AddMixinNetworkVars(BaseMoveMixin, networkVars)
@@ -104,7 +103,8 @@ function Onos:OnCreate()
     self.timeLastCharge = 0
     self.timeLastChargeEnd = 0
     self.chargeSpeed = 0
-    self.food = nil
+    self.devouring = nil
+    self.timeSinceLastDevourUpdate = 0
     
     if Client then    
         self:SetUpdates(true)
@@ -288,9 +288,20 @@ function Onos:GetMovePhysicsMask()
 end
 
 function Onos:CheckEndDevour()
-    if self:GetWeapon("devour") and self:GetWeapon("devour"):IsAlreadyEating() then
-        self:GetWeapon("devour"):OnDevourEnd()
+
+    if self.devouring ~= nil then
+        local food = Shared.GetEntity(self.devouring)
+        if food then
+            if food.OnDevouredEnd then
+                food:OnDevouredEnd()
+            end
+            if food.physicsModel then
+                food.physicsModel:SetCollisionEnabled(true)
+            end
+        end
     end
+    self.devouring = nil
+    
 end
 
 function Onos:OnHiveTeleport()
@@ -323,7 +334,7 @@ function Onos:GetMaxSpeed(possible)
         return Onos.kMaxSpeed
     end
 
-    return Onos.kClampedMaxSpeed * self:GetMovementSpeedModifier()
+    return Onos.kMaxSpeed * self:GetMovementSpeedModifier()
 
 end
 
@@ -395,15 +406,40 @@ function Onos:UpdateAutoCrouch(move)
 
 end
 
+function Onos:DevourUpdate()
+
+    if self.devouring ~= nil then
+        local food = Shared.GetEntity(self.devouring)
+        local devour = self:GetWeapon("devour")
+        if food and devour then
+        
+            if self.timeSinceLastDevourUpdate + Devour.kDigestionSpeed < Shared.GetTime() then   
+                //Player still being eaten, damage them
+                self.timeSinceLastDevourUpdate = Shared.GetTime()
+                if devour:DoDamage(kDevourDamage , food, nil, nil, "none" ) then
+                    if food.OnDevouredEnd then 
+                        food:OnDevouredEnd()
+                    end
+                    self.devouring = nil
+                end
+            end
+            self:SetModel(nil)
+            //Always update players POS relative to the onos
+            food:SetOrigin(self:GetOrigin())
+        else
+            self.devouring = nil
+        end
+    end
+    
+end
+
 function Onos:OnProcessMove(input)
 
     PROFILE("Onos:OnProcessMove")
     
     Alien.OnProcessMove(self, input)
     
-    if Server then
-        Onos:DevourUpdate()
-    end
+    self:DevourUpdate()
 
     if self.stooping then    
         self.stoopIntensity = math.min(1, self.stoopIntensity + Onos.kStoopingAnimationSpeed * input.time)

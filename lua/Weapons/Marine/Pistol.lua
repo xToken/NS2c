@@ -20,7 +20,7 @@ local kAnimationGraph = PrecacheAsset("models/marine/pistol/pistol_view.animatio
 
 local kClipSize = 10
 local kRange = 200
-local kSpread = ClipWeapon.kCone1Degrees
+local kSpread = ClipWeapon.kCone0Degrees
 local kAltSpread = ClipWeapon.kCone0Degrees
 
 local kLaserAttachPoint = "fxnode_laser"

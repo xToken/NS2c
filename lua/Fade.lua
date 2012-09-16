@@ -39,16 +39,14 @@ Fade.XZExtents = .4
 Fade.YExtents = 1.05
 Fade.kHealth = kFadeHealth
 Fade.kArmor = kFadeArmor
-Fade.kMass = 125 // ~350 pounds
+Fade.kMass = 50 // ~350 pounds
 Fade.kJumpHeight = 1.3
-Fade.kMaxSpeed = 7.0
-Fade.kMaxBlinkSpeed = 20
+Fade.kMaxSpeed = 20
 Fade.kWalkSpeed = 4
-Fade.kMaxBlinkSpeed = 24
 Fade.kAcceleration = 50
 Fade.kAirAcceleration = 24
-Fade.kWalkingAcceleration = 20
-Fade.kBlinkAcceleration = 82
+Fade.kBlinkAcceleration = 80
+Fade.kVerticleBlinkAcceleration = 26
 
 if Server then
     Script.Load("lua/Fade_Server.lua")
@@ -116,10 +114,6 @@ function Fade:GetHeadAttachpointName()
     return "fade_tongue2"
 end
 
-// prevents reseting of celerity
-function Fade:OnSecondaryAttack()
-end
-
 function Fade:PreCopyPlayerData()
 
     // Reset visibility and gravity in case we were in ether mode.
@@ -149,16 +143,16 @@ function Fade:OnJumpLand(landIntensity, slowDown)
     Alien.OnJumpLand(self, landIntensity, slowDown)
     self.landedAfterBlink = true
 end
+*/
 
-/*
 function Fade:PerformsVerticalMove()
     return self:GetIsBlinking()
 end
-*/
+
 
 function Fade:GetGroundFrictionForce()
     return 7.2
-end  
+end
 
 function Fade:GetCanJump()
     return Alien.GetCanJump(self)
@@ -174,19 +168,13 @@ end
 function Fade:GetAcceleration()
     
     if self:GetIsBlinking() then
-        if self:GetVelocity():GetLengthXZ() > Fade.kMaxBlinkSpeed then
-            return 50 * self:GetMovementSpeedModifier()
-        else
-            return Fade.kBlinkAcceleration * self:GetMovementSpeedModifier()
-        end
+        return Fade.kBlinkAcceleration * self:GetMovementSpeedModifier()
     end
     if not self:GetIsOnGround() then
         return Fade.kAirAcceleration * self:GetMovementSpeedModifier()
     end
     
-    local acceleration = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Fade.kWalkingAcceleration, Fade.kAcceleration)
-    
-    return acceleration * self:GetMovementSpeedModifier()
+    return Fade.kAcceleration * self:GetMovementSpeedModifier()
 end
 
 function Fade:GetMaxSpeed(possible)
@@ -198,32 +186,16 @@ function Fade:GetMaxSpeed(possible)
     //Walking
     local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Fade.kWalkSpeed, Fade.kMaxSpeed)
     
-    if self:GetIsBlinking() or self:GetIsOnSurface() then
-        maxSpeed = Fade.kMaxBlinkSpeed
-    end
-    
     // Take into account crouching
-    return ( 1 - self:GetCrouchAmount() * Player.kCrouchSpeedScalar ) * maxSpeed * self:GetMovementSpeedModifier()
+    return maxSpeed * self:GetMovementSpeedModifier()
 
 end
 
 function Fade:ModifyVelocity(input, velocity)      
 
-    if not self:GetIsBlinking() then       
-        Alien.ModifyVelocity(self, input, velocity)
-    else
-        /*
-        if self:GetIsOnGround() then
-            Print("TEOFISD")
-            local origin = self:GetOrigin()
-            origin.y = origin.y + 1
-            self:SetOrigin(origin)
-        end
-        */
-        // Adding in Y Component for blinking
-        local viewCoords = self:GetViewCoords()
-        local newVelocityY = viewCoords.zAxis.y * self:GetAcceleration() * input.time
-        velocity.y = velocity.y + newVelocityY
+    Alien.ModifyVelocity(self, input, velocity)
+    if self:GetIsBlinking() then
+        self:PerformMovement( velocity * input.time, 1, velocity )
     end
     
 end
@@ -269,6 +241,14 @@ function Fade:TriggerBlink()
     self.ethereal = true
     self.onGroundNeedsUpdate = false
     self.jumping = true
+	local newVelocity = self:GetVelocity()
+    local viewCoords = self:GetViewAngles():GetCoords()
+    local zAxis = viewCoords.zAxis
+		
+	newVelocity = newVelocity + 0.05 * (  Fade.kBlinkAcceleration * zAxis )
+	newVelocity.y = newVelocity.y + ( Fade.kVerticleBlinkAcceleration * (1 - math.cos(zAxis.y)) )
+           
+	self:SetVelocity(newVelocity)
 end
 
 function Fade:OnBlinkEnd()

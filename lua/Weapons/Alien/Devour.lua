@@ -22,8 +22,7 @@ local kAnimationGraph = PrecacheAsset("models/alien/onos/onos_view.animation_gra
 
 local networkVars =
 {
-    lastPrimaryAttackTime = "time",
-    devouring = "private entityid"
+    lastPrimaryAttackTime = "time"
 }
 
 AddMixinNetworkVars(StompMixin, networkVars)
@@ -31,10 +30,6 @@ AddMixinNetworkVars(StompMixin, networkVars)
 local function GetHasAttackDelay(self, player)
 
     local attackDelay = ConditionalValue( player:GetIsPrimaled(), (kDevourDelay / kPrimalScreamROFIncrease), kDevourDelay)
-    //local upg, level = GetHasFocusUpgrade(player)
-    //if upg and level > 0 then
-        //attackDelay = attackDelay * (1 + ((1 / 3) * level))
-    //end
     return self.lastPrimaryAttackTime + attackDelay > Shared.GetTime()
     
 end
@@ -54,37 +49,13 @@ function Devour:OnCreate()
     if Server then
         InitMixin(self, OwnerMixin)
     end
-    self.devouring = 0
     self.timeSinceLastDevourUpdate = 0
     self.lastPrimaryAttackTime = 0
     
 end
 
-function Devour:OnDestroy()
-    if self:IsAlreadyEating() then
-        self:OnDevourEnd()
-    end
-    ScriptActor.OnDestroy(self)
-    
-end
-
 function Devour:GetDeathIconIndex()
     return kDeathMessageIcon.Gore
-end
-
-function Devour:OnDevourEnd()
-    local food = Shared.GetEntity(self.devouring)
-    if food then
-        if not food.GetIsAlive or food:GetIsAlive() then
-            if food.OnDevouredEnd then
-                food:OnDevouredEnd()
-            end
-            if not food.physicsModel then
-                food.physicsModel = Shared.CreatePhysicsModel(food.physicsModelIndex, true, food:GetCoords(), food)
-            end
-        end  
-    end
-    self.devouring = 0
 end
 
 function Devour:GetAnimationGraphName()
@@ -128,14 +99,14 @@ function Devour:OnTag(tagName)
             self:TriggerEffects("gore_attack")
             player:DeductAbilityEnergy(self:GetEnergyCost())
             if didHit and target and target:isa("Marine") then
-                self:Devour(target)
+                self:Devour(player, target)
             end
         end
     end    
 
 end
 
-function Devour:Devour(target)
+function Devour:Devour(player, target)
     
     local allowed = true
     
@@ -144,7 +115,7 @@ function Devour:Devour(target)
     end
 
     if allowed then
-        self.devouring = target:GetId()
+        player.devouring = target:GetId()
         if target.OnDevoured then
             target:OnDevoured()
         end
@@ -154,7 +125,11 @@ end
 
 //Silly onos, you cant eat multiple marines at once
 function Devour:IsAlreadyEating()
-    return self.devouring ~= 0
+    local player = self:GetParent()
+    if player then
+        return player.devouring ~= 0
+    end
+    return false
 end
 
 function Devour:OnPrimaryAttack(player)

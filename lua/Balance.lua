@@ -102,7 +102,7 @@ kRegenerationCost = 0
 kRedemptionCost = 0
 
 kCamouflageCost = 0
-kReconnaissanceCost = 0
+kGhostCost = 0
 kAuraCost = 0
 kSilenceCost = 0
 
@@ -111,7 +111,7 @@ kCelerityCost = 0
 kRedeploymentCost = 0
 
 kFocusCost = 0
-kEchoCost = 0
+kBombardCost = 0
 kFuryCost = 0
 
 kHiveBuildTime = 180
@@ -129,7 +129,7 @@ kOnosGestateTime = 35
 kEvolutionGestateTime = 3
 
 kMarineTeamIntialRes = 100
-kMaxTeamResources = 1500
+kMaxTeamResources = 999
 kAlienTeamInitialRes = 25
 kMaxPersonalResources = 100
 kResourceTowerResourceInterval = 4
@@ -143,7 +143,6 @@ kResourceScalingMinDelta = .85
 kResourceScaling = 20
 
 //End Resource/Build Timing Stuff
-
 
 // MARINE DAMAGE
 kRifleDamage = 10
@@ -305,7 +304,7 @@ kSwipeEnergyCost = 7.2
 kSwipeDelay = 0.5
 
 kStartBlinkEnergyCost = 12
-kBlinkEnergyCost = 60
+kBlinkEnergyCost = 90
 
 kMetabolizeEnergyCost = 25
 kMetabolizeEnergyGain = 35
@@ -320,12 +319,12 @@ kAcidRocketRadius = 5
 
 kGoreDamage = 90
 kGoreDamageType = kDamageType.Normal
-kGoreEnergyCost = 11
+kGoreEnergyCost = 8
 kGoreDelay = 0.6
 
 kDevourInitialDamage = 10
 kDevourDamage = 10
-kDevourEnergyCost = 20
+kDevourEnergyCost = 35
 kDevourDelay = 2
 kDevourDamageType = kDamageType.Falling
 

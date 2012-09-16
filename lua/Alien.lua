@@ -248,40 +248,22 @@ function Alien:OnInitialized()
 
 end
 
-function Alien:GetDetectionRange(recon)
-    if not recon then
-        local hasupg, level = GetHasAuraUpgrade(self)
-        if hasupg then
-            return (((1 / 3) * level) * kAuraDetectionRange)
-        end
-    else
-        local hasupg, level = GetHasReconnaissanceUpgrade(self)
-        if hasupg then
-            return (((1 / 3) * level) * kReconnaissanceDetectionRange)
-        end
-	end
+function Alien:GetDetectionRange()
+    local hasupg, level = GetHasAuraUpgrade(self)
+    if hasupg then
+        return (((1 / 3) * level) * kAuraDetectionRange)
+    end
     return 0
 end
 
-function Alien:OnCheckDetectorActive(recon)
-    local hasupg, level
-    if not recon then
-        hasupg, level = GetHasAuraUpgrade(self)
-    else
-        hasupg, level = GetHasReconnaissanceUpgrade(self)
-    end
+function Alien:OnCheckDetectorActive()
+    local hasupg, level = GetHasAuraUpgrade(self)
     return hasupg and level > 0
 end
 
-function Alien:IsValidDetection(detectable, recon)
-    if not recon then
-        if detectable.GetReceivesStructuralDamage and detectable:GetReceivesStructuralDamage() then
-            return false
-        end
-    else
-        if not detectable.GetReceivesStructuralDamage or not detectable:GetReceivesStructuralDamage() then
-            return false
-        end
+function Alien:IsValidDetection(detectable)
+    if detectable.GetReceivesStructuralDamage and detectable:GetReceivesStructuralDamage() then
+        return false
     end
     return true
 end

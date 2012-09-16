@@ -29,6 +29,7 @@ local function CreateSporeCloud(self, player)
     local destination = trace.endPoint + trace.normal * 2
     
     local sporeCloud = CreateEntity(SporeCloud.kMapName, player:GetEyePos() + player:GetViewCoords().zAxis, player:GetTeamNumber())
+    sporeCloud:SetOwner(player)
     sporeCloud:SetTravelDestination(destination)
 
 end

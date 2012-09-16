@@ -53,13 +53,12 @@ Gorge.kYExtents = 0.475
 
 Gorge.kMass = 80
 Gorge.kJumpHeight = 1.2
-local kStartSlideForce = 7
+local kStartSlideForce = 12
 local kViewOffsetHeight = 0.6
-Gorge.kMaxGroundSpeed = 7
-Gorge.kMaxSlidingSpeed = 13
+Gorge.kMaxSpeed = 15
 Gorge.kAcceleration = 55
 Gorge.kAirAcceleration = 25
-Gorge.kSlidingAccelBoost = 10
+Gorge.kSlidingAccelBoost = 25
 Gorge.kGorgeCreateDistance = 3
 Gorge.kBellySlideCost = 25
 local kSlidingMoveInputScalar = 0.1
@@ -167,8 +166,7 @@ end
 
 function Gorge:GetAcceleration()
     if self.sliding then
-        local softaccelcap = math.max(self:GetVelocity():GetLengthXZ() - Gorge.kMaxGroundSpeed, 0) * 2.5
-        return (Gorge.kAcceleration + Gorge.kSlidingAccelBoost - softaccelcap) * self:GetMovementSpeedModifier()
+        return (Gorge.kAcceleration + Gorge.kSlidingAccelBoost) * self:GetMovementSpeedModifier()
     end
     
     if self:GetIsOnGround() then
@@ -320,10 +318,9 @@ end
 function Gorge:GetMaxSpeed(possible)
 
     if possible then
-        return Gorge.kMaxGroundSpeed
+        return Gorge.kMaxSpeed
     end
-    
-    return Gorge.kMaxGroundSpeed * self:GetMovementSpeedModifier()
+    return Gorge.kMaxSpeed * self:GetMovementSpeedModifier()
     
 end
 
@@ -345,6 +342,34 @@ end
 
 function Gorge:GetCanCloakOverride()
     return not self:GetIsBellySliding()
+end
+
+Gorge.kSlideControl = 1
+
+function Gorge:ModifyVelocity(input, velocity)
+
+    Alien.ModifyVelocity(self, input, velocity)
+    
+    // Give a little push forward to make sliding useful
+    if self.startedSliding then
+    
+        if self:GetIsOnGround() then
+    
+            local pushDirection = GetNormalizedVectorXZ(self:GetViewCoords().zAxis)
+            local force = kStartSlideForce * self:GetMovementSpeedModifier()
+            
+            local impulse = pushDirection * force
+
+            velocity.x = velocity.x * 0.5 + impulse.x
+            velocity.y = velocity.y * 0.5 + impulse.y
+            velocity.z = velocity.z * 0.5 + impulse.z
+        
+        end
+        
+        self.startedSliding = false
+
+    end
+    
 end
 
 function Gorge:GetPitchSmoothRate()
@@ -387,7 +412,7 @@ function Gorge:PostUpdateMove(input, runningPrediction)
         
         xzSpeed = xzSpeed + yTravel * -4
         
-        if xzSpeed < Gorge.kMaxSlidingSpeed or yTravel > 0 then
+        if xzSpeed < Gorge.kMaxSpeed or yTravel > 0 then
         
             local directionXZ = GetNormalizedVectorXZ(velocity)
             directionXZ:Scale(xzSpeed)

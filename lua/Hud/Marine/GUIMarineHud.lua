@@ -219,8 +219,7 @@ function GUIMarineHUD:Initialize()
     style.textColor = kBrightColor
     style.textureSet = "marine"
     style.displayTeamRes = true
-    //self.resourceDisplay = CreatePlayerResourceDisplay(self, kGUILayerPlayerHUDForeground1, self.background, style)
-    
+
     self.fuelDisplay = CreateFuelDisplay(self, kGUILayerPlayerHUDForeground1, self.background)
     self.inventoryDisplay = CreateInventoryDisplay(self, kGUILayerPlayerHUDForeground1, self.background)
     
@@ -231,31 +230,7 @@ function GUIMarineHUD:Initialize()
 end
 
 function GUIMarineHUD:InitFrame()
-    /*
-    self.topLeftFrame = GetGUIManager():CreateGraphicItem()
-    self.topLeftFrame:SetTexture(GUIMarineHUD.kFrameTexture)
-    self.topLeftFrame:SetAnchor(GUIItem.Left, GUIItem.Top)
-    self.topLeftFrame:SetTexturePixelCoordinates(unpack(GUIMarineHUD.kFrameTopLeftCoords))
-    self.background:AddChild(self.topLeftFrame)
-    
-    self.topRightFrame = GetGUIManager():CreateGraphicItem()
-    self.topRightFrame:SetTexture(GUIMarineHUD.kFrameTexture)
-    self.topRightFrame:SetAnchor(GUIItem.Right, GUIItem.Top)
-    self.topRightFrame:SetTexturePixelCoordinates(unpack(GUIMarineHUD.kFrameTopRightCoords))
-    self.background:AddChild(self.topRightFrame)
-    
-    self.bottomLeftFrame = GetGUIManager():CreateGraphicItem()
-    self.bottomLeftFrame:SetTexture(GUIMarineHUD.kFrameTexture)
-    self.bottomLeftFrame:SetAnchor(GUIItem.Left, GUIItem.Bottom)
-    self.bottomLeftFrame:SetTexturePixelCoordinates(unpack(GUIMarineHUD.kFrameBottomLeftCoords))
-    self.background:AddChild(self.bottomLeftFrame)
-    
-    self.bottomRightFrame = GetGUIManager():CreateGraphicItem()
-    self.bottomRightFrame:SetTexture(GUIMarineHUD.kFrameTexture)
-    self.bottomRightFrame:SetAnchor(GUIItem.Right, GUIItem.Bottom)
-    self.bottomRightFrame:SetTexturePixelCoordinates(unpack(GUIMarineHUD.kFrameBottomRightCoords))
-    self.background:AddChild(self.bottomRightFrame)
-    */
+
 end
 
 function GUIMarineHUD:InitializeMinimap()
@@ -290,17 +265,7 @@ function GUIMarineHUD:InitializeMinimap()
     self.minimapFrame:SetAnchor(GUIItem.Middle, GUIItem.Center)
     self.minimapFrame:AddChild(self.minimapScript:GetBackground())
     self.minimapFrame:SetColor(Color(1,1,1,0))
-    /*
-    self.minimapScanLines = self:CreateAnimatedGraphicItem()
-    self.minimapScanLines:SetTexture(GUIMarineHUD.kMinimapBorderTexture)
-    self.minimapScanLines:SetTexturePixelCoordinates(unpack(GUIMarineHUD.kMinimapScanlineTextureCoords))
-    self.minimapScanLines:SetAnchor(GUIItem.Left, GUIItem.Top)
-    self.minimapScanLines:SetColor(Color(1,1,1,1))
-    self.minimapScanLines:SetLayer(1)
-    self.minimapScanLines:SetBlendTechnique(GUIItem.Add)
-    self.minimapScanLines:SetStencilFunc(GUIItem.NotEqual)
-    self.minimapBackground:AddChild(self.minimapScanLines)
-    */
+ 
     self.minimapBackground:AddChild(self.minimapFrame)
 
 end
@@ -308,7 +273,7 @@ end
 function GUIMarineHUD:SetHUDMapEnabled(enabled)
 
     if (enabled == false) and self.minimapScript then        
-        self:UninitializeMinimap()    
+       self:UninitializeMinimap()    
     elseif (enabled == true) and self.minimapScript == nil then
         self:InitializeMinimap()
         self:ResetMinimap()
@@ -331,11 +296,6 @@ function GUIMarineHUD:Uninitialize()
         self.eventDisplay:Destroy()   
         self.eventDisplay = nil 
     end
-    
-    //if self.resourceDisplay then
-        //self.resourceDisplay:Destroy()
-        //self.resourceDisplay = nil
-    //end
     
     if self.fuelDisplay then
         self.fuelDisplay:Destroy()
@@ -363,10 +323,10 @@ function GUIMarineHUD:UninitializeMinimap()
         self.minimapBackground = nil
     end
     
-    if self.minimapFrame then
-        GUI.DestroyItem(self.minimapFrame)
-        self.minimapFrame = nil
-    end
+    //if self.minimapFrame then
+        //GUI.DestroyItem(self.minimapFrame)
+        //self.minimapFrame = nil
+    //end
 
 end
 

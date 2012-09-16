@@ -213,8 +213,7 @@ function Marine:GetDetectionRange()
 end
 
 function Marine:OnCheckDetectorActive()
-    //return GetHasTech(player, kTechId.Observatory) and GetHasTech(self, kTechId.MotionTracking, true)
-    return true
+    return GetHasTech(self, kTechId.Observatory) and GetHasTech(self, kTechId.MotionTracking)
 end
 
 function Marine:DeCloak()
@@ -694,50 +693,16 @@ function Marine:GetIsDevoured()
 end
 
 function Marine:OnDevoured()
-
     self.devoured = true
-    
-    local activeWeapon = self:GetActiveWeapon()
-    if activeWeapon then
-        activeWeapon:OnHolster(self)
-    end
-    
-    if Client and self._renderModel and not self.devouringMaterial then
-        local material = Client.CreateRenderMaterial()
-        material:SetMaterial("cinematics/vfx_materials/rupture.material")
-
-        local viewMaterial = Client.CreateRenderMaterial()
-        viewMaterial:SetMaterial("cinematics/vfx_materials/rupture.material")
-        
-        self.devourEntities = {}
-        self.devouringMaterial = material
-        self.devouringViewMaterial = viewMaterial
-        AddMaterialEffect(self, material, viewMaterial, self.devourEntities)        
-    end
-    
 end
 
 function Marine:GetCanSkipPhysics()
     return self.devoured
 end
 
-function Marine:OnDevouredEnd()
-
-    local activeWeapon = self:GetActiveWeapon()
-    if activeWeapon then
-        activeWeapon:OnDraw(self)
-    end
-    
+function Marine:OnDevouredEnd()    
     self.devoured = false
-    
-    if Client and self.devouringMaterial then
-        RemoveMaterialEffect(self.devourEntities, self.devouringMaterial, self.devouringViewMaterial)
-        Client.DestroyRenderMaterial(self.devouringMaterial)
-        Client.DestroyRenderMaterial(self.devouringViewMaterial)
-        self.devouringMaterial = nil
-        self.devouringViewMaterial = nil
-        self.devourEntities = nil      
-    end
+    self:SetModel(Marine.kModelName, Marine.kMarineAnimationGraph)
 end
 
 function Marine:GetWeldPercentageOverride()

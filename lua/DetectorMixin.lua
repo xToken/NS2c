@@ -10,7 +10,7 @@ DetectorMixin = { }
 DetectorMixin.type = "Detector"
 
 // Should be smaller than DetectableMixin:kResetDetectionInterval
-DetectorMixin.kUpdateDetectionInterval = 2
+DetectorMixin.kUpdateDetectionInterval = 1
 
 DetectorMixin.expectedCallbacks =
 {
@@ -45,15 +45,16 @@ local function PerformDetection(self)
     end
     
     if range > 0 and self.active then
-
         local teamNumber = GetEnemyTeamNumber(self:GetTeamNumber())
-        local origin = self:GetOrigin()    
+        local origin = self:GetOrigin()
         local detectables = GetEntitiesWithMixinForTeamWithinRange("Detectable", teamNumber, origin, range)
         
         for index, detectable in ipairs(detectables) do
-        
             // Mark them as detected
             if not self.IsValidDetection or self:IsValidDetection(detectable) then
+                if self:isa("Marine") then
+                    Print("TEST")
+                end
                 if not self.DeCloak or self:DeCloak() then
                     detectable:SetDetected(true, true)
                 else

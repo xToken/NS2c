@@ -31,6 +31,8 @@ kParasiteDuration = -1
 kCeleritySpeedModifier = 0.20
 kFocusAttackSlowdown = .5
 kFocusAttackDamageMultipler = 2
+kBombardAttackDamageMultipler = 1.3
+
 kRedemptionEHPThreshold = .40
 kRedemptionChancePerLevel = .15
 kRedemptionCheckTime = 2
@@ -40,7 +42,6 @@ kAuraDetectionRange = 25
 kFuryHealthRegained = 4
 kFuryHealthPercentageRegained = 0.05
 kFuryEnergyRegained = 10
-kReconnaissanceDetectionRange = 50
 
 // per second
 kAlienVisionCost = 0

@@ -74,13 +74,13 @@ local kViewOffsetHeight = 0.5
 Lerk.XZExtents = 0.4
 Lerk.YExtents = 0.4
 local kJumpImpulse = 4
-local kFlapStraightUpImpulse = 4.3
+local kFlapStraightUpImpulse = 4.7
 local kFlapThrustMoveScalar = 6.3
 // ~120 pounds
 Lerk.kLerkFlapEnergyCost = 3
 local kMass = 54
 local kJumpHeight = 1.5
-local kSwoopGravityScalar = -20.0
+local kSwoopGravityScalar = -25.0
 local kRegularGravityScalar = -7
 local kFlightGravityScalar = -4
 // Lerks walk slowly to encourage flight
@@ -272,7 +272,7 @@ function Lerk:GetFrictionForce(input, velocity)
     local prevVelocity = self:GetVelocity()
     
     if self.gliding then
-        return Vector(-prevVelocity.x, -prevVelocity.y, -prevVelocity.z) * .05
+        return Vector(-prevVelocity.x, -prevVelocity.y, -prevVelocity.z) * .02
     end
     
     // When in the air, but not gliding (spinning out of control)

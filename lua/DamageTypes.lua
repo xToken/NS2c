@@ -82,10 +82,17 @@ function NS2Gamerules_GetUpgradedDamage(attacker, doer, damage, damageType)
     
 end
 
-function Gamerules_GetDamageMultiplier(attacker)
-    local focuslevel = CheckActiveWeaponForFocus(attacker)
-    if focuslevel > 0 then
-        return 1 + (((kFocusAttackDamageMultipler - 1)/3) * focuslevel)
+function Gamerules_GetDamageMultiplier(attacker, target)
+    if target.GetReceivesStructuralDamage and target:GetReceivesStructuralDamage(damageType) then
+        local hasupg, level = GetHasBombardUpgrade(attacker)
+        if level > 0 and hasupg then
+            return 1 + (((kBombardAttackDamageMultipler - 1)/3) * level)
+        end
+    else
+        local focuslevel = CheckActiveWeaponForFocus(attacker)
+        if focuslevel > 0 then
+            return 1 + (((kFocusAttackDamageMultipler - 1)/3) * focuslevel)
+        end
     end
 
     if Server and Shared.GetCheatsEnabled() then
@@ -148,7 +155,7 @@ end
 local function ApplyAttackerModifiers(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType)
 
     damage = NS2Gamerules_GetUpgradedDamage(attacker, doer, damage, damageType)
-    damage = damage * Gamerules_GetDamageMultiplier(attacker)
+    damage = damage * Gamerules_GetDamageMultiplier(attacker, target)
     
     if attacker and attacker.ComputeDamageAttackerOverride then
         damage = attacker:ComputeDamageAttackerOverride(attacker, damage, damageType, doer)

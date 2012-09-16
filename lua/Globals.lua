@@ -308,6 +308,6 @@ kArmorBarColors = { [kMarineTeamType] = Color(0.078, 0.878, 0.984, 1),
 kUseInterval = 0.1
 
 kPlayerLOSDistance = 20
-kStructureLOSDistance = 3.5
+kStructureLOSDistance = 2.5
 
 kGestateCameraDistance = 1.75

@@ -58,8 +58,7 @@ DetectableMixin.optionalCallbacks =
 }
 
 // Should be bigger then DetectorMixin:kUpdateDetectionInterval
-DetectableMixin.kResetDetectionInterval = 3
-DetectableMixin.kMaxBlips = 4
+DetectableMixin.kResetDetectionInterval = 1.5
 
 DetectableMixin.networkVars =
 {
@@ -72,23 +71,19 @@ function DetectableMixin:__initmixin()
     self.detected = false
     self.decloak = false
     self.timeSinceDetection = nil
-    self.sensorBlipId = { }
-    for i = 1, DetectableMixin.kMaxBlips do
-        self.sensorBlipId[i] = Entity.invalidId
-    end
+    self.sensorBlipId = Entity.invalidId
+    
 end
 
 function DetectableMixin:OnDestroy()
 
     DetectableMixinDirtyTable[self:GetId()] = nil
 
-    for i = 1, DetectableMixin.kMaxBlips do
-        if (self.sensorBlipId[i] ~= Entity.invalidId) and Shared.GetEntity(self.sensorBlipId[i]) then
+    if (self.sensorBlipId ~= Entity.invalidId) and Shared.GetEntity(self.sensorBlipId) then
+    
+        DestroyEntity(Shared.GetEntity(self.sensorBlipId))
+        self.sensorBlipId = Entity.invalidId
         
-            DestroyEntity(Shared.GetEntity(self.sensorBlipId[i]))
-            self.sensorBlipId[i] = Entity.invalidId
-            
-        end
     end
     
 end
@@ -161,48 +156,40 @@ if Server then
     end
     
     function DetectableMixin:_UpdateSensorBlip()
-        local MaxBlips = 1
-		if self:isa("Player") then
-			local hasupg, level = GetHasEchoUpgrade(self)
-			if hasupg and level > 0 then
-				MaxBlips = level
-			end
-		end
-        for i = 1, MaxBlips do
-        
-            local blip = nil
-            if self.sensorBlipId[i] ~= Entity.invalidId then
-                blip = Shared.GetEntity(self.sensorBlipId[i])
-            end
-            
-            // Ignore alive if self doesn't have the Live mixin.
-            local alive = true
-            if HasMixin(self, "Live") then
-                alive = self:GetIsAlive()
-            end
-            
-            if not self:GetIsDetected() or not alive then
-            
-                if blip then
-                
-                    DestroyEntity(blip)
-                    self.sensorBlipId[i] = Entity.invalidId
-                    
-                end
-                
-            else
-            
-                if not blip then
-                
-                    blip = CreateEntity(SensorBlip.kMapName)
-                    self.sensorBlipId[i] = blip:GetId()
-                    
-                end
-                
-                blip:Update(self)
-                
-            end
+    
+        local blip = nil
+        if self.sensorBlipId ~= Entity.invalidId then
+            blip = Shared.GetEntity(self.sensorBlipId)
         end
+        
+        // Ignore alive if self doesn't have the Live mixin.
+        local alive = true
+        if HasMixin(self, "Live") then
+            alive = self:GetIsAlive()
+        end
+        
+        if not self:GetIsDetected() or not alive then
+        
+            if blip then
+            
+                DestroyEntity(blip)
+                self.sensorBlipId = Entity.invalidId
+                
+            end
+            
+        else
+        
+            if not blip then
+            
+                blip = CreateEntity(SensorBlip.kMapName)
+                self.sensorBlipId = blip:GetId()
+                
+            end
+            
+            blip:Update(self)
+            
+        end
+        
     end
     
 end

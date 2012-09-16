@@ -142,6 +142,9 @@ Player.kAirBrakeWeight = 0.1
 Player.kAirZMoveWeight = 2.5
 Player.kAirZStrafeWeight = 2.5
 Player.kAirStrafeWeight = 2
+Player.kTargetViewAngle = 15
+Player.kStrafeJumpAccel = 1.12
+
 local kLadderAcceleration = 16
 
 Player.kMaxWalkableNormal =  math.cos( math.rad(45) )
@@ -339,12 +342,9 @@ function Player:OnCreate()
     end
     
     self.viewOffset = Vector( 0, 0, 0 )
-    
     self.bodyYaw = 0
-    self.standingBodyYaw = 0
-    
+    self.standingBodyYaw = 0   
     self.clientIndex = -1
-   
     self.showScoreboard = false
     
     if Server then
@@ -355,6 +355,7 @@ function Player:OnCreate()
         self.showSayings = false
     end
     
+    self.lastspeedgain = 0
     self.sayingsMenu = 0
     self.timeLastMenu = 0    
     self.darwinMode = false
@@ -1355,7 +1356,7 @@ end
 
 // Make sure we can't move faster than our max speed (esp. when holding
 // down multiple keys, going down ramps, etc.)
-/*
+
 function Player:OnClampSpeed(input, velocity)
 
     PROFILE("Player:OnClampSpeed")
@@ -1390,7 +1391,7 @@ function Player:OnClampSpeed(input, velocity)
     end
     
 end
-*/
+
 
 // Allow child classes to alter player's move at beginning of frame. Alter amount they
 // can move by scaling input.move, remove key presses, etc.
@@ -2545,23 +2546,6 @@ local function veclerp(vec1, vec2, t)
     return vec1 + t *(vec2 - vec1)
 end
 
-local function vecslerp(vec1, vec2, t)
-     // Dot product - the cosine of the angle between 2 vectors.
-     local dot = vec1:DotProduct(vec2)
-     // Clamp it to be in the range of Acos()
-     // This may be unnecessary, but floating point
-     // precision can be a fickle mistress.
-     dot = Clamp(dot, -1.0, 1.0)
-     // Acos(dot) returns the angle between start and end,
-     // And multiplying that by percent returns the angle between
-     // start and the final result.
-     local theta = math.acos(dot) * t
-     local rVec = vec2 - vec1 * dot
-     GetNormalizedVector(rVec)     // Orthonormal basis
-     // The final result.
-     return ((vec1 * math.cos(theta)) + (rVec * math.sin(theta)))
-end
-
 // Children can add or remove velocity according to special abilities, modes, etc.
 function Player:ModifyVelocity(input, velocity)   
 
@@ -2590,81 +2574,52 @@ function Player:ModifyVelocity(input, velocity)
             local moveLengthXZ = velocity:GetLengthXZ()
             local previousY = velocity.y
             local adjustedZ = false
-
-            if input.move.z ~= 0 then
+            //Getting angle of view relative to movement
+            local viewCoords = self:GetViewCoords()
+            local forward = velocity:DotProduct(viewCoords.zAxis)
+            local v1 = math.sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y) + (velocity.z * velocity.z))
+            local v2 = math.sqrt((viewCoords.zAxis.x * viewCoords.zAxis.x) + (viewCoords.zAxis.y * viewCoords.zAxis.y) + (viewCoords.zAxis.z * viewCoords.zAxis.z))
+            local cvangle = ((Player.kTargetViewAngle - math.deg(math.acos((forward / (v1 * v2))))) / (0 - 1))
+            if (v1 * v2) == 0 then
+                vangle = 90
+            end
+            local accelerationangle = 1 - math.abs(math.sin(cvangle))
+            if Client and not Shared.GetIsRunningPrediction() then
+                self.lastspeedgain = accelerationangle
+            end
             
+            if input.move.z ~= 0 then
                 local redirectedVelocityZ = GetNormalizedVectorXZ(self:GetViewCoords().zAxis) * input.move.z
-                
                 if input.move.z < 0 then
-                
                     redirectedVelocityZ = GetNormalizedVectorXZ(velocity)
                     redirectedVelocityZ:Normalize()
-                    
                     local xzVelocity = Vector(velocity)
                     xzVelocity.y = 0
-                    
                     VectorCopy(velocity - (xzVelocity * input.time * Player.kAirBrakeWeight), velocity)
-                    
                 else
-                
                     redirectedVelocityZ = redirectedVelocityZ * input.time * Player.kAirZMoveWeight + GetNormalizedVectorXZ(velocity)
                     redirectedVelocityZ:Normalize()
-                    redirectedVelocityZ:Scale(moveLengthXZ)
+                    local redirz = redirectedVelocityZ
+                    redirectedVelocityZ:Scale(moveLengthXZ * math.max(accelerationangle * Player.kStrafeJumpAccel, 1))
                     redirectedVelocityZ.y = previousY
                     VectorCopy(redirectedVelocityZ,  velocity)
                     adjustedZ = true
-                
                 end
             
             end
         
-            if input.move.x ~= 0  then
-        
+            if input.move.x ~= 0  then                
                 local redirectedVelocityX = GetNormalizedVectorXZ(self:GetViewCoords().xAxis) * input.move.x
-            
                 if adjustedZ then
                     redirectedVelocityX = redirectedVelocityX * input.time * Player.kAirZStrafeWeight + GetNormalizedVectorXZ(velocity)
                 else
                     redirectedVelocityX = redirectedVelocityX * input.time * Player.kAirStrafeWeight + GetNormalizedVectorXZ(velocity)
                 end
-                
                 redirectedVelocityX:Normalize()            
                 redirectedVelocityX:Scale(moveLengthXZ)
                 redirectedVelocityX.y = previousY       
                 VectorCopy(redirectedVelocityX,  velocity)
-                
             end    
-
-        end
-
-        //local viewdir = (input.yaw - self.lastyaw) / input.time
-        //self.lastyaw = input.yaw
-        
-        //Getting angle of view relative to movement
-        local viewCoords = self:GetViewCoords()
-        local forward = velocity:DotProduct(viewCoords.zAxis)
-        local v1 = math.sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y) + (velocity.z * velocity.z))
-        local v2 = math.sqrt((viewCoords.zAxis.x * viewCoords.zAxis.x) + (viewCoords.zAxis.y * viewCoords.zAxis.y) + (viewCoords.zAxis.z * viewCoords.zAxis.z))
-        local vangle = math.deg(math.acos((forward / (v1 * v2))))
-        if (v1 * v2) == 0 then
-            vangle = 0
-        end
-        //Dont calc if view angle > 90 from movement otherwise oddities
-        if not self:GetIsOnSurface() and vangle < 90 then
-            //Calculate amount of adjustment to apply to make up for heavy binary strafing inputs
-            local accelerationangle = 1 - math.abs(math.cos(vangle))
-            local bonus = vecslerp(velocity, viewCoords.zAxis, (vangle / 90))
-            local kStrafeJumpMod = 10
-            //Calculate bonuses to newly adjusted movement vector
-            bonus = bonus + ((accelerationangle / kStrafeJumpMod) * (0.1 * viewCoords.zAxis - Sign(input.move.x) * 1 * viewCoords.xAxis ))
-            //bonus = bonus * accelerationangle
-            //Update DEBUG GUI
-            self.lastspeedgain = accelerationangle
-            //Dont slow down because of this effect
-            if bonus:GetLengthXZ() > velocity:GetLengthXZ() then
-                velocity.x = bonus.x
-                velocity.z = bonus.z
-            end
 
         end
     end

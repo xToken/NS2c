@@ -54,11 +54,9 @@ Shift.kEnergizeEffect = PrecacheAsset("cinematics/alien/shift/energize.cinematic
 Shift.kEnergizeSmallTargetEffect = PrecacheAsset("cinematics/alien/shift/energize_small.cinematic")
 Shift.kEnergizeLargeTargetEffect = PrecacheAsset("cinematics/alien/shift/energize_large.cinematic")
 Shift.kEnergizeThinkTime = 2
-Shift.kEchoMaxRange = 20
 
 local networkVars =
 {
-    echoActive = "boolean"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)

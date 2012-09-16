@@ -240,7 +240,7 @@ function Marine:OnKill(attacker, doer, point, direction)
         self:GetTeam():TriggerAlert(kTechId.MarineAlertSoldierLost, self)
     end
     
-    if attacker:GetTeamNumber() ~= self:GetTeamNumber() and attacker:GetTeamNumber() == kAlienTeamType then
+    if attacker:GetTeamNumber() ~= self:GetTeamNumber() and attacker:GetTeamNumber() == kAlienTeamType and attacker:isa("Player") then
         local hasupg, level = GetHasFuryUpgrade(attacker)
         if hasupg and level > 0 and attacker:GetIsAlive() then
             attacker:AddHealth((((1 / 3) * level) * kFuryHealthRegained) + ((((1 / 3) * level) * kFuryHealthPercentageRegained) * (attacker:GetMaxHealth() + attacker:GetMaxArmor())))

@@ -237,7 +237,7 @@ function InitTechTreeMaterialOffsets()
     kAlienTechIdToMaterialOffset[kTechId.Redeployment] = 56
     
     kAlienTechIdToMaterialOffset[kTechId.Silence] = 85
-    kAlienTechIdToMaterialOffset[kTechId.Reconnaissance] = 86
+    kAlienTechIdToMaterialOffset[kTechId.Ghost] = 86
     kAlienTechIdToMaterialOffset[kTechId.Aura] = 71
     
     kAlienTechIdToMaterialOffset[kTechId.Carapace] = 81
@@ -246,7 +246,7 @@ function InitTechTreeMaterialOffsets()
     
     kAlienTechIdToMaterialOffset[kTechId.Focus] = 80
     kAlienTechIdToMaterialOffset[kTechId.Fury] = 114
-    kAlienTechIdToMaterialOffset[kTechId.Echo] = 60
+    kAlienTechIdToMaterialOffset[kTechId.Bombard] = 60
     
     //Hydra
     kAlienTechIdToMaterialOffset[kTechId.Hydra] = 88

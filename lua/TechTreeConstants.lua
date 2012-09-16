@@ -88,7 +88,7 @@ kTechId = enum({
     'Crag', 'CragHeal', 'Shift', 'ShiftTeleport', 'Shade', 'ShadeDisorient', 'Whip',
   
     // Alien abilities and upgrades
-    'Carapace', 'Regeneration', 'Redemption', 'Silence', 'Celerity', 'Adrenaline', 'Focus', 'Camouflage', 'Aura', 'Silence2', 'Fury', 'Echo', 'Redeployment', 'Reconnaissance', 
+    'Carapace', 'Regeneration', 'Redemption', 'Silence', 'Celerity', 'Adrenaline', 'Focus', 'Camouflage', 'Aura', 'Silence2', 'Fury', 'Bombard', 'Redeployment', 'Ghost', 
     
     // Alien alerts
     'AlienAlertNeedHealing', 'AlienAlertStructureUnderAttack', 'AlienAlertHiveUnderAttack', 'AlienAlertHiveDying', 'AlienAlertHarvesterUnderAttack',

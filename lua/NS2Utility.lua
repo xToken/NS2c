@@ -890,6 +890,17 @@ function GetCanSeeEntity(seeingEntity, targetEntity)
                 fov = seeingEntity:GetMinimapFov(targetEntity)
             end
             
+            //Greatly reduce fov if enemy has Ghost
+            if targetEntity:isa("Alien") then
+                local hasupg, level = GetHasGhostUpgrade(targetEntity)
+                if hasupg and level > 0 then
+                    if seeingEntity.GetReceivesStructuralDamage and seeingEntity:GetReceivesStructuralDamage() then
+                        return false
+                    end
+                    fov = (fov / (level + 1))
+                end
+            end
+            
             local halfFov = math.rad(fov / 2)
             local s = math.acos(dotProduct)
             withinFOV = s < halfFov

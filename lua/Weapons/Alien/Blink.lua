@@ -105,9 +105,7 @@ function Blink:OnSecondaryAttack(player)
         if not self.blinkButtonDown then
         
             self:SetEthereal(player, true)
-            
             self.timeBlinkStarted = Shared.GetTime()
-            
             self.blinkButtonDown = true
             
         end

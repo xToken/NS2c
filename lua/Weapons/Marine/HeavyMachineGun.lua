@@ -65,8 +65,8 @@ function HeavyMachineGun:OnDestroy()
 end
 
 function HeavyMachineGun:OnPrimaryAttack(player)
-    if not self:GetIsReloading() and not self:GetHasAttackDelay() then
-        if player and self.clip > 0 then
+    if not self:GetIsReloading() and self.clip > 0 then
+        if player and not self:GetHasAttackDelay() then
         
             self:FirePrimary(player)
             // Don't decrement ammo in Darwin mode
@@ -76,11 +76,21 @@ function HeavyMachineGun:OnPrimaryAttack(player)
             self.lastfiredtime = Shared.GetTime()
             self:CreatePrimaryAttackEffect(player)
             Weapon.OnPrimaryAttack(self, player)
-            
+            self.primaryAttacking = true
         end
     else
+         self:OnPrimaryAttackEnd(player)
          self.blockingPrimary = false
     end    
+end
+
+function HeavyMachineGun:OnPrimaryAttackEnd(player)
+
+    if self.primaryAttacking then
+        ClipWeapon.OnPrimaryAttackEnd(self, player)
+        self.primaryAttacking = false 
+    end
+    
 end
 
 function HeavyMachineGun:GetNumStartClips()
@@ -104,7 +114,7 @@ end
 */
 
 function HeavyMachineGun:GetMaxAmmo()
-    return 3 * self:GetClipSize()
+    return 2 * self:GetClipSize()
 end
 
 function HeavyMachineGun:GetAnimationGraphName()
