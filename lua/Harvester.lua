@@ -74,11 +74,11 @@ function Harvester:GetDamagedAlertId()
 end
 
 function Harvester:GetCanBeUsed(player, useSuccessTable)
-
-    if self:GetCanConstruct() then
+    if not self:GetCanConstruct(player) then
         useSuccessTable.useSuccess = false
-    end
-    
+    else
+        useSuccessTable.useSuccess = true
+    end  
 end
 
 if Client then

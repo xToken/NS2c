@@ -83,18 +83,20 @@ function NS2Gamerules_GetUpgradedDamage(attacker, doer, damage, damageType)
 end
 
 function Gamerules_GetDamageMultiplier(attacker, target)
-    if target.GetReceivesStructuralDamage and target:GetReceivesStructuralDamage(damageType) then
-        local hasupg, level = GetHasBombardUpgrade(attacker)
-        if level > 0 and hasupg then
-            return 1 + (((kBombardAttackDamageMultipler - 1)/3) * level)
-        end
-    else
-        local focuslevel = CheckActiveWeaponForFocus(attacker)
-        if focuslevel > 0 then
-            return 1 + (((kFocusAttackDamageMultipler - 1)/3) * focuslevel)
+    if attacker:isa("Player") then
+        if target.GetReceivesStructuralDamage and target:GetReceivesStructuralDamage(damageType) then
+            local hasupg, level = GetHasBombardUpgrade(attacker)
+            if level > 0 and hasupg then
+                return 1 + (((kBombardAttackDamageMultipler - 1)/3) * level)
+            end
+        else
+            local focuslevel = CheckActiveWeaponForFocus(attacker)
+            if focuslevel > 0 then
+                return 1 + (((kFocusAttackDamageMultipler - 1)/3) * focuslevel)
+            end
         end
     end
-
+    
     if Server and Shared.GetCheatsEnabled() then
         return GetGamerules():GetDamageMultiplier()
     end

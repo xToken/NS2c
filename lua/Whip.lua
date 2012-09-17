@@ -316,7 +316,11 @@ elseif Server then
 end
 
 function Whip:GetCanBeUsed(player, useSuccessTable)
-    useSuccessTable.useSuccess = false    
+    if not self:GetCanConstruct(player) then
+        useSuccessTable.useSuccess = false
+    else
+        useSuccessTable.useSuccess = true
+    end
 end
 
 Shared.LinkClassToMap("Whip", Whip.kMapName, networkVars)

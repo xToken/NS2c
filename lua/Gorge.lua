@@ -53,12 +53,12 @@ Gorge.kYExtents = 0.475
 
 Gorge.kMass = 80
 Gorge.kJumpHeight = 1.2
-local kStartSlideForce = 12
+local kStartSlideForce = 8
 local kViewOffsetHeight = 0.6
 Gorge.kMaxSpeed = 15
 Gorge.kAcceleration = 55
 Gorge.kAirAcceleration = 25
-Gorge.kSlidingAccelBoost = 25
+Gorge.kSlidingAccelBoost = 20
 Gorge.kGorgeCreateDistance = 3
 Gorge.kBellySlideCost = 25
 local kSlidingMoveInputScalar = 0.1
@@ -318,7 +318,7 @@ end
 function Gorge:GetMaxSpeed(possible)
 
     if possible then
-        return Gorge.kMaxSpeed
+        return 7
     end
     return Gorge.kMaxSpeed * self:GetMovementSpeedModifier()
     

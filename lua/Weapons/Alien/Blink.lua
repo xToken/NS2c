@@ -17,9 +17,6 @@ Blink.kMapName = "blink"
 // initial force added when starting blink
 local kEtherealForce = 10
 
-// Delay before you can blink again after a blink
-Blink.kMinEnterEtherealTime = 0.25
-
 local networkVars =
 {
     // True when blink started and button not yet released
@@ -96,9 +93,8 @@ end
 
 function Blink:OnSecondaryAttack(player)
 
-    local minTimePassed = not player:GetRecentlyBlinked()
     local hasEnoughEnergy = player:GetEnergy() > kStartBlinkEnergyCost
-    if not player.etherealStartTime or minTimePassed and hasEnoughEnergy and self:GetBlinkAllowed() then
+    if hasEnoughEnergy and self:GetBlinkAllowed() then
     
         // Enter "ether" fast movement mode, but don't keep going ethereal when button still held down after
         // running out of energy
@@ -143,7 +139,7 @@ function Blink:SetEthereal(player, state)
         end
         
         player.ethereal = state
-        player:SetGravityEnabled(not player.ethereal)
+        //player:SetGravityEnabled(not player.ethereal)
         
         player:SetEthereal(state)
         

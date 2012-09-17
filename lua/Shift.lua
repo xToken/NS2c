@@ -141,12 +141,12 @@ function Shift:GetCanBeUsedConstructed()
 end   
 
 function Shift:GetCanBeUsed(player, useSuccessTable)
-
     local hasupg, level = GetHasRedeploymentUpgrade(player)
-    if self:GetCanConstruct() or (hasupg and level > 0) then
+    if not self:GetCanConstruct(player) and not(hasupg and level > 0) then
         useSuccessTable.useSuccess = false
+    else
+        useSuccessTable.useSuccess = true
     end
-    
 end
 
 function Shift:EnergizeInRange()

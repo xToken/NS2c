@@ -52,9 +52,6 @@ local function PerformDetection(self)
         for index, detectable in ipairs(detectables) do
             // Mark them as detected
             if not self.IsValidDetection or self:IsValidDetection(detectable) then
-                if self:isa("Marine") then
-                    Print("TEST")
-                end
                 if not self.DeCloak or self:DeCloak() then
                     detectable:SetDetected(true, true)
                 else

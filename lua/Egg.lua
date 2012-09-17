@@ -470,7 +470,7 @@ function Egg:InternalGetCanBeUsed(player)
 end
 
 function Egg:GetCanBeUsed(player, useSuccessTable)
-    useSuccessTable.useSuccess = self:InternalGetCanBeUsed(player)
+    useSuccessTable.useSuccess = false
 end
 
 if Server then

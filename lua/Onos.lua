@@ -331,7 +331,7 @@ end
 function Onos:GetMaxSpeed(possible)
 
     if possible then
-        return Onos.kMaxSpeed
+        return 10
     end
 
     return Onos.kMaxSpeed * self:GetMovementSpeedModifier()
@@ -474,25 +474,25 @@ local kOnosHeadMoveAmount = 0.1
 // Give dynamic camera motion to the player
 function Onos:OnUpdateCamera(deltaTime) 
 
-    local camOffsetHeight = 0
+    //local camOffsetHeight = 0
     
-    if not self:GetIsJumping() then
-        camOffsetHeight = -self:GetMaxViewOffsetHeight() * self:GetCrouchShrinkAmount() * self:GetCrouchAmount()
-    end
+    //if not self:GetIsJumping() then
+        //camOffsetHeight = -self:GetMaxViewOffsetHeight() * self:GetCrouchShrinkAmount() * self:GetCrouchAmount()
+    //end
     
-    if self:GetIsFirstPerson() then
+    //if self:GetIsFirstPerson() then
     
-        if not self:GetIsJumping() then
+        //if not self:GetIsJumping() then
         
-            local movementScalar = Clamp((self:GetVelocity():GetLength() / self:GetMaxSpeed(true)), 0.0, 0.8)
-            local bobbing = ( math.sin(Shared.GetTime() * 7) - 1 )
-            camOffsetHeight = camOffsetHeight + kOnosHeadMoveAmount * movementScalar * bobbing
+            //local movementScalar = Clamp((self:GetVelocity():GetLength() / self:GetMaxSpeed(true)), 0.0, 0.8)
+            //local bobbing = ( math.sin(Shared.GetTime() * 7) - 1 )
+            //camOffsetHeight = camOffsetHeight + kOnosHeadMoveAmount * movementScalar * bobbing
             
-        end
+        //end
         
-    end
+    //end
     
-    self:SetCameraYOffset(camOffsetHeight)
+    //self:SetCameraYOffset(camOffsetHeight)
 
 end
 

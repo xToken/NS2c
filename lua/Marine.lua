@@ -69,7 +69,7 @@ Marine.kStunDuration = 2
 Marine.kAcceleration = 60
 Marine.kAirAcceleration = 25
 Marine.kWalkMaxSpeed = 4.0                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
-Marine.kRunMaxSpeed = 7
+Marine.kRunMaxSpeed = 9
 Marine.kDoubleJumpMinHeightChange = 0.4
 Marine.kGroundFriction = 8
 

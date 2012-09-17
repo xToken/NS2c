@@ -454,7 +454,7 @@ end
 function Skulk:GetMaxSpeed(possible)
 
     if possible then
-        return Skulk.kMaxSpeed
+        return 8
     end
 
     local maxspeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Skulk.kMaxWalkSpeed, Skulk.kMaxSpeed)    

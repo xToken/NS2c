@@ -139,7 +139,7 @@ function ClipWeapon:GetAuxClip()
 end
 
 function ClipWeapon:GetMaxAmmo()
-    return 4 * self:GetClipSize()
+    return 5 * self:GetClipSize()
 end
 /*
 function ClipWeapon:OnTouch(recipient)

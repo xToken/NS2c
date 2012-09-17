@@ -78,7 +78,7 @@ function GUISpeedDebug:Update(deltaTime)
 
         local velocity = player:GetVelocity()
         local speed = velocity:GetLengthXZ()
-        local bonusSpeedFraction = speed / player:GetMaxSpeed(true)
+        local bonusSpeedFraction = speed / player:GetMaxSpeed()
         local currentFraction = player:GetSpeedDebugSpecial() 
 
         self.momentumFraction:SetSize(Vector(gMomentumBarWidth * bonusSpeedFraction, 30, 0))

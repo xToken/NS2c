@@ -197,8 +197,10 @@ end
 
 function Shade:GetCanBeUsed(player, useSuccessTable)
 
-    if self:GetCanConstruct() then
+    if not self:GetCanConstruct(player) then
         useSuccessTable.useSuccess = false
+    else
+        useSuccessTable.useSuccess = true
     end
     
 end

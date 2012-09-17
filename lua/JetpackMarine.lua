@@ -44,7 +44,7 @@ JetpackMarine.kVerticalThrustAccelerationMod = 2.2
 JetpackMarine.kVerticalFlyAccelerationMod = 1.6
 JetpackMarine.kJetpackAcceleration = 28
 JetpackMarine.kWalkMaxSpeed = 4.0                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
-JetpackMarine.kRunMaxSpeed = 6.8
+JetpackMarine.kRunMaxSpeed = 8
 JetpackMarine.kFlyMaxSpeed = 18
 JetpackMarine.kAcceleration = 45
 

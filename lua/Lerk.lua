@@ -227,7 +227,7 @@ end
 function Lerk:GetMaxSpeed(possible)
 
     if possible then
-        return kMaxSpeed
+        return 13
     end
 
     local speed = kMaxWalkSpeed

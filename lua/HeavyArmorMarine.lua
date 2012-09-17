@@ -61,7 +61,7 @@ HeavyArmorMarine.kAcceleration = 45
 HeavyArmorMarine.kAirAcceleration = 17
 HeavyArmorMarine.kAirStrafeWeight = 4
 HeavyArmorMarine.kWalkMaxSpeed = 3.75
-HeavyArmorMarine.kRunMaxSpeed = 6.25
+HeavyArmorMarine.kRunMaxSpeed = 8
 // How fast does our armor get repaired by welders
 HeavyArmorMarine.kArmorWeldRate = 25
 HeavyArmorMarine.kWeldedEffectsInterval = .5

@@ -11,7 +11,7 @@ Script.Load("lua/FunctionContracts.lua")
 GhostStructureMixin = CreateMixin( GhostStructureMixin )
 GhostStructureMixin.type = "GhostStructure"
 
-GhostStructureMixin.kGhostStructureCancelRange = 2
+GhostStructureMixin.kGhostStructureCancelRange = 3
 
 GhostStructureMixin.expectedMixins =
 {
@@ -46,8 +46,9 @@ local function ClearGhostStructure(self)
     self.isGhostStructure = false
     self:TriggerEffects("ghoststructure_destroy")
     local cost = LookupTechData(self:GetTechId(), kTechDataCostKey, 0)
-    self:GetTeam():AddTeamResources(cost * kGhostStructureModifier)
-    self:GetTeam():PrintWorldTextForTeamInRange(kWorldTextMessageType.Resources, (cost * kGhostStructureModifier), self:GetOrigin() + kWordMessageResourceOffset, kResourceMessageRange)
+    local refund = math.round(cost * kGhostStructureModifier)
+    self:GetTeam():AddTeamResources(refund)
+    self:GetTeam():PrintWorldTextForTeamInRange(kWorldTextMessageType.Resources, (refund), self:GetOrigin() + kWordMessageResourceOffset, kResourceMessageRange)
     DestroyEntity(self)
     
 end

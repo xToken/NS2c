@@ -16,7 +16,7 @@ function Onos:UpdateClientEffects(deltaTime, isLocal)
     if self:GetPlayFootsteps() then
         
         local velocityLength = self:GetVelocityLength()
-        local footstepInterval = .8 - (velocityLength / self:GetMaxSpeed(true)) * .15
+        local footstepInterval = .8 - (velocityLength / self:GetMaxSpeed()) * .15
         
         if self.timeOfLastFootstep == nil or (Shared.GetTime() > (self.timeOfLastFootstep + footstepInterval)) then
         

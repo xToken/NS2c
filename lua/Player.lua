@@ -135,15 +135,15 @@ Player.kMinimumPlayerVelocity = .05    // Minimum player velocity for network pe
 
 // Player speeds
 Player.kWalkMaxSpeed = 5             // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
-Player.kRunMaxSpeed = 12
+Player.kRunMaxSpeed = 10
 Player.kAcceleration = 58
 Player.kAirAcceleration = 32
 Player.kAirBrakeWeight = 0.1
 Player.kAirZMoveWeight = 2.5
 Player.kAirZStrafeWeight = 2.5
 Player.kAirStrafeWeight = 2
-Player.kTargetViewAngle = 15
-Player.kStrafeJumpAccel = 1.12
+Player.kTargetViewAngle = 7.5
+Player.kStrafeJumpAccel = 1.15
 
 local kLadderAcceleration = 16
 
@@ -2406,7 +2406,7 @@ function Player:GetMaterialBelowPlayer()
 end
 
 function Player:GetFootstepSpeedScalar()
-    return Clamp(self:GetVelocity():GetLength() / self:GetMaxSpeed(), 0, 1)
+    return Clamp(self:GetVelocity():GetLength() / Player.kRunMaxSpeed, 0, 1)
 end
 
 function Player:HandleAttacks(input)
@@ -2600,7 +2600,11 @@ function Player:ModifyVelocity(input, velocity)
                     redirectedVelocityZ = redirectedVelocityZ * input.time * Player.kAirZMoveWeight + GetNormalizedVectorXZ(velocity)
                     redirectedVelocityZ:Normalize()
                     local redirz = redirectedVelocityZ
-                    redirectedVelocityZ:Scale(moveLengthXZ * math.max(accelerationangle * Player.kStrafeJumpAccel, 1))
+                    if input.move.x ~= 0 then
+                        redirectedVelocityZ:Scale(moveLengthXZ * math.max(accelerationangle * Player.kStrafeJumpAccel, 1))
+                    else
+                        redirectedVelocityZ:Scale(moveLengthXZ)
+                    end
                     redirectedVelocityZ.y = previousY
                     VectorCopy(redirectedVelocityZ,  velocity)
                     adjustedZ = true
@@ -3108,6 +3112,7 @@ function Player:OnUpdateAnimationInput(modelMixin)
     elseif self:GetIsIdle() then
         moveState = "idle"
     end
+    
     modelMixin:SetAnimationInput("move", moveState)
     
     local activeWeapon = "none"
@@ -3132,7 +3137,7 @@ function Player:OnUpdateAnimationInput(modelMixin)
 end
 
 function Player:GetSpeedScalar()
-    return self:GetVelocityLength() / self:GetMaxSpeed(true)
+    return self:GetVelocityLength() / self:GetMaxSpeed()
 end
 
 function Player:OnUpdateCamera(deltaTime)
