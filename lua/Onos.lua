@@ -165,7 +165,7 @@ function Onos:GetChargeFraction()
 end
 
 function Gorge:GetCanClimb()
-    return true
+    return false
 end
 
 function Onos:EndCharge()

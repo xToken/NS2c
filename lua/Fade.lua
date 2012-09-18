@@ -287,7 +287,7 @@ function Fade:OverrideInput(input)
 end
 
 function Fade:GetCanClimb()
-    return true
+    return false
 end
 
 function Fade:OnBlinkEnd()
