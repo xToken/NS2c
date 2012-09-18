@@ -19,8 +19,8 @@ class 'CommandStation' (CommandStructure)
 
 CommandStation.kMapName = "commandstation"
 
-CommandStation.kModelName = PrecacheAsset("models/marine/command_station/command_station.model")
-//CommandStation.kModelName = PrecacheAsset("models/marine/commandcenter/commandcenter.model")
+//CommandStation.kModelName = PrecacheAsset("models/marine/command_station/command_station.model")
+CommandStation.kModelName = PrecacheAsset("models/marine/commandcenter/commandcenter.model")
 local kAnimationGraph = PrecacheAsset("models/marine/command_station/command_station.animation_graph")
 
 CommandStation.kUnderAttackSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/command_station_under_attack")

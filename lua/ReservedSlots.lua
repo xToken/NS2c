@@ -1,6 +1,6 @@
 //NS2 Reserved Slot
 
-kDAKRevisions["ReservedSlots"] = 1.4
+kDAKRevisions["ReservedSlots"] = 1.5
 local ReservedPlayers = { }
 local cachedPlayersList = { }
 local lastconnect = 0
@@ -9,18 +9,40 @@ local disconnectclients = { }
 local disconnectclienttime = 0
 local reserveslotactionslog = { }
 
-local ServerAdminPath = Server.GetAdminPath()
 local ReservedPlayersFileName = "ReservedPlayers.json"
 
-if kDAKConfig._ReservedSlots then
+if kDAKConfig and kDAKConfig._ReservedSlots then
+
+	local function CheckPluginConfig()
+	
+		if kDAKConfig.kMaximumSlots == nil or
+		 kDAKConfig.kReservedSlots == nil or
+		 kDAKConfig.kMinimumSlots == nil or
+		 kDAKConfig.kDelayedSyncTime == nil or
+		 kDAKConfig.kDelayedKickTime == nil or
+		 kDAKConfig.kReserveSlotServerFull == nil or
+		 kDAKConfig.kReserveSlotServerFullDisconnectReason == nil or
+		 kDAKConfig.kReserveSlotKickedForRoom == nil or
+		 kDAKConfig.kReserveSlotKickedDisconnectReason == nil then
+		 
+			kDAKConfig._ReservedSlots = false
+			
+		end
+	
+	end
+	CheckPluginConfig()
+
+end
+
+if kDAKConfig and kDAKConfig._ReservedSlots then
 
 	local function LoadReservedPlayers()
 		-- Borrowed :< from Huze reserved slot plugin to maintain compat.
 		local ReservedPlayersFile
 		if kCheckGameDirectory then
-			ReservedPlayersFile = assert(io.open("game://" .. ServerAdminPath .. ReservedPlayersFileName, "r"))
+			ReservedPlayersFile = assert(io.open("game://" .. kDAKConfigurationPath .. ReservedPlayersFileName, "r"))
 		else
-			ReservedPlayersFile = assert(io.open("user://" .. ServerAdminPath .. ReservedPlayersFileName, "r"))
+			ReservedPlayersFile = assert(io.open("user://" .. kDAKConfigurationPath .. ReservedPlayersFileName, "r"))
 		end
 		if ReservedPlayersFile then
 			Shared.Message("Loading Reserve slot players.")
@@ -32,7 +54,7 @@ if kDAKConfig._ReservedSlots then
 
 	local function SaveReservedPlayers()
 
-		local ReservedPlayersFile = io.open("user://" .. ServerAdminPath .. reservedPlayersFileName, "w+")
+		local ReservedPlayersFile = io.open("user://" .. kDAKConfigurationPath .. reservedPlayersFileName, "w+")
 		ReservedPlayersFile:write(json.encode(ReservedPlayers))
 		ReservedPlayersFile:close()
 		

@@ -1,11 +1,25 @@
 //NS2 EnhancedLogging and Tracking of events
 
-kDAKRevisions["EnhancedLogging"] = 1.2
-local ServerAdminPath = Server.GetAdminPath()
+kDAKRevisions["EnhancedLogging"] = 1.3
 local EnhancedLoggingFile = nil
-local EnhancedLog = { }  
+local EnhancedLog = { }
 
-if kDAKConfig._EnhancedLogging then
+if kDAKConfig and kDAKConfig._EnhancedLogging then
+
+	local function CheckPluginConfig()
+	
+		if kDAKConfig.kEnhancedLoggingSubDir == nil then
+		
+			kDAKConfig._EnhancedLogging = false
+			
+		end
+	
+	end
+	CheckPluginConfig()
+
+end
+
+if kDAKConfig and kDAKConfig._EnhancedLogging then
 
 	//*******************************************************************************************************************************
 	//Formatting Functions
@@ -234,7 +248,7 @@ if kDAKConfig._EnhancedLogging then
 		if EnhancedLoggingFile == nil then
 			return
 		end
-		local ELogFile = assert(io.open("user://" .. ServerAdminPath .. kDAKConfig.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "w"))
+		local ELogFile = assert(io.open("user://" .. kDAKConfigurationPath .. kDAKConfig.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "w"))
 		if ELogFile then
 			for i = 1, #EnhancedLog do
 				ELogFile:write(EnhancedLog[i] .. "\n")
@@ -242,13 +256,13 @@ if kDAKConfig._EnhancedLogging then
 			ELogFile:close()
 		end
 		
-		/*local ELogFile = io.open("user://" .. ServerAdminPath .. kDAKConfig.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "a+")
+		/*local ELogFile = io.open("user://" .. kDAKConfigurationPath .. kDAKConfig.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "a+")
 		if ELogFile then
 			ELogFile:seek("end")
 			ELogFile:write(logstring .. "\n")
 			ELogFile:close()
 		else
-			local ELogFile = io.open("user://" .. ServerAdminPath .. kDAKConfig.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "w")
+			local ELogFile = io.open("user://" .. kDAKConfigurationPath .. kDAKConfig.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "w")
 			if ELogFile then
 				ELogFile:write(logstring .. "\n")
 				ELogFile:close()
@@ -418,37 +432,6 @@ if kDAKConfig._EnhancedLogging then
 	
 	Event.Hook("Console_name",               OnCommandSetName)
 	
-	//Creating another layer here so that compat can be maintained with any other mods that may hook this.
-	class 'NS2ELGamerules' (NS2Gamerules)
-	NS2ELGamerules.kMapName = "ns2_gamerules"
-	
-	function NS2ELGamerules:OnCreate()
-
-        // Calls SetGamerules()
-        NS2Gamerules.OnCreate(self)
-		
-	end
-	
-	function NS2ELGamerules:JoinTeam(player, newTeamNumber, force)
-		local client = Server.GetOwner(player)
-		if client ~= nil then
-			PrintToEnhancedLog(GetTimeStamp() .. string.format("%s joined team %s.", GetClientUIDString(client), newTeamNumber))
-		end
-		return NS2Gamerules.JoinTeam(self, player, newTeamNumber, force)
-	end
-	
-	function NS2ELGamerules:EndGame(winningTeam)
-	
-		if self:GetGameState() == kGameState.Started then
-			if winningTeam == self.team1 then
-				PrintToEnhancedLog(GetTimeStamp() .. string.format("Aliens win."))
-			else
-				PrintToEnhancedLog(GetTimeStamp() .. string.format("Marines win."))
-			end
-		end
-		NS2Gamerules.EndGame(self, winningTeam)
-	end
-	
 	function NS2ELGamerules:SetGameState(state)
 
         if state ~= self.gameState then
@@ -481,7 +464,31 @@ if kDAKConfig._EnhancedLogging then
 		NS2Gamerules.CastVoteByPlayer(self, voteTechId, player )
 	end
 	
-	function NS2ELGamerules:OnEntityKilled(targetEntity, attacker, doer, point, direction)
+	function EnhancedLoggingJoinTeam(player, newTeamNumber, force)
+		local client = Server.GetOwner(player)
+		if client ~= nil then
+			PrintToEnhancedLog(GetTimeStamp() .. string.format("%s joined team %s.", GetClientUIDString(client), newTeamNumber))
+		end
+	end
+	
+	table.insert(kDAKOnTeamJoin, function(player, newTeamNumber, force) return EnhancedLoggingJoinTeam(player, newTeamNumber, force) end)
+	
+	function EnhancedLoggingEndGame(winningTeam)
+		local gamerules = GetGamerules()
+		if gamerules ~= nil then
+			if gamerules:GetGameState() == kGameState.Started then
+				if winningTeam == gamerules.team1 then
+					PrintToEnhancedLog(GetTimeStamp() .. string.format("Aliens win."))
+				else
+					PrintToEnhancedLog(GetTimeStamp() .. string.format("Marines win."))
+				end
+			end
+		end
+	end
+	
+	table.insert(kDAKOnGameEnd, function(winningTeam) return EnhancedLoggingEndGame(winningTeam) end)
+	
+	function EnhancedLoggingOnEntityKilled(targetEntity, attacker, doer, point, direction)
      
         if attacker and targetEntity and doer then
             local attackerOrigin = attacker:GetOrigin()
@@ -498,12 +505,10 @@ if kDAKConfig._EnhancedLogging then
 				PrintToEnhancedLog(GetTimeStamp() .. GetClientUIDString(attacker_client) .. " killed " .. GetClientUIDString(target_client) .. " with " .. doer:GetClassName() .. " at " .. GetFormattedPositions(attackerOrigin, targetOrigin))
 			end
         end
-       		   
-        NS2Gamerules.OnEntityKilled(self, targetEntity, attacker, doer, point, direction)
 
     end
 	
-	Shared.LinkClassToMap("NS2ELGamerules", NS2ELGamerules.kMapName, { })
+	table.insert(kDAKOnEntityKilled, function(targetEntity, attacker, doer, point, direction) return EnhancedLoggingOnEntityKilled(targetEntity, attacker, doer, point, direction) end)
 	
 	Shared.Message("EnhancedLogging Loading Complete")
 	

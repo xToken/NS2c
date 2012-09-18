@@ -723,4 +723,7 @@
   <file>
     <filename>ConsoleCommands_Client.lua</filename>
   </file>
+  <file>
+    <filename>ResourceTower.lua</filename>
+  </file>
 </project>

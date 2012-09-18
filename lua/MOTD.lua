@@ -1,10 +1,28 @@
 //NS2 Client Message of the Day
 
-kDAKRevisions["MOTD"] = 1.4
+kDAKRevisions["MOTD"] = 1.5
 local MOTDClientTracker = { }
 local MOTDAcceptedClients = { }
 
-if kDAKConfig._MOTD then
+if kDAKConfig and kDAKConfig._MOTD then
+
+	local function CheckPluginConfig()
+	
+		if kDAKConfig.kMOTDMessage == nil or
+		 kDAKConfig.kMOTDMessageDelay == nil or
+		 kDAKConfig.kMOTDMessageRevision == nil or
+		 kDAKConfig.kMOTDMessagesPerTick == nil then
+		 
+			kDAKConfig._MOTD = false
+			
+		end
+	
+	end
+	CheckPluginConfig()
+
+end
+
+if kDAKConfig and kDAKConfig._MOTD then
 
 	if kDAKSettings.MOTDAcceptedClients == nil then
 		kDAKSettings.MOTDAcceptedClients = { }

@@ -62,7 +62,7 @@ function CommandStructure:GetCommanderClassName()
 end
 
 function CommandStructure:GetWaitForCloseToLogin()
-    return true
+    return false
 end
 
 function CommandStructure:GetIsPlayerValidForCommander(player)

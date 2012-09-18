@@ -164,6 +164,10 @@ function Onos:GetChargeFraction()
     return ConditionalValue(self.charging, math.min(1, (Shared.GetTime() - self.timeLastCharge) / Onos.kChargeUpDuration ), 0)
 end
 
+function Gorge:GetCanClimb()
+    return true
+end
+
 function Onos:EndCharge()
 
     local surface, normal = GetSurfaceAndNormalUnderEntity(self)

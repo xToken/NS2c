@@ -9,7 +9,7 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Script.Load("lua/Mixins/ClientModelMixin.lua")
+Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
@@ -41,7 +41,7 @@ class 'Hydra' (ScriptActor)
 Hydra.kMapName = "hydra"
 
 Hydra.kModelName = PrecacheAsset("models/alien/offense_chamber/offense_chamber.model")
-Hydra.kModelName = PrecacheAsset("models/alien/hydra/hydra.model")
+//Hydra.kModelName = PrecacheAsset("models/alien/hydra/hydra.model")
 Hydra.kAnimationGraph = PrecacheAsset("models/alien/hydra/hydra.animation_graph")
 
 Hydra.kSpikeSpeed = 40
@@ -67,7 +67,7 @@ local networkVars =
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
+AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
@@ -86,7 +86,7 @@ function Hydra:OnCreate()
     ScriptActor.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ClientModelMixin)
+    InitMixin(self, ModelMixin)
     InitMixin(self, LiveMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, FlinchMixin)

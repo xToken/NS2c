@@ -16,29 +16,32 @@ if Server then
 	kDAKOnClientDisconnect = { }
 	kDAKOnServerUpdate = { }
 	kDAKOnClientDelayedConnect = { }
+	kDAKOnTeamJoin = { }
+	kDAKOnGameEnd = { }
+	kDAKOnEntityKilled = { }
 	kDAKServerAdminCommands = { }
+	kDAKConfigurationPath = Server.GetAdminPath()
 	
 	local settings = { groups = { }, users = { } }
-	local ServerAdminPath = Server.GetAdminPath()
 	local DAKConfigFileName = "DAKConfig.json"
 	local DAKSettingsFileName = "DAKSettings.json"
 	local serverAdminFileName = "DAKServerAdmin.json"
 	local DelayedClientConnect = { }
 	local lastserverupdate = 0
-	local DAKRevision = 1.2
+	local DAKRevision = 1.3
 		
     local function LoadServerAdminSettings()
     
-        Shared.Message("Loading " .. "user://" .. ServerAdminPath .. serverAdminFileName)
+        Shared.Message("Loading " .. "user://" .. kDAKConfigurationPath .. serverAdminFileName)
         
         local initialState = { groups = { }, users = { } }
         settings = initialState
         
 		local settingsFile
 		if kCheckGameDirectory then
-			settingsFile = io.open("game://" .. ServerAdminPath .. serverAdminFileName, "r")
+			settingsFile = io.open("game://" .. kDAKConfigurationPath .. serverAdminFileName, "r")
 		else
-			settingsFile = io.open("user://" .. ServerAdminPath .. serverAdminFileName, "r")
+			settingsFile = io.open("user://" .. kDAKConfigurationPath .. serverAdminFileName, "r")
 		end
         if settingsFile then
         
@@ -108,50 +111,23 @@ if Server then
         
     end
 		
-	local function DisableAllPlugins()
-	
-		kDAKConfig = { }
-		table.insert(kDAKConfig,_MOTD)
-		kDAKConfig._MOTD = false
-		
-		table.insert(kDAKConfig,_ReservedSlots)
-		kDAKConfig._ReservedSlots = false
-		
-		table.insert(kDAKConfig,_VoteRandom)
-		kDAKConfig._VoteRandom = false
-		
-		table.insert(kDAKConfig,_TournamentMode)
-		kDAKConfig._TournamentMode = false
-		
-		table.insert(kDAKConfig,_MapVote)
-		kDAKConfig._MapVote = false
-		
-		table.insert(kDAKConfig,_OverrideInterp)
-		kDAKConfig._OverrideInterp = false
-		
-		table.insert(kDAKConfig,_EnhancedLogging)
-		kDAKConfig._EnhancedLogging = false
-		
-		table.insert(kDAKConfig,kDelayedClientConnect)
-		table.insert(kDAKConfig,kDelayedServerUpdate)
-		kDAKConfig.kDelayedClientConnect = 2
-		kDAKConfig.kDelayedServerUpdate = 1
-	
+	local function DisableAllPlugins()	
+		kDAKConfig = nil
 	end
 	
 	local function LoadDAKConfig()
 		local DAKConfigFile
 		if kCheckGameDirectory then
-			DAKConfigFile = io.open("game://" .. ServerAdminPath .. DAKConfigFileName, "r")
+			DAKConfigFile = io.open("game://" .. kDAKConfigurationPath .. DAKConfigFileName, "r")
 		else
-			DAKConfigFile = io.open("user://" .. ServerAdminPath .. DAKConfigFileName, "r")
+			DAKConfigFile = io.open("user://" .. kDAKConfigurationPath .. DAKConfigFileName, "r")
 		end
 		if DAKConfigFile then
 			Shared.Message("Loading DAK configuration.")
 			kDAKConfig = json.decode(DAKConfigFile:read("*all"))
 			DAKConfigFile:close()
 		end
-		if kDAKConfig == nil then
+		if kDAKConfig == nil or kDAKConfig == { } then
 			DisableAllPlugins()
 		end
 	end
@@ -160,7 +136,7 @@ if Server then
 	
 	local function LoadDAKSettings()
 		local DAKSettingsFile
-		DAKSettingsFile = io.open("user://" .. ServerAdminPath .. DAKSettingsFileName, "r")
+		DAKSettingsFile = io.open("user://" .. kDAKConfigurationPath .. DAKSettingsFileName, "r")
 		if DAKSettingsFile then
 			Shared.Message("Loading DAK settings.")
 			kDAKSettings = json.decode(DAKSettingsFile:read("*all"))
@@ -175,7 +151,7 @@ if Server then
 	
 	function SaveDAKSettings()
 	
-		local DAKSettingsFile = io.open("user://" .. ServerAdminPath .. DAKSettingsFileName, "w+")
+		local DAKSettingsFile = io.open("user://" .. kDAKConfigurationPath .. DAKSettingsFileName, "w+")
 		if DAKSettingsFile then
 			DAKSettingsFile:write(json.encode(kDAKSettings))
 			DAKSettingsFile:close()
@@ -191,7 +167,7 @@ if Server then
 	
 	function EnhancedLog(message)
 	
-		if kDAKConfig._EnhancedLogging then
+		if kDAKConfig and kDAKConfig._EnhancedLogging then
 			EnhancedLogMessage(message)
 		end
 	
@@ -217,7 +193,7 @@ if Server then
 	
 	function PrintToAllAdmins(commandname, client, parm1)
 	
-		if kDAKConfig._EnhancedLogging then
+		if kDAKConfig and kDAKConfig._EnhancedLogging then
 			EnhancedLoggingAllAdmins(commandname, client, parm1)
 		end
 	
@@ -295,8 +271,10 @@ if Server then
 					if not kDAKOnClientConnect[i](client) then break end
 				end
 			end
-			local CEntry = { Client = client, Time = Shared.GetTime() + kDAKConfig.kDelayedClientConnect }
-			table.insert(DelayedClientConnect, CEntry)
+			if kDAKConfig and kDAKConfig.kDelayedClientConnect then
+				local CEntry = { Client = client, Time = Shared.GetTime() + kDAKConfig.kDelayedClientConnect }
+				table.insert(DelayedClientConnect, CEntry)
+			end
 		end
 		
 	end
@@ -332,7 +310,7 @@ if Server then
 	
 		PROFILE("DAKLoader:DAKUpdateServer")
 		
-		if lastserverupdate == nil or lastserverupdate < Shared.GetTime() then
+		if kDAKConfig and kDAKConfig.kDelayedServerUpdate and (lastserverupdate == nil or lastserverupdate < Shared.GetTime()) then
 		
 			if #kDAKOnServerUpdate > 0 then
 				for i = 1, #kDAKOnServerUpdate do
@@ -367,8 +345,57 @@ if Server then
 	end	
 	
 	Event.Hook("UpdateServer", DAKUpdateServer)
+	
+	//Creating another layer here so that compat can be maintained with any other mods that may hook this.
+	class 'NS2ELGamerules' (NS2Gamerules)
+	NS2ELGamerules.kMapName = "ns2_gamerules"
+	
+	function NS2ELGamerules:OnCreate()
+
+        // Calls SetGamerules()
+        NS2Gamerules.OnCreate(self)
 		
-	if kDAKConfig._OverrideInterp then
+	end
+	
+	function NS2ELGamerules:JoinTeam(player, newTeamNumber, force)
+		local client = Server.GetOwner(player)
+		if client ~= nil then
+			if #kDAKOnTeamJoin > 0 then
+				for i = 1, #kDAKOnTeamJoin do
+					kDAKOnTeamJoin[i](player, newTeamNumber, force)
+				end
+			end
+		end
+		return NS2Gamerules.JoinTeam(self, player, newTeamNumber, force)
+	end
+	
+	function NS2ELGamerules:EndGame(winningTeam)
+	
+		if #kDAKOnGameEnd > 0 then
+			for i = 1, #kDAKOnGameEnd do
+				kDAKOnGameEnd[i](winningTeam)
+			end
+		end
+		NS2Gamerules.EndGame(self, winningTeam)
+		
+	end
+	
+	function NS2ELGamerules:OnEntityKilled(targetEntity, attacker, doer, point, direction)
+    
+        if attacker and targetEntity and doer then
+			if #kDAKOnEntityKilled > 0 then
+				for i = 1, #kDAKOnEntityKilled do
+					kDAKOnEntityKilled[i](targetEntity, attacker, doer, point, direction)
+				end
+			end
+        end
+        NS2Gamerules.OnEntityKilled(self, targetEntity, attacker, doer, point, direction)
+
+    end
+	
+	Shared.LinkClassToMap("NS2ELGamerules", NS2ELGamerules.kMapName, { })
+		
+	if kDAKConfig and kDAKConfig._OverrideInterp then
 	
 		local function SetInterpOnClientConnected(client)
 			if kDAKConfig._OverrideInterp then
@@ -419,7 +446,7 @@ if Server then
 	
 	local function OnCommandListPlugins(client)
 	
-		if client ~= nil and kDAKConfig ~= nil then
+		if client ~= nil and kDAKConfig then
 			ServerAdminPrint(client, string.format("DAK Loader v%.1f.", DAKRevision))
 			for k,v in pairs(kDAKConfig) do
 				if string.find(k,"_") then
@@ -487,7 +514,7 @@ if Server then
 				PrintToAllAdmins("sv_killserver", client)
 			end
 		end
-		CRASHFILE = io.open("user://" .. ServerAdminPath .. "CRASHFILE", "w")
+		CRASHFILE = io.open("user://" .. kDAKConfigurationPath .. "CRASHFILE", "w")
 		if CRASHFILE then
 			CRASHFILE:seek("end")
 			CRASHFILE:write("\n CRASH")
@@ -499,42 +526,44 @@ if Server then
 	
 	//Load Plugins
 	
-	if kDAKConfig._EnhancedLogging then
+	if kDAKConfig and kDAKConfig._EnhancedLogging then
 		//EnhancedLogging
 		Script.Load("lua/EnhancedLogging.lua")
 	end
 	
-	if kDAKConfig._ReservedSlots then
+	if kDAKConfig and kDAKConfig._ReservedSlots then
 		//ReservedSlots
 		Script.Load("lua/ReservedSlots.lua")
 	end
 	
-	if kDAKConfig._VoteRandom then
+	if kDAKConfig and kDAKConfig._VoteRandom then
 		//VoteRandom
 		Script.Load("lua/VoteRandom.lua")
 	end
 	
-	if kDAKConfig._AFKKicker then
+	if kDAKConfig and kDAKConfig._AFKKicker then
 		//AFKKicker
 		Script.Load("lua/AFKKick.lua")
 	end
 	
-	if kDAKConfig._MapVote then
+	if kDAKConfig and kDAKConfig._MapVote then
 		//MapVote
 		Script.Load("lua/MapVote.lua")
 	end
 	
-	if kDAKConfig._TournamentMode then
+	if kDAKConfig and kDAKConfig._VoteSurrender then
+		//VoteSurrender
+		Script.Load("lua/VoteSurrender.lua")
+	end
+	
+	if kDAKConfig and kDAKConfig._TournamentMode then
 		//TournamentMode
 		Script.Load("lua/TournamentMode.lua")
 	end
 	
-	if kDAKConfig._MOTD then
+	if kDAKConfig and kDAKConfig._MOTD then
 		//MOTD
 		Script.Load("lua/MOTD.lua")
 	end
-	
-	//FirstPersonSpectator
-	//Script.Load("lua/FirstPersonSpectator.lua")
 	
 end

@@ -1,6 +1,6 @@
 //NS2 Vote Random Teams
 
-kDAKRevisions["VoteRandom"] = 1.2
+kDAKRevisions["VoteRandom"] = 1.3
 local kVoteRandomTeamsEnabled = false
 
 local RandomNewRoundDelay = 15
@@ -8,7 +8,28 @@ local RandomVotes = { }
 local RandomDuration = 0
 local RandomRoundRecentlyEnded = 0
 
-if kDAKConfig._VoteRandom then
+if kDAKConfig and kDAKConfig._VoteRandom then
+
+	local function CheckPluginConfig()
+	
+		if kDAKConfig.kVoteRandomInstantly == nil or
+		 kDAKConfig.kVoteRandomDuration == nil or
+		 kDAKConfig.kVoteRandomMinimumPercentage == nil or
+		 kDAKConfig.kVoteRandomEnabled == nil or
+		 kDAKConfig.kVoteRandomEnabledDuration == nil or
+		 kDAKConfig.kVoteRandomConnectAlert == nil or
+		 kDAKConfig.kVoteRandomVoteCountAlert == nil then
+		 
+			kDAKConfig._VoteRandom = false
+			
+		end
+	
+	end
+	CheckPluginConfig()
+
+end
+
+if kDAKConfig and kDAKConfig._VoteRandom then
 
 	local function LoadVoteRandom()
 

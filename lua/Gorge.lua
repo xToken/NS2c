@@ -268,6 +268,10 @@ function Gorge:GetCanRepairOverride(target)
     return true
 end
 
+function Gorge:GetCanClimb()
+    return true
+end
+
 function Gorge:HandleButtons(input)
 
     PROFILE("Gorge:HandleButtons")

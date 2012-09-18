@@ -1,10 +1,35 @@
 //NS2 Automatic AFK Kicker
 
-kDAKRevisions["AFKKicker"] = 1.3
+kDAKRevisions["AFKKicker"] = 1.4
 local AFKClientTracker = { }
 local lastAFKUpdate = 0
 
-if kDAKConfig._AFKKicker then
+if kDAKConfig and kDAKConfig._AFKKicker then
+
+	local function CheckPluginConfig()
+	
+		if kDAKConfig.kAFKKickDelay == nil or
+		 kDAKConfig.kAFKKickCheckDelay == nil or
+		 kDAKConfig.kAFKKickMinimumPlayers == nil or
+		 kDAKConfig.kAFKKickReturnMessage == nil or
+		 kDAKConfig.kAFKKickMessage == nil or
+		 kDAKConfig.kAFKKickDisconnectReason == nil or
+		 kDAKConfig.kAFKKickClientMessage == nil or
+		 kDAKConfig.kAFKKickWarning1 == nil or
+		 kDAKConfig.kAFKKickWarningMessage1 == nil or
+		 kDAKConfig.kAFKKickWarning2 == nil or
+		 kDAKConfig.kAFKKickWarningMessage2 == nil then
+		 
+			kDAKConfig._AFKKicker = false
+			
+		end
+	
+	end
+	CheckPluginConfig()
+
+end
+
+if kDAKConfig and kDAKConfig._AFKKicker then
 
 	local function DisplayMessage(client, message)
 

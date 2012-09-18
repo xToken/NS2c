@@ -51,7 +51,7 @@ Fade.kBlinkAirAccelerationDuration = 2
 Fade.kBlinkAcceleration = 60
 Fade.kVerticleBlinkAcceleration = 25
 Fade.kVerticleBlinkReduction = 3
-Fade.kVerticleBlinkOffset = 0.1
+Fade.kVerticleBlinkOffset = 0.075
 
 if Server then
     Script.Load("lua/Fade_Server.lua")
@@ -92,6 +92,7 @@ function Fade:OnCreate()
     self.ethereal = false
 
 end
+
 /*
 function Fade:AdjustGravityForce(input, gravity)
    
@@ -103,6 +104,7 @@ function Fade:AdjustGravityForce(input, gravity)
       
 end
 */
+
 function Fade:OnInitialized()
     Alien.OnInitialized(self)
     self:SetModel(Fade.kModelName, kFadeAnimationGraph)
@@ -199,9 +201,10 @@ function Fade:GetMaxSpeed(possible)
 
 end
 
-function Fade:ModifyVelocity(input, velocity)      
-
+function Fade:ModifyVelocity(input, velocity)     
+ 
     Alien.ModifyVelocity(self, input, velocity)
+    
     if self:GetIsBlinking() then
         self:PerformMovement( velocity * input.time, 1, velocity )
         local viewCoords = self:GetViewAngles():GetCoords()
@@ -212,7 +215,7 @@ function Fade:ModifyVelocity(input, velocity)
         if Sign(velocity.y) ~= Sign(zAxis.y) then
             if Sign(zAxis.y) > 0 then
                 velocity.y = 10
-            else
+            elseif zAxis.y < (-0.25) then
                 velocity.y = 0
             end
         end
@@ -245,6 +248,12 @@ function Fade:OnProcessMove(input)
     Alien.OnProcessMove(self, input)
 end
 
+function Fade:HandleOnGround(input, velocity)
+    if Sign(velocity.y) == -1 then
+        velocity.y = 0
+    end
+end
+
 // for update position
 function Fade:GetCanStep()
     return self:GetIsBlinking() or Alien.GetCanStep(self)
@@ -262,14 +271,6 @@ function Fade:TriggerBlink()
     self.ethereal = true
     self.onGroundNeedsUpdate = false
     self.jumping = true
-	local newVelocity = self:GetVelocity()
-    local viewCoords = self:GetViewAngles():GetCoords()
-    local zAxis = viewCoords.zAxis
-		
-	newVelocity = newVelocity + 0.05 * (  Fade.kBlinkAcceleration * zAxis )
-	newVelocity.y = newVelocity.y + ( Fade.kVerticleBlinkAcceleration * (1 - math.cos(zAxis.y)) )
-           
-	self:SetVelocity(newVelocity)
 end
 
 function Fade:OverrideInput(input)
@@ -285,14 +286,19 @@ function Fade:OverrideInput(input)
     
 end
 
+function Fade:GetCanClimb()
+    return true
+end
+
 function Fade:OnBlinkEnd()
-    if self:GetIsCloseToGround(0.3) then
+    self.onGroundNeedsUpdate = true
+    if self:GetIsOnGround() then
         self.jumping = false
     end
-    self.onGroundNeedsUpdate = true
     self.ethereal = false
 end
 
+/*
 local kFadeEngageOffset = Vector(0, 0.6, 0)
 function Fade:GetEngagementPointOverride()
     return self:GetOrigin() + kFadeEngageOffset
@@ -301,5 +307,6 @@ end
 function Fade:GetEngagementPointOverride()
     return self:GetOrigin() + Vector(0, 0.8, 0)
 end
+*/
 
 Shared.LinkClassToMap("Fade", Fade.kMapName, networkVars)

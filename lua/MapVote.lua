@@ -1,7 +1,7 @@
 //NS2 End Round map vote.
 //Replaces current automatic map switching on round-end.
 
-kDAKRevisions["MapVote"] = 1.2
+kDAKRevisions["MapVote"] = 1.3
 local kMaxMapVoteChatLength = 74
 local cycleTime = 0
 local Maps = { }
@@ -18,10 +18,44 @@ local mapvotenotify = 0
 local mapvotedelay = 0
 local nextmap
 
-local ServerAdminPath = Server.GetAdminPath()
 local mapCycleFileName = "mapcycle.txt"
 
-if kDAKConfig._MapVote then
+if kDAKConfig and kDAKConfig._MapVote then
+
+	local function CheckPluginConfig()
+	
+		if kDAKConfig.kVoteStartDelay == nil or
+		 kDAKConfig.kVotingDuration == nil or
+		 kDAKConfig.kMapsToSelect == nil or
+		 kDAKConfig.kDontRepeatFor == nil or
+		 kDAKConfig.kVoteNotifyDelay == nil or
+		 kDAKConfig.kVoteChangeDelay == nil or
+		 kDAKConfig.kVoteMinimumPercentage == nil or
+		 kDAKConfig.kRTVMinimumPercentage == nil or
+		 kDAKConfig.kVoteMapBeginning == nil or
+		 kDAKConfig.kVoteMapHowToVote == nil or
+		 kDAKConfig.kVoteMapStarted == nil or
+		 kDAKConfig.kVoteMapMapListing == nil or
+		 kDAKConfig.kVoteMapNoWinner == nil or
+		 kDAKConfig.kVoteMapTie == nil or
+		 kDAKConfig.kVoteMapWinner == nil or
+		 kDAKConfig.kVoteMapMinimumNotMet == nil or
+		 kDAKConfig.kVoteMapTimeLeft == nil or
+		 kDAKConfig.kVoteMapCurrentMapVotes == nil or
+		 kDAKConfig.kVoteMapRockTheVote == nil or
+		 kDAKConfig.kVoteMapCancelled == nil or
+		 kDAKConfig.kVoteMapInsufficientMaps == nil then
+		 
+			kDAKConfig._MapVote = false
+			
+		end
+	
+	end
+	CheckPluginConfig()
+
+end
+
+if kDAKConfig and kDAKConfig._MapVote then
 
 	local function LoadMapCycle()
 
@@ -29,9 +63,9 @@ if kDAKConfig._MapVote then
 		local file
 		
 		if kCheckGameDirectory then
-			file = io.open("game://" .. ServerAdminPath .. mapCycleFileName)
+			file = io.open("game://" .. kDAKConfigurationPath .. mapCycleFileName)
 		else
-			file = io.open("user://" .. ServerAdminPath .. mapCycleFileName)
+			file = io.open("user://" .. kDAKConfigurationPath .. mapCycleFileName)
 		end
 		
 		if file then

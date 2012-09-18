@@ -1,6 +1,6 @@
 //NS2 Tournament Mod Server side script
 
-kDAKRevisions["TournamentMode"] = 2.2
+kDAKRevisions["TournamentMode"] = 2.3
 local friendlyfire = false
 local teamoneready = false
 local teamtwoready = false
@@ -11,7 +11,29 @@ local countdownstarttime = 0
 local countdownstartcount = 0
 local lastpubmessage = 0
 
-if kDAKConfig._TournamentMode then
+if kDAKConfig and kDAKConfig._TournamentMode then
+
+	local function CheckPluginConfig()
+	
+		if kDAKConfig.kTournamentModePubMode == nil or 
+		 kDAKConfig.kTournamentModePubMinPlayers == nil or 
+		 kDAKConfig.kTournamentModePubPlayerWarning == nil or 
+		 kDAKConfig.kTournamentModePubAlertDelay == nil or 
+		 kDAKConfig.kTournamentModeReadyDelay == nil or 
+		 kDAKConfig.kTournamentModeGameStartDelay == nil or 
+		 kDAKConfig.kEnableFriendlyFireWithTournamentMode == nil or 
+		 kDAKConfig.kTournamentModeCountdown == nil then
+		 
+			kDAKConfig._TournamentMode = false
+			
+		end
+	
+	end
+	CheckPluginConfig()
+
+end
+
+if kDAKConfig and kDAKConfig._TournamentMode then
 
 	local function LoadTournamentMode()
 		if kDAKSettings.TournamentMode then
