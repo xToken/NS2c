@@ -211,7 +211,7 @@ end
 // repair rate increases over time
 function Welder:GetRepairRate(repairedEntity)
 
-    local repairRate = kWeldRate
+    local repairRate = kWelderRate
     if repairedEntity.GetReceivesStructuralDamage and repairedEntity:GetReceivesStructuralDamage() then
         repairRate = repairRate * kWelderStructureMultipler
     end

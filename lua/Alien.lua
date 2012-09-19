@@ -43,6 +43,7 @@ Alien.kNotEnoughResourcesSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/m
 
 Alien.kChatSound = PrecacheAsset("sound/NS2.fev/alien/common/chat")
 Alien.kSpendResourcesSoundName = PrecacheAsset("sound/NS2.fev/alien/commander/spend_nanites")
+Alien.kTeleportSound = PrecacheAsset("sound/NS2.fev/alien/commander/catalyze_3D")
 
 local kCelerityLoopingSound = PrecacheAsset("sound/NS2.fev/alien/common/celerity_loop")
 

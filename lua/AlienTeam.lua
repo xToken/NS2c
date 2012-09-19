@@ -637,7 +637,7 @@ local function AssignPlayerToEgg(self, player, spawntime)
         end
         
         //If hive has eggs, randomly select one
-        if localhiveeggs ~= { } and (localhiveeggs ~= nil or #localhiveeggs == 0) then
+        if localhiveeggs ~= { } and (localhiveeggs ~= nil or #localhiveeggs ~= 0) then
             localhiveeggs[math.random(1, #localhiveeggs)]:SetQueuedPlayerId(player:GetId(), spawntime)
             success = true
         else
