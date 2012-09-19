@@ -135,18 +135,12 @@ function GUIMarineStatus:Update(deltaTime, parameters)
     end
     
     //Update AmmoCounter
-    local activeWeapon = PlayerUI_GetWeapon()
-    if activeWeapon then
-        self.ammoText:SetText(ToString(activeWeapon.clip or "--") .. " / " .. ToString(activeWeapon.ammo or "--"))
-        self.ammoText:SetIsVisible(true)
-        if activeWeapon.clip and activeWeapon.GetClipSize and activeWeapon.clip < activeWeapon:GetClipSize() * GUIMarineStatus.kLowAmmoWarning then
-            self.ammoText:SetColor(Color(1, 0, 0, 1)) 
-        else
-            self.ammoText:SetColor(Color(1, 1, 1, 1)) 
-        end
+    self.ammoText:SetText(ToString(PlayerUI_GetWeaponClip() or "--") .. " / " .. ToString(PlayerUI_GetWeaponAmmo() or "--"))
+    self.ammoText:SetIsVisible(true)
+    if PlayerUI_GetWeaponClip() < PlayerUI_GetWeaponClipSize() * GUIMarineStatus.kLowAmmoWarning then
+        self.ammoText:SetColor(Color(1, 0, 0, 1)) 
     else
-        self.ammoText:SetText("--/--")    
-        self.ammoText:SetIsVisible(true)
+        self.ammoText:SetColor(Color(1, 1, 1, 1)) 
     end
     
     local currentHealth, maxHealth, currentArmor, maxArmor, parasiteState = unpack(parameters)

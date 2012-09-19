@@ -67,7 +67,7 @@ if Client then
         Projectile.OnInitialized(self)
         
         local player = Client.GetLocalPlayer()
-        if not player or player:GetId() ~= self.ownerId then
+        //if /*not player or player:GetId() ~= self.ownerId*/ then
         
             self.trailCinematic = Client.CreateTrailCinematic(RenderScene.Zone_Default)
             self.trailCinematic:SetCinematicNames(kSpitTrail)
@@ -88,8 +88,8 @@ if Client then
                 } )
                 
             self.trailCinematic:SetIsVisible(true)
-        
-        end
+
+        //end
     
     end
 

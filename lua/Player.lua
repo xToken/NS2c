@@ -1797,9 +1797,12 @@ function Player:DropToFloor()
 
 end
 
+
 function Player:GetCanStep()
     return self:GetIsOnGround()
 end
+
+
 
 function Player:UpdatePosition(velocity, time)
 
@@ -2126,7 +2129,7 @@ function Player:GetIsCloseToGround(distanceToGround)
         return false
     end
 
-    if (self:GetVelocityPitch() and self.timeOfLastJump ~= nil and (Shared.GetTime() - self.timeOfLastJump < .2)) then
+    if (self:GetVelocityPitch() > 0 and self.timeOfLastJump ~= nil and (Shared.GetTime() - self.timeOfLastJump < .2)) then
     
         // If we are moving away from the ground, don't treat
         // us as standing on it.
@@ -3112,7 +3115,6 @@ function Player:OnUpdateAnimationInput(modelMixin)
     elseif self:GetIsIdle() then
         moveState = "idle"
     end
-    
     modelMixin:SetAnimationInput("move", moveState)
     
     local activeWeapon = "none"

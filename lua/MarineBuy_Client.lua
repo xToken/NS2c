@@ -17,6 +17,7 @@ function MarineBuy_GetWeaponDescription(techId)
         gWeaponDescription[kTechId.Pistol] = "WEAPON_DESC_PISTOL"
         gWeaponDescription[kTechId.Rifle] = "WEAPON_DESC_RIFLE"
         gWeaponDescription[kTechId.Shotgun] = "WEAPON_DESC_SHOTGUN"
+		gWeaponDescription[kTechId.HeavyMachineGun] = "WEAPON_DESC_HEAVYMACHINEGUN"
         gWeaponDescription[kTechId.GrenadeLauncher] = "WEAPON_DESC_GRENADELAUNCHER"
         gWeaponDescription[kTechId.Welder] = "WEAPON_DESC_WELDER"
         gWeaponDescription[kTechId.Mines] = "WEAPON_DESC_MINE"
@@ -153,6 +154,7 @@ local function GetDisplayTechId(techId)
         gDisplayTechs[kTechId.Pistol] = true
         gDisplayTechs[kTechId.Rifle] = true
         gDisplayTechs[kTechId.Shotgun] = true
+		gDisplayTechs[kTechId.HeavyMachineGun] = true
         gDisplayTechs[kTechId.GrenadeLauncher] = true
         gDisplayTechs[kTechId.Welder] = true
         gDisplayTechs[kTechId.Mines] = true

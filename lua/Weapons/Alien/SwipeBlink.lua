@@ -31,7 +31,7 @@ local function GetHasAttackDelay(self, player)
     local attackDelay = ConditionalValue( player:GetIsPrimaled(), (kSwipeDelay / kPrimalScreamROFIncrease), kSwipeDelay)
     local upg, level = GetHasFocusUpgrade(player)
     if upg and level > 0 then
-        attackDelay = attackDelay * (1 + ((1 / 3) * level))
+        attackDelay = AdjustAttackDelayforFocus(attackDelay, level)
     end
     return self.lastPrimaryAttackTime + attackDelay > Shared.GetTime()
     

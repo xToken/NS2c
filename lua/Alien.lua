@@ -248,7 +248,7 @@ function Alien:OnInitialized()
 
 end
 
-function Alien:GetDetectionRange()
+function Alien:GetAlienDetectionRange()
     local hasupg, level = GetHasAuraUpgrade(self)
     if hasupg then
         return (((1 / 3) * level) * kAuraDetectionRange)
@@ -256,12 +256,12 @@ function Alien:GetDetectionRange()
     return 0
 end
 
-function Alien:OnCheckDetectorActive()
+function Alien:OnCheckAlienDetectorActive()
     local hasupg, level = GetHasAuraUpgrade(self)
     return hasupg and level > 0
 end
 
-function Alien:IsValidDetection(detectable)
+function Alien:IsValidAlienDetection(detectable)
     if detectable.GetReceivesStructuralDamage and detectable:GetReceivesStructuralDamage() then
         return false
     end

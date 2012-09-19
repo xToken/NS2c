@@ -17,7 +17,7 @@ class 'SpitSpray' (Ability)
 
 SpitSpray.kMapName = "spitspray"
 
-local kSpitSpeed = 40
+local kSpitSpeed = 55
 
 local kAnimationGraph = PrecacheAsset("models/alien/gorge/gorge_view.animation_graph")
 
@@ -43,7 +43,7 @@ local function GetHasAttackDelay(self, player)
     local attackDelay = ConditionalValue( player:GetIsPrimaled(), (kSpitDelay / kPrimalScreamROFIncrease), kSpitDelay)
     local upg, level = GetHasFocusUpgrade(player)
     if upg and level > 0 then
-        attackDelay = attackDelay * (1 + ((1 / 3) * level))
+        attackDelay = AdjustAttackDelayforFocus(attackDelay, level)
     end
     return self.lastPrimaryAttackTime + attackDelay > Shared.GetTime()
     
@@ -85,7 +85,7 @@ local function CreateSpitProjectile(self, player)
         
         local viewAngles = player:GetViewAngles()
         local viewCoords = viewAngles:GetCoords()
-        local startPoint = player:GetEyePos() + viewCoords.zAxis * 1
+        local startPoint = player:GetEyePos()// + viewCoords.zAxis * 1
 
         local startVelocity = viewCoords.zAxis * kSpitSpeed
         
@@ -142,8 +142,8 @@ function SpitSpray:OnTag(tagName)
             
             if Client then
             
-                local cinematic = Client.CreateCinematic(RenderScene.Zone_ViewModel)
-                cinematic:SetCinematic(kSpitViewEffect)
+                //local cinematic = Client.CreateCinematic(RenderScene.Zone_ViewModel)
+                //cinematic:SetCinematic(kSpitViewEffect)
                 
                 local model = player:GetViewModelEntity():GetRenderModel()
 

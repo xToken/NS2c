@@ -224,6 +224,15 @@ function Marine:IsValidDetection(detectable)
     if detectable.GetReceivesStructuralDamage and detectable.GetReceivesStructuralDamage() then
         return false
     end
+    
+    //Ghost adds a chance to 'evade' detection
+    if detectable:isa("Alien") then
+        local hasupg, level = GetHasGhostUpgrade(detectable)
+        if hasupg and level > 0 then
+            return math.random(1, level) <= 1
+        end
+    end
+    
     return true
 end
 

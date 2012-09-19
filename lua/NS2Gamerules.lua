@@ -184,6 +184,7 @@ if Server then
         
         self:SetIsVisible(false)
         self:SetPropagate(Entity.Propagate_Never)
+        
         self.justCreated = true
         
     end

@@ -113,7 +113,7 @@ end
 function PlayerUI_GetIsSpecating()
 
     local player = Client.GetLocalPlayer()
-    return player ~= nil and player:isa("Spectator")
+    return player ~= nil and (player:isa("Spectator") or player:isa("FilmSpectator"))
     
 end
 
@@ -183,12 +183,52 @@ function PlayerUI_GetHasNewOrder()
 
 end
 
+local function GetMostRelevantPheromone(toOrigin)
+
+    local pheromones = GetEntitiesWithinRange("Pheromone", toOrigin, 100)
+    local bestPheromone = nil
+    local bestDistSq = math.huge
+    for p = 1, #pheromones do
+    
+        local currentPheromone = pheromones[p]
+        local currentDistSq = currentPheromone:GetDistanceSquared(toOrigin)
+        local currentLevel = currentPheromone:GetLevel()
+        // Each additional level gives a Pheromone more power, it will score higher.
+        // Modify the distance to achieve this here.
+        currentDistSq = currentDistSq - ((currentLevel - 1) * 100)
+        if currentDistSq < bestDistSq then
+        
+            bestDistSq = currentDistSq
+            bestPheromone = currentPheromone
+            
+        end
+        
+    end
+    
+    return bestPheromone
+    
+end
+
 function PlayerUI_GetOrderPath()
 
     local player = Client.GetLocalPlayer()
     if player then
     
-        if not player:isa("Alien") then
+        if player:isa("Alien") then
+        
+            local playerOrigin = player:GetOrigin()
+            local pheromone = GetMostRelevantPheromone(playerOrigin)
+            if pheromone then
+            
+                local points = { }
+                local isReachable = Pathing.GetPathPoints(playerOrigin, pheromone:GetOrigin(), points)
+                if isReachable then
+                    return points
+                end
+                
+            end
+            
+        else
         
             local currentOrder = player:GetCurrentOrder()
             if currentOrder then
@@ -365,12 +405,44 @@ local kObjectiveOffset = Vector(0, 0.0, 0)
 local kObjectiveDistance = 40
 local function AddObjectives(objectives, className)
 
+    local player = Client.GetLocalPlayer()
+    
+    if player then
+
+        for index, objective in ientitylist(Shared.GetEntitiesWithClassname(className)) do
+        
+            if objective.showObjective and objective.occupiedTeam ~= player:GetTeamNumber() then
+            
+                local origin = objective:GetOrigin() + kObjectiveOffset
+                            
+                local cameraCoords = GetRenderCameraCoords()
+                local screenPosition = Vector(0,0,0)
+
+                local toPosition = GetNormalizedVector(cameraCoords.origin - objective:GetOrigin())
+                local distanceFraction = 1 - Clamp((cameraCoords.origin - objective:GetOrigin()):GetLength() / kObjectiveDistance, 0, 1)
+                local dotProduct = cameraCoords.zAxis:DotProduct(toPosition)
+                
+                if dotProduct < 0 then
+                
+                    // Display higher then the origin (world units above the origin)
+                    local yOffset = ConditionalValue(player:GetTeamType() == kAlienTeamType, .75, 3)
+        
+                    VectorCopy(Client.WorldToScreen(objective:GetOrigin() + Vector(0, yOffset, 0)), screenPosition) 
+                    table.insert(objectives, { Position = screenPosition, TechId = objective:GetTechId(), DistanceFraction = distanceFraction })                    
+                end
+                
+            end    
+
+        end
+    
+    end
+
 end
 
 function PlayerUI_GetObjectives()
 
     local objectives = { }
-    //AddObjectives(objectives, "ResourcePoint")    
+    AddObjectives(objectives, "ResourcePoint")    
     //AddObjectives(objectives, "TechPoint") 
 
     return objectives
@@ -422,7 +494,9 @@ function PlayerUI_GetFinalWaypointInScreenspace()
         
     else
     
-        if not player:isa("Alien") then
+        if player:isa("Alien") then
+            currentOrder = GetMostRelevantPheromone(player:GetOrigin())
+        else
             currentOrder = player:GetCurrentOrder()
         end
         
@@ -448,7 +522,11 @@ function PlayerUI_GetFinalWaypointInScreenspace()
     end
     
     local orderWayPoint = nil
-    orderWayPoint = currentOrder:GetLocation()
+    if currentOrder:isa("Pheromone") then
+        orderWayPoint = currentOrder:GetOrigin()
+    else
+        orderWayPoint = currentOrder:GetLocation()
+    end
     
     if not isCommander then
         orderWayPoint = orderWayPoint + Vector(0, 1.5, 0)
@@ -660,13 +738,53 @@ function Player:GetDisplayUnitStates()
     return self:GetIsAlive()
 end
 
+function PlayerUI_GetProgressText()
+
+    local player = Client.GetLocalPlayer()
+    if player then
+        return player.progressText
+    end
+    return nil
+
+end
+
+function PlayerUI_GetProgressFraction()
+
+    local player = Client.GetLocalPlayer()
+    if player then
+        return player.progressFraction
+    end
+    return nil
+
+end
+
+local kEnemyObjectiveRange = 30
+function PlayerUI_GetObjectiveInfo()
+
+    local player = Client.GetLocalPlayer()
+    
+    if player then
+    
+        if player.crossHairHealth and player.crossHairText then  
+        
+            player.showingObjective = true
+            return player.crossHairHealth / 100, player.crossHairText .. " " .. ToString(player.crossHairHealth) .. "%", player.crossHairTeamType
+            
+        end
+        
+        player.showingObjective = false
+        
+    end
+    
+end
+
 function PlayerUI_GetShowsObjective()
-    /*
+
     local player = Client.GetLocalPlayer()
     if player then
         return player.showingObjective == true
     end
-    */
+    
     return false
 
 end
@@ -895,6 +1013,14 @@ function PlayerUI_GetWeaponClip()
     return 0
 end
 
+function PlayerUI_GetWeaponClipSize()
+    local player = Client.GetLocalPlayer()
+    if player then
+        return player:GetWeaponClipSize()
+    end
+    return 0
+end
+
 function PlayerUI_GetAuxWeaponClip()
     local player = Client.GetLocalPlayer()
     if player then
@@ -1057,7 +1183,7 @@ function PlayerUI_GetPlayerIsParasited()
 
     local player = Client.GetLocalPlayer()
     if player then
-        return player:GetGameEffectMask(kGameEffect.Parasite)
+        return GetIsParasited(Player)
     end
     
     return false
@@ -1313,39 +1439,12 @@ end
 
 function Player:UpdateScreenEffects(deltaTime)
 
-    if self.screenEffects.phase then
-    
-        if self.timeOfLastPhase and (Shared.GetTime() - self.timeOfLastPhase <= Player.kPhaseEffectActiveTime) then
-        
-            self.screenEffects.phase:SetActive(true)
-            if not self.phaseTweener then
-            
-                self.phaseTweener = Tweener("forward")
-                self.phaseTweener.add(0, { amount = 1 }, Easing.linear)
-                local amplitude = 0.01
-                local period = Player.kPhaseEffectActiveTime * 0.75
-                self.phaseTweener.add(Player.kPhaseEffectActiveTime, { amount = 0 }, Easing.outElastic, { amplitude, period })
-                
-            end
-            self.phaseTweener.update(deltaTime)
-            self.screenEffects.phase:SetParameter("amount", self.phaseTweener.getCurrentProperties().amount)
-            
-        else
-        
-            self.screenEffects.phase:SetActive(false)
-            self.phaseTweener = nil
-            
-        end
-        
-    end
     
     // If we're cloaked, change screen effect
     local cloakScreenEffectState = HasMixin(self, "Cloakable") and self:GetIsCloaked()    
     self:SetCloakShaderState(cloakScreenEffectState)    
     self:UpdateCloakSoundLoop(cloakScreenEffectState)
     
-    // Play disorient screen effect to show we're near a shade
-    self:UpdateDisorientFX()
     
 end
 
@@ -1673,14 +1772,8 @@ end
 function Player:InitScreenEffects()
 
     self.screenEffects = {}
-    self.screenEffects.fadeBlink = Client.CreateScreenEffect("shaders/FadeBlink.screenfx")
-    self.screenEffects.fadeBlink:SetActive(false)
     self.screenEffects.darkVision = Client.CreateScreenEffect("shaders/DarkVision.screenfx")
-    self.screenEffects.darkVision:SetActive(false)    
-    self.screenEffects.blur = Client.CreateScreenEffect("shaders/Blur.screenfx")
-    self.screenEffects.blur:SetActive(false)
-    self.screenEffects.phase = Client.CreateScreenEffect("shaders/Phase.screenfx")
-    self.screenEffects.phase:SetActive(false)
+    self.screenEffects.darkVision:SetActive(false)
     self.screenEffects.cloaked = Client.CreateScreenEffect("shaders/Cloaked.screenfx")
     self.screenEffects.cloaked:SetActive(false)
     
@@ -1688,10 +1781,6 @@ end
 
 function Player:SetEthereal(ethereal)
 
-    if self.screenEffects and self.screenEffects.fadeBlink and (not ethereal or not self:GetIsThirdPerson()) then
-        self.screenEffects.fadeBlink:SetActive(ethereal)
-    end
-    
 end
 
 function Player:SetCloakShaderState(state)
@@ -1703,14 +1792,6 @@ function Player:SetCloakShaderState(state)
 end
 
 function Player:UpdateDisorientSoundLoop(state)
-
-    // Start or stop sound effects
-    if state ~= self.playerDisorientSoundLoopPlaying then
-        
-        self:TriggerEffects("disorient_loop", {active = state})
-        self.playerDisorientSoundLoopPlaying = state
-        
-    end
 
 end
 
@@ -1727,24 +1808,6 @@ function Player:UpdateCloakSoundLoop(state)
 end
 
 function Player:UpdateDisorientFX()
-
-    if self.screenEffects.disorient then
-    
-        local amount = 0
-        if HasMixin(self, "Disorientable") then
-            amount = self:GetDisorientedAmount()
-        end
-        
-        local state = (amount > 0)
-        if not self:GetIsThirdPerson() or not state then
-            self.screenEffects.disorient:SetActive(state)
-        end
-        
-        self.screenEffects.disorient:SetParameter("amount", amount)
-        
-    end
-    
-    self:UpdateDisorientSoundLoop(state)
     
 end
 
@@ -1777,7 +1840,6 @@ function Player:OnDestroy()
     DestroyScreenEffects(self)
     
     self:UpdateCloakSoundLoop(false)
-    self:UpdateDisorientSoundLoop(false)
     
     self:CloseMenu()
     
@@ -1911,6 +1973,26 @@ function Player:GetWeaponClip()
             return weapon:GetMinesLeft()
         elseif weapon:isa("HandGrenades") then
             return weapon:GetNadesLeft()
+        end
+    end
+    
+    return 0
+    
+end
+
+function Player:GetWeaponClipSize()
+
+    // We could do some checks to make sure we have a non-nil ClipWeapon,
+    // but this should never be called unless we do.
+    local weapon = self:GetActiveWeapon()
+    
+    if weapon ~= nil then
+        if weapon:isa("ClipWeapon") then
+            return weapon:GetClipSize()
+        elseif weapon:isa("Mines") then
+            return kMineCount
+        elseif weapon:isa("HandGrenades") then
+            return kNumHandGrenades
         end
     end
     
@@ -2143,7 +2225,7 @@ function Player:OnCountDownEnd()
         
     end
     
-    Client.PlayMusic("round_start")
+    //Client.PlayMusic("round_start")
     
 end
 

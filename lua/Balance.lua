@@ -155,10 +155,12 @@ kPistolDamageType = kDamageType.Normal
 kPistolClipSize = 10
 kPistolWeight = 0.03
 
-kWelderDamage = 5
+kWelderDamage = 4
 kWelderDamageType = kDamageType.Normal
-kWelderFireDelay = 0.5
+kWelderFireDelay = 0.4
 kWelderWeight = 0.035
+kWelderRate = 30
+kWelderStructureMultipler = 2
 
 kAxeDamage = 30
 kAxeDamageType = kDamageType.Structural

@@ -56,16 +56,17 @@ if Client then
             
             local success = false
             
-            if Client.GetOptionBoolean("showHints", true) then
+            if Client.GetOptionBoolean("showHints", true) and self:GetIsAlive() then
             
-                if self:GetIsAlive() then
-            
-                    local ent = self:PerformUseTrace()
-                    if ent then
+                local ent = self:PerformUseTrace()
+                if ent then
+                
+                    if GetPlayerCanUseEntity(self, ent) and not self:GetIsUsing() then
                     
-                        if GetPlayerCanUseEntity(self, ent) and not self:GetIsUsing() then
+                        // Don't show hint for an empty hive if you have a comm
+                        if not ent:isa("Hive") or not ScoreboardUI_GetTeamHasCommander(self:GetTeamNumber()) then
                         
-                            local hintText = nil
+                  			local hintText = nil
                             if ent:isa("Hive") and ent:GetIsBuilt() then
                                 hintText = "TELEPORT_HIVE"
                             elseif ent:isa("Hive") and not ent:GetIsBuilt() then
@@ -75,18 +76,24 @@ if Client then
 							else
 								hintText = "ALIEN_CONSTRUCT"
                             end
-
+                            
                             self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Use"), nil, hintText)
                             success = true
                             
                         end
+                        
                     end
+                    
                 end
+                
             end
+            
             if not success then
                 self.actionIconGUI:Hide()
             end
-        end    
+            
+        end
+        
     end
     
 end

@@ -21,24 +21,23 @@ kMaxAlienStructuresofType = 8
 
 kGhostStructureModifier = .75
 kEnergyUpdateRate = .25
-kStrafeJumpMod = 1
 kDropWeaponTimeLimit = 1
 kPickupWeaponTimeLimit = 1
 kItemStayTime = 30    // NS1
 
 // set to -1 for no time limit
 kParasiteDuration = -1
+
 kCeleritySpeedModifier = 0.20
-kFocusAttackSlowdown = .5
+kFocusAttackSlowdown = 0.5
 kFocusAttackDamageMultipler = 2
 kBombardAttackDamageMultipler = 1.3
-
 kRedemptionEHPThreshold = .40
 kRedemptionChancePerLevel = .15
 kRedemptionCheckTime = 2
 kRedemptionCooldown = 20
 kRedploymentCooldownBase = 15
-kAuraDetectionRange = 25
+kAuraDetectionRange = 30
 kFuryHealthRegained = 4
 kFuryHealthPercentageRegained = 0.05
 kFuryEnergyRegained = 10
@@ -49,7 +48,6 @@ kAlienVisionEnergyRegenMod = 1
 
 kDefaultStructureCost = 10
 kStructureCircleRange = 4
-kInfantryPortalUpgradeCost = 10
 kInfantryPortalAttachRange = 12
 kArmoryWeaponAttachRange = 10
 kRoboticsFactoryAttachRange = 12
@@ -57,7 +55,7 @@ kRoboticsFactoryAttachRange = 12
 // Obs stuff
 kScanDuration = 10
 kScanRadius = 20
-kMotionTrackingDetectionRange = 25
+kMotionTrackingDetectionRange = 30
 kObservatoryInitialEnergy = 25  kObservatoryMaxEnergy = 100
 kDistressBeaconRange = 15
 kDistressBeaconTime = 5
@@ -79,12 +77,6 @@ kJetpackReplenishFuelRate = .16
 
 //HA
 kHeavyArmorWeightAssist = 2.5
-
-// Welding variables
-kWelderSentryRepairRate = 150
-kPlayerWeldRate = 30
-kStructureWeldRate = 125
-kDoorWeldTime = 15
 
 kAlienRegenerationTime = 2
 kAlienInnateRegenerationPercentage  = 0.02

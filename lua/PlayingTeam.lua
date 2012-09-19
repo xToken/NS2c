@@ -821,41 +821,26 @@ end
 function PlayingTeam:UpdateVoteToEject()
 
     PROFILE("PlayingTeam:UpdateVoteToEject")
-    self.ejectCommVoteManager:SetNumPlayers(self:GetNumPlayers())
+    
     // Update with latest team size
-    if self:GetTeamType() == kAlienTeamType then
-        
-        if self.ejectCommVoteManager:GetVotePassed() then
-            local chamber = self.ejectCommVoteManager:GetTarget()
-            Print(string.format("Vote for %s successful!", chamber))
-            local success = UpgradeBaseHivetoChamberSpecific(nil, chamber, self)
-            Print(ConditionalValue(success, "Vote was successful", "Vote was unsuccessful"))
-            self.ejectCommVoteManager:Reset()
-            
-        elseif self.ejectCommVoteManager:GetVoteElapsed(Shared.GetTime()) then
-        
-            self.ejectCommVoteManager:Reset()
-                
-        end
-    else
+    self.ejectCommVoteManager:SetNumPlayers(self:GetNumPlayers())
 
-        // Eject commander if enough votes cast
-        if self.ejectCommVoteManager:GetVotePassed() then    
-            
-            local targetCommander = GetPlayerFromUserId( self.ejectCommVoteManager:GetTarget() )
-            
-            if targetCommander and targetCommander.Eject then
-                targetCommander:Eject()
-            end        
-            
-            self.ejectCommVoteManager:Reset()
-            
-        elseif self.ejectCommVoteManager:GetVoteElapsed(Shared.GetTime()) then
+    // Eject commander if enough votes cast
+    if self.ejectCommVoteManager:GetVotePassed() then    
         
-            self.ejectCommVoteManager:Reset()
-                
-        end
-     end
+        local targetCommander = GetPlayerFromUserId( self.ejectCommVoteManager:GetTarget() )
+        
+        if targetCommander and targetCommander.Eject then
+            targetCommander:Eject()
+        end        
+        
+        self.ejectCommVoteManager:Reset()
+        
+    elseif self.ejectCommVoteManager:GetVoteElapsed(Shared.GetTime()) then
+    
+        self.ejectCommVoteManager:Reset()
+            
+    end
     
 end
 

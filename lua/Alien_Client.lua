@@ -8,7 +8,7 @@
 
 Script.Load("lua/MaterialUtility.lua")
 
-Alien.kRegenerationViewCinematic = PrecacheAsset("cinematics/alien/regeneration_1p.cinematic")
+
 Alien.kFirstPersonDeathEffect = PrecacheAsset("cinematics/alien/death_1p_alien.cinematic")
 
 local kAlienFirstPersonHitEffectName = PrecacheAsset("cinematics/alien/hit_1p.cinematic")
@@ -354,12 +354,14 @@ function Alien:OnInitLocalClient()
             self.alienHUD = GetGUIManager():CreateGUIScript("GUIAlienHUD")
         end
 
-        if self.regenFeedback == nil then
-            self.regenFeedback = GetGUIManager():CreateGUIScript("GUIRegenerationFeedback")
-        end
+
         
         if self.objectiveDisplay == nil then
-            //self.objectiveDisplay = GetGUIManager():CreateGUIScript("GUIObjectiveDisplay")
+            self.objectiveDisplay = GetGUIManager():CreateGUIScript("GUIObjectiveDisplay")
+        end
+        
+        if self.progressDisplay == nil then
+            self.progressDisplay = GetGUIManager():CreateGUIScript("GUIProgressBar")
         end
         
     end
@@ -399,8 +401,6 @@ function Alien:UpdateClientEffects(deltaTime, isLocal)
             
         end
         
-        self:UpdateRegenerationEffect() 
-        
     end
     
 end
@@ -409,27 +409,6 @@ function Alien:GetFirstPersonDeathEffect()
     return Alien.kFirstPersonDeathEffect
 end
 
-function Alien:UpdateRegenerationEffect()
-
-    if GetHasRegenerationUpgrade(self) and self.regenFeedback and not self.regenFeedback:GetIsAnimating() then
-    
-        if self.lastHealth then
-        
-            if self.lastHealth < self:GetHealth() then
-            
-                self.regenFeedback:TriggerRegenEffect()
-                local cinematic = Client.CreateCinematic(RenderScene.Zone_ViewModel)
-                cinematic:SetCinematic(Alien.kRegenerationViewCinematic)
-                
-            end
-            
-        end
-        
-        self.lastHealth = self:GetHealth()  
-        
-    end
-    
-end
 
 function Alien:UpdateMisc(input)
 

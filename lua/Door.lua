@@ -38,8 +38,6 @@ Door.kStateSound = { [Door.kState.Open] = Door.kOpenSound,
 
 local kUpdateAutoUnlockRate = 1
 local kUpdateAutoOpenRate = 0.3
-local kWeldPercentagePerSecond = 1 / kDoorWeldTime
-local kHealthPercentagePerSecond = 0.9 / kDoorWeldTime
 
 local kModelNameDefault = PrecacheAsset("models/misc/door/door.model")
 local kModelNameClean = PrecacheAsset("models/misc/door/door_clean.model")
@@ -341,44 +339,14 @@ function Door:GetState()
 end
 
 function Door:GetCanBeWeldedOverride()
-    return (self:GetState() == Door.kState.Locked or self:GetState() == Door.kState.Welded) and self.weldedPercentage < 1.0, true
+    return false
 end
 
 function Door:GetWeldPercentageOverride()
-
-    if (self:GetState() == Door.kState.Locked or self:GetState() == Door.kState.Welded) and self.weldedPercentage < 1.0 then
-        return self.weldedPercentage//self:GetHealthScalar()
-    end    
-
     return 0
-    
 end
 
 function Door:OnWeldOverride(doer, elapsedTime)
-
-    self.weldedPercentage = self.weldedPercentage + kWeldPercentagePerSecond * elapsedTime
-
-    /*
-    local max = self:GetMaxHealth() + self:GetMaxArmor() * kHealthPointsPerArmor
-    if self:GetState() == Door.kState.Locked then
-        self:SetState(Door.kState.Welded)
-        self:SetHealth(max * 0.1)
-        self:SetArmor(0)
-    end
-    
-    local max = self:GetMaxHealth() + self:GetMaxArmor() * kHealthPointsPerArmor
-    self:AddHealth(elapsedTime * kHealthPercentagePerSecond * max)
-    */
-
-     if self.weldedPercentage >= 1.0 then
-        self.weldedPercentage = 1.0
-        self:SetState(Door.kState.Welded)
-     end
-     
-     -- Trigger a voiceover
-     
-     // refresh the lock trigger
-     self.timeLastLockTrigger = Shared.GetTime()
     
 end
 

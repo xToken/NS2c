@@ -12,14 +12,14 @@ AlienDetectorMixin.expectedCallbacks =
     // Returns integer for team number
     GetTeamNumber = "",
     // Returns 0 if not active currently
-    GetDetectionRange = "Return range of the detector.",
+    GetAlienDetectionRange = "Return range of the detector.",
     GetOrigin = "Detection origin",
 }
 
 AlienDetectorMixin.optionalCallbacks =
 {
-    IsValidDetection = "Used to valid if target should be shown",
-    OnCheckDetectorActive = "Called to check if detector is active.",
+    IsValidAlienDetection = "Used to valid if target should be shown",
+    OnCheckAlienDetectorActive = "Called to check if detector is active.",
 }
 
 function AlienDetectorMixin:__initmixin()
@@ -30,7 +30,7 @@ end
 local function PerformDetection(self)
 
     // Get list of Detectables in range
-    local range = self:GetDetectionRange(false)
+    local range = self:GetAlienDetectionRange()
     
     if range > 0 and self.active then
 
@@ -41,26 +41,7 @@ local function PerformDetection(self)
         for index, detectable in ipairs(detectables) do
         
             // Mark them as detected, run seperate detections for aura/recon
-            if not self.IsValidDetection or self:IsValidDetection(detectable, false) then
-                detectable:SetParasited(self, 1, false)
-            end
-        
-        end
-        
-    end
-    
-    range = self:GetDetectionRange(true)
-    
-    if range > 0 and self.active then
-
-        local teamNumber = GetEnemyTeamNumber(self:GetTeamNumber())
-        local origin = self:GetOrigin()    
-        local detectables = GetEntitiesWithMixinForTeamWithinRange("ParasiteAble", teamNumber, origin, range)
-        
-        for index, detectable in ipairs(detectables) do
-        
-            // Mark them as detected, run seperate detections for aura/recon
-            if not self.IsValidDetection or self:IsValidDetection(detectable, true) then
+            if not self.IsValidAlienDetection or self:IsValidAlienDetection(detectable) then
                 detectable:SetParasited(self, 1, false)
             end
         
@@ -77,8 +58,8 @@ local function SharedUpdate(self, deltaTime)
         if self.active then
             PerformDetection(self)
         else
-            if self.OnCheckDetectorActive then
-                self.active = self:OnCheckDetectorActive(false) or self:OnCheckDetectorActive(true)
+            if self.OnCheckAlienDetectorActive then
+                self.active = self:OnCheckAlienDetectorActive()
             end
         end
         self.timeSinceLastDetected = self.timeSinceLastDetected - DetectorMixin.kUpdateDetectionInterval
