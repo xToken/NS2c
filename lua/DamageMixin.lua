@@ -181,7 +181,7 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                     end
                     
                     if not Shared.GetIsRunningPrediction() and target.OnTakeDamageClient then
-                        target:OnTakeDamageClient(doer, point)
+                        target:OnTakeDamageClient(damage, doer, point)
                     end
                     
                 end

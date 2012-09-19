@@ -166,7 +166,7 @@ function PhaseGate:OnCreate()
     
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
-    self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
+    self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup)
     
 end
 
@@ -211,6 +211,10 @@ end
 // Temporarily don't use "target" attach point
 function PhaseGate:GetEngagementPointOverride()
     return self:GetModelOrigin()
+end
+
+function PhaseGate:GetDestLocationId()
+    return self.destLocationId
 end
 
 function PhaseGate:GetEffectParams(tableParams)

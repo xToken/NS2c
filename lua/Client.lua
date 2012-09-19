@@ -60,6 +60,10 @@ Client.worldMessages = { }
 
 local gRenderCamera = Client.CreateRenderCamera()
 
+// For logging total time played for rookie mode, even with map switch
+local timePlayed = nil
+local kTimePlayedOptionsKey = "timePlayedSeconds"
+            
 function GetRenderCameraCoords()
 
     if gRenderCamera then
@@ -406,6 +410,53 @@ function UpdateTracers(deltaTime)
 
 end
 
+// Update local time played in options file, so we can track "rookie" status
+function UpdateTimePlayed(deltaTime)
+
+    PROFILE("Client:UpdateTimePlayed")
+
+    local player = Client.GetLocalPlayer()
+    assert(player)
+
+    local teamNumber = player:GetTeamNumber()
+    if player:GetGameStarted() and (teamNumber == kMarineTeamType or teamNumber == kAlienTeamType) then
+    
+        // Increment time
+        timePlayed = ConditionalValue(timePlayed ~= nil, timePlayed, 0) + deltaTime
+        if timePlayed > kRookieSaveInterval then
+        
+            SaveTimePlayed(kRookieSaveInterval)
+            timePlayed = 0
+            
+            // If we are a rookie and we just increased over the time threshold, set ourselves no longer as a rookie
+            if Client.GetOptionInteger(kTimePlayedOptionsKey, 0) > kRookieTimeThreshold and Client.GetOptionBoolean(kRookieOptionsKey, true ) then
+            
+                local minutesPlayed = math.round(Client.GetOptionInteger(kTimePlayedOptionsKey, 0)/60)
+                local displayMessage = string.format(Locale.ResolveString("ROOKIE_DONE"), minutesPlayed)
+                Print(displayMessage)
+                Client.SetOptionBoolean( kRookieOptionsKey, false )
+                    
+            end
+            
+        end
+        
+    end
+    
+end
+
+function SaveTimePlayed(additionalTimePlayed)
+
+    if additionalTimePlayed ~= nil then
+    
+        assert(additionalTimePlayed > 0)
+        
+        local newTimePlayed = Client.GetOptionInteger(kTimePlayedOptionsKey, 0) + additionalTimePlayed
+        Client.SetOptionInteger(kTimePlayedOptionsKey, newTimePlayed)
+        
+    end
+    
+end
+
 /**
  * Shows or hides the skybox(es) based on the specified state.
  */
@@ -419,6 +470,9 @@ end
 
 function OnMapPreLoad()
 
+    // Add our current time we played
+    SaveTimePlayed(timePlayed)    
+    
     // Clear our list of render objects, lights, props
     Client.propList = {}
     Client.lightList = {}
@@ -612,6 +666,7 @@ end
 function UpdateWorldMessages()
 
     local removeEntries = {}
+    
     for _, message in ipairs(Client.worldMessages) do
     
         if (Client.GetTime() - message.creationTime) >= kWorldMessageLifeTime then
@@ -620,21 +675,60 @@ function UpdateWorldMessages()
     
     end
     
-    for _, reomveMessage in ipairs(removeEntries) do    
-        table.removevalue(Client.worldMessages, reomveMessage)    
+    for _, removeMessage in ipairs(removeEntries) do    
+        table.removevalue(Client.worldMessages, removeMessage)    
     end
 
 end
 
-function Client.AddWorldMessage(message, position)
+function Client.AddWorldMessage(messageType, message, position, entityId)
 
-    local worldMessage = {}
-    worldMessage.message = message
-    worldMessage.position = position
-    worldMessage.creationTime = Client.GetTime()
+    // Only add damage messages if we have it enabled
+    if messageType ~= kWorldTextMessageType.Damage or Client.GetOptionBoolean( "drawDamage", true ) then
+
+        // If we already have a message for this entity id, update existing message instead of adding new one
+        local time = Client.GetTime()
+            
+        local updatedExisting = false
+        
+        if messageType == kWorldTextMessageType.Damage then
+        
+            for _, currentWorldMessage in ipairs(Client.worldMessages) do
+            
+                if currentWorldMessage.messageType == messageType and currentWorldMessage.entityId == entityId and entityId ~= nil and entityId ~= Entity.invalidId then
+                
+                    currentWorldMessage.creationTime = time
+                    currentWorldMessage.position = position
+                    currentWorldMessage.previousNumber = tonumber(currentWorldMessage.message)
+                    currentWorldMessage.message = tostring(tonumber(currentWorldMessage.message) + tonumber(message))
+                    currentWorldMessage.minimumAnimationFraction = kWorldDamageRepeatAnimationScalar
+                    
+                    updatedExisting = true
+                    break
+                    
+                end
+                
+            end
+            
+        end
+        
+        if not updatedExisting then
+        
+            local worldMessage = {}
+            
+            worldMessage.messageType = messageType
+            worldMessage.message = message
+            worldMessage.position = position        
+            worldMessage.creationTime = time
+            worldMessage.entityId = entityId
+            worldMessage.animationFraction = 0
+            
+            table.insert(Client.worldMessages, worldMessage)
+            
+        end
+        
+    end
     
-    table.insert(Client.worldMessages, worldMessage)
-
 end
 
 function Client.GetWorldMessages()
@@ -685,7 +779,7 @@ function OnClientDisconnected(reason)
     GetGUIManager():DestroyGUIScriptSingle("GUIDeathMessages")
     GetGUIManager():DestroyGUIScriptSingle("GUIChat")
     GetGUIManager():DestroyGUIScriptSingle("GUIVoiceChat")
-    GetGUIManager():DestroyGUIScriptSingle("GUIMinimap")
+    GetGUIManager():DestroyGUIScriptSingle("GUIMinimapFrame")
     GetGUIManager():DestroyGUIScriptSingle("GUIMapAnnotations")
     GetGUIManager():DestroyGUIScriptSingle("GUIGameEnd")
     GetGUIManager():DestroyGUIScriptSingle("GUIWorldText")

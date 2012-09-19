@@ -52,12 +52,12 @@ function AddMaterialEffect(entity, material, viewMaterial, entities)
             table.insert(entities, entity:GetId())
         end
     end
-    /*
+    
     for i = 1, entity:GetNumChildren() do
         local child = entity:GetChildAtIndex(i - 1)
         AddMaterialEffect(child, material, viewMaterial, entities)
     end
-    */
+
 end
 
 function RemoveMaterialEffect(entities, material, viewMaterial)
@@ -430,6 +430,14 @@ function CreateBitMask(tableBitStrings)
     
     return outputBitMask
     
+end
+
+function GetBitMaskNumBits(bitMask)
+    local bits = 0
+    for k,v in pairs(bitMask) do
+        bits = bit.bor(bits, v)
+    end
+    return math.ceil(math.log(bits) / math.log(2))
 end
 
 // Can print one argument (string or not), or a string and variable list of parameters passed to string.format()

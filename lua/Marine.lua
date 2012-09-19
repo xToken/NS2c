@@ -181,6 +181,7 @@ function Marine:OnInitialized()
     
         InitMixin(self, HiveVisionMixin)
         
+        self:AddHelpWidget("GUIMapHelp", 1)
     end
     
     self.weaponDropTime = 0
@@ -800,7 +801,13 @@ function Marine:OnProcessMove(input)
 end
 
 function Marine:OnUpdateCamera(deltaTime)
-    Player.OnUpdateCamera(self, deltaTime)
+
+    if self:GetIsDisrupted() then
+        self:SetDesiredCameraYOffset(-1.3)
+    else
+        Player.OnUpdateCamera(self, deltaTime)
+    end
+
 end
 
 function Marine:GetHasCatpackBoost()

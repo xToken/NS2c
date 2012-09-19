@@ -8,7 +8,7 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Armory.kHealthIndicatorModelName = PrecacheAsset("models/marine/armory/health_indicator.model")
+local kHealthIndicatorModelName = PrecacheAsset("models/marine/armory/health_indicator.model")
 
 local kArmoryHealthbarOffset = Vector(0, 2, 0)
 function Armory:GetHealthbarOffset()
@@ -124,8 +124,10 @@ function Armory:OnUpdateRender()
     end
 
     if not self.healthIndicator then
+    
         self.healthIndicator = Client.CreateRenderModel(RenderScene.Zone_Default)  
-        self.healthIndicator:SetModel(Armory.kHealthIndicatorModelName)
+        self.healthIndicator:SetModel(kHealthIndicatorModelName)
+        
     end
     
     self.healthIndicator:SetIsVisible(showHealthIndicator)
@@ -136,7 +138,7 @@ function Armory:OnUpdateRender()
         local time = Shared.GetTime()
         local zAxis = Vector(math.cos(time), 0, math.sin(time))
 
-        local coords = Coords.GetLookIn(self:GetOrigin() + 2.7 * kUpVector, zAxis)
+        local coords = Coords.GetLookIn(self:GetOrigin() + 2.9 * kUpVector, zAxis)
         self.healthIndicator:SetCoords(coords)
     
     end

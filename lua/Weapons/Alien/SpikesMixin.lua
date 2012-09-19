@@ -9,7 +9,7 @@
 SpikesMixin = CreateMixin( SpikesMixin )
 SpikesMixin.type = "Spikes"
 
-local kSpread = Math.Radians(8)
+local kSpread = Math.Radians(7)
 
 // GetHasSecondary and GetSecondaryEnergyCost should completely override any existing
 // same named function defined in the object.

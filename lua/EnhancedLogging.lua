@@ -248,7 +248,7 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 		if EnhancedLoggingFile == nil then
 			return
 		end
-		local ELogFile = assert(io.open("user://" .. kDAKConfigurationPath .. kDAKConfig.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "w"))
+		local ELogFile = assert(io.open("config://" .. kDAKConfig.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "w"))
 		if ELogFile then
 			for i = 1, #EnhancedLog do
 				ELogFile:write(EnhancedLog[i] .. "\n")
@@ -256,13 +256,13 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 			ELogFile:close()
 		end
 		
-		/*local ELogFile = io.open("user://" .. kDAKConfigurationPath .. kDAKConfig.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "a+")
+		/*local ELogFile = io.open("config://" .. kDAKConfig.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "a+")
 		if ELogFile then
 			ELogFile:seek("end")
 			ELogFile:write(logstring .. "\n")
 			ELogFile:close()
 		else
-			local ELogFile = io.open("user://" .. kDAKConfigurationPath .. kDAKConfig.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "w")
+			local ELogFile = io.open("config://" .. kDAKConfig.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "w")
 			if ELogFile then
 				ELogFile:write(logstring .. "\n")
 				ELogFile:close()

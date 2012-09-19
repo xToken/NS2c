@@ -24,7 +24,9 @@ function CreateRagdoll(fromEntity)
     else    
         ragdoll:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup)    
     end
-
+    
+    ragdoll:CopyAnimationState(fromEntity)
+    
 end
 
 class 'Ragdoll' (Entity)
@@ -65,6 +67,10 @@ function Ragdoll:OnUpdateAnimationInput(modelMixin)
     modelMixin:SetAnimationInput("alive", false)  
     modelMixin:SetAnimationInput("built", true)
     modelMixin:SetAnimationInput("active", true)
+end
+
+function Ragdoll:OnUpdatePoseParameters()
+    self:SetPoseParam("grow", 1)    
 end
 
 function Ragdoll:TimeUp()

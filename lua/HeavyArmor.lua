@@ -10,7 +10,8 @@ class 'HeavyArmor' (ScriptActor)
 
 HeavyArmor.kMapName = "heavyarmor"
 
-HeavyArmor.kModelName = PrecacheAsset("models/marine/exosuit/exosuit_cm.model")
+//HeavyArmor.kModelName = PrecacheAsset("models/marine/exosuit/exosuit_cm.model")
+HeavyArmor.kModelName = PrecacheAsset("models/marine/heavyarmor/heavyarmor_drop.model")
 local kAnimationGraph = PrecacheAsset("models/marine/exosuit/exosuit_spawn_only.animation_graph")
 
 HeavyArmor.kPickupSound = PrecacheAsset("sound/NS2.fev/marine/common/pickup_Exosuit")

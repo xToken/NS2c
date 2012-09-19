@@ -307,6 +307,8 @@ function Commander:OnDestroy()
         
         Client.DestroyRenderModel(self.sentryRangeRenderModel)
         
+        DynamicMesh_Destroy(self.sentryBatteryLineHelp)
+        
         self.hudSetup = false
         
          MouseTracker_SetIsVisible(false)
@@ -867,7 +869,7 @@ function Commander:SetupHud()
     
     local alertsScript = GetGUIManager():CreateGUIScriptSingle("GUICommanderAlerts")
     // Every Player already has a GUIMinimap.
-    local minimapScript = GetGUIManager():GetGUIScriptSingle("GUIMinimap")
+    local minimapScript = GetGUIManager():GetGUIScriptSingle("GUIMinimapFrame")
     
     local selectionPanelScript = GetGUIManager():CreateGUIScriptSingle("GUISelectionPanel")
     
@@ -898,7 +900,7 @@ function Commander:SetupHud()
     
     // Calling SetBackgroundMode() will sometimes access self.managerScript through
     // CommanderUI_GetUIClickable() so call after self.managerScript is created above.
-    minimapScript:SetBackgroundMode(GUIMinimap.kModeMini)
+    minimapScript:SetBackgroundMode(GUIMinimapFrame.kModeMini)
     
     self.hudSetup = true
     
@@ -1407,7 +1409,7 @@ function Commander:UpdateCursor()
     
     // Set the cursor if it changed
     local cursorTexture = string.format("ui/Cursor_%s.dds", baseCursor)
-    if self.cursorOverUI then
+    if self.cursorOverUI and self.currentTechId == kTechId.None then
     
         hotspot = Vector(0, 0, 0)
         cursorTexture = "ui/Cursor_MenuDefault.dds"
@@ -1529,7 +1531,7 @@ function Commander:ClientOnMouseRelease(mouseButton, x, y)
 
         CommanderUI_TriggerPingInWorld(x, y)
         
-        local minimapScript = GetGUIManager():GetGUIScriptSingle("GUIMinimap")
+        local minimapScript = GetGUIManager():GetGUIScriptSingle("GUIMinimapFrame")
         if minimapScript then
             minimapScript:SetPingEnabled(false)
         end

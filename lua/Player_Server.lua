@@ -430,6 +430,8 @@ function Player:CopyPlayerDataFrom(player)
     self.modeTime = player.modeTime
     
     self.requestsScores = player.requestsScores
+    self.isRookie = player.isRookie
+    self.communicationStatus = player.communicationStatus
     
     // Don't lose purchased upgrades when becoming commander
     
@@ -689,6 +691,20 @@ function Player:UpdateMisc(input)
         GetGamerules():JoinTeam(self, kTeamReadyRoom)
     end
     
+    if self:GetTeamType() == kMarineTeamType then
+    
+        self.weaponUpgradeLevel = 0
+            
+        if GetHasTech(self, kTechId.Weapons3, true) then    
+            self.weaponUpgradeLevel = 3
+        elseif GetHasTech(self, kTechId.Weapons2, true) then    
+            self.weaponUpgradeLevel = 2
+        elseif GetHasTech(self, kTechId.Weapons1, true) then    
+            self.weaponUpgradeLevel = 1
+        end
+        
+    end
+    
 end
 
 function Player:GetTechTree()
@@ -754,5 +770,18 @@ function Player:TriggerAlert(techId, entity)
     end
     
     return false
+    
+end
+
+function Player:SetRookieMode(rookieMode)
+
+     if self.isRookie ~= rookieMode then
+    
+        self.isRookie = rookieMode
+        
+        // rookie status sent along with scores
+        self:SetScoreboardChanged(true)
+        
+    end
     
 end

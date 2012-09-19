@@ -42,6 +42,8 @@ kChatPrefixTextColor = 0xFFFFFF
 kChatTextColor = { [kNeutralTeamType] = kNeutralFontColor,
                    [kMarineTeamType] = kMarineFontColor,
                    [kAlienTeamType] = kAlienFontColor }
+kNewPlayerColor = 0x00DC00
+kNewPlayerColorFloat = Color(0, 0.862, 0, 1)
 kChatTypeTextColor = 0xDD4444
 kFriendlyColor = 0xFFFFFF
 kNeutralColor = 0xAAAAFF
@@ -80,9 +82,12 @@ kMaxResources = 999
 kMaxEntitiesInRadius = 25
 kMaxEntityRadius = 15
 
-kWorldMessageLifeTime = 4
-kWordMessageResourceOffset = Vector(0, 2.5, 0)
+kWorldMessageLifeTime = 1.0
+kWorldMessageResourceOffset = Vector(0, 2.5, 0)
 kResourceMessageRange = 35
+kWorldDamageNumberAnimationSpeed = 150
+// Updating messages with new numbers shouldn't reset animation - keep it big and faded-in intead of growing
+kWorldDamageRepeatAnimationScalar = .1
 
 // Max player name
 kMaxNameLength = 20
@@ -109,6 +114,7 @@ kMaxHitEffectsPerSecond = 200
 kMainMenuFlash = "ui/main_menu.swf"
 
 kPlayerStatus = enum( { "Hidden", "Dead", "Evolving", "Embryo", "Commander", "HeavyArmor", "GrenadeLauncher", "Rifle", "Shotgun", "HeavyMachineGun", "Void", "Spectator", "Skulk", "Gorge", "Fade", "Lerk", "Onos" } )
+kPlayerCommunicationStatus = enum( {'None', 'Voice', 'Typing', 'Menu'} )
 
 kMaxAlienAbilities = 3
 
@@ -303,7 +309,6 @@ kArmorBarColors = { [kMarineTeamType] = Color(0.078, 0.878, 0.984, 1),
                     [kAlienTeamType] = Color(0.576, 0.194, 0.011, 1),
                     [kNeutralTeamType] = Color(0.5, 0.5, 0.5, 1) }
 
-
 // used for specific effects
 kUseInterval = 0.1
 
@@ -311,3 +316,9 @@ kPlayerLOSDistance = 20
 kStructureLOSDistance = 2.5
 
 kGestateCameraDistance = 1.75
+
+// Rookie mode
+kRookieSaveInterval = 30 // seconds
+kRookieTimeThreshold = 4 * 60 * 60 // 4 hours
+kRookieNetworkCheckInterval = 2
+kRookieOptionsKey = "rookieMode"

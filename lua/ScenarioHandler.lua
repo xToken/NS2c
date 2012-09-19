@@ -27,7 +27,7 @@ class "ScenarioHandler"
 ScenarioHandler.kStartTag = "--- SCENARIO START ---"
 ScenarioHandler.kEndTag = "--- SCENARIO END ---"
 
-ScenarioHandler.kLoadPath = { "user://scenarios/${map}", "game://scenarios/${map}", "http://www.matsotech.se/ns2scenarios/${map}" }
+ScenarioHandler.kLoadPath = { "config://scenarios/${map}", "http://www.matsotech.se/ns2scenarios/${map}" }
 
 function ScenarioHandler:Init()
     
@@ -36,6 +36,11 @@ function ScenarioHandler:Init()
     // Just in case a player is evolving; we skip embryos. Eggs are also problematic, so we skip them.
     self.handlers = {
         TeamStartHandler():Init("TeamData"),
+        //CystHandler():Init("Cyst",kAlienTeamType),
+        //OrientedEntityHandler():Init("Clog",kAlienTeamType),
+        //PowerPointHandler():Init("PowerPoint", kMarineTeamType),
+        //OrientedEntityHandler():Init("MAC", kMarineTeamType),
+        //OrientedEntityHandler():Init("Drifter", kAlienTeamType),
         OrientedEntityHandler():Init("ARC",kMarineTeamType),
         IgnoreEntityHandler():Init("Embryo"),
         IgnoreEntityHandler():Init("Egg", true), 
@@ -51,6 +56,7 @@ function ScenarioHandler:Init()
         OrientedEntityHandler():Init("Extractor",kMarineTeamType),
         
         OrientedEntityHandler():Init("Hive",kAlienTeamType),
+        OrientedEntityHandler():Init("Whip",kAlienTeamType),
         OrientedEntityHandler():Init("Crag",kAlienTeamType),
         OrientedEntityHandler():Init("Shade",kAlienTeamType),
         OrientedEntityHandler():Init("Shift",kAlienTeamType),
@@ -78,7 +84,7 @@ end
 
 //
 // Save the current scenario
-// This just dumps formatted strings for all structures and non-building-owned Craps that allows
+// This just dumps formatted strings for all structures and non-building-owned Cysts that allows
 // the Load() method to easily reconstruct them
 // The data is written to the server log. The user should just cut out the chunk of the log containing the
 // scenario and put in on a webserver
@@ -122,9 +128,13 @@ end
 function ScenarioHandler:DestroySaveableEntities()
     local entityList = Shared.GetEntitiesWithClassname("Entity")
     for index, entity in ientitylist(entityList) do
-        handler = self:LookupHandler(entity:GetClassName())
-        if handler then
-            handler:Destroy(entity)
+        if entity:isa("Infestation") then
+            DestroyEntity(entity)
+        else
+            handler = self:LookupHandler(entity:GetClassName())
+            if handler then
+                handler:Destroy(entity)
+            end
         end
     end
 end
@@ -330,17 +340,22 @@ function OrientedEntityHandler:Load(args, classname)
     local result = self:Create(classname, origin)
     if result then
     
-        result:SetAngles(angles)
-        // if we can complete the construction, do so
-        if HasMixin(result, "Construct") then
-            result:SetConstructionComplete()
-        end
+    result:SetAngles(angles)
+    // if we can complete the construction, do so
+    if HasMixin(result, "Construct") then
+        result:SetConstructionComplete()
+    end
         
-        // fix to spread out the target acquisition for sentries; randomize lastTargetAcquisitionTime
-        if result:isa("Sentry") then
-            // buildtime means that we need to add a hefty offset to timeOLT
-            result.timeOfLastTargetAcquisition = Shared.GetTime() + 5 + math.random()
-        end
+    // fix to spread out the target acquisition for sentries; randomize lastTargetAcquisitionTime
+    if result:isa("Sentry") then
+        // buildtime means that we need to add a hefty offset to timeOLT
+        result.timeOfLastTargetAcquisition = Shared.GetTime() + 5 + math.random()
+    end
+
+    if result:isa("Drifter") or result:isa("MAC") then
+        // *sigh* - positioning an entity in its first OnUpdate? Really?
+        result.justSpawned = false
+    end
     
     end
     

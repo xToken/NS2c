@@ -158,6 +158,19 @@ function GetActiveAbilityData(secondary)
     
 end
 
+function AlienUI_GetHasAdrenaline()
+
+    local player = Client.GetLocalPlayer()
+    local hasAdrenaline = false
+    
+    if player then
+        hasAdrenaline = GetHasAdrenalineUpgrade(player)
+    end
+    
+    return hasAdrenaline == true
+
+end
+
 function AlienUI_GetInUmbra()
 
     local player = Client.GetLocalPlayer()
@@ -328,15 +341,23 @@ function PlayerUI_GetInactiveAbilities()
 end
 
 function PlayerUI_GetPlayerEnergy()
+
     local player = Client.GetLocalPlayer()
     if player and player.GetEnergy then
         return player:GetEnergy()
     end
     return 0
+    
 end
 
 function PlayerUI_GetPlayerMaxEnergy()
+
+    local player = Client.GetLocalPlayer()
+    if player and player.GetEnergy then
+        return player:GetMaxEnergy()
+    end
     return kAbilityMaxEnergy
+    
 end
 
 function Alien:OnKillClient()

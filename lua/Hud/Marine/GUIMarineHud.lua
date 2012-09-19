@@ -254,9 +254,9 @@ function GUIMarineHUD:InitializeMinimap()
     self.minimapStencil:SetAnchor(GUIItem.Middle, GUIItem.Top)
     self.minimapBackground:AddChild(self.minimapStencil)
     
-    self.minimapScript = GetGUIManager():CreateGUIScript("GUIMinimap")
+    self.minimapScript = GetGUIManager():CreateGUIScript("GUIMinimapFrame")
     self.minimapScript:ShowMap(true)
-    self.minimapScript:SetBackgroundMode(GUIMinimap.kModeZoom)
+    self.minimapScript:SetBackgroundMode(GUIMinimapFrame.kModeZoom)
     local minimapSize = self.minimapScript:GetMinimapSize()
     self.minimapScript:SetZoom(GUIMarineHUD.kDefaultZoom)
     

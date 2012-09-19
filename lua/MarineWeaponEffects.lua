@@ -65,6 +65,14 @@ kMarineWeaponEffects =
 
     },
     
+    exo_login =
+    {
+        viewModelCinematics =
+        {
+            {viewmodel_cinematic = "cinematics/marine/heavy/deploy_light.cinematic", attach_point = "exosuit_camBone"},
+        },
+    },
+    
     idle = 
     {
 
@@ -124,10 +132,10 @@ kMarineWeaponEffects =
     {
         pistolAttackEffects = 
         {
-            {sound = "sound/NS2.fev/marine/pistol/fire"},
             {viewmodel_cinematic = "cinematics/marine/pistol/muzzle_flash.cinematic", attach_point = "fxnode_pistolmuzzle"},
             {weapon_cinematic = "cinematics/marine/pistol/muzzle_flash.cinematic", attach_point = "fxnode_pistolmuzzle"},
             // Sound effect
+            {sound = "sound/NS2.fev/marine/pistol/fire"},
         },
     },
     
@@ -217,7 +225,8 @@ kMarineWeaponEffects =
     {
         glAttackEffects =
         {
-            //{viewmodel_cinematic = "cinematics/marine/gl/muzzle_flash.cinematic", attach_point = "fxnode_glmuzzle", empty = false},
+            {viewmodel_cinematic = "cinematics/marine/gl/muzzle_flash.cinematic", attach_point = "fxnode_glmuzzle", empty = false},
+            {weapon_cinematic = "cinematics/marine/gl/muzzle_flash.cinematic", attach_point = "fxnode_glmuzzle", empty = false},
             
             {sound = "sound/NS2.fev/marine/rifle/fire_grenade", done = true},
             {sound = "sound/NS2.fev/marine/common/empty", empty = true, done = true},
@@ -395,6 +404,31 @@ kMarineWeaponEffects =
             {viewmodel_cinematic = "cinematics/marine/builder/builder_nano_scan.cinematic", attach_point = "fxnode_weldermuzzle"},
             {weapon_cinematic = "cinematics/marine/builder/builder_nano_scan.cinematic", attach_point = "fxnode_weldermuzzle"},
         },
+    },
+    
+    minigun_overheated_left =
+    {
+        minigunOverheatEffects =
+        {
+            {viewmodel_cinematic = "cinematics/marine/minigun/overheat.cinematic", attach_point = "fxnode_l_minigun_muzzle"},
+        }
+    },
+    
+    
+    minigun_overheated_right =
+    {
+        minigunOverheatEffects =
+        {
+            {viewmodel_cinematic = "cinematics/marine/minigun/overheat.cinematic", attach_point = "fxnode_r_minigun_muzzle"},
+        }
+    },
+    
+    claw_attack =
+    {
+        sounds =
+        {
+            {sound = "sound/NS2.fev/marine/heavy/punch", done = true},
+        }
     },
     
 }

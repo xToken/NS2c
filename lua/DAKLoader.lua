@@ -20,29 +20,24 @@ if Server then
 	kDAKOnGameEnd = { }
 	kDAKOnEntityKilled = { }
 	kDAKServerAdminCommands = { }
-	kDAKConfigurationPath = Server.GetAdminPath()
 	
 	local settings = { groups = { }, users = { } }
-	local DAKConfigFileName = "DAKConfig.json"
-	local DAKSettingsFileName = "DAKSettings.json"
-	local serverAdminFileName = "DAKServerAdmin.json"
+	
+	local DAKConfigFileName = "config://DAKConfig.json"
+	local DAKSettingsFileName = "config://DAKSettings.json"
+	local serverAdminFileName = "config://DAKServerAdmin.json"
 	local DelayedClientConnect = { }
 	local lastserverupdate = 0
 	local DAKRevision = 1.3
 		
     local function LoadServerAdminSettings()
     
-        Shared.Message("Loading " .. "user://" .. kDAKConfigurationPath .. serverAdminFileName)
+        Shared.Message("Loading " .. serverAdminFileName)
         
         local initialState = { groups = { }, users = { } }
         settings = initialState
         
-		local settingsFile
-		if kCheckGameDirectory then
-			settingsFile = io.open("game://" .. kDAKConfigurationPath .. serverAdminFileName, "r")
-		else
-			settingsFile = io.open("user://" .. kDAKConfigurationPath .. serverAdminFileName, "r")
-		end
+		local settingsFile = io.open(serverAdminFileName, "r")
         if settingsFile then
         
             local fileContents = settingsFile:read("*all")
@@ -116,12 +111,7 @@ if Server then
 	end
 	
 	local function LoadDAKConfig()
-		local DAKConfigFile
-		if kCheckGameDirectory then
-			DAKConfigFile = io.open("game://" .. kDAKConfigurationPath .. DAKConfigFileName, "r")
-		else
-			DAKConfigFile = io.open("user://" .. kDAKConfigurationPath .. DAKConfigFileName, "r")
-		end
+		local DAKConfigFile = io.open(DAKConfigFileName, "r")
 		if DAKConfigFile then
 			Shared.Message("Loading DAK configuration.")
 			kDAKConfig = json.decode(DAKConfigFile:read("*all"))
@@ -136,7 +126,7 @@ if Server then
 	
 	local function LoadDAKSettings()
 		local DAKSettingsFile
-		DAKSettingsFile = io.open("user://" .. kDAKConfigurationPath .. DAKSettingsFileName, "r")
+		DAKSettingsFile = io.open(DAKSettingsFileName, "r")
 		if DAKSettingsFile then
 			Shared.Message("Loading DAK settings.")
 			kDAKSettings = json.decode(DAKSettingsFile:read("*all"))
@@ -151,7 +141,7 @@ if Server then
 	
 	function SaveDAKSettings()
 	
-		local DAKSettingsFile = io.open("user://" .. kDAKConfigurationPath .. DAKSettingsFileName, "w+")
+		local DAKSettingsFile = io.open(DAKSettingsFileName, "w+")
 		if DAKSettingsFile then
 			DAKSettingsFile:write(json.encode(kDAKSettings))
 			DAKSettingsFile:close()
@@ -514,7 +504,7 @@ if Server then
 				PrintToAllAdmins("sv_killserver", client)
 			end
 		end
-		CRASHFILE = io.open("user://" .. kDAKConfigurationPath .. "CRASHFILE", "w")
+		CRASHFILE = io.open("config://CRASHFILE", "w")
 		if CRASHFILE then
 			CRASHFILE:seek("end")
 			CRASHFILE:write("\n CRASH")

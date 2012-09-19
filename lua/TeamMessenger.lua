@@ -6,11 +6,12 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-kTeamMessageTypes = enum({ 'GameStarted', 'Eject', 'CannotSpawn',
+kTeamMessageTypes = enum({ 'GameStarted', 'PowerLost', 'PowerRestored', 'Eject', 'CannotSpawn',
                            'SpawningWait', 'Spawning', 'ResearchComplete', 'ResearchLost',
                            'HiveConstructed', 'HiveLowHealth', 'HiveKilled',
                            'CommandStationUnderAttack', 'IPUnderAttack', 'HiveUnderAttack',
-                           'Beacon', 'NoCommander' })
+                           'PowerPointUnderAttack', 'Beacon', 'NoCommander', 'TeamsUnbalanced',
+                           'TeamsBalanced' })
 
 local kTeamMessages = { }
 
@@ -49,6 +50,10 @@ kTeamMessages[kTeamMessageTypes.HiveUnderAttack] = { text = { [kAlienTeamType] =
 kTeamMessages[kTeamMessageTypes.Beacon] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "BEACON_TO") end } }
 
 kTeamMessages[kTeamMessageTypes.NoCommander] = { text = { [kMarineTeamType] = "NO_COMM", [kAlienTeamType] = "NO_COMM" } }
+
+kTeamMessages[kTeamMessageTypes.TeamsUnbalanced] = { text = { [kMarineTeamType] = "TEAMS_UNBALANCED", [kAlienTeamType] = "TEAMS_UNBALANCED" } }
+
+kTeamMessages[kTeamMessageTypes.TeamsBalanced] = { text = { [kMarineTeamType] = "TEAMS_BALANCED", [kAlienTeamType] = "TEAMS_BALANCED" } }
 
 // Silly name but it fits the convention.
 local kTeamMessageMessage =

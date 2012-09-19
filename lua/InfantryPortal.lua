@@ -314,7 +314,7 @@ function InfantryPortal:RequeuePlayer()
         local player = Shared.GetEntity(self.queuedPlayerId)
         local team = self:GetTeam()
         if team then
-            team:PutPlayerInRespawnQueue(Shared.GetEntity(self.queuedPlayerId), Shared.GetTime())
+            team:PutPlayerInRespawnQueue(Shared.GetEntity(self.queuedPlayerId))
         end
         player:SetIsRespawning(false, Entity.invalidId)
         player:SetSpectatorMode(Spectator.kSpectatorMode.Following)

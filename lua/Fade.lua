@@ -108,6 +108,13 @@ end
 function Fade:OnInitialized()
     Alien.OnInitialized(self)
     self:SetModel(Fade.kModelName, kFadeAnimationGraph)
+    
+    if Client then
+    
+        self:AddHelpWidget("GUIFadeBlinkHelp", 2)
+        
+    end
+    
 end
 
 function Fade:OnDestroy()
@@ -166,10 +173,13 @@ function Fade:GetCanJump()
 end
 
 function Fade:GetIsOnGround()
+
     if self:GetIsBlinking() then
         return false
     end
+    
     return Alien.GetIsOnGround(self)
+    
 end
 
 function Fade:GetAcceleration()

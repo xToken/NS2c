@@ -83,7 +83,8 @@ function NS2Gamerules_GetUpgradedDamage(attacker, doer, damage, damageType)
 end
 
 function Gamerules_GetDamageMultiplier(attacker, target)
-    if attacker:isa("Player") then
+
+    if attacker and attacker:isa("Player") then
         if target.GetReceivesStructuralDamage and target:GetReceivesStructuralDamage(damageType) then
             local hasupg, level = GetHasBombardUpgrade(attacker)
             if level > 0 and hasupg then
@@ -154,10 +155,18 @@ local function ApplyDefaultHealthPerArmor(target, attacker, doer, damage, armorF
     return damage, armorFractionUsed, kHealthPointsPerArmor
 end
 
+local function DoubleHealthPerArmor(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType)
+    return damage, armorFractionUsed, healthPerArmor * (kLightHealthPerArmor / kHealthPointsPerArmor)
+end
+
+local function HalfHealthPerArmor(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType)
+    return damage, armorFractionUsed, healthPerArmor * (kHeavyHealthPerArmor / kHealthPointsPerArmor)
+end
+
 local function ApplyAttackerModifiers(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType)
 
     damage = NS2Gamerules_GetUpgradedDamage(attacker, doer, damage, damageType)
-    damage = damage * Gamerules_GetDamageMultiplier(attacker, target)
+    damage = damage * Gamerules_GetDamageMultiplier()
     
     if attacker and attacker.ComputeDamageAttackerOverride then
         damage = attacker:ComputeDamageAttackerOverride(attacker, damage, damageType, doer)
@@ -226,6 +235,10 @@ local function MultiplyForStructures(target, attacker, doer, damage, armorFracti
     end
     
     return damage, armorFractionUsed, healthPerArmor
+end
+
+local function MultiplyForPlayers(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType)
+    return ConditionalValue(target:isa("Player"), damage * kPuncturePlayerDamageScalar, damage), armorFractionUsed, healthPerArmor
 end
 
 local function IgnoreHealthForPlayers(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType)
@@ -412,9 +425,10 @@ function GetDamageByType(target, attacker, doer, damage, damageType)
         // Thanks Harimau!
         local healthPointsBlocked = math.min(healthPerArmor * target.armor, armorFractionUsed * damage)
         armorUsed = healthPointsBlocked / healthPerArmor
+        
         // Anything left over comes off of health
         healthUsed = damage - healthPointsBlocked
-        
+    
     end
     
     return damage, armorUsed, healthUsed

@@ -1,0 +1,6 @@
+shader = "models/marine/marine.surface_shader"
+albedoMap = "models/marine/heavyarmor/heavyarmor.dds"
+emissiveMap = "models/marine/heavyarmor/heavyarmor.dds"
+specularMap = "models/marine/heavyarmor/heavyarmor.dds"
+glossMap = "models/marine/heavyarmor/heavyarmor.dds"
+normalMap = "models/marine/heavyarmor/heavyarmor.dds"

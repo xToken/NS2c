@@ -197,7 +197,6 @@ function GUIMarineBuyMenu:Initialize()
     GUIAnimatedScript.Initialize(self)
 
     self.mouseOverStates = { }
-    self.selectedUpgrades = { }
     self.equipped = { }
     
     self.selectedItem = PlayerUI_GetActiveWeaponTechId()
@@ -576,8 +575,7 @@ function GUIMarineBuyMenu:_UpdateContent(deltaTime)
         local researched, researchProgress, researching = self:_GetResearchInfo(techId)
         
         local itemCost = MarineBuy_GetCosts(techId)
-        local upgradesCost = self:_GetSelectedUpgradesCost()
-        local canAfford = PlayerUI_GetPlayerResources() >= itemCost + upgradesCost
+        local canAfford = PlayerUI_GetPlayerResources() >= itemCost
 
         if not canAfford and researched then
             self.portrait:SetColor(Color(1, 0, 0, 1))
@@ -797,13 +795,12 @@ function GUIMarineBuyMenu:_HandleItemClicked(mouseX, mouseY)
         
             local researched, researchProgress, researching = self:_GetResearchInfo(item.TechId)
             local itemCost = MarineBuy_GetCosts(item.TechId)
-            local upgradesCost = self:_GetSelectedUpgradesCost()
-            local canAfford = PlayerUI_GetPlayerResources() >= itemCost + upgradesCost 
+            local canAfford = PlayerUI_GetPlayerResources() >= itemCost
             local hasItem = PlayerUI_GetHasItem(item.TechId)
             
             if researched and canAfford and not hasItem then
             
-                MarineBuy_PurchaseItemAndUpgrades(item.TechId, self.selectedUpgrades)
+                MarineBuy_PurchaseItem(item.TechId)
                 MarineBuy_OnClose()
                 
                 return true, true
@@ -815,19 +812,5 @@ function GUIMarineBuyMenu:_HandleItemClicked(mouseX, mouseY)
     end
     
     return false, false
-    
-end
-
-function GUIMarineBuyMenu:_GetSelectedUpgradesCost()
-
-    local upgradeCosts = 0
-    
-    for k, upgrade in ipairs(self.selectedUpgrades) do
-    
-        //upgradeCosts = upgradeCosts + MarineBuy_GetCosts(upgrade)
-    
-    end
-    
-    return upgradeCosts
     
 end

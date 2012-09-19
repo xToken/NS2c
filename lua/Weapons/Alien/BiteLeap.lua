@@ -17,7 +17,8 @@ Shared.PrecacheSurfaceShader("materials/effects/mesh_effects/view_blood.surface_
 // kRange is now the range from eye to edge of attack range, ie its independent of the size of
 // the melee box, so for the skulk, it needs to increase to 1.2 to say at its previous range.
 // previously this value had an offset, which caused targets to be behind the melee attack (too close to the target and you missed)
-local kRange = 1.5
+// NS1 was 20 inches, which is .5 meters. The eye point in NS1 was correct but in NS2 it's the model origin.
+local kRange = 1.2
 
 local kStructureHitEffect = PrecacheAsset("cinematics/alien/skulk/bite_view_structure.cinematic")
 local kMarineHitEffect = PrecacheAsset("cinematics/alien/skulk/bite_view_marine.cinematic")
@@ -132,7 +133,8 @@ function BiteLeap:GetEffectParams(tableParams)
 end
 
 function BiteLeap:GetMeleeBase()
-    return 0.5, 1
+    // Width of box, height of box
+    return 0.38, 1
 end
 
 function BiteLeap:GetMeleeOffset()

@@ -199,7 +199,11 @@ function Skulk:OnLeap()
     
     self.leaping = true
     self.wallWalkingEnabled = false
+    self.onGround = false
+    self.onGroundNeedsUpdate = true
+    
     self.timeOfLeap = Shared.GetTime()
+    self.timeOfLastJump = Shared.GetTime()
     
 end
 
@@ -233,7 +237,11 @@ function Skulk:GetIsOnLadder()
 end
 
 function Skulk:GetIsWallWalkingPossible() 
-    return not self.crouching
+    return not self.crouching and not self:GetRecentlyJumped()
+end
+
+function Skulk:GetRecentlyJumped()
+    return not (self.timeOfLastJump == nil or (Shared.GetTime() > (self.timeOfLastJump + Skulk.kJumpRepeatTime)))
 end
 
 // Update wall-walking from current origin
@@ -344,7 +352,7 @@ end
 
 function Skulk:GetSmoothAngles()
     return not self:GetIsWallWalking()
-end
+end  
 
 function Skulk:UpdatePosition(velocity, time)
 
@@ -422,6 +430,7 @@ function Skulk:UpdatePosition(velocity, time)
 
 end
 
+
 function Skulk:PreventWallWalkIntersection(dt)
     
     PROFILE("Skulk:PreventWallWalkIntersection")
@@ -448,7 +457,9 @@ function Skulk:PreventWallWalkIntersection(dt)
 end
 
 function Skulk:UpdateCrouch()
+
     // Skulks cannot crouch!
+    
 end
 
 function Skulk:GetMaxSpeed(possible)
@@ -486,6 +497,10 @@ function Skulk:GetGroundFrictionForce()
     
 end
 
+function Skulk:GetAirFrictionForce()
+    return 0.13
+end 
+
 function Skulk:GetFrictionForce(input, velocity)
 
     local friction = Player.GetFrictionForce(self, input, velocity)
@@ -506,7 +521,7 @@ function Skulk:GetIsOnSurface()
 end
 
 function Skulk:GetIsAffectedByAirFriction()
-    return not self:GetIsOnSurface()
+    return self:GetIsJumping() or not self:GetIsOnSurface()
 end
 
 function Skulk:AdjustGravityForce(input, gravity)
@@ -557,19 +572,15 @@ end
 
 function Skulk:GetIsOnGround()
 
-    if self.leaping then
-        return false
-    end
-    
     return Alien.GetIsOnGround(self) and not self:GetIsWallWalking()
     
 end
 
-/*
+/**
  * Knockback only allowed while the Skulk is in the air (jumping or leaping).
-*/
-
+ */
 function Skulk:GetIsKnockbackAllowed()
+
     return not self:GetIsOnSurface()
 end
 
@@ -585,8 +596,11 @@ function Skulk:GetJumpVelocity(input, velocity)
 
     local viewCoords = self:GetViewAngles():GetCoords()
     
+    local soundEffectName = "jump"
+    
     // we add the bonus in the direction the move is going
     local move = input.move
+    move.x = move.x * 0.01
     
     if input.move:GetLength() ~= 0 then
         self.bonusVec = viewCoords:TransformVector(move)
@@ -626,7 +640,7 @@ function Skulk:HandleJump(input, velocity)
         self.wallWalkingEnabled = false
     
     end
-    
+        
     return success
     
 end
@@ -635,7 +649,7 @@ function Skulk:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Skulk:OnUpdateAnimationInput")
     
-    Player.OnUpdateAnimationInput(self, modelMixin)
+    Alien.OnUpdateAnimationInput(self, modelMixin)
     
     if self:GetIsLeaping() then
         modelMixin:SetAnimationInput("move", "leap")

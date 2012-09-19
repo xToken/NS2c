@@ -17,6 +17,13 @@ CloakableMixin.kUnCloakRate = 3
 CloakableMixin.kCloakCinematic = PrecacheAsset("cinematics/alien/cloak.cinematic")
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/cloaked.surface_shader")
 
+local Coords_GetTranslation = Coords.GetTranslation
+local Client_GetLocalPlayer
+
+if Client then
+    Client_GetLocalPlayer = Client.GetLocalPlayer
+end
+
 local kCloakedMaxSpeed = 4
 
 // This is needed so alien structures can be cloaked, but not marine structures
@@ -55,7 +62,7 @@ local function CreateCloakedEffect(self)
         self.cloakedCinematic = Client.CreateCinematic(RenderScene.Zone_Default)
         self.cloakedCinematic:SetCinematic(CloakableMixin.kCloakCinematic)
         self.cloakedCinematic:SetRepeatStyle(Cinematic.Repeat_Endless)
-        self.cloakedCinematic:SetCoords(Coords.GetTranslation(self:GetOrigin()))
+        self.cloakedCinematic:SetCoords(Coords_GetTranslation(self:GetOrigin()))
     
     end
 
@@ -206,9 +213,11 @@ elseif Client then
     function CloakableMixin:OnUpdateRender()
 
         PROFILE("CloakableMixin:OnUpdateRender")
+        
+        local player = Client_GetLocalPlayer()
     
         local newHiddenState = self:GetIsCloaked()
-        local areEnemies = GetAreEnemies(self, Client.GetLocalPlayer())
+        local areEnemies = GetAreEnemies(self, player)
         if self.clientCloaked ~= newHiddenState then
         
             if self.clientCloaked ~= nil then
@@ -224,10 +233,12 @@ elseif Client then
             DestroyCloakedEffect(self)
         end
         
-        if self.cloakedCinematic then        
-            self.cloakedCinematic:SetCoords(Coords.GetTranslation(self:GetOrigin()))
+        local cloakedCinematic = self.cloakedCinematic
+        if cloakedCinematic then        
+            cloakedCinematic:SetCoords( Coords_GetTranslation(self:GetOrigin()) )
         end
         
+        // cloaked aliens off infestation are not 100% hidden
         local speedScalar = 0
         
         if self.GetVelocityLength then
@@ -236,7 +247,7 @@ elseif Client then
              
         self:SetOpacity(1-self.cloakedFraction, "cloak")
 
-        if self == Client.GetLocalPlayer() then
+        if self == player then
         
             local viewModelEnt = self:GetViewModelEntity()            
             if viewModelEnt then
@@ -256,7 +267,7 @@ elseif Client then
                     self.cloakedMaterial = AddMaterial(model, "cinematics/vfx_materials/cloaked.material")
                 end
                 
-                if GetAreEnemies(self, Client.GetLocalPlayer()) then
+                if areEnemies then
                     if self.GetSpeedScalar then
                         self.cloakedMaterial:SetParameter("cloakAmount", self.cloakedFraction * self:GetSpeedScalar() * 0.02)
                     else
@@ -276,7 +287,7 @@ elseif Client then
             
             end
             
-            if self == Client.GetLocalPlayer() then
+            if self == player then
                 
                 local viewModelEnt = self:GetViewModelEntity()
                 if viewModelEnt and viewModelEnt:GetRenderModel() then

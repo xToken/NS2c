@@ -23,7 +23,6 @@ local kAnimationGraph = PrecacheAsset("models/alien/harvester/harvester.animatio
 
 local networkVars = { }
 
-
 AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(UmbraMixin, networkVars)
@@ -94,6 +93,8 @@ if Client then
     end    
 
     function Harvester:OnUpdateRender()
+    
+        PROFILE("Harvester:OnUpdateRender")
 
         local model = self:GetRenderModel()
         if model then
@@ -107,7 +108,7 @@ end
 local kHarvesterHealthbarOffset = Vector(0, .9, 0)
 function Harvester:GetHealthbarOffset()
     return kHarvesterHealthbarOffset
-end
+end 
 
 function Harvester:ConstructOverride(deltaTime)
     return deltaTime / 2

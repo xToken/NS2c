@@ -275,17 +275,8 @@ function MarineBuy_CloseNonFlash()
     player:CloseMenu()
 end
 
-function MarineBuy_PurchaseItemAndUpgrades(itemTechId, upgradeTechIds)
-
-    Shared.ConsoleCommand("buy " .. tostring(itemTechId))
-    
-    for k, upgradeTechId in ipairs(upgradeTechIds) do
-    
-        Print("buy upgrade: %s", tostring(upgradeTechId))
-        //Client.ConsoleCommand("buy " .. tostring(upgradeTechId))
-    
-    end
-
+function MarineBuy_PurchaseItem(itemTechId)
+    Client.SendNetworkMessage("Buy", BuildBuyMessage({ itemTechId }), true)
 end
 
 function MarineBuy_GetDisplayName(techId)

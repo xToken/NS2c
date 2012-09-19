@@ -18,10 +18,9 @@ class 'AlienTeam' (PlayingTeam)
 
 // Innate alien regeneration
 AlienTeam.kAutoHealInterval = 2
-AlienTeam.kSpawnScanInterval = .5
 AlienTeam.kStructureAutoHealInterval = 0.5
 AlienTeam.kAutoHealUpdateNum = 20 // number of structures to update per autoheal update
-
+AlienTeam.kSpawnScanInterval = 2
 AlienTeam.kOrganicStructureHealRate = kHealingBedStructureRegen     // Health per second
 
 // only update every second to not stress the server too much
@@ -220,7 +219,7 @@ function AlienTeam:SpawnInitialStructures(techPoint)
 end
 
 function AlienTeam:GetHasAbilityToRespawn()
-    
+
     local hives = GetEntitiesForTeam("Hive", self:GetTeamNumber())
     return table.count(hives) > 0
     
@@ -247,6 +246,7 @@ function AlienTeam:Update(timePassed)
     end
 
     PlayingTeam.Update(self, timePassed)
+    
     self:UpdateTeamAutoHeal(timePassed)
     self:UpdateCloakables()
     self:UpdateRespawn()

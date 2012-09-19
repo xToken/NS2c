@@ -9,9 +9,15 @@
 DetectableMixin = CreateMixin( DetectableMixin )
 DetectableMixin.type = "Detectable"
 
+
 // What entities have become dirty.
 // Flushed in the UpdateServer hook by DetectableMixin.OnUpdateServer
 local DetectableMixinDirtyTable = { }
+
+Shared.PrecacheSurfaceShader("cinematics/vfx_materials/detected.surface_shader")
+local kDetectedMaterialName = "cinematics/vfx_materials/detected.material"
+local kDetecEffectInterval = 3
+
 //
 // Call all dirty sensorblips
 //
@@ -72,6 +78,13 @@ function DetectableMixin:__initmixin()
     self.decloak = false
     self.timeSinceDetection = nil
     self.sensorBlipId = Entity.invalidId
+    
+    if Client then
+    
+        self.timeLastDetectEffect = 0
+        self.clientDetected = false
+    
+    end
     
 end
 
@@ -194,4 +207,42 @@ if Server then
     
 end
 
+/*
+function DetectableMixin:OnUpdateRender()
+
+    PROFILE("DetectableMixin:OnUpdateRender")
+
+    if self:isa("Player") and self:GetIsLocalPlayer() then
+    
+        local viewModelEnt = self:GetViewModelEntity()
+        local viewModel = viewModelEnt and viewModelEnt:GetRenderModel()
+        
+        if viewModel then
+        
+            if not self.detectedMaterial then
+                self.detectedMaterial = AddMaterial(viewModel, kDetectedMaterialName)
+            end
+    
+            if self.clientDetected ~= self:GetIsDetected() then
+            
+                self.clientDetected = self:GetIsDetected()
+                
+                if self.clientDetected then
+                    self.timeLastDetectEffect = Shared.GetTime()
+                end
+            
+            end
+            
+            if self:GetIsDetected() and self.timeLastDetectEffect + kDetecEffectInterval < Shared.GetTime() then            
+                self.timeLastDetectEffect = Shared.GetTime()
+            end
+            
+            self.detectedMaterial:SetParameter("timeDetected", self.timeLastDetectEffect)
+        
+        end
+    
+    end
+
+end
+*/
 Event.Hook("UpdateServer", DetectableMixinOnUpdateServer)

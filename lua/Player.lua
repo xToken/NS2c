@@ -179,6 +179,7 @@ local kBodyYawTurnThreshold = Math.Radians(85)
 // The 3rd person model angle is lagged behind the first person view angle a bit.
 // This is how fast it turns to catch up. Radians per second.
 local kTurnDelaySpeed = 8
+local kTurnRunDelaySpeed = 2.5
 // Controls how fast the body_yaw pose parameter used for turning while standing
 // still blends back to default when the player starts moving.
 local kTurnMoveYawBlendToMovingSpeed = 5
@@ -275,7 +276,9 @@ local networkVars =
     pushImpulse = "private vector",
     pushTime = "private time",
     
-    isMoveBlocked = "private boolean"
+    isMoveBlocked = "private boolean",
+    
+    communicationStatus = "enum kPlayerCommunicationStatus",
 }
 
 ------------
@@ -342,9 +345,13 @@ function Player:OnCreate()
     end
     
     self.viewOffset = Vector( 0, 0, 0 )
+    
     self.bodyYaw = 0
-    self.standingBodyYaw = 0   
+    self.standingBodyYaw = 0
+    self.runningBodyYaw = 0
+    
     self.clientIndex = -1
+   
     self.showScoreboard = false
     
     if Server then
@@ -494,6 +501,8 @@ function Player:OnInitialized()
         end
         
     end
+    
+    self.communicationStatus = kPlayerCommunicationStatus.None
     
 end
 
@@ -1356,7 +1365,6 @@ end
 
 // Make sure we can't move faster than our max speed (esp. when holding
 // down multiple keys, going down ramps, etc.)
-
 function Player:OnClampSpeed(input, velocity)
 
     PROFILE("Player:OnClampSpeed")
@@ -1549,35 +1557,54 @@ local function UpdateJumpLand(self, wasOnGround, previousVelocity)
     
 end
 
+local kDoublePI = math.pi * 2
+local kHalfPI = math.pi / 2
+
 local function UpdateBodyYaw(self, deltaTime, tempInput)
 
-    local maxRad = math.pi * 2
     local yaw = self:GetAngles().yaw
+    
+    local moving = false
     
     // Reset values when moving.
     if self:GetVelocityLength() > 0.1 then
     
+        moving = true
         // Take a bit of time to reset value so going into the move animation doesn't skip.
         self.standingBodyYaw = SlerpRadians(self.standingBodyYaw, yaw, deltaTime * kTurnMoveYawBlendToMovingSpeed)
-        self.standingBodyYaw = Math.Wrap(self.standingBodyYaw, 0, maxRad)
+        self.standingBodyYaw = Math.Wrap(self.standingBodyYaw, 0, kDoublePI)
+        
+        self.runningBodyYaw = SlerpRadians(self.runningBodyYaw, yaw, deltaTime * kTurnRunDelaySpeed)
+        self.runningBodyYaw = Math.Wrap(self.runningBodyYaw, 0, kDoublePI)
         
     else
     
+        self.runningBodyYaw = yaw
+        
         local diff = RadianDiff(self.standingBodyYaw, yaw)
         if math.abs(diff) >= kBodyYawTurnThreshold then
         
             diff = Clamp(diff, -kBodyYawTurnThreshold, kBodyYawTurnThreshold)
-            self.standingBodyYaw = Math.Wrap(diff + yaw, 0, maxRad)
+            self.standingBodyYaw = Math.Wrap(diff + yaw, 0, kDoublePI)
             
         end
         
     end
     
-    local adjustedBodyYaw = RadianDiff(self.standingBodyYaw, yaw)
-    if adjustedBodyYaw >= 0 then
-        self.bodyYaw = adjustedBodyYaw % (math.pi / 2)
+    if moving then
+    
+        self.bodyYaw = Clamp(RadianDiff(self.runningBodyYaw, yaw), -kHalfPI, kHalfPI)
+        self.runningBodyYaw = Math.Wrap(self.bodyYaw + yaw, 0, kDoublePI)
+        
     else
-        self.bodyYaw = -((math.pi / 2) - adjustedBodyYaw % (math.pi / 2))
+    
+        local adjustedBodyYaw = RadianDiff(self.standingBodyYaw, yaw)
+        if adjustedBodyYaw >= 0 then
+            self.bodyYaw = adjustedBodyYaw % kHalfPI
+        else
+            self.bodyYaw = -(kHalfPI - adjustedBodyYaw % kHalfPI)
+        end
+        
     end
     
 end
@@ -2336,7 +2363,7 @@ function Player:GetJumpHeight()
 end
 
 function Player:GetJumpVelocity(input, velocity)
-    velocity.y = math.sqrt(-2 * self:GetJumpHeight() * self:GetGravityForce(input))
+    velocity.y = math.sqrt(math.abs(2 * self:GetJumpHeight() * self:GetGravityForce(input)))
 end
 
 function Player:GetPlayJumpSound()
@@ -3097,7 +3124,12 @@ kStepTagNames["step_crouch"] = true
 function Player:OnTag(tagName)
 
     PROFILE("Player:OnTag")
-
+    
+    // Filter out crouch steps from playing at inappropriate times.
+    if tagName == "step_crouch" and not self:GetCrouching() then
+        return
+    end
+    
     // Play footstep when foot hits the ground. Client side only.
     if Client and self:GetPlayFootsteps() and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] then
         self:TriggerFootstep()
@@ -3253,6 +3285,28 @@ function Player:OnAdjustModelCoords(modelCoords)
       
     return modelCoords
     
+end
+
+function Player:GetWeaponUpgradeLevel()
+
+    if not self.weaponUpgradeLevel then
+        return 0
+    end
+
+    return self.weaponUpgradeLevel    
+
+end
+
+function Player:GetIsRookie()
+    return self.isRookie
+end
+
+function Player:GetCommunicationStatus()
+    return self.communicationStatus
+end
+
+function Player:SetCommunicationStatus(status)
+    self.communicationStatus = status
 end
 
 Shared.LinkClassToMap("Player", Player.kMapName, networkVars)

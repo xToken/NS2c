@@ -63,7 +63,8 @@ function OnCommandHitEffect(hitEffectTable)
     end
     
     if target and target.OnTakeDamageClient then
-        target:OnTakeDamageClient(doer, position)
+        // Damage not available here
+        target:OnTakeDamageClient(nil, doer, position)
     end
 
 end
@@ -108,7 +109,7 @@ function OnCommandScores(scoreTable)
     end
 
     Scoreboard_SetPlayerData(scoreTable.clientId, scoreTable.entityId, scoreTable.playerName, scoreTable.teamNumber, scoreTable.score,
-                             scoreTable.kills, scoreTable.deaths, math.floor(scoreTable.resources), scoreTable.isCommander,
+                             scoreTable.kills, scoreTable.deaths, math.floor(scoreTable.resources), scoreTable.isCommander, scoreTable.isRookie,
                              status, scoreTable.isSpectator)
     
 end
@@ -165,13 +166,14 @@ function OnCommandCommanderNotification(message)
     
 end
 
-local kWorldTextResolveStrings = { }
+kWorldTextResolveStrings = { }
 kWorldTextResolveStrings[kWorldTextMessageType.Resources] = "RESOURCES_ADDED"
 kWorldTextResolveStrings[kWorldTextMessageType.Resource] = "RESOURCE_ADDED"
+kWorldTextResolveStrings[kWorldTextMessageType.Damage] = "DAMAGE_TAKEN"
 function OnCommandWorldText(message)
 
     local messageStr = string.format(Locale.ResolveString(kWorldTextResolveStrings[message.messageType]), message.data)
-    Client.AddWorldMessage(messageStr, message.position)
+    Client.AddWorldMessage(message.messageType, messageStr, message.position)
     
 end
 

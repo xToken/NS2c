@@ -57,9 +57,9 @@ function Ability:GetInterfaceData(secondary, inactive)
         elseif parent.GetEnergy then
         
             if secondary then
-                return {parent:GetEnergy() / kAbilityMaxEnergy, self:GetSecondaryEnergyCost() / kAbilityMaxEnergy, self:GetIconOffsetX(secondary), self:GetIconOffsetY(secondary), vis, hudSlot}
+                return {parent:GetEnergy() / parent:GetMaxEnergy(), self:GetSecondaryEnergyCost() / parent:GetMaxEnergy(), self:GetIconOffsetX(secondary), self:GetIconOffsetY(secondary), vis, hudSlot}
             else
-                return {parent:GetEnergy() / kAbilityMaxEnergy, self:GetEnergyCost() / kAbilityMaxEnergy, self:GetIconOffsetX(secondary), self:GetIconOffsetY(secondary), vis, hudSlot}
+                return {parent:GetEnergy() / parent:GetMaxEnergy(), self:GetEnergyCost() / parent:GetMaxEnergy(), self:GetIconOffsetX(secondary), self:GetIconOffsetY(secondary), vis, hudSlot}
             end
         
         end

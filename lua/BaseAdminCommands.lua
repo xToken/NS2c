@@ -135,7 +135,24 @@ local function PrintStatus(player, client, index)
     end
     
 end
-CreateServerAdminCommand("Console_sv_status", AllPlayers(PrintStatus), "Lists player Ids and names for use in sv commands")
+
+CreateServerAdminCommand("Console_sv_status", AllPlayers(PrintStatus), "Lists player Ids and names for use in sv commands", true)
+
+local function PrintStatusIP(player, client, index)
+
+    local playerClient = Server.GetOwner(player)
+    if not playerClient then
+        Shared.Message("playerClient is nil in PrintStatus, alert Brian")
+    else
+    
+        local playerAddressString = IPAddressToString(Server.GetClientAddress(playerClient))
+        ServerAdminPrint(client, player:GetName() .. " : Steam Id = " .. playerClient:GetUserId() .. " : Address = " .. playerAddressString)
+        
+    end
+    
+end
+
+CreateServerAdminCommand("Console_sv_statusip", AllPlayers(PrintStatusIP), "Lists player Ids and names for use in sv commands")
 CreateServerAdminCommand("Console_sv_changemap", function(_, mapName) Server.StartMap(mapName) end, "<map name>, Switches to the map specified")
 
 local function OnCommandSVReset(client)
@@ -203,6 +220,7 @@ local function SwitchTeam(client, playerId, team)
     end
     
 end
+
 CreateServerAdminCommand("Console_sv_switchteam", SwitchTeam, "<player id> <team number>, 1 is Marine, 2 is Alien")
 
 local function Eject(client, playerId)
@@ -215,6 +233,7 @@ local function Eject(client, playerId)
     end
     
 end
+
 CreateServerAdminCommand("Console_sv_eject", Eject, "<player id>, Ejects Commander from the Command Structure")
 
 local function Kick(client, playerId)
@@ -227,12 +246,17 @@ local function Kick(client, playerId)
     end
     
 end
+
 CreateServerAdminCommand("Console_sv_kick", Kick, "<player id>, Kicks the player from the server")
 
 local function GetChatMessage(...)
 
     local chatMessage = StringConcatArgs(...)
-    return string.sub(chatMessage, 1, kMaxChatLength)
+    if chatMessage then
+        return string.sub(chatMessage, 1, kMaxChatLength)
+    end
+    
+    return ""
     
 end
 
@@ -243,6 +267,7 @@ local function Say(client, ...)
     
         Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Admin", -1, kTeamReadyRoom, kNeutralTeamType, chatMessage), true)
         Shared.Message("Chat All - Admin: " .. chatMessage)
+        Server.AddChatToHistory(chatMessage, "Admin", 0, kTeamReadyRoom, false)
         
     end
 	
@@ -254,6 +279,7 @@ local function Say(client, ...)
 	end
     
 end
+
 CreateServerAdminCommand("Console_sv_say", Say, "<message>, Sends a message to every player on the server")
 
 local function TeamSay(client, team, ...)
@@ -275,6 +301,7 @@ local function TeamSay(client, team, ...)
         end
         
         Shared.Message("Chat Team - Admin: " .. chatMessage)
+        Server.AddChatToHistory(chatMessage, "Admin", 0, teamNumber, true)
         
     end
 	
@@ -286,6 +313,7 @@ local function TeamSay(client, team, ...)
 	end
     
 end
+
 CreateServerAdminCommand("Console_sv_tsay", TeamSay, "<team number> <message>, Sends a message to one team")
 
 local function PlayerSay(client, playerId, ...)
@@ -315,6 +343,7 @@ local function PlayerSay(client, playerId, ...)
 	end
     
 end
+
 CreateServerAdminCommand("Console_sv_psay", PlayerSay, "<player id> <message>, Sends a message to a single player")
 
 local function Slay(client, playerId)
@@ -328,6 +357,7 @@ local function Slay(client, playerId)
     end
     
 end
+
 CreateServerAdminCommand("Console_sv_slay", Slay, "<player id>, Kills player")
 
 local function SetPassword(client, newPassword)
@@ -341,31 +371,31 @@ local function SetPassword(client, newPassword)
 	end
 	
 end
+
 CreateServerAdminCommand("Console_sv_password", SetPassword, "<string>, Changes the password on the server")
 
 local bannedPlayers = { }
-
-local bannedPlayersPath = Server.GetAdminPath()
-local bannedPlayersFileName = "BannedPlayers.json"
+local bannedPlayersFileName = "config://BannedPlayers.json"
 
 local function LoadBannedPlayers()
 
-    Shared.Message("Loading " .. "user://" .. bannedPlayersPath .. bannedPlayersFileName)
+    Shared.Message("Loading " .. bannedPlayersFileName)
     
     bannedPlayers = { }
     
     // Load the ban settings from file if the file exists.
-    local bannedPlayersFile = io.open("user://" .. bannedPlayersPath .. bannedPlayersFileName, "r")
+    local bannedPlayersFile = io.open(bannedPlayersFileName, "r")
     if bannedPlayersFile then
         bannedPlayers = json.decode(bannedPlayersFile:read("*all")) or { }
     end
     
 end
+
 LoadBannedPlayers()
 
 local function SaveBannedPlayers()
 
-    local bannedPlayersFile = io.open("user://" .. bannedPlayersPath .. bannedPlayersFileName, "w+")
+    local bannedPlayersFile = io.open(bannedPlayersFileName, "w+")
     bannedPlayersFile:write(json.encode(bannedPlayers))
     
 end
@@ -398,6 +428,7 @@ local function OnConnectCheckBan(client)
     end
     
 end
+
 Event.Hook("ClientConnect", OnConnectCheckBan)
 
 /**
@@ -433,6 +464,7 @@ local function Ban(client, playerId, duration, ...)
     end
     
 end
+
 CreateServerAdminCommand("Console_sv_ban", Ban, "<player id> <duration in minutes> <reason text>, Bans the player from the server, pass in 0 for duration to ban forever")
 
 local function UnBan(client, steamId)
@@ -457,6 +489,7 @@ local function UnBan(client, steamId)
     end
     
 end
+
 CreateServerAdminCommand("Console_sv_unban", UnBan, "<steam id>, Removes the player matching the passed in Steam Id from the ban list")
 
 function GetBannedPlayersList()
@@ -489,4 +522,22 @@ local function ListBans(client)
     end
     
 end
+
 CreateServerAdminCommand("Console_sv_listbans", ListBans, "Lists the banned players")
+
+local function PLogAll(client)
+
+    Shared.ConsoleCommand("p_logall")
+    ServerAdminPrint(client, "Performance logging enabled")
+    
+end
+
+CreateServerAdminCommand("Console_sv_p_logall", PLogAll, "Starts performance logging")
+
+local function PEndLog(client)
+
+    Shared.ConsoleCommand("p_endlog")
+    ServerAdminPrint(client, "Performance logging disabled")
+    
+end
+CreateServerAdminCommand("Console_sv_p_endlog", PEndLog, "Ends performance logging")

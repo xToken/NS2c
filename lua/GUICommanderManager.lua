@@ -16,7 +16,10 @@ GUICommanderManager.kEnableSelectorMoveAmount = 5
 GUICommanderManager.kSelectorMarineColor = Color(0.0, 0, 0.5, 0.15)
 GUICommanderManager.kSelectorAlienColor = Color(0.8, 0.3, 0, 0.15)
 
-GUICommanderManager.kLocationTextOffset = 10
+GUICommanderManager.kLocationTextSize = 22
+GUICommanderManager.kLocationTextOffset = Vector(36, 36, 0)
+GUICommanderManager.kLocationTextFont = "fonts/AgencyFB_small.fnt"
+GUICommanderManager.kLocationTextColor = Color(1, 1, 1, 0.5)
 
 function GUICommanderManager:Initialize()
 
@@ -51,12 +54,13 @@ end
 function GUICommanderManager:CreateLocationText()
 
     self.locationText = GUIManager:CreateTextItem()
-    self.locationText:SetFontSize(40)
+    self.locationText:SetFontName(GUICommanderManager.kLocationTextFont)
+    self.locationText:SetFontSize(GUICommanderManager.kLocationTextSize)
     self.locationText:SetAnchor(GUIItem.Left, GUIItem.Top)
     self.locationText:SetTextAlignmentX(GUIItem.Align_Min)
     self.locationText:SetTextAlignmentY(GUIItem.Align_Min)
-    self.locationText:SetPosition(Vector(GUICommanderManager.kLocationTextOffset, GUICommanderManager.kLocationTextOffset, 0))
-    self.locationText:SetColor(Color(1, 1, 1, 0.5))
+    self.locationText:SetPosition(GUICommanderManager.kLocationTextOffset)
+    self.locationText:SetColor(GUICommanderManager.kLocationTextColor)
     self.locationText:SetText(PlayerUI_GetLocationName())
 
 end

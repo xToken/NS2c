@@ -63,28 +63,26 @@ function PlayerUI_GetWorldMessages()
     local player = Client.GetLocalPlayer()
     
     if player then
-    
-        local direction = nil
-        local screenPos = nil
-        
+            
         for _, worldMessage in ipairs(Client.GetWorldMessages()) do
-
-            direction = GetNormalizedVector(worldMessage.position - player:GetViewCoords().origin)
             
-            if player:GetViewCoords().zAxis:DotProduct(direction) > 0 then
+            local tableEntry = {}
             
-                local tableEntry = {}
-                screenPos = Client.WorldToScreen(worldMessage.position)
-                
-                tableEntry.x = screenPos.x
-                tableEntry.y = screenPos.y
-                tableEntry.text = worldMessage.message
-                tableEntry.animationFraction = (Client.GetTime() - worldMessage.creationTime) / kWorldMessageLifeTime
-                
-                table.insert(messageTable, tableEntry)
+            tableEntry.position = worldMessage.position
+            tableEntry.messageType = worldMessage.messageType
+            tableEntry.previousNumber = worldMessage.previousNumber
+            tableEntry.text = worldMessage.message
+            worldMessage.animationFraction = (Client.GetTime() - worldMessage.creationTime) / kWorldMessageLifeTime
+            tableEntry.animationFraction = worldMessage.animationFraction
+            tableEntry.distance = (worldMessage.position - player:GetOrigin()):GetLength()
+            tableEntry.minimumAnimationFraction = worldMessage.minimumAnimationFraction
+            tableEntry.entityId = worldMessage.entityId
             
-            end
-        
+            local direction = GetNormalizedVector(worldMessage.position - player:GetViewCoords().origin)
+            tableEntry.inFront = player:GetViewCoords().zAxis:DotProduct(direction) > 0
+            
+            table.insert(messageTable, tableEntry)
+            
         end
     
     end
@@ -192,10 +190,7 @@ local function GetMostRelevantPheromone(toOrigin)
     
         local currentPheromone = pheromones[p]
         local currentDistSq = currentPheromone:GetDistanceSquared(toOrigin)
-        local currentLevel = currentPheromone:GetLevel()
-        // Each additional level gives a Pheromone more power, it will score higher.
-        // Modify the distance to achieve this here.
-        currentDistSq = currentDistSq - ((currentLevel - 1) * 100)
+
         if currentDistSq < bestDistSq then
         
             bestDistSq = currentDistSq
@@ -1706,7 +1701,7 @@ function Player:OnInitLocalClient()
     GetGUIManager():CreateGUIScriptSingle("GUIDeathMessages")
     GetGUIManager():CreateGUIScriptSingle("GUIChat")
     GetGUIManager():CreateGUIScriptSingle("GUIVoiceChat")
-    self.minimapScript = GetGUIManager():CreateGUIScriptSingle("GUIMinimap")
+    self.minimapScript = GetGUIManager():CreateGUIScriptSingle("GUIMinimapFrame")
     GetGUIManager():CreateGUIScriptSingle("GUIMapAnnotations")
     //GetGUIManager():CreateGUIScriptSingle("GUIPlayerNameTags")
     GetGUIManager():CreateGUIScriptSingle("GUIGameEnd")
@@ -1942,7 +1937,7 @@ function Player:ShowMap(showMap, showBig, forceReset)
     self.minimapVisible = showMap and showBig
     
     self.minimapScript:ShowMap(showMap)
-    self.minimapScript:SetBackgroundMode((showBig and GUIMinimap.kModeBig) or GUIMinimap.kModeMini, forceReset)
+    self.minimapScript:SetBackgroundMode((showBig and GUIMinimapFrame.kModeBig) or GUIMinimapFrame.kModeMini, forceReset)
 
 end
 
@@ -3127,6 +3122,79 @@ function Player:OnUpdatePlayer(deltaTime)
         
         self:UpdateClientEffects(deltaTime, self:GetIsLocalPlayer())
         
+        self:UpdateRookieMode()
+        
+        self:UpdateCommunicationStatus()
+        
+    end
+    
+end
+
+// The client is authoritative over our rookie state. It could be changed because
+// we've been playing long enough, or because the user changed it in their options.
+function Player:UpdateRookieMode()
+
+    // Only update for local player
+    if self:GetIsLocalPlayer() then
+
+        local time = Client.GetTime()
+        
+        // Doesn't need to be updated too often, and don't want to resend message multiple times while waiting for update
+        if self.timeLastRookieModeUpdate == nil or (time > self.timeLastRookieModeUpdate + kRookieNetworkCheckInterval) then
+        
+            local name = self:GetName()
+            local isRookie = ScoreboardUI_IsPlayerRookie(self:GetName())
+            local optionsRookieMode = Client.GetOptionBoolean(kRookieOptionsKey, true)
+            
+            if isRookie ~= optionsRookieMode then
+
+                Client.SendNetworkMessage("SetRookieMode", BuildRookieMessage(optionsRookieMode), true)
+                
+                // Set scoreboard for instant change
+                Scoreboard_SetRookieMode(self:GetName(), optionsRookieMode)
+                
+            end
+            
+            self.timeLastRookieModeUpdate = time    
+            
+        end
+        
+    end
+    
+end
+
+function Player:UpdateCommunicationStatus()
+
+    if self:GetIsLocalPlayer() then
+
+        local time = Client.GetTime()
+        
+        if self.timeLastCommStatusUpdate == nil or (time > self.timeLastCommStatusUpdate + 0.5) then
+        
+            local newCommStatus = kPlayerCommunicationStatus.None
+
+            // If voice comm being used
+            if Client.IsVoiceRecordingActive() then
+                newCommStatus = kPlayerCommunicationStatus.Voice
+            // If we're typing
+            elseif ChatUI_EnteringChatMessage() then
+                newCommStatus = kPlayerCommunicationStatus.Typing
+            // In menu
+            elseif MainMenu_GetIsOpened() then
+                newCommStatus = kPlayerCommunicationStatus.Menu
+            end
+            
+            if newCommStatus ~= self:GetCommunicationStatus() then
+            
+                Client.SendNetworkMessage("SetCommunicationStatus", BuildCommunicationStatus(newCommStatus), true)
+                self:SetCommunicationStatus(newCommStatus)
+                
+            end
+        
+            self.timeLastCommStatusUpdate = time
+            
+        end
+        
     end
     
 end
@@ -3294,7 +3362,7 @@ local function GetFirstPersonHitEffectName(doer)
 
 end
 
-function Player:OnTakeDamageClient(doer, position)
+function Player:OnTakeDamageClient(damage, doer, position)
 
     if self == Client.GetLocalPlayer() then
 

@@ -3,8 +3,7 @@
 
 kDAKRevisions["MapVote"] = 1.3
 local kMaxMapVoteChatLength = 74
-local cycleTime = 0
-local Maps = { }
+local cycle = { { maps = { }, time = 30, mode = "order" } }
 local TiedMaps = { }
 local VotingMaps = { }
 local MapVotes = { }
@@ -57,49 +56,38 @@ end
 
 if kDAKConfig and kDAKConfig._MapVote then
 
+	local mapCycleFileName = "config://MapCycle.json"
+
+	/** 
+	 * Loads information from the mapcycle.txt file.
+	 */
 	local function LoadMapCycle()
 
-		cycleTime = 900 //15 Minutes
-		local file
+		Shared.Message("Loading " .. mapCycleFileName)
 		
-		if kCheckGameDirectory then
-			file = io.open("game://" .. kDAKConfigurationPath .. mapCycleFileName)
-		else
-			file = io.open("user://" .. kDAKConfigurationPath .. mapCycleFileName)
+		cycle = { maps = { }, time = 30, mode = "order" }
+		
+		local cycleFile = io.open(mapCycleFileName, "r")
+		if cycleFile then
+			cycle = json.decode(cycleFile:read("*all")) or { }
 		end
 		
-		if file then
+		assert(type(cycle.time) == "number", "time number expected in " .. mapCycleFileName)
+		assert(type(cycle.mode) == "string", "mode string expected in " .. mapCycleFileName)
+		assert(type(cycle.maps) == "table", "maps list expected in " .. mapCycleFileName)
 		
-			for line in file:lines() do
-			
-				// Trim any white space from the line
-				line = line:gsub("^%s*(.-)%s*$", "%1")
-				
-				// Check for the form a = b
-				local var, val = line:match("^([%w_]+)%s*=%s*(.+)$")
-				
-				if var == "min_time" then
-				
-					// Convert minutes to seconds
-					cycleTime = tonumber(val) * 60
-					
-				elseif var ~= "mode" then
-					table.insert(Maps, line)
-				end
-				
-			end
-			
-		end
-
 	end
-
+	
 	LoadMapCycle()
-
+	
 	function MapCycle_TestCycleMap()
 
-		if Shared.GetTime() < cycleTime then
+		// time is stored as minutes so convert to seconds.
+		if Shared.GetTime() < (cycle.time * 60) then
+		
 			// We haven't been on the current map for long enough.
-			return
+			return false
+			
 		end
 		
 		mapvoteintiated = true
@@ -149,17 +137,17 @@ if kDAKConfig and kDAKConfig._MapVote then
 				end
 			end
 			
-			for i = 1, #Maps do
+			for i = 1, #cycle.maps do
 			
 				recentlyplayed = false
 				for j = 1, #kDAKSettings.PreviousMaps do
-					if Maps[i] == kDAKSettings.PreviousMaps[j] then
+					if cycle.maps[i] == kDAKSettings.PreviousMaps[j] then
 						recentlyplayed = true
 					end				
 				end
 
-				if Maps[i] ~= tostring(Shared.GetMapName()) and not recentlyplayed then	
-					table.insert(tempMaps, Maps[i])
+				if cycle.maps[i] ~= tostring(Shared.GetMapName()) and not recentlyplayed then	
+					table.insert(tempMaps, cycle.maps[i])
 				end
 				
 			end
@@ -463,7 +451,7 @@ if kDAKConfig and kDAKConfig._MapVote then
 		
 			local player = client:GetControllingPlayer()
 			if player ~= nil then
-				chatMessage = string.sub(string.format("%.1f Minutes Remaining.", math.max(0,(cycleTime - Shared.GetTime())/60)), 1, kMaxChatLength)
+				chatMessage = string.sub(string.format("%.1f Minutes Remaining.", math.max(0,(cycle.time - Shared.GetTime())/60)), 1, kMaxChatLength)
 				Server.SendNetworkMessage(player, "Chat", BuildChatMessage(false, "PM - Admin", -1, kTeamReadyRoom, kNeutralTeamType, chatMessage), true)
 			end
 			

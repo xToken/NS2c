@@ -16,6 +16,8 @@
 kTechDataId                             = "id"
 // Localizable string describing tech node
 kTechDataDisplayName                    = "displayname"
+// Include and set to false if not meant to display on commander UI "enables: "
+kTechIDShowEnables                      = "showenables"
 kTechDataMapName                        = "mapname"
 kTechDataModel                          = "model"
 // TeamResources, resources or energy

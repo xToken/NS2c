@@ -131,15 +131,17 @@ end
 function PlayingTeam:ResetTeam()
 
     local initialTechPoint = self:GetInitialTechPoint()
-
+    
     self:SpawnInitialStructures(initialTechPoint)
     
-    for i, player in ipairs( GetEntitiesForTeam("Player", self:GetTeamNumber()) ) do
+    local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
+    for p = 1, #players do
+    
+        local player = players[p]
         player:OnInitialSpawn(initialTechPoint:GetOrigin())
     end
-    self.unassignedhives = 0
-    self.techTree:SetTechChanged()
     
+    self.techTree:SetTechChanged()
 end
 
 function PlayingTeam:OnResetComplete()
@@ -538,7 +540,7 @@ function PlayingTeam:ReplaceRespawnPlayer(player, origin, angles, mapName)
     if not self:RespawnPlayer(newPlayer, origin, angles) then
     
         newPlayer = newPlayer:Replace(newPlayer:GetDeathMapName())
-        self:PutPlayerInRespawnQueue(newPlayer, Shared.GetTime())
+        self:PutPlayerInRespawnQueue(newPlayer)
         
     end
     
@@ -655,29 +657,13 @@ function PlayingTeam:Update(timePassed)
 
     PROFILE("PlayingTeam:Update")
     
-    // Give new players starting resources. Mark players as "having played" the game (so they don't get starting res if 
-    // they join a team again, etc.)    
-    local gamerules = GetGamerules()
-    for index, player in ipairs(self:GetPlayers()) do
-    
-        local success, played = gamerules:GetUserPlayedInGame(player)
-        if success and not played and self:GetTeamType() == kAlienTeamType then
-            player:SetResources( kAlienTeamInitialRes )
-        end
-        
-        if gamerules:GetGameStarted() then
-            gamerules:SetUserPlayedInGame(player)
-        end
-        
-    end
-    
     self:UpdateTechTree()
     
     self:UpdateGameEffects(timePassed)
     
     self:UpdateVoteToEject()
     
-    if gamerules:GetGameStarted() then
+    if GetGamerules():GetGameStarted() then
         self:UpdateResourceTowers()
     end
     
@@ -804,16 +790,6 @@ function PlayingTeam:VoteToEjectCommander(votingPlayer, targetCommander)
     
     if self.ejectCommVoteManager:PlayerVotesFor(votingPlayerSteamId, targetSteamId, Shared.GetTime()) then
         PrintToLog("%s cast vote to eject commander %s", votingPlayer:GetName(), targetCommander:GetName())
-    end
-    
-end
-
-function PlayingTeam:VoteforChamber(votingPlayer, Chamber)
-
-    local votingPlayerSteamId = tonumber(Server.GetOwner(votingPlayer):GetUserId())
-    
-    if self.ejectCommVoteManager:PlayerVotesFor(votingPlayerSteamId, Chamber, Shared.GetTime()) then
-            PrintToLog("%s cast vote for chamber %s", votingPlayer:GetName(), Chamber)
     end
     
 end

@@ -97,6 +97,7 @@ end
  * 1 = available and ready, display as pressable
  * 2 = available but not currently, display in red
  * 3 = not available, display grayed out (also for invalid actions, ie Recycle)
+ * 4 = normal color but not clickable
  */
 function CommanderUI_MenuButtonStatus(index)
 

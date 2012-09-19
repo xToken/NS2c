@@ -328,16 +328,15 @@ function AlienBuy_GetPurchasedUpgrades(idx)
     
 end
 
-function PurchaseTechs(purchaseIds)
+local function PurchaseTechs(purchaseIds)
 
-    ASSERT(purchaseIds)
-    ASSERT(table.count(purchaseIds) > 0)
+    assert(purchaseIds)
+    assert(table.count(purchaseIds) > 0)
     
     local player = Client.GetLocalPlayer()
     
-    local buyCommand = "buy"
     local buyAllowed = true
-    local totalCost = 0
+    local validPurchaseIds = { }
     
     for i, purchaseId in ipairs(purchaseIds) do
     
@@ -346,11 +345,12 @@ function PurchaseTechs(purchaseIds)
         if techNode ~= nil then
         
             if techNode:GetAvailable() then
-                totalCost = totalCost + techNode:GetCost()
-                buyCommand = buyCommand .. " " .. tostring(purchaseId)
+                table.insert(validPurchaseIds, purchaseId)
             else
+            
                 buyAllowed = false
                 break
+                
             end
             
         else
@@ -363,8 +363,10 @@ function PurchaseTechs(purchaseIds)
         
     end
     
-    Shared.ConsoleCommand(buyCommand)
-
+    if buyAllowed then
+        Client.SendNetworkMessage("Buy", BuildBuyMessage(validPurchaseIds), true)
+    end
+    
 end
 
 /**

@@ -11,7 +11,6 @@ local kVisionTextureName = "ui/marine_shotgun_buy.dds"
 local kIconWidth = 128
 local kIconHeight = 128
 local kIconSize = Vector(kIconWidth / 2, kIconHeight / 2, 0)
-local kBackgroundYOffset = -120
 local kArrowTexture = "ui/marinewaypoint_arrow.dds"
 local kArrowSize = Vector(24, 24, 0)
 
@@ -21,7 +20,7 @@ function GUIBuyShotgunHelp:Initialize()
 
     self.shotgunImage = GUIManager:CreateGraphicItem()
     self.shotgunImage:SetAnchor(GUIItem.Left, GUIItem.Top)
-    self.shotgunImage:SetPosition(Vector(-kIconWidth / 2, -kIconHeight + kBackgroundYOffset, 0))
+    self.shotgunImage:SetPosition(Vector(-kIconWidth / 2, -kIconHeight + kHelpBackgroundYOffset, 0))
     self.shotgunImage:SetSize(kIconSize)
     self.shotgunImage:SetTexture(kVisionTextureName)
     self.shotgunImage:SetLayer(kGUILayerPlayerHUD)
@@ -93,7 +92,7 @@ function GUIBuyShotgunHelp:Update(dt)
                         
                         self.shotgunImage:SetIsVisible(false)
                         self.shotgunBought = true
-                        Client.SetOptionInteger("help/guibuyshotgunhelp", Client.GetOptionInteger("help/guibuyshotgunhelp", 0) + 1)
+                        HelpWidgetIncreaseUse("GUIBuyShotgunHelp")
                         
                     end
                     

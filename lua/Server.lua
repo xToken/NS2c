@@ -21,10 +21,14 @@ Script.Load("lua/TeamJoin.lua")
 Script.Load("lua/Bot.lua")
 Script.Load("lua/VoteManager.lua")
 
+Script.Load("lua/ServerConfig.lua")
+
 Script.Load("lua/ServerAdmin.lua")
-Script.Load("lua/ServerAdminCommands.lua")
+//Script.Load("lua/ServerAdminCommands.lua")
 
 Script.Load("lua/ServerWebInterface.lua")
+
+Script.Load("lua/MapCycle.lua")
 
 Script.Load("lua/ConsoleCommands_Server.lua")
 Script.Load("lua/NetworkMessages_Server.lua")
@@ -90,8 +94,8 @@ local function LoadServerMapEntity(mapName, groupName, values)
 
     if not GetLoadEntity(mapName, groupName, values) then
         return
-    end    
-
+    end
+    
     // Skip the classes that are not true entities and are handled separately
     // on the client.
     if mapName ~= "prop_static"
@@ -107,6 +111,7 @@ local function LoadServerMapEntity(mapName, groupName, values)
        and mapName ~= Reverb.kMapName
        and mapName ~= Hive.kMapName
        and mapName ~= CommandStation.kMapName
+	   and mapName ~= "cyst"
        and mapName ~= Particles.kMapName
        and mapName ~= InfantryPortal.kMapName then
         
@@ -141,7 +146,7 @@ local function LoadServerMapEntity(mapName, groupName, values)
             if HasMixin(entity, "Model") and (renderModelCommAlpha < 1 or blocksPlacement) then
                 entity:SetPhysicsGroup(PhysicsGroup.CommanderPropsGroup)
             end
-
+            
         end
         
     end

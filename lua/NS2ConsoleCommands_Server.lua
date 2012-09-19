@@ -69,12 +69,12 @@ local function OnCommandFilm(client)
     
     if Shared.GetCheatsEnabled() or Shared.GetDevMode() or (player:GetTeamNumber() == kTeamReadyRoom) then
 
+        Shared.Message("Film mode enabled. Hold crouch for dolly, movement modifier for speed or attack to orbit then press movement keys.")
+
         local success, newPlayer = Spectate(player)
         
         // Transform class into FilmSpectator
         newPlayer:Replace(FilmSpectator.kMapName, newPlayer:GetTeamNumber(), false)
-        
-        Print("Film mode enabled. Hold crouch for dolly, movement modifier for speed or attack to orbit then press movement keys.")
         
     end
     
@@ -425,21 +425,6 @@ local function OnCommandLogout(client)
 
 end
 
-local function OnCommandBuy(client, ...)
-    
-    local player = client:GetControllingPlayer()
-    
-    local purchaseTechIds = { }
-    for _, purchaseTechId in ipairs( {...} ) do
-        table.insert(purchaseTechIds, tonumber(purchaseTechId))
-    end
-    
-    if player:GetIsAllowedToBuy() then
-        player:ProcessBuyAction(purchaseTechIds)
-    end
-
-end
-
 local function OnCommandGotoIdleWorker(client)
 
     local player = client:GetControllingPlayer()
@@ -640,9 +625,7 @@ local function OnCommandCreate(client, techIdString, number)
         local techId = techIdStringToTechId(techIdString)
         local attachClass = LookupTechData(techId, kStructureAttachClass)
         
-        if number == nil then
-            number = 1
-        end
+        number = number or 1
         
         if techId ~= nil then
         
@@ -673,9 +656,7 @@ local function OnCommandCreate(client, techIdString, number)
                     if position then
                     
                         success = true
-                        
                         CreateEntityForTeam(techId, position, teamNumber, player)
-                        
                         break
                         
                     end
@@ -686,7 +667,7 @@ local function OnCommandCreate(client, techIdString, number)
                     Print("Create %s: Couldn't find space for entity", EnumToString(kTechId, techId))
                 end
                 
-           end
+            end
             
         else
             Print("Usage: create (techId name)")
@@ -990,7 +971,6 @@ Event.Hook("Console_rr", OnCommandReadyRoom)
 
 Event.Hook("Console_endgame", OnCommandEndGame)
 Event.Hook("Console_logout", OnCommandLogout)
-Event.Hook("Console_buy", OnCommandBuy)
 Event.Hook("Console_gotoidleworker", OnCommandGotoIdleWorker)
 Event.Hook("Console_gotoplayeralert", OnCommandGotoPlayerAlert)
 Event.Hook("Console_selectallplayers", OnCommandSelectAllPlayers)

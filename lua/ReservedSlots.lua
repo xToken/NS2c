@@ -9,7 +9,7 @@ local disconnectclients = { }
 local disconnectclienttime = 0
 local reserveslotactionslog = { }
 
-local ReservedPlayersFileName = "ReservedPlayers.json"
+local ReservedPlayersFileName = "config://ReservedPlayers.json"
 
 if kDAKConfig and kDAKConfig._ReservedSlots then
 
@@ -38,12 +38,7 @@ if kDAKConfig and kDAKConfig._ReservedSlots then
 
 	local function LoadReservedPlayers()
 		-- Borrowed :< from Huze reserved slot plugin to maintain compat.
-		local ReservedPlayersFile
-		if kCheckGameDirectory then
-			ReservedPlayersFile = assert(io.open("game://" .. kDAKConfigurationPath .. ReservedPlayersFileName, "r"))
-		else
-			ReservedPlayersFile = assert(io.open("user://" .. kDAKConfigurationPath .. ReservedPlayersFileName, "r"))
-		end
+		local ReservedPlayersFile = assert(io.open(ReservedPlayersFileName, "r"))
 		if ReservedPlayersFile then
 			Shared.Message("Loading Reserve slot players.")
 			ReservedPlayers = json.decode(ReservedPlayersFile:read("*all"))
@@ -54,7 +49,7 @@ if kDAKConfig and kDAKConfig._ReservedSlots then
 
 	local function SaveReservedPlayers()
 
-		local ReservedPlayersFile = io.open("user://" .. kDAKConfigurationPath .. reservedPlayersFileName, "w+")
+		local ReservedPlayersFile = io.open(reservedPlayersFileName, "w+")
 		ReservedPlayersFile:write(json.encode(ReservedPlayers))
 		ReservedPlayersFile:close()
 		
