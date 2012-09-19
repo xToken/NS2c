@@ -8,10 +8,13 @@
 // siege attacks.
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+
 local kARCDamageOffset = Vector(0, 0.3, 0)
+local kMoveParam = "move_speed"
+local kMuzzleNode = "fxnode_arcmuzzle"
 
 function ARC:SetTargetDirection(target)
-    self.targetDirection = GetNormalizedVector(target:GetEngagementPoint() - self:GetAttachPointOrigin(ARC.kMuzzleNode))
+    self.targetDirection = GetNormalizedVector(target:GetEngagementPoint() - self:GetAttachPointOrigin(kMuzzleNode))
 end
 
 function ARC:ClearTargetDirection()
@@ -79,8 +82,6 @@ local function PerformAttack(self)
     local target = self:GetTarget()
     if target then
     
-        //Print("ARC  PerformAttack")
-    
         self:TriggerEffects("arc_firing")
     
         // Play big hit sound at origin
@@ -88,12 +89,7 @@ local function PerformAttack(self)
 
         // Do damage to everything in radius. Use upgraded splash radius if researched.
         local damageRadius = ConditionalValue(self:GetHasUpgrade(kTechId.ARCSplashTech), ARC.kUpgradedSplashRadius, ARC.kSplashRadius)
-        local hitEntities
-        if GetGamerules():GetFriendlyFire() then
-            hitEntities = GetEntitiesWithMixinWithinRange("Live", target:GetOrigin() + kARCDamageOffset, damageRadius)
-        else
-            hitEntities = GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(self:GetTeamNumber()), target:GetOrigin() + kARCDamageOffset, damageRadius)
-        end
+        local hitEntities = GetEntitiesWithMixinWithinRange("Live", target:GetOrigin() + kARCDamageOffset, damageRadius)
 
         // Do damage to every target in range
         RadiusDamage(hitEntities, target:GetOrigin(), damageRadius, ARC.kAttackDamage, self, true)

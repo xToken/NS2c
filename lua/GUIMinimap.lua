@@ -50,7 +50,7 @@ kInfestationDyingColor[kMinimapBlipTeam.Neutral] =Color(1, 0.67, 0.06, .11)
 kInfestationDyingColor[kMinimapBlipTeam.Alien] = Color(1, 0.67, 0.06, .11)
 kInfestationDyingColor[kMinimapBlipTeam.Marine] = Color(0.2, 0.7, 0.2, .15)
 
-local kPlayerOverLaySize = Vector(kBlipSize * 30, kBlipSize * 30, 0)
+local kPlayerOverLaySize = Vector(kBlipSize * 5, kBlipSize * 5, 0)
 
 local kIconFileName = "ui/minimap_blip.dds"
 

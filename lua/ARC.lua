@@ -45,10 +45,8 @@ ARC.kModelName = PrecacheAsset("models/marine/arc/arc.model")
 local kAnimationGraph = PrecacheAsset("models/marine/arc/arc.animation_graph")
 
 // Animations
-ARC.kMoveParam              = "move_speed"
-ARC.kArcPitchParam          = "arc_pitch"
-ARC.kArcYawParam            = "arc_yaw"
-ARC.kMuzzleNode             = "fxnode_arcmuzzle"
+local kArcPitchParam = "arc_pitch"
+local kArcYawParam = "arc_yaw"
 
 ARC.kArcForwardTrackYawParam = "move_yaw"
 ARC.kArcForwardTrackPitchParam = "move_pitch"
@@ -71,6 +69,9 @@ ARC.kCapsuleRadius = .5
 ARC.kMode = enum( {'Stationary', 'Targeting', 'Destroyed'} )
 ARC.kDeployMode = enum( { 'Undeploying', 'Undeployed', 'Deploying', 'Deployed' } )
 
+ARC.kTurnSpeed = math.pi / 2 // an ARC turns slowly
+ARC.kMaxSpeedLimitAngle = math.pi / 36 // 5 degrees
+ARC.kNoSpeedLimitAngle = math.pi / 4 // 24 degrees
 if Server then
     Script.Load("lua/ARC_Server.lua")
 end
@@ -152,7 +153,8 @@ function ARC:OnInitialized()
     
     if Server then
         // TargetSelectors require the TargetCacheMixin for cleanup.
-        InitMixin(self, TargetCacheMixin) 
+        InitMixin(self, TargetCacheMixin)
+        
         // Prioritize targetting non-Eggs first.
         self.targetSelector = TargetSelector():Init(
                 self,
@@ -188,6 +190,14 @@ end
 
 function ARC:GetReceivesStructuralDamage()
     return true
+end
+
+function ARC:GetTurnSpeedOverride()
+    return ARC.kTurnSpeed
+end
+
+function ARC:GetSpeedLimitAnglesOverride()
+    return { ARC.kMaxSpeedLimitAngle, ARC.kNoSpeedLimitAngle }
 end
 
 function ARC:GetCanSleep()
@@ -263,14 +273,22 @@ function ARC:GetFov()
     return ARC.kFov
 end
 
+function ARC:OnOverrideDoorInteraction(inEntity)   
+    return true, 4
+end
+
 function ARC:GetEffectParams(tableParams)
+
     ScriptActor.GetEffectParams(self, tableParams)    
     tableParams[kEffectFilterDeployed] = self:GetInAttackMode() 
+    
 end
 
 function ARC:FilterTarget()
+
     local attacker = self
-    return function (target, targetPosition) return attacker:GetCanFireAtTargetActual(target, targetPosition) end   
+    return function (target, targetPosition) return attacker:GetCanFireAtTargetActual(target, targetPosition) end
+    
 end
 
 //
@@ -317,7 +335,7 @@ function ARC:GetCanFireAtTargetActual(target, targetPoint)
     end
     
     local distToTarget = (target:GetOrigin() - self:GetOrigin()):GetLengthXZ()
-    if (distToTarget < ARC.kMinFireRange) then
+    if (distToTarget > ARC.kFireRange) then
         return false
     end
     
@@ -362,9 +380,10 @@ end
 
 function ARC:OnUpdatePoseParameters()
 
-    PROFILE("ARC:OnUpdatePoseParameters")  
-    self:SetPoseParam(ARC.kArcPitchParam, self.barrelPitchDegrees)
-    self:SetPoseParam(ARC.kArcYawParam , self.barrelYawDegrees)
+    PROFILE("ARC:OnUpdatePoseParameters")
+    
+    self:SetPoseParam(kArcPitchParam, self.barrelPitchDegrees)
+    self:SetPoseParam(kArcYawParam , self.barrelYawDegrees)
     self:SetPoseParam(ARC.kArcForwardTrackYawParam , self.forwardTrackYawDegrees)
     self:SetPoseParam(ARC.kArcForwardTrackPitchParam , self.forwardTrackPitchDegrees)
     

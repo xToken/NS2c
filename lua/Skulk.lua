@@ -497,10 +497,6 @@ function Skulk:GetGroundFrictionForce()
     
 end
 
-function Skulk:GetAirFrictionForce()
-    return 0.13
-end 
-
 function Skulk:GetFrictionForce(input, velocity)
 
     local friction = Player.GetFrictionForce(self, input, velocity)
