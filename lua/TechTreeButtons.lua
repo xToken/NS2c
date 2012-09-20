@@ -135,14 +135,14 @@ function InitTechTreeMaterialOffsets()
     kMarineTechIdToMaterialOffset[kTechId.AdvancedArmoryUpgrade] = 65
     kMarineTechIdToMaterialOffset[kTechId.PhaseGate] = 67
     kMarineTechIdToMaterialOffset[kTechId.PhaseTech] = 68
-    kMarineTechIdToMaterialOffset[kTechId.MotionTracking] = 62
+    kMarineTechIdToMaterialOffset[kTechId.MotionTracking] = 7
 
     kMarineTechIdToMaterialOffset[kTechId.GrenadeLauncher] = 72
     kMarineTechIdToMaterialOffset[kTechId.HeavyArmorTech] = 75
     kMarineTechIdToMaterialOffset[kTechId.HeavyArmor] = 61
-    kMarineTechIdToMaterialOffset[kTechId.Mine] = 80
-    kMarineTechIdToMaterialOffset[kTechId.Mines] = 80
-    kMarineTechIdToMaterialOffset[kTechId.Welder] = 21    
+    kMarineTechIdToMaterialOffset[kTechId.Mine] = 8
+    kMarineTechIdToMaterialOffset[kTechId.Mines] = 8
+    kMarineTechIdToMaterialOffset[kTechId.Welder] = 17
     kMarineTechIdToMaterialOffset[kTechId.HeavyMachineGun] = 47
     kMarineTechIdToMaterialOffset[kTechId.HandGrenadesTech] = 72
     kMarineTechIdToMaterialOffset[kTechId.HandGrenades] = 72
@@ -214,7 +214,7 @@ function InitTechTreeMaterialOffsets()
     // upgradeable alien abilities
     kAlienTechIdToMaterialOffset[kTechId.Leap] = 105
     kAlienTechIdToMaterialOffset[kTechId.BileBomb] = 107
-    kAlienTechIdToMaterialOffset[kTechId.Umbra] = 113
+    kAlienTechIdToMaterialOffset[kTechId.Umbra] = 114
     kAlienTechIdToMaterialOffset[kTechId.Metabolize] = 110
     kAlienTechIdToMaterialOffset[kTechId.Stomp] = 111
     
@@ -238,15 +238,15 @@ function InitTechTreeMaterialOffsets()
     
     kAlienTechIdToMaterialOffset[kTechId.Silence] = 85
     kAlienTechIdToMaterialOffset[kTechId.Ghost] = 86
-    kAlienTechIdToMaterialOffset[kTechId.Aura] = 71
+    kAlienTechIdToMaterialOffset[kTechId.Aura] = 60
     
     kAlienTechIdToMaterialOffset[kTechId.Carapace] = 81
     kAlienTechIdToMaterialOffset[kTechId.Regeneration] = 82
     kAlienTechIdToMaterialOffset[kTechId.Redemption] = 87
     
     kAlienTechIdToMaterialOffset[kTechId.Focus] = 80
-    kAlienTechIdToMaterialOffset[kTechId.Fury] = 114
-    kAlienTechIdToMaterialOffset[kTechId.Bombard] = 60
+    kAlienTechIdToMaterialOffset[kTechId.Fury] = 104
+    kAlienTechIdToMaterialOffset[kTechId.Bombard] = 53
     
     //Hydra
     kAlienTechIdToMaterialOffset[kTechId.Hydra] = 88

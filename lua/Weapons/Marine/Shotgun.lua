@@ -31,7 +31,7 @@ function Shotgun:OnCreate()
 
     ClipWeapon.OnCreate(self)
     
-    InitMixin(self, PickupableWeaponMixin)
+    InitMixin(self, PickupableWeaponMixin, { kRecipientType = "Marine" })
     
     self.emptyPoseParam = 0
 

@@ -41,17 +41,17 @@ Fade.kHealth = kFadeHealth
 Fade.kArmor = kFadeArmor
 Fade.kMass = 50 // ~350 pounds
 Fade.kJumpHeight = 1.3
-Fade.kMaxSpeed = 21
+Fade.kMaxSpeed = 23
 Fade.kBlinkAccelSpeed = 12
 Fade.kWalkSpeed = 4
 Fade.kAcceleration = 50
 Fade.kAirAcceleration = 25
 Fade.kBlinkAirAcceleration = 40
 Fade.kBlinkAirAccelerationDuration = 2
-Fade.kBlinkAcceleration = 60
-Fade.kVerticleBlinkAcceleration = 25
-Fade.kVerticleBlinkReduction = 3
-Fade.kVerticleBlinkOffset = 0.075
+Fade.kBlinkAcceleration = 75
+Fade.kBlinkFadeInTime = 0.10
+Fade.kVerticleBlinkAcceleration = 2500
+Fade.kBlinkOffset = Vector(0 ,Fade.kJumpHeight ,0)
 
 if Server then
     Script.Load("lua/Fade_Server.lua")
@@ -165,7 +165,7 @@ end
 
 
 function Fade:GetGroundFrictionForce()
-    return 7.2
+    return ConditionalValue(self:GetIsBlinking() or (self:GetRecentlyBlinked() and self:GetVelocity():GetLengthXZ() > Fade.kBlinkAccelSpeed), 6, 7.2)
 end
 
 function Fade:GetCanJump()
@@ -185,7 +185,8 @@ end
 function Fade:GetAcceleration()
     
     if self:GetIsBlinking() then
-        return Fade.kBlinkAcceleration * self:GetMovementSpeedModifier()
+        local btime = Clamp(((Shared.GetTime() - self.etherealStartTime) * 10), 0.1, 1)
+        return Fade.kBlinkAcceleration * self:GetMovementSpeedModifier() * btime
     end
     if self:GetRecentlyBlinked() and self:GetVelocity():GetLengthXZ() > Fade.kBlinkAccelSpeed then
         return Fade.kBlinkAirAcceleration * self:GetMovementSpeedModifier()
@@ -219,17 +220,16 @@ function Fade:ModifyVelocity(input, velocity)
         self:PerformMovement( velocity * input.time, 1, velocity )
         local viewCoords = self:GetViewAngles():GetCoords()
         local zAxis = viewCoords.zAxis
+        local upangle = math.abs(zAxis.y)
         //Convert velocity instantly if opposite direction for additional responsiveness
-        //offset viewangle slightly to account for downwards trending
-        zAxis.y = zAxis.y + Fade.kVerticleBlinkOffset
-        if Sign(velocity.y) ~= Sign(zAxis.y) then
+        if upangle > 0.15 and Sign(velocity.y) ~= Sign(zAxis.y) then
             if Sign(zAxis.y) > 0 then
                 velocity.y = 10
             elseif zAxis.y < (-0.25) then
                 velocity.y = 0
             end
+             velocity.y = velocity.y + (Fade.kVerticleBlinkAcceleration * ((1 - math.cos(zAxis.y)) * input.time))
         end
-        velocity.y = velocity.y + Clamp( Fade.kVerticleBlinkAcceleration * ((1 - math.cos(zAxis.y)) / Fade.kVerticleBlinkReduction) ,0, zAxis.y)
     end
     
 end
@@ -281,6 +281,7 @@ function Fade:TriggerBlink()
     self.ethereal = true
     self.onGroundNeedsUpdate = false
     self.jumping = true
+
 end
 
 function Fade:OverrideInput(input)
@@ -294,10 +295,6 @@ function Fade:OverrideInput(input)
     
     return input
     
-end
-
-function Fade:GetCanClimb()
-    return false
 end
 
 function Fade:OnBlinkEnd()

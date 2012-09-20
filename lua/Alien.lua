@@ -491,13 +491,6 @@ function Alien:GetCanBeHealedOverride()
     return self:GetIsAlive()
 end    
 
-/**
- * Aliens cannot climb ladders.
- */
-function Alien:GetCanClimb()
-    return true
-end
-
 function Alien:GetHasSayings()
     return true
 end

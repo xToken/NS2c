@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
   <file>
+    <filename>AFKKick.lua</filename>
+  </file>
+  <file>
     <filename>ARC.lua</filename>
   </file>
   <file>
@@ -10,6 +13,9 @@
     <filename>Weapons\Alien\Ability.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Alien\AcidRocket.lua</filename>
+  </file>
+  <file>
     <filename>Alien.lua</filename>
   </file>
   <file>
@@ -17,6 +23,12 @@
   </file>
   <file>
     <filename>AlienBuy_Client.lua</filename>
+  </file>
+  <file>
+    <filename>AlienDetectorMixin.lua</filename>
+  </file>
+  <file>
+    <filename>AlienSpectator.lua</filename>
   </file>
   <file>
     <filename>AlienStructureEffects.lua</filename>
@@ -59,6 +71,9 @@
   </file>
   <file>
     <filename>BalanceMisc.lua</filename>
+  </file>
+  <file>
+    <filename>BaseAdminCommands.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\BileBomb.lua</filename>
@@ -115,10 +130,19 @@
     <filename>Commander_Server.lua</filename>
   </file>
   <file>
+    <filename>ConsoleCommands_Client.lua</filename>
+  </file>
+  <file>
     <filename>ConstructMixin.lua</filename>
   </file>
   <file>
     <filename>Crag.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\CragAbility.lua</filename>
+  </file>
+  <file>
+    <filename>DAKLoader.lua</filename>
   </file>
   <file>
     <filename>DamageEffects.lua</filename>
@@ -139,10 +163,16 @@
     <filename>DetectorMixin.lua</filename>
   </file>
   <file>
+    <filename>DisruptMixin.lua</filename>
+  </file>
+  <file>
     <filename>Door.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\DropStructureAbility.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\DropStructureAbility2.lua</filename>
   </file>
   <file>
     <filename>Egg.lua</filename>
@@ -152,6 +182,9 @@
   </file>
   <file>
     <filename>EnergyMixin.lua</filename>
+  </file>
+  <file>
+    <filename>EnhancedLogging.lua</filename>
   </file>
   <file>
     <filename>Extractor.lua</filename>
@@ -173,6 +206,9 @@
   </file>
   <file>
     <filename>GUIAlienHUD.lua</filename>
+  </file>
+  <file>
+    <filename>GUIAlienSpectatorHUD.lua</filename>
   </file>
   <file>
     <filename>GUIBuyShotgunHelp.lua</filename>
@@ -217,6 +253,9 @@
     <filename>Hud\GUIInventory.lua</filename>
   </file>
   <file>
+    <filename>GUIMarineBuyMenu.lua</filename>
+  </file>
+  <file>
     <filename>Hud\Marine\GUIMarineHud.lua</filename>
   </file>
   <file>
@@ -235,7 +274,13 @@
     <filename>GUIPlayerNames.lua</filename>
   </file>
   <file>
+    <filename>Hud\GUIPlayerResource.lua</filename>
+  </file>
+  <file>
     <filename>GUISelectionPanel.lua</filename>
+  </file>
+  <file>
+    <filename>GUISpeedDebug.lua</filename>
   </file>
   <file>
     <filename>GUIUnitStatus.lua</filename>
@@ -271,13 +316,40 @@
     <filename>Weapons\Marine\GrenadeLauncher.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Marine\HandGrenade.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Marine\HandGrenades.lua</filename>
+  </file>
+  <file>
     <filename>Harvester.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\HarvesterAbility.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\HealSprayMixin.lua</filename>
   </file>
   <file>
+    <filename>HeavyArmor.lua</filename>
+  </file>
+  <file>
+    <filename>HeavyArmorMarine.lua</filename>
+  </file>
+  <file>
+    <filename>HeavyArmorMarine_Client.lua</filename>
+  </file>
+  <file>
+    <filename>HeavyArmorMarine_Server.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Marine\HeavyMachineGun.lua</filename>
+  </file>
+  <file>
     <filename>Hive.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\HiveAbility.lua</filename>
   </file>
   <file>
     <filename>Hive_Server.lua</filename>
@@ -316,10 +388,19 @@
     <filename>Lerk_Server.lua</filename>
   </file>
   <file>
+    <filename>LiveMixin.lua</filename>
+  </file>
+  <file>
     <filename>Location.lua</filename>
   </file>
   <file>
+    <filename>MOTD.lua</filename>
+  </file>
+  <file>
     <filename>MapBlipMixin.lua</filename>
+  </file>
+  <file>
+    <filename>MapVote.lua</filename>
   </file>
   <file>
     <filename>Marine.lua</filename>
@@ -358,7 +439,13 @@
     <filename>MedPack.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Alien\Metabolize.lua</filename>
+  </file>
+  <file>
     <filename>Mine.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Marine\Mines.lua</filename>
   </file>
   <file>
     <filename>NS2ConsoleCommands_Server.lua</filename>
@@ -424,6 +511,9 @@
     <filename>PointGiverMixin.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Alien\PrimalScreamMixin.lua</filename>
+  </file>
+  <file>
     <filename>PropDynamic.lua</filename>
   </file>
   <file>
@@ -448,10 +538,19 @@
     <filename>ResearchMixin.lua</filename>
   </file>
   <file>
+    <filename>ReservedSlots.lua</filename>
+  </file>
+  <file>
+    <filename>ResourceTower.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Marine\Rifle.lua</filename>
   </file>
   <file>
     <filename>RoboticsFactory.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\Rocket.lua</filename>
   </file>
   <file>
     <filename>CommAbilities\Marine\Scan.lua</filename>
@@ -466,16 +565,25 @@
     <filename>Sentry.lua</filename>
   </file>
   <file>
+    <filename>Sentry_Server.lua</filename>
+  </file>
+  <file>
     <filename>Server.lua</filename>
   </file>
   <file>
     <filename>Shade.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Alien\ShadeAbility.lua</filename>
+  </file>
+  <file>
     <filename>Shared.lua</filename>
   </file>
   <file>
     <filename>Shift.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\ShiftAbility.lua</filename>
   </file>
   <file>
     <filename>Weapons\Marine\Shotgun.lua</filename>
@@ -487,6 +595,12 @@
     <filename>Skulk_Client.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Alien\Smash.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\SpikesMixin.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Alien\Spit.lua</filename>
   </file>
   <file>
@@ -494,6 +608,12 @@
   </file>
   <file>
     <filename>Weapons\Alien\SporeCloud.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\SporesMixin.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\StompMixin.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\StructureAbility.lua</filename>
@@ -526,7 +646,19 @@
     <filename>TechTree_Server.lua</filename>
   </file>
   <file>
+    <filename>TournamentMode.lua</filename>
+  </file>
+  <file>
     <filename>Tracer_Client.lua</filename>
+  </file>
+  <file>
+    <filename>TurretFactoryMixin.lua</filename>
+  </file>
+  <file>
+    <filename>TurretMixin.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\UmbraCloud.lua</filename>
   </file>
   <file>
     <filename>UmbraMixin.lua</filename>
@@ -535,100 +667,13 @@
     <filename>UnitStatusMixin.lua</filename>
   </file>
   <file>
+    <filename>VoteRandom.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Weapon.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Weapon_Server.lua</filename>
-  </file>
-  <file>
-    <filename>WeldableMixin.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Marine\Welder.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\XenocideLeap.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\CragAbility.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\HarvesterAbility.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\HiveAbility.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\ShadeAbility.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\ShiftAbility.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Marine\HeavyMachineGun.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\UmbraCloud.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\SporesMixin.lua</filename>
-  </file>
-  <file>
-    <filename>TurretFactoryMixin.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\AcidRocket.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\Rocket.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\Smash.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\SpikesMixin.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\Metabolize.lua</filename>
-  </file>
-  <file>
-    <filename>TurretMixin.lua</filename>
-  </file>
-  <file>
-    <filename>HeavyArmorMarine.lua</filename>
-  </file>
-  <file>
-    <filename>HeavyArmorMarine_Client.lua</filename>
-  </file>
-  <file>
-    <filename>HeavyArmorMarine_Server.lua</filename>
-  </file>
-  <file>
-    <filename>HeavyArmor.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Marine\Mines.lua</filename>
-  </file>
-  <file>
-    <filename>GUIMarineBuyMenu.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Marine\HandGrenades.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Marine\HandGrenade.lua</filename>
-  </file>
-  <file>
-    <filename>AlienSpectator.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\StompMixin.lua</filename>
-  </file>
-  <file>
-    <filename>GUIAlienSpectatorHUD.lua</filename>
-  </file>
-  <file>
-    <filename>AlienDetectorMixin.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\PrimalScreamMixin.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\Web.lua</filename>
@@ -637,7 +682,10 @@
     <filename>Weapons\Alien\WebAbility.lua</filename>
   </file>
   <file>
-    <filename>LiveMixin.lua</filename>
+    <filename>WeldableMixin.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Marine\Welder.lua</filename>
   </file>
   <file>
     <filename>Whip.lua</filename>
@@ -646,51 +694,6 @@
     <filename>Weapons\Alien\WhipAbility.lua</filename>
   </file>
   <file>
-    <filename>Weapons\Alien\DropStructureAbility2.lua</filename>
-  </file>
-  <file>
-    <filename>AFKKick.lua</filename>
-  </file>
-  <file>
-    <filename>BaseAdminCommands.lua</filename>
-  </file>
-  <file>
-    <filename>DAKLoader.lua</filename>
-  </file>
-  <file>
-    <filename>EnhancedLogging.lua</filename>
-  </file>
-  <file>
-    <filename>MapVote.lua</filename>
-  </file>
-  <file>
-    <filename>MOTD.lua</filename>
-  </file>
-  <file>
-    <filename>ReservedSlots.lua</filename>
-  </file>
-  <file>
-    <filename>Sentry_Server.lua</filename>
-  </file>
-  <file>
-    <filename>TournamentMode.lua</filename>
-  </file>
-  <file>
-    <filename>VoteRandom.lua</filename>
-  </file>
-  <file>
-    <filename>Hud\GUIPlayerResource.lua</filename>
-  </file>
-  <file>
-    <filename>GUISpeedDebug.lua</filename>
-  </file>
-  <file>
-    <filename>DisruptMixin.lua</filename>
-  </file>
-  <file>
-    <filename>ConsoleCommands_Client.lua</filename>
-  </file>
-  <file>
-    <filename>ResourceTower.lua</filename>
+    <filename>Weapons\Alien\XenocideLeap.lua</filename>
   </file>
 </project>

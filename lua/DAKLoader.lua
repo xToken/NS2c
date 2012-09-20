@@ -1,43 +1,43 @@
 //DAK Loader/Base Config
 
 if Server then
-
-	kCheckGameDirectory = false
 	
 	//Load base NS2 Scripts
 	Script.Load("lua/Server.lua")
 	Script.Load("lua/dkjson.lua")
 
-	kDAKConfig = nil //Global variable storing all configuration items for mods
-	kDAKSettings = nil //Global variable storing all settings for mods
-	kDAKRevisions = { }
-	kDAKGameID = { }
-	kDAKOnClientConnect = { }
-	kDAKOnClientDisconnect = { }
-	kDAKOnServerUpdate = { }
-	kDAKOnClientDelayedConnect = { }
-	kDAKOnTeamJoin = { }
-	kDAKOnGameEnd = { }
-	kDAKOnEntityKilled = { }
-	kDAKServerAdminCommands = { }
+	kDAKConfig = nil 						//Global variable storing all configuration items for mods
+	kDAKSettings = nil 						//Global variable storing all settings for mods
+	kDAKRevisions = { }						//List used to track revisions of plugins
+	kDAKGameID = { }						//List of clients on connect for GameID
+	kDAKOnClientConnect = { }				//Functions run on Client Connect
+	kDAKOnClientDisconnect = { }			//Functions run on Client Disconnect
+	kDAKOnServerUpdate = { }				//Functions run on ServerUpdate
+	kDAKOnClientDelayedConnect = { }		//Functions run on DelayedClientConnect
+	kDAKOnTeamJoin = { }					//Functions run on Teamjoin from Gamerules
+	kDAKOnGameEnd = { }						//Functions run on GameEnd from Gamerules
+	kDAKOnEntityKilled = { }				//Functions run on EntityKilled from Gamerules
+	kDAKOnUpdatePregame = { }				//Functions run on UpdatePregame from Gamerules
+	kDAKServerAdminCommands = { }			//List of ServerAdmin Commands
+	kDAKBaseGamerules = NS2Gamerules
 	
 	local settings = { groups = { }, users = { } }
 	
 	local DAKConfigFileName = "config://DAKConfig.json"
 	local DAKSettingsFileName = "config://DAKSettings.json"
-	local serverAdminFileName = "config://DAKServerAdmin.json"
+	local DAKServerAdminFileName = "config://DAKServerAdmin.json"
 	local DelayedClientConnect = { }
 	local lastserverupdate = 0
-	local DAKRevision = 1.3
+	local DAKRevision = 1.4
 		
     local function LoadServerAdminSettings()
     
-        Shared.Message("Loading " .. serverAdminFileName)
+        Shared.Message("Loading " .. DAKServerAdminFileName)
         
         local initialState = { groups = { }, users = { } }
         settings = initialState
         
-		local settingsFile = io.open(serverAdminFileName, "r")
+		local settingsFile = io.open(DAKServerAdminFileName, "r")
         if settingsFile then
         
             local fileContents = settingsFile:read("*all")
@@ -45,8 +45,8 @@ if Server then
             
         end
         
-        assert(settings.groups, "groups must be defined in " .. serverAdminFileName)
-        assert(settings.users, "users must be defined in " .. serverAdminFileName)
+        assert(settings.groups, "groups must be defined in " .. DAKServerAdminFileName)
+        assert(settings.users, "users must be defined in " .. DAKServerAdminFileName)
         
     end
 	
@@ -336,54 +336,71 @@ if Server then
 	
 	Event.Hook("UpdateServer", DAKUpdateServer)
 	
-	//Creating another layer here so that compat can be maintained with any other mods that may hook this.
-	class 'NS2ELGamerules' (NS2Gamerules)
-	NS2ELGamerules.kMapName = "ns2_gamerules"
+	if kDAKConfig and kDAKConfig._GamerulesExtensions then
 	
-	function NS2ELGamerules:OnCreate()
-
-        // Calls SetGamerules()
-        NS2Gamerules.OnCreate(self)
+		//Creating another layer here so that compat can be maintained with any other mods that may hook this.
+		class 'NS2DAKGamerules' (kDAKBaseGamerules)
+		NS2DAKGamerules.kMapName = kDAKBaseGamerules.kMapName
 		
-	end
-	
-	function NS2ELGamerules:JoinTeam(player, newTeamNumber, force)
-		local client = Server.GetOwner(player)
-		if client ~= nil then
-			if #kDAKOnTeamJoin > 0 then
-				for i = 1, #kDAKOnTeamJoin do
-					kDAKOnTeamJoin[i](player, newTeamNumber, force)
+		function NS2DAKGamerules:OnCreate()
+
+			// Calls SetGamerules()
+			kDAKBaseGamerules.OnCreate(self)
+			
+		end
+		
+		function NS2DAKGamerules:JoinTeam(player, newTeamNumber, force)
+			local client = Server.GetOwner(player)
+			if client ~= nil then
+				if #kDAKOnTeamJoin > 0 then
+					for i = 1, #kDAKOnTeamJoin do
+						kDAKOnTeamJoin[i](player, newTeamNumber, force)
+					end
 				end
 			end
+			return kDAKBaseGamerules.JoinTeam(self, player, newTeamNumber, force)
 		end
-		return NS2Gamerules.JoinTeam(self, player, newTeamNumber, force)
-	end
-	
-	function NS2ELGamerules:EndGame(winningTeam)
-	
-		if #kDAKOnGameEnd > 0 then
-			for i = 1, #kDAKOnGameEnd do
-				kDAKOnGameEnd[i](winningTeam)
-			end
-		end
-		NS2Gamerules.EndGame(self, winningTeam)
 		
-	end
-	
-	function NS2ELGamerules:OnEntityKilled(targetEntity, attacker, doer, point, direction)
-    
-        if attacker and targetEntity and doer then
-			if #kDAKOnEntityKilled > 0 then
-				for i = 1, #kDAKOnEntityKilled do
-					kDAKOnEntityKilled[i](targetEntity, attacker, doer, point, direction)
+		function NS2DAKGamerules:EndGame(winningTeam)
+		
+			if #kDAKOnGameEnd > 0 then
+				for i = 1, #kDAKOnGameEnd do
+					kDAKOnGameEnd[i](winningTeam)
 				end
 			end
-        end
-        NS2Gamerules.OnEntityKilled(self, targetEntity, attacker, doer, point, direction)
+			kDAKBaseGamerules.EndGame(self, winningTeam)
+			
+		end
+		
+		function NS2DAKGamerules:OnEntityKilled(targetEntity, attacker, doer, point, direction)
+		
+			if attacker and targetEntity and doer then
+				if #kDAKOnEntityKilled > 0 then
+					for i = 1, #kDAKOnEntityKilled do
+						kDAKOnEntityKilled[i](targetEntity, attacker, doer, point, direction)
+					end
+				end
+			end
+			kDAKBaseGamerules.OnEntityKilled(self, targetEntity, attacker, doer, point, direction)
 
-    end
-	
-	Shared.LinkClassToMap("NS2ELGamerules", NS2ELGamerules.kMapName, { })
+		end
+		
+		function NS2DAKGamerules:UpdatePregame(timePassed)
+		
+			if #kDAKOnUpdatePregame > 0 then
+				for i = 1, #kDAKOnUpdatePregame do
+					if not kDAKOnUpdatePregame[i](timePassed) then
+						break
+					end
+				end
+			end
+			kDAKBaseGamerules.UpdatePregame(self, timePassed)
+			
+		end	
+		
+		Shared.LinkClassToMap("NS2DAKGamerules", NS2DAKGamerules.kMapName, { })
+		
+	end
 		
 	if kDAKConfig and kDAKConfig._OverrideInterp then
 	

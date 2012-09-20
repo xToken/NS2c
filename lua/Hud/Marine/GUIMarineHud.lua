@@ -649,7 +649,7 @@ function GUIMarineHUD:ShowMotionTracking(motiontracking)
 
     if motiontracking then
     
-        local textureCoords = GetTextureCoordinatesForIcon(kTechId.Observatory, true)
+        local textureCoords = GetTextureCoordinatesForIcon(kTechId.MotionTracking, true)
         self.mtracking:SetIsVisible(true)
         self.mtracking:SetTexturePixelCoordinates(unpack(textureCoords))
         

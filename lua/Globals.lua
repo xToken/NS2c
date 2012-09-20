@@ -274,6 +274,7 @@ kBloomOptionsKey = "graphics/display/bloom"
 kAnisotropicFilteringOptionsKey = "graphics/display/anisotropic-filtering"
 
 kMouseSensitivityScalar         = 50
+kAutoPickupWeapons         = "autopickupweapons"
 
 // Player use range
 kPlayerUseRange = 2

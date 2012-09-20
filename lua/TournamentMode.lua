@@ -61,7 +61,7 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 		self:ResetGame() 
 		self:ResetGame()
         self:SetGameState(kGameState.Countdown)      
-        self.countdownTime = NS2Gamerules.kCountDownLength     
+        self.countdownTime = kDAKGamerulesOverride.kCountDownLength     
         self.lastCountdownPlayed = nil       
     end
 	
@@ -134,56 +134,22 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 		end
 
 	end
-	
-	local function UpdatePregameOrig(self, timePassed)
-	
-		if self:GetGameState() == kGameState.PreGame then
 		
-            local preGameTime = NS2Gamerules.kPregameLength
-            if Shared.GetCheatsEnabled() then
-                preGameTime = 0
-            end
-            if self.timeSinceGameStateChanged > preGameTime then  
-                StartCountdown(self)
-                if Shared.GetCheatsEnabled() then
-                    self.countdownTime = 1
-                end      
-            end
-            
-        elseif self:GetGameState() == kGameState.Countdown then
-        
-            self.countdownTime = self.countdownTime - timePassed           
-            // Play count down sounds for last few seconds of count-down
-            local countDownSeconds = math.ceil(self.countdownTime)
-            if self.lastCountdownPlayed ~= countDownSeconds and (countDownSeconds < 4) then            
-                self.worldTeam:PlayPrivateTeamSound(NS2Gamerules.kCountdownSound)
-                self.team1:PlayPrivateTeamSound(NS2Gamerules.kCountdownSound)
-                self.team2:PlayPrivateTeamSound(NS2Gamerules.kCountdownSound)
-                self.spectatorTeam:PlayPrivateTeamSound(NS2Gamerules.kCountdownSound)             
-                self.lastCountdownPlayed = countDownSeconds   
-            end
-            
-            if self.countdownTime <= 0 then
-                self.team1:PlayPrivateTeamSound(ConditionalValue(self.team1:GetTeamType() == kAlienTeamType, NS2Gamerules.kAlienStartSound, NS2Gamerules.kMarineStartSound))
-                self.team2:PlayPrivateTeamSound(ConditionalValue(self.team2:GetTeamType() == kAlienTeamType, NS2Gamerules.kAlienStartSound, NS2Gamerules.kMarineStartSound))    
-                self:SetGameState(kGameState.Started)
-            end
-            
-        end
-	end
+	local function UpdatePregame(timePassed)
 	
-	function NS2Gamerules:UpdatePregame(timePassed)
-	
-		if GetTournamentMode() and not Shared.GetCheatsEnabled() and not Shared.GetDevMode() and self:GetGameState() == kGameState.PreGame then
+		local gamerules = GetGamerules()
+		if gamerules and GetTournamentMode() and not Shared.GetCheatsEnabled() and not Shared.GetDevMode() and gamerules:GetGameState() == kGameState.PreGame then
 			if kDAKConfig.kTournamentModePubMode then
 				MonitorPubMode(self)
 			end
 			MonitorCountDown()
-		else
-			UpdatePregameOrig(self, timePassed)
+			return false
 		end
-	
+		return true
+		
 	end
+	
+	table.insert(kDAKOnUpdatePregame, function(timePassed) return UpdatePregame(timePassed) end)
 
 	local function OnCommandTournamentMode(client)
 

@@ -136,7 +136,7 @@ local function GetRowForTechId(techId)
     
         rowTable = {}
         rowTable[kTechId.Hydra] = 1
-        rowTable[kTechId.Whip] = 2
+        rowTable[kTechId.Whip] = 9
         rowTable[kTechId.Web] = 3
         rowTable[kTechId.Hive] = 4
         rowTable[kTechId.Harvester] = 5

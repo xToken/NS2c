@@ -121,6 +121,7 @@ function Rifle:OnPrimaryAttack(player)
     end    
 
 end
+
 /*
 function Rifle:OnTouch(recipient)
     recipient:AddWeapon(self, true)
@@ -128,7 +129,7 @@ function Rifle:OnTouch(recipient)
 end
 
 function Rifle:GetIsValidRecipient(player)
-    if player then
+    if player and GetPlayerAutoWeaponPickup(player) then
         local hasWeapon = player:GetWeaponInHUDSlot(self:GetHUDSlot())
         if (not hasWeapon) and self.droppedtime + kPickupWeaponTimeLimit < Shared.GetTime() then
             return true
@@ -137,6 +138,7 @@ function Rifle:GetIsValidRecipient(player)
     return false
 end
 */
+
 function Rifle:OnSecondaryAttack(player)
     
 end

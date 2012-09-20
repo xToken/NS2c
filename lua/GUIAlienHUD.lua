@@ -53,6 +53,7 @@ local kInactiveAbilityBarOffset = Vector(-kInactiveAbilityBarWidth - 60, -kInact
 
 local kSelectedAbilityColor = Color(1, 1, 1, 1)
 local kUnselectedAbilityColor = Color(0.5, 0.5, 0.5, 1)
+local kLowEnergyColor = Color(196 / 255, 196 / 255, 0, 0)
 
 local kLowHealth = 0.3
 local kNotificationUpdateIntervall = 0.2
@@ -358,7 +359,7 @@ function GUIAlienHUD:UpdateEnergyText(deltaTime)
             local totalPower = secabilityData[currentIndex]
             local minimumPower = secabilityData[currentIndex + 1]
             if totalPower <= minimumPower then
-                setColor = Color(1, 0.5, 0.5, 1)
+                setColor = Color(1, 1, 0, 1)
             end
         end
     end

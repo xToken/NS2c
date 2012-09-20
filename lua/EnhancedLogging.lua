@@ -431,37 +431,41 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 	end
 	
 	Event.Hook("Console_name",               OnCommandSetName)
-	
-	function NS2ELGamerules:SetGameState(state)
-
-        if state ~= self.gameState then
-            if state == kGameState.Started then
-				PrintToEnhancedLog(GetTimeStamp() .. string.format("Game started."))
-			end			
-		end
-		NS2Gamerules.SetGameState(self, state)
 		
-	end
+	if kDAKConfig and kDAKConfig._GamerulesExtensions then
 	
-	function NS2ELGamerules:CastVoteByPlayer( voteTechId, player )
+		function NS2DAKGamerules:SetGameState(state)
 
-        if voteTechId == kTechId.VoteDownCommander1 or voteTechId == kTechId.VoteDownCommander2 or voteTechId == kTechId.VoteDownCommander3 then 
-            local playerIndex = (voteTechId - kTechId.VoteDownCommander1 + 1)        
-            local commanders = GetEntitiesForTeam("Commander", player:GetTeamNumber())
-            
-            if playerIndex <= table.count(commanders) then
-				local targetCommander = commanders[playerIndex]
-				if targetCommander ~= nil then
-					local targetClient = Server.GetOwner(targetCommander)
-					local Client = Server.GetOwner(player)
-					if targetClient and Client then
-						PrintToEnhancedLog(GetTimeStamp() .. GetClientUIDString(Client) .. " voted to eject " .. GetClientUIDString(targetClient))
+			if state ~= self.gameState then
+				if state == kGameState.Started then
+					PrintToEnhancedLog(GetTimeStamp() .. string.format("Game started."))
+				end			
+			end
+			kDAKBaseGamerules.SetGameState( self, state )
+			
+		end
+		
+		function NS2DAKGamerules:CastVoteByPlayer( voteTechId, player )
+
+			if voteTechId == kTechId.VoteDownCommander1 or voteTechId == kTechId.VoteDownCommander2 or voteTechId == kTechId.VoteDownCommander3 then 
+				local playerIndex = (voteTechId - kTechId.VoteDownCommander1 + 1)        
+				local commanders = GetEntitiesForTeam("Commander", player:GetTeamNumber())
+				
+				if playerIndex <= table.count(commanders) then
+					local targetCommander = commanders[playerIndex]
+					if targetCommander ~= nil then
+						local targetClient = Server.GetOwner(targetCommander)
+						local Client = Server.GetOwner(player)
+						if targetClient and Client then
+							PrintToEnhancedLog(GetTimeStamp() .. GetClientUIDString(Client) .. " voted to eject " .. GetClientUIDString(targetClient))
+						end
 					end
 				end
 			end
-		end
+			kDAKBaseGamerules.CastVoteByPlayer( self, voteTechId, player )
 			
-		NS2Gamerules.CastVoteByPlayer(self, voteTechId, player )
+		end
+		
 	end
 	
 	function EnhancedLoggingJoinTeam(player, newTeamNumber, force)
@@ -474,6 +478,7 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 	table.insert(kDAKOnTeamJoin, function(player, newTeamNumber, force) return EnhancedLoggingJoinTeam(player, newTeamNumber, force) end)
 	
 	function EnhancedLoggingEndGame(winningTeam)
+	
 		local gamerules = GetGamerules()
 		if gamerules ~= nil then
 			if gamerules:GetGameState() == kGameState.Started then
@@ -484,6 +489,7 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 				end
 			end
 		end
+		
 	end
 	
 	table.insert(kDAKOnGameEnd, function(winningTeam) return EnhancedLoggingEndGame(winningTeam) end)

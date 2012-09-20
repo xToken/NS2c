@@ -29,7 +29,6 @@ local networkVars =
 {
     isHolstered = "boolean",
     primaryAttacking = "boolean",
-    droppedtime = "time",
     secondaryAttacking = "boolean"
 }
 
@@ -54,7 +53,7 @@ function Weapon:OnCreate()
     self.isHolstered = true
     self.primaryAttacking = false
     self.secondaryAttacking = false
-    self.droppedtime = 0
+    
     // This value is used a lot in this class, cache it off.
     self.mapName = self:GetMapName()
     
@@ -88,15 +87,6 @@ function Weapon:GetBarrelPoint()
     return player and player:GetEyePos()
 
 end
-
-/*
-function Weapon:OnTouch(recipient)
-end
-
-function Weapon:GetIsValidRecipient(player)
-    return false
-end
-*/
 
 function Weapon:GetCanBeUsed(player, useSuccessTable)
     useSuccessTable.useSuccess = false    

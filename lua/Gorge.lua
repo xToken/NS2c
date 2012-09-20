@@ -122,7 +122,7 @@ if Client then
     function Gorge:OverrideInput(input)
     
         local activeWeapon = self:GetActiveWeapon()
-        if activeWeapon and (activeWeapon:isa("DropStructureAbility") or activeWeapon:isa("DropStructureAbility2")) then
+        if activeWeapon and (activeWeapon.kMapName == "drop_structure_ability" or activeWeapon.kMapName == "drop_structure_ability2") then
             input = activeWeapon:OverrideInput(input)
         end
         
@@ -265,10 +265,6 @@ local function UpdateGorgeSliding(self, input)
 end
 
 function Gorge:GetCanRepairOverride(target)
-    return true
-end
-
-function Gorge:GetCanClimb()
     return true
 end
 
@@ -447,7 +443,7 @@ if Client then
         
         local weapon = self:GetActiveWeapon()
         
-        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
+        if weapon and (weapon.kMapName == "drop_structure_ability" or weapon.kMapName == "drop_structure_ability2") then
         
             self.currentTechId = weapon:GetActiveStructure():GetDropStructureId()
             self.ghostStructureCoords = weapon:GetGhostModelCoords()

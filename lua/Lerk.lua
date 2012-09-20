@@ -165,10 +165,6 @@ function Lerk:GetAngleSmoothRate()
     return 6
 end
 
-function Lerk:GetCanClimb()
-    return false
-end
-
 function Lerk:GetRollSmoothRate()
     return 3
 end    

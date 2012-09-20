@@ -437,7 +437,7 @@ end
 function PlayerUI_GetObjectives()
 
     local objectives = { }
-    AddObjectives(objectives, "ResourcePoint")    
+    //AddObjectives(objectives, "ResourcePoint")    
     //AddObjectives(objectives, "TechPoint") 
 
     return objectives

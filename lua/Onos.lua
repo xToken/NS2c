@@ -72,7 +72,6 @@ end
 
 local networkVars =
 {
-    directionMomentum = "private float",
     stooping = "boolean",
     stoopIntensity = "compensated float",
     charging = "private boolean",
@@ -93,8 +92,6 @@ function Onos:OnCreate()
     Alien.OnCreate(self)
     
     InitMixin(self, DissolveMixin)
-    
-    self.directionMomentum = 0
     
     self.altAttack = false
     self.stooping = false
@@ -162,10 +159,6 @@ end
 
 function Onos:GetChargeFraction()
     return ConditionalValue(self.charging, math.min(1, (Shared.GetTime() - self.timeLastCharge) / Onos.kChargeUpDuration ), 0)
-end
-
-function Gorge:GetCanClimb()
-    return false
 end
 
 function Onos:EndCharge()

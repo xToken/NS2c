@@ -48,10 +48,8 @@ Player.kPushDuration = 0.5
 if Server then
     Script.Load("lua/Player_Server.lua")
 else
-
     Script.Load("lua/Player_Client.lua")
     Script.Load("lua/Chat.lua")
-    
 end
 
 ------------
@@ -2604,93 +2602,44 @@ function Player:ModifyVelocity(input, velocity)
             local moveLengthXZ = velocity:GetLengthXZ()
             local previousY = velocity.y
             local adjustedZ = false
-            //Getting angle of view relative to movement
-            local viewCoords = self:GetViewCoords()
-            local forward = velocity:DotProduct(viewCoords.zAxis)
-            local v1 = math.sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y) + (velocity.z * velocity.z))
-            local v2 = math.sqrt((viewCoords.zAxis.x * viewCoords.zAxis.x) + (viewCoords.zAxis.y * viewCoords.zAxis.y) + (viewCoords.zAxis.z * viewCoords.zAxis.z))
-            local cvangle = ((Player.kTargetViewAngle - math.deg(math.acos((forward / (v1 * v2))))) / (0 - 1))
-            if (v1 * v2) == 0 then
-                vangle = 90
-            end
-            local accelerationangle = 1 - math.abs(math.sin(cvangle))
-            if Client and not Shared.GetIsRunningPrediction() then
-                self.lastspeedgain = accelerationangle
-            end
+            local accelerationangle = 0.86
             
             if input.move.z ~= 0 then
                 local redirectedVelocityZ = GetNormalizedVectorXZ(self:GetViewCoords().zAxis) * input.move.z
+                redirectedVelocityZ.y = 0
+                redirectedVelocityZ:Normalize()
                 if input.move.z < 0 then
                     redirectedVelocityZ = GetNormalizedVectorXZ(velocity)
                     redirectedVelocityZ:Normalize()
                     local xzVelocity = Vector(velocity)
                     xzVelocity.y = 0
                     VectorCopy(velocity - (xzVelocity * input.time * Player.kAirBrakeWeight), velocity)
-                else
-                    redirectedVelocityZ = redirectedVelocityZ * input.time * Player.kAirZMoveWeight + GetNormalizedVectorXZ(velocity)
-                    redirectedVelocityZ:Normalize()
-                    local redirz = redirectedVelocityZ
-                    if input.move.x ~= 0 then
-                        redirectedVelocityZ:Scale(moveLengthXZ * math.max(accelerationangle * Player.kStrafeJumpAccel, 1))
-                    else
-                        redirectedVelocityZ:Scale(moveLengthXZ)
-                    end
+                else                    
+                    accelerationangle = math.max(0, GetNormalizedVectorXZ(velocity):DotProduct(redirectedVelocityZ))
+                    accelerationangle = math.pow(accelerationangle, 2)
+                    redirectedVelocityZ = redirectedVelocityZ * input.time * Skulk.kAirZMoveWeight * accelerationangle * Player.kStrafeJumpAccel + GetNormalizedVectorXZ(velocity)
+                    redirectedVelocityZ:Normalize()                
+                    redirectedVelocityZ:Scale(moveLengthXZ)
                     redirectedVelocityZ.y = previousY
-                    VectorCopy(redirectedVelocityZ,  velocity)
                     adjustedZ = true
+                    VectorCopy(redirectedVelocityZ,  velocity)
                 end
-            
             end
-        
             if input.move.x ~= 0  then                
                 local redirectedVelocityX = GetNormalizedVectorXZ(self:GetViewCoords().xAxis) * input.move.x
                 if adjustedZ then
-                    redirectedVelocityX = redirectedVelocityX * input.time * Player.kAirZStrafeWeight + GetNormalizedVectorXZ(velocity)
+                    redirectedVelocityX = redirectedVelocityX * input.time * Skulk.kAirStrafeWeight * accelerationangle * Player.kStrafeJumpAccel + GetNormalizedVectorXZ(velocity)
                 else
-                    redirectedVelocityX = redirectedVelocityX * input.time * Player.kAirStrafeWeight + GetNormalizedVectorXZ(velocity)
+                    redirectedVelocityX = redirectedVelocityX * input.time * Skulk.kAirStrafeWeight * 0.5 + GetNormalizedVectorXZ(velocity)
                 end
                 redirectedVelocityX:Normalize()            
                 redirectedVelocityX:Scale(moveLengthXZ)
                 redirectedVelocityX.y = previousY       
                 VectorCopy(redirectedVelocityX,  velocity)
-            end    
-
+            end
+            self.lastspeedgain = accelerationangle
         end
     end
-    
-    /*
-    // Logic for strafejumping style base movement mechanics
-    local viewdir = (input.yaw - self.lastyaw) / input.time
-    self.lastyaw = input.yaw
-    local viewCoords = self:GetViewCoords()
-
-    if not self:GetIsOnSurface() and input.move.x ~= 0 then
-
-        //air strafing
-        if Sign(viewdir) == Sign(input.move.x) then
-            local bonus = velocity * (-0.05)
-            local gauss = math.exp( -math.pow( (math.abs(viewdir) - 2) / 0.8 , 2) )
-            Print(ToString(gauss))
-            bonus = bonus + (120 * gauss * (0.1 * viewCoords.zAxis - Sign(input.move.x) * 1 * viewCoords.xAxis ))
-            Print(ToString(bonus))
-            VectorCopy(velocity + input.time * (bonus),  velocity)
-        end
-    
-    end
-    
-    local viewCoords = self:GetViewAngles():GetCoords()
-    local moveCoords = self:GetCoords()
-    if input.move.x and input.move.z == 0 then
-        local pushDirection = GetNormalizedVectorXZ(viewCoords.zAxis)
-        //local move = GetNormalizedVector( input.move )     
-        local redirectDir = moveCoords:TransformVector( pushDirection )
-        local deltaVelocity = redirectDir * input.time * self:GetAcceleration()
-        //Print(ToString(deltaVelocity))
-        //velocity = velocity + GetNormalizedVectorXZ(deltaVelocity)
-        velocity.x = velocity.x + deltaVelocity.x
-        velocity.z = velocity.z + deltaVelocity.z
-    end
-    */
 end
 
 
