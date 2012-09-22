@@ -1,6 +1,6 @@
 //NS2 Tournament Mod Server side script
 
-kDAKRevisions["TournamentMode"] = 2.3
+kDAKRevisions["TournamentMode"] = 2.4
 local TournamentModeSettings = { countdownstarted = false, countdownstarttime = 0, countdownstartcount = 0, lastmessage = 0, mode = "PCW"}
 TournamentModeSettings[1] = {ready = false, lastready = 0, captain = nil}
 TournamentModeSettings[2] = {ready = false, lastready = 0, captain = nil}
@@ -228,7 +228,7 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 		end
 	end
 
-	CreateServerAdminCommand("Console_sv_tournamentmode", OnCommandTournamentMode, "<state> <ffstate> <mode> Enable/Disable tournament mode, friendlyfire or change mode (PCW/OFFICIAL).")
+	DAKCreateServerAdminCommand("Console_sv_tournamentmode", OnCommandTournamentMode, "<state> <ffstate> <mode> Enable/Disable tournament mode, friendlyfire or change mode (PCW/OFFICIAL).")
 	
 	local function OnCommandSetupCaptain(client, teamnum, captain)
 	
@@ -252,7 +252,7 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 		
 	end
 	
-	CreateServerAdminCommand("Console_sv_setcaptain", OnCommandSetupCaptain, "<team> <captain> Set the captain for a team by gameid/steamid.")
+	DAKCreateServerAdminCommand("Console_sv_setcaptain", OnCommandSetupCaptain, "<team> <captain> Set the captain for a team by gameid/steamid.")
 	
 	local function OnCommandForceStartRound(client)
 	
@@ -270,7 +270,7 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 		end
 	end
 	
-	CreateServerAdminCommand("Console_sv_forceroundstart", OnCommandForceStartRound, "Force start a round in tournamentmode.")
+	DAKCreateServerAdminCommand("Console_sv_forceroundstart", OnCommandForceStartRound, "Force start a round in tournamentmode.")
 	
 	local function OnCommandCancelRoundStart(client)
 	
@@ -285,7 +285,7 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 		end
 	end
 	
-	CreateServerAdminCommand("Console_sv_cancelroundstart", OnCommandCancelRoundStart, "Cancel the start of a round in tournamentmode.")
+	DAKCreateServerAdminCommand("Console_sv_cancelroundstart", OnCommandCancelRoundStart, "Cancel the start of a round in tournamentmode.")
 
 	local function CheckGameCountdownStart()
 		if TournamentModeSettings[1].ready and TournamentModeSettings[2].ready then

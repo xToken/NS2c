@@ -252,7 +252,7 @@ if kDAKConfig and kDAKConfig._ReservedSlots then
 
 	end
 
-	CreateServerAdminCommand("Console_sv_addreserve", AddReservePlayer, "<name> <id> <reason> <time> Will add a reserve player to the list.")
+	DAKCreateServerAdminCommand("Console_sv_addreserve", AddReservePlayer, "<name> <id> <reason> <time> Will add a reserve player to the list.")
 	
 	local function DebugReserveSlots(client)
 	
@@ -266,7 +266,7 @@ if kDAKConfig and kDAKConfig._ReservedSlots then
 
 	end
 
-	CreateServerAdminCommand("Console_sv_reservedebug", DebugReserveSlots, "Will print messages logged during actions taken by reserve slot plugin.")
+	DAKCreateServerAdminCommand("Console_sv_reservedebug", DebugReserveSlots, "Will print messages logged during actions taken by reserve slot plugin.")
 
 	Shared.Message("ReserveSlot Loading Complete")
 	
