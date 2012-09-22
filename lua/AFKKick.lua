@@ -1,6 +1,6 @@
 //NS2 Automatic AFK Kicker
 
-kDAKRevisions["AFKKicker"] = 1.4
+kDAKRevisions["AFKKicker"] = 1.5
 local AFKClientTracker = { }
 local lastAFKUpdate = 0
 

@@ -1,6 +1,6 @@
 //NS2 Vote Random Teams
 
-kDAKRevisions["VoteRandom"] = 1.3
+kDAKRevisions["VoteRandom"] = 1.4
 local kVoteRandomTeamsEnabled = false
 
 local RandomNewRoundDelay = 15
@@ -218,7 +218,7 @@ if kDAKConfig and kDAKConfig._VoteRandom then
 
 	end
 
-	CreateServerAdminCommand("Console_sv_randomoff", VoteRandomOff, "Turns off any currently active random teams vote.")
+	DAKCreateServerAdminCommand("Console_sv_randomoff", VoteRandomOff, "Turns off any currently active random teams vote.")
 
 	local function VoteRandomOn(client)
 
@@ -249,7 +249,7 @@ if kDAKConfig and kDAKConfig._VoteRandom then
 
 	end
 
-	CreateServerAdminCommand("Console_sv_randomon", VoteRandomOn, "Will enable random teams.")
+	DAKCreateServerAdminCommand("Console_sv_randomon", VoteRandomOn, "Will enable random teams.")
 
 	Shared.Message("VoteRandom Loading Complete")
 

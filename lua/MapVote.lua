@@ -1,7 +1,7 @@
 //NS2 End Round map vote.
 //Replaces current automatic map switching on round-end.
 
-kDAKRevisions["MapVote"] = 1.3
+kDAKRevisions["MapVote"] = 1.4
 local kMaxMapVoteChatLength = 74
 local cycle = { { maps = { }, time = 30, mode = "order" } }
 local TiedMaps = { }
@@ -493,7 +493,7 @@ if kDAKConfig and kDAKConfig._MapVote then
 
 	end
 
-	CreateServerAdminCommand("Console_sv_votemap", StartMapVote, "Will start a map vote.")
+	DAKCreateServerAdminCommand("Console_sv_votemap", StartMapVote, "Will start a map vote.")
 
 	local function CancelMapVote(client)
 	
@@ -529,7 +529,7 @@ if kDAKConfig and kDAKConfig._MapVote then
 		end
 	end
 
-	CreateServerAdminCommand("Console_sv_cancelmapvote", CancelMapVote, "Will cancel a map vote.")
+	DAKCreateServerAdminCommand("Console_sv_cancelmapvote", CancelMapVote, "Will cancel a map vote.")
 
 	Shared.Message("MapVote Loading Complete")
 	

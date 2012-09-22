@@ -216,7 +216,7 @@ function Fade:GetMaxSpeed(possible)
 end
 
 function Fade:PreUpdateMove(input, runningPrediction)
-    if self:GetIsBlinking() and not self.blinkhandled and not runningPrediction then
+    if self:GetIsBlinking() and not self.blinkhandled then
         local velocity = self:GetVelocity()
         self:HandleJump(input, velocity)
         self:SetVelocity(velocity)

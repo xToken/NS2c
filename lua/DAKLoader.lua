@@ -28,7 +28,7 @@ if Server then
 	local DAKServerAdminFileName = "config://DAKServerAdmin.json"
 	local DelayedClientConnect = { }
 	local lastserverupdate = 0
-	local DAKRevision = 1.4
+	local DAKRevision = 1.5
 		
     local function LoadServerAdminSettings()
     
@@ -52,7 +52,7 @@ if Server then
 	
     LoadServerAdminSettings()
     
-    function GetGroupCanRunCommand(groupName, commandName)
+    function DAKGetGroupCanRunCommand(groupName, commandName)
     
         local group = settings.groups[groupName]
         if not group then
@@ -81,7 +81,7 @@ if Server then
         
     end
     
-    function GetClientCanRunCommand(client, commandName)
+    function DAKGetClientCanRunCommand(client, commandName)
     
         // Convert to the old Steam Id format.
         local steamId = client:GetUserId()
@@ -92,7 +92,7 @@ if Server then
                 for g = 1, #user.groups do
                 
                     local groupName = user.groups[g]
-                    if GetGroupCanRunCommand(groupName, commandName) then
+                    if DAKGetGroupCanRunCommand(groupName, commandName) then
                         return true
                     end
                     
@@ -466,7 +466,7 @@ if Server then
 		
 	end
 	
-	CreateServerAdminCommand("Console_sv_reloadconfig", OnCommandLoadDAKConfig, "Will reload the configuration files.")
+	DAKCreateServerAdminCommand("Console_sv_reloadconfig", OnCommandLoadDAKConfig, "Will reload the configuration files.")
 	
 	local function OnCommandRCON(client, ...)
 	
@@ -485,7 +485,7 @@ if Server then
 	
 	end
 	
-	CreateServerAdminCommand("Console_sv_rcon", OnCommandRCON, "<command>, Will execute specified command on server.")
+	DAKCreateServerAdminCommand("Console_sv_rcon", OnCommandRCON, "<command>, Will execute specified command on server.")
 	
 	local function OnCommandListPlugins(client)
 	
@@ -509,7 +509,7 @@ if Server then
 	
 	end
 	
-	CreateServerAdminCommand("Console_sv_plugins", OnCommandListPlugins, "Will list the state of all plugins.")	
+	DAKCreateServerAdminCommand("Console_sv_plugins", OnCommandListPlugins, "Will list the state of all plugins.")	
 	
 	local function OnCommandListMap(client)
 		local matchingFiles = { }
@@ -523,7 +523,7 @@ if Server then
 		end
 	end
 
-    CreateServerAdminCommand("Console_sv_maps", OnCommandListMap, "Will list all the maps currently on the server.")
+    DAKCreateServerAdminCommand("Console_sv_maps", OnCommandListMap, "Will list all the maps currently on the server.")
 	
 	local function OnCommandListAdmins(client)
 	
@@ -547,7 +547,7 @@ if Server then
 		
 	end
 
-    CreateServerAdminCommand("Console_sv_listadmins", OnCommandListAdmins, "Will list all groups and admins.")	
+    DAKCreateServerAdminCommand("Console_sv_listadmins", OnCommandListAdmins, "Will list all groups and admins.")	
 	
 	local function OnCommandKillServer(client)
 		if client ~= nil then 
@@ -565,7 +565,7 @@ if Server then
 		end
 	end
 
-    CreateServerAdminCommand("Console_sv_killserver", OnCommandKillServer, "Will crash the server (lol).")
+    DAKCreateServerAdminCommand("Console_sv_killserver", OnCommandKillServer, "Will crash the server (lol).")
 	
 	//Load Plugins
 	

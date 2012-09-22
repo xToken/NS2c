@@ -184,7 +184,7 @@ if kDAKConfig and kDAKConfig._VoteSurrender then
 
 	end
 
-	CreateServerAdminCommand("Console_sv_cancelsurrendervote", VoteSurrenderOff, "<teamnumber> Cancelles a currently running surrender vote for the provided team.")
+	DAKCreateServerAdminCommand("Console_sv_cancelsurrendervote", VoteSurrenderOff, "<teamnumber> Cancelles a currently running surrender vote for the provided team.")
 
 	local function VoteSurrenderOn(client, teamnum)
 		local tmNum = tonumber(teamnum)
@@ -201,7 +201,7 @@ if kDAKConfig and kDAKConfig._VoteSurrender then
 
 	end
 
-	CreateServerAdminCommand("Console_sv_surrendervote", VoteSurrenderOn, "<teamnumber> Will start a surrender vote for that team.")
+	DAKCreateServerAdminCommand("Console_sv_surrendervote", VoteSurrenderOn, "<teamnumber> Will start a surrender vote for that team.")
 
 	Shared.Message("VoteSurrender Loading Complete")
 

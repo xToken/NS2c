@@ -1,7 +1,7 @@
 //Base Admin Commands
 //This is designed to replace the base admin system.
 
-function CreateServerAdminCommand(commandName, commandFunction, helpText)
+function DAKCreateServerAdminCommand(commandName, commandFunction, helpText, optionalAlwaysAllowed)
 
 	// Remove the prefix.
 	if kDAKServerAdminCommands == nil then 
@@ -10,7 +10,7 @@ function CreateServerAdminCommand(commandName, commandFunction, helpText)
 	local fixedCommandName = string.gsub(commandName, "Console_", "")
 	local newCommand = function(client, ...)
 	
-		if not client or GetClientCanRunCommand(client, fixedCommandName, true) then
+		if not client or optionalAlwaysAllowed == true or DAKGetClientCanRunCommand(client, fixedCommandName, true) then
 			return commandFunction(client, ...)
 		end
 		
@@ -28,7 +28,7 @@ local function PrintHelpForCommand(client, optionalCommand)
 		local command = kDAKServerAdminCommands[c]
 		if optionalCommand == command.name or optionalCommand == nil then
 		
-			if not client or GetClientCanRunCommand(client, command.name, false) then
+			if not client or DAKGetClientCanRunCommand(client, command.name, false) then
 				ServerAdminPrint(client, command.name .. ": " .. command.help)
 			elseif optionalCommand then
 				ServerAdminPrint(client, "You do not have access to " .. optionalCommand)
@@ -136,7 +136,7 @@ local function PrintStatus(player, client, index)
     
 end
 
-CreateServerAdminCommand("Console_sv_status", AllPlayers(PrintStatus), "Lists player Ids and names for use in sv commands", true)
+DAKCreateServerAdminCommand("Console_sv_status", AllPlayers(PrintStatus), "Lists player Ids and names for use in sv commands", true)
 
 local function PrintStatusIP(player, client, index)
 
@@ -152,8 +152,8 @@ local function PrintStatusIP(player, client, index)
     
 end
 
-CreateServerAdminCommand("Console_sv_statusip", AllPlayers(PrintStatusIP), "Lists player Ids and names for use in sv commands")
-CreateServerAdminCommand("Console_sv_changemap", function(_, mapName) Server.StartMap(mapName) end, "<map name>, Switches to the map specified")
+DAKCreateServerAdminCommand("Console_sv_statusip", AllPlayers(PrintStatusIP), "Lists player Ids and names for use in sv commands")
+DAKCreateServerAdminCommand("Console_sv_changemap", function(_, mapName) Server.StartMap(mapName) end, "<map name>, Switches to the map specified")
 
 local function OnCommandSVReset(client)
 	if client ~= nil then 
@@ -165,7 +165,7 @@ local function OnCommandSVReset(client)
 	GetGamerules():ResetGame()
 end
 
-CreateServerAdminCommand("Console_sv_reset", OnCommandSVReset, "Resets the game round")
+DAKCreateServerAdminCommand("Console_sv_reset", OnCommandSVReset, "Resets the game round")
 
 local function OnCommandSVrrall(client)
 	if client ~= nil then 
@@ -180,7 +180,7 @@ local function OnCommandSVrrall(client)
 	end
 end
 	
-CreateServerAdminCommand("Console_sv_rrall", OnCommandSVrrall, "Forces all players to go to the Ready Room")
+DAKCreateServerAdminCommand("Console_sv_rrall", OnCommandSVrrall, "Forces all players to go to the Ready Room")
 
 local function OnCommandSVRandomall(client)
 	if client ~= nil then 
@@ -199,7 +199,7 @@ local function OnCommandSVRandomall(client)
 	end
 end
 
-CreateServerAdminCommand("Console_sv_randomall", OnCommandSVRandomall, "Forces all players to join a random team")
+DAKCreateServerAdminCommand("Console_sv_randomall", OnCommandSVRandomall, "Forces all players to join a random team")
 
 local function SwitchTeam(client, playerId, team)
 
@@ -221,7 +221,7 @@ local function SwitchTeam(client, playerId, team)
     
 end
 
-CreateServerAdminCommand("Console_sv_switchteam", SwitchTeam, "<player id> <team number>, 1 is Marine, 2 is Alien")
+DAKCreateServerAdminCommand("Console_sv_switchteam", SwitchTeam, "<player id> <team number>, 1 is Marine, 2 is Alien")
 
 local function Eject(client, playerId)
 
@@ -234,7 +234,7 @@ local function Eject(client, playerId)
     
 end
 
-CreateServerAdminCommand("Console_sv_eject", Eject, "<player id>, Ejects Commander from the Command Structure")
+DAKCreateServerAdminCommand("Console_sv_eject", Eject, "<player id>, Ejects Commander from the Command Structure")
 
 local function Kick(client, playerId)
 
@@ -247,7 +247,7 @@ local function Kick(client, playerId)
     
 end
 
-CreateServerAdminCommand("Console_sv_kick", Kick, "<player id>, Kicks the player from the server")
+DAKCreateServerAdminCommand("Console_sv_kick", Kick, "<player id>, Kicks the player from the server")
 
 local function GetChatMessage(...)
 
@@ -280,7 +280,7 @@ local function Say(client, ...)
     
 end
 
-CreateServerAdminCommand("Console_sv_say", Say, "<message>, Sends a message to every player on the server")
+DAKCreateServerAdminCommand("Console_sv_say", Say, "<message>, Sends a message to every player on the server")
 
 local function TeamSay(client, team, ...)
 
@@ -314,7 +314,7 @@ local function TeamSay(client, team, ...)
     
 end
 
-CreateServerAdminCommand("Console_sv_tsay", TeamSay, "<team number> <message>, Sends a message to one team")
+DAKCreateServerAdminCommand("Console_sv_tsay", TeamSay, "<team number> <message>, Sends a message to one team")
 
 local function PlayerSay(client, playerId, ...)
 
@@ -344,7 +344,7 @@ local function PlayerSay(client, playerId, ...)
     
 end
 
-CreateServerAdminCommand("Console_sv_psay", PlayerSay, "<player id> <message>, Sends a message to a single player")
+DAKCreateServerAdminCommand("Console_sv_psay", PlayerSay, "<player id> <message>, Sends a message to a single player")
 
 local function Slay(client, playerId)
 
@@ -358,7 +358,7 @@ local function Slay(client, playerId)
     
 end
 
-CreateServerAdminCommand("Console_sv_slay", Slay, "<player id>, Kills player")
+DAKCreateServerAdminCommand("Console_sv_slay", Slay, "<player id>, Kills player")
 
 local function SetPassword(client, newPassword)
     Server.SetPassword(newPassword or "")
@@ -372,7 +372,7 @@ local function SetPassword(client, newPassword)
 	
 end
 
-CreateServerAdminCommand("Console_sv_password", SetPassword, "<string>, Changes the password on the server")
+DAKCreateServerAdminCommand("Console_sv_password", SetPassword, "<string>, Changes the password on the server")
 
 local bannedPlayers = { }
 local bannedPlayersFileName = "config://BannedPlayers.json"
@@ -465,7 +465,7 @@ local function Ban(client, playerId, duration, ...)
     
 end
 
-CreateServerAdminCommand("Console_sv_ban", Ban, "<player id> <duration in minutes> <reason text>, Bans the player from the server, pass in 0 for duration to ban forever")
+DAKCreateServerAdminCommand("Console_sv_ban", Ban, "<player id> <duration in minutes> <reason text>, Bans the player from the server, pass in 0 for duration to ban forever")
 
 local function UnBan(client, steamId)
 
@@ -490,7 +490,7 @@ local function UnBan(client, steamId)
     
 end
 
-CreateServerAdminCommand("Console_sv_unban", UnBan, "<steam id>, Removes the player matching the passed in Steam Id from the ban list")
+DAKCreateServerAdminCommand("Console_sv_unban", UnBan, "<steam id>, Removes the player matching the passed in Steam Id from the ban list")
 
 function GetBannedPlayersList()
 
@@ -523,7 +523,7 @@ local function ListBans(client)
     
 end
 
-CreateServerAdminCommand("Console_sv_listbans", ListBans, "Lists the banned players")
+DAKCreateServerAdminCommand("Console_sv_listbans", ListBans, "Lists the banned players")
 
 local function PLogAll(client)
 
@@ -532,7 +532,7 @@ local function PLogAll(client)
     
 end
 
-CreateServerAdminCommand("Console_sv_p_logall", PLogAll, "Starts performance logging")
+DAKCreateServerAdminCommand("Console_sv_p_logall", PLogAll, "Starts performance logging")
 
 local function PEndLog(client)
 
@@ -540,4 +540,4 @@ local function PEndLog(client)
     ServerAdminPrint(client, "Performance logging disabled")
     
 end
-CreateServerAdminCommand("Console_sv_p_endlog", PEndLog, "Ends performance logging")
+DAKCreateServerAdminCommand("Console_sv_p_endlog", PEndLog, "Ends performance logging")
