@@ -1,6 +1,6 @@
 //NS2 EnhancedLogging and Tracking of events
 
-kDAKRevisions["EnhancedLogging"] = 1.3
+kDAKRevisions["EnhancedLogging"] = 1.4
 local EnhancedLoggingFile = nil
 local EnhancedLog = { }
 
