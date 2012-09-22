@@ -23,6 +23,11 @@ if kDAKConfig and kDAKConfig._VoteRandom then
 			kDAKConfig._VoteRandom = false
 			
 		end
+		
+		if kDAKSettings.RandomEnabledTill == nil then
+			local RandomEnabledTill = 0
+			table.insert(kDAKSettings, RandomEnabledTill)
+		end
 	
 	end
 	CheckPluginConfig()

@@ -79,7 +79,7 @@ function Alien:CheckRedemption()
         //maxap = LookupTechData(self.gestationTypeTechId, kTechDataMaxArmor)
         if self:GetHealthScalar() <= kRedemptionEHPThreshold then
             //Double Random Check to insure its actually random
-            if chance <= (kRedemptionChancePerLevel * level) and self.redemed == nil or self.redemed + kRedemptionCooldown < Shared.GetTime() then
+            if chance <= (kRedemptionChancePerLevel * level) and self.redemed + kRedemptionCooldown < Shared.GetTime() then
                 //Redemed
                 self:TeleportToHive()
                 self.redemed = Shared.GetTime()

@@ -48,6 +48,11 @@ if kDAKConfig and kDAKConfig._MapVote then
 			kDAKConfig._MapVote = false
 			
 		end
+		
+		if kDAKSettings.PreviousMaps == nil then
+			local PreviousMaps = { }
+			table.insert(kDAKSettings, PreviousMaps)
+		end
 	
 	end
 	CheckPluginConfig()
@@ -111,10 +116,6 @@ if kDAKConfig and kDAKConfig._MapVote then
 		PlayerVotes= { }
 		local validmaps = 1
 		local recentlyplayed = false
-		
-		if kDAKSettings.PreviousMaps == nil then
-			kDAKSettings.PreviousMaps = { }
-		end
 		
 		if #TiedMaps > 1 then
 		

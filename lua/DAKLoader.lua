@@ -203,6 +203,20 @@ if Server then
 		
 	end
 	
+	function GetClientMatchingGameId(id)
+	
+		assert(type(id) == "number")
+		if id > 0 and id <= #kDAKGameID then
+			local client = kDAKGameID[id]
+			if client ~= nil and VerifyClient(client) ~= nil then
+				return client
+			end
+		end
+		
+		return nil
+		
+	end
+	
 	function GetGameIdMatchingPlayer(player)
 	
 		local client = Server.GetOwner(player)
@@ -233,6 +247,28 @@ if Server then
 		
 		return 0
 	end
+	
+	function GetClientMatchingSteamId(steamId)
+
+		assert(type(steamId) == "number")
+		
+		local playerList = EntityListToTable(Shared.GetEntitiesWithClassname("Player"))
+		for r = #playerList, 1, -1 do
+			if playerList[r] ~= nil then
+				local plyr = playerList[r]
+				local clnt = playerList[r]:GetClient()
+				if plyr ~= nil and clnt ~= nil then
+					if clnt:GetUserId() == steamId then
+						return clnt
+					end
+				end
+			end				
+		end
+		
+		return nil
+		
+	end
+
 	
 	function ShufflePlayerList()
 	
@@ -390,7 +426,7 @@ if Server then
 			if #kDAKOnUpdatePregame > 0 then
 				for i = 1, #kDAKOnUpdatePregame do
 					if not kDAKOnUpdatePregame[i](timePassed) then
-						break
+						return
 					end
 				end
 			end

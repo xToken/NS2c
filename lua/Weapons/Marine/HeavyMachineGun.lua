@@ -15,6 +15,7 @@ local kViewModelName = PrecacheAsset("models/marine/heavymachinegun/heavymachine
 local kAnimationGraph = PrecacheAsset("models/marine/heavymachinegun/heavymachinegun_view.animation_graph")
 
 local kRange = 250
+local kHMGReloadTime = 6
 local kSpread = ClipWeapon.kCone10Degrees
 local kSingleShotSound = PrecacheAsset("sound/NS2.fev/marine/rifle/fire_single")
 local kLoopingSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin")
@@ -22,7 +23,8 @@ local kHeavyMachineGunEndSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin_
 
 local networkVars =
 {
-    lastfiredtime = "private time"
+    lastfiredtime = "private time",
+    reloadtime = "private time"
 }
 
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/rifle/muzzle_flash.cinematic")
@@ -45,6 +47,7 @@ function HeavyMachineGun:OnInitialized()
 
     ClipWeapon.OnInitialized(self)
     self.lastfiredtime = 0
+    self.reloadtime = 0 
     if Client then
     
         self:SetUpdates(true)
@@ -189,14 +192,6 @@ end
 function HeavyMachineGun:OnTag(tagName)
 
     PROFILE("HeavyMachineGun:OnTag")
-    if tagName == "end" then
-        self.reloading = false
-        self.ammo = self.ammo + self.clip
-        
-        // Transfer bullets from our ammo pool to the weapon's clip
-        self.clip = math.min(self.ammo, self:GetClipSize())
-        self.ammo = self.ammo - self.clip
-    end
 
 end
 
@@ -211,13 +206,20 @@ end
 
 function HeavyMachineGun:UpdateViewModelPoseParameters(viewModel)
 
-    viewModel:SetPoseParam("hide_gl", 0)
-    viewModel:SetPoseParam("gl_empty", 0)
-
     local attacking = self:GetPrimaryAttacking()
     local sign = (attacking and 1) or 0
 
     self:SetGunLoopParam(viewModel, "arm_loop", sign)
+    
+end
+
+function HeavyMachineGun:OnReload(player)
+
+    if self:CanReload() then
+        self:TriggerEffects("reload")
+        self.reloading = true
+        self.reloadtime = Shared.GetTime()
+    end
     
 end
 
@@ -231,8 +233,15 @@ function HeavyMachineGun:OnUpdateAnimationInput(modelMixin)
     
     PROFILE("HeavyMachineGun:OnUpdateAnimationInput")
     ClipWeapon.OnUpdateAnimationInput(self, modelMixin)
-
-    modelMixin:SetAnimationInput("gl", false)
+    
+    if self.reloading and self.reloadtime + kHMGReloadTime < Shared.GetTime() then
+        self.reloading = false
+        self.ammo = self.ammo + self.clip
+        self.reloadtime = 0
+        // Transfer bullets from our ammo pool to the weapon's clip
+        self.clip = math.min(self.ammo, self:GetClipSize())
+        self.ammo = self.ammo - self.clip
+    end
     
 end
 
@@ -264,7 +273,7 @@ if Client then
     end
     
     function HeavyMachineGun:GetPreventCameraAnimation()
-        return self:GetIsReloading()
+        return true
     end
 
     function HeavyMachineGun:GetBarrelPoint()

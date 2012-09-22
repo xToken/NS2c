@@ -129,7 +129,7 @@ function Alien:OnCreate()
     self.shades = 0
 	self.whips = 0
     self.unassignedhives = 0
-    
+    self.redemed = 0
     if Server then
         self.timeWhenPrimalScreamExpires = 0
     else
