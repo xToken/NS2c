@@ -90,9 +90,11 @@ if Client then
     
 end
 
+/*
 function CommandStation:GetUseAttachPoint()
     return kLoginAttachPoint
 end
+*/
 
 function CommandStation:GetCanRecycleOverride()
     return not self:GetIsOccupied()

@@ -48,10 +48,10 @@ Fade.kAcceleration = 50
 Fade.kAirAcceleration = 25
 Fade.kBlinkAirAcceleration = 40
 Fade.kBlinkAirAccelerationDuration = 2
-Fade.kBlinkAcceleration = 75
-Fade.kBlinkFadeInTime = 0.10
-Fade.kVerticleBlinkAcceleration = 2500
-Fade.kBlinkOffset = Vector(0 ,Fade.kJumpHeight ,0)
+Fade.kBlinkAcceleration = 80
+Fade.kVerticleBlinkAcceleration = 250
+Fade.kViewDeadZone = 0.10
+Fade.kReversalThreshold = 0.25
 
 if Server then
     Script.Load("lua/Fade_Server.lua")
@@ -63,7 +63,7 @@ local networkVars =
 {    
     etherealStartTime = "private time",
     etherealEndTime = "private time",
-    
+    blinkhandled = "private boolean",
     // True when we're moving quickly "through the ether"
     ethereal = "boolean"
 }
@@ -87,6 +87,7 @@ function Fade:OnCreate()
         self.isBlinking = false
     end
     
+    self.blinkhandled = false
     self.etherealStartTime = 0
     self.etherealEndTime = 0
     self.ethereal = false
@@ -169,6 +170,9 @@ function Fade:GetGroundFrictionForce()
 end
 
 function Fade:GetCanJump()
+    if self:GetIsBlinking() and not self.blinkhandled then
+        return true
+    end
     return Alien.GetCanJump(self)
 end
 
@@ -185,8 +189,7 @@ end
 function Fade:GetAcceleration()
     
     if self:GetIsBlinking() then
-        local btime = Clamp(((Shared.GetTime() - self.etherealStartTime) * 10), 0.1, 1)
-        return Fade.kBlinkAcceleration * self:GetMovementSpeedModifier() * btime
+        return Fade.kBlinkAcceleration * self:GetMovementSpeedModifier()
     end
     if self:GetRecentlyBlinked() and self:GetVelocity():GetLengthXZ() > Fade.kBlinkAccelSpeed then
         return Fade.kBlinkAirAcceleration * self:GetMovementSpeedModifier()
@@ -212,6 +215,15 @@ function Fade:GetMaxSpeed(possible)
 
 end
 
+function Fade:PreUpdateMove(input, runningPrediction)
+    if self:GetIsBlinking() and not self.blinkhandled and not runningPrediction then
+        local velocity = self:GetVelocity()
+        self:HandleJump(input, velocity)
+        self:SetVelocity(velocity)
+        self.blinkhandled = true
+    end
+end
+
 function Fade:ModifyVelocity(input, velocity)     
  
     Alien.ModifyVelocity(self, input, velocity)
@@ -221,13 +233,16 @@ function Fade:ModifyVelocity(input, velocity)
         local viewCoords = self:GetViewAngles():GetCoords()
         local zAxis = viewCoords.zAxis
         local upangle = math.abs(zAxis.y)
+
         //Convert velocity instantly if opposite direction for additional responsiveness
-        if upangle > 0.15 and Sign(velocity.y) ~= Sign(zAxis.y) then
-            if Sign(zAxis.y) > 0 then
-                velocity.y = 10
-            elseif zAxis.y < (-0.25) then
-                velocity.y = 0
-            end
+        if upangle > Fade.kViewDeadZone then
+            if upangle > Fade.kReversalThreshold and Sign(velocity.y) ~= Sign(zAxis.y) then
+                if Sign(zAxis.y) > 0 and velocity.y < 0 then
+                    velocity.y = 10
+                elseif Sign(zAxis.y) < 0 and velocity.y > 0 then
+                    velocity.y = 0
+                end
+             end
              velocity.y = velocity.y + (Fade.kVerticleBlinkAcceleration * ((1 - math.cos(zAxis.y)) * input.time))
         end
     end
@@ -280,8 +295,7 @@ end
 function Fade:TriggerBlink()
     self.ethereal = true
     self.onGroundNeedsUpdate = false
-    self.jumping = true
-
+    //self.jumping = true
 end
 
 function Fade:OverrideInput(input)
@@ -299,10 +313,11 @@ end
 
 function Fade:OnBlinkEnd()
     self.onGroundNeedsUpdate = true
-    if self:GetIsOnGround() then
-        self.jumping = false
-    end
+    //if self:GetIsOnGround() then
+        //self.jumping = false
+    //end
     self.ethereal = false
+    self.blinkhandled = false
 end
 
 /*

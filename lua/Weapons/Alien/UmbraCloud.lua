@@ -66,7 +66,7 @@ if Server then
     function UmbraCloud:Perform()
     
         for _, target in ipairs(GetEntitiesWithMixinForTeamWithinRange("Umbra", self:GetTeamNumber(), self:GetOrigin(), UmbraCloud.kRadius)) do
-            target:SetHasUmbra(true,kUmbraRetainTime)
+            target:SetHasUmbra(true, kUmbraRetainTime)
         end
         
     end

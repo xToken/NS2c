@@ -270,9 +270,9 @@ kLerkBiteDamageType = kDamageType.Normal
 kLerkBiteDelay = 0.35
 
 kSporeEnergyCost = 20
-kSporeDuration = 3
+kSporeDuration = 4
 kSporeDamage = 7
-kSporeRadius = 6 //225 NS1
+kSporeRadius = 5 //225 NS1
 kSporeAttackDelay = 1.0
 kSporeDamageDelay = .5
 
@@ -280,7 +280,7 @@ kUmbraEnergyCost = 30
 kUmbraDuration = 5
 kUmbraRadius = 6
 kUmbraBlockRate = 3
-kUmbraRetainTime = 0.2
+kUmbraRetainTime = 0.1
 
 kSpikeMaxDamage = 15
 kSpikeMinDamage = 10
@@ -302,11 +302,11 @@ kPrimalScreamROFIncrease = 1.3
 
 kSwipeDamage = 80
 kSwipeDamageType = kDamageType.Normal
-kSwipeEnergyCost = 7.2
+kSwipeEnergyCost = 6.5
 kSwipeDelay = 0.5
 
-kStartBlinkEnergyCost = 12
-kBlinkEnergyCost = 80
+kStartBlinkEnergyCost = 8
+kBlinkEnergyCost = 100
 
 kMetabolizeEnergyCost = 25
 kMetabolizeEnergyGain = 35

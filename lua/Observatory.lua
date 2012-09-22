@@ -281,7 +281,7 @@ local function GetPlayersToBeacon(self, toOrigin)
     for index, player in ipairs(self:GetTeam():GetPlayers()) do
     
         // Don't affect Commanders
-        if not player:isa("Commander") then
+        if not player:isa("Commander") and not player:isa("Ragdoll") then
         
             // Don't respawn players that are already nearby.
             if not GetIsPlayerNearby(self, player, toOrigin) or not player:GetIsAlive() then

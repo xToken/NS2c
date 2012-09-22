@@ -16,6 +16,11 @@ if kDAKConfig and kDAKConfig._MOTD then
 			kDAKConfig._MOTD = false
 			
 		end
+			
+		if kDAKSettings.MOTDAcceptedClients == nil then
+			local MOTDAcceptedClients = { }
+			table.insert(kDAKSettings, MOTDAcceptedClients)
+		end
 	
 	end
 	CheckPluginConfig()
@@ -23,10 +28,6 @@ if kDAKConfig and kDAKConfig._MOTD then
 end
 
 if kDAKConfig and kDAKConfig._MOTD then
-
-	if kDAKSettings.MOTDAcceptedClients == nil then
-		kDAKSettings.MOTDAcceptedClients = { }
-	end
        
 	local function DisplayMOTDMessage(client, message)
 
@@ -142,19 +143,23 @@ if kDAKConfig and kDAKConfig._MOTD then
 	table.insert(kDAKOnServerUpdate, function(deltatime) return ProcessRemainingMOTDMessages(deltatime) end)
 
 	local function OnCommandAcceptMOTD(client)
+	
+		local player = client:GetControllingPlayer()
+		local name = "acceptedclient"
 
-		if IsAcceptedClient(client) then
-			local player = client:GetControllingPlayer()
-			if player ~= nil then
+		if player ~= nil then
+			if IsAcceptedClient(client) then
 				chatMessage = string.sub(string.format("You already accepted the MOTD"), 1, kMaxChatLength)
 				Server.SendNetworkMessage(player, "Chat", BuildChatMessage(false, "PM - Admin", -1, kTeamReadyRoom, kNeutralTeamType, chatMessage), true)
+				return
 			end
-			return
+			name = player:GetName()
 		end
 		
 		local NewClient = { }
 		NewClient.id = client:GetUserId()
 		NewClient.revision = kDAKConfig.kMOTDMessageRevision
+		NewClient.name = name
 		
 		local player = client:GetControllingPlayer()
 		chatMessage = string.sub(string.format("You accepted the MOTD"), 1, kMaxChatLength)

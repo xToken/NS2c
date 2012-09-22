@@ -18,7 +18,7 @@ Shared.PrecacheSurfaceShader("materials/effects/mesh_effects/view_blood.surface_
 // the melee box, so for the skulk, it needs to increase to 1.2 to say at its previous range.
 // previously this value had an offset, which caused targets to be behind the melee attack (too close to the target and you missed)
 // NS1 was 20 inches, which is .5 meters. The eye point in NS1 was correct but in NS2 it's the model origin.
-local kRange = 1.2
+local kRange = 1.3
 
 local kStructureHitEffect = PrecacheAsset("cinematics/alien/skulk/bite_view_structure.cinematic")
 local kMarineHitEffect = PrecacheAsset("cinematics/alien/skulk/bite_view_marine.cinematic")

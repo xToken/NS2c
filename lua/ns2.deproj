@@ -106,6 +106,9 @@
     <filename>CommandStation.lua</filename>
   </file>
   <file>
+    <filename>CommandStation_Server.lua</filename>
+  </file>
+  <file>
     <filename>CommandStructure.lua</filename>
   </file>
   <file>

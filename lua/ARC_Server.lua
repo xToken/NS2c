@@ -89,7 +89,7 @@ local function PerformAttack(self)
 
         // Do damage to everything in radius. Use upgraded splash radius if researched.
         local damageRadius = ConditionalValue(self:GetHasUpgrade(kTechId.ARCSplashTech), ARC.kUpgradedSplashRadius, ARC.kSplashRadius)
-        local hitEntities = GetEntitiesWithMixinWithinRange("Live", target:GetOrigin() + kARCDamageOffset, damageRadius)
+        local hitEntities = GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(self:GetTeamNumber()), target:GetOrigin() + kARCDamageOffset, damageRadius)
 
         // Do damage to every target in range
         RadiusDamage(hitEntities, target:GetOrigin(), damageRadius, ARC.kAttackDamage, self, true)

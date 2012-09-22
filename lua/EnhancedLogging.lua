@@ -219,13 +219,12 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 	local function GetFormattedPositions(attackerOrigin, targetOrigin)
 		
 		if attackerOrigin ~= nil and targetOrigin ~= nil then
-		
-			local attackerx = string.format("%.2f", attackerOrigin.x)
-			local attackery = string.format("%.2f", attackerOrigin.y)
-			local attackerz = string.format("%.2f", attackerOrigin.z)
-			local targetx = string.format("%.2f", targetOrigin.x)
-			local targety = string.format("%.2f", targetOrigin.y)
-			local targetz = string.format("%.2f", targetOrigin.z)
+			local attackerx = string.format("%.3f", attackerOrigin.x)
+			local attackery = string.format("%.3f", attackerOrigin.y)
+			local attackerz = string.format("%.3f", attackerOrigin.z)
+			local targetx = string.format("%.3f", targetOrigin.x)
+			local targety = string.format("%.3f", targetOrigin.y)
+			local targetz = string.format("%.3f", targetOrigin.z)
 			return string.format("(attacker_position %f %f %f) (victim_position %f %f %f)", attackerx, attackery, attackerz, targetx, targety, targetz)
 			
 		end
@@ -256,6 +255,7 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 			ELogFile:close()
 		end
 		
+		//Append still causes crashes sooo yea pretty dumb...
 		/*local ELogFile = io.open("config://" .. kDAKConfig.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "a+")
 		if ELogFile then
 			ELogFile:seek("end")
@@ -393,7 +393,7 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 			if client.disconnectreason ~= nil then
 				reason = client.disconnectreason
 			end
-			//Shared.Message( GetTimeStamp() .. GetClientUIDString(client) .. " disconnected, " .. reason)
+			//Shared.Message(GetTimeStamp() .. GetClientUIDString(client) .. " disconnected, " .. reason)
 			PrintToEnhancedLog(GetTimeStamp() .. GetClientUIDString(client) .. " disconnected, " .. reason)
 			return true
 		else
@@ -466,6 +466,22 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 			
 		end
 		
+	end
+		
+	function Server.AddChatToHistory(message, playerName, steamId, teamNumber, teamOnly)
+		
+		local client = GetClientMatchingSteamId(steamId)
+		if client and steamId then
+			PrintToEnhancedLog(GetTimeStamp() .. GetClientUIDString(client) .. ConditionalValue(teamOnly, " teamsay ", " say ") .. message)
+		else
+			PrintToEnhancedLog(GetTimeStamp() .. playerName .. ConditionalValue(teamOnly, " teamsay ", " say ")  .. message)
+		end
+		
+		if chatMessageCount == nil then chatMessageCount = 0 end
+		chatMessageCount = chatMessageCount + 1
+		Server.recentChatMessages:Insert({ id = chatMessageCount, message = message, player = playerName,
+										   steamId = steamId, team = teamNumber, teamOnly = teamOnly })
+
 	end
 	
 	function EnhancedLoggingJoinTeam(player, newTeamNumber, force)
