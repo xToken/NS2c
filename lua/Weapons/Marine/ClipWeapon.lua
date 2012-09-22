@@ -513,7 +513,7 @@ end
 function ClipWeapon:OnTag(tagName)
 
     PROFILE("ClipWeapon:OnTag")
-
+    
     if tagName == "shoot" then
     
         local player = self:GetParent()
