@@ -248,7 +248,7 @@ kSpitDelay = 0.5
 // Also see kHealsprayHealStructureRate
 kHealsprayDamage = 13
 kHealPlayerPercent = 4
-kHealBuildingPercent = 5
+kHealBuildingScalar = 5
 kHealsprayDamageType = kDamageType.Biological
 kHealsprayFireDelay = 1.6
 kHealsprayEnergyCost = 15

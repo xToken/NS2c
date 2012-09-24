@@ -391,9 +391,6 @@
     <filename>Lerk_Server.lua</filename>
   </file>
   <file>
-    <filename>LiveMixin.lua</filename>
-  </file>
-  <file>
     <filename>Location.lua</filename>
   </file>
   <file>
@@ -418,9 +415,6 @@
     <filename>MarineCommander.lua</filename>
   </file>
   <file>
-    <filename>MarineCommander_Client.lua</filename>
-  </file>
-  <file>
     <filename>MarineCommander_Server.lua</filename>
   </file>
   <file>
@@ -428,9 +422,6 @@
   </file>
   <file>
     <filename>MarineTeam.lua</filename>
-  </file>
-  <file>
-    <filename>MarineWeaponEffects.lua</filename>
   </file>
   <file>
     <filename>Marine_Client.lua</filename>
@@ -505,9 +496,6 @@
     <filename>Player_Client.lua</filename>
   </file>
   <file>
-    <filename>Player_Server.lua</filename>
-  </file>
-  <file>
     <filename>PlayingTeam.lua</filename>
   </file>
   <file>
@@ -529,9 +517,6 @@
     <filename>PrototypeLab_Server.lua</filename>
   </file>
   <file>
-    <filename>Ragdoll.lua</filename>
-  </file>
-  <file>
     <filename>ReadyRoomTeam.lua</filename>
   </file>
   <file>
@@ -542,9 +527,6 @@
   </file>
   <file>
     <filename>ReservedSlots.lua</filename>
-  </file>
-  <file>
-    <filename>ResourceTower.lua</filename>
   </file>
   <file>
     <filename>Weapons\Marine\Rifle.lua</filename>

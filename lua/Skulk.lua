@@ -65,13 +65,14 @@ Skulk.kMinLeapVelocity = 13
 Skulk.kLeapTime = 0.2
 Skulk.kLeapForce = 14
 Skulk.kMaxSpeed = 20
+Skulk.kMaxWallSpeed = 12
 Skulk.kMaxWalkSpeed = 4
 Skulk.kGroundFriction = 6.0
 Skulk.kGroundWalkFriction = 6.5
 Skulk.kAcceleration = 45
 Skulk.kAirAcceleration = 28
 Skulk.kJumpHeight = 1.3
-Skulk.kWallJumpForce = 0.9
+Skulk.kWallJumpForce = 2
 Skulk.kWallJumpYBoost = 6
 Skulk.kJumpDelay = 0.25
 
@@ -208,7 +209,7 @@ function Skulk:OnLeap()
 end
 
 function Skulk:GetCanWallJump()
-    return self:GetIsWallWalking() or (not self:GetIsOnGround() and self:GetAverageWallWalkingNormal(Skulk.kJumpWallRange, Skulk.kJumpWallFeelerSize) ~= nil) and self.lastwalljump + Skulk.kJumpDelay < Shared.GetTime()
+    return self:GetIsWallWalking() or (not self:GetIsOnGround() and self:GetAverageWallWalkingNormal(Skulk.kJumpWallRange, Skulk.kJumpWallFeelerSize) ~= nil) and self.lastwalljump + Skulk.kJumpDelay < Shared.GetTime() and not self.crouching 
 end
 
 function Skulk:GetViewModelName()
@@ -251,7 +252,7 @@ function Skulk:PreUpdateMove(input, runningPrediction)
     
     self.moveButtonPressed = input.move:GetLength() ~= 0
     
-    if not self.wallWalkingEnabled or not self:GetIsWallWalkingPossible() then
+    if not self.wallWalkingEnabled or not self:GetIsWallWalkingPossible() or self.crouching then
     
         self.wallWalking = false
         
@@ -513,7 +514,7 @@ function Skulk:GetGravityAllowed()
 end
 
 function Skulk:GetIsOnSurface()
-    return Alien.GetIsOnSurface(self) or self:GetIsWallWalking()
+    return Alien.GetIsOnSurface(self) or (self:GetIsWallWalking() and not self.crouching)
 end
 
 function Skulk:GetIsAffectedByAirFriction()
@@ -608,7 +609,7 @@ function Skulk:GetJumpVelocity(input, velocity)
     self.bonusVec:Normalize()
     
     if self:GetCanWallJump() then
-        if velocity:GetLengthXZ() < Skulk.kMaxSpeed then
+        if velocity:GetLengthXZ() < Skulk.kMaxWallSpeed then
             local jumpForce = Skulk.kWallJumpForce * self:GetMovementSpeedModifier()
             self.lastwalljump = Shared.GetTime()
             velocity.x = velocity.x + self.bonusVec.x * jumpForce

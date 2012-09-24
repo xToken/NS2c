@@ -141,7 +141,7 @@ local function HealEntity(self, player, targetEntity)
     
     // Heal structures by multiple of damage(so it doesn't take forever to heal hives, ala NS1)
     if GetReceivesStructuralDamage(targetEntity) then
-        health = kHealsprayDamage + targetEntity:GetMaxHealth() * kHealBuildingPercent / 100.0
+        health = kHealsprayDamage * kHealBuildingScalar
     // Don't heal self at full rate - don't want Gorges to be too powerful. Same as NS1.
     elseif targetEntity == player then
         health = health * .5
