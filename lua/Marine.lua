@@ -66,7 +66,7 @@ Marine.kArmorPerUpgradeLevel = kArmorPerUpgradeLevel
 // Player phase delay - players can only teleport this often
 Marine.kPlayerPhaseDelay = 2
 Marine.kStunDuration = 2
-Marine.kAcceleration = 60
+Marine.kAcceleration = 55
 Marine.kAirAcceleration = 25
 Marine.kWalkMaxSpeed = 4.0                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
 Marine.kRunMaxSpeed = 9

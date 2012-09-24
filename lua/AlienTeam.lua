@@ -604,6 +604,7 @@ local function AssignPlayerToEgg(self, player, spawntime)
 
     local success = false
     //This uses hives to get eggs, but does NOT use the queued player or spawntime from that hive.
+    //This allows each hive to have a queue, but all the players spawn at the same hive.
     local eggs = GetEntitiesForTeam("Egg", self:GetTeamNumber())
     local spawnHive
     
@@ -635,10 +636,11 @@ local function AssignPlayerToEgg(self, player, spawntime)
                 table.insert(localhiveeggs, egg)
             end
         end
-        
+        Print(ToString(#localhiveeggs))
         //If hive has eggs, randomly select one
-        if localhiveeggs ~= { } and (localhiveeggs ~= nil or #localhiveeggs ~= 0) then
-            localhiveeggs[math.random(1, #localhiveeggs)]:SetQueuedPlayerId(player:GetId(), spawntime)
+        local hiveeggs = #localhiveeggs
+        if hiveeggs ~= nil and hiveeggs >= 1 then
+            localhiveeggs[math.random(1, hiveeggs)]:SetQueuedPlayerId(player:GetId(), spawntime)
             success = true
         else
             // Find the closest egg, doesn't matter which Hive owns it.
@@ -646,11 +648,9 @@ local function AssignPlayerToEgg(self, player, spawntime)
             
                 // Any egg is fine as long as it is free.
                 if egg:GetIsFree() then
-                
                     egg:SetQueuedPlayerId(player:GetId(), spawntime)
                     success = true
                     break
-                    
                 end
                 
             end
@@ -679,9 +679,11 @@ local function RespawnPlayer(self, hive)
             // player has no egg assigned, check for free egg
             if egg == nil then
                 local success = AssignPlayerToEgg(self, alien, spawntime)
+                if alien.GetHostEgg then
+                    egg = alien:GetHostEgg()
+                end
                 if not success then
                     //Fail spawn, player will automatically re-queue.
-                    Print(ToString("FAILSPAWN"))
                     self:PutPlayerInRespawnQueue(alien, spawntime - GetSpawnTime())
                 else
                     alien:SetWaveSpawnEndTime(spawntime)
@@ -692,7 +694,7 @@ local function RespawnPlayer(self, hive)
                 //Shouldnt be possible to fail getting team object AS WE ARE THAT
                 egg:SpawnPlayer()
             else
-                Print(ToString("FAILEGG"))
+                Print(ToString("FAILEGGSPAWN"))
                 self:PutPlayerInRespawnQueue(alien, spawntime - GetSpawnTime())            
             end
         end

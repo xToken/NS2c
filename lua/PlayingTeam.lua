@@ -139,6 +139,9 @@ function PlayingTeam:ResetTeam()
     
         local player = players[p]
         player:OnInitialSpawn(initialTechPoint:GetOrigin())
+        if self:GetTeamNumber() == kAlienTeamType then
+            player:SetResources(kAlienTeamInitialRes)
+        end
     end
     
     self.techTree:SetTechChanged()
@@ -826,7 +829,7 @@ function PlayingTeam:GetPresRecipientCount()
     for i, playerId in ipairs(self.playerIds) do
         
         local player = Shared.GetEntity(playerId)
-        if player and player:GetResources() < kMaxPersonalResources and player:GetIsAlive() and not player:isa("Commander") then
+        if player and player:GetResources() < kMaxPersonalResources and player:GetIsAlive() then
             recipientCount = recipientCount + 1
         end
 
@@ -840,10 +843,10 @@ end
 function PlayingTeam:SplitPres(resAwarded)
 
     local recipientCount = self:GetPresRecipientCount()
-    if recipientCount < kResourceScalingMinPlayers or recipientCount > kResourceScalingMaxPlayers then
-        local playerdiff = Clamp(recipientCount, kResourceScalingMinPlayers, kResourceScalingMaxPlayers)
-        resAwarded = resAwarded * Clamp((1 + ((recipientCount - playerdiff) / kResourceScaling)), kResourceScalingMinDelta, kResourceScalingMaxDelta)
-    end
+    //if recipientCount < kResourceScalingMinPlayers or recipientCount > kResourceScalingMaxPlayers then
+        //local playerdiff = Clamp(recipientCount, kResourceScalingMinPlayers, kResourceScalingMaxPlayers)
+        //resAwarded = resAwarded * Clamp((1 + ((recipientCount - playerdiff) / kResourceScaling)), kResourceScalingMinDelta, kResourceScalingMaxDelta)
+    //end
 
     for i = 1, recipientCount do 
     

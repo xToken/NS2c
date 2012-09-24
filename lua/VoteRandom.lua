@@ -151,7 +151,6 @@ if kDAKConfig and kDAKConfig._VoteRandom then
 			local gamerules = GetGamerules()
 			if gamerules:GetGameState() == kGameState.NotStarted and RandomRoundRecentlyEnded == nil then
 				RandomRoundRecentlyEnded = Shared.GetTime()
-				Print(ToString(RandomRoundRecentlyEnded))
 			end
 			if kDAKSettings.RandomEnabledTill > Shared.GetSystemTime() then
 				kVoteRandomTeamsEnabled = not kDAKConfig.kVoteRandomInstantly

@@ -53,9 +53,9 @@ end
 function NS2Gamerules_GetUpgradedDamage(attacker, doer, damage, damageType)
 
     local damageScalar = 1
-    
+
     if attacker ~= nil then
-                    
+    
         // Damage upgrades only affect weapons, not ARCs, Sentries, MACs, Mines, etc.
         if doer:isa("Weapon") or doer:isa("Grenade") then
         
@@ -72,6 +72,7 @@ function NS2Gamerules_GetUpgradedDamage(attacker, doer, damage, damageType)
                 damageScalar = kWeapons1DamageScalar
                 
             end
+            
         end
         if attacker.GetIsPrimaled and attacker:GetIsPrimaled() then
             damageScalar = kPrimalScreamDamageModifier

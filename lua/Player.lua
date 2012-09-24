@@ -120,9 +120,9 @@ Player.kYExtents = 0.95
 local kViewOffsetHeight = Player.kYExtents * 2 - 0.2
 
 // Slow down players when crouching
-Player.kCrouchSpeedScalar = 0.5
+Player.kCrouchSpeedScalar = 0.7
 // Percentage change in height when full crouched
-local kCrouchShrinkAmount = 0.7
+local kCrouchShrinkAmount = 0.6
 local kExtentsCrouchShrinkAmount = 0.5
 // How long does it take to crouch or uncrouch
 local kCrouchAnimationTime = 0.2

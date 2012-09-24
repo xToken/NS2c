@@ -121,7 +121,7 @@ function Alien:UpdateAutoHeal()
 
     PROFILE("Alien:UpdateAutoHeal")
 
-    if self:GetIsHealable() and not self.timeLastAlienAutoHeal or self.timeLastAlienAutoHeal + kAlienRegenerationTime <= Shared.GetTime() then
+    if self:GetIsHealable() and self.timeLastAlienAutoHeal == nil or self.timeLastAlienAutoHeal + kAlienRegenerationTime <= Shared.GetTime() then
 
         local healRate = kAlienInnateRegenerationPercentage
         self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), false)  
