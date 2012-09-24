@@ -286,7 +286,7 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 		
 			local playerClient = Server.GetOwner(player)
 			if playerClient ~= nil then
-				if playerClient ~= client and GetClientCanRunCommand(playerClient, commandname) then
+				if playerClient ~= client and DAKGetClientCanRunCommand(playerClient, commandname) then
 					ServerAdminPrint(playerClient, message)
 				end
 			end
