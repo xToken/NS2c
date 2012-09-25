@@ -1,7 +1,7 @@
 //NS2 End Round map vote.
 //Replaces current automatic map switching on round-end.
 
-kDAKRevisions["MapVote"] = 1.4
+kDAKRevisions["MapVote"] = 1.5
 local kMaxMapVoteChatLength = 74
 local cycle = { { maps = { }, time = 30, mode = "order" } }
 local TiedMaps = { }
@@ -50,8 +50,7 @@ if kDAKConfig and kDAKConfig._MapVote then
 		end
 		
 		if kDAKSettings.PreviousMaps == nil then
-			local PreviousMaps = { }
-			table.insert(kDAKSettings, PreviousMaps)
+			kDAKSettings.PreviousMaps = { }
 		end
 	
 	end
@@ -452,7 +451,7 @@ if kDAKConfig and kDAKConfig._MapVote then
 		
 			local player = client:GetControllingPlayer()
 			if player ~= nil then
-				chatMessage = string.sub(string.format("%.1f Minutes Remaining.", math.max(0,(cycle.time - Shared.GetTime())/60)), 1, kMaxChatLength)
+				chatMessage = string.sub(string.format("%.1f Minutes Remaining.", math.max(0,((cycle.time * 60) - Shared.GetTime())/60)), 1, kMaxChatLength)
 				Server.SendNetworkMessage(player, "Chat", BuildChatMessage(false, "PM - Admin", -1, kTeamReadyRoom, kNeutralTeamType, chatMessage), true)
 			end
 			
@@ -461,6 +460,22 @@ if kDAKConfig and kDAKConfig._MapVote then
 	end
 
 	Event.Hook("Console_timeleft",               OnCommandTimeleft)
+	
+	local function OnMapVoteChatMessage(message, playerName, steamId, teamNumber, teamOnly, client)
+	
+		if client and steamId and steamId ~= 0 then
+			if message == "timeleft" then
+				OnCommandTimeleft(client)
+			elseif message == "rtv" or message == "rockthevote" then
+				OnCommandRTV(client)
+			elseif string.sub(message,1,4) == "vote" then
+				OnCommandVote(client, string.sub(message,6,7))		
+			end
+		end
+	
+	end
+	
+	table.insert(kDAKOnClientChatMessage, function(message, playerName, steamId, teamNumber, teamOnly, client) return OnMapVoteChatMessage(message, playerName, steamId, teamNumber, teamOnly, client) end)
 
 	local function StartMapVote(client)
 

@@ -254,7 +254,7 @@ if Client then
     function HeavyMachineGun:OnClientPrimaryAttackStart()
     
         // Fire off a single shot on the first shot. Pew.
-        Shared.PlaySound(self, kSingleShotSound)
+        //Shared.PlaySound(self, kSingleShotSound)
         // Start the looping sound for the rest of the shooting. Pew pew pew...
         Shared.PlaySound(self, kLoopingSound)
     

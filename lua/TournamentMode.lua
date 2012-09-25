@@ -1,6 +1,6 @@
 //NS2 Tournament Mod Server side script
 
-kDAKRevisions["TournamentMode"] = 2.4
+kDAKRevisions["TournamentMode"] = 2.5
 local TournamentModeSettings = { countdownstarted = false, countdownstarttime = 0, countdownstartcount = 0, lastmessage = 0, mode = "PCW"}
 TournamentModeSettings[1] = {ready = false, lastready = 0, captain = nil}
 TournamentModeSettings[2] = {ready = false, lastready = 0, captain = nil}
@@ -333,6 +333,18 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 	end
 
 	Event.Hook("Console_ready",                 OnCommandReady)
+		
+	local function OnTournamentModeChatMessage(message, playerName, steamId, teamNumber, teamOnly, client)
+	
+		if client and steamId and steamId ~= 0 then
+			if message == "ready" then
+				OnCommandReady(client)
+			end
+		end
+	
+	end
+	
+	table.insert(kDAKOnClientChatMessage, function(message, playerName, steamId, teamNumber, teamOnly, client) return OnTournamentModeChatMessage(message, playerName, steamId, teamNumber, teamOnly, client) end)
 	
 	Shared.Message("TournamentMode Loading Complete")
 	

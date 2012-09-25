@@ -1,9 +1,10 @@
 //NS2 Team Surrender Vote
 
-kDAKRevisions["VoteSurrender"] = 1.0
+kDAKRevisions["VoteSurrender"] = 1.1
 local kVoteSurrenderRunning = { }
 local kSurrenderVotes = { }
 local kSurrenderVotesAlertTime = { }
+local kSurrenderTeamCount = 2
 
 if kDAKConfig and kDAKConfig._VoteSurrender then
 
@@ -25,7 +26,7 @@ end
 if kDAKConfig and kDAKConfig._VoteSurrender then
 
 	local function SetupSurrenderVars()
-		for i = 1, 2 do
+		for i = 1, kSurrenderTeamCount do
 			table.insert(kVoteSurrenderRunning, 0)
 			table.insert(kSurrenderVotes, { })
 			table.insert(kSurrenderVotesAlertTime, 0)			
@@ -40,7 +41,7 @@ if kDAKConfig and kDAKConfig._VoteSurrender then
 
 	local function UpdateSurrenderVotes()
 		local gamerules = GetGamerules()
-		for i = 1, 2 do
+		for i = 1, kSurrenderTeamCount do
 
 			if kVoteSurrenderRunning[i] ~= 0 and gamerules ~= nil and gamerules:GetGameState() == kGameState.Started and kSurrenderVotesAlertTime[i] + kDAKConfig.kVoteSurrenderAlertDelay < Shared.GetTime() then
 				local playerRecords =  GetEntitiesForTeam("Player", i)
@@ -95,7 +96,7 @@ if kDAKConfig and kDAKConfig._VoteSurrender then
 						kVoteSurrenderRunning[i] = 0
 						kSurrenderVotes[i] = { }
 					else
-						chatMessage = string.sub(string.format("%s votes to surrender, %s needed, %s seconds left. Surrender in console to vote", totalvotes, 
+						chatMessage = string.sub(string.format("%s votes to surrender, %s needed, %s seconds left. type surrender to vote", totalvotes, 
 						 math.ceil((#playerRecords * (kDAKConfig.kVoteSurrenderMinimumPercentage / 100))), 
 						 math.ceil((kVoteSurrenderRunning[i] + kDAKConfig.kVoteSurrenderVotingTime) - Shared.GetTime()) ), 1, kMaxChatLength)
 						kSurrenderVotesAlertTime[i] = Shared.GetTime()
@@ -116,12 +117,11 @@ if kDAKConfig and kDAKConfig._VoteSurrender then
 	table.insert(kDAKOnServerUpdate, function(deltatime) return UpdateSurrenderVotes() end)
 	
 	local function ClearSurrenderVotes()
-		kSurrenderVotesAlertTime[1] = 0
-		kVoteSurrenderRunning[1] = 0
-		kSurrenderVotes[1] = { }
-		kSurrenderVotesAlertTime[2] = 0
-		kVoteSurrenderRunning[2] = 0
-		kSurrenderVotes[2] = { }
+		for i = 1, kSurrenderTeamCount do
+			kSurrenderVotesAlertTime[i] = 0
+			kVoteSurrenderRunning[i] = 0
+			kSurrenderVotes[i] = { }
+		end
 	end
 		
 	table.insert(kDAKOnGameEnd, function(winningTeam) return ClearSurrenderVotes() end)
@@ -164,6 +164,18 @@ if kDAKConfig and kDAKConfig._VoteSurrender then
 	end
 
 	Event.Hook("Console_surrender",               OnCommandVoteSurrender)
+	
+	local function OnVoteSurrenderChatMessage(message, playerName, steamId, teamNumber, teamOnly, client)
+	
+		if client and steamId and steamId ~= 0 then
+			if message == "surrender" then
+				OnCommandVoteSurrender(client)	
+			end
+		end
+	
+	end
+	
+	table.insert(kDAKOnClientChatMessage, function(message, playerName, steamId, teamNumber, teamOnly, client) return OnVoteSurrenderChatMessage(message, playerName, steamId, teamNumber, teamOnly, client) end)
 
 	local function VoteSurrenderOff(client, teamnum)
 		local tmNum = tonumber(teamnum)

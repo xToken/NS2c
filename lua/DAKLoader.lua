@@ -18,6 +18,7 @@ if Server then
 	kDAKOnGameEnd = { }						//Functions run on GameEnd from Gamerules
 	kDAKOnEntityKilled = { }				//Functions run on EntityKilled from Gamerules
 	kDAKOnUpdatePregame = { }				//Functions run on UpdatePregame from Gamerules
+	kDAKOnClientChatMessage = { }			//Functions run on ChatMessages
 	kDAKServerAdminCommands = { }			//List of ServerAdmin Commands
 	kDAKBaseGamerules = NS2Gamerules
 	
@@ -28,7 +29,7 @@ if Server then
 	local DAKServerAdminFileName = "config://DAKServerAdmin.json"
 	local DelayedClientConnect = { }
 	local lastserverupdate = 0
-	local DAKRevision = 1.5
+	local DAKRevision = 1.6
 		
     local function LoadServerAdminSettings()
     
@@ -435,6 +436,21 @@ if Server then
 		end	
 		
 		Shared.LinkClassToMap("NS2DAKGamerules", NS2DAKGamerules.kMapName, { })
+					
+		function Server.AddChatToHistory(message, playerName, steamId, teamNumber, teamOnly)
+			
+			local client = GetClientMatchingSteamId(steamId)
+			if #kDAKOnClientChatMessage > 0 then
+				for i = 1, #kDAKOnClientChatMessage do
+					kDAKOnClientChatMessage[i](message, playerName, steamId, teamNumber, teamOnly, client)
+				end
+			end
+			if chatMessageCount == nil then chatMessageCount = 0 end
+			chatMessageCount = chatMessageCount + 1
+			Server.recentChatMessages:Insert({ id = chatMessageCount, message = message, player = playerName,
+											   steamId = steamId, team = teamNumber, teamOnly = teamOnly })
+
+		end
 		
 	end
 		
