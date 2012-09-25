@@ -1,6 +1,6 @@
 //NS2 Vote Random Teams
 
-kDAKRevisions["VoteRandom"] = 1.4
+kDAKRevisions["VoteRandom"] = 1.5
 local kVoteRandomTeamsEnabled = false
 
 local RandomNewRoundDelay = 15
@@ -41,8 +41,8 @@ if kDAKConfig and kDAKConfig._VoteRandom then
 		if kDAKSettings.RandomEnabledTill ~= nil then
 			if kDAKSettings.RandomEnabledTill > Shared.GetSystemTime() then
 				kVoteRandomTeamsEnabled = not kDAKConfig.kVoteRandomInstantly
-				Shared.Message(string.format("VoteRandom set to %s", ToString(kVoteRandomTeamsEnabled)))
-				EnhancedLog(string.format("VoteRandom set to %s", ToString(kVoteRandomTeamsEnabled)))
+				Shared.Message(string.format("RandomTeams set to %s", ToString(kVoteRandomTeamsEnabled)))
+				EnhancedLog(string.format("RandomTeams set to %s", ToString(kVoteRandomTeamsEnabled)))
 			else
 				kVoteRandomTeamsEnabled = false
 			end
@@ -197,6 +197,19 @@ if kDAKConfig and kDAKConfig._VoteRandom then
 	end
 
 	Event.Hook("Console_voterandom",               OnCommandVoteRandom)
+	Event.Hook("Console_random",               OnCommandVoteRandom)
+	
+	local function OnVoteRandomChatMessage(message, playerName, steamId, teamNumber, teamOnly, client)
+	
+		if client and steamId and steamId ~= 0 then
+			if message == "random" or message == "voterandom" then
+				OnCommandVoteRandom(client)	
+			end
+		end
+	
+	end
+	
+	table.insert(kDAKOnClientChatMessage, function(message, playerName, steamId, teamNumber, teamOnly, client) return OnVoteRandomChatMessage(message, playerName, steamId, teamNumber, teamOnly, client) end)
 
 	local function VoteRandomOff(client)
 

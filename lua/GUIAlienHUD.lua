@@ -33,11 +33,20 @@ local kUpgradeSize = Vector(80, 80, 0) * 0.8
 local kUpgradeYspacing = 50
 local kUpgradePos = Vector(kUpgradeSize.x - 120, -200, 0)
 local kUpgradesTexture = "ui/alien_buildmenu.dds"
+local kStatusTexture = "ui/marine_HUD_status.dds"
 
 local kHealthTextYOffset = -60
 local kArmorTextYOffset = -30
 local kEnergyTextYOffset = -30
 local kEnergyTextXOffset = -150
+
+local kArmorBarSize = Vector(206, 20, 0)
+local kArmorBarPixelCoords = { 58, 352, 58 + 206, 352 + 20 }
+local kArmorBarPos = Vector(58, 88, 0)
+
+local kHealthBarSize = Vector(206, 28, 0)
+local kHealthBarPixelCoords = { 58, 288, 58 + 206, 288 + 28 }
+local kHealthBarPos = Vector(58, 24, 0)
 
 local kNotEnoughEnergyColor = Color(0.6, 0, 0, 1)
 
@@ -57,6 +66,16 @@ local kLowEnergyColor = Color(196 / 255, 196 / 255, 0, 0)
 
 local kLowHealth = 0.3
 local kNotificationUpdateIntervall = 0.2
+
+local kBorderTexture = "ui/unitstatus_marine.dds"
+local kBorderCoords = { 256, 256, 256 + 512, 256 + 128 }
+local kBorderMaskPixelCoords = { 256, 384, 256 + 512, 384 + 512 }
+local kBorderMaskCircleRadius = 240
+local kHealthBorderPos = Vector(-150, -60, 0)
+local kHealthBorderSize = Vector(350, 65, 0)
+local kArmorBorderPos = Vector(-150, 10, 0)
+local kArmorBorderSize = Vector(350, 50, 0)
+local kRotationDuration = 8
 
 local function GetTechIdForUpgrade(upg) 
     return LookupTechData(upg, kTechDataKeyStructure, kTechId.None)
@@ -209,6 +228,56 @@ function GUIAlienHUD:CreateHealthText()
     self.armorText:SetColor(Color(1, 1, 1, 1))
     self.armorText:SetText("ARMOR :")
     self.resourceBackground:AddChild(self.armorText)
+    
+    self.armorBar = self:CreateAnimatedGraphicItem()
+    self.armorBar:SetTexture(kStatusTexture)
+    self.armorBar:SetTexturePixelCoordinates(unpack(kArmorBarPixelCoords))
+    self.armorBar:AddAsChildTo(self.resourceBackground)
+    
+    self.armorBarGlow = self:CreateAnimatedGraphicItem()
+    self.armorBarGlow:SetLayer(kGUILayerPlayerHUDForeground1 + 2)
+    self.armorBarGlow:SetAnchor(GUIItem.Right, GUIItem.Top)
+    self.armorBarGlow:SetBlendTechnique(GUIItem.Add)
+    self.armorBarGlow:SetIsVisible(true)
+    self.armorBarGlow:SetStencilFunc(GUIItem.NotEqual)
+    self.armorBar:AddChild(self.armorBarGlow)
+    
+    self.healthBar = self:CreateAnimatedGraphicItem()
+    self.healthBar:SetTexture(kStatusTexture)
+    self.healthBar:SetTexturePixelCoordinates(unpack(kHealthBarPixelCoords))
+    self.healthBar:AddAsChildTo(self.resourceBackground)
+
+    self.healthBorder = GetGUIManager():CreateGraphicItem()
+    self.healthBorder:SetAnchor(GUIItem.Middle, GUIItem.Center)
+    self.healthBorder:SetTexture(kBorderTexture)
+    self.healthBorder:SetTexturePixelCoordinates(unpack(kBorderCoords))
+    self.healthBorder:SetIsStencil(true)
+    
+    self.healthBorderMask = GetGUIManager():CreateGraphicItem()
+    self.healthBorderMask:SetTexture(kBorderTexture)
+    self.healthBorderMask:SetAnchor(GUIItem.Middle, GUIItem.Center)
+    self.healthBorderMask:SetBlendTechnique(GUIItem.Add)
+    self.healthBorderMask:SetTexturePixelCoordinates(unpack(kBorderMaskPixelCoords))
+    self.healthBorderMask:SetStencilFunc(GUIItem.NotEqual)
+    
+    self.healthBorder:AddChild(self.healthBorderMask)
+    self.resourceBackground:AddChild(self.healthBorder)
+    
+    self.armorBorder = GetGUIManager():CreateGraphicItem()
+    self.armorBorder:SetAnchor(GUIItem.Middle, GUIItem.Center)
+    self.armorBorder:SetTexture(kBorderTexture)
+    self.armorBorder:SetTexturePixelCoordinates(unpack(kBorderCoords))
+    self.armorBorder:SetIsStencil(true)
+    
+    self.armorBorderMask = GetGUIManager():CreateGraphicItem()
+    self.armorBorderMask:SetTexture(kBorderTexture)
+    self.armorBorderMask:SetAnchor(GUIItem.Middle, GUIItem.Center)
+    self.armorBorderMask:SetBlendTechnique(GUIItem.Add)
+    self.armorBorderMask:SetTexturePixelCoordinates(unpack(kBorderMaskPixelCoords))
+    self.armorBorderMask:SetStencilFunc(GUIItem.NotEqual)
+    
+    self.armorBorder:AddChild(self.armorBorderMask)
+    self.resourceBackground:AddChild(self.armorBorder)
 
 end
 
