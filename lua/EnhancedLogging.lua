@@ -1,6 +1,6 @@
 //NS2 EnhancedLogging and Tracking of events
 
-kDAKRevisions["EnhancedLogging"] = 1.4
+kDAKRevisions["EnhancedLogging"] = 1.5
 local EnhancedLoggingFile = nil
 local EnhancedLog = { }
 
@@ -467,22 +467,16 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 		end
 		
 	end
-		
-	function Server.AddChatToHistory(message, playerName, steamId, teamNumber, teamOnly)
-		
-		local client = GetClientMatchingSteamId(steamId)
-		if client and steamId then
+	
+	function EnhancedLoggingChatMessage(message, playerName, steamId, teamNumber, teamOnly, client)
+		if client and steamId and steamId ~= 0 then
 			PrintToEnhancedLog(GetTimeStamp() .. GetClientUIDString(client) .. ConditionalValue(teamOnly, " teamsay ", " say ") .. message)
 		else
 			PrintToEnhancedLog(GetTimeStamp() .. playerName .. ConditionalValue(teamOnly, " teamsay ", " say ")  .. message)
 		end
-		
-		if chatMessageCount == nil then chatMessageCount = 0 end
-		chatMessageCount = chatMessageCount + 1
-		Server.recentChatMessages:Insert({ id = chatMessageCount, message = message, player = playerName,
-										   steamId = steamId, team = teamNumber, teamOnly = teamOnly })
-
 	end
+	
+	table.insert(kDAKOnClientChatMessage, function(message, playerName, steamId, teamNumber, teamOnly, client) return EnhancedLoggingChatMessage(message, playerName, steamId, teamNumber, teamOnly, client) end)
 	
 	function EnhancedLoggingJoinTeam(player, newTeamNumber, force)
 		local client = Server.GetOwner(player)
@@ -498,11 +492,14 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 		local gamerules = GetGamerules()
 		if gamerules ~= nil then
 			if gamerules:GetGameState() == kGameState.Started then
-				if winningTeam == gamerules.team1 then
-					PrintToEnhancedLog(GetTimeStamp() .. string.format("Aliens win."))
-				else
-					PrintToEnhancedLog(GetTimeStamp() .. string.format("Marines win."))
-				end
+			    local version = ToString(Shared.GetBuildNumber())
+                local winner = ToString(winningTeam:GetTeamType())
+                local length = string.format("%.2f", Shared.GetTime() - gamerules.gameStartTime)
+                local map = Shared.GetMapName()
+                local start_location1 = gamerules.startingLocationNameTeam1
+                local start_location2 = gamerules.startingLocationNameTeam2
+				PrintToEnhancedLog(GetTimeStamp() .. "build " .. version .. " winning_team " .. winner .. " game_length " .. length .. 
+					" map " .. map .. " marine_start_loc " .. start_location1 .. " alien_start_loc " .. start_location2)
 			end
 		end
 		

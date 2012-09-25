@@ -75,7 +75,7 @@ if kDAKConfig and kDAKConfig._ReservedSlots then
 			return false
 		end
 		
-		if GetClientCanRunCommand(client, "sv_hasreserve") then
+		if DAKGetClientCanRunCommand(client, "sv_hasreserve") then
 			if not silent then ServerAdminPrint(client, "Reserved Slot Entry For - id: " .. tostring(client:GetUserId()) .. " - Is Valid") end
 			return true
 		end

@@ -18,8 +18,7 @@ if kDAKConfig and kDAKConfig._MOTD then
 		end
 			
 		if kDAKSettings.MOTDAcceptedClients == nil then
-			local MOTDAcceptedClients = { }
-			table.insert(kDAKSettings, MOTDAcceptedClients)
+			kDAKSettings.MOTDAcceptedClients = { }
 		end
 	
 	end
@@ -184,6 +183,20 @@ if kDAKConfig and kDAKConfig._MOTD then
 	end
 	
 	Event.Hook("Console_printmotd",                 OnCommandPrintMOTD)
+	
+	local function OnMOTDChatMessage(message, playerName, steamId, teamNumber, teamOnly, client)
+	
+		if client and steamId and steamId ~= 0 then
+			if message == "acceptmotd" then
+				OnCommandAcceptMOTD(client)
+			elseif message == "printmotd" then
+				OnCommandPrintMOTD(client)
+			end
+		end
+	
+	end
+	
+	table.insert(kDAKOnClientChatMessage, function(message, playerName, steamId, teamNumber, teamOnly, client) return OnMOTDChatMessage(message, playerName, steamId, teamNumber, teamOnly, client) end)
 
 	Shared.Message("ServerMOTD Loading Complete")
 	
