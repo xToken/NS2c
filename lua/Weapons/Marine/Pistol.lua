@@ -247,6 +247,10 @@ function Pistol:GetSwingAmount()
     return 15
 end
 
+function Pistol:GetMaxAmmo()
+    return 4 * self:GetClipSize()
+end
+
 function Pistol:GetIsLaserActive()
     return self.altMode and self:GetIsActive()
 end

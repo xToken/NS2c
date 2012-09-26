@@ -18,6 +18,9 @@ kHiveYOffset = 2.494
 kHiveUnderAttackTime = 15
 kMaxAlienStructureRange = 25
 kMaxAlienStructuresofType = 8
+kMaxBuildingHives = 2
+kPingOfDeathDelay = 2
+kPingOfDeathDamagePercent = 12
 
 kGhostStructureModifier = .75
 kEnergyUpdateRate = .25
@@ -27,6 +30,8 @@ kItemStayTime = 30    // NS1
 
 // set to -1 for no time limit
 kParasiteDuration = -1
+kFallDamageMinimumVelocity = 20
+kFallDamageScalar = 10
 
 kCeleritySpeedModifier = 0.20
 kFocusAttackSlowdown = 0.5

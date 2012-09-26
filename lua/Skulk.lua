@@ -232,6 +232,10 @@ function Skulk:GetIsLeaping()
     return self.leaping
 end
 
+function Skulk:ReceivesFallDamage()
+    return false
+end
+
 // Skulks do not respect ladders due to their wall walking superiority.
 function Skulk:GetIsOnLadder()
     return false

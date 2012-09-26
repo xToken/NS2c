@@ -73,6 +73,7 @@ local networkVars =
     timeAbilityEnergyChanged = "time",
     abilityEnergyOnChange = "float (0 to " .. math.ceil(kAbilityMaxEnergy) .. " by 0.05 [] )",
     
+    oneHive = "private boolean",
     twoHives = "private boolean",
     threeHives = "private boolean",
     
@@ -121,6 +122,7 @@ function Alien:OnCreate()
     self.darkVisionTime = 0
     self.darkVisionEndTime = 0
     
+    self.oneHive = false
     self.twoHives = false
     self.threeHives = false
     self.primalScreamBoost = false
@@ -312,6 +314,10 @@ end
 
 function Alien:GetSlowSpeedModifier()
     return Player.GetSlowSpeedModifier(self)
+end
+
+function Alien:GetHasOneHive()
+    return self.oneHive
 end
 
 function Alien:GetHasTwoHives()

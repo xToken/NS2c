@@ -64,7 +64,7 @@ DetectableMixin.optionalCallbacks =
 }
 
 // Should be bigger then DetectorMixin:kUpdateDetectionInterval
-DetectableMixin.kResetDetectionInterval = 1.5
+DetectableMixin.kResetDetectionInterval = 1
 
 DetectableMixin.networkVars =
 {
