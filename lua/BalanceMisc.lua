@@ -18,12 +18,12 @@ kHiveYOffset = 2.494
 kHiveUnderAttackTime = 15
 kMaxAlienStructureRange = 25
 kMaxAlienStructuresofType = 8
-kMaxBuildingHives = 2
+kMaxBuildingHives = 1
 kPingOfDeathDelay = 2
 kPingOfDeathDamagePercent = 12
 
 kGhostStructureModifier = .75
-kEnergyUpdateRate = .25
+kEnergyUpdateRate = 0.25
 kDropWeaponTimeLimit = 1
 kPickupWeaponTimeLimit = 1
 kItemStayTime = 30    // NS1
@@ -33,18 +33,18 @@ kParasiteDuration = -1
 kFallDamageMinimumVelocity = 20
 kFallDamageScalar = 10
 
-kCeleritySpeedModifier = 0.20
+kCeleritySpeedModifier = 0.2
 kFocusAttackSlowdown = 0.5
 kFocusAttackDamageMultipler = 2
 kBombardAttackDamageMultipler = 1.3
-kRedemptionEHPThreshold = .40
-kRedemptionChancePerLevel = .15
+kRedemptionEHPThreshold = 0.40
+kRedemptionChancePerLevel = 0.15
 kRedemptionCheckTime = 2
 kRedemptionCooldown = 20
 kRedploymentCooldownBase = 15
 kAuraDetectionRange = 30
 kFuryHealthRegained = 4
-kFuryHealthPercentageRegained = 0.05
+kFuryHealthPercentageRegained = 0.1
 kFuryEnergyRegained = 10
 
 // per second
@@ -67,7 +67,7 @@ kDistressBeaconTime = 3
 
 //Shift Energize
 kEnergizeRange = 15
-kEnergizeEnergyIncrease = .25
+kEnergizeEnergyIncrease = 0.25
 kStructureEnergyPerEnergize = 0.15
 kPlayerEnergyPerEnergize = 6
 kEnergizeUpdateRate = 1
@@ -76,9 +76,9 @@ kEnergizeUpdateRate = 1
 kUpgradeGestationTime = 2
 
 // Jetpack
-kJetpackUseFuelRate = .38
-kJetpackUpgradeUseFuelRate = .15
-kJetpackReplenishFuelRate = .16
+kJetpackUseFuelRate = 0.38
+kJetpackUpgradeUseFuelRate = 0.15
+kJetpackReplenishFuelRate = 0.16
 
 //HA
 kHeavyArmorWeightAssist = 2.5

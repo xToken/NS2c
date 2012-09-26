@@ -655,7 +655,6 @@ local function AssignPlayerToEgg(self, player, spawntime)
                 table.insert(localhiveeggs, egg)
             end
         end
-        Print(ToString(#localhiveeggs))
         //If hive has eggs, randomly select one
         local hiveeggs = #localhiveeggs
         if hiveeggs ~= nil and hiveeggs >= 1 then

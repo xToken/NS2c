@@ -8,6 +8,8 @@ class 'Metabolize' (Blink)
 
 Metabolize.kMapName = "metabolize"
 
+local kDefaultAttackSpeed = 1.4
+
 local networkVars =
 {
 }
