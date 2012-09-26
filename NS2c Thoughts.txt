@@ -62,8 +62,6 @@ Consider adding tech path that requires second tech point to be captured.
 
 Final points of completion for release
 -Changes to redemption (maybe)
--Ping of death
--Add optional building hive limitations
 -Bite view jar
 -Alien HUD changes
 -Review Ghost

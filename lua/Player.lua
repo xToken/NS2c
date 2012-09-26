@@ -2600,12 +2600,18 @@ function Player:ModifyVelocity(input, velocity)
 
     // Must press jump multiple times to get multiple jumps 
     if bit.band(input.commands, Move.Jump) ~= 0 and not self.jumpHandled then
-    
-        if self:HandleJump(input, velocity) and self.OnJump then
+        
+        local jumped = self:HandleJump(input, velocity)
+        if jumped and self.OnJump then
             self:OnJump()
         end
         
+        //if jumped and not self:OverrideStrafeJump() then
         self.jumpHandled = self:OverrideStrafeJump()
+        //self.jumpHandled = true
+        //else
+        //self.jumpHandled = false
+        //end
     
     elseif self:GetIsOnGround() then
         self:HandleOnGround(input, velocity)

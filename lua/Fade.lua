@@ -316,9 +316,9 @@ end
 
 function Fade:OnBlinkEnd()
     self.onGroundNeedsUpdate = true
-    //if self:GetIsOnGround() then
-        //self.jumping = false
-    //end
+    if self:GetIsOnGround() then
+        self.jumping = false
+    end
     self.ethereal = false
     self.blinkhandled = false
 end
