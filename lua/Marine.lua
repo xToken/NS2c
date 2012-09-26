@@ -803,7 +803,7 @@ end
 function Marine:OnUpdateCamera(deltaTime)
 
     if self:GetIsDisrupted() then
-        self:SetDesiredCameraYOffset(-1.3)
+        self:SetDesiredCameraYOffset(-0.25)
     else
         Player.OnUpdateCamera(self, deltaTime)
     end

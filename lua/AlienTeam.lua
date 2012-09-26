@@ -23,6 +23,8 @@ AlienTeam.kAutoHealUpdateNum = 20 // number of structures to update per autoheal
 AlienTeam.kSpawnScanInterval = 2
 AlienTeam.kOrganicStructureHealRate = kHealingBedStructureRegen     // Health per second
 
+AlienTeam.kPingSound = PrecacheAsset("sound/NS2.fev/ambient/feild_walkthrough")
+
 // only update every second to not stress the server too much
 AlienTeam.kAlienSpectatorUpdateIntervall = 1
 
@@ -65,6 +67,7 @@ function AlienTeam:OnInitialized()
     PlayingTeam.OnInitialized(self)    
 
     self.timeLastAlienSpectatorCheck = 0
+    self.lastPingOfDeathCheck = 0
     self.lastAutoHealIndex = 1
     self.timeLastWave = nil
     
@@ -250,6 +253,7 @@ function AlienTeam:Update(timePassed)
     self:UpdateTeamAutoHeal(timePassed)
     self:UpdateCloakables()
     self:UpdateRespawn()
+    self:PingOfDeath()
     
 end
 
@@ -260,6 +264,21 @@ function AlienTeam:OnTechTreeUpdated()
         self.updateAlienArmor = false
         self.updateAlienArmorInTicks = 100
         
+    end
+
+end
+
+function AlienTeam:PingOfDeath()
+
+    if not self:GetHasAbilityToRespawn() and (not GetTournamentMode or not GetTournamentMode()) and self.lastPingOfDeathCheck + kPingOfDeathDelay < Shared.GetTime() then
+        for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
+            if alien:GetIsAlive() then
+                local damage = math.max(0, alien:GetMaxHealth() * (kPingOfDeathDamagePercent / 100))
+                alien:TakeDamage(damage, alien, alien, alien:GetOrigin(), nil, 0, damage, kDamageType.Falling)
+                StartSoundEffectForPlayer(AlienTeam.kPingSound, alien)
+            end
+        end
+        self.lastPingOfDeathCheck = Shared.GetTime()
     end
 
 end
@@ -703,7 +722,6 @@ local function RespawnPlayer(self, hive)
     hive.timeWaveEnds = 0
   
 end
-
 
 function AlienTeam:UpdateRespawn()
 

@@ -149,8 +149,21 @@ local function DropStructure(self, player)
         if valid and enoughRes and self:GetActiveStructure():IsAllowed(player) then
         
             if techId == kTechId.Hive or techId == kTechId.Harvester then
-                success, entid = player:AttemptToBuild(techId, coords.origin, nil, nil, nil, nil, self, nil, player)
-                
+                local success = false
+                if techId == kTechId.Hive then
+                    local BuildingHives = 0
+                    for index, hive in ipairs(GetEntitiesForTeam("Hive", self:GetTeamNumber())) do
+                        if not hive:GetIsBuilt() then
+                            BuildingHives = BuildingHives + 1
+                        end
+                    end
+                    if BuildingHives < kMaxBuildingHives then
+                        success, entid = player:AttemptToBuild(techId, coords.origin, nil, nil, nil, nil, self, nil, player)
+                    end
+                else
+                    success, entid = player:AttemptToBuild(techId, coords.origin, nil, nil, nil, nil, self, nil, player)
+                end
+
                 if success then
                     player:AddResources(-cost)     
                     if entid then

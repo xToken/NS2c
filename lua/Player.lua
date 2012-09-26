@@ -1532,6 +1532,10 @@ function Player:GetIsOnSurface()
     return self.onGround
 end    
 
+function Player:ReceivesFallDamage()
+    return true
+end
+
 local function UpdateJumpLand(self, wasOnGround, previousVelocity)
 
     // If we landed this frame
@@ -1553,6 +1557,16 @@ local function UpdateJumpLand(self, wasOnGround, previousVelocity)
         
     end
     
+end
+
+local function UpdateFallDamage(self, wasOnGround, previousVelocity)
+
+    if wasOnGround == false and self:GetIsOnSurface() and self:ReceivesFallDamage() then
+        if math.abs(previousVelocity.y) > kFallDamageMinimumVelocity then
+            local damage = math.max(0, math.abs(previousVelocity.y * kFallDamageScalar) - 200)
+            self:TakeDamage(damage, self, self, self:GetOrigin(), nil, 0, damage, kDamageType.Falling)
+        end
+    end
 end
 
 local kDoublePI = math.pi * 2
@@ -1676,6 +1690,7 @@ function Player:OnProcessMove(input)
         
         self:UpdateMaxMoveSpeed(input.time) 
         
+        UpdateFallDamage(self, wasOnGround, previousVelocity)
         UpdateJumpLand(self, wasOnGround, previousVelocity)
         
         // Restore the buttons so that things like the scoreboard, etc. work.

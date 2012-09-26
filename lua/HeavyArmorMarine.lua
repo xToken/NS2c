@@ -86,12 +86,6 @@ function HeavyArmorMarine:OnInitialized()
     
 end
 
-// Currently there are some issues with a jumping Marine getting disrupted (weapons becoming locked).
-// not using now toss, only stun. maybe that already fixed it
-function HeavyArmorMarine:GetCanBeDisrupted()
-    return not self:GetIsJumping()
-end
-
 function HeavyArmorMarine:GetCanRepairOverride(target)
     return self:GetWeapon(Welder.kMapName) and HasMixin(target, "Weldable") and ( (target:isa("Marine") and target:GetArmor() < target:GetMaxArmor()) or (not target:isa("Marine") and target:GetHealthScalar() < 0.9) )
 end
