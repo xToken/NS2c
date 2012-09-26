@@ -475,6 +475,9 @@
     <filename>OrdersMixin.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Alien\Parasite.lua</filename>
+  </file>
+  <file>
     <filename>ParasiteMixin.lua</filename>
   </file>
   <file>
@@ -578,6 +581,9 @@
   </file>
   <file>
     <filename>Skulk_Client.lua</filename>
+  </file>
+  <file>
+    <filename>Skulk_Server.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\Smash.lua</filename>

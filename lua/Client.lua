@@ -597,13 +597,13 @@ local function UpdateFogAreaModifiers(fromOrigin)
             
         end
         
-        Client.SetZoneFogDepthScale(RenderScene.Zone_ViewModel, 1.0 / viewZoneScale)
+        Client.SetZoneFogDepthScale(RenderScene.Zone_ViewModel, 0.0 / viewZoneScale)
         Client.SetZoneFogColor(RenderScene.Zone_ViewModel, viewZoneColor)
         
-        Client.SetZoneFogDepthScale(RenderScene.Zone_SkyBox, 1.0 / skyboxZoneScale)
+        Client.SetZoneFogDepthScale(RenderScene.Zone_SkyBox, 0.0 / skyboxZoneScale)
         Client.SetZoneFogColor(RenderScene.Zone_SkyBox, skyboxZoneColor)
         
-        Client.SetZoneFogDepthScale(RenderScene.Zone_Default, 1.0 / defaultZoneScale)
+        Client.SetZoneFogDepthScale(RenderScene.Zone_Default, 0.0 / defaultZoneScale)
         Client.SetZoneFogColor(RenderScene.Zone_Default, defaultZoneColor)
         
     end

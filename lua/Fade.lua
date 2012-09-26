@@ -164,6 +164,9 @@ function Fade:PerformsVerticalMove()
     return self:GetIsBlinking()
 end
 
+function Fade:ReceivesFallDamage()
+    return false
+end
 
 function Fade:GetGroundFrictionForce()
     return ConditionalValue(self:GetIsBlinking() or (self:GetRecentlyBlinked() and self:GetVelocity():GetLengthXZ() > Fade.kBlinkAccelSpeed), 6, 7.2)

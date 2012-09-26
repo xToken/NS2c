@@ -62,8 +62,16 @@ function Marine:OnTakeDamage(damage, attacker, doer, point)
 
     if damage > 50 and (not self.timeLastDamageKnockback or self.timeLastDamageKnockback + 1 < Shared.GetTime()) then    
     
-        self:AddPushImpulse(GetNormalizedVectorXZ(self:GetOrigin() - point) * damage * 0.2 * self:GetSlowSpeedModifier())
+        self:AddPushImpulse(GetNormalizedVectorXZ(self:GetOrigin() - point) * damage * 0.25 * self:GetSlowSpeedModifier())
         self.timeLastDamageKnockback = Shared.GetTime()
+        
+        if self:GetIsAlive() then
+            local viewCoords = self:GetViewCoords()
+            viewCoords.zAxis = viewCoords.zAxis - (point * 0.075)
+            local viewAngles = Angles()
+            viewAngles:BuildFromCoords(viewCoords)
+            self:SetViewAngles(viewAngles)
+        end
         
     end
 

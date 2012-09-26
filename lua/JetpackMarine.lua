@@ -205,6 +205,10 @@ function JetpackMarine:GetSlowOnLand()
     return false
 end
 
+function JetpackMarine:ReceivesFallDamage()
+    return false
+end
+
 function JetpackMarine:GetArmorAmount()
 
     local jetpackArmorBonus = 0    

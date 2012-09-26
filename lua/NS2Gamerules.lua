@@ -1179,7 +1179,7 @@ if Server then
                 // Give new players starting resources. Mark players as "having played" the game (so they don't get starting res if
                 // they join a team again, etc.)
                 local success, played = GetUserPlayedInGame(self, newPlayer)
-                if success and not played then
+                if success and not played and newTeamNumber == kAlienTeamType then
                     newPlayer:SetResources(kAlienTeamInitialRes)
                 end
                 

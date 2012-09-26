@@ -223,6 +223,10 @@ function Lerk:GetIsWallGripping()
     return self.wallGripTime ~= 0 
 end
 
+function Lerk:ReceivesFallDamage()
+    return false
+end
+
 // Gain speed gradually the longer we stay in the air
 function Lerk:GetMaxSpeed(possible)
 

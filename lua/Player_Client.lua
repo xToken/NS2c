@@ -1737,7 +1737,8 @@ function Player:OnInitLocalClient()
     // Set commander geometry visible
     Client.SetGroupIsVisible(kCommanderInvisibleGroupName, true)
     
-    Client.SetEnableFog(true)
+    Client.SetEnableFog(false)
+    Shared.ConsoleCommand("r_fog false")
     
     self:InitScreenEffects()
 
@@ -1964,10 +1965,8 @@ function Player:GetWeaponClip()
     if weapon ~= nil then
         if weapon:isa("ClipWeapon") then
             return weapon:GetClip()
-        elseif weapon:isa("Mines") then
-            return weapon:GetMinesLeft()
-        elseif weapon:isa("HandGrenades") then
-            return weapon:GetNadesLeft()
+        elseif weapon:isa("Mines") or weapon:isa("HandGrenades") then
+            return 1
         end
     end
     
@@ -2003,6 +2002,10 @@ function Player:GetAuxWeaponClip()
     
     if(weapon ~= nil and weapon:isa("ClipWeapon")) then
         return weapon:GetAuxClip()
+    elseif (weapon ~= nil and weapon:isa("Mines")) then
+        return weapon:GetMinesLeft()
+    elseif (weapon ~= nil and weapon:isa("HandGrenades")) then
+        return weapon:GetNadesLeft()
     end
     
     return 0

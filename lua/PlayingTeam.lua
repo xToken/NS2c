@@ -756,10 +756,10 @@ function PlayingTeam:UpdateTechTree()
             
         self.unassignedhives = 0
         for index, hive in ipairs(GetEntitiesForTeam("Hive", self:GetTeamNumber())) do
-            if hive:GetTechId() == kTechId.Hive and hive:GetIsBuilt() then
+            if hive:GetTechId() == kTechId.Hive and hive:GetIsBuilt() and hive:GetIsAlive() then
                 self.unassignedhives = self.unassignedhives + 1
             end
-        end     
+        end
         
         // Send research, availability, etc. tech node updates to team players
         self.techTree:SendTechTreeUpdates(players)

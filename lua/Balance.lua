@@ -204,10 +204,10 @@ kHandGrenadesWeight = 0.025
 
 kSentryAttackDamage = 10
 kSentryAttackDamageType = kDamageType.Normal
-kSentryAttackBaseROF = 0.08
-kSentryAttackRandROF = 0.04
+kSentryAttackBaseROF = 0.12
+kSentryAttackRandROF = 0.16
 kSentryAttackBulletsPerSalvo = 1
-kConfusedSentryBaseROF = 1.5
+kConfusedSentryBaseROF = 1.0
 
 // sentry increases damage when shooting at the same target (resets when switching targets)
 kSentryMinAttackDamage = 5
@@ -243,14 +243,14 @@ kXenocideEnergyCost = 50
 kSpitDamage = 30
 kSpitDamageType = kDamageType.Normal
 kSpitEnergyCost = 8
-kSpitDelay = 0.5
+kSpitDelay = 0.4
 
 // Also see kHealsprayHealStructureRate
 kHealsprayDamage = 13
 kHealPlayerPercent = 4
 kHealBuildingScalar = 5
 kHealsprayDamageType = kDamageType.Biological
-kHealsprayFireDelay = 1.6
+kHealsprayFireDelay = 0.8
 kHealsprayEnergyCost = 15
 kHealsprayRadius = 3.5
 
@@ -267,7 +267,7 @@ kWebEngagementRange = 2
 kLerkBiteDamage = 60
 kLerkBiteEnergyCost = 5
 kLerkBiteDamageType = kDamageType.Normal
-kLerkBiteDelay = 0.35
+kLerkBiteDelay = 0.32
 
 kSporeEnergyCost = 20
 kSporeDuration = 4
@@ -303,7 +303,7 @@ kPrimalScreamROFIncrease = 1.3
 kSwipeDamage = 80
 kSwipeDamageType = kDamageType.Normal
 kSwipeEnergyCost = 6.5
-kSwipeDelay = 0.5
+kSwipeDelay = 0.48
 
 kStartBlinkEnergyCost = 8
 kBlinkEnergyCost = 100
@@ -311,18 +311,18 @@ kBlinkEnergyCost = 100
 kMetabolizeEnergyCost = 25
 kMetabolizeEnergyGain = 35
 kMetabolizeHealthGain = 20
-kMetabolizeDelay = 1.3
+kMetabolizeDelay = 1.45
 
 kAcidRocketDamage = 25
 kAcidRocketDamageType = kDamageType.Heavy
-kAcidRocketFireDelay = 1
+kAcidRocketFireDelay = 0.5
 kAcidRocketEnergyCost = 10
 kAcidRocketRadius = 5
 
 kGoreDamage = 90
 kGoreDamageType = kDamageType.Normal
-kGoreEnergyCost = 8
-kGoreDelay = 0.6
+kGoreEnergyCost = 7
+kGoreDelay = 0.45
 
 kDevourInitialDamage = 10
 kDevourDamage = 10
@@ -336,7 +336,7 @@ kDisruptMarineTime = 2
 
 kSmashDamage = 95
 kSmashDamageType = kDamageType.Structural
-kSmashEnergyCost = 13
+kSmashEnergyCost = 9
 
 kChargeMaxDamage = 4
 kChargeMinDamage = 1
