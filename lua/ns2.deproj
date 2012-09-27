@@ -7,9 +7,6 @@
     <filename>ARC.lua</filename>
   </file>
   <file>
-    <filename>ARC_Server.lua</filename>
-  </file>
-  <file>
     <filename>Weapons\Alien\Ability.lua</filename>
   </file>
   <file>
@@ -475,9 +472,6 @@
     <filename>OrdersMixin.lua</filename>
   </file>
   <file>
-    <filename>Weapons\Alien\Parasite.lua</filename>
-  </file>
-  <file>
     <filename>ParasiteMixin.lua</filename>
   </file>
   <file>
@@ -686,5 +680,11 @@
   </file>
   <file>
     <filename>Weapons\Alien\XenocideLeap.lua</filename>
+  </file>
+  <file>
+    <filename>ARC_Server.lua</filename>
+  </file>
+  <file>
+    <filename>GUISensorBlips.lua</filename>
   </file>
 </project>

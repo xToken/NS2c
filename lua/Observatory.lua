@@ -32,7 +32,7 @@ Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
-Script.Load("lua/ParasiteMixin.lua")
+Script.Load("lua/DetectableMixin.lua")
 
 class 'Observatory' (ScriptActor)
 
@@ -73,7 +73,7 @@ AddMixinNetworkVars(EnergyMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
-AddMixinNetworkVars(ParasiteMixin, networkVars)
+AddMixinNetworkVars(DetectableMixin, networkVars)
 
 function Observatory:OnCreate()
 
@@ -112,7 +112,7 @@ function Observatory:OnCreate()
     InitMixin(self, ObstacleMixin)
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
-    InitMixin(self, ParasiteMixin)
+    InitMixin(self, DetectableMixin)
     
     if Client then
         InitMixin(self, CommanderGlowMixin)

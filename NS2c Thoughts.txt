@@ -62,10 +62,7 @@ Consider adding tech path that requires second tech point to be captured.
 
 Final points of completion for release
 -Changes to redemption (maybe)
--Alien HUD changes <- biggest
--Consider health bar information
--Hive health/construction information
--CC's not linked to tech points to prevent abuse
+-Alien HUD changes
 -Review Ghost
 
 http://www.unknownworlds.com/forums/index.php?showtopic=97790

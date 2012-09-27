@@ -748,6 +748,16 @@ local kGameEndMessage =
 {
     win = "boolean"
 }
+
+local kHiveInfoMessage = 
+{
+    key              = "integer",
+    location         = string.format("string (%d)", kMaxHiveNameLength),
+    healthpercent    = "float",
+    buildprogress    = "float",
+    techId           = "enum kTechId"
+}
+
 Shared.RegisterNetworkMessage("GameEnd", kGameEndMessage)
 
 Shared.RegisterNetworkMessage("EntityChanged", kEntityChangedMessage)
@@ -789,6 +799,8 @@ Shared.RegisterNetworkMessage("DebugCapsule", kDebugCapsuleMessage)
 
 Shared.RegisterNetworkMessage( "TechNodeBase", kTechNodeBaseMessage )
 Shared.RegisterNetworkMessage( "ClearTechTree", {} )
+
+Shared.RegisterNetworkMessage( "HiveInfo", kHiveInfoMessage )
 
 local kRookieMessage =
 {

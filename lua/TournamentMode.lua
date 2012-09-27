@@ -168,7 +168,7 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 			if GetTournamentMode() and (teamNumber == 1 or teamNumber == 2) then
 				return true
 			end
-			return kDAKBaseGamerules.GetCanJoinTeamNumber(self, teamNumber)
+			kDAKBaseGamerules.GetCanJoinTeamNumber(self, teamNumber)
 			
 		end
 		

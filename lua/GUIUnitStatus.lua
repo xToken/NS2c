@@ -96,6 +96,10 @@ local function GetColorForUnitState(unitStatus)
 
 end
 
+local function AdjustHealthValuesForEnemies(value)
+    return math.ceil(value * 10) / 10
+end
+
 function GUIUnitStatus:Initialize()
 
     GUIAnimatedScript.Initialize(self)
@@ -282,15 +286,16 @@ function GUIUnitStatus:UpdateUnitStatusList(activeBlips, deltaTime)
         
         if not isEnemy then
             updateBlip.HealthBar:SetSize(Vector(kHealthBarWidth * blipData.HealthFraction, kHealthBarHeight, 0))
-            updateBlip.HealthBar:SetTexturePixelCoordinates(GetPixelCoordsForFraction(blipData.HealthFraction))
-        
             updateBlip.ArmorBar:SetSize(Vector(kArmorBarWidth * blipData.ArmorFraction, kArmorBarHeight, 0))
-            updateBlip.ArmorBar:SetTexturePixelCoordinates(GetPixelCoordsForFraction(blipData.ArmorFraction)) 
         else
-            updateBlip.HealthBarBg:SetIsVisible(false)
-            updateBlip.ArmorBarBg:SetIsVisible(false)
+            //updateBlip.HealthBarBg:SetIsVisible(false)
+            //updateBlip.ArmorBarBg:SetIsVisible(false)
+            updateBlip.HealthBar:SetSize(Vector(kHealthBarWidth * AdjustHealthValuesForEnemies(blipData.HealthFraction), kHealthBarHeight, 0))
+            updateBlip.ArmorBar:SetSize(Vector(kArmorBarWidth * AdjustHealthValuesForEnemies(blipData.ArmorFraction), kArmorBarHeight, 0))
         end
-        
+        updateBlip.HealthBar:SetTexturePixelCoordinates(GetPixelCoordsForFraction(blipData.HealthFraction))
+        updateBlip.ArmorBar:SetTexturePixelCoordinates(GetPixelCoordsForFraction(blipData.ArmorFraction)) 
+                    
         updateBlip.ProgressingIcon:SetRotation(Vector(0, 0, -2 * math.pi * baseResearchRot))
         updateBlip.BorderMask:SetRotation(Vector(0, 0, -2 * math.pi * baseResearchRot))
         updateBlip.BorderMask:SetIsVisible(teamType == kMarineTeamType and blipData.IsCrossHairTarget)

@@ -65,6 +65,15 @@ function Marine:OnTakeDamage(damage, attacker, doer, point)
         self:AddPushImpulse(GetNormalizedVectorXZ(self:GetOrigin() - point) * damage * 0.2 * self:GetSlowSpeedModifier())
         self.timeLastDamageKnockback = Shared.GetTime()
         
+        if self:GetIsAlive() and attacker and attacker:isa("Alien") then
+            local viewCoords = self:GetViewCoords()
+            local aviewCoords = attacker:GetViewCoords()
+            viewCoords.zAxis = viewCoords.zAxis - (aviewCoords.zAxis * 0.05)
+            local viewAngles = Angles()
+            viewAngles:BuildFromCoords(viewCoords)
+            self:SetViewAngles(viewAngles)
+        end
+        
     end
 
 end
@@ -240,7 +249,7 @@ function Marine:OnKill(attacker, doer, point, direction)
         self:GetTeam():TriggerAlert(kTechId.MarineAlertSoldierLost, self)
     end
     
-    if attacker and attacker:GetTeamNumber() ~= self:GetTeamNumber() and attacker:GetTeamNumber() == kAlienTeamType and attacker:isa("Player") then
+    if attacker and attacker:GetTeamNumber() ~= self:GetTeamNumber() and attacker:GetTeamNumber() == kAlienTeamType and attacker:isa("Alien") then
         local hasupg, level = GetHasFuryUpgrade(attacker)
         if hasupg and level > 0 and attacker:GetIsAlive() then
             attacker:AddHealth((((1 / 3) * level) * kFuryHealthRegained) + ((((1 / 3) * level) * kFuryHealthPercentageRegained) * (attacker:GetMaxHealth() + attacker:GetMaxArmor())))

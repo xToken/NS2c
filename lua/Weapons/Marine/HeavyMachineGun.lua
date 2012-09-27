@@ -15,9 +15,8 @@ local kViewModelName = PrecacheAsset("models/marine/heavymachinegun/heavymachine
 local kAnimationGraph = PrecacheAsset("models/marine/heavymachinegun/heavymachinegun_view.animation_graph")
 
 local kRange = 250
-local kHMGReloadTime = 6
+local kHeavyMachineGunReloadTime = 6
 local kSpread = ClipWeapon.kCone10Degrees
-local kSingleShotSound = PrecacheAsset("sound/NS2.fev/marine/rifle/fire_single")
 local kLoopingSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin")
 local kHeavyMachineGunEndSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin_down")
 
@@ -234,7 +233,7 @@ function HeavyMachineGun:OnUpdateAnimationInput(modelMixin)
     PROFILE("HeavyMachineGun:OnUpdateAnimationInput")
     ClipWeapon.OnUpdateAnimationInput(self, modelMixin)
     
-    if self.reloading and self.reloadtime + kHMGReloadTime < Shared.GetTime() then
+    if self.reloading and self.reloadtime + kHeavyMachineGunReloadTime < Shared.GetTime() then
         self.reloading = false
         self.ammo = self.ammo + self.clip
         self.reloadtime = 0
@@ -253,8 +252,6 @@ if Client then
 
     function HeavyMachineGun:OnClientPrimaryAttackStart()
     
-        // Fire off a single shot on the first shot. Pew.
-        //Shared.PlaySound(self, kSingleShotSound)
         // Start the looping sound for the rest of the shooting. Pew pew pew...
         Shared.PlaySound(self, kLoopingSound)
     

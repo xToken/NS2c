@@ -1152,6 +1152,17 @@ function PlayerUI_GetPlayerMaxHealth()
     
 end
 
+function PlayerUI_GetPlayerTeam()
+
+    local player = Client.GetLocalPlayer()
+    if player then
+        return player:GetTeamNumber()
+    end
+    
+    return 0
+    
+end
+
 function PlayerUI_GetPlayerArmor()
 
     local player = Client.GetLocalPlayer()
@@ -1428,7 +1439,6 @@ function Player:UpdateMisc(input)
 end
 
 function Player:SetBlurEnabled(blurEnabled)
-    
 end
 
 
@@ -1468,66 +1478,7 @@ function Player:GetDrawPlayer(isLocal)
     return self:GetDrawWorld(isLocal)
 end
 
-local kDangerCheckEndDistance = 25
-local kDangerCheckStartDistance = 15
-assert(kDangerCheckEndDistance > kDangerCheckStartDistance)
-local kDangerHealthEndAmount = 0.6
-local kDangerHealthStartAmount = 0.5
-assert(kDangerHealthEndAmount > kDangerHealthStartAmount)
-local function UpdateDangerEffects(self)
-
-    if self:GetGameStarted() then
-    
-        local now = Shared.GetTime()
-        self.lastDangerCheckTime = self.lastDangerCheckTime or now
-        if now - self.lastDangerCheckTime > 1 then
-        
-            local playerOrigin = self:GetOrigin()
-            // Check to see if there are any nearby Command Structures that are close to death.
-            local commandStructures = GetEntitiesWithinRange("CommandStructure", playerOrigin, kDangerCheckEndDistance)
-            Shared.SortEntitiesByDistance(playerOrigin, commandStructures)
-            
-            // Check if danger needs to be enabled or disabled
-            if not self.dangerEnabled then
-            
-                if #commandStructures > 0 then
-                
-                    local commandStructure = commandStructures[1]
-                    if commandStructure:GetIsBuilt() and commandStructure:GetIsAlive() and
-                       commandStructure:GetIsInCombat() and
-                       commandStructure:GetHealthScalar() <= kDangerHealthStartAmount and
-                       commandStructure:GetDistance(playerOrigin) <= kDangerCheckStartDistance then
-                    
-                        self.dangerEnabled = true
-                        self.dangerOrigin = commandStructure:GetOrigin()
-                       //Client.PlayMusic("danger")
-                        
-                    end
-                    
-                end
-                
-            else
-            
-                local commandStructure = commandStructures[1]
-                if not commandStructure or not commandStructure:GetIsAlive() or
-                   commandStructure:GetHealthScalar() >= kDangerHealthEndAmount or
-                   not commandStructure:GetIsInCombat() or
-                   self.dangerOrigin:GetDistanceTo(playerOrigin) > kDangerCheckEndDistance then
-                
-                    //Client.PlayMusic("no_danger")
-                    self.dangerEnabled = false
-                    self.dangerOrigin = nil
-                    
-                end
-                
-            end
-            
-            self.lastDangerCheckTime = now
-            
-        end
-        
-    end
-    
+local function UpdateDangerEffects(self) 
 end
 
 // Only called when not running prediction
@@ -1537,7 +1488,6 @@ function Player:UpdateClientEffects(deltaTime, isLocal)
     
         self:UpdateIdleSound()
         self:UpdateCommanderPingSound()
-        UpdateDangerEffects(self)
         
     end
     
@@ -1671,12 +1621,6 @@ function Player:GetAndClearAlertBlips()
 end
 
 local function DisableDanger(self)
-
-    // Stop looping music.
-    if self:GetIsLocalPlayer() then
-        //Client.StopMusic("danger")
-    end
-    
 end
 
 // Called on the Client only, after OnInitialized(), for a ScriptActor that is controlled by the local player.
@@ -1776,7 +1720,6 @@ function Player:InitScreenEffects()
 end
 
 function Player:SetEthereal(ethereal)
-
 end
 
 function Player:SetCloakShaderState(state)
@@ -1788,7 +1731,6 @@ function Player:SetCloakShaderState(state)
 end
 
 function Player:UpdateDisorientSoundLoop(state)
-
 end
 
 function Player:UpdateCloakSoundLoop(state)
@@ -1804,7 +1746,6 @@ function Player:UpdateCloakSoundLoop(state)
 end
 
 function Player:UpdateDisorientFX()
-    
 end
 
 local function DestroyScreenEffects(self)
@@ -1866,6 +1807,7 @@ end
  * they don't have them enabled while spectating. This is required now
  * that the dead player entity exists alongside the new spectator player.
  */
+
 function Player:OnKillClient()
 
     DestroyScreenEffects(self)
@@ -1950,6 +1892,10 @@ function Player:GetWeaponAmmo()
     
     if(weapon ~= nil and weapon:isa("ClipWeapon")) then
         return weapon:GetAmmo()
+    elseif (weapon ~= nil and weapon:isa("Mines")) then
+        return weapon:GetMinesLeft()
+    elseif (weapon ~= nil and weapon:isa("HandGrenades")) then
+        return weapon:GetNadesLeft()
     end
     
     return 0

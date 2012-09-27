@@ -15,7 +15,6 @@ class 'JetpackMarine' (Marine)
 JetpackMarine.kMapName = "jetpackmarine"
 
 JetpackMarine.kModelName = PrecacheAsset("models/marine/male/male.model")
-JetpackMarine.kSpecialModelName = PrecacheAsset("models/marine/male/male_special.model")
 
 JetpackMarine.kJetpackStart = PrecacheAsset("sound/NS2.fev/marine/common/jetpack_start")
 JetpackMarine.kJetpackEnd = PrecacheAsset("sound/NS2.fev/marine/common/jetpack_end")
