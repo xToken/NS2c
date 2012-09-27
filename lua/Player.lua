@@ -508,6 +508,9 @@ function Player:SetTimeTargetHit()
     self.timeTargetHit = Shared.GetTime()
 end
 
+function Player:MakeSpecialEdition()    
+end
+
 function Player:AddKill()
 
     self.kills = Clamp(self.kills + 1, 0, kMaxKills)
