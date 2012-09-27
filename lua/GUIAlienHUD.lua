@@ -726,6 +726,8 @@ function GUIAlienHUD:UpdateHiveInformation(deltaTime)
             if self.hives[i].lasthealth ~= hiveinfo.healthpercent and hiveinfo.time - Client.GetTime() < 5 then
                 local textureCoords = GetTextureCoordinatesForIcon(hiveinfo.techId, false)
                 self.hives[i].locationtext:SetText(hiveinfo.location)
+                self.hives[i].locationtext:SetIsVisible(true)
+                self.hives[i].locationtext:SetColor(kHealthBarColor)
                 self.hives[i].icon:SetTexturePixelCoordinates(unpack(textureCoords))
                 self.hives[i].icon:SetIsVisible(true)
                 self.hives[i].healthBar:SetSize(Vector(kHiveHealthSize.x, kHiveHealthSize.y * hiveinfo.healthpercent, 0))
