@@ -21,7 +21,7 @@ AlienTeam.kAutoHealInterval = 2
 AlienTeam.kStructureAutoHealInterval = 0.5
 AlienTeam.kAutoHealUpdateNum = 20 // number of structures to update per autoheal update
 AlienTeam.kSpawnScanInterval = 2
-AlienTeam.kOrganicStructureHealRate = kHealingBedStructureRegen     // Health per second
+AlienTeam.kOrganicStructureHealRate = 0.02     // Health per second
 
 AlienTeam.kPingSound = PrecacheAsset("sound/NS2.fev/ambient/feild_walkthrough")
 
@@ -316,11 +316,11 @@ function AlienTeam:UpdateTeamAutoHeal(timePassed)
                     entity.timeLastAutoHeal = Shared.GetTime()
                 else
                     deltaTime = Shared.GetTime() - entity.timeLastAutoHeal
-                    entity.timeLastAutoHeal = Shared.GetTime()
                 end
 
-                if isHealable then
-                    entity:AddHealth(math.min(AlienTeam.kOrganicStructureHealRate * deltaTime, 0.02*entity:GetMaxHealth()), true)                
+                if isHealable and deltaTime > AlienTeam.kAutoHealInterval then
+                    entity:AddHealth(math.max(AlienTeam.kOrganicStructureHealRate * entity:GetMaxHealth(), 1), true)
+                    entity.timeLastAutoHeal = Shared.GetTime()
                 end
             
             end
@@ -485,64 +485,6 @@ function AlienTeam:OnUpgradeChamberConstructed(upgradeChamber)
     end
     
 end
-
-/*
-function AlienTeam:OnUpgradeChamberDestroyed(upgradeChamber)
-
-    if upgradeChamber:GetTechId() == kTechId.Crag then
-        self.updateAlienArmor = true
-    end
-    
-    // These is a list of all tech to check when a upgrade chamber is destroyed.
-    local checkForLostResearch = { [kTechId.Crag] = { "Crag", kTechId.Regeneration },
-                                   [kTechId.Crag] = { "Crag", kTechId.Carapace },
-                                   [kTechId.Shift] = { "Shift", kTechId.Celerity },
-                                   [kTechId.Shift] = { "Shift", kTechId.Adrenaline },
-                                   [kTechId.Shade] = { "Shade", kTechId.Silence },
-                                   [kTechId.Shade] = { "Shade", kTechId.Focus } }
-    
-    local checkTech = checkForLostResearch[upgradeChamber:GetTechId()]
-    if checkTech then
-    
-        local anyRemain = false
-        for _, ent in ientitylist(Shared.GetEntitiesWithClassname(checkTech[1])) do
-        
-            // Don't count the upgradeChamber as it is being destroyed now.
-            if ent ~= upgradeChamber and ent:GetTechId() == upgradeChamber:GetTechId() then
-            
-                anyRemain = true
-                break
-                
-            end
-            
-        end
-        
-        if not anyRemain then
-            SendTeamMessage(self, kTeamMessageTypes.ResearchLost, checkTech[2])
-        end
-        
-    end
-    
-end
-
-function AlienTeam:OnResearchComplete(structure, researchId)
-
-    PlayingTeam.OnResearchComplete(self, structure, researchId)
-    
-    local checkForGainedResearch = { [kTechId.Crag] = kTechId.Regeneration,
-                                     [kTechId.Crag] = kTechId.Carapace,
-                                     [kTechId.Shift] = kTechId.Celerity,
-                                     [kTechId.Shift] = kTechId.Adrenaline,
-                                     [kTechId.Shade] = kTechId.Silence,
-                                     [kTechId.Shade] = kTechId.Focus }
-    
-    local gainedResearch = checkForGainedResearch[researchId]
-    if gainedResearch then
-        SendTeamMessage(self, kTeamMessageTypes.ResearchComplete, gainedResearch)
-    end
-    
-end
-*/
 
 function AlienTeam:UpdateCloakables()
 

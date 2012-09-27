@@ -86,7 +86,6 @@ local tapString =
 Player.kMapName = "player"
 
 Player.kModelName                   = PrecacheAsset("models/marine/male/male.model")
-Player.kSpecialModelName            = PrecacheAsset("models/marine/male/male_special.model")
 Player.kClientConnectSoundName      = PrecacheAsset("sound/NS2.fev/common/connect")
 Player.kNotEnoughResourcesSound     = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/more")
 Player.kInvalidSound                = PrecacheAsset("sound/NS2.fev/common/invalid")

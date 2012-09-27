@@ -178,6 +178,17 @@ kAlienWeaponEffects =
             //{cinematic = "cinematics/alien/gorge/spit_fire.cinematic"},
         },
     },
+    
+    acidrocket_attack =
+    {
+        bilebombFireEffects = 
+        {   
+            {sound = "", silenceupgrade = true, done = true}, 
+            //{sound = "sound/ns1.fev/ns1/acidrocket_fire"},
+            {sound = "sound/NS2.fev/alien/gorge/bilebomb"},
+            //{cinematic = "cinematics/alien/gorge/spit_fire.cinematic"},
+        },
+    },
 
     bilebomb_hit =
     {

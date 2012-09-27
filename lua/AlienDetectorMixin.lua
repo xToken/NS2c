@@ -36,13 +36,13 @@ local function PerformDetection(self)
 
         local teamNumber = GetEnemyTeamNumber(self:GetTeamNumber())
         local origin = self:GetOrigin()    
-        local detectables = GetEntitiesWithMixinForTeamWithinRange("ParasiteAble", teamNumber, origin, range)
+        local detectables = GetEntitiesWithMixinForTeamWithinRange("Detectable", teamNumber, origin, range)
         
         for index, detectable in ipairs(detectables) do
         
             // Mark them as detected, run seperate detections for aura/recon
             if not self.IsValidAlienDetection or self:IsValidAlienDetection(detectable) then
-                detectable:SetParasited(self, 1, false)
+                detectable:SetDetected(true, false)
             end
         
         end

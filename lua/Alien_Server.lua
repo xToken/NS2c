@@ -115,6 +115,7 @@ function Alien:OnProcessMove(input)
     self.primalScreamBoost = self.timeWhenPrimalScreamExpires > Shared.GetTime()  
     self:UpdateAutoHeal()
     self:UpdateNumUpgradeStructures()
+    self:UpdateHiveInformation()
     
 end
 
@@ -136,10 +137,27 @@ function Alien:GetDamagedAlertId()
     return kTechId.AlienAlertLifeformUnderAttack
 end
 
+function Alien:UpdateHiveInformation()
+
+    if self.timeToUpdateHiveInfo == nil or Shared.GetTime() >= self.timeToUpdateHiveInfo then
+        for index, hive in ipairs(GetEntitiesForTeam("Hive", self:GetTeamNumber())) do
+            local hiveinfo = {
+                                key = index, 
+                                location = hive:GetLocationName(), 
+                                healthpercent = (hive:GetHealth() / hive:GetMaxHealth()), 
+                                buildprogress = ConditionalValue(hive:GetIsBuilt(), 1, hive:GetBuiltFraction()),
+                                techId = hive:GetTechId()
+                             }
+             Server.SendNetworkMessage("HiveInfo", hiveinfo, false)
+        end
+        self.timeToUpdateHiveInfo =  Shared.GetTime() + 1
+    end
+    
+end
+
 function Alien:UpdateNumUpgradeStructures()
     local time = Shared.GetTime()
     if self.timeOfLastNumUpgradesUpdate == nil or (time > self.timeOfLastNumUpgradesUpdate + 2) then
-    
         local team = self:GetTeam()
         if team and team.GetIsAlienTeam and team:GetIsAlienTeam() and team.techIdCount then
             for i = 1, #kAlienUpgradeChambers do
@@ -165,7 +183,11 @@ function Alien:UpdateNumUpgradeStructures()
                     end
                 end
             end
-            self.unassignedhives = team:GetUnassignedHives()    
+            if team.techIdCount[kTechId.Hive] and team.techIdCount[kTechId.Hive] ~= nil then
+                self.unassignedhives = math.min(team.techIdCount[kTechId.Hive], 4)
+            else
+                self.unassignedhives = 0
+            end
         end
         self.timeOfLastNumUpgradesUpdate = time
      end
@@ -174,6 +196,7 @@ end
 /**
  * Morph into new class or buy upgrade.
  */
+
 function Alien:ProcessBuyAction(techIds)
 
     ASSERT(type(techIds) == "table")
@@ -207,12 +230,15 @@ function Alien:ProcessBuyAction(techIds)
     local position = self:GetOrigin()
     local newLifeFormTechId = kTechId.None
     
-    local evolveAllowed = self:GetIsOnGround()
+    //local evolveAllowed = self:GetIsOnGround()
+    local evolveAllowed = true
     evolveAllowed = evolveAllowed and GetHasRoomForCapsule(eggExtents, position + Vector(0, eggExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
     evolveAllowed = evolveAllowed and GetHasRoomForCapsule(newAlienExtents, position + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
     
     // If not on the ground for the buy action, attempt to automatically
     // put the player on the ground in an area with enough room for the new Alien.
+    // Derp code below
+    /*
     if not evolveAllowed then
     
         for index = 1, 100 do
@@ -230,7 +256,7 @@ function Alien:ProcessBuyAction(techIds)
         end
         
     end
-    
+    */
     if evolveAllowed then
     
         // Deduct cost here as player is immediately replaced and copied.
@@ -327,10 +353,6 @@ function Alien:GetHealthPerArmorOverride(damageType, healthPerArmor)
 
     return newHealthPerArmor
     
-end
-
-function Alien:MakeSpecialEdition()
-    // Currently there's no alien special edition visual difference
 end
 
 function Alien:GetTierOneTechId()
@@ -512,6 +534,7 @@ function Alien:OnKill(attacker, doer, point, direction)
     if self:GetTechId() == kTechId.Onos then
         self:CheckEndDevour()
     end
+    self.oneHive = false
     self.twoHives = false
     self.threeHives = false
     
@@ -569,5 +592,5 @@ function Alien:CopyPlayerDataFrom(player)
     self.shifts = player.shifts
     self.shades = player.shades
 	self.whips = player.whips
-    
+    self.unassignedhives = player.unassignedhives
 end

@@ -21,7 +21,6 @@ Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
-Script.Load("lua/ParasiteMixin.lua")
 Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/RecycleMixin.lua")
 Script.Load("lua/ConstructMixin.lua")
@@ -52,26 +51,18 @@ ARC.kArcForwardTrackYawParam = "move_yaw"
 ARC.kArcForwardTrackPitchParam = "move_pitch"
 // Balance
 ARC.kHealth                 = kARCHealth
-ARC.kStartDistance          = 4
 ARC.kAttackDamage           = kARCDamage
 ARC.kFireRange              = kARCRange         // From NS1
 ARC.kMinFireRange           = kARCMinRange
 ARC.kSplashRadius           = 10
-ARC.kUpgradedSplashRadius   = 13
-ARC.kMoveSpeed              = 3.0
 ARC.kFov                    = 360
-ARC.kBarrelMoveRate         = 100
+ARC.kBarrelMoveRate         = 150
 ARC.kMaxPitch               = 45
 ARC.kMaxYaw                 = 180
-ARC.kCapsuleHeight = .05
-ARC.kCapsuleRadius = .5
 
 ARC.kMode = enum( {'Stationary', 'Targeting', 'Destroyed'} )
 ARC.kDeployMode = enum( { 'Undeploying', 'Undeployed', 'Deploying', 'Deployed' } )
 
-ARC.kTurnSpeed = math.pi / 2 // an ARC turns slowly
-ARC.kMaxSpeedLimitAngle = math.pi / 36 // 5 degrees
-ARC.kNoSpeedLimitAngle = math.pi / 4 // 24 degrees
 if Server then
     Script.Load("lua/ARC_Server.lua")
 end
@@ -108,7 +99,6 @@ AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
-AddMixinNetworkVars(ParasiteMixin, networkVars)
 
 function ARC:OnCreate()
 
@@ -134,7 +124,6 @@ function ARC:OnCreate()
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, GhostStructureMixin)
-    InitMixin(self, ParasiteMixin)
     
     if Server then
         InitMixin(self, SleeperMixin)
@@ -190,14 +179,6 @@ end
 
 function ARC:GetReceivesStructuralDamage()
     return true
-end
-
-function ARC:GetTurnSpeedOverride()
-    return ARC.kTurnSpeed
-end
-
-function ARC:GetSpeedLimitAnglesOverride()
-    return { ARC.kMaxSpeedLimitAngle, ARC.kNoSpeedLimitAngle }
 end
 
 function ARC:GetCanSleep()
@@ -271,10 +252,6 @@ end
 
 function ARC:GetFov()
     return ARC.kFov
-end
-
-function ARC:OnOverrideDoorInteraction(inEntity)   
-    return true, 4
 end
 
 function ARC:GetEffectParams(tableParams)
@@ -384,8 +361,8 @@ function ARC:OnUpdatePoseParameters()
     
     self:SetPoseParam(kArcPitchParam, self.barrelPitchDegrees)
     self:SetPoseParam(kArcYawParam , self.barrelYawDegrees)
-    self:SetPoseParam(ARC.kArcForwardTrackYawParam , self.forwardTrackYawDegrees)
-    self:SetPoseParam(ARC.kArcForwardTrackPitchParam , self.forwardTrackPitchDegrees)
+    //self:SetPoseParam(ARC.kArcForwardTrackYawParam , self.forwardTrackYawDegrees)
+    //self:SetPoseParam(ARC.kArcForwardTrackPitchParam , self.forwardTrackPitchDegrees)
     
 end
 

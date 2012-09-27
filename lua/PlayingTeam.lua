@@ -122,7 +122,6 @@ function PlayingTeam:OnInitialized()
     self.totalTeamResourcesCollected = 0
     
     self.ejectCommVoteManager:Reset()
-    self.unassignedhives = 0
     self.lastCommPingTime = 0
     self.lastCommPingPosition = Vector(0,0,0)
 
@@ -651,11 +650,6 @@ function PlayingTeam:TechRemoved(entity)
     
 end
 
-
-function PlayingTeam:GetUnassignedHives()
-    return self.unassignedhives
-end
-
 function PlayingTeam:Update(timePassed)
 
     PROFILE("PlayingTeam:Update")
@@ -752,13 +746,6 @@ function PlayingTeam:UpdateTechTree()
                 
             end
             
-        end
-            
-        self.unassignedhives = 0
-        for index, hive in ipairs(GetEntitiesForTeam("Hive", self:GetTeamNumber())) do
-            if hive:GetTechId() == kTechId.Hive and hive:GetIsBuilt() and hive:GetIsAlive() then
-                self.unassignedhives = self.unassignedhives + 1
-            end
         end
         
         // Send research, availability, etc. tech node updates to team players

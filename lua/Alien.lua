@@ -45,8 +45,6 @@ Alien.kChatSound = PrecacheAsset("sound/NS2.fev/alien/common/chat")
 Alien.kSpendResourcesSoundName = PrecacheAsset("sound/NS2.fev/alien/commander/spend_nanites")
 Alien.kTeleportSound = PrecacheAsset("sound/NS2.fev/alien/commander/catalyze_3D")
 
-local kCelerityLoopingSound = PrecacheAsset("sound/NS2.fev/alien/common/celerity_loop")
-
 // Representative portrait of selected units in the middle of the build button cluster
 Alien.kPortraitIconsTexture = "ui/alien_portraiticons.dds"
 
@@ -83,7 +81,7 @@ local networkVars =
 	whips = string.format("integer (0 to 3)"),
     
     primalScreamBoost = "compensated boolean",
-    unassignedhives = string.format("integer (0 to 10"),
+    unassignedhives = string.format("integer (0 to 4"),
     darkVisionOn = "private boolean",
     darkVisionLastFrame = "private boolean"
 }
@@ -132,6 +130,8 @@ function Alien:OnCreate()
 	self.whips = 0
     self.unassignedhives = 0
     self.redemed = 0
+    self.hivesinfo = { }
+    
     if Server then
         self.timeWhenPrimalScreamExpires = 0
     else
@@ -179,6 +179,13 @@ function Alien:DestroyGUI()
             self.regenFeedback = nil
             
         end
+        
+        if self.sensorBlips == nil then
+        
+            GetGUIManager():DestroyGUIScript(self.sensorBlips)
+            self.sensorBlips = nil
+            
+        end 
         
         if self.eggInfo then
         
@@ -410,7 +417,6 @@ function Alien:GetMaxBackwardSpeedScalar()
 end
 
 function Alien:UpdateSpeedModifiers(input)
-    
 end
 
 function Alien:SetDarkVision(state)
@@ -442,7 +448,6 @@ end
 function Alien:UpdateSharedMisc(input)
 
     self:UpdateSpeedModifiers(input)
-    
     Player.UpdateSharedMisc(self, input)
     
 end

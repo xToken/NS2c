@@ -11,7 +11,6 @@ Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/ScoringMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
-Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/DisorientableMixin.lua")
 Script.Load("lua/LOSMixin.lua")
@@ -36,7 +35,8 @@ end
 Shared.PrecacheSurfaceShader("models/marine/marine.surface_shader")
 Shared.PrecacheSurfaceShader("models/marine/marine_noemissive.surface_shader")
 
-HeavyArmorMarine.kModelName = PrecacheAsset("models/marine/male/male_special.model")
+HeavyArmorMarine.kModelName = PrecacheAsset("models/marine/heavyarmor/heavyarmor.model")
+
 HeavyArmorMarine.kMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_graph")
 
 HeavyArmorMarine.kDieSoundName = PrecacheAsset("sound/NS2.fev/marine/common/death")
@@ -84,6 +84,10 @@ function HeavyArmorMarine:OnInitialized()
     Marine.OnInitialized(self)
     self:SetModel(HeavyArmorMarine.kModelName, HeavyArmorMarine.kMarineAnimationGraph)   
     
+end
+
+function HeavyArmorMarine:MakeSpecialEdition()
+    self:SetModel(HeavyArmorMarine.kModelName, HeavyArmorMarine.kMarineAnimationGraph)
 end
 
 function HeavyArmorMarine:GetCanRepairOverride(target)

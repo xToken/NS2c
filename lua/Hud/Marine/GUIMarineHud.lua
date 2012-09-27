@@ -631,21 +631,6 @@ function GUIMarineHUD:Update(deltaTime)
 end
 
 function GUIMarineHUD:UpdatePowerIcon(powerState)
-
-    self.minimapPower:DestroyAnimations()
-
-    if powerState == POWER_OFF then
-        self.minimapPower:SetColor(Color(1,1,1,0))
-    elseif powerState == POWER_ON then
-        self.minimapPower:SetColor(Color(30/255, 150/255, 151/255, 0.8))
-    elseif powerState == POWER_DAMAGED then
-        self.minimapPower:SetColor(Color(30/255, 150/255, 151/255, 0.8))
-        self.minimapPower:Pause(1, "POWER_ANIM")
-    elseif powerState == POWER_DESTROYED then
-        self.minimapPower:SetColor(Color(0.6, 0, 0, 0.5))
-        self.minimapPower:Pause(1, "POWER_ANIM")
-    end
-
 end
 
 function GUIMarineHUD:SetIsVisible(isVisible)
@@ -655,11 +640,11 @@ end
 function GUIMarineHUD:ShowNewArmorLevel(armorLevel)
 
     if armorLevel ~= 0 then
-    
         local textureCoords = GetTextureCoordinatesForIcon(GetTechIdForArmorLevel(armorLevel), true)
         self.armorLevel:SetIsVisible(true)
         self.armorLevel:SetTexturePixelCoordinates(unpack(textureCoords))
-        
+    else
+        self.armorLevel:SetIsVisible(false)
     end
 
 end
@@ -667,11 +652,11 @@ end
 function GUIMarineHUD:ShowMotionTracking(motiontracking)
 
     if motiontracking then
-    
         local textureCoords = GetTextureCoordinatesForIcon(kTechId.MotionTracking, true)
         self.mtracking:SetIsVisible(true)
         self.mtracking:SetTexturePixelCoordinates(unpack(textureCoords))
-        
+    else
+        self.mtracking:SetIsVisible(false)
     end
 
 end
@@ -679,11 +664,11 @@ end
 function GUIMarineHUD:ShowNewWeaponLevel(weaponLevel)
 
     if weaponLevel ~= 0 then
-    
         local textureCoords = GetTextureCoordinatesForIcon(GetTechIdForWeaponLevel(weaponLevel), true)
         self.weaponLevel:SetIsVisible(true)
         self.weaponLevel:SetTexturePixelCoordinates(unpack(textureCoords))
-   
+    else
+        self.weaponLevel:SetIsVisible(false)
     end
 
 end

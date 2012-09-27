@@ -15,6 +15,7 @@ kUnitStatus = enum({
     'Dying',
     'Unbuilt',
     'Damaged',
+    'Recycling',
     'Researching'
 })
 
@@ -61,7 +62,11 @@ function UnitStatusMixin:GetUnitStatus(forEntity)
         else
         
             if HasMixin(self, "Research") and self:GetIsResearching() then
-                unitStatus = kUnitStatus.Researching
+                if self:GetRecycleActive() then
+                    unitStatus = kUnitStatus.Recycling
+                else
+                    unitStatus = kUnitStatus.Researching
+                end
             
             elseif HasMixin(self, "Live") and self:GetHealthScalar() < 1 and self:GetIsAlive() and (not forEntity.GetCanRepairOverride or forEntity:GetCanRepairOverride(self)) then
                 unitStatus = kUnitStatus.Damaged
