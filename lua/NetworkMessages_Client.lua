@@ -177,6 +177,16 @@ function OnCommandWorldText(message)
     
 end
 
+function OnCommandRecieveHiveInfo(hiveinfo)
+
+    local player = Client.GetLocalPlayer()
+    if player:isa("Alien") then
+        player.hivesinfo[hiveinfo.key] = hiveinfo
+        player.hivesinfo[hiveinfo.key].time = Client.GetTime()
+    end
+    
+end
+
 Client.HookNetworkMessage("Ping", OnCommandPing)
 Client.HookNetworkMessage("HitEffect", OnCommandHitEffect)
 Client.HookNetworkMessage("Scores", OnCommandScores)
@@ -195,3 +205,4 @@ Client.HookNetworkMessage("DebugLine", OnCommandDebugLine)
 Client.HookNetworkMessage("DebugCapsule", OnCommandDebugCapsule)
 
 Client.HookNetworkMessage("WorldText", OnCommandWorldText)
+Client.HookNetworkMessage("HiveInfo", OnCommandRecieveHiveInfo)

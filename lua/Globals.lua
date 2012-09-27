@@ -97,7 +97,7 @@ kMaxDeaths = 254
 kMaxPing = 999
 
 kMaxChatLength = 80
-
+kMaxHiveNameLength = 30
 kMaxHotkeyGroups = 5
 
 // Surface list. Add more materials here to precache ricochets, bashes, footsteps, etc

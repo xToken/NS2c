@@ -7,7 +7,7 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/RecycleMixin.lua")
-Script.Load("lua/ParasiteMixin.lua")
+Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/CommandStructure.lua")
 Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
@@ -39,14 +39,14 @@ local networkVars =
 
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
-AddMixinNetworkVars(ParasiteMixin, networkVars)
+AddMixinNetworkVars(DetectableMixin, networkVars)
 
 function CommandStation:OnCreate()
 
     CommandStructure.OnCreate(self)
     
     InitMixin(self, GhostStructureMixin)
-    InitMixin(self, ParasiteMixin)
+    InitMixin(self, DetectableMixin)
     
 end
 

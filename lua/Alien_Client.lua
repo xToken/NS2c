@@ -79,6 +79,18 @@ function PlayerUI_GetEggDisplayInfo()
 
 end
 
+function PlayerUI_GetHiveInformation()
+    
+    local player = Client.GetLocalPlayer()
+    
+    if player then
+        return player.hivesinfo
+    end
+    
+    return nil
+
+end
+
 function AlienUI_GetWaveSpawnTime()
 
     local player = Client.GetLocalPlayer()
@@ -375,7 +387,9 @@ function Alien:OnInitLocalClient()
             self.alienHUD = GetGUIManager():CreateGUIScript("GUIAlienHUD")
         end
 
-
+        if self.sensorBlips == nil then
+            self.sensorBlips = GetGUIManager():CreateGUIScript("GUISensorBlips")
+        end
         
         if self.objectiveDisplay == nil then
             self.objectiveDisplay = GetGUIManager():CreateGUIScript("GUIObjectiveDisplay")

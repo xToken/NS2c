@@ -47,6 +47,7 @@ Shared.PrecacheSurfaceShader("models/marine/marine_noemissive.surface_shader")
 
 Marine.kModelName = PrecacheAsset("models/marine/male/male.model")
 Marine.kSpecialModelName = PrecacheAsset("models/marine/male/male_special.model")
+
 Marine.kMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_graph")
 
 Marine.kDieSoundName = PrecacheAsset("sound/NS2.fev/marine/common/death")
@@ -219,6 +220,16 @@ end
 
 function Marine:DeCloak()
     return false
+end
+
+function Marine:MakeSpecialEdition()
+
+    if not blockBlackArmor then
+        self:SetModel(Marine.kSpecialModelName, Marine.kMarineAnimationGraph)
+    else
+        self:SetModel(Marine.kModelName, Marine.kMarineAnimationGraph)        
+    end
+    
 end
 
 function Marine:IsValidDetection(detectable)

@@ -271,7 +271,11 @@ function GUIMarineStatus:Update(deltaTime, parameters)
     end
     
     //Update AmmoCounter
-    self.ammoText:SetText(ToString(PlayerUI_GetWeaponClip() or "--") .. " / " .. ToString(PlayerUI_GetWeaponAmmo() or "--"))
+    local clipammo = ToString(PlayerUI_GetWeaponClip())
+    local ammo = ToString(PlayerUI_GetWeaponAmmo())
+    if clipammo == "0" then clipammo = "--" end
+    if ammo == "0" then ammo = "--" end
+    self.ammoText:SetText(clipammo .. " / " .. ammo)
     self.ammoText:SetIsVisible(true)
     if PlayerUI_GetWeaponClip() < PlayerUI_GetWeaponClipSize() * GUIMarineStatus.kLowAmmoWarning then
         self.ammoText:SetColor(Color(1, 0, 0, 1)) 
