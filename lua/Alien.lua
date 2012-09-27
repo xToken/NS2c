@@ -257,6 +257,9 @@ function Alien:OnInitialized()
 
 end
 
+function Alien:MakeSpecialEdition()    
+end
+
 function Alien:GetAlienDetectionRange()
     local hasupg, level = GetHasAuraUpgrade(self)
     if hasupg then
