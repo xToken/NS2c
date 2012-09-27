@@ -8,7 +8,7 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-kAlienUpgradeChambers = {kTechId.Crag, kTechId.Shift, kTechId.Shade, kTechId.Whip, kTechId.Hive}
+kAlienUpgradeChambers = {kTechId.Crag, kTechId.Shift, kTechId.Shade, kTechId.Whip}
 
 function GetHasPrereqs(teamNumber, techId)
 

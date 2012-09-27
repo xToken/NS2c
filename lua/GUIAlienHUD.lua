@@ -138,7 +138,7 @@ function GUIAlienHUD:Initialize()
     self.upgrades[kTechId.Shift] = { }
     self.upgrades[kTechId.Shade] = { }
     self.upgrades[kTechId.Whip] = { }
-    self.upgrades[kTechId.Hive] = { }
+    //self.upgrades[kTechId.Hive] = { }
     for i = 1, #kAlienUpgradeChambers do
         self.upgrades[kAlienUpgradeChambers[i]][0] = 0
         for j = 1, 3 do
@@ -175,6 +175,7 @@ function GUIAlienHUD:Initialize()
         self.hives[i].locationtext:SetColor(kHealthBarColor)
         self.hives[i].locationtext:AddAsChildTo(self.resourceBackground)
         self.hives[i].lasthealth = 0
+        self.hives[i].techId = kTechId.Hive
     end
     
     self:Reset()
@@ -723,7 +724,8 @@ function GUIAlienHUD:UpdateHiveInformation(deltaTime)
     if hivesinfo ~= nil then
         for i = 1, #hivesinfo do
             local hiveinfo = hivesinfo[i]
-            if self.hives[i].lasthealth ~= hiveinfo.healthpercent and hiveinfo.time - Client.GetTime() < 5 then
+            if self.hives[i].lasthealth ~= hiveinfo.healthpercent or self.hives[i].techId ~= hiveinfo.techId and hiveinfo.time - Client.GetTime() < 5 then
+            
                 local textureCoords = GetTextureCoordinatesForIcon(hiveinfo.techId, false)
                 self.hives[i].locationtext:SetText(hiveinfo.location)
                 self.hives[i].locationtext:SetIsVisible(true)
@@ -757,6 +759,8 @@ function GUIAlienHUD:UpdateHiveInformation(deltaTime)
                     self.hives[i].builtBar:SetIsVisible(true) 
                 end
                 self.hives[i].lasthealth = hiveinfo.healthpercent
+                self.hives[i].techId = hiveinfo.techId
+                
             elseif hiveinfo.time - Client.GetTime() < 5 then
                 if self.hives[i].hivedamageAnimPlaying ~= nil and self.hives[i].hivedamageAnimPlaying < Client.GetTime() then
                     self.hives[i].hivedamageAnimPlaying = nil
@@ -766,6 +770,7 @@ function GUIAlienHUD:UpdateHiveInformation(deltaTime)
                     self.hives[i].locationtext:SetColor(kHealthBarColor)
                 end
             end
+            
             hivenum = i + 1
         end
             
