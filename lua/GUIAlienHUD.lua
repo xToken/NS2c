@@ -175,6 +175,7 @@ function GUIAlienHUD:Initialize()
         self.hives[i].locationtext:SetColor(kHealthBarColor)
         self.hives[i].locationtext:AddAsChildTo(self.resourceBackground)
         self.hives[i].lasthealth = 0
+        self.hives[i].lastbuilt = 0
         self.hives[i].techId = kTechId.Hive
     end
     
@@ -724,7 +725,7 @@ function GUIAlienHUD:UpdateHiveInformation(deltaTime)
     if hivesinfo ~= nil then
         for i = 1, #hivesinfo do
             local hiveinfo = hivesinfo[i]
-            if self.hives[i].lasthealth ~= hiveinfo.healthpercent or self.hives[i].techId ~= hiveinfo.techId and hiveinfo.time - Client.GetTime() < 5 then
+            if self.hives[i].lasthealth ~= hiveinfo.healthpercent or self.hives[i].techId ~= hiveinfo.techId or self.hives[i].lastbuilt ~= hiveinfo.buildprogress  and hiveinfo.time - Client.GetTime() < 5 then
             
                 local textureCoords = GetTextureCoordinatesForIcon(hiveinfo.techId, false)
                 self.hives[i].locationtext:SetText(hiveinfo.location)
@@ -760,6 +761,7 @@ function GUIAlienHUD:UpdateHiveInformation(deltaTime)
                 end
                 self.hives[i].lasthealth = hiveinfo.healthpercent
                 self.hives[i].techId = hiveinfo.techId
+                self.hives[i].lastbuilt = hiveinfo.buildprogress
                 
             elseif hiveinfo.time - Client.GetTime() < 5 then
                 if self.hives[i].hivedamageAnimPlaying ~= nil and self.hives[i].hivedamageAnimPlaying < Client.GetTime() then
