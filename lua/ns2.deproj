@@ -7,6 +7,9 @@
     <filename>ARC.lua</filename>
   </file>
   <file>
+    <filename>ARC_Server.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Alien\Ability.lua</filename>
   </file>
   <file>
@@ -280,6 +283,9 @@
     <filename>GUISelectionPanel.lua</filename>
   </file>
   <file>
+    <filename>GUISensorBlips.lua</filename>
+  </file>
+  <file>
     <filename>GUISpeedDebug.lua</filename>
   </file>
   <file>
@@ -419,6 +425,9 @@
   </file>
   <file>
     <filename>MarineTeam.lua</filename>
+  </file>
+  <file>
+    <filename>MarineWeaponEffects.lua</filename>
   </file>
   <file>
     <filename>Marine_Client.lua</filename>
@@ -680,11 +689,5 @@
   </file>
   <file>
     <filename>Weapons\Alien\XenocideLeap.lua</filename>
-  </file>
-  <file>
-    <filename>ARC_Server.lua</filename>
-  </file>
-  <file>
-    <filename>GUISensorBlips.lua</filename>
   </file>
 </project>

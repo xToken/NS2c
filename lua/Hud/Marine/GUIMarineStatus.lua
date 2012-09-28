@@ -273,7 +273,7 @@ function GUIMarineStatus:Update(deltaTime, parameters)
     //Update AmmoCounter
     local clipammo = ToString(PlayerUI_GetWeaponClip())
     local ammo = ToString(PlayerUI_GetWeaponAmmo())
-    if clipammo == "0" then clipammo = "--" end
+    if clipammo == nil then clipammo = "--" end
     if ammo == "0" then ammo = "--" end
     self.ammoText:SetText(clipammo .. " / " .. ammo)
     self.ammoText:SetIsVisible(true)
