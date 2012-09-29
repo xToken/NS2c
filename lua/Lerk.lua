@@ -348,6 +348,9 @@ local function Flap(self, input, velocity)
 
 end
 
+function Lerk:GetTimeOfLastFlap()
+    return self.lastTimeFlapped
+end
 
 // Lerk flight
 //
@@ -435,6 +438,11 @@ function Lerk:HandleButtons(input)
         
     end
     
+end
+
+local kLerkEngageOffset = Vector(0, 0.6, 0)
+function Lerk:GetEngagementPointOverride()
+    return self:GetOrigin() + kLerkEngageOffset
 end
 
 // Called from GroundMoveMixin.

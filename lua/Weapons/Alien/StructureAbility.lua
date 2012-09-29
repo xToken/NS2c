@@ -47,11 +47,6 @@ function StructureAbility:GetEnergyCost(player)
 end
 
 // Child should override
-function StructureAbility:GetIconOffsetY(secondary)
-    assert(false)
-end
-
-// Child should override
 function StructureAbility:GetDropStructureId()
     assert(false)
 end

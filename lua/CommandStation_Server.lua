@@ -14,22 +14,19 @@ function CommandStation:GetCommanderClassName()
     return MarineCommander.kMapName
 end
 
-function CommandStation:GetIsPlayerInside(player)
-
-    local vecDiff = (player:GetModelOrigin() - self:GetModelOrigin())
-    return vecDiff:GetLength() < self:GetExtents():GetLength() * 2
-    
-end
-
 function CommandStation:GetIsPlayerValidForCommander(player)
     return player ~= nil and player:isa("Marine") and self:GetIsPlayerInside(player) and CommandStructure.GetIsPlayerValidForCommander(self, player)
+end
+
+function CommandStation:GetKillOrigin()
+    return self:GetOrigin() + Vector(0, 1.5, 0)
 end
 
 local function KillPlayersInside(self)
 
     // Now kill any other players that are still inside the command station so they're not stuck!
     // Draw debug box if players are players on inside aren't dying or players on the outside are
-    //DebugBox(self:GetModelOrigin(), self:GetModelOrigin(), self:GetExtents() * 1.7, 8, 1, 1, 1, 1)
+    //DebugCircle(self:GetKillOrigin(), CommandStation.kCommandStationKillConstant, Vector(0, 1, 0), 1, 1, 1, 1, 1)
     
     for index, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
     

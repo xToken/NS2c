@@ -21,6 +21,7 @@ kMaxAlienStructuresofType = 8
 kMaxBuildingHives = 1
 kPingOfDeathDelay = 2
 kPingOfDeathDamagePercent = 12
+kResearchMod = 1
 
 kGhostStructureModifier = .75
 kEnergyUpdateRate = 0.25

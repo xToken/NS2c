@@ -17,18 +17,17 @@ Script.Load("lua/TargetCache.lua")
 
 Script.Load("lua/MarineTeam.lua")
 Script.Load("lua/AlienTeam.lua")
-Script.Load("lua/TeamJoin.lua")
+
 Script.Load("lua/Bot.lua")
 Script.Load("lua/VoteManager.lua")
 
 Script.Load("lua/ServerConfig.lua")
-
 Script.Load("lua/ServerAdmin.lua")
 //Script.Load("lua/ServerAdminCommands.lua")
 
 Script.Load("lua/ServerWebInterface.lua")
-
 Script.Load("lua/MapCycle.lua")
+Script.Load("lua/ConsistencyConfig.lua")
 
 Script.Load("lua/ConsoleCommands_Server.lua")
 Script.Load("lua/NetworkMessages_Server.lua")
@@ -90,15 +89,9 @@ function GetLoadEntity(mapName, groupName, values)
     return values.onlyexplore ~= true
 end
 
-local function LoadServerMapEntity(mapName, groupName, values)
+function GetCreateEntityOnStart(mapName, groupName, values)
 
-    if not GetLoadEntity(mapName, groupName, values) then
-        return
-    end
-    
-    // Skip the classes that are not true entities and are handled separately
-    // on the client.
-    if mapName ~= "prop_static"
+    return mapName ~= "prop_static"
        and mapName ~= "light_point"
        and mapName ~= "light_spot"
        and mapName ~= "light_ambient"
@@ -106,14 +99,69 @@ local function LoadServerMapEntity(mapName, groupName, values)
        and mapName ~= "cinematic"
        and mapName ~= "skybox"
        and mapName ~= "pathing_settings"
-	   and mapName ~= "ambient_sound"
        and mapName ~= ReadyRoomSpawn.kMapName
+       //and mapName ~= AmbientSound.kMapName
        and mapName ~= Reverb.kMapName
        and mapName ~= Hive.kMapName
        and mapName ~= CommandStation.kMapName
-	   and mapName ~= "cyst"
+       //and mapName ~= Cyst.kMapName
        and mapName ~= Particles.kMapName
-       and mapName ~= InfantryPortal.kMapName then
+       and mapName ~= InfantryPortal.kMapName
+
+end
+
+function GetLoadSpecial(mapName, groupName, values)
+
+    local success = false
+
+    if mapName == Hive.kMapName or mapName == CommandStation.kMapName then
+       table.insert(Server.mapLoadLiveEntityValues, { mapName, groupName, values })
+       success = true
+    elseif mapName == ReadyRoomSpawn.kMapName then
+    
+        local entity = ReadyRoomSpawn()
+        entity:OnCreate()
+        LoadEntityFromValues(entity, values)
+        table.insert(Server.readyRoomSpawnList, entity)
+        success = true
+        
+    //elseif (mapName == AmbientSound.kMapName) then
+    
+        // Make sure sound index is precached but only create ambient sound object on client
+        //Shared.PrecacheSound(values.eventName)
+        //success = true
+        
+    elseif mapName == Particles.kMapName then
+        Shared.PrecacheCinematic(values.cinematicName)
+        success = true
+    elseif mapName == InfantryPortal.kMapName then
+        //table.insert(Server.infantryPortalSpawnPoints, values.origin)
+        success = false
+    //elseif mapName == Cyst.kMapName then
+        //table.insert(Server.cystSpawnPoints, values.origin)
+        //success = true
+    elseif mapName == "pathing_settings" then
+        ParsePathingSettings(values)
+        success = true
+    end
+
+    return success    
+
+end
+
+local function LoadServerMapEntity(mapName, groupName, values)
+
+    if not GetLoadEntity(mapName, groupName, values) then
+        return
+    end
+    
+    if mapName == InfantryPortal.kMapName then
+        return
+    end
+    
+    // Skip the classes that are not true entities and are handled separately
+    // on the client.
+    if GetCreateEntityOnStart(mapName, groupName, values) then
         
         local entity = Server.CreateEntity(mapName, values)
         if entity then
@@ -149,33 +197,15 @@ local function LoadServerMapEntity(mapName, groupName, values)
             
         end
         
-    end
-    
-    if mapName == Hive.kMapName
-       or mapName == CommandStation.kMapName then
-       
-       table.insert(Server.mapLoadLiveEntityValues, {mapName, groupName, values})
-       
-    end   
-    
-    if mapName == ReadyRoomSpawn.kMapName then
-
-        local entity = ReadyRoomSpawn()
-        entity:OnCreate()
-        LoadEntityFromValues(entity, values)
-        table.insert(Server.readyRoomSpawnList, entity)
-
-    elseif (mapName == Particles.kMapName) then
-        Shared.PrecacheCinematic(values.cinematicName)
-    elseif (mapName == "pathing_settings") then
-        ParsePathingSettings(values)
-    else
+    end  
+        
+    if not GetLoadSpecial(mapName, groupName, values) then
     
         // Allow the MapEntityLoader to load it if all else fails.
         LoadMapEntity(mapName, groupName, values)
-
+        
     end
-
+    
 end
 
 /**

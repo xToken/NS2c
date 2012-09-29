@@ -13,6 +13,7 @@ decoda_name = "Client"
 Client.AddTextureLoadRule("*_spec.dds", 1)
 
 Script.Load("lua/Shared.lua")
+Script.Load("lua/Render.lua")
 Script.Load("lua/MapEntityLoader.lua")
 Script.Load("lua/Button.lua")
 Script.Load("lua/Chat.lua")
@@ -58,12 +59,12 @@ Client.trailCinematics = { }
 Client.destroyTrailCinematics = { }
 Client.worldMessages = { }
 
-local gRenderCamera = Client.CreateRenderCamera()
-
 // For logging total time played for rookie mode, even with map switch
 local timePlayed = nil
 local kTimePlayedOptionsKey = "timePlayedSeconds"
-            
+
+local waitingForAutoTeamBalanceUI = GetGUIManager():CreateGUIScript("GUIWaitingForAutoTeamBalance")
+
 function GetRenderCameraCoords()
 
     if gRenderCamera then
@@ -347,6 +348,17 @@ local function UpdateHelpAutoReset()
     
 end
 
+local function UpdateWaitingToSpawnUI(player)
+
+    local displayUI = false
+    if player and player:GetIsWaitingForTeamBalance() then
+        displayUI = true
+    end
+    
+    waitingForAutoTeamBalanceUI:SetIsVisible(displayUI)
+    
+end
+
 function OnUpdateClient(deltaTime)
 
     PROFILE("Client:OnUpdateClient")
@@ -367,6 +379,8 @@ function OnUpdateClient(deltaTime)
     if kHelpAutoResetEnabled then
         UpdateHelpAutoReset()
     end
+    
+    UpdateWaitingToSpawnUI(player)
     
 end
 
@@ -422,7 +436,11 @@ function UpdateTimePlayed(deltaTime)
     if player:GetGameStarted() and (teamNumber == kMarineTeamType or teamNumber == kAlienTeamType) then
     
         // Increment time
-        timePlayed = ConditionalValue(timePlayed ~= nil, timePlayed, 0) + deltaTime
+        if timePlayed == nil then
+            timePlayed = 0
+        end
+        timePlayed = timePlayed + deltaTime
+        
         if timePlayed > kRookieSaveInterval then
         
             SaveTimePlayed(kRookieSaveInterval)
@@ -629,7 +647,17 @@ function OnUpdateRender()
         //UpdateFogAreaModifiers(coords.origin)
         
         camera:SetCoords(coords)
-        camera:SetFov(player:GetRenderFov())
+		
+        local adjustValue   = Clamp( Client.GetOptionFloat("graphics/display/fov-adjustment",0), 0, 1 )
+		local adjustRadians = math.rad(
+			(1-adjustValue)*kMinFOVAdjustmentDegrees + adjustValue*kMaxFOVAdjustmentDegrees)
+		
+		// Don't adjust the FOV for the commander.
+		if player:isa("Commander") then
+		    adjustRadians = 0
+	    end
+			
+        camera:SetFov(player:GetRenderFov()+adjustRadians)
         
         // In commander mode use frustum culling since the occlusion geometry
         // isn't generally setup for viewing the level from the outside (and
@@ -648,10 +676,10 @@ function OnUpdateRender()
         Client.SetRenderCamera(gRenderCamera)
         
         HiveVision_SetEnabled( GetIsAlienUnit(player) )
-        HiveVision_SyncCamera( gRenderCamera )
+        HiveVision_SyncCamera( gRenderCamera, player:isa("Commander") )
         
         EquipmentOutline_SetEnabled( GetIsMarineUnit(player) )
-        EquipmentOutline_SyncCamera( gRenderCamera )
+        EquipmentOutline_SyncCamera( gRenderCamera, player:isa("Commander") )
         
     else
     
@@ -783,6 +811,10 @@ function OnClientDisconnected(reason)
     GetGUIManager():DestroyGUIScriptSingle("GUIMapAnnotations")
     GetGUIManager():DestroyGUIScriptSingle("GUIGameEnd")
     GetGUIManager():DestroyGUIScriptSingle("GUIWorldText")
+    GetGUIManager():DestroyGUIScriptSingle("GUICommunicationStatusIcons")
+    
+    GetGUIManager():DestroyGUIScript(waitingForAutoTeamBalanceUI)
+    waitingForAutoTeamBalanceUI = nil
     
     // Destroy graphical debug text items
     for index, item in ipairs(gDebugTextList) do
@@ -795,9 +827,16 @@ end
  * Fade to black and show messages, global so transistion between classes is smooth.
  */
 local function OnLoadComplete()
+
+    gRenderCamera = Client.CreateRenderCamera()
+    gRenderCamera:SetRenderSetup("renderer/Deferred.render_setup")
+    
+    Render_SyncRenderOptions()
+
     GetGUIManager():CreateGUIScript("GUIDeathScreen")
     HiveVision_Initialize()
     EquipmentOutline_Initialize()
+    
 end
 
 Event.Hook("ClientDisconnected", OnClientDisconnected)

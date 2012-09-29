@@ -1,4 +1,4 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
 //
 // lua\NS2Gamerules.lua
 //
@@ -809,6 +809,8 @@ if Server then
     
     local function UpdateAutoTeamBalance(self, dt)
     
+        local wasDisabled = false
+        
         // Check if auto-team balance should be enabled or disabled.
         local autoTeamBalance = Server.GetConfigSetting("auto_team_balance")
         if autoTeamBalance then
@@ -820,15 +822,10 @@ if Server then
             
             local team1Players = self.team1:GetNumPlayers()
             local team2Players = self.team2:GetNumPlayers()
+            
             local unbalancedAmount = math.abs(team1Players - team2Players)
             if unbalancedAmount >= enabledOnUnbalanceAmount then
             
-                if team1Players > team2Players then
-                    self.team1:SetAutoTeamBalanceEnabled(true, unbalancedAmount)
-                else
-                    self.team2:SetAutoTeamBalanceEnabled(true, unbalancedAmount)
-                end
-                
                 if not self.autoTeamBalanceEnabled then
                 
                     self.teamsUnbalancedTime = self.teamsUnbalancedTime or 0
@@ -837,6 +834,12 @@ if Server then
                     if self.teamsUnbalancedTime >= enabledAfterSeconds then
                     
                         self.autoTeamBalanceEnabled = true
+                        if team1Players > team2Players then
+                            self.team1:SetAutoTeamBalanceEnabled(true, unbalancedAmount)
+                        else
+                            self.team2:SetAutoTeamBalanceEnabled(true, unbalancedAmount)
+                        end
+                        
                         SendTeamMessage(self.team1, kTeamMessageTypes.TeamsUnbalanced)
                         SendTeamMessage(self.team2, kTeamMessageTypes.TeamsUnbalanced)
                         Print("Auto-team balance enabled")
@@ -845,22 +848,25 @@ if Server then
                     
                 end
                 
+            // The autobalance system itself has turned itself off.
             elseif self.autoTeamBalanceEnabled then
-            
-                self.team1:SetAutoTeamBalanceEnabled(false)
-                self.team2:SetAutoTeamBalanceEnabled(false)
-                self.teamsUnbalancedTime = 0
-                self.autoTeamBalanceEnabled = false
-                SendTeamMessage(self.team1, kTeamMessageTypes.TeamsBalanced)
-                SendTeamMessage(self.team2, kTeamMessageTypes.TeamsBalanced)
-                Print("Auto-team balance disabled")
-                
+                wasDisabled = true
             end
             
-        else
+        // The autobalance system was turned off by the admin.
+        elseif self.autoTeamBalanceEnabled then
+            wasDisabled = true
+        end
+        
+        if wasDisabled then
         
             self.team1:SetAutoTeamBalanceEnabled(false)
             self.team2:SetAutoTeamBalanceEnabled(false)
+            self.teamsUnbalancedTime = 0
+            self.autoTeamBalanceEnabled = false
+            SendTeamMessage(self.team1, kTeamMessageTypes.TeamsBalanced)
+            SendTeamMessage(self.team2, kTeamMessageTypes.TeamsBalanced)
+            Print("Auto-team balance disabled")
             
         end
         
@@ -917,7 +923,7 @@ if Server then
                 self:UpdatePregame(timePassed)
                 self:UpdateToReadyRoom()
                 self:UpdateMapCycle()
-                //UpdateAutoTeamBalance(self, timePassed)
+                UpdateAutoTeamBalance(self, timePassed)
                 
                 self.timeSinceGameStateChanged = self.timeSinceGameStateChanged + timePassed
                 
@@ -1276,15 +1282,23 @@ if Server then
         self.lastCountdownPlayed = nil
         
     end
+    
+    function NS2Gamerules:GetPregameLength()
+    
+        local preGameTime = kPregameLength
+        if Shared.GetCheatsEnabled() then
+            preGameTime = 0
+        end
+        
+        return preGameTime
+        
+    end
 
     function NS2Gamerules:UpdatePregame(timePassed)
 
         if self:GetGameState() == kGameState.PreGame then
         
-            local preGameTime = kPregameLength
-            if Shared.GetCheatsEnabled() then
-                preGameTime = 0
-            end
+            local preGameTime = self:GetPregameLength()
             
             if self.timeSinceGameStateChanged > preGameTime then
             

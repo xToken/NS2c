@@ -60,15 +60,20 @@ function SwipeBlink:GetHUDSlot()
 end
 
 function SwipeBlink:GetIconOffsetY(secondary)
-    return kAbilityOffset.SwipeBlink
+    return kAbilityOffset.Swipe
 end
 
 function SwipeBlink:GetPrimaryAttackRequiresPress()
     return false
 end
 
+function SwipeBlink:GetSecondaryTechId()
+    return kTechId.Blink
+end
+
+
 function SwipeBlink:GetDeathIconIndex()
-    return kDeathMessageIcon.SwipeBlink
+    return kDeathMessageIcon.Swipe
 end
 
 function SwipeBlink:GetBlinkAllowed()

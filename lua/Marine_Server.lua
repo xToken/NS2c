@@ -142,6 +142,23 @@ local function PlayerIsFacingHostStructure(player, host)
 end
 
 function GetHostStructureFor(entity, techId)
+
+    local hostStructures = {}
+    table.copy(GetEntitiesForTeamWithinRange("Armory", entity:GetTeamNumber(), entity:GetOrigin(), Armory.kResupplyUseRange), hostStructures, true)
+    table.copy(GetEntitiesForTeamWithinRange("PrototypeLab", entity:GetTeamNumber(), entity:GetOrigin(), PrototypeLab.kResupplyUseRange), hostStructures, true)
+    
+    if table.count(hostStructures) > 0 then
+    
+        for index, host in ipairs(hostStructures) do
+        
+            // check at first if the structure is hostign the techId:
+            if GetHostSupportsTechId(host, techId) and PlayerIsFacingHostStructure(player, host) then
+                return host
+            end    
+        
+        end
+            
+    end
     
     return nil
 
@@ -223,7 +240,7 @@ function Marine:DropAllWeapons()
     local weaponSpawnCoords = self:GetAttachPointCoords(Weapon.kHumanAttachPoint)
     local weaponList = self:GetHUDOrderedWeaponList()
     for w = 1, #weaponList do
-        
+    
         local weapon = weaponList[w]
         if weapon:GetIsDroppable() and LookupTechData(weapon:GetTechId(), kTechDataCostKey, 0) > 0 then
             self:Drop(weapon, true, true)

@@ -92,8 +92,6 @@ function GUICommanderButtons:Initialize()
     self.buttons = { }
 
     self.background = GUIManager:CreateGraphicItem()
-
-    self:InitializeTooltip()
     
     self:InitializeMarineBackground()
 
@@ -291,23 +289,6 @@ function GUICommanderButtons:SharedInitializeButtons(settingsTable)
     end
     
 end
-
-function GUICommanderButtons:InitializeTooltip()
-
-    local settingsTable = { }
-    settingsTable.Width = GUICommanderButtons.kBackgroundWidth
-    settingsTable.Height = 40
-    settingsTable.X = 0
-    settingsTable.Y = -40
-    settingsTable.TexturePartWidth = GUICommanderButtons.kBackgroundTexturePartWidth
-    settingsTable.TexturePartHeight = GUICommanderButtons.kBackgroundTexturePartHeight
-
-    self.tooltip = GUICommanderTooltip()
-    self.tooltip:Initialize(settingsTable)
-    self.background:AddChild(self.tooltip:GetBackground())
-
-end
-
 function GUICommanderButtons:InitializeIdleWorkersIcon()
 
     self.idleWorkers = GUIManager:CreateGraphicItem()
@@ -387,11 +368,6 @@ function GUICommanderButtons:Uninitialize()
         self.highlightItem = nil
     end
     
-    if self.tooltip then
-        self.tooltip:Uninitialize()
-        self.tooltip = nil    
-    end
-    
     if self.idleWorkers then
         GUI.DestroyItem(self.idleWorkers)
         self.idleWorkers = nil
@@ -437,11 +413,7 @@ function GUICommanderButtons:Update(deltaTime)
 
     UpdateTabs(self)
     
-    local tooltipButtonIndex = self:UpdateInput()
-    
-    self:UpdateTooltip(tooltipButtonIndex)
-    
-    //self:UpdateIdleWorkersIcon()
+    self.tooltipButtonIndex = self:UpdateInput()
     
     self:UpdateAlertIcon()
     
@@ -519,22 +491,15 @@ function GUICommanderButtons:UpdateInput()
     
 end
 
-function GUICommanderButtons:UpdateTooltip(tooltipButtonIndex)
+function GUICommanderButtons:GetTooltipData()
 
-    local visible = tooltipButtonIndex ~= nil
-    self.tooltip:SetIsVisible(visible)
+    local player = Client.GetLocalPlayer()
     
-    if visible then
-        local tooltipData = CommanderUI_MenuButtonTooltip(tooltipButtonIndex)
-        local text = tooltipData[1]
-        local hotKey = tooltipData[2]
-        local costNumber = tooltipData[3]
-        local requires = tooltipData[4]
-        local enabled = tooltipData[5]
-        local info = tooltipData[6]
-        local typeNumber = tooltipData[7]
-        self.tooltip:UpdateData(text, hotKey, costNumber, requires, enabled, info, typeNumber)
+    if self.tooltipButtonIndex and player then    
+        return PlayerUI_GetTooltipDataFromTechId(player.menuTechButtons[self.tooltipButtonIndex], self.tooltipButtonIndex)        
     end
+
+    return nil
 
 end
 

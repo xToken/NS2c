@@ -101,7 +101,7 @@ function CreateEntityForCommander(techId, position, commander)
     
     local newEnt = CreateEntityForTeam(techId, position, commander:GetTeamNumber(), commander)
     ASSERT(newEnt ~= nil, "Didn't create entity for techId: " .. EnumToString(kTechId, techId))
-    
+    if newEnt:GetIsDestroyed() then newEnt = nil end
     if newEnt then
     
         newEnt:SetOwner(commander)        

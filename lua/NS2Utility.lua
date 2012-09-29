@@ -9,9 +9,28 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 Script.Load("lua/Table.lua")
 Script.Load("lua/Utility.lua")
+Script.Load("lua/FunctionContracts.lua")
 
 if Server then
     Script.Load("lua/NS2Utility_Server.lua")
+end
+
+function GetGameInfoEntity()
+
+    local entityList = Shared.GetEntitiesWithClassname("GameInfo")
+    if entityList:GetSize() > 0 then    
+        return entityList:GetEntityAtIndex(0)
+    end    
+
+end
+
+function GetTeamInfoEntity(teamNumber)
+
+    local teamInfo = GetEntitiesForTeam("TeamInfo", teamNumber)
+    if table.count(teamInfo) > 0 then
+        return teamInfo
+    end
+    
 end
 
 function GetIsTargetDetected(target)
@@ -141,7 +160,7 @@ function GetCircleSizeForEntity(entity)
     size = ConditionalValue(entity:isa("Door"), 4.0, size)
     size = ConditionalValue(entity:isa("InfantryPortal"), 3.5, size)
     size = ConditionalValue(entity:isa("Extractor"), 3.0, size)
-    size = ConditionalValue(entity:isa("CommandStation"), 6.5, size)
+    size = ConditionalValue(entity:isa("CommandStation"), 3.5, size)
     size = ConditionalValue(entity:isa("Egg"), 2.5, size)
     size = ConditionalValue(entity:isa("Armory"), 4.0, size)
     size = ConditionalValue(entity:isa("Harvester"), 3.7, size)
@@ -245,7 +264,7 @@ end
 // Find place for player to spawn, within range of origin. Makes sure that a line can be traced between the two points
 // without hitting anything, to make sure you don't spawn on the other side of a wall. Returns nil if it can't find a 
 // spawn point after a few tries.
-function GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, origin, minRange, maxRange, filter)
+function GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, origin, minRange, maxRange, filter, validationFunc)
 
     ASSERT(capsuleHeight > 0)
     ASSERT(capsuleRadius > 0)
@@ -261,10 +280,10 @@ function GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, origin, minRange
     for i = 0, 10 do
     
         local spawnPoint = nil
-        local points = GetRandomPointsWithinRadius(origin, minRange, maxRange, maxHeight, 1, 1)
+        local points = GetRandomPointsWithinRadius(origin, minRange, maxRange, maxHeight, 1, 1, nil, validationFunc)
         if #points == 1 then
             spawnPoint = points[1]
-        else
+        elseif Server then
             Print("GetRandomPointsWithinRadius() failed inside of GetRandomSpawnForCapsule()")
         end
         
@@ -1051,12 +1070,17 @@ function SetPlayerPoseParameters(player, viewModel)
     local viewAngles = player:GetViewAngles()
     
     local pitch = -Math.Wrap(Math.Degrees(viewAngles.pitch), -180, 180)
-	
+    
     local landIntensity = player.landIntensity or 0
     
     local bodyYaw = 0
     if player.bodyYaw then
         bodyYaw = Math.Wrap(Math.Degrees(player.bodyYaw), -180, 180)
+    end
+    
+    local bodyYawRun = 0
+    if player.bodyYawRun then
+        bodyYawRun = Math.Wrap(Math.Degrees(player.bodyYawRun), -180, 180)
     end
     
     local viewAngles = player:GetViewAngles()
@@ -1078,7 +1102,7 @@ function SetPlayerPoseParameters(player, viewModel)
     player:SetPoseParam("move_speed", speedScalar)
     player:SetPoseParam("body_pitch", pitch)
     player:SetPoseParam("body_yaw", bodyYaw)
-    player:SetPoseParam("body_yaw_run", bodyYaw)
+    player:SetPoseParam("body_yaw_run", bodyYawRun)
     
     player:SetPoseParam("crouch", player:GetCrouchAmount())
     player:SetPoseParam("land_intensity", landIntensity)
@@ -1090,7 +1114,7 @@ function SetPlayerPoseParameters(player, viewModel)
         viewModel:SetPoseParam("move_speed", speedScalar)
         viewModel:SetPoseParam("crouch", player:GetCrouchAmount())
         viewModel:SetPoseParam("body_yaw", bodyYaw)
-        viewModel:SetPoseParam("body_yaw_run", bodyYaw)
+        viewModel:SetPoseParam("body_yaw_run", bodyYawRun)
         viewModel:SetPoseParam("land_intensity", landIntensity)
         
     end
@@ -1238,6 +1262,7 @@ end
 
 function TriggerMomentumChangeEffects(entity, surface, direction, normal, extraEffectParams)
 
+    assert(math.abs(direction:GetLengthSquared() - 1) < 0.001)
     local tableParams = {}
     
     tableParams[kEffectFilterDoerName] = entity:GetClassName()
@@ -1584,7 +1609,7 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
     startPoint = startPoint or middleStart
     
     local direction = target and (endPoint - startPoint):GetUnit() or nil
-    return target ~= null or middleTrace.fraction < 1, target, endPoint, direction, surface
+    return target ~= nil or middleTrace.fraction < 1, target, endPoint, direction, surface
     
 end
 
@@ -1730,6 +1755,7 @@ end
  * entity for which SetControllingPlayer has been called on the server, or one
  * of its children).
  */
+  
 function GetIsClientControlled(entity)
 
     PROFILE("NS2Utility:GetIsClientControlled")
@@ -1871,7 +1897,7 @@ function TraceBullet(player, weapon, startPoint, direction, throughHallucination
 end
 
 -- add comma to separate thousands
-function comma_value(amount)
+function CommaValue(amount)
     local formatted = ""
     if amount ~= nil then
         formatted = amount
@@ -1883,4 +1909,86 @@ function comma_value(amount)
         end
     end
     return formatted
+end
+
+// Look for "BIND_" in the string and substitute with key to press
+// ie, "Press the BIND_Buy key to evolve to a new lifeform or to gain new upgrades." => "Press the B key to evolve to a new lifeform or to gain new upgrades."
+function SubstituteBindStrings(tipString)
+
+    local substitutions = {}
+    for word in string.gmatch(tipString, "BIND_(%a+)") do
+    
+        local bind = GetPrettyInputName(word)
+        //local bind = BindingsUI_GetInputValue(word)
+        assert(type(bind) == "string", tipString)
+        tipString = string.gsub(tipString, "BIND_" .. word, bind)
+    end
+    
+    return tipString
+    
+end
+
+// Look up texture coordinates in kInventoryIconsTexture
+// Used for death messages, inventory icons, and abilities drawn in the alien "energy ball"
+gTechIdPosition = nil
+function GetTexCoordsForTechId(techId)
+
+    local x1 = 0
+    local y1 = 0
+    local x2 = kInventoryIconTextureWidth
+    local y2 = kInventoryIconTextureHeight
+    
+    if not gTechIdPosition then
+    
+        gTechIdPosition = {}
+        
+        // marine weapons
+        gTechIdPosition[kTechId.Rifle] = kDeathMessageIcon.Rifle
+        gTechIdPosition[kTechId.Pistol] = kDeathMessageIcon.Pistol
+        gTechIdPosition[kTechId.Axe] = kDeathMessageIcon.Axe
+        gTechIdPosition[kTechId.Shotgun] = kDeathMessageIcon.Shotgun
+        gTechIdPosition[kTechId.HeavyMachineGun] = kDeathMessageIcon.Rifle
+        gTechIdPosition[kTechId.HandGrenades] = kDeathMessageIcon.Grenade
+        gTechIdPosition[kTechId.GrenadeLauncher] = kDeathMessageIcon.Grenade
+        gTechIdPosition[kTechId.Welder] = kDeathMessageIcon.Welder
+        gTechIdPosition[kTechId.Mines] = kDeathMessageIcon.Mine
+        
+        // alien abilities
+        gTechIdPosition[kTechId.Bite] = kDeathMessageIcon.Bite
+        gTechIdPosition[kTechId.Parasite] = kDeathMessageIcon.Parasite
+        gTechIdPosition[kTechId.Leap] = kDeathMessageIcon.Leap
+        gTechIdPosition[kTechId.Xenocide] = kDeathMessageIcon.Xenocide
+        
+        gTechIdPosition[kTechId.Spit] = kDeathMessageIcon.Spit
+        gTechIdPosition[kTechId.BuildAbility] = kDeathMessageIcon.BuildAbility
+        gTechIdPosition[kTechId.BuildAbility2] = kDeathMessageIcon.BuildAbility
+        gTechIdPosition[kTechId.Spray] = kDeathMessageIcon.Spray
+        gTechIdPosition[kTechId.BileBomb] = kDeathMessageIcon.BileBomb
+        gTechIdPosition[kTechId.Web] = kDeathMessageIcon.BileBomb
+        
+        gTechIdPosition[kTechId.LerkBite] = kDeathMessageIcon.LerkBite
+        gTechIdPosition[kTechId.Spores] = kDeathMessageIcon.SporeCloud
+        gTechIdPosition[kTechId.Umbra] = kDeathMessageIcon.Umbra
+        gTechIdPosition[kTechId.PrimalScream] = kDeathMessageIcon.PrimalScream
+        
+        gTechIdPosition[kTechId.Swipe] = kDeathMessageIcon.Swipe
+        gTechIdPosition[kTechId.Blink] = kDeathMessageIcon.Blink
+        gTechIdPosition[kTechId.Metabolize] = kDeathMessageIcon.Metabolize
+        
+        gTechIdPosition[kTechId.Gore] = kDeathMessageIcon.Gore
+        gTechIdPosition[kTechId.Stomp] = kDeathMessageIcon.Stomp
+        
+    end
+    
+    local position = gTechIdPosition[techId]
+    
+    if position then
+    
+        y1 = (position - 1) * kInventoryIconTextureHeight
+        y2 = y1 + kInventoryIconTextureHeight
+    
+    end
+    
+    return x1, y1, x2, y2
+
 end

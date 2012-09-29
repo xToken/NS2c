@@ -131,19 +131,21 @@ kDisplayWeaponTime = 1.5
 kSpecialEditionProductId = 4930
 
 // Death message indices 
-kDeathMessageIcon = enum( {'None', 'Rifle', 'RifleButt',
-                           'Pistol', 'Axe', 'Shotgun',
-                           'Flamethrower', 'ARC', 'Grenade',
-                           'Sentry', 'Welder', 'Bite',
-                           'HydraSpike', 'Spray', 'Spikes',
-                           'PoisonDart', 'SporeCloud', 'SwipeBlink',
-                           'Consumed', 'Whip', 'BileBomb', 'Mine',
-                           'Gore', 'Spit', 'Jetpack', 'Claw', 'HeavyMachineGun' } )
+kDeathMessageIcon = enum( { 'None', 
+                            'Rifle', 'RifleButt', 'Pistol', 'Axe', 'Shotgun',
+                            'Flamethrower', 'ARC', 'Grenade', 'Sentry', 'Welder',
+                            'Bite', 'HydraSpike', 'Spray', 'PrimalScream', 'Parasite',
+                            'SporeCloud', 'Swipe', 'BuildAbility', 'Whip', 'BileBomb',
+                            'Mine', 'Gore', 'Spit', 'Jetpack', 'Claw',
+                            'Minigun', 'Metabolize', 'LerkBite', 'Umbra', 
+                            'Xenocide', 'Blink', 'Leap', 'Stomp',
+                            'Consumed',
+                            } )
 
 kMinimapBlipType = enum( { 'Undefined', 'TechPoint', 'ResourcePoint', 'Scan',
                            'Sentry', 'CommandStation', 'CommandStationL2', 'CommandStationL3',
-						   'Extractor', 'InfantryPortal', 'Armory', 'PhaseGate', 'Observatory',
-						   'RoboticsFactory', 'ArmsLab', 'PrototypeLab', 'PowerPack',
+                           'Extractor', 'InfantryPortal', 'Armory', 'PhaseGate', 'Observatory',
+                           'RoboticsFactory', 'ArmsLab', 'PrototypeLab', 'PowerPack',
                            'Hive', 'Harvester', 'Hydra', 'Egg', 'Crag', 'Whip', 'Shade', 'Shift',
                            'Marine', 'JetpackMarine', 'HeavyArmorMarine', 'Jetpack', 'Skulk', 'Lerk', 'Onos', 'Fade', 'Gorge',
                            'Door', 'PowerPoint', 'DestroyedPowerPoint',
@@ -161,8 +163,8 @@ kAlertExpireTime = 20
 
 // Bit mask table for non-stackable game effects.
 // Always keep "Max" as last element.
-kGameEffect = CreateBitMask( {"InUmbra", "Fury", "Cloaked", "Parasite", "NearDeath", "Beacon", "Energize", "Max"} )
-kGameEffectMax = bit.rshift(kGameEffect.Max, 1)
+kGameEffect = CreateBitMask( {"InUmbra", "Fury", "Cloaked", "Parasite", "NearDeath", "OnFire", "OnInfestation", "Beacon", "Energize", "Max"} )
+kGameEffectMax = bit.lshift( 1, GetBitMaskNumBits(kGameEffect) )
 
 // Stackable game effects (more than one can be active, server-side only)
 kFuryGameEffect = "fury"
@@ -252,6 +254,10 @@ kEpsilon = 0.0001
 kCommanderDropSpawnHeight = 0.08
 kCommanderEquipmentDropSpawnHeight = 0.5
 
+kInventoryIconsTexture = "ui/inventory_icons.dds"
+kInventoryIconTextureWidth = 128
+kInventoryIconTextureHeight = 64
+
 // Options keys
 kNicknameOptionsKey = "nickname"
 kVisualDetailOptionsKey = "visualDetail"
@@ -323,3 +329,6 @@ kRookieSaveInterval = 30 // seconds
 kRookieTimeThreshold = 4 * 60 * 60 // 4 hours
 kRookieNetworkCheckInterval = 2
 kRookieOptionsKey = "rookieMode"
+
+kMinFOVAdjustmentDegrees = 0
+kMaxFOVAdjustmentDegrees = 0

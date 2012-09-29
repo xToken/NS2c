@@ -169,6 +169,8 @@ function Onos:EndCharge()
     local moveDirection = self:GetVelocity()
     moveDirection:Normalize()
     
+    //TriggerMomentumChangeEffects(self, surface, moveDirection, normal)
+    
     self.charging = false
     self.chargeSpeed = 0
     self.timeLastChargeEnd = Shared.GetTime()

@@ -8,6 +8,8 @@
 //    Updates tech availability.
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+Script.Load("lua/TechTreeConstants.lua")
+Script.Load("lua/MixinUtility.lua")
 
 TechMixin = CreateMixin( TechMixin )
 TechMixin.type = "Tech"

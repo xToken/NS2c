@@ -63,6 +63,34 @@ end
 
 Shared.RegisterNetworkMessage( "HitEffect", kHitEffectMessage )
 
+local kDamageMessage =
+{
+    posx = string.format("float (%d to %d by 0.05)", -kHitEffectMaxPosition, kHitEffectMaxPosition),
+    posy = string.format("float (%d to %d by 0.05)", -kHitEffectMaxPosition, kHitEffectMaxPosition),
+    posz = string.format("float (%d to %d by 0.05)", -kHitEffectMaxPosition, kHitEffectMaxPosition),
+    targetId = "entityid",
+    amount = "float",
+}
+
+function BuildDamageMessage(target, amount, hitpos)
+    
+    local t = {}
+    t.posx = hitpos.x
+    t.posy = hitpos.y
+    t.posz = hitpos.z
+    t.amount = amount
+    t.targetId = (target and target:GetId()) or Entity.invalidId
+    return t
+    
+end
+
+function ParseDamageMessage(message)
+    local position = Vector(message.posx, message.posy, message.posz)
+    return Shared.GetEntity(message.targetId), message.amount, position
+end
+
+Shared.RegisterNetworkMessage( "Damage", kDamageMessage )
+
 local kCommanderPingMessage =
 {
     position = "vector"

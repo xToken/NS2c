@@ -373,7 +373,7 @@ end
 function GUISelectionPanel:UpdateSingleSelection(entityId)
 
     local entity = Shared.GetEntity(entityId)
-    
+
     // Make all multiselection icons invisible.
     function SetItemInvisible(item) item:SetIsVisible(false) end
     table.foreachfunctor(self.multiSelectionIcons, SetItemInvisible)

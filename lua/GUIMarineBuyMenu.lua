@@ -18,7 +18,6 @@ GUIMarineBuyMenu.kRepeatingBackground = "ui/menu/grid.dds"
 GUIMarineBuyMenu.kContentBgTexture = "ui/menu/repeating_bg.dds"
 GUIMarineBuyMenu.kContentBgBackTexture = "ui/menu/repeating_bg_black.dds"
 GUIMarineBuyMenu.kResourceIconTexture = "ui/pres_icon_big.dds"
-GUIMarineBuyMenu.kSmallIconTexture = "ui/marine_messages_icons.dds"
 GUIMarineBuyMenu.kBigIconTexture = "ui/marine_buy_bigicons.dds"
 GUIMarineBuyMenu.kButtonTexture = "ui/marine_buymenu_button.dds"
 GUIMarineBuyMenu.kMenuSelectionTexture = "ui/marine_buymenu_selector.dds"
@@ -174,7 +173,7 @@ function GUIMarineBuyMenu:SetHostStructure(hostStructure)
     self.hostStructure = hostStructure
     self:_InitializeItemButtons()
     if hostStructure:isa("Armory") then
-        self.selectedItem = PlayerUI_GetActiveWeaponTechId()
+        self.selectedItem = kTechId.Shotgun //PlayerUI_GetActiveWeaponTechId()
     else
         self.selectedItem = kTechId.Jetpack
     end
@@ -199,7 +198,7 @@ function GUIMarineBuyMenu:Initialize()
     self.mouseOverStates = { }
     self.equipped = { }
     
-    self.selectedItem = PlayerUI_GetActiveWeaponTechId()
+    self.selectedItem = kTechId.Shotgun
     
     self:_InitializeBackground()
     self:_InitializeContent()
@@ -315,7 +314,7 @@ function GUIMarineBuyMenu:_InitializeEquipped()
     self.equippedBg:AddChild(self.equippedTitle)
     
     
-        self.equipped = { }
+    self.equipped = { }
     
     local equippedTechIds = MarineBuy_GetEquipped()
     local selectorPosX = -GUIMarineBuyMenu.kSelectorSize.x + GUIMarineBuyMenu.kPadding
@@ -326,7 +325,7 @@ function GUIMarineBuyMenu:_InitializeEquipped()
         graphicItem:SetSize(GUIMarineBuyMenu.kSmallIconSize)
         graphicItem:SetAnchor(GUIItem.Middle, GUIItem.Top)
         graphicItem:SetPosition(Vector(-GUIMarineBuyMenu.kSmallIconSize.x/ 2, GUIMarineBuyMenu.kEquippedIconTopOffset + (GUIMarineBuyMenu.kSmallIconSize.y) * k - GUIMarineBuyMenu.kSmallIconSize.y, 0))
-        graphicItem:SetTexture(GUIMarineBuyMenu.kSmallIconTexture)
+        graphicItem:SetTexture(kInventoryIconsTexture)
         graphicItem:SetTexturePixelCoordinates(GetSmallIconPixelCoordinates(itemTechId))
         
         self.equippedBg:AddChild(graphicItem)
@@ -375,7 +374,7 @@ function GUIMarineBuyMenu:_InitializeItemButtons()
         graphicItem:SetSize(GUIMarineBuyMenu.kMenuIconSize)
         graphicItem:SetAnchor(GUIItem.Middle, GUIItem.Top)
         graphicItem:SetPosition(Vector(-GUIMarineBuyMenu.kMenuIconSize.x/ 2, GUIMarineBuyMenu.kIconTopOffset + (GUIMarineBuyMenu.kMenuIconSize.y) * k - GUIMarineBuyMenu.kMenuIconSize.y, 0))
-        graphicItem:SetTexture(GUIMarineBuyMenu.kSmallIconTexture)
+        graphicItem:SetTexture(kInventoryIconsTexture)
         graphicItem:SetTexturePixelCoordinates(GetSmallIconPixelCoordinates(itemTechId))
         
         local graphicItemActive = GUIManager:CreateGraphicItem()
@@ -486,8 +485,8 @@ function GUIMarineBuyMenu:_UpdateItemButtons(deltaTime)
         // set grey if not researched
         if not MarineBuy_IsResearched(item.TechId) then
         
-            useColor = Color(0.5, 0.5, 0.5, 1) 
-           
+            useColor = Color(0.5, 0.5, 0.5, .4) 
+   
         // set red if can't afford
         elseif PlayerUI_GetPlayerResources() < MarineBuy_GetCosts(item.TechId) then
         
@@ -577,12 +576,18 @@ function GUIMarineBuyMenu:_UpdateContent(deltaTime)
         local itemCost = MarineBuy_GetCosts(techId)
         local canAfford = PlayerUI_GetPlayerResources() >= itemCost
 
+        local color = Color(1, 1, 1, 1)
         if not canAfford and researched then
-            self.portrait:SetColor(Color(1, 0, 0, 1))
-        else
-            self.portrait:SetColor(Color(1, 1, 1, 1))
+            color = Color(1, 0, 0, 1)
+        elseif not researched then
+            // Make it clear that we can't buy this
+            color = Color(0.5, 0.5, 0.5, .6)
         end
     
+        self.itemName:SetColor(color)
+        self.portrait:SetColor(color)        
+        self.itemDescription:SetColor(color)
+        
         self.itemName:SetText(MarineBuy_GetDisplayName(techId))
         self.portrait:SetTexturePixelCoordinates(GetBigIconPixelCoords(techId, researched))
         self.itemDescription:SetText(MarineBuy_GetWeaponDescription(techId))

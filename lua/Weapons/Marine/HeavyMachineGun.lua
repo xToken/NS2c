@@ -67,6 +67,12 @@ function HeavyMachineGun:OnDestroy()
 end
 
 function HeavyMachineGun:OnPrimaryAttack(player)
+
+    if not self:GetIsReloading() then
+        ClipWeapon.OnPrimaryAttack(self, player)
+    end    
+    
+    /*
     if not self:GetIsReloading() and self.clip > 0 then
         if player and not self:GetHasAttackDelay() then
         
@@ -84,8 +90,11 @@ function HeavyMachineGun:OnPrimaryAttack(player)
          self:OnPrimaryAttackEnd(player)
          self.blockingPrimary = false
     end    
+    */
+    
 end
 
+/*
 function HeavyMachineGun:OnPrimaryAttackEnd(player)
 
     if self.primaryAttacking then
@@ -94,10 +103,12 @@ function HeavyMachineGun:OnPrimaryAttackEnd(player)
     end
     
 end
+*/
 
 function HeavyMachineGun:GetNumStartClips()
     return 2
 end
+
 /*
 function HeavyMachineGun:OnTouch(recipient)
     recipient:AddWeapon(self, true)
@@ -127,6 +138,7 @@ function HeavyMachineGun:GetViewModelName()
     return kViewModelName
 end
 
+/*
 function HeavyMachineGun:GetFireDelay()
     return kHeavyMachineGunROF
 end
@@ -134,13 +146,14 @@ end
 function HeavyMachineGun:GetHasAttackDelay()
     return self.lastfiredtime + self:GetFireDelay() > Shared.GetTime()
 end
+*/
 
 function HeavyMachineGun:GetDeathIconIndex()
 
     if self:GetSecondaryAttacking() then
-        return kDeathMessageIcon.HeavyMachineGunButt
+        return kDeathMessageIcon.Minigun
     end
-    return kDeathMessageIcon.HeavyMachineGun
+    return kDeathMessageIcon.Minigun
     
 end
 
@@ -188,12 +201,6 @@ function HeavyMachineGun:GetShellEffect()
     return chooseWeightedEntry ( HeavyMachineGun.kShellEffectTable )
 end
 
-function HeavyMachineGun:OnTag(tagName)
-
-    PROFILE("HeavyMachineGun:OnTag")
-
-end
-
 function HeavyMachineGun:SetGunLoopParam(viewModel, paramName, rateOfChange)
 
     local current = viewModel:GetPoseParam(paramName)
@@ -212,6 +219,7 @@ function HeavyMachineGun:UpdateViewModelPoseParameters(viewModel)
     
 end
 
+/*
 function HeavyMachineGun:OnReload(player)
 
     if self:CanReload() then
@@ -221,6 +229,7 @@ function HeavyMachineGun:OnReload(player)
     end
     
 end
+*/
 
 function HeavyMachineGun:Dropped(prevOwner)
 
@@ -228,6 +237,7 @@ function HeavyMachineGun:Dropped(prevOwner)
     
 end
 
+/*
 function HeavyMachineGun:OnUpdateAnimationInput(modelMixin)
     
     PROFILE("HeavyMachineGun:OnUpdateAnimationInput")
@@ -243,6 +253,7 @@ function HeavyMachineGun:OnUpdateAnimationInput(modelMixin)
     end
     
 end
+*/
 
 function HeavyMachineGun:GetAmmoPackMapName()
     return HeavyMachineGunAmmo.kMapName
@@ -281,7 +292,7 @@ if Client then
             local origin = player:GetEyePos()
             local viewCoords= player:GetViewCoords()
         
-            return origin + viewCoords.zAxis * 0.4 + viewCoords.xAxis * -0.2 + viewCoords.yAxis * -0.22
+            return origin + viewCoords.zAxis * 1.0 + viewCoords.xAxis * -0.2 + viewCoords.yAxis * -0.22
         end
         
         return self:GetOrigin()

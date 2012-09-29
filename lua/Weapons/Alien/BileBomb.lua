@@ -55,6 +55,11 @@ function BileBomb:GetHUDSlot()
     return 4
 end
 
+function BileBomb:GetSecondaryTechId()
+    return kTechId.Spray
+end
+
+
 function BileBomb:OnTag(tagName)
 
     PROFILE("BileBomb:OnTag")

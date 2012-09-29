@@ -157,11 +157,14 @@ function PrototypeLab:UpdatePrototypeLabAnim(extension, loggedIn, scanTime, time
 
     local loggedInName = "log_" .. extension
     local loggedInParamValue = ConditionalValue(loggedIn, 1, 0)
-
+    
     if extension == "n" then
+    
         self.loginNorthAmount = Clamp(Slerp(self.loginNorthAmount, loggedInParamValue, timePassed*2), 0, 1)
         self:SetPoseParam(loggedInName, self.loginNorthAmount)
+        
     elseif extension == "s" then
+    
         self.loginSouthAmount = Clamp(Slerp(self.loginSouthAmount, loggedInParamValue, timePassed*2), 0, 1)
         self:SetPoseParam(loggedInName, self.loginSouthAmount)
     elseif extension == "e" then
@@ -186,16 +189,6 @@ function PrototypeLab:OnUpdate(deltaTime)
 
     if Client then
         self:UpdatePrototypeLabWarmUp()
-    end
-
-    if GetIsUnitActive(self) then
-        
-        // Set pose parameters according to if we're logged in or not
-        self:UpdatePrototypeLabAnim("e", self.loggedInEast, self.timeScannedEast, deltaTime)
-        self:UpdatePrototypeLabAnim("n", self.loggedInNorth, self.timeScannedNorth, deltaTime)
-        self:UpdatePrototypeLabAnim("w", self.loggedInWest, self.timeScannedWest, deltaTime)
-        self:UpdatePrototypeLabAnim("s", self.loggedInSouth, self.timeScannedSouth, deltaTime)
-        
     end
     
     ScriptActor.OnUpdate(self, deltaTime)

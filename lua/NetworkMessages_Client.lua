@@ -69,6 +69,16 @@ function OnCommandHitEffect(hitEffectTable)
 
 end
 
+// Show damage numbers for players
+function OnCommandDamage(damageTable)
+
+    local target, amount, hitpos = ParseDamageMessage(damageTable)
+    if target then
+        Client.AddWorldMessage(kWorldTextMessageType.Damage, ToString(math.round(amount)), hitpos, target:GetId())
+    end
+    
+end
+
 function OnCommandScores(scoreTable)
 
     local status = kPlayerStatus[scoreTable.status]
@@ -107,7 +117,7 @@ function OnCommandScores(scoreTable)
     elseif scoreTable.status == kPlayerStatus.HeavyMachineGun then
         status = Locale.ResolveString("STATUS_HEAVY_MACHINE_GUN")
     end
-
+    
     Scoreboard_SetPlayerData(scoreTable.clientId, scoreTable.entityId, scoreTable.playerName, scoreTable.teamNumber, scoreTable.score,
                              scoreTable.kills, scoreTable.deaths, math.floor(scoreTable.resources), scoreTable.isCommander, scoreTable.isRookie,
                              status, scoreTable.isSpectator)
@@ -189,6 +199,7 @@ end
 
 Client.HookNetworkMessage("Ping", OnCommandPing)
 Client.HookNetworkMessage("HitEffect", OnCommandHitEffect)
+Client.HookNetworkMessage("Damage", OnCommandDamage)
 Client.HookNetworkMessage("Scores", OnCommandScores)
 
 Client.HookNetworkMessage("ClearTechTree", OnCommandClearTechTree)

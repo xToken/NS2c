@@ -136,6 +136,46 @@ function MarineCommander:GetQuickMenuTechButtons(techId)
     
 end
 
+local gMarineMenuButtons =
+{
+
+    [kTechId.BuildMenu] = { kTechId.Extractor, kTechId.InfantryPortal, kTechId.Armory, kTechId.CommandStation,
+                        kTechId.RoboticsFactory, kTechId.Sentry, kTechId.ARC, kTechId.None},
+                            
+    [kTechId.AdvancedMenu] = { kTechId.Observatory, kTechId.ArmsLab, kTechId.PrototypeLab, kTechId.PhaseGate, 
+                              kTechId.None, kTechId.None, kTechId.None, kTechId.None},
+
+    [kTechId.AssistMenu] = { kTechId.AmmoPack, kTechId.MedPack, kTechId.CatPack, kTechId.None,
+                        kTechId.WeaponsMenu, kTechId.None, kTechId.None, kTechId.None},
+                          
+    [kTechId.WeaponsMenu] = { kTechId.Mines, kTechId.Shotgun, kTechId.HeavyMachineGun, kTechId.GrenadeLauncher,
+                        kTechId.Welder, kTechId.Jetpack, kTechId.HeavyArmor, kTechId.None}
+
+
+}
+
+function MarineCommander:GetButtonTable()
+    return gMarineMenuButtons
+end
+
+// Top row always the same. Alien commander can override to replace. 
+function MarineCommander:GetQuickMenuTechButtons(techId)
+
+    // Top row always for quick access
+    local marineTechButtons = { kTechId.BuildMenu, kTechId.AdvancedMenu, kTechId.AssistMenu, kTechId.RootMenu }
+    local menuButtons = gMarineMenuButtons[techId]    
+    
+    if not menuButtons then
+        menuButtons = {kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+    end
+
+    table.copy(menuButtons, marineTechButtons, true)        
+
+    // Return buttons and true/false if we are in a quick-access menu
+    return marineTechButtons
+    
+end
+
 function MarineCommander:GetChatSound()
     return MarineCommander.kChatSound
 end

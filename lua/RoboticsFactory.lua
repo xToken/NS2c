@@ -296,7 +296,7 @@ function RoboticsFactory:GetHealthbarOffset()
 end 
 
 
-Shared.LinkClassToMap("RoboticsFactory", RoboticsFactory.kMapName, networkVars)
+Shared.LinkClassToMap("RoboticsFactory", RoboticsFactory.kMapName, networkVars, true)
 
 
 class 'ARCRoboticsFactory' (RoboticsFactory)

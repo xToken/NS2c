@@ -81,8 +81,12 @@ function LerkBite:GetHUDSlot()
     return 1
 end
 
-function LerkBite:GetIconOffsetY(secondary)
-    return kAbilityOffset.PoisonBite
+function LerkBite:GetDeathIconIndex()
+    return kDeathMessageIcon.LerkBite
+end
+
+function LerkBite:GetSecondaryTechId()
+    return kTechId.Spores
 end
 
 function LerkBite:GetRange()
@@ -142,7 +146,7 @@ function LerkBite:GetEffectParams(tableParams)
 end
 
 function LerkBite:GetMeleeBase()
-    return 1, 0.6
+    return Weapon.kMeleeBaseWidth, 1
 end
 
 function LerkBite:GetMeleeOffset()
@@ -233,6 +237,12 @@ function LerkBite:OnUpdateAnimationInput(modelMixin)
         modelMixin:SetAnimationInput("activity", activityString)
     
     end
+    
+end
+
+function LerkBite:GetDamageType()
+
+	return kLerkBiteDamageType 
     
 end
 

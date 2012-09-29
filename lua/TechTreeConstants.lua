@@ -75,7 +75,7 @@ kTechId = enum({
     'TwoHives', 'ThreeHives', 'UpgradeToCragHive', 'UpgradeToShadeHive', 'UpgradeToShiftHive', 'UpgradeToWhipHive',
     
     // Alien abilities (not all are needed, only ones with damage types)
-    'Bite', 'LerkBite', 'Parasite',  'Spit', 'BuildAbility', 'Spray', 'Spores', 'HydraSpike', 'SwipeBlink', 'StabBlink', 'Gore', 'Smash', 'BuildAbility2', 'Devour',
+    'Bite', 'LerkBite', 'Parasite',  'Spit', 'BuildAbility', 'Spray', 'Spores', 'HydraSpike', 'Swipe', 'StabBlink', 'Gore', 'Smash', 'BuildAbility2', 'Devour',
 
     // upgradeable alien abilities (need to be unlocked)
     'BileBomb', 'Leap', 'Blink', 'Stomp', 'Spikes', 'Umbra', 'Metabolize', 'Xenocide', 'AcidRocket', 'Smash', 'WebStalk', 'Charge', 'PrimalScream',

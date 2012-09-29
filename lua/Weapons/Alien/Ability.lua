@@ -17,28 +17,24 @@ Ability.kMapName = "alienability"
 
 local kDefaultEnergyCost = 20
 
-// The order of icons in kHUDAbilitiesTexture, used by GetIconOffsetY.
-// These are just the rows, the colum is determined by primary or secondary
-kAbilityOffset = enum( {'Bite', 'Parasite', 'Spit', 'Hydra', 'Cyst', 'BileBomb', 'Umbra', 'Spores', 'SwipeBlink', 'Vortex', 'Gore', 'Smash', 'Xenocide', 'PoisonBite', 'PrimalScream' } )
-
 // Return 0-100 energy cost (where 100 is full energy bar)
 function Ability:GetEnergyCost(player)
     return kDefaultEnergyCost
+end
+
+function Ability:GetSecondaryTechId()
+    return kTechId.None
 end
 
 function Ability:GetSecondaryEnergyCost(player)
     return self:GetEnergyCost(player)
 end
 
-function Ability:GetIconOffsetX(secondary)
-    return ConditionalValue(secondary, 1, 0)
+function Ability:GetResetViewModelOnDraw()
+    return false
 end
 
-function Ability:GetIconOffsetY(secondary)
-    return 0
-end
-
-// return array of player energy (0-1), ability energy cost (0-1), x offset, y offset, visibility and hud slot
+// return array of player energy (0-1), ability energy cost (0-1), techId, visibility and hud slot
 function Ability:GetInterfaceData(secondary, inactive)
 
     local parent = self:GetParent()
@@ -51,15 +47,21 @@ function Ability:GetInterfaceData(secondary, inactive)
             hudSlot = self:GetHUDSlot()
         end
         
-        // Inactive abilities return only xoff, yoff, hud slot
+        // Handle secondary here
+        local techId = self:GetTechId()
+        if secondary then
+            techId = self:GetSecondaryTechId()
+        end
+        
+        // Inactive abilities return only hud slot, techId
         if inactive then
-            return {self:GetIconOffsetX(secondary), self:GetIconOffsetY(secondary), hudSlot}
+            return {hudSlot, techId}
         elseif parent.GetEnergy then
         
             if secondary then
-                return {parent:GetEnergy() / parent:GetMaxEnergy(), self:GetSecondaryEnergyCost() / parent:GetMaxEnergy(), self:GetIconOffsetX(secondary), self:GetIconOffsetY(secondary), vis, hudSlot}
+                return {parent:GetEnergy() / parent:GetMaxEnergy(), self:GetSecondaryEnergyCost() / parent:GetMaxEnergy(), techId, vis, hudSlot}
             else
-                return {parent:GetEnergy() / parent:GetMaxEnergy(), self:GetEnergyCost() / parent:GetMaxEnergy(), self:GetIconOffsetX(secondary), self:GetIconOffsetY(secondary), vis, hudSlot}
+                return {parent:GetEnergy() / parent:GetMaxEnergy(), self:GetEnergyCost() / parent:GetMaxEnergy(), techId, vis, hudSlot}
             end
         
         end
