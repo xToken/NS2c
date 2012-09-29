@@ -159,13 +159,14 @@ function ARC:OnInitialized()
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end
+        self:SetMode(ARC.kMode.Stationary)
     elseif Client then
         self.lastModeClient = self.mode
         InitMixin(self, UnitStatusMixin)
     end
     self.deploytime = 0
+    self.active = true
     self:SetUpdates(true)
-    
 end
 
 local kARCHealthbarOffset = Vector(0, 0.7, 0)
@@ -202,11 +203,10 @@ end
 
 function ARC:OnPowerOn()
 
-    self:SetMode(ARC.kMode.Stationary)
     self.deployMode = ARC.kDeployMode.Deploying
     self:TriggerEffects("arc_deploying")
     self.deploytime = Shared.GetTime()
-    
+    self.active = true
 end
 
 function ARC:OnPowerOff()
@@ -215,7 +215,7 @@ function ARC:OnPowerOff()
         self:CompletedCurrentOrder()
     end
     self.deploytime = 0
-    self:SetMode(ARC.kMode.Stationary)
+    self.active = false
     self.deployMode = ARC.kDeployMode.Undeploying
     self:TriggerEffects("arc_stop_charge")
     self:TriggerEffects("arc_undeploying")
@@ -374,7 +374,7 @@ function ARC:OnUpdate(deltaTime)
     
     if Server then
         self:UpdateOrders(deltaTime)
-        if self.deploytime ~= 0 and self.deploytime + 2 < Shared.GetTime() then
+        if self.deploytime ~= 0 and self.deploytime + 2 < Shared.GetTime() and self:GetIsAlive() and self:GetIsPowered() then
             self.deploytime = 0
             self:ForceDeployed()
         end
@@ -386,7 +386,7 @@ function ARC:OnUpdate(deltaTime)
         end
     end
     
-    if self.mode ~= ARC.kMode.Stationary and self.deployMode ~= ARC.kDeployMode.Deploying and self.mode ~= ARC.kMode.Undeploying and self.mode ~= ARC.kMode.Destroyed then
+    if self.mode ~= ARC.kMode.Stationary and self.deployMode ~= ARC.kDeployMode.Deploying and self.deployMode ~= ARC.kMode.Undeploying and self.mode ~= ARC.kMode.Destroyed then
         self:UpdateAngles(deltaTime)
     end
     

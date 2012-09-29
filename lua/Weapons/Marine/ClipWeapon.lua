@@ -455,12 +455,12 @@ local function FireBullets(self, player)
 end
 
 function ClipWeapon:FirePrimary(player)
-    if Server then
-        if self.lastfired ~= nil then
-            Print(ToString(Shared.GetTime() - self.lastfired))
-        end
-        self.lastfired = Shared.GetTime()
-    end
+    //if Server then
+        //if self.lastfired ~= nil then
+            //Print(ToString(Shared.GetTime() - self.lastfired))
+        //end
+        //self.lastfired = Shared.GetTime()
+    //end
     FireBullets(self, player)
 end
 

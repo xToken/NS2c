@@ -97,6 +97,9 @@
     <filename>Client.lua</filename>
   </file>
   <file>
+    <filename>Weapons\ClientWeaponEffectsMixin.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Marine\ClipWeapon.lua</filename>
   </file>
   <file>
@@ -530,6 +533,9 @@
   </file>
   <file>
     <filename>ReadyRoomTeam.lua</filename>
+  </file>
+  <file>
+    <filename>RecycleMixin.lua</filename>
   </file>
   <file>
     <filename>RegenerationMixin.lua</filename>
