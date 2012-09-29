@@ -110,7 +110,9 @@ local function PerformAttack(self)
 end
 
 function ARC:SetMode(mode)
-
+    if mode ~= 1 and mode ~= 2 and mode ~= 3 then
+        assert(false)
+    end
     if self.mode ~= mode then
     
         local triggerEffectName = "arc_" .. string.lower(EnumToString(ARC.kMode, mode))        
@@ -137,7 +139,7 @@ function ARC:OnTag(tagName)
         self:TriggerEffects("arc_charge")
     elseif tagName == "attack_end" then
         self:SetMode(ARC.kMode.Targeting)
-    elseif tagName == "deploy_end" then
+    elseif tagName == "deploy_end" and self.deployMode == ARC.kDeployMode.Deploying then
         // Clear orders when deployed so new ARC attack order will be used
         self.deployMode = ARC.kDeployMode.Deployed
         self:ClearOrders()
@@ -156,6 +158,8 @@ function ARC:ForceDeployed()
         //Print("FORCEARCDEPLOYED")
         self.deployMode = ARC.kDeployMode.Deployed
         self:ClearOrders()
+    else
+        self.deployMode = ARC.kDeployMode.Undeploying
     end
 end
 

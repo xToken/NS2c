@@ -26,6 +26,7 @@ local kAnimationGraph = PrecacheAsset("models/marine/shotgun/shotgun_view.animat
 
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/shotgun/muzzle_flash.cinematic")
 local kMuzzleAttachPoint = "fxnode_shotgunmuzzle"
+local kShotgunBaseFireSpeed = 1.3
 
 function Shotgun:OnCreate()
 
@@ -199,6 +200,8 @@ function Shotgun:FirePrimary(player)
     self:TriggerEffects("shotgun_attack")
 
 end
+
+//
 
 function Shotgun:OnProcessMove(input)
     ClipWeapon.OnProcessMove(self, input)
