@@ -41,8 +41,8 @@ local networkVars =
     armsLabUp                  = "boolean",
     protoLabUp                 = "boolean",
     roboticsUp                 = "boolean",
-    observatoryUp              = "boolean"
-
+    observatoryUp              = "boolean",
+    playerCount                = "integer (0 to " .. kMaxPlayers - 1 .. ")"
 }
 
 AddMixinNetworkVars(TeamMixin, networkVars)
@@ -103,7 +103,7 @@ function CreateRelevantIdMaskMarine()
 
     end
 
-
+    
     TeamInfo.kRelevantIdMaskMarine = CreateBitMask(t)
 
 end
@@ -152,6 +152,7 @@ function TeamInfo:OnCreate()
         self.protoLabUp = false
         self.roboticsUp = false
         self.observatoryUp = false
+        self.playerCount = 0
         
     end
     
@@ -165,6 +166,7 @@ local function UpdateInfo(self)
     
         self:SetTeamNumber(self.team:GetTeamNumber())
         self.teamResources = self.team:GetTeamResources()
+        self.playerCount = Clamp(self.team:GetNumPlayers(), 0, 31)
         
         self.totalTeamResources = self.team:GetTotalTeamResources()
         self.personalResources = 0
@@ -439,6 +441,10 @@ function TeamInfo:UpdateBitmasks(techId, techNode, isMarine)
         
     end
 
+end
+
+function TeamInfo:GetPlayerCount()
+    return self.playerCount
 end
 
 Shared.LinkClassToMap("TeamInfo", TeamInfo.kMapName, networkVars)

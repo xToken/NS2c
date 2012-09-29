@@ -118,7 +118,7 @@ function CommanderUI_MenuButtonStatus(index)
                 if techNode:GetResearching() and not techNode:GetIsUpgrade() then
                 
                     // Don't display
-                    buttonStatus = 0
+                    buttonStatus = 0                    
                     
                 elseif not techNode:GetAvailable() or not player.menuTechButtonsAllowed[index] then
                 

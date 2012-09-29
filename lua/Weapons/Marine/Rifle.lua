@@ -140,7 +140,6 @@ end
 */
 
 function Rifle:OnSecondaryAttack(player)
-    
 end
 
 function Rifle:GetNumStartClips()

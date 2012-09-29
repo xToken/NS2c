@@ -101,6 +101,7 @@ Script.Load("lua/Embryo.lua")
 // Base players
 Script.Load("lua/ReadyRoomPlayer.lua")
 Script.Load("lua/Spectator.lua")
+Script.Load("lua/FilmSpectator.lua")
 Script.Load("lua/AlienSpectator.lua")
 Script.Load("lua/MarineSpectator.lua")
 Script.Load("lua/Ragdoll.lua")

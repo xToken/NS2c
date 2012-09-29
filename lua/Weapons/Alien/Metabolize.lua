@@ -45,11 +45,11 @@ function Metabolize:GetHUDSlot()
 end
 
 function Metabolize:GetDeathIconIndex()
-    return kDeathMessageIcon.SwipeBlink
+    return kDeathMessageIcon.Swipe
 end
 
 function Metabolize:GetIconOffsetY(secondary)
-    return kAbilityOffset.SwipeBlink
+    return kAbilityOffset.Swipe
 end
 
 function Metabolize:GetBlinkAllowed()

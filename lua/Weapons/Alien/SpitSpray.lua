@@ -71,8 +71,8 @@ function SpitSpray:GetHUDSlot()
     return 1
 end
 
-function SpitSpray:GetIconOffsetY(secondary)
-    return kAbilityOffset.Spit
+function SpitSpray:GetSecondaryTechId()
+    return kTechId.Spray
 end
 
 function SpitSpray:GetPrimaryEnergyCost()

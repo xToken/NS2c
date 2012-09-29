@@ -323,4 +323,4 @@ function Whip:GetCanBeUsed(player, useSuccessTable)
     end
 end
 
-Shared.LinkClassToMap("Whip", Whip.kMapName, networkVars)
+Shared.LinkClassToMap("Whip", Whip.kMapName, networkVars, true)

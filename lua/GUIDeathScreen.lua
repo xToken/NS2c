@@ -13,7 +13,6 @@ class 'GUIDeathScreen' (GUIAnimatedScript)
 
 local kWeaponIconSize = Vector(256, 128, 0)
 local kFontName = "fonts/AgencyFB_medium.fnt"
-local kTexture = "ui/marine_messages_icons.dds"
 
 function GUIDeathScreen:Initialize()
 
@@ -30,7 +29,7 @@ function GUIDeathScreen:Initialize()
     self.weaponIcon:SetAnchor(GUIItem.Middle, GUIItem.Center)
     self.weaponIcon:SetSize(kWeaponIconSize)    
     self.weaponIcon:SetPosition(Vector(-kWeaponIconSize.x / 2, -kWeaponIconSize.y / 2, 0))
-    self.weaponIcon:SetTexture(kTexture)
+    self.weaponIcon:SetTexture(kInventoryIconsTexture)
     
     self.killerName = GetGUIManager():CreateTextItem()
     self.killerName:SetText("")

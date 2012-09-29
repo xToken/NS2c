@@ -233,18 +233,22 @@ function BuildTechData()
         { [kTechDataId] = kTechId.HandGrenadesTech,      [kTechDataCostKey] = kHandGrenadesTechResearchCost,        [kTechDataResearchTimeKey] = kHandGrenadesTechResearchTime,  [kTechDataDisplayName] = "HAND_GRENADES_TECH",              [kTechDataTooltipInfo] = "HAND_GRENADES_TECH_TOOLTIP"},
             
         // ALIENS
-        // tier 1 abilities
+        // tier 0 abilities
         { [kTechDataId] = kTechId.Bite,                  [kTechDataMapName] = BiteLeap.kMapName,        [kTechDataDamageType] = kBiteDamageType,        [kTechDataDisplayName] = "BITE"},
-        { [kTechDataId] = kTechId.Parasite,              [kTechDataMapName] = Parasite.kMapName,        [kTechDataDamageType] = kParasiteDamageType,    [kTechDataDisplayName] = "PARASITE"},
         { [kTechDataId] = kTechId.Spit,                  [kTechDataMapName] = SpitSpray.kMapName,       [kTechDataDamageType] = kSpitDamageType,        [kTechDataDisplayName] = "SPIT"},
         { [kTechDataId] = kTechId.BuildAbility,          [kTechDataMapName] = DropStructureAbility.kMapName,            [kTechDataDisplayName] = "BUILD_ABILITY"},
         { [kTechDataId] = kTechId.BuildAbility2,         [kTechDataMapName] = DropStructureAbility2.kMapName,            [kTechDataDisplayName] = "BUILD_ABILITY_2"},
-        { [kTechDataId] = kTechId.Spray,                 [kTechDataMapName] = SpitSpray.kMapName,       [kTechDataDamageType] = kHealsprayDamageType,   [kTechDataDisplayName] = "SPRAY"},
-        { [kTechDataId] = kTechId.SwipeBlink,            [kTechDataMapName] = SwipeBlink.kMapName,      [kTechDataDamageType] = kSwipeDamageType,       [kTechDataDisplayName] = "SWIPE_BLINK"},
-        { [kTechDataId] = kTechId.Gore,                  [kTechDataMapName] = Gore.kMapName,            [kTechDataDamageType] = kGoreDamageType,        [kTechDataDisplayName] = "GORE"},
-        { [kTechDataId] = kTechId.Devour,                [kTechDataMapName] = Devour.kMapName,            [kTechDataDamageType] = kDevourDamageType,        [kTechDataDisplayName] = "DEVOUR"},
         { [kTechDataId] = kTechId.LerkBite,              [kTechDataMapName] = LerkBite.kMapName,        [kTechDataDamageType] = kLerkBiteDamageType,    [kTechDataDisplayName] = "LERK_BITE"},
- 
+        { [kTechDataId] = kTechId.Swipe,            [kTechDataMapName] = SwipeBlink.kMapName,      [kTechDataDamageType] = kSwipeDamageType,       [kTechDataDisplayName] = "SWIPE_BLINK"},
+        { [kTechDataId] = kTechId.Gore,                  [kTechDataMapName] = Gore.kMapName,            [kTechDataDamageType] = kGoreDamageType,        [kTechDataDisplayName] = "GORE"},
+        
+        // tier 1 abilities
+        { [kTechDataId] = kTechId.Parasite,              [kTechDataMapName] = Parasite.kMapName,        [kTechDataDamageType] = kParasiteDamageType,    [kTechDataDisplayName] = "PARASITE"},
+        { [kTechDataId] = kTechId.Spray,                 [kTechDataMapName] = SpitSpray.kMapName,       [kTechDataDamageType] = kHealsprayDamageType,   [kTechDataDisplayName] = "SPRAY"},
+        { [kTechDataId] = kTechId.Spores,                   [kTechDataDisplayName] = "SPORES",        [kTechDataCostKey] = kSporesResearchCost, [kTechDataResearchTimeKey] = kSporesResearchTime, [kTechDataTooltipInfo] = "SPORES_TOOLTIP" },     
+        { [kTechDataId] = kTechId.Blink,                 [kTechDataDisplayName] = "BLINK", [kTechDataCostKey] = kBlinkResearchCost, [kTechDataResearchTimeKey] = kBlinkResearchTime, [kTechDataTooltipInfo] = "BLINK_TOOLTIP"},  
+        { [kTechDataId] = kTechId.Charge,                 [kTechDataDisplayName] = "CHARGE"},
+        
         // tier 2 abilities
         { [kTechDataId] = kTechId.Leap,                   [kTechDataDisplayName] = "LEAP", [kTechDataCostKey] = kLeapResearchCost, [kTechDataResearchTimeKey] = kLeapResearchTime, [kTechDataTooltipInfo] = "LEAP_TOOLTIP" },     
         { [kTechDataId] = kTechId.BileBomb,               [kTechDataMapName] = BileBomb.kMapName,        [kTechDataDamageType] = kBileBombDamageType,  [kTechDataDisplayName] = "BILEBOMB", [kTechDataCostKey] = kBileBombResearchCost, [kTechDataResearchTimeKey] = kBileBombResearchTime, [kTechDataTooltipInfo] = "BILEBOMB_TOOLTIP" },
@@ -259,8 +263,10 @@ function BuildTechData()
         { [kTechDataId] = kTechId.PrimalScream ,          [kTechDataDisplayName] = "PRIMAL_SCREAM", [kTechDataCostKey] = kPrimalScreamResearchCost, [kTechDataResearchTimeKey] = kPrimalScreamResearchTime, [kTechDataTooltipInfo] = "PRIMAL_SCREAM_TOOLTIP"},
         { [kTechDataId] = kTechId.AcidRocket ,            [kTechDataMapName] = AcidRocket.kMapName,   [kTechDataDisplayName] = "ACID_ROCKET", [kTechDataCostKey] = kAcidRocketResearchCost, [kTechDataResearchTimeKey] = kAcidRocketResearchTime, [kTechDataTooltipInfo] = "ACID_ROCKET_TOOLTIP"},
         { [kTechDataId] = kTechId.Smash,                  [kTechDataMapName] = Smash.kMapName,            [kTechDataDamageType] = kSmashDamageType,        [kTechDataDisplayName] = "SMASH"},
-        //{ [kTechDataId] = kTechId.Charge,                 [kTechDataDisplayName] = "CHARGE"},
-		
+        
+		{ [kTechDataId] = kTechId.Devour,                [kTechDataMapName] = Devour.kMapName,            [kTechDataDamageType] = kDevourDamageType,        [kTechDataDisplayName] = "DEVOUR"},
+
+  
         // Alien structures (spawn hive at 110 units off ground = 2.794 meters)
         { [kTechDataId] = kTechId.Hive, [kTechDataHint] = "HIVE_HINT", [kTechDataGhostModelClass] = "AlienGhostModel",  [kTechDataMapName] = Hive.kMapName,   [kTechDataDisplayName] = "HIVE", [kTechDataCostKey] = kHiveCost,                     [kTechDataBuildTime] = kHiveBuildTime, [kTechDataModel] = Hive.kModelName,  [kTechDataHotkey] = Move.V,                [kTechDataMaxHealth] = kHiveHealth,  [kTechDataMaxArmor] = kHiveArmor,              [kStructureAttachClass] = "TechPoint",         [kTechDataSpawnHeightOffset] = kHiveYOffset,    [kTechDataPointValue] = kHivePointValue, [kTechDataTooltipInfo] = "HIVE_TOOLTIP"}, 
         

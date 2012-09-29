@@ -450,4 +450,4 @@ function ARC:GetShowHitIndicator()
     return false
 end
 
-Shared.LinkClassToMap("ARC", ARC.kMapName, networkVars)
+Shared.LinkClassToMap("ARC", ARC.kMapName, networkVars, true)

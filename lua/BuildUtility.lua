@@ -6,6 +6,8 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+local gDebugBuildUtility = false
+
 local function CheckBuildTechAvailable(techId, teamNumber)
 
     local techTree = GetTechTree(teamNumber)
@@ -205,6 +207,14 @@ local function GetTeamNumber(player, ignoreEntity)
     
 end
 
+local function BuildUtility_Print(formatString, ...)
+
+    if gDebugBuildUtility then
+        Print(formatString, ...)
+    end
+    
+end    
+
 /**
  * Returns true or false if build attachments are fulfilled, as well as possible attach entity 
  * to be hooked up to. If snap radius passed, then snap build origin to it when nearby. Otherwise
@@ -217,6 +227,15 @@ function GetIsBuildLegal(techId, position, snapRadius, player, ignoreEntity)
     
     local attachEntity = nil
     local errorString = ""
+    local ignoreEntities = LookupTechData(techId, kTechDataCollideWithWorldOnly, false)
+    
+    BuildUtility_Print("------------- GetIsBuildLegal(%s) ---------------", EnumToString(kTechId, techId))
+    
+    local filter = CreateFilter(ignoreEntity)
+    
+    if ignoreEntities then
+        filter = EntityFilterAll()
+    end
     
     // Snap to ground
     local legalPosition = GetGroundAtPointWithCapsule(position, extents, PhysicsMask.CommanderBuild, CreateFilter(ignoreEntity))
@@ -225,18 +244,25 @@ function GetIsBuildLegal(techId, position, snapRadius, player, ignoreEntity)
     local teamNumber = GetTeamNumber(player, ignoreEntity)
     legalBuild, legalPosition, attachEntity = GetBuildAttachRequirementsMet(techId, legalPosition, teamNumber, snapRadius)
     
+    BuildUtility_Print("GetBuildAttachRequirementsMet legal: %s", ToString(legalBuild))
+    
     // Check collision and make sure there aren't too many entities nearby
     if legalBuild and player then
         legalBuild, errorString = CheckBuildEntityRequirements(techId, legalPosition, player, ignoreEntity)
     end
     
+    BuildUtility_Print("CheckBuildEntityRequirements legal: %s", ToString(legalBuild))
+    
     legalBuild = legalBuild and CheckBuildTechAvailable(techId, teamNumber)
     
-    local ignoreEntities = LookupTechData(techId, kTechDataCollideWithWorldOnly, false)
+    BuildUtility_Print("CheckBuildTechAvailable legal: %s", ToString(legalBuild))
+    
     // Ignore entities means ignore pathing as well.
     if not ignoreEntities and legalBuild then
         legalBuild = GetPathingRequirementsMet(legalPosition, extents)        
     end
+    
+    BuildUtility_Print("GetPathingRequirementsMet legal: %s", ToString(legalBuild))
     
     if legalBuild then
     
@@ -246,6 +272,8 @@ function GetIsBuildLegal(techId, position, snapRadius, player, ignoreEntity)
         
     end
     
+    BuildUtility_Print("CheckClearForStacking legal: %s", ToString(legalBuild))
+    
     // Check special build requirements. We do it here because we have the trace from the building available to find out the normal
     if legalBuild then
     
@@ -254,6 +282,8 @@ function GetIsBuildLegal(techId, position, snapRadius, player, ignoreEntity)
         
             // DL: As the normal passed in here isn't used to orient the building - don't bother working it out exactly. Up should be good enough.
             legalBuild = method(techId, legalPosition, Vector(0, 1, 0), player)
+            
+            BuildUtility_Print("customMethod legal: %s", ToString(legalBuild))
             
         end
         
@@ -269,3 +299,30 @@ function GetIsBuildLegal(techId, position, snapRadius, player, ignoreEntity)
     return legalBuild, legalPosition, attachEntity, errorString
     
 end
+
+local function FlipDebug()
+    gDebugBuildUtility = not gDebugBuildUtility
+    Print("set commander debug to %s", ToString(gDebugBuildUtility))
+end
+
+function BuildUtility_SetDebug(vm)
+
+    if not vm then
+        Print("use: debugcommander client, server or all")
+    end
+
+    if Shared.GetCheatsEnabled() then
+    
+        if Client and vm == "client" then
+            FlipDebug()
+        elseif Server and vm == "server" then
+            FlipDebug()
+        elseif vm == "all" then
+            FlipDebug()
+        end
+            
+    end
+
+end
+
+

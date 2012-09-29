@@ -12,6 +12,7 @@ Script.Load("lua/HudTooltips.lua")
 Script.Load("lua/DSPEffects.lua")
 Script.Load("lua/tweener/Tweener.lua")
 Script.Load("lua/TechTreeConstants.lua")
+Script.Load("lua/GUICommunicationStatusIcons.lua")
 
 kDefaultPingSound = "sound/NS2.fev/common/ping"
 kMarinePingSound = "sound/NS2.fev/marine/commander/ping"
@@ -841,6 +842,49 @@ function PlayerUI_GetCrosshairWidth()
     
 end
 
+function PlayerUI_GetTooltipDataFromTechId(techId, hotkeyIndex)
+
+    local techTree = GetTechTree()
+
+    if techTree then
+    
+        local tooltipData = {}
+        local techNode = techTree:GetTechNode(techId)
+
+        tooltipData.text = GetDisplayNameForTechId(techId, "TIP")
+        tooltipData.info = GetTooltipInfoText(techId)
+        if target and target.GetTooltipText then
+            tooltipData.info = target:GetTooltipText()
+        end
+        tooltipData.costNumber = LookupTechData(techId, kTechDataCostKey, 0)                
+        tooltipData.requires = techTree:GetRequiresText(techId)
+        tooltipData.enabled = techTree:GetEnablesText(techId)          
+        tooltipData.techNode = techTree:GetTechNode(techId)
+        
+        tooltipData.resourceType = 0
+        
+        if techNode then
+            tooltipData.resourceType = techNode:GetResourceType()
+        end
+
+        if hotkeyIndex then
+        
+            tooltipData.hotKey = kGridHotkeys[hotkeyIndex]
+            
+            if tooltipData.hotKey ~= "" then
+                tooltipData.hotKey = gHotkeyDescriptions[tooltipData.hotKey]
+            end
+        
+        end
+        
+        tooltipData.hotKey = tooltipData.hotKey or ""
+    
+        return tooltipData
+    
+    end
+
+end
+
 
 /**
  * Get the height of the crosshair image in the atlas, return 0 to hide
@@ -896,29 +940,12 @@ function PlayerUI_GetWeapon()
 end
 
 /**
- * Returns the techId of the active weapon.
- */
-function PlayerUI_GetActiveWeaponTechId()
-
-    local player = Client.GetLocalPlayer()
-    if player and HasMixin(player, "WeaponOwner") then
-    
-        local activeWeapon = player:GetActiveWeapon()
-        if activeWeapon then
-            return activeWeapon:GetTechId()
-        end
-        
-    end
-    
-    return kTechId.None
-    
-end
-
-/**
  * Returns a list of techIds (weapons) the player is carrying.
  */
 function PlayerUI_GetInventoryTechIds()
 
+    PROFILE("PlayerUI_GetInventoryTechIds")
+    
     local player = Client.GetLocalPlayer()
     if player and HasMixin(player, "WeaponOwner") then
     
@@ -935,7 +962,7 @@ function PlayerUI_GetInventoryTechIds()
         return inventoryTechIds
         
     end
-    return {}
+    return { }
     
 end
 
@@ -950,16 +977,23 @@ function PlayerUI_IsCameraAnimated()
     
 end
 
+/**
+ * Returns the techId of the active weapon.
+ */
 function PlayerUI_GetActiveWeaponTechId()
 
+    PROFILE("PlayerUI_GetActiveWeaponTechId")
+    
     local player = Client.GetLocalPlayer()
     if player then
+    
         local activeWeapon = player:GetActiveWeapon()
         if activeWeapon then
             return activeWeapon:GetTechId()
-        end    
+        end
+        
     end
-
+    
 end
 
 function PlayerUI_GetPlayerClass()
@@ -985,9 +1019,31 @@ function PlayerUI_GetMinimapPlayerDirection()
 
 end
 
-/**
- * Called by Flash to get the number of reserve bullets in the active weapon.
- */
+function PlayerUI_GetReadyRoomOrders()
+
+    local readyRoomOrders = { }
+    
+    for _, teamjoinEnt in ientitylist(Shared.GetEntitiesWithClassname("TeamJoin")) do
+    
+        if teamjoinEnt.teamNumber == kTeam1Index or teamjoinEnt.teamNumber == kTeam2Index then
+        
+            local order = { }
+            order.TeamNumber = teamjoinEnt.teamNumber
+            order.Position = teamjoinEnt:GetOrigin() + Vector(0, 1, 0)
+            order.IsFull = teamjoinEnt.teamIsFull
+            
+            order.PlayerCount = teamjoinEnt.playerCount
+            
+            table.insert(readyRoomOrders, order)
+            
+        end
+        
+    end
+    
+    return readyRoomOrders
+    
+end
+
 function PlayerUI_GetWeaponAmmo()
     local player = Client.GetLocalPlayer()
     if player then
@@ -996,10 +1052,6 @@ function PlayerUI_GetWeaponAmmo()
     return 0
 end
 
-/**
- * Called by Flash to get the number of bullets left in the reserve for 
- * the active weapon.
- */
 function PlayerUI_GetWeaponClip()
     local player = Client.GetLocalPlayer()
     if player then
@@ -1043,15 +1095,19 @@ function PlayerUI_GetBuildPercentage()
 end
 
 /**
- * Called by Flash to get the value to display for the team resources on
- * the HUD.
+ * Returns the amount of team resources.
  */
 function PlayerUI_GetTeamResources()
+
+    PROFILE("PlayerUI_GetTeamResources")
+    
     local player = Client.GetLocalPlayer()
     if player then
         return player:GetDisplayTeamResources()
     end
+    
     return 0
+    
 end
 
 // TODO: 
@@ -1114,6 +1170,8 @@ end
  */
 function PlayerUI_GetPersonalResources()
 
+    PROFILE("PlayerUI_GetPersonalResources")
+    
     local player = Client.GetLocalPlayer()
     if player then
         return player:GetPersonalResources()
@@ -1146,17 +1204,6 @@ function PlayerUI_GetPlayerMaxHealth()
     local player = Client.GetLocalPlayer()
     if player then
         return player:GetMaxHealth()
-    end
-    
-    return 0
-    
-end
-
-function PlayerUI_GetPlayerTeam()
-
-    local player = Client.GetLocalPlayer()
-    if player then
-        return player:GetTeamNumber()
     end
     
     return 0
@@ -1651,6 +1698,7 @@ function Player:OnInitLocalClient()
     GetGUIManager():CreateGUIScriptSingle("GUIGameEnd")
     GetGUIManager():CreateGUIScriptSingle("GUIWorldText")
     GetGUIManager():CreateGUIScriptSingle("GUIPing")
+    GetGUIManager():CreateGUIScriptSingle("GUICommunicationStatusIcons")
     
     if self.unitStatusDisplay == nil then
     
@@ -1706,6 +1754,14 @@ function Player:OnInitLocalClient()
     
     // Just in case the danger music wasn't stopped already for some reason.
     DisableDanger(self)
+    
+    if self:GetTeamNumber() == kTeamReadyRoom then
+    
+        if self.guiReadyRoomOrders == nil then
+            self.guiReadyRoomOrders = GetGUIManager():CreateGUIScript("GUIReadyRoomOrders")
+        end
+    
+    end
     
 end
 
@@ -1769,6 +1825,13 @@ function Player:OnDestroy()
 
     ScriptActor.OnDestroy(self)
     
+    if self.guiReadyRoomOrders then
+    
+        GetGUIManager():DestroyGUIScript(self.guiReadyRoomOrders)
+        self.guiReadyRoomOrders = nil
+        
+    end
+    
     if self.viewModel ~= nil then
         Client.DestroyRenderViewModel(self.viewModel)
         self.viewModel = nil
@@ -1807,7 +1870,6 @@ end
  * they don't have them enabled while spectating. This is required now
  * that the dead player entity exists alongside the new spectator player.
  */
-
 function Player:OnKillClient()
 
     DestroyScreenEffects(self)
@@ -1977,8 +2039,8 @@ function Player:GetCameraViewCoordsOverride(cameraCoords)
         local movementIntensity = 0.5
         
         cameraCoords.yAxis = GetNormalizedVector(cameraCoords.yAxis + attachCoords.yAxis * animationIntensity)
-        cameraCoords.zAxis = cameraCoords.yAxis:CrossProduct(cameraCoords.xAxis)
-        cameraCoords.xAxis = cameraCoords.zAxis:CrossProduct(cameraCoords.yAxis)
+        cameraCoords.xAxis = cameraCoords.yAxis:CrossProduct(cameraCoords.zAxis)
+        cameraCoords.zAxis = cameraCoords.xAxis:CrossProduct(cameraCoords.yAxis)        
         
         cameraCoords.origin.x = cameraCoords.origin.x + (attachCoords.origin.x - cameraCoords.origin.x) * movementIntensity
         cameraCoords.origin.y = attachCoords.origin.y
@@ -2249,6 +2311,17 @@ function Player:SetCameraShake(amount, speed, time)
     end
     
     return success
+    
+end
+
+function PlayerUI_GetIsWaitingForTeamBalance()
+
+    local player = Client.GetLocalPlayer()
+    if player then
+        return player:GetIsWaitingForTeamBalance()
+    end
+    
+    return false
     
 end
 
@@ -2682,6 +2755,21 @@ function PlayerUI_GetRequests()
     end
     
     return requests
+
+end
+
+function PlayerUI_GetTimeDamageTaken()
+
+    local player = Client.GetLocalPlayer()
+    if player then
+    
+        if HasMixin(player, "Combat") then
+            return player:GetTimeLastDamageTaken()
+        end
+    
+    end
+    
+    return 0
 
 end
 
