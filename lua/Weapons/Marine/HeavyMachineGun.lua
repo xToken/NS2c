@@ -15,16 +15,9 @@ local kViewModelName = PrecacheAsset("models/marine/heavymachinegun/heavymachine
 local kAnimationGraph = PrecacheAsset("models/marine/heavymachinegun/heavymachinegun_view.animation_graph")
 
 local kRange = 250
-local kHeavyMachineGunReloadTime = 6
 local kSpread = ClipWeapon.kCone10Degrees
 local kLoopingSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin")
 local kHeavyMachineGunEndSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin_down")
-
-local networkVars =
-{
-    lastfiredtime = "private time",
-    reloadtime = "private time"
-}
 
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/rifle/muzzle_flash.cinematic")
 local kMuzzleAttachPoint = "fxnode_riflemuzzle"
@@ -46,7 +39,6 @@ function HeavyMachineGun:OnInitialized()
 
     ClipWeapon.OnInitialized(self)
     self.lastfiredtime = 0
-    self.reloadtime = 0 
     if Client then
     
         self:SetUpdates(true)
@@ -70,40 +62,9 @@ function HeavyMachineGun:OnPrimaryAttack(player)
 
     if not self:GetIsReloading() then
         ClipWeapon.OnPrimaryAttack(self, player)
-    end    
-    
-    /*
-    if not self:GetIsReloading() and self.clip > 0 then
-        if player and not self:GetHasAttackDelay() then
-        
-            self:FirePrimary(player)
-            // Don't decrement ammo in Darwin mode
-            if not player or not player:GetDarwinMode() then
-                self.clip = self.clip - 1
-            end
-            self.lastfiredtime = Shared.GetTime()
-            self:CreatePrimaryAttackEffect(player)
-            Weapon.OnPrimaryAttack(self, player)
-            self.primaryAttacking = true
-        end
-    else
-         self:OnPrimaryAttackEnd(player)
-         self.blockingPrimary = false
-    end    
-    */
-    
-end
-
-/*
-function HeavyMachineGun:OnPrimaryAttackEnd(player)
-
-    if self.primaryAttacking then
-        ClipWeapon.OnPrimaryAttackEnd(self, player)
-        self.primaryAttacking = false 
     end
     
 end
-*/
 
 function HeavyMachineGun:GetNumStartClips()
     return 2
@@ -138,16 +99,6 @@ function HeavyMachineGun:GetViewModelName()
     return kViewModelName
 end
 
-/*
-function HeavyMachineGun:GetFireDelay()
-    return kHeavyMachineGunROF
-end
-
-function HeavyMachineGun:GetHasAttackDelay()
-    return self.lastfiredtime + self:GetFireDelay() > Shared.GetTime()
-end
-*/
-
 function HeavyMachineGun:GetDeathIconIndex()
 
     if self:GetSecondaryAttacking() then
@@ -163,10 +114,6 @@ end
 
 function HeavyMachineGun:GetClipSize()
     return kHeavyMachineGunClipSize
-end
-
-function HeavyMachineGun:GetReloadTime()
-    return kHeavyMachineGunReloadTime
 end
 
 function HeavyMachineGun:GetSpread()
@@ -219,41 +166,11 @@ function HeavyMachineGun:UpdateViewModelPoseParameters(viewModel)
     
 end
 
-/*
-function HeavyMachineGun:OnReload(player)
-
-    if self:CanReload() then
-        self:TriggerEffects("reload")
-        self.reloading = true
-        self.reloadtime = Shared.GetTime()
-    end
-    
-end
-*/
-
 function HeavyMachineGun:Dropped(prevOwner)
 
     ClipWeapon.Dropped(self, prevOwner)
     
 end
-
-/*
-function HeavyMachineGun:OnUpdateAnimationInput(modelMixin)
-    
-    PROFILE("HeavyMachineGun:OnUpdateAnimationInput")
-    ClipWeapon.OnUpdateAnimationInput(self, modelMixin)
-    
-    if self.reloading and self.reloadtime + kHeavyMachineGunReloadTime < Shared.GetTime() then
-        self.reloading = false
-        self.ammo = self.ammo + self.clip
-        self.reloadtime = 0
-        // Transfer bullets from our ammo pool to the weapon's clip
-        self.clip = math.min(self.ammo, self:GetClipSize())
-        self.ammo = self.ammo - self.clip
-    end
-    
-end
-*/
 
 function HeavyMachineGun:GetAmmoPackMapName()
     return HeavyMachineGunAmmo.kMapName
@@ -265,7 +182,7 @@ if Client then
     
         // Start the looping sound for the rest of the shooting. Pew pew pew...
         Shared.PlaySound(self, kLoopingSound)
-    
+        
     end
     
     function HeavyMachineGun:OnClientPrimaryAttackEnd()
@@ -277,7 +194,7 @@ if Client then
     end
 
     function HeavyMachineGun:GetPrimaryEffectRate()
-        return 0.5
+        return 0.4
     end
     
     function HeavyMachineGun:GetPreventCameraAnimation()
@@ -301,4 +218,4 @@ if Client then
 
 end
 
-Shared.LinkClassToMap("HeavyMachineGun", HeavyMachineGun.kMapName, networkVars)
+Shared.LinkClassToMap("HeavyMachineGun", HeavyMachineGun.kMapName, { })

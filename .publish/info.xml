@@ -1,6 +1,7 @@
 <options>
     <description>NS2c</description>
+    <id>99702624</id>
     <kind>Game</kind>
     <title>NS2c</title>
-    <visibility>[Set Visibility]</visibility>
+    <visibility>Friends Only</visibility>
 </options>

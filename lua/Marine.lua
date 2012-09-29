@@ -571,6 +571,13 @@ function Marine:GetTechButtons(techId)
 end
 
 function Marine:GetCatalystFireModifier()
+    local weapon = self:GetActiveWeapon()    
+    if weapon ~= nil then
+        if weapon.kMapName == "shotgun" then
+            return ConditionalValue(self:GetHasCatpackBoost(), 1.69, 1.3)
+        end
+    end
+    
     return ConditionalValue(self:GetHasCatpackBoost(), CatPack.kAttackSpeedModifier, 1)
 end
 
