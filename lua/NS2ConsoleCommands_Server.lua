@@ -461,13 +461,13 @@ local function OnCommandSetFOV(client, fovValue)
     
 end
 
-local function OnCommandChangeClass(className, teamNumber)
+local function OnCommandChangeClass(className, teamNumber, extraValues)
 
     return function(client)
     
         local player = client:GetControllingPlayer()
         if Shared.GetCheatsEnabled() and player:GetTeamNumber() == teamNumber then
-            player:Replace(className, player:GetTeamNumber(), false)
+            player:Replace(className, player:GetTeamNumber(), false, nil, extraValues)
         end
         
     end
@@ -650,7 +650,21 @@ local function OnCommandCreate(client, techIdString, number)
                         end
                         
                     else
+                    
+                        /*local modelName = LookupTechData(techId, kTechDataModel)
+                        local modelIndex = Shared.GetModelIndex(modelName)
+                        local model = Shared.GetModel(modelIndex)
+                        local minExtents, maxExtents = model:GetExtents()
+                        Print(modelName .. " bounding box min: " .. ToString(minExtents) .. " max: " .. ToString(maxExtents))
+                        local extents = maxExtents
+                        DebugBox(player:GetOrigin(), player:GetOrigin(), maxExtents - minExtents, 1000, 1, 0, 0, 1)
+                        DebugBox(player:GetOrigin(), player:GetOrigin(), minExtents, 1000, 0, 1, 0, 1)
+                        DebugBox(player:GetOrigin(), player:GetOrigin(), maxExtents, 1000, 0, 0, 1, 1)*/
+                        //position = GetRandomSpawnForCapsule(extents.y, extents.x, player:GetOrigin() + Vector(0, 0.5, 0), 2, 10)
+                        //position = position - Vector(0, extents.y, 0)
+                        
                         position = CalculateRandomSpawn(nil, player:GetOrigin() + Vector(0, 0.5, 0), techId, true, 2, 10, 3)
+                        
                     end
                     
                     if position then
@@ -710,14 +724,21 @@ local function OnCommandSetGameEffect(client, gameEffectString, trueFalseString)
     if Shared.GetCheatsEnabled() then
     
         local player = client:GetControllingPlayer()          
-        local gameEffect = kGameEffect[gameEffectString]
+        local gameEffectBitMask = kGameEffect[gameEffectString]
+        if gameEffectBitMask ~= nil then
         
-        local state = true
-        if trueFalseString and ((trueFalseString == "false") or (trueFalseString == "0")) then
-            state = false
-        end
-        
-        player:SetGameEffectMask(gameEffect, state)
+            Print("OnCommandSetGameEffect(%s) => %s", gameEffectString, ToString(gameEffectBitMask))
+            
+            local state = true
+            if trueFalseString and ((trueFalseString == "false") or (trueFalseString == "0")) then
+                state = false
+            end
+            
+            player:SetGameEffectMask(gameEffectBitMask, state)
+            
+        else
+            Print("Couldn't find bitmask in %s for %s", ToString(kGameEffect), gameEffectString)
+        end        
         
     end
     
@@ -939,6 +960,14 @@ local function OnCommandUndeployARCs()
     
 end
 
+local function OnCommandDebugCommander(client, vm)
+
+    if Shared.GetCheatsEnabled() then    
+        BuildUtility_SetDebug(vm)        
+    end
+    
+end
+
 local function OnCommandRespawnTeam(client, teamNum)
 
     if Shared.GetCheatsEnabled() then
@@ -1033,4 +1062,6 @@ Event.Hook("Console_hastech", OnCommandHasTech)
 Event.Hook("Console_eggspawntimes", OnCommandEggSpawnTimes)
 Event.Hook("Console_gothere", OnCommandGoThere)
 
-Event.Hook("Console_commanderping", OnCommandCommanderPing)
+Event.Hook("Console_rupture", OnCommandRupture)
+
+Event.Hook("Console_debugcommander", OnCommandDebugCommander)

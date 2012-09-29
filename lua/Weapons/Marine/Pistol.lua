@@ -216,7 +216,7 @@ function Pistol:GetPrimaryAttackRequiresPress()
 end
 
 function Pistol:GetNumStartClips()
-    return 3
+    return 2
 end
 
 function Pistol:GetWeight()
@@ -248,7 +248,7 @@ function Pistol:GetSwingAmount()
 end
 
 function Pistol:GetMaxAmmo()
-    return 4 * self:GetClipSize()
+    return 3 * self:GetClipSize()
 end
 
 function Pistol:GetIsLaserActive()

@@ -208,7 +208,11 @@ function ConstructMixin:Construct(elapsedTime, builder)
                 if self.buildTime <= self.timeOfNextBuildWeldEffects and newBuildTime >= self.timeOfNextBuildWeldEffects then
                 
                     playAV = true
-                    self.timeOfNextBuildWeldEffects = newBuildTime + kBuildEffectsInterval
+                    if self:GetTeamNumber() == kAlienTeamType then
+                        self.timeOfNextBuildWeldEffects = newBuildTime + (kBuildEffectsInterval / 3)
+                    else
+                        self.timeOfNextBuildWeldEffects = newBuildTime + kBuildEffectsInterval
+                    end
                     
                 end
                 

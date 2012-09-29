@@ -19,6 +19,7 @@ local kEtherealForce = 10
 
 local networkVars =
 {
+    
     // True when blink started and button not yet released
     blinkButtonDown = "boolean"
 }
@@ -173,6 +174,7 @@ function Blink:ProcessMoveOnWeapon(player, input)
             player:DeductAbilityEnergy(energyCost)
             
         end
+        
     end
     
     // End blink mode if out of energy

@@ -49,14 +49,14 @@ function ResearchMixin:UpdateResearch(deltaTime)
 
     local researchNode = self:GetTeam():GetTechTree():GetTechNode(self.researchingId)
     if researchNode then
-
+    
         local researchDuration = LookupTechData(researchNode:GetTechId(), kTechDataResearchTimeKey, 0.01)
         
         if GetGamerules():GetAutobuild() then
             researchDuration = math.min(0.5, researchDuration)
         end
         
-        researchDuration = researchDuration
+        researchDuration = researchDuration * kResearchMod
         
         // avoid division with 0
         researchDuration = math.max(researchDuration, 0.01)

@@ -144,8 +144,6 @@ function InfantryPortal:OnInitialized()
     ScriptActor.OnInitialized(self)
     
     InitMixin(self, WeldableMixin)    
-
-    self:SetModel(InfantryPortal.kModelName, kAnimationGraph)
     
     // For both client and server
     self:SetNextThink(InfantryPortal.kThinkInterval)
@@ -489,4 +487,4 @@ function InfantryPortal:GetHealthbarOffset()
     return kInfantryPortalHealthbarOffset
 end 
 
-Shared.LinkClassToMap("InfantryPortal", InfantryPortal.kMapName, networkVars)
+Shared.LinkClassToMap("InfantryPortal", InfantryPortal.kMapName, networkVars, true)

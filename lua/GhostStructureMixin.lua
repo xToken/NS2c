@@ -37,8 +37,8 @@ function GhostStructureMixin:__initmixin()
     
 end
 
-function GhostStructureMixin:GetHasUmbra()
-    return self.dragsUmbra or self:GetGameEffectMask(kGameEffect.InUmbra)
+function GhostStructureMixin:GetIsGhostStructure()
+    return self.isGhostStructure
 end
 
 local function ClearGhostStructure(self)
@@ -57,7 +57,7 @@ if Server then
 
     local function CheckGhostState(self, doer)
     
-        if self.isGhostStructure and GetAreFriends(self, doer) then
+        if self:GetIsGhostStructure() and GetAreFriends(self, doer) then
             self.isGhostStructure = false
         end
         
@@ -84,7 +84,7 @@ end
 
 local function SharedUpdate(self, deltaTime)
 
-    if Server and self.isGhostStructure then
+    if Server and self:GetIsGhostStructure() then
     
         // check for enemies in range and destroy the structure, return resources to team
         local enemies = GetEntitiesForTeamWithinRange("Player", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin() + Vector(0, 0.3, 0), GhostStructureMixin.kGhostStructureCancelRange)
@@ -109,7 +109,7 @@ local function SharedUpdate(self, deltaTime)
         
         if model then
 
-            if self.isGhostStructure then
+            if self:GetIsGhostStructure() then
             
                 self:SetOpacity(0, "ghostStructure")
             

@@ -18,6 +18,9 @@ Weapon.kMapName = "weapon"
 
 // Attach point for marine weapons
 Weapon.kHumanAttachPoint = "RHand_Weapon"
+// Super important constant that defines how often a bite or other melee attack will hit
+Weapon.kMeleeBaseWidth = .8
+Weapon.kMeleeBaseHeight = .8
 
 if Server then
     Script.Load("lua/Weapons/Weapon_Server.lua")
@@ -57,6 +60,10 @@ function Weapon:OnCreate()
     self.droppedtime = 0
     // This value is used a lot in this class, cache it off.
     self.mapName = self:GetMapName()
+    
+    if Client then
+        self.activeSince = 0
+    end
     
 end
 
@@ -208,13 +215,21 @@ function Weapon:OnHolster(player)
         local viewModel = player:GetViewModelEntity()
         Client.DestroyAttachedCinematics(viewModel)
     end
-    
+
+end
+
+function Weapon:GetResetViewModelOnDraw()
+    return true
 end
 
 function Weapon:OnDraw(player, previousWeaponMapName)
 
     self.isHolstered = false
     self:SetIsVisible(true)
+    
+    if self:GetResetViewModelOnDraw() then
+        player:SetViewModel(nil, nil)
+    end
     
     player:SetViewModel(self:GetViewModelName(), self)
     
@@ -223,10 +238,14 @@ function Weapon:OnDraw(player, previousWeaponMapName)
 end
 
 /**
- * The melee base is the width and height of the surface that defines the melee volume
+ * The melee base is the width and height of the surface that defines the melee volume.
+ * This box needs to be wide enough so that if a target is mostly on screen, the bite will hit
+ * Because of perspective, this means that the farther away a target gets, the more accurate 
+ * we'll need to be (the closer to the center of the screen)
  */
 function Weapon:GetMeleeBase()
-    return 0.8, 0.8
+    // Width of box, height of box
+    return Weapon.kMeleeBaseWidth, Weapon.kMeleeBaseHeight
 end
 
 /**

@@ -14,11 +14,13 @@ Script.Load("lua/Weapons/Alien/LeapMixin.lua")
 
 Shared.PrecacheSurfaceShader("materials/effects/mesh_effects/view_blood.surface_shader")
 
-// kRange is now the range from eye to edge of attack range, ie its independent of the size of
-// the melee box, so for the skulk, it needs to increase to 1.2 to say at its previous range.
-// previously this value had an offset, which caused targets to be behind the melee attack (too close to the target and you missed)
+// kRange is the range from eye to edge of attack range, ie its independent of the size of
+// the melee box. previously this value had an offset, which caused targets to be behind the melee 
+// attack (too close to the target and you missed)
 // NS1 was 20 inches, which is .5 meters. The eye point in NS1 was correct but in NS2 it's the model origin.
-local kRange = 1.3
+// Melee attacks must originate from the player's eye instead of the world model's eye to make sure you 
+// can't attack through walls.
+local kRange = 1.2
 
 local kStructureHitEffect = PrecacheAsset("cinematics/alien/skulk/bite_view_structure.cinematic")
 local kMarineHitEffect = PrecacheAsset("cinematics/alien/skulk/bite_view_marine.cinematic")
@@ -78,8 +80,8 @@ function BiteLeap:GetHUDSlot()
     return 1
 end
 
-function BiteLeap:GetIconOffsetY(secondary)
-    return kAbilityOffset.Bite
+function BiteLeap:GetSecondaryTechId()
+    return kTechId.Leap
 end
 
 function BiteLeap:GetRange()
@@ -134,7 +136,7 @@ end
 
 function BiteLeap:GetMeleeBase()
     // Width of box, height of box
-    return 0.38, 1
+    return Weapon.kMeleeBaseWidth, 1
 end
 
 function BiteLeap:GetMeleeOffset()
@@ -151,7 +153,7 @@ function BiteLeap:OnTag(tagName)
         
         if player and not GetHasAttackDelay(self, player) then  
         
-            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kBiteDamage, kRange)
+            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kBiteDamage, kRange, nil, false)
             self.lastPrimaryAttackTime = Shared.GetTime()
             self:TriggerEffects("bite_attack")
             player:DeductAbilityEnergy(self:GetEnergyCost())

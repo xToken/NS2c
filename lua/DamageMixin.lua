@@ -65,9 +65,18 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                 if not direction then
                     direction = Vector(0, 0, 1)
                 end
-                
-                // giveDamageTime is used to indicate to the player that they certainly did damage on the server.
-                if Server and (not doer.GetShowHitIndicator or doer:GetShowHitIndicator()) then
+                                
+                // Many types of damage events are server-only, such as grenades.
+                // Send the player a message so they get feedback about what damage they've done.
+                // We use messages to handle multiple-hits per frame, such as splash damage from grenades.
+                if Server and attacker:isa("Player") and (not doer.GetShowHitIndicator or doer:GetShowHitIndicator()) then
+                    local showNumbers = GetAreEnemies(attacker,target) and target:GetIsAlive()
+                    if showNumbers then
+                        local msg = BuildDamageMessage(target, damage, point)
+                        Server.SendNetworkMessage(attacker, "Damage", msg, false)
+                    end
+                    
+                    // This makes the cross hair turn red. Show it when hitting anything
                     attacker.giveDamageTime = Shared.GetTime()
                 end
                 

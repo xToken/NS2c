@@ -270,4 +270,4 @@ if Server then
 
 end
 
-Shared.LinkClassToMap("Shade", Shade.kMapName, networkVars)
+Shared.LinkClassToMap("Shade", Shade.kMapName, networkVars, true)

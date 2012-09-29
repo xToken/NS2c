@@ -85,7 +85,7 @@ Skulk.kNormalWallWalkRange = 0.1
 Skulk.kStickyWallWalkRange = 0.25
 
 // jump is valid when you are close to a wall but not attached yet at this range
-Skulk.kJumpWallRange = 0.2
+Skulk.kJumpWallRange = 0.4
 Skulk.kJumpWallFeelerSize = 0.1
 Skulk.kWallStickFactor = 0.97
 
@@ -200,6 +200,7 @@ function Skulk:OnLeap()
     
     self.leaping = true
     self.wallWalkingEnabled = false
+
     self.onGround = false
     self.onGroundNeedsUpdate = true
     

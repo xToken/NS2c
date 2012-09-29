@@ -13,13 +13,6 @@ Script.Load("lua/GUIScript.lua")
 
 class 'GUICommanderTooltip' (GUIScript)
 
-// settingsTable.Width
-// settingsTable.Height
-// settingsTable.X
-// settingsTable.Y
-// settingsTable.TexturePartWidth
-// settingsTable.TexturePartHeight
-
 GUICommanderTooltip.kAlienBackgroundTexture = "ui/alien_commander_textures.dds"
 GUICommanderTooltip.kMarineBackgroundTexture = "ui/marine_commander_textures.dds"
 
@@ -78,15 +71,17 @@ GUICommanderTooltip.kHeight = 40 * kCommanderGUIsGlobalScale
 local kBackgroundNoiseTexture = "ui/alien_commander_bg_smoke.dds"
 local kSmokeyBackgroundSize = GUIScale(Vector(400, 640, 0))
 
-function GUICommanderTooltip:Initialize(settingsTable)
+function GUICommanderTooltip:Initialize()
 
     self.textureName = GUICommanderTooltip.kMarineBackgroundTexture
     
-    self.tooltipWidth = GUICommanderTooltip.kWidth
-    self.tooltipHeight = GUICommanderTooltip.kHeight
+    self.tooltipWidth = 466 * kCommanderGUIsGlobalScale
+    self.tooltipHeight = 40
     
-    self.tooltipX = settingsTable.X
-    self.tooltipY = settingsTable.Y
+    self.tooltipX = 0
+    self.tooltipY = -60
+    
+    self.registeredScripts = {}
     
     self:InitializeBackground()
     
@@ -218,10 +213,6 @@ function GUICommanderTooltip:InitializeBackground()
     self.backgroundBottom:SetTexture(self.textureName)
     GUISetTextureCoordinatesTable(self.backgroundBottom, GUICommanderTooltip.kBackgroundBottomCoords)
     self.backgroundCenter:AddChild(self.backgroundBottom)
-    
-    if PlayerUI_GetTeamType() == kAlienTeamType then
-        self:InitSmokeyBackground()
-    end
 
 end
 
@@ -257,6 +248,7 @@ function GUICommanderTooltip:UpdateData(text, hotkey, costNumber, requires, enab
     
     self.text:SetText(text)
     self.hotkey:SetText("( " .. hotkey .. " )")
+    self.hotkey:SetIsVisible(string.len(hotkey) > 0)
     if costNumber > 0 then
         self.resourceIcon:SetIsVisible(true)
         GUISetTextureCoordinatesTable(self.resourceIcon, GUICommanderTooltip.kResourceIconTextureCoordinates[typeNumber])
@@ -347,7 +339,33 @@ function GUICommanderTooltip:SetIsVisible(setIsVisible)
 end
 
 function GUICommanderTooltip:GetBackground()
-
     return self.background
+end
+
+function GUICommanderTooltip:Register(script)
+    table.insertunique(self.registeredScripts, script)
+end
+
+function GUICommanderTooltip:Update(deltaTime)
+
+    local tooltipData = nil
+
+    for _, script in ipairs(self.registeredScripts) do
+    
+        if not tooltipData then
+            tooltipData = script:GetTooltipData()
+        end
+    
+    end
+
+    if tooltipData then
+    
+        self:UpdateData(tooltipData.text, tooltipData.hotKey, tooltipData.costNumber, tooltipData.requires, tooltipData.enabled, tooltipData.info, tooltipData.resourceType)
+        self.background:SetIsVisible(true)
+    
+    else
+        self.background:SetIsVisible(false)
+    end
 
 end
+

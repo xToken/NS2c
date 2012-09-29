@@ -60,6 +60,10 @@ function XenocideLeap:OnDestroy()
     end
 end
 
+function XenocideLeap:GetDeathIconIndex()
+    return kDeathMessageIcon.Xenocide
+end
+
 function XenocideLeap:GetEnergyCost(player)
     if not self.xenociding then
         return kXenocideEnergyCost

@@ -455,6 +455,12 @@ local function FireBullets(self, player)
 end
 
 function ClipWeapon:FirePrimary(player)
+    if Server then
+        if self.lastfired ~= nil then
+            Print(ToString(Shared.GetTime() - self.lastfired))
+        end
+        self.lastfired = Shared.GetTime()
+    end
     FireBullets(self, player)
 end
 
@@ -513,7 +519,7 @@ end
 function ClipWeapon:OnTag(tagName)
 
     PROFILE("ClipWeapon:OnTag")
-    
+
     if tagName == "shoot" then
     
         local player = self:GetParent()
@@ -569,7 +575,7 @@ function ClipWeapon:OnUpdateAnimationInput(modelMixin)
     modelMixin:SetAnimationInput("activity", activity)
 	modelMixin:SetAnimationInput("flinch_gore", false)
     modelMixin:SetAnimationInput("empty", (self.ammo + self.clip) == 0)
-    
+
 end
 
 // override if weapon should drop reserve ammo as separate entity

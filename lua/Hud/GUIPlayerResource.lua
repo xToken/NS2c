@@ -30,7 +30,9 @@ local kRTCountTexture = "ui/%s_HUD_rtcount.dds"
 GUIPlayerResource.kRTCountYOffset = -16
 
 GUIPlayerResource.kTeamTextPos = Vector(20, 360, 0)
+
 GUIPlayerResource.kIconTextXOffset = -20
+
 GUIPlayerResource.kFontSizePersonal = 30
 GUIPlayerResource.kFontSizePersonalBig = 30
 
@@ -75,7 +77,7 @@ function GUIPlayerResource:Initialize(style)
     // Background.
     self.background = self.script:CreateAnimatedGraphicItem()
     self.background:SetAnchor(GUIItem.Right, GUIItem.Bottom)
-    //self.background:SetTexture(string.format(kBackgroundTexture, style.textureSet))
+    self.background:SetTexture(string.format(kBackgroundTexture, style.textureSet))
     self.background:AddAsChildTo(self.frame)
     
     self.rtCount = GetGUIManager():CreateGraphicItem()
@@ -165,6 +167,8 @@ end
 
 function GUIPlayerResource:Update(deltaTime, parameters)
 
+    PROFILE("GUIPlayerResource:Update")
+    
     local tRes, pRes, numRTs = unpack(parameters)
     
     self.rtCount:SetIsVisible(numRTs > 0)

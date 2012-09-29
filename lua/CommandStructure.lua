@@ -131,4 +131,4 @@ function CommandStructure:GetCanBeUsedConstructed()
     return not self:GetIsOccupied()
 end
 
-Shared.LinkClassToMap("CommandStructure", CommandStructure.kMapName, networkVars)
+Shared.LinkClassToMap("CommandStructure", CommandStructure.kMapName, networkVars, true)

@@ -370,6 +370,9 @@
     <filename>InfantryPortal.lua</filename>
   </file>
   <file>
+    <filename>InvalidOriginMixin.lua</filename>
+  </file>
+  <file>
     <filename>Jetpack.lua</filename>
   </file>
   <file>
@@ -521,6 +524,9 @@
   </file>
   <file>
     <filename>PrototypeLab_Server.lua</filename>
+  </file>
+  <file>
+    <filename>RagdollMixin.lua</filename>
   </file>
   <file>
     <filename>ReadyRoomTeam.lua</filename>

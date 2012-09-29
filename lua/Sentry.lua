@@ -625,6 +625,7 @@ function Sentry:OnUpdatePoseParameters()
     end
     
     self:SetPoseParam(Sentry.kPitchPoseParam, self.barrelPitchDegrees + pitchConfused)
+    self:SetPoseParam(Sentry.kYawPoseParam, self.barrelYawDegrees + yawConfused)
     
     // when the sentry is in scan mode, the network field barrelYawDegrees is not used
     local yaw = self.mode == Sentry.kMode.Scanning and self.calculatedBarrelYawDegrees or self.barrelYawDegrees

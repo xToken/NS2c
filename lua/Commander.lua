@@ -400,6 +400,18 @@ function Commander:GetIsInQuickMenu(techId)
     return techId == kTechId.BuildMenu or techId == kTechId.AdvancedMenu or techId == kTechId.AssistMenu
 end
 
+function Commander:GetMenuTechIdFor(techId)
+
+    for menuTechId, techIdTable in pairs(self:GetButtonTable()) do
+    
+        if table.contains(techIdTable, techId) then
+            return menuTechId
+        end
+    
+    end
+
+end
+
 function Commander:GetCurrentTechButtons(techId, entity)
 
     local techButtons = self:GetQuickMenuTechButtons(techId)

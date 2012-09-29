@@ -246,8 +246,6 @@ function Commander:SendKeyEvent(key, down)
                 hotkeyGroup = 4
             elseif key == InputKey.Num5 then
                 hotkeyGroup = 5
-            elseif key == InputKey.Num6 then
-                hotkeyGroup = 6
             end
             
             if hotkeyGroup ~= 0 then
@@ -295,7 +293,11 @@ function Commander:OnDestroy()
         self.managerScript = nil
         
         GetGUIManager():DestroyGUIScriptSingle("GUIOrders")
-        self.guiOrders = nil        
+        self.guiOrders = nil
+        
+        GetGUIManager():DestroyGUIScriptSingle("GUICommanderHelpWidget")
+        
+        GetGUIManager():DestroyGUIScriptSingle("GUICommanderTooltip")
         
         self.ghostMode = false
         self:DestroySelectionCircles()
@@ -476,7 +478,7 @@ function Commander:UpdateGhostStructureVisuals()
         local trace = GetCommanderPickTarget(self, CreatePickRay(self, x, y), false, true)
         
         local valid, position, attachEntity = GetIsBuildLegal(self.currentTechId, trace.endPoint, Commander.kStructureSnapRadius, self)
-        
+
         local item = GUI.GetCursorFocus(x, y, Client.GetScreenWidth(), Client.GetScreenHeight())
         if item ~= nil then
             valid = false
@@ -622,11 +624,8 @@ function CommanderUI_TargetedAction(index, x, y, button)
             if not LookupTechData(techId, kTechDataSpecifyOrientation, false) or player.specifyingOrientation then
 
                 player:SendTargetedAction(techId, normalizedPickRay)
-                player:SetCurrentTech(kTechId.None)
                 
             end
-            
-            player.timeLastTargetedAction = Shared.GetTime()
             
         end
         
@@ -756,6 +755,8 @@ function Commander:OnInitLocalClient()
     if self.guiOrders == nil then
         self.guiOrders = GetGUIManager():CreateGUIScriptSingle("GUIOrders")
     end
+    
+    
     
     self.cursorOverUI = false
     
@@ -888,6 +889,8 @@ function Commander:SetupHud()
     minimapScript:GetBackground():AddChild(hotkeyIconScript:GetBackground())
     self.managerScript = GetGUIManager():CreateGUIScript("GUICommanderManager")
     
+    local worldbuttons = GetGUIManager():CreateGUIScriptSingle("GUICommanderHelpWidget")
+    
     // The manager needs to know about other commander UI scripts for things like
     // making sure mouse clicks don't click through UI elements.
     self.managerScript:AddChildScript(alertsScript)
@@ -897,6 +900,14 @@ function Commander:SetupHud()
     self.managerScript:AddChildScript(hotkeyIconScript)
     self.managerScript:AddChildScript(logoutScript)
     self.managerScript:AddChildScript(minimapButtons)
+    self.managerScript:AddChildScript(worldbuttons)
+    
+    self.commanderTooltip = GetGUIManager():CreateGUIScriptSingle("GUICommanderTooltip")
+    
+    self.commanderTooltip:Register(self.buttonsScript)
+    self.commanderTooltip:Register(worldbuttons)
+    
+    self.buttonsScript.background:AddChild(self.commanderTooltip:GetBackground())
     
     // Calling SetBackgroundMode() will sometimes access self.managerScript through
     // CommanderUI_GetUIClickable() so call after self.managerScript is created above.
@@ -1036,9 +1047,16 @@ function Commander:SendTargetedAction(techId, normalizedPickRay, orientation)
         local orientation = ConditionalValue(orientation, orientation, math.random() * 2 * math.pi)
         local message = BuildCommTargetedActionMessage(techId, normalizedPickRay.x, normalizedPickRay.y, normalizedPickRay.z, orientation)
         Client.SendNetworkMessage("CommTargetedAction", message, true)
+        //UpdateCooldown(self, techId)
+        self.timeLastTargetedAction = Shared.GetTime()
+        self:SetCurrentTech(kTechId.None)
         
     end
     
+end
+
+function Commander:GetTimeLastTargetedAction()
+    return self.timeLastTargetedAction or 0
 end
 
 function Commander:SendTargetedOrientedAction(techId, normalizedPickRay, orientation)
@@ -1047,6 +1065,9 @@ function Commander:SendTargetedOrientedAction(techId, normalizedPickRay, orienta
     
         local message = BuildCommTargetedActionMessage(techId, normalizedPickRay.x, normalizedPickRay.y, normalizedPickRay.z, orientation)
         Client.SendNetworkMessage("CommTargetedAction", message, true)
+        //UpdateCooldown(self, techId)
+        self.timeLastTargetedAction = Shared.GetTime()
+        self:SetCurrentTech(kTechId.None)
         
     end
     
@@ -1058,6 +1079,9 @@ function Commander:SendTargetedActionWorld(techId, worldCoords, orientation)
     
         local message = BuildCommTargetedActionMessage(techId, worldCoords.x, worldCoords.y, worldCoords.z, ConditionalValue(orientation, orientation, 0))
         Client.SendNetworkMessage("CommTargetedActionWorld", message, true)
+        //UpdateCooldown(self, techId)
+        self:SetCurrentTech(kTechId.None)
+        self.timeLastTargetedAction = Shared.GetTime()
         
     end
     
@@ -1441,7 +1465,7 @@ function Commander:ClientOnMouseRelease(mouseButton, x, y)
     local normalizedPickRay = CreatePickRay(self, x, y)    
     if mouseButton == 0 then
     
-        local minimapScript = GetGUIManager():GetGUIScriptSingle("GUIMinimap")
+        local minimapScript = GetGUIManager():GetGUIScriptSingle("GUIMinimapFrame")
 
         // Only allowed when there is not a ghost structure or the structure is valid.
         if not self.ghostMode then

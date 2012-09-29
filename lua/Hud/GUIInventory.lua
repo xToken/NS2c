@@ -10,7 +10,6 @@
 
 class 'GUIInventory'
 
-GUIInventory.kTexture = "ui/marine_messages_icons.dds"
 GUIInventory.kFontName = "fonts/AgencyFB_tiny.fnt"
 
 GUIInventory.kBackgroundYOffset = GUIScale(-100)
@@ -33,71 +32,12 @@ function CreateInventoryDisplay(scriptHandle, hudLayer, frame)
 
 end
 
-local gTechIdPosition = nil
-local function GetCoordsForTechId(techId)
-
-    local x1 = 0
-    local y1 = 0
-    local x2 = 128
-    local y2 = 0
-    
-    if not gTechIdPosition then
-    
-        gTechIdPosition = {}
-        
-        // marine weapons
-        gTechIdPosition[kTechId.Rifle] = 1
-        gTechIdPosition[kTechId.Pistol] = 3
-        gTechIdPosition[kTechId.Axe] = 4
-        gTechIdPosition[kTechId.Shotgun] = 5
-        gTechIdPosition[kTechId.HeavyMachineGun] = 6
-        gTechIdPosition[kTechId.GrenadeLauncher] = 8
-        gTechIdPosition[kTechId.Welder] = 10
-        gTechIdPosition[kTechId.Mines] = 21
-        gTechIdPosition[kTechId.HandGrenades] = 8
-                
-        // alien abilities
-        gTechIdPosition[kTechId.Bite] = 11
-        gTechIdPosition[kTechId.Parasite] = 12
-        gTechIdPosition[kTechId.Xenocide] = 22
-        
-        gTechIdPosition[kTechId.Spit] = 23
-        gTechIdPosition[kTechId.BuildAbility] = 18
-        gTechIdPosition[kTechId.BuildAbility2] = 18
-        gTechIdPosition[kTechId.BileBomb] = 20
-        
-        gTechIdPosition[kTechId.LerkBite] = 11
-        gTechIdPosition[kTechId.Spores] = 16
-        gTechIdPosition[kTechId.Umbra] = 13
-        
-        gTechIdPosition[kTechId.SwipeBlink] = 17
-        gTechIdPosition[kTechId.Metabolize] = 27
-        gTechIdPosition[kTechId.AcidRocket] = 26
-        
-        gTechIdPosition[kTechId.Gore] = 22
-        gTechIdPosition[kTechId.Smash] = 22
-        
-    end
-    
-    local position = gTechIdPosition[techId]
-    
-    if position then
-    
-        y1 = position * 64
-        y2 = y1 + 64
-    
-    end
-    
-    return x1, y1, x2, y2
-
-end
-
 local function CreateInventoryItem(self, index, alienStyle)
 
     local item = self.script:CreateAnimatedGraphicItem()
     
     item:SetSize(GUIInventory.kItemSize)
-    item:SetTexture(GUIInventory.kTexture)
+    item:SetTexture(kInventoryIconsTexture)
     item:AddAsChildTo(self.background)
     
     local key, keyText = GUICreateButtonIcon("Weapon1", alienStyle)
@@ -132,7 +72,7 @@ local function LocalAdjustSlot(self, index, hudSlot, techId, isActive, resetAnim
     
     inventoryItem.KeyText:SetText(BindingsUI_GetInputValue("Weapon" .. hudSlot))
     inventoryItem.Graphic:SetUniformScale(self.scale)
-    inventoryItem.Graphic:SetTexturePixelCoordinates(GetCoordsForTechId(techId))
+    inventoryItem.Graphic:SetTexturePixelCoordinates(GetTexCoordsForTechId(techId))
     inventoryItem.Graphic:SetPosition(Vector( (GUIInventory.kItemPadding + GUIInventory.kItemSize.x) * index , 0, 0) )
     
     if resetAnimations then
@@ -157,6 +97,9 @@ function GUIInventory:Initialize()
     self.frame:AddChild(self.background)
     
     self.inventoryIcons = {}
+    
+    // Force it to display always
+    self.forceAnimationReset = false
 
 end
 
@@ -171,8 +114,15 @@ function GUIInventory:SetIsVisible(visible)
     self.background:SetIsVisible(visible)
 end
 
+// Call this with true to force inventory to stay on screen instead of fading out
+function GUIInventory:SetForceAnimationReset(state)
+    self.forceAnimationReset = state
+end
+
 function GUIInventory:Update(deltaTime, parameters)
 
+    PROFILE("GUIInventory:Update")
+    
     local activeWeaponTechId, inventoryTechIds = unpack(parameters)
     
     if #self.inventoryIcons > #inventoryTechIds then
@@ -188,6 +138,10 @@ function GUIInventory:Update(deltaTime, parameters)
         self.lastActiveWeaponTechId = activeWeaponTechId
         resetAnimations = true
         
+    end
+    
+    if self.forceAnimationReset then
+        resetAnimations = true
     end
     
     self.background:SetPosition(Vector( (-#inventoryTechIds-1) * (GUIInventory.kItemPadding + GUIInventory.kItemSize.x *.5 ) * self.scale, GUIInventory.kBackgroundYOffset, 0  ) )

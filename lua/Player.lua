@@ -48,8 +48,10 @@ Player.kPushDuration = 0.5
 if Server then
     Script.Load("lua/Player_Server.lua")
 else
+
     Script.Load("lua/Player_Client.lua")
     Script.Load("lua/Chat.lua")
+    
 end
 
 ------------
@@ -86,6 +88,7 @@ local tapString =
 Player.kMapName = "player"
 
 Player.kModelName                   = PrecacheAsset("models/marine/male/male.model")
+Player.kSpecialModelName            = PrecacheAsset("models/marine/male/male_special.model")
 Player.kClientConnectSoundName      = PrecacheAsset("sound/NS2.fev/common/connect")
 Player.kNotEnoughResourcesSound     = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/more")
 Player.kInvalidSound                = PrecacheAsset("sound/NS2.fev/common/invalid")
@@ -119,7 +122,7 @@ Player.kYExtents = 0.95
 local kViewOffsetHeight = Player.kYExtents * 2 - 0.2
 
 // Slow down players when crouching
-Player.kCrouchSpeedScalar = 0.7
+Player.kCrouchSpeedScalar = 0.6
 // Percentage change in height when full crouched
 local kCrouchShrinkAmount = 0.6
 local kExtentsCrouchShrinkAmount = 0.5
@@ -221,15 +224,14 @@ local networkVars =
     // bodyYaw must be compenstated as it feeds into the animation as a pose parameter
     bodyYaw = "compensated interpolated angle (11 bits)",
     standingBodyYaw = "angle interpolated (11 bits)",
-    lastyaw = "angle interpolated (11 bits)",
+    
+    bodyYawRun = "compensated interpolated angle (11 bits)",
+    runningBodyYaw = "angle interpolated (11 bits)",
     
     showScoreboard = "private boolean",
     sayingsMenu = "private integer (0 to 6)",
     timeLastMenu = "private time",
     darwinMode = "private boolean",
-    
-    // Time we last did damage to a target
-    timeTargetHit = "private time",
     
     // Set to true when jump key has been released after jump processed
     // Used to require the key to pressed multiple times
@@ -263,10 +265,6 @@ local networkVars =
     // Reduce max player velocity in some cases (marine jumping)
     slowAmount = "float (0 to 1 by 0.01)",
     movementModiferState = "private boolean",
-    // For double-tapping moves
-    //lastButtonReleased = "private integer (0 to 4)",
-    //timeLastButtonReleased = "private time",
-    //previousMove = "private vector",
     
     giveDamageTime = "private time",
     
@@ -276,6 +274,8 @@ local networkVars =
     isMoveBlocked = "private boolean",
     
     communicationStatus = "enum kPlayerCommunicationStatus",
+    
+    waitingForAutoTeamBalance = "private boolean",
 }
 
 ------------
@@ -345,6 +345,8 @@ function Player:OnCreate()
     
     self.bodyYaw = 0
     self.standingBodyYaw = 0
+    
+    self.bodyYawRun = 0
     self.runningBodyYaw = 0
     
     self.clientIndex = -1
@@ -359,15 +361,13 @@ function Player:OnCreate()
         self.showSayings = false
     end
     
-    self.lastspeedgain = 0
     self.sayingsMenu = 0
     self.timeLastMenu = 0    
     self.darwinMode = false
     self.timeLastSayingsAction = 0
-    self.timeTargetHit = 0
     self.kills = 0
     self.deaths = 0
-    self.lastyaw = 0
+    
     self.jumpHandled = false
     self.jumping = false
     self.leftFoot = true
@@ -399,6 +399,7 @@ function Player:OnCreate()
     self.stepAmount    = 0
     
     self.isMoveBlocked = false
+    self.isRookie = false
             
     // Create the controller for doing collision detection.
     // Just use default values for the capsule size for now. Player will update to correct
@@ -417,6 +418,8 @@ function Player:OnCreate()
     
     self.pushImpulse = Vector(0,0,0)
     self.pushTime = 0
+    
+    self.waitingForAutoTeamBalance = false
     
 end
 
@@ -501,14 +504,6 @@ function Player:OnInitialized()
     
     self.communicationStatus = kPlayerCommunicationStatus.None
     
-end
-
-// For signaling reticle hit feedback on client
-function Player:SetTimeTargetHit()
-    self.timeTargetHit = Shared.GetTime()
-end
-
-function Player:MakeSpecialEdition()    
 end
 
 function Player:AddKill()
@@ -628,8 +623,8 @@ end
 
 function Player:OverrideSayingsMenu(input)
 
-    local sayingsButtonPressed = bit.band(input.commands, Move.ToggleSayings1) ~= 0 or
-                                 bit.band(input.commands, Move.ToggleSayings2) ~= 0 or
+    local sayingsButtonPressed = bit.band(input.commands, Move.ToggleRequest) ~= 0 or
+                                 bit.band(input.commands, Move.ToggleSayings) ~= 0 or
                                  bit.band(input.commands, Move.ToggleVoteMenu) ~= 0
     
     local voteButtonPressed = (self:GetTeamNumber() == kTeam1Index or self:GetTeamNumber() == kTeam2Index) and
@@ -642,7 +637,7 @@ function Player:OverrideSayingsMenu(input)
         if self.timeLastSayingsAction == nil or (Shared.GetTime() > self.timeLastSayingsAction + 0.2) then
         
             local newMenu = 1
-            if bit.band(input.commands, Move.ToggleSayings2) ~= 0 then
+            if bit.band(input.commands, Move.ToggleSayings) ~= 0 then
                 newMenu = ConditionalValue(self:isa("Alien"), 1, 2)
             elseif voteButtonPressed then
                 newMenu = ConditionalValue(self:isa("Alien"), 2, 3)
@@ -668,9 +663,9 @@ function Player:OverrideSayingsMenu(input)
         end
         
         // Sayings toggles are handled client side.
-        local removeToggleMenuMask = bit.bxor(0xFFFFFFFF, Move.ToggleSayings1)
+        local removeToggleMenuMask = bit.bxor(0xFFFFFFFF, Move.ToggleRequest)
         input.commands = bit.band(input.commands, removeToggleMenuMask)
-        removeToggleMenuMask = bit.bxor(0xFFFFFFFF, Move.ToggleSayings2)
+        removeToggleMenuMask = bit.bxor(0xFFFFFFFF, Move.ToggleSayings)
         input.commands = bit.band(input.commands, removeToggleMenuMask)
         removeToggleMenuMask = bit.bxor(0xFFFFFFFF, Move.ToggleVoteMenu)
         input.commands = bit.band(input.commands, removeToggleMenuMask)
@@ -1400,7 +1395,6 @@ function Player:OnClampSpeed(input, velocity)
     
 end
 
-
 // Allow child classes to alter player's move at beginning of frame. Alter amount they
 // can move by scaling input.move, remove key presses, etc.
 function Player:AdjustMove(input)
@@ -1531,7 +1525,7 @@ function Player:SlowDown(slowScalar)
 end
 
 function Player:GetIsOnSurface()
-    return self.onGround
+    return self:GetIsOnGround()
 end    
 
 function Player:ReceivesFallDamage()
@@ -1578,12 +1572,9 @@ local function UpdateBodyYaw(self, deltaTime, tempInput)
 
     local yaw = self:GetAngles().yaw
     
-    local moving = false
-    
     // Reset values when moving.
     if self:GetVelocityLength() > 0.1 then
     
-        moving = true
         // Take a bit of time to reset value so going into the move animation doesn't skip.
         self.standingBodyYaw = SlerpRadians(self.standingBodyYaw, yaw, deltaTime * kTurnMoveYawBlendToMovingSpeed)
         self.standingBodyYaw = Math.Wrap(self.standingBodyYaw, 0, kDoublePI)
@@ -1605,20 +1596,14 @@ local function UpdateBodyYaw(self, deltaTime, tempInput)
         
     end
     
-    if moving then
+    self.bodyYawRun = Clamp(RadianDiff(self.runningBodyYaw, yaw), -kHalfPI, kHalfPI)
+    self.runningBodyYaw = Math.Wrap(self.bodyYawRun + yaw, 0, kDoublePI)
     
-        self.bodyYaw = Clamp(RadianDiff(self.runningBodyYaw, yaw), -kHalfPI, kHalfPI)
-        self.runningBodyYaw = Math.Wrap(self.bodyYaw + yaw, 0, kDoublePI)
-        
+    local adjustedBodyYaw = RadianDiff(self.standingBodyYaw, yaw)
+    if adjustedBodyYaw >= 0 then
+        self.bodyYaw = adjustedBodyYaw % kHalfPI
     else
-    
-        local adjustedBodyYaw = RadianDiff(self.standingBodyYaw, yaw)
-        if adjustedBodyYaw >= 0 then
-            self.bodyYaw = adjustedBodyYaw % kHalfPI
-        else
-            self.bodyYaw = -(kHalfPI - adjustedBodyYaw % kHalfPI)
-        end
-        
+        self.bodyYaw = -(kHalfPI - adjustedBodyYaw % kHalfPI)
     end
     
 end
@@ -2737,6 +2722,8 @@ function Player:HandleButtons(input)
     
     self:HandleAttacks(input)
     
+    // self:HandleDoubleTap(input)
+    
     if bit.band(input.commands, Move.NextWeapon) ~= 0 then
         self:SelectNextWeapon()
     end
@@ -2917,10 +2904,6 @@ end
 // Set to true when score, name, kills, team, etc. changes so it's propagated to players
 function Player:SetScoreboardChanged(state)
     self.scoreboardChanged = state
-end
-
-function Player:GetTimeTargetHit()
-    return self.timeTargetHit
 end
 
 function Player:GetHasSayings()
@@ -3281,4 +3264,16 @@ function Player:SetCommunicationStatus(status)
     self.communicationStatus = status
 end
 
-Shared.LinkClassToMap("Player", Player.kMapName, networkVars)
+if Server then
+
+    function Player:SetWaitingForTeamBalance(waiting)
+        self.waitingForAutoTeamBalance = waiting
+    end
+    
+end
+
+function Player:GetIsWaitingForTeamBalance()
+    return self.waitingForAutoTeamBalance
+end
+
+Shared.LinkClassToMap("Player", Player.kMapName, networkVars, true)
