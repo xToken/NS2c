@@ -1,7 +1,7 @@
 //NS2 End Round map vote.
 //Replaces current automatic map switching on round-end.
 
-kDAKRevisions["MapVote"] = 1.5
+kDAKRevisions["MapVote"] = 1.6
 local kMaxMapVoteChatLength = 74
 local cycle = { { maps = { }, time = 30, mode = "order" } }
 local TiedMaps = { }
@@ -296,7 +296,7 @@ if kDAKConfig and kDAKConfig._MapVote then
 				table.insert(kDAKSettings.PreviousMaps, nextmap)
 				SaveDAKSettings()
 				if nextmap ~= nil then 
-					Server.StartMap(nextmap)
+					Server.StartWorld( { }, nextmap )
 				end
 				nextmap = nil
 				mapvotecomplete = false

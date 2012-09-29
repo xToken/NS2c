@@ -69,6 +69,10 @@ if kDAKConfig and kDAKConfig._AFKKicker then
 	local function UpdateAFKClient(client, PEntry, player)
 		if player ~= nil then
 		
+			if DAKGetClientCanRunCommand(client, "sv_afkimmune") then
+				return PEntry
+			end
+		
 			local playerList = EntityListToTable(Shared.GetEntitiesWithClassname("Player"))
 			PEntry.Active = true
 			if player:GetViewAngles() ~= PEntry.MVec or (player:GetOrigin() ~= PEntry.POrig and player:GetIsOverhead()) or #playerList < kDAKConfig.kAFKKickMinimumPlayers then

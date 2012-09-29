@@ -153,7 +153,7 @@ local function PrintStatusIP(player, client, index)
 end
 
 DAKCreateServerAdminCommand("Console_sv_statusip", AllPlayers(PrintStatusIP), "Lists player Ids and names for use in sv commands")
-DAKCreateServerAdminCommand("Console_sv_changemap", function(_, mapName) Server.StartMap(mapName) end, "<map name>, Switches to the map specified")
+DAKCreateServerAdminCommand("Console_sv_changemap", function(_, mapName) Server.StartWorld( { }, mapName ) end, "<map name>, Switches to the map specified")
 
 local function OnCommandSVReset(client)
 	if client ~= nil then 
@@ -541,3 +541,29 @@ local function PEndLog(client)
     
 end
 DAKCreateServerAdminCommand("Console_sv_p_endlog", PEndLog, "Ends performance logging")
+
+local function AutoBalance(client, enabled, playerCount, seconds)
+
+    if enabled == "true" then
+    
+        playerCount = playerCount and tonumber(playerCount) or 2
+        seconds = seconds and tonumber(seconds) or 10
+        Server.SetConfigSetting("auto_team_balance", { enabled_on_unbalance_amount = playerCount, enabled_after_seconds = seconds })
+        ServerAdminPrint(client, "Auto Team Balance is now Enabled. Player unbalance amount: " .. playerCount .. " Activate delay: " .. seconds)
+        
+    else
+    
+        Server.SetConfigSetting("auto_team_balance", nil)
+        ServerAdminPrint(client, "Auto Team Balance is now Disabled")
+        
+    end
+	
+	if client ~= nil and playerId ~= nil then 
+		local player = client:GetControllingPlayer()
+		if player ~= nil then
+			PrintToAllAdmins("sv_autobalance", client, ToString(enabled).. ToString(playerCount) .. ToString(seconds))
+		end
+	end
+    
+end
+DAKCreateServerAdminCommand("Console_sv_autobalance", AutoBalance, "<true/false> <player count> <seconds>, Toggles auto team balance. The player count and seconds are optional. Count defaults to 2 over balance to enable. Defaults to 10 second wait to enable.")
