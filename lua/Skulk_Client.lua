@@ -35,7 +35,7 @@ function Skulk:UpdateMisc(input)
         self.goalCameraRoll = 0
     end
     
-    self.currentCameraRoll = LerpGeneric(self.currentCameraRoll, self.goalCameraRoll, math.min(1, input.time * Skulk.kCameraRollSpeedModifier))
+    //self.currentCameraRoll = LerpGeneric(self.currentCameraRoll, self.goalCameraRoll, math.min(1, input.time * Skulk.kCameraRollSpeedModifier))
 
 end
 

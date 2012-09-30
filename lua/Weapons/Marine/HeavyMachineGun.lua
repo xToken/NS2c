@@ -18,7 +18,7 @@ local kRange = 250
 local kSpread = ClipWeapon.kCone10Degrees
 local kLoopingSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin")
 local kHeavyMachineGunEndSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin_down")
-
+local kHeavyMachineGunROF = 0.5
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/rifle/muzzle_flash.cinematic")
 local kMuzzleAttachPoint = "fxnode_riflemuzzle"
 
@@ -60,8 +60,35 @@ end
 
 function HeavyMachineGun:OnPrimaryAttack(player)
 
-    if not self:GetIsReloading() then
-        ClipWeapon.OnPrimaryAttack(self, player)
+    if not self:GetIsReloading() and self.clip > 0 then
+        if player and not self:GetHasAttackDelay() then
+        
+            self:FirePrimary(player)
+            // Don't decrement ammo in Darwin mode
+            if not player or not player:GetDarwinMode() then
+                self.clip = self.clip - 1
+            end
+            self.lastfiredtime = Shared.GetTime()
+            self:CreatePrimaryAttackEffect(player)
+            Weapon.OnPrimaryAttack(self, player)
+            self.primaryAttacking = true
+        end
+    elseif self.ammo > 0 then
+        self:OnPrimaryAttackEnd(player)
+        // Automatically reload if we're out of ammo.
+        player:Reload()
+    else
+        self:OnPrimaryAttackEnd(player)
+        self.blockingPrimary = false
+    end    
+    
+end
+
+function HeavyMachineGun:OnPrimaryAttackEnd(player)
+
+    if self.primaryAttacking then
+        ClipWeapon.OnPrimaryAttackEnd(self, player)
+        self.primaryAttacking = false 
     end
     
 end
@@ -97,6 +124,19 @@ end
 
 function HeavyMachineGun:GetViewModelName()
     return kViewModelName
+end
+
+function HeavyMachineGun:GetFireDelay()
+    local player = self:GetParent()
+    local modifier = 1
+    if player then
+        modifier = ConditionalValue(player:GetHasCatpackBoost(), CatPack.kAttackSpeedModifier, 1)
+    end
+    return (kHeavyMachineGunROF / modifier)
+end
+
+function HeavyMachineGun:GetHasAttackDelay()
+    return self.lastfiredtime + self:GetFireDelay() > Shared.GetTime()
 end
 
 function HeavyMachineGun:GetDeathIconIndex()

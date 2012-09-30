@@ -2191,7 +2191,7 @@ end
 
 function Player:GetPlayFootsteps()
 
-    return not self.crouching and self:GetVelocityLength() > .75 and self:GetIsOnGround() 
+    return not self.crouching and self:GetVelocityLength() > .75 and self:GetIsOnGround() and not self.movementModiferState
     
 end
 

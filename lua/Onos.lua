@@ -47,6 +47,7 @@ Onos.kGroundFrictionForce = 8
 Onos.kBaseAcceleration = 55
 Onos.kAirAcceleration = 25
 Onos.kMaxSpeed = 15
+Onos.kMaxCrouchSpeed = 3
 
 Onos.kHealth = kOnosHealth
 Onos.kArmor = kOnosArmor
@@ -241,7 +242,7 @@ end
 
 function Onos:TriggerCharge(move)
     
-    if not self.charging and self.timeLastChargeEnd + Onos.kChargeDelay < Shared.GetTime() and self:GetIsOnGround() and not self:GetCrouching() and self.onHive then
+    if not self.charging and self.timeLastChargeEnd + Onos.kChargeDelay < Shared.GetTime() and self:GetIsOnGround() and not self:GetCrouching() and self.oneHive then
 
         self.charging = true
         self.timeLastCharge = Shared.GetTime()
@@ -332,8 +333,16 @@ function Onos:GetMaxSpeed(possible)
     if possible then
         return 10
     end
+    
+    local maxSpeed = Onos.kMaxSpeed
+    
+    // Take into account crouching
+    
+    if self:GetCrouching() and self:GetIsOnGround() then
+        maxSpeed = Onos.kMaxCrouchSpeed
+    end
 
-    return Onos.kMaxSpeed * self:GetMovementSpeedModifier()
+    return maxSpeed * self:GetMovementSpeedModifier()
 
 end
 
@@ -468,30 +477,30 @@ function Onos:OnUpdateAnimationInput(modelMixin)
 
 end
 
-local kOnosHeadMoveAmount = 0.1
+local kOnosHeadMoveAmount = 0.0
 
 // Give dynamic camera motion to the player
 function Onos:OnUpdateCamera(deltaTime) 
 
-    //local camOffsetHeight = 0
+    local camOffsetHeight = 0
     
-    //if not self:GetIsJumping() then
-        //camOffsetHeight = -self:GetMaxViewOffsetHeight() * self:GetCrouchShrinkAmount() * self:GetCrouchAmount()
-    //end
+    if not self:GetIsJumping() then
+        camOffsetHeight = -self:GetMaxViewOffsetHeight() * self:GetCrouchShrinkAmount() * self:GetCrouchAmount()
+    end
     
-    //if self:GetIsFirstPerson() then
+    if self:GetIsFirstPerson() then
     
-        //if not self:GetIsJumping() then
+        if not self:GetIsJumping() then
         
             //local movementScalar = Clamp((self:GetVelocity():GetLength() / self:GetMaxSpeed(true)), 0.0, 0.8)
             //local bobbing = ( math.sin(Shared.GetTime() * 7) - 1 )
             //camOffsetHeight = camOffsetHeight + kOnosHeadMoveAmount * movementScalar * bobbing
             
-        //end
+        end
         
-    //end
+    end
     
-    //self:SetCameraYOffset(camOffsetHeight)
+    self:SetCameraYOffset(camOffsetHeight)
 
 end
 

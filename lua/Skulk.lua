@@ -65,12 +65,13 @@ Skulk.kMinLeapVelocity = 13
 Skulk.kLeapTime = 0.2
 Skulk.kLeapForce = 14
 Skulk.kMaxSpeed = 20
+Skulk.kMaxGroundSpeed = 8
 Skulk.kMaxWallSpeed = 12
 Skulk.kMaxWalkSpeed = 4
 Skulk.kGroundFriction = 6.0
 Skulk.kGroundWalkFriction = 6.5
-Skulk.kAcceleration = 45
-Skulk.kAirAcceleration = 28
+Skulk.kAcceleration = 55
+Skulk.kAirAcceleration = 30
 Skulk.kJumpHeight = 1.3
 Skulk.kWallJumpForce = 2
 Skulk.kWallJumpYBoost = 6
@@ -481,7 +482,9 @@ end
 
 function Skulk:GetAcceleration()
     if self:GetIsOnSurface() then
-        return Skulk.kAcceleration * self:GetMovementSpeedModifier()
+        local maccel = math.max(Skulk.kMaxGroundSpeed - self:GetVelocity():GetLengthXZ(), 0) * 10
+        
+        return (Skulk.kAcceleration + maccel) * self:GetMovementSpeedModifier()
     else
         return Skulk.kAirAcceleration * self:GetMovementSpeedModifier()
     end

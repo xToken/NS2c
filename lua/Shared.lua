@@ -47,6 +47,7 @@ Script.Load("lua/BuildUtility.lua")
 Script.Load("lua/Balance.lua")
 Script.Load("lua/BalanceHealth.lua")
 Script.Load("lua/BalanceMisc.lua")
+Script.Load("lua/TeamJoin.lua")
 
 // Neutral structures
 Script.Load("lua/ResourcePoint.lua")

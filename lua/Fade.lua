@@ -44,6 +44,7 @@ Fade.kJumpHeight = 1.3
 Fade.kMaxSpeed = 23
 Fade.kBlinkAccelSpeed = 12
 Fade.kWalkSpeed = 4
+Fade.kMaxCrouchSpeed = 3
 Fade.kAcceleration = 50
 Fade.kAirAcceleration = 25
 Fade.kBlinkAirAcceleration = 40
@@ -213,7 +214,11 @@ function Fade:GetMaxSpeed(possible)
     //Walking
     local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Fade.kWalkSpeed, Fade.kMaxSpeed)
     
-    // Take into account crouching
+        // Take into account crouching
+    if self:GetCrouching() and self:GetIsOnGround() then
+        maxSpeed = Fade.kMaxCrouchSpeed
+    end
+
     return maxSpeed * self:GetMovementSpeedModifier()
 
 end
