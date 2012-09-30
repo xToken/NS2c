@@ -296,15 +296,6 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 		Shared.Message(string.format(message))
 	end
 	
-	local function OnCommandSVChangeMap(client, mapName)
-		if client ~= nil then 
-			local player = client:GetControllingPlayer()
-			if player ~= nil then
-				PrintToAllAdmins("sv_changemap", client, mapName)
-			end
-		end
-	end
-	
 	local function OnCommandSVSwitchTeam(client, playerId, team)
 		if client ~= nil and playerId ~= nil and team ~= nil then 
 			local player = client:GetControllingPlayer()
@@ -366,7 +357,6 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 		end
 	end
 	
-	Event.Hook("Console_sv_changemap",				OnCommandSVChangeMap)
 	Event.Hook("Console_sv_switchteam",               OnCommandSVSwitchTeam)
 	Event.Hook("Console_sv_kick",               OnCommandSVKick)
 	Event.Hook("Console_sv_slay",               OnCommandSVSlay)
