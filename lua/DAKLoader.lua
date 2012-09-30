@@ -110,7 +110,7 @@ if Server then
 		//Start Default Config
 		local ModsTable = { }
 		local MOTDTable = { }
-		table.insert(ModsTable, "5f3b1e6")
+		table.insert(ModsTable, "5f7771c")
 		table.insert(MOTDTable, "********************************************************************")
 		table.insert(MOTDTable, "* Commands: These can be entered via chat or the console (~)        ")
 		table.insert(MOTDTable, "* rtv: To initiate a map vote aka Rock The Vote                     ")
