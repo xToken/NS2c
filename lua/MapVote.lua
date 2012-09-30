@@ -295,8 +295,12 @@ if kDAKConfig and kDAKConfig._MapVote then
 			
 				table.insert(kDAKSettings.PreviousMaps, nextmap)
 				SaveDAKSettings()
-				if nextmap ~= nil then 
-					Server.StartWorld( kDAKGameMods, nextmap )
+				if nextmap ~= nil then
+					local ServerMods = { }
+					if kDAKConfig and kDAKConfig.kModsReloadList then
+						ServerMods = kDAKConfig.kModsReloadList
+					end
+					Server.StartWorld( ServerMods, nextmap )
 				end
 				nextmap = nil
 				mapvotecomplete = false
