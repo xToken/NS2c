@@ -10,7 +10,7 @@ DetectorMixin = { }
 DetectorMixin.type = "Detector"
 
 // Should be smaller than DetectableMixin:kResetDetectionInterval
-DetectorMixin.kUpdateDetectionInterval = 1
+DetectorMixin.kUpdateDetectionInterval = 1.5
 
 DetectorMixin.expectedCallbacks =
 {
