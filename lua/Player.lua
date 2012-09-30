@@ -2191,7 +2191,7 @@ end
 
 function Player:GetPlayFootsteps()
 
-    return not self.crouching and self:GetVelocityLength() > .75 and self:GetIsOnGround() and not self.movementModiferState
+    return not self.crouching and self:GetVelocityLength() > 0.75 and self:GetIsOnGround() and not self.movementModiferState
     
 end
 
@@ -3087,6 +3087,7 @@ function Player:OnTag(tagName)
     
     // Play footstep when foot hits the ground. Client side only.
     if Client and self:GetPlayFootsteps() and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] then
+        //Print("STEPPPIN")
         self:TriggerFootstep()
     end
     

@@ -18,7 +18,8 @@ local kRange = 250
 local kSpread = ClipWeapon.kCone10Degrees
 local kLoopingSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin")
 local kHeavyMachineGunEndSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin_down")
-local kHeavyMachineGunROF = 0.5
+local kHeavyMachineGunROF = 0.05
+local kHeavyMachineGunReloadTime = 6.3
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/rifle/muzzle_flash.cinematic")
 local kMuzzleAttachPoint = "fxnode_riflemuzzle"
 
@@ -39,6 +40,7 @@ function HeavyMachineGun:OnInitialized()
 
     ClipWeapon.OnInitialized(self)
     self.lastfiredtime = 0
+    self.reloadtime = 0
     if Client then
     
         self:SetUpdates(true)
@@ -60,7 +62,7 @@ end
 
 function HeavyMachineGun:OnPrimaryAttack(player)
 
-    if not self:GetIsReloading() and self.clip > 0 then
+    if not self:GetIsReloading() and self.clip > 0 and self.deployed then
         if player and not self:GetHasAttackDelay() then
         
             self:FirePrimary(player)
@@ -73,7 +75,7 @@ function HeavyMachineGun:OnPrimaryAttack(player)
             Weapon.OnPrimaryAttack(self, player)
             self.primaryAttacking = true
         end
-    elseif self.ammo > 0 then
+    elseif self.ammo > 0 and self.deployed then
         self:OnPrimaryAttackEnd(player)
         // Automatically reload if we're out of ammo.
         player:Reload()
@@ -135,8 +137,43 @@ function HeavyMachineGun:GetFireDelay()
     return (kHeavyMachineGunROF / modifier)
 end
 
+function HeavyMachineGun:CanReload()
+    return self.ammo > 0 and self.clip < self:GetClipSize() and not self.reloading and self.deployed
+end
+
+function HeavyMachineGun:OnReload(player)
+    if self:CanReload() then
+        self:TriggerEffects("reload")
+        self.reloading = true
+        self.reloadtime = Shared.GetTime()
+    end
+end
+
+function HeavyMachineGun:OnUpdateAnimationInput(modelMixin)
+    
+    PROFILE("HeavyMachineGun:OnUpdateAnimationInput")
+    ClipWeapon.OnUpdateAnimationInput(self, modelMixin)
+    
+    if self.reloading and self.reloadtime + kHeavyMachineGunReloadTime < Shared.GetTime() then
+        self.reloading = false
+        self.ammo = self.ammo + self.clip
+        self.reloadtime = 0
+        // Transfer bullets from our ammo pool to the weapon's clip
+        self.clip = math.min(self.ammo, self:GetClipSize())
+        self.ammo = self.ammo - self.clip
+    end
+    
+end
+
 function HeavyMachineGun:GetHasAttackDelay()
     return self.lastfiredtime + self:GetFireDelay() > Shared.GetTime()
+end
+
+function HeavyMachineGun:OnTag(tagName)
+    PROFILE("HeavyMachineGun:OnTag")
+    if tagName == "deploy_end" then
+        self.deployed = true
+    end
 end
 
 function HeavyMachineGun:GetDeathIconIndex()
@@ -234,7 +271,7 @@ if Client then
     end
 
     function HeavyMachineGun:GetPrimaryEffectRate()
-        return 0.4
+        return 0.05
     end
     
     function HeavyMachineGun:GetPreventCameraAnimation()
@@ -249,7 +286,7 @@ if Client then
             local origin = player:GetEyePos()
             local viewCoords= player:GetViewCoords()
         
-            return origin + viewCoords.zAxis * 1.0 + viewCoords.xAxis * -0.2 + viewCoords.yAxis * -0.22
+            return origin + viewCoords.zAxis * 0.4 + viewCoords.xAxis * -0.3 + viewCoords.yAxis * -0.25
         end
         
         return self:GetOrigin()

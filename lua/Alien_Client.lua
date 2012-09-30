@@ -83,6 +83,16 @@ function PlayerUI_GetHiveInformation()
     
     local player = Client.GetLocalPlayer()
     
+    if player.hivesinfo ~= { } then
+        for i = 1, #player.hivesinfo do
+            local hiveinfo = player.hivesinfo[i]
+            if hiveinfo ~= nil then
+                if Shared.GetTime() - hiveinfo.time > 4 then
+                    table.removevalue(player.hivesinfo, hiveinfo)
+                end
+            end
+        end      
+    end
     if player then
         return player.hivesinfo
     end

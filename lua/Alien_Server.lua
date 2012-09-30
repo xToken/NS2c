@@ -141,14 +141,16 @@ function Alien:UpdateHiveInformation()
 
     if self.timeToUpdateHiveInfo == nil or Shared.GetTime() >= self.timeToUpdateHiveInfo then
         for index, hive in ipairs(GetEntitiesForTeam("Hive", self:GetTeamNumber())) do
-            local hiveinfo = {
-                                key = index, 
-                                location = hive:GetLocationName(), 
-                                healthpercent = (hive:GetHealth() / hive:GetMaxHealth()), 
-                                buildprogress = ConditionalValue(hive:GetIsBuilt(), 1, hive:GetBuiltFraction()),
-                                techId = hive:GetTechId()
-                             }
-             Server.SendNetworkMessage("HiveInfo", hiveinfo, false)
+            if hive:GetIsAlive() then
+                local hiveinfo = {
+                                    key = index, 
+                                    location = hive:GetLocationName(), 
+                                    healthpercent = (hive:GetHealth() / hive:GetMaxHealth()), 
+                                    buildprogress = ConditionalValue(hive:GetIsBuilt(), 1, hive:GetBuiltFraction()),
+                                    techId = hive:GetTechId()
+                                 }
+                 Server.SendNetworkMessage("HiveInfo", hiveinfo, false)
+            end
         end
         self.timeToUpdateHiveInfo =  Shared.GetTime() + 1
     end

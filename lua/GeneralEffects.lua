@@ -182,6 +182,22 @@ kGeneralEffectData =
         },
     },
     
+    victory =
+    {
+        victoryEffects =
+        {
+            {sound = "sound/ns2c.fev/ns2c/ui/you_win", done = true},
+        },
+    },
+    
+    loss =
+    {
+        lossEffects =
+        {
+            {sound = "sound/ns2c.fev/ns2c/ui/you_lose", done = true},
+        },
+    },
+    
     catalyst =
     {
         catalystEffects =

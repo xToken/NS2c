@@ -11,7 +11,7 @@ kTeamMessageTypes = enum({ 'GameStarted', 'PowerLost', 'PowerRestored', 'Eject',
                            'HiveConstructed', 'HiveLowHealth', 'HiveKilled',
                            'CommandStationUnderAttack', 'IPUnderAttack', 'HiveUnderAttack',
                            'PowerPointUnderAttack', 'Beacon', 'NoCommander', 'TeamsUnbalanced',
-                           'TeamsBalanced' })
+                           'TeamsBalanced'})
 
 local kTeamMessages = { }
 
