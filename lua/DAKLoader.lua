@@ -19,13 +19,12 @@ if Server then
 	kDAKOnClientChatMessage = { }			//Functions run on ChatMessages
 	kDAKServerAdminCommands = { }			//List of ServerAdmin Commands
 	kDAKBaseGamerules = NS2Gamerules
-	kDAKGameMods = { }
 	
 	local settings = { groups = { }, users = { } }
 	
 	local DAKConfigFileName = "config://DAKConfig.json"
 	local DAKSettingsFileName = "config://DAKSettings.json"
-	local DAKServerAdminFileName = "config://DAKServerAdmin.json"
+	local DAKServerAdminFileName = "config://ServerAdmin.json"
 	local DelayedClientConnect = { }
 	local lastserverupdate = 0
 	local DAKRevision = 1.6
@@ -105,9 +104,106 @@ if Server then
         return false
         
     end
+	
+	local function GenerateDefaultDAKConfig()
+		 
+		//Start Default Config
+		local ModsTable = { }
+		local MOTDTable = { }
+		table.insert(ModsTable, "5f7771c")
+		table.insert(MOTDTable, "********************************************************************")
+		table.insert(MOTDTable, "* Commands: These can be entered via chat or the console (~)        ")
+		table.insert(MOTDTable, "* rtv: To initiate a map vote aka Rock The Vote                     ")
+		table.insert(MOTDTable, "* random: To vote for auto-random teams for next 30 minutes         ")
+		table.insert(MOTDTable, "* timeleft: To display the time until next map vote                 ")
+		table.insert(MOTDTable, "* surrender: To initiate or vote in a surrender vote for your team. ")
+		table.insert(MOTDTable, "* acceptmotd: To accept and suppress this message                   ")
+		table.insert(MOTDTable, "********************************************************************")
+		kDAKConfig = { }
+		kDAKConfig.GlobalConfig = "Global Configuration"
+		kDAKConfig.kDelayedClientConnect = 2
+		kDAKConfig.kDelayedServerUpdate = 1
+		kDAKConfig.kModsReloadList = ModsTable
+		kDAKConfig._OverrideInterp = false
+		kDAKConfig.kInterp = 100
+		kDAKConfig._VoteRandom = true
+		kDAKConfig.kVoteRandomInstantly = false
+		kDAKConfig.kVoteRandomDuration = 30
+		kDAKConfig.kVoteRandomMinimumPercentage = 60
+		kDAKConfig.kVoteRandomEnabled = "Random teams have been enabled, the round will restart."
+		kDAKConfig.kVoteRandomEnabledDuration = "Random teams have been enabled for the next %s Minutes"
+		kDAKConfig.kVoteRandomConnectAlert = "Random teams are enabled, you are being randomed to a team."
+		kDAKConfig.kVoteRandomVoteCountAlert = "%s voted for random teams. (%s votes, needed %s)."
+		kDAKConfig._TournamentMode = false
+		kDAKConfig.kTournamentModePubMode = false
+		kDAKConfig.kTournamentModePubMinPlayers = 3
+		kDAKConfig.kTournamentModePubPlayerWarning = "Game will start once each team has %s players."
+		kDAKConfig.kTournamentModePubAlertDelay = 30
+		kDAKConfig.kTournamentModeReadyDelay = 2
+		kDAKConfig.kTournamentModeGameStartDelay = 15
+		kDAKConfig.kTournamentModeCountdown = "Game will start in %s seconds!"
+		kDAKConfig._ReservedSlots = false
+		kDAKConfig.kMaximumSlots = 19
+		kDAKConfig.kReservedSlots = 3
+		kDAKConfig.kMinimumSlots = 1
+		kDAKConfig.kDelayedSycTime = 3
+		kDAKConfig.kDelayedKickTime = 2
+		kDAKConfig.kReserveSlotServerFull = "Server is full - You must have a reserved slot to connect."
+		kDAKConfig.kReserveSlotServerFullDisconnectReason = "Server is full."
+		kDAKConfig.kReserveSlotKickedForRoom = "**You're being kicked due to a reserved slot, this is automatically determined**"
+		kDAKConfig.kReserveSlotKickedDisconnectReason = "Kicked due to a reserved slot."
+		kDAKConfig._MOTD = true
+		kDAKConfig.kMOTDMessage = MOTDTable
+		kDAKConfig.kMOTDMessageDelay = 6
+		kDAKConfig.kMOTDMessageRevision = 1
+		kDAKConfig.kMOTDMessagesPerTick = 5
+		kDAKConfig._MapVote = true
+		kDAKConfig.kVoteStartDelay = 8
+		kDAKConfig.kVotingDuration = 30
+		kDAKConfig.kMapsToSelect = 7
+		kDAKConfig.kDontRepeatFor = 4
+		kDAKConfig.kVoteNotifyDelay = 6
+		kDAKConfig.kVoteChangeDelay = 4
+		kDAKConfig.kVoteMinimumPercentage = 25
+		kDAKConfig.kRTVMinimumPercentage = 50
+		kDAKConfig.kVoteMapBeginning = "******                 Map vote will begin in %s seconds.                 ******"
+		kDAKConfig.kVoteMapHowToVote = "******     You can vote for the map you want by typing vote #     ******"
+		kDAKConfig.kVoteMapStarted = "*******            Map vote has begun. (%s%% votes needed to win)           ******"
+		kDAKConfig.kVoteMapMapListing = "******                vote %s for %s                                       "
+		kDAKConfig.kVoteMapNoWinner = "******               Voting has ended, no map won.                             "
+		kDAKConfig.kVoteMapTie = "******  Voting has ended with a tie, A new vote will start in %s seconds  ******"
+		kDAKConfig.kVoteMapWinner = "******     Voting has ended, %s won with %s votes.                           "
+		kDAKConfig.kVoteMapMinimumNotMet = "******%s had the most votes with %s, but the minimum required is %s.******"
+		kDAKConfig.kVoteMapTimeLeft = "******                      %.1f seconds are left to vote                   ******"
+		kDAKConfig.kVoteMapCurrentMapVotes = "******      %s votes for %s (to vote, type vote %s)   ******"
+		kDAKConfig.kVoteMapRockTheVote = "%s rock'd the vote. (%s votes, needed %s)."
+		kDAKConfig.kVoteMapCancelled = "******           Map vote has been cancelled.         ******"
+		kDAKConfig.kVoteMapInsufficientMaps = "******           Not enough maps for a vote.         ******"
+		kDAKConfig._AFKKicker = true
+		kDAKConfig.kAFKKickDelay = 150
+		kDAKConfig.kAFKKickCheckDelay = 5
+		kDAKConfig.kAFKKickMinimumPlayers = 5
+		kDAKConfig.kAFKKickReturnMessage = "You are no longer flagged as idle."
+		kDAKConfig.kAFKKickMessage = "%s kicked from the server for idling more than %d seconds."
+		kDAKConfig.kAFKKickDisconnectReason = "Kicked from the server for idling more than %d seconds."
+		kDAKConfig.kAFKKickClientMessage = "You are being kicked for idling for more than %d seconds."
+		kDAKConfig.kAFKKickWarning1 = 30
+		kDAKConfig.kAFKKickWarningMessage1 = "You will be kicked in %d seconds for idling."
+		kDAKConfig.kAFKKickWarning2 = 10
+		kDAKConfig.kAFKKickWarningMessage2 = "You will be kicked in %d seconds for idling."
+		kDAKConfig._EnhancedLogging = true
+		kDAKConfig.kEnhancedLoggingSubDir = "Logs"
+		kDAKConfig._VoteSurrender = true
+		kDAKConfig.kVoteSurrenderMinimumPercentage = 60
+		kDAKConfig.kVoteSurrenderVotingTime = 120
+		kDAKConfig.kVoteSurrenderAlertDelay = 20
+		kDAKConfig._GamerulesExtensions = true
+		//End Default Config
 		
-	local function DisableAllPlugins()	
-		kDAKConfig = nil
+		local configFile = io.open(DAKConfigFileName, "w+")
+		configFile:write(json.encode(kDAKConfig, { indent = true }))
+		io.close(configFile)
+		
 	end
 	
 	local function LoadDAKConfig()
@@ -118,7 +214,7 @@ if Server then
 			DAKConfigFile:close()
 		end
 		if kDAKConfig == nil or kDAKConfig == { } then
-			DisableAllPlugins()
+			GenerateDefaultDAKConfig()
 		end
 	end
 	

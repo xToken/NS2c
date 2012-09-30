@@ -153,7 +153,24 @@ local function PrintStatusIP(player, client, index)
 end
 
 DAKCreateServerAdminCommand("Console_sv_statusip", AllPlayers(PrintStatusIP), "Lists player Ids and names for use in sv commands")
-DAKCreateServerAdminCommand("Console_sv_changemap", function(_, mapName) Server.StartWorld( kDAKGameMods, mapName ) end, "<map name>, Switches to the map specified")
+
+local function OnCommandChangeMap(client, mapName)
+
+	if client ~= nil then 
+		local player = client:GetControllingPlayer()
+		if player ~= nil then
+			PrintToAllAdmins("sv_changemap", client, mapName)
+		end
+	end
+	
+	local ServerMods = { }
+	if kDAKConfig and kDAKConfig.kModsReloadList then
+		ServerMods = kDAKConfig.kModsReloadList
+	end
+	Server.StartWorld( ServerMods, mapName )
+	
+end
+DAKCreateServerAdminCommand("Console_sv_changemap", OnCommandChangeMap, "<map name>, Switches to the map specified")
 
 local function OnCommandSVReset(client)
 	if client ~= nil then 

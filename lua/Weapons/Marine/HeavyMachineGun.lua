@@ -20,7 +20,7 @@ local kLoopingSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/hmg_fire"
 local kHeavyMachineGunEndSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin_down")
 local kHeavyMachineGunROF = 0.05
 local kHeavyMachineGunReloadTime = 6.3
-local kMuzzleEffect = PrecacheAsset("cinematics/marine/rifle/muzzle_flash.cinematic")
+local kMuzzleEffect = PrecacheAsset("cinematics/marine/heavymachinegun/muzzle_flash.cinematic")
 local kMuzzleAttachPoint = "fxnode_riflemuzzle"
 
 function HeavyMachineGun:OnCreate()
