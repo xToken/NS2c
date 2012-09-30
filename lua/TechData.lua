@@ -312,7 +312,7 @@ function BuildTechData()
         { [kTechDataId] = kTechId.Silence2,     [kTechDataImplemented] = false,        [kTechDataCategory] = kTechId.ShiftHive,      [kTechDataKeyStructure] = kTechId.Shift,      [kTechDataDisplayName] = "SILENCE", [kTechDataTooltipInfo] = "SILENCE_TOOLTIP", [kTechDataCostKey] = kSilenceCost },
         
         { [kTechDataId] = kTechId.Silence,            [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,       [kTechDataDisplayName] = "SILENCE", [kTechDataTooltipInfo] = "SILENCE_TOOLTIP", [kTechDataCostKey] = kSilenceCost },                
-        { [kTechDataId] = kTechId.Aura,               [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,       [kTechDataDisplayName] = "AURA", [kTechDataTooltipInfo] = "AURA_TOOLTIP", [kTechDataCostKey] = kAuraCost },
+        { [kTechDataId] = kTechId.Aura,            [kTechDataImplemented] = false,      [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,       [kTechDataDisplayName] = "AURA", [kTechDataTooltipInfo] = "AURA_TOOLTIP", [kTechDataCostKey] = kAuraCost },
         { [kTechDataId] = kTechId.Ghost,              [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,      [kTechDataDisplayName] = "GHOST", [kTechDataTooltipInfo] = "GHOST_TOOLTIP", [kTechDataCostKey] = kGhostCost },
         { [kTechDataId] = kTechId.Camouflage,    [kTechDataImplemented] = false,       [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,       [kTechDataDisplayName] = "CAMOUFLAGE", [kTechDataTooltipInfo] = "CAMOUFLAGE_TOOLTIP", [kTechDataCostKey] = kCamouflageCost },
         
