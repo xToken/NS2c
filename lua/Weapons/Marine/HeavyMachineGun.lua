@@ -16,7 +16,7 @@ local kAnimationGraph = PrecacheAsset("models/marine/heavymachinegun/heavymachin
 
 local kRange = 250
 local kSpread = ClipWeapon.kCone10Degrees
-local kLoopingSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin")
+local kLoopingSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/hmg_fire")
 local kHeavyMachineGunEndSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin_down")
 local kHeavyMachineGunROF = 0.05
 local kHeavyMachineGunReloadTime = 6.3
@@ -89,7 +89,8 @@ end
 function HeavyMachineGun:OnPrimaryAttackEnd(player)
 
     if self.primaryAttacking then
-        ClipWeapon.OnPrimaryAttackEnd(self, player)
+        Shared.StopSound(self, kLoopingSound)
+        Weapon.OnPrimaryAttackEnd(self, player)
         self.primaryAttacking = false 
     end
     
@@ -143,10 +144,9 @@ end
 
 function HeavyMachineGun:OnReload(player)
     if self:CanReload() then
-        self:TriggerEffects("reload")
-        self.reloading = true
         self.reloadtime = Shared.GetTime()
     end
+    ClipWeapon.OnReload(self, player)
 end
 
 function HeavyMachineGun:OnUpdateAnimationInput(modelMixin)
@@ -154,7 +154,7 @@ function HeavyMachineGun:OnUpdateAnimationInput(modelMixin)
     PROFILE("HeavyMachineGun:OnUpdateAnimationInput")
     ClipWeapon.OnUpdateAnimationInput(self, modelMixin)
     
-    if self.reloading and self.reloadtime + kHeavyMachineGunReloadTime < Shared.GetTime() then
+    if Server and self.reloading and self.reloadtime + kHeavyMachineGunReloadTime < Shared.GetTime() then
         self.reloading = false
         self.ammo = self.ammo + self.clip
         self.reloadtime = 0
@@ -262,10 +262,18 @@ if Client then
         
     end
     
+    function HeavyMachineGun:GetTriggerPrimaryEffects()
+        return not self:GetIsReloading()
+    end
+    
+    function HeavyMachineGun:OnClientPrimaryAttacking()
+        Shared.PlaySound(self, kLoopingSound)
+    end
+    
     function HeavyMachineGun:OnClientPrimaryAttackEnd()
     
         // Just assume the looping sound is playing.
-        Shared.StopSound(self, kLoopingSound)
+        //Shared.StopSound(self, kLoopingSound)
         Shared.PlaySound(self, kHeavyMachineGunEndSound)
 
     end

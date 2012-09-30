@@ -19,6 +19,7 @@ if Server then
 	kDAKOnClientChatMessage = { }			//Functions run on ChatMessages
 	kDAKServerAdminCommands = { }			//List of ServerAdmin Commands
 	kDAKBaseGamerules = NS2Gamerules
+	kDAKGameMods = { }
 	
 	local settings = { groups = { }, users = { } }
 	

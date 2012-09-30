@@ -153,7 +153,7 @@ local function PrintStatusIP(player, client, index)
 end
 
 DAKCreateServerAdminCommand("Console_sv_statusip", AllPlayers(PrintStatusIP), "Lists player Ids and names for use in sv commands")
-DAKCreateServerAdminCommand("Console_sv_changemap", function(_, mapName) Server.StartWorld( { }, mapName ) end, "<map name>, Switches to the map specified")
+DAKCreateServerAdminCommand("Console_sv_changemap", function(_, mapName) Server.StartWorld( kDAKGameMods, mapName ) end, "<map name>, Switches to the map specified")
 
 local function OnCommandSVReset(client)
 	if client ~= nil then 
