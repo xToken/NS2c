@@ -553,6 +553,9 @@
     <filename>ReservedSlots.lua</filename>
   </file>
   <file>
+    <filename>ResourceTower.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Marine\Rifle.lua</filename>
   </file>
   <file>

@@ -256,10 +256,8 @@ end
 if Client then
 
     function HeavyMachineGun:OnClientPrimaryAttackStart()
-    
         // Start the looping sound for the rest of the shooting. Pew pew pew...
         Shared.PlaySound(self, kLoopingSound)
-        
     end
     
     function HeavyMachineGun:GetTriggerPrimaryEffects()

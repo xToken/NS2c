@@ -28,14 +28,16 @@ local kButtRange = 1.4
 
 local kNumberOfVariants = 3
 
-local kSingleShotSounds = { "sound/NS2.fev/marine/rifle/fire_single", "sound/NS2.fev/marine/rifle/fire_single_2", "sound/NS2.fev/marine/rifle/fire_single_3" }
-for k, v in ipairs(kSingleShotSounds) do PrecacheAsset(v) end
+local kSingleShotSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/lmg_fire")
 
-local kLoopingSounds = { "sound/NS2.fev/marine/rifle/fire_14_sec_loop", "sound/NS2.fev/marine/rifle/fire_loop_2", "sound/NS2.fev/marine/rifle/fire_loop_3",
-                         "sound/NS2.fev/marine/rifle/fire_loop_1_upgrade_1", "sound/NS2.fev/marine/rifle/fire_loop_2_upgrade_1", "sound/NS2.fev/marine/rifle/fire_loop_3_upgrade_1",
-                         "sound/NS2.fev/marine/rifle/fire_loop_1_upgrade_3", "sound/NS2.fev/marine/rifle/fire_loop_2_upgrade_3", "sound/NS2.fev/marine/rifle/fire_loop_3_upgrade_3" }
+//local kSingleShotSounds = { "sound/NS2.fev/marine/rifle/fire_single", "sound/NS2.fev/marine/rifle/fire_single_2", "sound/NS2.fev/marine/rifle/fire_single_3" }
+//for k, v in ipairs(kSingleShotSounds) do PrecacheAsset(v) end
 
-for k, v in ipairs(kLoopingSounds) do PrecacheAsset(v) end
+//local kLoopingSounds = { "sound/NS2.fev/marine/rifle/fire_14_sec_loop", "sound/NS2.fev/marine/rifle/fire_loop_2", "sound/NS2.fev/marine/rifle/fire_loop_3",
+                         //"sound/NS2.fev/marine/rifle/fire_loop_1_upgrade_1", "sound/NS2.fev/marine/rifle/fire_loop_2_upgrade_1", "sound/NS2.fev/marine/rifle/fire_loop_3_upgrade_1",
+                         //"sound/NS2.fev/marine/rifle/fire_loop_1_upgrade_3", "sound/NS2.fev/marine/rifle/fire_loop_2_upgrade_3", "sound/NS2.fev/marine/rifle/fire_loop_3_upgrade_3" }
+
+//for k, v in ipairs(kLoopingSounds) do PrecacheAsset(v) end
 
 local kEndSounds = { "sound/NS2.fev/marine/rifle/end", "sound/NS2.fev/marine/rifle/end_upgrade_1", "sound/NS2.fev/marine/rifle/end_upgrade_3"  }
 for k, v in ipairs(kEndSounds) do PrecacheAsset(v) end
@@ -45,11 +47,6 @@ local kMuzzleCinematics = {
     PrecacheAsset("cinematics/marine/rifle/muzzle_flash.cinematic"),
     PrecacheAsset("cinematics/marine/rifle/muzzle_flash2.cinematic"),
     PrecacheAsset("cinematics/marine/rifle/muzzle_flash3.cinematic"),
-}
-
-local networkVars =
-{
-    soundType = "integer (1 to 9)"
 }
 
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/rifle/muzzle_flash.cinematic")
@@ -64,9 +61,6 @@ function Rifle:OnCreate()
     
     if Client then
         InitMixin(self, ClientWeaponEffectsMixin)
-    elseif Server then
-        self.soundVariant = Shared.GetRandomInt(1, kNumberOfVariants)
-        self.soundType = self.soundVariant
     end
     
 end
@@ -96,26 +90,10 @@ function Rifle:OnDestroy()
     
 end
 
-local function UpdateSoundType(self, player)
-
-    local upgradeLevel = 0
-    
-    if player.GetWeaponUpgradeLevel then
-        upgradeLevel = math.max(0, player:GetWeaponUpgradeLevel() - 1)
-    end
-
-    self.soundType = self.soundVariant + upgradeLevel * kNumberOfVariants
-
-end
-
 function Rifle:OnPrimaryAttack(player)
 
     if not self:GetIsReloading() then
     
-        if Server then
-            UpdateSoundType(self, player)
-        end
-        
         ClipWeapon.OnPrimaryAttack(self, player)
         
     end    
@@ -272,17 +250,17 @@ if Client then
 
     function Rifle:OnClientPrimaryAttackStart()
     
-        Shared.PlaySound(self, kLoopingSounds[self.soundType])
+        Shared.PlaySound(self, kSingleShotSound)
         
         if not self.muzzleCinematic then
         
-            local cinematicName = kMuzzleCinematics[math.ceil(self.soundType / 3)]
+            local cinematicName = kMuzzleCinematics[1]
             self.activeCinematicName = cinematicName
             self.muzzleCinematic = CreateMuzzleCinematic(self, cinematicName, cinematicName, kMuzzleAttachPoint, nil, Cinematic.Repeat_Endless)
             
         else
         
-            local cinematicName = kMuzzleCinematics[math.ceil(self.soundType / 3)]
+            local cinematicName = kMuzzleCinematics[1]
             if cinematicName ~= self.activeCinematicName then
             
                 Client.DestroyCinematic(self.muzzleCinematic)
@@ -300,11 +278,15 @@ if Client then
         
     end
     
+    function Rifle:OnClientPrimaryAttacking()
+        Shared.PlaySound(self, kSingleShotSound)
+    end
+    
     function Rifle:OnClientPrimaryAttackEnd()
     
         // Just assume the looping sound is playing.
-        Shared.StopSound(self, kLoopingSounds[self.soundType])
-        Shared.PlaySound(self, kEndSounds[math.ceil(self.soundType / 3)])
+        //Shared.StopSound(self, kLoopingSounds[self.soundType])
+        //Shared.PlaySound(self, kEndSounds[math.ceil(self.soundType / 3)])
         
         if self.muzzleCinematic then
             self.muzzleCinematic:SetIsVisible(false)
@@ -338,4 +320,4 @@ if Client then
     
 end
 
-Shared.LinkClassToMap("Rifle", Rifle.kMapName, networkVars)
+Shared.LinkClassToMap("Rifle", Rifle.kMapName, { })
