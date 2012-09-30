@@ -41,6 +41,8 @@ Script.Load("lua/NetworkDebug.lua")
 Server.dbgTracer = DbgTracer()
 Server.dbgTracer:Init()
 
+table.insert(kDAKGameMods, "5f3b1e6")
+
 Server.readyRoomSpawnList = table.array(32)
 
 // map name, group name and values keys for all map entities loaded to
