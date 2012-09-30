@@ -23,7 +23,8 @@ local kTextureName = "ui/alien_hud_health.dds"
 local kAbilityImage = "ui/alien_abilities.dds"
 
 local kHealthFontName = "fonts/Stamp_large.fnt"
-local kArmorFontName = "fonts/Stamp_medium.fnt"
+local kArmorFontName = "fonts/Stamp_large.fnt"
+//local kArmorFontName = "fonts/Stamp_medium.fnt"
 local kAbilityNumFontName = "fonts/Kartika_small.fnt"
 local kHiveLocationFontName = "fonts/AgencyFB_tiny.fnt"
 
@@ -40,18 +41,18 @@ local kHiveStatusPos = Vector(kHiveStatusSize.x - 180, -80, 0)
 local kMaxHives = 5
 local kHiveStatusYspacing = 100
 
-local kHiveHealthSize = Vector(10, 60, 0)
+local kHiveHealthSize = Vector(10, 70, 0)
 local kHiveHealthBarPos = Vector(-43, -63, 0)
-local kHiveBuiltSize = Vector(10, 60, 0)
+local kHiveBuiltSize = Vector(10, 70, 0)
 local kHiveBuiltBarPos = Vector(-85, -63, 0)
 local kHiveTextPos = Vector(-115, 5, 0)
 
 local kUpgradesTexture = "ui/alien_buildmenu.dds"
 local kStatusTexture = "ui/alien_HUD_status.dds"
 
-local kHealthTextPos = Vector(220, -60, 0)
-local kArmorTextPos = Vector(220, -30, 0)
-local kEnergyTextPos = Vector(-60, -35, 0)
+local kHealthTextPos = Vector(220, -70, 0)
+local kArmorTextPos = Vector(220, -26, 0)
+local kEnergyTextPos = Vector(-60, -31, 0)
 
 local kArmorBarColor = kAlienFontColor
 local kHealthBarColor = kAlienFontColor
@@ -61,23 +62,23 @@ local kArmorBarGlowCoords = { 0, 392, 30, 392 + 30 }
 local kArmorBarGlowSize = Vector(8, 22, 0)
 local kArmorBarGlowPos = Vector(-kArmorBarGlowSize.x, 0, 0)
 
-local kArmorBarSize = Vector(200, 20, 0)
-local kArmorBarPixelCoords = { 58, 352, 58 + 206, 352 + 20 }
+local kArmorBarSize = Vector(200, 30, 0)
+local kArmorBarPixelCoords = { 58, 352, 58 + 200, 352 + 30 }
 local kArmorBarPos = Vector(10, -35, 0)
 
-local kHealthBarSize = Vector(200, 28, 0)
-local kHealthBarPixelCoords = { 58, 352, 58 + 206, 352 + 20 }
-local kHealthBarPos = Vector(10, -65, 0)
+local kHealthBarSize = Vector(200, 40, 0)
+local kHealthBarPixelCoords = { 58, 352, 58 + 200, 352 + 40 }
+local kHealthBarPos = Vector(10, -80, 0)
 
-local kEnergyBarSize = Vector(200, 20, 0)
-local kEnergyBarPixelCoords = { 58, 352, 58 + 206, 352 + 20 }
+local kEnergyBarSize = Vector(200, 30, 0)
+local kEnergyBarPixelCoords = { 58, 352, 58 + 206, 352 + 30 }
 local kEnergyBarPos = Vector(-270, -40, 0)
 
 local kNotEnoughEnergyColor = Color(0.6, 0, 0, 1)
-local kEnergizeColor = Color(243/255, 189/255, 77/255,0)
+local kEnergizeColor = Color(.7, .7, .2, 1)
 
 local kLowHiveHealth = 0.4
-local kLowHealth = 0.3
+local kLowHealth = 0.4
 local kNotificationUpdateIntervall = 0.2
 local kHiveUpdateInterval = 1
 
@@ -544,6 +545,10 @@ function GUIAlienHUD:UpdateHealthText(deltaTime)
             self.armorBar:SetTexturePixelCoordinates(unpack(pixelCoords))
         
             local particleSize = Vector(10, 14, 0)
+            if armorFraction < (kLowHealth / 2) then
+                self.armorBar:SetColor(Color(1, 0, 0, 1))
+                self.armorText:SetColor(Color(1, 0, 0, 1))
+            end
 
             for i = 1, 3 do
                 
@@ -570,7 +575,10 @@ function GUIAlienHUD:UpdateHealthText(deltaTime)
         
             self.armorBar:DestroyAnimations()
             self.armorBar:SetSize( armorBarSize, animSpeed )
-            self.armorBar:SetColor(kArmorBarColor)
+            if armorFraction > (kLowHealth / 2) then
+                self.armorBar:SetColor(kArmorBarColor)
+                self.armorText:SetColor(kArmorBarColor)
+            end
             self.armorBar:SetTexturePixelCoordinates(pixelCoords[1], pixelCoords[2], pixelCoords[3], pixelCoords[4], animSpeed, "ANIM_ARMOR_TEXTURE")
             
             self.armorText:DestroyAnimations()
@@ -605,7 +613,14 @@ function GUIAlienHUD:UpdateEnergyText(deltaTime)
 	    local energyBarSize = Vector(kEnergyBarSize.x * energyFraction, kEnergyBarSize.y, 0)
 	    local pixelCoords = kEnergyBarPixelCoords
 	    pixelCoords[3] = kEnergyBarSize.x * energyFraction + pixelCoords[1]
-    
+	    local energizeLevel = PlayerUI_GetEnergizeLevel()
+        if energizeLevel > 0 then
+            self.energyText:SetColor(Color(1, energyFraction, 1, 1))
+        else
+            self.energyText:SetColor(Color(1, energyFraction, 0, 1))
+        end
+        self.energyBar:SetColor(Color(1, energyFraction, 0, 1))
+        
         if currentenergy < self.lastEnergy then
             self.energyText:DestroyAnimation("ANIM_TEXT")
             self.energyText:SetText(tostring(math.ceil(currentenergy)))
@@ -618,11 +633,12 @@ function GUIAlienHUD:UpdateEnergyText(deltaTime)
             self.energyBar:SetTexturePixelCoordinates(pixelCoords[1], pixelCoords[2], pixelCoords[3], pixelCoords[4], animSpeed, "ANIM_HEALTH_TEXTURE")
         end
 
-        local abilityData = PlayerUI_GetAbilityData()
-        local secabilityData = PlayerUI_GetSecondaryAbilityData()
+        //local abilityData = PlayerUI_GetAbilityData()
+        //local secabilityData = PlayerUI_GetSecondaryAbilityData()
         
-        local currentIndex = 1
+        //local currentIndex = 1
         
+        /*
         if table.count(abilityData) > 0 then
             local totalPower = abilityData[currentIndex]
             local minimumPower = abilityData[currentIndex + 1]
@@ -693,15 +709,7 @@ function GUIAlienHUD:UpdateEnergyText(deltaTime)
                 end
             end
         end
-        
-        //kEnergizeColor
-        if not self.lowEnergyAnimPlaying and not self.CriticallowEnergyAnimPlaying then 
-            local energizeLevel = PlayerUI_GetEnergizeLevel()
-            if energizeLevel > 0 then
-                self.energyBar:SetColor(kEnergizeColor)
-                self.energyText:SetColor(kEnergizeColor)
-            end
-        end
+        */
         
         self.lastEnergy = currentenergy
         
@@ -724,56 +732,58 @@ function GUIAlienHUD:UpdateHiveInformation(deltaTime)
     local hivenum = 1
     if hivesinfo ~= nil then
         for i = 1, #hivesinfo do
-            local hiveinfo = hivesinfo[i]
-            if self.hives[i].lasthealth ~= hiveinfo.healthpercent or self.hives[i].techId ~= hiveinfo.techId or self.hives[i].lastbuilt ~= hiveinfo.buildprogress  and hiveinfo.time - Client.GetTime() < 5 then
+            if i < kMaxHives then
+                local hiveinfo = hivesinfo[i]
+                if self.hives[i].lasthealth ~= hiveinfo.healthpercent or self.hives[i].techId ~= hiveinfo.techId or self.hives[i].lastbuilt ~= hiveinfo.buildprogress  and hiveinfo.time - Client.GetTime() < 5 then
+                
+                    local textureCoords = GetTextureCoordinatesForIcon(hiveinfo.techId, false)
+                    self.hives[i].locationtext:SetText(hiveinfo.location)
+                    self.hives[i].locationtext:SetIsVisible(true)
+                    self.hives[i].locationtext:SetColor(kHealthBarColor)
+                    self.hives[i].icon:SetTexturePixelCoordinates(unpack(textureCoords))
+                    self.hives[i].icon:SetIsVisible(true)
+                    self.hives[i].healthBar:SetSize(Vector(kHiveHealthSize.x, kHiveHealthSize.y * hiveinfo.healthpercent, 0))
+                    self.hives[i].healthBar:SetIsVisible(true)
+                    self.hives[i].builtBar:SetSize(Vector(kHiveBuiltSize.x, kHiveBuiltSize.y * hiveinfo.buildprogress, 0))
+                    
+                    local animSpeed = ConditionalValue(hiveinfo.healthpercent < self.hives[i].lasthealth, kAnimSpeedDown, kAnimSpeedUp)
+                    local pixelCoords = kHealthBarPixelCoords
+                    pixelCoords[3] = kHealthBarSize.x * hiveinfo.healthpercent + pixelCoords[1]
+
+                    if hiveinfo.healthpercent < kLowHiveHealth then
+                        self.hives[i].icon:SetColor(Color(1, 0, 0, 1))
+                        self.hives[i].locationtext:SetColor(Color(1, 0, 0, 1))
+                    end
+                    if self.hives[i].lasthealth > hiveinfo.healthpercent then
+                        self.hives[i].hivedamageAnimPlaying = Client.GetTime() + 5
+                        self.hives[i].healthBar:SetColor(Color(1, 0, 0, 1), kHiveDamageAnimRate, "ANIM_HEALTH_PULSATE", AnimateQuadratic, HiveDamagePulsate )
+                    else
+                        self.hives[i].healthBar:SetColor(kHealthBarColor)
+                        self.hives[i].icon:SetColor(kHealthBarColor)
+                        self.hives[i].locationtext:SetColor(kHealthBarColor)
+                    end
+
+                    if hiveinfo.buildprogress == 1 then
+                        self.hives[i].builtBar:SetIsVisible(false)
+                    else
+                        self.hives[i].builtBar:SetIsVisible(true) 
+                    end
+                    self.hives[i].lasthealth = hiveinfo.healthpercent
+                    self.hives[i].techId = hiveinfo.techId
+                    self.hives[i].lastbuilt = hiveinfo.buildprogress
+                    
+                elseif hiveinfo.time - Client.GetTime() < 5 then
+                    if self.hives[i].hivedamageAnimPlaying ~= nil and self.hives[i].hivedamageAnimPlaying < Client.GetTime() then
+                        self.hives[i].hivedamageAnimPlaying = nil
+                        self.hives[i].healthBar:DestroyAnimation("ANIM_HEALTH_PULSATE")
+                        self.hives[i].healthBar:SetColor(kHealthBarColor)
+                        self.hives[i].icon:SetColor(kHealthBarColor)
+                        self.hives[i].locationtext:SetColor(kHealthBarColor)
+                    end
+                end
             
-                local textureCoords = GetTextureCoordinatesForIcon(hiveinfo.techId, false)
-                self.hives[i].locationtext:SetText(hiveinfo.location)
-                self.hives[i].locationtext:SetIsVisible(true)
-                self.hives[i].locationtext:SetColor(kHealthBarColor)
-                self.hives[i].icon:SetTexturePixelCoordinates(unpack(textureCoords))
-                self.hives[i].icon:SetIsVisible(true)
-                self.hives[i].healthBar:SetSize(Vector(kHiveHealthSize.x, kHiveHealthSize.y * hiveinfo.healthpercent, 0))
-                self.hives[i].healthBar:SetIsVisible(true)
-                self.hives[i].builtBar:SetSize(Vector(kHiveBuiltSize.x, kHiveBuiltSize.y * hiveinfo.buildprogress, 0))
-                
-                local animSpeed = ConditionalValue(hiveinfo.healthpercent < self.hives[i].lasthealth, kAnimSpeedDown, kAnimSpeedUp)
-                local pixelCoords = kHealthBarPixelCoords
-                pixelCoords[3] = kHealthBarSize.x * hiveinfo.healthpercent + pixelCoords[1]
-
-                if hiveinfo.healthpercent < kLowHiveHealth then
-                    self.hives[i].icon:SetColor(Color(1, 0, 0, 1))
-                    self.hives[i].locationtext:SetColor(Color(1, 0, 0, 1))
-                end
-                if self.hives[i].lasthealth > hiveinfo.healthpercent then
-                    self.hives[i].hivedamageAnimPlaying = Client.GetTime() + 5
-                    self.hives[i].healthBar:SetColor(Color(1, 0, 0, 1), kHiveDamageAnimRate, "ANIM_HEALTH_PULSATE", AnimateQuadratic, HiveDamagePulsate )
-                else
-                    self.hives[i].healthBar:SetColor(kHealthBarColor)
-                    self.hives[i].icon:SetColor(kHealthBarColor)
-                    self.hives[i].locationtext:SetColor(kHealthBarColor)
-                end
-
-                if hiveinfo.buildprogress == 1 then
-                    self.hives[i].builtBar:SetIsVisible(false)
-                else
-                    self.hives[i].builtBar:SetIsVisible(true) 
-                end
-                self.hives[i].lasthealth = hiveinfo.healthpercent
-                self.hives[i].techId = hiveinfo.techId
-                self.hives[i].lastbuilt = hiveinfo.buildprogress
-                
-            elseif hiveinfo.time - Client.GetTime() < 5 then
-                if self.hives[i].hivedamageAnimPlaying ~= nil and self.hives[i].hivedamageAnimPlaying < Client.GetTime() then
-                    self.hives[i].hivedamageAnimPlaying = nil
-                    self.hives[i].healthBar:DestroyAnimation("ANIM_HEALTH_PULSATE")
-                    self.hives[i].healthBar:SetColor(kHealthBarColor)
-                    self.hives[i].icon:SetColor(kHealthBarColor)
-                    self.hives[i].locationtext:SetColor(kHealthBarColor)
-                end
+                hivenum = i + 1
             end
-            
-            hivenum = i + 1
         end
             
         if self.lastHiveUpdate + kHiveUpdateInterval < Client.GetTime() then

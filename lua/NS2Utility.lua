@@ -1644,7 +1644,7 @@ function BuildClassToGrid()
 
     ClassToGrid["ReadyRoomPlayer"] = { 1, 2 }
     ClassToGrid["Marine"] = { 1, 2 }
-    ClassToGrid["HeavyArmor"] = { 2, 2 }
+    ClassToGrid["HeavyArmorMarine"] = { 2, 2 }
     ClassToGrid["JetpackMarine"] = { 3, 2 }
     ClassToGrid["CommandStationOccupied"] = { 5, 2 }
     ClassToGrid["CommandStationL2Occupied"] = { 6, 2 }
@@ -1686,7 +1686,7 @@ function BuildClassToGrid()
     ClassToGrid["Crag"] = { 1, 7 }
     ClassToGrid["Whip"] = { 3, 7 }
     ClassToGrid["Shade"] = { 5, 7 }
-    ClassToGrid["Shift"] = { 7, 7 }
+    ClassToGrid["Shift"] = { 6, 7 }
 
     ClassToGrid["WaypointMove"] = { 1, 8 }
     ClassToGrid["WaypointDefend"] = { 2, 8 }
