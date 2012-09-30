@@ -191,8 +191,8 @@ function OnCommandRecieveHiveInfo(hiveinfo)
 
     local player = Client.GetLocalPlayer()
     if player:isa("Alien") then
+        hiveinfo.time = Shared.GetTime()
         player.hivesinfo[hiveinfo.key] = hiveinfo
-        player.hivesinfo[hiveinfo.key].time = Client.GetTime()
     end
     
 end

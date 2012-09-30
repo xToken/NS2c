@@ -756,13 +756,13 @@ function Marine:GetCanChangeViewAngles()
     return true
 end    
 
-function Marine:GetPlayFootsteps()
+//function Marine:GetPlayFootsteps()
 
-    local velocity = self:GetVelocity()
-    local velocityLength = velocity:GetLength() 
-    return self:GetIsOnGround() and velocityLength > .75 and not self.movementModiferState and not self.crouching
+    //local velocity = self:GetVelocity()
+    //local velocityLength = velocity:GetLength() 
+    //return self:GetIsOnGround() and velocityLength > .75 and not self.movementModiferState and not self.crouching
     
-end
+//end
 
 function Marine:OnDisrupt()
 

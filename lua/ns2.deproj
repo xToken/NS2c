@@ -244,6 +244,9 @@
     <filename>Hud\GUIEvent.lua</filename>
   </file>
   <file>
+    <filename>GUIGameEnd.lua</filename>
+  </file>
+  <file>
     <filename>GUIGorgeBuildMenu.lua</filename>
   </file>
   <file>
@@ -281,6 +284,9 @@
   </file>
   <file>
     <filename>Hud\GUIPlayerResource.lua</filename>
+  </file>
+  <file>
+    <filename>GUIReadyRoomOrders.lua</filename>
   </file>
   <file>
     <filename>GUISelectionPanel.lua</filename>
