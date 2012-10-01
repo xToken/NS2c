@@ -295,7 +295,7 @@ kDamageEffects =
             {sound = "sound/NS2.fev/alien/gorge/wound", classname = "Gorge", world_space = true, done = true}, 
             {sound = "sound/NS2.fev/alien/lerk/wound_serious", classname = "Lerk", flinch_severe = true, world_space = true, done = true},
             {sound = "sound/NS2.fev/alien/lerk/wound", classname = "Lerk", world_space = true, done = true},
-            {sound = "sound/NS2.fev/alien/fade/wound_serious", classname = "Fade", flinch_severe = true, world_space = true, done = true},
+            {sound = "sound/ns2c.fev/ns2c/alien/fade/wound", classname = "Fade", flinch_severe = true, world_space = true, done = true},
             {sound = "sound/NS2.fev/alien/fade/wound", classname = "Fade", world_space = true, done = true},
             {sound = "sound/NS2.fev/alien/onos/wound_serious", classname = "Onos", flinch_severe = true, world_space = true, done = true},
             {sound = "sound/NS2.fev/alien/onos/wound", classname = "Onos", world_space = true, done = true},

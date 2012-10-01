@@ -189,7 +189,7 @@ end
 
 function HeavyArmorMarine:GetAcceleration()
     local acceleration = HeavyArmorMarine.kAcceleration
-    if not self:GetIsOnGround() then
+    if not self.onGround then
         acceleration = HeavyArmorMarine.kAirAcceleration
     end
     acceleration = acceleration * self:GetSlowSpeedModifier() * self:GetInventorySpeedScalar()

@@ -58,19 +58,12 @@ function AcidRocket:OnPrimaryAttack(player)
 
     if player:GetEnergy() >= self:GetEnergyCost() and Shared.GetTime() > (self.timeLastAcidRocket + self:GetPrimaryAttackDelay()) then
         if Server then
-            self.firingPrimary = true
             self:FireRocketProjectile(player)
-            player:DeductAbilityEnergy(self:GetEnergyCost())            
-            self.timeLastAcidRocket = Shared.GetTime()
-            self:TriggerEffects("bilebomb_attack")
-            
-            if Client then
-            
-                local cinematic = Client.CreateCinematic(RenderScene.Zone_ViewModel)
-                cinematic:SetCinematic(kBbombViewEffect)
-                
-            end
+            player:DeductAbilityEnergy(self:GetEnergyCost())
         end
+        self.firingPrimary = true
+        self.timeLastAcidRocket = Shared.GetTime()
+        self:TriggerEffects("acidrocket_attack")
     else
         self.firingPrimary = false
     end  

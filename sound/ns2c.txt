@@ -45,6 +45,8 @@ ns2c.fev/ns2c/alien/lerk/umbra_block
 ns2c.fev/ns2c/alien/lerk/primal_scream
 ns2c.fev/ns2c/alien/lerk/umbra_fire
 ns2c.fev/ns2c/alien/fade
+ns2c.fev/ns2c/alien/fade/spawn
+ns2c.fev/ns2c/alien/fade/wound
 ns2c.fev/ns2c/alien/fade/acidrocket_fire
 ns2c.fev/ns2c/alien/fade/acidrocket_hit
 ns2c.fev/ns2c/alien/fade/metabolize

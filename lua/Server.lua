@@ -26,7 +26,7 @@ Script.Load("lua/ServerAdmin.lua")
 Script.Load("lua/DAKLoader.lua")
 
 Script.Load("lua/ServerWebInterface.lua")
-Script.Load("lua/MapCycle.lua")
+//Script.Load("lua/MapCycle.lua")
 Script.Load("lua/ConsistencyConfig.lua")
 
 Script.Load("lua/ConsoleCommands_Server.lua")

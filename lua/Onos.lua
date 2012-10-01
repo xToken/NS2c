@@ -52,7 +52,7 @@ Onos.kMaxCrouchSpeed = 3
 Onos.kHealth = kOnosHealth
 Onos.kArmor = kOnosArmor
 Onos.kChargeEnergyCost = 45
-Onos.kChargeAcceleration = 100
+Onos.kChargeAcceleration = 150
 Onos.kChargeUpDuration = .25
 Onos.kChargeDelay = .1
 Onos.kMinChargeDamage = kChargeMinDamage
@@ -147,7 +147,7 @@ end
 function Onos:GetAcceleration()
 
     local acceleration = Onos.kBaseAcceleration
-    if not self:GetIsOnGround() then
+    if not self.onGround then
         acceleration = Onos.kAirAcceleration
     end
     if self.charging then
@@ -242,7 +242,7 @@ end
 
 function Onos:TriggerCharge(move)
     
-    if not self.charging and self.timeLastChargeEnd + Onos.kChargeDelay < Shared.GetTime() and self:GetIsOnGround() and not self:GetCrouching() and self.oneHive then
+    if not self.charging and self.timeLastChargeEnd + Onos.kChargeDelay < Shared.GetTime() and self.onGround and not self:GetCrouching() and self.oneHive then
 
         self.charging = true
         self.timeLastCharge = Shared.GetTime()
@@ -338,7 +338,7 @@ function Onos:GetMaxSpeed(possible)
     
     // Take into account crouching
     
-    if self:GetCrouching() and self:GetIsOnGround() then
+    if self:GetCrouching() and self.onGround then
         maxSpeed = Onos.kMaxCrouchSpeed
     end
 
