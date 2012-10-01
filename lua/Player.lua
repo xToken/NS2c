@@ -3074,6 +3074,7 @@ kStepTagNames["step"] = true
 kStepTagNames["step_run"] = true
 kStepTagNames["step_sprint"] = true
 kStepTagNames["step_crouch"] = true
+
 function Player:OnTag(tagName)
 
     PROFILE("Player:OnTag")
@@ -3084,8 +3085,7 @@ function Player:OnTag(tagName)
     end
     
     // Play footstep when foot hits the ground. Client side only.
-    if Client and self:GetPlayFootsteps() and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] then
-        //Print("STEPPPIN")
+    if Client and self:GetPlayFootsteps() and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] and not self.movementModiferState then
         self:TriggerFootstep()
     end
     
