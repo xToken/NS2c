@@ -22,7 +22,7 @@ local networkVars =
     lastPrimaryAttackTime = "time"
 }
 
-SwipeBlink.kRange = 1.6
+SwipeBlink.kRange = 1.4
 
 local kAnimationGraph = PrecacheAsset("models/alien/fade/fade_view.animation_graph")
 

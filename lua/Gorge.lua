@@ -169,7 +169,7 @@ function Gorge:GetAcceleration()
         return (Gorge.kAcceleration + Gorge.kSlidingAccelBoost) * self:GetMovementSpeedModifier()
     end
     
-    if self:GetIsOnGround() then
+    if self.onGround then
         return Gorge.kAcceleration * self:GetMovementSpeedModifier()
     else
         return Gorge.kAirAcceleration * self:GetMovementSpeedModifier()
@@ -224,7 +224,7 @@ local function UpdateGorgeSliding(self, input)
     PROFILE("Gorge:UpdateGorgeSliding")
     
     local slidingDesired = GetIsSlidingDesired(self, input)
-    if slidingDesired and not self.sliding and self.timeSlideEnd + kSlideCoolDown < Shared.GetTime() and self:GetIsOnGround() and self:GetEnergy() >= Gorge.kBellySlideCost then
+    if slidingDesired and not self.sliding and self.timeSlideEnd + kSlideCoolDown < Shared.GetTime() and self.onGround and self:GetEnergy() >= Gorge.kBellySlideCost then
     
         self.sliding = true
         self.startedSliding = true
@@ -353,7 +353,7 @@ function Gorge:ModifyVelocity(input, velocity)
     // Give a little push forward to make sliding useful
     if self.startedSliding then
     
-        if self:GetIsOnGround() then
+        if self.onGround then
     
             local pushDirection = GetNormalizedVectorXZ(self:GetViewCoords().zAxis)
             local force = kStartSlideForce * self:GetMovementSpeedModifier()
@@ -403,7 +403,7 @@ end
 
 function Gorge:PostUpdateMove(input, runningPrediction)
 
-    if self:GetIsBellySliding() and self:GetIsOnGround() then
+    if self:GetIsBellySliding() and self.onGround then
     
         local velocity = self:GetVelocity()
     

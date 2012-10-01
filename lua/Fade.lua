@@ -154,13 +154,6 @@ function Fade:GetViewModelName()
     return Fade.kViewModelName
 end
 
-/*
-function Fade:OnJumpLand(landIntensity, slowDown)
-    Alien.OnJumpLand(self, landIntensity, slowDown)
-    self.landedAfterBlink = true
-end
-*/
-
 function Fade:PerformsVerticalMove()
     return self:GetIsBlinking()
 end
@@ -198,7 +191,7 @@ function Fade:GetAcceleration()
     if self:GetRecentlyBlinked() and self:GetVelocity():GetLengthXZ() > Fade.kBlinkAccelSpeed then
         return Fade.kBlinkAirAcceleration * self:GetMovementSpeedModifier()
     end
-    if not self:GetIsOnGround() then
+    if not self.onGround then
         return Fade.kAirAcceleration * self:GetMovementSpeedModifier()
     end
     
@@ -215,7 +208,7 @@ function Fade:GetMaxSpeed(possible)
     local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Fade.kWalkSpeed, Fade.kMaxSpeed)
     
         // Take into account crouching
-    if self:GetCrouching() and self:GetIsOnGround() then
+    if self:GetCrouching() and self.onGround then
         maxSpeed = Fade.kMaxCrouchSpeed
     end
 
@@ -303,7 +296,7 @@ end
 function Fade:TriggerBlink()
     self.ethereal = true
     self.onGroundNeedsUpdate = false
-    //self.jumping = true
+    self.jumping = true
 end
 
 function Fade:OverrideInput(input)

@@ -373,12 +373,12 @@ function JetpackMarine:GetMaxSpeed(possible)
     local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), JetpackMarine.kWalkMaxSpeed,  JetpackMarine.kRunMaxSpeed)
     
     // GetIsOnGround is used to not lose our jetpacking speed when jump is released to lose height
-    if self:GetIsJetpacking() or not self:GetIsOnGround() then
+    if self:GetIsJetpacking() or not self.onGround then
         maxSpeed = JetpackMarine.kFlyMaxSpeed
     end
     
     // Take into account crouching
-    if self:GetCrouching() and self:GetIsOnGround() then
+    if self:GetCrouching() and self.onGround then
         maxSpeed = ( 1 - self:GetCrouchAmount() * self:GetCrouchSpeedScalar() ) * maxSpeed
     end
     

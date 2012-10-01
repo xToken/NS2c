@@ -507,7 +507,7 @@ function Marine:GetMaxSpeed(possible)
     local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Marine.kWalkMaxSpeed,  Marine.kRunMaxSpeed)
     
     // Take into account crouching
-    if self:GetCrouching() and self:GetIsOnGround() then
+    if self:GetCrouching() and self.onGround then
         maxSpeed = ( 1 - self:GetCrouchAmount() * self:GetCrouchSpeedScalar() ) * maxSpeed
     end
     
@@ -540,7 +540,7 @@ end
 
 function Marine:GetAcceleration()
     local acceleration = Marine.kAcceleration
-    if not self:GetIsOnGround() then
+    if not self.onGround then
         acceleration = Marine.kAirAcceleration
     end
     acceleration = acceleration * self:GetSlowSpeedModifier() * self:GetInventorySpeedScalar()

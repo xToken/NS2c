@@ -3102,7 +3102,7 @@ local function OnJumpLandClient(self)
 
     if not Shared.GetIsRunningPrediction() then
     
-        local landSurface = GetSurfaceAndNormalUnderEntity(self)
+        //local landSurface = GetSurfaceAndNormalUnderEntity(self)
         self:TriggerEffects("land", { surface = landSurface, enemy = GetAreEnemies(self, Client.GetLocalPlayer()) })
         
     end
