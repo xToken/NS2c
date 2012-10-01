@@ -1,5 +1,0 @@
-shader = "../core/shaders/Model_alpha.surface_shader"
-albedoMap = "models/marine/switchaxe/switchaxe.dds"
-normalMap = "models/marine/switchaxe/switchaxe.dds"
-opacityMap = "models/marine/switchaxe/switchaxe_alpha.dds"
-specularMap = "models/marine/switchaxe/switchaxe_alpha.dds"
