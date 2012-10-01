@@ -265,6 +265,7 @@ if Client then
     end
     
     function HeavyMachineGun:OnClientPrimaryAttacking()
+        Shared.StopSound(self, kLoopingSound)
         Shared.PlaySound(self, kLoopingSound)
     end
     

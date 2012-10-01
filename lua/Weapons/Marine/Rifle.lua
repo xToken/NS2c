@@ -279,6 +279,7 @@ if Client then
     end
     
     function Rifle:OnClientPrimaryAttacking()
+        Shared.StopSound(self, kSingleShotSound)
         Shared.PlaySound(self, kSingleShotSound)
     end
     

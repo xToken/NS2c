@@ -354,6 +354,7 @@ end
 local function OnCommandGive(client, itemName)
 
     local player = client:GetControllingPlayer()
+    if itemName == "hmg" then itemName = "heavymachinegun" end // lol
     if(Shared.GetCheatsEnabled() and itemName ~= nil) then
         player:GiveItem(itemName)
         //player:SetActiveWeapon(itemName)
