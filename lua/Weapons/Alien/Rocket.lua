@@ -76,7 +76,7 @@ if Server then
             end
         
             RadiusDamage(hitEntities, self:GetOrigin(), kAcidRocketRadius, kAcidRocketDamage, self, true)
-            self:TriggerEffects("bilebomb_hit")
+            self:TriggerEffects("acidrocket_hit")
             DestroyEntity(self)
 
         end

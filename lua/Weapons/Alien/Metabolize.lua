@@ -60,6 +60,8 @@ function Metabolize:OnPrimaryAttack(player)
 
     if not self:GetIsBlinking() and player:GetEnergy() >= self:GetEnergyCost() and not GetHasAttackDelay(self, player) then
         self.primaryAttacking = true    
+    else
+        self:OnPrimaryAttackEnd()
     end
     
 end
@@ -68,7 +70,6 @@ end
 function Metabolize:OnPrimaryAttackEnd()
     
     Blink.OnPrimaryAttackEnd(self)
-    
     self.primaryAttacking = false
     
 end
@@ -76,7 +77,6 @@ end
 function Metabolize:OnHolster(player)
 
     Blink.OnHolster(self, player)
-    
     self.primaryAttacking = false
     
 end
