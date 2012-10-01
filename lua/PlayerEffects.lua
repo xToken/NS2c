@@ -149,16 +149,16 @@ kPlayerEffectData =
             {sound = "sound/NS2.fev/materials/rock/fade_step", classname = "Fade", surface = "rock", done = true},
             
             // Onos
-            {sound = "sound/NS2.fev/materials/metal/onos_step_for_enemy", classname = "Onos", surface = "metal", enemy = true, done = true},
+            //{sound = "sound/NS2.fev/materials/metal/onos_step_for_enemy", classname = "Onos", surface = "metal", enemy = true, done = true},
             {sound = "sound/NS2.fev/materials/metal/onos_step", classname = "Onos", surface = "metal", done = true},
             
-            {sound = "sound/NS2.fev/materials/thin_metal/onos_step_for_enemy", classname = "Onos", surface = "thin_metal", enemy = true, done = true},
+            //{sound = "sound/NS2.fev/materials/thin_metal/onos_step_for_enemy", classname = "Onos", surface = "thin_metal", enemy = true, done = true},
             {sound = "sound/NS2.fev/materials/thin_metal/onos_step", classname = "Onos", surface = "thin_metal", done = true},
             
-            {sound = "sound/NS2.fev/materials/organic/onos_step_for_enemy", classname = "Onos", surface = "organic", enemy = true, done = true},
+            //{sound = "sound/NS2.fev/materials/organic/onos_step_for_enemy", classname = "Onos", surface = "organic", enemy = true, done = true},
             {sound = "sound/NS2.fev/materials/organic/onos_step", classname = "Onos", surface = "organic", done = true},
             
-            {sound = "sound/NS2.fev/materials/rock/onos_step_for_enemy", classname = "Onos", surface = "rock", enemy = true, done = true},
+            //{sound = "sound/NS2.fev/materials/rock/onos_step_for_enemy", classname = "Onos", surface = "rock", enemy = true, done = true},
             {sound = "sound/NS2.fev/materials/rock/onos_step", classname = "Onos", surface = "rock", done = true},
             
             {sound = "sound/NS2.fev/alien/onos/onos_step", classname = "Onos", done = true},
