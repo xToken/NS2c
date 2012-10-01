@@ -10,6 +10,10 @@ ns2c.fev/ns2c/marine/weapon/pistol_fire
 ns2c.fev/ns2c/marine/weapon/hmg_reload
 ns2c.fev/ns2c/marine/weapon/shotgun_draw
 ns2c.fev/ns2c/marine/weapon/shotgun_fire
+ns2c.fev/ns2c/marine/heavyarmor/run_step1
+ns2c.fev/ns2c/marine/heavyarmor/run_step2
+ns2c.fev/ns2c/marine/heavyarmor/run_step3
+ns2c.fev/ns2c/marine/heavyarmor/run_step4
 ns2c.fev/ns2c/alien
 ns2c.fev/ns2c/alien/skulk
 ns2c.fev/ns2c/alien/skulk/bite
