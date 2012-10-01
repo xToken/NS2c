@@ -28,7 +28,7 @@ AddMixinNetworkVars(StompMixin, networkVars)
 
 local kAttackRadius = 1.5
 local kAttackOriginDistance = 2
-local kAttackRange = 2.2
+local kAttackRange = 1.9
 
 local function GetHasAttackDelay(self, player)
 

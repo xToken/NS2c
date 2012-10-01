@@ -181,11 +181,11 @@ kAlienWeaponEffects =
     
     acidrocket_attack =
     {
-        bilebombFireEffects = 
+        acidrocketFireEffects = 
         {   
             {sound = "", silenceupgrade = true, done = true}, 
-            //{sound = "sound/ns1.fev/ns1/acidrocket_fire"},
-            {sound = "sound/NS2.fev/alien/gorge/bilebomb"},
+            {sound = "sound/ns2c.fev/ns2c/alien/fade/acidrocket_fire"},
+            //{sound = "sound/NS2.fev/alien/gorge/spit"},
             //{cinematic = "cinematics/alien/gorge/spit_fire.cinematic"},
         },
     },
@@ -200,6 +200,19 @@ kAlienWeaponEffects =
             
             {sound = "", silenceupgrade = true, done = true},
             {sound = "sound/NS2.fev/alien/gorge/bilebomb_hit", done = true},
+        },
+    },
+    
+    acidrocket_hit =
+    {
+        acidrocketHitEffects = 
+        {
+            
+            // TODO: Change to something else
+            {cinematic = "cinematics/alien/gorge/bilebomb_impact.cinematic"},
+            
+            {sound = "", silenceupgrade = true, done = true},
+            {sound = "sound/ns2c.fev/ns2c/alien/fade/acidrocket_hit", done = true},
         },
     },
     
@@ -248,7 +261,7 @@ kAlienWeaponEffects =
             {sound = "", silenceupgrade = true, done = true}, 
             //{viewmodel_cinematic = "cinematics/alien/lerk/spore_view_fire.cinematic", attach_point = "fxnode_hole_left"},
             //{viewmodel_cinematic = "cinematics/alien/lerk/spore_view_fire.cinematic", attach_point = "fxnode_hole_right"},
-            {sound = "sound/NS2.fev/alien/structures/crag/umbra"},
+            {sound = "sound/ns2c.fev/ns2c/alien/lerk/spore_fire"},
         },
     },    
 
@@ -259,7 +272,7 @@ kAlienWeaponEffects =
             {sound = "", silenceupgrade = true, done = true}, 
             {viewmodel_cinematic = "cinematics/alien/lerk/umbra_view_fire.cinematic", attach_point = "fxnode_hole_left"},
             {viewmodel_cinematic = "cinematics/alien/lerk/umbra_view_fire.cinematic", attach_point = "fxnode_hole_right"},
-            {sound = "sound/NS2.fev/alien/structures/crag/umbra"},
+            {sound = "sound/ns2c.fev/ns2c/alien/lerk/umbra_fire"},
         },
     },
 
@@ -306,7 +319,7 @@ kAlienWeaponEffects =
         stabAttackEffects =
         {
             {sound = "", silenceupgrade = true, done = true}, 
-            {sound = "sound/NS2.fev/alien/fade/stab"},
+            {sound = "sound/ns2c.fev/ns2c/alien/fade/metabolize"},
         },
     },
 
@@ -400,7 +413,7 @@ kAlienWeaponEffects =
         {
             {cinematic = "cinematics/alien/onos/stomp_hit.cinematic"},
             {sound = "", silenceupgrade = true, done = true},
-            {sound = "sound/NS2.fev/alien/onos/death", world_space = true},
+            {sound = "sound/ns2c.fev/ns2c/alien/lerk/primal_scream", world_space = true},
         },    
     
     }, 

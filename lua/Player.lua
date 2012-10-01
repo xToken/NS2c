@@ -1822,12 +1822,9 @@ function Player:DropToFloor()
 
 end
 
-
 function Player:GetCanStep()
     return self:GetIsOnGround()
 end
-
-
 
 function Player:UpdatePosition(velocity, time)
 
@@ -2189,7 +2186,7 @@ end
 
 function Player:GetPlayFootsteps()
 
-    return not self.crouching and self:GetVelocityLength() > 0.75 and self:GetIsOnGround() and not self.movementModiferState
+    return not self.crouching and self:GetVelocityLength() > 0.75 and self.onGround and not self.movementModiferState
     
 end
 
@@ -2292,7 +2289,7 @@ function Player:GetMaxSpeed(possible)
     local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Player.kWalkMaxSpeed,  Player.kRunMaxSpeed)
     
     // Take into account crouching
-    if self:GetCrouching() and self:GetIsOnGround() then
+    if self:GetCrouching() and self.onGround then
         maxSpeed = ( 1 - self:GetCrouchAmount() * self:GetCrouchSpeedScalar() ) * maxSpeed
     end
       
@@ -2301,7 +2298,7 @@ function Player:GetMaxSpeed(possible)
 end
 
 function Player:GetAcceleration()
-    if self:GetIsOnGround() then
+    if self.onGround then
         return Player.kAcceleration * self:GetSlowSpeedModifier()
     else
         return Player.kAirAcceleration * self:GetSlowSpeedModifier()
@@ -2322,7 +2319,7 @@ end
  */
 function Player:ConstrainMoveVelocity(wishVelocity)
 
-    if not self:GetIsOnLadder() and not self:GetIsOnGround() and wishVelocity:GetLengthXZ() > 0 and self:GetVelocity():GetLengthXZ() > 0 and 
+    if not self:GetIsOnLadder() and not self.onGround and wishVelocity:GetLengthXZ() > 0 and self:GetVelocity():GetLengthXZ() > 0 and 
         (not self.GetIsWallWalking or not self:GetIsWallWalking()) and (not self.GetIsBlinking or not self:GetIsBlinking()) then
     
         local normWishVelocity = GetNormalizedVectorXZ(wishVelocity)
@@ -2582,7 +2579,8 @@ function Player:ModifyVelocity(input, velocity)
     if self.GetIsDevoured and self:GetIsDevoured() then
 		return velocity
 	end
-
+    
+    local onground = false
     // Must press jump multiple times to get multiple jumps 
     if bit.band(input.commands, Move.Jump) ~= 0 and not self.jumpHandled then
         
@@ -2599,19 +2597,20 @@ function Player:ModifyVelocity(input, velocity)
         //end
     
     elseif self:GetIsOnGround() then
+        onground = true
         self:HandleOnGround(input, velocity)
     end
-        
-    if not self:OverrideStrafeJump() then
-        if not self:GetIsOnGround() and input.move:GetLength() ~= 0 then
-        
+    
+    if not self:OverrideStrafeJump() and not onground then
+        if input.move:GetLength() ~= 0 then
             local moveLengthXZ = velocity:GetLengthXZ()
+            local viewCoords = self:GetViewCoords()
             local previousY = velocity.y
             local adjustedZ = false
             local accelerationangle = 0.86
             
             if input.move.z ~= 0 then
-                local redirectedVelocityZ = GetNormalizedVectorXZ(self:GetViewCoords().zAxis) * input.move.z
+                local redirectedVelocityZ = GetNormalizedVectorXZ(viewCoords.zAxis) * input.move.z
                 redirectedVelocityZ.y = 0
                 redirectedVelocityZ:Normalize()
                 if input.move.z < 0 then
@@ -2632,7 +2631,7 @@ function Player:ModifyVelocity(input, velocity)
                 end
             end
             if input.move.x ~= 0  then                
-                local redirectedVelocityX = GetNormalizedVectorXZ(self:GetViewCoords().xAxis) * input.move.x
+                local redirectedVelocityX = GetNormalizedVectorXZ(viewCoords.xAxis) * input.move.x
                 if adjustedZ then
                     redirectedVelocityX = redirectedVelocityX * input.time * Skulk.kAirStrafeWeight * accelerationangle * Player.kStrafeJumpAccel + GetNormalizedVectorXZ(velocity)
                 else
@@ -2646,6 +2645,7 @@ function Player:ModifyVelocity(input, velocity)
             self.lastspeedgain = accelerationangle
         end
     end
+    
 end
 
 

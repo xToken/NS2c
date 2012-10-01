@@ -165,11 +165,11 @@ kPlayerEffectData =
             
             // HA
             
-            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step1", classname = "HeavyArmorMarine", surface = "metal", done = true},
+            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step2", classname = "HeavyArmorMarine", surface = "metal", done = true},
             {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step2", classname = "HeavyArmorMarine", surface = "thin_metal", done = true},
             {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step3", classname = "HeavyArmorMarine", surface = "organic", done = true},
             {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step4", classname = "HeavyArmorMarine", surface = "rock", done = true},
-            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step1", classname = "HeavyArmorMarine", done = true},
+            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step2", classname = "HeavyArmorMarine", done = true},
             
             // Marine
             

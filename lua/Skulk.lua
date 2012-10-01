@@ -279,7 +279,7 @@ function Skulk:PreUpdateMove(input, runningPrediction)
                 self.wallWalking = true
                 
             // If not on the ground, check for a wall a bit further away and move towards it like a magnet.            
-            elseif not self:GetIsOnGround() then
+            elseif not self.onGround then
             
                 // If the player is trying to stick to the wall put some extra
                 // effort into keeping them on it.
@@ -315,12 +315,12 @@ function Skulk:PreUpdateMove(input, runningPrediction)
         self.wallWalkingStickEnabled = false        
         self.wallWalkingNormalGoal = Vector.yAxis
         
-        if self:GetIsOnGround() then        
+        if self.onGround then        
             self.wallWalkingEnabled = false            
         end
     end
 
-    if self.leaping and (Alien.GetIsOnGround(self) or self.wallWalking) and (Shared.GetTime() > self.timeOfLeap + Skulk.kLeapTime) then
+    if self.leaping and (self.onGround or self.wallWalking) and (Shared.GetTime() > self.timeOfLeap + Skulk.kLeapTime) then
         self.leaping = false
     end
     
@@ -376,7 +376,7 @@ function Skulk:UpdatePosition(velocity, time)
     if not self.wallWalkingEnabled then
         
         local oldSpeed = velocity:GetLengthXZ()
-        local wereOnGround = self:GetIsOnGround()
+        local wereOnGround = self.onGround
         velocity = Alien.UpdatePosition(self, velocity, time)
         // we enable wallkwalk if we are no longer on ground but were the previous 
         if wereOnGround and not self:GetIsOnGround() then

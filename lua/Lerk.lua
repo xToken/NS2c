@@ -75,7 +75,7 @@ Lerk.XZExtents = 0.4
 Lerk.YExtents = 0.4
 local kJumpImpulse = 4
 local kFlapStraightUpImpulse = 4.7
-local kFlapThrustMoveScalar = 6.3
+local kFlapThrustMoveScalar = 6.5
 // ~120 pounds
 Lerk.kLerkFlapEnergyCost = 3
 local kMass = 54
@@ -85,7 +85,7 @@ local kRegularGravityScalar = -7
 local kFlightGravityScalar = -4
 // Lerks walk slowly to encourage flight
 local kMaxWalkSpeed = 2.8
-local kMaxSpeed = 12
+local kMaxSpeed = 13
 local kAirAcceleration = 2.7
 local flying2DSound = PrecacheAsset("sound/NS2.fev/alien/lerk/flying")
 local flying3DSound = PrecacheAsset("sound/NS2.fev/alien/lerk/flying")
@@ -235,7 +235,7 @@ function Lerk:GetMaxSpeed(possible)
     end
 
     local speed = kMaxWalkSpeed
-    if not self:GetIsOnGround() then
+    if not self.onGround then
     
         local kBaseAirScalar = 1.2      // originally 0.5
         local kAirTimeToMaxSpeed = 5  // originally 10
@@ -281,7 +281,7 @@ function Lerk:GetFrictionForce(input, velocity)
     
     // When in the air, but not gliding (spinning out of control)
     // Allow holding the jump key to reduce velocity, and slow the fall
-    if (not self:GetIsOnGround()) and (bit.band(input.commands, Move.Jump) ~= 0) and (not self.gliding) then
+    if (not self.onGround) and (bit.band(input.commands, Move.Jump) ~= 0) and (not self.gliding) then
     
         if prevVelocity.y < 0 then
             return Vector(-prevVelocity.x, -prevVelocity.y, -prevVelocity.z) * frictionScalar
