@@ -288,7 +288,7 @@ if Client then
         // Just assume the looping sound is playing.
         //Shared.StopSound(self, kLoopingSounds[self.soundType])
         //Shared.PlaySound(self, kEndSounds[math.ceil(self.soundType / 3)])
-        
+        Shared.StopSound(self, kSingleShotSound)
         if self.muzzleCinematic then
             self.muzzleCinematic:SetIsVisible(false)
         end
