@@ -17,7 +17,7 @@ kWebActivateTime = 2
 
 Web.kMapName = "web"
 
-Web.kModelName = PrecacheAsset("models/alien/gorge/goowall.model")
+Web.kModelName = PrecacheAsset("models/alien/gorge/goowallnode.model")
 
 local networkVars = { }
 
@@ -116,7 +116,7 @@ function Web:OnInitialized()
         self:SetArmor(self:GetMaxArmor())
         
         InitMixin(self, TriggerMixin)
-        //self:SetBox(Vector(4,2,10))
+        self:SetBox(Vector(2,2,2))
         
     end
     

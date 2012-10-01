@@ -164,13 +164,13 @@ kPlayerEffectData =
             {sound = "sound/NS2.fev/alien/onos/onos_step", classname = "Onos", done = true},
             
             // HA
-            /*
-            {sound = "sound/NS2.fev/marine/heavy/step", classname = "HeavyArmorMarine", surface = "metal", done = true},
-            {sound = "sound/NS2.fev/marine/heavy/step", classname = "HeavyArmorMarine", surface = "thin_metal", done = true},
-            {sound = "sound/NS2.fev/marine/heavy/step", classname = "HeavyArmorMarine", surface = "organic", done = true},
-            {sound = "sound/NS2.fev/marine/heavy/step", classname = "HeavyArmorMarine", surface = "rock", done = true},
-            {sound = "sound/NS2.fev/marine/heavy/step", classname = "HeavyArmorMarine", classname = "Onos", done = true},
-            */
+            
+            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step1", classname = "HeavyArmorMarine", surface = "metal", done = true},
+            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step2", classname = "HeavyArmorMarine", surface = "thin_metal", done = true},
+            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step3", classname = "HeavyArmorMarine", surface = "organic", done = true},
+            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step4", classname = "HeavyArmorMarine", surface = "rock", done = true},
+            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step1", classname = "HeavyArmorMarine", done = true},
+            
             // Marine
             
             // Sprint
