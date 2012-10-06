@@ -420,7 +420,7 @@ function PlayingTeam:GetHasTeamLost()
         local abilityToRespawn = self:GetHasAbilityToRespawn()
         local numAliveCommandStructures = self:GetNumAliveCommandStructures()
         
-        if not abilityToRespawn and not activePlayers or self:GetNumPlayers() ~= 0 then
+        if not abilityToRespawn and not activePlayers or self:GetNumPlayers() == 0 then
             return true
         end
         

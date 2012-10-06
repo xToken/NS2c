@@ -132,7 +132,7 @@ if Server then
 		//Base DAK Config
 		if Plugin == "DAKLoader" or Plugin == "ALL" then
 			local ModsTable = { }
-			table.insert(ModsTable, "5f7771c")
+			table.insert(ModsTable, "5f4f178")
 			if kDAKConfig == nil then
 				kDAKConfig = { }
 			end
@@ -617,22 +617,22 @@ if Server then
 	
 	local function OnCommandListPlugins(client)
 	
-		//if client ~= nil and kDAKConfig then
+		if client ~= nil and kDAKConfig then
 			for k,v in pairs(kDAKConfig) do
 				local plugin = k
 				local version = kDAKRevisions[plugin]
 				if version == nil then version = 1 end
 				if plugin ~= nil then
 					if v.kEnabled then
-						//ServerAdminPrint(client, string.format("Plugin %s v%.1f is enabled.", plugin, version))
-						Shared.Message(string.format("Plugin %s v%.1f is enabled.", plugin, version))
+						ServerAdminPrint(client, string.format("Plugin %s v%.1f is enabled.", plugin, version))
+						//Shared.Message(string.format("Plugin %s v%.1f is enabled.", plugin, version))
 					else
-						//ServerAdminPrint(client, string.format("Plugin %s is disabled.", plugin))
-						Shared.Message(string.format("Plugin %s is disabled.", plugin))
+						ServerAdminPrint(client, string.format("Plugin %s is disabled.", plugin))
+						//Shared.Message(string.format("Plugin %s is disabled.", plugin))
 					end
 				end
 			end
-		//end
+		end
 	
 	end
 	
