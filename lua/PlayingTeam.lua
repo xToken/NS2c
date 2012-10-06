@@ -830,10 +830,13 @@ end
 function PlayingTeam:SplitPres(resAwarded)
 
     local recipientCount = self:GetPresRecipientCount()
-    //if recipientCount < kResourceScalingMinPlayers or recipientCount > kResourceScalingMaxPlayers then
-        //local playerdiff = Clamp(recipientCount, kResourceScalingMinPlayers, kResourceScalingMaxPlayers)
-        //resAwarded = resAwarded * Clamp((1 + ((recipientCount - playerdiff) / kResourceScaling)), kResourceScalingMinDelta, kResourceScalingMaxDelta)
-    //end
+    if recipientCount <= kResourceScalingMinPlayers or recipientCount >= kResourceScalingMaxPlayers then
+        local playerdiff = Clamp(recipientCount, kResourceScalingMinPlayers + 1, kResourceScalingMaxPlayers)
+        local oldres = resAwarded
+        resAwarded = resAwarded * Clamp((1 + ((recipientCount - playerdiff) / kResourceScaling)), kResourceScalingMinDelta, kResourceScalingMaxDelta)
+        
+        Print(string.format("Resources adjusted to %s from %s for %s players.", ToString(resAwarded), ToString(oldres), ToString(recipientCount)))
+    end
 
     for i = 1, recipientCount do 
     

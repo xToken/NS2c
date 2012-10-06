@@ -45,13 +45,6 @@ function Scan:OnInitialized()
     
 end
 
-local function InkCloudNearby(self)
-
-    local inkClouds = GetEntitiesForTeamWithinRange("ShadeInk", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), Scan.kScanDistance)
-    return #inkClouds > 0
-
-end
-
 function Scan:GetRepeatCinematic()
     return Scan.kScanEffect
 end
@@ -74,26 +67,32 @@ if Server then
     
         PROFILE("Scan:Perform")
         
-        if not InkCloudNearby(self) then
+        local enemies = GetEntitiesWithMixinForTeamWithinRange("LOS", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), Scan.kScanDistance)
         
-            local enemies = GetEntitiesWithMixinForTeamWithinRange("LOS", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), Scan.kScanDistance)
-            
-            for _, enemy in ipairs(enemies) do
-            
-                enemy:SetIsSighted(true)
-                
-                // Allow entities to respond
-                if enemy.OnScan then
-                   enemy:OnScan()
+        for _, enemy in ipairs(enemies) do
+        
+            //Ghost adds a chance to 'evade' detection
+            local visible = true
+            if enemy:isa("Alien") then
+                local hasupg, level = GetHasGhostUpgrade(enemy)
+                if hasupg and level > 0 then
+                    local hide = math.random(1, 100) < (level * kGhostScanDodgePerLevel)
+                    visible = not hide
                 end
+            end
                 
-                if HasMixin(enemy, "Detectable") then
-                    enemy:SetDetected(true, true)
-                end
-                
+            enemy:SetIsSighted(visible)
+            
+            // Allow entities to respond
+            if enemy.OnScan then
+               enemy:OnScan()
             end
             
-        end    
+            if HasMixin(enemy, "Detectable") then
+                enemy:SetDetected(visible, true)
+            end
+            
+        end
         
     end
     

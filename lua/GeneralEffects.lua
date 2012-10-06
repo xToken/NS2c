@@ -98,7 +98,7 @@ kGeneralEffectData =
             {sound = "sound/NS2.fev/alien/skulk/spawn", classname = "Skulk", done = true},
             {sound = "sound/NS2.fev/alien/gorge/spawn", classname = "Gorge", done = true},
             {sound = "sound/NS2.fev/alien/lerk/spawn", classname = "Lerk", done = true},
-            {sound = "sound/NS2.fev/alien/fade/spawn", classname = "Fade", done = true},
+            {sound = "sound/ns2c.fev/ns2c/alien/fade/spawn", classname = "Fade", done = true},
             {sound = "sound/NS2.fev/alien/onos/spawn", classname = "Onos", done = true},
             
             {sound = "sound/NS2.fev/alien/drifter/spawn", classname = "Drifter", done = true},
@@ -198,6 +198,22 @@ kGeneralEffectData =
         },
     },
     
+    ayumi =
+    {
+        ayumiEffects =
+        {
+            {sound = "sound/ns2c.fev/ns2c/ui/ayumi_rr", done = true},
+        },
+    },
+    
+    end_ayumi =
+    {
+        ayumiEffects =
+        {
+            {stop_sound = "sound/ns2c.fev/ns2c/ui/ayumi_rr", done = true},
+        },
+    },
+    
     catalyst =
     {
         catalystEffects =
@@ -249,10 +265,8 @@ kGeneralEffectData =
             {parented_sound = "sound/NS2.fev/marine/structures/infantry_portal_active", classname = "InfantryPortal", done = true},
             {parented_sound = "sound/NS2.fev/marine/structures/phase_gate_active", classname = "PhaseGate", done = true},
             {parented_sound = "sound/NS2.fev/marine/structures/arc/idle", classname = "ARC", done = true},
-            {parented_sound = "sound/NS2.fev/marine/structures/mac/hover", classname = "MAC", done = true},
             
             {parented_sound = "sound/NS2.fev/alien/structures/hive_idle", classname = "Hive", done = true},
-            {parented_sound = "sound/NS2.fev/alien/infestation/build", classname = "Cyst", done = true},
             {parented_sound = "sound/NS2.fev/alien/structures/hydra/idle", classname = "Hydra", done = true},
             {parented_sound = "sound/NS2.fev/alien/structures/crag/idle", classname = "Crag", done = true},
             {parented_sound = "sound/NS2.fev/alien/structures/shade/idle", classname = "Shade", done = true},
@@ -267,7 +281,6 @@ kGeneralEffectData =
             //{parented_sound = "sound/NS2.fev/alien/fade/idle", classname = "Fade", done = true},
             {parented_sound = "sound/NS2.fev/alien/onos/idle", classname = "Onos", done = true},
             
-            {sound = "sound/NS2.fev/marine/flamethrower/idle", classname = "Flamethrower", done = true},
         },
     },
     
@@ -282,10 +295,8 @@ kGeneralEffectData =
             {stop_sound = "sound/NS2.fev/marine/structures/infantry_portal_active", classname = "InfantryPortal", done = true},
             {stop_sound = "sound/NS2.fev/marine/structures/phase_gate_active", classname = "PhaseGate", done = true},
             {stop_sound = "sound/NS2.fev/marine/structures/arc/idle", classname = "ARC", done = true},
-            {stop_sound = "sound/NS2.fev/marine/structures/mac/hover", classname = "MAC", done = true},
             
             {stop_sound = "sound/NS2.fev/alien/structures/hive_idle", classname = "Hive", done = true},
-            {stop_sound = "sound/NS2.fev/alien/infestation/build", classname = "Cyst", done = true},
             {stop_sound = "sound/NS2.fev/alien/structures/hydra/idle", classname = "Hydra", done = true},
             {stop_sound = "sound/NS2.fev/alien/structures/crag/idle", classname = "Crag", done = true},
             {stop_sound = "sound/NS2.fev/alien/structures/shade/idle", classname = "Shade", done = true},
@@ -311,8 +322,6 @@ kGeneralEffectData =
             // Gorge
             {sound = "sound/NS2.fev/alien/gorge/build", classname = "Gorge", done = true},
             
-            // Drifter construction effects        
-            {sound = "sound/NS2.fev/alien/structures/generic_build", classname = "Drifter", done = true},
         },
     },
     
@@ -336,22 +345,16 @@ kGeneralEffectData =
         {
             // TODO: Substitute material properties?
             {cinematic = "cinematics/materials/%s/grenade_explosion.cinematic", classname = "Grenade", done = true},
-            {cinematic = "cinematics/marine/mac/death.cinematic", classname = "MAC", done = true},
             {cinematic = "cinematics/marine/arc/destroyed.cinematic", classname = "ARC", done = true},
-            {cinematic = "cinematics/alien/structures/death_small.cinematic", classname = "Drifter", done = true},
         },
       
         // Play world sound instead of parented sound as entity is going away?
         deathSoundEffects = 
         {            
             {sound = "sound/NS2.fev/alien/skulk/bite_kill", doer = "BiteLeap"},
-            
-            {stop_sound = "sound/NS2.fev/marine/structures/mac/thrusters", classname = "MAC"},
-            
+                        
             {stop_sound = "sound/NS2.fev/marine/structures/arc/fire", classname = "ARC"},
-            
-            {sound = "sound/NS2.fev/marine/structures/mac/death", classname = "MAC", done = true},
-            {sound = "sound/NS2.fev/alien/drifter/death", classname = "Drifter", done = true},
+
             {sound = "sound/NS2.fev/alien/skulk/death", classname = "Skulk", done = true},
             {sound = "sound/NS2.fev/alien/gorge/death", classname = "Gorge", done = true},
             {sound = "sound/NS2.fev/alien/lerk/death", classname = "Lerk", done = true},            
@@ -425,6 +428,34 @@ kGeneralEffectData =
             // Marine
             {private_sound = "sound/NS2.fev/marine/common/res_received", done = true},
 
+        },
+    },
+    
+    alien_move1 =
+    {
+        alienMove1Effects =
+        {
+            {sound = "", silenceupgrade = true, done = true},
+            //{sound = "sound/NS2.fev/alien/skulk/death", classname = "Skulk", done = true},
+            //{sound = "sound/NS2.fev/alien/gorge/death", classname = "Gorge", done = true},
+            //{sound = "sound/NS2.fev/alien/lerk/death", classname = "Lerk", done = true},            
+            {sound = "sound/ns2c.fev/ns2c/alien/fade/move1", classname = "Fade", done = true},
+            //{sound = "sound/NS2.fev/alien/onos/death", classname = "Onos", done = true},
+            {sound = "", done = true},
+        },
+    },
+    
+    alien_move2 =
+    {
+        alienMove2Effects =
+        {
+            {sound = "", silenceupgrade = true, done = true},
+            //{sound = "sound/NS2.fev/alien/skulk/death", classname = "Skulk", done = true},
+            //{sound = "sound/NS2.fev/alien/gorge/death", classname = "Gorge", done = true},
+            //{sound = "sound/NS2.fev/alien/lerk/death", classname = "Lerk", done = true},            
+            {sound = "sound/ns2c.fev/ns2c/alien/fade/move2", classname = "Fade", done = true},
+            //{sound = "sound/NS2.fev/alien/onos/death", classname = "Onos", done = true},
+            {sound = "", done = true},
         },
     },
     

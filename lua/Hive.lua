@@ -54,6 +54,7 @@ Hive.kGlowEffect = PrecacheAsset("cinematics/alien/hive/glow.cinematic")
 Hive.kSpecksEffect = PrecacheAsset("cinematics/alien/hive/specks.cinematic")
 
 Hive.kCompleteSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/hive_complete")
+Hive.kSpecialCompleteSound = PrecacheAsset("sound/ns2c.fev/ns2c/ui/now_we_dance")
 Hive.kUnderAttackSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/hive_under_attack")
 Hive.kStructureUnderAttackSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/structure_under_attack")
 Hive.kHarvesterUnderAttackSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/harvester_under_attack")

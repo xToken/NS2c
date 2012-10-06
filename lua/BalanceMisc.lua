@@ -47,6 +47,12 @@ kAuraDetectionRange = 30
 kFuryHealthRegained = 4
 kFuryHealthPercentageRegained = 0.1
 kFuryEnergyRegained = 10
+kGhostMotionTrackingDodgePerLevel = 30
+kGhostObservatoryDodgePerLevel = 25
+kGhostMinimapDodgePerLevel = 30
+kGhostScanDodgePerLevel = 15
+kAlienBaseMoveNoise = 5
+kAlienRandMoveNoise = 12
 
 // per second
 kAlienVisionCost = 0

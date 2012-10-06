@@ -54,9 +54,8 @@ local kIconCoords = {
     [Locale.ResolveString("STATUS_RIFLE")] =             {            0, 0,   iconSize.x, iconSize.y },
     [Locale.ResolveString("STATUS_SHOTGUN")] =           {   iconSize.x, 0, 2*iconSize.x, iconSize.y },
     [Locale.ResolveString("STATUS_GRENADE_LAUNCHER")] =  { 2*iconSize.x, 0, 3*iconSize.x, iconSize.y },
-    [Locale.ResolveString("STATUS_HEAVY_MACHINE_GUN")] =  { 2*iconSize.x, 0, 3*iconSize.x, iconSize.y },
-    [Locale.ResolveString("STATUS_FLAMETHROWER")] =      { 3*iconSize.x, 0, 4*iconSize.x, iconSize.y },
-    [Locale.ResolveString("STATUS_HEAVY_ARMOR")] =               { 0, iconSize.y,   iconSize.x, 2*iconSize.y },
+    //[Locale.ResolveString("STATUS_HEAVY_MACHINE_GUN")] =  { 2*iconSize.x, 0, 3*iconSize.x, iconSize.y },
+    ["HMG"]                                              =  { 2*iconSize.x, 0, 3*iconSize.x, iconSize.y },
     
     [Locale.ResolveString("STATUS_SKULK")] =             {            0, 0,   iconSize.x, iconSize.y },
     [Locale.ResolveString("STATUS_GORGE")] =             {   iconSize.x, 0, 2*iconSize.x, iconSize.y },

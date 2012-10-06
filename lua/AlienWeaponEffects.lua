@@ -58,8 +58,8 @@ kAlienWeaponEffects =
         {
             {sound = "", silenceupgrade = true, done = true},
             
-            {sound = "sound/NS2.fev/alien/lerk/bite", attach_point = "Bip01_Head", surface = "structure", done = true},
-            {sound = "sound/NS2.fev/alien/lerk/bite", attach_point = "Bip01_Head"},
+            {sound = "sound/ns2c.fev/ns2c/alien/skulk/bite2", attach_point = "Bip01_Head", surface = "structure", done = true},
+            {sound = "sound/ns2c.fev/ns2c/alien/skulk/bite2", attach_point = "Bip01_Head"},
         },
     },
     
@@ -158,7 +158,6 @@ kAlienWeaponEffects =
             {cinematic = "cinematics/alien/lerk/bomb_big.cinematic", classname = "CommandStation", done = true },
             {cinematic = "cinematics/alien/lerk/bomb_big.cinematic", classname = "RoboticsFactory", done = true },
             {cinematic = "cinematics/alien/lerk/bomb_small.cinematic", classname = "Sentry", done = true },
-            {parented_cinematic = "cinematics/alien/lerk/bomb_small.cinematic", classname = "MAC", done = true },
             {parented_cinematic = "cinematics/alien/lerk/bomb_structure.cinematic", classname = "ARC", done = true },
             {parented_cinematic = "cinematics/alien/lerk/bomb_marine.cinematic", classname = "Marine", done = true},
             

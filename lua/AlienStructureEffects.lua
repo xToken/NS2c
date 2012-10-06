@@ -61,18 +61,12 @@ kAlienStructureEffects =
             {cinematic = "cinematics/alien/structures/death_small.cinematic", classname = "Web", done = true},
             {cinematic = "cinematics/alien/structures/death_hive.cinematic", classname = "Hive", done = true},
             {cinematic = "cinematics/alien/structures/death_large.cinematic", classname = "Whip", done = true},
-            
-            {cinematic = "cinematics/alien/structures/death_small.cinematic", classname = "Veil", done = true},
-            {cinematic = "cinematics/alien/structures/death_small.cinematic", classname = "Shell", done = true},
-            {cinematic = "cinematics/alien/structures/death_small.cinematic", classname = "Spur", done = true},
-            
+                        
             {cinematic = "cinematics/alien/structures/death_small.cinematic", classname = "Crag", done = true},
             {cinematic = "cinematics/alien/structures/death_small.cinematic", classname = "Shade", done = true},
             {cinematic = "cinematics/alien/structures/death_small.cinematic", classname = "Shift", done = true},
             
             {cinematic = "cinematics/alien/structures/death_harvester.cinematic", classname = "Harvester", done = true},
-            {cinematic = "cinematics/alien/structures/death_small.cinematic", classname = "Babbler", done = true},
-            {cinematic = "cinematics/alien/structures/death_small.cinematic", classname = "Cyst", done = true},
         },
         
         alienStructureDeathSounds =
@@ -83,12 +77,7 @@ kAlienStructureEffects =
             {sound = "sound/NS2.fev/alien/structures/death_grenade", classname = "Structure", doer = "Grenade", isalien = true, done = true},
             {sound = "sound/NS2.fev/alien/structures/death_axe", classname = "Structure", doer = "Axe", isalien = true, done = true},            
             {sound = "sound/NS2.fev/alien/structures/death_small", classname = "Structure", isalien = true, done = true},
-            {sound = "sound/NS2.fev/alien/structures/death_small", classname = "Clog", done = true},
-            {sound = "sound/NS2.fev/alien/structures/death_small", classname = "Cyst", done = true},
-            
-            {sound = "sound/NS2.fev/alien/structures/death_small", classname = "Veil", done = true},
-            {sound = "sound/NS2.fev/alien/structures/death_small", classname = "Shell", done = true},
-            {sound = "sound/NS2.fev/alien/structures/death_small", classname = "Spur", done = true},
+            {sound = "sound/NS2.fev/alien/structures/death_small", classname = "Web", done = true},
             
             {sound = "sound/NS2.fev/alien/structures/death_small", classname = "Crag", done = true},
             {sound = "sound/NS2.fev/alien/structures/death_small", classname = "Shade", done = true},
@@ -177,14 +166,6 @@ kAlienStructureEffects =
         },
     },
     
-    infestation_spike_burst = 
-    {
-        infestationSpikeBurstEffect =
-        {
-            {cinematic = "cinematics/alien/infestationspike/burst.cinematic"},
-        }
-    },
-    
     clog_slime =
     {
         clogSlimeEffects =
@@ -239,26 +220,6 @@ kAlienStructureEffects =
         },
     },
     
-    // Triggered by commander
-    crag_trigger_umbra =
-    {
-        cragUmbraEffects =
-        {
-            // TODO: Play as private commander sound if played
-            {sound = "sound/NS2.fev/alien/structures/crag/umbra"},
-            {cinematic = "cinematics/alien/crag/umbra.cinematic"},
-            // TODO: Add private commander sound
-        },
-    },    
-
-    // Triggered by commander
-    crag_trigger_babblers =
-    {
-        cragBabblerEffects =
-        {
-        },
-    },    
-    
     whip_attack =
     {
         whipAttackEffects =
@@ -274,35 +235,7 @@ kAlienStructureEffects =
             {sound = "sound/NS2.fev/alien/structures/whip/swing"},
         },
     },
-    
-    whip_bombard =
-    {
-        whipBombardEffects =
-        {
-            // TODO: trigger custom bombard attack sound
-            {sound = "sound/NS2.fev/alien/structures/whip/swing"},
-        },
-    },
-    
-    whipbomb_hit =
-    {
-        whipBombHitEffects = 
-        {
-            // TODO: trigger custom whip bomb hit sound
-            {sound = "sound/NS2.fev/alien/gorge/bilebomb_hit"},
-            {cinematic = "cinematics/alien/whip/bomb_hit.cinematic", done = true},
-        },
-    },
-    
-    whip_trigger_fury =
-    {
-        whipTriggerFuryEffects = 
-        {
-            {sound = "sound/NS2.fev/alien/structures/whip/fury"},
-            {cinematic = "cinematics/alien/whip/fury.cinematic"},
-        },
-    },   
-    
+        
     //Whip.kMode = enum( {'Rooted', 'Unrooting', 'UnrootedStationary', 'Rooting', 'StartMoving', 'Moving', 'EndMoving'} )
     
     // Played when root finishes
@@ -334,15 +267,6 @@ kAlienStructureEffects =
     {
         {sound = "sound/NS2.fev/alien/structures/shade/cloak_start"},
     },
-
-    death_hallucination =
-    {
-        deathHallucinationEffect =
-        {
-            {sound = "sound/NS2.fev/alien/common/frenzy" },
-            {cinematic = "cinematics/alien/shade/death_halluzination.cinematic", done = true},         
-        },
-    },     
     
     teleport_start =
     {

@@ -444,7 +444,12 @@ function Hive:OnTeleportEnd()
 end
 
 function Hive:GetCompleteAlertId()
-    return kTechId.AlienAlertHiveComplete
+    local hives = GetEntitiesForTeam("Hive", self:GetTeamNumber())
+    if table.count(hives) == 3 then
+        return kTechId.AlienAlertHiveSpecialComplete
+    else
+        return kTechId.AlienAlertHiveComplete
+    end
 end
 
 function Hive:SetAttached(structure)

@@ -37,7 +37,6 @@ kMarineStructureEffects =
     {
         ghostStructureDestroyEffects =
         {
-            {sound = "sound/NS2.fev/marine/structures/mac/build"},
             {cinematic = "cinematics/marine/ghoststructure_destroy.cinematic", done = true},
         }
     

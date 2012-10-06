@@ -685,10 +685,6 @@ function PlayerUI_GetCrosshairY()
                 index = 1
             elseif mapname == Shotgun.kMapName then
                 index = 3
-            //elseif mapname == HeavyMachineGun.kMapName then
-                //index = 4
-            //elseif mapname == Flamethrower.kMapName then
-                //index = 5
             // All alien crosshairs are the same for now
             elseif mapname == LerkBite.kMapName or mapname == LerkUmbra.kMapName or mapname == Parasite.kMapName or mapname == AcidRocket.kMapName then
                 index = 6

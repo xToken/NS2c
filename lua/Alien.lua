@@ -80,6 +80,7 @@ local networkVars =
     shifts = string.format("integer (0 to 3)"),
     shades = string.format("integer (0 to 3)"),
 	whips = string.format("integer (0 to 3)"),
+    movenoise = "private time",
     
     primalScreamBoost = "compensated boolean",
     unassignedhives = string.format("integer (0 to 4"),
@@ -116,6 +117,7 @@ function Alien:OnCreate()
     self.timeAbilityEnergyChange = Shared.GetTime()
     self.abilityEnergyOnChange = self:GetMaxEnergy()
     self.lastEnergyRate = self:GetRecuperationRate()
+    self.movenoise = Shared.GetTime() + math.random(kAlienBaseMoveNoise, kAlienRandMoveNoise)
     
     // Only used on the local client.
     self.darkVisionOn = false
@@ -455,10 +457,22 @@ function Alien:SetDarkVision(state)
 
 end
 
+function Alien:UpdateMoveNoise()
+    if self.movenoise < Shared.GetTime() then
+        if math.random(1, 2) == 1 then
+            self:TriggerEffects("alien_move1")
+        else
+            self:TriggerEffects("alien_move2")
+        end
+        self.movenoise = Shared.GetTime() + math.random(kAlienBaseMoveNoise, kAlienRandMoveNoise)
+    end
+end
+
 function Alien:UpdateSharedMisc(input)
 
     self:UpdateSpeedModifiers(input)
     Player.UpdateSharedMisc(self, input)
+    self:UpdateMoveNoise()
     
 end
 

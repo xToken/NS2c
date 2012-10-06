@@ -139,7 +139,7 @@ kKillRewardMax = 2
 kResourceScalingMinPlayers = 4
 kResourceScalingMaxPlayers = 12
 kResourceScalingMaxDelta = 1.2
-kResourceScalingMinDelta = .85
+kResourceScalingMinDelta = .75
 kResourceScaling = 20
 
 //End Resource/Build Timing Stuff

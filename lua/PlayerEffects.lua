@@ -10,14 +10,6 @@ kPlayerEffectData =
 {
 
     // when hit by emp blast
-    emp_blasted =
-    {
-        empBlastedEffects = 
-        {
-            {cinematic = "cinematics/alien/emphit.cinematic", class = "Alien", done = true},
-        }    
-    },
-
     enzymed =
     {
         enzymedEffects =
@@ -165,10 +157,8 @@ kPlayerEffectData =
             
             // HA
             
-            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step2", classname = "HeavyArmorMarine", surface = "metal", done = true},
-            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step2", classname = "HeavyArmorMarine", surface = "thin_metal", done = true},
-            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step3", classname = "HeavyArmorMarine", surface = "organic", done = true},
-            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step3", classname = "HeavyArmorMarine", surface = "rock", done = true},
+            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step1", left = true, classname = "HeavyArmorMarine", done = true},
+            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step2", left = false, classname = "HeavyArmorMarine", done = true},
             {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step3", classname = "HeavyArmorMarine", done = true},
             
             // Marine
@@ -278,16 +268,6 @@ kPlayerEffectData =
             {cinematic = "cinematics/materials/organic/onos_momentum_change.cinematic",  doer = "Onos", surface = "organic", done = true},
             {cinematic = "cinematics/materials/rock/onos_momentum_change.cinematic",  doer = "Onos", surface = "rock", done = true},
         }
-    },
-
-    // Triggered for local player
-    disorient_loop =
-    {
-        disorientFX =
-        {
-            {looping_sound = "sound/NS2.fev/alien/structures/shade/disorientate", active = true, done = true},
-            {stop_sound = "sound/NS2.fev/alien/structures/shade/disorientate", active = false, done = true},
-        },
     },
     
     cloak_loop =
