@@ -58,7 +58,6 @@ kMarineWeaponEffects =
             {sound = "sound/ns2c.fev/ns2c/marine/weapon/pistol_draw", classname = "Pistol", done = true},
             {sound = "sound/NS2.fev/marine/axe/draw", classname = "Axe", done = true},
             {sound = "sound/ns2c.fev/ns2c/marine/weapon/hmg_draw", classname = "HeavyMachineGun", done = true},
-            //{sound = "sound/NS2.fev/marine/shotgun/deploy", classname = "Shotgun", done = true},
             {sound = "sound/ns2c.fev/ns2c/marine/weapon/shotgun_draw", classname = "Shotgun", done = true},
             {sound = "sound/NS2.fev/marine/welder/deploy", classname = "Welder", done = true},
 
@@ -84,8 +83,7 @@ kMarineWeaponEffects =
         gunReloadEffects =
         {
             {sound = "sound/NS2.fev/marine/rifle/reload", classname = "Rifle"},
-            {sound = "sound/NS2.fev/marine/pistol/reload", classname = "Pistol"},
-            {sound = "sound/NS2.fev/marine/flamethrower/reload", classname = "Flamethrower"},
+            {sound = "sound/ns2c.fev/ns2c/marine/weapon/pistol_reload", classname = "Pistol"},
             {sound = "sound/ns2c.fev/ns2c/marine/weapon/hmg_reload", classname = "HeavyMachineGun"},
         },
     },
@@ -94,8 +92,9 @@ kMarineWeaponEffects =
     {
         gunReloadCancelEffects =
         {
-            {stop_sound = "sound/NS2.fev/marine/rifle/reload", classname = "Rifle"},
-            {stop_sound = "sound/NS2.fev/marine/pistol/reload", classname = "Pistol"},
+            {stop_sound = "sound/ns2c.fev/ns2c/marine/weapon/lmg_reload", classname = "Rifle"},
+            {stop_sound = "sound/ns2c.fev/ns2c/marine/weapon/pistol_reload", classname = "Pistol"},
+            {stop_sound = "sound/ns2c.fev/ns2c/marine/weapon/hmg_reload", classname = "HeavyMachineGun"},
         },
     },
     

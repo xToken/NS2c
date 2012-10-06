@@ -60,11 +60,18 @@ function HeavyMachineGun:OnDestroy()
     ClipWeapon.OnDestroy(self)
 end
 
+local function CancelReload(self)
+    self.reloading = false
+    self:TriggerEffects("reload_cancel")
+end
+
 function HeavyMachineGun:OnPrimaryAttack(player)
 
     if not self:GetIsReloading() and self.clip > 0 and self.deployed then
         if player and not self:GetHasAttackDelay() then
-        
+            if self:GetIsReloading() then
+                CancelReload(self)
+            end
             self:FirePrimary(player)
             // Don't decrement ammo in Darwin mode
             if not player or not player:GetDarwinMode() then
@@ -257,6 +264,7 @@ if Client then
 
     function HeavyMachineGun:OnClientPrimaryAttackStart()
         // Start the looping sound for the rest of the shooting. Pew pew pew...
+        Shared.StopSound(self, kLoopingSound)
         Shared.PlaySound(self, kLoopingSound)
     end
     
@@ -278,7 +286,7 @@ if Client then
     end
 
     function HeavyMachineGun:GetPrimaryEffectRate()
-        return 0.09
+        return 0.1
     end
     
     function HeavyMachineGun:GetPreventCameraAnimation()

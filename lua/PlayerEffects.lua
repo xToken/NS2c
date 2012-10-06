@@ -168,8 +168,8 @@ kPlayerEffectData =
             {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step2", classname = "HeavyArmorMarine", surface = "metal", done = true},
             {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step2", classname = "HeavyArmorMarine", surface = "thin_metal", done = true},
             {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step3", classname = "HeavyArmorMarine", surface = "organic", done = true},
-            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step4", classname = "HeavyArmorMarine", surface = "rock", done = true},
-            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step2", classname = "HeavyArmorMarine", done = true},
+            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step3", classname = "HeavyArmorMarine", surface = "rock", done = true},
+            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step3", classname = "HeavyArmorMarine", done = true},
             
             // Marine
             
@@ -249,7 +249,7 @@ kPlayerEffectData =
             {sound = "sound/NS2.fev/alien/gorge/land", classname = "Gorge", done = true},
             {sound = "sound/NS2.fev/alien/fade/land", classname = "Fade", done = true},
             {sound = "sound/NS2.fev/alien/onos/land", classname = "Onos", done = true},
-            //{sound = "sound/NS2.fev/marine/heavy/land", classname = "HeavyArmorMarine", done = true},
+            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step4", classname = "HeavyArmorMarine", done = true},
 
             {sound = "sound/NS2.fev/materials/organic/fall", surface = "organic", classname = "Marine", done = true},
             {sound = "sound/NS2.fev/materials/thin_metal/fall", surface = "thin_metal", classname = "Marine", done = true},
@@ -265,7 +265,7 @@ kPlayerEffectData =
         
         landCinematics =
         {
-            {cinematic = "cinematics/marine/heavy/land.cinematic", classname = "HeavyArmorMarine", done = true},
+            //{cinematic = "cinematics/marine/heavy/land.cinematic", classname = "HeavyArmorMarine", done = true},
         },
     },
     

@@ -124,26 +124,36 @@ function Armory:ResupplyPlayer(player)
     end
 
     // Give ammo to all their weapons, one clip at a time, starting from primary
-    local weapons = player:GetHUDOrderedWeaponList()
+    local activeWeapon = player:GetActiveWeapon()
     
-    for index, weapon in ipairs(weapons) do
-    
-        if weapon:isa("ClipWeapon") then
-        
-            if weapon:GiveAmmo(1, false) then
-            
-                self:TriggerEffects("armory_ammo", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
-                
-                resuppliedPlayer = true
-                
-                break
-                
-            end 
-                   
+    if activeWeapon ~= nil then
+        if activeWeapon:GiveAmmo(1, false) then
+            self:TriggerEffects("armory_ammo", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
+            resuppliedPlayer = true
         end
+    end 
+    
+    if not resuppliedPlayer then
+        local weapons = player:GetHUDOrderedWeaponList()
         
+        for index, weapon in ipairs(weapons) do
+        
+            if weapon:isa("ClipWeapon") then
+            
+                if weapon:GiveAmmo(1, false) then
+                
+                    self:TriggerEffects("armory_ammo", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
+                    
+                    resuppliedPlayer = true
+                    
+                    break
+                    
+                end 
+                       
+            end
+            
+        end
     end
-        
     if resuppliedPlayer then
     
         // Insert/update entry in table

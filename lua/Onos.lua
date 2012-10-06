@@ -44,15 +44,15 @@ Onos.kJumpHeight = 1.2
 // triggered when the momentum value has changed by this amount (negative because we trigger the effect when the onos stops, not accelerates)
 Onos.kMomentumEffectTriggerDiff = 3
 Onos.kGroundFrictionForce = 8
-Onos.kBaseAcceleration = 55
-Onos.kAirAcceleration = 25
-Onos.kMaxSpeed = 15
+Onos.kBaseAcceleration = 58
+Onos.kAirAcceleration = 28
+Onos.kMaxSpeed = 16
 Onos.kMaxCrouchSpeed = 3
 
 Onos.kHealth = kOnosHealth
 Onos.kArmor = kOnosArmor
-Onos.kChargeEnergyCost = 45
-Onos.kChargeAcceleration = 150
+Onos.kChargeEnergyCost = 60
+Onos.kChargeAcceleration = 120
 Onos.kChargeUpDuration = .25
 Onos.kChargeDelay = .1
 Onos.kMinChargeDamage = kChargeMinDamage
@@ -147,7 +147,7 @@ end
 function Onos:GetAcceleration()
 
     local acceleration = Onos.kBaseAcceleration
-    if not self.onGround then
+    if not self:GetIsOnGround() then
         acceleration = Onos.kAirAcceleration
     end
     if self.charging then
@@ -242,7 +242,7 @@ end
 
 function Onos:TriggerCharge(move)
     
-    if not self.charging and self.timeLastChargeEnd + Onos.kChargeDelay < Shared.GetTime() and self.onGround and not self:GetCrouching() and self.oneHive then
+    if not self.charging and self.timeLastChargeEnd + Onos.kChargeDelay < Shared.GetTime() and self:GetIsOnGround() and not self:GetCrouching() and self.oneHive then
 
         self.charging = true
         self.timeLastCharge = Shared.GetTime()

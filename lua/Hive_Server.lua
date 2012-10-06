@@ -79,12 +79,14 @@ local function EmptySpawnWave(self)
     if team and self.queuedplayer then
 
         local player = Shared.GetEntity(self.queuedplayer)
-        player:SetEggId(Entity.invalidId, 0)
-        player:SetWaveSpawnEndTime(0)
-        //Correctly sets time back so that players position in the queue isnt completely botched 
-        //only would miss next spawn by 1 if another player is already queued and in progress at another hive.
-        team:PutPlayerInRespawnQueue(player, self.timeWaveEnds - kAlienWaveSpawnInterval)        
-                
+        if player then
+            player:SetEggId(Entity.invalidId, 0)
+            player:SetWaveSpawnEndTime(0)
+            //Correctly sets time back so that players position in the queue isnt completely botched 
+            //only would miss next spawn by 1 if another player is already queued and in progress at another hive.
+            team:PutPlayerInRespawnQueue(player, self.timeWaveEnds - kAlienWaveSpawnInterval)
+        end
+        
     end
     
     self.queuedplayer = nil
@@ -93,15 +95,13 @@ end
 
 function Hive:OnDestroy()
 
+    EmptySpawnWave(self)
+    
     local team = self:GetTeam()
     
     if team then
         team:OnHiveDestroyed(self)
     end
-    
-    local techId = self:GetTechId()
-    
-    EmptySpawnWave(self)
     
     CommandStructure.OnDestroy(self)
 end
@@ -282,7 +282,9 @@ local function CheckLowHealth(self)
 end
 
 function Hive:OnEntityChange(oldId, newId)
-    CommandStructure.OnEntityChange(self, oldId, newId)    
+
+    CommandStructure.OnEntityChange(self, oldId, newId)
+    
 end
 
 function Hive:OnUpdate(deltaTime)

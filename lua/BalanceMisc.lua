@@ -77,7 +77,7 @@ kEnergizeUpdateRate = 1
 kUpgradeGestationTime = 2
 
 // Jetpack
-kJetpackUseFuelRate = 0.38
+kJetpackUseFuelRate = 0.36
 kJetpackUpgradeUseFuelRate = 0.15
 kJetpackReplenishFuelRate = 0.16
 

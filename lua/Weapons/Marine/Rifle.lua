@@ -39,9 +39,7 @@ local kSingleShotSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/lmg_fi
 
 //for k, v in ipairs(kLoopingSounds) do PrecacheAsset(v) end
 
-local kEndSounds = { "sound/NS2.fev/marine/rifle/end", "sound/NS2.fev/marine/rifle/end_upgrade_1", "sound/NS2.fev/marine/rifle/end_upgrade_3"  }
-for k, v in ipairs(kEndSounds) do PrecacheAsset(v) end
-
+local kEndSounds = PrecacheAsset("sound/NS2.fev/marine/rifle/end")
 
 local kMuzzleCinematics = {
     PrecacheAsset("cinematics/marine/rifle/muzzle_flash.cinematic"),
@@ -249,7 +247,7 @@ end
 if Client then
 
     function Rifle:OnClientPrimaryAttackStart()
-    
+        Shared.StopSound(self, kSingleShotSound)
         Shared.PlaySound(self, kSingleShotSound)
         
         if not self.muzzleCinematic then
@@ -286,9 +284,8 @@ if Client then
     function Rifle:OnClientPrimaryAttackEnd()
     
         // Just assume the looping sound is playing.
-        //Shared.StopSound(self, kLoopingSounds[self.soundType])
-        //Shared.PlaySound(self, kEndSounds[math.ceil(self.soundType / 3)])
         Shared.StopSound(self, kSingleShotSound)
+        Shared.PlaySound(self, kEndSounds)
         if self.muzzleCinematic then
             self.muzzleCinematic:SetIsVisible(false)
         end
@@ -296,7 +293,7 @@ if Client then
     end
     
     function Rifle:GetPrimaryEffectRate()
-        return 0.08
+        return 0.07
     end
     
     function Rifle:GetPreventCameraAnimation()

@@ -140,6 +140,8 @@ function PlayingTeam:ResetTeam()
         player:OnInitialSpawn(initialTechPoint:GetOrigin())
         if self:GetTeamNumber() == kAlienTeamType then
             player:SetResources(kAlienTeamInitialRes)
+        else
+            player:SetResources(0)
         end
     end
     
@@ -418,10 +420,8 @@ function PlayingTeam:GetHasTeamLost()
         local abilityToRespawn = self:GetHasAbilityToRespawn()
         local numAliveCommandStructures = self:GetNumAliveCommandStructures()
         
-        if not abilityToRespawn and (not activePlayers or self:GetNumPlayers() == 0) then
-            
+        if not abilityToRespawn and not activePlayers or self:GetNumPlayers() ~= 0 then
             return true
-            
         end
         
     end

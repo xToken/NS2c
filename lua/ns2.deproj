@@ -25,7 +25,13 @@
     <filename>AlienBuy_Client.lua</filename>
   </file>
   <file>
+    <filename>AlienDetectableMixin.lua</filename>
+  </file>
+  <file>
     <filename>AlienDetectorMixin.lua</filename>
+  </file>
+  <file>
+    <filename>AlienSensorBlip.lua</filename>
   </file>
   <file>
     <filename>AlienSpectator.lua</filename>
@@ -367,6 +373,9 @@
     <filename>Weapons\Alien\HiveAbility.lua</filename>
   </file>
   <file>
+    <filename>HiveVisionMixin.lua</filename>
+  </file>
+  <file>
     <filename>Hive_Server.lua</filename>
   </file>
   <file>
@@ -514,6 +523,9 @@
     <filename>Player_Client.lua</filename>
   </file>
   <file>
+    <filename>Player_Server.lua</filename>
+  </file>
+  <file>
     <filename>PlayingTeam.lua</filename>
   </file>
   <file>
@@ -572,6 +584,9 @@
   </file>
   <file>
     <filename>ScriptActor.lua</filename>
+  </file>
+  <file>
+    <filename>SensorBlip.lua</filename>
   </file>
   <file>
     <filename>Sentry.lua</filename>

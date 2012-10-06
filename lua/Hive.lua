@@ -191,6 +191,10 @@ end
 function Hive:OnManufactured(createdEntity)
 end
 
+function Hive:GetShowUnitStatusForOverride(forEntity)
+    return not GetAreEnemies(self, forEntity)
+end
+
 function Hive:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Hive:OnUpdateAnimationInput")

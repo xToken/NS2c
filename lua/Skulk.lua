@@ -66,12 +66,12 @@ Skulk.kLeapTime = 0.2
 Skulk.kLeapForce = 14
 Skulk.kMaxSpeed = 20
 Skulk.kMaxGroundSpeed = 8
-Skulk.kMaxWallSpeed = 12
+Skulk.kMaxWallSpeed = 10
 Skulk.kMaxWalkSpeed = 4
 Skulk.kGroundFriction = 6.0
 Skulk.kGroundWalkFriction = 6.5
-Skulk.kAcceleration = 55
-Skulk.kAirAcceleration = 30
+Skulk.kAcceleration = 60
+Skulk.kAirAcceleration = 35
 Skulk.kJumpHeight = 1.3
 Skulk.kWallJumpForce = 2
 Skulk.kWallJumpYBoost = 6
@@ -202,8 +202,8 @@ function Skulk:OnLeap()
     self.leaping = true
     self.wallWalkingEnabled = false
 
-    self.onGround = false
-    self.onGroundNeedsUpdate = true
+    //self.onGround = false
+    //self.onGroundNeedsUpdate = true
     
     self.timeOfLeap = Shared.GetTime()
     self.timeOfLastJump = Shared.GetTime()
@@ -279,7 +279,7 @@ function Skulk:PreUpdateMove(input, runningPrediction)
                 self.wallWalking = true
                 
             // If not on the ground, check for a wall a bit further away and move towards it like a magnet.            
-            elseif not self.onGround then
+            elseif not self:GetIsOnGround() then
             
                 // If the player is trying to stick to the wall put some extra
                 // effort into keeping them on it.
@@ -376,7 +376,7 @@ function Skulk:UpdatePosition(velocity, time)
     if not self.wallWalkingEnabled then
         
         local oldSpeed = velocity:GetLengthXZ()
-        local wereOnGround = self.onGround
+        local wereOnGround = self:GetIsOnGround()
         velocity = Alien.UpdatePosition(self, velocity, time)
         // we enable wallkwalk if we are no longer on ground but were the previous 
         if wereOnGround and not self:GetIsOnGround() then
@@ -600,8 +600,6 @@ end
 function Skulk:GetJumpVelocity(input, velocity)
 
     local viewCoords = self:GetViewAngles():GetCoords()
-    
-    local soundEffectName = "jump"
     
     // we add the bonus in the direction the move is going
     local move = input.move

@@ -2833,6 +2833,93 @@ function PlayerUI_GetMapXY(worldX, worldZ)
 
 end
 
+local kSensorBlipSize = 25
+
+function PlayerUI_GetSensorBlipInfo()
+
+    PROFILE("PlayerUI_GetSensorBlipInfo")
+    
+    local player = Client.GetLocalPlayer()
+    local teamnum = player:GetTeamNumber()
+    local blips = {}
+    
+    if player then
+    
+        local eyePos = player:GetEyePos()
+        local list
+        if teamnum == kMarineTeamType then
+            list = Shared.GetEntitiesWithClassname("SensorBlip")
+        else
+            list = Shared.GetEntitiesWithClassname("AlienSensorBlip")
+        end
+        if list then
+            for index, blip in ientitylist(list) do
+            
+                local blipOrigin = blip:GetOrigin()
+                local blipEntId = blip.entId
+                local blipName = ""
+                
+                // Lookup more recent position of blip
+                local blipEntity = Shared.GetEntity(blipEntId)
+
+                // Do not display a blip for the local player.
+                if blipEntity ~= player then
+
+                    if blipEntity then
+                    
+                        if blipEntity:isa("Player") then
+                            blipName = Scoreboard_GetPlayerData(blipEntity:GetClientIndex(), kScoreboardDataIndexName)
+                        elseif blipEntity.GetTechId then
+                            blipName = GetDisplayNameForTechId(blipEntity:GetTechId())
+                        end
+                        
+                    end
+                    
+                    if not blipName then
+                        blipName = ""
+                    end
+                    
+                    // Get direction to blip. If off-screen, don't render. Bad values are generated if 
+                    // Client.WorldToScreen is called on a point behind the camera.
+                    local normToEntityVec = GetNormalizedVector(blipOrigin - eyePos)
+                    local normViewVec = player:GetViewAngles():GetCoords().zAxis
+                   
+                    local dotProduct = normToEntityVec:DotProduct(normViewVec)
+                    if dotProduct > 0 then
+                    
+                        // Get distance to blip and determine radius
+                        local distance = (eyePos - blipOrigin):GetLength()
+                        local drawRadius = kSensorBlipSize/distance
+                        
+                        // Compute screen xy to draw blip
+                        local screenPos = Client.WorldToScreen(blipOrigin)
+
+                        local trace = Shared.TraceRay(eyePos, blipOrigin, CollisionRep.LOS, PhysicsMask.Bullets, EntityFilterTwo(player, entity))                               
+                        local obstructed = ((trace.fraction ~= 1) and ((trace.entity == nil) or trace.entity:isa("Door"))) 
+                        
+                        if not obstructed and entity and not entity:GetIsVisible() then
+                            obstructed = true
+                        end
+                        
+                        // Add to array (update numElementsPerBlip in GUISensorBlips:UpdateBlipList)
+                        table.insert(blips, screenPos.x)
+                        table.insert(blips, screenPos.y)
+                        table.insert(blips, drawRadius)
+                        table.insert(blips, obstructed)
+                        table.insert(blips, blipName)
+
+                    end
+                    
+                end
+                
+            end
+        end
+    end
+    
+    return blips
+    
+end
+
 /**
  * Returns a linear array of static blip data
  * X position, Y position, rotation, X texture offset, Y texture offset, kMinimapBlipType, kMinimapBlipTeam
@@ -2848,7 +2935,7 @@ function PlayerUI_GetStaticMapBlips()
     local numBlips = 0
     
     local minimapBlipTeamAlien    = kMinimapBlipTeam.Alien
-    local minimapBlipTeamMarine   = kMinimapBlipTeam.Alien
+    local minimapBlipTeamMarine   = kMinimapBlipTeam.Marine
     local minimapBlipTeamFriendly = kMinimapBlipTeam.Friendly
     local minimapBlipTeamEnemy    = kMinimapBlipTeam.Enemy
     local minimapBlipTeamNeutral  = kMinimapBlipTeam.Neutral
@@ -2870,7 +2957,7 @@ function PlayerUI_GetStaticMapBlips()
             
                 local blipTeam = minimapBlipTeamNeutral
                 local blipTeamNumber = blip:GetTeamNumber()        
-            
+                
                 if playerNoTeam then
                     if blipTeamNumber == kMarineTeamType then
                         blipTeam = minimapBlipTeamMarine
@@ -2901,11 +2988,17 @@ function PlayerUI_GetStaticMapBlips()
             end            
             
         end
+
+        local list
+        if playerTeam == kMarineTeamType then
+            list = Shared.GetEntitiesWithClassname("SensorBlip")
+        else
+            list = Shared.GetEntitiesWithClassname("AlienSensorBlip")
+        end
         
-        for index, blip in ientitylist(Shared.GetEntitiesWithClassname("SensorBlip")) do
+        for index, blip in ientitylist(list) do
         
             local blipOrigin = blip:GetOrigin()
-         
             local i = numBlips * 8
          
             blipsData[i + 1] = blipOrigin.x
@@ -2920,7 +3013,7 @@ function PlayerUI_GetStaticMapBlips()
             numBlips = numBlips + 1
             
         end
-        
+
         for index, order in ientitylist(Shared.GetEntitiesWithClassname("Order")) do
          
             local blipOrigin = order:GetLocation()
@@ -3102,7 +3195,7 @@ local function OnJumpLandClient(self)
 
     if not Shared.GetIsRunningPrediction() then
     
-        //local landSurface = GetSurfaceAndNormalUnderEntity(self)
+        local landSurface = GetSurfaceAndNormalUnderEntity(self)
         self:TriggerEffects("land", { surface = landSurface, enemy = GetAreEnemies(self, Client.GetLocalPlayer()) })
         
     end

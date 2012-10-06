@@ -26,6 +26,7 @@ Script.Load("lua/LOSMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/DetectorMixin.lua")
+Script.Load("lua/AlienDetectableMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 
 if Client then
@@ -106,6 +107,7 @@ AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
+AddMixinNetworkVars(AlienDetectableMixin, networkVars)
 
 function Marine:OnCreate()
 
@@ -125,7 +127,8 @@ function Marine:OnCreate()
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, ParasiteMixin)
-   
+    InitMixin(self, AlienDetectableMixin)
+       
     if Server then
 
         
@@ -233,7 +236,7 @@ function Marine:MakeSpecialEdition()
 end
 
 function Marine:IsValidDetection(detectable)
-    if detectable.GetReceivesStructuralDamage and detectable.GetReceivesStructuralDamage() then
+    if detectable.GetReceivesStructuralDamage and detectable:GetReceivesStructuralDamage() then
         return false
     end
     
@@ -241,7 +244,7 @@ function Marine:IsValidDetection(detectable)
     if detectable:isa("Alien") then
         local hasupg, level = GetHasGhostUpgrade(detectable)
         if hasupg and level > 0 then
-            return math.random(1, level) <= 1
+            return math.random(1, 100) < (level * 25)
         end
     end
     
@@ -507,7 +510,7 @@ function Marine:GetMaxSpeed(possible)
     local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Marine.kWalkMaxSpeed,  Marine.kRunMaxSpeed)
     
     // Take into account crouching
-    if self:GetCrouching() and self.onGround then
+    if self:GetCrouching() and self:GetIsOnGround() then
         maxSpeed = ( 1 - self:GetCrouchAmount() * self:GetCrouchSpeedScalar() ) * maxSpeed
     end
     
@@ -540,7 +543,7 @@ end
 
 function Marine:GetAcceleration()
     local acceleration = Marine.kAcceleration
-    if not self.onGround then
+    if not self:GetIsOnGround() then
         acceleration = Marine.kAirAcceleration
     end
     acceleration = acceleration * self:GetSlowSpeedModifier() * self:GetInventorySpeedScalar()

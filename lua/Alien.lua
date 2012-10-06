@@ -22,6 +22,7 @@ Script.Load("lua/LOSMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/AlienActionFinderMixin.lua")
 Script.Load("lua/AlienDetectorMixin.lua")
+Script.Load("lua/DetectableMixin.lua")
 
 if Client then
     Script.Load("lua/TeamMessageMixin.lua")
@@ -90,6 +91,7 @@ AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(EnergizeMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
+AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 
@@ -105,7 +107,8 @@ function Alien:OnCreate()
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, SelectableMixin)
-        
+    InitMixin(self, DetectableMixin)
+         
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
     
     self.timeLastMomentumEffect = 0
@@ -180,17 +183,17 @@ function Alien:DestroyGUI()
             
         end
         
-        if self.sensorBlips == nil then
-        
-            GetGUIManager():DestroyGUIScript(self.sensorBlips)
-            self.sensorBlips = nil
-            
-        end 
-        
         if self.eggInfo then
         
             GetGUIManager():DestroyGUIScript(self.eggInfo)
             self.eggInfo = nil
+            
+        end
+        
+        if self.sensorBlips then
+        
+            GetGUIManager():DestroyGUIScript(self.sensorBlips)
+            self.sensorBlips = nil
             
         end
         
@@ -205,6 +208,13 @@ function Alien:DestroyGUI()
         
             GetGUIManager():DestroyGUIScript(self.objectiveDisplay)
             self.objectiveDisplay = nil
+            
+        end
+        
+        if self.sensorBlips then
+        
+            GetGUIManager():DestroyGUIScript(self.sensorBlips)
+            self.sensorBlips = nil
             
         end
         
@@ -274,9 +284,6 @@ function Alien:OnCheckAlienDetectorActive()
 end
 
 function Alien:IsValidAlienDetection(detectable)
-    if detectable.GetReceivesStructuralDamage and detectable:GetReceivesStructuralDamage() then
-        return false
-    end
     return true
 end
 

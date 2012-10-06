@@ -1,25 +1,9 @@
 //NS2 EnhancedLogging and Tracking of events
 
-kDAKRevisions["EnhancedLogging"] = 1.5
 local EnhancedLoggingFile = nil
 local EnhancedLog = { }
-
-if kDAKConfig and kDAKConfig._EnhancedLogging then
-
-	local function CheckPluginConfig()
 	
-		if kDAKConfig.kEnhancedLoggingSubDir == nil then
-		
-			kDAKConfig._EnhancedLogging = false
-			
-		end
-	
-	end
-	CheckPluginConfig()
-
-end
-
-if kDAKConfig and kDAKConfig._EnhancedLogging then
+if kDAKConfig and kDAKConfig.EnhancedLogging and kDAKConfig.EnhancedLogging.kEnabled then
 
 	//*******************************************************************************************************************************
 	//Formatting Functions
@@ -247,7 +231,7 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 		if EnhancedLoggingFile == nil then
 			return
 		end
-		local ELogFile = assert(io.open("config://" .. kDAKConfig.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "w"))
+		local ELogFile = assert(io.open("config://" .. kDAKConfig.EnhancedLogging.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "w"))
 		if ELogFile then
 			for i = 1, #EnhancedLog do
 				ELogFile:write(EnhancedLog[i] .. "\n")
@@ -256,13 +240,13 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 		end
 		
 		//Append still causes crashes sooo yea pretty dumb...
-		/*local ELogFile = io.open("config://" .. kDAKConfig.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "a+")
+		/*local ELogFile = io.open("config://" .. kDAKConfig.EnhancedLogging.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "a+")
 		if ELogFile then
 			ELogFile:seek("end")
 			ELogFile:write(logstring .. "\n")
 			ELogFile:close()
 		else
-			local ELogFile = io.open("config://" .. kDAKConfig.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "w")
+			local ELogFile = io.open("config://" .. kDAKConfig.EnhancedLogging.kEnhancedLoggingSubDir .. "\\" .. EnhancedLoggingFile, "w")
 			if ELogFile then
 				ELogFile:write(logstring .. "\n")
 				ELogFile:close()
@@ -280,7 +264,7 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 		local playerRecords = Shared.GetEntitiesWithClassname("Player")
 		local message = GetTimeStamp() .. GetClientUIDString(client) .. " executed " .. commandname
 		if parm1 ~= nil then
-			message = message .. parm1
+			message = message .. " " .. parm1
 		end
 		for _, player in ientitylist(playerRecords) do
 		
@@ -422,7 +406,7 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 	
 	Event.Hook("Console_name",               OnCommandSetName)
 		
-	if kDAKConfig and kDAKConfig._GamerulesExtensions then
+	if kDAKConfig and kDAKConfig.DAKLoader and kDAKConfig.DAKLoader.GamerulesExtensions then
 	
 		function NS2DAKGamerules:SetGameState(state)
 
@@ -480,7 +464,7 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 	function EnhancedLoggingEndGame(winningTeam)
 	
 		local gamerules = GetGamerules()
-		if gamerules ~= nil then
+		if gamerules then
 			if gamerules:GetGameState() == kGameState.Started then
 			    local version = ToString(Shared.GetBuildNumber())
                 local winner = ToString(winningTeam:GetTeamType())
@@ -519,7 +503,10 @@ if kDAKConfig and kDAKConfig._EnhancedLogging then
 	
 	table.insert(kDAKOnEntityKilled, function(targetEntity, attacker, doer, point, direction) return EnhancedLoggingOnEntityKilled(targetEntity, attacker, doer, point, direction) end)
 	
-	Shared.Message("EnhancedLogging Loading Complete")
+elseif kDAKConfig and not kDAKConfig.EnhancedLogging then
+	
+	DAKGenerateDefaultDAKConfig("EnhancedLogging")
 	
 end
-	
+
+Shared.Message("EnhancedLogging Loading Complete")

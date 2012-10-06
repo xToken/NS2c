@@ -696,7 +696,6 @@ function AlienTeam:UpdateRespawn()
 
                 // spawn aliens in a wave, do nothing if the wave time has not passed yet   
                 if hive.timeWaveEnds ~= 0 and hive.timeWaveEnds < Shared.GetTime() then
-                    local player = Shared.GetEntity(hive.queuedplayer)
                     RespawnPlayer(self, hive)
                 end
             end

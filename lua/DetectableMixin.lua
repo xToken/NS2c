@@ -130,7 +130,6 @@ function DetectableMixin:SetDetected(state, decloak)
         if self.OnDetectedChange then
             self:OnDetectedChange(state)
         end
-        
         self.detected = state
         if decloak then
             self.decloak = decloak
@@ -245,4 +244,5 @@ function DetectableMixin:OnUpdateRender()
 
 end
 */
+
 Event.Hook("UpdateServer", DetectableMixinOnUpdateServer)

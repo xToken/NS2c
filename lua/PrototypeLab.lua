@@ -28,7 +28,8 @@ Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-Script.Load("lua/DetectableMixin.lua")
+Script.Load("lua/AlienDetectableMixin.lua")
+Script.Load("lua/ParasiteMixin.lua")
 
 local kAnimationGraph = PrecacheAsset("models/marine/prototype_lab/prototype_lab.animation_graph")
 
@@ -70,7 +71,8 @@ AddMixinNetworkVars(RecycleMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
-AddMixinNetworkVars(DetectableMixin, networkVars)
+AddMixinNetworkVars(AlienDetectableMixin, networkVars)
+AddMixinNetworkVars(ParasiteMixin, networkVars)
 
 function PrototypeLab:OnCreate()
 
@@ -93,7 +95,8 @@ function PrototypeLab:OnCreate()
     InitMixin(self, ObstacleMixin)
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
-    InitMixin(self, DetectableMixin)
+    InitMixin(self, AlienDetectableMixin)
+    InitMixin(self, ParasiteMixin)
     
     if Client then
         InitMixin(self, CommanderGlowMixin)

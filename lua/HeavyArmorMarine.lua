@@ -16,7 +16,6 @@ Script.Load("lua/DisorientableMixin.lua")
 Script.Load("lua/LOSMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
-Script.Load("lua/ParasiteMixin.lua")
 
 if Client then
     Script.Load("lua/TeamMessageMixin.lua")
@@ -189,7 +188,7 @@ end
 
 function HeavyArmorMarine:GetAcceleration()
     local acceleration = HeavyArmorMarine.kAcceleration
-    if not self.onGround then
+    if not self:GetIsOnGround() then
         acceleration = HeavyArmorMarine.kAirAcceleration
     end
     acceleration = acceleration * self:GetSlowSpeedModifier() * self:GetInventorySpeedScalar()

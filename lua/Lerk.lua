@@ -235,7 +235,7 @@ function Lerk:GetMaxSpeed(possible)
     end
 
     local speed = kMaxWalkSpeed
-    if not self.onGround then
+    if not self:GetIsOnGround() then
     
         local kBaseAirScalar = 1.2      // originally 0.5
         local kAirTimeToMaxSpeed = 5  // originally 10
@@ -255,6 +255,7 @@ function Lerk:GetMaxSpeed(possible)
 end
 
 function Lerk:GetAcceleration()
+    //return Alien.GetAcceleration(self) * self:GetMovementSpeedModifier()
     return ConditionalValue(self:GetIsOnGround(), Alien.GetAcceleration(self), kAirAcceleration) * self:GetMovementSpeedModifier()
 end
 
@@ -281,7 +282,7 @@ function Lerk:GetFrictionForce(input, velocity)
     
     // When in the air, but not gliding (spinning out of control)
     // Allow holding the jump key to reduce velocity, and slow the fall
-    if (not self.onGround) and (bit.band(input.commands, Move.Jump) ~= 0) and (not self.gliding) then
+    if (not self:GetIsOnGround()) and (bit.band(input.commands, Move.Jump) ~= 0) and (not self.gliding) then
     
         if prevVelocity.y < 0 then
             return Vector(-prevVelocity.x, -prevVelocity.y, -prevVelocity.z) * frictionScalar
