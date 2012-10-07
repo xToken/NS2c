@@ -26,6 +26,7 @@ Script.Load("lua/LOSMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/DetectorMixin.lua")
+Script.Load("lua/AlienDetectableMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 
 if Client then
@@ -52,7 +53,7 @@ Marine.kMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_
 
 Marine.kDieSoundName = PrecacheAsset("sound/NS2.fev/marine/common/death")
 Marine.kFlashlightSoundName = PrecacheAsset("sound/NS2.fev/common/light")
-Marine.kGunPickupSound = PrecacheAsset("sound/NS2.fev/marine/common/pickup_gun")
+Marine.kGunPickupSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/pickup")
 Marine.kSpendResourcesSoundName = PrecacheAsset("sound/NS2.fev/marine/common/player_spend_nanites")
 Marine.kChatSound = PrecacheAsset("sound/NS2.fev/marine/common/chat")
 Marine.kSoldierLostAlertSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/soldier_lost")
@@ -67,8 +68,8 @@ Marine.kArmorPerUpgradeLevel = kArmorPerUpgradeLevel
 // Player phase delay - players can only teleport this often
 Marine.kPlayerPhaseDelay = 2
 Marine.kStunDuration = 2
-Marine.kAcceleration = 55
-Marine.kAirAcceleration = 25
+Marine.kAcceleration = 58
+Marine.kAirAcceleration = 28
 Marine.kWalkMaxSpeed = 3.75                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
 Marine.kRunMaxSpeed = 9
 Marine.kDoubleJumpMinHeightChange = 0.4
@@ -106,6 +107,7 @@ AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
+AddMixinNetworkVars(AlienDetectableMixin, networkVars)
 
 function Marine:OnCreate()
 
@@ -125,7 +127,8 @@ function Marine:OnCreate()
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, ParasiteMixin)
-   
+    InitMixin(self, AlienDetectableMixin)
+       
     if Server then
 
         
@@ -233,7 +236,7 @@ function Marine:MakeSpecialEdition()
 end
 
 function Marine:IsValidDetection(detectable)
-    if detectable.GetReceivesStructuralDamage and detectable.GetReceivesStructuralDamage() then
+    if detectable.GetReceivesStructuralDamage and detectable:GetReceivesStructuralDamage() then
         return false
     end
     
@@ -241,7 +244,7 @@ function Marine:IsValidDetection(detectable)
     if detectable:isa("Alien") then
         local hasupg, level = GetHasGhostUpgrade(detectable)
         if hasupg and level > 0 then
-            return math.random(1, level) <= 1
+            return math.random(1, 100) <= (level * 25)
         end
     end
     
@@ -453,7 +456,7 @@ function Marine:HandleButtons(input)
                         
                         self:AddWeapon(nearbyDroppedWeapon, true)
                         Shared.PlayWorldSound(nil, Marine.kGunPickupSound, nil, self:GetOrigin())
-                        
+                        self:SetScoreboardChanged(true)
                         self.timeOfLastPickUpWeapon = Shared.GetTime()
                         
                     end
@@ -507,7 +510,7 @@ function Marine:GetMaxSpeed(possible)
     local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Marine.kWalkMaxSpeed,  Marine.kRunMaxSpeed)
     
     // Take into account crouching
-    if self:GetCrouching() and self.onGround then
+    if self:GetCrouching() and self:GetIsOnGround() then
         maxSpeed = ( 1 - self:GetCrouchAmount() * self:GetCrouchSpeedScalar() ) * maxSpeed
     end
     
@@ -540,7 +543,7 @@ end
 
 function Marine:GetAcceleration()
     local acceleration = Marine.kAcceleration
-    if not self.onGround then
+    if not self:GetIsOnGround() then
         acceleration = Marine.kAirAcceleration
     end
     acceleration = acceleration * self:GetSlowSpeedModifier() * self:GetInventorySpeedScalar()

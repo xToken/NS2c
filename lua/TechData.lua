@@ -312,7 +312,7 @@ function BuildTechData()
         { [kTechDataId] = kTechId.Silence2,     [kTechDataImplemented] = false,        [kTechDataCategory] = kTechId.ShiftHive,      [kTechDataKeyStructure] = kTechId.Shift,      [kTechDataDisplayName] = "SILENCE", [kTechDataTooltipInfo] = "SILENCE_TOOLTIP", [kTechDataCostKey] = kSilenceCost },
         
         { [kTechDataId] = kTechId.Silence,            [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,       [kTechDataDisplayName] = "SILENCE", [kTechDataTooltipInfo] = "SILENCE_TOOLTIP", [kTechDataCostKey] = kSilenceCost },                
-        { [kTechDataId] = kTechId.Aura,            [kTechDataImplemented] = false,      [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,       [kTechDataDisplayName] = "AURA", [kTechDataTooltipInfo] = "AURA_TOOLTIP", [kTechDataCostKey] = kAuraCost },
+        { [kTechDataId] = kTechId.Aura,               [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,       [kTechDataDisplayName] = "AURA", [kTechDataTooltipInfo] = "AURA_TOOLTIP", [kTechDataCostKey] = kAuraCost },
         { [kTechDataId] = kTechId.Ghost,              [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,      [kTechDataDisplayName] = "GHOST", [kTechDataTooltipInfo] = "GHOST_TOOLTIP", [kTechDataCostKey] = kGhostCost },
         { [kTechDataId] = kTechId.Camouflage,    [kTechDataImplemented] = false,       [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,       [kTechDataDisplayName] = "CAMOUFLAGE", [kTechDataTooltipInfo] = "CAMOUFLAGE_TOOLTIP", [kTechDataCostKey] = kCamouflageCost },
         
@@ -350,6 +350,7 @@ function BuildTechData()
 
         { [kTechDataId] = kTechId.AlienAlertHiveDying,                          [kTechDataAlertSound] = Hive.kDyingSound,                                   [kTechDataAlertType] = kAlertType.Info,   [kTechDataAlertPriority] = 3, [kTechDataAlertText] = "ALIEN_ALERT_HIVE_DYING",                 [kTechDataAlertTeam] = true, [kTechDataAlertIgnoreDistance] = true},        
         { [kTechDataId] = kTechId.AlienAlertHiveComplete,                       [kTechDataAlertSound] = Hive.kCompleteSound,                                [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertText] = "ALIEN_ALERT_HIVE_COMPLETE",    [kTechDataAlertTeam] = true, [kTechDataAlertIgnoreDistance] = true},
+        { [kTechDataId] = kTechId.AlienAlertHiveSpecialComplete,                [kTechDataAlertSound] = Hive.kSpecialCompleteSound,                         [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertText] = "ALIEN_ALERT_HIVE_COMPLETE",    [kTechDataAlertTeam] = true, [kTechDataAlertIgnoreDistance] = true},
         { [kTechDataId] = kTechId.AlienAlertGorgeBuiltHarvester,                [kTechDataAlertType] = kAlertType.Info,                                                                                 [kTechDataAlertText] = "ALIEN_ALERT_GORGEBUILT_HARVESTER"},
         { [kTechDataId] = kTechId.AlienAlertNotEnoughResources,                 [kTechDataAlertSound] = Alien.kNotEnoughResourcesSound,                     [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertText] = "ALIEN_ALERT_NOTENOUGH_RESOURCES"},
 

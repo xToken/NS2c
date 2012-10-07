@@ -32,7 +32,8 @@ Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
-Script.Load("lua/DetectableMixin.lua")
+Script.Load("lua/AlienDetectableMixin.lua")
+Script.Load("lua/ParasiteMixin.lua")
 
 class 'Observatory' (ScriptActor)
 
@@ -73,7 +74,8 @@ AddMixinNetworkVars(EnergyMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
-AddMixinNetworkVars(DetectableMixin, networkVars)
+AddMixinNetworkVars(AlienDetectableMixin, networkVars)
+AddMixinNetworkVars(ParasiteMixin, networkVars)
 
 function Observatory:OnCreate()
 
@@ -112,7 +114,8 @@ function Observatory:OnCreate()
     InitMixin(self, ObstacleMixin)
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
-    InitMixin(self, DetectableMixin)
+    InitMixin(self, AlienDetectableMixin)
+    InitMixin(self, ParasiteMixin)
     
     if Client then
         InitMixin(self, CommanderGlowMixin)
@@ -198,7 +201,8 @@ function Observatory:IsValidDetection(detectable)
     if detectable:isa("Alien") then
         local hasupg, level = GetHasGhostUpgrade(detectable)
         if hasupg and level > 0 then
-            return math.random(1, level) <= 1
+            local hide = math.random(1, 100) <= (level * kGhostObservatoryDodgePerLevel)
+            return hide
         end
     end
     
@@ -312,7 +316,7 @@ local function GetPlayersToBeacon(self, toOrigin)
     
 end
 
-local function ResurrectPlayer(player, player, distressOrigin)
+local function ResurrectPlayer(self, player, distressOrigin)
     local TechID = kTechId.Marine
     if player:GetIsAlive() then
         TechID = player:GetTechId()
@@ -374,9 +378,9 @@ function Observatory:PerformDistressBeacon()
     end
     
     // Also respawn players that are spawning in at infantry portals near command station (use a little extra range to account for vertical difference)
-    for index, ip in ipairs(GetEntitiesForTeamWithinRange("InfantryPortal", self:GetTeamNumber(), distressOrigin, kInfantryPortalAttachRange + 1)) do
-        ip:FinishSpawn()
-    end
+    //for index, ip in ipairs(GetEntitiesForTeamWithinRange("InfantryPortal", self:GetTeamNumber(), distressOrigin, kInfantryPortalAttachRange + 1)) do
+        //ip:FinishSpawn()
+    //end
        
     // Play mega-spawn sound in world.
     if anyPlayerWasBeaconed then
@@ -402,7 +406,7 @@ end
 function Observatory:PerformActivation(techId, position, normal, commander)
 
     local success = false
-    
+
     if GetIsUnitActive(self) then
     
         if techId == kTechId.DistressBeacon then
@@ -411,6 +415,15 @@ function Observatory:PerformActivation(techId, position, normal, commander)
         
     end
     
+    return ScriptActor.PerformActivation(self, techId, position, normal, commander)
+    
+end
+
+function Observatory:OverrideTechTreeAction(techNode, position, orientation, commander)
+
+    local success = false
+    local keepProcessing = true
+    local techId = techNode:GetTechId()
     if techId == kTechId.Recycle and self:GetIsBeaconing() then
         self:CancelDistressBeacon()
         local team = self:GetTeam()
@@ -420,10 +433,10 @@ function Observatory:PerformActivation(techId, position, normal, commander)
                 team:SetTeamResources(team:GetTeamResources() + bNode:GetCost())
             end
         end
-        return true
+        success = true
+        keepProcessing = false
     end
-    
-    return ScriptActor.PerformActivation(self, techId, position, normal, commander)
+    return success, keepProcessing
     
 end
 

@@ -4,20 +4,28 @@ if Server then
 
 	Script.Load("lua/dkjson.lua")
 
+	kDAKDefaultMods = "5f7771c"
 	kDAKConfig = nil 						//Global variable storing all configuration items for mods
 	kDAKSettings = nil 						//Global variable storing all settings for mods
 	kDAKRevisions = { }						//List used to track revisions of plugins
-	kDAKGameID = { }						//List of clients on connect for GameID
+	kDAKGameID = { }						//List of connected clients for GameID
+	
+	//DAK Hookable Functions
 	kDAKOnClientConnect = { }				//Functions run on Client Connect
 	kDAKOnClientDisconnect = { }			//Functions run on Client Disconnect
 	kDAKOnServerUpdate = { }				//Functions run on ServerUpdate
 	kDAKOnClientDelayedConnect = { }		//Functions run on DelayedClientConnect
-	kDAKOnTeamJoin = { }					//Functions run on Teamjoin from Gamerules
+	kDAKOnTeamJoin = { }					//Functions run on TeamJoin from Gamerules
 	kDAKOnGameEnd = { }						//Functions run on GameEnd from Gamerules
 	kDAKOnEntityKilled = { }				//Functions run on EntityKilled from Gamerules
 	kDAKOnUpdatePregame = { }				//Functions run on UpdatePregame from Gamerules
 	kDAKOnClientChatMessage = { }			//Functions run on ChatMessages
+	kDAKOverrideMapChange = { }	    		//List of functions run to confirm if map should change
+	
+	//Other globals
 	kDAKServerAdminCommands = { }			//List of ServerAdmin Commands
+	kDAKPluginDefaultConfigs = { }			//List of functions to setup default configs per plugin
+	
 	kDAKBaseGamerules = NS2Gamerules
 	
 	local settings = { groups = { }, users = { } }
@@ -26,24 +34,39 @@ if Server then
 	local DAKSettingsFileName = "config://DAKSettings.json"
 	local DAKServerAdminFileName = "config://ServerAdmin.json"
 	local DelayedClientConnect = { }
-	local lastserverupdate = 0
-	local DAKRevision = 1.6
+	local DelayedServerAdminCommands = { }
+	local DelayedServerCommands = false
+	local serverupdatetime = 0
+	kDAKRevisions["DAKLoader"] = 1.7
 		
     local function LoadServerAdminSettings()
     
         Shared.Message("Loading " .. DAKServerAdminFileName)
-        
+		
         local initialState = { groups = { }, users = { } }
         settings = initialState
-        
-		local settingsFile = io.open(DAKServerAdminFileName, "r")
-        if settingsFile then
-        
-            local fileContents = settingsFile:read("*all")
+		
+		local configFile = io.open(DAKServerAdminFileName, "r")
+        if configFile then
+            local fileContents = configFile:read("*all")
             settings = json.decode(fileContents) or initialState
-            
+			io.close(configFile)
+		else
+		    local defaultConfig = {
+									groups =
+										{
+										  admin_group = { type = "disallowed", commands = { } },
+										  mod_group = { type = "allowed", commands = { "sv_reset", "sv_ban" } }
+										},
+									users =
+										{
+										  NsPlayer = { id = 10000001, groups = { "admin_group" } }
+										}
+								  }
+			local configFile = io.open(DAKServerAdminFileName, "w+")
+			configFile:write(json.encode(defaultConfig, { indent = true, level = 1 }))
+			io.close(configFile)
         end
-        
         assert(settings.groups, "groups must be defined in " .. DAKServerAdminFileName)
         assert(settings.users, "users must be defined in " .. DAKServerAdminFileName)
         
@@ -105,106 +128,54 @@ if Server then
         
     end
 	
-	local function GenerateDefaultDAKConfig()
-		 
-		//Start Default Config
-		local ModsTable = { }
-		local MOTDTable = { }
-		table.insert(ModsTable, "5f7771c")
-		table.insert(MOTDTable, "********************************************************************")
-		table.insert(MOTDTable, "* Commands: These can be entered via chat or the console (~)        ")
-		table.insert(MOTDTable, "* rtv: To initiate a map vote aka Rock The Vote                     ")
-		table.insert(MOTDTable, "* random: To vote for auto-random teams for next 30 minutes         ")
-		table.insert(MOTDTable, "* timeleft: To display the time until next map vote                 ")
-		table.insert(MOTDTable, "* surrender: To initiate or vote in a surrender vote for your team. ")
-		table.insert(MOTDTable, "* acceptmotd: To accept and suppress this message                   ")
-		table.insert(MOTDTable, "********************************************************************")
-		kDAKConfig = { }
-		kDAKConfig.GlobalConfig = "Global Configuration"
-		kDAKConfig.kDelayedClientConnect = 2
-		kDAKConfig.kDelayedServerUpdate = 1
-		kDAKConfig.kModsReloadList = ModsTable
-		kDAKConfig._OverrideInterp = false
-		kDAKConfig.kInterp = 100
-		kDAKConfig._VoteRandom = true
-		kDAKConfig.kVoteRandomInstantly = false
-		kDAKConfig.kVoteRandomDuration = 30
-		kDAKConfig.kVoteRandomMinimumPercentage = 60
-		kDAKConfig.kVoteRandomEnabled = "Random teams have been enabled, the round will restart."
-		kDAKConfig.kVoteRandomEnabledDuration = "Random teams have been enabled for the next %s Minutes"
-		kDAKConfig.kVoteRandomConnectAlert = "Random teams are enabled, you are being randomed to a team."
-		kDAKConfig.kVoteRandomVoteCountAlert = "%s voted for random teams. (%s votes, needed %s)."
-		kDAKConfig._TournamentMode = false
-		kDAKConfig.kTournamentModePubMode = false
-		kDAKConfig.kTournamentModePubMinPlayers = 3
-		kDAKConfig.kTournamentModePubPlayerWarning = "Game will start once each team has %s players."
-		kDAKConfig.kTournamentModePubAlertDelay = 30
-		kDAKConfig.kTournamentModeReadyDelay = 2
-		kDAKConfig.kTournamentModeGameStartDelay = 15
-		kDAKConfig.kTournamentModeCountdown = "Game will start in %s seconds!"
-		kDAKConfig._ReservedSlots = false
-		kDAKConfig.kMaximumSlots = 19
-		kDAKConfig.kReservedSlots = 3
-		kDAKConfig.kMinimumSlots = 1
-		kDAKConfig.kDelayedSycTime = 3
-		kDAKConfig.kDelayedKickTime = 2
-		kDAKConfig.kReserveSlotServerFull = "Server is full - You must have a reserved slot to connect."
-		kDAKConfig.kReserveSlotServerFullDisconnectReason = "Server is full."
-		kDAKConfig.kReserveSlotKickedForRoom = "**You're being kicked due to a reserved slot, this is automatically determined**"
-		kDAKConfig.kReserveSlotKickedDisconnectReason = "Kicked due to a reserved slot."
-		kDAKConfig._MOTD = true
-		kDAKConfig.kMOTDMessage = MOTDTable
-		kDAKConfig.kMOTDMessageDelay = 6
-		kDAKConfig.kMOTDMessageRevision = 1
-		kDAKConfig.kMOTDMessagesPerTick = 5
-		kDAKConfig._MapVote = true
-		kDAKConfig.kVoteStartDelay = 8
-		kDAKConfig.kVotingDuration = 30
-		kDAKConfig.kMapsToSelect = 7
-		kDAKConfig.kDontRepeatFor = 4
-		kDAKConfig.kVoteNotifyDelay = 6
-		kDAKConfig.kVoteChangeDelay = 4
-		kDAKConfig.kVoteMinimumPercentage = 25
-		kDAKConfig.kRTVMinimumPercentage = 50
-		kDAKConfig.kVoteMapBeginning = "******                 Map vote will begin in %s seconds.                 ******"
-		kDAKConfig.kVoteMapHowToVote = "******     You can vote for the map you want by typing vote #     ******"
-		kDAKConfig.kVoteMapStarted = "*******            Map vote has begun. (%s%% votes needed to win)           ******"
-		kDAKConfig.kVoteMapMapListing = "******                vote %s for %s                                       "
-		kDAKConfig.kVoteMapNoWinner = "******               Voting has ended, no map won.                             "
-		kDAKConfig.kVoteMapTie = "******  Voting has ended with a tie, A new vote will start in %s seconds  ******"
-		kDAKConfig.kVoteMapWinner = "******     Voting has ended, %s won with %s votes.                           "
-		kDAKConfig.kVoteMapMinimumNotMet = "******%s had the most votes with %s, but the minimum required is %s.******"
-		kDAKConfig.kVoteMapTimeLeft = "******                      %.1f seconds are left to vote                   ******"
-		kDAKConfig.kVoteMapCurrentMapVotes = "******      %s votes for %s (to vote, type vote %s)   ******"
-		kDAKConfig.kVoteMapRockTheVote = "%s rock'd the vote. (%s votes, needed %s)."
-		kDAKConfig.kVoteMapCancelled = "******           Map vote has been cancelled.         ******"
-		kDAKConfig.kVoteMapInsufficientMaps = "******           Not enough maps for a vote.         ******"
-		kDAKConfig._AFKKicker = true
-		kDAKConfig.kAFKKickDelay = 150
-		kDAKConfig.kAFKKickCheckDelay = 5
-		kDAKConfig.kAFKKickMinimumPlayers = 5
-		kDAKConfig.kAFKKickReturnMessage = "You are no longer flagged as idle."
-		kDAKConfig.kAFKKickMessage = "%s kicked from the server for idling more than %d seconds."
-		kDAKConfig.kAFKKickDisconnectReason = "Kicked from the server for idling more than %d seconds."
-		kDAKConfig.kAFKKickClientMessage = "You are being kicked for idling for more than %d seconds."
-		kDAKConfig.kAFKKickWarning1 = 30
-		kDAKConfig.kAFKKickWarningMessage1 = "You will be kicked in %d seconds for idling."
-		kDAKConfig.kAFKKickWarning2 = 10
-		kDAKConfig.kAFKKickWarningMessage2 = "You will be kicked in %d seconds for idling."
-		kDAKConfig._EnhancedLogging = true
-		kDAKConfig.kEnhancedLoggingSubDir = "Logs"
-		kDAKConfig._VoteSurrender = true
-		kDAKConfig.kVoteSurrenderMinimumPercentage = 60
-		kDAKConfig.kVoteSurrenderVotingTime = 120
-		kDAKConfig.kVoteSurrenderAlertDelay = 20
-		kDAKConfig._GamerulesExtensions = true
-		//End Default Config
+	local function GenerateDefaultDAKConfig(Plugin)
 		
+		//Base DAK Config
+		if Plugin == "DAKLoader" or Plugin == "ALL" then
+			local ModsTable = { }
+			table.insert(ModsTable, kDAKDefaultMods)
+			if kDAKConfig == nil then
+				kDAKConfig = { }
+			end
+			kDAKConfig.DAKLoader = { }
+			kDAKConfig.DAKLoader.kDelayedClientConnect = 2
+			kDAKConfig.DAKLoader.kDelayedServerUpdate = 1
+			kDAKConfig.DAKLoader.kModsReloadList = ModsTable
+			kDAKConfig.DAKLoader.GamerulesExtensions = true
+			kDAKConfig.DAKLoader.OverrideInterp = { }
+			kDAKConfig.DAKLoader.OverrideInterp.kEnabled = false
+			kDAKConfig.DAKLoader.OverrideInterp.kInterp = 100
+			kDAKConfig.DAKLoader.kEnabled = true
+			//Base DAK Config
+		end
+		
+		//Generate default configs for all plugins
+		for i = 1, #kDAKPluginDefaultConfigs do
+			PluginDefaultConfig = kDAKPluginDefaultConfigs[i]
+			if Plugin == PluginDefaultConfig.PluginName or Plugin == "ALL" then
+				kDAKPluginDefaultConfigs[i].DefaultConfig()
+			end
+		end
+		
+		//Write config to file
 		local configFile = io.open(DAKConfigFileName, "w+")
-		configFile:write(json.encode(kDAKConfig, { indent = true }))
+		configFile:write(json.encode(kDAKConfig, { indent = true, level = 1 }))
 		io.close(configFile)
 		
 	end
+	
+	local function LoadDAKPluginConfigs()
+		local matchingFiles = { }
+		Shared.GetMatchingFileNames("lua/plugins/*.lua", false, matchingFiles)
+		for _, pFile in pairs(matchingFiles) do
+			local _, _, filename = string.find(pFile, "lua/plugins/(.*).lua")
+			if string.sub(filename, 1, 6) == "config" then
+				Script.Load(pFile)
+			end
+		end
+	end
+	
+	LoadDAKPluginConfigs()
 	
 	local function LoadDAKConfig()
 		local DAKConfigFile = io.open(DAKConfigFileName, "r")
@@ -214,7 +185,8 @@ if Server then
 			DAKConfigFile:close()
 		end
 		if kDAKConfig == nil or kDAKConfig == { } then
-			GenerateDefaultDAKConfig()
+			Shared.Message("Generating Default DAK configuration.")
+			GenerateDefaultDAKConfig("ALL")
 		end
 	end
 	
@@ -239,26 +211,66 @@ if Server then
 	
 		local DAKSettingsFile = io.open(DAKSettingsFileName, "w+")
 		if DAKSettingsFile then
-			DAKSettingsFile:write(json.encode(kDAKSettings))
+			DAKSettingsFile:write(json.encode(kDAKSettings, { indent = true, level = 1 }))
 			DAKSettingsFile:close()
 		end
 	
 	end
 	
-	Script.Load("lua/BaseAdminCommands.lua")
-	
 	//*****************************************************************************************************************
 	//Globals
 	//*****************************************************************************************************************
 	
+	//Hooks for logging functions
 	function EnhancedLog(message)
 	
-		if kDAKConfig and kDAKConfig._EnhancedLogging then
+		if kDAKConfig and kDAKConfig.EnhancedLogging and kDAKConfig.EnhancedLogging.kEnabled then
 			EnhancedLogMessage(message)
 		end
 	
 	end
+		
+	function PrintToAllAdmins(commandname, client, parm1)
 	
+		if kDAKConfig and kDAKConfig.EnhancedLogging and kDAKConfig.EnhancedLogging.kEnabled then
+			EnhancedLoggingAllAdmins(commandname, client, parm1)
+		end
+	
+	end
+	
+	//Internal Globals
+	function DAKCreateServerAdminCommand(commandName, commandFunction, helpText, optionalAlwaysAllowed)
+		local ServerAdminCmd = { cmdName = commandName, cmdFunction = commandFunction, helpT = helpText, opt = optionalAlwaysAllowed }
+		table.insert(DelayedServerAdminCommands, ServerAdminCmd)
+		DelayedServerCommands = true
+	end
+	
+	function DAKGenerateDefaultDAKConfig(Plugin)
+		GenerateDefaultDAKConfig(Plugin)
+	end
+	
+	function RegisterServerAdminCommand(commandName, commandFunction, helpText, optionalAlwaysAllowed)
+		if kDAKConfig and kDAKConfig.BaseAdminCommands and kDAKConfig.BaseAdminCommands.kEnabled then
+			CreateBaseServerAdminCommand(commandName, commandFunction, helpText, optionalAlwaysAllowed)
+		else
+			CreateServerAdminCommand(commandName, commandFunction, helpText, optionalAlwaysAllowed)
+		end
+	end
+	
+	function DAKVerifyMapName(mapName)
+		local matchingFiles = { }
+		Shared.GetMatchingFileNames("maps/*.level", false, matchingFiles)
+
+		for _, mapFile in pairs(matchingFiles) do
+			local _, _, filename = string.find(mapFile, "maps/(.*).level")
+			if mapName:upper() == string.format(filename):upper() then
+				return true
+			end		
+		end
+		return false
+	end
+	
+	//Client ID Translators
 	function VerifyClient(client)
 	
 		local playerList = EntityListToTable(Shared.GetEntitiesWithClassname("Player"))
@@ -274,14 +286,6 @@ if Server then
 			end				
 		end
 		return nil
-	
-	end
-	
-	function PrintToAllAdmins(commandname, client, parm1)
-	
-		if kDAKConfig and kDAKConfig._EnhancedLogging then
-			EnhancedLoggingAllAdmins(commandname, client, parm1)
-		end
 	
 	end
 	
@@ -365,7 +369,6 @@ if Server then
 		
 	end
 
-	
 	function ShufflePlayerList()
 	
 		local playerList = EntityListToTable(Shared.GetEntitiesWithClassname("Player"))
@@ -386,40 +389,43 @@ if Server then
 	
 	local function DAKOnClientConnected(client)
 	
-		if client ~= nil and VerifyClient(client) ~= nil then
-			table.insert(kDAKGameID, client)
-			if #kDAKOnClientConnect > 0 then
-				for i = 1, #kDAKOnClientConnect do
-					if not kDAKOnClientConnect[i](client) then break end
+		if kDAKConfig and kDAKConfig.DAKLoader and kDAKConfig.DAKLoader.kEnabled then
+			if client ~= nil and VerifyClient(client) ~= nil then
+				table.insert(kDAKGameID, client)
+				if #kDAKOnClientConnect > 0 then
+					for i = 1, #kDAKOnClientConnect do
+						if not kDAKOnClientConnect[i](client) then break end
+					end
+				end
+				if kDAKConfig and kDAKConfig.DAKLoader and kDAKConfig.DAKLoader.kDelayedClientConnect then
+					local CEntry = { Client = client, Time = Shared.GetTime() + kDAKConfig.DAKLoader.kDelayedClientConnect }
+					table.insert(DelayedClientConnect, CEntry)
 				end
 			end
-			if kDAKConfig and kDAKConfig.kDelayedClientConnect then
-				local CEntry = { Client = client, Time = Shared.GetTime() + kDAKConfig.kDelayedClientConnect }
-				table.insert(DelayedClientConnect, CEntry)
-			end
 		end
-		
 	end
 
 	Event.Hook("ClientConnect", DAKOnClientConnected)
 	
 	local function DAKOnClientDisconnected(client)
 	
-		if client ~= nil and VerifyClient(client) ~= nil then
-			if #DelayedClientConnect > 0 then
-				for i = 1, #DelayedClientConnect do
-					local PEntry = DelayedClientConnect[i]
-					if PEntry ~= nil and PEntry.Client ~= nil then
-						if client == PEntry.Client then
-							DelayedClientConnect[i] = nil
-							break
+		if kDAKConfig and kDAKConfig.DAKLoader and kDAKConfig.DAKLoader.kEnabled then
+			if client ~= nil and VerifyClient(client) ~= nil then
+				if #DelayedClientConnect > 0 then
+					for i = 1, #DelayedClientConnect do
+						local PEntry = DelayedClientConnect[i]
+						if PEntry ~= nil and PEntry.Client ~= nil then
+							if client == PEntry.Client then
+								DelayedClientConnect[i] = nil
+								break
+							end
 						end
+					end		
+				end
+				if #kDAKOnClientDisconnect > 0 then
+					for i = 1, #kDAKOnClientDisconnect do
+						if not kDAKOnClientDisconnect[i](client) then break end
 					end
-				end		
-			end
-			if #kDAKOnClientDisconnect > 0 then
-				for i = 1, #kDAKOnClientDisconnect do
-					if not kDAKOnClientDisconnect[i](client) then break end
 				end
 			end
 		end
@@ -432,43 +438,59 @@ if Server then
 	
 		PROFILE("DAKLoader:DAKUpdateServer")
 		
-		if kDAKConfig and kDAKConfig.kDelayedServerUpdate and (lastserverupdate == nil or lastserverupdate < Shared.GetTime()) then
-		
-			if #kDAKOnServerUpdate > 0 then
-				for i = 1, #kDAKOnServerUpdate do
-					kDAKOnServerUpdate[i](deltaTime)
-				end
-			end
+		if kDAKConfig and kDAKConfig.DAKLoader and kDAKConfig.DAKLoader.kEnabled then
+			serverupdatetime = serverupdatetime + deltaTime
+			if kDAKConfig.DAKLoader.kDelayedServerUpdate and serverupdatetime > kDAKConfig.DAKLoader.kDelayedServerUpdate then
 			
-			if #DelayedClientConnect > 0 then
-				for i = #DelayedClientConnect, 1, -1 do
-					local CEntry = DelayedClientConnect[i]
-					if CEntry ~= nil and CEntry.Client ~= nil and VerifyClient(CEntry.Client) ~= nil then
-						if CEntry.Time < Shared.GetTime() then
-							if #kDAKOnClientDelayedConnect > 0 then
-								for i = 1, #kDAKOnClientDelayedConnect do
-									if not kDAKOnClientDelayedConnect[i](CEntry.Client) then
-										break 
-									end
-								end
-							end
-							DelayedClientConnect[i] = nil
-						end
-					else
-						DelayedClientConnect[i] = nil
+				if #kDAKOnServerUpdate > 0 then
+					for i = 1, #kDAKOnServerUpdate do
+						kDAKOnServerUpdate[i](deltaTime)
 					end
 				end
+				
+				if #DelayedClientConnect > 0 then
+					for i = #DelayedClientConnect, 1, -1 do
+						local CEntry = DelayedClientConnect[i]
+						if CEntry ~= nil and CEntry.Client ~= nil and VerifyClient(CEntry.Client) ~= nil then
+							if CEntry.Time < Shared.GetTime() then
+								if #kDAKOnClientDelayedConnect > 0 then
+									for i = 1, #kDAKOnClientDelayedConnect do
+										if not kDAKOnClientDelayedConnect[i](CEntry.Client) then
+											break 
+										end
+									end
+								end
+								DelayedClientConnect[i] = nil
+							end
+						else
+							DelayedClientConnect[i] = nil
+						end
+					end
+				end
+				
+				//Print(string.format("%.5f Accuracy", (100 - math.abs(100 - ((serverupdatetime/1) * 100)))))
+				serverupdatetime = serverupdatetime - kDAKConfig.DAKLoader.kDelayedServerUpdate
+				
 			end
 			
-			lastserverupdate = Shared.GetTime() + kDAKConfig.kDelayedServerUpdate
-			
+			if DelayedServerCommands then
+				if #DelayedServerAdminCommands > 0 then
+					for i = 1, #DelayedServerAdminCommands do
+						local ServerAdminCmd = DelayedServerAdminCommands[i]
+						RegisterServerAdminCommand(ServerAdminCmd.cmdName, ServerAdminCmd.cmdFunction, ServerAdminCmd.helpT, ServerAdminCmd.opt)
+					end
+				end
+				Shared.Message("Server Commands Registered")
+				DelayedServerAdminCommands = nil
+				DelayedServerCommands = false
+			end
 		end
-	
+		
 	end	
 	
 	Event.Hook("UpdateServer", DAKUpdateServer)
 	
-	if kDAKConfig and kDAKConfig._GamerulesExtensions then
+	if kDAKConfig and kDAKConfig.DAKLoader and kDAKConfig.DAKLoader.GamerulesExtensions then
 	
 		//Creating another layer here so that compat can be maintained with any other mods that may hook this.
 		class 'NS2DAKGamerules' (kDAKBaseGamerules)
@@ -486,7 +508,9 @@ if Server then
 			if client ~= nil then
 				if #kDAKOnTeamJoin > 0 then
 					for i = 1, #kDAKOnTeamJoin do
-						kDAKOnTeamJoin[i](player, newTeamNumber, force)
+						if not kDAKOnTeamJoin[i](player, newTeamNumber, force) then
+							return false, player
+						end
 					end
 				end
 			end
@@ -545,11 +569,11 @@ if Server then
 		
 	end
 		
-	if kDAKConfig and kDAKConfig._OverrideInterp then
+	if kDAKConfig and kDAKConfig.DAKLoader and kDAKConfig.DAKLoader.OverrideInterp and kDAKConfig.DAKLoader.OverrideInterp.kEnabled then
 	
 		local function SetInterpOnClientConnected(client)
-			if kDAKConfig._OverrideInterp then
-				Shared.ConsoleCommand(string.format("interp %f", (kDAKConfig.kInterp/1000)))
+			if kDAKConfig.DAKLoader.OverrideInterp.kEnabled then
+				Shared.ConsoleCommand(string.format("interp %f", (kDAKConfig.DAKLoader.OverrideInterp.kInterp/1000)))
 			end
 			return true
 		end
@@ -597,18 +621,17 @@ if Server then
 	local function OnCommandListPlugins(client)
 	
 		if client ~= nil and kDAKConfig then
-			ServerAdminPrint(client, string.format("DAK Loader v%.1f.", DAKRevision))
 			for k,v in pairs(kDAKConfig) do
-				if string.find(k,"_") then
-					local plugin = string.gsub(k, "_", "")
-					local version = kDAKRevisions[plugin]
-					if version == nil then version = 1 end
-					if plugin ~= nil then
-						if v then
-							ServerAdminPrint(client, string.format("Plugin %s v%.1f is enabled.", plugin, version))
-						else
-							ServerAdminPrint(client, string.format("Plugin %s is disabled.", plugin))
-						end
+				local plugin = k
+				local version = kDAKRevisions[plugin]
+				if version == nil then version = 1 end
+				if plugin ~= nil then
+					if v.kEnabled then
+						ServerAdminPrint(client, string.format("Plugin %s v%.1f is enabled.", plugin, version))
+						//Shared.Message(string.format("Plugin %s v%.1f is enabled.", plugin, version))
+					else
+						ServerAdminPrint(client, string.format("Plugin %s is disabled.", plugin))
+						//Shared.Message(string.format("Plugin %s is disabled.", plugin))
 					end
 				end
 			end
@@ -616,7 +639,7 @@ if Server then
 	
 	end
 	
-	DAKCreateServerAdminCommand("Console_sv_plugins", OnCommandListPlugins, "Will list the state of all plugins.")	
+	DAKCreateServerAdminCommand("Console_sv_listplugins", OnCommandListPlugins, "Will list the state of all plugins.")	
 	
 	local function OnCommandListMap(client)
 		local matchingFiles = { }
@@ -631,6 +654,19 @@ if Server then
 	end
 
     DAKCreateServerAdminCommand("Console_sv_maps", OnCommandListMap, "Will list all the maps currently on the server.")
+	
+	local function OnCommandDefaultPluginConfig(client, plugin)
+		if client ~= nil and plugin ~= nil then
+			ServerAdminPrint(client, string.format("Defaulting %s config", plugin))
+			GenerateDefaultDAKConfig(plugin)
+			local player = client:GetControllingPlayer()
+			if player ~= nil then
+				PrintToAllAdmins("sv_defaultconfig", client, plugin)
+			end
+		end
+	end
+
+    DAKCreateServerAdminCommand("Console_sv_defaultconfig", OnCommandDefaultPluginConfig, "<Plugin Name> Will list all the maps currently on the server.")
 	
 	local function OnCommandListAdmins(client)
 	
@@ -664,56 +700,27 @@ if Server then
 				PrintToAllAdmins("sv_killserver", client)
 			end
 		end
-		CRASHFILE = io.open("config://CRASHFILE", "w")
-		if CRASHFILE then
-			CRASHFILE:seek("end")
-			CRASHFILE:write("\n CRASH")
-			CRASHFILE:close()
-		end
+		//No need for this durrrrr, server supports exit
+		Shared.ConsoleCommand("exit")
 	end
 
     DAKCreateServerAdminCommand("Console_sv_killserver", OnCommandKillServer, "Will crash the server (lol).")
 	
 	//Load Plugins
-	
-	if kDAKConfig and kDAKConfig._EnhancedLogging then
-		//EnhancedLogging
-		Script.Load("lua/EnhancedLogging.lua")
+	local function LoadPlugins()
+		local matchingFiles = { }
+		Shared.GetMatchingFileNames("lua/plugins/*.lua", false, matchingFiles)
+		for _, pFile in pairs(matchingFiles) do
+			local _, _, filename = string.find(pFile, "lua/plugins/(.*).lua")
+			if string.sub(filename, 1, 6) == "plugin" then
+				Shared.Message("Loading " .. string.format(filename))
+				Script.Load(pFile)
+			end
+		end
 	end
 	
-	if kDAKConfig and kDAKConfig._ReservedSlots then
-		//ReservedSlots
-		Script.Load("lua/ReservedSlots.lua")
-	end
+	LoadPlugins()
 	
-	if kDAKConfig and kDAKConfig._VoteRandom then
-		//VoteRandom
-		Script.Load("lua/VoteRandom.lua")
-	end
-	
-	if kDAKConfig and kDAKConfig._AFKKicker then
-		//AFKKicker
-		Script.Load("lua/AFKKick.lua")
-	end
-	
-	if kDAKConfig and kDAKConfig._MapVote then
-		//MapVote
-		Script.Load("lua/MapVote.lua")
-	end
-	
-	if kDAKConfig and kDAKConfig._VoteSurrender then
-		//VoteSurrender
-		Script.Load("lua/VoteSurrender.lua")
-	end
-	
-	if kDAKConfig and kDAKConfig._TournamentMode then
-		//TournamentMode
-		Script.Load("lua/TournamentMode.lua")
-	end
-	
-	if kDAKConfig and kDAKConfig._MOTD then
-		//MOTD
-		Script.Load("lua/MOTD.lua")
-	end
+	DAKCreateServerAdminCommand("Console_sv_reloadplugins", LoadPlugins, "Reloads all plugins.")
 	
 end

@@ -51,6 +51,13 @@ function ReadyRoomTeam:GetRespawnMapName(player)
     
 end
 
+function ReadyRoomTeam:ResetTeam()
+    local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
+    for p = 1, #players do
+        player:SetResources(0)
+    end
+end
+
 /**
  * Transform player to appropriate team respawn class and respawn them at an appropriate spot for the team.
  */

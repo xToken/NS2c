@@ -295,7 +295,9 @@ if Server then
             if self.evolveTime >= self.gestationTime then
             
                 // Move up slightly so that if we gestated on a sloped surface we don't get stuck
-                self:SetOrigin( self:GetOrigin() + Vector(0, Embryo.kEvolveSpawnOffset, 0) )
+                if self:GetIsColliding() then
+                    self:SetOrigin( self:GetOrigin() + Vector(0, Embryo.kEvolveSpawnOffset, 0) )
+                end
                 
                 // Replace player with new player
                 local newPlayer = self:Replace(self.gestationClass)

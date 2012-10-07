@@ -932,16 +932,6 @@ function GetCanSeeEntity(seeingEntity, targetEntity)
         
     end
     
-    //Adjust LOS for players with GHOST
-    if targetEntity:isa("Alien") then
-        local hasupg, level = GetHasGhostUpgrade(targetEntity)
-        if hasupg and level > 0 then
-            if seeingEntity.GetReceivesStructuralDamage and seeingEntity:GetReceivesStructuralDamage() then
-                return false
-            end
-        end
-    end
-    
     return seen
     
 end
@@ -1105,7 +1095,7 @@ function SetPlayerPoseParameters(player, viewModel)
     player:SetPoseParam("body_yaw_run", bodyYawRun)
     
     player:SetPoseParam("crouch", player:GetCrouchAmount())
-    player:SetPoseParam("land_intensity", landIntensity)
+    player:SetPoseParam("land_intensity", 0)
     
     if viewModel then
     
@@ -1697,6 +1687,7 @@ function BuildClassToGrid()
     ClassToGrid["AttackOrder"] = { 2, 8 }
     
     ClassToGrid["SensorBlip"] = { 5, 8 }
+    ClassToGrid["AlienSensorBlip"] = { 5, 8 }
     
     ClassToGrid["Player"] = { 7, 8 }
     

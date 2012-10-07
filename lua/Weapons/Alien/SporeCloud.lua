@@ -18,7 +18,8 @@ SporeCloud.kMapName = "SporeCloud"
 
 SporeCloud.kLoopingEffect = PrecacheAsset("cinematics/alien/lerk/spores.cinematic")
 SporeCloud.kLoopingEffectAlien = PrecacheAsset("cinematics/alien/lerk/spores.cinematic")
-local kSporeSound = PrecacheAsset("sound/NS2.fev/alien/structures/crag/umbra")
+local kSporesSound = PrecacheAsset("sound/ns2c.fev/ns2c/alien/lerk/spore_hit")
+
 local gHurtBySpores = { }
 // duration of cinematic, increase cinematic duration and kSporeCloudDuration to 12 to match the old value from Crag.lua
 SporeCloud.kSporeCloudDuration = kSporeDuration
@@ -42,7 +43,7 @@ function SporeCloud:OnCreate()
     end
     
     self:SetUpdates(true)
-    
+    self.soundplayed = false
     self.createTime = Shared.GetTime()
     self.endOfDamageTime = self.createTime + kSporeDuration 
     self.destroyTime = self.endOfDamageTime + 2
@@ -77,7 +78,7 @@ end
 function SporeCloud:OnInitialized()
     
     if Server then
-        //Shared.PlayWorldSound(nil, kSporeSound, nil, self:GetOrigin())
+
     end
     
 end
@@ -139,9 +140,13 @@ function SporeCloud:OnUpdate(deltaTime)
             local distanceFraction = (self.destination - self:GetOrigin()):GetLength() / SporeCloud.kMaxRange
             self:SetOrigin( self:GetOrigin() + GetNormalizedVector(travelVector) * deltaTime * SporeCloud.kTravelSpeed * distanceFraction )
         end
+        if travelVector:GetLength() < 2 and not self.soundplayed then
+            Shared.PlayWorldSound(nil, kSporesSound, nil, self:GetOrigin())
+            self.soundplayed = true
+        end
     
     end
-
+    
     local time = Shared.GetTime()
     if Server then 
         // we do damage until the spores have died away. 

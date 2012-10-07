@@ -735,7 +735,7 @@ function GUIAlienHUD:UpdateHiveInformation(deltaTime)
         for i = 1, #hivesinfo do
             if i < kMaxHives then
                 local hiveinfo = hivesinfo[i]
-                if self.hives[i].lasthealth ~= hiveinfo.healthpercent or self.hives[i].techId ~= hiveinfo.techId or self.hives[i].lastbuilt ~= hiveinfo.buildprogress or self.hives[i].lasttime ~= hiveinfo.time then
+                if self.hives[i].lasttime ~= hiveinfo.time then
                 
                     local textureCoords = GetTextureCoordinatesForIcon(hiveinfo.techId, false)
                     self.hives[i].locationtext:SetText(hiveinfo.location)

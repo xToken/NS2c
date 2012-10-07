@@ -232,7 +232,6 @@ function Weapon:OnDraw(player, previousWeaponMapName)
     end
     
     player:SetViewModel(self:GetViewModelName(), self)
-    
     self:TriggerEffects("draw")
     
 end

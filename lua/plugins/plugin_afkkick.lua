@@ -1,35 +1,9 @@
 //NS2 Automatic AFK Kicker
 
-kDAKRevisions["AFKKicker"] = 1.5
 local AFKClientTracker = { }
 local lastAFKUpdate = 0
 
-if kDAKConfig and kDAKConfig._AFKKicker then
-
-	local function CheckPluginConfig()
-	
-		if kDAKConfig.kAFKKickDelay == nil or
-		 kDAKConfig.kAFKKickCheckDelay == nil or
-		 kDAKConfig.kAFKKickMinimumPlayers == nil or
-		 kDAKConfig.kAFKKickReturnMessage == nil or
-		 kDAKConfig.kAFKKickMessage == nil or
-		 kDAKConfig.kAFKKickDisconnectReason == nil or
-		 kDAKConfig.kAFKKickClientMessage == nil or
-		 kDAKConfig.kAFKKickWarning1 == nil or
-		 kDAKConfig.kAFKKickWarningMessage1 == nil or
-		 kDAKConfig.kAFKKickWarning2 == nil or
-		 kDAKConfig.kAFKKickWarningMessage2 == nil then
-		 
-			kDAKConfig._AFKKicker = false
-			
-		end
-	
-	end
-	CheckPluginConfig()
-
-end
-
-if kDAKConfig and kDAKConfig._AFKKicker then
+if kDAKConfig and kDAKConfig.AFKKicker and kDAKConfig.AFKKicker.kEnabled then
 
 	local function DisplayMessage(client, message)
 
@@ -41,7 +15,7 @@ if kDAKConfig and kDAKConfig._AFKKicker then
 	
 	local function DisconnectClientForIdling(client)
 
-		client.disconnectreason = string.format(kDAKConfig.kAFKKickDisconnectReason, kDAKConfig.kAFKKickDelay)
+		client.disconnectreason = string.format(kDAKConfig.AFKKicker.kAFKKickDisconnectReason, kDAKConfig.AFKKicker.kAFKKickDelay)
 		Server.DisconnectClient(client)
 		
 	end
@@ -56,7 +30,7 @@ if kDAKConfig and kDAKConfig._AFKKicker then
 		if client ~= nil then
 			local player = client:GetControllingPlayer()
 			if player ~= nil and client ~= nil then
-				local PEntry = { ID = client:GetUserId(), MVec = player:GetViewAngles(), POrig = player:GetOrigin(), Time = Shared.GetTime() + kDAKConfig.kAFKKickDelay, Active = true, Warn1 = false, Warn2 = false, kick = false }
+				local PEntry = { ID = client:GetUserId(), MVec = player:GetViewAngles(), POrig = player:GetOrigin(), Time = Shared.GetTime() + kDAKConfig.AFKKicker.kAFKKickDelay, Active = true, Warn1 = false, Warn2 = false, kick = false }
 				table.insert(AFKClientTracker, PEntry)
 			end
 			return true
@@ -75,38 +49,38 @@ if kDAKConfig and kDAKConfig._AFKKicker then
 		
 			local playerList = EntityListToTable(Shared.GetEntitiesWithClassname("Player"))
 			PEntry.Active = true
-			if player:GetViewAngles() ~= PEntry.MVec or (player:GetOrigin() ~= PEntry.POrig and player:GetIsOverhead()) or #playerList < kDAKConfig.kAFKKickMinimumPlayers then
+			if player:GetViewAngles() ~= PEntry.MVec or (player:GetOrigin() ~= PEntry.POrig and player:GetIsOverhead()) or #playerList < kDAKConfig.AFKKicker.kAFKKickMinimumPlayers then
 				PEntry.MVec = player:GetViewAngles()
 				PEntry.POrig = player:GetOrigin()
-				PEntry.Time = Shared.GetTime() + kDAKConfig.kAFKKickDelay
+				PEntry.Time = Shared.GetTime() + kDAKConfig.AFKKicker.kAFKKickDelay
 				if PEntry.Warn2 or PEntry.Warn1 or PEntry.kick then
 					PEntry.kick = false
 					PEntry.Warn2 = false
 					PEntry.Warn1 = false
-					DisplayMessage(client, kDAKConfig.kAFKKickReturnMessage)
+					DisplayMessage(client, kDAKConfig.AFKKicker.kAFKKickReturnMessage)
 				end
 				return PEntry			
 			end
 			
 			if PEntry.kick and PEntry.Time < Shared.GetTime() then
-				Shared.Message(string.format(kDAKConfig.kAFKKickMessage, player:GetName(), kDAKConfig.kAFKKickDelay))
-				EnhancedLog(string.format(kDAKConfig.kAFKKickMessage, player:GetName(), kDAKConfig.kAFKKickDelay))
+				Shared.Message(string.format(kDAKConfig.AFKKicker.kAFKKickMessage, player:GetName(), kDAKConfig.AFKKicker.kAFKKickDelay))
+				EnhancedLog(string.format(kDAKConfig.AFKKicker.kAFKKickMessage, player:GetName(), kDAKConfig.AFKKicker.kAFKKickDelay))
 				DisconnectClientForIdling(client)
 				return nil
 			end
 			
-			if not PEntry.Warn1 and PEntry.Time < (Shared.GetTime() + kDAKConfig.kAFKKickWarning1) then
-				DisplayMessage(client, string.format(kDAKConfig.kAFKKickWarningMessage1, kDAKConfig.kAFKKickWarning1))
+			if not PEntry.Warn1 and PEntry.Time < (Shared.GetTime() + kDAKConfig.AFKKicker.kAFKKickWarning1) then
+				DisplayMessage(client, string.format(kDAKConfig.AFKKicker.kAFKKickWarningMessage1, kDAKConfig.AFKKicker.kAFKKickWarning1))
 				PEntry.Warn1 = true
 			end
 			
-			if not PEntry.Warn2 and PEntry.Time < (Shared.GetTime() + kDAKConfig.kAFKKickWarning2) then
-				DisplayMessage(client, string.format(kDAKConfig.kAFKKickWarningMessage2, kDAKConfig.kAFKKickWarning2))
+			if not PEntry.Warn2 and PEntry.Time < (Shared.GetTime() + kDAKConfig.AFKKicker.kAFKKickWarning2) then
+				DisplayMessage(client, string.format(kDAKConfig.AFKKicker.kAFKKickWarningMessage2, kDAKConfig.AFKKicker.kAFKKickWarning2))
 				PEntry.Warn2 = true
 			end
 			
 			if PEntry.Warn2 and PEntry.Warn1 and PEntry.Time < Shared.GetTime() then
-				DisplayMessage(client, string.format(kDAKConfig.kAFKKickClientMessage, kDAKConfig.kAFKKickDelay))
+				DisplayMessage(client, string.format(kDAKConfig.AFKKicker.kAFKKickClientMessage, kDAKConfig.AFKKicker.kAFKKickDelay))
 				PEntry.kick = true
 			end
 			
@@ -134,7 +108,7 @@ if kDAKConfig and kDAKConfig._AFKKicker then
 
 		PROFILE("AFKKick:ProcessPlayingUsers")
 
-		if #AFKClientTracker > 0 and lastAFKUpdate + kDAKConfig.kAFKKickCheckDelay < Shared.GetTime() then
+		if #AFKClientTracker > 0 and lastAFKUpdate + kDAKConfig.AFKKicker.kAFKKickCheckDelay < Shared.GetTime() then
 			local playerRecords = Shared.GetEntitiesWithClassname("Player")
 			for i = #AFKClientTracker, 1, -1 do
 				local PEntry = AFKClientTracker[i]
@@ -163,7 +137,11 @@ if kDAKConfig and kDAKConfig._AFKKicker then
 	end
 
 	table.insert(kDAKOnServerUpdate, function(deltatime) return ProcessPlayingUsers(deltatime) end)
-
-	Shared.Message("AFKKicker Loading Complete")
+	
+elseif kDAKConfig and not kDAKConfig.AFKKicker then
+	
+	DAKGenerateDefaultDAKConfig("AFKKicker")
 	
 end
+
+Shared.Message("AFKKicker Loading Complete")

@@ -14,7 +14,7 @@ CloakableMixin.type = "Cloakable"
 CloakableMixin.kCloakRate = 0.5
 CloakableMixin.kUnCloakRate = 3
 
-CloakableMixin.kCloakCinematic = PrecacheAsset("cinematics/alien/cloak.cinematic")
+//CloakableMixin.kCloakCinematic = PrecacheAsset("cinematics/alien/cloak.cinematic")
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/cloaked.surface_shader")
 
 local Coords_GetTranslation = Coords.GetTranslation
@@ -57,25 +57,25 @@ end
 
 local function CreateCloakedEffect(self)
 
-    if not self.cloakedCinematic then
+    //if not self.cloakedCinematic then
     
-        self.cloakedCinematic = Client.CreateCinematic(RenderScene.Zone_Default)
-        self.cloakedCinematic:SetCinematic(CloakableMixin.kCloakCinematic)
-        self.cloakedCinematic:SetRepeatStyle(Cinematic.Repeat_Endless)
-        self.cloakedCinematic:SetCoords(Coords_GetTranslation(self:GetOrigin()))
+        //self.cloakedCinematic = Client.CreateCinematic(RenderScene.Zone_Default)
+        //self.cloakedCinematic:SetCinematic(CloakableMixin.kCloakCinematic)
+        //self.cloakedCinematic:SetRepeatStyle(Cinematic.Repeat_Endless)
+        //self.cloakedCinematic:SetCoords(Coords_GetTranslation(self:GetOrigin()))
     
-    end
+    //end
 
 end
 
 local function DestroyCloakedEffect(self)
 
-    if self.cloakedCinematic then
+    //if self.cloakedCinematic then
     
-        Client.DestroyCinematic(self.cloakedCinematic)
-        self.cloakedCinematic = nil
+        //Client.DestroyCinematic(self.cloakedCinematic)
+        //self.cloakedCinematic = nil
     
-    end
+    //end
     
 end
 
