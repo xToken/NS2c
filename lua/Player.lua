@@ -27,7 +27,6 @@ Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/MobileTargetMixin.lua")
-Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/HintMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/BadgeMixin.lua")
@@ -51,7 +50,6 @@ else
 
     Script.Load("lua/Player_Client.lua")
     Script.Load("lua/Chat.lua")
-    
 end
 
 ------------
@@ -105,12 +103,12 @@ local kUseBoxSize = Vector(0.5, 0.5, 0.5)
 
 Player.kCountDownLength = kCountDownLength
     
-Player.kGravity = -24
+Player.kGravity = -20
 Player.kMass = 90.7 // ~200 pounds (incl. armor, weapons)
 Player.kWalkBackwardSpeedScalar = 0.4
 // Weapon weight scalars (from NS1)
 Player.kStowedWeaponWeightScalar = 0.7
-Player.kJumpHeight =  1.3
+Player.kJumpHeight =  1.2
 Player.kOnGroundDistance = 0.1
 
 // The physics shapes used for player collision have a "skin" that makes them appear to float, this makes the shape
@@ -237,6 +235,7 @@ local networkVars =
     // Used to require the key to pressed multiple times
     jumpHandled = "private boolean",
     timeOfLastJump = "private time",
+    landtime = "private time",
     jumping = "compensated boolean",
     onGround = "compensated boolean",
     onGroundNeedsUpdate = "private boolean",
@@ -264,7 +263,7 @@ local networkVars =
     
     // Reduce max player velocity in some cases (marine jumping)
     slowAmount = "float (0 to 1 by 0.01)",
-    movementModiferState = "private boolean",
+    movementModiferState = "boolean",
     
     giveDamageTime = "private time",
     
@@ -291,7 +290,6 @@ AddMixinNetworkVars(UpgradableMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
-AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(HintMixin, networkVars)
 AddMixinNetworkVars(BadgeMixin, networkVars)
 
@@ -321,7 +319,6 @@ function Player:OnCreate()
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kPlayerMoveOrderCompleteDistance })
-    InitMixin(self, DetectableMixin)
     InitMixin(self, HintMixin, { kHintSound = Player.kTooltipSound, kHintInterval = Player.kHintInterval })
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, BadgeMixin)
@@ -373,7 +370,7 @@ function Player:OnCreate()
     self.modeTime = -1
     self.primaryAttackLastFrame = false
     self.secondaryAttackLastFrame = false
-    
+    self.movementModiferState = false
     self.requestsScores = false   
     self.viewModelId = Entity.invalidId
     
@@ -390,7 +387,8 @@ function Player:OnCreate()
     self.onLadder = false
     
     self.timeLastOnGround = 0
-    
+    self.landtime = 0
+
     self.resources = 0
     
     self.stepStartTime = 0
@@ -1242,6 +1240,13 @@ end
 
 function Player:GetFrictionForce(input, velocity)
 
+    local friction = Vector(0, 0, 0)
+    local frictionScalar = 0
+    // 2 frames at 100 fps, maybe should be a function of input.time?
+	if (self.landtime + .02) > Shared.GetTime()  then
+        return friction
+    end
+
     local stopSpeed = self:GetStopSpeed()
     local friction = GetNormalizedVector(-velocity)
     local velocityLength = 0
@@ -1515,6 +1520,7 @@ function Player:OnJumpLand(landIntensity, slowDown)
     if Client and self:GetIsLocalPlayer() then
         self:OnJumpLandLocalClient()
     end
+    self.landtime = Shared.GetTime()
     
 end
 
@@ -1647,9 +1653,10 @@ function Player:OnProcessMove(input)
         
         // Force an update to whether or not we're on the ground in case something
         // has moved out from underneath us.
-        self.onGroundNeedsUpdate = true      
+             
         local wasOnGround = self.onGround
         local previousVelocity = self:GetVelocity()
+        self.onGroundNeedsUpdate = previousVelocity ~= nil or not previousVelocity.y < 0
         
         local commands = input.commands
         
@@ -2050,6 +2057,10 @@ function Player:UpdatePosition(velocity, time)
         Log("%s: Stuck, start %s, new %s, rounded %s, d1 %s, d2 %s, d3 %s", self, start, o, networkOrigin, o - start, networkOrigin - o, networkOrigin - start)    
     end
     */
+
+    if not wasOnGround and self:GetIsOnGround() then
+        self.timeOfLastLand = Shared.GetTime()
+    end
     return velocity
     
 end
@@ -2186,8 +2197,12 @@ end
 
 function Player:GetPlayFootsteps()
 
-    return not self.crouching and self:GetVelocityLength() > 0.75 and self.onGround and not self.movementModiferState
+    return not self.crouching and self:GetVelocityLength() > 0.75 and self:GetIsOnGround() and not self:GetMovementModifierState()
     
+end
+
+function Player:GetMovementModifierState()
+    return self.movementModiferState
 end
 
 // Called by client/server UpdateMisc()
@@ -2286,7 +2301,7 @@ function Player:GetMaxSpeed(possible)
     end
     
     //Walking
-    local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Player.kWalkMaxSpeed,  Player.kRunMaxSpeed)
+    local maxSpeed = ConditionalValue(self:GetMovementModifierState() and self:GetIsOnSurface(), Player.kWalkMaxSpeed,  Player.kRunMaxSpeed)
     
     // Take into account crouching
     if self:GetCrouching() and self.onGround then
@@ -2298,7 +2313,7 @@ function Player:GetMaxSpeed(possible)
 end
 
 function Player:GetAcceleration()
-    if self.onGround then
+    if self:GetIsOnGround() then
         return Player.kAcceleration * self:GetSlowSpeedModifier()
     else
         return Player.kAirAcceleration * self:GetSlowSpeedModifier()
@@ -2319,7 +2334,7 @@ end
  */
 function Player:ConstrainMoveVelocity(wishVelocity)
 
-    if not self:GetIsOnLadder() and not self.onGround and wishVelocity:GetLengthXZ() > 0 and self:GetVelocity():GetLengthXZ() > 0 and 
+    if not self:GetIsOnLadder() and not self:GetIsOnGround() and wishVelocity:GetLengthXZ() > 0 and self:GetVelocity():GetLengthXZ() > 0 and 
         (not self.GetIsWallWalking or not self:GetIsWallWalking()) and (not self.GetIsBlinking or not self:GetIsBlinking()) then
     
         local normWishVelocity = GetNormalizedVectorXZ(wishVelocity)
@@ -2589,19 +2604,24 @@ function Player:ModifyVelocity(input, velocity)
             self:OnJump()
         end
         
-        //if jumped and not self:OverrideStrafeJump() then
-        self.jumpHandled = self:OverrideStrafeJump()
-        //self.jumpHandled = true
-        //else
-        //self.jumpHandled = false
-        //end
-    
+        if kJumpMode == 2 then
+            self.jumpHandled = self:OverrideStrafeJump()
+        elseif kJumpMode == 1 then
+            if jumped and not self:OverrideStrafeJump() then
+                self.jumpHandled = true
+            else
+                self.jumpHandled = false
+            end
+        else
+            self.jumpHandled = true
+        end
+
     elseif self:GetIsOnGround() then
         onground = true
         self:HandleOnGround(input, velocity)
     end
     
-    if not self:OverrideStrafeJump() and not onground then
+    if not self:OverrideStrafeJump() and not onground and (not self.GetIsBlinking or not self:GetIsBlinking()) then
         if input.move:GetLength() ~= 0 then
             local moveLengthXZ = velocity:GetLengthXZ()
             local viewCoords = self:GetViewCoords()
@@ -2684,7 +2704,7 @@ function Player:HandleButtons(input)
     
     // Update movement ability
     local newMovementState = bit.band(input.commands, Move.MovementModifier) ~= 0
-    if newMovementState ~= self.movementModiferState and self.movementModiferState ~= nil then
+    if newMovementState ~= self:GetMovementModifierState() then
         self:MovementModifierChanged(newMovementState, input)
     end
     
@@ -3057,13 +3077,13 @@ if Client then
     function Player:TriggerFootstep()
     
         self.leftFoot = not self.leftFoot
-		local sprinting = not self.movementModiferState
+		//local sprinting = not self.movementModiferState
         local viewVec = self:GetViewAngles():GetCoords().zAxis
         local forward = self:GetVelocity():DotProduct(viewVec) > -0.1
         local crouch = self:GetCrouching()
         local localPlayer = Client.GetLocalPlayer()
         local enemy = localPlayer and GetAreEnemies(self, localPlayer)
-        self:TriggerEffects("footstep", {surface = self:GetMaterialBelowPlayer(), left = self.leftFoot, sprinting = sprinting, forward = forward, crouch = crouch, enemy = enemy})
+        self:TriggerEffects("footstep", {surface = self:GetMaterialBelowPlayer(), left = self.leftFoot, sprinting = true, forward = forward, crouch = crouch, enemy = enemy})
         
     end
     
@@ -3085,7 +3105,7 @@ function Player:OnTag(tagName)
     end
     
     // Play footstep when foot hits the ground. Client side only.
-    if Client and self:GetPlayFootsteps() and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] and not self.movementModiferState then
+    if Client and self:GetPlayFootsteps() and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] and not self:GetMovementModifierState() then
         self:TriggerFootstep()
     end
     

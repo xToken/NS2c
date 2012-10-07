@@ -41,7 +41,7 @@ function UnitStatusMixin:GetShowUnitStatusFor(forEntity)
     if HasMixin(self, "Live") and showUnitStatus then
         showUnitStatus = self:GetIsAlive()
     end
-    
+
     return showUnitStatus
     
 end

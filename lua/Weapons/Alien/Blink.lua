@@ -19,7 +19,6 @@ local kEtherealForce = 10
 
 local networkVars =
 {
-    
     // True when blink started and button not yet released
     blinkButtonDown = "boolean"
 }
@@ -49,26 +48,11 @@ function Blink:GetSecondaryAttackRequiresPress()
 end
 
 function Blink:TriggerBlinkOutEffects(player)
-
-    // Play particle effect at vanishing position
-    if not Shared.GetIsRunningPrediction() then
-    
-        self:TriggerEffects("blink_out", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
-        
-        if Client and Client.GetLocalPlayer():GetId() == player:GetId() then
-            self:TriggerEffects("blink_out_local", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
-        end
-        
-    end
-
+    self:TriggerEffects("blink_out", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
 end
 
 function Blink:TriggerBlinkInEffects(player)
-
-    if not Shared.GetIsRunningPrediction() then
-        self:TriggerEffects("blink_in", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
-    end
-    
+    self:TriggerEffects("blink_in", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
 end
 
 function Blink:GetIsBlinking()
@@ -131,7 +115,6 @@ function Blink:SetEthereal(player, state)
     if player.ethereal ~= state then
     
         if state then
-        
             player.etherealStartTime = Shared.GetTime()
             self:TriggerBlinkOutEffects(player)            
         else

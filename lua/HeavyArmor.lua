@@ -10,12 +10,9 @@ class 'HeavyArmor' (ScriptActor)
 
 HeavyArmor.kMapName = "heavyarmor"
 
-//HeavyArmor.kModelName = PrecacheAsset("models/marine/exosuit/exosuit_cm.model")
 HeavyArmor.kModelName = PrecacheAsset("models/marine/heavyarmor/heavyarmor_drop.model")
-local kAnimationGraph = PrecacheAsset("models/marine/exosuit/exosuit_spawn_only.animation_graph")
 
-HeavyArmor.kPickupSound = PrecacheAsset("sound/NS2.fev/marine/common/pickup_Exosuit")
-HeavyArmor.kEmptySound = PrecacheAsset("sound/NS2.fev/marine/common/Exosuit_empty")
+HeavyArmor.kPickupSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/heavyarmor_pickup")
 
 HeavyArmor.kThinkInterval = .5
 
@@ -44,13 +41,17 @@ function HeavyArmor:OnInitialized()
 
     ScriptActor.OnInitialized(self)
     
-    self:SetModel(HeavyArmor.kModelName, kAnimationGraph)
+    self:SetModel(HeavyArmor.kModelName)
     
+end
+
+function HeavyArmor:GetCanBeUsed(player, useSuccessTable)
+    useSuccessTable.useSuccess = false
 end
 
 function HeavyArmor:OnTouch(recipient)
     if self:GetIsValidRecipient(recipient) then
-        StartSoundEffectAtOrigin(HeavyArmor.kPickupSound, recipient:GetOrigin())
+        Shared.PlayWorldSound(nil, HeavyArmor.kPickupSound, nil, recipient:GetOrigin())
         recipient:GiveHeavyArmor()
         return true
     end

@@ -56,7 +56,8 @@ function AlienTeam:Initialize(teamName, teamNumber)
     self.updateAlienArmorInTicks = nil
     
     self.timeLastSpawnCheck = 0
-    
+    self.overflowres = 0
+    self.lastOverflowCheck = 0
     self.cloakables = {}
     self.cloakableCloakCount = {}
     
@@ -70,9 +71,9 @@ function AlienTeam:OnInitialized()
     self.lastPingOfDeathCheck = 0
     self.lastAutoHealIndex = 1
     self.timeLastWave = nil
-    
+    self.overflowres = 0
     self.clientOwnedStructures = { }
-    
+    self.lastOverflowCheck = 0
     self.cloakables = {}
     self.cloakableCloakCount = {}
 
@@ -228,6 +229,22 @@ function AlienTeam:GetHasAbilityToRespawn()
     
 end
 
+function AlienTeam:GetOverflowResources()
+    return self.overflowres
+end
+
+function AlienTeam:AddOverflowResources(extraRes)
+    if extraRes > 0 then
+        self.overflowres = self.overflowres + (math.floor(extraRes * 100) / 100)
+    end
+end
+
+function AlienTeam:DeductOverflowResources(extraRes)
+    if extraRes > 0 then
+        self.overflowres = self.overflowres - extraRes
+    end
+end
+
 function AlienTeam:Update(timePassed)
 
     PROFILE("AlienTeam:Update")
@@ -253,8 +270,19 @@ function AlienTeam:Update(timePassed)
     self:UpdateTeamAutoHeal(timePassed)
     self:UpdateCloakables()
     self:UpdateRespawn()
-    self:PingOfDeath()
+    self:UpdatePingOfDeath()
+    self:UpdateOverflowResources()
     
+end
+
+function AlienTeam:UpdateOverflowResources()
+    if self.lastOverflowCheck + 1 < Shared.GetTime() and self:GetPresRecipientCount() > 0 then
+        if self:GetOverflowResources() > 0 then
+            local overflowres = math.min(self:GetOverflowResources(), self:GetPresRecipientCount() * 100)
+            self:DeductOverflowResources(overflowres)
+            self:SplitPres(overflowres, true)
+        end
+    end
 end
 
 function AlienTeam:OnTechTreeUpdated()
@@ -268,7 +296,7 @@ function AlienTeam:OnTechTreeUpdated()
 
 end
 
-function AlienTeam:PingOfDeath()
+function AlienTeam:UpdatePingOfDeath()
 
     if not self:GetHasAbilityToRespawn() and (not GetTournamentMode or not GetTournamentMode()) and self.lastPingOfDeathCheck + kPingOfDeathDelay < Shared.GetTime() then
         for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
@@ -464,6 +492,7 @@ end
 /**
  * Inform all alien players about the hive destruction (remove abilities).
  */
+
 function AlienTeam:OnHiveDestroyed(destroyedHive)
 
     local activeHiveCount = self:GetActiveHiveCount()
@@ -556,7 +585,7 @@ function AlienTeam:AwardResources(min, max, pointOwner)
     resAwarded = resAwarded - pointOwner:AwardResForKill(resAwarded)
     
     if resAwarded > 0 then
-        self:SplitPres(resAwarded)
+        self:SplitPres(resAwarded, true)
     end
 
 end
@@ -696,7 +725,6 @@ function AlienTeam:UpdateRespawn()
 
                 // spawn aliens in a wave, do nothing if the wave time has not passed yet   
                 if hive.timeWaveEnds ~= 0 and hive.timeWaveEnds < Shared.GetTime() then
-                    local player = Shared.GetEntity(hive.queuedplayer)
                     RespawnPlayer(self, hive)
                 end
             end

@@ -60,29 +60,41 @@ function HeavyMachineGun:OnDestroy()
     ClipWeapon.OnDestroy(self)
 end
 
+local function CancelReload(self)
+    self.reloading = false
+    self:TriggerEffects("reload_cancel")
+end
+
 function HeavyMachineGun:OnPrimaryAttack(player)
 
-    if not self:GetIsReloading() and self.clip > 0 and self.deployed then
-        if player and not self:GetHasAttackDelay() then
-        
-            self:FirePrimary(player)
-            // Don't decrement ammo in Darwin mode
-            if not player or not player:GetDarwinMode() then
-                self.clip = self.clip - 1
+    if self:GetIsPrimaryAttackAllowed(player) then
+        if not self:GetIsReloading() and self.clip > 0 and self.deployed then
+            if player and not self:GetHasAttackDelay() then
+                if self:GetIsReloading() then
+                    CancelReload(self)
+                end
+                self:FirePrimary(player)
+                // Don't decrement ammo in Darwin mode
+                if not player or not player:GetDarwinMode() then
+                    self.clip = self.clip - 1
+                end
+                self.lastfiredtime = Shared.GetTime()
+                self:CreatePrimaryAttackEffect(player)
+                Weapon.OnPrimaryAttack(self, player)
+                self.primaryAttacking = true
             end
-            self.lastfiredtime = Shared.GetTime()
-            self:CreatePrimaryAttackEffect(player)
-            Weapon.OnPrimaryAttack(self, player)
-            self.primaryAttacking = true
+        elseif self.ammo > 0 and self.deployed then
+            self:OnPrimaryAttackEnd(player)
+            // Automatically reload if we're out of ammo.
+            player:Reload()
+        else
+            self:OnPrimaryAttackEnd(player)
+            self.blockingPrimary = false
         end
-    elseif self.ammo > 0 and self.deployed then
-        self:OnPrimaryAttackEnd(player)
-        // Automatically reload if we're out of ammo.
-        player:Reload()
     else
         self:OnPrimaryAttackEnd(player)
         self.blockingPrimary = false
-    end    
+    end
     
 end
 
@@ -234,6 +246,9 @@ function HeavyMachineGun:SetGunLoopParam(viewModel, paramName, rateOfChange)
     
 end
 
+function HeavyMachineGun:OnSecondaryAttack(player)
+end
+
 function HeavyMachineGun:UpdateViewModelPoseParameters(viewModel)
 
     local attacking = self:GetPrimaryAttacking()
@@ -257,6 +272,7 @@ if Client then
 
     function HeavyMachineGun:OnClientPrimaryAttackStart()
         // Start the looping sound for the rest of the shooting. Pew pew pew...
+        Shared.StopSound(self, kLoopingSound)
         Shared.PlaySound(self, kLoopingSound)
     end
     
@@ -272,13 +288,13 @@ if Client then
     function HeavyMachineGun:OnClientPrimaryAttackEnd()
     
         // Just assume the looping sound is playing.
-        //Shared.StopSound(self, kLoopingSound)
+        Shared.StopSound(self, kLoopingSound)
         Shared.PlaySound(self, kHeavyMachineGunEndSound)
 
     end
 
     function HeavyMachineGun:GetPrimaryEffectRate()
-        return 0.09
+        return 0.06
     end
     
     function HeavyMachineGun:GetPreventCameraAnimation()

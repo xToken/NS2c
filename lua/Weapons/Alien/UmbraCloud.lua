@@ -38,17 +38,7 @@ end
 function UmbraCloud:OnInitialized()
 
     CommanderAbility.OnInitialized(self)
-    
-    if Server then
-        //Shared.PlayWorldSound(nil, kUmbraSound, nil, self:GetOrigin())
-    end
-    
-    /*
-    if Client then
-        DebugCapsule(self:GetOrigin(), self:GetOrigin(), UmbraCloud.kRadius, 0, UmbraCloud.kUmbraCloudDuration)
-    end
-    */
-    
+    self.soundplayed = false
 end
 
 function UmbraCloud:SetTravelDestination(position)
@@ -81,6 +71,10 @@ if Server then
             if travelVector:GetLength() > 0.3 then
                 local distanceFraction = (self.destination - self:GetOrigin()):GetLength() / UmbraCloud.kMaxRange
                 self:SetOrigin( self:GetOrigin() + GetNormalizedVector(travelVector) * deltaTime * UmbraCloud.kTravelSpeed * distanceFraction )
+            end
+            if travelVector:GetLength() < 2 and not self.soundplayed then
+                Shared.PlayWorldSound(nil, kUmbraSound, nil, self:GetOrigin())
+                self.soundplayed = true
             end
         
         end

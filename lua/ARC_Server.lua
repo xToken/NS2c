@@ -155,7 +155,6 @@ end
 
 function ARC:ForceDeployed()
     if self.deployMode == ARC.kDeployMode.Deploying then
-        //Print("FORCEARCDEPLOYED")
         self.deployMode = ARC.kDeployMode.Deployed
         self:ClearOrders()
     else

@@ -399,7 +399,7 @@ function Alien:OnInitLocalClient()
 
         if self.sensorBlips == nil then
             self.sensorBlips = GetGUIManager():CreateGUIScript("GUISensorBlips")
-        end
+        end 
         
         if self.objectiveDisplay == nil then
             self.objectiveDisplay = GetGUIManager():CreateGUIScript("GUIObjectiveDisplay")

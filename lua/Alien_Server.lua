@@ -147,6 +147,7 @@ function Alien:UpdateHiveInformation()
                                     location = hive:GetLocationName(), 
                                     healthpercent = (hive:GetHealth() / hive:GetMaxHealth()), 
                                     buildprogress = ConditionalValue(hive:GetIsBuilt(), 1, hive:GetBuiltFraction()),
+                                    timelastdamaged = hive.lastHiveFlinchEffectTime,
                                     techId = hive:GetTechId()
                                  }
                  Server.SendNetworkMessage("HiveInfo", hiveinfo, false)

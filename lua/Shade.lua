@@ -47,7 +47,7 @@ Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/TriggerMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-Script.Load("lua/DetectorMixin.lua")
+Script.Load("lua/AlienDetectorMixin.lua")
 
 class 'Shade' (ScriptActor)
 
@@ -107,7 +107,7 @@ function Shade:OnCreate()
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
     InitMixin(self, CombatMixin)
-    InitMixin(self, DetectorMixin)
+    InitMixin(self, AlienDetectorMixin)
         
     if Server then
     
@@ -169,6 +169,18 @@ end
 
 function Shade:GetReceivesStructuralDamage()
     return true
+end
+
+function Shade:IsValidAlienDetection(detectable)
+    return true
+end
+
+function Shade:GetAlienDetectionRange()
+    return Shade.kHiveSightRange
+end
+
+function Shade:OnCheckAlienDetectorActive()
+    return self:GetIsBuilt() and self:GetIsAlive()
 end
 
 function Shade:ConstructOverride(deltaTime)
@@ -249,18 +261,6 @@ if Server then
         for _, cloakable in ipairs( GetEntitiesWithMixinForTeamWithinRange("Cloakable", self:GetTeamNumber(), self:GetOrigin(), Shade.kCloakRadius) ) do
         
             cloakable:SetIsCloaked(true, 1, false)
-        
-        end
-        
-        return self:GetIsAlive()
-    
-    end
-    
-    function Shade:UpdateHiveSight()
-    
-        for _, hivesightable in ipairs( GetEntitiesWithMixinForTeamWithinRange("ParasiteAble", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), Shade.kCloakRadius) ) do
-        
-            hivesightable:SetParasited(self, 1)
         
         end
         

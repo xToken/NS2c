@@ -500,7 +500,9 @@ end
 function ClipWeapon:OnHolster(player)
 
     Weapon.OnHolster(self, player)
-    
+    if self:GetIsReloading() then
+        CancelReload(self)
+    end
     self.deployed = false
     self.blockingPrimary = false
     self.blockingSecondary = false

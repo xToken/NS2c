@@ -55,6 +55,14 @@ function DropStructureAbility:OnCreate()
     
 end
 
+function DropStructureAbility:GetDeathIconIndex()
+    return kDeathMessageIcon.Consumed
+end
+
+function DropStructureAbility:GetSecondaryTechId()
+    return kTechId.Spray
+end
+
 function DropStructureAbility:GetNumStructuresBuilt(techId)
     return -1
 end
@@ -125,7 +133,7 @@ function DropStructureAbility:OnPrimaryAttack(player)
         if valid then
         
             // Ensure they have enough resources.
-            local cost = GetCostForTech(self:GetActiveStructure():GetDropStructureId())
+            local cost = GetCostForTech(self:GetActiveStructure().GetDropStructureId())
             if player:GetResources() >= cost then
                 Ability.OnPrimaryAttack(self, player)
             else
@@ -146,12 +154,13 @@ local function DropStructure(self, player)
     if Server then
     
         local coords, valid, onEntity = self:GetPositionForStructure(player)
-        local techId = self:GetActiveStructure():GetDropStructureId()
+        local techId = self:GetActiveStructure().GetDropStructureId()
                 
         local cost = LookupTechData(self:GetActiveStructure():GetDropStructureId(), kTechDataCostKey, 0)
         local enoughRes = player:GetResources() >= cost
         
         if valid and enoughRes and self:GetActiveStructure():IsAllowed(player) then
+        
             // Create structure
             // Check for override of Technode availablitiy
             local structure = self:CreateStructure(coords, player)
@@ -221,7 +230,7 @@ function DropStructureAbility:PerformPrimaryAttack(player)
         local viewCoords = viewAngles:GetCoords()
         
         // trigger locally and also for other players
-        local cost = LookupTechData(self:GetActiveStructure():GetDropStructureId(), kTechDataCostKey)
+        local cost = LookupTechData(self:GetActiveStructure().GetDropStructureId(), kTechDataCostKey)
         if player:GetResources() >= cost then
             self:TriggerEffects("spit_structure", {effecthostcoords = Coords.GetLookIn(player:GetEyePos() + viewCoords.zAxis * 0.4, player:GetViewCoords().zAxis)} )
         end
@@ -239,7 +248,7 @@ function DropStructureAbility:CreateStructure(coords, player)
 	if created_structure then 
 		return created_structure
 	else
-    	return CreateEntity( self:GetActiveStructure():GetDropMapName(), coords.origin, player:GetTeamNumber() )
+    	return CreateEntity( self:GetActiveStructure().GetDropMapName(), coords.origin, player:GetTeamNumber() )
     end
 end
 
@@ -251,7 +260,7 @@ function DropStructureAbility:GetPositionForStructure(player)
     PROFILE("DropStructureAbility:GetPositionForStructure")
 
     local validPosition = false
-    local range = self:GetActiveStructure():GetDropRange()
+    local range = self:GetActiveStructure().GetDropRange()
     local origin = player:GetEyePos() + player:GetViewAngles():GetCoords().zAxis * range
 
     // Trace short distance in front
@@ -360,15 +369,7 @@ function DropStructureAbility:ProcessMoveOnWeapon(input)
     self.showGhost = not self.dropping and not self.droppedStructure
     local player = self:GetParent()
     
-    if Server then
-    
-        if player then
-        
-            local team = player:GetTeam()
-            local hiveCount = team:GetNumHives() 
-        end
-    
-    elseif Client and not Shared.GetIsRunningPrediction() then
+    if Client and not Shared.GetIsRunningPrediction() then
 
         if player then
 
@@ -397,7 +398,7 @@ function DropStructureAbility:ProcessMoveOnWeapon(input)
                     self:GetActiveStructure():OnUpdateHelpModel(self, self.abilityHelpModel, self.ghostCoords)
                 end
                 
-                if player:GetResources() < LookupTechData(self:GetActiveStructure():GetDropStructureId(), kTechDataCostKey) then
+                if player:GetResources() < LookupTechData(self:GetActiveStructure().GetDropStructureId(), kTechDataCostKey) then
                     valid = false
                 end
                 
@@ -509,7 +510,7 @@ elseif Client then
     function DropStructureAbility:OnHolster(player)
     
         Ability.OnHolster(self, player)
-
+        
         self:DestroyStructureGhost()
         self:DestroyBuildMenu()
         

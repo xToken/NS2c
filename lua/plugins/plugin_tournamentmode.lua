@@ -1,42 +1,20 @@
 //NS2 Tournament Mod Server side script
 
-kDAKRevisions["TournamentMode"] = 2.5
-local TournamentModeSettings = { countdownstarted = false, countdownstarttime = 0, countdownstartcount = 0, lastmessage = 0, mode = "PCW"}
+local TournamentModeSettings = { countdownstarted = false, countdownstarttime = 0, countdownstartcount = 0, lastmessage = 0, official = false}
 TournamentModeSettings[1] = {ready = false, lastready = 0, captain = nil}
 TournamentModeSettings[2] = {ready = false, lastready = 0, captain = nil}
 
-if kDAKConfig and kDAKConfig._TournamentMode then
+if kDAKConfig and kDAKConfig.TournamentMode and kDAKConfig.TournamentMode.kEnabled then
 
-	local function CheckPluginConfig()
-	
-		if kDAKConfig.kTournamentModePubMode == nil or 
-		 kDAKConfig.kTournamentModePubMinPlayers == nil or 
-		 kDAKConfig.kTournamentModePubPlayerWarning == nil or 
-		 kDAKConfig.kTournamentModePubAlertDelay == nil or 
-		 kDAKConfig.kTournamentModeReadyDelay == nil or 
-		 kDAKConfig.kTournamentModeGameStartDelay == nil or 
-		 kDAKConfig.kTournamentModeCountdown == nil then
-		 
-			kDAKConfig._TournamentMode = false
-			
-		end
-		
-		if kDAKSettings.TournamentMode == nil then
-			local TournamentMode = false
-			table.insert(kDAKSettings, TournamentMode)
-		end
-		
-		if kDAKSettings.FriendlyFire == nil then
-			local FriendlyFire = false
-			table.insert(kDAKSettings, FriendlyFire)
-		end
-	
+	if kDAKSettings.TournamentMode == nil then
+		local TournamentMode = false
+		table.insert(kDAKSettings, TournamentMode)
 	end
-	CheckPluginConfig()
-
-end
-
-if kDAKConfig and kDAKConfig._TournamentMode then
+	
+	if kDAKSettings.FriendlyFire == nil then
+		local FriendlyFire = false
+		table.insert(kDAKSettings, FriendlyFire)
+	end
 
 	local function LoadTournamentMode()
 		if kDAKSettings.TournamentMode then
@@ -58,17 +36,21 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 	function GetTournamentMode()
 		return kDAKSettings.TournamentMode
 	end
+	
+	table.insert(kDAKOverrideMapChange, function() return GetTournamentMode() end)
 
 	function GetFriendlyFire()
 		return kDAKSettings.FriendlyFire
 	end
 	
 	local function StartCountdown(gamerules)
-		gamerules:ResetGame() 
-		gamerules:ResetGame()
-        gamerules:SetGameState(kGameState.Countdown)      
-        gamerules.countdownTime = kCountDownLength     
-        gamerules.lastCountdownPlayed = nil       
+		if gamerules then
+			gamerules:ResetGame() 
+			gamerules:ResetGame()
+			gamerules:SetGameState(kGameState.Countdown)      
+			gamerules.countdownTime = kCountDownLength     
+			gamerules.lastCountdownPlayed = nil 
+		end
     end
 	
 	local function ClearTournamentModeState()
@@ -102,7 +84,7 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 								
 			if TournamentModeSettings.countdownstarttime - TournamentModeSettings.countdownstartcount < Shared.GetTime() and TournamentModeSettings.countdownstartcount ~= 0 then
 				if (math.fmod(TournamentModeSettings.countdownstartcount, 5) == 0 or TournamentModeSettings.countdownstartcount <= 5) then
-					DisplayNotification(string.format(kDAKConfig.kTournamentModeCountdown, TournamentModeSettings.countdownstartcount), 1, kMaxChatLength)
+					DisplayNotification(string.format(kDAKConfig.TournamentMode.kTournamentModeCountdown, TournamentModeSettings.countdownstartcount), 1, kMaxChatLength)
 				end
 				TournamentModeSettings.countdownstartcount = TournamentModeSettings.countdownstartcount - 1
 			end
@@ -120,17 +102,17 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 	end
 	
 	local function MonitorPubMode(gamerules)
-	
-		if gamerules:GetTeam1():GetNumPlayers() >= kDAKConfig.kTournamentModePubMinPlayers and gamerules:GetTeam2():GetNumPlayers() >= kDAKConfig.kTournamentModePubMinPlayers then
+		
+		if gamerules and gamerules:GetTeam1():GetNumPlayers() >= kDAKConfig.TournamentMode.kTournamentModePubMinPlayers and gamerules:GetTeam2():GetNumPlayers() >= kDAKConfig.TournamentMode.kTournamentModePubMinPlayers then
 			if not TournamentModeSettings.countdownstarted then
 				TournamentModeSettings.countdownstarted = true
-				TournamentModeSettings.countdownstarttime = Shared.GetTime() + kDAKConfig.kTournamentModeGameStartDelay
-				TournamentModeSettings.countdownstartcount = kDAKConfig.kTournamentModeGameStartDelay	
+				TournamentModeSettings.countdownstarttime = Shared.GetTime() + kDAKConfig.TournamentMode.kTournamentModeGameStartDelay
+				TournamentModeSettings.countdownstartcount = kDAKConfig.TournamentMode.kTournamentModeGameStartDelay	
 			end
 		else
 			CheckCancelGameStart()
-			if TournamentModeSettings.lastpubmessage + kDAKConfig.kTournamentModePubAlertDelay < Shared.GetTime() then
-				DisplayNotification(string.format(kDAKConfig.kTournamentModePubPlayerWarning, kDAKConfig.kTournamentModePubMinPlayers), 1, kMaxChatLength)
+			if TournamentModeSettings.lastpubmessage + kDAKConfig.TournamentMode.kTournamentModePubAlertDelay < Shared.GetTime() then
+				DisplayNotification(string.format(kDAKConfig.TournamentMode.kTournamentModePubPlayerWarning, kDAKConfig.TournamentMode.kTournamentModePubMinPlayers), 1, kMaxChatLength)
 				TournamentModeSettings.lastpubmessage = Shared.GetTime()
 			end
 		end
@@ -138,7 +120,7 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 	end
 	
 	local function TournamentModeOnDisconnect(client)
-		if TournamentModeSettings.countdownstarted and not kDAKConfig.kTournamentModePubMode then
+		if TournamentModeSettings.countdownstarted and not kDAKConfig.TournamentMode.kTournamentModePubMode then
 			CheckCancelGameStart()
 		end
 	end
@@ -149,7 +131,7 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 	
 		local gamerules = GetGamerules()
 		if gamerules and GetTournamentMode() and not Shared.GetCheatsEnabled() and not Shared.GetDevMode() and gamerules:GetGameState() == kGameState.PreGame then
-			if kDAKConfig.kTournamentModePubMode then
+			if kDAKConfig.TournamentMode.kTournamentModePubMode then
 				MonitorPubMode(gamerules)
 			end
 			MonitorCountDown()
@@ -161,7 +143,7 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 		
 	table.insert(kDAKOnUpdatePregame, function(timePassed) return UpdatePregame(timePassed) end)
 	
-	if kDAKConfig and kDAKConfig._GamerulesExtensions then
+	if kDAKConfig and kDAKConfig.DAKLoader and kDAKConfig.DAKLoader.GamerulesExtensions then
 	
 		function NS2DAKGamerules:GetCanJoinTeamNumber(teamNumber)
 
@@ -184,7 +166,8 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 	end
 
 	local function OnCommandTournamentMode(client, state, ffstate, newmode)
-		if state ~= true or state ~= false then
+		local alert = false
+		if (state ~= true or state ~= false) and state ~= nil then
 			local newstate = tonumber(state)
 			assert(type(newstate) == "number")
 			if newstate > 0 then
@@ -193,7 +176,7 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 				state = false
 			end
 		end
-		if ffstate ~= true or ffstate ~= false then
+		if (ffstate ~= true or ffstate ~= false) and ffstate ~= nil then
 			local newffstate = tonumber(ffstate)
 			assert(type(newffstate) == "number")
 			if newffstate > 0 then
@@ -201,29 +184,46 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 			else
 				ffstate = false
 			end
-		else
 		end
-		if client ~= nil and state ~= GetTournamentMode() then
+		if (newmode ~= true or newmode ~= false) and newmode ~= nil then
+			local newnummode = tonumber(newmode)
+			assert(type(newnummode) == "number")
+			if newnummode > 0 then
+				newmode = true
+			else
+				newmode = false
+			end
+		end
+		if client ~= nil and state ~= nil and state ~= GetTournamentMode() then
 			kDAKSettings.TournamentMode = state
-			ServerAdminPrint(client, "TournamentMode/FriendlyFire " .. ConditionalValue(GetTournamentMode(), "enabled", "disabled"))
+			ServerAdminPrint(client, "TournamentMode " .. ConditionalValue(GetTournamentMode(), "enabled", "disabled"))
 			SaveDAKSettings()
+			alert = true
 		end
-		if client ~= nil and ffstate ~= GetFriendlyFire() then
+		if client ~= nil and ffstate ~= nil and ffstate ~= GetFriendlyFire() then
 			kDAKSettings.FriendlyFire = ffstate
 			ServerAdminPrint(client, "FriendlyFire " .. ConditionalValue(GetFriendlyFire(), "enabled", "disabled"))
 			SaveDAKSettings()
+			alert = true
 		end
-		if client ~= nil and TournamentModeSettings.mode ~= newmode and (newmode == "PCW" or newmode == "OFFICIAL") then
-			if newmode == "PCW" then
-				EnablePCWMode(client)
-			elseif newmode == "OFFICIAL" then
+		if client ~= nil and newmode ~= nil and TournamentModeSettings.official ~= newmode then
+			if newmode == true then
 				EnableOfficialMode(client)
-			end		
+			elseif newmode == false then
+				EnablePCWMode(client)
+			end
+			TournamentModeSettings.official = newmode
+			alert = true
 		end
 		if client ~= nil then 		
 			local player = client:GetControllingPlayer()
 			if player ~= nil then
 				PrintToAllAdmins("sv_tournamentmode", client, " " .. ToString(state) .. " " .. ToString(ffstate) .. " " .. ToString(newmode))
+			end
+			if not alert then
+				ServerAdminPrint(client, string.format("Tournamentmode set to - " .. ToString(kDAKSettings.TournamentMode)
+					.. " FriendlyFire set to - " .. ToString(kDAKSettings.FriendlyFire)
+					.. " Official set to - ".. ToString(TournamentModeSettings.official)))
 			end
 		end
 	end
@@ -236,12 +236,13 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 		local cp = tonumber(captain)
 		assert(type(tmNum) == "number")
 		assert(type(cp) == "number")
-		if tmNum == 1 or tmNum == 2 then
+		if tmNum == 1 or tmNum == 2 and client then
 			if GetClientMatchingGameId(cp) then
 				TournamentModeSettings[tmNum].captain = GetClientMatchingGameId(cp):GetUserId()
 			else
 				TournamentModeSettings[tmNum].captain = captain
 			end
+			ServerAdminPrint(client, string.format("Team captain for team %s set to %s", tmNum, TournamentModeSettings[tmNum].captain))
 		end
 		if client ~= nil then 
 			local player = client:GetControllingPlayer()
@@ -290,8 +291,8 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 	local function CheckGameCountdownStart()
 		if TournamentModeSettings[1].ready and TournamentModeSettings[2].ready then
 			TournamentModeSettings.countdownstarted = true
-			TournamentModeSettings.countdownstarttime = Shared.GetTime() + kDAKConfig.kTournamentModeGameStartDelay
-			TournamentModeSettings.countdownstartcount = kDAKConfig.kTournamentModeGameStartDelay
+			TournamentModeSettings.countdownstarttime = Shared.GetTime() + kDAKConfig.TournamentMode.kTournamentModeGameStartDelay
+			TournamentModeSettings.countdownstartcount = kDAKConfig.TournamentMode.kTournamentModeGameStartDelay
 		end
 	end
 	
@@ -301,15 +302,15 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 		local teamnum = player:GetTeamNumber()
 		local clientid = client:GetUserId()
 		if teamnum == 1 or teamnum == 2 then
-			if mode == "OFFICIAL" and TournamentModeSettings[teamnum].captain then			
-				if TournamentModeSettings[teamnum].lastready + kDAKConfig.kTournamentModeReadyDelay < Shared.GetTime() and TournamentModeSettings[teamnum].captain == clientid then
+			if TournamentModeSettings.official and TournamentModeSettings[teamnum].captain then			
+				if TournamentModeSettings[teamnum].lastready + kDAKConfig.TournamentMode.kTournamentModeReadyDelay < Shared.GetTime() and TournamentModeSettings[teamnum].captain == clientid then
 					TournamentModeSettings[teamnum].ready = not TournamentModeSettings[teamnum].ready
 					TournamentModeSettings[teamnum].lastready = Shared.GetTime()
 					DisplayNotification(string.format("%s has " .. ConditionalValue(TournamentModeSettings[teamnum].ready, "readied", "unreadied") .. " for Team %s.",clientid, teamnum))
 					CheckGameCountdownStart()
 				end
-			else
-				if TournamentModeSettings[teamnum].lastready + kDAKConfig.kTournamentModeReadyDelay < Shared.GetTime() then
+			elseif not TournamentModeSettings.official then
+				if TournamentModeSettings[teamnum].lastready + kDAKConfig.TournamentMode.kTournamentModeReadyDelay < Shared.GetTime() then
 					TournamentModeSettings[teamnum].ready = not TournamentModeSettings[teamnum].ready
 					TournamentModeSettings[teamnum].lastready = Shared.GetTime()
 					DisplayNotification(string.format("%s has " .. ConditionalValue(TournamentModeSettings[teamnum].ready, "readied", "unreadied") .. " for Team %s.",clientid, teamnum))
@@ -326,7 +327,7 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 	local function OnCommandReady(client)
 		local gamerules = GetGamerules()
 		if gamerules ~= nil and client ~= nil then
-			if GetTournamentMode() and (gamerules:GetGameState() == kGameState.NotStarted or gamerules:GetGameState() == kGameState.PreGame) and not kDAKConfig.kTournamentModePubMode then
+			if GetTournamentMode() and (gamerules:GetGameState() == kGameState.NotStarted or gamerules:GetGameState() == kGameState.PreGame) and not kDAKConfig.TournamentMode.kTournamentModePubMode then
 				ClientReady(client)
 			end
 		end
@@ -346,6 +347,10 @@ if kDAKConfig and kDAKConfig._TournamentMode then
 	
 	table.insert(kDAKOnClientChatMessage, function(message, playerName, steamId, teamNumber, teamOnly, client) return OnTournamentModeChatMessage(message, playerName, steamId, teamNumber, teamOnly, client) end)
 	
-	Shared.Message("TournamentMode Loading Complete")
+elseif kDAKConfig and not kDAKConfig.TournamentMode then
 	
+	DAKGenerateDefaultDAKConfig("TournamentMode")
+		
 end
+
+Shared.Message("TournamentMode Loading Complete")

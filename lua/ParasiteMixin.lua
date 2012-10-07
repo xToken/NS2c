@@ -60,6 +60,10 @@ function ParasiteMixin:SetParasited(fromPlayer, duration, visible)
                 end
                 
             end
+            
+            if self.GetReceivesStructuralDamage and self:GetReceivesStructuralDamage() then
+                self:SetDetected(true)
+            end
         
             self.timeParasited = Shared.GetTime()
             self.parasiteduration = duration

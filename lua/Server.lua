@@ -22,11 +22,17 @@ Script.Load("lua/Bot.lua")
 Script.Load("lua/VoteManager.lua")
 
 Script.Load("lua/ServerConfig.lua")
-Script.Load("lua/ServerAdmin.lua")
 Script.Load("lua/DAKLoader.lua")
 
+if kDAKConfig and kDAKConfig.BaseAdminCommands and kDAKConfig.BaseAdminCommands.kEnabled then
+else
+	Print("Falling back")
+	Script.Load("lua/ServerAdmin.lua")
+	Script.Load("lua/ServerAdminCommands.lua")
+	Script.Load("lua/MapCycle.lua")
+end
+
 Script.Load("lua/ServerWebInterface.lua")
-//Script.Load("lua/MapCycle.lua")
 Script.Load("lua/ConsistencyConfig.lua")
 
 Script.Load("lua/ConsoleCommands_Server.lua")
@@ -64,7 +70,9 @@ function Server.AddChatToHistory(message, playerName, steamId, teamNumber, teamO
     chatMessageCount = chatMessageCount + 1
     Server.recentChatMessages:Insert({ id = chatMessageCount, message = message, player = playerName,
                                        steamId = steamId, team = teamNumber, teamOnly = teamOnly })
-    DAKChatLogging(message, playerName, steamId, teamNumber, teamOnly)
+	if kDAKConfig and kDAKConfig.DAKLoader and kDAKConfig.DAKLoader.GamerulesExtensions then
+		DAKChatLogging(message, playerName, steamId, teamNumber, teamOnly)
+	end
 end
 
 /**

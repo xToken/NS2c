@@ -3,8 +3,6 @@
 
 Marine.k2DHUDFlash = "ui/marine_hud_2d.swf"
 
-local kSensorBlipSize = 25
-
 local kMarineHealthbarOffset = Vector(0, 1.2, 0)
 function Marine:GetHealthbarOffset()
     return kMarineHealthbarOffset
@@ -32,83 +30,6 @@ function MarineUI_GetHasArmsLab()
     
     return false
 
-end
-
-function PlayerUI_GetSensorBlipInfo()
-
-    PROFILE("PlayerUI_GetSensorBlipInfo")
-    
-    local player = Client.GetLocalPlayer()
-    local blips = {}
-    
-    if player then
-    
-        local eyePos = player:GetEyePos()
-        for index, blip in ientitylist(Shared.GetEntitiesWithClassname("SensorBlip")) do
-        
-            local blipOrigin = blip:GetOrigin()
-            local blipEntId = blip.entId
-            local blipName = ""
-            
-            // Lookup more recent position of blip
-            local blipEntity = Shared.GetEntity(blipEntId)
-            
-            // Do not display a blip for the local player.
-            if blipEntity ~= player then
-
-                if blipEntity then
-                
-                    if blipEntity:isa("Player") then
-                        blipName = Scoreboard_GetPlayerData(blipEntity:GetClientIndex(), kScoreboardDataIndexName)
-                    elseif blipEntity.GetTechId then
-                        blipName = GetDisplayNameForTechId(blipEntity:GetTechId())
-                    end
-                    
-                end
-                
-                if not blipName then
-                    blipName = ""
-                end
-                
-                // Get direction to blip. If off-screen, don't render. Bad values are generated if 
-                // Client.WorldToScreen is called on a point behind the camera.
-                local normToEntityVec = GetNormalizedVector(blipOrigin - eyePos)
-                local normViewVec = player:GetViewAngles():GetCoords().zAxis
-               
-                local dotProduct = normToEntityVec:DotProduct(normViewVec)
-                if dotProduct > 0 then
-                
-                    // Get distance to blip and determine radius
-                    local distance = (eyePos - blipOrigin):GetLength()
-                    local drawRadius = kSensorBlipSize/distance
-                    
-                    // Compute screen xy to draw blip
-                    local screenPos = Client.WorldToScreen(blipOrigin)
-
-                    local trace = Shared.TraceRay(eyePos, blipOrigin, CollisionRep.LOS, PhysicsMask.Bullets, EntityFilterTwo(player, entity))                               
-                    local obstructed = ((trace.fraction ~= 1) and ((trace.entity == nil) or trace.entity:isa("Door"))) 
-                    
-                    if not obstructed and entity and not entity:GetIsVisible() then
-                        obstructed = true
-                    end
-                    
-                    // Add to array (update numElementsPerBlip in GUISensorBlips:UpdateBlipList)
-                    table.insert(blips, screenPos.x)
-                    table.insert(blips, screenPos.y)
-                    table.insert(blips, drawRadius)
-                    table.insert(blips, obstructed)
-                    table.insert(blips, blipName)
-
-                end
-                
-            end
-            
-        end
-    
-    end
-    
-    return blips
-    
 end
 
 local function GetIsCloseToMenuStructure(self)

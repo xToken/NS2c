@@ -55,11 +55,10 @@ local function GetBigIconPixelCoords(techId, researched)
         gBigIconIndex[kTechId.Shotgun] = 3
         gBigIconIndex[kTechId.GrenadeLauncher] = 4
         gBigIconIndex[kTechId.Jetpack] = 6
-        gBigIconIndex[kTechId.Exosuit] = 7
+        gBigIconIndex[kTechId.HeavyArmor] = 7
         gBigIconIndex[kTechId.Welder] = 8
         gBigIconIndex[kTechId.Mines] = 9
         gBigIconIndex[kTechId.HandGrenades] = 4
-        gBigIconIndex[kTechId.DualMinigunExosuit] = 10
     
     end
     
@@ -108,10 +107,9 @@ local function GetSmallIconPixelCoordinates(itemTechId)
         gSmallIconIndex[kTechId.Shotgun] = 5
         gSmallIconIndex[kTechId.GrenadeLauncher] = 8
         gSmallIconIndex[kTechId.Jetpack] = 24
-        gSmallIconIndex[kTechId.Exosuit] = 25
+        gSmallIconIndex[kTechId.HeavyArmor] = 25
         gSmallIconIndex[kTechId.Welder] = 10
         gSmallIconIndex[kTechId.LayMines] = 21
-        gSmallIconIndex[kTechId.DualMinigunExosuit] = 26
     
     end
     
@@ -460,8 +458,7 @@ local function GetItemTechId(researchTechId)
         gResearchToWeaponIds[kTechId.WelderTech] = kTechId.Welder
         gResearchToWeaponIds[kTechId.MinesTech] = kTechId.LayMines
         gResearchToWeaponIds[kTechId.JetpackTech] = kTechId.Jetpack
-        gResearchToWeaponIds[kTechId.ExosuitTech] = kTechId.Exosuit
-        gResearchToWeaponIds[kTechId.DualMinigunTech] = kTechId.DualMinigunExosuit
+        gResearchToWeaponIds[kTechId.HeavyArmorTech] = kTechId.HeavyArmor
     
     end
     

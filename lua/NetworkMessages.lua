@@ -783,7 +783,8 @@ local kHiveInfoMessage =
     location         = string.format("string (%d)", kMaxHiveNameLength),
     healthpercent    = "float",
     buildprogress    = "float",
-    techId           = "enum kTechId"
+    techId           = "enum kTechId",
+    timelastdamaged  = "time"
 }
 
 Shared.RegisterNetworkMessage("GameEnd", kGameEndMessage)
