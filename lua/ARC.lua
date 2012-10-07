@@ -208,6 +208,7 @@ function ARC:OnPowerOn()
     self.deployMode = ARC.kDeployMode.Deploying
     self:TriggerEffects("arc_deploying")
     self.deploytime = Shared.GetTime()
+    //Print("POWERON")
     self.active = true
 end
 
@@ -218,6 +219,7 @@ function ARC:OnPowerOff()
     end
     self.deploytime = 0
     self.active = false
+    //Print("POWEROFF")
     self.deployMode = ARC.kDeployMode.Undeploying
     self:TriggerEffects("arc_stop_charge")
     self:TriggerEffects("arc_undeploying")
@@ -376,14 +378,16 @@ function ARC:OnUpdate(deltaTime)
     
     if Server then
         self:UpdateOrders(deltaTime)
-        if self.deploytime ~= 0 and self.deploytime + ARC.kDeployAnimationTime < Shared.GetTime() and self:GetIsAlive() and self:GetIsPowered() then
+        if self.deploytime ~= 0 and self.deploytime + ARC.kDeployAnimationTime < Shared.GetTime() and self:GetIsAlive() and self:GetIsPowered() and self.deployMode == ARC.kDeployMode.Deploying then
             self.deploytime = 0
             self:ForceDeployed()
+            //Print("FORCEDEPLOYED")
         end
         if self.deployMode == ARC.kDeployMode.Undeployed and self:GetIsPowered() then
             self.deployMode = ARC.kDeployMode.Deploying
             self:TriggerEffects("arc_deploying")
             self.deploytime = Shared.GetTime()
+            //Print("FORCEDEPLOYED2")
         end
     end
     

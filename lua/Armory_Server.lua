@@ -126,7 +126,7 @@ function Armory:ResupplyPlayer(player)
     // Give ammo to all their weapons, one clip at a time, starting from primary
     local activeWeapon = player:GetActiveWeapon()
     
-    if activeWeapon ~= nil then
+    if activeWeapon ~= nil and activeWeapon:isa("ClipWeapon") then
         if activeWeapon:GiveAmmo(1, false) then
             self:TriggerEffects("armory_ammo", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
             resuppliedPlayer = true
