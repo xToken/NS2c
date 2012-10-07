@@ -61,7 +61,6 @@ if kDAKConfig and kDAKConfig.MapVote and kDAKConfig.MapVote.kEnabled then
 
 		// time is stored as minutes so convert to seconds.
 		if Shared.GetTime() < (cycle.time * 60) then
-		
 			// We haven't been on the current map for long enough.
 			return false
 			
@@ -75,14 +74,18 @@ if kDAKConfig and kDAKConfig.MapVote and kDAKConfig.MapVote.kEnabled then
 			end
 		end
 		
-		mapvoteintiated = true
-		mapvotedelay = Shared.GetTime() + kDAKConfig.MapVote.kVoteStartDelay
-		
-		chatMessage = string.sub(string.format(kDAKConfig.MapVote.kVoteMapBeginning, kDAKConfig.MapVote.kVoteStartDelay), 1, kMaxChatLength)
-		Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Admin", -1, kTeamReadyRoom, kNeutralTeamType, chatMessage), true)
-		
-		chatMessage = string.sub(string.format(kDAKConfig.MapVote.kVoteMapHowToVote, kDAKConfig.MapVote.kVoteStartDelay), 1, kMaxChatLength)
-		Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Admin", -1, kTeamReadyRoom, kNeutralTeamType, chatMessage), true)
+		if mapvoterunning or mapvoteintiated or mapvotecomplete then
+			//Map vote already running, dont start another
+		else		
+			mapvoteintiated = true
+			mapvotedelay = Shared.GetTime() + kDAKConfig.MapVote.kVoteStartDelay
+			
+			chatMessage = string.sub(string.format(kDAKConfig.MapVote.kVoteMapBeginning, kDAKConfig.MapVote.kVoteStartDelay), 1, kMaxChatLength)
+			Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Admin", -1, kTeamReadyRoom, kNeutralTeamType, chatMessage), true)
+			
+			chatMessage = string.sub(string.format(kDAKConfig.MapVote.kVoteMapHowToVote, kDAKConfig.MapVote.kVoteStartDelay), 1, kMaxChatLength)
+			Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Admin", -1, kTeamReadyRoom, kNeutralTeamType, chatMessage), true)
+		end
 		
 	end
 

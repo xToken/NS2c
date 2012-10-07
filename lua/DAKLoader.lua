@@ -132,7 +132,7 @@ if Server then
 		//Base DAK Config
 		if Plugin == "DAKLoader" or Plugin == "ALL" then
 			local ModsTable = { }
-			table.insert(ModsTable, "5f4f178")
+			table.insert(ModsTable, "5f7771c")
 			if kDAKConfig == nil then
 				kDAKConfig = { }
 			end
@@ -507,7 +507,9 @@ if Server then
 			if client ~= nil then
 				if #kDAKOnTeamJoin > 0 then
 					for i = 1, #kDAKOnTeamJoin do
-						kDAKOnTeamJoin[i](player, newTeamNumber, force)
+						if not kDAKOnTeamJoin[i](player, newTeamNumber, force) then
+							return false, player
+						end
 					end
 				end
 			end

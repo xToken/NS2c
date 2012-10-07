@@ -457,6 +457,7 @@ if kDAKConfig and kDAKConfig.EnhancedLogging and kDAKConfig.EnhancedLogging.kEna
 		if client ~= nil then
 			PrintToEnhancedLog(GetTimeStamp() .. string.format("%s joined team %s.", GetClientUIDString(client), newTeamNumber))
 		end
+		return true
 	end
 	
 	table.insert(kDAKOnTeamJoin, function(player, newTeamNumber, force) return EnhancedLoggingJoinTeam(player, newTeamNumber, force) end)

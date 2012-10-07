@@ -50,7 +50,6 @@ else
 
     Script.Load("lua/Player_Client.lua")
     Script.Load("lua/Chat.lua")
-    
 end
 
 ------------
@@ -264,7 +263,7 @@ local networkVars =
     
     // Reduce max player velocity in some cases (marine jumping)
     slowAmount = "float (0 to 1 by 0.01)",
-    movementModiferState = "private compensated boolean",
+    movementModiferState = "boolean",
     
     giveDamageTime = "private time",
     
@@ -371,7 +370,7 @@ function Player:OnCreate()
     self.modeTime = -1
     self.primaryAttackLastFrame = false
     self.secondaryAttackLastFrame = false
-    
+    self.movementModiferState = false
     self.requestsScores = false   
     self.viewModelId = Entity.invalidId
     
@@ -2198,8 +2197,12 @@ end
 
 function Player:GetPlayFootsteps()
 
-    return not self.crouching and self:GetVelocityLength() > 0.75 and self:GetIsOnGround() and not self.movementModiferState
+    return not self.crouching and self:GetVelocityLength() > 0.75 and self:GetIsOnGround() and not self:GetMovementModifierState()
     
+end
+
+function Player:GetMovementModifierState()
+    return self.movementModiferState
 end
 
 // Called by client/server UpdateMisc()
@@ -2298,7 +2301,7 @@ function Player:GetMaxSpeed(possible)
     end
     
     //Walking
-    local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Player.kWalkMaxSpeed,  Player.kRunMaxSpeed)
+    local maxSpeed = ConditionalValue(self:GetMovementModifierState() and self:GetIsOnSurface(), Player.kWalkMaxSpeed,  Player.kRunMaxSpeed)
     
     // Take into account crouching
     if self:GetCrouching() and self.onGround then
@@ -2701,7 +2704,7 @@ function Player:HandleButtons(input)
     
     // Update movement ability
     local newMovementState = bit.band(input.commands, Move.MovementModifier) ~= 0
-    if newMovementState ~= self.movementModiferState and self.movementModiferState ~= nil then
+    if newMovementState ~= self:GetMovementModifierState() then
         self:MovementModifierChanged(newMovementState, input)
     end
     
@@ -3074,13 +3077,13 @@ if Client then
     function Player:TriggerFootstep()
     
         self.leftFoot = not self.leftFoot
-		local sprinting = not self.movementModiferState
+		//local sprinting = not self.movementModiferState
         local viewVec = self:GetViewAngles():GetCoords().zAxis
         local forward = self:GetVelocity():DotProduct(viewVec) > -0.1
         local crouch = self:GetCrouching()
         local localPlayer = Client.GetLocalPlayer()
         local enemy = localPlayer and GetAreEnemies(self, localPlayer)
-        self:TriggerEffects("footstep", {surface = self:GetMaterialBelowPlayer(), left = self.leftFoot, sprinting = sprinting, forward = forward, crouch = crouch, enemy = enemy})
+        self:TriggerEffects("footstep", {surface = self:GetMaterialBelowPlayer(), left = self.leftFoot, sprinting = true, forward = forward, crouch = crouch, enemy = enemy})
         
     end
     
@@ -3102,7 +3105,7 @@ function Player:OnTag(tagName)
     end
     
     // Play footstep when foot hits the ground. Client side only.
-    if Client and self:GetPlayFootsteps() and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] and not self.movementModiferState then
+    if Client and self:GetPlayFootsteps() and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] and not self:GetMovementModifierState() then
         self:TriggerFootstep()
     end
     

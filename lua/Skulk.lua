@@ -483,8 +483,11 @@ end
 function Skulk:GetAcceleration()
     if self:GetIsOnSurface() then
         local maccel = math.max(Skulk.kMaxGroundSpeed - self:GetVelocity():GetLengthXZ(), 0) * 10
-        
-        return (Skulk.kAcceleration + maccel) * self:GetMovementSpeedModifier()
+        if self:GetIsWallWalking() then
+            return Skulk.kAcceleration * self:GetMovementSpeedModifier()
+        else
+            return (Skulk.kAcceleration + maccel) * self:GetMovementSpeedModifier()
+        end
     else
         return Skulk.kAirAcceleration * self:GetMovementSpeedModifier()
     end
