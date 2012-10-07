@@ -334,21 +334,9 @@ kAlienWeaponEffects =
     {
         blinkOutEffects =
         {   
-            {stop_sound = "sound/ns2c.fev/ns2c/alien/fade/blink"},
+            {sound = "", silenceupgrade = true, done = true},  
+            {sound = "sound/ns2c.fev/ns2c/alien/fade/blink"},  
             {player_cinematic = "cinematics/alien/fade/blink_out_silent.cinematic", done = true},
-            {sound = "", silenceupgrade = true, done = true},  
-            {sound = "sound/ns2c.fev/ns2c/alien/fade/blink"},  
-        },
-    },
-    
-    blink_out_local =
-    {
-        blinkOutEffects =
-        {        
-            {stop_sound = "sound/ns2c.fev/ns2c/alien/fade/blink"},
-            {viewmodel_cinematic = "cinematics/alien/fade/blink_view.cinematic", attach_point = ""},
-            {sound = "", silenceupgrade = true, done = true},  
-            {sound = "sound/ns2c.fev/ns2c/alien/fade/blink"},  
         },
     },
     

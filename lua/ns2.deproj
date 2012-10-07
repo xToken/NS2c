@@ -691,9 +691,6 @@
     <filename>Weapons\Weapon.lua</filename>
   </file>
   <file>
-    <filename>Weapon.lua</filename>
-  </file>
-  <file>
     <filename>WeaponOwnerMixin.lua</filename>
   </file>
   <file>

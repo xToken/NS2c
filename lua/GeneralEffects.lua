@@ -202,7 +202,7 @@ kGeneralEffectData =
     {
         ayumiEffects =
         {
-            {sound = "sound/ns2c.fev/ns2c/ui/ayumi_rr", done = true},
+            //{private_sound = "sound/ns2c.fev/ns2c/ui/ayumi_rr", done = true},
         },
     },
     
@@ -210,7 +210,7 @@ kGeneralEffectData =
     {
         ayumiEffects =
         {
-            {stop_sound = "sound/ns2c.fev/ns2c/ui/ayumi_rr", done = true},
+            //{stop_sound = "sound/ns2c.fev/ns2c/ui/ayumi_rr", done = true},
         },
     },
     

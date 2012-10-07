@@ -246,6 +246,9 @@ function HeavyMachineGun:SetGunLoopParam(viewModel, paramName, rateOfChange)
     
 end
 
+function HeavyMachineGun:OnSecondaryAttack(player)
+end
+
 function HeavyMachineGun:UpdateViewModelPoseParameters(viewModel)
 
     local attacking = self:GetPrimaryAttacking()
