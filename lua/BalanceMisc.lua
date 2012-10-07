@@ -47,6 +47,12 @@ kAuraDetectionRange = 30
 kFuryHealthRegained = 4
 kFuryHealthPercentageRegained = 0.1
 kFuryEnergyRegained = 10
+kGhostMotionTrackingDodgePerLevel = 33
+kGhostObservatoryDodgePerLevel = 33
+kGhostMinimapDodgePerLevel = 33
+kGhostScanDodgePerLevel = 33
+kAlienBaseMoveNoise = 5
+kAlienRandMoveNoise = 12
 
 // per second
 kAlienVisionCost = 0
@@ -77,7 +83,7 @@ kEnergizeUpdateRate = 1
 kUpgradeGestationTime = 2
 
 // Jetpack
-kJetpackUseFuelRate = 0.38
+kJetpackUseFuelRate = 0.36
 kJetpackUpgradeUseFuelRate = 0.15
 kJetpackReplenishFuelRate = 0.16
 

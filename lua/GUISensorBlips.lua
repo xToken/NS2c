@@ -13,7 +13,7 @@
 class 'GUISensorBlips' (GUIScript)
 
 GUISensorBlips.kMarineBlipImageName = "ui/sensor.dds"
-GUISensorBlips.kAlienBlipImageName = "ui/sensor.dds"
+GUISensorBlips.kAlienBlipImageName = "ui/aliensensor.dds"
 
 GUISensorBlips.kFontName = "fonts/Arial_15.fnt"
 GUISensorBlips.kFontSize = GUIScale(30)
@@ -51,7 +51,7 @@ end
 function GUISensorBlips:Update(deltaTime)
 
     PROFILE("GUISensorBlips:Update")
-
+    
     self:UpdateBlipList(PlayerUI_GetSensorBlipInfo())
     
     self:UpdateAnimations(deltaTime)
@@ -160,9 +160,9 @@ function GUISensorBlips:CreateBlipItem()
     newBlip.GraphicsItem = GUIManager:CreateGraphicItem()
     newBlip.GraphicsItem:SetAnchor(GUIItem.Left, GUIItem.Top)
     
-    if PlayerUI_GetPlayerTeam == kMarineTeamType then
+    if PlayerUI_IsOnMarineTeam() then
         newBlip.GraphicsItem:SetTexture(GUISensorBlips.kMarineBlipImageName)
-    else
+    elseif PlayerUI_IsOnAlienTeam then
         newBlip.GraphicsItem:SetTexture(GUISensorBlips.kAlienBlipImageName)
     end
     

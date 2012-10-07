@@ -36,12 +36,12 @@ Shared.PrecacheSurfaceShader("models/alien/fade/fade.surface_shader")
 
 Fade.kViewOffsetHeight = 1.7
 Fade.XZExtents = .4
-Fade.YExtents = 1.05
+Fade.YExtents = .85
 Fade.kHealth = kFadeHealth
 Fade.kArmor = kFadeArmor
 Fade.kMass = 50 // ~350 pounds
-Fade.kJumpHeight = 1.3
-Fade.kMaxSpeed = 23
+Fade.kJumpHeight = 1.1
+Fade.kMaxSpeed = 20
 Fade.kBlinkAccelSpeed = 12
 Fade.kWalkSpeed = 4
 Fade.kMaxCrouchSpeed = 3
@@ -49,10 +49,10 @@ Fade.kAcceleration = 50
 Fade.kAirAcceleration = 25
 Fade.kBlinkAirAcceleration = 40
 Fade.kBlinkAirAccelerationDuration = 2
-Fade.kBlinkAcceleration = 80
-Fade.kVerticleBlinkAcceleration = 250
-Fade.kViewDeadZone = 0.10
-Fade.kReversalThreshold = 0.25
+Fade.kBlinkAcceleration = 50
+Fade.kVerticleBlinkAcceleration = 150
+Fade.kViewDeadZone = 0.15
+Fade.kReversalThreshold = 0.3
 
 if Server then
     Script.Load("lua/Fade_Server.lua")
@@ -64,7 +64,6 @@ local networkVars =
 {    
     etherealStartTime = "private time",
     etherealEndTime = "private time",
-    blinkhandled = "private boolean",
     // True when we're moving quickly "through the ether"
     ethereal = "boolean"
 }
@@ -88,24 +87,15 @@ function Fade:OnCreate()
         self.isBlinking = false
     end
     
-    self.blinkhandled = false
     self.etherealStartTime = 0
     self.etherealEndTime = 0
     self.ethereal = false
 
 end
 
-/*
 function Fade:AdjustGravityForce(input, gravity)
-   
-    if self:GetIsBlinking() or not self.landedAfterBlink then
-        gravity = gravity * .75
-    end
-    
     return gravity
-      
 end
-*/
 
 function Fade:OnInitialized()
     Alien.OnInitialized(self)
@@ -167,20 +157,50 @@ function Fade:GetGroundFrictionForce()
 end
 
 function Fade:GetCanJump()
-    if self:GetIsBlinking() and not self.blinkhandled then
+    if self:GetIsBlinking() then
         return true
     end
     return Alien.GetCanJump(self)
 end
 
-function Fade:GetIsOnGround()
+function Fade:HandleJump(input, velocity)
 
-    if self:GetIsBlinking() then
-        return false
+    local success = false
+    
+    if self:GetCanJump() then
+    
+        // Compute the initial velocity to give us the desired jump
+        // height under the force of gravity.
+        if not self:GetIsBlinking() then
+            self:GetJumpVelocity(input, velocity)
+        end
+        
+        if self:GetPlayJumpSound() then
+        
+            if not Shared.GetIsRunningPrediction() then
+                self:TriggerEffects("jump", {surface = self:GetMaterialBelowPlayer()})
+            end
+            
+        end
+
+        // TODO: Set this somehow (set on sounds for entity, not by sound name?)
+        //self:SetSoundParameter(soundName, "speed", self:GetFootstepSpeedScalar(), 1)
+        
+        self.timeOfLastJump = Shared.GetTime()
+        
+        self.onGroundNeedsUpdate = true
+        
+        self.jumping = true
+        success = true
+        
     end
     
-    return Alien.GetIsOnGround(self)
+    return success
     
+end
+
+function Fade:GetIsOnGround()    
+    return Alien.GetIsOnGround(self)
 end
 
 function Fade:GetAcceleration()
@@ -191,7 +211,7 @@ function Fade:GetAcceleration()
     if self:GetRecentlyBlinked() and self:GetVelocity():GetLengthXZ() > Fade.kBlinkAccelSpeed then
         return Fade.kBlinkAirAcceleration * self:GetMovementSpeedModifier()
     end
-    if not self.onGround then
+    if not self:GetIsOnGround() then
         return Fade.kAirAcceleration * self:GetMovementSpeedModifier()
     end
     
@@ -208,7 +228,7 @@ function Fade:GetMaxSpeed(possible)
     local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Fade.kWalkSpeed, Fade.kMaxSpeed)
     
         // Take into account crouching
-    if self:GetCrouching() and self.onGround then
+    if self:GetCrouching() and self:GetIsOnGround() and not self:GetRecentlyBlinked() then
         maxSpeed = Fade.kMaxCrouchSpeed
     end
 
@@ -216,36 +236,33 @@ function Fade:GetMaxSpeed(possible)
 
 end
 
-function Fade:PreUpdateMove(input, runningPrediction)
-    if self:GetIsBlinking() and not self.blinkhandled then
-        local velocity = self:GetVelocity()
-        self:HandleJump(input, velocity)
-        self:SetVelocity(velocity)
-        self.blinkhandled = true
-    end
-end
-
 function Fade:ModifyVelocity(input, velocity)     
  
     Alien.ModifyVelocity(self, input, velocity)
     
     if self:GetIsBlinking() then
+        
         self:PerformMovement( velocity * input.time, 1, velocity )
         local viewCoords = self:GetViewAngles():GetCoords()
         local zAxis = viewCoords.zAxis
         local upangle = math.abs(zAxis.y)
 
-        //Convert velocity instantly if opposite direction for additional responsiveness
-        if upangle > Fade.kViewDeadZone then
-            if upangle > Fade.kReversalThreshold and Sign(velocity.y) ~= Sign(zAxis.y) then
-                if Sign(zAxis.y) > 0 and velocity.y < 0 then
-                    velocity.y = 10
-                elseif Sign(zAxis.y) < 0 and velocity.y > 0 then
-                    velocity.y = 0
-                end
+        self.onGroundNeedsUpdate = true
+        if self:GetIsOnGround() and velocity.y < 4 then
+            velocity.y = velocity.y + math.sqrt(math.abs(2 * self:GetJumpHeight() * self:GetGravityForce(input)))
+        else
+            //Convert velocity instantly if opposite direction for additional responsiveness
+            if upangle > Fade.kViewDeadZone then
+                if upangle > Fade.kReversalThreshold and Sign(velocity.y) ~= Sign(zAxis.y) then
+                    if Sign(zAxis.y) > 0 and velocity.y < 0 then
+                        velocity.y = 10
+                    elseif Sign(zAxis.y) < 0 and velocity.y > 0 then
+                        velocity.y = 0
+                    end
+                 end
+                 velocity.y = velocity.y + (Fade.kVerticleBlinkAcceleration * ((1 - math.cos(zAxis.y)) * input.time))
              end
-             velocity.y = velocity.y + (Fade.kVerticleBlinkAcceleration * ((1 - math.cos(zAxis.y)) * input.time))
-        end
+         end
     end
     
 end
@@ -267,7 +284,7 @@ function Fade:GetRecentlyBlinked()
 end
 
 function Fade:GetRecentlyJumped()
-    return self.timeOfLastJump ~= nil and self.timeOfLastJump + 0.15 > Shared.GetTime()
+    return self.timeOfLastJump ~= nil and self.timeOfLastJump + 0.2 > Shared.GetTime()
 end
 
 function Fade:OnProcessMove(input)
@@ -282,7 +299,8 @@ end
 
 // for update position
 function Fade:GetCanStep()
-    return self:GetIsBlinking() or Alien.GetCanStep(self)
+    //return self:GetIsBlinking() or Alien.GetCanStep(self)
+    return false
 end
 
 function Fade:GetStepHeight()
@@ -290,12 +308,13 @@ function Fade:GetStepHeight()
 end
 
 function Fade:GetGravityAllowed()
-    return not self:GetIsBlinking()
+    return true
 end
 
 function Fade:TriggerBlink()
     self.ethereal = true
     self.onGroundNeedsUpdate = false
+    self.onGround = false
     self.jumping = true
 end
 
@@ -318,10 +337,8 @@ function Fade:OnBlinkEnd()
         self.jumping = false
     end
     self.ethereal = false
-    self.blinkhandled = false
 end
 
-/*
 local kFadeEngageOffset = Vector(0, 0.6, 0)
 function Fade:GetEngagementPointOverride()
     return self:GetOrigin() + kFadeEngageOffset
@@ -330,6 +347,5 @@ end
 function Fade:GetEngagementPointOverride()
     return self:GetOrigin() + Vector(0, 0.8, 0)
 end
-*/
 
 Shared.LinkClassToMap("Fade", Fade.kMapName, networkVars)

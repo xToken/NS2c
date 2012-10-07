@@ -12,6 +12,8 @@ Script.Load("lua/BalanceMisc.lua")
 
 // used as fallback
 kDefaultBuildTime = 8
+// 2 = Hold Space, 1 = Queued Jumping like Quake, 0 = Default NS2
+kJumpMode = 2
 
 // Resource Costs/Build/Research Times
 kCommandStationCost = 20
@@ -139,7 +141,7 @@ kKillRewardMax = 2
 kResourceScalingMinPlayers = 4
 kResourceScalingMaxPlayers = 12
 kResourceScalingMaxDelta = 1.2
-kResourceScalingMinDelta = .85
+kResourceScalingMinDelta = .75
 kResourceScaling = 20
 
 //End Resource/Build Timing Stuff

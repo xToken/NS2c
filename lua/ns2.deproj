@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
   <file>
-    <filename>AFKKick.lua</filename>
-  </file>
-  <file>
     <filename>ARC.lua</filename>
   </file>
   <file>
@@ -25,7 +22,13 @@
     <filename>AlienBuy_Client.lua</filename>
   </file>
   <file>
+    <filename>AlienDetectableMixin.lua</filename>
+  </file>
+  <file>
     <filename>AlienDetectorMixin.lua</filename>
+  </file>
+  <file>
+    <filename>AlienSensorBlip.lua</filename>
   </file>
   <file>
     <filename>AlienSpectator.lua</filename>
@@ -35,6 +38,9 @@
   </file>
   <file>
     <filename>AlienTeam.lua</filename>
+  </file>
+  <file>
+    <filename>AlienUpgrades_Client.lua</filename>
   </file>
   <file>
     <filename>AlienWeaponEffects.lua</filename>
@@ -71,9 +77,6 @@
   </file>
   <file>
     <filename>BalanceMisc.lua</filename>
-  </file>
-  <file>
-    <filename>BaseAdminCommands.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\BileBomb.lua</filename>
@@ -190,9 +193,6 @@
     <filename>EnergyMixin.lua</filename>
   </file>
   <file>
-    <filename>EnhancedLogging.lua</filename>
-  </file>
-  <file>
     <filename>Extractor.lua</filename>
   </file>
   <file>
@@ -212,9 +212,6 @@
   </file>
   <file>
     <filename>GUIAlienHUD.lua</filename>
-  </file>
-  <file>
-    <filename>GUIAlienSpectatorHUD.lua</filename>
   </file>
   <file>
     <filename>GUIBuyShotgunHelp.lua</filename>
@@ -259,9 +256,6 @@
     <filename>GUIInsight_Tech.lua</filename>
   </file>
   <file>
-    <filename>Hud\GUIInventory.lua</filename>
-  </file>
-  <file>
     <filename>GUIMarineBuyMenu.lua</filename>
   </file>
   <file>
@@ -299,6 +293,9 @@
   </file>
   <file>
     <filename>GUIUnitStatus.lua</filename>
+  </file>
+  <file>
+    <filename>GUIWaypoints.lua</filename>
   </file>
   <file>
     <filename>Gamerules.lua</filename>
@@ -367,6 +364,9 @@
     <filename>Weapons\Alien\HiveAbility.lua</filename>
   </file>
   <file>
+    <filename>HiveVisionMixin.lua</filename>
+  </file>
+  <file>
     <filename>Hive_Server.lua</filename>
   </file>
   <file>
@@ -394,6 +394,9 @@
     <filename>JetpackOnBack.lua</filename>
   </file>
   <file>
+    <filename>LOSMixin.lua</filename>
+  </file>
+  <file>
     <filename>Lerk.lua</filename>
   </file>
   <file>
@@ -409,13 +412,7 @@
     <filename>Location.lua</filename>
   </file>
   <file>
-    <filename>MOTD.lua</filename>
-  </file>
-  <file>
     <filename>MapBlipMixin.lua</filename>
-  </file>
-  <file>
-    <filename>MapVote.lua</filename>
   </file>
   <file>
     <filename>Marine.lua</filename>
@@ -428,6 +425,9 @@
   </file>
   <file>
     <filename>MarineCommander.lua</filename>
+  </file>
+  <file>
+    <filename>MarineCommander_Client.lua</filename>
   </file>
   <file>
     <filename>MarineCommander_Server.lua</filename>
@@ -481,9 +481,6 @@
     <filename>Observatory.lua</filename>
   </file>
   <file>
-    <filename>Onos.lua</filename>
-  </file>
-  <file>
     <filename>Onos_Client.lua</filename>
   </file>
   <file>
@@ -512,6 +509,9 @@
   </file>
   <file>
     <filename>Player_Client.lua</filename>
+  </file>
+  <file>
+    <filename>Player_Server.lua</filename>
   </file>
   <file>
     <filename>PlayingTeam.lua</filename>
@@ -550,9 +550,6 @@
     <filename>ResearchMixin.lua</filename>
   </file>
   <file>
-    <filename>ReservedSlots.lua</filename>
-  </file>
-  <file>
     <filename>ResourceTower.lua</filename>
   </file>
   <file>
@@ -563,6 +560,9 @@
   </file>
   <file>
     <filename>Weapons\Alien\Rocket.lua</filename>
+  </file>
+  <file>
+    <filename>Sayings.lua</filename>
   </file>
   <file>
     <filename>CommAbilities\Marine\Scan.lua</filename>
@@ -581,6 +581,9 @@
   </file>
   <file>
     <filename>Server.lua</filename>
+  </file>
+  <file>
+    <filename>ServerBrowser_Test.lua</filename>
   </file>
   <file>
     <filename>Shade.lua</filename>
@@ -661,9 +664,6 @@
     <filename>TechTree_Server.lua</filename>
   </file>
   <file>
-    <filename>TournamentMode.lua</filename>
-  </file>
-  <file>
     <filename>Tracer_Client.lua</filename>
   </file>
   <file>
@@ -682,10 +682,16 @@
     <filename>UnitStatusMixin.lua</filename>
   </file>
   <file>
-    <filename>VoteRandom.lua</filename>
+    <filename>UpgradeStructureManager.lua</filename>
+  </file>
+  <file>
+    <filename>VoteManager.lua</filename>
   </file>
   <file>
     <filename>Weapons\Weapon.lua</filename>
+  </file>
+  <file>
+    <filename>WeaponOwnerMixin.lua</filename>
   </file>
   <file>
     <filename>Weapons\Weapon_Server.lua</filename>

@@ -1,32 +1,13 @@
 //NS2 Client Message of the Day
 
-kDAKRevisions["MOTD"] = 1.5
 local MOTDClientTracker = { }
 local MOTDAcceptedClients = { }
 
-if kDAKConfig and kDAKConfig._MOTD then
+if kDAKConfig and kDAKConfig.MOTD and kDAKConfig.MOTD.kEnabled then
 
-	local function CheckPluginConfig()
-	
-		if kDAKConfig.kMOTDMessage == nil or
-		 kDAKConfig.kMOTDMessageDelay == nil or
-		 kDAKConfig.kMOTDMessageRevision == nil or
-		 kDAKConfig.kMOTDMessagesPerTick == nil then
-		 
-			kDAKConfig._MOTD = false
-			
-		end
-			
-		if kDAKSettings.MOTDAcceptedClients == nil then
-			kDAKSettings.MOTDAcceptedClients = { }
-		end
-	
+	if kDAKSettings.MOTDAcceptedClients == nil then
+		kDAKSettings.MOTDAcceptedClients = { }
 	end
-	CheckPluginConfig()
-
-end
-
-if kDAKConfig and kDAKConfig._MOTD then
        
 	local function DisplayMOTDMessage(client, message)
 
@@ -42,7 +23,7 @@ if kDAKConfig and kDAKConfig._MOTD then
 			for r = #kDAKSettings.MOTDAcceptedClients, 1, -1 do
 				local AcceptedClient = kDAKSettings.MOTDAcceptedClients[r]
 				local steamid = client:GetUserId()
-				if AcceptedClient.id == steamid and AcceptedClient.revision == kDAKConfig.kMOTDMessageRevision then
+				if AcceptedClient.id == steamid and AcceptedClient.revision == kDAKConfig.MOTD.kMOTDMessageRevision then
 					return true
 				end
 			end
@@ -53,19 +34,19 @@ if kDAKConfig and kDAKConfig._MOTD then
 	local function ProcessMessagesforUser(PEntry)
 		
 		local messagestart = PEntry.Message
-		for i = messagestart, #kDAKConfig.kMOTDMessage do
+		for i = messagestart, #kDAKConfig.MOTD.kMOTDMessage do
 		
-			if i < kDAKConfig.kMOTDMessagesPerTick + messagestart then
-				DisplayMOTDMessage(PEntry.Client, kDAKConfig.kMOTDMessage[i])
+			if i < kDAKConfig.MOTD.kMOTDMessagesPerTick + messagestart then
+				DisplayMOTDMessage(PEntry.Client, kDAKConfig.MOTD.kMOTDMessage[i])
 			else
 				PEntry.Message = i
-				PEntry.Time = Shared.GetTime() + kDAKConfig.kMOTDMessageDelay
+				PEntry.Time = Shared.GetTime() + kDAKConfig.MOTD.kMOTDMessageDelay
 				break
 			end
 			
 		end
 		
-		if #kDAKConfig.kMOTDMessage < messagestart + kDAKConfig.kMOTDMessagesPerTick then
+		if #kDAKConfig.MOTD.kMOTDMessage < messagestart + kDAKConfig.MOTD.kMOTDMessagesPerTick then
 			PEntry = nil
 		end
 	
@@ -157,7 +138,7 @@ if kDAKConfig and kDAKConfig._MOTD then
 		
 		local NewClient = { }
 		NewClient.id = client:GetUserId()
-		NewClient.revision = kDAKConfig.kMOTDMessageRevision
+		NewClient.revision = kDAKConfig.MOTD.kMOTDMessageRevision
 		NewClient.name = name
 		
 		local player = client:GetControllingPlayer()
@@ -197,7 +178,11 @@ if kDAKConfig and kDAKConfig._MOTD then
 	end
 	
 	table.insert(kDAKOnClientChatMessage, function(message, playerName, steamId, teamNumber, teamOnly, client) return OnMOTDChatMessage(message, playerName, steamId, teamNumber, teamOnly, client) end)
-
-	Shared.Message("ServerMOTD Loading Complete")
+	
+elseif kDAKConfig and not kDAKConfig.MOTD then
+	
+	DAKGenerateDefaultDAKConfig("MOTD")
 	
 end
+
+Shared.Message("ServerMOTD Loading Complete")

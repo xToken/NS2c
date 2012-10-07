@@ -24,30 +24,8 @@ local kRange = 250
 // 4 degrees in NS1
 local kSpread = ClipWeapon.kCone4Degrees
 
-local kButtRange = 1.4
-
-local kNumberOfVariants = 3
-
 local kSingleShotSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/lmg_fire")
-
-//local kSingleShotSounds = { "sound/NS2.fev/marine/rifle/fire_single", "sound/NS2.fev/marine/rifle/fire_single_2", "sound/NS2.fev/marine/rifle/fire_single_3" }
-//for k, v in ipairs(kSingleShotSounds) do PrecacheAsset(v) end
-
-//local kLoopingSounds = { "sound/NS2.fev/marine/rifle/fire_14_sec_loop", "sound/NS2.fev/marine/rifle/fire_loop_2", "sound/NS2.fev/marine/rifle/fire_loop_3",
-                         //"sound/NS2.fev/marine/rifle/fire_loop_1_upgrade_1", "sound/NS2.fev/marine/rifle/fire_loop_2_upgrade_1", "sound/NS2.fev/marine/rifle/fire_loop_3_upgrade_1",
-                         //"sound/NS2.fev/marine/rifle/fire_loop_1_upgrade_3", "sound/NS2.fev/marine/rifle/fire_loop_2_upgrade_3", "sound/NS2.fev/marine/rifle/fire_loop_3_upgrade_3" }
-
-//for k, v in ipairs(kLoopingSounds) do PrecacheAsset(v) end
-
-local kEndSounds = { "sound/NS2.fev/marine/rifle/end", "sound/NS2.fev/marine/rifle/end_upgrade_1", "sound/NS2.fev/marine/rifle/end_upgrade_3"  }
-for k, v in ipairs(kEndSounds) do PrecacheAsset(v) end
-
-
-local kMuzzleCinematics = {
-    PrecacheAsset("cinematics/marine/rifle/muzzle_flash.cinematic"),
-    PrecacheAsset("cinematics/marine/rifle/muzzle_flash2.cinematic"),
-    PrecacheAsset("cinematics/marine/rifle/muzzle_flash3.cinematic"),
-}
+local kEndSound = PrecacheAsset("sound/NS2.fev/marine/rifle/end")
 
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/rifle/muzzle_flash.cinematic")
 local kMuzzleAttachPoint = "fxnode_riflemuzzle"
@@ -71,6 +49,9 @@ function Rifle:OnInitialized()
     
     if Client then
     
+        self:SetFirstPersonAttackingEffect(kMuzzleEffect)
+        self:SetThirdPersonAttackingEffect(kMuzzleEffect)
+        self:SetMuzzleAttachPoint(kMuzzleAttachPoint)
         self:SetUpdates(true)
         
     end
@@ -80,13 +61,6 @@ end
 function Rifle:OnDestroy()
 
     ClipWeapon.OnDestroy(self)
-    
-    if self.muzzleCinematic then
-    
-        Client.DestroyCinematic(self.muzzleCinematic)
-        self.muzzleCinematic = nil
-        
-    end
     
 end
 
@@ -125,16 +99,7 @@ function Rifle:GetNumStartClips()
 end
 
 function Rifle:OnHolster(player)
-
-    if self.muzzleCinematic then
-    
-        Client.DestroyCinematic(self.muzzleCinematic)
-        self.muzzleCinematic = nil
-        
-    end
-    
-    ClipWeapon.OnHolster(self, player)
-    
+    ClipWeapon.OnHolster(self, player)  
 end
 
 function Rifle:GetAnimationGraphName()
@@ -249,33 +214,8 @@ end
 if Client then
 
     function Rifle:OnClientPrimaryAttackStart()
-    
-        Shared.PlaySound(self, kSingleShotSound)
-        
-        if not self.muzzleCinematic then
-        
-            local cinematicName = kMuzzleCinematics[1]
-            self.activeCinematicName = cinematicName
-            self.muzzleCinematic = CreateMuzzleCinematic(self, cinematicName, cinematicName, kMuzzleAttachPoint, nil, Cinematic.Repeat_Endless)
-            
-        else
-        
-            local cinematicName = kMuzzleCinematics[1]
-            if cinematicName ~= self.activeCinematicName then
-            
-                Client.DestroyCinematic(self.muzzleCinematic)
-                self.muzzleCinematic = CreateMuzzleCinematic(self, cinematicName, cinematicName, kMuzzleAttachPoint, nil, Cinematic.Repeat_Endless)
-                self.activeCinematicName = cinematicName
-                
-            end
-            
-        end
-        
-        // CreateMuzzleCinematic() can return nil in case there is no parent or the parent is invisible (for alien commander for example)
-        if self.muzzleCinematic then
-            self.muzzleCinematic:SetIsVisible(true)
-        end
-        
+        Shared.StopSound(self, kSingleShotSound)
+        Shared.PlaySound(self, kSingleShotSound)        
     end
     
     function Rifle:OnClientPrimaryAttacking()
@@ -284,19 +224,13 @@ if Client then
     end
     
     function Rifle:OnClientPrimaryAttackEnd()
-    
         // Just assume the looping sound is playing.
-        //Shared.StopSound(self, kLoopingSounds[self.soundType])
-        //Shared.PlaySound(self, kEndSounds[math.ceil(self.soundType / 3)])
         Shared.StopSound(self, kSingleShotSound)
-        if self.muzzleCinematic then
-            self.muzzleCinematic:SetIsVisible(false)
-        end
-        
+        Shared.PlaySound(self, kEndSound)
     end
     
     function Rifle:GetPrimaryEffectRate()
-        return 0.08
+        return 0.07
     end
     
     function Rifle:GetPreventCameraAnimation()

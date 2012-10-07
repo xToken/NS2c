@@ -337,9 +337,12 @@ function HealSprayMixin:OnTag(tagName)
         
         local player = self:GetParent()
         if player and player:GetEnergy() >= self:GetSecondaryEnergyCost(player) then
-        
-            PerformHealSpray(self, player)            
-            player:DeductAbilityEnergy(self:GetSecondaryEnergyCost(player))
+            
+            if Server then        
+                PerformHealSpray(self, player)            
+                player:DeductAbilityEnergy(self:GetSecondaryEnergyCost(player))
+            end
+            
             self:TriggerEffects("heal_spray")
             self.lastSecondaryAttackTime = Shared.GetTime()
         

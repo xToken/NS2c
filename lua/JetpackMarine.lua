@@ -39,13 +39,13 @@ JetpackMarine.kJetpackFuelReplenishDelay = .2
 
 // Allow JPers to go faster in the air, but still capped
 JetpackMarine.kAirSpeedMultiplier = 2.2
-JetpackMarine.kJetpackGravity = -12
-JetpackMarine.kVerticalThrustAccelerationMod = 2.2
-JetpackMarine.kVerticalFlyAccelerationMod = 1.6
-JetpackMarine.kJetpackAcceleration = 25
+JetpackMarine.kJetpackGravity = -16
+JetpackMarine.kVerticalThrustAccelerationMod = 1.2
+JetpackMarine.kVerticalFlyAccelerationMod = 1.0
+JetpackMarine.kJetpackAcceleration = 35
 JetpackMarine.kWalkMaxSpeed = 4.0                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
 JetpackMarine.kRunMaxSpeed = 8
-JetpackMarine.kFlyMaxSpeed = 18
+JetpackMarine.kFlyMaxSpeed = 16
 JetpackMarine.kAcceleration = 40
 
 JetpackMarine.kJetpackArmorBonus = kJetpackArmor
@@ -373,12 +373,12 @@ function JetpackMarine:GetMaxSpeed(possible)
     local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), JetpackMarine.kWalkMaxSpeed,  JetpackMarine.kRunMaxSpeed)
     
     // GetIsOnGround is used to not lose our jetpacking speed when jump is released to lose height
-    if self:GetIsJetpacking() or not self.onGround then
+    if self:GetIsJetpacking() or not self:GetIsOnGround() then
         maxSpeed = JetpackMarine.kFlyMaxSpeed
     end
     
     // Take into account crouching
-    if self:GetCrouching() and self.onGround then
+    if self:GetCrouching() and self:GetIsOnGround() then
         maxSpeed = ( 1 - self:GetCrouchAmount() * self:GetCrouchSpeedScalar() ) * maxSpeed
     end
     

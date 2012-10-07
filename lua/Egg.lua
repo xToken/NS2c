@@ -346,11 +346,11 @@ function Egg:GetUnitNameOverride(viewer)
 end
 
 // Grab player out of respawn queue unless player passed in (for test framework)
-function Egg:SpawnPlayer(player)
+function Egg:SpawnPlayer(overrideplayer)
 
     PROFILE("Egg:SpawnPlayer")
 
-    local queuedPlayer = player
+    local queuedPlayer = overrideplayer
     
     if not queuedPlayer or self.queuedPlayerId ~= nil then
         queuedPlayer = Shared.GetEntity(self.queuedPlayerId)
@@ -366,6 +366,7 @@ function Egg:SpawnPlayer(player)
         // Spawn player on top of egg
         local spawnOrigin = Vector(self:GetOrigin())
         // Move down to the ground.
+        
         spawnOrigin.y = spawnOrigin.y - (self:GetExtents().y / 2)
 
         local gestationClass = self:GetClassToGestate()

@@ -54,11 +54,12 @@ ARC.kHealth                 = kARCHealth
 ARC.kAttackDamage           = kARCDamage
 ARC.kFireRange              = kARCRange         // From NS1
 ARC.kMinFireRange           = kARCMinRange
-ARC.kSplashRadius           = 10
+ARC.kSplashRadius           = 3
 ARC.kFov                    = 360
 ARC.kBarrelMoveRate         = 150
 ARC.kMaxPitch               = 45
 ARC.kMaxYaw                 = 180
+ARC.kDeployAnimationTime    = 4
 
 ARC.kMode = enum( {'Stationary', 'Targeting', 'Destroyed'} )
 ARC.kDeployMode = enum( { 'Undeploying', 'Undeployed', 'Deploying', 'Deployed' } )
@@ -79,7 +80,7 @@ local networkVars =
     // pose parameters for forward track (should be compensated??)
     forwardTrackYawDegrees        = "float",
     forwardTrackPitchDegrees      = "float",
-    
+    deploytime                  = "private time",
     // So we can update angles and pose parameters smoothly on client
     targetDirection             = "vector"
 }
@@ -164,6 +165,7 @@ function ARC:OnInitialized()
         self.lastModeClient = self.mode
         InitMixin(self, UnitStatusMixin)
     end
+    self.deployMode = ARC.kDeployMode.Undeployed
     self.deploytime = 0
     self.active = true
     self:SetUpdates(true)
@@ -374,12 +376,11 @@ function ARC:OnUpdate(deltaTime)
     
     if Server then
         self:UpdateOrders(deltaTime)
-        if self.deploytime ~= 0 and self.deploytime + 2 < Shared.GetTime() and self:GetIsAlive() and self:GetIsPowered() then
+        if self.deploytime ~= 0 and self.deploytime + ARC.kDeployAnimationTime < Shared.GetTime() and self:GetIsAlive() and self:GetIsPowered() then
             self.deploytime = 0
             self:ForceDeployed()
         end
         if self.deployMode == ARC.kDeployMode.Undeployed and self:GetIsPowered() then
-            self:SetMode(ARC.kMode.Stationary)
             self.deployMode = ARC.kDeployMode.Deploying
             self:TriggerEffects("arc_deploying")
             self.deploytime = Shared.GetTime()

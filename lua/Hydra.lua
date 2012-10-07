@@ -151,7 +151,7 @@ function Hydra:OnInitialized()
         InitMixin(self, HiveVisionMixin)
         
         self.decal = Client.CreateRenderDecal()
-        self.decal:SetMaterial("materials/infestation/infestation_decal.material")     
+        //self.decal:SetMaterial("materials/infestation/infestation_decal.material")     
         
     end
     

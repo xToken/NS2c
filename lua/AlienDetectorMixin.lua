@@ -5,7 +5,7 @@ AlienDetectorMixin = { }
 AlienDetectorMixin.type = "AlienDetector"
 
 // Should be smaller than DetectableMixin:kResetDetectionInterval
-AlienDetectorMixin.kUpdateDetectionInterval = 4
+AlienDetectorMixin.kUpdateDetectionInterval = 2
 
 AlienDetectorMixin.expectedCallbacks =
 {
@@ -31,18 +31,22 @@ local function PerformDetection(self)
 
     // Get list of Detectables in range
     local range = self:GetAlienDetectionRange()
+         
+    if self.OnCheckDetectorActive then
+        self.active = self:OnCheckDetectorActive()
+    end
     
     if range > 0 and self.active then
 
         local teamNumber = GetEnemyTeamNumber(self:GetTeamNumber())
         local origin = self:GetOrigin()    
-        local detectables = GetEntitiesWithMixinForTeamWithinRange("Detectable", teamNumber, origin, range)
+        local detectables = GetEntitiesWithMixinForTeamWithinRange("AlienDetectable", teamNumber, origin, range)
         
         for index, detectable in ipairs(detectables) do
         
             // Mark them as detected, run seperate detections for aura/recon
             if not self.IsValidAlienDetection or self:IsValidAlienDetection(detectable) then
-                detectable:SetDetected(true, false)
+                detectable:SetDetected(true)
             end
         
         end

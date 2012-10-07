@@ -92,8 +92,6 @@ function OnCommandScores(scoreTable)
         status = Locale.ResolveString("STATUS_EMBRYO")
     elseif scoreTable.status == kPlayerStatus.Commander then
         status = Locale.ResolveString("STATUS_COMMANDER")
-    elseif scoreTable.status == kPlayerStatus.HeavyArmor then
-        status = Locale.ResolveString("STATUS_HEAVY_ARMOR")
     elseif scoreTable.status == kPlayerStatus.GrenadeLauncher then
         status = Locale.ResolveString("STATUS_GRENADE_LAUNCHER")
     elseif scoreTable.status == kPlayerStatus.Rifle then
@@ -115,7 +113,8 @@ function OnCommandScores(scoreTable)
     elseif scoreTable.status == kPlayerStatus.Onos then
         status = Locale.ResolveString("STATUS_ONOS")
     elseif scoreTable.status == kPlayerStatus.HeavyMachineGun then
-        status = Locale.ResolveString("STATUS_HEAVY_MACHINE_GUN")
+        //status = Locale.ResolveString("STATUS_HEAVY_MACHINE_GUN")
+        status = "HMG"
     end
     
     Scoreboard_SetPlayerData(scoreTable.clientId, scoreTable.entityId, scoreTable.playerName, scoreTable.teamNumber, scoreTable.score,
@@ -192,7 +191,9 @@ function OnCommandRecieveHiveInfo(hiveinfo)
     local player = Client.GetLocalPlayer()
     if player:isa("Alien") then
         hiveinfo.time = Shared.GetTime()
-        player.hivesinfo[hiveinfo.key] = hiveinfo
+        if player.hivesinfo == { } or player.hivesinfo[hiveinfo.key] ~= hiveinfo then
+            player.hivesinfo[hiveinfo.key] = hiveinfo
+        end
     end
     
 end

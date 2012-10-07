@@ -55,9 +55,6 @@ Whip.kTargetCheckTime = .3
 Whip.kRange = 6
 Whip.kAreaEffectRadius = 3
 Whip.kDamage = 50
-Whip.kMoveSpeed = 2.5
-Whip.kMoveSpeedOnInfestation = 4
-Whip.kMaxMoveSpeedParam = 10
 
 Whip.kWhipBallParam = "ball"
 
