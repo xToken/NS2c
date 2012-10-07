@@ -1105,7 +1105,7 @@ function SetPlayerPoseParameters(player, viewModel)
         viewModel:SetPoseParam("crouch", player:GetCrouchAmount())
         viewModel:SetPoseParam("body_yaw", bodyYaw)
         viewModel:SetPoseParam("body_yaw_run", bodyYawRun)
-        viewModel:SetPoseParam("land_intensity", landIntensity)
+        viewModel:SetPoseParam("land_intensity", 0)
         
     end
     

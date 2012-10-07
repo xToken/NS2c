@@ -307,8 +307,8 @@ kSwipeDamageType = kDamageType.Normal
 kSwipeEnergyCost = 6.5
 kSwipeDelay = 0.48
 
-kStartBlinkEnergyCost = 8
-kBlinkEnergyCost = 100
+kStartBlinkEnergyCost = 5
+kBlinkEnergyCost = 60
 
 kMetabolizeEnergyCost = 25
 kMetabolizeEnergyGain = 35
