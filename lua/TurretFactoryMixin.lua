@@ -31,7 +31,7 @@ if Server then
 
         for _, powerConsumerId in ipairs(self.powerConsumerIds) do
             local powerConsumer = Shared.GetEntity(powerConsumerId)
-            if powerConsumer then
+            if powerConsumer and HasMixin(powerConsumer, "TurretMixin") then
                 powerConsumer:OnTurretFactoryDestroyed(self)
             end
         end
