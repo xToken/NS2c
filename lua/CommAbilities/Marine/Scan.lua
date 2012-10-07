@@ -76,7 +76,7 @@ if Server then
             if enemy:isa("Alien") then
                 local hasupg, level = GetHasGhostUpgrade(enemy)
                 if hasupg and level > 0 then
-                    local hide = math.random(1, 100) < (level * kGhostScanDodgePerLevel)
+                    local hide = math.random(1, 100) <= (level * kGhostScanDodgePerLevel)
                     visible = not hide
                 end
             end

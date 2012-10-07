@@ -104,7 +104,7 @@ function ClientWeaponEffectsMixin:UpdateAttackEffects(deltaTime)
     
     if self.clientPrimaryAttacking ~= primaryAttacking then
     
-        if self.timeLastPrimaryEffectUpdate + GetPrimaryEffectRate(self) < Shared.GetTime() or not primaryAttacking then
+        //if self.timeLastPrimaryEffectUpdate + GetPrimaryEffectRate(self) < Shared.GetTime() or not primaryAttacking then
             self.clientPrimaryAttacking = primaryAttacking
             
             if primaryAttacking then
@@ -112,7 +112,7 @@ function ClientWeaponEffectsMixin:UpdateAttackEffects(deltaTime)
             else
                 self:OnClientPrimaryAttackEnd()
             end
-        end
+        //end
         
     end
     

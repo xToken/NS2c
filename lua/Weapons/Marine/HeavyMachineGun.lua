@@ -67,29 +67,34 @@ end
 
 function HeavyMachineGun:OnPrimaryAttack(player)
 
-    if not self:GetIsReloading() and self.clip > 0 and self.deployed then
-        if player and not self:GetHasAttackDelay() then
-            if self:GetIsReloading() then
-                CancelReload(self)
+    if self:GetIsPrimaryAttackAllowed(player) then
+        if not self:GetIsReloading() and self.clip > 0 and self.deployed then
+            if player and not self:GetHasAttackDelay() then
+                if self:GetIsReloading() then
+                    CancelReload(self)
+                end
+                self:FirePrimary(player)
+                // Don't decrement ammo in Darwin mode
+                if not player or not player:GetDarwinMode() then
+                    self.clip = self.clip - 1
+                end
+                self.lastfiredtime = Shared.GetTime()
+                self:CreatePrimaryAttackEffect(player)
+                Weapon.OnPrimaryAttack(self, player)
+                self.primaryAttacking = true
             end
-            self:FirePrimary(player)
-            // Don't decrement ammo in Darwin mode
-            if not player or not player:GetDarwinMode() then
-                self.clip = self.clip - 1
-            end
-            self.lastfiredtime = Shared.GetTime()
-            self:CreatePrimaryAttackEffect(player)
-            Weapon.OnPrimaryAttack(self, player)
-            self.primaryAttacking = true
+        elseif self.ammo > 0 and self.deployed then
+            self:OnPrimaryAttackEnd(player)
+            // Automatically reload if we're out of ammo.
+            player:Reload()
+        else
+            self:OnPrimaryAttackEnd(player)
+            self.blockingPrimary = false
         end
-    elseif self.ammo > 0 and self.deployed then
-        self:OnPrimaryAttackEnd(player)
-        // Automatically reload if we're out of ammo.
-        player:Reload()
     else
         self:OnPrimaryAttackEnd(player)
         self.blockingPrimary = false
-    end    
+    end
     
 end
 
@@ -280,13 +285,13 @@ if Client then
     function HeavyMachineGun:OnClientPrimaryAttackEnd()
     
         // Just assume the looping sound is playing.
-        //Shared.StopSound(self, kLoopingSound)
+        Shared.StopSound(self, kLoopingSound)
         Shared.PlaySound(self, kHeavyMachineGunEndSound)
 
     end
 
     function HeavyMachineGun:GetPrimaryEffectRate()
-        return 0.1
+        return 0.06
     end
     
     function HeavyMachineGun:GetPreventCameraAnimation()

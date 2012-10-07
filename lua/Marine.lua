@@ -68,8 +68,8 @@ Marine.kArmorPerUpgradeLevel = kArmorPerUpgradeLevel
 // Player phase delay - players can only teleport this often
 Marine.kPlayerPhaseDelay = 2
 Marine.kStunDuration = 2
-Marine.kAcceleration = 55
-Marine.kAirAcceleration = 25
+Marine.kAcceleration = 58
+Marine.kAirAcceleration = 28
 Marine.kWalkMaxSpeed = 3.75                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
 Marine.kRunMaxSpeed = 9
 Marine.kDoubleJumpMinHeightChange = 0.4
@@ -244,7 +244,7 @@ function Marine:IsValidDetection(detectable)
     if detectable:isa("Alien") then
         local hasupg, level = GetHasGhostUpgrade(detectable)
         if hasupg and level > 0 then
-            return math.random(1, 100) < (level * 25)
+            return math.random(1, 100) <= (level * 25)
         end
     end
     

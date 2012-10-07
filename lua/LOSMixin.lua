@@ -97,7 +97,7 @@ if Server then
             //Ghost adds a chance to 'evade' detection
             local hasupg, level = GetHasGhostUpgrade(entity)
             if hasupg and level > 0 then
-                if math.random(1, 100) < (level * kGhostMinimapDodgePerLevel) then
+                if math.random(1, 100) <= (level * kGhostMinimapDodgePerLevel) then
                     return false
                 end
             end

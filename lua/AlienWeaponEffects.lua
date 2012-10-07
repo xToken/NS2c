@@ -301,7 +301,7 @@ kAlienWeaponEffects =
             {cinematic = "cinematics/alien/lerk/poison_trail.cinematic"},
             {sound = "sound/NS2.fev/alien/lerk/spores_shoot"},
         }
-    },    
+    },
     
     swipe_attack = 
     {
@@ -328,7 +328,7 @@ kAlienWeaponEffects =
         {        
             {player_cinematic = "cinematics/alien/fade/blink_in_silent.cinematic", done = true},    
         },
-    },  
+    },
 
     blink_out =
     {
@@ -350,7 +350,7 @@ kAlienWeaponEffects =
             {sound = "", silenceupgrade = true, done = true},  
             {sound = "sound/ns2c.fev/ns2c/alien/fade/blink"},  
         },
-    },  
+    },
     
     // Sound Effects only
     gore_attack =

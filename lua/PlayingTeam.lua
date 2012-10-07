@@ -840,8 +840,7 @@ function PlayingTeam:SplitPres(resAwarded, noscaling)
         local playerdiff = Clamp(playercount, kResourceScalingMinPlayers + 1, kResourceScalingMaxPlayers)
         local oldres = resAwarded
         resAwarded = resAwarded * Clamp((1 + ((playercount - playerdiff) / kResourceScaling)), kResourceScalingMinDelta, kResourceScalingMaxDelta)
-        
-        Print(string.format("Resources adjusted to %s from %s for %s players.", ToString(resAwarded), ToString(oldres), ToString(playercount)))
+        //Print(string.format("Resources adjusted to %s from %s for %s players.", ToString(resAwarded), ToString(oldres), ToString(playercount)))
     end
 
     for i = 1, recipientCount do 
