@@ -53,7 +53,7 @@ Marine.kMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_
 
 Marine.kDieSoundName = PrecacheAsset("sound/NS2.fev/marine/common/death")
 Marine.kFlashlightSoundName = PrecacheAsset("sound/NS2.fev/common/light")
-Marine.kGunPickupSound = PrecacheAsset("sound/NS2.fev/marine/common/pickup_gun")
+Marine.kGunPickupSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/pickup")
 Marine.kSpendResourcesSoundName = PrecacheAsset("sound/NS2.fev/marine/common/player_spend_nanites")
 Marine.kChatSound = PrecacheAsset("sound/NS2.fev/marine/common/chat")
 Marine.kSoldierLostAlertSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/soldier_lost")
@@ -456,7 +456,7 @@ function Marine:HandleButtons(input)
                         
                         self:AddWeapon(nearbyDroppedWeapon, true)
                         Shared.PlayWorldSound(nil, Marine.kGunPickupSound, nil, self:GetOrigin())
-                        
+                        self:SetScoreboardChanged(true)
                         self.timeOfLastPickUpWeapon = Shared.GetTime()
                         
                     end

@@ -133,6 +133,8 @@ function PlayingTeam:ResetTeam()
     
     self:SpawnInitialStructures(initialTechPoint)
     
+    self.overflowres = 0
+    
     local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
     for p = 1, #players do
     
@@ -700,7 +702,7 @@ function PlayingTeam:UpdateResourceTowers()
         if self:GetTeamType() == kMarineTeamType then
             self:AddTeamResources(ResGained)
         else
-            self:SplitPres(ResGained)
+            self:SplitPres(ResGained, false)
         end 
         
     end
@@ -810,6 +812,9 @@ function PlayingTeam:UpdateVoteToEject()
     
 end
 
+function PlayingTeam:AddOverflowResources(resAwarded)
+end
+
 function PlayingTeam:GetPresRecipientCount()
 
     local recipientCount = 0
@@ -827,15 +832,16 @@ function PlayingTeam:GetPresRecipientCount()
 end
 
 // split resources to all players until their they either have all reached the maximum or the rewarded res was splitted evenly
-function PlayingTeam:SplitPres(resAwarded)
+function PlayingTeam:SplitPres(resAwarded, noscaling)
 
     local recipientCount = self:GetPresRecipientCount()
-    if recipientCount <= kResourceScalingMinPlayers or recipientCount >= kResourceScalingMaxPlayers then
-        local playerdiff = Clamp(recipientCount, kResourceScalingMinPlayers + 1, kResourceScalingMaxPlayers)
+    local playercount = self:GetNumPlayers()
+    if (playercount <= kResourceScalingMinPlayers or playercount >= kResourceScalingMaxPlayers) and not noscaling then
+        local playerdiff = Clamp(playercount, kResourceScalingMinPlayers + 1, kResourceScalingMaxPlayers)
         local oldres = resAwarded
-        resAwarded = resAwarded * Clamp((1 + ((recipientCount - playerdiff) / kResourceScaling)), kResourceScalingMinDelta, kResourceScalingMaxDelta)
+        resAwarded = resAwarded * Clamp((1 + ((playercount - playerdiff) / kResourceScaling)), kResourceScalingMinDelta, kResourceScalingMaxDelta)
         
-        Print(string.format("Resources adjusted to %s from %s for %s players.", ToString(resAwarded), ToString(oldres), ToString(recipientCount)))
+        Print(string.format("Resources adjusted to %s from %s for %s players.", ToString(resAwarded), ToString(oldres), ToString(playercount)))
     end
 
     for i = 1, recipientCount do 
@@ -857,6 +863,10 @@ function PlayingTeam:SplitPres(resAwarded)
 
     end
 
+    if resAwarded > 0 then
+        self:AddOverflowResources(resAwarded) 
+    end
+
 end
 
 // add resources to player and split overflow amongst the team
@@ -866,7 +876,7 @@ function PlayingTeam:AwardPersonalResources(min, max, pointOwner)
     resAwarded = resAwarded - pointOwner:AwardResForKill(resAwarded)
     
     if resAwarded > 0 then
-        self:SplitPres(resAwarded)
+        self:SplitPres(resAwarded, true)
     end
 
 end

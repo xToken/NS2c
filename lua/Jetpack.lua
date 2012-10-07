@@ -56,11 +56,15 @@ end
 function Jetpack:OnTouch(recipient)
 
     if self:GetIsValidRecipient(recipient) then
-        StartSoundEffectAtOrigin(Jetpack.kPickupSound, recipient:GetOrigin())
+        Shared.PlayWorldSound(nil, Jetpack.kPickupSound, nil, recipient:GetOrigin())
         recipient:GiveJetpack()
         return true
     end
     
+end
+
+function Jetpack:GetCanBeUsed(player, useSuccessTable)
+    useSuccessTable.useSuccess = false
 end
 
 // only give jetpacks to standard marines

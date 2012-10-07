@@ -1243,7 +1243,8 @@ function Player:GetFrictionForce(input, velocity)
 
     local friction = Vector(0, 0, 0)
     local frictionScalar = 0
-	if (self.landtime + .01) > Shared.GetTime()  then
+    // 2 frames at 100 fps, maybe should be a function of input.time?
+	if (self.landtime + .02) > Shared.GetTime()  then
         return friction
     end
 
@@ -2600,13 +2601,18 @@ function Player:ModifyVelocity(input, velocity)
             self:OnJump()
         end
         
-        //if jumped and not self:OverrideStrafeJump() then
-        self.jumpHandled = self:OverrideStrafeJump()
-        //self.jumpHandled = true
-        //else
-        //self.jumpHandled = false
-        //end
-    
+        if kJumpMode == 2 then
+            self.jumpHandled = self:OverrideStrafeJump()
+        elseif kJumpMode == 1 then
+            if jumped and not self:OverrideStrafeJump() then
+                self.jumpHandled = true
+            else
+                self.jumpHandled = false
+            end
+        else
+            self.jumpHandled = true
+        end
+
     elseif self:GetIsOnGround() then
         onground = true
         self:HandleOnGround(input, velocity)

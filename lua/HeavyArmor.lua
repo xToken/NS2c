@@ -45,6 +45,10 @@ function HeavyArmor:OnInitialized()
     
 end
 
+function HeavyArmor:GetCanBeUsed(player, useSuccessTable)
+    useSuccessTable.useSuccess = false
+end
+
 function HeavyArmor:OnTouch(recipient)
     if self:GetIsValidRecipient(recipient) then
         Shared.PlayWorldSound(nil, HeavyArmor.kPickupSound, nil, recipient:GetOrigin())
