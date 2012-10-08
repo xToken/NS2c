@@ -129,7 +129,9 @@ if kDAKConfig and kDAKConfig.VoteRandom and kDAKConfig.VoteRandom.kEnabled then
 	table.insert(kDAKOnTeamJoin, function(player, newTeamNumber, force) return VoteRandomJoinTeam(player, newTeamNumber, force) end)
 	
 	function VoteRandomEndGame(winningTeam)
-		RandomRoundRecentlyEnded = Shared.GetTime()
+		if kVoteRandomTeamsEnabled then
+			RandomRoundRecentlyEnded = Shared.GetTime()
+		end
 	end
 	
 	table.insert(kDAKOnGameEnd, function(winningTeam) return VoteRandomEndGame(winningTeam) end)

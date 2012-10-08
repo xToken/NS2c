@@ -821,7 +821,7 @@ function PlayingTeam:GetPresRecipientCount()
     for i, playerId in ipairs(self.playerIds) do
         
         local player = Shared.GetEntity(playerId)
-        if player and player:GetResources() < kMaxPersonalResources and player:GetIsAlive() then
+        if player and player:GetResources() < kMaxPersonalResources then
             recipientCount = recipientCount + 1
         end
 

@@ -703,11 +703,11 @@ function Marine:Drop(weapon, ignoreDropTimeLimit, ignoreReplacementWeapon)
         
         if Server then
         
-            if ignoreReplacementWeapon ~= true and weapon.GetReplacementWeaponMapName then
-                self:GiveItem(weapon:GetReplacementWeaponMapName(), false)
+            //if ignoreReplacementWeapon ~= true and weapon.GetReplacementWeaponMapName then
+                //self:GiveItem(weapon:GetReplacementWeaponMapName(), false)
                 // the client expects the next weapon is going to be selected (does not know about the replacement).
-                self:SelectNextWeaponInDirection(1)
-            end
+                //self:SelectNextWeaponInDirection(1)
+            //end
         
         end
         
