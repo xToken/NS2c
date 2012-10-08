@@ -208,6 +208,10 @@ function Welder:GetRange()
     return kWeldRange
 end
 
+function Welder:GetReplacementWeaponMapName()
+    return HandGrenades.kMapName
+end
+
 // repair rate increases over time
 function Welder:GetRepairRate(repairedEntity)
 

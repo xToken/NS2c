@@ -349,25 +349,6 @@ function Marine:UpdateMisc(input)
     
 end
 
-// Give dynamic camera motion to the player
-/*
-function Marine:PlayerCameraCoordsAdjustment(cameraCoords) 
-
-    if self:GetIsFirstPerson() then
-        
-        if self:GetIsStunned() then
-            local attachPointOffset = self:GetAttachPointOrigin("Head") - cameraCoords.origin
-            attachPointOffset.x = attachPointOffset.x * .5
-            attachPointOffset.z = attachPointOffset.z * .5
-            cameraCoords.origin = cameraCoords.origin + attachPointOffset
-        end
-    
-    end
-    
-    return cameraCoords
-
-end*/
-
 function Marine:OnCountDown()
 
     Player.OnCountDown(self)
