@@ -2135,8 +2135,6 @@ function Player:GetCameraViewCoordsOverride(cameraCoords)
             cameraCoords = angles:GetCoords(origin)
             
         end
-        
-        cameraCoords = self:PlayerCameraCoordsAdjustment(cameraCoords)
     
     end
 

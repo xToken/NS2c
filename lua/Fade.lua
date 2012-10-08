@@ -49,10 +49,7 @@ Fade.kAcceleration = 50
 Fade.kAirAcceleration = 25
 Fade.kBlinkAirAcceleration = 40
 Fade.kBlinkAirAccelerationDuration = 2
-Fade.kBlinkAcceleration = 50
-Fade.kVerticleBlinkAcceleration = 150
-Fade.kViewDeadZone = 0.15
-Fade.kReversalThreshold = 0.3
+Fade.kBlinkAcceleration = 20
 
 if Server then
     Script.Load("lua/Fade_Server.lua")
@@ -236,35 +233,8 @@ function Fade:GetMaxSpeed(possible)
 
 end
 
-function Fade:ModifyVelocity(input, velocity)     
- 
+function Fade:ModifyVelocity(input, velocity)
     Alien.ModifyVelocity(self, input, velocity)
-    
-    if self:GetIsBlinking() then
-        
-        self:PerformMovement( velocity * input.time, 1, velocity )
-        local viewCoords = self:GetViewAngles():GetCoords()
-        local zAxis = viewCoords.zAxis
-        local upangle = math.abs(zAxis.y)
-
-        self.onGroundNeedsUpdate = true
-        if self:GetIsOnGround() and velocity.y < 4 then
-            velocity.y = velocity.y + math.sqrt(math.abs(2 * self:GetJumpHeight() * self:GetGravityForce(input)))
-        else
-            //Convert velocity instantly if opposite direction for additional responsiveness
-            if upangle > Fade.kViewDeadZone then
-                if upangle > Fade.kReversalThreshold and Sign(velocity.y) ~= Sign(zAxis.y) then
-                    if Sign(zAxis.y) > 0 and velocity.y < 0 then
-                        velocity.y = 10
-                    elseif Sign(zAxis.y) < 0 and velocity.y > 0 then
-                        velocity.y = 0
-                    end
-                 end
-                 velocity.y = velocity.y + (Fade.kVerticleBlinkAcceleration * ((1 - math.cos(zAxis.y)) * input.time))
-             end
-         end
-    end
-    
 end
 
 function Fade:GetMass()
@@ -281,6 +251,10 @@ end
 
 function Fade:GetRecentlyBlinked()
     return Shared.GetTime() - self.etherealEndTime < Fade.kBlinkAirAccelerationDuration
+end
+
+function Fade:GetBlinkCooldown()
+    return Shared.GetTime() - self.etherealEndTime < Blink.kMinEnterEtherealTime
 end
 
 function Fade:GetRecentlyJumped()
@@ -311,21 +285,30 @@ function Fade:GetGravityAllowed()
     return true
 end
 
-function Fade:TriggerBlink()
+function Fade:OnBlink()
     self.ethereal = true
     self.onGroundNeedsUpdate = false
     self.onGround = false
     self.jumping = true
 end
 
+function Fade:OnBlinking(input)
+
+    self.onGroundNeedsUpdate = true 
+    local newVelocity = self:GetViewCoords().zAxis * Fade.kBlinkAcceleration * input.time
+    local velocity = self:GetVelocity()
+    
+    if self:GetIsOnGround() and velocity.y < 4 then
+        newVelocity.y = newVelocity.y + math.sqrt(math.abs(2 * self:GetJumpHeight() * self:GetGravityForce(input)))
+    end
+
+    self:SetVelocity(velocity + newVelocity)
+
+end
+
 function Fade:OverrideInput(input)
 
     Player.OverrideInput(self, input)
-
-    if self:GetIsBlinking() then
-        input.move.z = 1
-        input.move.x = 0
-    end
     
     return input
     

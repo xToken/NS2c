@@ -14,8 +14,8 @@ Script.Load("lua/Weapons/Alien/Ability.lua")
 class 'Blink' (Ability)
 Blink.kMapName = "blink"
 
-// initial force added when starting blink
-local kEtherealForce = 10
+local kEtherealForce = 8
+Blink.kMinEnterEtherealTime = 0.1
 
 local networkVars =
 {
@@ -78,8 +78,9 @@ end
 
 function Blink:OnSecondaryAttack(player)
 
+    local minTimePassed = not player:GetBlinkCooldown()
     local hasEnoughEnergy = player:GetEnergy() > kStartBlinkEnergyCost
-    if hasEnoughEnergy and self:GetBlinkAllowed() then
+    if hasEnoughEnergy and self:GetBlinkAllowed() and minTimePassed then
     
         // Enter "ether" fast movement mode, but don't keep going ethereal when button still held down after
         // running out of energy
@@ -89,6 +90,8 @@ function Blink:OnSecondaryAttack(player)
             self.timeBlinkStarted = Shared.GetTime()
             self.blinkButtonDown = true
             
+            local newVelocity = player:GetViewCoords().zAxis * kEtherealForce  
+            player:SetVelocity(player:GetVelocity() + newVelocity)            
         end
         
     end
@@ -123,7 +126,6 @@ function Blink:SetEthereal(player, state)
         end
         
         player.ethereal = state
-        //player:SetGravityEnabled(not player.ethereal)
         
         player:SetEthereal(state)
         
@@ -132,7 +134,7 @@ function Blink:SetEthereal(player, state)
             
             // Deduct blink start energy amount.
             player:DeductAbilityEnergy(kStartBlinkEnergyCost)
-            player:TriggerBlink()
+            player:OnBlink()
         
         else
             
@@ -148,16 +150,10 @@ function Blink:ProcessMoveOnWeapon(player, input)
  
     if self:GetIsActive() and player.ethereal then
     
-        // Decrease energy while in blink mode
-        // Don't deduct energy for blink for a short time to make sure that when we blink
-        // we always get at least a short blink out of it
-        if Shared.GetTime() > (self.timeBlinkStarted + .08) then
-
+            player:OnBlinking(input)
             local energyCost = input.time * kBlinkEnergyCost
             player:DeductAbilityEnergy(energyCost)
-            
-        end
-        
+
     end
     
     // End blink mode if out of energy

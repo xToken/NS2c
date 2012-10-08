@@ -225,6 +225,18 @@ function Marine:GiveItem(itemMapName)
             
         end
         
+        if itemMapName == Welder.kMapName then
+        
+            local hgWeapon = self:GetWeapon(HandGrenades.kMapName)
+            
+            if hgWeapon then
+                self:RemoveWeapon(hgWeapon)
+                DestroyEntity(hgWeapon)
+                continue = true
+            end
+            
+        end
+        
         if continue == true then
             return Player.GiveItem(self, itemMapName, setActive)
         end

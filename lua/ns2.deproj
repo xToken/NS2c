@@ -481,6 +481,9 @@
     <filename>Observatory.lua</filename>
   </file>
   <file>
+    <filename>Onos.lua</filename>
+  </file>
+  <file>
     <filename>Onos_Client.lua</filename>
   </file>
   <file>
