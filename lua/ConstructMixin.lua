@@ -44,6 +44,7 @@ ConstructMixin.optionalCallbacks =
     OnConstruct = "Called whenever construction progress changes.",
     OnConstructionComplete = "Called whenever construction is completes.",
     GetCanBeUsedConstructed = "Return true when this entity has a use function when constructed."
+    
 }
 
 function ConstructMixin:__initmixin()

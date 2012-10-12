@@ -51,10 +51,11 @@ function SporesMixin:OnSecondaryAttack(player)
         self:TriggerEffects("spores_attack")
         self:TriggerEffects("spikes_attack")
         if Server then
-            CreateSporeCloud(self, self:GetParent())
+            CreateSporeCloud(self, player)
             self:GetParent():DeductAbilityEnergy(self:GetSecondaryEnergyCost())
         end
         self.lastSecondaryAttackTime = Shared.GetTime()
+        self.secondaryAttacking = true
     else
         self.secondaryAttacking = false
     end
@@ -81,14 +82,18 @@ function SporesMixin:OnUpdateAnimationInput(modelMixin)
     PROFILE("SporesMixin:OnUpdateAnimationInput")
 
     local player = self:GetParent()
-    if player and self.secondaryAttacking and player:GetEnergy() >= self:GetSecondaryEnergyCost(player) and not GetHasAttackDelay(self, player) then
-        modelMixin:SetAnimationInput("activity", "secondary")
+    if player then
+        if self.secondaryAttacking then
+            modelMixin:SetAnimationInput("ability", "spores")
+        elseif not GetHasAttackDelay(self, player) then
+            modelMixin:SetAnimationInput("ability", "bite")
+        end
     end
     
 end
 
 function SporesMixin:GetIsSecondaryBlocking()
-    return self.secondaryAttacking or GetHasAttackDelay(self, self:GetParent())
+    return false
 end
 
 function SporesMixin:OnClientSecondaryAttacking()

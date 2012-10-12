@@ -857,6 +857,27 @@ local function OnCommandEggSpawnTimes(client, cmd)
     
 end
 
+local function OnCommandTestOrder(client)
+
+    if Shared.GetCheatsEnabled() then
+    
+        local player = client:GetControllingPlayer()
+
+        if player and HasMixin(player, "Orders") then
+
+            local eyePos = player:GetEyePos()
+            local endPos = eyePos + player:GetViewAngles():GetCoords().zAxis * 50
+            local trace = Shared.TraceRay(eyePos, endPos, CollisionRep.Default, PhysicsMask.Bullets, EntityFilterAll())
+            local target = trace.endPoint
+
+            player:GiveOrder(kTechId.Move, 0, target)
+        
+        end
+        
+    end    
+
+end
+
 // call for the nearest AI unit to come to your location. Useful when testing pathing/animation
 local function OnCommandGoThere(client)
     

@@ -155,7 +155,7 @@ function BuildTechData()
         { [kTechDataId] = kTechId.Defend,             [kTechDataDisplayName] = "DEFEND", [kTechDataOrderSound] = MarineCommander.kDefendTargetSound},
 
         // Menus
-        { [kTechDataId] = kTechId.RootMenu,              [kTechDataDisplayName] = "SELECT", [kTechDataHotkey] = Move.B, [kTechDataTooltipInfo] = "SELECT_TOOLTIP"},
+        //{ [kTechDataId] = kTechId.RootMenu,              [kTechDataDisplayName] = "SELECT", [kTechDataHotkey] = Move.B, [kTechDataTooltipInfo] = "SELECT_TOOLTIP"},
         { [kTechDataId] = kTechId.BuildMenu,             [kTechDataDisplayName] = "BUILD", [kTechDataHotkey] = Move.W, [kTechDataTooltipInfo] = "BUILD_TOOLTIP"},
         { [kTechDataId] = kTechId.AdvancedMenu,          [kTechDataDisplayName] = "ADVANCED", [kTechDataHotkey] = Move.E, [kTechDataTooltipInfo] = "ADVANCED_TOOLTIP"},
         { [kTechDataId] = kTechId.AssistMenu,            [kTechDataDisplayName] = "ASSIST", [kTechDataHotkey] = Move.R, [kTechDataTooltipInfo] = "ASSIST_TOOLTIP"},
@@ -231,6 +231,7 @@ function BuildTechData()
         { [kTechDataId] = kTechId.CatPackTech,           [kTechDataCostKey] = kCatPackTechResearchCost,             [kTechDataResearchTimeKey] = kCatPackTechResearchTime,       [kTechDataDisplayName] = "CAT_PACKS",                  [kTechDataTooltipInfo] = "CAT_PACK_TECH_TOOLTIP"},
         { [kTechDataId] = kTechId.MotionTracking,        [kTechDataCostKey] = kMotionTrackingResearchCost,          [kTechDataResearchTimeKey] = kMotionTrackingResearchTime,    [kTechDataDisplayName] = "MOTION_TRACKING",            [kTechDataTooltipInfo] = "MOTION_TRACKING_TOOLTIP"},
         { [kTechDataId] = kTechId.HandGrenadesTech,      [kTechDataCostKey] = kHandGrenadesTechResearchCost,        [kTechDataResearchTimeKey] = kHandGrenadesTechResearchTime,  [kTechDataDisplayName] = "HAND_GRENADES_TECH",              [kTechDataTooltipInfo] = "HAND_GRENADES_TECH_TOOLTIP"},
+        { [kTechDataId] = kTechId.Electrify,             [kTechDataCostKey] = kElectricalUpgradeResearchCost,        [kTechDataResearchTimeKey] = kElectricalUpgradeResearchTime,  [kTechDataDisplayName] = "ELECTRIFY",              [kTechDataTooltipInfo] = "ELECTRIFY_TOOLTIP"},
             
         // ALIENS
         // tier 0 abilities
@@ -252,7 +253,7 @@ function BuildTechData()
         // tier 2 abilities
         { [kTechDataId] = kTechId.Leap,                   [kTechDataDisplayName] = "LEAP", [kTechDataCostKey] = kLeapResearchCost, [kTechDataResearchTimeKey] = kLeapResearchTime, [kTechDataTooltipInfo] = "LEAP_TOOLTIP" },     
         { [kTechDataId] = kTechId.BileBomb,               [kTechDataMapName] = BileBomb.kMapName,        [kTechDataDamageType] = kBileBombDamageType,  [kTechDataDisplayName] = "BILEBOMB", [kTechDataCostKey] = kBileBombResearchCost, [kTechDataResearchTimeKey] = kBileBombResearchTime, [kTechDataTooltipInfo] = "BILEBOMB_TOOLTIP" },
-		{ [kTechDataId] = kTechId.Umbra,                  [kTechDataMapName] = LerkUmbra.kMapName,       [kTechDataDisplayName] = "UMBRA", [kTechDataCostKey] = kUmbraResearchCost, [kTechDataResearchTimeKey] = kUmbraResearchTime, [kTechDataTooltipInfo] = "UMBRA_TOOLTIP"},
+		{ [kTechDataId] = kTechId.Umbra,                  [kTechDataMapName] = LerkBiteUmbra.kMapName,       [kTechDataDisplayName] = "UMBRA", [kTechDataCostKey] = kUmbraResearchCost, [kTechDataResearchTimeKey] = kUmbraResearchTime, [kTechDataTooltipInfo] = "UMBRA_TOOLTIP"},
         { [kTechDataId] = kTechId.Metabolize,             [kTechDataMapName] = Metabolize.kMapName,  [kTechDataDisplayName] = "METABOLIZE", [kTechDataCostKey] = kMetabolizeResearchCost, [kTechDataResearchTimeKey] = kMetabolizeResearchTime, [kTechDataTooltipInfo] = "METABOLIZE_TOOLTIP"},  
         { [kTechDataId] = kTechId.Stomp,                  [kTechDataDisplayName] = "STOMP", [kTechDataCostKey] = kStompResearchCost, [kTechDataResearchTimeKey] = kStompResearchTime, [kTechDataTooltipInfo] = "STOMP_TOOLTIP" }, 
 
@@ -260,8 +261,8 @@ function BuildTechData()
         { [kTechDataId] = kTechId.Xenocide,               [kTechDataMapName] = XenocideLeap.kMapName,    [kTechDataDamageType] = kXenocideDamageType,   [kTechDataDisplayName] = "XENOCIDE", [kTechDataCostKey] = kXenocideResearchCost, [kTechDataResearchTimeKey] = kXenocideResearchTime, [kTechDataTooltipInfo] = "XENOCIDE_TOOLTIP"},
         { [kTechDataId] = kTechId.Web,         			  [kTechDataMapName] = Web.kMapName,             [kTechDataHint] = "WEB_HINT", [kTechDataDisplayName] = "WEB", [kTechDataEngagementDistance] = kWebEngagementRange, [kTechDataMaxHealth] = kWebHealth, [kTechDataMaxArmor] = kWebArmor, [kTechDataModel] = Web.kModelName, [kTechDataPointValue] = kWebPointValue, },
         //{ [kTechDataId] = kTechId.Spikes,                 [kTechDataDisplayName] = "SPIKES", [kTechDataCostKey] = kSpikesResearchCost, [kTechDataResearchTimeKey] = kSpikesResearchTime, [kTechDataTooltipInfo] = "SPIKES_TOOLTIP"},
-        { [kTechDataId] = kTechId.PrimalScream ,          [kTechDataDisplayName] = "PRIMAL_SCREAM", [kTechDataCostKey] = kPrimalScreamResearchCost, [kTechDataResearchTimeKey] = kPrimalScreamResearchTime, [kTechDataTooltipInfo] = "PRIMAL_SCREAM_TOOLTIP"},
-        { [kTechDataId] = kTechId.AcidRocket ,            [kTechDataMapName] = AcidRocket.kMapName,   [kTechDataDisplayName] = "ACID_ROCKET", [kTechDataCostKey] = kAcidRocketResearchCost, [kTechDataResearchTimeKey] = kAcidRocketResearchTime, [kTechDataTooltipInfo] = "ACID_ROCKET_TOOLTIP"},
+        { [kTechDataId] = kTechId.PrimalScream,          [kTechDataMapName] = LerkBitePrimal.kMapName,         [kTechDataDisplayName] = "PRIMAL_SCREAM", [kTechDataCostKey] = kPrimalScreamResearchCost, [kTechDataResearchTimeKey] = kPrimalScreamResearchTime, [kTechDataTooltipInfo] = "PRIMAL_SCREAM_TOOLTIP"},
+        { [kTechDataId] = kTechId.AcidRocket,            [kTechDataMapName] = AcidRocket.kMapName,   [kTechDataDisplayName] = "ACID_ROCKET", [kTechDataCostKey] = kAcidRocketResearchCost, [kTechDataResearchTimeKey] = kAcidRocketResearchTime, [kTechDataTooltipInfo] = "ACID_ROCKET_TOOLTIP"},
         { [kTechDataId] = kTechId.Smash,                  [kTechDataMapName] = Smash.kMapName,            [kTechDataDamageType] = kSmashDamageType,        [kTechDataDisplayName] = "SMASH"},
         
 		{ [kTechDataId] = kTechId.Devour,                [kTechDataMapName] = Devour.kMapName,            [kTechDataDamageType] = kDevourDamageType,        [kTechDataDisplayName] = "DEVOUR"},
@@ -309,12 +310,12 @@ function BuildTechData()
         { [kTechDataId] = kTechId.Celerity,           [kTechDataCategory] = kTechId.ShiftHive,      [kTechDataKeyStructure] = kTechId.Shift,      [kTechDataDisplayName] = "CELERITY", [kTechDataTooltipInfo] = "CELERITY_TOOLTIP", [kTechDataCostKey] = kCelerityCost },
         { [kTechDataId] = kTechId.Adrenaline,         [kTechDataCategory] = kTechId.ShiftHive,      [kTechDataKeyStructure] = kTechId.Shift,       [kTechDataDisplayName] = "ADRENALINE", [kTechDataTooltipInfo] = "ADRENALINE_TOOLTIP", [kTechDataCostKey] = kAdrenalineCost },
         { [kTechDataId] = kTechId.Redeployment,       [kTechDataCategory] = kTechId.ShiftHive,      [kTechDataKeyStructure] = kTechId.Shift,      [kTechDataDisplayName] = "REDEPLOYMENT", [kTechDataTooltipInfo] = "REDEPLOYMENT_TOOLTIP", [kTechDataCostKey] = kRedeploymentCost },
-        { [kTechDataId] = kTechId.Silence2,     [kTechDataImplemented] = false,        [kTechDataCategory] = kTechId.ShiftHive,      [kTechDataKeyStructure] = kTechId.Shift,      [kTechDataDisplayName] = "SILENCE", [kTechDataTooltipInfo] = "SILENCE_TOOLTIP", [kTechDataCostKey] = kSilenceCost },
+        { [kTechDataId] = kTechId.Silence2,           [kTechDataImplemented] = false,        [kTechDataCategory] = kTechId.ShiftHive,      [kTechDataKeyStructure] = kTechId.Shift,      [kTechDataDisplayName] = "SILENCE", [kTechDataTooltipInfo] = "SILENCE_TOOLTIP", [kTechDataCostKey] = kSilenceCost },
         
         { [kTechDataId] = kTechId.Silence,            [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,       [kTechDataDisplayName] = "SILENCE", [kTechDataTooltipInfo] = "SILENCE_TOOLTIP", [kTechDataCostKey] = kSilenceCost },                
         { [kTechDataId] = kTechId.Aura,               [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,       [kTechDataDisplayName] = "AURA", [kTechDataTooltipInfo] = "AURA_TOOLTIP", [kTechDataCostKey] = kAuraCost },
         { [kTechDataId] = kTechId.Ghost,              [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,      [kTechDataDisplayName] = "GHOST", [kTechDataTooltipInfo] = "GHOST_TOOLTIP", [kTechDataCostKey] = kGhostCost },
-        { [kTechDataId] = kTechId.Camouflage,    [kTechDataImplemented] = false,       [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,       [kTechDataDisplayName] = "CAMOUFLAGE", [kTechDataTooltipInfo] = "CAMOUFLAGE_TOOLTIP", [kTechDataCostKey] = kCamouflageCost },
+        { [kTechDataId] = kTechId.Camouflage,         [kTechDataImplemented] = false,       [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,       [kTechDataDisplayName] = "CAMOUFLAGE", [kTechDataTooltipInfo] = "CAMOUFLAGE_TOOLTIP", [kTechDataCostKey] = kCamouflageCost },
         
         { [kTechDataId] = kTechId.Focus,              [kTechDataCategory] = kTechId.WhipHive,      [kTechDataKeyStructure] = kTechId.Whip,    [kTechDataDisplayName] = "FOCUS", [kTechDataTooltipInfo] = "FOCUS_TOOLTIP", [kTechDataCostKey] = kFocusCost },
         { [kTechDataId] = kTechId.Fury,               [kTechDataCategory] = kTechId.WhipHive,      [kTechDataKeyStructure] = kTechId.Whip,    [kTechDataDisplayName] = "FURY", [kTechDataTooltipInfo] = "FURY_TOOLTIP", [kTechDataCostKey] = kFuryCost },

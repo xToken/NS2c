@@ -749,19 +749,10 @@ function GUICommanderButtons:SelectTab(index)
     local foundTabTable = nil
     table.foreachfunctor(self.tabs, function (tabTable) if tabTable.TopItem == buttonItem then foundTabTable = tabTable end end)
     if foundTabTable then
-    
-        if index ~= 4 or #CommanderUI_GetSelectedEntities() > 0 then
-
-            self.tabs[4].TopItem:SetIsVisible(false) // always hide the select tab
-            foundTabTable.TopItem:SetIsVisible(true)
-            self.lastPressedTab = foundTabTable
-            
-            self.selectedTabIndex = index
-        
-        end
-        
+        foundTabTable.TopItem:SetIsVisible(true)
+        self.lastPressedTab = foundTabTable
+        self.selectedTabIndex = index
     else
-    
         // This is a bit of a hack for now.
         local tooltipData = CommanderUI_MenuButtonTooltip(index)
         // NOTE: This will fail to work when "Back" has been localized.

@@ -191,9 +191,9 @@ end
 function HeavyMachineGun:GetDeathIconIndex()
 
     if self:GetSecondaryAttacking() then
-        return kDeathMessageIcon.Minigun
+        return kDeathMessageIcon.HeavyMachineGun
     end
-    return kDeathMessageIcon.Minigun
+    return kDeathMessageIcon.HeavyMachineGun
     
 end
 

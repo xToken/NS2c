@@ -63,6 +63,9 @@ end
 
 Shared.RegisterNetworkMessage( "HitEffect", kHitEffectMessage )
 
+/*
+For damage numbers
+*/
 local kDamageMessage =
 {
     posx = string.format("float (%d to %d by 0.05)", -kHitEffectMaxPosition, kHitEffectMaxPosition),
@@ -90,6 +93,32 @@ function ParseDamageMessage(message)
 end
 
 Shared.RegisterNetworkMessage( "Damage", kDamageMessage )
+
+/*
+For commander abilities, such as nanoshield
+*/
+
+local kAbilityResultMessage =
+{
+    techId = "enum kTechId",
+    success = "boolean",
+    castTime = "time",  // When the ability was cast and succeded. Used for cooldown enforcement.
+}
+
+function BuildAbilityResultMessage( techId, success, castTime )
+
+    local t = {}
+    t.techId = techId
+    t.success = success
+    t.castTime = castTime
+    return t
+
+end
+
+Shared.RegisterNetworkMessage( "AbilityResult", kAbilityResultMessage )
+
+/*
+*/
 
 local kCommanderPingMessage =
 {

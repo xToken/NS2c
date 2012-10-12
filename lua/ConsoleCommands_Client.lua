@@ -193,11 +193,6 @@ function OnCommandSetName(nickname)
     
 end
 
-// Save this setting if we set it via a console command
-function OnCommandToggleWeaponPickup()
-    Client.SetOptionString(kAutoPickupWeapons, not Client.GetOptionString(kAutoPickupWeapons))
-end
-
 local function OnCommandFunctionContractsEnabled(enabled)
     SetFunctionContractsEnabled(enabled == "true")
 end
@@ -271,7 +266,6 @@ Event.Hook("Console_locate", OnCommandLocate)
 Event.Hook("Console_distance", OnCommandDistance)
 Event.Hook("Console_animinputs", OnCommandAnimInputs)
 Event.Hook("Console_name", OnCommandSetName)
-Event.Hook("Console_autoweaponpickup", OnCommandToggleWeaponPickup)
 Event.Hook("Console_functioncontractsenabled", OnCommandFunctionContractsEnabled)
 Event.Hook("Console_cleardebuglines", OnCommandClearDebugLines)
 Event.Hook("Console_guiinfo", OnCommandGUIInfo)

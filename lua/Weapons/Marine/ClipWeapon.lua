@@ -11,7 +11,6 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Weapon.lua")
-Script.Load("lua/Weapons/BulletsMixin.lua")
 
 PrecacheAsset("cinematics/materials/umbra/ricochet.cinematic")
 
@@ -57,8 +56,6 @@ function ClipWeapon:OnCreate()
     self.blockingSecondary = false
     self.timeAttackStarted = 0
     self.deployed = false
-    
-    InitMixin(self, BulletsMixin)
     
 end
 
@@ -398,11 +395,7 @@ local function FireBullets(self, player)
       
     local numberBullets = self:GetBulletsPerShot()
     local startPoint = player:GetEyePos()
-    
-    if Client then
-        DbgTracer.MarkClientFire(player, startPoint)
-    end
-    
+
     for bullet = 1, numberBullets do
     
         local spreadDirection = CalculateSpread(shootCoords, self:GetSpread(bullet) * self:GetInaccuracyScalar(player), NetworkRandom)
@@ -410,10 +403,6 @@ local function FireBullets(self, player)
         local endPoint = startPoint + spreadDirection * range
         
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
-        
-        if Server then
-            Server.dbgTracer:TraceBullet(player, startPoint, trace)
-        end
         
         local damage = 0
 
@@ -441,8 +430,16 @@ local function FireBullets(self, player)
             local effectFrequency = self:GetTracerEffectFrequency()
             local showTracer = math.random() < effectFrequency
             
-            self:ApplyBulletGameplayEffects(player, trace.entity, impactPoint, direction, damage, trace.surface, showTracer)
+            local blockedByUmbra = GetBlockedByUmbra(target)
+    
+            if blockedByUmbra then
+                surface = "umbra"
+                damage = damage * (1 - kUmbraDamageReduction)
+            end
 
+            // deals damage or plays surface hit effects   
+            self:DoDamage(damage, target, endPoint, direction, surface, false, showTracer)
+            
         end
         
         local client = Server and player:GetClient() or Client
@@ -455,12 +452,6 @@ local function FireBullets(self, player)
 end
 
 function ClipWeapon:FirePrimary(player)
-    //if Server then
-        //if self.lastfired ~= nil then
-            //Print(ToString(Shared.GetTime() - self.lastfired))
-        //end
-        //self.lastfired = Shared.GetTime()
-    //end
     FireBullets(self, player)
 end
 

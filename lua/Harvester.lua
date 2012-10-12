@@ -10,10 +10,10 @@ Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/ResourceTower.lua")
 Script.Load("lua/UnitStatusMixin.lua")
-Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
+Script.Load("lua/HasUmbraMixin.lua")
 
 class 'Harvester' (ResourceTower)
 Harvester.kMapName = "harvester"
@@ -21,13 +21,15 @@ Harvester.kMapName = "harvester"
 Harvester.kModelName = PrecacheAsset("models/alien/harvester/harvester.model")
 local kAnimationGraph = PrecacheAsset("models/alien/harvester/harvester.animation_graph")
 
-local networkVars = { }
+local networkVars = 
+{
+}
 
 AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
-AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(HiveVisionMixin, networkVars)
+AddMixinNetworkVars(HasUmbraMixin, networkVars)
 
 function Harvester:OnCreate()
 
@@ -35,13 +37,13 @@ function Harvester:OnCreate()
     
     InitMixin(self, CloakableMixin)
     InitMixin(self, DetectableMixin)
-    InitMixin(self, UmbraMixin)
     InitMixin(self, DissolveMixin)
+    InitMixin(self, HasUmbraMixin)
         
     if Client then
         InitMixin(self, CommanderGlowMixin)    
-    end    
-
+    end
+    
 end
 
 function Harvester:OnInitialized()

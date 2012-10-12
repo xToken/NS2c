@@ -153,7 +153,7 @@ end
 
 function PrototypeLab:GetTechButtons(techId)
     return { kTechId.JetpackTech, kTechId.HeavyArmorTech, kTechId.None, kTechId.None,
-                  kTechId.Jetpack, kTechId.HeavyArmor, kTechId.None, kTechId.None }    
+                  kTechId.None, kTechId.None, kTechId.None, kTechId.None }    
 end
 
 function PrototypeLab:UpdatePrototypeLabAnim(extension, loggedIn, scanTime, timePassed)

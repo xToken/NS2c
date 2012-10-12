@@ -90,10 +90,10 @@ end
 function Shotgun:GetSpread(bulletNum)
 
     // NS1 was 20 degrees for half the shots and 20 degrees plus 7 degrees for half the shots
-    if bulletNum < (kShotgunBulletsPerShot / 2) then
-        return Math.Radians(8)
+    if bulletNum <= kShotgunMinSpreadBullets then
+        return Math.Radians(kShotgunMinSpread)
     else
-        return Math.Radians(20)
+        return Math.Radians(kShotgunMaxSpread)
     end
     
 end
@@ -112,7 +112,7 @@ function Shotgun:GetTracerEffectFrequency()
 end
 
 function Shotgun:GetBulletDamage(target, endPoint)
-    //
+    /*
     if Server then
         local player = self:GetParent()
         if player then  
@@ -126,6 +126,7 @@ function Shotgun:GetBulletDamage(target, endPoint)
             end
         end
     end
+    */
     return kShotgunDamage
 end
 

@@ -208,7 +208,6 @@ function AlienTeam:OnEntityChange(oldEntityId, newEntityId)
     // Check if the oldEntityId matches any client's built structure and
     // handle the change.
     
-    LifeFormEggOnEntityChanged(oldEntityId, newEntityId)
     self:UpdateClientOwnedStructures(oldEntityId)
     self:UpdateCloakablesChanged(oldEntityId, newEntityId)
     
@@ -272,6 +271,7 @@ function AlienTeam:Update(timePassed)
     self:UpdateRespawn()
     self:UpdatePingOfDeath()
     self:UpdateOverflowResources()
+    self:UpdateHiveInformation()
     
 end
 
@@ -283,6 +283,29 @@ function AlienTeam:UpdateOverflowResources()
             self:SplitPres(overflowres, true)
         end
     end
+end
+
+function AlienTeam:UpdateHiveInformation()
+
+    if self.timeToUpdateHiveInfo == nil or Shared.GetTime() >= self.timeToUpdateHiveInfo then
+        for index, hive in ipairs(GetEntitiesForTeam("Hive", self:GetTeamNumber())) do
+            if hive:GetIsAlive() then
+                local hiveinfo = {
+                                    key = index, 
+                                    location = hive:GetLocationName(), 
+                                    healthpercent = (hive:GetHealth() / hive:GetMaxHealth()), 
+                                    buildprogress = ConditionalValue(hive:GetIsBuilt(), 1, hive:GetBuiltFraction()),
+                                    timelastdamaged = hive.lastHiveFlinchEffectTime,
+                                    techId = hive:GetTechId()
+                                 }
+                 for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
+                    Server.SendNetworkMessage(alien, "HiveInfo", hiveinfo, false)
+                 end
+            end
+        end
+        self.timeToUpdateHiveInfo =  Shared.GetTime() + 1
+    end
+    
 end
 
 function AlienTeam:OnTechTreeUpdated()
@@ -470,6 +493,22 @@ function AlienTeam:GetActiveHiveCount()
 
 end
 
+function AlienTeam:GetActiveEggCount()
+
+    local activeEggCount = 0
+    
+    for _, egg in ipairs(GetEntitiesForTeam("Egg", self:GetTeamNumber())) do
+    
+        if egg:GetIsAlive() and egg:GetIsEmpty() then
+            activeEggCount = activeEggCount + 1
+        end
+    
+    end
+    
+    return activeEggCount
+
+end
+
 /**
  * Inform all alien players about the hive construction (add new abilities).
  */
@@ -492,7 +531,6 @@ end
 /**
  * Inform all alien players about the hive destruction (remove abilities).
  */
-
 function AlienTeam:OnHiveDestroyed(destroyedHive)
 
     local activeHiveCount = self:GetActiveHiveCount()
@@ -511,6 +549,62 @@ function AlienTeam:OnUpgradeChamberConstructed(upgradeChamber)
 
     if upgradeChamber:GetTechId() == kTechId.CarapaceShell then
         self.updateAlienArmor = true
+    end
+    
+end
+
+function AlienTeam:OnUpgradeChamberDestroyed(upgradeChamber)
+
+    if upgradeChamber:GetTechId() == kTechId.CarapaceShell then
+        self.updateAlienArmor = true
+    end
+    
+    // These is a list of all tech to check when a upgrade chamber is destroyed.
+    local checkForLostResearch = { [kTechId.RegenerationShell] = { "Shell", kTechId.Regeneration },
+                                   [kTechId.CarapaceShell] = { "Shell", kTechId.Carapace },
+                                   [kTechId.CeleritySpur] = { "Spur", kTechId.Celerity },
+                                   [kTechId.HyperMutationSpur] = { "Spur", kTechId.HyperMutation },
+                                   [kTechId.SilenceVeil] = { "Veil", kTechId.Silence },
+                                   [kTechId.AuraVeil] = { "Veil", kTechId.Aura } }
+    
+    local checkTech = checkForLostResearch[upgradeChamber:GetTechId()]
+    if checkTech then
+    
+        local anyRemain = false
+        for _, ent in ientitylist(Shared.GetEntitiesWithClassname(checkTech[1])) do
+        
+            // Don't count the upgradeChamber as it is being destroyed now.
+            if ent ~= upgradeChamber and ent:GetTechId() == upgradeChamber:GetTechId() then
+            
+                anyRemain = true
+                break
+                
+            end
+            
+        end
+        
+        if not anyRemain then
+            SendTeamMessage(self, kTeamMessageTypes.ResearchLost, checkTech[2])
+        end
+        
+    end
+    
+end
+
+function AlienTeam:OnResearchComplete(structure, researchId)
+
+    PlayingTeam.OnResearchComplete(self, structure, researchId)
+    
+    local checkForGainedResearch = { [kTechId.UpgradeRegenerationShell] = kTechId.Regeneration,
+                                     [kTechId.UpgradeCarapaceShell] = kTechId.Carapace,
+                                     [kTechId.UpgradeCeleritySpur] = kTechId.Celerity,
+                                     [kTechId.UpgradeHyperMutationSpur] = kTechId.HyperMutation,
+                                     [kTechId.UpgradeSilenceVeil] = kTechId.Silence,
+                                     [kTechId.UpgradeAuraVeil] = kTechId.Aura }
+    
+    local gainedResearch = checkForGainedResearch[researchId]
+    if gainedResearch then
+        SendTeamMessage(self, kTeamMessageTypes.ResearchComplete, gainedResearch)
     end
     
 end
@@ -590,29 +684,14 @@ function AlienTeam:AwardResources(min, max, pointOwner)
 
 end
 
-local function AssignPlayerToEgg(self, player, spawntime)
+local function AssignPlayerToEgg(self, player, spawntime, hive)
 
     local success = false
-    //This uses hives to get eggs, but does NOT use the queued player or spawntime from that hive.
-    //This allows each hive to have a queue, but all the players spawn at the same hive.
     local eggs = GetEntitiesForTeam("Egg", self:GetTeamNumber())
-    local spawnHive
-    
-    local function SortByLastDamageTaken(hive1, hive2)
-        return hive1:GetTimeLastDamageTaken() > hive1:GetTimeLastDamageTaken()
-    end
-    
-    // use hive under attack if any
-    local hives = GetEntitiesForTeam("Hive", self:GetTeamNumber())
-    table.sort(hives, SortByLastDamageTaken)
-
-    for _, hive in ipairs(hives) do
-        if hive:GetTimeLastDamageTaken() + 15 > Shared.GetTime() then
-            spawnHive = hive
-        end
-    end
+    local spawnHive = hive
     
     if not spawnHive then
+        local hives = GetEntitiesForTeam("Hive", self:GetTeamNumber())
         spawnHive = hives[math.random(1,#hives)]
     end
     
@@ -667,7 +746,7 @@ local function RespawnPlayer(self, hive)
 
             // player has no egg assigned, check for free egg
             if egg == nil then
-                local success = AssignPlayerToEgg(self, alien, spawntime)
+                local success = AssignPlayerToEgg(self, alien, spawntime, hive)
                 if alien.GetHostEgg then
                     egg = alien:GetHostEgg()
                 end
@@ -679,11 +758,15 @@ local function RespawnPlayer(self, hive)
                 end
             end
             if egg ~= nil then
-                //Alien spawn is a go houston
-                //Shouldnt be possible to fail getting team object AS WE ARE THAT
-                egg:SpawnPlayer()
+                //Egg spawn is a go houston
+                success, newPlayer = egg:SpawnPlayer()
+                if not success or newPlayer == nil then
+                    //Not sure how this happens but i think its causing the spawn bug
+                    //Requeue the player making sure to post date them correspondingly
+                    Print(ToString("FAILEGGSPAWN"))
+                    self:PutPlayerInRespawnQueue(alien, spawntime - GetSpawnTime())   
+                end
             else
-                Print(ToString("FAILEGGSPAWN"))
                 self:PutPlayerInRespawnQueue(alien, spawntime - GetSpawnTime())            
             end
         end
@@ -717,7 +800,7 @@ function AlienTeam:UpdateRespawn()
                         hive.timeWaveEnds = GetSpawnTime() + Shared.GetTime()      
                         local player = Shared.GetEntity(hive.queuedplayer)
                         if player then
-                            AssignPlayerToEgg(self, player, hive.timeWaveEnds)
+                            AssignPlayerToEgg(self, player, hive.timeWaveEnds, hive)
                             player:SetWaveSpawnEndTime(hive.timeWaveEnds)
                         end      
                     end       

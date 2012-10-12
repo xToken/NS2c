@@ -1,20 +1,18 @@
 //
 // lua\UmbraCloud.lua
 
-Script.Load("lua/CommAbilities/CommanderAbility.lua")
+Script.Load("lua/TeamMixin.lua")
+Script.Load("lua/OwnerMixin.lua")
+Script.Load("lua/DamageMixin.lua")
 
-class 'UmbraCloud' (CommanderAbility)
+class 'UmbraCloud' (Entity)
 
 UmbraCloud.kMapName = "UmbraCloud"
 
 UmbraCloud.kUmbraCloudEffect = PrecacheAsset("cinematics/alien/Crag/umbra.cinematic")
 local kUmbraSound = PrecacheAsset("sound/NS2.fev/alien/structures/crag/umbra")
 
-UmbraCloud.kType = CommanderAbility.kType.Repeat
-
 // duration of cinematic, increase cinematic duration and kUmbraCloudDuration to 12 to match the old value from Crag.lua
-UmbraCloud.kUmbraCloudDuration = kUmbraDuration
-UmbraCloud.kRadius = kUmbraRadius
 UmbraCloud.kMaxRange = 20
 local kThinkTime = 0.5
 UmbraCloud.kTravelSpeed = 60 // meters per second
@@ -23,22 +21,33 @@ local networkVars =
 {
 }
 
-function UmbraCloud:GetRepeatCinematic()
-    return UmbraCloud.kUmbraCloudEffect
-end
+function UmbraCloud:OnCreate()
 
-function UmbraCloud:GetType()
-    return UmbraCloud.kType
-end
+    InitMixin(self, TeamMixin)
     
-function UmbraCloud:GetLifeSpan()
-    return UmbraCloud.kUmbraCloudDuration
+    if Server then
+        InitMixin(self, OwnerMixin)
+        self.nextUpdateTime = 0
+    end
+    
+    self:SetUpdates(true)
+    self.soundplayed = false
+    self.createTime = Shared.GetTime()
+    self.endOfUmbraTime = self.createTime + kUmbraDuration
+    self.destroyTime = self.endOfUmbraTime + 2
+
 end
 
-function UmbraCloud:OnInitialized()
+if Client then
 
-    CommanderAbility.OnInitialized(self)
-    self.soundplayed = false
+    function UmbraCloud:OnDestroy()
+        Entity.OnDestroy(self)
+        if self.umbraEffect then
+            Client.DestroyCinematic(self.umbraEffect)
+            self.umbraEffect = nil
+        end
+    end
+
 end
 
 function UmbraCloud:SetTravelDestination(position)
@@ -46,41 +55,76 @@ function UmbraCloud:SetTravelDestination(position)
 end
 
 function UmbraCloud:GetThinkTime()
-    //attempt dynamic think time per modified per cloud :/
-    //makes initial cloud movement fast but doesnt add useless cycles
     return kThinkTime
+end
+
+function UmbraCloud:OnUpdate(deltaTime)
+    
+    if self.destination then
+    
+        local travelVector = self.destination - self:GetOrigin()
+        if travelVector:GetLength() > 0.3 then
+            local distanceFraction = (self.destination - self:GetOrigin()):GetLength() / UmbraCloud.kMaxRange
+            self:SetOrigin( self:GetOrigin() + GetNormalizedVector(travelVector) * deltaTime * UmbraCloud.kTravelSpeed * distanceFraction )
+        end
+        if travelVector:GetLength() < 2 and not self.soundplayed then
+            Shared.PlayWorldSound(nil, kUmbraSound, nil, self:GetOrigin())
+            self.soundplayed = true
+        end
+    
+    end
+           
+    local time = Shared.GetTime()
+    if Server then 
+        if time > self.nextUpdateTime and time < self.endOfUmbraTime then
+            self.nextUpdateTime = time + kThinkTime
+            self:SetHasUmbra(self.nextUpdateTime)
+        end
+        
+        if  time > self.destroyTime then
+            DestroyEntity(self)
+        end
+        
+     elseif Client then
+
+        if self.umbraEffect then        
+            self.umbraEffect:SetCoords(self:GetCoords())            
+        else
+        
+            self.umbraEffect = Client.CreateCinematic(RenderScene.Zone_Default)
+            self.umbraEffect:SetCinematic(UmbraCloud.kUmbraCloudEffect)
+            self.umbraEffect:SetRepeatStyle(Cinematic.Repeat_Endless)
+            self.umbraEffect:SetCoords(self:GetCoords())
+        
+        end
+    
+    end
+
 end
 
 if Server then
 
-    function UmbraCloud:Perform()
-    
-        for _, target in ipairs(GetEntitiesWithMixinForTeamWithinRange("Umbra", self:GetTeamNumber(), self:GetOrigin(), UmbraCloud.kRadius)) do
-            target:SetHasUmbra(true, kUmbraRetainTime)
-        end
-        
-    end
-    
-    function UmbraCloud:OnUpdate(deltaTime)
-    
-        CommanderAbility.OnUpdate(self, deltaTime)
-        
-        if self.destination then
-        
-            local travelVector = self.destination - self:GetOrigin()
-            if travelVector:GetLength() > 0.3 then
-                local distanceFraction = (self.destination - self:GetOrigin()):GetLength() / UmbraCloud.kMaxRange
-                self:SetOrigin( self:GetOrigin() + GetNormalizedVector(travelVector) * deltaTime * UmbraCloud.kTravelSpeed * distanceFraction )
-            end
-            if travelVector:GetLength() < 2 and not self.soundplayed then
-                Shared.PlayWorldSound(nil, kUmbraSound, nil, self:GetOrigin())
-                self.soundplayed = true
-            end
-        
-        end
-    
-    end
+   function UmbraCloud:SetHasUmbra(time)
 
+        local friendlies = GetEntitiesForTeam("Player", self:GetTeamNumber())
+        local filterNonDoors = EntityFilterAllButIsa("Door")
+        for index, entity in ipairs(friendlies) do
+
+            local attackPoint = entity:GetEyePos()        
+            if (attackPoint - self:GetOrigin()):GetLength() < kUmbraRadius then
+            
+                local trace = Shared.TraceRay(self:GetOrigin(), attackPoint, CollisionRep.Damage, PhysicsMask.Bullets, filterNonDoors)
+                if trace.fraction == 1.0 or trace.entity == entity then
+                    if HasMixin(entity, "HasUmbra") then
+                        entity:SetHasUmbra(true, time + 0.1)
+                    end
+                end
+                
+            end
+            
+        end
+        
+    end
+    
 end
-
 Shared.LinkClassToMap("UmbraCloud", UmbraCloud.kMapName, networkVars)

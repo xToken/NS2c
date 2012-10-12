@@ -194,7 +194,7 @@ function Commander:HandleButtons(input)
     end
     
     if Client then
-        self:ShowMap(true, bit.band(input.commands, Move.ShowMap) ~= 0)
+        //self:ShowMap(true, bit.band(input.commands, Move.ShowMap) ~= 0)
     end
     
 end

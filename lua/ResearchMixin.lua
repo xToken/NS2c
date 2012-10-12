@@ -275,6 +275,12 @@ function ResearchMixin:GetCanResearch(techId)
     if techId == kTechId.Recycle and HasMixin(self, "Recycle") then
         return true
     end
+    
+    if techId == kTechId.Cancel and self:GetIsResearching() then
+        if self.researchingId == kTechId.Recycle and self.researchProgress > kRecycleCancelWindow then
+            return false        
+        end
+    end
 
     if self.GetCanResearchOverride then
         return self:GetCanResearchOverride(techId)

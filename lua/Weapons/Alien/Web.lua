@@ -98,6 +98,10 @@ local function CheckAllEntsInTrigger(self)
     
 end
 
+function Web:GetCanBeUsed(player, useSuccessTable)
+    useSuccessTable.useSuccess = false
+end
+
 function Web:OnInitialized()
     
     ScriptActor.OnInitialized(self)

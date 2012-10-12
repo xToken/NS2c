@@ -20,13 +20,11 @@ Script.Load("lua/LOSMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
-Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-
 Script.Load("lua/ScriptActor.lua")
-Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
+Script.Load("lua/HasUmbraMixin.lua")
 
 class 'Egg' (ScriptActor)
 
@@ -48,7 +46,7 @@ Egg.kSkinOffset = Vector(0, 0.12, 0)
 local networkVars =
 {
     // if player is inside it
-    empty = "boolean",
+    empty = "boolean"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -61,45 +59,7 @@ AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
-AddMixinNetworkVars(UmbraMixin, networkVars)
-
-if Server then
-
-    local gLifeFormEggs = {}
-    
-    local function SortByTechId(entId1, entId2)
-        
-        local ent1 = Shared.GetEntity(entId1)
-        local ent2 = Shared.GetEntity(entId2)
-    
-        return ent1 and ent2 and ent1:GetTechId() > ent2:GetTechId()
-        
-    end
-
-    function RegisterLifeFormEgg(egg)
-    
-        table.insert(gLifeFormEggs, egg:GetId())
-        table.sort(gLifeFormEggs, SortByTechId)
-    
-    end
-    
-    function LifeFormEggOnEntityChanged(oldId, newId)
-    
-        if table.contains(gLifeFormEggs, oldId) then
-            
-            if not newId then
-                table.removevalue(gLifeFormEggs, oldId)
-            end
-            
-        end
-    
-    end
-    
-    function GetLifeFormEggs()
-        return gLifeFormEggs
-    end
-
-end
+AddMixinNetworkVars(HasUmbraMixin, networkVars)
 
 function Egg:OnCreate()
 
@@ -118,14 +78,13 @@ function Egg:OnCreate()
     InitMixin(self, LOSMixin)
     InitMixin(self, DetectableMixin)
     InitMixin(self, ResearchMixin)
-    InitMixin(self, UmbraMixin)
+    InitMixin(self, HasUmbraMixin)
     
     if Client then
         InitMixin(self, CommanderGlowMixin)    
     end
     
     self.empty = true
-    
     self:SetLagCompensated(false)
     
 end
@@ -174,11 +133,6 @@ end
 function Egg:GetTechButtons(techId)
 
     local techButtons = nil
-    
-    if self:GetTechId() == kTechId.Egg then   
-        techButtons = { kTechId.GorgeEgg, kTechId.LerkEgg, kTechId.FadeEgg, kTechId.OnosEgg }      
-    end
-    
     return techButtons
     
 end
@@ -272,6 +226,10 @@ if Server then
         
     end
     
+end
+
+function Egg:GetSendDeathMessageOverride()
+    return false
 end
 
 function Egg:GetClassToGestate()
@@ -518,6 +476,10 @@ function Egg:OnAdjustModelCoords(coords)
     coords.origin = coords.origin - Egg.kSkinOffset
     return coords
     
+end
+
+function Egg:GetIsEmpty()
+    return self.empty
 end
 
 Shared.LinkClassToMap("Egg", Egg.kMapName, networkVars)

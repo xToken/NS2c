@@ -33,13 +33,13 @@ Script.Load("lua/StaticTargetMixin.lua")
 Script.Load("lua/TargetCacheMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
-Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/DamageMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
+Script.Load("lua/HasUmbraMixin.lua")
 
 class 'Whip' (ScriptActor)
 
@@ -78,9 +78,9 @@ AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
-AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
+AddMixinNetworkVars(HasUmbraMixin, networkVars)
 
 if Server then
 
@@ -113,10 +113,10 @@ function Whip:OnCreate()
     InitMixin(self, RagdollMixin)
     InitMixin(self, DamageMixin)
     InitMixin(self, ObstacleMixin)
-    InitMixin(self, UmbraMixin)
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
     InitMixin(self, CombatMixin)
+    InitMixin(self, HasUmbraMixin)
     
     self.attackYaw = 0 
     self.slapping = false

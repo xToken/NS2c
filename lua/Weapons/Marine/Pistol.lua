@@ -216,7 +216,7 @@ function Pistol:GetPrimaryAttackRequiresPress()
 end
 
 function Pistol:GetNumStartClips()
-    return 2
+    return 3
 end
 
 function Pistol:GetWeight()

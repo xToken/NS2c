@@ -165,7 +165,7 @@ kWelderRate = 30
 kWelderStructureMultipler = 2
 
 kAxeDamage = 30
-kAxeDamageType = kDamageType.Structural
+kAxeDamageType = kDamageType.Normal
 
 kGrenadeLauncherGrenadeDamage = 125
 kGrenadeLauncherGrenadeDamageType = kDamageType.Structural
@@ -178,8 +178,11 @@ kShotgunDamage = 17
 kShotgunDamageType = kDamageType.Normal
 kShotgunClipSize = 8
 kShotgunBulletsPerShot = 10
-kShotgunMaxRange = 13
-kShotgunDropOffStartRange = 4
+kShotgunMaxRange = 18
+kShotgunMinSpread = 17
+kShotgunMinSpreadBullets = 5
+kShotgunMaxSpread = 25
+//kShotgunDropOffStartRange = 4
 kShotgunWeight = 0.15
 
 kHeavyMachineGunDamage = 20
@@ -224,6 +227,16 @@ kARCMinRange = 7
 kWeapons1DamageScalar = 1.1
 kWeapons2DamageScalar = 1.2
 kWeapons3DamageScalar = 1.3
+
+kElectricalDamage = 20
+kElectricalMaxTargets = 2
+kElectricalRange = 5
+kElectricalUpgradeResearchCost = 20
+kElectricalUpgradeResearchTime = 30
+kElectrifyDamageTime = 1
+kElectrifyCooldownTime = 10
+kElectrifyEnergyRegain = 0.2
+kElectrifyEnergyCost = 0.1
 
 // ALIEN DAMAGE
 kBiteDamage = 75
@@ -282,7 +295,9 @@ kUmbraEnergyCost = 30
 kUmbraDuration = 5
 kUmbraRadius = 6
 kUmbraBlockRate = 3
+kUmbraDamageReduction = 0.35
 kUmbraRetainTime = 0.1
+kUmbraAttackDelay = 1.0
 
 kSpikeMaxDamage = 15
 kSpikeMinDamage = 10
@@ -307,8 +322,8 @@ kSwipeDamageType = kDamageType.Normal
 kSwipeEnergyCost = 6.5
 kSwipeDelay = 0.48
 
-kStartBlinkEnergyCost = 10
-kBlinkEnergyCost = 60
+kStartBlinkEnergyCost = 8
+kBlinkEnergyCost = 65
 
 kMetabolizeEnergyCost = 25
 kMetabolizeEnergyGain = 35
@@ -319,7 +334,7 @@ kAcidRocketDamage = 25
 kAcidRocketDamageType = kDamageType.Heavy
 kAcidRocketFireDelay = 0.5
 kAcidRocketEnergyCost = 10
-kAcidRocketRadius = 5
+kAcidRocketRadius = 6
 
 kGoreDamage = 90
 kGoreDamageType = kDamageType.Normal
@@ -336,7 +351,7 @@ kStompEnergyCost = 30
 kStompRange = 12
 kDisruptMarineTime = 2
 
-kSmashDamage = 95
+kSmashDamage = 125
 kSmashDamageType = kDamageType.Structural
 kSmashEnergyCost = 9
 
@@ -355,6 +370,6 @@ kMelee3DamageScalar = 1.3
 
 // SPAWN TIMES
 kMarineRespawnTime = 10
-kEggSpawnTime = 10
+kEggSpawnTime = 8
 kAlienWaveSpawnInterval = 7
 kAlienEggsPerHive = 10

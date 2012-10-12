@@ -179,9 +179,6 @@ function Fade:HandleJump(input, velocity)
             end
             
         end
-
-        // TODO: Set this somehow (set on sounds for entity, not by sound name?)
-        //self:SetSoundParameter(soundName, "speed", self:GetFootstepSpeedScalar(), 1)
         
         self.timeOfLastJump = Shared.GetTime()
         
@@ -300,6 +297,12 @@ function Fade:OnBlinking(input)
     
     if self:GetIsOnGround() and velocity.y < 4 then
         newVelocity.y = newVelocity.y + math.sqrt(math.abs(2 * self:GetJumpHeight() * self:GetGravityForce(input)))
+    end
+    
+    local upangle = self:GetViewCoords().zAxis.y
+    if upangle > 0.5 then
+        if newVelocity.y < 0 then newVelocity.y = 0 end
+        newVelocity.y = self:GetViewCoords().zAxis.y * (Fade.kBlinkAcceleration * 2) * input.time
     end
 
     self:SetVelocity(velocity + newVelocity)

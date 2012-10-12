@@ -20,8 +20,11 @@ local kBackgroundYOffset = -10
 local kPickupKeyFontSize = 22
 local kPickupTextFontSize = 20
 
-local kIconsTextureName = "ui/pickup_icons.dds"
-local kKeyTextureName = "ui/key_mouse_marine.dds"
+local kIconsTextureName = PrecacheAsset("ui/pickup_icons.dds")
+local kKeyTextureName = PrecacheAsset("ui/key_mouse_marine.dds")
+local kProgressBarTextureName = PrecacheAsset("ui/progress_bar_bg.dds")
+local kCommanderBarTextureName = PrecacheAsset("ui/commanderbar.dds")
+
 local kIconOffsets = { }
 kIconOffsets["Rifle"] = 0
 kIconOffsets["Shotgun"] = 1
@@ -37,6 +40,11 @@ kIconOffsets["HandGrenades"] = 4
 local kItemText = { }
 kItemText["Jetpack"] = string.format("Buy Jetpack for %s Resources.", LookupTechData(kTechId.Jetpack, kTechDataCostKey))
 
+// Hold-button progress
+local kBarPadding = 4
+local kBarBgSize = Vector(kIconWidth/2, 32, 0)
+local kBarSize = Vector(kBarBgSize.x - (2 * kBarPadding), kBarBgSize.y - (2 * kBarPadding), 0)
+
 class 'GUIActionIcon' (GUIScript)
 
 function GUIActionIcon:Initialize()
@@ -51,37 +59,63 @@ function GUIActionIcon:Initialize()
     self.pickupKeyBackground:SetAnchor(GUIItem.Middle, GUIItem.Top)
     self.pickupKeyBackground:SetTexture(kKeyTextureName)
     self.pickupIcon:AddChild(self.pickupKeyBackground)
-    
+
     self.pickupKey = GUIManager:CreateTextItem()
     self.pickupKey:SetFontSize(kPickupKeyFontSize)
     self.pickupKey:SetAnchor(GUIItem.Middle, GUIItem.Center)
     self.pickupKey:SetTextAlignmentX(GUIItem.Align_Center)
     self.pickupKey:SetTextAlignmentY(GUIItem.Align_Center)
-    self.pickupKey:SetColor(kMarineFontColor)
     self.pickupKey:SetFontIsBold(true)
     self.pickupKey:SetText("")
     self.pickupKey:SetFontName("fonts/AgencyFB_small.fnt")
     self.pickupKeyBackground:AddChild(self.pickupKey)
-    
+
     self.pickupText = GUIManager:CreateTextItem()
     self.pickupText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
     self.pickupText:SetTextAlignmentX(GUIItem.Align_Center)
     self.pickupText:SetTextAlignmentY(GUIItem.Align_Center)
     self.pickupText:SetPosition(Vector(0, 100, 0))
-    self.pickupText:SetColor(kMarineFontColor)
     self.pickupText:SetText("")
     self.pickupText:SetFontName("fonts/AgencyFB_small.fnt")
     self.pickupKeyBackground:AddChild(self.pickupText)
-
+    
     self.hintText = GUIManager:CreateTextItem()
     self.hintText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
     self.hintText:SetTextAlignmentX(GUIItem.Align_Center)
     self.hintText:SetTextAlignmentY(GUIItem.Align_Center)
     self.hintText:SetPosition(Vector(0, -50, 0))
-    self.hintText:SetColor(kMarineFontColor)
     self.hintText:SetText("")
     self.hintText:SetFontName("fonts/AgencyFB_small.fnt")
     self.pickupKeyBackground:AddChild(self.hintText)
+
+    // For some things, we need the player to hold the key down for a bit. This displays hold-progress
+    self.progressBarBg = GUIManager:CreateGraphicItem()
+    self.progressBarBg:SetAnchor(GUIItem.Middle, GUIItem.Center)
+    self.progressBarBg:SetPosition(Vector(-kBarBgSize.x/2,-kBarBgSize.y/2-16,0))
+    self.progressBarBg:SetSize(kBarBgSize)
+    self.progressBarBg:SetTexture(kProgressBarTextureName)
+    self.pickupIcon:AddChild(self.progressBarBg)
+    
+    self.progressBar = GUIManager:CreateGraphicItem()
+    self.progressBar:SetSize(kBarSize)
+    self.progressBar:SetAnchor(GUIItem.Left, GUIItem.Top)
+    self.progressBar:SetPosition(Vector(kBarPadding, kBarPadding, 0))
+    self.progressBar:SetTexture(kCommanderBarTextureName)
+    self.progressBar:SetInheritsParentAlpha(true)
+    self.progressBarBg:AddChild(self.progressBar)
+    
+    // so it can say "Hold [E]"
+    self.holdText = GUIManager:CreateTextItem()
+    self.holdText:SetFontSize(kPickupKeyFontSize)
+    self.holdText:SetAnchor(GUIItem.Middle, GUIItem.Center)
+    self.holdText:SetPosition(Vector(0, 0, 0))
+    self.holdText:SetTextAlignmentX(GUIItem.Align_Center)
+    self.holdText:SetTextAlignmentY(GUIItem.Align_Center)
+    self.holdText:SetFontIsBold(true)    
+    self.holdText:SetText(Locale.ResolveString("HOLD_KEY"))
+    self.holdText:SetFontName("fonts/AgencyFB_small.fnt")
+    self.progressBarBg:AddChild(self.holdText)
+
 
 end
 
@@ -99,13 +133,33 @@ function GUIActionIcon:Uninitialize()
     GUI.DestroyItem(self.hintText)
     self.hintText = nil
     
+    GUI.DestroyItem(self.progressBarBg)
+    self.progressBarBg = nil
+
+    GUI.DestroyItem(self.progressBar)
+    self.progressBar = nil
+
+    GUI.DestroyItem(self.holdText)
+    self.holdText = nil
+ 
+end
+
+function GUIActionIcon:SetColor(c)
+    self.pickupKey:SetColor(c)
+    self.pickupKeyBackground:SetColor(c)
+    self.pickupText:SetColor(c)
+    self.hintText:SetColor(c)
+    self.progressBarBg:SetColor(c)
+    self.progressBar:SetColor(c)
+    self.holdText:SetColor(c)
 end
 
 // Optionally specify text to display before button
-function GUIActionIcon:ShowIcon(buttonText, weaponType, hintText)
+// use holdFraction = nil if this is not a held action
+function GUIActionIcon:ShowIcon(buttonText, weaponType, hintText, holdFraction)
 
     PROFILE("GUIActionIcon:ShowIcon")
-
+    
     self.pickupIcon:SetIsVisible(true)
     self.hintText:SetIsVisible(false)
     
@@ -144,6 +198,13 @@ function GUIActionIcon:ShowIcon(buttonText, weaponType, hintText)
         self.hintText:SetIsVisible(true)
     end
 
+    // handle hold progress
+    if holdFraction ~= nil then
+        self.progressBarBg:SetIsVisible(true)
+        self.progressBar:SetSize( Vector( kBarSize.x*holdFraction, kBarSize.y, 0 ) )
+    else
+        self.progressBarBg:SetIsVisible(false)
+    end
 end
 
 function GUIActionIcon:Hide()

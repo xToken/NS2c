@@ -40,7 +40,6 @@ Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
-Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
@@ -48,6 +47,7 @@ Script.Load("lua/TriggerMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/AlienDetectorMixin.lua")
+Script.Load("lua/HasUmbraMixin.lua")
 
 class 'Shade' (ScriptActor)
 
@@ -63,7 +63,9 @@ Shade.kCloakRadius = 20
 Shade.kCloakUpdateRate = 0.5
 Shade.kHiveSightRange = 25
 
-local networkVars = { }
+local networkVars = 
+{ 
+}
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ClientModelMixin, networkVars)
@@ -79,10 +81,10 @@ AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
-AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
-        
+AddMixinNetworkVars(HasUmbraMixin, networkVars)
+
 function Shade:OnCreate()
 
     ScriptActor.OnCreate(self)
@@ -103,12 +105,12 @@ function Shade:OnCreate()
     InitMixin(self, ResearchMixin)
     InitMixin(self, RagdollMixin)
     InitMixin(self, ObstacleMixin)
-    InitMixin(self, UmbraMixin)
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
     InitMixin(self, CombatMixin)
     InitMixin(self, AlienDetectorMixin)
-        
+    InitMixin(self, HasUmbraMixin)
+    
     if Server then
     
         //InitMixin(self, TriggerMixin, {kPhysicsGroup = PhysicsGroup.TriggerGroup, kFilterMask = PhysicsMask.AllButTriggers} )    

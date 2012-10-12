@@ -196,7 +196,7 @@ end
 function AlienUI_GetInUmbra()
 
     local player = Client.GetLocalPlayer()
-    if player ~= nil and HasMixin(player, "Umbra") then
+    if player ~= nil and HasMixin(player, "HasUmbra") then
         return player:GetHasUmbra()
     end
 

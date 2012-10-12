@@ -9,10 +9,8 @@
 // Set the name of the VM for debugging
 decoda_name = "Client"
 
-// Load all specular maps at 1/2 resolution
-Client.AddTextureLoadRule("*_spec.dds", 1)
-
 Script.Load("lua/Shared.lua")
+Script.Load("lua/GhostModelUI.lua")
 Script.Load("lua/Render.lua")
 Script.Load("lua/MapEntityLoader.lua")
 Script.Load("lua/Button.lua")
@@ -390,13 +388,18 @@ function OnNotifyGUIItemDestroyed(destroyedItem)
 
 end
 
-function CreateTracer(startPoint, endPoint, velocity, doer)
+function CreateTracer(startPoint, endPoint, velocity, doer, effectName)
 
     if not Shared.GetIsRunningPrediction() then
-    
-        local effectName = kDefaultTracerEffectName
-        if doer.GetTracerEffectName then
-            effectName = doer:GetTracerEffectName()
+
+        if not effectName then
+        
+            if doer.GetTracerEffectName then
+                effectName = doer:GetTracerEffectName()
+            else
+                effectName = kDefaultTracerEffectName
+            end
+        
         end
 
         local tracer = BuildTracer(startPoint, endPoint, velocity, effectName)
@@ -670,8 +673,8 @@ function OnUpdateRender()
         
         gRenderCamera:SetCoords(camera:GetCoords())
         gRenderCamera:SetFov(horizontalFov)
-        gRenderCamera:SetNearPlane(0.01)
-        gRenderCamera:SetFarPlane(1000.0)
+        gRenderCamera:SetNearPlane(0.03)
+        gRenderCamera:SetFarPlane(400.0)
         gRenderCamera:SetCullingMode(cullingMode)
         Client.SetRenderCamera(gRenderCamera)
         
@@ -824,6 +827,34 @@ function OnClientDisconnected(reason)
 end
 
 /**
+ * UI scripts that need to precache assets are loaded here.
+ * Not all GUI scripts need to be listed here.
+ * They must be loaded after OnLoadComplete() below because they need functions
+ * that are only available after the Client is fully loaded.
+ */
+local function LoadGUIScripts()
+
+    Script.Load("lua/GUIMinimapFrame.lua")
+    Script.Load("lua/GUIMinimap.lua")
+    Script.Load("lua/Hud/Marine/GUIMarineHud.lua")
+    Script.Load("lua/GUIActionIcon.lua")
+    Script.Load("lua/GUIMarineTeamMessage.lua")
+    Script.Load("lua/GUINotifications.lua")
+    Script.Load("lua/Hud/GUINotificationItem.lua")
+    Script.Load("lua/Hud/Marine/GUIMarineStatus.lua")
+    Script.Load("lua/Hud/Marine/GUIMarineHUDStyle.lua")
+    Script.Load("lua/Hud/Marine/GUIExoHud.lua")
+    Script.Load("lua/Hud/GUIEvent.lua")
+    Script.Load("lua/Hud/GUIPlayerResource.lua")
+    Script.Load("lua/GUIAlienBuyMenu.lua")
+    Script.Load("lua/GUIWaypoints.lua")
+    Script.Load("lua/GUIProgressBar.lua")
+    Script.Load("lua/GUIAlienTeamMessage.lua")
+    Script.Load("lua/GUIAlienHUD.lua")
+    
+end
+
+/**
  * Fade to black and show messages, global so transistion between classes is smooth.
  */
 local function OnLoadComplete()
@@ -832,10 +863,11 @@ local function OnLoadComplete()
     gRenderCamera:SetRenderSetup("renderer/Deferred.render_setup")
     
     Render_SyncRenderOptions()
-
+    
     GetGUIManager():CreateGUIScript("GUIDeathScreen")
     HiveVision_Initialize()
     EquipmentOutline_Initialize()
+    LoadGUIScripts()
     
 end
 

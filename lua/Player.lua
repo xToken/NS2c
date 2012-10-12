@@ -50,6 +50,7 @@ else
 
     Script.Load("lua/Player_Client.lua")
     Script.Load("lua/Chat.lua")
+    
 end
 
 ------------
@@ -202,6 +203,9 @@ Player.kMaxStepAmount = 1
 local networkVars =
 {
     fullPrecisionOrigin = "private vector", 
+    // players need to be treated special by the interpolation code, as they are moved asynchronously
+    // compared to non-player entities.
+    onProcessMoveTime = "compensated time (by 0.001 [7 9 12])",
     
     // Controlling client index. -1 for not being controlled by a live player (ragdoll, fake player)
     clientIndex = "integer",
@@ -326,6 +330,8 @@ function Player:OnCreate()
     if Client then
         InitMixin(self, HelpMixin)
     end
+    
+    self.onProcessMoveTime = 0
     
     self:SetLagCompensated(true)
     
@@ -1354,7 +1360,7 @@ end
 function Player:GetMinimapFov(targetEntity)
 
     if targetEntity and targetEntity:isa("Player") then
-        return 28
+        return 60
     end
     
     return 90
@@ -1563,7 +1569,7 @@ local function UpdateFallDamage(self, wasOnGround, previousVelocity)
 
     if wasOnGround == false and self:GetIsOnSurface() and self:ReceivesFallDamage() then
         if math.abs(previousVelocity.y) > kFallDamageMinimumVelocity then
-            local damage = math.max(0, math.abs(previousVelocity.y * kFallDamageScalar) - 200)
+            local damage = math.max(0, math.abs(previousVelocity.y * kFallDamageScalar) - 195)
             self:TakeDamage(damage, self, self, self:GetOrigin(), nil, 0, damage, kDamageType.Falling)
         end
     end
@@ -1829,9 +1835,12 @@ function Player:DropToFloor()
 
 end
 
+
 function Player:GetCanStep()
     return self:GetIsOnGround()
 end
+
+
 
 function Player:UpdatePosition(velocity, time)
 
@@ -2196,9 +2205,7 @@ end
 
 
 function Player:GetPlayFootsteps()
-
-    return not self.crouching and self:GetVelocityLength() > 0.75 and self:GetIsOnGround() and not self:GetMovementModifierState()
-    
+    return self:GetVelocityLength() > 4.5 and self:GetIsOnGround()
 end
 
 function Player:GetMovementModifierState()
@@ -2398,9 +2405,6 @@ function Player:HandleJump(input, velocity)
             end
             
         end
-
-        // TODO: Set this somehow (set on sounds for entity, not by sound name?)
-        //self:SetSoundParameter(soundName, "speed", self:GetFootstepSpeedScalar(), 1)
         
         self.timeOfLastJump = Shared.GetTime()
         
@@ -3105,7 +3109,7 @@ function Player:OnTag(tagName)
     end
     
     // Play footstep when foot hits the ground. Client side only.
-    if Client and self:GetPlayFootsteps() and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] and not self:GetMovementModifierState() then
+    if Client and self:GetPlayFootsteps() and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] then
         self:TriggerFootstep()
     end
     
@@ -3197,48 +3201,6 @@ function Player:OnInitialSpawn(techPointOrigin)
     self:SetViewAngles(angles)
     
 end
-
-
-// welding, constructing or attacking command structures will show the progress bar
-function Player:OnRepair(target, success)
-
-    if Client and self:GetIsLocalPlayer() then
-    
-        if self.timeLastConstructed ~= Shared.GetTime() and target and target ~= self and not target:isa("CommandStructure") and (not HasMixin(target, "Construct") or target:GetIsBuilt()) then
-        
-            if target:isa("Marine") then
-                self.progressFraction = target:GetArmorScalar()
-            else
-                self.progressFraction = target:GetHealthScalar()
-            end
-        
-            if target:isa("Player") then
-                self.progressText = target:GetName()
-            else        
-                self.progressText = GetDisplayName(target)
-            end    
-            
-            if success then
-                self.timeLastRepaired = Shared.GetTime()
-            end
-        
-        end
-    
-    end
-
-end
-
-function Player:OnConstructTarget(target)
-
-    if Client and self:GetIsLocalPlayer() and HasMixin(target, "Construct") then
-
-        self.progressText = GetDisplayName(target)
-        self.progressFraction = target:GetBuiltFraction()
-        self.timeLastConstructed = Shared.GetTime()
-    
-    end
-
-end  
 
 // This causes problems when doing a trace ray against CollisionRep.Move.
 function Player:OnCreateCollisionModel()

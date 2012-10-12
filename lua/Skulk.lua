@@ -61,9 +61,9 @@ Skulk.kHealth = kSkulkHealth
 Skulk.kArmor = kSkulkArmor
 Skulk.kLeapVerticalVelocity = 8
 Skulk.kLeapVerticalForce = 7
-Skulk.kMinLeapVelocity = 13
+Skulk.kMinLeapVelocity = 11
 Skulk.kLeapTime = 0.2
-Skulk.kLeapForce = 14
+Skulk.kLeapForce = 12
 Skulk.kMaxSpeed = 20
 Skulk.kMaxGroundSpeed = 8
 Skulk.kMaxWallSpeed = 10
@@ -574,7 +574,7 @@ end
 function Skulk:GetPlayFootsteps()
     
     // Don't play footsteps when we're walking
-    return self:GetVelocityLength() > .75 and not self.movementModiferState and not GetHasSilenceUpgrade(self) and not self:GetIsCloaked() and self:GetIsOnSurface()
+    return self:GetVelocityLength() > 5 and not GetHasSilenceUpgrade(self) and not self:GetIsCloaked() and self:GetIsOnSurface()
     
 end
 

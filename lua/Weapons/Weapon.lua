@@ -7,7 +7,6 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/ScriptActor.lua")
-Script.Load("lua/DbgTracer.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/DamageMixin.lua")
@@ -19,7 +18,7 @@ Weapon.kMapName = "weapon"
 // Attach point for marine weapons
 Weapon.kHumanAttachPoint = "RHand_Weapon"
 // Super important constant that defines how often a bite or other melee attack will hit
-Weapon.kMeleeBaseWidth = .8
+Weapon.kMeleeBaseWidth = .5
 Weapon.kMeleeBaseHeight = .8
 
 if Server then
@@ -232,6 +231,7 @@ function Weapon:OnDraw(player, previousWeaponMapName)
     end
     
     player:SetViewModel(self:GetViewModelName(), self)
+    
     self:TriggerEffects("draw")
     
 end

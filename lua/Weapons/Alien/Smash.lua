@@ -48,7 +48,7 @@ function Smash:GetEnergyCost(player)
 end
 
 function Smash:GetHUDSlot()
-    return 3
+    return 2
 end
 
 function Smash:OnHolster(player)

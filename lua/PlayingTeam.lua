@@ -199,7 +199,6 @@ function PlayingTeam:InitTechTree()
     self.techTree:SetTeamNumber(self:GetTeamNumber())
     
     // Menus
-    self.techTree:AddMenu(kTechId.RootMenu)
     self.techTree:AddMenu(kTechId.BuildMenu)
     self.techTree:AddMenu(kTechId.AdvancedMenu)
     self.techTree:AddMenu(kTechId.AssistMenu)

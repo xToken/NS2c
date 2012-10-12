@@ -238,6 +238,11 @@ function InfantryPortal:GetSpawnTime()
     return kMarineRespawnTime
 end
 
+function InfantryPortal:GetTechButtons(techId)
+    return { kTechId.None, kTechId.None, kTechId.None, kTechId.None,
+             kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+end
+
 function InfantryPortal:OnReplace(newStructure)
 
     newStructure.queuedPlayerId = self.queuedPlayerId    

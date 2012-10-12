@@ -33,6 +33,7 @@ Script.Load("lua/TechNode.lua")
 Script.Load("lua/TechTree.lua")
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/Order.lua")
+Script.Load("lua/PropDynamic.lua")
 Script.Load("lua/Blip.lua")
 Script.Load("lua/MapBlip.lua")
 Script.Load("lua/ParticleEffect.lua")
@@ -48,6 +49,7 @@ Script.Load("lua/BuildUtility.lua")
 Script.Load("lua/Balance.lua")
 Script.Load("lua/BalanceHealth.lua")
 Script.Load("lua/BalanceMisc.lua")
+
 Script.Load("lua/TeamJoin.lua")
 
 // Neutral structures
@@ -140,7 +142,6 @@ Script.Load("lua/TeamInfo.lua")
 Script.Load("lua/GameInfo.lua")
 Script.Load("lua/AlienTeamInfo.lua")
 Script.Load("lua/PathingUtility.lua")
-Script.Load("lua/HitRegEvent.lua")
 
 gHeightMap = gHeightMap // survive hotloading; will be nil the first time
 

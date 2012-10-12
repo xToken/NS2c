@@ -9,7 +9,6 @@
 
 Script.Load("lua/Player.lua")
 Script.Load("lua/CloakableMixin.lua")
-Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/RegenerationMixin.lua")
 Script.Load("lua/ScoringMixin.lua")
 Script.Load("lua/Alien_Upgrade.lua")
@@ -23,6 +22,7 @@ Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/AlienActionFinderMixin.lua")
 Script.Load("lua/AlienDetectorMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
+Script.Load("lua/HasUmbraMixin.lua")
 
 if Client then
     Script.Load("lua/TeamMessageMixin.lua")
@@ -89,18 +89,17 @@ local networkVars =
 }
 
 AddMixinNetworkVars(CloakableMixin, networkVars)
-AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(EnergizeMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
+AddMixinNetworkVars(HasUmbraMixin, networkVars)
 
 function Alien:OnCreate()
 
     Player.OnCreate(self)
     InitMixin(self, AlienDetectorMixin)
-    InitMixin(self, UmbraMixin)
     InitMixin(self, RegenerationMixin)
     InitMixin(self, AlienActionFinderMixin)
     InitMixin(self, EnergizeMixin)
@@ -109,6 +108,7 @@ function Alien:OnCreate()
     InitMixin(self, LOSMixin)
     InitMixin(self, SelectableMixin)
     InitMixin(self, DetectableMixin)
+    InitMixin(self, HasUmbraMixin)
          
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
     
@@ -210,13 +210,6 @@ function Alien:DestroyGUI()
         
             GetGUIManager():DestroyGUIScript(self.objectiveDisplay)
             self.objectiveDisplay = nil
-            
-        end
-        
-        if self.sensorBlips then
-        
-            GetGUIManager():DestroyGUIScript(self.sensorBlips)
-            self.sensorBlips = nil
             
         end
         

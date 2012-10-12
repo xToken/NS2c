@@ -433,43 +433,29 @@ function Marine:HandleButtons(input)
         
         if bit.band(input.commands, Move.Drop) ~= 0 then
         
-            if Server then
-            
-                // First check for a nearby weapon to pickup.
-                local nearbyDroppedWeapon = self:GetNearbyPickupableWeapon()
-                if nearbyDroppedWeapon then
-                
-                    if Shared.GetTime() > self.timeOfLastPickUpWeapon + kPickupWeaponTimeLimit then
-                    
-                        if nearbyDroppedWeapon.GetReplacementWeaponMapName then
-                        
-                            local replacement = nearbyDroppedWeapon:GetReplacementWeaponMapName()
-                            local toReplace = self:GetWeapon(replacement)
-                            if toReplace then
-                            
-                                self:RemoveWeapon(toReplace)
-                                DestroyEntity(toReplace)
-                                
-                            end
-                            
-                        end
-                        
-                        self:AddWeapon(nearbyDroppedWeapon, true)
-                        Shared.PlayWorldSound(nil, Marine.kGunPickupSound, nil, self:GetOrigin())
-                        self:SetScoreboardChanged(true)
-                        self.timeOfLastPickUpWeapon = Shared.GetTime()
-                        
+            // First check for a nearby weapon to pickup.
+            local nearbyDroppedWeapon = self:GetNearbyPickupableWeapon()
+            if nearbyDroppedWeapon then
+                if Shared.GetTime() > self.timeOfLastPickUpWeapon + kPickupWeaponTimeLimit then
+                    if nearbyDroppedWeapon.GetReplacementWeaponMapName then
+                        local replacement = nearbyDroppedWeapon:GetReplacementWeaponMapName()
+                        local toReplace = self:GetWeapon(replacement)
+                        if toReplace then  
+                            self:RemoveWeapon(toReplace)
+                            DestroyEntity(toReplace)       
+                        end   
                     end
-                    
-                else
-                
-                    // No nearby weapon, drop our current weapon.
-                    self:Drop()
-                    
                 end
-                
-            end
-            
+                self:AddWeapon(nearbyDroppedWeapon, true)
+                self:SetScoreboardChanged(true)
+                self.timeOfLastPickUpWeapon = Shared.GetTime()
+                if Server then
+                    Shared.PlayWorldSound(nil, Marine.kGunPickupSound, nil, self:GetOrigin())
+                end
+            else
+                // No nearby weapon, drop our current weapon.
+                self:Drop()
+            end            
         end
         
     end
@@ -560,12 +546,14 @@ function Marine:GetWeaponDropTime()
     return self.weaponDropTime
 end
 
-local marineTechButtons = { kTechId.Attack, kTechId.Move, kTechId.Defend  }
+local marineTechButtons = { kTechId.Attack, kTechId.Move, kTechId.Defend, kTechId.None, 
+                                  kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+                                  
 function Marine:GetTechButtons(techId)
 
     local techButtons = nil
     
-    if techId == kTechId.RootMenu then
+    if techId == kTechId.WeaponsMenu then
         techButtons = marineTechButtons
     end
     
@@ -757,18 +745,9 @@ end
 
 function Marine:GetCanChangeViewAngles()
     return true
-end    
-
-//function Marine:GetPlayFootsteps()
-
-    //local velocity = self:GetVelocity()
-    //local velocityLength = velocity:GetLength() 
-    //return self:GetIsOnGround() and velocityLength > .75 and not self.movementModiferState and not self.crouching
-    
-//end
+end
 
 function Marine:OnDisrupt()
-
 end
 
 function Marine:OnUseTarget(target)

@@ -462,7 +462,7 @@ end
 
 function Sentry:GetTechButtons(techId)
 
-    if techId == kTechId.RootMenu then 
+    if techId == kTechId.WeaponsMenu then 
         
         if self.mode == Sentry.kMode.Attacking then
             return kAttackingButtons

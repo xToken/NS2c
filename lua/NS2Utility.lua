@@ -28,7 +28,7 @@ function GetTeamInfoEntity(teamNumber)
 
     local teamInfo = GetEntitiesForTeam("TeamInfo", teamNumber)
     if table.count(teamInfo) > 0 then
-        return teamInfo
+        return teamInfo[1]
     end
     
 end
@@ -472,10 +472,10 @@ end
 
 function GetBlockedByUmbra(entity)
 
-    if entity ~= nil and HasMixin(entity, "Umbra") then
+    if entity ~= nil and HasMixin(entity, "HasUmbra") then
     
         if entity:GetHasUmbra() then
-            return entity:UpdateUmbraBulletCount()
+            return true
         end
         
     end
@@ -898,11 +898,7 @@ function GetCanSeeEntity(seeingEntity, targetEntity)
             local seeingEntityAngles = GetEntityViewAngles(seeingEntity)
             local normViewVec = seeingEntityAngles:GetCoords().zAxis        
             local dotProduct = Math.DotProduct(toEntity, normViewVec)
-            local fov = 90
-            
-            if seeingEntity.GetFov then
-                fov = seeingEntity:GetFov()
-            end
+            local fov = seeingEntity:GetFov()
             
             // players have separate fov for marking enemies as sighted
             if seeingEntity.GetMinimapFov then
@@ -922,10 +918,6 @@ function GetCanSeeEntity(seeingEntity, targetEntity)
             
             if trace.entity == targetEntity then
                 seen = true
-            end
-            
-            if Server and Server.dbgTracer.seeEntityTraceEnabled then
-                Server.dbgTracer:TraceTargeting(seeingEntity, targetEntity, eyePos, trace)
             end
             
         end
@@ -1581,10 +1573,6 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
             
         end
         
-        if Server and traceRealAttack then
-            Server.dbgTracer:TraceMelee(player,  point, trace, extents, coords)
-        end
-        
         // Performance boost, doubt it makes much difference, but its an easy one...
         if target and target:isa("Player") then
             break
@@ -1746,7 +1734,6 @@ end
  * entity for which SetControllingPlayer has been called on the server, or one
  * of its children).
  */
-  
 function GetIsClientControlled(entity)
 
     PROFILE("NS2Utility:GetIsClientControlled")
@@ -1861,10 +1848,6 @@ function TraceBullet(player, weapon, startPoint, direction, throughHallucination
     for i = 1, maxTraces do
     
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterTwo(lastHitEntity, weapon))
-        
-        if Server then
-            Server.dbgTracer:TraceBullet(player, startPoint, trace)
-        end
         
         if trace.fraction ~= 1 then
         

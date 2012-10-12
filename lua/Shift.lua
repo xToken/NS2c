@@ -31,11 +31,11 @@ Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
-Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
+Script.Load("lua/HasUmbraMixin.lua")
 
 class 'Shift' (ScriptActor)
 
@@ -73,8 +73,8 @@ AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
-AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
+AddMixinNetworkVars(HasUmbraMixin, networkVars)
 
 function Shift:OnCreate()
 
@@ -97,8 +97,8 @@ function Shift:OnCreate()
     InitMixin(self, ResearchMixin)
     InitMixin(self, RagdollMixin)
     InitMixin(self, ObstacleMixin)
-    InitMixin(self, UmbraMixin)
     InitMixin(self, CombatMixin)
+    InitMixin(self, HasUmbraMixin)
     
     if Client then
         InitMixin(self, CommanderGlowMixin)    
@@ -107,7 +107,7 @@ function Shift:OnCreate()
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
-
+    
 end
 
 function Shift:OnInitialized()
@@ -179,7 +179,7 @@ end
 
 function Shift:GetShowOrderLine()
     return true
-end  
+end
 
 function Shift:ConstructOverride(deltaTime)
     return deltaTime / 2
@@ -207,6 +207,11 @@ function Shift:TeleportPlayer(player, level)
             local validshifts = { }
             local shifts = GetEntitiesForTeam("Shift", self:GetTeamNumber())
             local success = false
+
+            local function SortByDistance(shift1, shift2)
+                return shift1.dist > shift2.dist
+            end
+            
             for i, shift in ipairs(shifts) do
                 local shiftinfo = { shift = shift, dist = 0 }
                 local toTarget = shift:GetOrigin() - player:GetOrigin()
@@ -216,22 +221,18 @@ function Shift:TeleportPlayer(player, level)
                     table.insert(validshifts, shiftinfo)
                 end
              end
-             local selectedshift
-             local selectedshiftdist = 0
+             
+             table.sort(validshifts, SortByDistance)
+
              for s = 1, #validshifts do
-                if selectedshiftdist < validshifts[s].dist then
-                    selectedshift = validshifts[s].shift
-                    selectedshiftdist = validshifts[s].dist
-                end
-             end
-             if selectedshift then
+                selectedshift = validshifts[s].shift
                 local TechID = kTechId.Skulk
                 if player:GetIsAlive() then
                     TechID = player:GetTechId()
                 end
                 local extents = LookupTechData(TechID, kTechDataMaxExtents)
                 local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)
-                local range = 4
+                local range = 6
                 local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, selectedshift:GetOrigin(), 2, range, EntityFilterAll())
                 if spawnPoint then
                     local validForPlayer = GetIsPlacementForTechId(spawnPoint, true, TechID)
@@ -241,11 +242,13 @@ function Shift:TeleportPlayer(player, level)
                         SpawnPlayerAtPoint(player, spawnPoint)
                         success = true
                         player.nextredeploy = Shared.GetTime() + (kRedploymentCooldownBase / level)
+                        break
                     end
                 end
-                if not success then
-                    player:TriggerInvalidSound()
-                end
+             end
+             
+            if not success then
+                player:TriggerInvalidSound()
             end
         end
     end

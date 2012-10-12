@@ -99,7 +99,7 @@ function DropStructureAbility:GetDropClassName()
 end
 
 function DropStructureAbility:GetHUDSlot()
-    return 2
+    return 3
 end
 
 function DropStructureAbility:GetHasSecondary(player)

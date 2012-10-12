@@ -79,6 +79,16 @@ function OnCommandDamage(damageTable)
     
 end
 
+function OnCommandAbilityResult(msg)
+
+    // The server will send us this message to tell us an ability succeded.
+    player = Client.GetLocalPlayer()
+    if player:GetIsCommander() then
+        player:OnAbilityResultMessage(msg.techId, msg.success, msg.castTime)
+    end
+
+end
+
 function OnCommandScores(scoreTable)
 
     local status = kPlayerStatus[scoreTable.status]
@@ -201,6 +211,7 @@ end
 Client.HookNetworkMessage("Ping", OnCommandPing)
 Client.HookNetworkMessage("HitEffect", OnCommandHitEffect)
 Client.HookNetworkMessage("Damage", OnCommandDamage)
+Client.HookNetworkMessage("AbilityResult", OnCommandAbilityResult)
 Client.HookNetworkMessage("Scores", OnCommandScores)
 
 Client.HookNetworkMessage("ClearTechTree", OnCommandClearTechTree)

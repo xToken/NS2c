@@ -71,7 +71,7 @@ function Devour:GetEnergyCost(player)
 end
 
 function Devour:GetHUDSlot()
-    return 2
+    return 3
 end
 
 function Devour:OnHolster(player)

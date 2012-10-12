@@ -50,10 +50,6 @@ local function FireSpikes(self)
     self.spiked = true
     self.silenced = GetHasSilenceUpgrade(player)
 
-    if Client then
-        DbgTracer.MarkClientFire(player, startPoint)
-    end
-
     for spike = 1, numSpikes do
 
         // Calculate spread for each shot, in case they differ    
@@ -67,17 +63,9 @@ local function FireSpikes(self)
         startPoint = player:GetEyePos()
         
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
-        
-        if Server then
-            Server.dbgTracer:TraceBullet(player, startPoint, trace)
-        end
   
         local distToTarget = (trace.endPoint - startPoint):GetLength()
-        
-        if Server then
-            Server.dbgTracer:TraceBullet(player, startPoint, trace)  
-        end
-        
+
         if trace.fraction < 1 then
 
             // Have damage increase to reward close combat

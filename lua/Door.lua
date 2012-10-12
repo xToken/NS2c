@@ -293,7 +293,7 @@ end
 
 function Door:GetTechButtons(techId, teamType)
 
-    if(techId == kTechId.RootMenu) then   
+    if(techId == kTechId.WeaponsMenu) then   
         // $AS - Aliens do not get tech on doors they can just select them
         if not (teamType == kAlienTeamType) then
             return  {kTechId.None, kTechId.None, kTechId.None, kTechId.None, // add kTechId.DoorClose to enable closing for commanders

@@ -28,11 +28,13 @@ kEnergyUpdateRate = 0.25
 kDropWeaponTimeLimit = 1
 kPickupWeaponTimeLimit = 1
 kItemStayTime = 30    // NS1
+kRecycleCancelWindow = 0.25
+kRecycleRefundScalar = 0.5
 
 // set to -1 for no time limit
 kParasiteDuration = -1
-kFallDamageMinimumVelocity = 20
-kFallDamageScalar = 10
+kFallDamageMinimumVelocity = 15
+kFallDamageScalar = 13
 
 kCeleritySpeedModifier = 0.2
 kFocusAttackSlowdown = 0.5

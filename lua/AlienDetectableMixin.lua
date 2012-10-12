@@ -59,7 +59,7 @@ AlienDetectableMixin.optionalCallbacks =
 }
 
 // Should be bigger then DetectorMixin:kUpdateDetectionInterval
-AlienDetectableMixin.kResetDetectionInterval = 3
+AlienDetectableMixin.kResetDetectionInterval = 2
 
 AlienDetectableMixin.networkVars =
 {

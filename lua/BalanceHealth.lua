@@ -37,7 +37,7 @@ kOnosArmorFullyUpgradedAmount = 950
 
 kHealthPointsPerArmorScalarHive1 = 1
 kHealthPointsPerArmorScalarHive2 = 1
-kHealthPointsPerArmorScalarHive3 = 1
+kHealthPointsPerArmorScalarHive3 = 1.5
 
 // used for structures
 kStartHealthScalar = 0.3

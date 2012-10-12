@@ -48,8 +48,8 @@ local kDistressBeaconSoundDistance = 100
 local kDistressBeaconSoundMarine = PrecacheAsset("sound/NS2.fev/marine/common/distress_beacon_marine")
 local kDistressBeaconSoundAlien = PrecacheAsset("sound/NS2.fev/marine/common/distress_beacon_alien")
 
-local kObservatoryTechButtons = { kTechId.Scan, kTechId.PhaseTech, kTechId.MotionTracking, kTechId.None, 
-                                  kTechId.DistressBeacon, kTechId.None, kTechId.None, kTechId.None }
+local kObservatoryTechButtons = { kTechId.Scan, kTechId.PhaseTech, kTechId.None, kTechId.None, 
+                                  kTechId.DistressBeacon, kTechId.MotionTracking, kTechId.None, kTechId.None }
 
 Observatory.kDistressBeaconTime = kDistressBeaconTime
 Observatory.kDistressBeaconRange = kDistressBeaconRange
@@ -170,7 +170,7 @@ end
 
 function Observatory:GetTechButtons(techId)
 
-    if techId == kTechId.RootMenu then
+    if techId == kTechId.WeaponsMenu then
         return kObservatoryTechButtons
     end
     

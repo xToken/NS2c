@@ -24,7 +24,6 @@ local kAbilityImage = "ui/alien_abilities.dds"
 
 local kHealthFontName = "fonts/Stamp_large.fnt"
 local kArmorFontName = "fonts/Stamp_large.fnt"
-//local kArmorFontName = "fonts/Stamp_medium.fnt"
 local kAbilityNumFontName = "fonts/Kartika_small.fnt"
 local kHiveLocationFontName = "fonts/AgencyFB_tiny.fnt"
 
@@ -755,8 +754,8 @@ function GUIAlienHUD:UpdateHiveInformation(deltaTime)
                         self.hives[i].icon:SetColor(Color(1, 0, 0, 1))
                         self.hives[i].locationtext:SetColor(Color(1, 0, 0, 1))
                     end
-                    if self.hives[i].lasthealth > hiveinfo.healthpercent then
-                        self.hives[i].hivedamageAnimPlaying = Client.GetTime() + 5
+                    if hiveinfo.timelastdamaged > Shared.GetTime() - 5 then
+                        self.hives[i].hivedamageAnimPlaying = Client.GetTime() + 1
                         self.hives[i].healthBar:SetColor(Color(1, 0, 0, 1), kHiveDamageAnimRate, "ANIM_HEALTH_PULSATE", AnimateQuadratic, HiveDamagePulsate )
                     else
                         self.hives[i].healthBar:SetColor(kHealthBarColor)

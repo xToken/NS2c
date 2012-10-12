@@ -22,17 +22,10 @@ Script.Load("lua/Bot.lua")
 Script.Load("lua/VoteManager.lua")
 
 Script.Load("lua/ServerConfig.lua")
-Script.Load("lua/DAKLoader.lua")
-
-if kDAKConfig and kDAKConfig.BaseAdminCommands and kDAKConfig.BaseAdminCommands.kEnabled then
-else
-	Print("Falling back")
-	Script.Load("lua/ServerAdmin.lua")
-	Script.Load("lua/ServerAdminCommands.lua")
-	Script.Load("lua/MapCycle.lua")
-end
-
+Script.Load("lua/ServerAdmin.lua")
+Script.Load("lua/ServerAdminCommands.lua")
 Script.Load("lua/ServerWebInterface.lua")
+Script.Load("lua/MapCycle.lua")
 Script.Load("lua/ConsistencyConfig.lua")
 
 Script.Load("lua/ConsoleCommands_Server.lua")
@@ -40,12 +33,7 @@ Script.Load("lua/NetworkMessages_Server.lua")
 
 Script.Load("lua/dkjson.lua")
 
-Script.Load("lua/DbgTracer_Server.lua")
-
 Script.Load("lua/NetworkDebug.lua")
- 
-Server.dbgTracer = DbgTracer()
-Server.dbgTracer:Init()
 
 Server.readyRoomSpawnList = table.array(32)
 
@@ -70,9 +58,7 @@ function Server.AddChatToHistory(message, playerName, steamId, teamNumber, teamO
     chatMessageCount = chatMessageCount + 1
     Server.recentChatMessages:Insert({ id = chatMessageCount, message = message, player = playerName,
                                        steamId = steamId, team = teamNumber, teamOnly = teamOnly })
-	if kDAKConfig and kDAKConfig.DAKLoader and kDAKConfig.DAKLoader.GamerulesExtensions then
-		DAKChatLogging(message, playerName, steamId, teamNumber, teamOnly)
-	end
+    
 end
 
 /**
@@ -157,6 +143,18 @@ function GetLoadSpecial(mapName, groupName, values)
 
 end
 
+local function DumpServerEntity(mapName, groupName, values)
+
+    Print("------------ %s ------------", ToString(mapName))
+    
+    for key, value in pairs(values) do    
+        Print("[%s] %s", ToString(key), ToString(value))
+    end
+    
+    Print("---------------------------------------------")
+
+end
+
 local function LoadServerMapEntity(mapName, groupName, values)
 
     if not GetLoadEntity(mapName, groupName, values) then
@@ -165,7 +163,7 @@ local function LoadServerMapEntity(mapName, groupName, values)
     
     if mapName == InfantryPortal.kMapName then
         return
-    end
+	end
     
     // Skip the classes that are not true entities and are handled separately
     // on the client.
@@ -204,6 +202,8 @@ local function LoadServerMapEntity(mapName, groupName, values)
             end
             
         end
+        
+        //DumpServerEntity(mapName, groupName, values)
         
     end  
         

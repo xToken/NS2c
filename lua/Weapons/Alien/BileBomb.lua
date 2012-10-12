@@ -14,8 +14,8 @@ class 'BileBomb' (Ability)
 BileBomb.kMapName = "bilebomb"
 
 // part of the players velocity is use for the bomb
-local kPlayerVelocityFraction = 1
-local kBombVelocity = 15
+local kPlayerVelocityFraction = 0.75
+local kBombVelocity = 12
 
 local kAnimationGraph = PrecacheAsset("models/alien/gorge/gorge_view.animation_graph")
 
@@ -52,7 +52,7 @@ function BileBomb:GetIconOffsetY(secondary)
 end
 
 function BileBomb:GetHUDSlot()
-    return 4
+    return 2
 end
 
 function BileBomb:GetSecondaryTechId()
@@ -121,16 +121,17 @@ function BileBomb:FireBombProjectile(player)
     if Server then
     
         local viewAngles = player:GetViewAngles()
+        local velocity = player:GetVelocity()
         local viewCoords = viewAngles:GetCoords()
-        local startPoint = player:GetEyePos() + viewCoords.zAxis * 1
+        local startPoint = player:GetEyePos() + viewCoords.zAxis * 0.35
         
         local startPointTrace = Shared.TraceRay(player:GetEyePos(), startPoint, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterOne(player))
         startPoint = startPointTrace.endPoint
         
-        local startVelocity = viewCoords.zAxis * kBombVelocity
+        local startVelocity = viewCoords.zAxis * kBombVelocity + velocity * kPlayerVelocityFraction
         
         local bomb = CreateEntity(Bomb.kMapName, startPoint, player:GetTeamNumber())
-        bomb:Setup(player, startVelocity, true)
+        bomb:Setup(player, startVelocity, true, Vector(0.25,0.25,0.25))
         
     end
     

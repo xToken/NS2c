@@ -135,17 +135,18 @@ function InitTechTreeMaterialOffsets()
     kMarineTechIdToMaterialOffset[kTechId.AdvancedArmoryUpgrade] = 65
     kMarineTechIdToMaterialOffset[kTechId.PhaseGate] = 67
     kMarineTechIdToMaterialOffset[kTechId.PhaseTech] = 68
-    kMarineTechIdToMaterialOffset[kTechId.MotionTracking] = 7
+    kMarineTechIdToMaterialOffset[kTechId.MotionTracking] = 10
 
     kMarineTechIdToMaterialOffset[kTechId.GrenadeLauncher] = 72
     kMarineTechIdToMaterialOffset[kTechId.HeavyArmorTech] = 75
-    kMarineTechIdToMaterialOffset[kTechId.HeavyArmor] = 61
+    kMarineTechIdToMaterialOffset[kTechId.HeavyArmor] = 76
     kMarineTechIdToMaterialOffset[kTechId.Mine] = 8
     kMarineTechIdToMaterialOffset[kTechId.Mines] = 8
     kMarineTechIdToMaterialOffset[kTechId.Welder] = 17
     kMarineTechIdToMaterialOffset[kTechId.HeavyMachineGun] = 47
-    kMarineTechIdToMaterialOffset[kTechId.HandGrenadesTech] = 72
-    kMarineTechIdToMaterialOffset[kTechId.HandGrenades] = 72
+    kMarineTechIdToMaterialOffset[kTechId.HandGrenadesTech] = 46
+    kMarineTechIdToMaterialOffset[kTechId.HandGrenades] = 46
+    kMarineTechIdToMaterialOffset[kTechId.Electrify] = 9
     
     // Doors
     kMarineTechIdToMaterialOffset[kTechId.Door] = 84

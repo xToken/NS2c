@@ -18,6 +18,10 @@ kDefaultPingSound = "sound/NS2.fev/common/ping"
 kMarinePingSound = "sound/NS2.fev/marine/commander/ping"
 kAlienPingSound = "sound/NS2.fev/alien/commander/ping"
 
+Player.screenEffects = { }
+Player.screenEffects.cloaked = Client.CreateScreenEffect("shaders/Cloaked.screenfx")
+Player.screenEffects.cloaked:SetActive(false)
+
 local kDefaultFirstPersonEffectName = PrecacheAsset("cinematics/marine/hit_1p.cinematic")
 
 Client.PrecacheLocalSound(kDefaultPingSound)
@@ -686,7 +690,7 @@ function PlayerUI_GetCrosshairY()
             elseif mapname == Shotgun.kMapName then
                 index = 3
             // All alien crosshairs are the same for now
-            elseif mapname == LerkBite.kMapName or mapname == LerkUmbra.kMapName or mapname == Parasite.kMapName or mapname == AcidRocket.kMapName then
+            elseif mapname == LerkBite.kMapName or mapname == LerkBiteUmbra.kMapName or mapname == LerkBitePrimal.kMapName or mapname == Parasite.kMapName or mapname == AcidRocket.kMapName then
                 index = 6
             elseif(mapname == SpitSpray.kMapName) then
                 index = 7
@@ -1514,12 +1518,9 @@ function Player:UpdateIdleSound()
 end
 
 function Player:GetDrawWorld(isLocal)
-    return not isLocal or self:GetIsThirdPerson() or ((self.countingDown and not Shared.GetCheatsEnabled()) and self:GetTeamNumber() ~= kNeutralTeamType)
+    return not self:GetIsLocalPlayer() or self:GetIsThirdPerson() or ((self.countingDown and not Shared.GetCheatsEnabled()) and self:GetTeamNumber() ~= kNeutralTeamType)
 end
 
-function Player:GetDrawPlayer(isLocal)
-    return self:GetDrawWorld(isLocal)
-end
 
 local function UpdateDangerEffects(self) 
 end
@@ -1728,8 +1729,6 @@ function Player:OnInitLocalClient()
     Client.SetEnableFog(false)
     Shared.ConsoleCommand("r_fog false")
     
-    self:InitScreenEffects()
-
     local loopingIdleSound = self:GetIdleSoundName()
     if loopingIdleSound then
         
@@ -1761,23 +1760,13 @@ function Player:OnInitLocalClient()
     
 end
 
-function Player:InitScreenEffects()
-
-    self.screenEffects = {}
-    self.screenEffects.darkVision = Client.CreateScreenEffect("shaders/DarkVision.screenfx")
-    self.screenEffects.darkVision:SetActive(false)
-    self.screenEffects.cloaked = Client.CreateScreenEffect("shaders/Cloaked.screenfx")
-    self.screenEffects.cloaked:SetActive(false)
-    
-end
-
 function Player:SetEthereal(ethereal)
 end
 
 function Player:SetCloakShaderState(state)
 
-    if self.screenEffects.cloaked then
-        self.screenEffects.cloaked:SetActive(state)
+    if Player.screenEffects.cloaked then
+        Player.screenEffects.cloaked:SetActive(state)
     end
     
 end
@@ -1800,16 +1789,10 @@ end
 function Player:UpdateDisorientFX()
 end
 
-local function DestroyScreenEffects(self)
+local function DisableScreenEffects()
 
-    if self.screenEffects ~= nil then
-    
-        for effectName, effect in pairs(self.screenEffects) do
-            Client.DestroyScreenEffect(effect)
-        end
-        
-        self.screenEffects = { }
-        
+    for _, effect in pairs(Player.screenEffects) do
+        effect:SetActive(false)
     end
     
 end
@@ -1833,7 +1816,7 @@ function Player:OnDestroy()
         self.viewModel = nil
     end
     
-    DestroyScreenEffects(self)
+    DisableScreenEffects()
     
     self:UpdateCloakSoundLoop(false)
     
@@ -1868,7 +1851,7 @@ end
  */
 function Player:OnKillClient()
 
-    DestroyScreenEffects(self)
+    DisableScreenEffects()
     DisableDanger(self)
     
 end
@@ -2016,6 +1999,14 @@ function Player:GetAuxWeaponClip()
     
 end   
 
+function Player:OnConstructTarget(target)
+
+    if self:GetIsLocalPlayer() and HasMixin(target, "Construct") then
+        self.timeLastConstructed = Shared.GetTime()
+    end
+
+end
+
 function Player:GetHeadAttachpointName()
     return "Head"
 end
@@ -2135,6 +2126,8 @@ function Player:GetCameraViewCoordsOverride(cameraCoords)
             cameraCoords = angles:GetCoords(origin)
             
         end
+        
+        cameraCoords = self:PlayerCameraCoordsAdjustment(cameraCoords)
     
     end
 
@@ -2668,7 +2661,7 @@ function PlayerUI_IsASpectator()
 
     local player = Client.GetLocalPlayer()
     if player ~= nil then
-        return player:isa("Commander")
+        return player:isa("Spectator")
     end
     
     return false
@@ -2951,7 +2944,7 @@ function PlayerUI_GetStaticMapBlips()
             
                 local blipTeam = minimapBlipTeamNeutral
                 local blipTeamNumber = blip:GetTeamNumber()        
-                
+            
                 if playerNoTeam then
                     if blipTeamNumber == kMarineTeamType then
                         blipTeam = minimapBlipTeamMarine
@@ -2967,9 +2960,9 @@ function PlayerUI_GetStaticMapBlips()
                 end    
               
                 local i = numBlips * 8
-                
-                blipsData[i + 1] = blip.worldX
-                blipsData[i + 2] = blip.worldZ
+                local blipOrig = blip:GetOrigin()
+                blipsData[i + 1] = blipOrig.x
+                blipsData[i + 2] = blipOrig.z
                 blipsData[i + 3] = blip:GetRotation()
                 blipsData[i + 4] = 0
                 blipsData[i + 5] = 0
@@ -2993,6 +2986,7 @@ function PlayerUI_GetStaticMapBlips()
         for index, blip in ientitylist(list) do
         
             local blipOrigin = blip:GetOrigin()
+         
             local i = numBlips * 8
          
             blipsData[i + 1] = blipOrigin.x
@@ -3007,7 +3001,7 @@ function PlayerUI_GetStaticMapBlips()
             numBlips = numBlips + 1
             
         end
-
+        
         for index, order in ientitylist(Shared.GetEntitiesWithClassname("Order")) do
          
             local blipOrigin = order:GetLocation()
@@ -3324,23 +3318,14 @@ function Player:UpdateCommunicationStatus()
 end
 
 function Player:OnGetIsVisible(visibleTable)
-
-    local isLocal = Client.GetLocalPlayer() == self
-    
-    local drawWorld = self:GetDrawWorld(isLocal)
-    local drawPlayer = not self:isa("Commander") and self:GetDrawPlayer(isLocal) and not self:isa("Spectator") and not self:isa("FilmSpectator")
-    
-    visibleTable.Visible = drawPlayer
-    
+    visibleTable.Visible = self:GetDrawWorld()
 end
 
 function Player:OnUpdateRender()
 
     PROFILE("Player:OnUpdateRender")
     
-    local isLocal = self:GetIsLocalPlayer()
-    
-    if isLocal then
+    if self:GetIsLocalPlayer() then
     
         local blurEnabled = self.minimapVisible
         self:SetBlurEnabled(blurEnabled)
@@ -3349,19 +3334,6 @@ function Player:OnUpdateRender()
         local now = Shared.GetTime()
         self:UpdateScreenEffects(now - self.lastOnUpdateRenderTime)
         self.lastOnUpdateRenderTime = now
-        
-    end
-    
-    // Only show local player model and active weapon for local player when third person 
-    // or for other players (not ethereal Fades)
-    local drawWorld = self:GetDrawWorld(isLocal)
-
-    local viewModel = self:GetViewModelEntity()    
-    if viewModel ~= nil then
-    
-        viewModel:UpdateGUI()
-        // Hide view model when in third person.
-        viewModel:SetIsVisible(viewModel:GetIsVisible() and not drawWorld)
         
     end
     

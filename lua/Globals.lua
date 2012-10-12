@@ -113,7 +113,7 @@ kMaxHitEffectsPerSecond = 200
 
 kMainMenuFlash = "ui/main_menu.swf"
 
-kPlayerStatus = enum( { "Hidden", "Dead", "Evolving", "Embryo", "Commander", "HeavyArmor", "GrenadeLauncher", "Rifle", "Shotgun", "HeavyMachineGun", "Void", "Spectator", "Skulk", "Gorge", "Fade", "Lerk", "Onos" } )
+kPlayerStatus = enum( { "Hidden", "Dead", "Evolving", "Embryo", "Commander", "GrenadeLauncher", "Rifle", "Shotgun", "HeavyMachineGun", "Void", "Spectator", "Skulk", "Gorge", "Fade", "Lerk", "Onos" } )
 kPlayerCommunicationStatus = enum( {'None', 'Voice', 'Typing', 'Menu'} )
 
 kMaxAlienAbilities = 3
@@ -133,7 +133,7 @@ kSpecialEditionProductId = 4930
 // Death message indices 
 kDeathMessageIcon = enum( { 'None', 
                             'Rifle', 'RifleButt', 'Pistol', 'Axe', 'Shotgun',
-                            'Flamethrower', 'ARC', 'Grenade', 'Sentry', 'Welder',
+                            'HeavyMachineGun', 'ARC', 'Grenade', 'Sentry', 'Welder',
                             'Bite', 'HydraSpike', 'Spray', 'PrimalScream', 'Parasite',
                             'SporeCloud', 'Swipe', 'BuildAbility', 'Whip', 'BileBomb',
                             'Mine', 'Gore', 'Spit', 'Jetpack', 'Claw',
@@ -280,7 +280,6 @@ kBloomOptionsKey = "graphics/display/bloom"
 kAnisotropicFilteringOptionsKey = "graphics/display/anisotropic-filtering"
 
 kMouseSensitivityScalar         = 50
-kAutoPickupWeapons         = "autopickupweapons"
 
 // Player use range
 kPlayerUseRange = 2
@@ -330,5 +329,5 @@ kRookieTimeThreshold = 4 * 60 * 60 // 4 hours
 kRookieNetworkCheckInterval = 2
 kRookieOptionsKey = "rookieMode"
 
-kMinFOVAdjustmentDegrees = 0
-kMaxFOVAdjustmentDegrees = 0
+kMinFOVAdjustmentDegrees = -5
+kMaxFOVAdjustmentDegrees = 5

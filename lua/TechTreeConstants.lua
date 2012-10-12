@@ -53,7 +53,7 @@ kTechId = enum({
     // Marine tech 
     'CommandStation', 'Armory', 'InfantryPortal', 'Extractor', 'Sentry', 'ARC',
     'Scan', 'AmmoPack', 'MedPack', 'CatPack', 'CatPackTech', 'AdvancedArmoryUpgrade', 'Observatory', 'DistressBeacon', 'PhaseGate', 'RoboticsFactory', 'ARCRoboticsFactory', 'ArmsLab',
-    'PrototypeLab', 'AdvancedArmory', 'HandGrenadesTech', 
+    'PrototypeLab', 'AdvancedArmory', 'HandGrenadesTech', 'Electrify', 
     
     // Research 
     'PhaseTech', 'Jetpack', 'JetpackTech','HeavyArmorTech', 'HeavyArmor', 
@@ -116,6 +116,6 @@ kTechType = enum({ 'Invalid', 'Order', 'Research', 'Upgrade', 'Action', 'Buy', '
 
 // Button indices
 kRecycleCancelButtonIndex   = 12
-kMarineUpgradeButtonIndex   = 4
+kMarineUpgradeButtonIndex   = 5
 kAlienBackButtonIndex       = 8
 

@@ -116,6 +116,11 @@ function CommandStation:GetTechAllowed(techId, techNode, player)
     
 end
 
+function CommandStation:GetTechButtons(techId)
+    return { kTechId.None, kTechId.None, kTechId.None, kTechId.None,
+             kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+end
+
 function CommandStation:GetIsPlayerInside(player)
 
     // Check to see if we're in range of the visible center of the login platform

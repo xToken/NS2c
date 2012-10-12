@@ -81,7 +81,7 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                 end
                 
                 killedFromDamage = target:TakeDamage(damage, attacker, doer, point, direction, armorUsed, healthUsed, damageType)
-                
+
                 if self.OnDamageDone then
                     self:OnDamageDone(doer, target)
                 end

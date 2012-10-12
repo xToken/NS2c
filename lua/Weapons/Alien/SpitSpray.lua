@@ -84,14 +84,15 @@ local function CreateSpitProjectile(self, player)
     if Server then
         
         local viewAngles = player:GetViewAngles()
+        local velocity = player:GetVelocity()
         local viewCoords = viewAngles:GetCoords()
-        local startPoint = player:GetEyePos()// + viewCoords.zAxis * 1
+        local startPoint = player:GetEyePos() + viewCoords.zAxis * 0.35
 
-        local startVelocity = viewCoords.zAxis * kSpitSpeed
+        local startVelocity = viewCoords.zAxis * kSpitSpeed + velocity * 0.5
         
         local spit = CreateEntity(Spit.kMapName, startPoint, player:GetTeamNumber())
-        SetAnglesFromVector(spit, viewCoords.zAxis)
-        spit:Setup(player, startVelocity, false)
+        //SetAnglesFromVector(spit, viewCoords.zAxis)
+        spit:Setup(player, startVelocity, false, Vector(0.10,0.10,0.10))
         
     end
 
@@ -134,8 +135,7 @@ function SpitSpray:OnTag(tagName)
         if player and not GetHasAttackDelay(self, player) then
         
             self.lastPrimaryAttackTime = Shared.GetTime()
-            CreateSpitProjectile(self, player)
-            
+            CreateSpitProjectile(self, player)            
             player:DeductAbilityEnergy(self:GetEnergyCost())
             
             self:TriggerEffects("spitspray_attack")

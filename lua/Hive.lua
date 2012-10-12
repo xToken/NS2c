@@ -12,23 +12,22 @@ Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/CommandStructure.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
-Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
+Script.Load("lua/HasUmbraMixin.lua")
 
 class 'Hive' (CommandStructure)
 
 local networkVars = 
 {
-    scared = "boolean",
 }
 
 AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
-AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(HiveVisionMixin, networkVars)
+AddMixinNetworkVars(HasUmbraMixin, networkVars)
 
 kResearchToHiveType =
 {
@@ -79,9 +78,9 @@ function Hive:OnCreate()
     CommandStructure.OnCreate(self)
     
     InitMixin(self, CloakableMixin)
-    InitMixin(self, UmbraMixin)
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
+    InitMixin(self, HasUmbraMixin)
     
     if Server then
         
@@ -151,7 +150,7 @@ function Hive:OnCollision(entity)
     /*if entity:isa("Player") and GetEnemyTeamNumber(self:GetTeamNumber()) == entity:GetTeamNumber() then    
         self.lastTimeEnemyTouchedHive = Shared.GetTime()
     end*/
-    
+        
 end
 
 function GetIsHiveTypeResearch(techId)

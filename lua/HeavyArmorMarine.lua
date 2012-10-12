@@ -200,7 +200,6 @@ function HeavyArmorMarine:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("HeavyArmorMarine:OnUpdateAnimationInput")
     Marine.OnUpdateAnimationInput(self, modelMixin)
-    modelMixin:SetAnimationInput("attack_speed", self:GetCatalystFireModifier())
     
 end
 
