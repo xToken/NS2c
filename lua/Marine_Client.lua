@@ -92,27 +92,8 @@ function Marine:TriggerHudInitEffects()
 
 end
 
-// check if player aims at a Weldable unit and return it's percentage
-function Marine:GetCurrentWeldPercentage()
-
-    local activeWeapon = self:GetActiveWeapon()
-    
-    if activeWeapon then
-    
-        local target = self:GetCrossHairTarget()
-        if target and GetAreFriends(self, target) then
-        
-            local weldPercentage = HasMixin(target, "Weldable") and target:GetWeldPercentage() or 1
-            local buildPercentage = HasMixin(target, "Construct") and target:GetBuiltFraction() or 1
-            
-            return ConditionalValue(weldPercentage > buildPercentage, buildPercentage, weldPercentage)
-        
-        end
-        
-    end
-    
-    return 0
-    
+function Marine:UnitStatusPercentage()
+    return self.unitStatusPercentage
 end
 
 function Marine:ShowMap(showMap, showBig, forceReset)

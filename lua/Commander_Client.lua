@@ -403,7 +403,7 @@ function Commander:UpdateGhostGuides()
                 else
                     table.insert(supportingTechIds, attachId)
                 end
-                
+
                 for index, ent in ipairs(GetEntsWithTechIdIsActive(supportingTechIds)) do 
                     self:AddGhostGuide(Vector(ent:GetOrigin()), ghostRadius)         
                 end

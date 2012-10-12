@@ -7,6 +7,19 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+function Marine:OnConstructTarget(target)     
+    self:SetUnitStatusPercentage(target:GetBuiltFraction() * 100)
+end
+
+function Marine:OnWeldTarget(target)
+    self:SetUnitStatusPercentage(target:GetWeldPercentage() * 100)
+end
+
+function Marine:SetUnitStatusPercentage(percentage)
+    self.unitStatusPercentage = Clamp(math.round(percentage), 0, 100)
+    self.timeLastUnitPercentageUpdate = Shared.GetTime()
+end
+
 local function GetCanTriggerAlert(self, techId, timeOut)
 
     if not self.alertTimes then

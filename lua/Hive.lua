@@ -59,6 +59,8 @@ Hive.kStructureUnderAttackSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/
 Hive.kHarvesterUnderAttackSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/harvester_under_attack")
 Hive.kLifeformUnderAttackSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/lifeform_under_attack")
 Hive.kDyingSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/hive_dying")
+Hive.kEnemyApproachesSound1 = PrecacheAsset("sound/ns2c.fev/ns2c/ui/enemy_approach1")
+Hive.kEnemyApproachesSound2 = PrecacheAsset("sound/ns2c.fev/ns2c/ui/enemy_approach2")
 
 Hive.kTriggerCatalyst2DSound = PrecacheAsset("sound/NS2.fev/alien/commander/catalyze_2D")
 Hive.kTriggerCatalystSound = PrecacheAsset("sound/NS2.fev/alien/commander/catalyze_3D")

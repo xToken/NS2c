@@ -11,6 +11,7 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Weapon.lua")
+Script.Load("lua/Weapons/BulletsMixin.lua")
 
 PrecacheAsset("cinematics/materials/umbra/ricochet.cinematic")
 
@@ -56,6 +57,7 @@ function ClipWeapon:OnCreate()
     self.blockingSecondary = false
     self.timeAttackStarted = 0
     self.deployed = false
+	InitMixin(self, BulletsMixin)
     
 end
 
@@ -430,16 +432,8 @@ local function FireBullets(self, player)
             local effectFrequency = self:GetTracerEffectFrequency()
             local showTracer = math.random() < effectFrequency
             
-            local blockedByUmbra = GetBlockedByUmbra(target)
-    
-            if blockedByUmbra then
-                surface = "umbra"
-                damage = damage * (1 - kUmbraDamageReduction)
-            end
+            self:ApplyBulletGameplayEffects(player, trace.entity, impactPoint, direction, damage, trace.surface, showTracer)
 
-            // deals damage or plays surface hit effects   
-            self:DoDamage(damage, target, endPoint, direction, surface, false, showTracer)
-            
         end
         
         local client = Server and player:GetClient() or Client

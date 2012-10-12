@@ -93,7 +93,7 @@ kTechId = enum({
     // Alien alerts
     'AlienAlertNeedHealing', 'AlienAlertStructureUnderAttack', 'AlienAlertHiveUnderAttack', 'AlienAlertHiveDying', 'AlienAlertHarvesterUnderAttack',
     'AlienAlertLifeformUnderAttack', 'AlienAlertGorgeBuiltHarvester', 'AlienCommanderEjected',
-    'AlienAlertOrderComplete',
+    'AlienAlertOrderComplete', 'AlienAlertEnemyApproaches1', 'AlienAlertEnemyApproaches2',
     'AlienAlertNotEnoughResources', 'AlienAlertResearchComplete', 'AlienAlertManufactureComplete', 'AlienAlertUpgradeComplete', 'AlienAlertHiveComplete', 'AlienAlertHiveSpecialComplete', 
     
     // Voting commands

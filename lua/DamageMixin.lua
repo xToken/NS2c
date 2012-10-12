@@ -81,7 +81,7 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                 end
                 
                 killedFromDamage = target:TakeDamage(damage, attacker, doer, point, direction, armorUsed, healthUsed, damageType)
-
+                
                 if self.OnDamageDone then
                     self:OnDamageDone(doer, target)
                 end
@@ -100,7 +100,6 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
             local armorMultiplier = ConditionalValue(damageType == kDamageType.Light, 4, 2)
             armorMultiplier = ConditionalValue(damageType == kDamageType.Heavy, 1, armorMultiplier)
         
-            local effectName = "damage"
             local playArmorEffect = armorUsed * armorMultiplier > healthUsed
             
             if not target then

@@ -78,6 +78,9 @@ local kDamageMessage =
 function BuildDamageMessage(target, amount, hitpos)
     
     local t = {}
+    if hitpos.x > kHitEffectMaxPosition or hitpos.x < -kHitEffectMaxPosition then
+        assert(false)
+    end
     t.posx = hitpos.x
     t.posy = hitpos.y
     t.posz = hitpos.z

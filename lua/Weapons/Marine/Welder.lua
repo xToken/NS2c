@@ -255,8 +255,6 @@ function Welder:PerformWeld(player)
                 target:Construct(kWelderFireDelay, player)
             end
 
-            player:OnRepair(target, target:GetHealthScalar() < 1)
-            
         end
         
     end

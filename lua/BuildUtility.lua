@@ -69,7 +69,8 @@ local function GetBuildAttachRequirementsMet(techId, position, teamNumber, snapR
             table.insert(supportingTechIds, attachId)
         end
         
-        local ents = GetEntsWithTechIdIsActive(supportingTechIds, attachRange, position)           
+        local ents = GetEntsWithTechIdIsActive(supportingTechIds, attachRange, position)
+        
         legalBuild = (table.count(ents) > 0) 
     
     end

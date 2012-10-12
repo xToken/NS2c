@@ -186,7 +186,15 @@ function CommandStructure:OnUse(player, elapsedTime, useAttachPoint, usePoint, u
         if self:GetIsBuilt() then
             player:TeleportToHive(self)
         else
-            self:OnTakeDamage(0, player, player:GetActiveWeapon(), player:GetOrigin())
+            local team = self:GetTeam()
+            if team then
+                if math.random(1,2) == 1 then
+                    team:TriggerAlert(kTechId.AlienAlertEnemyApproaches1, self)
+                else
+                    team:TriggerAlert(kTechId.AlienAlertEnemyApproaches2, self)
+                end
+            end
+            self.lastHiveFlinchEffectTime = Shared.GetTime()
         end
     end
     

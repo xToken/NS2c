@@ -1085,13 +1085,16 @@ function PlayerUI_GetWeldPercentage()
     return 0
 end
 
-function PlayerUI_GetBuildPercentage()
-    local player = Client.GetLocalPlayer()
-    if player and player.GetCurrentBuildPercentage then
-        return player:GetCurrentBuildPercentage()
-    end    
+function PlayerUI_GetUnitStatusPercentage()
 
+    local player = Client.GetLocalPlayer()
+    
+    if player and player.UnitStatusPercentage then
+        return player:UnitStatusPercentage()
+    end
+    
     return 0
+    
 end
 
 /**

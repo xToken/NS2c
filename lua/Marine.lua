@@ -94,7 +94,10 @@ local networkVars =
     flashlightLastFrame = "private boolean",
     devoured = "private boolean",
     lastjumpheight = "private float",
-    catpackboost = "private boolean"
+    catpackboost = "private boolean",
+    weaponUpgradeLevel = "integer (0 to 3)",
+    
+    unitStatusPercentage = "private integer (0 to 100)"
 }
 
 AddMixinNetworkVars(BaseMoveMixin, networkVars)
@@ -131,6 +134,10 @@ function Marine:OnCreate()
        
     if Server then
 
+
+        // stores welder / builder progress
+        self.unitStatusPercentage = 0
+        self.timeLastUnitPercentageUpdate = 0
         
     elseif Client then
     
@@ -433,29 +440,43 @@ function Marine:HandleButtons(input)
         
         if bit.band(input.commands, Move.Drop) ~= 0 then
         
-            // First check for a nearby weapon to pickup.
-            local nearbyDroppedWeapon = self:GetNearbyPickupableWeapon()
-            if nearbyDroppedWeapon then
-                if Shared.GetTime() > self.timeOfLastPickUpWeapon + kPickupWeaponTimeLimit then
-                    if nearbyDroppedWeapon.GetReplacementWeaponMapName then
-                        local replacement = nearbyDroppedWeapon:GetReplacementWeaponMapName()
-                        local toReplace = self:GetWeapon(replacement)
-                        if toReplace then  
-                            self:RemoveWeapon(toReplace)
-                            DestroyEntity(toReplace)       
-                        end   
+            if Server then
+            
+                // First check for a nearby weapon to pickup.
+                local nearbyDroppedWeapon = self:GetNearbyPickupableWeapon()
+                if nearbyDroppedWeapon then
+                
+                    if Shared.GetTime() > self.timeOfLastPickUpWeapon + kPickupWeaponTimeLimit then
+                    
+                        if nearbyDroppedWeapon.GetReplacementWeaponMapName then
+                        
+                            local replacement = nearbyDroppedWeapon:GetReplacementWeaponMapName()
+                            local toReplace = self:GetWeapon(replacement)
+                            if toReplace then
+                            
+                                self:RemoveWeapon(toReplace)
+                                DestroyEntity(toReplace)
+                                
+                            end
+                            
+                        end
+                        
+                        self:AddWeapon(nearbyDroppedWeapon, true)
+		                self:SetScoreboardChanged(true)
+		                Shared.PlayWorldSound(nil, Marine.kGunPickupSound, nil, self:GetOrigin())
+                        self.timeOfLastPickUpWeapon = Shared.GetTime()
+                        
                     end
+                    
+                else
+                
+                    // No nearby weapon, drop our current weapon.
+                    self:Drop()
+                    
                 end
-                self:AddWeapon(nearbyDroppedWeapon, true)
-                self:SetScoreboardChanged(true)
-                self.timeOfLastPickUpWeapon = Shared.GetTime()
-                if Server then
-                    Shared.PlayWorldSound(nil, Marine.kGunPickupSound, nil, self:GetOrigin())
-                end
-            else
-                // No nearby weapon, drop our current weapon.
-                self:Drop()
-            end            
+                
+            end
+            
         end
         
     end
@@ -794,7 +815,11 @@ function Marine:OnProcessMove(input)
 
     if Server then
     	self.catpackboost = Shared.GetTime() - self.timeCatpackboost < CatPack.kDuration
+        if self.unitStatusPercentage ~= 0 and self.timeLastUnitPercentageUpdate + 2 < Shared.GetTime() then
+            self.unitStatusPercentage = 0
+        end
 	end
+
 
     Player.OnProcessMove(self, input)
 
