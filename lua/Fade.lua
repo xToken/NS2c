@@ -41,15 +41,10 @@ Fade.kHealth = kFadeHealth
 Fade.kArmor = kFadeArmor
 Fade.kMass = 50 // ~350 pounds
 Fade.kJumpHeight = 1.1
-Fade.kMaxSpeed = 18
-Fade.kBlinkAccelSpeed = 12
+Fade.kMaxSpeed = 19
 Fade.kWalkSpeed = 4
+Fade.kBlinkAcceleration = 50
 Fade.kMaxCrouchSpeed = 3
-Fade.kAcceleration = 50
-Fade.kAirAcceleration = 25
-Fade.kBlinkAirAcceleration = 40
-Fade.kBlinkAirAccelerationDuration = 2
-Fade.kBlinkAcceleration = 20
 
 if Server then
     Script.Load("lua/Fade_Server.lua")
@@ -149,10 +144,6 @@ function Fade:ReceivesFallDamage()
     return false
 end
 
-function Fade:GetGroundFrictionForce()
-    return ConditionalValue(self:GetIsBlinking() or (self:GetRecentlyBlinked() and self:GetVelocity():GetLengthXZ() > Fade.kBlinkAccelSpeed), 6, 7.2)
-end
-
 function Fade:GetCanJump()
     if self:GetIsBlinking() then
         return true
@@ -197,25 +188,10 @@ function Fade:GetIsOnGround()
     return Alien.GetIsOnGround(self)
 end
 
-function Fade:GetAcceleration()
-    
-    if self:GetIsBlinking() then
-        return Fade.kBlinkAcceleration * self:GetMovementSpeedModifier()
-    end
-    if self:GetRecentlyBlinked() and self:GetVelocity():GetLengthXZ() > Fade.kBlinkAccelSpeed then
-        return Fade.kBlinkAirAcceleration * self:GetMovementSpeedModifier()
-    end
-    if not self:GetIsOnGround() then
-        return Fade.kAirAcceleration * self:GetMovementSpeedModifier()
-    end
-    
-    return Fade.kAcceleration * self:GetMovementSpeedModifier()
-end
-
 function Fade:GetMaxSpeed(possible)
 
     if possible then
-        return 8
+        return Fade.kMaxSpeed
     end
     
     //Walking

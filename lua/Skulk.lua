@@ -64,14 +64,8 @@ Skulk.kLeapVerticalForce = 7
 Skulk.kMinLeapVelocity = 18
 Skulk.kLeapTime = 0.2
 Skulk.kLeapForce = 12
-Skulk.kMaxSpeed = 20
-Skulk.kMaxGroundSpeed = 8
-Skulk.kMaxWallSpeed = 10
+Skulk.kMaxSpeed = 9
 Skulk.kMaxWalkSpeed = 4
-Skulk.kGroundFriction = 6.0
-Skulk.kGroundWalkFriction = 6.5
-Skulk.kAcceleration = 53
-Skulk.kAirAcceleration = 40
 Skulk.kJumpHeight = 1.3
 Skulk.kWallJumpForce = 2
 Skulk.kWallJumpYBoost = 6
@@ -472,49 +466,12 @@ end
 function Skulk:GetMaxSpeed(possible)
 
     if possible then
-        return 8
+        return Skulk.kMaxSpeed
     end
 
     local maxspeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Skulk.kMaxWalkSpeed, Skulk.kMaxSpeed)    
     return maxspeed * self:GetMovementSpeedModifier()
     
-end
-
-function Skulk:GetAcceleration()
-    if self:GetIsOnSurface() then
-        local maccel = math.max(Skulk.kMaxGroundSpeed - self:GetVelocity():GetLengthXZ(), 0) * 10
-        if self:GetIsWallWalking() then
-            return Skulk.kAcceleration * self:GetMovementSpeedModifier()
-        else
-            return (Skulk.kAcceleration + maccel) * self:GetMovementSpeedModifier()
-        end
-    else
-        return Skulk.kAirAcceleration * self:GetMovementSpeedModifier()
-    end
-end
-
-function Skulk:GetMass()
-    return Skulk.kMass
-end
-
-/*
-function Skulk:GetGroundFrictionForce()   
-
-    local groundFriction = ConditionalValue(self:GetIsWallWalking(), Skulk.kGroundWalkFriction, Skulk.kGroundFriction ) 
-    return groundFriction
-    
-end
-*/
-
-function Skulk:GetFrictionForce(input, velocity)
-
-    local friction = Player.GetFrictionForce(self, input, velocity)
-    if self:GetIsWallWalking() then
-        friction.y = -self:GetVelocity().y * self:GetGroundFrictionForce()
-    end
-    
-    return friction
-
 end
 
 function Skulk:GetGravityAllowed()
@@ -532,11 +489,11 @@ end
 function Skulk:AdjustGravityForce(input, gravity)
 
     // No gravity when we're sticking to a wall.
-    if self:GetIsWallWalking() then
-        gravity = 0
-    elseif self.leaping then
-        return gravity * 1
-    end
+    //if self:GetIsWallWalking() then
+        //gravity = 0
+    //elseif self.leaping then
+        //return gravity * 1
+    //end
     
     return gravity
     
@@ -615,7 +572,7 @@ function Skulk:GetJumpVelocity(input, velocity)
     self.bonusVec:Normalize()
     
     if self:GetCanWallJump() then
-        if velocity:GetLengthXZ() < Skulk.kMaxWallSpeed then
+        if velocity:GetLengthXZ() < Skulk.kMaxSpeed then
             local jumpForce = Skulk.kWallJumpForce * self:GetMovementSpeedModifier()
             self.lastwalljump = Shared.GetTime()
             velocity.x = velocity.x + self.bonusVec.x * jumpForce

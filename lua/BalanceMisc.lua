@@ -89,9 +89,9 @@ kEnergizeUpdateRate = 1
 kUpgradeGestationTime = 2
 
 // Jetpack
-kJetpackUseFuelRate = 0.36
+kJetpackUseFuelRate = 0.32
 kJetpackUpgradeUseFuelRate = 0.15
-kJetpackReplenishFuelRate = 0.18
+kJetpackReplenishFuelRate = 0.20
 
 //HA
 kHeavyArmorWeightAssist = 2.5

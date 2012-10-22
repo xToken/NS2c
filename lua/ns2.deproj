@@ -409,6 +409,9 @@
     <filename>Weapons\Alien\LerkBitePrimal.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Alien\LerkBiteSpikes.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Alien\LerkBiteUmbra.lua</filename>
   </file>
   <file>

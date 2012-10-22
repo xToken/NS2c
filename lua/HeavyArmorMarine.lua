@@ -109,10 +109,6 @@ function HeavyArmorMarine:GetArmorAmount()
     
 end
 
-function HeavyArmorMarine:GetGroundFrictionForce()
-    return Marine.GetGroundFrictionForce(self)
-end
-
 function HeavyArmorMarine:GetInventorySpeedScalar()
     return 1 - (self:GetWeaponsWeight() / kHeavyArmorWeightAssist)
 end

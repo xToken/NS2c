@@ -14,7 +14,6 @@ Script.Load("lua/BalanceMisc.lua")
 kDefaultBuildTime = 8
 // 2 = Hold Space, 1 = Queued Jumping like Quake, 0 = Default NS2
 kJumpMode = 2
-kStrafeJumpOverride = false
 
 // Resource Costs/Build/Research Times
 kCommandStationCost = 20
@@ -160,9 +159,9 @@ kPistolWeight = 0.03
 
 kWelderDamage = 4
 kWelderDamageType = kDamageType.Normal
-kWelderFireDelay = 0.33
+kWelderFireDelay = 0.4
 kWelderWeight = 0.035
-kWelderRate = 30
+kWelderRate = 60
 kWelderStructureMultipler = 2
 
 kAxeDamage = 30

@@ -417,10 +417,6 @@ function Marine:OnDestroy()
     
 end
 
-function Marine:GetGroundFrictionForce()
-    return Marine.kGroundFriction
-end
-
 function Marine:HandleButtons(input)
 
     PROFILE("Marine:HandleButtons")
@@ -542,16 +538,6 @@ end
 
 function Marine:GetCanBeWeldedOverride()
     return self:GetArmor() < self:GetMaxArmor(), false
-end
-
-function Marine:GetAcceleration()
-    local acceleration = Marine.kAcceleration
-    if not self:GetIsOnGround() then
-        acceleration = Marine.kAirAcceleration
-    end
-    acceleration = acceleration * self:GetSlowSpeedModifier() * self:GetInventorySpeedScalar()
-
-    return acceleration * self:GetCatalystMoveSpeedModifier()
 end
 
 // Returns -1 to 1

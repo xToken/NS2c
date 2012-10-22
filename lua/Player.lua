@@ -136,12 +136,6 @@ Player.kMinimumPlayerVelocity = .05    // Minimum player velocity for network pe
 Player.kWalkMaxSpeed = 4             // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
 Player.kRunMaxSpeed = 8
 Player.kAcceleration = 40
-Player.kAirAcceleration = 32
-Player.kAirBrakeWeight = 0.1
-Player.kAirZMoveWeight = 2.5
-Player.kAirZStrafeWeight = 2.5
-Player.kAirStrafeWeight = 2
-Player.kTargetViewAngle = 7.5
 Player.kStrafeJumpAccel = 1.2
 
 local kLadderAcceleration = 16
@@ -183,9 +177,6 @@ local kTurnRunDelaySpeed = 2.5
 // still blends back to default when the player starts moving.
 local kTurnMoveYawBlendToMovingSpeed = 5
 
-// This is used to push players away from each other.
-local kPlayerRepelForce = 7
-
 // Max amount of step allowed
 Player.kMaxStepAmount = 1
 
@@ -226,6 +217,7 @@ local networkVars =
     // bodyYaw must be compenstated as it feeds into the animation as a pose parameter
     bodyYaw = "compensated interpolated angle (11 bits)",
     standingBodyYaw = "angle interpolated (11 bits)",
+    strafejumpoverride = "boolean",
     
     bodyYawRun = "compensated interpolated angle (11 bits)",
     runningBodyYaw = "angle interpolated (11 bits)",
@@ -243,7 +235,7 @@ local networkVars =
     jumping = "compensated boolean",
     onGround = "compensated boolean",
     onGroundNeedsUpdate = "private boolean",
-    strafejumpoverride = "private boolean",
+
     onLadder = "boolean",
     
     // Player-specific mode. When set to kPlayerMode.Default, player moves and acts normally, otherwise
@@ -346,7 +338,7 @@ function Player:OnCreate()
     
     self.bodyYaw = 0
     self.standingBodyYaw = 0
-    self.strafejumpoverride = false
+    
     self.bodyYawRun = 0
     self.runningBodyYaw = 0
     
@@ -383,6 +375,7 @@ function Player:OnCreate()
     self.usingStructure = nil
     self.timeOfLastUse  = 0
     self.respawnQueueEntryTime = nil
+    self.strafejumpoverride = false
 
     self.timeOfDeath = nil
     self.crouching = false
@@ -1167,6 +1160,10 @@ function Player:GetTeamResources()
     return self.teamResources
 end
 
+function Player:GetVerticleMove()
+    return false
+end
+
 // MoveMixin callbacks.
 // Compute the desired velocity based on the input. Make sure that going off at 45 degree angles
 // doesn't make us faster.
@@ -1178,6 +1175,9 @@ function Player:ComputeForwardVelocity(input)
     local accel = self:GetAcceleration()
     if self:GetIsOnLadder() then
         accel = kLadderAcceleration
+        angles = self:ConvertToViewAngles(input.pitch, input.yaw, 0)
+    end
+    if self.GetIsWallWalking and self:GetIsWallWalking() then
         angles = self:ConvertToViewAngles(input.pitch, input.yaw, 0)
     end
     local viewCoords = angles:GetCoords()
@@ -1199,7 +1199,7 @@ function Player:GetIsAffectedByAirFriction()
 end
 
 function Player:GetGroundFrictionForce()
-    return ConditionalValue(self.crouching or self.isUsing, 14, 4)
+    return ConditionalValue(self.crouching or self.isUsing, 12, 4)
 end   
 
 function Player:GetAirFrictionForce()
@@ -1215,7 +1215,7 @@ function Player:GetCanClimb()
 end
 
 function Player:GetStopSpeed()
-    return 2.4
+    return 2.7
 end
 
 function Player:PerformsVerticalMove()
@@ -1241,7 +1241,7 @@ function Player:GetFrictionForce(input, velocity)
             friction = -stopSpeed * control
         end
         frictionScalar = self:GetClimbFrictionForce()
-    elseif self:GetIsOnGround() then
+    elseif self:GetIsOnSurface() then
         frictionScalar = self:GetGroundFrictionForce()
     else
         if not self:PerformsVerticalMove() then
@@ -2291,7 +2291,7 @@ function Player:GetMaxBackwardSpeedScalar()
 end
 
 function Player:GetAirMoveScalar()
-    return .7
+    return 0.8
 end
 
 /**

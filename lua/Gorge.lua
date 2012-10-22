@@ -55,19 +55,14 @@ Gorge.kMass = 80
 Gorge.kJumpHeight = 1.2
 local kStartSlideForce = 8
 local kViewOffsetHeight = 0.6
-Gorge.kMaxSpeed = 15
-Gorge.kAcceleration = 45
-Gorge.kAirAcceleration = 20
+Gorge.kMaxSpeed = 7
+Gorge.kMaxSlideSpeed = 13
 Gorge.kSlidingAccelBoost = 15
 Gorge.kGorgeCreateDistance = 3
 Gorge.kBellySlideCost = 25
 local kSlidingMoveInputScalar = 0.1
 local kBuildingModeMovementScalar = 0.001
 local kSlideCoolDown = 1.5
-
-Gorge.kAirZMoveWeight = 2.5
-Gorge.kAirStrafeWeight = 2.5
-Gorge.kAirBrakeWeight = 0.1
 
 local kGorgeBellyYaw = "belly_yaw"
 local kGorgeLeanSpeed = 2
@@ -162,18 +157,6 @@ end
 
 function Gorge:GetIsBellySliding()
     return self.sliding
-end
-
-function Gorge:GetAcceleration()
-    if self.sliding then
-        return (Gorge.kAcceleration + Gorge.kSlidingAccelBoost) * self:GetMovementSpeedModifier()
-    end
-    
-    if self:GetIsOnGround() then
-        return Gorge.kAcceleration * self:GetMovementSpeedModifier()
-    else
-        return Gorge.kAirAcceleration * self:GetMovementSpeedModifier()
-    end
 end
 
 function Gorge:HandleJump(input, velocity)
@@ -292,27 +275,6 @@ function Gorge:OverrideStrafeJump()
     return false
 end
 
-/*
-function Gorge:ConstrainMoveVelocity(moveVelocity)   
-
-    Alien.ConstrainMoveVelocity(self, moveVelocity)
-    
-    if self:GetIsBellySliding() then
-        moveVelocity:Scale(0)
-    end
-    
-end
-*/
-
-function Gorge:GetGroundFrictionForce()
-
-    if self:GetIsBellySliding() then
-        return 0.2
-    end
-
-    return Alien.GetGroundFrictionForce(self)
-end
-
 function Gorge:SetCrouchState(newCrouchState)
     self.crouching = newCrouchState
 end
@@ -320,7 +282,10 @@ end
 function Gorge:GetMaxSpeed(possible)
 
     if possible then
-        return 7
+        return Gorge.kMaxSpeed
+    end
+    if self:GetIsBellySliding() then
+        return Gorge.kMaxSlideSpeed * self:GetMovementSpeedModifier()
     end
     return Gorge.kMaxSpeed * self:GetMovementSpeedModifier()
     

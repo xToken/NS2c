@@ -43,16 +43,14 @@ Onos.kJumpHeight = 1.2
 
 // triggered when the momentum value has changed by this amount (negative because we trigger the effect when the onos stops, not accelerates)
 Onos.kMomentumEffectTriggerDiff = 3
-Onos.kGroundFrictionForce = 8
-Onos.kBaseAcceleration = 58
-Onos.kAirAcceleration = 28
-Onos.kMaxSpeed = 16
+Onos.kMaxSpeed = 8
+Onos.kMaxChargeSpeed = 15
 Onos.kMaxCrouchSpeed = 3
 
 Onos.kHealth = kOnosHealth
 Onos.kArmor = kOnosArmor
 Onos.kChargeEnergyCost = 50
-Onos.kChargeAcceleration = 120
+Onos.kChargeAcceleration = 40
 Onos.kChargeUpDuration = 0.4
 Onos.kChargeDelay = 0.1
 Onos.kMinChargeDamage = kChargeMinDamage
@@ -146,15 +144,12 @@ end
 
 function Onos:GetAcceleration()
 
-    local acceleration = Onos.kBaseAcceleration
-    if not self:GetIsOnGround() then
-        acceleration = Onos.kAirAcceleration
-    end
+    local acceleration = Player.GetAcceleration()
     if self.charging then
-        acceleration = Onos.kBaseAcceleration + (Onos.kChargeAcceleration - Onos.kBaseAcceleration) * self:GetChargeFraction() 
+        acceleration = acceleration + (Onos.kChargeAcceleration - acceleration) * self:GetChargeFraction() 
     end
     
-    return acceleration * self:GetMovementSpeedModifier()
+    return acceleration
     
 end
 
@@ -324,14 +319,10 @@ function Onos:GetMaxViewOffsetHeight()
     return Onos.kViewOffsetHeight
 end
 
-function Onos:GetGroundFrictionForce()
-    return Onos.kGroundFrictionForce
-end
-
 function Onos:GetMaxSpeed(possible)
 
     if possible then
-        return 10
+        return Onos.kMaxSpeed
     end
     
     local maxSpeed = Onos.kMaxSpeed
@@ -340,6 +331,9 @@ function Onos:GetMaxSpeed(possible)
     
     if self:GetCrouching() and self.onGround then
         maxSpeed = Onos.kMaxCrouchSpeed
+    end
+    if self.charging then
+        maxSpeed = Onos.kMaxChargeSpeed
     end
 
     return maxSpeed * self:GetMovementSpeedModifier()
