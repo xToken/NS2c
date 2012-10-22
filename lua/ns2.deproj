@@ -97,6 +97,9 @@
     <filename>BuildUtility.lua</filename>
   </file>
   <file>
+    <filename>Weapons\BulletsMixin.lua</filename>
+  </file>
+  <file>
     <filename>CatPack.lua</filename>
   </file>
   <file>
@@ -380,9 +383,6 @@
   </file>
   <file>
     <filename>InfantryPortal.lua</filename>
-  </file>
-  <file>
-    <filename>InvalidOriginMixin.lua</filename>
   </file>
   <file>
     <filename>Jetpack.lua</filename>
@@ -701,6 +701,9 @@
   </file>
   <file>
     <filename>WeaponOwnerMixin.lua</filename>
+  </file>
+  <file>
+    <filename>WeaponUtility.lua</filename>
   </file>
   <file>
     <filename>Weapons\Weapon_Server.lua</filename>

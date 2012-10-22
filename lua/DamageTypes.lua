@@ -85,7 +85,7 @@ function NS2Gamerules_GetUpgradedDamage(attacker, target, doer, damage, damageTy
                 damageScalar = 1 + (((kBombardAttackDamageMultipler - 1)/3) * level)
             end
         else
-            local focuslevel = CheckActiveWeaponForFocus(attacker)
+            local focuslevel = CheckWeaponForFocus(doer, attacker)
             if focuslevel > 0 then
                 damageScalar = 1 + (((kFocusAttackDamageMultipler - 1)/3) * focuslevel)
             end

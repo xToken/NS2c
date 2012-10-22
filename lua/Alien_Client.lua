@@ -8,7 +8,6 @@
 
 Script.Load("lua/MaterialUtility.lua")
 
-
 Alien.kFirstPersonDeathEffect = PrecacheAsset("cinematics/alien/death_1p_alien.cinematic")
 
 local kAlienFirstPersonHitEffectName = PrecacheAsset("cinematics/alien/hit_1p.cinematic")
@@ -436,13 +435,13 @@ function Alien:UpdateClientEffects(deltaTime, isLocal)
             darkVisionFadeAmount = math.max( 1 - (Shared.GetTime() - self.darkVisionEndTime) / darkVisionFadeTime, 0 )
         end
         
-        if self.screenEffects.darkVision then
+        if Player.screenEffects.darkVision then
         
-            self.screenEffects.darkVision:SetActive(self.darkVisionOn or darkVisionFadeAmount > 0)
+            Player.screenEffects.darkVision:SetActive(self.darkVisionOn or darkVisionFadeAmount > 0)
             
-            self.screenEffects.darkVision:SetParameter("startTime", self.darkVisionTime)
-            self.screenEffects.darkVision:SetParameter("time", Shared.GetTime())
-            self.screenEffects.darkVision:SetParameter("amount", darkVisionFadeAmount)
+            Player.screenEffects.darkVision:SetParameter("startTime", self.darkVisionTime)
+            Player.screenEffects.darkVision:SetParameter("time", Shared.GetTime())
+            Player.screenEffects.darkVision:SetParameter("amount", darkVisionFadeAmount)
             
         end
         

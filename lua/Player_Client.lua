@@ -19,6 +19,8 @@ kMarinePingSound = "sound/NS2.fev/marine/commander/ping"
 kAlienPingSound = "sound/NS2.fev/alien/commander/ping"
 
 Player.screenEffects = { }
+Player.screenEffects.darkVision = Client.CreateScreenEffect("shaders/DarkVision.screenfx")
+Player.screenEffects.darkVision:SetActive(false)
 Player.screenEffects.cloaked = Client.CreateScreenEffect("shaders/Cloaked.screenfx")
 Player.screenEffects.cloaked:SetActive(false)
 
@@ -690,7 +692,7 @@ function PlayerUI_GetCrosshairY()
             elseif mapname == Shotgun.kMapName then
                 index = 3
             // All alien crosshairs are the same for now
-            elseif mapname == LerkBite.kMapName or mapname == LerkBiteUmbra.kMapName or mapname == LerkBitePrimal.kMapName or mapname == Parasite.kMapName or mapname == AcidRocket.kMapName then
+            elseif mapname == LerkBite.kMapName or mapname == LerkBiteUmbra.kMapName or mapname == LerkBitePrimal.kMapName or mapname == LerkBiteSpikes.kMapName or mapname == Parasite.kMapName or mapname == AcidRocket.kMapName then
                 index = 6
             elseif(mapname == SpitSpray.kMapName) then
                 index = 7
@@ -1077,12 +1079,15 @@ function PlayerUI_GetAuxWeaponClip()
 end
 
 function PlayerUI_GetWeldPercentage()
+
     local player = Client.GetLocalPlayer()
+    
     if player and player.GetCurrentWeldPercentage then
         return player:GetCurrentWeldPercentage()
-    end    
-
+    end
+    
     return 0
+    
 end
 
 function PlayerUI_GetUnitStatusPercentage()
@@ -3475,10 +3480,6 @@ function Player:OnTakeDamageClient(damage, doer, position)
             local effectCoords = Coords.GetIdentity()
             effectCoords.yAxis = GetNormalizedVectorXY(cameraCoords.origin - position)
             effectCoords.xAxis = effectCoords.zAxis:CrossProduct(effectCoords.yAxis)
-            
-            local cinematic = Client.CreateCinematic(RenderScene.Zone_ViewModel)
-            cinematic:SetCinematic(GetFirstPersonHitEffectName(doer))
-            cinematic:SetCoords(effectCoords)
         
         end
     

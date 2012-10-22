@@ -61,7 +61,7 @@ Skulk.kHealth = kSkulkHealth
 Skulk.kArmor = kSkulkArmor
 Skulk.kLeapVerticalVelocity = 8
 Skulk.kLeapVerticalForce = 7
-Skulk.kMinLeapVelocity = 11
+Skulk.kMinLeapVelocity = 18
 Skulk.kLeapTime = 0.2
 Skulk.kLeapForce = 12
 Skulk.kMaxSpeed = 20
@@ -71,7 +71,7 @@ Skulk.kMaxWalkSpeed = 4
 Skulk.kGroundFriction = 6.0
 Skulk.kGroundWalkFriction = 6.5
 Skulk.kAcceleration = 53
-Skulk.kAirAcceleration = 30
+Skulk.kAirAcceleration = 40
 Skulk.kJumpHeight = 1.3
 Skulk.kWallJumpForce = 2
 Skulk.kWallJumpYBoost = 6
@@ -188,14 +188,14 @@ end
 
 function Skulk:OnLeap()
 
-    local velocity = self:GetVelocity() * 0.5
+    local velocity = self:GetVelocity()
     local minSpeed = math.max(0, Skulk.kMinLeapVelocity - velocity:GetLengthXZ() - Skulk.kLeapVerticalForce) * self:GetMovementSpeedModifier()
 
     local forwardVec = self:GetViewAngles():GetCoords().zAxis
-    local newVelocity = (velocity + GetNormalizedVectorXZ(forwardVec) * (Skulk.kLeapForce * self:GetMovementSpeedModifier() + minSpeed))
+    local newVelocity = (velocity + GetNormalizedVector(forwardVec) * (Skulk.kLeapForce * self:GetMovementSpeedModifier() + minSpeed))
     
     // Add in vertical component.
-    newVelocity.y = Skulk.kLeapVerticalVelocity * forwardVec.y + Skulk.kLeapVerticalForce * self:GetMovementSpeedModifier() + ConditionalValue(velocity.y < 0, velocity.y, 0)
+    //newVelocity.y = Skulk.kLeapVerticalVelocity * forwardVec.y + Skulk.kLeapVerticalForce * self:GetMovementSpeedModifier() + ConditionalValue(velocity.y < 0, velocity.y, 0)
     
     self:SetVelocity(newVelocity)
     
@@ -498,16 +498,13 @@ function Skulk:GetMass()
 end
 
 /*
-function Skulk:ConstrainMoveVelocity(wishVelocity)
-end
-*/
-
 function Skulk:GetGroundFrictionForce()   
 
     local groundFriction = ConditionalValue(self:GetIsWallWalking(), Skulk.kGroundWalkFriction, Skulk.kGroundFriction ) 
     return groundFriction
     
 end
+*/
 
 function Skulk:GetFrictionForce(input, velocity)
 

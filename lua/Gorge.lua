@@ -292,6 +292,7 @@ function Gorge:OverrideStrafeJump()
     return false
 end
 
+/*
 function Gorge:ConstrainMoveVelocity(moveVelocity)   
 
     Alien.ConstrainMoveVelocity(self, moveVelocity)
@@ -301,6 +302,7 @@ function Gorge:ConstrainMoveVelocity(moveVelocity)
     end
     
 end
+*/
 
 function Gorge:GetGroundFrictionForce()
 

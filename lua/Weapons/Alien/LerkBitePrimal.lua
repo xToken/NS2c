@@ -126,10 +126,6 @@ function LerkBitePrimal:GetPrimaryAttackUsesFocus()
     return true
 end
 
-function LerkBitePrimal:GetisUsingPrimaryAttack()
-    return self.primaryAttacking
-end
-
 function LerkBitePrimal:GetEffectParams(tableParams)
 
     Ability.GetEffectParams(self, tableParams)

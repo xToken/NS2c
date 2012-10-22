@@ -540,10 +540,6 @@ function Marine:GetMaxBackwardSpeedScalar()
     return Marine.kWalkBackwardSpeedScalar
 end
 
-function Marine:GetAirFrictionForce()
-    return 0.5
-end
-
 function Marine:GetCanBeWeldedOverride()
     return self:GetArmor() < self:GetMaxArmor(), false
 end

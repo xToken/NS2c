@@ -137,7 +137,7 @@ kDeathMessageIcon = enum( { 'None',
                             'Bite', 'HydraSpike', 'Spray', 'PrimalScream', 'Parasite',
                             'SporeCloud', 'Swipe', 'BuildAbility', 'Whip', 'BileBomb',
                             'Mine', 'Gore', 'Spit', 'Jetpack', 'Claw',
-                            'HeavyMachineGun', 'Metabolize', 'LerkBite', 'Umbra', 
+                            'Minigun', 'Metabolize', 'LerkBite', 'Umbra', 
                             'Xenocide', 'Blink', 'Leap', 'Stomp',
                             'Consumed',
                             } )

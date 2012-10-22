@@ -120,8 +120,6 @@ function Shift:OnInitialized()
     
         InitMixin(self, StaticTargetMixin)
     
-        self:AddTimedCallback(Shift.EnergizeInRange, Shift.kEnergizeThinkTime)
-        
         // This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
@@ -142,16 +140,16 @@ end
 
 function Shift:GetCanBeUsed(player, useSuccessTable)
     local hasupg, level = GetHasRedeploymentUpgrade(player)
-    if not self:GetCanConstruct(player) and not(hasupg and level > 0) then
-        useSuccessTable.useSuccess = false
-    else
+    if self:GetCanConstruct(player) or (hasupg and level > 0 and player.nextredeploy < Shared.GetTime()) then
         useSuccessTable.useSuccess = true
+    else
+        useSuccessTable.useSuccess = false
     end
 end
 
 function Shift:EnergizeInRange()
 
-    if self:GetIsBuilt() then
+    if self:GetIsBuilt() and self:GetIsAlive() then
     
         local energizeAbles = GetEntitiesWithMixinForTeamWithinRange("Energize", self:GetTeamNumber(), self:GetOrigin(), kEnergizeRange)
         
@@ -193,10 +191,24 @@ function Shift:OnUse(player, elapsedTime, useAttachPoint, usePoint, useSuccessTa
 end
 
 if Server then
-
-    function Shift:OnUpdate(deltaTime)
-        PROFILE("Shift:OnUpdate")
-        ScriptActor.OnUpdate(self, deltaTime)
+    
+    function Shift:OnConstructionComplete()
+        self:AddTimedCallback(Shift.EnergizeInRange, Shift.kEnergizeThinkTime)
+        local team = self:GetTeam()
+        if team then
+            team:OnUpgradeChamberConstructed(self)
+        end
+    end
+    
+    function Shift:OnKill(attacker, doer, point, direction)
+    
+        ScriptActor.OnKill(self, attacker, doer, point, direction)
+        
+        local team = self:GetTeam()
+        if team then
+            team:OnUpgradeChamberDestroyed(self)
+        end
+        
     end
     
 end
@@ -233,18 +245,23 @@ function Shift:TeleportPlayer(player, level)
                 local extents = LookupTechData(TechID, kTechDataMaxExtents)
                 local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)
                 local range = 6
-                local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, selectedshift:GetOrigin(), 2, range, EntityFilterAll())
-                if spawnPoint then
-                    local validForPlayer = GetIsPlacementForTechId(spawnPoint, true, TechID)
-                    local notNearResourcePoint = #GetEntitiesWithinRange("ResourcePoint", spawnPoint, 2) == 0
-                    if notNearResourcePoint then
-                        Shared.PlayWorldSound(nil, Alien.kTeleportSound, nil, self:GetOrigin())
-                        SpawnPlayerAtPoint(player, spawnPoint)
-                        success = true
-                        player.nextredeploy = Shared.GetTime() + (kRedploymentCooldownBase / level)
-                        break
+                for t = 1, 100 do //Persistance...
+                    local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, selectedshift:GetOrigin(), 2, range, EntityFilterAll())
+                    if spawnPoint then
+                        local validForPlayer = GetIsPlacementForTechId(spawnPoint, true, TechID)
+                        local notNearResourcePoint = #GetEntitiesWithinRange("ResourcePoint", spawnPoint, 2) == 0
+                        if notNearResourcePoint then
+                            Shared.PlayWorldSound(nil, Alien.kTeleportSound, nil, self:GetOrigin())
+                            SpawnPlayerAtPoint(player, spawnPoint)
+                            success = true
+                            player.nextredeploy = Shared.GetTime() + (kRedploymentCooldownBase / level)
+                            break
+                        end
                     end
                 end
+                if success then
+                    break
+                 end
              end
              
             if not success then

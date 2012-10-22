@@ -85,6 +85,7 @@ local networkVars =
     primalScreamBoost = "compensated boolean",
     unassignedhives = string.format("integer (0 to 4"),
     darkVisionOn = "private boolean",
+    nextredeploy = "private time",
     darkVisionLastFrame = "private boolean"
 }
 
@@ -124,7 +125,7 @@ function Alien:OnCreate()
     self.darkVisionLastFrame = false
     self.darkVisionTime = 0
     self.darkVisionEndTime = 0
-    
+    self.nextredeploy = 0
     self.oneHive = false
     self.twoHives = false
     self.threeHives = false

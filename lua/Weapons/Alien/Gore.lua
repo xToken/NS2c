@@ -127,10 +127,6 @@ function Gore:GetPrimaryAttackUsesFocus()
     return true
 end
 
-function Gore:GetisUsingPrimaryAttack()
-    return self.primaryAttacking
-end
-
 function Gore:OnAttackEnd()
     self.primaryAttacking = false
 end

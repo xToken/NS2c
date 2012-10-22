@@ -173,16 +173,6 @@ function Whip:OnInitialized()
     
 end
 
-function Whip:OnDestroy()
-
-    ScriptActor.OnDestroy(self)
-    
-    if Server then
-        self.movingSound = nil
-    end
-    
-end
-
 function Whip:GetDamagedAlertId()
     return kTechId.AlienAlertStructureUnderAttack
 end
@@ -309,7 +299,27 @@ elseif Server then
     function Whip:OnAiAttackHitFail(attackType)
         self.slapping = false
     end
-
+    
+    function Whip:OnConstructionComplete()
+    
+        local team = self:GetTeam()
+        if team then
+            team:OnUpgradeChamberConstructed(self)
+        end
+        
+    end
+    
+    function Whip:OnKill(attacker, doer, point, direction)
+    
+        ScriptActor.OnKill(self, attacker, doer, point, direction)
+        
+        local team = self:GetTeam()
+        if team then
+            team:OnUpgradeChamberDestroyed(self)
+        end
+    
+    end
+    
 end
 
 function Whip:GetCanBeUsed(player, useSuccessTable)

@@ -758,6 +758,7 @@ function GUIAlienHUD:UpdateHiveInformation(deltaTime)
                         self.hives[i].hivedamageAnimPlaying = Client.GetTime() + 1
                         self.hives[i].healthBar:SetColor(Color(1, 0, 0, 1), kHiveDamageAnimRate, "ANIM_HEALTH_PULSATE", AnimateQuadratic, HiveDamagePulsate )
                     else
+                        self.hives[i].hivedamageAnimPlaying = 0
                         self.hives[i].healthBar:SetColor(kHealthBarColor)
                         self.hives[i].icon:SetColor(kHealthBarColor)
                         self.hives[i].locationtext:SetColor(kHealthBarColor)
@@ -772,9 +773,9 @@ function GUIAlienHUD:UpdateHiveInformation(deltaTime)
                     self.hives[i].techId = hiveinfo.techId
                     self.hives[i].lastbuilt = hiveinfo.buildprogress
                     self.hives[i].lasttime = hiveinfo.time
-                elseif hiveinfo.time - Client.GetTime() < 5 then
+                elseif hiveinfo.time - Client.GetTime() < 5 or self.hives[i].hivedamageAnimPlaying ~= 0 then
                     if self.hives[i].hivedamageAnimPlaying ~= nil and self.hives[i].hivedamageAnimPlaying < Client.GetTime() then
-                        self.hives[i].hivedamageAnimPlaying = nil
+                        self.hives[i].hivedamageAnimPlaying = 0
                         self.hives[i].healthBar:DestroyAnimation("ANIM_HEALTH_PULSATE")
                         self.hives[i].healthBar:SetColor(kHealthBarColor)
                         self.hives[i].icon:SetColor(kHealthBarColor)

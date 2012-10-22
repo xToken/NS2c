@@ -513,6 +513,12 @@ end
  * Inform all alien players about the hive construction (add new abilities).
  */
 function AlienTeam:OnHiveConstructed(newHive)
+    
+    SendTeamMessage(self, kTeamMessageTypes.HiveConstructed, newHive:GetLocationId()) 
+    
+end
+
+function AlienTeam:OnHiveDelayedConstructed(newHive)
 
     local activeHiveCount = self:GetActiveHiveCount()
     
@@ -523,8 +529,6 @@ function AlienTeam:OnHiveConstructed(newHive)
         end
         
     end
-    
-    SendTeamMessage(self, kTeamMessageTypes.HiveConstructed, newHive:GetLocationId())
     
 end
 
@@ -545,28 +549,17 @@ function AlienTeam:OnHiveDestroyed(destroyedHive)
     
 end
 
+local checkForLostResearch = { [kTechId.Crag] = { "Crag", kTechId.Crag },
+                               [kTechId.Shift] = { "Shift", kTechId.Shift },
+                               [kTechId.Shade] = { "Shade", kTechId.Shade },
+                               [kTechId.Whip] = { "Whip", kTechId.Whip } }
+
 function AlienTeam:OnUpgradeChamberConstructed(upgradeChamber)
 
-    if upgradeChamber:GetTechId() == kTechId.CarapaceShell then
+    if upgradeChamber:GetTechId() == kTechId.Crag then
         self.updateAlienArmor = true
     end
-    
-end
 
-function AlienTeam:OnUpgradeChamberDestroyed(upgradeChamber)
-
-    if upgradeChamber:GetTechId() == kTechId.CarapaceShell then
-        self.updateAlienArmor = true
-    end
-    
-    // These is a list of all tech to check when a upgrade chamber is destroyed.
-    local checkForLostResearch = { [kTechId.RegenerationShell] = { "Shell", kTechId.Regeneration },
-                                   [kTechId.CarapaceShell] = { "Shell", kTechId.Carapace },
-                                   [kTechId.CeleritySpur] = { "Spur", kTechId.Celerity },
-                                   [kTechId.HyperMutationSpur] = { "Spur", kTechId.HyperMutation },
-                                   [kTechId.SilenceVeil] = { "Veil", kTechId.Silence },
-                                   [kTechId.AuraVeil] = { "Veil", kTechId.Aura } }
-    
     local checkTech = checkForLostResearch[upgradeChamber:GetTechId()]
     if checkTech then
     
@@ -584,6 +577,36 @@ function AlienTeam:OnUpgradeChamberDestroyed(upgradeChamber)
         end
         
         if not anyRemain then
+            SendTeamMessage(self, kTeamMessageTypes.ResearchComplete, checkTech[2])
+        end
+        
+    end
+    
+end
+
+function AlienTeam:OnUpgradeChamberDestroyed(upgradeChamber)
+
+    if upgradeChamber:GetTechId() == kTechId.Crag then
+        self.updateAlienArmor = true
+    end
+    
+    local checkTech = checkForLostResearch[upgradeChamber:GetTechId()]
+    if checkTech then
+    
+        local alreadyhas = 0
+        for _, ent in ientitylist(Shared.GetEntitiesWithClassname(checkTech[1])) do
+        
+            // Don't count the upgradeChamber as it is being constructed now.
+            if ent ~= upgradeChamber and ent:GetTechId() == upgradeChamber:GetTechId() then
+            
+                alreadyhas = alreadyhas + 1
+                break
+                
+            end
+            
+        end
+        
+        if alreadyhas < kChamberLostNotification then
             SendTeamMessage(self, kTeamMessageTypes.ResearchLost, checkTech[2])
         end
         

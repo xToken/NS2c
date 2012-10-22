@@ -51,8 +51,8 @@ Onos.kMaxCrouchSpeed = 3
 
 Onos.kHealth = kOnosHealth
 Onos.kArmor = kOnosArmor
-Onos.kChargeEnergyCost = 60
-Onos.kChargeAcceleration = 110
+Onos.kChargeEnergyCost = 50
+Onos.kChargeAcceleration = 120
 Onos.kChargeUpDuration = 0.4
 Onos.kChargeDelay = 0.1
 Onos.kMinChargeDamage = kChargeMinDamage
@@ -424,14 +424,15 @@ function Onos:DevourUpdate()
             if self.timeSinceLastDevourUpdate + Devour.kDigestionSpeed < Shared.GetTime() then   
                 //Player still being eaten, damage them
                 self.timeSinceLastDevourUpdate = Shared.GetTime()
-                if devour:DoDamage(kDevourDamage , food, nil, nil, "none" ) then
+                if devour:DoDamage(kDevourDamage , food, self:GetOrigin(), 0, "none" ) then
                     if food.OnDevouredEnd then 
                         food:OnDevouredEnd()
                     end
                     self.devouring = nil
                 end
             end
-            self:SetModel(nil)
+            
+            food:DestroyController()
             //Always update players POS relative to the onos
             food:SetOrigin(self:GetOrigin())
         else

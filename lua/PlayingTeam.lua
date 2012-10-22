@@ -605,7 +605,7 @@ function PlayingTeam:TechAdded(entity)
     // don't do anything if this tech is not prereq of another tech
     if not self.requiredTechIds[techId] then
         return
-    end    
+    end
     
     table.insertunique(self.entityTechIds, techId)
     
@@ -636,6 +636,10 @@ function PlayingTeam:TechRemoved(entity)
     
     if self.techIdCount[techId] then    
         self.techIdCount[techId] = self.techIdCount[techId] - 1    
+    end
+    
+    if techId == kTechId.Crag then
+        self.updateAlienArmorInTicks = 100
     end
     
     if self.techIdCount[techId] == nil or self.techIdCount[techId] <= 0 then

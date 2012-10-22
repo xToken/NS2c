@@ -13,13 +13,13 @@ local kElectrifiedSound = PrecacheAsset("sound/ns2c.fev/ns2c/alien/lerk/spore_hi
 ElectrifyMixin.expectedMixins =
 {
     Live = "ElectrifyMixin makes only sense if this entity can take damage (has LiveMixin).",
-    Research = "Required for electrify progress / cancellation."
+    Research = "Required for electrify progress / cancellation.",
+    Energy = "Required for visual notification for comm."
 }    
 
 ElectrifyMixin.networkVars =
 {
     isElectrified = "boolean",
-    storedelectric = "float (0 to " .. 1 .. " by 0.05 [] )",
 	lastDamagetick = "time"
 }
 
@@ -27,7 +27,6 @@ function ElectrifyMixin:__initmixin()
     self.isElectrified = false
     self.lastDamagetick = 0    
     self.lastElectrifiedTime = 0
-    self.storedelectric = 0.4
     self.lastEnergyRegen = 0
     if Client then
         self.lasteffectupdate = 0
@@ -39,7 +38,6 @@ local function ClearElectrify(self)
     self.isElectrified = false
     self.lastDamagetick = 0    
     self.lastElectrifiedTime = 0
-    self.storedelectric = 0
     self.lastEnergyRegen = 0
     if Client then
         self:_RemoveEffect()
@@ -57,6 +55,10 @@ function ElectrifyMixin:GetIsElectrified()
 	return self.isElectrified
 end
 
+function ElectrifyMixin:GetCanRegainEnergy()
+	return self.lastDamagetick + kElectrifyCooldownTime < Shared.GetTime()
+end
+
 function ElectrifyMixin:OnResearchComplete(researchId)
 
     if researchId == kTechId.Electrify then
@@ -70,7 +72,7 @@ local function UpdateClientElectrifyEffects(self)
     assert(Client)
     
     if self:GetIsElectrified() and self:GetIsAlive() then
-        if self.storedelectric >= 0.1 then
+        if self:GetEnergy() > kElectrifyEnergyCost then
             self:_CreateEffectOn()
         else
             self:_CreateEffectOff()
@@ -91,12 +93,12 @@ local function SharedUpdate(self, deltaTime)
 				local damagedentities = 0
 				for index, entity in ipairs(enemies) do
 					local attackPoint = entity:GetOrigin()     
-					if (attackPoint - self:GetOrigin()):GetLength() < damageRadius and damagedentities < kElectricalMaxTargets and self.storedelectric >= kElectrifyEnergyCost then
+					if (attackPoint - self:GetOrigin()):GetLength() < damageRadius and damagedentities < kElectricalMaxTargets and self:GetEnergy() >= kElectrifyEnergyCost then
 						if not entity:isa("Commander") and HasMixin(entity, "Live") and entity:GetIsAlive() then
 							// Make sure electrifiedbuilding can "see" target
 							local trace = Shared.TraceRay(self:GetOrigin(), attackPoint, CollisionRep.Damage, PhysicsMask.Bullets, filterNonDoors)
 							if trace.fraction == 1.0 or trace.entity == entity then
-							    self.storedelectric = math.max(self.storedelectric - kElectrifyEnergyCost, 0)
+							    self:SetEnergy(math.max(self:GetEnergy() - kElectrifyEnergyCost, 0))
 								self:DoDamage(kElectricalDamage , entity, trace.endPoint, (attackPoint - trace.endPoint):GetUnit(), "none" )
 								damagedentities = damagedentities + 1
 							end
@@ -110,11 +112,6 @@ local function SharedUpdate(self, deltaTime)
 				self.lastDamagetick = Shared.GetTime()
 			end
 		end
-		
-        if self.lastEnergyRegen + kElectrifyCooldownTime < Shared.GetTime() and self.storedelectric < 1 then
-            self.storedelectric = math.min(self.storedelectric + kElectrifyEnergyRegain, 1)
-            self.lastEnergyRegen = Shared.GetTime()
-        end
        
     elseif not Shared.GetIsRunningPrediction() then
         UpdateClientElectrifyEffects(self)

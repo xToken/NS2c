@@ -145,14 +145,6 @@ function Devour:OnPrimaryAttackEnd(player)
     self:OnAttackEnd()
 end
 
-function Devour:GetPrimaryAttackUsesFocus()
-    return false
-end
-
-function Devour:GetisUsingPrimaryAttack()
-    return self.primaryAttacking
-end
-
 function Devour:OnAttackEnd()
     self.primaryAttacking = false
 end

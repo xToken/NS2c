@@ -14,6 +14,7 @@ Script.Load("lua/BalanceMisc.lua")
 kDefaultBuildTime = 8
 // 2 = Hold Space, 1 = Queued Jumping like Quake, 0 = Default NS2
 kJumpMode = 2
+kStrafeJumpOverride = false
 
 // Resource Costs/Build/Research Times
 kCommandStationCost = 20
@@ -159,7 +160,7 @@ kPistolWeight = 0.03
 
 kWelderDamage = 4
 kWelderDamageType = kDamageType.Normal
-kWelderFireDelay = 0.4
+kWelderFireDelay = 0.33
 kWelderWeight = 0.035
 kWelderRate = 30
 kWelderStructureMultipler = 2
@@ -204,7 +205,7 @@ kNumHandGrenades = 2
 kHandGrenadesRange = 4
 kHandGrenadesDamage = 80
 kHandGrenadesDamageType = kDamageType.Normal
-kHandGrenadesLifetime = 2.5
+kHandGrenadesLifetime = 0.75
 kHandGrenadesWeight = 0.025
 
 kSentryAttackDamage = 10
@@ -222,7 +223,6 @@ kSentryDamageRampUpDuration = 5
 kARCDamage = 400
 kARCDamageType = kDamageType.StructuresOnly // splash damage hits friendly arcs as well
 kARCRange = 26 //1100 NS1
-kARCMinRange = 7
 
 kWeapons1DamageScalar = 1.1
 kWeapons2DamageScalar = 1.2
@@ -235,8 +235,10 @@ kElectricalUpgradeResearchCost = 20
 kElectricalUpgradeResearchTime = 30
 kElectrifyDamageTime = 1
 kElectrifyCooldownTime = 10
-kElectrifyEnergyRegain = 0.2
-kElectrifyEnergyCost = 0.1
+kElectrifyEnergyRegain = 25
+kElectrifyEnergyCost = 10
+kExtractorInitialEnergy = 25
+kExtractorMaxEnergy = 100
 
 // ALIEN DAMAGE
 kBiteDamage = 75

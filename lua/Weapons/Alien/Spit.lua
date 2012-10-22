@@ -52,6 +52,10 @@ function Spit:TimeUp()
     
 end
 
+function Spit:GetPrimaryAttackUsesFocus()
+    return true
+end
+
 function Spit:GetSimulatePhysics()
     return not self:GetIsOnSurface()
 end

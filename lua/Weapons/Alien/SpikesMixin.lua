@@ -27,9 +27,16 @@ SpikesMixin.overrideFunctions =
 SpikesMixin.networkVars =
 {
     shootingSpikes = "boolean",
+    lastSecondaryAttackTime = "time",
     // need to use a network variable for silence upgrade here, since the marines do not know the alien tech tree
     silenced = "boolean"
 }
+
+function SpikesMixin:__initmixin()
+    self.lastSecondaryAttackTime = 0
+    shootginSpikes = false
+    silenced = false
+end
 
 local function FireSpikes(self)
 
@@ -109,7 +116,7 @@ function SpikesMixin:OnSecondaryAttackEnd(player)
 end
 
 function SpikesMixin:GetHasSecondary(player)
-    return player:GetHasThreeHives()
+    return true
 end
 
 function SpikesMixin:GetSecondaryEnergyCost(player)

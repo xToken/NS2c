@@ -142,6 +142,7 @@ Script.Load("lua/TeamInfo.lua")
 Script.Load("lua/GameInfo.lua")
 Script.Load("lua/AlienTeamInfo.lua")
 Script.Load("lua/PathingUtility.lua")
+Script.Load("lua/DAKLoader.lua")
 
 gHeightMap = gHeightMap // survive hotloading; will be nil the first time
 

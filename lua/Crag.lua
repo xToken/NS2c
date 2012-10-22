@@ -129,8 +129,6 @@ function Crag:OnInitialized()
     if Server then
     
         InitMixin(self, StaticTargetMixin)
-        
-        self:AddTimedCallback(Crag.HealInRange, Crag.kHealInterval)
 
     // This Mixin must be inited inside this OnInitialized() function.
     if not HasMixin(self, "MapBlip") then
@@ -152,7 +150,7 @@ end
 
 function Crag:HealInRange()
 
-    if self:GetIsBuilt() then
+    if self:GetIsBuilt() and self:GetIsAlive() then
     
         local healtargets = GetEntitiesWithMixinForTeamWithinRange("Live", self:GetTeamNumber(), self:GetOrigin(), Crag.kHealRadius)
         local entsHealed = 0
@@ -221,6 +219,32 @@ function Crag:GetCanBeUsed(player, useSuccessTable)
         useSuccessTable.useSuccess = false
     else
         useSuccessTable.useSuccess = true
+    end
+    
+end
+
+if Server then
+
+    function Crag:OnConstructionComplete()
+    
+        self:AddTimedCallback(Crag.HealInRange, Crag.kHealInterval)
+        
+        local team = self:GetTeam()
+        if team then
+            team:OnUpgradeChamberConstructed(self)
+        end
+        
+    end
+    
+    function Crag:OnKill(attacker, doer, point, direction)
+    
+        ScriptActor.OnKill(self, attacker, doer, point, direction)
+        
+        local team = self:GetTeam()
+        if team then
+            team:OnUpgradeChamberDestroyed(self)
+        end
+        
     end
     
 end

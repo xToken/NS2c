@@ -19,9 +19,12 @@ kHiveUnderAttackTime = 15
 kMaxAlienStructureRange = 25
 kMaxAlienStructuresofType = 8
 kMaxBuildingHives = 1
+kChamberLostNotification = 1
 kPingOfDeathDelay = 2
 kPingOfDeathDamagePercent = 12
 kResearchMod = 1
+kAirMaxSpeedScalar = 1.8
+kOnLandDelay = 0.03
 
 kGhostStructureModifier = .75
 kEnergyUpdateRate = 0.25
@@ -35,6 +38,7 @@ kRecycleRefundScalar = 0.5
 kParasiteDuration = -1
 kFallDamageMinimumVelocity = 15
 kFallDamageScalar = 13
+kKnockbackTime = 0.05
 
 kCeleritySpeedModifier = 0.2
 kFocusAttackSlowdown = 0.5
@@ -53,8 +57,8 @@ kGhostMotionTrackingDodgePerLevel = 33
 kGhostObservatoryDodgePerLevel = 33
 kGhostMinimapDodgePerLevel = 33
 kGhostScanDodgePerLevel = 33
-kAlienBaseMoveNoise = 5
-kAlienRandMoveNoise = 12
+kAlienBaseMoveNoise = 4
+kAlienRandMoveNoise = 8
 
 // per second
 kAlienVisionCost = 0
@@ -87,7 +91,7 @@ kUpgradeGestationTime = 2
 // Jetpack
 kJetpackUseFuelRate = 0.36
 kJetpackUpgradeUseFuelRate = 0.15
-kJetpackReplenishFuelRate = 0.16
+kJetpackReplenishFuelRate = 0.18
 
 //HA
 kHeavyArmorWeightAssist = 2.5

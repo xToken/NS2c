@@ -116,14 +116,6 @@ function SpitSpray:OnPrimaryAttackEnd(player)
     
 end
 
-function SpitSpray:GetPrimaryAttackUsesFocus()
-    return true
-end
-
-function SpitSpray:GetisUsingPrimaryAttack()
-    return self.primaryAttacking
-end
-
 function SpitSpray:OnTag(tagName)
 
     PROFILE("SpitSpray:OnTag")

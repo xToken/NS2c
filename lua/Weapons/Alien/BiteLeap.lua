@@ -114,10 +114,6 @@ function BiteLeap:GetPrimaryAttackUsesFocus()
     return true
 end
 
-function BiteLeap:GetisUsingPrimaryAttack()
-    return self.primaryAttacking
-end
-
 function BiteLeap:GetEffectParams(tableParams)
 
     Ability.GetEffectParams(self, tableParams)

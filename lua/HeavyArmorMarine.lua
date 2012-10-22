@@ -157,10 +157,6 @@ function HeavyArmorMarine:GetMaxBackwardSpeedScalar()
     return HeavyArmorMarine.kWalkBackwardSpeedScalar
 end
 
-function HeavyArmorMarine:GetAirFrictionForce()
-    return 0.08 + 2 * self.slowAmount
-end
-
 function HeavyArmorMarine:GetCanBeWeldedOverride()
     return self:GetArmor() < self:GetMaxArmor(), false
 end

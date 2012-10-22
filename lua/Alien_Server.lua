@@ -132,6 +132,27 @@ function Alien:UpdateAutoHeal()
 
 end
 
+local kAbilityData = { [kTechId.Skulk] = { kTechId.Parasite, kTechId.Leap, kTechId.Xenocide }, 
+                       [kTechId.Gorge] = { kTechId.Spray, kTechId.BileBomb, kTechId.Web },
+                       [kTechId.Lerk] = { kTechId.Spores, kTechId.Umbra, kTechId.PrimalScream }, 
+                       [kTechId.Fade] = { kTechId.Blink, kTechId.Metabolize, kTechId.AcidRocket },
+                       [kTechId.Onos] = { kTechId.Charge, kTechId.Stomp, kTechId.Smash } }
+
+function Alien:OnHiveConstructed(newHive, activeHiveCount)
+    
+    local AbilityData = kAbilityData[self:GetTechId()]
+    if AbilityData[activeHiveCount] ~= nil then
+        SendPlayersMessage({self}, kTeamMessageTypes.ResearchComplete, AbilityData[activeHiveCount])
+    end
+end
+
+function Alien:OnHiveDestroyed(destroyedHive, activeHiveCount)
+    local AbilityData = kAbilityData[self:GetTechId()]
+    if AbilityData[activeHiveCount + 1] ~= nil then
+        SendPlayersMessage({self}, kTeamMessageTypes.ResearchLost, AbilityData[activeHiveCount + 1])
+    end
+end
+
 function Alien:GetDamagedAlertId()
     return kTechId.AlienAlertLifeformUnderAttack
 end
@@ -215,7 +236,11 @@ function Alien:ProcessBuyAction(techIds)
     local evolveAllowed = true
     evolveAllowed = evolveAllowed and GetHasRoomForCapsule(eggExtents, position + Vector(0, eggExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
     evolveAllowed = evolveAllowed and GetHasRoomForCapsule(newAlienExtents, position + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
- 
+    if self:GetTechId() == kTechId.Onos then
+        if self.devouring then
+            evolveAllowed = false
+        end
+    end
     if evolveAllowed then
     
         // Deduct cost here as player is immediately replaced and copied.
@@ -253,7 +278,7 @@ function Alien:ProcessBuyAction(techIds)
         else    
 
             self:AddResources(math.min(0, -totalCosts))
-            
+
             local newPlayer = self:Replace(Embryo.kMapName)
             position.y = position.y + Embryo.kEvolveSpawnOffset
             newPlayer:SetOrigin(position)

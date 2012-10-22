@@ -127,10 +127,6 @@ function LerkBiteUmbra:GetPrimaryAttackUsesFocus()
     return true
 end
 
-function LerkBiteUmbra:GetisUsingPrimaryAttack()
-    return self.primaryAttacking
-end
-
 function LerkBiteUmbra:GetEffectParams(tableParams)
 
     Ability.GetEffectParams(self, tableParams)

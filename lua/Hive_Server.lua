@@ -93,19 +93,6 @@ local function EmptySpawnWave(self)
     
 end
 
-function Hive:OnDestroy()
-
-    EmptySpawnWave(self)
-    
-    local team = self:GetTeam()
-    
-    if team then
-        team:OnHiveDestroyed(self)
-    end
-    
-    CommandStructure.OnDestroy(self)
-end
-
 function Hive:GetTeamType()
     return kAlienTeamType
 end
@@ -303,6 +290,13 @@ end
 
 function Hive:OnKill(attacker, doer, point, direction)
 
+    if self:GetIsBuilt() then
+
+        EmptySpawnWave(self)
+        self:AddTimedCallback(Hive.OnDelayedKill, 2)
+
+    end    
+
     CommandStructure.OnKill(self, attacker, doer, point, direction)
     
     local team = self:GetTeam()
@@ -311,6 +305,14 @@ function Hive:OnKill(attacker, doer, point, direction)
         SendTeamMessage(team, kTeamMessageTypes.HiveKilled, self:GetLocationId())
     end
     
+end
+
+function Hive:OnDelayedKill()
+    local team = self:GetTeam()
+    if team then
+        team:OnHiveDestroyed(self)
+    end
+    return false
 end
 
 function Hive:GenerateEggSpawns(hiveLocationName)
@@ -488,6 +490,17 @@ function Hive:OnConstructionComplete()
         self:OnResearchComplete(kTechId.UpgradeToWhipHive)
     end
     
+    self:AddTimedCallback(Hive.OnDelayedConstructionComplete, 2)
+    
+end
+
+function Hive:OnDelayedConstructionComplete()
+    local team = self:GetTeam()
+    
+    if team and self:GetIsAlive() then    
+        team:OnHiveDelayedConstructed(self)        
+    end
+    return false
 end
 
 function Hive:GetIsPlayerValidForCommander(player)

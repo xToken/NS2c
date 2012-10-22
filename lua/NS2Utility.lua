@@ -1707,21 +1707,17 @@ function CalcEggSpawnTime(numPlayers, eggNumber, numDeadPlayers)
     return kEggSpawnTime
 end
 
-function CheckActiveWeaponForFocus(player)
+function CheckWeaponForFocus(doer, player)
     
-    if player.GetActiveWeapon then
-        local activeWeapon = player:GetActiveWeapon()
-        local hasupg, level = GetHasFocusUpgrade(player)
-        if activeWeapon == nil then 
-            return 0 
-        end
-        if activeWeapon and hasupg and level > 0 then
-            if activeWeapon:GetPrimaryAttackUsesFocus() and activeWeapon:GetisUsingPrimaryAttack() then
-                return level    
-            end
+    local hasupg, level = GetHasFocusUpgrade(player)
+    if doer == nil then 
+        return 0 
+    end
+    if doer and hasupg and level > 0 then
+        if doer.GetPrimaryAttackUsesFocus and doer:GetPrimaryAttackUsesFocus() then
+            return level    
         end
     end
-        
     return 0
 end
 
