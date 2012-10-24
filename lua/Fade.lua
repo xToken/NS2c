@@ -41,9 +41,11 @@ Fade.kHealth = kFadeHealth
 Fade.kArmor = kFadeArmor
 Fade.kMass = 50 // ~350 pounds
 Fade.kJumpHeight = 1.1
-Fade.kMaxSpeed = 19
+Fade.kMaxSpeed = 8
+Fade.kMaxBlinkSpeed = 19
 Fade.kWalkSpeed = 4
 Fade.kBlinkAcceleration = 50
+Fade.kBlinkAccelerationDuration = 2
 Fade.kMaxCrouchSpeed = 3
 
 if Server then
@@ -194,12 +196,23 @@ function Fade:GetMaxSpeed(possible)
         return Fade.kMaxSpeed
     end
     
-    //Walking
-    local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Fade.kWalkSpeed, Fade.kMaxSpeed)
+    local maxspeed = Fade.kMaxSpeed
+        
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = Fade.kWalkSpeed
+    elseif self:GetIsOnSurface() and (self.landtime + kOnLandDelay) < Shared.GetTime() then
+        maxSpeed = Fade.kMaxSpeed
+    else
+        maxSpeed = Fade.kMaxSpeed * kAirMaxSpeedScalar
+    end
     
-        // Take into account crouching
-    if self:GetCrouching() and self:GetIsOnGround() and not self:GetRecentlyBlinked() then
+    // Take into account crouching
+    if self:GetCrouching() and self:GetIsOnGround() then
         maxSpeed = Fade.kMaxCrouchSpeed
+    end
+    
+    if self:GetIsBlinking() or self:GetRecentlyBlinked() then
+        maxSpeed = Fade.kMaxBlinkSpeed
     end
 
     return maxSpeed * self:GetMovementSpeedModifier()
@@ -223,7 +236,7 @@ function Fade:GetIsBlinking()
 end
 
 function Fade:GetRecentlyBlinked()
-    return Shared.GetTime() - self.etherealEndTime < Fade.kBlinkAirAccelerationDuration
+    return Shared.GetTime() - self.etherealEndTime < Fade.kBlinkAccelerationDuration
 end
 
 function Fade:GetBlinkCooldown()

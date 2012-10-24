@@ -68,12 +68,9 @@ Marine.kArmorPerUpgradeLevel = kArmorPerUpgradeLevel
 // Player phase delay - players can only teleport this often
 Marine.kPlayerPhaseDelay = 2
 Marine.kStunDuration = 2
-Marine.kAcceleration = 58
-Marine.kAirAcceleration = 28
 Marine.kWalkMaxSpeed = 3.75                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
-Marine.kRunMaxSpeed = 9
+Marine.kRunMaxSpeed = 7
 Marine.kDoubleJumpMinHeightChange = 0.4
-Marine.kGroundFriction = 8
 
 // How fast does our armor get repaired by welders
 Marine.kArmorWeldRate = 25
@@ -510,7 +507,15 @@ function Marine:GetMaxSpeed(possible)
     end
     
     //Walking
-    local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Marine.kWalkMaxSpeed,  Marine.kRunMaxSpeed)
+    local maxSpeed = Marine.kRunMaxSpeed
+    
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = Marine.kWalkMaxSpeed
+    elseif self:GetIsOnSurface() and (self.landtime + kOnLandDelay) < Shared.GetTime() then
+        maxSpeed = Marine.kRunMaxSpeed
+    else
+        maxSpeed = Marine.kRunMaxSpeed * kAirMaxSpeedScalar
+    end
     
     // Take into account crouching
     if self:GetCrouching() and self:GetIsOnGround() then

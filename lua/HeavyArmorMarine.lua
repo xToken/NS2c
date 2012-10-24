@@ -59,8 +59,8 @@ HeavyArmorMarine.kMass = 200
 HeavyArmorMarine.kAcceleration = 45
 HeavyArmorMarine.kAirAcceleration = 17
 HeavyArmorMarine.kAirStrafeWeight = 4
-HeavyArmorMarine.kWalkMaxSpeed = 3.75
-HeavyArmorMarine.kRunMaxSpeed = 8
+HeavyArmorMarine.kWalkMaxSpeed = 3.5
+HeavyArmorMarine.kRunMaxSpeed = 6
 // How fast does our armor get repaired by welders
 HeavyArmorMarine.kArmorWeldRate = 25
 HeavyArmorMarine.kWeldedEffectsInterval = .5
@@ -127,8 +127,15 @@ function HeavyArmorMarine:GetMaxSpeed(possible)
         return 0
     end
     
-    //Walking
-    local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), HeavyArmorMarine.kWalkMaxSpeed,  HeavyArmorMarine.kRunMaxSpeed)
+    local maxSpeed = HeavyArmorMarine.kRunMaxSpeed
+        
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = HeavyArmorMarine.kWalkMaxSpeed
+    elseif self:GetIsOnSurface() and (self.landtime + kOnLandDelay) < Shared.GetTime() then
+        maxSpeed = HeavyArmorMarine.kRunMaxSpeed
+    else
+        maxSpeed = HeavyArmorMarine.kRunMaxSpeed * kAirMaxSpeedScalar
+    end
     
     // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
     local inventorySpeedScalar = self:GetInventorySpeedScalar()
@@ -176,16 +183,6 @@ end
 
 function HeavyArmorMarine:GetMass()
     return HeavyArmorMarine.kMass
-end
-
-function HeavyArmorMarine:GetAcceleration()
-    local acceleration = HeavyArmorMarine.kAcceleration
-    if not self:GetIsOnGround() then
-        acceleration = HeavyArmorMarine.kAirAcceleration
-    end
-    acceleration = acceleration * self:GetSlowSpeedModifier() * self:GetInventorySpeedScalar()
-
-    return acceleration * self:GetCatalystMoveSpeedModifier()
 end
 
 function HeavyArmorMarine:OnUpdateAnimationInput(modelMixin)

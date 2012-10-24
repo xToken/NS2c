@@ -136,7 +136,7 @@ Player.kMinimumPlayerVelocity = .05    // Minimum player velocity for network pe
 Player.kWalkMaxSpeed = 4             // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
 Player.kRunMaxSpeed = 8
 Player.kAcceleration = 40
-Player.kStrafeJumpAccel = 1.2
+Player.kStrafeJumpAccel = 1
 
 local kLadderAcceleration = 16
 
@@ -217,7 +217,6 @@ local networkVars =
     // bodyYaw must be compenstated as it feeds into the animation as a pose parameter
     bodyYaw = "compensated interpolated angle (11 bits)",
     standingBodyYaw = "angle interpolated (11 bits)",
-    strafejumpoverride = "boolean",
     
     bodyYawRun = "compensated interpolated angle (11 bits)",
     runningBodyYaw = "angle interpolated (11 bits)",
@@ -375,7 +374,6 @@ function Player:OnCreate()
     self.usingStructure = nil
     self.timeOfLastUse  = 0
     self.respawnQueueEntryTime = nil
-    self.strafejumpoverride = false
 
     self.timeOfDeath = nil
     self.crouching = false
@@ -1346,7 +1344,7 @@ function Player:OnClampSpeed(input, velocity)
         moveSpeed = velocity:GetLengthXZ()   
     end
     
-    local maxSpeed = ConditionalValue(self:GetIsOnGround() and (self.landtime + kOnLandDelay) < Shared.GetTime(), self:GetMaxSpeed(), self:GetMaxSpeed() * kAirMaxSpeedScalar)
+    local maxSpeed = self:GetMaxSpeed()
     
     // Players moving backwards can't go full speed.
     if input.move.z < 0 then
@@ -2291,7 +2289,7 @@ function Player:GetMaxBackwardSpeedScalar()
 end
 
 function Player:GetAirMoveScalar()
-    return 0.8
+    return 0.7
 end
 
 /**
@@ -2583,13 +2581,12 @@ function Player:ModifyVelocity(input, velocity)
         self:HandleOnGround(input, velocity)
     end
     
-    if not self:OverrideStrafeJump() and not onground and (not self.GetIsBlinking or not self:GetIsBlinking()) and not self.strafejumpoverride then
+    if not self:OverrideStrafeJump() and not onground then//and (not self.GetIsBlinking or not self:GetIsBlinking()) then
         if input.move:GetLength() ~= 0 then
             local moveLengthXZ = velocity:GetLengthXZ()
             local viewCoords = self:GetViewCoords()
             local previousY = velocity.y
             local adjustedZ = false
-            local accelerationangle = 0.86
             
             if input.move.z ~= 0 then
                 local redirectedVelocityZ = GetNormalizedVectorXZ(viewCoords.zAxis) * input.move.z
@@ -2602,9 +2599,7 @@ function Player:ModifyVelocity(input, velocity)
                     xzVelocity.y = 0
                     VectorCopy(velocity - (xzVelocity * input.time), velocity)
                 else                    
-                    accelerationangle = math.max(0, GetNormalizedVectorXZ(velocity):DotProduct(redirectedVelocityZ))
-                    accelerationangle = math.pow(accelerationangle, 2)
-                    redirectedVelocityZ = redirectedVelocityZ * input.time * accelerationangle * Player.kStrafeJumpAccel + GetNormalizedVectorXZ(velocity)
+                    redirectedVelocityZ = redirectedVelocityZ * input.time + GetNormalizedVectorXZ(velocity)
                     redirectedVelocityZ:Normalize()                
                     redirectedVelocityZ:Scale(moveLengthXZ)
                     redirectedVelocityZ.y = previousY
@@ -2615,7 +2610,7 @@ function Player:ModifyVelocity(input, velocity)
             if input.move.x ~= 0  then                
                 local redirectedVelocityX = GetNormalizedVectorXZ(viewCoords.xAxis) * input.move.x
                 if adjustedZ then
-                    redirectedVelocityX = redirectedVelocityX * input.time * accelerationangle * Player.kStrafeJumpAccel + GetNormalizedVectorXZ(velocity)
+                    redirectedVelocityX = redirectedVelocityX * input.time + GetNormalizedVectorXZ(velocity)
                 else
                     redirectedVelocityX = redirectedVelocityX * input.time * 0.5 + GetNormalizedVectorXZ(velocity)
                 end
@@ -2624,15 +2619,13 @@ function Player:ModifyVelocity(input, velocity)
                 redirectedVelocityX.y = previousY       
                 VectorCopy(redirectedVelocityX,  velocity)
             end
-            self.lastspeedgain = accelerationangle
         end
     end
     
 end
 
-
 function Player:GetSpeedDebugSpecial()
-    return self.lastspeedgain
+    return 0
 end
 
 function Player:HandleOnGround(input, velocity)

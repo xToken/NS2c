@@ -49,7 +49,7 @@ Onos.kMaxCrouchSpeed = 3
 
 Onos.kHealth = kOnosHealth
 Onos.kArmor = kOnosArmor
-Onos.kChargeEnergyCost = 50
+Onos.kChargeEnergyCost = 35
 Onos.kChargeAcceleration = 40
 Onos.kChargeUpDuration = 0.4
 Onos.kChargeDelay = 0.1
@@ -146,7 +146,7 @@ function Onos:GetAcceleration()
 
     local acceleration = Player.GetAcceleration()
     if self.charging then
-        acceleration = acceleration + (Onos.kChargeAcceleration - acceleration) * self:GetChargeFraction() 
+        acceleration = acceleration + Onos.kChargeAcceleration * self:GetChargeFraction() 
     end
     
     return acceleration
@@ -325,9 +325,7 @@ function Onos:GetMaxSpeed(possible)
         return Onos.kMaxSpeed
     end
     
-    local maxSpeed = Onos.kMaxSpeed
-    
-    // Take into account crouching
+    local maxSpeed = ConditionalValue(self:GetIsOnSurface() and (self.landtime + kOnLandDelay) < Shared.GetTime(), Onos.kMaxSpeed, Onos.kMaxSpeed * kAirMaxSpeedScalar)
     
     if self:GetCrouching() and self.onGround then
         maxSpeed = Onos.kMaxCrouchSpeed

@@ -1005,14 +1005,6 @@ local function OnCommandRespawnTeam(client, teamNum)
     
 end
 
-local function OnCommandStrafeJumpToggle(client)
-    local allPlayers = Shared.GetEntitiesWithClassname("Player")
-    // If any player scoreboard info has changed, send those updates to everyone
-    for index, fromPlayer in ientitylist(allPlayers) do
-        fromPlayer.strafejumpoverride = not fromPlayer.strafejumpoverride
-    end
-end
-
 // GC commands
 Event.Hook("Console_changegcsettingserver", OnCommandChangeGCSettingServer)
 
@@ -1095,4 +1087,3 @@ Event.Hook("Console_gothere", OnCommandGoThere)
 Event.Hook("Console_rupture", OnCommandRupture)
 
 Event.Hook("Console_debugcommander", OnCommandDebugCommander)
-Event.Hook("Console_strafejumptoggle", OnCommandStrafeJumpToggle)

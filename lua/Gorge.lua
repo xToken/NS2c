@@ -53,11 +53,11 @@ Gorge.kYExtents = 0.475
 
 Gorge.kMass = 80
 Gorge.kJumpHeight = 1.2
-local kStartSlideForce = 8
+local kStartSlideForce = 15
 local kViewOffsetHeight = 0.6
 Gorge.kMaxSpeed = 7
 Gorge.kMaxSlideSpeed = 13
-Gorge.kSlidingAccelBoost = 15
+Gorge.kSlidingAccelBoost = 3
 Gorge.kGorgeCreateDistance = 3
 Gorge.kBellySlideCost = 25
 local kSlidingMoveInputScalar = 0.1
@@ -284,10 +284,14 @@ function Gorge:GetMaxSpeed(possible)
     if possible then
         return Gorge.kMaxSpeed
     end
+        
+    local maxSpeed = ConditionalValue(self:GetIsOnSurface() and (self.landtime + kOnLandDelay) < Shared.GetTime(), Gorge.kMaxSpeed, Gorge.kMaxSpeed * kAirMaxSpeedScalar)
+    
     if self:GetIsBellySliding() then
-        return Gorge.kMaxSlideSpeed * self:GetMovementSpeedModifier()
+        maxSpeed = Gorge.kMaxSlideSpeed
     end
-    return Gorge.kMaxSpeed * self:GetMovementSpeedModifier()
+
+    return maxSpeed * self:GetMovementSpeedModifier()
     
 end
 
