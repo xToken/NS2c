@@ -115,6 +115,10 @@ function SpikesMixin:OnSecondaryAttackEnd(player)
 
 end
 
+function SpikesMixin:OnHolster()
+    self.secondaryAttacking = false
+end
+
 function SpikesMixin:GetHasSecondary(player)
     return true
 end
@@ -188,6 +192,13 @@ function SpikesMixin:OnClientSecondaryAttacking()
         self:TriggerEffects("spikes_attack")
     end
     
+end
+
+function SpikesMixin:GetTriggerSecondaryEffects()
+
+    local parent = self:GetParent()
+    return parent ~= nil and parent:GetIsAlive()
+
 end
 
 function SpikesMixin:GetDamageType()

@@ -133,9 +133,6 @@
     <filename>Commander_Client.lua</filename>
   </file>
   <file>
-    <filename>Commander_IdleWorkerPanel.lua</filename>
-  </file>
-  <file>
     <filename>Commander_PlayerAlertPanel.lua</filename>
   </file>
   <file>
@@ -299,9 +296,6 @@
   </file>
   <file>
     <filename>GUIUnitStatus.lua</filename>
-  </file>
-  <file>
-    <filename>GUIWaypoints.lua</filename>
   </file>
   <file>
     <filename>GeneralEffects.lua</filename>
@@ -545,9 +539,6 @@
   </file>
   <file>
     <filename>PrototypeLab_Server.lua</filename>
-  </file>
-  <file>
-    <filename>RagdollMixin.lua</filename>
   </file>
   <file>
     <filename>ReadyRoomTeam.lua</filename>

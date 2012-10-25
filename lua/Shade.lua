@@ -114,7 +114,7 @@ function Shade:OnCreate()
     if Server then
     
         //InitMixin(self, TriggerMixin, {kPhysicsGroup = PhysicsGroup.TriggerGroup, kFilterMask = PhysicsMask.AllButTriggers} )    
-    else
+    elseif Client then
         InitMixin(self, CommanderGlowMixin)            
     end
     

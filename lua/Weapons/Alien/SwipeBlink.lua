@@ -147,12 +147,6 @@ function SwipeBlink:PerformMeleeAttack()
     
 end
 
-function SwipeBlink:GetEffectParams(tableParams)
-
-    Blink.GetEffectParams(self, tableParams)
-    
-end
-
 function SwipeBlink:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("SwipeBlink:OnUpdateAnimationInput")

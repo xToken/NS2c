@@ -268,14 +268,6 @@ function Pistol:UpdateViewModelPoseParameters(viewModel)
     viewModel:SetPoseParam("empty", self.emptyPoseParam)
 end
 
-function Pistol:GetEffectParams(tableParams)
-
-    ClipWeapon.GetEffectParams(self, tableParams)
-    
-    tableParams[kEffectFilterInAltMode] = self.altMode
-    
-end
-
 function Pistol:OnTag(tagName)
 
     PROFILE("Pistol:OnTag")

@@ -13,6 +13,11 @@ local function SetupDefaultConfig()
 	kDAKConfig.ReservedSlots.kReserveSlotServerFullDisconnectReason = "Server is full."
 	kDAKConfig.ReservedSlots.kReserveSlotKickedForRoom = "**You're being kicked due to a reserved slot, this is automatically determined**"
 	kDAKConfig.ReservedSlots.kReserveSlotKickedDisconnectReason = "Kicked due to a reserved slot."
+	SaveDAKConfig()
 end
 
 table.insert(kDAKPluginDefaultConfigs, {PluginName = "ReservedSlots", DefaultConfig = function() SetupDefaultConfig() end })
+
+if kDAKConfig.ReservedSlots == nil then
+	SetupDefaultConfig()
+end

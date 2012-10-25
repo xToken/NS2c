@@ -11,6 +11,7 @@ Script.Load("lua/GUIAnimatedScript.lua")
 local kMouseOverSound = "sound/NS2.fev/alien/common/alien_menu/hover"
 local kSelectSound = "sound/NS2.fev/alien/common/alien_menu/evolve"
 local kCloseSound = "sound/NS2.fev/alien/common/alien_menu/sell_upgrade"
+local kFontName = "fonts/AgencyFB_small.fnt"
 Client.PrecacheLocalSound(kMouseOverSound)
 Client.PrecacheLocalSound(kSelectSound)
 Client.PrecacheLocalSound(kCloseSound)
@@ -31,7 +32,7 @@ function GorgeBuild_Close()
     local player = Client.GetLocalPlayer()
     
     local activeWeapon = player:GetActiveWeapon()
-
+    
     if activeWeapon.DestroyBuildMenu then
         activeWeapon:DestroyBuildMenu()
     end    
@@ -39,9 +40,23 @@ end
 
 function GorgeBuild_SendSelect(index)
 
-    local message = BuildGorgeSelectStructureMessage(index)
-    Client.SendNetworkMessage("GorgeSelectStructure", message, true)
+    local player = Client.GetLocalPlayer()
+
+    if player then
     
+        local dropStructureAbility = player:GetWeapon(DropStructureAbility.kMapName)
+        if dropStructureAbility then
+            dropStructureAbility:SetActiveStructure(index)
+        end
+        
+    end
+    
+end
+
+function GorgeBuild_GetIsAbilityAvailable(index)
+
+    return DropStructureAbility.kSupportedStructures[index] and DropStructureAbility.kSupportedStructures[index]:IsAllowed(Client.GetLocalPlayer())
+
 end
 
 function GorgeBuild_AllowConsumeDrop(techId)
@@ -160,24 +175,13 @@ function GUIGorgeBuildMenu:Initialize()
     
     self.buttons = {}
     
-    //self:Reset()
-
-end
-
-function GUIGorgeBuildMenu:SetSupportedStructures(SupportedStructures)
-    self.supportedstructures = SupportedStructures
     self:Reset()
+
 end
 
 function GUIGorgeBuildMenu:Uninitialize()
     
     GUIAnimatedScript.Uninitialize(self)
-
-end
-
-function GUIGorgeBuildMenu:GetIsAbilityAvailable(index)
-
-    return self.supportedstructures[index] and self.supportedstructures[index]:IsAllowed(Client.GetLocalPlayer())
 
 end
 
@@ -190,7 +194,7 @@ function GUIGorgeBuildMenu:_HandleMouseOver(onItem)
     
 end
 
-local function UpdateButton(self, button, index)
+local function UpdateButton(button, index)
 
     local col = 1
     local color = GUIGorgeBuildMenu.kAvailableColor
@@ -200,7 +204,7 @@ local function UpdateButton(self, button, index)
         color = GUIGorgeBuildMenu.kTooExpensiveColor
     end
     
-    if not self:GetIsAbilityAvailable(index) then
+    if not GorgeBuild_GetIsAbilityAvailable(index) then
         col = 3
         color = GUIGorgeBuildMenu.kUnavailableColor
     end
@@ -259,7 +263,7 @@ function GUIGorgeBuildMenu:Update(deltaTime)
     
     for index, button in ipairs(self.buttons) do
         
-        UpdateButton(self, button, index)
+        UpdateButton(button, index)
         
         if self:_GetIsMouseOver(button.graphicItem) then
             self:_HandleMouseOver(button.graphicItem)
@@ -342,17 +346,20 @@ function GUIGorgeBuildMenu:CreateButton(techId, scale, frame, keybind, position)
     button.description:SetTextAlignmentX(GUIItem.Align_Center)
     button.description:SetTextAlignmentY(GUIItem.Align_Center)
     button.description:SetFontSize(22)
-    button.description:SetPosition(Vector(0, 24, 0))
+    button.description:SetFontName(kFontName)
+    button.description:SetPosition(Vector(0, 0, 0))
     button.description:SetFontIsBold(true)
     
     button.keyIcon:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
-    local pos = Vector(-button.keyIcon:GetSize().x/2, button.keyIcon:GetSize().y, 0)
+    button.keyIcon:SetFontName(kFontName)
+    local pos = Vector(-button.keyIcon:GetSize().x/2, 0.5*button.keyIcon:GetSize().y, 0)
     button.keyIcon:SetPosition(pos)
     
     button.structuresLeft:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
     button.structuresLeft:SetTextAlignmentX(GUIItem.Align_Center)
     button.structuresLeft:SetTextAlignmentY(GUIItem.Align_Center)
     button.structuresLeft:SetFontSize(28)
+    button.structuresLeft:SetFontName(kFontName)
     button.structuresLeft:SetPosition(kDefaultStructureCountPos)
     button.structuresLeft:SetFontIsBold(true)
     button.structuresLeft:SetColor(GUIGorgeBuildMenu.kAvailableColor)
@@ -373,6 +380,7 @@ function GUIGorgeBuildMenu:CreateButton(techId, scale, frame, keybind, position)
     button.costText:SetColor(Color(1, 1, 1, 1))
     button.costText:SetFontIsBold(true)    
     button.costText:SetFontSize(28)
+    button.costText:SetFontName(kFontName)
     button.costText:SetColor(GUIGorgeBuildMenu.kAvailableColor)
     button.costIcon:AddChild(button.costText)
     
@@ -387,39 +395,6 @@ function GUIGorgeBuildMenu:CreateButton(techId, scale, frame, keybind, position)
 
 end
 
-function GUIGorgeBuildMenu:SendKeyEvent(key, down)
-
-    local closeMenu = false
-    local inputHandled = false
-    
-    if key == InputKey.MouseButton0 and self.mousePressed ~= down then
-    
-        closeMenu = true
-        inputHandled = true
-    
-        for index, button in ipairs(self.buttons) do
-            if self:_GetIsMouseOver(button.background) and self:GetIsAbilityAvailable(index) and GorgeBuild_GetCanAffordAbility(button.techId) then
-                GorgeBuild_SendSelect(index)
-                break
-            end
-        end
-    
-    elseif key == InputKey.MouseButton1 then
-    
-        closeMenu = true
-        inputHandled = false
-        
-    end
-
-    if closeMenu then
-        self:OnClose()
-        GorgeBuild_Close()
-    end 
-
-    return inputHandled
-
-end
-
 function GUIGorgeBuildMenu:OverrideInput(input)
 
     local closeMenu = false
@@ -428,8 +403,8 @@ function GUIGorgeBuildMenu:OverrideInput(input)
     for index, weaponSwitchCommand in ipairs(weaponSwitchCommands) do
     
         if bit.band(input.commands, weaponSwitchCommand) ~= 0 then
-        
-            if self:GetIsAbilityAvailable(index) and GorgeBuild_GetCanAffordAbility(self.buttons[index].techId)  then
+
+            if GorgeBuild_GetIsAbilityAvailable(index) and GorgeBuild_GetCanAffordAbility(self.buttons[index].techId)  then
                 GorgeBuild_SendSelect(index)
                 local removeWeaponMask = bit.bxor(0xFFFFFFFF, weaponSwitchCommand)
                 input.commands = bit.band(input.commands, removeWeaponMask)
@@ -447,6 +422,16 @@ function GUIGorgeBuildMenu:OverrideInput(input)
         self:OnClose()
         GorgeBuild_Close()
     end
+
+    // small hack: secondary attack causes switch to previous weapon. since we dont know here which was the previous weapon, we treat primary attack in this frame
+    // as a secondary to trigger the weapon switch
+    
+    if bit.band(input.commands, Move.PrimaryAttack) ~= 0 then
+        input.commands = bit.bor(input.commands, Move.SecondaryAttack)
+    end
+    
+    local removePrimaryAttackMask = bit.bxor(0xFFFFFFFF, Move.PrimaryAttack)
+    input.commands = bit.band(input.commands, removePrimaryAttackMask)
 
     return input
 

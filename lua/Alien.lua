@@ -22,7 +22,7 @@ Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/AlienActionFinderMixin.lua")
 Script.Load("lua/AlienDetectorMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
-Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/RagdollMixin.lua")
 
 if Client then
     Script.Load("lua/TeamMessageMixin.lua")
@@ -34,7 +34,7 @@ Alien.kMapName = "alien"
 
 if Server then
     Script.Load("lua/Alien_Server.lua")
-else
+elseif Client then
     Script.Load("lua/Alien_Client.lua")
 end
 
@@ -110,7 +110,8 @@ function Alien:OnCreate()
     InitMixin(self, SelectableMixin)
     InitMixin(self, DetectableMixin)
     InitMixin(self, HasUmbraMixin)
-         
+    InitMixin(self, RagdollMixin)
+ 
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
     
     self.timeLastMomentumEffect = 0
@@ -140,7 +141,7 @@ function Alien:OnCreate()
     
     if Server then
         self.timeWhenPrimalScreamExpires = 0
-    else
+    elseif Client then
         InitMixin(self, TeamMessageMixin, { kGUIScriptName = "GUIAlienTeamMessage" })
     end
     
@@ -219,8 +220,17 @@ function Alien:DestroyGUI()
             GetGUIManager():DestroyGUIScript(self.progressDisplay)
             self.progressDisplay = nil
             
-        end        
+        end 
+
+        if self.requestMenu then
+        
+            GetGUIManager():DestroyGUIScript(self.requestMenu)
+            self.requestMenu = nil
+            
+        end
+       
     end
+    
 end
 
 function Alien:OnDestroy()
@@ -258,6 +268,7 @@ function Alien:OnInitialized()
     if Client and Client.GetLocalPlayer() == self then
     
         Client.SetPitch(0.0)
+        //self:AddHelpWidget("GUIAlienVisionHelp", 2)
         
     end
 
@@ -428,26 +439,22 @@ end
 function Alien:SetDarkVision(state)
 
     if state ~= self.darkVisionOn then
-    
-        self.darkVisionOn = state
-    
-        if Client and self == Client.GetLocalPlayer() then
+
+        if state then
         
-            if self.darkVisionOn then
+            self.darkVisionTime = Shared.GetTime()
+            self:TriggerEffects("alien_vision_on") 
             
-                self.darkVisionTime = Shared.GetTime()
-                self:TriggerEffects("alien_vision_on") 
-                
-            else
-            
-                self.darkVisionEndTime = Shared.GetTime()
-                self:TriggerEffects("alien_vision_off")
-                
-            end
+        else
+        
+            self.darkVisionEndTime = Shared.GetTime()
+            self:TriggerEffects("alien_vision_off")
             
         end
     
     end
+    
+    self.darkVisionOn = state
 
 end
 
@@ -488,10 +495,6 @@ function Alien:GetIsCamouflaged()
     return GetHasCamouflageUpgrade(self) and not self:GetIsInCombat()
 end
 
-function Alien:GetCustomAnimationName(animName)
-    return animName
-end
-
 function Alien:GetNotEnoughResourcesSound()
     return Alien.kNotEnoughResourcesSound
 end
@@ -518,91 +521,7 @@ end
 
 function Alien:GetCanBeHealedOverride()
     return self:GetIsAlive()
-end    
-
-function Alien:GetHasSayings()
-    return true
 end
-
-function Alien:GetSayings()
-
-    if self.showSayings then
-    
-        if self.showSayingsMenu == 1 then
-            return alienGroupSayingsText    
-        end
-        
-        if self.showSayingsMenu == 2 then
-            return GetVoteActionsText(self:GetTeamNumber())
-        end
-        
-        return
-        
-    end
-    
-    return nil
-    
-end
-
-function Alien:ExecuteSaying(index, menu)
-
-    Player.ExecuteSaying(self, index, menu)
-    
-    if Server then
-    
-        // Handle voting.
-        if menu == 2 then
-            GetGamerules():CastVoteByPlayer(voteActionsActions[index], self)
-        else
-        
-            if index > 0 and index <= #alienGroupSayingsSounds then
-            
-                self:PlaySound(alienGroupSayingsSounds[index])
-                
-                local techId = alienRequestActions[index]
-                if techId ~= kTechId.None then
-                    self:GetTeam():TriggerAlert(techId, self)
-                end
-                
-                // Remember this as a custom blip type so we can display 
-                // appropriate text ("needs healing")
-                self:SetCustomBlip( alienBlipTypes[index] )
-                
-            end
-            
-        end
-        
-    end
-    
-end
-
-function Alien:SetCustomBlip(blipType)
-
-    self.customBlipType = blipType
-    
-    if blipType ~= kBlipType.Undefined then
-        self.customBlipTime = Shared.GetTime()
-    else
-        self.customBlipTime = nil
-    end
-
-end
-
-function Alien:GetCustomBlip()
-
-    if self.customBlipType ~= nil and self.customBlipType ~= kBlipType.Undefined then
-    
-        if self.customBlipTime and Shared.GetTime() < (self.customBlipTime + Alien.kCustomBlipDuration) then
-        
-            return self.customBlipType
-            
-        end
-        
-    end
-    
-    return kBlipType.Undefined
-    
-end   
 
 function Alien:GetChatSound()
     return Alien.kChatSound

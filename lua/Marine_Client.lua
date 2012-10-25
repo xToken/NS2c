@@ -80,6 +80,12 @@ function Marine:OnInitLocalClient()
         if self.unitStatusDisplay == nil then
             self.unitStatusDisplay = GetGUIManager():CreateGUIScript("GUIUnitStatus")
             self.unitStatusDisplay:EnableMarineStyle()
+		end
+
+		if self.requestMenu == nil then
+            self.requestMenu = GetGUIManager():CreateGUIScript("GUIRequestMenu")
+        
+
         end
         
     end
@@ -142,6 +148,26 @@ function Marine:SetHudParams(hudParams)
     self.hudParams = hudParams
 end
 
+
+function Marine:OnKillClient()
+
+    Player.OnKillClient(self)
+    
+    if self.requestMenu then
+        
+        GetGUIManager():DestroyGUIScript(self.requestMenu)
+        self.requestMenu = nil
+            
+    end
+    
+    if self.marineHUD then
+    
+        GetGUIManager():DestroyGUIScript(self.marineHUD)
+        self.marineHUD = nil
+        
+    end
+
+end
 function Marine:UpdateClientEffects(deltaTime, isLocal)
     
     Player.UpdateClientEffects(self, deltaTime, isLocal)

@@ -19,7 +19,6 @@ Script.Load("lua/WeaponOwnerMixin.lua")
 Script.Load("lua/DoorMixin.lua")
 Script.Load("lua/mixins/ControllerMixin.lua")
 Script.Load("lua/LiveMixin.lua")
-Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
@@ -46,11 +45,23 @@ Player.kPushDuration = 0.5
 
 if Server then
     Script.Load("lua/Player_Server.lua")
-else
+end
 
+if Client then
     Script.Load("lua/Player_Client.lua")
     Script.Load("lua/Chat.lua")
-    
+end
+
+if Predict then
+
+function Player:OnUpdatePlayer(deltaTime)    
+    // do nothing
+end
+
+function Player:UpdateMisc(input)
+    // do nothing
+end
+
 end
 
 ------------
@@ -194,9 +205,6 @@ Player.kMaxStepAmount = 1
 local networkVars =
 {
     fullPrecisionOrigin = "private vector", 
-    // players need to be treated special by the interpolation code, as they are moved asynchronously
-    // compared to non-player entities.
-    onProcessMoveTime = "compensated time (by 0.001 [7 9 12])",
     
     // Controlling client index. -1 for not being controlled by a live player (ragdoll, fake player)
     clientIndex = "integer",
@@ -220,9 +228,6 @@ local networkVars =
     
     bodyYawRun = "compensated interpolated angle (11 bits)",
     runningBodyYaw = "angle interpolated (11 bits)",
-    
-    showScoreboard = "private boolean",
-    sayingsMenu = "private integer (0 to 6)",
     timeLastMenu = "private time",
     darwinMode = "private boolean",
     
@@ -234,7 +239,7 @@ local networkVars =
     jumping = "compensated boolean",
     onGround = "compensated boolean",
     onGroundNeedsUpdate = "private boolean",
-
+    
     onLadder = "boolean",
     
     // Player-specific mode. When set to kPlayerMode.Default, player moves and acts normally, otherwise
@@ -284,7 +289,6 @@ AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(UpgradableMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
-AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(HintMixin, networkVars)
 AddMixinNetworkVars(BadgeMixin, networkVars)
 
@@ -307,13 +311,12 @@ function Player:OnCreate()
     InitMixin(self, ControllerMixin)
     InitMixin(self, WeaponOwnerMixin, { kStowedWeaponWeightScalar = Player.kStowedWeaponWeightScalar })
     InitMixin(self, DoorMixin)
+    // TODO: move LiveMixin to child classes (some day)
     InitMixin(self, LiveMixin)
-    InitMixin(self, RagdollMixin)
     InitMixin(self, UpgradableMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
-    InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kPlayerMoveOrderCompleteDistance })
     InitMixin(self, HintMixin, { kHintSound = Player.kTooltipSound, kHintInterval = Player.kHintInterval })
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, BadgeMixin)
@@ -321,8 +324,6 @@ function Player:OnCreate()
     if Client then
         InitMixin(self, HelpMixin)
     end
-    
-    self.onProcessMoveTime = 0
     
     self:SetLagCompensated(true)
     
@@ -349,14 +350,8 @@ function Player:OnCreate()
         self.sendTechTreeBase = false
     end
     
-    if Client then
-        self.showSayings = false
-    end
-    
-    self.sayingsMenu = 0
     self.timeLastMenu = 0    
     self.darwinMode = false
-    self.timeLastSayingsAction = 0
     self.kills = 0
     self.deaths = 0
     
@@ -601,8 +596,6 @@ function Player:OverrideInput(input)
         
     end
     
-    self:OverrideSayingsMenu(input)
-    
     if self.shortcircuitInput then
         input.commands = 0x00000000
         input.move = Vector(0,0,0)
@@ -611,87 +604,6 @@ function Player:OverrideInput(input)
     self.shortcircuitInput = MainMenu_GetIsOpened()
     
     return input
-    
-end
-
-function Player:OverrideSayingsMenu(input)
-
-    local sayingsButtonPressed = bit.band(input.commands, Move.ToggleRequest) ~= 0 or
-                                 bit.band(input.commands, Move.ToggleSayings) ~= 0 or
-                                 bit.band(input.commands, Move.ToggleVoteMenu) ~= 0
-    
-    local voteButtonPressed = (self:GetTeamNumber() == kTeam1Index or self:GetTeamNumber() == kTeam2Index) and
-                              bit.band(input.commands, Move.ToggleVoteMenu) ~= 0
-    
-    // Allow voting while dead.
-    if self:GetHasSayings() and sayingsButtonPressed and (self:GetIsAlive() or voteButtonPressed) then
-    
-        // If enough time has passed.
-        if self.timeLastSayingsAction == nil or (Shared.GetTime() > self.timeLastSayingsAction + 0.2) then
-        
-            local newMenu = 1
-            if bit.band(input.commands, Move.ToggleSayings) ~= 0 then
-                newMenu = ConditionalValue(self:isa("Alien"), 1, 2)
-            elseif voteButtonPressed then
-                newMenu = ConditionalValue(self:isa("Alien"), 2, 3)
-            end
-            
-            // If not visible, bring up menu
-            if not self.showSayings then
-            
-                self.showSayings = true
-                self.showSayingsMenu = newMenu
-                
-            // else if same menu and visible, hide it
-            elseif newMenu == self.showSayingsMenu then
-            
-                self.showSayings = false
-                self.showSayingsMenu = nil
-                
-            // If different, change menu without showing or hiding
-            elseif newMenu ~= self.showSayingsMenu then
-                self.showSayingsMenu = newMenu
-            end
-            
-        end
-        
-        // Sayings toggles are handled client side.
-        local removeToggleMenuMask = bit.bxor(0xFFFFFFFF, Move.ToggleRequest)
-        input.commands = bit.band(input.commands, removeToggleMenuMask)
-        removeToggleMenuMask = bit.bxor(0xFFFFFFFF, Move.ToggleSayings)
-        input.commands = bit.band(input.commands, removeToggleMenuMask)
-        removeToggleMenuMask = bit.bxor(0xFFFFFFFF, Move.ToggleVoteMenu)
-        input.commands = bit.band(input.commands, removeToggleMenuMask)
-        
-        // Record time
-        self.timeLastSayingsAction = Shared.GetTime()
-        
-    end
-    
-    // Intercept any execute sayings commands.
-    if self.showSayings and self:GetIsAlive() then
-    
-        local weaponSwitchCommands = { Move.Weapon1, Move.Weapon2, Move.Weapon3, Move.Weapon4, Move.Weapon5 }
-        
-        for i, weaponSwitchCommand in ipairs(weaponSwitchCommands) do
-        
-            if bit.band(input.commands, weaponSwitchCommand) ~= 0 then
-            
-                // Tell the server to execute this saying.
-                local message = BuildExecuteSayingMessage(i, self.showSayingsMenu)
-                Client.SendNetworkMessage("ExecuteSaying", message, true)
-                
-                local removeWeaponMask = bit.bxor(0xFFFFFFFF, weaponSwitchCommand)
-                input.commands = bit.band(input.commands, removeWeaponMask)
-                self.showSayings = false
-                
-                break
-                
-            end
-            
-        end
-        
-    end
     
 end
 
@@ -1002,32 +914,6 @@ local function AttemptToUse(self, timePassed)
 
     end
 
-end
-
-function Player:GetCurrentBuildPercentage()
-
-    local buildPercentage = 0
-    
-    if self:GetIsUsing() then
-        local entity, attachPoint = self:PerformUseTrace() 
-
-        if entity and HasMixin(entity, "Construct") then
-            buildPercentage = entity:GetBuiltFraction()
-        end
-    end
-
-    return buildPercentage
-
-end
-
-// Play different animations depending on current weapon
-function Player:GetCustomAnimationName(animName)
-    local activeWeapon = self:GetActiveWeapon()
-    if (activeWeapon ~= nil) then
-        return string.format("%s_%s", activeWeapon:GetMapName(), animName)
-    else
-        return animName
-    end
 end
 
 function Player:Buy()
@@ -1619,10 +1505,10 @@ function Player:OnProcessMove(input)
         
         // Force an update to whether or not we're on the ground in case something
         // has moved out from underneath us.
-             
+        self.onGroundNeedsUpdate = true      
         local wasOnGround = self.onGround
+        local previousOrigin = self:GetOrigin()
         local previousVelocity = self:GetVelocity()
-        self.onGroundNeedsUpdate = previousVelocity ~= nil or not previousVelocity.y < 0
         
         local commands = input.commands
         
@@ -1642,10 +1528,10 @@ function Player:OnProcessMove(input)
             self:UpdateViewAngles(input)  
             
         end
-        
+                
         // Update origin and velocity from input move (main physics behavior).
         self:UpdateMove(input)
-        
+
         self:UpdateMaxMoveSpeed(input.time) 
         
         UpdateFallDamage(self, wasOnGround, previousVelocity)
@@ -1664,8 +1550,10 @@ function Player:OnProcessMove(input)
         UpdateBodyYaw(self, input.time, input)
         
         //self:PushAIUnits()
-        
-    elseif not self:GetIsAlive() and Client and (Client.GetLocalPlayer() == self) then
+
+    end
+    
+    if Client then
     
         // Allow the use of scoreboard, chat, and map even when not alive.
         self:UpdateScoreboardDisplay(input)
@@ -1676,6 +1564,150 @@ function Player:OnProcessMove(input)
     
     self:EndUse(input.time)
     
+end
+
+// The Predict world tries to merge moves to lower the server load
+// The lua interface has three callbacks called at three points in 
+// the merge process:
+// - before the current move has been processed
+// - after the move has been processed and
+// - after the mergedMove has been processed.
+//  Any of them returning false will cause the merge attempt to be aborted.
+if Predict then
+/**
+ * Cheap check if a merge move is at all possible BEFORE move is run
+ * usedRandom and usedUnmergable is true if the prevMove used random or an unmergable trace.
+ */
+function Player:OnMoveMergePossible(prevMove, move, prevUsedRandom, prevUsedUnmergableTrace)
+
+    // if previous move used an attack, then we can't merge if the keys held down are not the same, then don't merge them
+    local sameCommands = prevMove.commands == move.commands
+    local sameMove = prevMove.move == move.move
+    
+    local result = sameMove and sameCommands and not prevUsedRandom and not prevUsedUnmergableTrace
+    
+    if not result then
+        //Log("%s: OnMoveMergePossible failed, sameCommands %s, sameMove %s, noRandom %s, noUnmergableTrace %s", self, sameCommands, sameMove, not prevUsedRandom, not prevUsedUnmergableTrace)
+    end
+    
+    // in order for animation to work correctly, we must break merge if animation changes
+    self.mergeMoveState = { 
+        animationStart = self.animationStart,
+        animationStart2 = self.animationStart2,
+        layer1AnimationStart = self.layer1AnimationStart,
+        layer1AnimationStart2 = self.layer1AnimationStart2,
+    }
+
+    local viewModel = self:GetViewModelEntity()
+    self.mergeMoveViewState = {} 
+    if viewModel then
+        self.mergeMoveViewState.animationStart = viewModel.animationStart
+        self.mergeMoveViewState.animationStart2 = viewModel.animationStart2
+        self.mergeMoveViewState.layer1AnimationStart = viewModel.layer1AnimationStart
+        self.mergeMoveViewState.layer1AnimationStart2 = viewModel.layer1AnimationStart2
+    end
+
+    return result
+    
+end
+
+// return a map of fail states
+local function CheckMergeStates(self)
+
+    local failures = {}
+    local result = true
+    for key,value in pairs(self.mergeMoveState) do
+        local selfValue = key == "origin" and self:GetOrigin() or self[key]
+        if value ~= selfValue then
+            result = false
+            failures[key] = value - selfValue
+        end
+    end
+
+    local viewModel = self:GetViewModelEntity()
+    if viewModel then
+        for key,value in pairs(self.mergeMoveViewState) do
+            if value ~= viewModel[key] then
+                result = false
+                failures["view" .. key] = value - viewModel[key]
+            end
+        end
+    end    
+    
+    return result, failures
+end
+
+/**
+ * Try to construct a merged move from prevMove and move.
+ * Called AFTER move has been processed.
+ * Save any state needed in OnMoveMergeSuccessful.
+ * MergeMove contains prevMove.AppendMove(move)
+ * Return true (and a valid attempt at a mergedMove) if possible
+ * Note: if it returns false, the current move is marked as standalone and won't be marked
+ */
+function Player:OnTryMoveMerge(prevMove, move, mergedMove)
+
+    local result, failures = CheckMergeStates(self)
+    
+    if not result then
+        //Log("%s: OnTryMoveMerge failed %s", self, failures)
+        return result
+    end
+
+    
+    // save state for use in OnMergeSuccessful
+    // Note that we need to break off both before and after a move if animation changes
+    self.mergeMoveState = { 
+        animationStart = self.animationStart,
+        animationStart2 = self.animationStart2,
+        layer1AnimationStart = self.layer1AnimationStart,
+        layer1AnimationStart2 = self.layer1AnimationStart2,
+        origin = self:GetOrigin(),
+        velocity = self:GetVelocity(),
+    }
+    
+    local viewModel = self:GetViewModelEntity()
+    self.mergeMoveViewState = {} 
+    if viewModel then
+        self.mergeMoveViewState.animationStart = viewModel.animationStart
+        self.mergeMoveViewState.animationStart2 = viewModel.animationStart2
+        self.mergeMoveViewState.layer1AnimationStart = viewModel.layer1AnimationStart
+        self.mergeMoveViewState.layer1AnimationStart2 = viewModel.layer1AnimationStart2
+    end
+
+    return true    
+end
+
+
+/**
+ * Check if the mergedMove was successful.
+ * Called after the mergedMove has been processed.
+ * The mergedMove may be modified to produce a better result.
+ * Return true if the mergedMove produces acceptable results.
+ */
+function Player:OnMoveMergeSuccessful(mergedMove)
+
+    local originDiff = (self.mergeMoveState.origin - self:GetOrigin()):GetLength()
+    local velocityDiff = (self.mergeMoveState.velocity- self:GetVelocity()):GetLength()
+    
+    if originDiff > 0.03 or velocityDiff > 0.5 then
+        //Log("%s: OnMoveMergeSuccessful failed, originDiff %s, velocityDiff %s", self, originDiff, velocityDiff)
+        return false
+    end
+    
+    // erase them from fixed diffs before checking
+    self.mergeMoveState.origin = nil
+    self.mergeMoveState.velocity = nil
+    local result, failures = CheckMergeStates(self)
+    
+    if not result then
+        //Log("%s: OnMoveMergeSuccessful failed %s", self, failures)
+    end
+
+    return result    
+    
+end
+
 end
 
 function Player:PushAIUnits()
@@ -1800,7 +1832,29 @@ function Player:GetCanStep()
     return self:GetIsOnGround()
 end
 
+function Player:GetCanStepOver(entity)
+    return false
+end
 
+local function CheckCanStepOver(self, hitEntities)
+
+    local canStepOver = true
+
+    if hitEntities then
+    
+        for _, entity in ipairs(hitEntities) do
+        
+            if not self:GetCanStepOver(entity) then
+                canStepOver = false
+            end
+            
+        end
+    
+    end 
+    
+    return canStepOver
+
+end
 
 function Player:UpdatePosition(velocity, time)
 
@@ -1825,6 +1879,9 @@ function Player:UpdatePosition(velocity, time)
     local offset = velocity * time
     local horizontalOffset = Vector(offset)
     horizontalOffset.y = 0
+    local hitEntities = nil
+    local completedMove = false
+    local averageSurfaceNormal = nil
     
     local stepUpOffset = 0
     
@@ -1834,16 +1891,24 @@ function Player:UpdatePosition(velocity, time)
         local fractionOfOffset = 1
         
         if horizontalOffsetLength > 0 then
+        
+            // check if we would collide with something, set fourth parameter to false
+            completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(horizontalOffset, maxSlideMoves, velocity, false)   
+            velocity = Vector(startVelocity)       
 
-            // Move up
-            self:PerformMovement(Vector(0, stepHeight, 0), 1)
-            local steppedStart = self:GetOrigin()
-            stepUpOffset = steppedStart.y - start.y
+            if CheckCanStepOver(self, hitEntities) then
+
+                // Move up
+                self:PerformMovement(Vector(0, stepHeight, 0), 1)
+                local steppedStart = self:GetOrigin()
+                stepUpOffset = steppedStart.y - start.y
+            
+            end
         
             // Horizontal move
             self:PerformMovement(horizontalOffset, maxSlideMoves, velocity)
             
-            local movePerformed = self:GetOrigin() - steppedStart
+            local movePerformed = self:GetOrigin() - (steppedStart or start)
             fractionOfOffset = movePerformed:DotProduct(horizontalOffset) / (horizontalOffsetLength*horizontalOffsetLength)
             
         end
@@ -1858,8 +1923,7 @@ function Player:UpdatePosition(velocity, time)
 
             self:SetOrigin(start)
             velocity = Vector(startVelocity)
-            
-            // Just do the move            
+                 
             self:PerformMovement(offset, maxSlideMoves, velocity)
             
             local movePerformed = self:GetOrigin() - start
@@ -1905,7 +1969,7 @@ function Player:UpdatePosition(velocity, time)
     else
         
         // Just do the move
-        self:PerformMovement(offset, maxSlideMoves, velocity)        
+        completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(offset, maxSlideMoves, velocity)        
             
     end
            
@@ -2026,11 +2090,7 @@ function Player:UpdatePosition(velocity, time)
         Log("%s: Stuck, start %s, new %s, rounded %s, d1 %s, d2 %s, d3 %s", self, start, o, networkOrigin, o - start, networkOrigin - o, networkOrigin - start)    
     end
     */
-
-    if not wasOnGround and self:GetIsOnGround() then
-        self.timeOfLastLand = Shared.GetTime()
-    end
-    return velocity
+    return velocity, hitEntities, averageSurfaceNormal
     
 end
 
@@ -2180,8 +2240,6 @@ function Player:UpdateSharedMisc(input)
     
     self:UpdateMode()
     
-    self:UpdateScoreboardDisplay(input)
-    
 end
 
 function Player:UpdateScoreboardDisplay(input)
@@ -2193,8 +2251,10 @@ function Player:UpdateShowMap(input)
     PROFILE("Player:UpdateShowMap")
     
     if Client then
+    
         self.minimapVisible = bit.band(input.commands, Move.ShowMap) ~= 0
-        self:ShowMap(self.minimapVisible, true)
+        self:ShowMap(self.minimapVisible, self.minimapVisible == true)
+        
     end
     
 end
@@ -2361,6 +2421,9 @@ function Player:HandleJump(input, velocity)
             end
             
         end
+
+        // TODO: Set this somehow (set on sounds for entity, not by sound name?)
+        //self:SetSoundParameter(soundName, "speed", self:GetFootstepSpeedScalar(), 1)
         
         self.timeOfLastJump = Shared.GetTime()
         
@@ -2709,11 +2772,6 @@ function Player:HandleButtons(input)
         self:Reload()
     end
     
-    if bit.band(input.commands, Move.Taunt) ~= 0 then
-        self:Taunt()
-        self.timeOfLastTaunt = Shared.GetTime()
-    end
-    
     // Weapon switch
     if not self:GetIsCommander() and not self:GetIsUsing() then
     
@@ -2789,20 +2847,6 @@ function Player:GetIsOverhead()
     return false
 end
 
-// Children should override with specific menu actions
-function Player:ExecuteSaying(index, menu)
-    self.executeSaying = index
-end
-
-function Player:GetAndClearSaying()
-    if(self.executeSaying ~= nil) then
-        local saying = self.executeSaying
-        self.executeSaying = nil
-        return saying
-    end
-    return nil
-end
-
 /**
  * Returns the view model entity.
  */
@@ -2848,24 +2892,6 @@ function Player:SetViewModel(viewModelName, weapon)
     
 end
 
-// temporary using taunt for requesting heal. such kind of user input will be handled in another way later
-function Player:Taunt()
-
-    if Server then
-        self:RequestHeal()
-    end
-
-    /*
-    if self.timeOfLastTaunt == nil or Shared.GetTime() > (self.timeOfLastTaunt + 8) then
-    
-        self:TriggerEffects("taunt")
-        self.timeOfLastTaunt = Shared.GetTime()
-        
-    end
-    */
-    
-end
-
 function Player:GetCanBeUsed(player, useSuccessTable)
     useSuccessTable.useSuccess = false
 end
@@ -2877,22 +2903,6 @@ end
 // Set to true when score, name, kills, team, etc. changes so it's propagated to players
 function Player:SetScoreboardChanged(state)
     self.scoreboardChanged = state
-end
-
-function Player:GetHasSayings()
-    return false
-end
-
-function Player:GetSayings()
-    return {}
-end
-
-// Index starts with 1
-function Player:ChooseSaying(sayingIndex)
-end
-
-function Player:GetShowSayings()
-    return self.showSayings
 end
 
 function Player:SpaceClearForEntity(position, printResults)
@@ -3049,7 +3059,6 @@ kStepTagNames["step"] = true
 kStepTagNames["step_run"] = true
 kStepTagNames["step_sprint"] = true
 kStepTagNames["step_crouch"] = true
-
 function Player:OnTag(tagName)
 
     PROFILE("Player:OnTag")

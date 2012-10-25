@@ -7,6 +7,11 @@ local function SetupDefaultConfig()
 	kDAKConfig.VoteSurrender.kVoteSurrenderMinimumPercentage = 60
 	kDAKConfig.VoteSurrender.kVoteSurrenderVotingTime = 120
 	kDAKConfig.VoteSurrender.kVoteSurrenderAlertDelay = 20
+	SaveDAKConfig()
 end
 
 table.insert(kDAKPluginDefaultConfigs, {PluginName = "VoteSurrender", DefaultConfig = function() SetupDefaultConfig() end })
+
+if kDAKConfig.VoteSurrender == nil then
+	SetupDefaultConfig()
+end

@@ -141,7 +141,7 @@ function CommanderUI_MenuButtonStatus(index)
                 end
 
             else
-                Print("CommanderUI_MenuButtonStatus(%s): Tech node for id %s not found (%s)", tostring(index), EnumToString(kTechId, techId), table.tostring(player.menuTechButtons))
+                // Print("CommanderUI_MenuButtonStatus(%s): Tech node for id %s not found (%s)", tostring(index), EnumToString(kTechId, techId), table.tostring(player.menuTechButtons))
             end
             
         end
@@ -180,7 +180,7 @@ function CommanderUI_MenuButtonOffset(index)
     if index <= table.count(player.menuTechButtons) then
     
         local techId = player.menuTechButtons[index]
-        
+    
         if index == 4 then
             local selectedEnts = player:GetSelection()
             if selectedEnts and selectedEnts[1] then
@@ -188,7 +188,7 @@ function CommanderUI_MenuButtonOffset(index)
                 techId = entity:GetTechId()
             end
         end
-        
+
         return GetMaterialXYOffset(techId, player:isa("MarineCommander"))
         
     end
@@ -203,7 +203,7 @@ function CommanderUI_MenuButtonXOffset(index)
     if(index <= table.count(player.menuTechButtons)) then
     
         local techId = player.menuTechButtons[index]
-        
+    
         if index == 4 then
             local selectedEnts = player:GetSelection()
             if selectedEnts and selectedEnts[1] then
@@ -211,7 +211,8 @@ function CommanderUI_MenuButtonXOffset(index)
                 techId = entity:GetTechId()
             end
         end
-             
+    
+        
         local xOffset, yOffset = GetMaterialXYOffset(techId, player:isa("MarineCommander"))
         return xOffset
         
@@ -243,22 +244,24 @@ end
 local function UpdateSharedTechButtons(self)
 
     self.menuTechButtons = { }
-    
-    if #self.selectedSubGroupEntityIds > 0 then
+    local selection = self:GetSelection()
+    if #selection > 0 then
     
         // Loop through all entities and get their tech buttons
         local selectedTechButtons = { }
         local maxTechButtons = 0
-        for selectedEntityIndex, entityId in ipairs(self.selectedSubGroupEntityIds) do
-        
-            local entity = Shared.GetEntity(entityId)        
-            if(entity ~= nil) then
+        for i = 1, #selection do
+
+            local entity = Shared.GetEntity(selection[i])
+            if entity then
 
                 local techButtons = self:GetCurrentTechButtons(self.menuTechId, entity)
                 
-                if(techButtons ~= nil) then
+                if techButtons then
+                
                     table.insert(selectedTechButtons, techButtons)
                     maxTechButtons = math.max(maxTechButtons, table.count(techButtons))
+                    
                 end
                 
             end
@@ -362,16 +365,18 @@ local function ComputeMenuTechAvailability(self)
             
         elseif techNode then
         
-            if #self.selectedSubGroupEntityIds > 0 then
+            local selection = self:GetSelection()
+        
+            if #selection > 0 then
             
-                for e = 1, #self.selectedSubGroupEntityIds do
+                for e = 1, #selection do
                 
-                    local entityId = self.selectedSubGroupEntityIds[e]
+                    local entityId = selection[e]
                     local entity = Shared.GetEntity(entityId)
                     local isTechAllowed = false
                     local canAfford = false
                     
-                    local _, isSelectTabSelected = self:IsTabSelected(kTechId.WeaponsMenu)
+                    local _, isSelectTabSelected = self:IsTabSelected(kTechId.RootMenu)
                     if isSelectTabSelected then
                         isTechAllowed, canAfford = entity:GetTechAllowed(techId, techNode, self)
                     else

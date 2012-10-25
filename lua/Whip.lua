@@ -121,8 +121,7 @@ function Whip:OnCreate()
     self.attackYaw = 0 
     self.slapping = false
     
-    if Server then
-    else
+    if Client then
         InitMixin(self, CommanderGlowMixin)    
     end
     

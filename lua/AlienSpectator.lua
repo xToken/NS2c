@@ -60,7 +60,7 @@ function AlienSpectator:OnInitialized()
     if Server then
     
         self.evolveTechIds = { kTechId.Skulk }
-        self:AddTimedCallback(UpdateQueuePosition, 1)
+        self:AddTimedCallback(UpdateQueuePosition, 0.1)
         UpdateQueuePosition(self)
         
     end
@@ -75,13 +75,38 @@ function AlienSpectator:OnDestroy()
 
     TeamSpectator.OnDestroy(self)
     
-    if Client and self.spawnHUD then
+    if Client  then
     
-        GetGUIManager():DestroyGUIScript(self.spawnHUD)
-        self.spawnHUD = nil
+        if self.spawnHUD then
+        
+            GetGUIManager():DestroyGUIScript(self.spawnHUD)
+            self.spawnHUD = nil
+            
+        end
+        
+        if self.requestMenu then
+        
+            GetGUIManager():DestroyGUIScript(self.requestMenu)
+            self.requestMenu = nil
+            
+        end  
         
     end
     
+end
+
+if Client then
+
+    function AlienSpectator:OnInitLocalClient()
+    
+            Spectator.OnInitLocalClient(self)
+            
+            if self.requestMenu == nil then
+                self.requestMenu = GetGUIManager():CreateGUIScript("GUIRequestMenu")
+            end
+        
+    end
+
 end
 
 function AlienSpectator:GetIsValidToSpawn()
@@ -166,8 +191,8 @@ end
  */
 function AlienSpectator:GetPreventCameraPenetration()
 
-    local imposedTarget = Shared.GetEntity(self:GetImposedTargetId())
-    return imposedTarget and imposedTarget:isa("Egg")
+    local followTarget = Shared.GetEntity(self:GetFollowTargetId())
+    return followTarget and followTarget:isa("Egg")
     
 end
 

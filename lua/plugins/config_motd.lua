@@ -10,6 +10,7 @@ local function SetupDefaultConfig()
 	table.insert(MOTDTable, "* timeleft: To display the time until next map vote                 ")
 	table.insert(MOTDTable, "* surrender: To initiate or vote in a surrender vote for your team. ")
 	table.insert(MOTDTable, "* acceptmotd: To accept and suppress this message                   ")
+	table.insert(MOTDTable, "* stuck: To have your player teleported to be unstuck.              ")
 	table.insert(MOTDTable, "********************************************************************")
 	kDAKConfig.MOTD = { }
 	kDAKConfig.MOTD.kEnabled = true
@@ -17,6 +18,11 @@ local function SetupDefaultConfig()
 	kDAKConfig.MOTD.kMOTDMessageDelay = 6
 	kDAKConfig.MOTD.kMOTDMessageRevision = 1
 	kDAKConfig.MOTD.kMOTDMessagesPerTick = 5
+	SaveDAKConfig()
 end
 
 table.insert(kDAKPluginDefaultConfigs, {PluginName = "MOTD", DefaultConfig = function() SetupDefaultConfig() end })
+
+if kDAKConfig.MOTD == nil then
+	SetupDefaultConfig()
+end

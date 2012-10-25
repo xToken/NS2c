@@ -51,9 +51,6 @@ Commander.kAttachStructuresRadius = 5
 
 Commander.kScrollVelocity = 40
 
-// Snap structures within this range to attach points.
-Commander.kStructureSnapRadius = kStructureSnapRadius
-
 Script.Load("lua/Commander_Selection.lua")
 
 if (Server) then
@@ -65,14 +62,11 @@ end
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/placement_valid.surface_shader")
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/placement_invalid.surface_shader")
 
-Commander.kMaxSubGroupIndex = 32
-
 Commander.kSelectMode = enum( {'None', 'SelectedGroup', 'JumpedToGroup'} )
 
 local networkVars =
 {
     timeScoreboardPressed   = "float",
-    focusGroupIndex         = string.format("integer (1 to %d)", Commander.kMaxSubGroupIndex),
     numIdleWorkers          = string.format("integer (0 to %d)", kMaxIdleWorkers),
     numPlayerAlerts         = string.format("integer (0 to %d)", kMaxPlayerAlerts),
     commanderCancel         = "boolean",
@@ -88,10 +82,17 @@ AddMixinNetworkVars(OverheadMoveMixin, networkVars)
 AddMixinNetworkVars(MinimapMoveMixin, networkVars)
 AddMixinNetworkVars(HotkeyMoveMixin, networkVars)
 
-function Commander:OnInitialized()
+function Commander:OnCreate()
 
+    Player.OnCreate(self)
+    
     InitMixin(self, CameraHolderMixin, { kFov = Commander.kFov })
     InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
+    
+end
+
+function Commander:OnInitialized()
+
     InitMixin(self, OverheadMoveMixin)
     InitMixin(self, MinimapMoveMixin)
     InitMixin(self, HotkeyMoveMixin)
@@ -101,7 +102,6 @@ function Commander:OnInitialized()
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
     
     self.selectedEntities = { }
-    self.selectedSubGroupEntityIds = { }
     
     Player.OnInitialized(self)
     
@@ -113,13 +113,6 @@ function Commander:OnInitialized()
     if Client then
     
         self.drawResearch = false
-        
-        self.specifyingOrientation = false
-        self.orientationAngle = 0
-        self.specifyingOrientationPosition = Vector(0, 0, 0)
-        
-        self.ghostStructure = nil
-        self.ghostStructureValid = false
         
         // Start in build menu (more useful then command station menu)
         if self:GetIsLocalPlayer() then
@@ -159,7 +152,13 @@ end
 
 function Commander:GetTechAllowed(techId, techNode, self)
 
-    local allowed, canAfford = Player.GetTechAllowed(self, techId, techNode, self)    
+    local allowed, canAfford = Player.GetTechAllowed(self, techId, techNode, self)
+/*
+    if techId == kTechId.Harvester or techId == kTechId.Extractor then
+        allowed = GetIsUnderResourceTowerLimit(self)
+    end
+    */
+    
     return allowed, canAfford
 
 end
@@ -197,41 +196,6 @@ function Commander:HandleButtons(input)
         //self:ShowMap(true, bit.band(input.commands, Move.ShowMap) ~= 0)
     end
     
-end
-
-// Don't show scoreboard right away, also use tab to handle sub-group selection through UI cleverness
-function Commander:UpdateScoreboard(input)
-
-    // If player holds scoreboard key (tab), show scores. If they tap it, switch
-    // focus to next sub-group within selection
-    if (bit.band(input.commands, Move.Scoreboard) ~= 0) then
-    
-        if self.timeScoreboardPressed == 0 then
-            self.timeScoreboardPressed = Shared.GetTime()
-        end
-        
-        if Shared.GetTime() > (self.timeScoreboardPressed + Commander.kScoreBoardDisplayDelay) then
-            self.showScoreboard = true
-        end
-    
-    else
-    
-        // If we're showing scoreboard, hide it
-        if self.showScoreboard then
-        
-            self.showScoreboard = false
-
-        elseif self.timeScoreboardPressed ~= 0 then
-        
-            // else switch to next sub group
-            self.focusGroupIndex = ( self.focusGroupIndex + 1 ) % Commander.kMaxSubGroupIndex
-            
-        end
-        
-        self.timeScoreboardPressed = 0
-        
-    end
-
 end
 
 function Commander:UpdateCrouch()
@@ -428,12 +392,7 @@ function Commander:GetCurrentTechButtons(techId, entity)
             
         end
         
-        // add recycle button if not researching
-        if HasMixin(entity, "Recycle") and not entity:GetIsResearching() and entity:GetCanRecycle() and entity:GetTeamType() ~= kAlienTeamType then // TODO: don't check for team here, alien structures should simply not add the recycle mixin 
-            techButtons[kRecycleCancelButtonIndex] = kTechId.Recycle  
-
-        // If we're researching or already recycling, add cancel button if there is not already one.          
-        elseif HasMixin(entity, "Research") and entity:GetIsResearching() then
+        if (HasMixin(entity, "Research") and entity:GetIsResearching()) or (HasMixin(entity, "GhostStructure") and entity:GetIsGhostStructure()) then
         
             local foundCancel = false
             for b = 1, #techButtons do
@@ -450,7 +409,10 @@ function Commander:GetCurrentTechButtons(techId, entity)
             if not foundCancel then
                 techButtons[kRecycleCancelButtonIndex] = kTechId.Cancel
             end
-            
+        
+        // add recycle button if not researching / ghost structure mode
+        elseif HasMixin(entity, "Recycle") and not entity:GetIsResearching() and entity:GetCanRecycle() and not entity:GetIsRecycled() then
+            techButtons[kRecycleCancelButtonIndex] = kTechId.Recycle
         end
         
     end

@@ -131,19 +131,6 @@ kGeneralEffectData =
         }
     },
     
-    energize =
-    {
-        energizeEffects =
-        {
-            //{sound = "sound/NS2.fev/alien/structures/shift/energize_player"},
-        
-            {parented_cinematic = "cinematics/alien/energize_big.cinematic", classname = "Onos", done = true},
-            {parented_cinematic = "cinematics/alien/energize_big.cinematic", classname = "Hive", done = true},
-            {parented_cinematic = "cinematics/alien/energize_middle.cinematic", classname = "Structure", done = true},
-            {parented_cinematic = "cinematics/alien/energize_small.cinematic", classname = "Player", done = true},
-        }    
-    },
-    
     // alien commander foresight effect
     foresight =
     {
@@ -398,24 +385,6 @@ kGeneralEffectData =
             {stop_sound = "sound/NS2.fev/common/fire_large", classname = "Onos", done = true},
             {stop_sound = "sound/NS2.fev/common/fire_small"},
         },
-    },
-    
-    regenerate =
-    {
-        regenerateEffects =
-        {
-            {sound = "sound/NS2.fev/alien/common/regeneration"},
-            {private_sound = "sound/NS2.fev/alien/common/regeneration"},
-        },
-    },
-    
-    regenerate_ability =
-    {
-        regenerateAbilityEffects =
-        {
-            {sound = "sound/NS2.fev/alien/common/regeneration_ability"},
-            {private_sound = "sound/NS2.fev/alien/common/regeneration_ability"},
-        }
     },
     
     res_received =

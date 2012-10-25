@@ -98,7 +98,7 @@ function Gorge:OnInitialized()
         self.slideLoopSound:SetAsset(Gorge.kSlideLoopSound)
         self.slideLoopSound:SetParent(self)
         
-    else
+    elseif Client then
     
         self:AddHelpWidget("GUIGorgeHealHelp", 2)
         self:AddHelpWidget("GUIGorgeBellySlideHelp", 2)
@@ -158,17 +158,11 @@ end
 function Gorge:GetIsBellySliding()
     return self.sliding
 end
-
-function Gorge:HandleJump(input, velocity)
-
-    if not self:GetIsBellySliding() then
-        return Alien.HandleJump(self, input, velocity)
-    end
-    
-    return false
-    
+/*
+function Gorge:GetCanJump()
+    return not self:GetIsBellySliding()
 end
-
+*/
 local function GetIsSlidingDesired(self, input)
 
     if bit.band(input.commands, Move.MovementModifier) == 0 then
@@ -179,7 +173,7 @@ local function GetIsSlidingDesired(self, input)
         return false
     end
     
-    if self:GetVelocity():GetLengthXZ() < 3 then
+    if self:GetVelocity():GetLengthXZ() < 3 or self:GetIsJumping() then
     
         if self:GetIsBellySliding() then    
             return false

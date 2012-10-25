@@ -14,7 +14,7 @@ RegenerationMixin.expectedMixins =
     Live = "Needed for GetMaxHealth.",
 }
 
-local kRegenEffectInterval = 2
+local kRegenEffectInterval = 1
 
 function RegenerationMixin:__initmixin()
     self.timeLastRegenEffect = 0
@@ -39,7 +39,7 @@ if Server then
                 local healRate = ((self:GetMaxHealth() + self:GetMaxArmor()) * ((kAlienRegenerationPercentage / 3) * level))
                                 
                 local prevHealthScalar = self:GetHealthScalar()
-                self:AddHealth(healRate)
+                self:AddHealth(healRate, false, false, true)
                 
                 if prevHealthScalar < self:GetHealthScalar() then
                     self:TriggerEffects("regeneration")

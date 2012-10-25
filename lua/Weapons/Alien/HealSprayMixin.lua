@@ -123,10 +123,6 @@ local function DamageEntity(self, player, targetEntity)
 
     local healthScalar = targetEntity:GetHealthScalar()
     self:DoDamage(kHealsprayDamage, targetEntity, targetEntity:GetEngagementPoint(), GetNormalizedVector(targetEntity:GetOrigin(), player:GetEyePos()), "none")
-    
-    if Server and healthScalar ~= targetEntity:GetHealthScalar() then
-        targetEntity:TriggerEffects("sprayed")
-    end
 
 end
 

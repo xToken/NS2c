@@ -71,7 +71,7 @@ Hive.kHealthUpdateTime = 2
 
 if Server then
     Script.Load("lua/Hive_Server.lua")
-else
+elseif Client then
     Script.Load("lua/Hive_Client.lua")
 end
 

@@ -16,8 +16,13 @@ local function JoinTeam(player, teamIndex)
     if player ~= nil and player:GetTeamNumber() == kTeamReadyRoom then
     
         // Auto team balance checks.
-        if GetGamerules():GetCanJoinTeamNumber(teamIndex) or Shared.GetCheatsEnabled() then
+        local allowed = GetGamerules():GetCanJoinTeamNumber(teamIndex)
+                
+        if allowed or Shared.GetCheatsEnabled() then
             return GetGamerules():JoinTeam(player, teamIndex)
+        else
+            Server.SendNetworkMessage(player, "JoinError", BuildJoinErrorMessage(), false)
+            return false
         end
         
     end
@@ -1005,6 +1010,45 @@ local function OnCommandRespawnTeam(client, teamNum)
     
 end
 
+local function OnCommandMakeSpecialEdition(client)
+
+    if Shared.GetCheatsEnabled() then
+    
+        local player = client:GetControllingPlayer()
+        if player and player:isa("Marine") then        
+            player:SetModel(Marine.kSpecialEditionModelName, Marine.kMarineAnimationGraph)            
+        end
+        
+    end    
+
+end
+
+local function OnCommandGreenEdition(client)
+
+    if Shared.GetCheatsEnabled() then
+    
+        local player = client:GetControllingPlayer()
+        if player and player:isa("Marine") then        
+            player:SetModel(Marine.kModelName, Marine.kMarineAnimationGraph)            
+        end
+        
+    end    
+
+end
+
+local function OnCommandBlackEdition(client)
+
+    if Shared.GetCheatsEnabled() then
+    
+        local player = client:GetControllingPlayer()
+        if player and player:isa("Marine") then        
+            player:SetModel(Marine.kBlackArmorModelName, Marine.kMarineAnimationGraph)            
+        end
+        
+    end    
+
+end
+
 // GC commands
 Event.Hook("Console_changegcsettingserver", OnCommandChangeGCSettingServer)
 
@@ -1085,5 +1129,8 @@ Event.Hook("Console_eggspawntimes", OnCommandEggSpawnTimes)
 Event.Hook("Console_gothere", OnCommandGoThere)
 
 Event.Hook("Console_rupture", OnCommandRupture)
+Event.Hook("Console_makespecial", OnCommandMakeSpecialEdition)
+Event.Hook("Console_makegreen", OnCommandGreenEdition)
+Event.Hook("Console_makeblack", OnCommandBlackEdition)
 
 Event.Hook("Console_debugcommander", OnCommandDebugCommander)

@@ -65,7 +65,7 @@ local kAutoCrouchCheckInterval = 0.4
 
 if Server then
     Script.Load("lua/Onos_Server.lua")
-else
+elseif Client then
     Script.Load("lua/Onos_Client.lua")
 end
 
@@ -104,8 +104,6 @@ function Onos:OnCreate()
     
     if Client then    
         self:SetUpdates(true)
-    else
-    
     end
     
 end
@@ -458,16 +456,6 @@ function Onos:OnUpdatePoseParameters(viewModel)
     
     self:SetPoseParam("stoop", self.stoopIntensity)
     
-end
-
-function Onos:OnUpdateAnimationInput(modelMixin)
-
-    PROFILE("Onos:OnUpdateAnimationInput")
-
-    Alien.OnUpdateAnimationInput(self, modelMixin)
-    
-    modelMixin:SetAnimationInput("weapon", activeWeapon)
-
 end
 
 local kOnosHeadMoveAmount = 0.0

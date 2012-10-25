@@ -19,6 +19,9 @@ Script.Load("lua/DamageTypes.lua")
 Script.Load("lua/Debug.lua")
 Script.Load("lua/CollisionRep.lua")
 Script.Load("lua/Utility.lua")
+
+Log("Loading VM %s", VMNAME)
+
 Script.Load("lua/MixinUtility.lua")
 Script.Load("lua/Actor.lua")
 Script.Load("lua/AnimatedModel.lua")
@@ -89,7 +92,7 @@ Script.Load("lua/AmmoPack.lua")
 Script.Load("lua/MedPack.lua")
 Script.Load("lua/CatPack.lua")
 Script.Load("lua/Effect.lua")
-Script.Load("lua/Particles.lua")
+Script.Load("lua/ServerParticleEmitter.lua")
 
 // Alien structures
 Script.Load("lua/Harvester.lua")
@@ -142,7 +145,6 @@ Script.Load("lua/TeamInfo.lua")
 Script.Load("lua/GameInfo.lua")
 Script.Load("lua/AlienTeamInfo.lua")
 Script.Load("lua/PathingUtility.lua")
-Script.Load("lua/DAKLoader.lua")
 
 gHeightMap = gHeightMap // survive hotloading; will be nil the first time
 
@@ -161,7 +163,6 @@ end
 
 local function OnMapPostLoad()
     LoadHeightmap()
-
 end
 
 function GetHeightmap()

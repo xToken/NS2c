@@ -128,7 +128,8 @@ function ARC:OnCreate()
     
     if Server then
         InitMixin(self, SleeperMixin)
-    else
+        
+    elseif Client then
         InitMixin(self, CommanderGlowMixin)
     end
     

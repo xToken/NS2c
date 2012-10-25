@@ -16,6 +16,7 @@ Script.Load("lua/MapEntityLoader.lua")
 Script.Load("lua/Button.lua")
 Script.Load("lua/Chat.lua")
 Script.Load("lua/DeathMessage_Client.lua")
+Script.Load("lua/DSPEffects.lua")
 Script.Load("lua/Notifications.lua")
 Script.Load("lua/Scoreboard.lua")
 Script.Load("lua/ScoreDisplay.lua")
@@ -29,7 +30,7 @@ Script.Load("lua/MenuManager.lua")
 Script.Load("lua/BindingsDialog.lua")
 Script.Load("lua/MainMenu.lua")
 Script.Load("lua/ConsoleBindings.lua")
-// Disabled for now.
+
 Script.Load("lua/ServerAdmin.lua")
 
 Script.Load("lua/ConsoleCommands_Client.lua")
@@ -46,8 +47,6 @@ Shared.PrecacheSurfaceShader("shaders/Model_alpha.surface_shader")
 Client.propList = { }
 Client.lightList = { }
 Client.skyBoxList = { }
-Client.ambientSoundList = { }
-Client.particlesList = { }
 Client.tracersList = { }
 Client.fogAreaModifierList = { }
 Client.rules = { }
@@ -119,30 +118,32 @@ function DestroyLevelObjects()
         Client.billboardList = { }
     end
 
-    // Remove the reflection probes.      
-    if Client.reflectionProbeList ~= nil then  
+    // Remove the reflection probes.
+    if Client.reflectionProbeList ~= nil then
+    
         for index, reflectionProbe in ipairs(Client.reflectionProbeList) do
             Client.DestroyRenderReflectionProbe(reflectionProbe)
         end
         Client.reflectionProbeList = { }
-    end    
+        
+    end
     
     // Remove the cinematics.
     if Client.cinematics ~= nil then
+    
         for index, cinematic in ipairs(Client.cinematics) do
             Client.DestroyCinematic(cinematic)
         end
         Client.cinematics = { }
+        
     end
     
-    // Remove the skyboxes.    
+    // Remove the skyboxes.
     Client.skyBoxList = { }
     
-    Client.particlesList = {}
-    Client.tracersList = {}
-    Client.ambientSoundList = {}
-    Client.rules = {}
-
+    Client.tracersList = { }
+    Client.rules = { }
+    
 end
 
 function ExitPressed()
@@ -211,7 +212,9 @@ function OnMapLoadEntity(className, groupName, values)
         Client.minimapExtentScale = values.scale
         Client.minimapExtentOrigin = values.origin
         
-    elseif className == "skybox" or className == "cinematic" then
+    // Only create the client side cinematic if it isn't waiting for a signal to start.
+    // Otherwise the server will create the cinematic.
+    elseif className == "skybox" or (className == "cinematic" and (values.startsOnMessage == "" or values.startsOnMessage == nil)) then
     
         local coords = values.angles:GetCoords(values.origin)
         
@@ -223,8 +226,8 @@ function OnMapLoadEntity(className, groupName, values)
         
         local cinematic = Client.CreateCinematic(zone)
         
-        cinematic:SetCinematic( values.cinematicName )
-        cinematic:SetCoords( coords )
+        cinematic:SetCinematic(values.cinematicName)
+        cinematic:SetCoords(coords)
         
         local repeatStyle = Cinematic.Repeat_None
         
@@ -249,13 +252,13 @@ function OnMapLoadEntity(className, groupName, values)
         cinematic:SetRepeatStyle(repeatStyle)
         table.insert(Client.cinematics, cinematic)
         
-    elseif className == "ambient_sound" then
-        
-    elseif className == Particles.kMapName then
+    //elseif className == AmbientSound.kMapName then
     
-        //local entity = Particles()
+        //local entity = AmbientSound()
         //LoadEntityFromValues(entity, values)
-        //table.insert(Client.particlesList, entity)
+        // Precache the ambient sound effects
+        //Shared.PrecacheSound(entity.eventName)
+        //table.insert(Client.ambientSoundList, entity)
         
     elseif className == Reverb.kMapName then
     
@@ -492,17 +495,15 @@ end
 function OnMapPreLoad()
 
     // Add our current time we played
-    SaveTimePlayed(timePlayed)    
+    SaveTimePlayed(timePlayed)
     
     // Clear our list of render objects, lights, props
-    Client.propList = {}
-    Client.lightList = {}
-    Client.skyBoxList = {}
-    Client.ambientSoundList = {}
-    Client.particlesList = {}
-    Client.tracersList = {}
+    Client.propList = { }
+    Client.lightList = { }
+    Client.skyBoxList = { }
+    Client.tracersList = { }
     
-    Client.rules = {}
+    Client.rules = { }
     Client.DestroyReverbs()
     Client.ResetSoundSystem()
     
@@ -700,8 +701,10 @@ function UpdateWorldMessages()
     
     for _, message in ipairs(Client.worldMessages) do
     
-        if (Client.GetTime() - message.creationTime) >= kWorldMessageLifeTime then
+        if (Client.GetTime() - message.creationTime) >= message.lifeTime then
             table.insert(removeEntries, message)
+        else
+            message.animationFraction = (Client.GetTime() - message.creationTime) / message.lifeTime
         end
     
     end
@@ -753,6 +756,16 @@ function Client.AddWorldMessage(messageType, message, position, entityId)
             worldMessage.creationTime = time
             worldMessage.entityId = entityId
             worldMessage.animationFraction = 0
+            worldMessage.lifeTime = ConditionalValue(kWorldTextMessageType.CommanderError == messageType, kCommanderErrorMessageLifeTime, kWorldMessageLifeTime)
+            
+            if messageType == kWorldTextMessageType.CommanderError then
+            
+                local commander = Client.GetLocalPlayer()
+                if commander then
+                    commander:TriggerInvalidSound()
+                end
+                
+            end
             
             table.insert(Client.worldMessages, worldMessage)
             
@@ -765,8 +778,6 @@ end
 function Client.GetWorldMessages()
     return Client.worldMessages
 end
-
-
 
 function Client.CreateTrailCinematic(renderZone)
     local trailCinematic = TrailCinematic()
@@ -805,7 +816,6 @@ function OnClientDisconnected(reason)
     GetGUIManager():DestroyGUIScriptSingle("GUICrosshair")
     GetGUIManager():DestroyGUIScriptSingle("GUIScoreboard")
     GetGUIManager():DestroyGUIScriptSingle("GUINotifications")
-    GetGUIManager():DestroyGUIScriptSingle("GUIRequests")
     GetGUIManager():DestroyGUIScriptSingle("GUIDamageIndicators")
     GetGUIManager():DestroyGUIScriptSingle("GUIDeathMessages")
     GetGUIManager():DestroyGUIScriptSingle("GUIChat")

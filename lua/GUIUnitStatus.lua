@@ -12,8 +12,8 @@
 
 class 'GUIUnitStatus' (GUIAnimatedScript)
 
-GUIUnitStatus.kMarineFontName = "fonts/AgencyFB_small.fnt"
-
+GUIUnitStatus.kFontName = "fonts/AgencyFB_small.fnt"
+GUIUnitStatus.kActionFontName = "fonts/AgencyFB_smaller_bordered.fnt"
 GUIUnitStatus.kUnitStatusSize = Vector(60, 60, 0)
 
 GUIUnitStatus.kAlphaPerSecond = 0.8
@@ -36,6 +36,7 @@ GUIUnitStatus.kUnpoweredColor = Color(1,0.2,0.2,1)
 GUIUnitStatus.kEnemyColor = Color(1,0.3,0.3,1)
 
 GUIUnitStatus.kFontScale = GUIScale( Vector(1,1,1) ) * 1.2
+GUIUnitStatus.kActionFontScale = GUIScale( Vector(1,1,1) )
 GUIUnitStatus.kFontScaleProgress = GUIScale( Vector(1,1,1) ) * 0.8
 GUIUnitStatus.kFontScaleSmall = GUIScale( Vector(1,1,1) ) * 0.9
 
@@ -67,6 +68,7 @@ local kBackgroundNoiseTexture = "ui/alien_commander_bg_smoke.dds"
 local kSmokeyBackgroundSize = GUIScale(Vector(256, 130, 0))
 
 local kNameDefaultPos = GUIScale(Vector(0, 4, 0))
+local kActionDefaultPos = GUIScale(Vector(0, -16, 0))
 
 local function GetUnitStatusTextureCoordinates(unitStatus)
 
@@ -254,6 +256,7 @@ function GUIUnitStatus:UpdateUnitStatusList(activeBlips, deltaTime)
         // use the entities team color here, so you can make a difference between enemy or friend
         updateBlip.statusBg:SetColor(Color(1,1,1,alpha))
         updateBlip.NameText:SetText(blipData.Name)
+        updateBlip.ActionText:SetText(blipData.Action)
         
         local hintVisible = showHints and blipData.Hint ~= nil and string.len(blipData.Hint) > 0
         
@@ -280,6 +283,7 @@ function GUIUnitStatus:UpdateUnitStatusList(activeBlips, deltaTime)
             textColor.a = alpha
         end
         updateBlip.NameText:SetColor(textColor)
+        updateBlip.ActionText:SetColor(textColor)
         if updateBlip.HintText then
             updateBlip.HintText:SetColor(textColor)
         end
@@ -295,7 +299,7 @@ function GUIUnitStatus:UpdateUnitStatusList(activeBlips, deltaTime)
         end
         updateBlip.HealthBar:SetTexturePixelCoordinates(GetPixelCoordsForFraction(blipData.HealthFraction))
         updateBlip.ArmorBar:SetTexturePixelCoordinates(GetPixelCoordsForFraction(blipData.ArmorFraction)) 
-                    
+        
         updateBlip.ProgressingIcon:SetRotation(Vector(0, 0, -2 * math.pi * baseResearchRot))
         updateBlip.BorderMask:SetRotation(Vector(0, 0, -2 * math.pi * baseResearchRot))
         updateBlip.BorderMask:SetIsVisible(teamType == kMarineTeamType and blipData.IsCrossHairTarget)
@@ -421,15 +425,23 @@ function GUIUnitStatus:CreateBlipItem()
     
     newBlip.NameText = GUIManager:CreateTextItem()
     newBlip.NameText:SetAnchor(GUIItem.Middle, GUIItem.Top)
-    newBlip.NameText:SetFontName(GUIUnitStatus.kMarineFontName)
+    newBlip.NameText:SetFontName(GUIUnitStatus.kFontName)
     newBlip.NameText:SetTextAlignmentX(GUIItem.Align_Center)
     newBlip.NameText:SetTextAlignmentY(GUIItem.Align_Min)
     newBlip.NameText:SetScale(GUIUnitStatus.kFontScale)
     newBlip.NameText:SetPosition(kNameDefaultPos)  
     
+    newBlip.ActionText = GUIManager:CreateTextItem()
+    newBlip.ActionText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
+    newBlip.ActionText:SetFontName(GUIUnitStatus.kActionFontName)
+    newBlip.ActionText:SetTextAlignmentX(GUIItem.Align_Center)
+    newBlip.ActionText:SetTextAlignmentY(GUIItem.Align_Min)
+    newBlip.ActionText:SetScale(GUIUnitStatus.kActionFontScale)
+    newBlip.ActionText:SetPosition(kActionDefaultPos)  
+    
     newBlip.HintText = GUIManager:CreateTextItem()
     newBlip.HintText:SetAnchor(GUIItem.Middle, GUIItem.Top)
-    newBlip.HintText:SetFontName(GUIUnitStatus.kMarineFontName)
+    newBlip.HintText:SetFontName(GUIUnitStatus.kFontName)
     newBlip.HintText:SetTextAlignmentX(GUIItem.Align_Center)
     newBlip.HintText:SetTextAlignmentY(GUIItem.Align_Min)
     newBlip.HintText:SetScale(GUIUnitStatus.kFontScaleSmall)
@@ -471,6 +483,8 @@ function GUIUnitStatus:CreateBlipItem()
     
     newBlip.GraphicsItem:AddChild(newBlip.ProgressingIcon)
     newBlip.GraphicsItem:AddChild(newBlip.OverLayGraphic)
+    
+    newBlip.ProgressingIcon:AddChild(newBlip.ActionText)
     
     return newBlip
     

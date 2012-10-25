@@ -122,7 +122,7 @@ function Observatory:OnCreate()
     end
     
     self:SetLagCompensated(false)
-    self:SetPhysicsCollisionRep(CollisionRep.Move)
+    self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)  
     
 end

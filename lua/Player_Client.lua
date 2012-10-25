@@ -46,6 +46,10 @@ Player.kFirstPersonAlienHealthCircle = PrecacheAsset("models/misc/marine-build/m
 
 Player.kFirstPersonDeathEffect = PrecacheAsset("cinematics/death_1p.cinematic")
 
+local kDeadSound = PrecacheAsset("sound/NS2.fev/common/dead")
+Client.PrecacheLocalSound(kDeadSound)
+gPlayingDeadMontage = nil
+
 local kHealthCircleFadeOutTime = 1
 
 local function GetHealthCircleName(self)
@@ -79,7 +83,6 @@ function PlayerUI_GetWorldMessages()
             tableEntry.messageType = worldMessage.messageType
             tableEntry.previousNumber = worldMessage.previousNumber
             tableEntry.text = worldMessage.message
-            worldMessage.animationFraction = (Client.GetTime() - worldMessage.creationTime) / kWorldMessageLifeTime
             tableEntry.animationFraction = worldMessage.animationFraction
             tableEntry.distance = (worldMessage.position - player:GetOrigin()):GetLength()
             tableEntry.minimumAnimationFraction = worldMessage.minimumAnimationFraction
@@ -130,7 +133,7 @@ function PlayerUI_GetCurrentOrderType()
 
     local player = Client.GetLocalPlayer()
     
-    if player and player:GetCurrentOrder() then
+    if player and HasMixin(player, "Orders")  and player:GetCurrentOrder() then
         return player:GetCurrentOrder():GetType()
     end
     
@@ -230,7 +233,7 @@ function PlayerUI_GetOrderPath()
                 
             end
             
-        else
+        elseif HasMixin(player, "Orders") then
         
             local currentOrder = player:GetCurrentOrder()
             if currentOrder then
@@ -249,6 +252,13 @@ function PlayerUI_GetOrderPath()
     end
     
     return nil
+    
+end
+
+function PlayerUI_GetCanDisplayRequestMenu()
+
+    local player = Client.GetLocalPlayer()
+    return player ~= nil and (player:GetIsAlive() or player:isa("Spectator")) and not player:GetBuyMenuIsDisplaying() and not MainMenu_GetIsOpened()
     
 end
 
@@ -320,6 +330,7 @@ function PlayerUI_GetUnitStatusInfo()
 
                     local statusFraction = unit:GetUnitStatusFraction(player)
                     local description = unit:GetUnitName(player)
+                    local action = unit:GetActionName(player)
                     local hint = unit:GetUnitHint(player)
                     
                     local healthBarOrigin = origin + kDefaultHealthOffset
@@ -331,6 +342,10 @@ function PlayerUI_GetUnitStatusInfo()
                     local worldOrigin = Vector(origin)
                     origin = Client.WorldToScreen(origin)
                     healthBarOrigin = Client.WorldToScreen(healthBarOrigin)
+                    
+                    if unit == crossHairTarget then
+                        healthBarOrigin.y = math.max(GUIScale(180), healthBarOrigin.y)
+                    end
 
                     local health = 0
                     local armor = 0
@@ -369,6 +384,7 @@ function PlayerUI_GetUnitStatusInfo()
                         HealthBarPosition = healthBarOrigin,
                         Status = status,
                         Name = description,
+                        Action = action,
                         Hint = hint,
                         StatusFraction = statusFraction,
                         HealthFraction = health,
@@ -498,7 +514,7 @@ function PlayerUI_GetFinalWaypointInScreenspace()
     
         if player:isa("Alien") then
             currentOrder = GetMostRelevantPheromone(player:GetOrigin())
-        else
+        elseif HasMixin(player, "Orders") then
             currentOrder = player:GetCurrentOrder()
         end
         
@@ -998,6 +1014,15 @@ function PlayerUI_GetActiveWeaponTechId()
     
 end
 
+function PlayerUI_GetPlayerClassName()
+
+    local player = Client.GetLocalPlayer()
+    if player then
+        return player:GetClassName()
+    end
+
+end
+
 function PlayerUI_GetPlayerClass()
     
     /*
@@ -1047,11 +1072,15 @@ function PlayerUI_GetReadyRoomOrders()
 end
 
 function PlayerUI_GetWeaponAmmo()
+
     local player = Client.GetLocalPlayer()
+    
     if player then
         return player:GetWeaponAmmo()
     end
+    
     return 0
+    
 end
 
 function PlayerUI_GetWeaponClip()
@@ -1064,18 +1093,25 @@ end
 
 function PlayerUI_GetWeaponClipSize()
     local player = Client.GetLocalPlayer()
+    
     if player then
         return player:GetWeaponClipSize()
     end
+    
     return 0
+    
 end
 
 function PlayerUI_GetAuxWeaponClip()
+
     local player = Client.GetLocalPlayer()
+    
     if player then
         return player:GetAuxWeaponClip()
     end
+    
     return 0
+    
 end
 
 function PlayerUI_GetWeldPercentage()
@@ -1470,6 +1506,10 @@ function Player:SendKeyEvent(key, down)
         
     end
     
+    if GetIsBinding(key, "RequestHealth") then
+        self.timeOfLastHealRequest = Shared.GetTime()
+    end
+    
     return false
 
 end
@@ -1487,7 +1527,7 @@ function Player:UpdateMisc(input)
     
         self:UpdateCrossHairTarget()
         self:UpdateDamageIndicators()
-        self:UpdateChat(input)
+        self:UpdateDeadSound()
         
     end
     
@@ -1663,16 +1703,35 @@ function Player:AddAlert(techId, worldX, worldZ, entityId, entityTechId)
     
 end
 
-function Player:GetAndClearAlertBlips()
+function Player:GetAlertBlips()
 
     local alertBlips = {}
     table.copy(self.alertBlips, alertBlips)
-    table.clear(self.alertBlips)
     return alertBlips
     
 end
 
+function Player:ClearAlertBlips()
+    table.clear(self.alertBlips)    
+end
+
+function Player:OnGUIUpdated()
+    self:ClearAlertBlips()
+end
+
 local function DisableDanger(self)
+end
+
+local function DisableScreenEffects(self)
+
+    if self:GetIsLocalPlayer() then
+    
+        for _, effect in pairs(Player.screenEffects) do
+            effect:SetActive(false)
+        end
+        
+    end
+    
 end
 
 // Called on the Client only, after OnInitialized(), for a ScriptActor that is controlled by the local player.
@@ -1692,7 +1751,6 @@ function Player:OnInitLocalClient()
     GetGUIManager():CreateGUIScriptSingle("GUICrosshair")
     GetGUIManager():CreateGUIScriptSingle("GUIScoreboard")
     GetGUIManager():CreateGUIScriptSingle("GUINotifications")
-    GetGUIManager():CreateGUIScriptSingle("GUIRequests")
     GetGUIManager():CreateGUIScriptSingle("GUIDamageIndicators")
     GetGUIManager():CreateGUIScriptSingle("GUIDeathMessages")
     GetGUIManager():CreateGUIScriptSingle("GUIChat")
@@ -1711,6 +1769,8 @@ function Player:OnInitLocalClient()
         self.unitStatusDisplay:EnableAlienStyle()
         
     end
+    
+    DisableScreenEffects(self)
 
     // Re-enable skybox rendering after commanding
     SetSkyboxDrawState(true)
@@ -1729,7 +1789,7 @@ function Player:OnInitLocalClient()
     
     self.traceReticle = false
     
-    self.damageIndicators = {}
+    self.damageIndicators = { }
     
     // Set commander geometry visible
     Client.SetGroupIsVisible(kCommanderInvisibleGroupName, true)
@@ -1812,19 +1872,12 @@ function Player:OnDestroy()
 
     ScriptActor.OnDestroy(self)
     
-    if self.guiReadyRoomOrders then
-    
-        GetGUIManager():DestroyGUIScript(self.guiReadyRoomOrders)
-        self.guiReadyRoomOrders = nil
-        
-    end
-    
     if self.viewModel ~= nil then
+    
         Client.DestroyRenderViewModel(self.viewModel)
         self.viewModel = nil
+        
     end
-    
-    DisableScreenEffects()
     
     self:UpdateCloakSoundLoop(false)
     
@@ -1859,7 +1912,7 @@ end
  */
 function Player:OnKillClient()
 
-    DisableScreenEffects()
+    DisableScreenEffects(self)
     DisableDanger(self)
     
 end
@@ -2411,15 +2464,6 @@ function PlayerUI_GetRecentPurchaseable()
 
 end
 
-// True means display the menu or sub-menu
-function PlayerUI_ShowSayings()
-    local player = Client.GetLocalPlayer()    
-    if player then
-        return player:GetShowSayings()
-    end
-    return nil
-end
-
 // returns true/false
 function PlayerUI_GetHasMotionTracking()
     if Client.GetLocalPlayer().gameStarted then
@@ -2528,22 +2572,6 @@ function PlayerUI_GetSayings()
         sayings = player:GetSayings()
     end
     return sayings
-    
-end
-
-// Returns 0 unless a saying was just chosen. Returns 1 - number of sayings when one is chosen.
-function PlayerUI_SayingChosen()
-
-    local player = Client.GetLocalPlayer()
-    if player then
-    
-        local saying = player:GetAndClearSaying()
-        if saying ~= nil then
-            return saying
-        end
-        
-    end
-    return 0
     
 end
 
@@ -3105,15 +3133,68 @@ function PlayerUI_GetShowGiveDamageIndicator()
     
 end
 
-function Player:AddTakeDamageIndicator(worldX, worldZ)
+local function GetDamageEffectType(self)
 
-    // Insert triple indicating when damage was taken and from where it came 
-    local triple = {worldX, worldZ, Shared.GetTime()}
-    table.insert(self.damageIndicators, triple)
+    if self:isa("Marine") then
+        return kDamageEffectType.Blood
+    elseif self:isa("Alien") then
+        return kDamageEffectType.AlienBlood
+    elseif self:isa("Exo") then
+        return kDamageEffectType.Sparks
+    end
+
+end
+
+function Player:GetShowDamageArrows()
+    return true
+end
+
+function Player:AddTakeDamageIndicator(damagePosition)
+
+    if self:GetShowDamageArrows() then
+    
+        // Insert triple indicating when damage was taken and from where it came 
+        local triple = {damagePosition.x, damagePosition.z, Shared.GetTime()}
+        table.insert(self.damageIndicators, triple)
+        
+    end
     
     if not self:GetIsAlive() and not self.deathTriggered then
         self:TriggerFirstPersonDeathEffects()
         self.deathTriggered = true
+    end
+    
+    local damageIndicatorScript = GetGUIManager():GetGUIScriptSingle("GUIDamageIndicators")
+    local hitEffectType = GetDamageEffectType(self)
+    
+    if damageIndicatorScript and hitEffectType then
+    
+        local position = Vector(0,0,0)
+        local viewCoords = self:GetViewCoords()
+        
+        local hitDirection = GetNormalizedVector( viewCoords.origin - damagePosition )
+        position.x = viewCoords.xAxis:DotProduct(hitDirection)
+        position.y = viewCoords.zAxis:DotProduct(hitDirection)
+        
+        if position:GetLength() > 0 then
+        
+            position:Normalize()
+            position:Scale(0.95)
+            
+            local screenPos = Vector()
+            
+            screenPos.y = position.y * Client.GetScreenHeight() *.5 + Client.GetScreenHeight() *.5
+            screenPos.x = position.x * Client.GetScreenWidth() * .5 + Client.GetScreenWidth() * .5
+            
+            local rotation = math.atan2(position.x, position.y) + .5 * math.pi
+            if rotation < 0 then
+                rotation = rotation + 2 * math.pi
+            end
+            
+            damageIndicatorScript:OnTakeDamage(screenPos, rotation, hitEffectType)
+        
+        end
+        
     end
     
 end
@@ -3164,6 +3245,11 @@ function Player:UpdateDamageIndicators()
         end
         
     end
+    
+end
+
+    
+function Player:UpdateDeadSound()
     
 end
 
@@ -3326,7 +3412,13 @@ function Player:UpdateCommunicationStatus()
 end
 
 function Player:OnGetIsVisible(visibleTable)
+
     visibleTable.Visible = self:GetDrawWorld()
+    
+    if not self:GetIsAlive() and not HasMixin(self, "Ragdoll") then
+        visibleTable.Visible = false
+    end
+    
 end
 
 function Player:OnUpdateRender()
@@ -3463,29 +3555,6 @@ local function GetFirstPersonHitEffectName(doer)
     end
     
     return effectName
-
-end
-
-function Player:OnTakeDamageClient(damage, doer, position)
-
-    if self == Client.GetLocalPlayer() then
-
-        if doer and GetAreFriends(self, doer) then
-            return
-        end
-
-        local cameraCoords = GetRenderCameraCoords()
-        if cameraCoords then
-        
-            local effectCoords = Coords.GetIdentity()
-            effectCoords.yAxis = GetNormalizedVectorXY(cameraCoords.origin - position)
-            effectCoords.xAxis = effectCoords.zAxis:CrossProduct(effectCoords.yAxis)
-        
-        end
-    
-    end
-    
-    // TODO: trigger camera tilt, somehow, somewhere (probably 'global' tilt for smoothing transistion to spectator camera / death anim)
 
 end
 

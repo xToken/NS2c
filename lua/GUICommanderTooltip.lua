@@ -58,15 +58,12 @@ GUICommanderTooltip.kRequiresTextMaxHeight = 32
 GUICommanderTooltip.kRequiresYOffset = 10
 
 GUICommanderTooltip.kEnablesFontSize = 16
-GUICommanderTooltip.kEnablesTextMaxHeight = 48
+GUICommanderTooltip.kEnablesTextMaxHeight = 64
 GUICommanderTooltip.kEnablesYOffset = 10
 
 GUICommanderTooltip.kInfoFontSize = 16
 GUICommanderTooltip.kInfoTextMaxHeight = 48
 GUICommanderTooltip.kInfoYOffset = 10
-
-GUICommanderTooltip.kWidth = 461 * kCommanderGUIsGlobalScale
-GUICommanderTooltip.kHeight = 40 * kCommanderGUIsGlobalScale
 
 local kBackgroundNoiseTexture = "ui/alien_commander_bg_smoke.dds"
 local kSmokeyBackgroundSize = GUIScale(Vector(400, 640, 0))
@@ -249,11 +246,13 @@ function GUICommanderTooltip:UpdateData(text, hotkey, costNumber, requires, enab
     self.text:SetText(text)
     self.hotkey:SetText("( " .. hotkey .. " )")
     self.hotkey:SetIsVisible(string.len(hotkey) > 0)
-    if costNumber > 0 then
+    // typeNumber may be 0 if the tech data hasn't been fully synced to the Client yet.
+    if costNumber > 0 and typeNumber ~= 0 then
+    
         self.resourceIcon:SetIsVisible(true)
         GUISetTextureCoordinatesTable(self.resourceIcon, GUICommanderTooltip.kResourceIconTextureCoordinates[typeNumber])
         self.cost:SetText(ToString(costNumber))
-        //self.cost:SetColor(GUICommanderTooltip.kResourceColors[typeNumber])
+        
     else
         self.resourceIcon:SetIsVisible(false)
     end
@@ -282,7 +281,12 @@ function GUICommanderTooltip:UpdateData(text, hotkey, costNumber, requires, enab
     end
     
     if self.enables:GetIsVisible() then
-        nextYPosition = self.enables:GetPosition().y + self.enables:GetTextHeight(self.enables:GetText()) + self.enablesInfo:GetTextHeight(self.enablesInfo:GetText())
+    
+        local enablesText = self.enablesInfo:GetText()
+        if string.len(enablesText) > 0 then
+            nextYPosition = self.enables:GetPosition().y + self.enables:GetTextHeight(self.enables:GetText()) + self.enablesInfo:GetTextHeight(self.enablesInfo:GetText())
+        end
+        
     end
 
     if string.len(info) > 0 then

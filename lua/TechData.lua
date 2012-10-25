@@ -129,6 +129,8 @@ kTechDataAlertIgnoreInterval = "ignorealertinterval"
 kTechDataCategory = "techcategory"
 // used to track alien upgrade structures
 kTechDataKeyStructure = "keystructure"
+// custom message displayed for the commander when build method failed
+kTechDataBuildMethodFailedMessage = "commanderbuildmethodfailed"
 
 function BuildTechData()
     

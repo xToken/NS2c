@@ -21,7 +21,7 @@ Script.Load("lua/TechTreeConstants.lua")
 
 class 'GUIMarineHUD' (GUIAnimatedScript)
 
-GUIMarineHUD.kUpgradesTexture = "ui/marine_buildmenu_personal.dds"
+GUIMarineHUD.kUpgradesTexture = "ui/buildmenu.dds"
 
 local POWER_OFF = 1
 local POWER_ON = 2
@@ -612,7 +612,7 @@ function GUIMarineHUD:Update(deltaTime)
         
     end
 
-    local useColor = Color(1, 1, 1, 1)        
+    local useColor = kIconColors[kMarineTeamType]
     if not MarineUI_GetHasArmsLab() then
         useColor = Color(1, 0, 0, 1)
     end

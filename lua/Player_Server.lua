@@ -18,15 +18,8 @@ function Player:OnClientConnect(client)
     
 end
 
-// childs should override this
-function Player:RequestHeal()
-end
-
 function Player:GetClient()
     return self.client
-end
-
-function Player:SetEthereal(ethereal)
 end
 
 function Player:Reset()
@@ -198,9 +191,6 @@ function Player:OnKill(killer, doer, point, direction)
     
     // Fade out screen
     self.timeOfDeath = Shared.GetTime()
-    
-    // So we aren't moving in spectator mode
-    self:SetVelocity(Vector(0, 0, 0))
     
     DestroyViewModel(self)
     
@@ -385,7 +375,6 @@ function Player:CopyPlayerDataFrom(player)
     self.baseYaw = player.baseYaw
     
     // MoveMixin fields.
-    self:SetVelocity(player:GetVelocity())
     self:SetGravityEnabled(player:GetGravityEnabled())
     
     self.name = player.name
@@ -453,8 +442,6 @@ function Player:CopyPlayerDataFrom(player)
     
     end
     
-    player:TransferOrders(self)
-    
     // Remember this player's muted clients.
     self.mutedClients = player.mutedClients
     
@@ -503,7 +490,7 @@ function Player:Replace(mapName, newTeamNumber, preserveWeapons, atOrigin, extra
     // Make model look where the player is looking
     player.standingBodyYaw = self:GetAngles().yaw
     
-    if not player:GetTeam():GetSupportsOrders() then
+    if not player:GetTeam():GetSupportsOrders() and HasMixin(player, "Orders") then
         player:ClearOrders()
     end
     

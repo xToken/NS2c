@@ -8,24 +8,6 @@
 kAlienStructureEffects = 
 {
 
-    hive_nutrient_mist =
-    {
-        hiveNutrientMistEffects =
-        {
-            {cinematic = "cinematics/alien/hive/hive_catalyst.cinematic"},
-            {sound = "sound/NS2.fev/alien/commander/catalyze_3D", done = true},        
-        }    
-    },
-
-    shift_echo =
-    {
-        shiftEchoEffects =
-        {
-            {cinematic = "cinematics/alien/shift/echo_target.cinematic", done = true},
-            {sound = "sound/NS2.fev/alien/structures/shift/energize", done = true},
-        }    
-    },
-
     structure_land =
     {
         structureLand =
@@ -205,20 +187,7 @@ kAlienStructureEffects =
         {
             {cinematic = "cinematics/alien/crag/heal_wave.cinematic"}
         },
-    },
-    
-    // Triggered for each entity healed by crag
-    crag_target_healed =
-    {        
-        cragTargetHealedEffects =
-        {
-            {sound = "sound/NS2.fev/alien/common/regeneration"},
-            
-            {cinematic = "cinematics/alien/heal_big.cinematic", classname = "Onos", done = true},
-            {cinematic = "cinematics/alien/heal_big.cinematic", classname = "Structure", done = true},
-            {cinematic = "cinematics/alien/heal.cinematic", done = true},
-        },
-    },
+    },  
     
     whip_attack =
     {

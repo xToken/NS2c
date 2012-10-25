@@ -115,20 +115,6 @@ function UnitStatusMixin:GetUnitHint(forEntity)
 end
 
 function UnitStatusMixin:GetUnitName(forEntity)
-
-    if GetAreFriends(forEntity, self) and HasMixin(self, "Research") and self:GetIsResearching() then
-    
-        local researchingId = self:GetResearchingId()
-        local displayName = LookupTechData(researchingId, kTechDataDisplayName, "")
-    
-        // Override a couple special cases        
-        if researchingId == kTechId.AdvancedArmoryUpgrade or researchingId == kTechId.UpgradeRoboticsFactory or researchingId == kTechId.EvolveBombard then
-            displayName = "COMM_SEL_UPGRADING"
-        end
-        
-        return Locale.ResolveString(displayName)
-        
-    end
     
     if HasMixin(self, "Tech") then
     
@@ -151,6 +137,28 @@ function UnitStatusMixin:GetUnitName(forEntity)
     
     end
 
+    return ""
+
+end
+
+function UnitStatusMixin:GetActionName(forEntity)
+
+    if GetAreFriends(forEntity, self) and HasMixin(self, "Research") and self:GetIsResearching() then
+    
+        local researchingId = self:GetResearchingId()
+        local displayName = LookupTechData(researchingId, kTechDataDisplayName, "")
+    
+        /*
+        // Override a couple special cases        
+        if researchingId == kTechId.AdvancedArmoryUpgrade or researchingId == kTechId.UpgradeRoboticsFactory or researchingId == kTechId.EvolveBombard then
+            displayName = "COMM_SEL_UPGRADING"
+        end
+        */
+        
+        return Locale.ResolveString(displayName)
+        
+    end
+    
     return ""
 
 end

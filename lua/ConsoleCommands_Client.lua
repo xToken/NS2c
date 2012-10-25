@@ -132,6 +132,7 @@ local animationInputsDisplayedOnScreen = nil
 local function OnCommandAnimInputs(entId)
 
     if Shared.GetCheatsEnabled() then
+        Log("Showing animation inputs for %s", entId)
         animationInputsDisplayedOnScreen = tonumber(entId)
     end
     

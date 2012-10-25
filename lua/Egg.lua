@@ -260,6 +260,10 @@ end
 
 local function GestatePlayer(self, player, fromTechId)
 
+	player.oneHive = false
+    player.twoHives = false
+    player.threeHives = false
+
     local newPlayer = player:Replace(Embryo.kMapName)
     if not newPlayer:IsAnimated() then
         newPlayer:SetDesiredCamera(1.1, { follow = true, tweening = kTweeningFunctions.easeout7 })

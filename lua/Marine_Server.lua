@@ -7,12 +7,22 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-function Marine:OnConstructTarget(target)     
-    self:SetUnitStatusPercentage(target:GetBuiltFraction() * 100)
+local function UpdateUnitStatusPercentage(self, target)
+
+    if HasMixin(target, "Construct") and not target:GetIsBuilt() then
+        self:SetUnitStatusPercentage(target:GetBuiltFraction() * 100)
+    elseif HasMixin(target, "Weldable") then
+        self:SetUnitStatusPercentage(target:GetWeldPercentage() * 100)
+    end
+
+end
+
+function Marine:OnConstructTarget(target)
+    UpdateUnitStatusPercentage(self, target)
 end
 
 function Marine:OnWeldTarget(target)
-    self:SetUnitStatusPercentage(target:GetWeldPercentage() * 100)
+    UpdateUnitStatusPercentage(self, target)
 end
 
 function Marine:SetUnitStatusPercentage(percentage)
@@ -20,74 +30,23 @@ function Marine:SetUnitStatusPercentage(percentage)
     self.timeLastUnitPercentageUpdate = Shared.GetTime()
 end
 
-local function GetCanTriggerAlert(self, techId, timeOut)
-
-    if not self.alertTimes then
-        self.alertTimes = {}
-    end
-    
-    return not self.alertTimes[techId] or self.alertTimes[techId] + timeOut < Shared.GetTime()
-
-end
-
-function Marine:ExecuteSaying(index, menu)
-
-    if not Player.ExecuteSaying(self, index, menu) then
-
-        if Server then
-        
-            if menu == 3 and voteActionsActions[index] then
-                GetGamerules():CastVoteByPlayer(voteActionsActions[index], self)
-            else
-            
-                local sayings = marineRequestSayingsSounds
-                local sayingActions = marineRequestActions
-                
-                if menu == 2 then
-                
-                    sayings = marineGroupSayingsSounds
-                    sayingActions = marineGroupRequestActions
-                    
-                end
-                
-                if sayings[index] then
-                
-                    local techId = sayingActions[index]
-                    if techId ~= kTechId.None and GetCanTriggerAlert(self, techId, Marine.kMarineAlertTimeout) then
-                    
-                        self:PlaySound(sayings[index])
-                        self:GetTeam():TriggerAlert(techId, self)
-                        self.alertTimes[techId] = Shared.GetTime()
-                        
-                    end
-                    
-                end
-                
-            end
-            
-        end
-        
-    end
-    
-end
-
 function Marine:OnTakeDamage(damage, attacker, doer, point)
 
-    if damage > 50 and (not self.timeLastDamageKnockback or self.timeLastDamageKnockback + 1 < Shared.GetTime()) and Shared.GetTime() - self.timeOfLastJump < kKnockbackTime then    
+    if doer and doer:isa("Gore") and not self:GetIsVortexed() then
     
-        self:AddPushImpulse(GetNormalizedVectorXZ(self:GetOrigin() - point) * damage * 0.05)
-        self.timeLastDamageKnockback = Shared.GetTime()
-        
-        if self:GetIsAlive() and attacker and attacker:isa("Alien") then
-            local viewCoords = self:GetViewCoords()
-            local aviewCoords = attacker:GetViewCoords()
-            viewCoords.zAxis.y = math.min(viewCoords.zAxis.y + math.abs(aviewCoords.zAxis.y * 0.5), 1)
-            local viewAngles = Angles()
-            viewAngles:BuildFromCoords(viewCoords)
-            self:SetViewAngles(viewAngles)
-        end
+        self.interruptAim = true
+        self.interruptStartTime = Shared.GetTime()
         
     end
+
+    /*
+    if damage > 50 and (not self.timeLastDamageKnockback or self.timeLastDamageKnockback + 1 < Shared.GetTime()) then    
+    
+        self:AddPushImpulse(GetNormalizedVectorXZ(self:GetOrigin() - point) * damage * 0.1 * self:GetSlowSpeedModifier())
+        self.timeLastDamageKnockback = Shared.GetTime()
+        
+    end
+    */
 
 end
 

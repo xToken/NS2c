@@ -537,7 +537,7 @@ end
 function Skulk:GetPlayFootsteps()
     
     // Don't play footsteps when we're walking
-    return self:GetVelocityLength() > 5 and not GetHasSilenceUpgrade(self) and not self:GetIsCloaked() and self:GetIsOnSurface()
+    return self:GetVelocityLength() > 5 and not GetHasSilenceUpgrade(self) and not self:GetIsCloaked() and self:GetIsOnSurface() and self:GetIsAlive()
     
 end
 
@@ -626,6 +626,12 @@ function Skulk:OnUpdateAnimationInput(modelMixin)
     
     modelMixin:SetAnimationInput("onwall", self:GetIsWallWalking() and not self:GetIsJumping())
     modelMixin:SetAnimationInput("attack_speed", self:GetIsPrimaled() and (kDefaultAttackSpeed * kPrimalScreamROFIncrease) or kDefaultAttackSpeed)
+end
+
+
+local kSkulkEngageOffset = Vector(0, 0.28, 0)
+function Skulk:GetEngagementPointOverride()
+    return self:GetOrigin() + kSkulkEngageOffset
 end
 
 Shared.LinkClassToMap("Skulk", Skulk.kMapName, networkVars)

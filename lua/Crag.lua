@@ -104,13 +104,10 @@ function Crag:OnCreate()
     InitMixin(self, HasUmbraMixin)
     
     self.healingActive = false
-    self.umbratime = 0
     
     self:SetUpdates(true)
     
-    if Server then
-    
-    else
+    if Client then
         InitMixin(self, CommanderGlowMixin)    
     end
     
@@ -130,10 +127,10 @@ function Crag:OnInitialized()
     
         InitMixin(self, StaticTargetMixin)
 
-    // This Mixin must be inited inside this OnInitialized() function.
-    if not HasMixin(self, "MapBlip") then
-        InitMixin(self, MapBlipMixin)
-    end
+        // This Mixin must be inited inside this OnInitialized() function.
+        if not HasMixin(self, "MapBlip") then
+            InitMixin(self, MapBlipMixin)
+        end
         
     elseif Client then
     

@@ -674,15 +674,6 @@ function GetNearestFreeAttachEntity(techId, origin, range)
     
 end
 
-// Returns if it's legal for player to build structure or drop item, along with the position
-// Assumes you're passing in build or buy tech.
-function GetIsBuildPickVecLegal(techId, player, pickVec, snapRadius)
-
-    local trace = GetCommanderPickTarget(player, pickVec, false, true)
-    return GetIsBuildLegal(techId, trace.endPoint, snapRadius, player)
-    
-end
-
 // Trace until we hit the "inside" of the level or hit nothing. Returns nil if we hit nothing,
 // returns the world point of the surface we hit otherwise. Only hit surfaces that are facing 
 // towards us.
@@ -859,9 +850,13 @@ function GetNearest(origin, className, teamNumber, filterFunc)
     
 end
 
-// Computes line of sight to entity
+function GetCanAttackEntity(seeingEntity, targetEntity)
+    return GetCanSeeEntity(seeingEntity, targetEntity, true)
+end
+
+// Computes line of sight to entity, set considerObstacles to true to check if any other entity is blocking LOS
 local toEntity = Vector()
-function GetCanSeeEntity(seeingEntity, targetEntity)
+function GetCanSeeEntity(seeingEntity, targetEntity, considerObstacles)
 
     PROFILE("NS2Utility:GetCanSeeEntity")
     
@@ -913,10 +908,15 @@ function GetCanSeeEntity(seeingEntity, targetEntity)
         
         if withinFOV then
         
+            local filter = EntityFilterAll()
+            if considerObstacles then
+                filter = EntityFilterTwo(seeingEntity, targetEntity)
+            end
+        
             // See if there's something blocking our view of the entity.
-            local trace = Shared.TraceRay(eyePos, targetOrigin + toEntity, CollisionRep.LOS, PhysicsMask.All, EntityFilterOnly(targetEntity))
+            local trace = Shared.TraceRay(eyePos, targetOrigin, CollisionRep.LOS, PhysicsMask.All, filter)
             
-            if trace.entity == targetEntity then
+            if trace.fraction == 1 then
                 seen = true
             end
             
@@ -1037,6 +1037,8 @@ if Client then
     
 end
 
+
+local kUpVector = Vector(0, 1, 0)
 function SetPlayerPoseParameters(player, viewModel)
 
     if not player or not player:isa("Player") then
@@ -1050,35 +1052,37 @@ function SetPlayerPoseParameters(player, viewModel)
     ASSERT(not viewmodel or viewmodel:isa("Viewmodel"))
     
     local viewAngles = player:GetViewAngles()
+    local coords = player:GetCoords()
+    local orientation = coords.yAxis.y + coords.xAxis.y
     
-    local pitch = -Math.Wrap(Math.Degrees(viewAngles.pitch), -180, 180)
+    local pitch = -Math.Wrap(Math.Degrees(viewAngles.pitch * orientation), -180, 180)
     
     local landIntensity = player.landIntensity or 0
     
     local bodyYaw = 0
     if player.bodyYaw then
-        bodyYaw = Math.Wrap(Math.Degrees(player.bodyYaw), -180, 180)
+        bodyYaw = Math.Wrap(Math.Degrees(player.bodyYaw * orientation), -180, 180)
     end
     
     local bodyYawRun = 0
     if player.bodyYawRun then
-        bodyYawRun = Math.Wrap(Math.Degrees(player.bodyYawRun), -180, 180)
+        bodyYawRun = Math.Wrap(Math.Degrees(player.bodyYawRun * orientation), -180, 180)
     end
     
     local viewAngles = player:GetViewAngles()
     local viewCoords = viewAngles:GetCoords()
     
-    local horizontalVelocity = player:GetVelocityFromPolar()
+    local velocity = player:GetVelocityFromPolar()
     // Not all players will contrain their movement to the X/Z plane only.
     if player.GetMoveSpeedIs2D and player:GetMoveSpeedIs2D() then
-        horizontalVelocity.y = 0
+        velocity.y = 0
     end
     
-    local x = Math.DotProduct(viewCoords.xAxis, horizontalVelocity)
-    local z = Math.DotProduct(viewCoords.zAxis, horizontalVelocity)
+    local x = Math.DotProduct(viewCoords.xAxis, velocity)
+    local z = Math.DotProduct(viewCoords.zAxis, velocity)
     
-    local moveYaw = Math.Wrap(Math.Degrees( math.atan2(z,x) ), -180, 180)
-    local speedScalar = player:GetVelocityLength() / player:GetMaxSpeed(true)
+    local moveYaw = Math.Wrap(Math.Degrees( math.atan2(z,x) * orientation ), -180, 180)
+    local speedScalar = velocity:GetLength() / player:GetMaxSpeed(true)
     
     player:SetPoseParam("move_yaw", moveYaw)
     player:SetPoseParam("move_speed", speedScalar)
@@ -1104,11 +1108,11 @@ function SetPlayerPoseParameters(player, viewModel)
 end
 
 // Pass in position on ground
-function GetHasRoomForCapsule(extents, position, collisionRep, physicsMask, ignoreEntity)
+function GetHasRoomForCapsule(extents, position, collisionRep, physicsMask, ignoreEntity, filter)
 
     if extents ~= nil then
     
-        local filter = ConditionalValue(ignoreEntity, EntityFilterOne(ignoreEntity), nil)
+        local filter = filter or ConditionalValue(ignoreEntity, EntityFilterOne(ignoreEntity), nil)
         return not Shared.CollideBox(extents, position, collisionRep, physicsMask, filter)
         
     else
@@ -1240,33 +1244,6 @@ function TriggerHitEffects(doer, target, origin, surface, melee, extraEffectPara
     
     GetEffectManager():TriggerEffects("damage", tableParams, doer)
     
-end
-
-function TriggerMomentumChangeEffects(entity, surface, direction, normal, extraEffectParams)
-
-    assert(math.abs(direction:GetLengthSquared() - 1) < 0.001)
-    local tableParams = {}
-    
-    tableParams[kEffectFilterDoerName] = entity:GetClassName()
-    tableParams[kEffectSurface] = ConditionalValue(type(surface) == "string" and surface ~= "", surface, "metal") 
-
-    local coords = Coords.GetIdentity()
-    coords.origin = entity:GetOrigin()
-    coords.zAxis = direction
-    coords.yAxis = normal    
-    coords.xAxis = coords.yAxis:CrossProduct(coords.zAxis)
-    
-    tableParams[kEffectHostCoords] = coords
-
-    // Add in extraEffectParams if specified    
-    if extraEffectParams then
-        for key, element in pairs(extraEffectParams) do
-            tableParams[key] = element
-        end
-    end
-    
-    GetEffectManager():TriggerEffects("momentum_change", tableParams)
-
 end
 
 // Get nearest valid target for commander ability activation, of specified team number nearest specified position.
@@ -1460,11 +1437,11 @@ function TraceMeleeBox(weapon, eyePoint, axis, extents, range, mask, filter)
     
 end
 
-local function IsPossibleMeleeTarget(player, target)
+local function IsPossibleMeleeTarget(player, target, teamNumber)
 
     if target and HasMixin(target, "Live") and target:GetCanTakeDamage() and target:GetIsAlive() then
     
-        if HasMixin(target, "Team") and GetEnemyTeamNumber(player:GetTeamNumber()) == target:GetTeamNumber() then
+        if HasMixin(target, "Team") and teamNumber == target:GetTeamNumber() then
             return true
         end
         
@@ -1481,9 +1458,11 @@ end
  *
  * Default priority: closest enemy player, otherwise closest enemy melee target
  */
-local function IsBetterMeleeTarget(player, newTarget, target)
+local function IsBetterMeleeTarget(weapon, player, newTarget, target)
 
-    if IsPossibleMeleeTarget(player, newTarget) then
+    local teamNumber = GetEnemyTeamNumber(player:GetTeamNumber())
+
+    if IsPossibleMeleeTarget(player, newTarget, teamNumber) then
     
         if not target or (not target:isa("Player") and newTarget:isa("Player")) then
             return true
@@ -1496,13 +1475,14 @@ local function IsBetterMeleeTarget(player, newTarget, target)
 end
 
 // melee targets must be in front of the player
-local minAngle = 20 / 90
 local function IsNotBehind(fromPoint, hitPoint, forwardDirection)
 
-    local toHitPoint = hitPoint - fromPoint
+    local startPoint = fromPoint + forwardDirection * 0.1
+
+    local toHitPoint = hitPoint - startPoint
     toHitPoint:Normalize()
-    
-    return forwardDirection:DotProduct(toHitPoint) > minAngle
+
+    return forwardDirection:DotProduct(toHitPoint) > 0
 
 end
 
@@ -1532,9 +1512,15 @@ local kTraceOrder = { 4, 1, 3, 5, 7, 0, 2, 6, 8 }
   * Then we split the space into 9 parts and trace/select all of them, choose the "best" target. If no good target is found,
   * we use the middle trace for effects.
   */
-function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceRealAttack)
+function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceRealAttack, scale, priorityFunc)
+
+    scale = scale or 1
 
     local eyePoint = player:GetEyePos()
+    
+    if not teamNumber then
+        teamNumber = GetEnemyTeamNumber( player:GetTeamNumber() )
+    end
     
     local coords = optionalCoords or player:GetViewAngles():GetCoords()
     local axis = coords.zAxis
@@ -1546,11 +1532,24 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
     end
     
     local width, height = weapon:GetMeleeBase()
+    width = scale * width
+    height = scale * height
+    
+    /*
+    if Client then
+        Client.DebugCapsule(eyePoint, eyePoint + axis * range, width, 0, 3)
+    end
+    */
+    
     // extents defines a world-axis aligned box, so x and z must be the same. 
     local extents = Vector(width / 6, height / 6, width / 6)
     local filter = EntityFilterOne(player)
     local middleTrace,middleStart
     local target,endPoint,surface,startPoint
+    
+    if not priorityFunc then
+        priorityFunc = IsBetterMeleeTarget
+    end
     
     for _, pointIndex in ipairs(kTraceOrder) do
     
@@ -1563,19 +1562,13 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
             middleTrace, middleStart = trace, sp
         end
         
-        if IsBetterMeleeTarget(player, trace.entity, target) and IsNotBehind(eyePoint, trace.endPoint, forwardDirection) then
+        if trace.entity and priorityFunc(weapon, player, trace.entity, target) and IsNotBehind(eyePoint, trace.endPoint, forwardDirection) then
         
-            // Log("Selected %s over %s", target, trace.entity)
             target = trace.entity
             startPoint = sp
             endPoint = trace.endPoint
             surface = trace.surface
             
-        end
-        
-        // Performance boost, doubt it makes much difference, but its an easy one...
-        if target and target:isa("Player") then
-            break
         end
         
     end
@@ -1591,13 +1584,38 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
     
 end
 
+local kNumMeleeZones = 3
+function PerformGradualMeleeAttack(weapon, player, damage, range, optionalCoords, altMode)
+
+    local didHit, target, endPoint, direction, surface
+
+    local stepSize = 1 / kNumMeleeZones
+    for i = 1, kNumMeleeZones do
+    
+        didHit, target, endPoint, direction, surface = CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, true, i * stepSize)
+        if target and didHit then
+        
+            local damageMult = 1 - (i - 1) * stepSize
+            //damageMult = math.cos(damageMult * (math.pi / 2) + math.pi) + 1
+            //Print(ToString(damageMult))
+            weapon:DoDamage(damage * damageMult, target, endPoint, direction, surface, altMode)
+            return didHit, target, endPoint, direction, surface
+            
+        end
+        
+    end
+    
+    return didHit, target, endPoint, direction, surface
+
+end
+
 /**
  * Does an attack with a melee capsule.
  */
 function AttackMeleeCapsule(weapon, player, damage, range, optionalCoords, altMode)
 
     // Enable tracing on this capsule check, last argument.
-    local didHit, target, endPoint, direction, surface = CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, true)
+    local didHit, target, endPoint, direction, surface = CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, true, 1)
     
     if didHit then
         weapon:DoDamage(damage, target, endPoint, direction, surface, altMode)
@@ -1742,8 +1760,10 @@ function GetIsClientControlled(entity)
     
     if Server then
         return Server.GetOwner(entity) ~= nil
-    else
+    elseif Client then
         return Client.GetLocalPlayer() == entity
+    elseif Predict then
+        return Predict.GetLocalPlayer() == entity
     end
 
 end

@@ -77,7 +77,7 @@ function CommandStructure:UpdateCommanderLogin(force)
     
         // Don't turn player into commander until short time later
         local player = Shared.GetEntity(self.playerIdStartedLogin)
-
+        
         if (self:GetIsPlayerValidForCommander(player) and GetIsUnitActive(self)) or force then
             self:LoginPlayer(player)
         // Player was killed, became invalid or left the server somehow
@@ -120,12 +120,6 @@ function CommandStructure:LoginPlayer(player)
     
     // Clear game effects on player
     commanderPlayer:ClearGameEffects()    
-    
-    // Make this structure the first hotgroup if we don't have any yet
-    if commanderPlayer:GetNumHotkeyGroups() == 0 then
-        commanderPlayer:CreateHotkeyGroup(1, { self:GetId() })
-    end
-    
     commanderPlayer:SetCommandStructure(self)
     
     // Save origin so we can restore it on logout

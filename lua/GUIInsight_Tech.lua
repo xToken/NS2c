@@ -12,8 +12,6 @@
 
 class 'GUIInsight_Tech' (GUIScript)
 
-GUIInsight_Tech.kTechIconTextureMarine = "ui/marine_buildmenu.dds"
-GUIInsight_Tech.kTechIconTextureAlien = "ui/alien_buildmenu.dds"
 GUIInsight_Tech.kFrameTexture = "ui/tech.dds"
 GUIInsight_Tech.kGridMarineTexture = "ui/techgridmarine.dds"
 GUIInsight_Tech.kGridAlienTexture = "ui/techgridalien.dds"
@@ -23,9 +21,13 @@ GUIInsight_Tech.kAlienBackgroundTexture = "ui/alientechbackground.dds"
 GUIInsight_Tech.kHorizontalBarTexture = "ui/repeatable_bar_horizontal.dds"
 GUIInsight_Tech.kVerticalBarTexture = "ui/repeatable_bar_vertical.dds"
 
-GUIInsight_Tech.kButtonStatusEnabled = Color(1, 1, 1, 1)
 GUIInsight_Tech.kButtonStatusRed = Color(1, 0, 0, 1)
-GUIInsight_Tech.kButtonStatusOff = Color(0.3, 0.3, 0.3, 1)
+
+local kIconColorsOff = 
+{
+    [kMarineTeamType] = Color(kIconColors[kMarineTeamType].r, kIconColors[kMarineTeamType].g, kIconColors[kMarineTeamType].b, 0.3),
+    [kAlienTeamType] = Color(kIconColors[kAlienTeamType].r, kIconColors[kAlienTeamType].g, kIconColors[kAlienTeamType].b, 0.3)
+}
 
 -- Also change in OnResolutionChanged!
 GUIInsight_Tech.kTechIconSize = Vector(Clamp(GUIScale(42), 25, 53), Clamp(GUIScale(42), 25, 53), 0)
@@ -349,38 +351,24 @@ function GUIInsight_Tech:CreateUpgradeIcon(techId, isMarine)
     
     if techIdGridPosition[techId] then
 
+        local str = EnumToString(kTechId, techId)
+        local team = isMarine and kTeam1Index or kTeam2Index
+        local color = kIconColorsOff[team]
+
+        position.x = GUIInsight_Tech.kTechIconSize.x * techIdGridPosition[techId].x
+        position.y = GUIInsight_Tech.kTechIconSize.y * techIdGridPosition[techId].y
+
+        self.gUpgradeIcons[str] = GetGUIManager():CreateGraphicItem()
+        self.gUpgradeIcons[str]:SetTexture("ui/buildmenu.dds")
+        self.gUpgradeIcons[str]:SetAnchor(GUIItem.Left, GUIItem.Top)
+        self.gUpgradeIcons[str]:SetSize(GUIInsight_Tech.kTechIconSize)
+        self.gUpgradeIcons[str]:SetPosition(position)
+        self.gUpgradeIcons[str]:SetColor(color)
+        self.gUpgradeIcons[str]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, isMarine)))
         if isMarine then
-
-            position.x = GUIInsight_Tech.kTechIconSize.x * techIdGridPosition[techId].x
-            position.y = GUIInsight_Tech.kTechIconSize.y * techIdGridPosition[techId].y
-
-            self.gUpgradeIcons[EnumToString(kTechId, techId)] = GetGUIManager():CreateGraphicItem()
-            self.gUpgradeIcons[EnumToString(kTechId, techId)]:SetTexture(GUIInsight_Tech.kTechIconTextureMarine)
-            self.gUpgradeIcons[EnumToString(kTechId, techId)]:SetAnchor(GUIItem.Left, GUIItem.Top)
-            self.gUpgradeIcons[EnumToString(kTechId, techId)]:SetSize(GUIInsight_Tech.kTechIconSize)
-            self.gUpgradeIcons[EnumToString(kTechId, techId)]:SetPosition(position)
-            self.gUpgradeIcons[EnumToString(kTechId, techId)]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, true)))
-            self.marineTechBackground:AddChild(self.gUpgradeIcons[EnumToString(kTechId, techId)])
-            
+            self.marineTechBackground:AddChild(self.gUpgradeIcons[str])
         else
-
-            position.x = GUIInsight_Tech.kTechIconSize.x * techIdGridPosition[techId].x
-            position.y = GUIInsight_Tech.kTechIconSize.y * techIdGridPosition[techId].y
-
-            self.gUpgradeIcons[EnumToString(kTechId, techId)] = GetGUIManager():CreateGraphicItem()
-            self.gUpgradeIcons[EnumToString(kTechId, techId)]:SetTexture(GUIInsight_Tech.kTechIconTextureAlien)
-            self.gUpgradeIcons[EnumToString(kTechId, techId)]:SetAnchor(GUIItem.Left, GUIItem.Top)
-            self.gUpgradeIcons[EnumToString(kTechId, techId)]:SetSize(GUIInsight_Tech.kTechIconSize)
-            self.gUpgradeIcons[EnumToString(kTechId, techId)]:SetPosition(position)
-            
---            if not (techId == kTechId.TwoHives) then --  or techId == kTechId.ThreeHives
-                self.gUpgradeIcons[EnumToString(kTechId, techId)]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, false)))
---            else
---                self.gUpgradeIcons[EnumToString(kTechId, techId)]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.Augmentation, false)))
---            end
-            
-            self.alienTechBackground:AddChild(self.gUpgradeIcons[EnumToString(kTechId, techId)])
-
+            self.alienTechBackground:AddChild(self.gUpgradeIcons[str])
         end
 
     end
@@ -545,9 +533,15 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
                 if techIdString == "JetpackTech" then
 
                     if (not protoLabUp) then
+
                         self.gUpgradeIcons[techIdString]:SetColor(self.kButtonStatusRed)
                     end
-                    
+                elseif techIdString == "GrenadeLauncher" or techIdString == "HeavyMachineGun" then
+
+                    if not AAUp then
+                        self.gUpgradeIcons[techIdString]:SetColor(self.kButtonStatusRed)
+                    end
+    
                 elseif techIdString == "PhaseTech" or  techIdString == "MotionTracking" then
 
                     if not observatoryUp then
@@ -564,8 +558,8 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
             
                 local text = string.format("%s Completed", GetDisplayNameForTechId(techId, "Tech"))
                 
-                local icon = {Texture = "ui/marine_buildmenu.dds", TextureCoordinates = GetTextureCoordinatesForIcon(techId, true), Color = Color(1,1,1,0.5), Size = Vector(15,15,0)}
-                local info = {Text = text, Scale = Vector(0.2,0.2,0.2), Color = Color(0.5,0.5,0.5,0.5), ShadowColor = Color(0,0,0,0.5)}
+                local icon = {Texture = "ui/buildmenu.dds", TextureCoordinates = GetTextureCoordinatesForIcon(techId, true), Color = kIconColors[kTeam1Index], Size = Vector(15,15,0)}
+                local info = {Text = text, Scale = Vector(0.2,0.2,0.2), Color = kIconColors[kTeam1Index], ShadowColor = Color(0,0,0,0.5)}
                 local position = self.gUpgradeIcons[techIdString]:GetScreenPosition(Client.GetScreenWidth(), Client.GetScreenHeight())
                 
                 local alert = GUIInsight_AlertQueue:CreateAlert(position, icon, info, kTeam1Index)
@@ -581,19 +575,19 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
 
             if ArmorIdStrings[techIdString] then
 
-                self.gUpgradeIcons["Armor1"]:SetColor(self.kButtonStatusEnabled)
+                self.gUpgradeIcons["Armor1"]:SetColor(kIconColors[kTeam1Index])
 
                 self.gUpgradeIcons["Armor1"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, true)))
 
             elseif WeaponsIdStrings[techIdString] then
 
-                self.gUpgradeIcons["Weapons1"]:SetColor(self.kButtonStatusEnabled)
+                self.gUpgradeIcons["Weapons1"]:SetColor(kIconColors[kTeam1Index])
 
                 self.gUpgradeIcons["Weapons1"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, true)))
 
             elseif self.gUpgradeIcons[techIdString] then -- needed since there may be other research which isn't actually on the grid (like the fake entries)
 
-                self.gUpgradeIcons[techIdString]:SetColor(self.kButtonStatusEnabled)
+                self.gUpgradeIcons[techIdString]:SetColor(kIconColors[kTeam1Index])
 
             end
 
@@ -602,8 +596,8 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
 
                 local text = string.format("%s Started", GetDisplayNameForTechId(techId, "Tech"))
                 
-                local icon = {Texture = "ui/marine_buildmenu.dds", TextureCoordinates = GetTextureCoordinatesForIcon(techId, true), Color = Color(1,1,1,0.5), Size = Vector(15,15,0)}
-                local info = {Text = text, Scale = Vector(0.2,0.2,0.2), Color = Color(0.5,0.5,0.5,0.5), ShadowColor = Color(0,0,0,0.5)}
+                local icon = {Texture = "ui/buildmenu.dds", TextureCoordinates = GetTextureCoordinatesForIcon(techId, true), Color = kIconColors[kTeam1Index], Size = Vector(15,15,0)}
+                local info = {Text = text, Scale = Vector(0.2,0.2,0.2), Color = kIconColors[kTeam1Index], ShadowColor = Color(0,0,0,0.5)}
                 local position = self.gUpgradeIcons[techIdString]:GetScreenPosition(Client.GetScreenWidth(), Client.GetScreenHeight())
                 
                 local alert = GUIInsight_AlertQueue:CreateAlert(position, icon, info, kTeam1Index)
@@ -617,11 +611,11 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
         
             if techIdString == "Armor1" or techIdString == "Weapons1" then
 
-                self.gUpgradeIcons[techIdString]:SetColor(self.kButtonStatusOff)
+                self.gUpgradeIcons[techIdString]:SetColor(kIconColorsOff[kTeam1Index])
 
             elseif not ArmorWeaponsIdStrings[techIdString] and self.gUpgradeIcons[techIdString] then -- do not make icon disabled because of higher level research
 
-                self.gUpgradeIcons[techIdString]:SetColor(self.kButtonStatusOff)
+                self.gUpgradeIcons[techIdString]:SetColor(kIconColorsOff[kTeam1Index])
                 
             end
 
@@ -642,7 +636,7 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
                 if techIdString == "Xenocide" then
                 
                     if (capturedTechPoints > 2) then
-                        self.gUpgradeIcons["Leap"]:SetColor(self.kButtonStatusEnabled)
+                        self.gUpgradeIcons["Leap"]:SetColor(kIconColors[kTeam2Index])
                     else
                         self.gUpgradeIcons["Leap"]:SetColor(self.kButtonStatusRed)
                     end
@@ -656,7 +650,7 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
                 elseif techIdString == "Web" then
                 
                     if (capturedTechPoints > 2) then
-                        self.gUpgradeIcons["BileBomb"]:SetColor(self.kButtonStatusEnabled)
+                        self.gUpgradeIcons["BileBomb"]:SetColor(kIconColors[kTeam2Index])
                     else
                         self.gUpgradeIcons["BileBomb"]:SetColor(self.kButtonStatusRed)
                     end
@@ -670,13 +664,13 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
                 elseif techIdString == "PrimalScream" then
                 
                     if (capturedTechPoints > 2) then
-                        self.gUpgradeIcons["Umbra"]:SetColor(self.kButtonStatusEnabled)
+                        self.gUpgradeIcons["Umbra"]:SetColor(kIconColors[kTeam2Index])
                     else
                         self.gUpgradeIcons["Umbra"]:SetColor(self.kButtonStatusRed)
                     end
                     
                     if (capturedTechPoints < 2) then -- switch to Tier 2 icons if below 2 hives to indicate that T2 abilities are also lost
-                        self.gUpgradeIcons["Umbra"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.Umbra, false)))
+                        self.gUpgradeIcons["Umbra"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.Spores, false)))
                     else 
                         self.gUpgradeIcons["Umbra"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, false)))
                     end
@@ -684,13 +678,13 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
                 elseif techIdString == "AcidRocket" then
                 
                     if (capturedTechPoints > 2) then
-                        self.gUpgradeIcons["Metabolize"]:SetColor(self.kButtonStatusEnabled)
+                        self.gUpgradeIcons["Metabolize"]:SetColor(kIconColors[kTeam2Index])
                     else
                         self.gUpgradeIcons["Metabolize"]:SetColor(self.kButtonStatusRed)
                     end
                     
                     if (capturedTechPoints < 2) then -- switch to Tier 2 icons if below 2 hives to indicate that T2 abilities are also lost
-                        self.gUpgradeIcons["Metabolize"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.Metabolize, false)))
+                        self.gUpgradeIcons["Metabolize"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.Blink, false)))
                     else 
                         self.gUpgradeIcons["Metabolize"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, false)))
                     end
@@ -698,16 +692,12 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
                 elseif techIdString == "Smash" then
                 
                     if (capturedTechPoints > 2) then
-                        self.gUpgradeIcons["Stomp"]:SetColor(self.kButtonStatusEnabled)
+                        self.gUpgradeIcons["Stomp"]:SetColor(kIconColors[kTeam2Index])
                     else
                         self.gUpgradeIcons["Stomp"]:SetColor(self.kButtonStatusRed)
                     end
                     
-                    if (capturedTechPoints < 2) then -- switch to Tier 2 icons if below 2 hives to indicate that T2 abilities are also lost
-                        self.gUpgradeIcons["Stomp"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.Stomp, false)))
-                    else 
-                        self.gUpgradeIcons["Stomp"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, false)))
-                    end
+                    self.gUpgradeIcons["Stomp"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, false)))
                 
                 end
                 
@@ -716,7 +706,7 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
                 if techIdString == "Leap" then
                 
                     if (capturedTechPoints > 1) then
-                        self.gUpgradeIcons["Leap"]:SetColor(self.kButtonStatusEnabled)
+                        self.gUpgradeIcons["Leap"]:SetColor(kIconColors[kTeam2Index])
                     else
                         -- T3 is checked after T2, so no need to switch textures twice right now. See above.
                         -- self.gUpgradeIcons["Leap"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, false)))
@@ -727,7 +717,7 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
                 elseif techIdString == "BileBomb" then
                 
                     if (capturedTechPoints > 1) then
-                        self.gUpgradeIcons["BileBomb"]:SetColor(self.kButtonStatusEnabled)
+                        self.gUpgradeIcons["BileBomb"]:SetColor(kIconColors[kTeam2Index])
                     else
                         self.gUpgradeIcons["BileBomb"]:SetColor(self.kButtonStatusRed)
                         -- self.gUpgradeIcons["BileBomb"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, false)))
@@ -736,16 +726,16 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
                 elseif techIdString == "Umbra" then
                 
                     if (capturedTechPoints > 1) then
-                        self.gUpgradeIcons["Umbra"]:SetColor(self.kButtonStatusEnabled)
+                        self.gUpgradeIcons["Umbra"]:SetColor(kIconColors[kTeam2Index])
                     else
                         self.gUpgradeIcons["Umbra"]:SetColor(self.kButtonStatusRed)
                         -- self.gUpgradeIcons["Spores"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, false)))
                     end
 
-                elseif techIdString == "Metabolize" then
+                elseif techIdString == "Blink" then
                 
                     if (capturedTechPoints > 1) then
-                        self.gUpgradeIcons["Metabolize"]:SetColor(self.kButtonStatusEnabled)
+                        self.gUpgradeIcons["Metabolize"]:SetColor(kIconColors[kTeam2Index])
                     else
                         self.gUpgradeIcons["Metabolize"]:SetColor(self.kButtonStatusRed)
                        --  self.gUpgradeIcons["Blink"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, false)))
@@ -755,7 +745,7 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
             
             elseif self.gUpgradeIcons[techIdString] then -- needed since there may be other research which isn't actually on the grid (like the fake entries)
 
-                self.gUpgradeIcons[techIdString]:SetColor(self.kButtonStatusEnabled)
+                self.gUpgradeIcons[techIdString]:SetColor(kIconColors[kTeam2Index])
 
             end
             
@@ -765,8 +755,8 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
             
                 local text = string.format("%s Completed", GetDisplayNameForTechId(techId, "Tech"))
                 
-                local icon = {Texture = "ui/alien_buildmenu.dds", TextureCoordinates = GetTextureCoordinatesForIcon(techId, false), Color = Color(1,1,1,0.5), Size = Vector(15,15,0)}
-                local info = {Text = text, Scale = Vector(0.2,0.2,0.2), Color = Color(0.5,0.5,0.5,0.5), ShadowColor = Color(0,0,0,0.5)}
+                local icon = {Texture = "ui/buildmenu.dds", TextureCoordinates = GetTextureCoordinatesForIcon(techId, false), Color = kIconColors[kTeam2Index], Size = Vector(15,15,0)}
+                local info = {Text = text, Scale = Vector(0.2,0.2,0.2), Color = kIconColors[kTeam2Index], ShadowColor = Color(0,0,0,0.5)}
                 local position = self.gUpgradeIcons[techIdString]:GetScreenPosition(Client.GetScreenWidth(), Client.GetScreenHeight())
                 
                 local alert = GUIInsight_AlertQueue:CreateAlert(position, icon, info, kTeam2Index)
@@ -784,31 +774,31 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
             
                 if techIdString == "Xenocide" then
                 
-                    self.gUpgradeIcons["Leap"]:SetColor(self.kButtonStatusEnabled)
+                    self.gUpgradeIcons["Leap"]:SetColor(kIconColors[kTeam2Index])
                     
                     self.gUpgradeIcons["Leap"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, false)))
                 
                 elseif techIdString == "Web" then
                 
-                    self.gUpgradeIcons["BileBomb"]:SetColor(self.kButtonStatusEnabled)
+                    self.gUpgradeIcons["BileBomb"]:SetColor(kIconColors[kTeam2Index])
                     
                     self.gUpgradeIcons["BileBomb"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, false)))
                 
                 elseif techIdString == "PrimalScream" then
                 
-                    self.gUpgradeIcons["Umbra"]:SetColor(self.kButtonStatusEnabled)
+                    self.gUpgradeIcons["Umbra"]:SetColor(kIconColors[kTeam2Index])
                     
                     self.gUpgradeIcons["Umbra"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, false)))
                 
                 elseif techIdString == "AcidRocket" then
                 
-                    self.gUpgradeIcons["Metabolize"]:SetColor(self.kButtonStatusEnabled)
+                    self.gUpgradeIcons["Metabolize"]:SetColor(kIconColors[kTeam2Index])
                     
                     self.gUpgradeIcons["Metabolize"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, false)))
                 
                 elseif techIdString == "Smash" then -- Stomp is T3 right now, maybe Primal will be T2 or T4?
                 
-                    self.gUpgradeIcons["Stomp"]:SetColor(self.kButtonStatusEnabled)
+                    self.gUpgradeIcons["Stomp"]:SetColor(kIconColors[kTeam2Index])
                     
                     self.gUpgradeIcons["Stomp"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, false)))
                 
@@ -816,7 +806,7 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
             
             elseif self.gUpgradeIcons[techIdString] then -- needed since there may be other research which isn't actually on the grid (like the fake entries)
 
-                self.gUpgradeIcons[techIdString]:SetColor(self.kButtonStatusEnabled)
+                self.gUpgradeIcons[techIdString]:SetColor(kIconColors[kTeam2Index])
 
             end
 
@@ -825,8 +815,8 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
 
                 local text = string.format("%s Started", GetDisplayNameForTechId(techId, "Tech"))
                 
-                local icon = {Texture = "ui/alien_buildmenu.dds", TextureCoordinates = GetTextureCoordinatesForIcon(techId, false), Color = Color(1,1,1,0.5), Size = Vector(15,15,0)}
-                local info = {Text = text, Scale = Vector(0.2,0.2,0.2), Color = Color(0.5,0.5,0.5,0.5), ShadowColor = Color(0,0,0,0.5)}
+                local icon = {Texture = "ui/buildmenu.dds", TextureCoordinates = GetTextureCoordinatesForIcon(techId, false), Color = kIconColors[kTeam2Index], Size = Vector(15,15,0)}
+                local info = {Text = text, Scale = Vector(0.2,0.2,0.2), Color = kIconColors[kTeam2Index], ShadowColor = Color(0,0,0,0.5)}
                 local position = self.gUpgradeIcons[techIdString]:GetScreenPosition(Client.GetScreenWidth(), Client.GetScreenHeight())
                 
                 local alert = GUIInsight_AlertQueue:CreateAlert(position, icon, info, kTeam2Index)
@@ -840,14 +830,14 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
 
             if techIdString == "CragHive" or techIdString == "ShadeHive" or techIdString == "ShiftHive" or techIdString == "WhipHive"  then
             
-                self.gUpgradeIcons[techIdString]:SetColor(self.kButtonStatusOff)
+                self.gUpgradeIcons[techIdString]:SetColor(kIconColorsOff[kTeam2Index])
                 
             elseif self.gUpgradeIcons[techIdString] then -- needed since there may be other research which isn't actually on the grid (like the fake entries)
             
                 if isDisabled then
                     self.gUpgradeIcons[techIdString]:SetColor(self.kButtonStatusRed)
                 else
-                    self.gUpgradeIcons[techIdString]:SetColor(self.kButtonStatusOff)
+                    self.gUpgradeIcons[techIdString]:SetColor(kIconColorsOff[kTeam2Index])
                 end
                 
             end

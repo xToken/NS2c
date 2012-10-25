@@ -20,7 +20,7 @@ ScriptActor.kMapName = "scriptactor"
 
 if Server then
     Script.Load("lua/ScriptActor_Server.lua", true)
-else
+elseif Client then
     Script.Load("lua/ScriptActor_Client.lua", true)
 end
 

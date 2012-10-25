@@ -294,15 +294,23 @@ if Server then
             
             if self.evolveTime >= self.gestationTime then
             
-                // Move up slightly so that if we gestated on a sloped surface we don't get stuck
-                if self:GetIsColliding() then
-                    self:SetOrigin( self:GetOrigin() + Vector(0, Embryo.kEvolveSpawnOffset, 0) )
-                end
-                
                 // Replace player with new player
                 local newPlayer = self:Replace(self.gestationClass)
                 newPlayer:SetCameraDistance(0)
                 
+                local capsuleHeight, capsuleRadius = self:GetTraceCapsule()
+                local newAlienExtents = LookupTechData(newPlayer:GetTechId(), kTechDataMaxExtents)
+                
+                if not GetHasRoomForCapsule(newAlienExtents, self:GetOrigin() + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls, nil, EntityFilterTwo(self, newPlayer)) then
+                
+                    local spawnPoint = GetRandomSpawnForCapsule(newAlienExtents.y, capsuleRadius, self:GetModelOrigin(), 0.5, 5, EntityFilterOne(self))
+
+                    if spawnPoint then
+                        newPlayer:SetOrigin(spawnPoint)
+                    end
+                    
+                end
+
                 newPlayer:DropToFloor()
                 
                 self:TriggerEffects("player_end_gestate")

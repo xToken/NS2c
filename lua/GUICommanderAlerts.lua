@@ -19,9 +19,10 @@ GUICommanderAlerts.kIconSizeScalar = 0.5
 GUICommanderAlerts.kBadgeWidth = 300
 GUICommanderAlerts.kBadgeHeight = 50
 // How much space between the edge of the badge and the text/icon.
-GUICommanderAlerts.kBadgeWidthBuffer = 5
+GUICommanderAlerts.kBadgeWidthBuffer = 10
 
 GUICommanderAlerts.kMessageFontSize = 18
+kFontName = "fonts/AgencyFB_small.fnt"
 
 // This is how high up the screen the messages should be offset from.
 // This avoids them clipping over the tooltips.
@@ -166,7 +167,7 @@ function GUICommanderAlerts:AddMessage(text, iconXOffset, iconYOffset, entityId,
     insertMessage["Icon"]:SetSize(Vector(iconScaledWidth, iconScaledHeight, 0))
     insertMessage["Icon"]:SetAnchor(GUIItem.Left, GUIItem.Center)
     insertMessage["Icon"]:SetPosition(Vector(GUICommanderAlerts.kBadgeWidthBuffer, -iconScaledHeight / 2, 0))
-    insertMessage["Icon"]:SetTexture("ui/" .. CommanderUI_MenuImage() .. ".dds")
+    insertMessage["Icon"]:SetTexture("ui/buildmenu.dds")
     
     local pixelXOffset = iconXOffset * GUICommanderAlerts.kIconWidth
     local pixelYOffset = iconYOffset * GUICommanderAlerts.kIconHeight
@@ -177,6 +178,7 @@ function GUICommanderAlerts:AddMessage(text, iconXOffset, iconYOffset, entityId,
         insertMessage["Message"] = GUIManager:CreateTextItem()
     end
     insertMessage["Message"]:SetFontSize(GUICommanderAlerts.kMessageFontSize)
+    insertMessage["Message"]:SetFontName(kFontName)
     insertMessage["Message"]:SetAnchor(GUIItem.Right, GUIItem.Center)
     insertMessage["Message"]:SetTextAlignmentX(GUIItem.Align_Min)
     insertMessage["Message"]:SetTextAlignmentY(GUIItem.Align_Center)

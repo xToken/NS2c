@@ -25,6 +25,11 @@ local function SetupDefaultConfig()
 	kDAKConfig.MapVote.kVoteMapRockTheVote = "%s rock'd the vote. (%s votes, needed %s)."
 	kDAKConfig.MapVote.kVoteMapCancelled = "******           Map vote has been cancelled.         ******"
 	kDAKConfig.MapVote.kVoteMapInsufficientMaps = "******           Not enough maps for a vote.         ******"
+	SaveDAKConfig()
 end
 
 table.insert(kDAKPluginDefaultConfigs, {PluginName = "MapVote", DefaultConfig = function() SetupDefaultConfig() end })
+
+if kDAKConfig.MapVote == nil then
+	SetupDefaultConfig()
+end

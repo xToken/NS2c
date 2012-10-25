@@ -55,7 +55,7 @@ Armory.kDeployTime = 1
 
 if Server then
     Script.Load("lua/Armory_Server.lua")
-else
+elseif Client then
     Script.Load("lua/Armory_Client.lua")
 end
 

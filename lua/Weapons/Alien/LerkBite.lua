@@ -37,7 +37,6 @@ end
 
 local networkVars =
 {
-    lastBittenEntityId = "entityid",
     lastPrimaryAttackTime = "time"
 }
 
@@ -60,7 +59,6 @@ function LerkBite:OnCreate()
     
     InitMixin(self, SporesMixin)
     
-    self.lastBittenEntityId = Entity.invalidId
     self.primaryAttacking = false
     self.lastPrimaryAttackTime = 0
     if Client then
@@ -123,22 +121,6 @@ end
 
 function LerkBite:GetPrimaryAttackUsesFocus()
     return true
-end
-
-function LerkBite:GetEffectParams(tableParams)
-
-    Ability.GetEffectParams(self, tableParams)
-    
-    // There is a special case for biting structures.
-    if self.lastBittenEntityId ~= Entity.invalidId then
-    
-        local lastBittenEntity = Shared.GetEntity(self.lastBittenEntityId)
-        if lastBittenEntity and GetReceivesStructuralDamage(lastBittenEntity) then
-            tableParams[kEffectFilterHitSurface] = "structure"
-        end
-        
-    end
-    
 end
 
 function LerkBite:GetMeleeBase()

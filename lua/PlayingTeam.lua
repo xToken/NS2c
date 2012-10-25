@@ -716,9 +716,6 @@ function PlayingTeam:GetTechTree()
     return self.techTree
 end
 
-function PlayingTeam:TriggerSayingAction(player, sayingActionTechId)
-end
-
 function PlayingTeam:UpdateTechTree()
 
     PROFILE("PlayingTeam:UpdateTechTree")
@@ -911,6 +908,10 @@ function PlayingTeam:GetCommanderPingPosition()
 end
 
 function PlayingTeam:SetCommanderPing(position)
-    self.lastCommPingTime = Shared.GetTime()
-    self.lastCommPingPosition = position
+
+    if self.lastCommPingTime + 3 < Shared.GetTime() then
+        self.lastCommPingTime = Shared.GetTime()
+        self.lastCommPingPosition = position
+    end
+    
 end

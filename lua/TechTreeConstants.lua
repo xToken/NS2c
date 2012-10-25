@@ -10,6 +10,8 @@ kTechId = enum({
     
     'None', 
     
+    'SpawnMarine', 'SpawnAlien', 'CollectResources',
+    
     // General orders and actions ("Default" is right-click)
     'Default', 'Move', 'Attack', 'Build', 'Construct', 'Cancel', 'Recycle', 'Weld', 'AutoWeld', 'Stop', 'SetRally', 'SetTarget',
     // Alien specific orders
@@ -52,7 +54,7 @@ kTechId = enum({
 
     // Marine tech 
     'CommandStation', 'Armory', 'InfantryPortal', 'Extractor', 'Sentry', 'ARC',
-    'Scan', 'AmmoPack', 'MedPack', 'CatPack', 'CatPackTech', 'AdvancedArmoryUpgrade', 'Observatory', 'DistressBeacon', 'PhaseGate', 'RoboticsFactory', 'ARCRoboticsFactory', 'ArmsLab',
+    'Scan', 'AmmoPack', 'MedPack', 'CatPack', 'CatPackTech', 'AdvancedArmoryUpgrade', 'Observatory', 'Detector', 'DistressBeacon', 'PhaseGate', 'RoboticsFactory', 'ARCRoboticsFactory', 'ArmsLab',
     'PrototypeLab', 'AdvancedArmory', 'HandGrenadesTech', 'Electrify', 
     
     // Research 

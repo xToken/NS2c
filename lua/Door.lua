@@ -213,8 +213,6 @@ function Door:Reset()
     self.weldedPercentage = 0
     self:SetHealth(self:GetMaxHealth())
     self:SetArmor(self:GetMaxArmor())
-    self.timeToRagdoll = nil
-    self.timeToDestroy = nil
     
     InitModel(self)
     
@@ -222,7 +220,7 @@ end
 
 function Door:GetShowHealthFor(player)
     return false
-end  
+end
 
 function Door:GetReceivesStructuralDamage()
     return true

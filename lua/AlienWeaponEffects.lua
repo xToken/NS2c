@@ -103,18 +103,6 @@ kAlienWeaponEffects =
         {   
             {sound = "", silenceupgrade = true, done = true}, 
             {sound = "sound/NS2.fev/alien/gorge/spit"},
-            //{cinematic = "cinematics/alien/gorge/spit_fire.cinematic"},
-        },
-    },
-
-    // When healed by Gorge    
-    sprayed =
-    {
-        sprayedEffects =
-        {   
-            {parented_cinematic = "cinematics/alien/heal.cinematic"},
-            {sound = "", silenceupgrade = true, done = true}, 
-            {sound = "sound/NS2.fev/alien/common/regeneration", world_space = true},
         },
     },
     
@@ -174,7 +162,6 @@ kAlienWeaponEffects =
         {   
             {sound = "", silenceupgrade = true, done = true}, 
             {sound = "sound/NS2.fev/alien/gorge/bilebomb"},
-            //{cinematic = "cinematics/alien/gorge/spit_fire.cinematic"},
         },
     },
     
@@ -231,7 +218,7 @@ kAlienWeaponEffects =
         {
             {cinematic = "cinematics/alien/gorge/spit_structure.cinematic"},
             {sound = "", silenceupgrade = true, done = true}, 
-            {sound = "sound/NS2.fev/alien/gorge/create_structure_start"},
+            {sound = "sound/NS2.fev/alien/gorge/create_structure_start", world_space = true},
         }
     },
     

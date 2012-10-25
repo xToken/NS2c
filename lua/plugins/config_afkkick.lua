@@ -15,6 +15,11 @@ local function SetupDefaultConfig()
 	kDAKConfig.AFKKicker.kAFKKickWarningMessage1 = "You will be kicked in %d seconds for idling."
 	kDAKConfig.AFKKicker.kAFKKickWarning2 = 10
 	kDAKConfig.AFKKicker.kAFKKickWarningMessage2 = "You will be kicked in %d seconds for idling."
+	SaveDAKConfig()
 end
 
 table.insert(kDAKPluginDefaultConfigs, {PluginName = "AFKKicker", DefaultConfig = function() SetupDefaultConfig() end })
+
+if kDAKConfig.AFKKicker == nil then
+	SetupDefaultConfig()
+end

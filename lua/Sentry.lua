@@ -335,8 +335,9 @@ function Sentry:OnCreate()
         // Play a "ping" sound effect every Sentry.kPingInterval while scanning.
         local function PlayScanPing(sentry)
         
-            if sentry.mode == Sentry.kMode.Scanning and self:GetIsPowered() then
-                StartSoundEffectAtOrigin(kSentryScanSoundName, sentry:GetModelOrigin())
+            if GetIsUnitActive(self) and not self.attacking and self.attachedToBattery then
+                local player = Client.GetLocalPlayer()
+                Shared.PlayPrivateSound(player, kSentryScanSoundName, nil, 1, sentry:GetModelOrigin())
             end
             return true
             

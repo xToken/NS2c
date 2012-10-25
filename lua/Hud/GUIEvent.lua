@@ -25,8 +25,8 @@ function CreateEventDisplay(scriptHandle, hudLayer, frame, useMarineStyle)
 
 end
 
-GUIEvent.kUnlockTexture = "ui/marine_HUD_unlocked.dds"
-GUIEvent.kAlienUnlockTexture = "ui/alien_HUD_unlocked.dds"
+GUIEvent.kUnlockTexture = PrecacheAsset("ui/marine_HUD_unlocked.dds")
+GUIEvent.kAlienUnlockTexture = PrecacheAsset("ui/alien_HUD_unlocked.dds")
 
 GUIEvent.kUnlockFontSize = 16
 GUIEvent.kUnlockBottomTextColor = Color(246/255, 254/255, 37/255 )
@@ -74,15 +74,14 @@ local function GetUnlockIconParams(unlockId)
     
 end
 
-GUIEvent.kTexture = "ui/marine_HUD_notifyFrame.dds"
-GUIEvent.kTextureMiddleBackground = "ui/marine_HUD_notifyMiddleBackground.dds"
-GUIEvent.kTextureMiddleBorder = "ui/marine_HUD_notifyMiddleBorder.dds"
+GUIEvent.kTexture = PrecacheAsset("ui/marine_HUD_notifyFrame.dds")
+GUIEvent.kTextureMiddleBackground = PrecacheAsset("ui/marine_HUD_notifyMiddleBackground.dds")
+GUIEvent.kTextureMiddleBorder = PrecacheAsset("ui/marine_HUD_notifyMiddleBorder.dds")
 
-GUIEvent.kAlienTexture = "ui/alien_HUD_notifyFrame.dds"
-GUIEvent.kAlienTextureMiddleBackground = "ui/alien_HUD_notifyMiddleBackground.dds"
-GUIEvent.kAlienTextureMiddleBorder = "ui/alien_HUD_notifyMiddleBorder.dds"
+GUIEvent.kAlienTexture = PrecacheAsset("ui/alien_HUD_notifyFrame.dds")
+GUIEvent.kAlienTextureMiddleBorder = PrecacheAsset("ui/alien_HUD_notifyMiddleBorder.dds")
 
-GUIEvent.kFramepos = Vector(30 , 380, 0)
+GUIEvent.kFramepos = Vector(20 , 400, 0)
 GUIEvent.kAlienFramepos = Vector(-128 , 40, 0)
 
 GUIEvent.kBorderTopTextureCoords = { 0, 0, 320, 24 + 6 }

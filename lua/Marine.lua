@@ -28,6 +28,8 @@ Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/DetectorMixin.lua")
 Script.Load("lua/AlienDetectableMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
+Script.Load("lua/OrdersMixin.lua")
+Script.Load("lua/RagdollMixin.lua")
 
 if Client then
     Script.Load("lua/TeamMessageMixin.lua")
@@ -39,7 +41,7 @@ Marine.kMapName = "marine"
 
 if Server then
     Script.Load("lua/Marine_Server.lua")
-else
+elseif Client then
     Script.Load("lua/Marine_Client.lua")
 end
 
@@ -97,6 +99,7 @@ local networkVars =
     unitStatusPercentage = "private integer (0 to 100)"
 }
 
+AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(BaseMoveMixin, networkVars)
 AddMixinNetworkVars(GroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
@@ -128,7 +131,7 @@ function Marine:OnCreate()
     InitMixin(self, LOSMixin)
     InitMixin(self, ParasiteMixin)
     InitMixin(self, AlienDetectableMixin)
-       
+    InitMixin(self, RagdollMixin)   
     if Server then
 
 
@@ -155,7 +158,7 @@ function Marine:OnCreate()
         InitMixin(self, DisorientableMixin)
         
     end
-    
+
 end
 
 function Marine:OnInitialized()
@@ -163,6 +166,7 @@ function Marine:OnInitialized()
     // These mixins must be called before SetModel because SetModel eventually
     // calls into OnUpdatePoseParameters() which calls into these mixins.
     // Yay for convoluted class hierarchies!!!
+    InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kPlayerMoveOrderCompleteDistance })
     InitMixin(self, OrderSelfMixin, { kPriorityAttackTargets = { "Harvester" } })
     InitMixin(self, WeldableMixin)
     
@@ -189,11 +193,16 @@ function Marine:OnInitialized()
     
         InitMixin(self, HiveVisionMixin)
         
+        self:AddHelpWidget("GUIMarineHealthRequestHelp", 2)
+        //self:AddHelpWidget("GUIMarineFlashlightHelp", 2)
+        //self:AddHelpWidget("GUIBuyShotgunHelp", 2)
+        self:AddHelpWidget("GUIMarineWeldHelp", 2)
         self:AddHelpWidget("GUIMapHelp", 1)
+        
     end
     
     self.weaponDropTime = 0
-    self.timeOfLastPhase = nil
+    self.timeOfLastPhase = 0
     
     local viewAngles = self:GetViewAngles()
     self.lastYaw = viewAngles.yaw
@@ -232,9 +241,7 @@ end
 function Marine:MakeSpecialEdition()
 
     if not blockBlackArmor then
-        self:SetModel(Marine.kSpecialModelName, Marine.kMarineAnimationGraph)
-    else
-        self:SetModel(Marine.kModelName, Marine.kMarineAnimationGraph)        
+        self:SetModel(Marine.kBlackArmorModelName, Marine.kMarineAnimationGraph)
     end
     
 end
@@ -407,6 +414,13 @@ function Marine:OnDestroy()
         
             GetGUIManager():DestroyGUIScript(self.progressDisplay)
             self.progressDisplay = nil
+            
+        end
+        
+        if self.requestMenu then
+        
+            GetGUIManager():DestroyGUIScript(self.requestMenu)
+            self.requestMenu = nil
             
         end
         
@@ -584,31 +598,6 @@ function Marine:GetCatalystMoveSpeedModifier()
     return ConditionalValue(self:GetHasCatpackBoost(), CatPack.kMoveSpeedScalar, 1)
 end
 
-function Marine:GetHasSayings()
-    return true
-end
-
-// Other
-function Marine:GetSayings()
-
-    if(self.showSayings) then
-    
-        if(self.showSayingsMenu == 1) then
-            return marineRequestSayingsText
-        end
-        if(self.showSayingsMenu == 2) then
-            return marineGroupSayingsText
-        end
-        if(self.showSayingsMenu == 3) then
-            return GetVoteActionsText(self:GetTeamNumber())
-        end
-        
-    end
-    
-    return nil
-    
-end
-
 function Marine:GetChatSound()
     return Marine.kChatSound
 end
@@ -682,9 +671,6 @@ function Marine:Drop(weapon, ignoreDropTimeLimit, ignoreReplacementWeapon)
         // Remove from player's inventory
         if Server then
             self:RemoveWeapon(weapon)
-        end
-        
-        if Server then
         
             local weaponSpawnCoords = self:GetAttachPointCoords(Weapon.kHumanAttachPoint)
             weapon:SetCoords(weaponSpawnCoords)

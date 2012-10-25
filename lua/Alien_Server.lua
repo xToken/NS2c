@@ -56,18 +56,6 @@ function Alien:TeleportToHive(usedhive)
 
 end
 
-function Alien:RequestHeal()
-
-    if not self.timeLastHealRequest or self.timeLastHealRequest + 4 < Shared.GetTime() then
-    
-        self:GetTeam():TriggerAlert(kTechId.AlienAlertNeedHealing, self)
-        self:PlaySound("sound/NS2.fev/alien/voiceovers/need_healing")
-        self.timeLastHealRequest = Shared.GetTime()
-            
-    end
-
-end
-
 function Alien:CheckRedemption()
 
     local hasupg, level = GetHasRedemptionUpgrade(self)
@@ -125,7 +113,7 @@ function Alien:UpdateAutoHeal()
     if self:GetIsHealable() and self.timeLastAlienAutoHeal == nil or self.timeLastAlienAutoHeal + kAlienRegenerationTime <= Shared.GetTime() then
 
         local healRate = kAlienInnateRegenerationPercentage
-        self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), false)  
+        self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), false, false, true)    
         self.timeLastAlienAutoHeal = Shared.GetTime()
     
     end 
@@ -205,8 +193,8 @@ function Alien:ProcessBuyAction(techIds)
     ASSERT(table.count(techIds) > 0)
 
     local success = false
-    local healthScalar = 1
-    local armorScalar = 1
+    local healthScalar = self:GetHealth() / self:GetMaxHealth()
+    local armorScalar = self:GetMaxArmor() == 0 and 1 or self:GetArmor() / self:GetMaxArmor()
     local totalCosts = 0
     
     // Check for room
@@ -282,12 +270,6 @@ function Alien:ProcessBuyAction(techIds)
             local newPlayer = self:Replace(Embryo.kMapName)
             position.y = position.y + Embryo.kEvolveSpawnOffset
             newPlayer:SetOrigin(position)
-
-            if not newPlayer:IsAnimated() then
-                newPlayer:SetDesiredCamera(1.1, { follow = true, tweening = kTweeningFunctions.easeout7 })
-            end
-            newPlayer:SetCameraDistance(kGestateCameraDistance)
-            newPlayer:SetViewOffsetHeight(.5)
             
             if totalCosts < 0 then
                 newPlayer.resOnGestationComplete = -totalCosts

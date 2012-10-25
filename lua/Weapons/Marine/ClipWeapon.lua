@@ -171,11 +171,6 @@ end
 function ClipWeapon:OnProcessMove(input)
 
     Weapon.OnProcessMove(self, input)
-    
-    // We need to clear this out in OnProcessMove (rather than ProcessMoveOnWeapon)
-    // since this will get called after the view model has been updated from
-    // Player:OnProcessMove. 
-    self.secondaryAttacking = false
 
 end
 
@@ -433,6 +428,10 @@ local function FireBullets(self, player)
             local showTracer = math.random() < effectFrequency
             
             self:ApplyBulletGameplayEffects(player, trace.entity, impactPoint, direction, damage, trace.surface, showTracer)
+            
+            if Client and showTracer then
+                TriggerFirstPersonTracer(self, trace.endPoint)
+            end
 
         end
         

@@ -194,7 +194,7 @@ function InfantryPortal:GetUseAttachPoint()
     return ""
 end
 
-function InfantryPortal:QueueWaitingPlayer()
+local function QueueWaitingPlayer(self)
 
     if self:GetIsAlive() and self.queuedPlayerId == Entity.invalidId then
 
@@ -220,7 +220,7 @@ function InfantryPortal:QueueWaitingPlayer()
                     playerToSpawn:SetSpectatorMode(Spectator.kSpectatorMode.Following)
                 end
                 
-                playerToSpawn:ImposeTarget(self)
+                playerToSpawn:SetFollowTarget(self)
 
             end
             
@@ -236,11 +236,6 @@ end
 
 function InfantryPortal:GetSpawnTime()
     return kMarineRespawnTime
-end
-
-function InfantryPortal:GetTechButtons(techId)
-    return { kTechId.None, kTechId.None, kTechId.None, kTechId.None,
-             kTechId.None, kTechId.None, kTechId.None, kTechId.None }
 end
 
 function InfantryPortal:OnReplace(newStructure)
@@ -379,20 +374,25 @@ end
 // If built and active 
 if Server then
 
-    function InfantryPortal:OnThink()
+    function InfantryPortal:FillQueueIfFree()
     
         if GetIsUnitActive(self) then
         
-            PROFILE("InfantryPortal:OnThink")
-            
-            // If no player in queue
             if self.queuedPlayerId == Entity.invalidId then
-            
-                // Grab available player from team and put in queue
-                self:QueueWaitingPlayer()
-               
-            // else if time has elapsed to spawn player
-            elseif self:SpawnTimeElapsed() then
+                QueueWaitingPlayer(self)
+            end
+
+        end
+
+    end
+
+    function InfantryPortal:OnThink()
+    
+        self:FillQueueIfFree()    
+        
+        if GetIsUnitActive(self) then
+
+            if self:SpawnTimeElapsed() then
             
                 self:FinishSpawn()
                 PushPlayersInRange(self:GetOrigin(), kPushRange, kPushImpulseStrength, GetEnemyTeamNumber(self:GetTeamNumber()))
@@ -405,7 +405,7 @@ if Server then
             end
             
         end
-        
+            
         self:SetNextThink(InfantryPortal.kThinkInterval)
         
     end
@@ -487,6 +487,15 @@ function InfantryPortal:OnUpdateRender()
     else
         DestroySpinEffect(self)
     end
+    
+end
+
+function InfantryPortal:GetTechButtons()
+
+    return {
+        kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
+        kTechId.None, kTechId.None, kTechId.None, kTechId.None,     
+    }
     
 end
 

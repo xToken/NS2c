@@ -214,4 +214,24 @@ function Shotgun:GetAmmoPackMapName()
 end    
 
 
+if Client then
+
+    function Shotgun:GetBarrelPoint()
+    
+        local player = self:GetParent()
+        if player then
+        
+            local origin = player:GetEyePos()
+            local viewCoords= player:GetViewCoords()
+            
+            return origin + viewCoords.zAxis * 0.4 + viewCoords.xAxis * -0.18 + viewCoords.yAxis * -0.2
+            
+        end
+        
+        return self:GetOrigin()
+        
+    end
+
+end
+
 Shared.LinkClassToMap("Shotgun", Shotgun.kMapName, networkVars)

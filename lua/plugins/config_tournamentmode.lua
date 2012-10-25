@@ -11,6 +11,11 @@ local function SetupDefaultConfig()
 	kDAKConfig.TournamentMode.kTournamentModeReadyDelay = 2
 	kDAKConfig.TournamentMode.kTournamentModeGameStartDelay = 15
 	kDAKConfig.TournamentMode.kTournamentModeCountdown = "Game will start in %s seconds!"
+	SaveDAKConfig()
 end
 
 table.insert(kDAKPluginDefaultConfigs, {PluginName = "TournamentMode", DefaultConfig = function() SetupDefaultConfig() end })
+
+if kDAKConfig.TournamentMode == nil then
+	SetupDefaultConfig()
+end

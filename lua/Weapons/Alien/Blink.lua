@@ -19,15 +19,14 @@ Blink.kMinEnterEtherealTime = 0.1
 
 local networkVars =
 {
-    // True when blink started and button not yet released
-    blinkButtonDown = "boolean"
 }
 
 function Blink:OnInitialized()
 
     Ability.OnInitialized(self)
 
-    self.blinkButtonDown = false
+    self.secondaryAttacking = false
+    self.timeBlinkStarted = 0
     
 end
 
@@ -84,12 +83,11 @@ function Blink:OnSecondaryAttack(player)
     
         // Enter "ether" fast movement mode, but don't keep going ethereal when button still held down after
         // running out of energy
-        if not self.blinkButtonDown then
+        if not self.secondaryAttacking then
         
             self:SetEthereal(player, true)
             self.timeBlinkStarted = Shared.GetTime()
-            self.blinkButtonDown = true
-            
+            self.secondaryAttacking = true
             local newVelocity = player:GetViewCoords().zAxis * kEtherealForce  
             player:SetVelocity(player:GetVelocity() + newVelocity)            
         end
@@ -108,7 +106,7 @@ function Blink:OnSecondaryAttackEnd(player)
     
     Ability.OnSecondaryAttackEnd(self, player)
     
-    self.blinkButtonDown = false
+    self.secondaryAttacking = false
     
 end
 

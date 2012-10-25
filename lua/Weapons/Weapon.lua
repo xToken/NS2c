@@ -23,7 +23,7 @@ Weapon.kMeleeBaseHeight = .8
 
 if Server then
     Script.Load("lua/Weapons/Weapon_Server.lua")
-else
+elseif Client then
     Script.Load("lua/Weapons/Weapon_Client.lua")
 end
 

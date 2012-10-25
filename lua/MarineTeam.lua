@@ -73,6 +73,20 @@ function MarineTeam:GetHasAbilityToRespawn()
     
 end
 
+function MarineTeam:OnRespawnQueueChanged()
+
+    local spawningStructures = GetEntitiesForTeam("InfantryPortal", self:GetTeamNumber())
+    
+    for index, current in ipairs(spawningStructures) do
+    
+        if current:GetIsBuilt() and current:GetIsPowered() then
+            current:FillQueueIfFree()
+        end
+        
+    end        
+    
+end
+
 // Clear distress flag for all players on team, unless affected by distress beaconing Observatory. 
 // This function is here to make sure case with multiple observatories and distress beacons is
 // handled properly.
