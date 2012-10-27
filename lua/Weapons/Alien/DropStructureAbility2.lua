@@ -9,8 +9,6 @@ Script.Load("lua/Weapons/Alien/HiveAbility.lua")
 
 class 'DropStructureAbility2' (Ability)
 
-local kMaxStructuresPerType = 20
-
 DropStructureAbility2.kMapName = "drop_structure_ability2"
 
 DropStructureAbility2.kCircleModelName = PrecacheAsset("models/misc/circle/circle_alien.model")
@@ -188,7 +186,6 @@ local function DropStructure(self, player, origin, direction, structureAbility)
     
         local coords, valid, onEntity = self:GetPositionForStructure(origin, direction, structureAbility)
         local techId = structureAbility:GetDropStructureId()
-                
         local cost = LookupTechData(structureAbility:GetDropStructureId(), kTechDataCostKey, 0)
         local enoughRes = player:GetResources() >= cost
         
@@ -219,13 +216,14 @@ local function DropStructure(self, player, origin, direction, structureAbility)
                 end
                 
             else
-                // Create structure
                 local structure = self:CreateStructure(coords, player, structureAbility)
                 if structure then
                     structure:SetOwner(player)
                     player:GetTeam():AddGorgeStructure(player, structure)
-                    // Check for space
                     if structure:SpaceClearForEntity(coords.origin) then
+                        local angles = Angles()
+                        angles:BuildFromCoords(coords)
+                        structure:SetAngles(angles)
                         player:AddResources(-cost)
                         self:TriggerEffects("spit_structure", {effecthostcoords = Coords.GetLookIn(origin, direction)} )
                         return true
@@ -233,6 +231,8 @@ local function DropStructure(self, player, origin, direction, structureAbility)
                         player:TriggerInvalidSound()
                         DestroyEntity(structure)
                     end
+                else
+                   player:TriggerInvalidSound()
                 end
             end
             
@@ -278,8 +278,6 @@ end
 // for structure. Used to preview placement via a ghost structure and then to create it.
 // Also returns bool if it's a valid position or not.
 function DropStructureAbility2:GetPositionForStructure(startPosition, direction, structureAbility)
-    
-    local techId = structureAbility:GetDropStructureId()
     
     PROFILE("DropStructureAbility2:GetPositionForStructure")
 
@@ -335,7 +333,8 @@ function DropStructureAbility2:GetPositionForStructure(startPosition, direction,
     
     local coords = Coords.GetLookIn( displayOrigin, structureFacing, trace.normal )
 
-	if self:GetActiveStructure():GetDropStructureId() == kTechId.Harvester or self:GetActiveStructure():GetDropStructureId() == kTechId.Hive then
+	if structureAbility:GetDropStructureId() == kTechId.Harvester or structureAbility:GetDropStructureId() == kTechId.Hive then
+    	local techId = structureAbility:GetDropStructureId()
 	    local checkBypass = { }
 	    checkBypass["ValidExit"] = true
 	    local validBuild, legalPosition, attachEntity, errorString = GetIsBuildLegal(techId, displayOrigin, direction, range, player, false, checkBypass)

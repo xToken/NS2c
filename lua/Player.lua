@@ -1481,6 +1481,28 @@ local function UpdateAnimationInputs(self, input)
 
 end
 
+
+function Player:OnProcessIntermediate(input)
+   
+    if self:GetIsAlive() and not self.countingDown then
+        // Update to the current view angles so that the mouse feels smooth and responsive.
+        self:UpdateViewAngles(input)
+    end
+    
+    // This is necessary to update the child entity bones so that the view model
+    // animates smoothly and attached weapons will have the correct coords.
+    local numChildren = self:GetNumChildren()
+    for i = 1,numChildren do
+        local child = self:GetChildAtIndex(i - 1)
+        if child.OnProcessIntermediate then
+            child:OnProcessIntermediate(input)
+        end
+    end
+    
+    self:UpdateClientEffects(input.time, true)
+    
+end
+
 // You can't modify a compensated field for another (relevant) entity during OnProcessMove(). The
 // "local" player doesn't undergo lag compensation it's only all of the other players and entities.
 // For example, if health was compensated, you can't modify it when a player was shot -
@@ -1507,7 +1529,6 @@ function Player:OnProcessMove(input)
         // has moved out from underneath us.
         self.onGroundNeedsUpdate = true      
         local wasOnGround = self.onGround
-        local previousOrigin = self:GetOrigin()
         local previousVelocity = self:GetVelocity()
         
         local commands = input.commands
@@ -1564,150 +1585,6 @@ function Player:OnProcessMove(input)
     
     self:EndUse(input.time)
     
-end
-
-// The Predict world tries to merge moves to lower the server load
-// The lua interface has three callbacks called at three points in 
-// the merge process:
-// - before the current move has been processed
-// - after the move has been processed and
-// - after the mergedMove has been processed.
-//  Any of them returning false will cause the merge attempt to be aborted.
-if Predict then
-/**
- * Cheap check if a merge move is at all possible BEFORE move is run
- * usedRandom and usedUnmergable is true if the prevMove used random or an unmergable trace.
- */
-function Player:OnMoveMergePossible(prevMove, move, prevUsedRandom, prevUsedUnmergableTrace)
-
-    // if previous move used an attack, then we can't merge if the keys held down are not the same, then don't merge them
-    local sameCommands = prevMove.commands == move.commands
-    local sameMove = prevMove.move == move.move
-    
-    local result = sameMove and sameCommands and not prevUsedRandom and not prevUsedUnmergableTrace
-    
-    if not result then
-        //Log("%s: OnMoveMergePossible failed, sameCommands %s, sameMove %s, noRandom %s, noUnmergableTrace %s", self, sameCommands, sameMove, not prevUsedRandom, not prevUsedUnmergableTrace)
-    end
-    
-    // in order for animation to work correctly, we must break merge if animation changes
-    self.mergeMoveState = { 
-        animationStart = self.animationStart,
-        animationStart2 = self.animationStart2,
-        layer1AnimationStart = self.layer1AnimationStart,
-        layer1AnimationStart2 = self.layer1AnimationStart2,
-    }
-
-    local viewModel = self:GetViewModelEntity()
-    self.mergeMoveViewState = {} 
-    if viewModel then
-        self.mergeMoveViewState.animationStart = viewModel.animationStart
-        self.mergeMoveViewState.animationStart2 = viewModel.animationStart2
-        self.mergeMoveViewState.layer1AnimationStart = viewModel.layer1AnimationStart
-        self.mergeMoveViewState.layer1AnimationStart2 = viewModel.layer1AnimationStart2
-    end
-
-    return result
-    
-end
-
-// return a map of fail states
-local function CheckMergeStates(self)
-
-    local failures = {}
-    local result = true
-    for key,value in pairs(self.mergeMoveState) do
-        local selfValue = key == "origin" and self:GetOrigin() or self[key]
-        if value ~= selfValue then
-            result = false
-            failures[key] = value - selfValue
-        end
-    end
-
-    local viewModel = self:GetViewModelEntity()
-    if viewModel then
-        for key,value in pairs(self.mergeMoveViewState) do
-            if value ~= viewModel[key] then
-                result = false
-                failures["view" .. key] = value - viewModel[key]
-            end
-        end
-    end    
-    
-    return result, failures
-end
-
-/**
- * Try to construct a merged move from prevMove and move.
- * Called AFTER move has been processed.
- * Save any state needed in OnMoveMergeSuccessful.
- * MergeMove contains prevMove.AppendMove(move)
- * Return true (and a valid attempt at a mergedMove) if possible
- * Note: if it returns false, the current move is marked as standalone and won't be marked
- */
-function Player:OnTryMoveMerge(prevMove, move, mergedMove)
-
-    local result, failures = CheckMergeStates(self)
-    
-    if not result then
-        //Log("%s: OnTryMoveMerge failed %s", self, failures)
-        return result
-    end
-
-    
-    // save state for use in OnMergeSuccessful
-    // Note that we need to break off both before and after a move if animation changes
-    self.mergeMoveState = { 
-        animationStart = self.animationStart,
-        animationStart2 = self.animationStart2,
-        layer1AnimationStart = self.layer1AnimationStart,
-        layer1AnimationStart2 = self.layer1AnimationStart2,
-        origin = self:GetOrigin(),
-        velocity = self:GetVelocity(),
-    }
-    
-    local viewModel = self:GetViewModelEntity()
-    self.mergeMoveViewState = {} 
-    if viewModel then
-        self.mergeMoveViewState.animationStart = viewModel.animationStart
-        self.mergeMoveViewState.animationStart2 = viewModel.animationStart2
-        self.mergeMoveViewState.layer1AnimationStart = viewModel.layer1AnimationStart
-        self.mergeMoveViewState.layer1AnimationStart2 = viewModel.layer1AnimationStart2
-    end
-
-    return true    
-end
-
-
-/**
- * Check if the mergedMove was successful.
- * Called after the mergedMove has been processed.
- * The mergedMove may be modified to produce a better result.
- * Return true if the mergedMove produces acceptable results.
- */
-function Player:OnMoveMergeSuccessful(mergedMove)
-
-    local originDiff = (self.mergeMoveState.origin - self:GetOrigin()):GetLength()
-    local velocityDiff = (self.mergeMoveState.velocity- self:GetVelocity()):GetLength()
-    
-    if originDiff > 0.03 or velocityDiff > 0.5 then
-        //Log("%s: OnMoveMergeSuccessful failed, originDiff %s, velocityDiff %s", self, originDiff, velocityDiff)
-        return false
-    end
-    
-    // erase them from fixed diffs before checking
-    self.mergeMoveState.origin = nil
-    self.mergeMoveState.velocity = nil
-    local result, failures = CheckMergeStates(self)
-    
-    if not result then
-        //Log("%s: OnMoveMergeSuccessful failed %s", self, failures)
-    end
-
-    return result    
-    
-end
-
 end
 
 function Player:PushAIUnits()
@@ -2328,8 +2205,15 @@ function Player:GetMaxSpeed(possible)
     end
     
     //Walking
-    local maxSpeed = ConditionalValue(self:GetMovementModifierState() and self:GetIsOnSurface(), Player.kWalkMaxSpeed,  Player.kRunMaxSpeed)
-    
+    local maxSpeed = Player.kRunMaxSpeed
+     
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = Player.kMaxWalkSpeed
+    elseif self:GetIsOnSurface() and (self.landtime + kOnLandDelay) < Shared.GetTime() then
+        maxSpeed = Player.kRunMaxSpeed
+    else
+        maxSpeed = Player.kRunMaxSpeed * kAirMaxSpeedScalar
+    end
     // Take into account crouching
     if self:GetCrouching() and self.onGround then
         maxSpeed = ( 1 - self:GetCrouchAmount() * self:GetCrouchSpeedScalar() ) * maxSpeed

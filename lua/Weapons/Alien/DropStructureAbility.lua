@@ -14,11 +14,8 @@ Script.Load("lua/Weapons/Alien/WhipAbility.lua")
 
 class 'DropStructureAbility' (Ability)
 
-local kMaxStructuresPerType = 20
-
 DropStructureAbility.kMapName = "drop_structure_ability"
 
-DropStructureAbility.kCircleModelName = PrecacheAsset("models/misc/circle/circle_alien.model")
 local kCreateFailSound = PrecacheAsset("sound/NS2.fev/alien/gorge/create_fail")
 local kAnimationGraph = PrecacheAsset("models/alien/gorge/gorge_view.animation_graph")
 
@@ -112,23 +109,8 @@ function DropStructureAbility:GetEnergyCost(player)
     return kDropStructureEnergyCost
 end
 
-// Child should override
-function DropStructureAbility:GetDropStructureId()
-    assert(false)
-end
-
 function DropStructureAbility:GetDamageType()
     return kHealsprayDamageType
-end
-
-// Child should override ("hydra", "crap", etc.). 
-function DropStructureAbility:GetSuffixName()
-    assert(false)
-end
-
-// Child should override ("Hydra")
-function DropStructureAbility:GetDropClassName()
-    assert(false)
 end
 
 function DropStructureAbility:GetHUDSlot()
@@ -207,6 +189,9 @@ local function DropStructure(self, player, origin, direction, structureAbility)
                 player:GetTeam():AddGorgeStructure(player, structure)
                 // Check for space
                 if structure:SpaceClearForEntity(coords.origin) then
+                    local angles = Angles()
+                    angles:BuildFromCoords(coords)
+                    structure:SetAngles(angles)
                     player:AddResources(-cost)
                     self:TriggerEffects("spit_structure", {effecthostcoords = Coords.GetLookIn(origin, direction)} )
                     return true
@@ -349,67 +334,16 @@ function DropStructureAbility:OnUpdateAnimationInput(modelMixin)
     
 end
 
-function DropStructureAbility:ProcessMoveOnWeapon(input)
-
-    // Show ghost if we're able to create structure, and if menu is not visible
-    local player = self:GetParent()
-    if player then
-    
-        if Client then
-
-            // Update ghost position 
-            if self.showGhost then
-            
-                if not self.abilityHelpModel then
-                    
-                    // Create build circle to show hydra range
-                    self.circle = Client.CreateRenderModel(RenderScene.Zone_Default)
-                    self.circle:SetModel( Shared.GetModelIndex(DropStructureAbility.kCircleModelName) )
-                    
-                    self.abilityHelpModel = Client.CreateRenderModel(RenderScene.Zone_Default)
-                    self.abilityHelpModel:SetCastsShadows(false)
-                    
-                    
-                end
-            
-                self.ghostCoords, valid = self:GetPositionForStructure(player:GetEyePos(), player:GetViewCoords().zAxis, self:GetActiveStructure())
-                
-                if not valid then
-                    self.abilityHelpModel:SetIsVisible(false)
-                end
-                
-                if valid then
-                    self:GetActiveStructure():OnUpdateHelpModel(self, self.abilityHelpModel, self.ghostCoords)
-                end
-                
-                if player:GetResources() < LookupTechData(self:GetActiveStructure().GetDropStructureId(), kTechDataCostKey) then
-                    valid = false
-                end
-                
-                // Scale and position circle to show range
-                if self.circle then
-                
-                    local coords = Coords.GetLookIn( self.ghostCoords.origin + Vector(0, .01, 0), Vector.xAxis )
-                    coords:Scale( 2 * Hydra.kRange )
-                    self.circle:SetCoords(coords)
-                    self.circle:SetIsVisible(valid)
-                    
-                end
-                
-                self.placementValid = valid
-                
-            end
-        end    
-    end
-    
-end
-
 function DropStructureAbility:GetShowGhostModel()
     return self.showGhost
 end
 
 function DropStructureAbility:GetUnassignedHives()
     return self.unassignedhives
+end
+
+function DropStructureAbility:GetShowGhostModel()
+    return self.showGhost
 end
 
 function DropStructureAbility:GetGhostModelCoords()
@@ -420,45 +354,47 @@ function DropStructureAbility:GetIsPlacementValid()
     return self.placementValid
 end
 
+function DropStructureAbility:GetGhostModelTechId()
+    return self:GetActiveStructure():GetDropStructureId()
+end
+
 if Client then
 
-    function DropStructureAbility:OnSetActive()
-    
-        if not Shared.GetIsRunningPrediction() then
-    
-            if not self.buildMenu then
+    function DropStructureAbility:OnProcessIntermediate(input)
+
+        local player = self:GetParent()
+        local viewDirection = player:GetViewCoords().zAxis
+
+        if player then
+
+            self.ghostCoords, self.placementValid = self:GetPositionForStructure(player:GetEyePos(), viewDirection, self:GetActiveStructure())
             
-                self.buildMenu = GetGUIManager():CreateGUIScript("GUIGorgeBuildMenu")
-                self.droppedStructure = false
-                self.showGhost = false
-                
+            if player:GetResources() < LookupTechData(self:GetActiveStructure():GetDropStructureId(), kTechDataCostKey) then
+                self.placementValid = false
             end
         
         end
+        
+    end
     
+    function DropStructureAbility:CreateBuildMenu()
+    
+        if not self.buildMenu then
+        
+            self.buildMenu = GetGUIManager():CreateGUIScript("GUIGorgeBuildMenu")
+            self.droppedStructure = false
+            self.showGhost = false
+            
+        end
+        
     end
 
-    function DropStructureAbility:DestroyStructureGhost()
-        
-        if self.abilityHelpModel ~= nil then
-        
-            Client.DestroyRenderModel(self.abilityHelpModel)
-            self.abilityHelpModel = nil
-            
-        end
-        
-        if self.circle ~= nil then
-        
-            Client.DestroyRenderModel(self.circle)
-            self.circle = nil
-            
-            
-        end
-        
+    function DropStructureAbility:OnSetActive()    
+        self:CreateBuildMenu()    
     end
     
     function DropStructureAbility:DestroyBuildMenu()
-    
+
         if self.buildMenu ~= nil then
         
             GetGUIManager():DestroyGUIScript(self.buildMenu)
@@ -470,19 +406,28 @@ if Client then
 
     function DropStructureAbility:OnDestroy()
     
-        self:DestroyStructureGhost()
-        self:DestroyBuildMenu()
-        
+        self:DestroyBuildMenu()        
         Ability.OnDestroy(self)
         
     end
-
-    function DropStructureAbility:OnHolster(player)
     
-        Ability.OnHolster(self, player)
+    function DropStructureAbility:OnDrawClient()
+    
+        Ability.OnDrawClient(self)
         
-        self:DestroyStructureGhost()
-        self:DestroyBuildMenu()
+        if self:GetParent() == Client.GetLocalPlayer() then
+            self:CreateBuildMenu()
+        end
+        
+    end
+    
+    function DropStructureAbility:OnHolsterClient()
+    
+        Ability.OnHolsterClient(self)
+        
+        if self:GetParent() == Client.GetLocalPlayer() then
+            self:DestroyBuildMenu()
+        end
         
     end
     

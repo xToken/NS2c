@@ -3566,3 +3566,7 @@ end
 function Player:GetClientSideAnimationEnabled()
     return true
 end
+
+function Player:GetShowAtmosphericLight()
+    return true
+end

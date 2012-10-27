@@ -49,7 +49,7 @@ Onos.kMaxCrouchSpeed = 3
 
 Onos.kHealth = kOnosHealth
 Onos.kArmor = kOnosArmor
-Onos.kChargeEnergyCost = 35
+Onos.kChargeEnergyCost = 50
 Onos.kChargeAcceleration = 40
 Onos.kChargeUpDuration = 0.4
 Onos.kChargeDelay = 0.1
@@ -256,20 +256,16 @@ end
 function Onos:HandleButtons(input)
 
     Alien.HandleButtons(self, input)
+
+    if self.movementModiferState then
     
-    if not Shared.GetIsRunningPrediction() then
+        self:TriggerCharge(input.move)
+        
+    else
     
-        if self.movementModiferState then
-        
-            self:TriggerCharge(input.move)
-            
-        else
-        
-            if self.charging then
-                self:EndCharge()
-            end
-        
-        end  
+        if self.charging then
+            self:EndCharge()
+        end
     
     end
 

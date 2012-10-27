@@ -7,6 +7,7 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/GUIAnimatedScript.lua")
+Script.Load("lua/GUIGorgeBuildMenu.lua")
 
 local kMouseOverSound = "sound/NS2.fev/alien/common/alien_menu/hover"
 local kSelectSound = "sound/NS2.fev/alien/common/alien_menu/evolve"

@@ -104,5 +104,9 @@ if Server then
 
 end
 
+function Bomb:GetNotifiyTarget()
+    return false
+end
+
 
 Shared.LinkClassToMap("Bomb", Bomb.kMapName, networkVars)

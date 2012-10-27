@@ -35,6 +35,7 @@ function GUICommanderAlerts:Initialize()
 
     self.messages = { }
     self.reuseMessages = { }
+    self.teamType = PlayerUI_GetTeamType()
     
 end
 
@@ -111,10 +112,12 @@ function GUICommanderAlerts:Update(deltaTime)
     // Update existing messages.
     local numberMessages = table.count(self.messages)
     for i, message in ipairs(self.messages) do
+    
         local currentPosition = Vector(message["Background"]:GetPosition())
         currentPosition.y = GUICommanderAlerts.kBadgeHeight * (numberMessages - i) - GUICommanderAlerts.kMessageScreenYOffset
         message["Background"]:SetPosition(currentPosition)
         message["Time"] = message["Time"] + deltaTime
+        
         if message["Time"] >= GUICommanderAlerts.kTimeStartFade then
             local fadeAmount = ((GUICommanderAlerts.kTimeEndFade - message["Time"]) / (GUICommanderAlerts.kTimeEndFade - GUICommanderAlerts.kTimeStartFade))
             local currentColor = message["Background"]:GetColor()
@@ -124,6 +127,7 @@ function GUICommanderAlerts:Update(deltaTime)
                 table.insert(removeMessages, message)
             end
         end
+        
     end
     
     // Remove faded out messages.
@@ -147,6 +151,7 @@ function GUICommanderAlerts:AddMessage(text, iconXOffset, iconYOffset, entityId,
     
     // Check if we can reuse an existing message.
     if table.count(self.reuseMessages) > 0 then
+    
         insertMessage = self.reuseMessages[1]
         insertMessage["Time"] = 0
         insertMessage["Background"]:SetIsVisible(true)
@@ -157,11 +162,13 @@ function GUICommanderAlerts:AddMessage(text, iconXOffset, iconYOffset, entityId,
         insertMessage["MapX"] = mapX
         insertMessage["MapZ"] = mapZ
         table.remove(self.reuseMessages, 1)
+        
     end
     
     if insertMessage["Icon"] == nil then
         insertMessage["Icon"] = GUIManager:CreateGraphicItem()
     end
+    
     local iconScaledWidth = GUICommanderAlerts.kIconWidth * GUICommanderAlerts.kIconSizeScalar
     local iconScaledHeight = GUICommanderAlerts.kIconHeight * GUICommanderAlerts.kIconSizeScalar
     insertMessage["Icon"]:SetSize(Vector(iconScaledWidth, iconScaledHeight, 0))
@@ -173,6 +180,7 @@ function GUICommanderAlerts:AddMessage(text, iconXOffset, iconYOffset, entityId,
     local pixelYOffset = iconYOffset * GUICommanderAlerts.kIconHeight
     insertMessage["Icon"]:SetTexturePixelCoordinates(pixelXOffset, pixelYOffset, pixelXOffset + GUICommanderAlerts.kIconWidth, pixelYOffset + GUICommanderAlerts.kIconHeight)
     insertMessage["Icon"]:SetInheritsParentAlpha(true)
+    insertMessage["Icon"]:SetColor(kIconColors[self.teamType])
     
     if insertMessage["Message"] == nil then
         insertMessage["Message"] = GUIManager:CreateTextItem()
@@ -185,17 +193,22 @@ function GUICommanderAlerts:AddMessage(text, iconXOffset, iconYOffset, entityId,
     insertMessage["Message"]:SetText(text)
     insertMessage["Message"]:SetInheritsParentAlpha(true)
     insertMessage["Message"]:SetPosition(Vector(GUICommanderAlerts.kBadgeWidthBuffer, 0, 0))
+    insertMessage["Message"]:SetColor(ConditionalValue(self.teamType == kMarineTeamType,kMarineFontColor, kAlienFontColor))
     
     // Only set children the first time this message is created.
     if insertMessage["Background"] == nil then
+    
         insertMessage["Background"] = GUIManager:CreateGraphicItem()
         insertMessage["Background"]:SetLayer(kGUILayerCommanderAlerts)
         insertMessage["Background"]:AddChild(insertMessage["Icon"])
         insertMessage["Icon"]:AddChild(insertMessage["Message"])
+        
     end
+    
     insertMessage["Background"]:SetSize(Vector(GUICommanderAlerts.kBadgeWidth, GUICommanderAlerts.kBadgeHeight, 0))
     insertMessage["Background"]:SetAnchor(GUIItem.Right, GUIItem.Center)
     insertMessage["Background"]:SetPosition(Vector(-GUICommanderAlerts.kBadgeWidth, 0, 0))
+    
     local badgeTextureName = GUICommanderAlerts.kAlertBadgeTextureName
 
     insertMessage["Background"]:SetTexture(badgeTextureName)

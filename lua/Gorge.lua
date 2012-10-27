@@ -55,7 +55,7 @@ Gorge.kMass = 80
 Gorge.kJumpHeight = 1.2
 local kStartSlideForce = 15
 local kViewOffsetHeight = 0.6
-Gorge.kMaxSpeed = 7
+Gorge.kMaxSpeed = 6.5
 Gorge.kMaxSlideSpeed = 13
 Gorge.kSlidingAccelBoost = 3
 Gorge.kGorgeCreateDistance = 3
@@ -397,48 +397,52 @@ end
 
 if Client then
 
-    function Gorge:OnProcessMove(input)
-
-        Alien.OnProcessMove(self, input)
-
-        self.currentTechId = nil
-        self.ghostStructureCoords = nil
-        self.ghostStructureValid = false
-        self.showGhostModel = false
-        
+    function Gorge:GetShowGhostModel()
+    
         local weapon = self:GetActiveWeapon()
+        if weapon and weapon:isa("DropStructureAbility") then
+            return weapon:GetShowGhostModel()
+        end
         
-        if weapon and (weapon.kMapName == "drop_structure_ability" or weapon.kMapName == "drop_structure_ability2") then
+        return false
         
-            self.currentTechId = weapon:GetActiveStructure():GetDropStructureId()
-            self.ghostStructureCoords = weapon:GetGhostModelCoords()
-            self.ghostStructureValid = weapon:GetIsPlacementValid()
-            self.showGhostModel = weapon:GetShowGhostModel()
+    end    
+
+    function Gorge:GetGhostModelTechId()
+    
+        local weapon = self:GetActiveWeapon()
+        if weapon and weapon:isa("DropStructureAbility") then
+            return weapon:GetGhostModelTechId()
+        end
         
+    end
+
+    function Gorge:GetGhostModelCoords()
+    
+        local weapon = self:GetActiveWeapon()
+        if weapon and weapon:isa("DropStructureAbility") then
+            return weapon:GetGhostModelCoords()
         end
 
     end
 
-    function Gorge:GetShowGhostModel()
-        return self.showGhostModel
-    end    
-
-    function Gorge:GetGhostModelTechId()
-        return self.currentTechId
-    end
-
-    function Gorge:GetGhostModelCoords()
-        return self.ghostStructureCoords
-    end
-
     function Gorge:GetIsPlacementValid()
-        return self.ghostStructureValid
+    
+        local weapon = self:GetActiveWeapon()
+        if weapon and weapon:isa("DropStructureAbility") then
+            return weapon:GetIsPlacementValid()
+        end
+    
     end
 
 end
 
 function Gorge:GetCanAttack()
     return Alien.GetCanAttack(self) and not self:GetIsBellySliding()
+end
+
+function Gorge:GetEngagementPointOverride()
+    return self:GetOrigin() + Vector(0, 0.28, 0)
 end
 
 Shared.LinkClassToMap("Gorge", Gorge.kMapName, networkVars)

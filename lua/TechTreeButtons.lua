@@ -210,7 +210,38 @@ function InitTechTreeMaterialOffsets()
     //kTechIdToMaterialOffset[kTechId.ThreatMarker] = 138
     
     //kTechIdToMaterialOffset[kTechId.ExpandingMarker] = 141
-
+	kTechIdToMaterialOffset[kTechId.Defend] = 142
+	kTechIdToMaterialOffset[kTechId.MarineAlertSentryUnderAttack] = 123
+    kTechIdToMaterialOffset[kTechId.MarineAlertSoldierUnderAttack] = 123
+    kTechIdToMaterialOffset[kTechId.MarineAlertStructureUnderAttack] = 123
+    kTechIdToMaterialOffset[kTechId.MarineAlertExtractorUnderAttack] = 123
+    kTechIdToMaterialOffset[kTechId.MarineAlertCommandStationUnderAttack] = 123
+    kTechIdToMaterialOffset[kTechId.MarineAlertInfantryPortalUnderAttack] = 123
+    
+    kTechIdToMaterialOffset[kTechId.MarineAlertCommandStationComplete] = 0
+    kTechIdToMaterialOffset[kTechId.MarineAlertConstructionComplete] = 131
+    kTechIdToMaterialOffset[kTechId.MarineAlertSentryFiring] = 5
+    kTechIdToMaterialOffset[kTechId.MarineAlertSoldierLost] = 96
+    kTechIdToMaterialOffset[kTechId.MarineAlertNeedAmmo] = 91
+    kTechIdToMaterialOffset[kTechId.MarineAlertNeedMedpack] = 92
+    kTechIdToMaterialOffset[kTechId.MarineAlertNeedOrder] = 24
+    kTechIdToMaterialOffset[kTechId.MarineAlertUpgradeComplete] = 101
+    kTechIdToMaterialOffset[kTechId.MarineAlertResearchComplete] = 101
+    kTechIdToMaterialOffset[kTechId.MarineAlertManufactureComplete] = 131
+    
+    
+    //kTechIdToMaterialOffset[kTechId.AlienAlertNeedMist] = 56
+    //kTechIdToMaterialOffset[kTechId.AlienAlertNeedEnzyme] = 42
+    kTechIdToMaterialOffset[kTechId.AlienAlertHiveUnderAttack] = 123
+    kTechIdToMaterialOffset[kTechId.AlienAlertStructureUnderAttack] = 123
+    kTechIdToMaterialOffset[kTechId.AlienAlertHarvesterUnderAttack] = 123
+    kTechIdToMaterialOffset[kTechId.AlienAlertLifeformUnderAttack] = 123
+    kTechIdToMaterialOffset[kTechId.AlienAlertHiveDying] = 123
+    kTechIdToMaterialOffset[kTechId.AlienAlertHiveComplete] = 2
+    
+    kTechIdToMaterialOffset[kTechId.AlienAlertUpgradeComplete] = 101
+    kTechIdToMaterialOffset[kTechId.AlienAlertResearchComplete] = 101
+    kTechIdToMaterialOffset[kTechId.AlienAlertManufactureComplete] = 131
 end
 
 function GetMaterialXYOffset(techId)

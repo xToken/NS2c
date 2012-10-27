@@ -163,7 +163,7 @@ function Blink:OnUpdateAnimationInput(modelMixin)
 
     local player = self:GetParent()
     if self:GetIsBlinking() then
-        modelMixin:SetAnimationInput("move", "run")
+        modelMixin:SetAnimationInput("move", "blink")
     end
     
 end

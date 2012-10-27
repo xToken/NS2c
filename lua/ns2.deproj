@@ -289,6 +289,9 @@
     <filename>GUIReadyRoomOrders.lua</filename>
   </file>
   <file>
+    <filename>GUIResourceDisplay.lua</filename>
+  </file>
+  <file>
     <filename>GUISelectionPanel.lua</filename>
   </file>
   <file>

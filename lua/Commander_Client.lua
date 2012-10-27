@@ -38,6 +38,22 @@ function Commander:GetCanRepairOverride(target)
     return false
 end
 
+function CommanderUI_GetNumCapturedTechpoint()
+
+    local player = Client.GetLocalPlayer()
+    if player then
+    
+        local teamInfo = GetTeamInfoEntity(player:GetTeamNumber())
+        if teamInfo then
+            return teamInfo:GetNumCapturedTechPoints()
+        end
+        
+    end
+
+    return 0    
+
+end
+
 function CommanderUI_GetUnitVisions()
 
     local unitVisions = {}
@@ -258,7 +274,7 @@ end
 
 function Commander:OnDestroy()
 
-    Player.OnDestroy(self)
+    Player.OnDestroy(self) 
 
     if self.hudSetup == true then
     
@@ -331,8 +347,19 @@ end
 
 function Commander:AddGhostGuide(origin, radius)
 
+    local guide = nil
+    
+    if #self.reuseGhostGuides > 0 then
+        guide = self.reuseGhostGuides[#self.reuseGhostGuides]
+        table.remove(self.reuseGhostGuides, #self.reuseGhostGuides)
+    end
+
     // Insert point, circle
-    local guide = Client.CreateRenderModel(RenderScene.Zone_Default)
+    
+    if not guide then
+        guide = Client.CreateRenderModel(RenderScene.Zone_Default)
+    end
+
     local modelName = ConditionalValue(self:GetTeamType() == kAlienTeamType, Commander.kAlienCircleModelName, Commander.kMarineCircleModelName)
     guide:SetModel(modelName)
     local coords = Coords.GetLookIn( origin + Vector(0, kZFightingConstant, 0), Vector(1, 0, 0) )
@@ -348,107 +375,109 @@ end
 // visual range for selected units if they are specified.
 function Commander:UpdateGhostGuides()
 
-    local kGhostGuideUpdateTime = .3
+    self:DestroyGhostGuides(true)
 
-    // Only update every so often (update immediately after minimap click?)
-    if self.timeOfLastGhostGuideUpdate == nil or Shared.GetTime() > self.timeOfLastGhostGuideUpdate + kGhostGuideUpdateTime then
-
-        self:DestroyGhostGuides()
-    
-        local techId = self.currentTechId
-        if techId ~= nil and techId ~= kTechId.None then
+    local techId = self.currentTechId
+    if techId ~= nil and techId ~= kTechId.None then
+        
+        // check if entity has a special ghost guide method
+        local method = LookupTechData(techId, kTechDataGhostGuidesMethod, nil)
+        
+        if method then
+            local guides = method(self)
+            for entity, radius in pairs(guides) do
+                self:AddGhostGuide(Vector(entity:GetOrigin()), radius)
+            end
+        end
+        
+        // If entity can only be placed within range of attach structures, get all the ents that
+        // count for this and draw circles around them
+        local ghostRadius = LookupTechData(techId, kStructureAttachRange, 0)
+        
+        if ghostRadius ~= 0 then
+        
+            // Lookup attach entity 
+            local attachId = LookupTechData(techId, kStructureAttachId)
             
-            // check if entity has a special ghost guide method
-            local method = LookupTechData(techId, kTechDataGhostGuidesMethod, nil)
-            
-            if method then
-                local guides = method(self)
-                for entity, radius in pairs(guides) do
-                    self:AddGhostGuide(Vector(entity:GetOrigin()), radius)
+            // Handle table of attach ids
+            local supportingTechIds = {}
+            if type(attachId) == "table" then
+                for index, currentAttachId in ipairs(attachId) do
+                    table.insert(supportingTechIds, currentAttachId)
                 end
+            else
+                table.insert(supportingTechIds, attachId)
             end
             
-            // If entity can only be placed within range of attach structures, get all the ents that
-            // count for this and draw circles around them
-            local ghostRadius = LookupTechData(techId, kStructureAttachRange, 0)
+            for index, ent in ipairs(GetEntsWithTechIdIsActive(supportingTechIds)) do 
+                self:AddGhostGuide(Vector(ent:GetOrigin()), ghostRadius)         
+            end
+
+        else
+
+            // Otherwise, draw only the free attach entities for this build tech (this is the common case)
+            for index, ent in ipairs(GetFreeAttachEntsForTechId(techId)) do                    
+                self:AddGhostGuide(Vector(ent:GetOrigin()), kStructureSnapRadius)                    
+            end
+
+        end
+        
+        // If attach range specified, then structures don't go on this attach point, but within this range of it            
+        self.attachRange = LookupTechData(techId, kStructureAttachRange, nil)
+        
+    end
+    
+    // Now draw visual ranges for selected units
+    for index, entityEntry in pairs(self.selectedEntities) do    
+    
+        // Draw visual range on structures that specify it (no building effects)
+        local entity = Shared.GetEntity(entityEntry[1])
+        if entity ~= nil then
+        
+            // if GetVisualRadius() returns an array of radiuses, draw them all
+            local visualRadius = entity:GetVisualRadius()
             
-            if ghostRadius ~= 0 then
-            
-                // Lookup attach entity 
-                local attachId = LookupTechData(techId, kStructureAttachId)
-                
-                // Handle table of attach ids
-                local supportingTechIds = {}
-                if type(attachId) == "table" then
-                    for index, currentAttachId in ipairs(attachId) do
-                        table.insert(supportingTechIds, currentAttachId)
+            if visualRadius ~= nil then
+                if type(visualRadius) == "table" then
+                    for i,r in ipairs(visualRadius) do
+                        self:AddGhostGuide(Vector(entity:GetOrigin()), r)
                     end
                 else
-                    table.insert(supportingTechIds, attachId)
+                    self:AddGhostGuide(Vector(entity:GetOrigin()), visualRadius)
                 end
-                
-                for index, ent in ipairs(GetEntsWithTechIdIsActive(supportingTechIds)) do 
-                    self:AddGhostGuide(Vector(ent:GetOrigin()), ghostRadius)         
-                end
-   
-            else
- 
-                // Otherwise, draw only the free attach entities for this build tech (this is the common case)
-                for index, ent in ipairs(GetFreeAttachEntsForTechId(techId)) do                    
-                    self:AddGhostGuide(Vector(ent:GetOrigin()), kStructureSnapRadius)                    
-                end
-
-            end
-            
-            // If attach range specified, then structures don't go on this attach point, but within this range of it            
-            self.attachRange = LookupTechData(techId, kStructureAttachRange, nil)
-            
-        end
-        
-        // Now draw visual ranges for selected units
-        for index, entityEntry in pairs(self.selectedEntities) do    
-        
-            // Draw visual range on structures that specify it (no building effects)
-            local entity = Shared.GetEntity(entityEntry[1])
-            if entity ~= nil then
-            
-                // if GetVisualRadius() returns an array of radiuses, draw them all
-                local visualRadius = entity:GetVisualRadius()
-                
-                if visualRadius ~= nil then
-                    if type(visualRadius) == "table" then
-                        for i,r in ipairs(visualRadius) do
-                            self:AddGhostGuide(Vector(entity:GetOrigin()), r)
-                        end
-                    else
-                        self:AddGhostGuide(Vector(entity:GetOrigin()), visualRadius)
-                    end
-                end
-                
             end
             
         end
-       
-        self.timeOfLastGhostGuideUpdate = Shared.GetTime()
- 
+        
     end
     
 end
 
-function Commander:DestroyGhostGuides()
 
-    if self.ghostGuides then
-    
-        for index, guide in ipairs(self.ghostGuides) do
-        
+function Commander:DestroyGhostGuides(reuse)
+
+    for index, guide in ipairs(self.ghostGuides) do
+        if not reuse then
             Client.DestroyRenderModel(guide[2])
-            
+
+        else
+            guide[2]:SetIsVisible(false)
+            table.insert(self.reuseGhostGuides, guide[2])
         end
+    end
+    
+    if not reuse then
+    
+        for index, guide in ipairs(self.reuseGhostGuides) do
+            Client.DestroyRenderModel(guide[2])
+        end
+
+        self.reuseGhostGuides = {}
         
     end
-        
+
     self.ghostGuides = {}
-    
+
 end
 
 /** 
@@ -549,7 +578,8 @@ function Commander:OnInitLocalClient()
     
     self.selectionCircles = { }
     self.sentryArcs = { }
-    self.ghostGuides = { }
+    self.ghostGuides = {}
+    self.reuseGhostGuides = {}
     
     self:SetupHud()
     
@@ -605,6 +635,9 @@ function Commander:OverrideInput(input)
     input.move.z = 0
     
     // Move to position if minimap clicked or idle work clicked
+    input.yaw = self.minimapNormX
+    input.pitch = self.minimapNormY
+
     if self.setScrollPosition then
     
         input.commands = bit.bor(input.commands, Move.Minimap)
@@ -612,10 +645,7 @@ function Commander:OverrideInput(input)
         // Put in yaw and pitch because they are 16 bits
         // each. Without them we get a "settling" after
         // clicking the minimap due to differences after
-        // sending to the server
-        input.yaw = self.minimapNormX
-        input.pitch = self.minimapNormY
-        
+        // sending to the server        
         self.setScrollPosition = false
 
     end
@@ -1298,4 +1328,8 @@ end
 
 function Commander:GetIsPlacementValid()
     return GetCommanderGhostStructureValid()
+end
+
+function Commander:GetShowAtmosphericLight()
+    return false
 end

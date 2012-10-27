@@ -210,11 +210,6 @@ function Weapon:OnHolster(player)
     self.primaryAttacking = false
     self.secondaryAttacking = false
     
-    if Client then
-        local viewModel = player:GetViewModelEntity()
-        Client.DestroyAttachedCinematics(viewModel)
-    end
-
 end
 
 function Weapon:GetResetViewModelOnDraw()

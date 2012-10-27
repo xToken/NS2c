@@ -79,7 +79,7 @@ function MarineTeam:OnRespawnQueueChanged()
     
     for index, current in ipairs(spawningStructures) do
     
-        if current:GetIsBuilt() and current:GetIsPowered() then
+        if GetIsUnitActive(current) then
             current:FillQueueIfFree()
         end
         

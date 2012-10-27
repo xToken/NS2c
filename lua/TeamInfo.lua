@@ -42,7 +42,8 @@ local networkVars =
     protoLabUp                 = "boolean",
     roboticsUp                 = "boolean",
     observatoryUp              = "boolean",
-    playerCount                = "integer (0 to " .. kMaxPlayers - 1 .. ")"
+    playerCount                = "integer (0 to " .. kMaxPlayers - 1 .. ")",
+    workerCount                = "integer (0 to 18)"
 }
 
 AddMixinNetworkVars(TeamMixin, networkVars)

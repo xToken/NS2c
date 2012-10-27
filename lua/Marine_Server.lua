@@ -31,23 +31,14 @@ function Marine:SetUnitStatusPercentage(percentage)
 end
 
 function Marine:OnTakeDamage(damage, attacker, doer, point)
-
-    if doer and doer:isa("Gore") and not self:GetIsVortexed() then
     
-        self.interruptAim = true
-        self.interruptStartTime = Shared.GetTime()
-        
-    end
-
-    /*
     if damage > 50 and (not self.timeLastDamageKnockback or self.timeLastDamageKnockback + 1 < Shared.GetTime()) then    
     
-        self:AddPushImpulse(GetNormalizedVectorXZ(self:GetOrigin() - point) * damage * 0.1 * self:GetSlowSpeedModifier())
+        self:AddPushImpulse(GetNormalizedVectorXZ(self:GetOrigin() - point) * damage * 0.025 * self:GetSlowSpeedModifier())
         self.timeLastDamageKnockback = Shared.GetTime()
         
     end
-    */
-
+    
 end
 
 function Marine:GetDamagedAlertId()

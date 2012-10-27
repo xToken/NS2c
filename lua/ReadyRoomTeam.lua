@@ -64,16 +64,22 @@ end
 function ReadyRoomTeam:ReplaceRespawnPlayer(player, origin, angles)
 
     local mapName = self:GetRespawnMapName(player)
+    
+    // We do not support Commanders in the ready room. The ready room is chaos!
+    if mapName == MarineCommander.kMapName then
+        mapName = ReadyRoomPlayer.kMapName
+    end
+    
     local isEmbryo = player:isa("Embryo") or (player:isa("Spectator") and player:GetPreviousMapName() == Embryo.kMapName)
     local newPlayer = player:Replace(mapName, self:GetTeamNumber(), false, origin)
     
-    // Spawn embryos as ready room players with embryo model, so they can still move
+    // Spawn embryos as ready room players with embryo model, so they can still move.
     if isEmbryo then
         newPlayer:SetModel(Embryo.kModelName)
     end
     
     self:RespawnPlayer(newPlayer, origin, angles)
-
+    
     newPlayer:ClearGameEffects()
     
     return (newPlayer ~= nil), newPlayer

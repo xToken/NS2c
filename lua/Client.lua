@@ -13,7 +13,6 @@ Script.Load("lua/Shared.lua")
 Script.Load("lua/GhostModelUI.lua")
 Script.Load("lua/Render.lua")
 Script.Load("lua/MapEntityLoader.lua")
-Script.Load("lua/Button.lua")
 Script.Load("lua/Chat.lua")
 Script.Load("lua/DeathMessage_Client.lua")
 Script.Load("lua/DSPEffects.lua")
@@ -684,6 +683,12 @@ function OnUpdateRender()
         
         EquipmentOutline_SetEnabled( GetIsMarineUnit(player) )
         EquipmentOutline_SyncCamera( gRenderCamera, player:isa("Commander") )
+        
+        if player:GetShowAtmosphericLight() then
+            EnableAtmosphericDensity()
+        else
+            DisableAtmosphericDensity()
+        end
         
     else
     

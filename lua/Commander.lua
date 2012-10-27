@@ -535,4 +535,9 @@ function Commander:OverrideCheckVision()
     return false
 end
 
+function Commander:OnProcessIntermediate(input)
+    self:UpdateClientEffects(input.time, true)
+end
+
+
 Shared.LinkClassToMap("Commander", Commander.kMapName, networkVars)
