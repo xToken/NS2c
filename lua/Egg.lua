@@ -381,7 +381,7 @@ function Egg:SetQueuedPlayerId(playerId, spawntime)
             playerToSpawn:SetSpectatorMode(Spectator.kSpectatorMode.Following)
         end
         
-        playerToSpawn:ImposeTarget(self)
+        playerToSpawn:SetFollowTarget(self)
         
     end
     
@@ -415,21 +415,7 @@ function Egg:GetEngagementPointOverride()
 end
 
 function Egg:InternalGetCanBeUsed(player)
-
-    local canBeUsed = false
-    if (self:GetTechId() ~= kTechId.Egg or self:GetIsResearching() ) and player:GetTeamNumber() == self:GetTeamNumber() then
-    
-        local currentPlayerValue = LookupTechData(player:GetTechId(), kTechDataCostKey,0)
-        local preEvolvedValue = LookupTechData(self:GetGestateTechId(), kTechDataCostKey, 0)
-    
-        if preEvolvedValue > currentPlayerValue then
-            canBeUsed = true
-        end
-        
-    end
-    
-    return canBeUsed
-    
+    return false
 end
 
 function Egg:GetCanBeUsed(player, useSuccessTable)
@@ -487,19 +473,3 @@ function Egg:GetIsEmpty()
 end
 
 Shared.LinkClassToMap("Egg", Egg.kMapName, networkVars)
-
-class 'GorgeEgg' (Egg)
-GorgeEgg.kMapName = "gorgeegg"
-Shared.LinkClassToMap("GorgeEgg", GorgeEgg.kMapName, { })
-
-class 'LerkEgg' (Egg)
-LerkEgg.kMapName = "lerkegg"
-Shared.LinkClassToMap("LerkEgg", LerkEgg.kMapName, { })
-
-class 'FadeEgg' (Egg)
-FadeEgg.kMapName = "fadeegg"
-Shared.LinkClassToMap("FadeEgg", FadeEgg.kMapName, { })
-
-class 'OnosEgg' (Egg)
-OnosEgg.kMapName = "onosegg"
-Shared.LinkClassToMap("OnosEgg", OnosEgg.kMapName, { })

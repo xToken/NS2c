@@ -34,7 +34,7 @@ function Blink:OnHolster(player)
 
     Ability.OnHolster(self, player)
     
-    self:SetEthereal(player, false)
+    //self:SetEthereal(player, false)
     
 end
 
@@ -124,8 +124,6 @@ function Blink:SetEthereal(player, state)
         end
         
         player.ethereal = state
-        
-        player:SetEthereal(state)
         
         // Give player initial velocity in direction we're pressing, or forward if not pressing anything.
         if player.ethereal then

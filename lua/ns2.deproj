@@ -253,6 +253,9 @@
     <filename>GUIGorgeBuildMenu.lua</filename>
   </file>
   <file>
+    <filename>GUIGorgeBuildMenu2.lua</filename>
+  </file>
+  <file>
     <filename>GUIInsight_OtherHealthbars.lua</filename>
   </file>
   <file>
@@ -479,6 +482,9 @@
   </file>
   <file>
     <filename>NetworkMessages_Client.lua</filename>
+  </file>
+  <file>
+    <filename>NetworkMessages_Server.lua</filename>
   </file>
   <file>
     <filename>Observatory.lua</filename>

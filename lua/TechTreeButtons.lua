@@ -40,198 +40,177 @@ function InitTechTreeMaterialOffsets()
 
     // Init icon offsets
     kTechIdToMaterialOffset = {}
-    
-    // Resource Points
-    kTechIdToMaterialOffset[kTechId.ResourcePoint] = 89
-    kTechIdToMaterialOffset[kTechId.ResourcePoint] = 0
 
-    // First row
     kTechIdToMaterialOffset[kTechId.CommandStation] = 0
-    
     kTechIdToMaterialOffset[kTechId.Armory] = 1
-    // Change offset in CommanderUI_GetIdleWorkerOffset when changing extractor
+    kTechIdToMaterialOffset[kTechId.AdvancedArmory] = 1
+    kTechIdToMaterialOffset[kTechId.Hive] = 2
     kTechIdToMaterialOffset[kTechId.Extractor] = 3
     kTechIdToMaterialOffset[kTechId.InfantryPortal] = 4
     kTechIdToMaterialOffset[kTechId.Sentry] = 5
-    
     kTechIdToMaterialOffset[kTechId.RoboticsFactory] = 6    
-    kTechIdToMaterialOffset[kTechId.UpgradeRoboticsFactory] = 6
+    
     kTechIdToMaterialOffset[kTechId.ARCRoboticsFactory] = 6
-    
     kTechIdToMaterialOffset[kTechId.Observatory] = 7
-    // TODO: Change this
-    kTechIdToMaterialOffset[kTechId.ArmsLab] = 11
-    
-    // Second row - Non-player orders
-    kTechIdToMaterialOffset[kTechId.Recycle] = 12
-    kTechIdToMaterialOffset[kTechId.Move] = 13
-    kTechIdToMaterialOffset[kTechId.Stop] = 14
-    kTechIdToMaterialOffset[kTechId.RootMenu] = 15
-    kTechIdToMaterialOffset[kTechId.Cancel] = 16
-    kTechIdToMaterialOffset[kTechId.Construct] = 22
-    
-    //kTechIdToMaterialOffset[kTechId.] = 17 // MAC build
-    
-    kTechIdToMaterialOffset[kTechId.Attack] = 18
-    kTechIdToMaterialOffset[kTechId.SetRally] = 19
-    kTechIdToMaterialOffset[kTechId.SetTarget] = 28
-    kTechIdToMaterialOffset[kTechId.Weld] = 21
-    kTechIdToMaterialOffset[kTechId.BuildMenu] = 22
-    kTechIdToMaterialOffset[kTechId.AdvancedMenu] = 23    
-    
-    kTechIdToMaterialOffset[kTechId.MarineAlertOrderComplete] = 60
-
-    kTechIdToMaterialOffset[kTechId.Defend] = 27
-
-    kTechIdToMaterialOffset[kTechId.AssistMenu] = 33
-    kTechIdToMaterialOffset[kTechId.WeaponsMenu] = 55
-    
-    // Fourth row - droppables, research
-    kTechIdToMaterialOffset[kTechId.AmmoPack] = 36
-    kTechIdToMaterialOffset[kTechId.MedPack] = 37
-    kTechIdToMaterialOffset[kTechId.JetpackTech] = 40
-    kTechIdToMaterialOffset[kTechId.Jetpack] = 40
-    kTechIdToMaterialOffset[kTechId.Scan] = 41
-    kTechIdToMaterialOffset[kTechId.ARC] = 44
-    kTechIdToMaterialOffset[kTechId.CatPack] = 45
-    kTechIdToMaterialOffset[kTechId.CatPackTech] = 45
-    
-    // Fifth row 
-    kTechIdToMaterialOffset[kTechId.Shotgun] = 48
-    kTechIdToMaterialOffset[kTechId.Armor1] = 49
-    kTechIdToMaterialOffset[kTechId.Armor2] = 50
-    kTechIdToMaterialOffset[kTechId.Armor3] = 51
-        
-    // upgrades
-    kTechIdToMaterialOffset[kTechId.Weapons1] = 55
-    kTechIdToMaterialOffset[kTechId.Weapons2] = 56
-    kTechIdToMaterialOffset[kTechId.Weapons3] = 57
-    
-    kTechIdToMaterialOffset[kTechId.Marine] = 60
-    kTechIdToMaterialOffset[kTechId.JetpackMarine] = 60
-    kTechIdToMaterialOffset[kTechId.HeavyArmorMarine] = 61
-    kTechIdToMaterialOffset[kTechId.DistressBeacon] = 63
-    kTechIdToMaterialOffset[kTechId.AdvancedArmory] = 65
-    kTechIdToMaterialOffset[kTechId.AdvancedArmoryUpgrade] = 65
-    kTechIdToMaterialOffset[kTechId.PhaseGate] = 67
-    kTechIdToMaterialOffset[kTechId.PhaseTech] = 68
-    kTechIdToMaterialOffset[kTechId.MotionTracking] = 10
-
-    kTechIdToMaterialOffset[kTechId.GrenadeLauncher] = 72
-    kTechIdToMaterialOffset[kTechId.HeavyArmorTech] = 75
-    kTechIdToMaterialOffset[kTechId.HeavyArmor] = 76
     kTechIdToMaterialOffset[kTechId.Mine] = 8
     kTechIdToMaterialOffset[kTechId.Mines] = 8
-    kTechIdToMaterialOffset[kTechId.Welder] = 17
-    kTechIdToMaterialOffset[kTechId.HeavyMachineGun] = 47
-    kTechIdToMaterialOffset[kTechId.HandGrenadesTech] = 46
-    kTechIdToMaterialOffset[kTechId.HandGrenades] = 46
-    kTechIdToMaterialOffset[kTechId.Electrify] = 9
+    //kTechIdToMaterialOffset[kTechId.SentryBattery] = 9
+    kTechIdToMaterialOffset[kTechId.ArmsLab] = 10
     
-    // Doors
-    kTechIdToMaterialOffset[kTechId.Door] = 84
-    kTechIdToMaterialOffset[kTechId.DoorOpen] = 85
-    kTechIdToMaterialOffset[kTechId.DoorClose] = 86
-    kTechIdToMaterialOffset[kTechId.DoorLock] = 87
-    kTechIdToMaterialOffset[kTechId.DoorUnlock] = 88
-    // 89 = nozzle
-    // 90 = tech point
+    //kTechIdToMaterialOffset[kTechId.Spur] = 11
+    kTechIdToMaterialOffset[kTechId.Door] = 12
+    kTechIdToMaterialOffset[kTechId.ResourcePoint] = 13
+    kTechIdToMaterialOffset[kTechId.TechPoint] = 14
+    kTechIdToMaterialOffset[kTechId.PrototypeLab] = 15
+    kTechIdToMaterialOffset[kTechId.Harvester] = 16
+    kTechIdToMaterialOffset[kTechId.PhaseGate] = 17
+    kTechIdToMaterialOffset[kTechId.UpgradeToCragHive] = 18
+    kTechIdToMaterialOffset[kTechId.UpgradeToWhipHive] = 19
+    kTechIdToMaterialOffset[kTechId.UpgradeToShadeHive] = 21
+    kTechIdToMaterialOffset[kTechId.UpgradeToShiftHive] = 20
+    kTechIdToMaterialOffset[kTechId.CragHive] = 18
+    kTechIdToMaterialOffset[kTechId.WhipHive] = 19
+    kTechIdToMaterialOffset[kTechId.ShadeHive] = 21
+    kTechIdToMaterialOffset[kTechId.ShiftHive] = 20
+    kTechIdToMaterialOffset[kTechId.Crag] = 18
+    kTechIdToMaterialOffset[kTechId.Whip] = 19
+    kTechIdToMaterialOffset[kTechId.Shift] = 20
+    kTechIdToMaterialOffset[kTechId.Shade] = 21
     
-    kTechIdToMaterialOffset[kTechId.PrototypeLab] = 94
+    //kTechIdToMaterialOffset[kTechId.Shell] = 22
+    //kTechIdToMaterialOffset[kTechId.Veil] = 23
+    kTechIdToMaterialOffset[kTechId.Marine] = 24
+    kTechIdToMaterialOffset[kTechId.HeavyArmorMarine] = 25
+    kTechIdToMaterialOffset[kTechId.HeavyArmor] = 25
+    kTechIdToMaterialOffset[kTechId.JetpackMarine] = 26
+    kTechIdToMaterialOffset[kTechId.Skulk] = 27
+    kTechIdToMaterialOffset[kTechId.Gorge] = 28
+    kTechIdToMaterialOffset[kTechId.Lerk] = 29
     
-    // Generic orders 
-    kTechIdToMaterialOffset[kTechId.Default] = 0
-    kTechIdToMaterialOffset[kTechId.Move] = 1
-    kTechIdToMaterialOffset[kTechId.Attack] = 2
-    kTechIdToMaterialOffset[kTechId.Build] = 3
-    kTechIdToMaterialOffset[kTechId.Construct] = 8
-    kTechIdToMaterialOffset[kTechId.Stop] = 5
-    kTechIdToMaterialOffset[kTechId.SetRally] = 6
-    kTechIdToMaterialOffset[kTechId.SetTarget] = 7
+    kTechIdToMaterialOffset[kTechId.Fade] = 30
+    kTechIdToMaterialOffset[kTechId.Onos] = 31
+    kTechIdToMaterialOffset[kTechId.ARC] = 32
+    //kTechIdToMaterialOffset[kTechId.ARCUndeploy] = 32
+    //kTechIdToMaterialOffset[kTechId.ARCDeploy] = 33
+    kTechIdToMaterialOffset[kTechId.Egg] = 34
+    kTechIdToMaterialOffset[kTechId.Embryo] = 34
+    //kTechIdToMaterialOffset[kTechId.Cyst] = 35
+    //kTechIdToMaterialOffset[kTechId.MAC] = 36
+    //kTechIdToMaterialOffset[kTechId.Drifter] = 37
+    //kTechIdToMaterialOffset[kTechId.WhipUnroot] = 38
+    //kTechIdToMaterialOffset[kTechId.WhipRoot] = 39
     
-    // Menus
-    kTechIdToMaterialOffset[kTechId.RootMenu] = 21
-    kTechIdToMaterialOffset[kTechId.BuildMenu] = 8
-    kTechIdToMaterialOffset[kTechId.AdvancedMenu] = 9
-    kTechIdToMaterialOffset[kTechId.AssistMenu] = 10
-    kTechIdToMaterialOffset[kTechId.MarkersMenu] = 14
-    kTechIdToMaterialOffset[kTechId.UpgradesMenu] = 12
-    kTechIdToMaterialOffset[kTechId.Cancel] = 5
-           
-    // Lifeforms
-    kTechIdToMaterialOffset[kTechId.Skulk] = 16
-    kTechIdToMaterialOffset[kTechId.Gorge] = 17
-    kTechIdToMaterialOffset[kTechId.Lerk] = 18
-    kTechIdToMaterialOffset[kTechId.Fade] = 19
-    kTechIdToMaterialOffset[kTechId.Onos] = 20
+    //kTechIdToMaterialOffset[kTechId.ShiftEcho] = 40
+    kTechIdToMaterialOffset[kTechId.Redeployment] = 40
+    //kTechIdToMaterialOffset[kTechId.WhipBombard] = 41
+    kTechIdToMaterialOffset[kTechId.Bombard] = 41
+    //kTechIdToMaterialOffset[kTechId.EnzymeCloud] = 42
+    kTechIdToMaterialOffset[kTechId.Redemption] = 42
+    //kTechIdToMaterialOffset[kTechId.MACEMPTech] = 43
+    //kTechIdToMaterialOffset[kTechId.MACEMP] = 43
+    //kTechIdToMaterialOffset[kTechId.Rupture] = 44
+    kTechIdToMaterialOffset[kTechId.Fury] = 44
+    //kTechIdToMaterialOffset[kTechId.ShadeInk] = 45
+    kTechIdToMaterialOffset[kTechId.Aura] = 45
+    //kTechIdToMaterialOffset[kTechId.ShiftHatch] = 46
+    //kTechIdToMaterialOffset[kTechId.ShiftEnergize] = 47
+    //kTechIdToMaterialOffset[kTechId.HealWave] = 48
+    //kTechIdToMaterialOffset[kTechId.Infestation] = 49
     
-    // Structures
-    kTechIdToMaterialOffset[kTechId.Hive] = 24
-    kTechIdToMaterialOffset[kTechId.CragHive] = 40
-    kTechIdToMaterialOffset[kTechId.ShadeHive] = 64
-    kTechIdToMaterialOffset[kTechId.ShiftHive] = 56
-    kTechIdToMaterialOffset[kTechId.WhipHive] = 48
+    //kTechIdToMaterialOffset[kTechId.GrenadeWhack] = 50
+    //kTechIdToMaterialOffset[kTechId.HiveHeal] = 51
+    //kTechIdToMaterialOffset[kTechId.CragHeal] = 51
+    kTechIdToMaterialOffset[kTechId.DistressBeacon] = 52
+    //kTechIdToMaterialOffset[kTechId.BoneWall] = 53
+    kTechIdToMaterialOffset[kTechId.Scan] = 54
+    //kTechIdToMaterialOffset[kTechId.NanoShield] = 55
+    //kTechIdToMaterialOffset[kTechId.NutrientMist] = 56
+    kTechIdToMaterialOffset[kTechId.Focus] = 56
+    //kTechIdToMaterialOffset[kTechId.Welding] = 57
+    //kTechIdToMaterialOffset[kTechId.EvolveHallucinations] = 58
+    //kTechIdToMaterialOffset[kTechId.EvolveEcho] = 59
     
-    kTechIdToMaterialOffset[kTechId.UpgradeToCragHive] = 40
-    kTechIdToMaterialOffset[kTechId.UpgradeToShadeHive] = 64
-    kTechIdToMaterialOffset[kTechId.UpgradeToShiftHive] = 56
-    kTechIdToMaterialOffset[kTechId.UpgradeToWhipHive] = 48
+    //kTechIdToMaterialOffset[kTechId.EvolveBombard] = 60
+    kTechIdToMaterialOffset[kTechId.Carapace] = 61
+    kTechIdToMaterialOffset[kTechId.Regeneration] = 62
+    kTechIdToMaterialOffset[kTechId.Adrenaline] = 63
+    kTechIdToMaterialOffset[kTechId.Celerity] = 64
+    kTechIdToMaterialOffset[kTechId.Silence] = 65
+    kTechIdToMaterialOffset[kTechId.Ghost] = 66
+    kTechIdToMaterialOffset[kTechId.Leap] = 67
+    kTechIdToMaterialOffset[kTechId.BileBomb] = 68
+    kTechIdToMaterialOffset[kTechId.Web] = 68
+    kTechIdToMaterialOffset[kTechId.PrimalScream] = 69
+    kTechIdToMaterialOffset[kTechId.Spikes] = 69
     
-    // Change offset in CommanderUI_GetIdleWorkerOffset when changing harvester
-    kTechIdToMaterialOffset[kTechId.Harvester] = 27
-    kTechIdToMaterialOffset[kTechId.Egg] = 30
+    kTechIdToMaterialOffset[kTechId.Metabolize] = 70
+    kTechIdToMaterialOffset[kTechId.AcidRocket] = 71
+    kTechIdToMaterialOffset[kTechId.Stomp] = 72
+    kTechIdToMaterialOffset[kTechId.Smash] = 72
+    kTechIdToMaterialOffset[kTechId.Charge] = 72
+    kTechIdToMaterialOffset[kTechId.Stomp] = 72
+    //kTechIdToMaterialOffset[kTechId.MACSpeedTech] = 73
+    //kTechIdToMaterialOffset[kTechId.Detector] = 74  
+    kTechIdToMaterialOffset[kTechId.Umbra] = 75
+    //kTechIdToMaterialOffset[kTechId.ShadeCloak] = 76
+    kTechIdToMaterialOffset[kTechId.Armor1] = 77
+    kTechIdToMaterialOffset[kTechId.Armor2] = 78
+    kTechIdToMaterialOffset[kTechId.Armor3] = 79
     
-    // Doors
-    // $AS - Aliens can select doors if an onos can potential break a door
-    // the alien commander should be able to see its health I would think
-    // we do not have any art for doors on aliens so we once again use the
-    // question mark 
-    kTechIdToMaterialOffset[kTechId.Door] = 22
-    kTechIdToMaterialOffset[kTechId.DoorOpen] =22
-    kTechIdToMaterialOffset[kTechId.DoorClose] = 22
-    kTechIdToMaterialOffset[kTechId.DoorLock] = 22
-    kTechIdToMaterialOffset[kTechId.DoorUnlock] = 22
-    
-    // upgradeable alien abilities
-    kTechIdToMaterialOffset[kTechId.Leap] = 105
-    kTechIdToMaterialOffset[kTechId.BileBomb] = 107
-    kTechIdToMaterialOffset[kTechId.Umbra] = 114
-    kTechIdToMaterialOffset[kTechId.Metabolize] = 110
-    kTechIdToMaterialOffset[kTechId.Stomp] = 111
-    
-    kTechIdToMaterialOffset[kTechId.Xenocide] = 108
-    kTechIdToMaterialOffset[kTechId.Web] = 112
-    kTechIdToMaterialOffset[kTechId.PrimalScream] = 20
-    kTechIdToMaterialOffset[kTechId.Spikes] = 114
-    kTechIdToMaterialOffset[kTechId.AcidRocket] = 113
-    kTechIdToMaterialOffset[kTechId.Smash] = 111
-    kTechIdToMaterialOffset[kTechId.Charge] = 111
-      
-    //Chambers
-    kTechIdToMaterialOffset[kTechId.Crag] = 40
-    kTechIdToMaterialOffset[kTechId.Shift] = 56
-    kTechIdToMaterialOffset[kTechId.Shade] = 64
-    kTechIdToMaterialOffset[kTechId.Whip] = 48
-        
-    kTechIdToMaterialOffset[kTechId.Adrenaline] = 83
-    kTechIdToMaterialOffset[kTechId.Celerity] = 84
-    kTechIdToMaterialOffset[kTechId.Redeployment] = 56
-    
-    kTechIdToMaterialOffset[kTechId.Silence] = 85
-    kTechIdToMaterialOffset[kTechId.Ghost] = 86
-    kTechIdToMaterialOffset[kTechId.Aura] = 60
-    
-    kTechIdToMaterialOffset[kTechId.Carapace] = 81
-    kTechIdToMaterialOffset[kTechId.Regeneration] = 82
-    kTechIdToMaterialOffset[kTechId.Redemption] = 87
-    
-    kTechIdToMaterialOffset[kTechId.Focus] = 80
-    kTechIdToMaterialOffset[kTechId.Fury] = 104
-    kTechIdToMaterialOffset[kTechId.Bombard] = 53
-    
-    //Hydra
+    kTechIdToMaterialOffset[kTechId.WeaponsMenu] = 80
+    kTechIdToMaterialOffset[kTechId.Weapons1] = 80
+    kTechIdToMaterialOffset[kTechId.Weapons2] = 81
+    kTechIdToMaterialOffset[kTechId.Weapons3] = 82
+    kTechIdToMaterialOffset[kTechId.UpgradeRoboticsFactory] = 83
+    //kTechIdToMaterialOffset[kTechId.DualMinigunTech] = 84
+    kTechIdToMaterialOffset[kTechId.HeavyArmorTech] = 84
+    kTechIdToMaterialOffset[kTechId.Shotgun] = 85
+    //kTechIdToMaterialOffset[kTechId.Flamethrower] = 86
+    kTechIdToMaterialOffset[kTechId.GrenadeLauncher] = 87
+    kTechIdToMaterialOffset[kTechId.Welder] = 88
     kTechIdToMaterialOffset[kTechId.Hydra] = 88
+    kTechIdToMaterialOffset[kTechId.JetpackTech] = 89
+    kTechIdToMaterialOffset[kTechId.Jetpack] = 89
     
+    kTechIdToMaterialOffset[kTechId.PhaseTech] = 90
+    kTechIdToMaterialOffset[kTechId.AmmoPack] = 91
+    kTechIdToMaterialOffset[kTechId.MedPack] = 92
+    //kTechIdToMaterialOffset[kTechId.PowerPoint] = 93
+    //kTechIdToMaterialOffset[kTechId.SocketPowerNode] = 94
+    kTechIdToMaterialOffset[kTechId.Xenocide] = 95
+    //kTechIdToMaterialOffset[kTechId.SpawnMarine] = 96
+    //kTechIdToMaterialOffset[kTechId.SpawnAlien] = 97
+    //kTechIdToMaterialOffset[kTechId.DrifterCamouflage] = 98
+    kTechIdToMaterialOffset[kTechId.AdvancedArmoryUpgrade] = 99
+    kTechIdToMaterialOffset[kTechId.Electrify] = 100
+    kTechIdToMaterialOffset[kTechId.MotionTracking] = 102
+    kTechIdToMaterialOffset[kTechId.HandGrenadesTech] = 103
+    kTechIdToMaterialOffset[kTechId.HandGrenades] = 103
+    kTechIdToMaterialOffset[kTechId.HeavyMachineGun] = 104
+    kTechIdToMaterialOffset[kTechId.CatPack] = 105
+    kTechIdToMaterialOffset[kTechId.CatPackTech] = 105
+    kTechIdToMaterialOffset[kTechId.Electrify] = 106
+    
+    kTechIdToMaterialOffset[kTechId.Recycle] = 108
+    kTechIdToMaterialOffset[kTechId.Move] = 121
+    kTechIdToMaterialOffset[kTechId.Stop] = 122
+    kTechIdToMaterialOffset[kTechId.Attack] = 123
+    kTechIdToMaterialOffset[kTechId.Cancel] = 124
+    kTechIdToMaterialOffset[kTechId.Weld] = 127
+    //kTechIdToMaterialOffset[kTechId.AutoWeld] = 127
+    kTechIdToMaterialOffset[kTechId.BuildMenu] = 128
+    kTechIdToMaterialOffset[kTechId.AdvancedMenu] = 129
+    
+    kTechIdToMaterialOffset[kTechId.AssistMenu] = 130
+    kTechIdToMaterialOffset[kTechId.Construct] = 131
+    //kTechIdToMaterialOffset[kTechId.NeedHealingMarker] = 132
+    kTechIdToMaterialOffset[kTechId.RootMenu] = 133
+    //kTechIdToMaterialOffset[kTechId.LifeFormMenu] = 136
+    kTechIdToMaterialOffset[kTechId.SetRally] = 137
+    //kTechIdToMaterialOffset[kTechId.ThreatMarker] = 138
+    
+    //kTechIdToMaterialOffset[kTechId.ExpandingMarker] = 141
+
 end
 
 function GetMaterialXYOffset(techId)

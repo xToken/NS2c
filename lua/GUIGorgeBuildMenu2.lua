@@ -1,6 +1,6 @@
 // ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
-// lua\GUIGorgeBuildMenu.lua
+// lua\GUIGorgeBuildMenu2.lua
 //
 // Created by: Andreas Urwalek (a_urwa@sbox.tugraz.at)
 //
@@ -16,35 +16,19 @@ Client.PrecacheLocalSound(kMouseOverSound)
 Client.PrecacheLocalSound(kSelectSound)
 Client.PrecacheLocalSound(kCloseSound)
 
-function GorgeBuild_OnClose()
-    Shared.PlaySound(nil, kCloseSound)
-end
+local kBackgroundNoiseTexture = "ui/alien_commander_bg_smoke.dds"
+local kSmokeyBackgroundSize = GUIScale(Vector(220, 400, 0))
 
-function GorgeBuild_OnSelect()
-    Shared.PlaySound(nil, kSelectSound)
-end
+local kDefaultStructureCountPos = Vector(-48, -24, 0)
+local kCenteredStructureCountPos = Vector(0, -24, 0)
 
-function GorgeBuild_OnMouseOver()
-    Shared.PlaySound(nil, kMouseOverSound)
-end
-
-function GorgeBuild_Close()
-    local player = Client.GetLocalPlayer()
-    
-    local activeWeapon = player:GetActiveWeapon()
-    
-    if activeWeapon.DestroyBuildMenu then
-        activeWeapon:DestroyBuildMenu()
-    end    
-end
-
-function GorgeBuild_SendSelect(index)
+function GorgeBuild2_SendSelect(index)
 
     local player = Client.GetLocalPlayer()
 
     if player then
     
-        local dropStructureAbility = player:GetWeapon(DropStructureAbility.kMapName)
+        local dropStructureAbility = player:GetWeapon(DropStructureAbility2.kMapName)
         if dropStructureAbility then
             dropStructureAbility:SetActiveStructure(index)
         end
@@ -53,9 +37,9 @@ function GorgeBuild_SendSelect(index)
     
 end
 
-function GorgeBuild_GetIsAbilityAvailable(index)
+function GorgeBuild2_GetIsAbilityAvailable(index)
 
-    return DropStructureAbility.kSupportedStructures[index] and DropStructureAbility.kSupportedStructures[index]:IsAllowed(Client.GetLocalPlayer())
+    return DropStructureAbility2.kSupportedStructures[index] and DropStructureAbility2.kSupportedStructures[index]:IsAllowed(Client.GetLocalPlayer())
 
 end
 
@@ -89,51 +73,7 @@ function GorgeBuild_GetMaxNumStructure(techId)
 
 end
 
-class 'GUIGorgeBuildMenu' (GUIAnimatedScript)
-
-GUIGorgeBuildMenu.kBaseYResolution = 1200
-
-GUIGorgeBuildMenu.kButtonWidth = 180
-GUIGorgeBuildMenu.kButtonHeight = 180
-
-GUIGorgeBuildMenu.kBackgroundYOffset = GUIGorgeBuildMenu.kButtonHeight * 0.5
-
-GUIGorgeBuildMenu.kButtonTexture = "ui/gorge_build_menu.dds"
-GUIGorgeBuildMenu.kBuyMenuTexture = "ui/alien_buymenu.dds"
-GUIGorgeBuildMenu.kSmokeSmallTextureCoordinates = { { 916, 4, 1020, 108 }, { 916, 15, 1020, 219 }, { 916, 227, 1020, 332 }, { 916, 332, 1020, 436 } }
-
-GUIGorgeBuildMenu.kPixelSize = 128
-
-GUIGorgeBuildMenu.kAvailableColor = kAlienTeamColorFloat
-GUIGorgeBuildMenu.kTooExpensiveColor = Color(1, 0, 0, 1)
-GUIGorgeBuildMenu.kUnavailableColor = Color(0.4, 0.4, 0.4, 0.7)
-
-// selection circle animation:
-GUIGorgeBuildMenu.kPulseInAnimationDuration = 0.6
-GUIGorgeBuildMenu.kPulseOutAnimationDuration = 0.3
-GUIGorgeBuildMenu.kLowColor = Color(1, 0.4, 0.4, 0.5)
-GUIGorgeBuildMenu.kHighColor = Color(1, 1, 1, 1)
-
-GUIGorgeBuildMenu.kPersonalResourceIcon = { Width = 0, Height = 0, X = 0, Y = 0, Coords = { X1 = 144, Y1 = 363, X2 = 192, Y2 = 411} }
-GUIGorgeBuildMenu.kPersonalResourceIcon.Width = 32
-GUIGorgeBuildMenu.kPersonalResourceIcon.Height = 32
-GUIGorgeBuildMenu.kResourceTexture = "ui/alien_commander_textures.dds"
-GUIGorgeBuildMenu.kIconTextXOffset = 5
-
-local kBackgroundNoiseTexture = "ui/alien_commander_bg_smoke.dds"
-local kSmokeyBackgroundSize = GUIScale(Vector(220, 400, 0))
-
-local kDefaultStructureCountPos = Vector(-48, -24, 0)
-local kCenteredStructureCountPos = Vector(0, -24, 0)
-
-//selection circle animation callbacks
-function PulseOutAnimation(script, item)
-    item:SetColor(GUIGorgeBuildMenu.kHighColor, GUIGorgeBuildMenu.kPulseInAnimationDuration, "PULSE", AnimateLinear, PulseInAnimation)
-end
-
-function PulseInAnimation(script, item)
-    item:SetColor(GUIGorgeBuildMenu.kLowColor, GUIGorgeBuildMenu.kPulseOutAnimationDuration, "PULSE", AnimateLinear, PulseOutAnimation)
-end
+class 'GUIGorgeBuildMenu2' (GUIAnimatedScript)
 
 local rowTable = nil
 local function GetRowForTechId(techId)
@@ -156,7 +96,7 @@ local function GetRowForTechId(techId)
 
 end
 
-function GUIGorgeBuildMenu:Initialize()
+function GUIGorgeBuildMenu2:Initialize()
 
     GUIAnimatedScript.Initialize(self)
 
@@ -170,13 +110,13 @@ function GUIGorgeBuildMenu:Initialize()
 
 end
 
-function GUIGorgeBuildMenu:Uninitialize()
+function GUIGorgeBuildMenu2:Uninitialize()
     
     GUIAnimatedScript.Uninitialize(self)
 
 end
 
-function GUIGorgeBuildMenu:_HandleMouseOver(onItem)
+function GUIGorgeBuildMenu2:_HandleMouseOver(onItem)
     
     if onItem ~= self.lastActiveItem then
         GorgeBuild_OnMouseOver()
@@ -195,7 +135,7 @@ local function UpdateButton(button, index)
         color = GUIGorgeBuildMenu.kTooExpensiveColor
     end
     
-    if not GorgeBuild_GetIsAbilityAvailable(index) then
+    if not GorgeBuild2_GetIsAbilityAvailable(index) then
         col = 3
         color = GUIGorgeBuildMenu.kUnavailableColor
     end
@@ -248,7 +188,7 @@ end
 
 
 
-function GUIGorgeBuildMenu:Update(deltaTime)
+function GUIGorgeBuildMenu2:Update(deltaTime)
 
     GUIAnimatedScript.Update(self, deltaTime)
     
@@ -264,11 +204,11 @@ function GUIGorgeBuildMenu:Update(deltaTime)
 
 end
 
-function GUIGorgeBuildMenu:Reset()
+function GUIGorgeBuildMenu2:Reset()
     
     self.background:SetUniformScale(self.scale)
 
-    for index, structureAbility in ipairs(DropStructureAbility.kSupportedStructures) do
+    for index, structureAbility in ipairs(DropStructureAbility2.kSupportedStructures) do
     
         // TODO: pass keybind from options instead of index
         table.insert( self.buttons, self:CreateButton(structureAbility.GetDropStructureId(), self.scale, self.background, GorgeBuild_GetKeybindForIndex(index), index - 1) )
@@ -280,14 +220,14 @@ function GUIGorgeBuildMenu:Reset()
     
 end
 
-function GUIGorgeBuildMenu:OnResolutionChanged(oldX, oldY, newX, newY)
+function GUIGorgeBuildMenu2:OnResolutionChanged(oldX, oldY, newX, newY)
 
     self.scale = newY / GUIGorgeBuildMenu.kBaseYResolution
     self:Reset()
 
 end
 
-function GUIGorgeBuildMenu:CreateButton(techId, scale, frame, keybind, position)
+function GUIGorgeBuildMenu2:CreateButton(techId, scale, frame, keybind, position)
 
     local button =
     {
@@ -387,7 +327,7 @@ function GUIGorgeBuildMenu:CreateButton(techId, scale, frame, keybind, position)
 
 end
 
-function GUIGorgeBuildMenu:OverrideInput(input)
+function GUIGorgeBuildMenu2:OverrideInput(input)
 
     local closeMenu = false
 
@@ -396,8 +336,8 @@ function GUIGorgeBuildMenu:OverrideInput(input)
     
         if bit.band(input.commands, weaponSwitchCommand) ~= 0 then
 
-            if GorgeBuild_GetIsAbilityAvailable(index) and GorgeBuild_GetCanAffordAbility(self.buttons[index].techId)  then
-                GorgeBuild_SendSelect(index)
+            if GorgeBuild2_GetIsAbilityAvailable(index) and GorgeBuild_GetCanAffordAbility(self.buttons[index].techId)  then
+                GorgeBuild2_SendSelect(index)
                 local removeWeaponMask = bit.bxor(0xFFFFFFFF, weaponSwitchCommand)
                 input.commands = bit.band(input.commands, removeWeaponMask)
             end
@@ -429,21 +369,21 @@ function GUIGorgeBuildMenu:OverrideInput(input)
 
 end
 
-function GUIGorgeBuildMenu:_GetIsMouseOver(overItem)
+function GUIGorgeBuildMenu2:_GetIsMouseOver(overItem)
 
     return GUIItemContainsPoint(overItem, Client.GetCursorPosScreen())
     
 end
 
-function GUIGorgeBuildMenu:OnClose()
+function GUIGorgeBuildMenu2:OnClose()
 
     GorgeBuild_OnClose()
 
 end
 
-function GUIGorgeBuildMenu:OnAnimationCompleted(animatedItem, animationName, itemHandle)
+function GUIGorgeBuildMenu2:OnAnimationCompleted(animatedItem, animationName, itemHandle)
 end
 
 // called when the last animation remaining has completed this frame
-function GUIGorgeBuildMenu:OnAnimationsEnd(item)
+function GUIGorgeBuildMenu2:OnAnimationsEnd(item)
 end

@@ -77,17 +77,11 @@ function DropStructureAbility:OnPrimaryAttack(player)
 
         if not self.dropping then
         
-            if player:GetEnergy() >= kDropStructureEnergyCost then
+            if self:PerformPrimaryAttack(player) then
             
-                if self:PerformPrimaryAttack(player) then
+                self.dropping = true
+                self.showGhost = false
                 
-                    self.dropping = true
-                    self.showGhost = false
-                    
-                end
-
-            else
-                player:TriggerInvalidSound()
             end
 
         end
@@ -198,13 +192,11 @@ local function DropStructure(self, player, origin, direction, structureAbility)
     if Server then
     
         local coords, valid, onEntity = self:GetPositionForStructure(origin, direction, structureAbility)
-        local techId = structureAbility:GetDropStructureId()
-                
+        local techId = structureAbility:GetDropStructureId() 
         local cost = LookupTechData(structureAbility:GetDropStructureId(), kTechDataCostKey, 0)
         local enoughRes = player:GetResources() >= cost
-        local enoughEnergy = player:GetEnergy() >= kDropStructureEnergyCost
         
-        if valid and enoughRes and structureAbility:IsAllowed(player) and enoughEnergy then
+        if valid and enoughRes and structureAbility:IsAllowed(player) then
         
             // Create structure
             // Check for override of Technode availablitiy
@@ -213,37 +205,14 @@ local function DropStructure(self, player, origin, direction, structureAbility)
             
                 structure:SetOwner(player)
                 player:GetTeam():AddGorgeStructure(player, structure)
-                
                 // Check for space
                 if structure:SpaceClearForEntity(coords.origin) then
-                
-                    local angles = Angles()
-                 
-                    angles.yaw = math.random() * math.pi * 2
-                    angles.pitch = math.random() * math.pi * 2
-                    angles.roll = math.random() * math.pi * 2
-
-                    structure:SetAngles(angles)
-                    
-                    if structure.OnCreatedByGorge then
-                        structure:OnCreatedByGorge(self.lastCreatedId)
-                    end
-                    
                     player:AddResources(-cost)
-                    
-                    if self:GetActiveStructure():GetStoreBuildId() then
-                        self.lastCreatedId = structure:GetId()
-                    end
-                    
                     self:TriggerEffects("spit_structure", {effecthostcoords = Coords.GetLookIn(origin, direction)} )
-                    
                     return true
-                    
                 else
-                
                     player:TriggerInvalidSound()
                     DestroyEntity(structure)
-                    
                 end
                 
             else
@@ -262,9 +231,7 @@ local function DropStructure(self, player, origin, direction, structureAbility)
         end
         
     end
-    
     return true
-    
 end
 
 function DropStructureAbility:OnDropStructure(origin, direction, structureIndex)
@@ -388,7 +355,7 @@ function DropStructureAbility:ProcessMoveOnWeapon(input)
     local player = self:GetParent()
     if player then
     
-        if Client and not Shared.GetIsRunningPrediction() then
+        if Client then
 
             // Update ghost position 
             if self.showGhost then
@@ -428,6 +395,9 @@ function DropStructureAbility:ProcessMoveOnWeapon(input)
                     self.circle:SetIsVisible(valid)
                     
                 end
+                
+                self.placementValid = valid
+                
             end
         end    
     end

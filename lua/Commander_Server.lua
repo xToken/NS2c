@@ -517,10 +517,6 @@ function Commander:ProcessTechTreeAction(techId, pickVec, orientation, worldCoor
         
     end
     
-	// Tell client result of cast
-    local msg = BuildAbilityResultMessage(techId, success, Shared.GetTime())
-    Server.SendNetworkMessage(self, "AbilityResult", msg, false)
-    
     return success
     
 end

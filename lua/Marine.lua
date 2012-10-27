@@ -49,7 +49,8 @@ Shared.PrecacheSurfaceShader("models/marine/marine.surface_shader")
 Shared.PrecacheSurfaceShader("models/marine/marine_noemissive.surface_shader")
 
 Marine.kModelName = PrecacheAsset("models/marine/male/male.model")
-Marine.kSpecialModelName = PrecacheAsset("models/marine/male/male_special.model")
+Marine.kBlackArmorModelName = PrecacheAsset("models/marine/male/male_special.model")
+Marine.kSpecialEditionModelName = PrecacheAsset("models/marine/male/male_special_v1.model")
 
 Marine.kMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_graph")
 

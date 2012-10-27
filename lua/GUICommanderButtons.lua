@@ -372,13 +372,11 @@ function GUICommanderButtons:InitializeIdleWorkersIcon()
     self.idleWorkers:SetSize(Vector(GUICommanderButtons.kIdleWorkersSize, GUICommanderButtons.kIdleWorkersSize, 0))
     self.idleWorkers:SetAnchor(GUIItem.Left, GUIItem.Top)
     self.idleWorkers:SetPosition(Vector(-GUICommanderButtons.kIdleWorkersSize - GUICommanderButtons.kIdleWorkersXOffset, 0, 0))
-    self.idleWorkers:SetTexture("ui/" .. CommanderUI_MenuImage() .. ".dds")
-    local coordinates = CommanderUI_GetIdleWorkerOffset()
-    local x1 = GUICommanderButtons.kBuildMenuTextureWidth * coordinates[1]
-    local x2 = x1 + GUICommanderButtons.kBuildMenuTextureWidth
-    local y1 = GUICommanderButtons.kBuildMenuTextureHeight * coordinates[2]
-    local y2 = y1 + GUICommanderButtons.kBuildMenuTextureHeight
-    self.idleWorkers:SetTexturePixelCoordinates(x1, y1, x2, y2)
+    self.idleWorkers:SetColor(kIconColors[self.teamType])
+    self.idleWorkers:SetTexture("ui/buildmenu.dds")
+    
+    local coordinates = ConditionalValue(self.teamType == kMarineTeamType, GetTextureCoordinatesForIcon(kTechId.MAC), GetTextureCoordinatesForIcon(kTechId.Drifter))
+    self.idleWorkers:SetTexturePixelCoordinates(unpack(coordinates))
     self.idleWorkers:SetIsVisible(false)
     self.background:AddChild(self.idleWorkers)
     
@@ -580,18 +578,6 @@ function GUICommanderButtons:GetTooltipData()
 
 end
 
-function GUICommanderButtons:UpdateIdleWorkersIcon()
-
-    local numIdleWorkers = CommanderUI_GetIdleWorkerCount()
-    if numIdleWorkers > 0 then
-        self.idleWorkers:SetIsVisible(true)
-        self.idleWorkersText:SetText(ToString(numIdleWorkers))
-    else
-        self.idleWorkers:SetIsVisible(false)
-    end
-
-end
-
 function ScalePlayerAlertOperator(item, scalar)
 
     local newScalar = math.cos(scalar * math.sin(scalar * math.pi))
@@ -663,7 +649,9 @@ end
 function GUICommanderButtons:UpdateButtonStatus(buttonIndex)
 
     local buttonStatus = CommanderUI_MenuButtonStatus(buttonIndex)
+    //local buttonCooldownFraction = CommanderUI_MenuButtonCooldownFraction(buttonIndex)
     local buttonItem = self.buttons[buttonIndex]
+    local backgroundItem = self.buttonbackground[buttonIndex]
 
     buttonItem:SetIsVisible(GUICommanderButtons.kButtonStatusData[buttonStatus].Visible)
     
@@ -766,10 +754,6 @@ local function SendButtonTargetedAction(index, x, y)
     
     // Don't execute targeted action if we're still on top of the UI
     if not CommanderUI_GetMouseIsOverUI() then
-    
-        if player:TechCausesDelay(techId) then
-            player.leftClickActionDelay = kCommanderLeftClickDelay
-        end
         
         player:SendTargetedAction(techId, normalizedPickRay)
         return true

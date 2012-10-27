@@ -376,7 +376,7 @@ local function ComputeMenuTechAvailability(self)
                     local isTechAllowed = false
                     local canAfford = false
                     
-                    local _, isSelectTabSelected = self:IsTabSelected(kTechId.RootMenu)
+                    local _, isSelectTabSelected = self:IsTabSelected(kTechId.WeaponsMenu)
                     if isSelectTabSelected then
                         isTechAllowed, canAfford = entity:GetTechAllowed(techId, techNode, self)
                     else
@@ -438,7 +438,11 @@ end
 
 function Commander:IsTabSelected(techId)
 
-    assert(self.buttonsScript)
-    return self.buttonsScript:IsTab(techId), self.buttonsScript:IsTabSelected(techId)
+    //assert(self.buttonsScript)
+    if self.buttonsScript then
+        return self.buttonsScript:IsTab(techId), self.buttonsScript:IsTabSelected(techId)
+    else
+        return false, false
+    end
     
 end

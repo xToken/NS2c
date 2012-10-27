@@ -119,29 +119,6 @@ end
 
 Shared.RegisterNetworkMessage( "Damage", kDamageMessage )
 
-/*
-For commander abilities, such as nanoshield
-*/
-
-local kAbilityResultMessage =
-{
-    techId = "enum kTechId",
-    success = "boolean",
-    castTime = "time",  // When the ability was cast and succeded. Used for cooldown enforcement.
-}
-
-function BuildAbilityResultMessage( techId, success, castTime )
-
-    local t = {}
-    t.techId = techId
-    t.success = success
-    t.castTime = castTime
-    return t
-
-end
-
-Shared.RegisterNetworkMessage( "AbilityResult", kAbilityResultMessage )
-
 // Tell players WHY they can't join a team
 local kJoinErrorMessage =
 {
@@ -882,6 +859,7 @@ Shared.RegisterNetworkMessage("MutePlayer", kMutePlayerMessage)
 
 // Gorge select structure message
 Shared.RegisterNetworkMessage("GorgeBuildStructure", kGorgeBuildStructureMessage)
+Shared.RegisterNetworkMessage("GorgeBuildStructure2", kGorgeBuildStructureMessage)
 
 // Chat
 Shared.RegisterNetworkMessage("ChatClient", kChatClientMessage)

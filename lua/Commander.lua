@@ -501,13 +501,6 @@ function Commander:OnProcessMove(input)
             self.timeLastEnergyCheck = Shared.GetTime()
             self:CheckStructureEnergy()
         end
-        
-    elseif Client then
-    
-        if self.leftClickActionDelay > 0 then
-            self.leftClickActionDelay = math.max(self.leftClickActionDelay - input.time, 0)
-        end
-    
     end
     
 end

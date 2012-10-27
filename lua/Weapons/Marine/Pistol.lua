@@ -108,18 +108,6 @@ if Client then
         return Color(1, 0, 0, 0.07)
         
     end
-    
-    function Pistol:FirePrimary(player)
-    
-        ClipWeapon.FirePrimary(self, player)
-        
-        self:TriggerEffects("pistol_attack")
-        
-        if Client then
-            self:TriggerEffects("pistol_attack_shell")
-        end
-    
-    end
 
     function Pistol:GetLaserAttachCoords()
     

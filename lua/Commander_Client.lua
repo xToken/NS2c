@@ -689,7 +689,7 @@ function Commander:SetupHud()
     
     local selectionPanelScript = GetGUIManager():CreateGUIScriptSingle("GUISelectionPanel")
     
-    local buttonsScriptName = ConditionalValue(self:GetTeamType() == kAlienTeamType, "GUICommanderButtonsAliens", "GUICommanderButtonsMarines")
+    local buttonsScriptName = "GUICommanderButtonsMarines"
     self.buttonsScript = GetGUIManager():CreateGUIScript(buttonsScriptName)
     self.buttonsScript:GetBackground():AddChild(selectionPanelScript:GetBackground())
     minimapScript:SetButtonsScript(self.buttonsScript)
@@ -877,7 +877,6 @@ local function UpdateGhostStructureVisuals(self)
     local commSpecifyingOrientation = GetCommanderGhostStructureSpecifyingOrientation()
     
     self.sentryRangeRenderModel:SetIsVisible(self.currentTechId == kTechId.Sentry and commSpecifyingOrientation)
-    self.sentryBatteryLineHelp:SetIsVisible(self.currentTechId == kTechId.SentryBattery)
     
     local coords = GetCommanderGhostStructureCoords()
     

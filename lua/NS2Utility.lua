@@ -674,6 +674,16 @@ function GetNearestFreeAttachEntity(techId, origin, range)
     
 end
 
+// Returns if it's legal for player to build structure or drop item, along with the position
+// Assumes you're passing in build or buy tech.
+function GetIsBuildPickVecLegal(techId, player, pickVec, snapRadius, direction)
+    local trace = GetCommanderPickTarget(player, pickVec, false, true)
+    local checkBypass = { }
+	checkBypass["ValidExit"] = true
+    local legalBuild, legalPosition, attachEntity, errorString = GetIsBuildLegal(techId, trace.endPoint, direction, snapRadius, player, false, checkBypass)
+    return legalBuild
+end
+
 // Trace until we hit the "inside" of the level or hit nothing. Returns nil if we hit nothing,
 // returns the world point of the surface we hit otherwise. Only hit surfaces that are facing 
 // towards us.

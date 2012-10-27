@@ -30,7 +30,7 @@ Script.Load("lua/MenuManager.lua")
 Script.Load("lua/BindingsDialog.lua")
 Script.Load("lua/MainMenu.lua")
 Script.Load("lua/ConsoleBindings.lua")
-
+// Disabled for now.
 Script.Load("lua/ServerAdmin.lua")
 
 Script.Load("lua/ConsoleCommands_Client.lua")
