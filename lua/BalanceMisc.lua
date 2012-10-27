@@ -24,7 +24,7 @@ kPingOfDeathDelay = 2
 kPingOfDeathDamagePercent = 12
 kResearchMod = 1
 kAirMaxSpeedScalar = 1.8
-kOnLandDelay = 0.03
+kOnLandDelay = 0.1
 
 kGhostStructureModifier = .75
 kEnergyUpdateRate = 0.25
