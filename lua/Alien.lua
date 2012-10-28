@@ -482,12 +482,17 @@ function Alien:HandleButtons(input)
     PROFILE("Alien:HandleButtons")   
     
     Player.HandleButtons(self, input)
+
+    if Client and self:GetCanControl() and not Shared.GetIsRunningPrediction() then
     
-    local darkVisionPressed = bit.band(input.commands, Move.ToggleFlashlight) ~= 0
-    if not self.darkVisionLastFrame and darkVisionPressed then
-        self:SetDarkVision(not self.darkVisionOn)
+        local darkVisionPressed = bit.band(input.commands, Move.ToggleFlashlight) ~= 0
+        if not self.darkVisionLastFrame and darkVisionPressed then
+            self:SetDarkVision(not self.darkVisionOn)
+        end
+        
+        self.darkVisionLastFrame = darkVisionPressed
+
     end
-    self.darkVisionLastFrame = darkVisionPressed
     
 end
 

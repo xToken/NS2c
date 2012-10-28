@@ -20,7 +20,6 @@ Script.Load("lua/Hud/GUIInventory.lua")
 class 'GUIAlienHUD' (GUIAnimatedScript)
 
 local kTextureName = "ui/alien_hud_health.dds"
-local kAbilityImage = "ui/alien_abilities.dds"
 
 local kHealthFontName = "fonts/Stamp_large.fnt"
 local kArmorFontName = "fonts/Stamp_large.fnt"
@@ -46,7 +45,7 @@ local kHiveBuiltSize = Vector(10, 70, 0)
 local kHiveBuiltBarPos = Vector(-85, -63, 0)
 local kHiveTextPos = Vector(-115, 5, 0)
 
-local kUpgradesTexture = "ui/alien_buildmenu.dds"
+local kUpgradesTexture = "ui/buildmenu.dds"
 local kStatusTexture = "ui/alien_HUD_status.dds"
 
 local kHealthTextPos = Vector(220, -70, 0)

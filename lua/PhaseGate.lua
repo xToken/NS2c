@@ -104,8 +104,8 @@ local kUpdateInterval = 0.25
 // Can only teleport a player every so often
 local kDepartureRate = 0.5
 
-local kPushRange = 3
-local kPushImpulseStrength = 40
+local kPushRange = 1
+local kPushImpulseStrength = 20
 
 local networkVars =
 {

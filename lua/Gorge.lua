@@ -278,9 +278,9 @@ function Gorge:GetMaxSpeed(possible)
     if possible then
         return Gorge.kMaxSpeed
     end
-        
-    local maxSpeed = ConditionalValue(self:GetIsOnSurface() and (self.landtime + kOnLandDelay) < Shared.GetTime(), Gorge.kMaxSpeed, Gorge.kMaxSpeed * kAirMaxSpeedScalar)
     
+    local maxSpeed = Gorge.kMaxSpeed
+
     if self:GetIsBellySliding() then
         maxSpeed = Gorge.kMaxSlideSpeed
     end
@@ -400,7 +400,7 @@ if Client then
     function Gorge:GetShowGhostModel()
     
         local weapon = self:GetActiveWeapon()
-        if weapon and weapon:isa("DropStructureAbility") then
+        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
             return weapon:GetShowGhostModel()
         end
         
@@ -411,7 +411,7 @@ if Client then
     function Gorge:GetGhostModelTechId()
     
         local weapon = self:GetActiveWeapon()
-        if weapon and weapon:isa("DropStructureAbility") then
+        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
             return weapon:GetGhostModelTechId()
         end
         
@@ -420,7 +420,7 @@ if Client then
     function Gorge:GetGhostModelCoords()
     
         local weapon = self:GetActiveWeapon()
-        if weapon and weapon:isa("DropStructureAbility") then
+        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
             return weapon:GetGhostModelCoords()
         end
 
@@ -429,7 +429,7 @@ if Client then
     function Gorge:GetIsPlacementValid()
     
         local weapon = self:GetActiveWeapon()
-        if weapon and weapon:isa("DropStructureAbility") then
+        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
             return weapon:GetIsPlacementValid()
         end
     

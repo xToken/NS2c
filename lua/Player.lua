@@ -146,8 +146,10 @@ Player.kMinimumPlayerVelocity = .05    // Minimum player velocity for network pe
 // Player speeds
 Player.kWalkMaxSpeed = 4             // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
 Player.kRunMaxSpeed = 8
-Player.kAcceleration = 40
-Player.kStrafeJumpAccel = 1
+Player.kAcceleration = 45
+Player.kAirZMoveWeight = 2.5
+Player.kAirZStrafeWeight = 2.5
+Player.kAirStrafeWeight = 2
 
 local kLadderAcceleration = 16
 
@@ -235,7 +237,6 @@ local networkVars =
     // Used to require the key to pressed multiple times
     jumpHandled = "private boolean",
     timeOfLastJump = "private time",
-    landtime = "private time",
     jumping = "compensated boolean",
     onGround = "compensated boolean",
     onGroundNeedsUpdate = "private boolean",
@@ -1083,7 +1084,7 @@ function Player:GetIsAffectedByAirFriction()
 end
 
 function Player:GetGroundFrictionForce()
-    return ConditionalValue(self.crouching or self.isUsing, 12, 4)
+    return ConditionalValue(self.crouching or self.isUsing, 10, 4)
 end   
 
 function Player:GetAirFrictionForce()
@@ -1099,7 +1100,7 @@ function Player:GetCanClimb()
 end
 
 function Player:GetStopSpeed()
-    return 2.7
+    return 3
 end
 
 function Player:PerformsVerticalMove()
@@ -1111,10 +1112,6 @@ function Player:GetFrictionForce(input, velocity)
     local friction = Vector(0, 0, 0)
     local frictionScalar = 0
 
-	if (self.landtime + kOnLandDelay) > Shared.GetTime()  then
-        return friction
-    end
-
     local stopSpeed = self:GetStopSpeed()
     friction = -velocity
     local velocitylength = self:GetVelocity():GetLength()
@@ -1125,7 +1122,7 @@ function Player:GetFrictionForce(input, velocity)
             friction = -stopSpeed * control
         end
         frictionScalar = self:GetClimbFrictionForce()
-    elseif self:GetIsOnSurface() then
+    elseif self:GetIsOnSurface() and (self.landtime + kOnLandDelay) < Shared.GetTime() then
         frictionScalar = self:GetGroundFrictionForce()
     else
         if not self:PerformsVerticalMove() then
@@ -1237,8 +1234,12 @@ function Player:OnClampSpeed(input, velocity)
         maxSpeed = maxSpeed * self:GetMaxBackwardSpeedScalar()
     end
     
-    if moveSpeed > maxSpeed then
+    if not self:GetIsOnSurface() or (self.landtime + kOnLandDelay) > Shared.GetTime() then
+        maxSpeed = maxSpeed * kAirMaxSpeedScalar
+    end
     
+    if moveSpeed > maxSpeed then
+
         local velocityY = velocity.y
         velocity:Scale(maxSpeed / moveSpeed)
         
@@ -1369,10 +1370,11 @@ end
 
 function Player:OnJumpLand(landIntensity, slowDown)
 
+    self.landtime = Shared.GetTime()
+    
     if Client and self:GetIsLocalPlayer() then
         self:OnJumpLandLocalClient()
     end
-    self.landtime = Shared.GetTime()
     
 end
 
@@ -1634,7 +1636,7 @@ function Player:UpdateMaxMoveSpeed(deltaTime)
 
     ASSERT(deltaTime >= 0)
     
-    // Only recover max speed when on the ground
+    // Only recover max speed when on the 
     if self:GetIsOnGround() then
     
         local newSlow = math.max(0, self.slowAmount - deltaTime)
@@ -2019,6 +2021,8 @@ function Player:GetIsOnGround()
     // Re-calculate every time SetOrigin is called
     if self.onGroundNeedsUpdate then
     
+        local wasonGround = self.onGround
+        
         self.onGround = false
         
         self.onGround = self:GetIsCloseToGround(Player.kOnGroundDistance)
@@ -2068,7 +2072,7 @@ function Player:GetIsCloseToGround(distanceToGround)
         return false
     end
 
-    if (self:GetVelocityPitch() > 0 and self.timeOfLastJump ~= nil and (Shared.GetTime() - self.timeOfLastJump < .2)) then
+    if (self:GetVelocityPitch() > 0 and self.timeOfLastJump ~= nil and (Shared.GetTime() - self.timeOfLastJump < .1)) then
     
         // If we are moving away from the ground, don't treat
         // us as standing on it.
@@ -2204,16 +2208,16 @@ function Player:GetMaxSpeed(possible)
         return Player.kRunMaxSpeed
     end
     
-    //Walking
-    local maxSpeed = Player.kRunMaxSpeed
-     
+    local maxSpeed = Player.kRunMaxSpeed * kAirMaxSpeedScalar
+    
     if self.movementModiferState and self:GetIsOnSurface() then
-        maxSpeed = Player.kMaxWalkSpeed
+        maxSpeed = Player.kWalkMaxSpeed
     elseif self:GetIsOnSurface() and (self.landtime + kOnLandDelay) < Shared.GetTime() then
         maxSpeed = Player.kRunMaxSpeed
     else
         maxSpeed = Player.kRunMaxSpeed * kAirMaxSpeedScalar
     end
+    
     // Take into account crouching
     if self:GetCrouching() and self.onGround then
         maxSpeed = ( 1 - self:GetCrouchAmount() * self:GetCrouchSpeedScalar() ) * maxSpeed
@@ -2534,6 +2538,7 @@ function Player:ModifyVelocity(input, velocity)
             local viewCoords = self:GetViewCoords()
             local previousY = velocity.y
             local adjustedZ = false
+            //local accelerationangle = 0.86
             
             if input.move.z ~= 0 then
                 local redirectedVelocityZ = GetNormalizedVectorXZ(viewCoords.zAxis) * input.move.z
@@ -2545,8 +2550,10 @@ function Player:ModifyVelocity(input, velocity)
                     local xzVelocity = velocity
                     xzVelocity.y = 0
                     VectorCopy(velocity - (xzVelocity * input.time), velocity)
-                else                    
-                    redirectedVelocityZ = redirectedVelocityZ * input.time + GetNormalizedVectorXZ(velocity)
+                else
+                    //accelerationangle = math.max(0, GetNormalizedVectorXZ(velocity):DotProduct(redirectedVelocityZ))
+                    //accelerationangle = math.pow(accelerationangle, 2)            
+                    redirectedVelocityZ = redirectedVelocityZ * input.time * Player.kAirZMoveWeight + GetNormalizedVectorXZ(velocity)
                     redirectedVelocityZ:Normalize()                
                     redirectedVelocityZ:Scale(moveLengthXZ)
                     redirectedVelocityZ.y = previousY
@@ -2557,9 +2564,9 @@ function Player:ModifyVelocity(input, velocity)
             if input.move.x ~= 0  then                
                 local redirectedVelocityX = GetNormalizedVectorXZ(viewCoords.xAxis) * input.move.x
                 if adjustedZ then
-                    redirectedVelocityX = redirectedVelocityX * input.time + GetNormalizedVectorXZ(velocity)
+                    redirectedVelocityX = redirectedVelocityX * input.time * Player.kAirStrafeWeight + GetNormalizedVectorXZ(velocity)
                 else
-                    redirectedVelocityX = redirectedVelocityX * input.time * 0.5 + GetNormalizedVectorXZ(velocity)
+                    redirectedVelocityX = redirectedVelocityX * input.time * Player.kAirStrafeWeight * 0.5 + GetNormalizedVectorXZ(velocity)
                 end
                 redirectedVelocityX:Normalize()            
                 redirectedVelocityX:Scale(moveLengthXZ)

@@ -43,7 +43,7 @@ JetpackMarine.kVerticalFlyAccelerationMod = 2.0
 JetpackMarine.kJetpackAcceleration = 22
 JetpackMarine.kWalkMaxSpeed = 4.0                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
 JetpackMarine.kRunMaxSpeed = 6.5
-JetpackMarine.kFlyMaxSpeed = 15
+JetpackMarine.kFlyMaxSpeed = 8.5
 
 JetpackMarine.kJetpackArmorBonus = kJetpackArmor
 JetpackMarine.kJetpackTakeOffTime = .01
@@ -372,10 +372,6 @@ function JetpackMarine:GetMaxSpeed(possible)
     
     if self.movementModiferState and self:GetIsOnSurface() then
         maxSpeed = JetpackMarine.kWalkMaxSpeed
-    elseif self:GetIsOnSurface() and (self.landtime + kOnLandDelay) < Shared.GetTime() then
-        maxSpeed = JetpackMarine.kRunMaxSpeed
-    else
-        maxSpeed = JetpackMarine.kRunMaxSpeed * kAirMaxSpeedScalar
     end
     
     // GetIsOnGround is used to not lose our jetpacking speed when jump is released to lose height

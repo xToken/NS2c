@@ -1,6 +1,7 @@
 ACID_ROCKET = "Acid Rocket"
 ACID_ROCKET_TOOLTIP = "Fires projectiles of acid that deal heavy damage to armor"
 ADVANCED_ARMORY_HINT = "Heavymachineguns, grenadelaunchers"
+ADRENALINE_TOOLTIP = "Doubles energy regeneration rate."
 ALIEN_CONSTRUCT = "Construct"
 TELEPORT_HIVE = "Press use to teleport to the furthest or any under attack hive"
 ALERT_DANGER = "Press use to alert your team and allow them to teleport here"

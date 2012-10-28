@@ -88,9 +88,14 @@ function Embryo:OnInitialized()
         else
             Client.SetPitch(0.8)
         end
+
         
     end
     
+    // do not animate the camera transition, just teleport instantly.
+    self:SetCameraDistance(kGestateCameraDistance)
+    self:SetViewOffsetHeight(.5)
+
 end
 
 function Embryo:GetShowUnitStatusForOverride(forEntity)

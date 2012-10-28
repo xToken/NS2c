@@ -14,8 +14,8 @@ class 'BileBomb' (Ability)
 BileBomb.kMapName = "bilebomb"
 
 // part of the players velocity is use for the bomb
-local kPlayerVelocityFraction = 0.75
-local kBombVelocity = 12
+local kPlayerVelocityFraction = 0.5
+local kBombVelocity = 10
 
 local kAnimationGraph = PrecacheAsset("models/alien/gorge/gorge_view.animation_graph")
 

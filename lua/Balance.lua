@@ -272,8 +272,8 @@ kHealsprayRadius = 3.5
 
 kBileBombDamage = 200
 kBileBombDamageType = kDamageType.StructuresOnly
-kBileBombEnergyCost = 22  // 200 inches in NS1 = 5 meters
-kBileBombSplashRadius = 5           
+kBileBombEnergyCost = 22
+kBileBombSplashRadius = 6  // 200 inches in NS1 = 5 meters           
 
 kWebSpinnerROF = 0.5
 kWebSpinnerEnergyCost = 18

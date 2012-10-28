@@ -54,8 +54,8 @@ InfantryPortal.kThinkInterval = 0.25
 InfantryPortal.kTransponderPointValue = 15
 InfantryPortal.kLoginAttachPoint = "keypad"
 
-local kPushRange = 3
-local kPushImpulseStrength = 40
+local kPushRange = 1.5
+local kPushImpulseStrength = 20
 
 local networkVars =
 {

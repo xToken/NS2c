@@ -319,11 +319,12 @@ function Onos:GetMaxSpeed(possible)
         return Onos.kMaxSpeed
     end
     
-    local maxSpeed = ConditionalValue(self:GetIsOnSurface() and (self.landtime + kOnLandDelay) < Shared.GetTime(), Onos.kMaxSpeed, Onos.kMaxSpeed * kAirMaxSpeedScalar)
+    local maxSpeed = Onos.kMaxSpeed
     
     if self:GetCrouching() and self.onGround then
         maxSpeed = Onos.kMaxCrouchSpeed
     end
+    
     if self.charging then
         maxSpeed = Onos.kMaxChargeSpeed
     end

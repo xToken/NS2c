@@ -91,8 +91,12 @@ function DropStructureAbility:OnPrimaryAttackEnd(player)
 
     if not Shared.GetIsRunningPrediction() then
     
-        if Client and self.dropping then
-            self:OnSetActive()
+        //if Client and self.dropping then
+            //self:OnSetActive()
+        //end
+        
+        if player and player:GetWeapon("spitspray") then
+            player:SetActiveWeapon("spitspray")
         end
 
         self.dropping = false
@@ -216,7 +220,7 @@ local function DropStructure(self, player, origin, direction, structureAbility)
         end
         
     end
-    return true
+    return false
 end
 
 function DropStructureAbility:OnDropStructure(origin, direction, structureIndex)
@@ -227,7 +231,7 @@ function DropStructureAbility:OnDropStructure(origin, direction, structureIndex)
     
         local structureAbility = DropStructureAbility.kSupportedStructures[structureIndex]        
         if structureAbility then        
-             DropStructure(self, player, origin, direction, structureAbility)
+            DropStructure(self, player, origin, direction, structureAbility)
         end
         
     end

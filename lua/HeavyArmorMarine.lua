@@ -128,13 +128,9 @@ function HeavyArmorMarine:GetMaxSpeed(possible)
     end
     
     local maxSpeed = HeavyArmorMarine.kRunMaxSpeed
-        
+    
     if self.movementModiferState and self:GetIsOnSurface() then
         maxSpeed = HeavyArmorMarine.kWalkMaxSpeed
-    elseif self:GetIsOnSurface() and (self.landtime + kOnLandDelay) < Shared.GetTime() then
-        maxSpeed = HeavyArmorMarine.kRunMaxSpeed
-    else
-        maxSpeed = HeavyArmorMarine.kRunMaxSpeed * kAirMaxSpeedScalar
     end
     
     // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.

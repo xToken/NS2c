@@ -87,8 +87,12 @@ function DropStructureAbility2:OnPrimaryAttackEnd(player)
 
     if not Shared.GetIsRunningPrediction() then
     
-        if Client and self.dropping then
-            self:OnSetActive()
+        //if Client and self.dropping then
+            //self:OnSetActive()
+        //end
+        
+        if player and player:GetWeapon("spitspray") then
+            player:SetActiveWeapon("spitspray")
         end
 
         self.dropping = false
@@ -105,23 +109,8 @@ function DropStructureAbility2:GetEnergyCost(player)
     return kDropStructureEnergyCost
 end
 
-// Child should override
-function DropStructureAbility2:GetDropStructureId()
-    assert(false)
-end
-
 function DropStructureAbility2:GetDamageType()
     return kHealsprayDamageType
-end
-
-// Child should override ("hydra", "crap", etc.). 
-function DropStructureAbility2:GetSuffixName()
-    assert(false)
-end
-
-// Child should override ("Hydra")
-function DropStructureAbility2:GetDropClassName()
-    assert(false)
 end
 
 function DropStructureAbility2:GetHUDSlot()
@@ -164,7 +153,6 @@ function DropStructureAbility2:PerformPrimaryAttack(player)
 
             local message = BuildGorgeDropStructureMessage(player:GetEyePos(), player:GetViewCoords().zAxis, self.activeStructure)
             Client.SendNetworkMessage("GorgeBuildStructure2", message, true)
-            
         else
             player:TriggerInvalidSound()
             success = false
@@ -185,12 +173,12 @@ local function DropStructure(self, player, origin, direction, structureAbility)
     if Server then
     
         local coords, valid, onEntity = self:GetPositionForStructure(origin, direction, structureAbility)
-        local techId = structureAbility:GetDropStructureId()
+        local techId = structureAbility:GetDropStructureId() 
         local cost = LookupTechData(structureAbility:GetDropStructureId(), kTechDataCostKey, 0)
         local enoughRes = player:GetResources() >= cost
         
         if valid and enoughRes and structureAbility:IsAllowed(player) then
-        
+
             if techId == kTechId.Hive or techId == kTechId.Harvester then
                 if techId == kTechId.Hive then
                     local BuildingHives = 0
@@ -247,7 +235,7 @@ local function DropStructure(self, player, origin, direction, structureAbility)
         end
         
     end
-    return true
+    return false
 end
 
 function DropStructureAbility2:OnDropStructure(origin, direction, structureIndex)
@@ -258,7 +246,7 @@ function DropStructureAbility2:OnDropStructure(origin, direction, structureIndex
     
         local structureAbility = DropStructureAbility2.kSupportedStructures[structureIndex]        
         if structureAbility then        
-             DropStructure(self, player, origin, direction, structureAbility)
+            DropStructure(self, player, origin, direction, structureAbility)
         end
         
     end
@@ -377,67 +365,16 @@ function DropStructureAbility2:OnUpdateAnimationInput(modelMixin)
     
 end
 
-function DropStructureAbility2:ProcessMoveOnWeapon(input)
-
-    // Show ghost if we're able to create structure, and if menu is not visible
-    local player = self:GetParent()
-    if player then
-    
-        if Client then
-
-            // Update ghost position 
-            if self.showGhost then
-            
-                if not self.abilityHelpModel then
-                    
-                    // Create build circle to show hydra range
-                    self.circle = Client.CreateRenderModel(RenderScene.Zone_Default)
-                    self.circle:SetModel( Shared.GetModelIndex(DropStructureAbility.kCircleModelName) )
-                    
-                    self.abilityHelpModel = Client.CreateRenderModel(RenderScene.Zone_Default)
-                    self.abilityHelpModel:SetCastsShadows(false)
-                    
-                    
-                end
-            
-                self.ghostCoords, valid = self:GetPositionForStructure(player:GetEyePos(), player:GetViewCoords().zAxis, self:GetActiveStructure())
-                
-                if not valid then
-                    self.abilityHelpModel:SetIsVisible(false)
-                end
-                
-                if valid then
-                    self:GetActiveStructure():OnUpdateHelpModel(self, self.abilityHelpModel, self.ghostCoords)
-                end
-                
-                if player:GetResources() < LookupTechData(self:GetActiveStructure().GetDropStructureId(), kTechDataCostKey) then
-                    valid = false
-                end
-                
-                // Scale and position circle to show range
-                if self.circle then
-                
-                    local coords = Coords.GetLookIn( self.ghostCoords.origin + Vector(0, .01, 0), Vector.xAxis )
-                    coords:Scale( 2 * Hydra.kRange )
-                    self.circle:SetCoords(coords)
-                    self.circle:SetIsVisible(valid)
-                    
-                end
-                
-                self.placementValid = valid
-                
-            end
-        end    
-    end
-    
-end
-
 function DropStructureAbility2:GetShowGhostModel()
     return self.showGhost
 end
 
 function DropStructureAbility2:GetUnassignedHives()
     return self.unassignedhives
+end
+
+function DropStructureAbility2:GetShowGhostModel()
+    return self.showGhost
 end
 
 function DropStructureAbility2:GetGhostModelCoords()
@@ -448,41 +385,43 @@ function DropStructureAbility2:GetIsPlacementValid()
     return self.placementValid
 end
 
+function DropStructureAbility2:GetGhostModelTechId()
+    return self:GetActiveStructure():GetDropStructureId()
+end
+
 if Client then
 
-    function DropStructureAbility2:OnSetActive()
-    
-        if not Shared.GetIsRunningPrediction() then
-    
-            if not self.buildMenu then
+    function DropStructureAbility2:OnProcessIntermediate(input)
+
+        local player = self:GetParent()
+        local viewDirection = player:GetViewCoords().zAxis
+
+        if player then
+
+            self.ghostCoords, self.placementValid = self:GetPositionForStructure(player:GetEyePos(), viewDirection, self:GetActiveStructure())
             
-                self.buildMenu = GetGUIManager():CreateGUIScript("GUIGorgeBuildMenu2")
-                self.droppedStructure = false
-                self.showGhost = false
-                
+            if player:GetResources() < LookupTechData(self:GetActiveStructure():GetDropStructureId(), kTechDataCostKey) then
+                self.placementValid = false
             end
         
         end
+        
+    end
     
+    function DropStructureAbility2:CreateBuildMenu()
+    
+        if not self.buildMenu then
+        
+            self.buildMenu = GetGUIManager():CreateGUIScript("GUIGorgeBuildMenu2")
+            self.droppedStructure = false
+            self.showGhost = false
+            
+        end
+        
     end
 
-    function DropStructureAbility2:DestroyStructureGhost()
-        
-        if self.abilityHelpModel ~= nil then
-        
-            Client.DestroyRenderModel(self.abilityHelpModel)
-            self.abilityHelpModel = nil
-            
-        end
-        
-        if self.circle ~= nil then
-        
-            Client.DestroyRenderModel(self.circle)
-            self.circle = nil
-            
-            
-        end
-        
+    function DropStructureAbility2:OnSetActive()    
+        self:CreateBuildMenu()    
     end
     
     function DropStructureAbility2:DestroyBuildMenu()
@@ -498,19 +437,28 @@ if Client then
 
     function DropStructureAbility2:OnDestroy()
     
-        self:DestroyStructureGhost()
-        self:DestroyBuildMenu()
-        
+        self:DestroyBuildMenu()        
         Ability.OnDestroy(self)
         
     end
-
-    function DropStructureAbility2:OnHolster(player)
     
-        Ability.OnHolster(self, player)
+    function DropStructureAbility2:OnDrawClient()
+    
+        Ability.OnDrawClient(self)
         
-        self:DestroyStructureGhost()
-        self:DestroyBuildMenu()
+        if self:GetParent() == Client.GetLocalPlayer() then
+            self:CreateBuildMenu()
+        end
+        
+    end
+    
+    function DropStructureAbility2:OnHolsterClient()
+    
+        Ability.OnHolsterClient(self)
+        
+        if self:GetParent() == Client.GetLocalPlayer() then
+            self:DestroyBuildMenu()
+        end
         
     end
     

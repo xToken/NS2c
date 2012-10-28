@@ -42,7 +42,7 @@ Fade.kArmor = kFadeArmor
 Fade.kMass = 50 // ~350 pounds
 Fade.kJumpHeight = 1.1
 Fade.kMaxSpeed = 7.0
-Fade.kMaxBlinkSpeed = 19
+Fade.kMaxBlinkSpeed = 11
 Fade.kWalkSpeed = 4
 Fade.kBlinkAcceleration = 50
 Fade.kBlinkAccelerationDuration = 2
@@ -196,14 +196,10 @@ function Fade:GetMaxSpeed(possible)
         return Fade.kMaxSpeed
     end
     
-    local maxspeed = Fade.kMaxSpeed
+    local maxSpeed = Fade.kMaxSpeed
         
     if self.movementModiferState and self:GetIsOnSurface() then
         maxSpeed = Fade.kWalkSpeed
-    elseif self:GetIsOnSurface() and (self.landtime + kOnLandDelay) < Shared.GetTime() then
-        maxSpeed = Fade.kMaxSpeed
-    else
-        maxSpeed = Fade.kMaxSpeed * kAirMaxSpeedScalar
     end
     
     // Take into account crouching

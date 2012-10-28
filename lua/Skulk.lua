@@ -473,10 +473,6 @@ function Skulk:GetMaxSpeed(possible)
     
     if self.movementModiferState and self:GetIsOnSurface() then
         maxSpeed = Skulk.kMaxWalkSpeed
-    elseif self:GetIsOnSurface() and (self.landtime + kOnLandDelay) < Shared.GetTime() then
-        maxSpeed = Skulk.kMaxSpeed
-    else
-        maxSpeed = Skulk.kMaxSpeed * kAirMaxSpeedScalar
     end
 
     return maxSpeed * self:GetMovementSpeedModifier()

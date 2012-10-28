@@ -328,7 +328,8 @@ function Marine:GetCanRepairOverride(target)
 end
 
 function Marine:GetSlowOnLand()
-    return ((self:GetOrigin().y - self.lastjumpheight) <= Marine.kDoubleJumpMinHeightChange)
+    local adjustedy = ConditionalValue(self.crouching, self:GetOrigin().y - 0.5, self:GetOrigin().y)
+    return ((adjustedy - self.lastjumpheight) <= Marine.kDoubleJumpMinHeightChange)
 end
 
 function Marine:GetArmorAmount()
@@ -526,10 +527,6 @@ function Marine:GetMaxSpeed(possible)
     
     if self.movementModiferState and self:GetIsOnSurface() then
         maxSpeed = Marine.kWalkMaxSpeed
-    elseif self:GetIsOnSurface() and (self.landtime + kOnLandDelay) < Shared.GetTime() then
-        maxSpeed = Marine.kRunMaxSpeed
-    else
-        maxSpeed = Marine.kRunMaxSpeed * kAirMaxSpeedScalar
     end
     
     // Take into account crouching

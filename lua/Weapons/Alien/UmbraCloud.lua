@@ -67,7 +67,7 @@ function UmbraCloud:OnUpdate(deltaTime)
             local distanceFraction = (self.destination - self:GetOrigin()):GetLength() / UmbraCloud.kMaxRange
             self:SetOrigin( self:GetOrigin() + GetNormalizedVector(travelVector) * deltaTime * UmbraCloud.kTravelSpeed * distanceFraction )
         end
-        if travelVector:GetLength() < 2 and not self.soundplayed then
+        if travelVector:GetLength() < 3 and not self.soundplayed then
             Shared.PlayWorldSound(nil, kUmbraSound, nil, self:GetOrigin())
             self.soundplayed = true
         end

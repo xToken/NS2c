@@ -195,6 +195,7 @@ function InitTechTreeMaterialOffsets()
     kTechIdToMaterialOffset[kTechId.Move] = 121
     kTechIdToMaterialOffset[kTechId.Stop] = 122
     kTechIdToMaterialOffset[kTechId.Attack] = 123
+    kTechIdToMaterialOffset[kTechId.SetTarget] = 123
     kTechIdToMaterialOffset[kTechId.Cancel] = 124
     kTechIdToMaterialOffset[kTechId.Weld] = 127
     //kTechIdToMaterialOffset[kTechId.AutoWeld] = 127

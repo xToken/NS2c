@@ -42,6 +42,8 @@ function CragStructureAbility:IsAllowed(player)
     local teamnum = player:GetTeamNumber()
     local techTree = GetTechTree(teamnum)
     local techNode = techTree:GetTechNode(kTechId.Crag)
-    assert(techNode)
+    if techNode == nil then
+        return false
+    end
     return (techNode:GetAvailable() or player:GetUnassignedHives() > 0) and #structures < kMaxAlienStructuresofType
 end
