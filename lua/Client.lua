@@ -294,6 +294,16 @@ function SetCommanderPropState(isComm)
 
 end
 
+function UpdateAmbientSounds(deltaTime)
+    
+    PROFILE("Client:UpdateAmbientSounds")
+
+    for index, ambientSound in ipairs(Client.ambientSoundList) do
+        ambientSound:OnUpdate(deltaTime)
+    end
+    
+end
+
 local function ExpireDebugText()
 
     // Expire debug text items after lifetime has elapsed        
@@ -368,8 +378,15 @@ function OnUpdateClient(deltaTime)
     
     local player = Client.GetLocalPlayer()
     if player ~= nil then
-        //UpdateParticles(deltaTime)
-        UpdateTracers(deltaTime) 
+    
+        //UpdateAmbientSounds(deltaTime)
+        
+        //UpdateDSPEffects()
+        
+        UpdateTracers(deltaTime)
+        
+        UpdateTimePlayed(deltaTime)
+        
     end
     
     GetEffectManager():OnUpdate(deltaTime)
@@ -878,6 +895,7 @@ local function OnLoadComplete()
     gRenderCamera:SetRenderSetup("renderer/Deferred.render_setup")
     
     Render_SyncRenderOptions()
+    OptionsDialogUI_SyncSoundVolumes()
     
     GetGUIManager():CreateGUIScript("GUIDeathScreen")
     HiveVision_Initialize()

@@ -66,24 +66,41 @@ end
 
 if Server then
 
-    function Location:OnTriggerEntered(enterEnt, triggerEnt)
-
-        if enterEnt.SetLocationName then
-            enterEnt:SetLocationName(triggerEnt:GetName())
-            enterEnt:SetLocationEntity(self)
+    function Location:OnTriggerEntered(entity, triggerEnt)
+        ASSERT(self == triggerEnt)
+        if entity.SetLocationName then
+            //Log("%s enter loc %s ('%s') from '%s'", entity, self, self:GetName(), entity:GetLocationName())
+            // only if we have no location do we set the location here
+            // otherwise we wait until we exit the location to set it
+            if not entity:GetLocationEntity() then
+                entity:SetLocationName(triggerEnt:GetName())
+                entity:SetLocationEntity(self)
+            end
         end
 
         if GetGamerules():GetGameStarted() then
-            if not enterEnt:isa("Commander") and HasMixin(enterEnt, "Team") then
-                if enterEnt:GetTeamNumber() == kMarineTeamType then
+            if not entity:isa("Commander") and HasMixin(entity, "Team") then
+                if entity:GetTeamNumber() == kMarineTeamType then
                     self.visitedByTeamOne = true
-                elseif enterEnt:GetTeamNumber() == kAlienTeamType then
+                elseif entity:GetTeamNumber() == kAlienTeamType then
                     self.visitedByTeamTwo = true
                 end    
             end
         end
-            
     end
+
+	function Location:OnTriggerExited(entity, triggerEnt)
+	
+        ASSERT(self == triggerEnt)
+        if entity.SetLocationName then
+            local enteredLoc = GetLocationForPoint(entity:GetOrigin(), self)
+            local name = enteredLoc and enteredLoc:GetName() or ""
+            //Log("%s exited location %s('%s'), entered '%s'", entity, self, self:GetName(), name)
+            entity:SetLocationName(name)
+            entity:SetLocationEntity(enteredLoc)
+        end
+        
+	end
 
 end
 

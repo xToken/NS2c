@@ -1204,14 +1204,15 @@ function GUIAlienBuyMenu:_UpdateAlienButtons()
 end
 
 local kDefaultColor = Color(kIconColors[kAlienTeamType])
-local kNotAvailableColor = Color(0.3, 0.3, 0.0, 1)
+local kNotAvailableColor = Color(0.0, 0.0, 0.0, 1)
 local kNotAllowedColor = Color(1, 0,0,1)
+local kPurchasedColor = Color(1, 0.6, 0, 1)
 
 function GUIAlienBuyMenu:_UpdateUpgrades(deltaTime)
 
     for i, slot in ipairs(self.slots) do
 
-        if AlienBuy_GetHasTech(slot.Category) then
+        if GetHasAnyCathegoryUpgrade(slot.Category) then
             slot.Graphic:SetTexture(GUIAlienBuyMenu.kSlotTexture)    
         else
             slot.Graphic:SetTexture(GUIAlienBuyMenu.kSlotLockedTexture)
@@ -1222,10 +1223,17 @@ function GUIAlienBuyMenu:_UpdateUpgrades(deltaTime)
     for i, currentButton in ipairs(self.upgradeButtons) do
 
         local useColor = kDefaultColor
+        
+        if currentButton.Purchased then
+            useColor = kPurchasedColor
 
-        if not AlienBuy_GetTechAvailable(currentButton.TechId) or 
-			(currentButton.Purchased and not self:GetNewLifeFormSelected() ) then
+        elseif not AlienBuy_GetTechAvailable(currentButton.TechId) then           
             useColor = kNotAvailableColor
+            
+            // unselect button if tech becomes unavailable
+            if currentButton.Selected then
+                currentButton.Selected = false
+            end
             
         elseif not currentButton.Selected and not AlienBuy_GetIsUpgradeAllowed(currentButton.TechId, self.upgradeList) then
             useColor = kNotAllowedColor

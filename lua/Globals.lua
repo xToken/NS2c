@@ -130,6 +130,7 @@ kDisplayWeaponTime = 1.5
 
 // If player bought Special Edition
 kSpecialEditionProductId = 4930
+kDeluxeEditionProductId = 4932
 
 // Death message indices 
 kDeathMessageIcon = enum( { 'None', 
@@ -243,7 +244,6 @@ kNonCollisionGeometryGroupName  = "NonCollisionGeometry"
 // Max players allowed in game
 kMaxPlayers = 32
 
-kMaxIdleWorkers = 127
 kMaxPlayerAlerts = 127
 
 // Max distance to propagate entities with

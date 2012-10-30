@@ -36,6 +36,7 @@ Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/DissolveMixin.lua")
 
 class 'Shift' (ScriptActor)
 
@@ -75,6 +76,7 @@ AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
+AddMixinNetworkVars(DissolveMixin, networkVars)
 
 function Shift:OnCreate()
 
@@ -99,6 +101,7 @@ function Shift:OnCreate()
     InitMixin(self, ObstacleMixin)
     InitMixin(self, CombatMixin)
     InitMixin(self, HasUmbraMixin)
+	InitMixin(self, DissolveMixin)
     
     if Client then
         InitMixin(self, CommanderGlowMixin)    

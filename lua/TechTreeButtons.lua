@@ -168,7 +168,7 @@ function InitTechTreeMaterialOffsets()
     //kTechIdToMaterialOffset[kTechId.Flamethrower] = 86
     kTechIdToMaterialOffset[kTechId.GrenadeLauncher] = 87
     kTechIdToMaterialOffset[kTechId.Welder] = 88
-    kTechIdToMaterialOffset[kTechId.Hydra] = 88
+    
     kTechIdToMaterialOffset[kTechId.JetpackTech] = 89
     kTechIdToMaterialOffset[kTechId.Jetpack] = 89
     
@@ -182,7 +182,7 @@ function InitTechTreeMaterialOffsets()
     //kTechIdToMaterialOffset[kTechId.SpawnAlien] = 97
     //kTechIdToMaterialOffset[kTechId.DrifterCamouflage] = 98
     kTechIdToMaterialOffset[kTechId.AdvancedArmoryUpgrade] = 99
-    kTechIdToMaterialOffset[kTechId.Electrify] = 100
+    kTechIdToMaterialOffset[kTechId.Hydra] = 100
     kTechIdToMaterialOffset[kTechId.MotionTracking] = 102
     kTechIdToMaterialOffset[kTechId.HandGrenadesTech] = 103
     kTechIdToMaterialOffset[kTechId.HandGrenades] = 103
@@ -253,6 +253,7 @@ function GetMaterialXYOffset(techId)
     index = kTechIdToMaterialOffset[techId]
     
     if index == nil then
+        assert(techId ~= nil)
         Print("Warning: %s did not define kTechIdToMaterialOffset ", EnumToString(kTechId, techId) )
     end
 

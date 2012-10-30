@@ -186,7 +186,7 @@ if Server then
                     local trace = Shared.TraceRay(self:GetOrigin(), attackPoint, CollisionRep.Damage, PhysicsMask.Bullets, filterNonDoors)
                     if trace.fraction == 1.0 or trace.entity == entity then
                     
-                        self:DoDamage(kSporeDamage , entity, trace.endPoint, (attackPoint - trace.endPoint):GetUnit(), "none" )
+                        self:DoDamage(kSporeDamage , entity, trace.endPoint, (attackPoint - trace.endPoint):GetUnit(), "organic" )
                         
                         // Spores can't hurt this entity for kSporeDamageDelay
                         SetEntityRecentlyHurt(entity:GetId())

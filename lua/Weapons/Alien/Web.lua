@@ -120,7 +120,7 @@ function Web:OnInitialized()
         self:SetArmor(self:GetMaxArmor())
         
         InitMixin(self, TriggerMixin)
-        self:SetBox(Vector(2,2,2))
+        self:SetBox(Vector(3,3,3))
         
     end
     

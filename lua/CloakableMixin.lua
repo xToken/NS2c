@@ -14,7 +14,6 @@ CloakableMixin.type = "Cloakable"
 CloakableMixin.kCloakRate = 0.5
 CloakableMixin.kUnCloakRate = 3
 
-//CloakableMixin.kCloakCinematic = PrecacheAsset("cinematics/alien/cloak.cinematic")
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/cloaked.surface_shader")
 
 local Coords_GetTranslation = Coords.GetTranslation
@@ -42,7 +41,7 @@ CloakableMixin.networkVars =
 {
     cloaked = "boolean",
     fullyCloaked = "boolean",
-    cloakedFraction = "float (0 to 1 by 0.01)"
+    cloakedFraction = "interpolated float (0 to 1 by 0.01)"
 }
 
 function CloakableMixin:__initmixin()
@@ -53,38 +52,6 @@ function CloakableMixin:__initmixin()
     self.cloakChargeTime = 0
     self.cloakTime = nil
     
-end
-
-local function CreateCloakedEffect(self)
-
-    //if not self.cloakedCinematic then
-    
-        //self.cloakedCinematic = Client.CreateCinematic(RenderScene.Zone_Default)
-        //self.cloakedCinematic:SetCinematic(CloakableMixin.kCloakCinematic)
-        //self.cloakedCinematic:SetRepeatStyle(Cinematic.Repeat_Endless)
-        //self.cloakedCinematic:SetCoords(Coords_GetTranslation(self:GetOrigin()))
-    
-    //end
-
-end
-
-local function DestroyCloakedEffect(self)
-
-    //if self.cloakedCinematic then
-    
-        //Client.DestroyCinematic(self.cloakedCinematic)
-        //self.cloakedCinematic = nil
-    
-    //end
-    
-end
-
-if Client then
-
-    function CloakableMixin:OnDestroy()
-        DestroyCloakedEffect(self)
-    end
-
 end
 
 function CloakableMixin:SetIsCloaked(state, cloakTime, force)
@@ -225,17 +192,6 @@ elseif Client then
             end
             self.clientCloaked = newHiddenState
 
-        end
-        
-        if self.clientCloaked and not areEnemies then
-            CreateCloakedEffect(self)
-        else
-            DestroyCloakedEffect(self)
-        end
-        
-        local cloakedCinematic = self.cloakedCinematic
-        if cloakedCinematic then        
-            cloakedCinematic:SetCoords( Coords_GetTranslation(self:GetOrigin()) )
         end
         
         // cloaked aliens off infestation are not 100% hidden

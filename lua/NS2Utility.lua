@@ -942,13 +942,13 @@ function GetLocations()
     return EntityListToTable(Shared.GetEntitiesWithClassname("Location"))
 end
 
-function GetLocationForPoint(point)
+function GetLocationForPoint(point, ignoredLocation)
 
     local ents = GetLocations()
     
     for index, location in ipairs(ents) do
     
-        if location:GetIsPointInside(point) then
+        if location ~= ignoredLocation and location:GetIsPointInside(point) then
         
             return location
             

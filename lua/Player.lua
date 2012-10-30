@@ -1088,7 +1088,7 @@ function Player:GetGroundFrictionForce()
 end   
 
 function Player:GetAirFrictionForce()
-    return 0.5
+    return 0.50
 end
 
 function Player:GetClimbFrictionForce()
@@ -1128,7 +1128,11 @@ function Player:GetFrictionForce(input, velocity)
         if not self:PerformsVerticalMove() then
             friction.y = 0
         end
-        frictionScalar = self:GetAirFrictionForce()
+        if not self:GetIsOnSurface() then
+            frictionScalar = self:GetAirFrictionForce()
+        else
+            frictionScalar = self:GetAirFrictionForce() * 3
+        end
     end
 
     // Calculate friction when going slower than stopSpeed
@@ -1514,6 +1518,28 @@ end
 function Player:OnProcessMove(input)
 
     PROFILE("Player:OnProcessMove")
+
+    local commands = input.commands
+    if self:GetIsAlive() then
+    
+        if self.countingDown then
+        
+            input.move:Scale(0)
+            input.commands = 0
+            
+        else
+        
+            // Allow children to alter player's move before processing. To alter the move
+            // before it's sent to the server, use OverrideInput
+            input = self:AdjustMove(input)
+            
+            // Update player angles and view angles smoothly from desired angles if set. 
+            // But visual effects should only be calculated when not predicting.
+            self:UpdateViewAngles(input)  
+            
+        end
+        
+    end
     
     self:OnUpdatePlayer(input.time)
     
@@ -1532,29 +1558,10 @@ function Player:OnProcessMove(input)
         self.onGroundNeedsUpdate = true      
         local wasOnGround = self.onGround
         local previousVelocity = self:GetVelocity()
-        
-        local commands = input.commands
-        
-        if self.countingDown then
-        
-            input.move:Scale(0)
-            input.commands = 0
-            
-        else
-        
-            // Allow children to alter player's move before processing. To alter the move
-            // before it's sent to the server, use OverrideInput
-            input = self:AdjustMove(input)
-            
-            // Update player angles and view angles smoothly from desired angles if set. 
-            // But visual effects should only be calculated when not predicting.
-            self:UpdateViewAngles(input)  
-            
-        end
                 
         // Update origin and velocity from input move (main physics behavior).
         self:UpdateMove(input)
-
+        
         self:UpdateMaxMoveSpeed(input.time) 
         
         UpdateFallDamage(self, wasOnGround, previousVelocity)
@@ -2208,14 +2215,10 @@ function Player:GetMaxSpeed(possible)
         return Player.kRunMaxSpeed
     end
     
-    local maxSpeed = Player.kRunMaxSpeed * kAirMaxSpeedScalar
+    local maxSpeed = Player.kRunMaxSpeed
     
     if self.movementModiferState and self:GetIsOnSurface() then
         maxSpeed = Player.kWalkMaxSpeed
-    elseif self:GetIsOnSurface() and (self.landtime + kOnLandDelay) < Shared.GetTime() then
-        maxSpeed = Player.kRunMaxSpeed
-    else
-        maxSpeed = Player.kRunMaxSpeed * kAirMaxSpeedScalar
     end
     
     // Take into account crouching

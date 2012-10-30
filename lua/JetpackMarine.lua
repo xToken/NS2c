@@ -38,8 +38,8 @@ end
 JetpackMarine.kJetpackFuelReplenishDelay = .2
 
 // Allow JPers to go faster in the air, but still capped
-JetpackMarine.kVerticalThrustAccelerationMod = 1.9
-JetpackMarine.kVerticalFlyAccelerationMod = 2.0
+JetpackMarine.kVerticalThrustAccelerationMod = 3.5
+JetpackMarine.kVerticalFlyAccelerationMod = 2.5
 JetpackMarine.kJetpackAcceleration = 22
 JetpackMarine.kWalkMaxSpeed = 4.0                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
 JetpackMarine.kRunMaxSpeed = 6.5
@@ -425,7 +425,7 @@ function JetpackMarine:ModifyVelocity(input, velocity)
         
         velocity.x = velocity.x + deltaVelocity.x
         velocity.z = velocity.z + deltaVelocity.z
-        //velocity.y = velocity.y + self:GetAcceleration() * input.time * JetpackMarine.kVerticalFlyAccelerationMod
+        velocity.y = velocity.y + self:GetAcceleration() * input.time * JetpackMarine.kVerticalFlyAccelerationMod
         
         //modify velocity according to input, but clamp the results to prevent extreme vertical speed
         if input.move:GetLength() == 0 then

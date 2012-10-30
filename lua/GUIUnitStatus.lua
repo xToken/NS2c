@@ -217,7 +217,7 @@ function GUIUnitStatus:UpdateUnitStatusList(activeBlips, deltaTime)
         updateBlip.statusBg:SetTexture(kStatusBgTexture[teamType])
         updateBlip.statusBg:SetPosition(blipData.HealthBarPosition - GUIUnitStatus.kStatusBgSize * .5 )
 
-        if blipData.HealthFraction == 0 then
+        if blipData.HealthFraction == 0 or PlayerUI_IsACommander() then
             updateBlip.statusBg:SetTexturePixelCoordinates(0, 0, 0, 0)
         else        
             updateBlip.statusBg:SetTexturePixelCoordinates(unpack(GUIUnitStatus.kStatusBackgroundPixelCoords))

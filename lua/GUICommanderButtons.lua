@@ -163,8 +163,6 @@ function GUICommanderButtons:Initialize()
 
     self:InitializeButtons()
     
-    self:InitializeIdleWorkersIcon()
-    
     self:InitializePlayerAlertIcon()
     
     self:InitializeSelectAllPlayersIcon()
@@ -366,29 +364,6 @@ function GUICommanderButtons:SharedInitializeButtons(settingsTable)
     end
     
 end
-function GUICommanderButtons:InitializeIdleWorkersIcon()
-
-    self.idleWorkers = GUIManager:CreateGraphicItem()
-    self.idleWorkers:SetSize(Vector(GUICommanderButtons.kIdleWorkersSize, GUICommanderButtons.kIdleWorkersSize, 0))
-    self.idleWorkers:SetAnchor(GUIItem.Left, GUIItem.Top)
-    self.idleWorkers:SetPosition(Vector(-GUICommanderButtons.kIdleWorkersSize - GUICommanderButtons.kIdleWorkersXOffset, 0, 0))
-    self.idleWorkers:SetColor(kIconColors[self.teamType])
-    self.idleWorkers:SetTexture("ui/buildmenu.dds")
-    
-    local coordinates = ConditionalValue(self.teamType == kMarineTeamType, GetTextureCoordinatesForIcon(kTechId.MAC), GetTextureCoordinatesForIcon(kTechId.Drifter))
-    self.idleWorkers:SetTexturePixelCoordinates(unpack(coordinates))
-    self.idleWorkers:SetIsVisible(false)
-    self.background:AddChild(self.idleWorkers)
-    
-    self.idleWorkersText = GUIManager:CreateTextItem()
-    self.idleWorkersText:SetFontSize(GUICommanderButtons.kIdleWorkersFontSize)
-    self.idleWorkersText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
-    self.idleWorkersText:SetTextAlignmentX(GUIItem.Align_Center)
-    self.idleWorkersText:SetTextAlignmentY(GUIItem.Align_Min)
-    self.idleWorkersText:SetColor(Color(1, 1, 1, 1))
-    self.idleWorkers:AddChild(self.idleWorkersText)
-
-end
 
 function GUICommanderButtons:InitializePlayerAlertIcon()
 
@@ -441,11 +416,6 @@ function GUICommanderButtons:Uninitialize()
     if self.highlightItem then
         GUI.DestroyItem(self.highlightItem)
         self.highlightItem = nil
-    end
-    
-    if self.idleWorkers then
-        GUI.DestroyItem(self.idleWorkers)
-        self.idleWorkers = nil
     end
 
     if self.playerAlerts then
@@ -789,9 +759,7 @@ function GUICommanderButtons:MousePressed(key, mouseX, mouseY)
             
         elseif key == InputKey.MouseButton0 then
         
-            if self.idleWorkers:GetIsVisible() and GUIItemContainsPoint(self.idleWorkers, mouseX, mouseY) then
-                CommanderUI_ClickedIdleWorker()
-            elseif self.playerAlerts:GetIsVisible() and GUIItemContainsPoint(self.playerAlerts, mouseX, mouseY) then
+            if self.playerAlerts:GetIsVisible() and GUIItemContainsPoint(self.playerAlerts, mouseX, mouseY) then
                 CommanderUI_ClickedPlayerAlert()
             elseif self.selectAllPlayers:GetIsVisible() and GUIItemContainsPoint(self.selectAllPlayers, mouseX, mouseY) then
                 CommanderUI_ClickedSelectAllPlayers()
@@ -947,7 +915,6 @@ end
 function GUICommanderButtons:ContainsPoint(pointX, pointY)
 
     // Check if the point is over any of the UI managed by the GUICommanderButtons.
-    local containsPoint = GUIItemContainsPoint(self.idleWorkers, pointX, pointY)
     containsPoint = containsPoint or GUIItemContainsPoint(self.playerAlerts, pointX, pointY)
     containsPoint = containsPoint or GUIItemContainsPoint(self.selectAllPlayers, pointX, pointY)
     return containsPoint or GUIItemContainsPoint(self.background, pointX, pointY)

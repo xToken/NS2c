@@ -67,7 +67,6 @@ Commander.kSelectMode = enum( {'None', 'SelectedGroup', 'JumpedToGroup'} )
 local networkVars =
 {
     timeScoreboardPressed   = "float",
-    numIdleWorkers          = string.format("integer (0 to %d)", kMaxIdleWorkers),
     numPlayerAlerts         = string.format("integer (0 to %d)", kMaxPlayerAlerts),
     commanderCancel         = "boolean",
     commandStationId        = "entityid",
@@ -131,7 +130,6 @@ function Commander:OnInitialized()
 
     self.timeScoreboardPressed = 0
     self.focusGroupIndex = 1
-    self.numIdleWorkers = 0
     self.numPlayerAlerts = 0
     self.positionBeforeJump = Vector(0, 0, 0)
     self.selectMode = Commander.kSelectMode.None
@@ -223,10 +221,6 @@ function Commander:UpdatePosition(velocity, time)
 
     return velocity
     
-end
-
-function Commander:GetNumIdleWorkers()
-    return self.numIdleWorkers
 end
 
 function Commander:GetNumPlayerAlerts()

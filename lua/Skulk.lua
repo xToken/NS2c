@@ -59,11 +59,9 @@ Skulk.kJumpRepeatTime = 0.1
 Skulk.kViewOffsetHeight = .55
 Skulk.kHealth = kSkulkHealth
 Skulk.kArmor = kSkulkArmor
-Skulk.kLeapVerticalVelocity = 8
-Skulk.kLeapVerticalForce = 7
-Skulk.kMinLeapVelocity = 18
 Skulk.kLeapTime = 0.2
-Skulk.kLeapForce = 12
+Skulk.kLeapVerticalVelocity = 10
+Skulk.kLeapForce = 15
 Skulk.kMaxSpeed = 9
 Skulk.kMaxWalkSpeed = 4
 Skulk.kJumpHeight = 1.3
@@ -183,13 +181,14 @@ end
 function Skulk:OnLeap()
 
     local velocity = self:GetVelocity()
-    local minSpeed = math.max(0, Skulk.kMinLeapVelocity - velocity:GetLengthXZ() - Skulk.kLeapVerticalForce) * self:GetMovementSpeedModifier()
+    //local minSpeed = math.max(0, Skulk.kMinLeapVelocity - velocity:GetLengthXZ() - Skulk.kLeapVerticalForce) * self:GetMovementSpeedModifier()
 
     local forwardVec = self:GetViewAngles():GetCoords().zAxis
-    local newVelocity = (velocity + GetNormalizedVector(forwardVec) * (Skulk.kLeapForce * self:GetMovementSpeedModifier() + minSpeed))
+    local newVelocity = velocity + (GetNormalizedVector(forwardVec) * (Skulk.kLeapForce * self:GetMovementSpeedModifier()))
     
-    // Add in vertical component.
-    //newVelocity.y = Skulk.kLeapVerticalVelocity * forwardVec.y + Skulk.kLeapVerticalForce * self:GetMovementSpeedModifier() + ConditionalValue(velocity.y < 0, velocity.y, 0)
+    if newVelocity.y < 2 then
+        newVelocity.y = Skulk.kLeapVerticalVelocity * self:GetMovementSpeedModifier()
+    end
     
     self:SetVelocity(newVelocity)
     
@@ -238,7 +237,7 @@ function Skulk:GetIsOnLadder()
 end
 
 function Skulk:GetIsWallWalkingPossible() 
-    return not self.crouching and not self:GetRecentlyJumped()
+    return not self.crouching and not self:GetRecentlyJumped() and not Player.GetIsJumping(self)
 end
 
 function Skulk:GetRecentlyJumped()
@@ -485,23 +484,6 @@ end
 
 function Skulk:GetIsOnSurface()
     return Alien.GetIsOnSurface(self) or (self:GetIsWallWalking() and not self.crouching)
-end
-
-function Skulk:GetIsAffectedByAirFriction()
-    return self:GetIsJumping() or not self:GetIsOnSurface()
-end
-
-function Skulk:AdjustGravityForce(input, gravity)
-
-    // No gravity when we're sticking to a wall.
-    //if self:GetIsWallWalking() then
-        //gravity = 0
-    //elseif self.leaping then
-        //return gravity * 1
-    //end
-    
-    return gravity
-    
 end
 
 function Skulk:GetMoveDirection(moveVelocity)
