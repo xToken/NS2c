@@ -79,11 +79,13 @@ local function GetMapEntityLoadPriority(mapName)
 end
 
 // filter the entities which are explore mode only
+// MUST BE GLOBAL - overridden by mods
 function GetLoadEntity(mapName, groupName, values)
     return values.onlyexplore ~= true
 end
 
-local function GetCreateEntityOnStart(mapName, groupName, values)
+// MUST BE GLOBAL - overridden by mods
+function GetCreateEntityOnStart(mapName, groupName, values)
 
     return mapName ~= "prop_static"
        and mapName ~= "light_point"
@@ -103,7 +105,8 @@ local function GetCreateEntityOnStart(mapName, groupName, values)
 
 end
 
-local function GetLoadSpecial(mapName, groupName, values)
+// MUST BE GLOBAL - overridden by mods
+function GetLoadSpecial(mapName, groupName, values)
 
     local success = false
     

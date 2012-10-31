@@ -770,10 +770,6 @@ function Commander:ClickSelect(x, y, controlSelect)
 
     local success = false
     local hitEntity = false
-
-    if Client and self.leftClickActionDelay > 0 then
-        return false
-    end
     
     if Client and self.timeLastTargetedAction and self.timeLastTargetedAction + kCommanderLeftClickDelay > Shared.GetTime() then
         return false

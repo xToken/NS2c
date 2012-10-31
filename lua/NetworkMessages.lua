@@ -13,6 +13,24 @@ Script.Load("lua/TechTreeConstants.lua")
 Script.Load("lua/VoiceOver.lua")
 Script.Load("lua/InsightNetworkMessages.lua")
 
+function BuildConnectMessage(armorId)
+
+    local t = {}
+    t.armorId = armorId
+    return t
+    
+end
+
+function ParseConnectMessage(message)
+    return message.armorId
+end
+
+local kConnectMessage =
+{
+    armorId = "enum kArmorType",
+}
+Shared.RegisterNetworkMessage( "ConnectMessage", kConnectMessage )
+
 function BuildVoiceMessage(voiceId)
 
     local t = {}
@@ -28,8 +46,6 @@ end
 local kVoiceOverMessage =
 {
     voiceId = "enum kVoiceId",
-    
-
 }
 
 Shared.RegisterNetworkMessage( "VoiceMessage", kVoiceOverMessage )

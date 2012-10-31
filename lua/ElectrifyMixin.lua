@@ -8,7 +8,7 @@ ElectrifyMixin.type = "Electrify"
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/electrified.surface_shader")
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/electrified_view.surface_shader")
 
-local kElectrifiedSound = PrecacheAsset("sound/ns2c.fev/ns2c/alien/lerk/spore_hit")
+local kElectrifiedSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/elec_hit1")
 
 ElectrifyMixin.expectedMixins =
 {
@@ -63,6 +63,7 @@ function ElectrifyMixin:OnResearchComplete(researchId)
 
     if researchId == kTechId.Electrify then
 		self.isElectrified = true
+		//self:AddTimedCallback(ElectrifyMixin.Update, kElectrifyDamageTime)
 	end
 	
 end
@@ -83,7 +84,7 @@ local function UpdateClientElectrifyEffects(self)
     
 end
 
-local function SharedUpdate(self, deltaTime)
+function ElectrifyMixin:Update()
 
     if Server then
 		if self:GetIsAlive() and self:GetIsElectrified() then
@@ -113,7 +114,7 @@ local function SharedUpdate(self, deltaTime)
 			end
 		end
        
-    elseif not Shared.GetIsRunningPrediction() then
+    elseif Client and not Shared.GetIsRunningPrediction() then
         UpdateClientElectrifyEffects(self)
         if self.lasteffectupdate + 10 < Shared.GetTime() then
             self.lasteffectupdate = Shared.GetTime()
@@ -121,14 +122,6 @@ local function SharedUpdate(self, deltaTime)
         end
     end
     
-end
-
-function ElectrifyMixin:OnUpdate(deltaTime)   
-    SharedUpdate(self, deltaTime)
-end
-
-function ElectrifyMixin:OnProcessMove(input)   
-    SharedUpdate(self, input.time)
 end
 
 if Client then

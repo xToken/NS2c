@@ -118,7 +118,11 @@ function CommanderUI_MenuButtonStatus(index)
                 if techNode:GetResearching() and not techNode:GetIsUpgrade() then
                 
                     // Don't display
-                    buttonStatus = 0                    
+                    buttonStatus = 0
+
+                elseif techNode:GetIsPassive() then
+
+                    buttonStatus = 4         
                     
                 elseif not techNode:GetAvailable() or not player.menuTechButtonsAllowed[index] then
                 
@@ -129,12 +133,7 @@ function CommanderUI_MenuButtonStatus(index)
                 
                     // red, can't afford, but allowed
                     buttonStatus = 2
-                    
-                elseif techNode:GetIsPassive() then
-                
-                    // normal color but not clickable
-                    buttonStatus = 4
-                   
+                                       
                 else
                     // Available
                     buttonStatus = 1
@@ -156,6 +155,7 @@ local kDeselectUnitsOnTech = { }
 kDeselectUnitsOnTech[kTechId.BuildMenu] = true
 kDeselectUnitsOnTech[kTechId.AdvancedMenu] = true
 kDeselectUnitsOnTech[kTechId.AssistMenu] = true
+kDeselectUnitsOnTech[kTechId.WeaponsMenu] = true
 function CommanderUI_MenuButtonAction(index)
 
     local player = Client.GetLocalPlayer()
@@ -438,11 +438,7 @@ end
 
 function Commander:IsTabSelected(techId)
 
-    //assert(self.buttonsScript)
-    if self.buttonsScript then
-        return self.buttonsScript:IsTab(techId), self.buttonsScript:IsTabSelected(techId)
-    else
-        return false, false
-    end
+    assert(self.buttonsScript)
+    return self.buttonsScript:IsTab(techId), self.buttonsScript:IsTabSelected(techId)
     
 end

@@ -369,6 +369,8 @@ local function UpdateWaitingToSpawnUI(player)
     
 end
 
+local optionsSent = false
+
 function OnUpdateClient(deltaTime)
 
     PROFILE("Client:OnUpdateClient")
@@ -398,6 +400,16 @@ function OnUpdateClient(deltaTime)
     end
     
     UpdateWaitingToSpawnUI(player)
+    
+    // HACK: should use the proper hook instead
+    if not optionsSent then
+
+        local armorType = StringToEnum(kArmorType, Client.GetOptionString("armorType", "Green"))
+        Client.SendNetworkMessage("ConnectMessage", BuildConnectMessage(armorType), true)
+        
+        optionsSent = true
+    
+    end
     
 end
 
@@ -854,6 +866,11 @@ function OnClientDisconnected(reason)
     // Destroy graphical debug text items
     for index, item in ipairs(gDebugTextList) do
         GetGUIManager():DestroyGUIScript(item)
+    end
+    
+    // Hack to avoid script error if load hasn't completed yet.
+    if Client.SetOptionString then
+        Client.SetOptionString("lastServerMapName", "")
     end
     
 end

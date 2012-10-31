@@ -318,6 +318,28 @@ local function OnVoiceMessage(client, message)
 
 end
 
+local function OnConnectMessage(client, message)
+
+    local armorType = ParseConnectMessage(message)
+    if client then
+    
+        local allowed = armorType == kArmorType.Green or
+                       (armorType == kArmorType.Black and GetHasBlackArmor(client)) or
+                       (armorType == kArmorType.Deluxe and GetHasDeluxeEdition(client))
+                        
+        if allowed then
+            client.armorType = armorType
+        end
+        
+        local player = client:GetControllingPlayer()
+        if player then
+            player:OnClientUpdated(client)
+        end
+    
+    end
+
+end
+
 Server.HookNetworkMessage("MarqueeSelect", OnCommandCommMarqueeSelect)
 Server.HookNetworkMessage("ClickSelect", OnCommandCommClickSelect)
 Server.HookNetworkMessage("ClearSelection", OnCommandClearSelection)
@@ -337,3 +359,4 @@ Server.HookNetworkMessage("SetRookieMode", OnCommandSetRookieMode)
 Server.HookNetworkMessage("SetCommunicationStatus", OnCommandSetCommStatus)
 Server.HookNetworkMessage("Buy", OnMessageBuy)
 Server.HookNetworkMessage("VoiceMessage", OnVoiceMessage)
+Server.HookNetworkMessage("ConnectMessage", OnConnectMessage)

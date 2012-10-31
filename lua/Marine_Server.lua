@@ -300,3 +300,11 @@ function Marine:GiveHeavyArmor()
     HAMarine:SetHealth(health)
     
 end
+
+function Marine:MakeSpecialEdition()
+    self:SetModel(Marine.kBlackArmorModelName, Marine.kMarineAnimationGraph)
+end
+
+function Marine:MakeDeluxeEdition()
+    self:SetModel(Marine.kSpecialEditionModelName, Marine.kMarineAnimationGraph)
+end

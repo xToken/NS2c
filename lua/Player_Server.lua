@@ -98,7 +98,9 @@ AddFunctionContract(Player.GetClientMuted, { Arguments = { "Player", "number" },
 
 // Changes the visual appearance of the player to the special edition version.
 function Player:MakeSpecialEdition()
-    self:SetModel(Player.kSpecialModelName, Marine.kMarineAnimationGraph)
+end
+
+function Player:MakeDeluxeEdition()
 end
 
 // Not authoritative, only visual and information. TeamResources is stored in the team.
@@ -205,6 +207,7 @@ function Player:SetControllingPlayer(client)
     
         client:SetControllingPlayer(self)
         self:UpdateClientRelevancyMask()
+        self:OnClientUpdated(client)
         
     end
     
@@ -529,11 +532,6 @@ function Player:Replace(mapName, newTeamNumber, preserveWeapons, atOrigin, extra
     // Must happen after the owner has been set on the player.
     player:InitializeBadges()
     
-    // Set up special armor marines if player owns special edition 
-    if owner and Server.GetIsDlcAuthorized(owner, kSpecialEditionProductId) then
-        player:MakeSpecialEdition()
-    end
-    
     // Log player spawning
     if teamNumber ~= 0 then
         PostGameViz(string.format("%s spawned", SafeClassName(self)), self)
@@ -765,4 +763,18 @@ function Player:SetRookieMode(rookieMode)
         
     end
     
+end
+
+function Player:OnClientUpdated(client)
+
+    if client then
+    
+        if client.armorType == kArmorType.Black and GetHasBlackArmor(client) then
+            self:MakeSpecialEdition()
+        elseif client.armorType == kArmorType.Deluxe and GetHasDeluxeEdition(client) then
+            self:MakeDeluxeEdition()
+        end
+    
+    end
+
 end

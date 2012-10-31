@@ -2586,7 +2586,9 @@ function Player:GetSpeedDebugSpecial()
 end
 
 function Player:HandleOnGround(input, velocity)
-    velocity.y = 0
+    if velocity.y < 0 then
+        velocity.y = 0
+    end
 end
 
 function Player:GetIsAbleToUse()

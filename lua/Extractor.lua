@@ -91,7 +91,7 @@ function Extractor:GetDamagedAlertId()
 end
 
 function Extractor:GetTechButtons(techId)
-    return { /*kTechId.Electrify,*/  kTechId.None, kTechId.None, kTechId.None, kTechId.None,
+    return { kTechId.None, kTechId.None, kTechId.None, kTechId.None,
              kTechId.None, kTechId.None, kTechId.None, kTechId.None }
 end
 

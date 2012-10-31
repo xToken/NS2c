@@ -105,10 +105,7 @@ function Commander:OnInitialized()
     Player.OnInitialized(self)
     
     self:SetIsVisible(false)
-    
-    // set to a time to delay any left click action
-    self.leftClickActionDelay = 0
-    
+
     if Client then
     
         self.drawResearch = false
@@ -151,11 +148,6 @@ end
 function Commander:GetTechAllowed(techId, techNode, self)
 
     local allowed, canAfford = Player.GetTechAllowed(self, techId, techNode, self)
-/*
-    if techId == kTechId.Harvester or techId == kTechId.Extractor then
-        allowed = GetIsUnderResourceTowerLimit(self)
-    end
-    */
     
     return allowed, canAfford
 
@@ -456,24 +448,69 @@ function Commander:OnEntityChange(oldEntityId, newEntityId)
     
 end
 
-function Commander:GetIsEntityNameSelected(className)
+function Commander:SetTechCooldown(techId, cooldownDuration, startTime)
 
-    for tableIndex, entityPair in ipairs(self.selectedEntities) do
+    if techId == kTechId.None or not techId then
+        return
+    end    
+
+    local reusedEntry = false
     
-        local entityIndex = entityPair[1]
-        local entity = Shared.GetEntity(entityIndex)
+    for _, techIdCD in ipairs(GetTechIdCooldowns(self:GetTeamNumber())) do
+    
+        if techIdCD.TechId == techId then
         
-        // Don't allow it to be researched while researching
-        if( entity ~= nil and entity:isa(className) ) then
+            techIdCD.StartTime = startTime
+            techIdCD.CooldownDuration = cooldownDuration
+            reusedEntry = true
+            break
         
-            return true
-            
         end
-        
+    
     end
     
-    return false
+    if not reusedEntry then    
+        table.insert( GetTechIdCooldowns(self:GetTeamNumber()), { StartTime = startTime, TechId = techId, CooldownDuration = cooldownDuration } )    
+    end
     
+    if Server then
+    
+        // send message to commander to sync the cd
+    
+    end
+
+end
+
+function Commander:GetIsTechOnCooldown(techId)
+
+    for _, techIdCD in ipairs(GetTechIdCooldowns(self:GetTeamNumber())) do
+    
+        if techIdCD.TechId == techId then
+            
+            local time = Shared.GetTime()
+            return time < techIdCD.StartTime + techIdCD.CooldownDuration
+
+        end
+    
+    end
+
+end
+
+function Commander:GetCooldownFraction(techId)
+
+    for _, techIdCD in ipairs(GetTechIdCooldowns(self:GetTeamNumber())) do
+    
+        if techIdCD.TechId == techId then
+            
+            local timePassed = Shared.GetTime() - techIdCD.StartTime
+            return 1 - math.min(1, timePassed / techIdCD.CooldownDuration)
+
+        end
+    
+    end
+    
+    return 0
+
 end
 
 function Commander:OnProcessMove(input)

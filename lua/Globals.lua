@@ -128,10 +128,6 @@ kTertiaryWeaponSlot = 3
 // How long to display weapon picker after selecting weapons
 kDisplayWeaponTime = 1.5
 
-// If player bought Special Edition
-kSpecialEditionProductId = 4930
-kDeluxeEditionProductId = 4932
-
 // Death message indices 
 kDeathMessageIcon = enum( { 'None', 
                             'Rifle', 'RifleButt', 'Pistol', 'Axe', 'Shotgun',
@@ -341,3 +337,31 @@ kIconColors =
     [kAlienTeamType] = Color(1, 0.9, 0.4, 1),
     [kNeutralTeamType] = Color(1, 1, 1, 1),
 }
+
+// TODO: should move this keys, functions into a separate file (Products.lua?)
+
+// If player bought Special Edition
+kSpecialEditionProductId = 4930
+kDeluxeEditionProductId = 4932
+
+kArmorType = enum( { 'Green', 'Black', 'Deluxe'})
+
+function GetHasBlackArmor(client)
+
+    if Client then    
+        return Client.GetIsDlcAuthorized(kSpecialEditionProductId)    
+    elseif Server and client then
+        return Server.GetIsDlcAuthorized(client, kSpecialEditionProductId)
+    end
+    
+end
+
+function GetHasDeluxeEdition(client)
+
+    if Client then    
+        return Client.GetIsDlcAuthorized(kDeluxeEditionProductId)
+    elseif Server and client then    
+        return Server.GetIsDlcAuthorized(client, kDeluxeEditionProductId)
+    end
+
+end

@@ -239,14 +239,6 @@ function Marine:DeCloak()
     return false
 end
 
-function Marine:MakeSpecialEdition()
-
-    if not blockBlackArmor then
-        self:SetModel(Marine.kBlackArmorModelName, Marine.kMarineAnimationGraph)
-    end
-    
-end
-
 function Marine:IsValidDetection(detectable)
     if detectable.GetReceivesStructuralDamage and detectable:GetReceivesStructuralDamage() then
         return false

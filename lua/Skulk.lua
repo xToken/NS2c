@@ -383,7 +383,7 @@ function Skulk:UpdatePosition(velocity, time)
         end
    
     else
-    
+
         // We need to make a copy so that we aren't holding onto a reference
         // which is updated when the origin changes.
         local start = Vector(self:GetOrigin())

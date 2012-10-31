@@ -401,12 +401,8 @@ function GUICommanderButtons:InitializeSelectAllPlayersIcon()
     self.selectAllPlayers:SetPosition(Vector(GUICommanderButtons.kSelectAllPlayersX, GUICommanderButtons.kSelectAllPlayersY, 0))
     self.selectAllPlayers:SetTexture("ui/buildmenu.dds")
     
-    local coordinates = CommanderUI_GetPlayerAlertOffset()
-    local x1 = GUICommanderButtons.kBuildMenuTextureWidth * coordinates[1]
-    local x2 = x1 + GUICommanderButtons.kBuildMenuTextureWidth
-    local y1 = GUICommanderButtons.kBuildMenuTextureHeight * coordinates[2]
-    local y2 = y1 + GUICommanderButtons.kBuildMenuTextureHeight
-    self.selectAllPlayers:SetTexturePixelCoordinates(x1, y1, x2, y2)
+    local coordinates = GetTextureCoordinatesForIcon(kTechId.Marine)
+    self.selectAllPlayers:SetTexturePixelCoordinates(unpack(coordinates))
     self.selectAllPlayers:SetIsVisible(false)
     
 end
@@ -724,7 +720,6 @@ local function SendButtonTargetedAction(index, x, y)
     
     // Don't execute targeted action if we're still on top of the UI
     if not CommanderUI_GetMouseIsOverUI() then
-        
         player:SendTargetedAction(techId, normalizedPickRay)
         return true
         
@@ -770,6 +765,7 @@ function GUICommanderButtons:MousePressed(key, mouseX, mouseY)
                 if not GetCommanderGhostStructureEnabled() then
                 
                     if SendButtonTargetedAction(self.targetedButton, mouseX, mouseY) then
+                        
                         self:SetTargetedButton(nil)
                     end
                     
