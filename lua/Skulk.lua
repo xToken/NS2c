@@ -60,7 +60,7 @@ Skulk.kViewOffsetHeight = .55
 Skulk.kHealth = kSkulkHealth
 Skulk.kArmor = kSkulkArmor
 Skulk.kLeapTime = 0.2
-Skulk.kLeapVerticalVelocity = 10
+Skulk.kLeapVerticalVelocity = 8
 Skulk.kLeapForce = 15
 Skulk.kMaxSpeed = 9
 Skulk.kMaxWalkSpeed = 4
@@ -186,7 +186,7 @@ function Skulk:OnLeap()
     local forwardVec = self:GetViewAngles():GetCoords().zAxis
     local newVelocity = velocity + (GetNormalizedVector(forwardVec) * (Skulk.kLeapForce * self:GetMovementSpeedModifier()))
     
-    if newVelocity.y < 2 then
+    if newVelocity.y < 1 then
         newVelocity.y = Skulk.kLeapVerticalVelocity * self:GetMovementSpeedModifier()
     end
     

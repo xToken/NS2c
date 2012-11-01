@@ -155,7 +155,6 @@ local kDeselectUnitsOnTech = { }
 kDeselectUnitsOnTech[kTechId.BuildMenu] = true
 kDeselectUnitsOnTech[kTechId.AdvancedMenu] = true
 kDeselectUnitsOnTech[kTechId.AssistMenu] = true
-kDeselectUnitsOnTech[kTechId.WeaponsMenu] = true
 function CommanderUI_MenuButtonAction(index)
 
     local player = Client.GetLocalPlayer()

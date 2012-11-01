@@ -394,6 +394,28 @@ function Hive:GetDamagedAlertId()
     
 end
 
+function Hive:OnUse(player, elapsedTime, useAttachPoint, usePoint, useSuccessTable)
+
+    local csUseSuccess = false
+    
+    if self:GetIsBuilt() then
+        player:TeleportToHive(self)
+    else
+        local team = self:GetTeam()
+        if team then
+            if math.random(1,2) == 1 then
+                team:TriggerAlert(kTechId.AlienAlertEnemyApproaches1, self)
+            else
+                team:TriggerAlert(kTechId.AlienAlertEnemyApproaches2, self)
+            end
+        end
+        self.lastHiveFlinchEffectTime = Shared.GetTime()
+    end
+    
+    useSuccessTable.useSuccess = false
+    
+end
+
 function Hive:OnTakeDamage(damage, attacker, doer, point)
 
     local time = Shared.GetTime()

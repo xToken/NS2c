@@ -538,6 +538,20 @@ function GUIAlienBuyMenu:_UninitializeMouseOverInfo()
 
 end
 
+local function GetHasAnyCategoryUpgrade(cathegory)
+
+    local upgrades = AlienUI_GetUpgradesForCategory(cathegory)
+
+    for i = 1, #upgrades do
+        if AlienBuy_GetTechAvailable(upgrades[i]) then
+            return true
+        end        
+    end
+    
+    return false
+
+end
+
 function GUIAlienBuyMenu:_InitializeUpgradeButtons()
 
     // There are purchased and unpurchased buttons. Both are managed in this list.
@@ -1212,7 +1226,7 @@ function GUIAlienBuyMenu:_UpdateUpgrades(deltaTime)
 
     for i, slot in ipairs(self.slots) do
 
-        if GetHasAnyCathegoryUpgrade(slot.Category) then
+        if GetHasAnyCategoryUpgrade(slot.Category) then
             slot.Graphic:SetTexture(GUIAlienBuyMenu.kSlotTexture)    
         else
             slot.Graphic:SetTexture(GUIAlienBuyMenu.kSlotLockedTexture)

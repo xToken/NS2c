@@ -15,12 +15,16 @@ if Server then
     Script.Load("lua/NS2Utility_Server.lua")
 end
 
+if Client then
+    PrecacheAsset("ui/buildmenu.dds")
+end
+
 function GetGameInfoEntity()
 
     local entityList = Shared.GetEntitiesWithClassname("GameInfo")
     if entityList:GetSize() > 0 then    
         return entityList:GetEntityAtIndex(0)
-    end    
+    end
 
 end
 

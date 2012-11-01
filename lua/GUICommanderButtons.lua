@@ -765,7 +765,6 @@ function GUICommanderButtons:MousePressed(key, mouseX, mouseY)
                 if not GetCommanderGhostStructureEnabled() then
                 
                     if SendButtonTargetedAction(self.targetedButton, mouseX, mouseY) then
-                        
                         self:SetTargetedButton(nil)
                     end
                     

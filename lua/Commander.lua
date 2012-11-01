@@ -55,7 +55,7 @@ Script.Load("lua/Commander_Selection.lua")
 
 if (Server) then
     Script.Load("lua/Commander_Server.lua")
-else
+elseif Client then
     Script.Load("lua/Commander_Client.lua")
 end
 
@@ -532,6 +532,9 @@ function Commander:OnProcessMove(input)
             self.timeLastEnergyCheck = Shared.GetTime()
             self:CheckStructureEnergy()
         end
+        
+    elseif Client then
+    
     end
     
 end

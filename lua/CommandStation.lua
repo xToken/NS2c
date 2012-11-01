@@ -28,9 +28,6 @@ CommandStation.kUnderAttackSound = PrecacheAsset("sound/NS2.fev/marine/voiceover
 
 Shared.PrecacheSurfaceShader("models/marine/command_station/command_station_display.surface_shader")
 
-local kLoginAttachPoint = "login"
-CommandStation.kCommandStationKillConstant = 3
-
 if Server then
     Script.Load("lua/CommandStation_Server.lua")
 end
@@ -94,12 +91,6 @@ if Client then
     
 end
 
-/*
-function CommandStation:GetUseAttachPoint()
-    return kLoginAttachPoint
-end
-*/
-
 function CommandStation:GetCanRecycleOverride()
     return not self:GetIsOccupied()
 end
@@ -119,14 +110,6 @@ end
 function CommandStation:GetTechButtons(techId)
     return { kTechId.None, kTechId.None, kTechId.None, kTechId.None,
              kTechId.None, kTechId.None, kTechId.None, kTechId.None }
-end
-
-function CommandStation:GetIsPlayerInside(player)
-
-    // Check to see if we're in range of the visible center of the login platform
-    local vecDiff = (player:GetModelOrigin() - self:GetKillOrigin())
-    return vecDiff:GetLength() < CommandStation.kCommandStationKillConstant
-    
 end
 
 local kCommandStationState = enum( { "Normal", "Locked", "Welcome" } )
