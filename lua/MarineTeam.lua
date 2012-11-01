@@ -190,7 +190,7 @@ function MarineTeam:InitTechTree()
     self.techTree:AddTechInheritance(kTechId.RoboticsFactory, kTechId.ARCRoboticsFactory)
     self.techTree:AddBuildNode(kTechId.ARC,                          kTechId.ARCRoboticsFactory,                kTechId.None)       
     self.techTree:AddBuildNode(kTechId.PrototypeLab,          kTechId.AdvancedArmory,              kTechId.ArmsLab)        
-    self.techTree:AddResearchNode(kTechId.Electrify,           kTechId.Extractor,               kTechId.None)
+    self.techTree:AddUpgradeNode(kTechId.Electrify,           kTechId.Extractor,               kTechId.None)
     
     // Marine Upgrades
     self.techTree:AddResearchNode(kTechId.PhaseTech,                    kTechId.Observatory,        kTechId.None)
