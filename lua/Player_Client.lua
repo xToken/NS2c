@@ -2129,7 +2129,7 @@ function Player:GetCameraViewCoordsOverride(cameraCoords)
         end
         
         local activeWeapon = self:GetActiveWeapon()
-        local animateCamera = activeWeapon and (not activeWeapon.GetPreventCameraAnimation or not activeWeapon:GetPreventCameraAnimation())
+        local animateCamera = activeWeapon and (not activeWeapon.GetPreventCameraAnimation or not activeWeapon:GetPreventCameraAnimation(self))
     
         // clamp the yaw value to prevent sudden camera flip    
         local cameraAngles = Angles()

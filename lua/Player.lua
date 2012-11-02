@@ -1068,11 +1068,10 @@ function Player:ComputeForwardVelocity(input)
     local viewCoords = angles:GetCoords()
     
     local moveVelocity = viewCoords:TransformVector(move)
-    
     if input.move.z < 0 and self:GetVelocity():GetLength() > self:GetMaxSpeed() * self:GetMaxBackwardSpeedScalar() then
         moveVelocity = moveVelocity * self:GetMaxBackwardSpeedScalar()
     end
-
+    
     self:ConstrainMoveVelocity(moveVelocity)
     
     return moveVelocity * accel

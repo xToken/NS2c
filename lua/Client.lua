@@ -401,7 +401,6 @@ function OnUpdateClient(deltaTime)
     
     UpdateWaitingToSpawnUI(player)
     
-    // HACK: should use the proper hook instead
     if not optionsSent then
 
         local armorType = StringToEnum(kArmorType, Client.GetOptionString("armorType", "Green"))

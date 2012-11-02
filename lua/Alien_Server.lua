@@ -97,12 +97,14 @@ function Alien:OnProcessMove(input)
     
     Player.OnProcessMove(self, input)
     
+	if not self:GetIsDestroyed() then
     // Calculate two and three hives so abilities for abilities        
-    self:UpdateNumHives()
-    self:CheckRedemption()
-    self.primalScreamBoost = self.timeWhenPrimalScreamExpires > Shared.GetTime()  
-    self:UpdateAutoHeal()
-    self:UpdateNumUpgradeStructures()
+    	self:UpdateNumHives()
+    	self:CheckRedemption()
+    	self.primalScreamBoost = self.timeWhenPrimalScreamExpires > Shared.GetTime()  
+    	self:UpdateAutoHeal()
+    	self:UpdateNumUpgradeStructures()
+	end
     
 end
 
