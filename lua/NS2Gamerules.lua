@@ -922,7 +922,7 @@ if Server then
                 self:UpdatePregame(timePassed)
                 self:UpdateToReadyRoom()
                 self:UpdateMapCycle()
-                UpdateAutoTeamBalance(self, timePassed)
+                //UpdateAutoTeamBalance(self, timePassed)
                 
                 self.timeSinceGameStateChanged = self.timeSinceGameStateChanged + timePassed
                 
@@ -1254,6 +1254,7 @@ if Server then
                 local team2Players = self.team2:GetNumPlayers()
                 local totalCount = team1Players + team2Players
                 
+                /*
                 // This is an optional end condition based on the teams being unbalanced.
                 local endGameOnUnbalancedAmount = Server.GetConfigSetting("end_round_on_team_unbalance")
                 // Don't consider unbalanced game end until enough people are playing.
@@ -1266,6 +1267,7 @@ if Server then
                     end
                     
                 end
+                */
                 
                 if (team1Lost and team2Lost) or (team1Won and team2Won) then
                     self:DrawGame()

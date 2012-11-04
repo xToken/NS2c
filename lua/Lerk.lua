@@ -237,7 +237,11 @@ function Lerk:GetAcceleration()
     return ConditionalValue(self:GetIsOnGround(), Alien.GetAcceleration(self), kAirAcceleration) * self:GetMovementSpeedModifier()
 end
 
-function Lerk:OverrideStrafeJump()
+function Lerk:OverrideAirControl()
+    return true
+end
+
+function Lerk:OverrideJumpQueue()
     return true
 end
 
@@ -584,17 +588,6 @@ function Lerk:PreUpdateMove(input, runningPrediction)
         
     end
     
-end
-
-
-function Lerk:GetIsOnGround()
-
-    if self.gliding then
-        return false
-    end
-
-    return Alien.GetIsOnGround(self)    
-
 end
 
 function Lerk:HandleAttacks(input)

@@ -59,8 +59,6 @@ Client.worldMessages = { }
 local timePlayed = nil
 local kTimePlayedOptionsKey = "timePlayedSeconds"
 
-local waitingForAutoTeamBalanceUI = GetGUIManager():CreateGUIScript("GUIWaitingForAutoTeamBalance")
-
 function GetRenderCameraCoords()
 
     if gRenderCamera then
@@ -399,7 +397,7 @@ function OnUpdateClient(deltaTime)
         UpdateHelpAutoReset()
     end
     
-    UpdateWaitingToSpawnUI(player)
+    //UpdateWaitingToSpawnUI(player)
     
     if not optionsSent then
 
@@ -858,9 +856,6 @@ function OnClientDisconnected(reason)
     GetGUIManager():DestroyGUIScriptSingle("GUIGameEnd")
     GetGUIManager():DestroyGUIScriptSingle("GUIWorldText")
     GetGUIManager():DestroyGUIScriptSingle("GUICommunicationStatusIcons")
-    
-    GetGUIManager():DestroyGUIScript(waitingForAutoTeamBalanceUI)
-    waitingForAutoTeamBalanceUI = nil
     
     // Destroy graphical debug text items
     for index, item in ipairs(gDebugTextList) do

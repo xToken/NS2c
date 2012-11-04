@@ -10,7 +10,9 @@ Shared.PrecacheSurfaceShader("cinematics/vfx_materials/electrified_view.surface_
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/electrified_1.surface_shader")
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/electrified_view_1.surface_shader")
 
-local kElectrifiedSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/elec_hit1")
+local kElectrifiedSounds = {"sound/ns2c.fev/ns2c/marine/weapon/elec_hit1", "sound/ns2c.fev/ns2c/marine/weapon/elec_hit2", "sound/ns2c.fev/ns2c/marine/weapon/elec_hit3"}
+
+for k, s in ipairs(kElectrifiedSounds) do PrecacheAsset(s) end
 
 ElectrifyMixin.expectedMixins =
 {
@@ -117,26 +119,28 @@ end
 function ElectrifyMixin:Update()
 
     if self:GetIsAlive() and self:GetIsElectrified() then
-        local enemies = GetEntitiesForTeam("Player", GetEnemyTeamNumber(self:GetTeamNumber()))
+        //GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(self:GetTeamNumber()), target:GetOrigin() + kARCDamageOffset, damageRadius)
+        local enemies = GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), kElectricalRange + 4)
         local damageRadius = kElectricalRange
         local damagedentities = 0
         for index, entity in ipairs(enemies) do
-            local attackPoint = entity:GetOrigin()     
+            local attackPoint = entity:GetOrigin()
             if (attackPoint - self:GetOrigin()):GetLength() < damageRadius and damagedentities < kElectricalMaxTargets and self:GetEnergy() >= kElectrifyEnergyCost then
                 if not entity:isa("Commander") and HasMixin(entity, "Live") and entity:GetIsAlive() then
                     // Make sure electrifiedbuilding can "see" target
                     local trace = Shared.TraceRay(self:GetOrigin(), attackPoint, CollisionRep.Damage, PhysicsMask.Bullets, filterNonDoors)
-                    if trace.fraction == 1.0 or trace.entity == entity then
-                        self:SetEnergy(math.max(self:GetEnergy() - kElectrifyEnergyCost, 0))
-                        self:DoDamage(kElectricalDamage , entity, trace.endPoint, (attackPoint - trace.endPoint):GetUnit(), "none" )
-                        damagedentities = damagedentities + 1
-                    end
+                    //if trace.fraction == 1.0 or trace.entity == entity then
+                    self:SetEnergy(math.max(self:GetEnergy() - kElectrifyEnergyCost, 0))
+                    self:DoDamage(kElectricalDamage , entity, trace.endPoint, (attackPoint - trace.endPoint):GetUnit(), "none" )
+                    damagedentities = damagedentities + 1
+                    //end
                 end
             end
+            Print(ToString((attackPoint - self:GetOrigin()):GetLength()))
         end
         if damagedentities > 0 then
             self.lastElectrifiedTime = Shared.GetTime()
-            Shared.PlayWorldSound(nil, kElectrifiedSound, nil, self:GetOrigin())
+            Shared.PlayWorldSound(nil, kElectrifiedSounds[math.random(1,3)], nil, self:GetOrigin())
             self.lastDamagetick = Shared.GetTime()
         end
     end

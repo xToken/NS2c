@@ -588,12 +588,14 @@ function GUIAlienBuyMenu:_InitializeUpgradeButtons()
             self.background:AddChild(buttonIcon)
             
             // The background is visible only inside the embryo.
+            /*
             local buttonBackground = GUIManager:CreateGraphicItem()
             buttonBackground:SetSize(Vector(GUIAlienBuyMenu.kUpgradeButtonSize, GUIAlienBuyMenu.kUpgradeButtonSize, 0))
             buttonBackground:SetTexture(GUIAlienBuyMenu.kBuyMenuTexture)
             buttonBackground:SetTexturePixelCoordinates(unpack(GUIAlienBuyMenu.kUpgradeButtonBackgroundTextureCoordinates))
             buttonBackground:SetStencilFunc(GUIItem.NotEqual)
             buttonIcon:AddChild(buttonBackground)
+            */
 
             local unselectedPosition = Vector( math.cos(angle) * GUIAlienBuyMenu.kUpgradeButtonDistance - GUIAlienBuyMenu.kUpgradeButtonSize * .5, math.sin(angle) * GUIAlienBuyMenu.kUpgradeButtonDistance - GUIAlienBuyMenu.kUpgradeButtonSize * .5, 0 )
             

@@ -70,7 +70,7 @@ function SporesMixin:OnSecondaryAttackEnd(player)
 end
 
 function SporesMixin:GetHasSecondary(player)
-    return player.oneHive 
+    return player:GetHasOneHive() 
 end
 
 function SporesMixin:GetSecondaryEnergyCost(player)

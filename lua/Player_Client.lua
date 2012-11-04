@@ -9,20 +9,20 @@
 
 Script.Load("lua/Chat.lua")
 Script.Load("lua/HudTooltips.lua")
-Script.Load("lua/DSPEffects.lua")
 Script.Load("lua/tweener/Tweener.lua")
 Script.Load("lua/TechTreeConstants.lua")
 Script.Load("lua/GUICommunicationStatusIcons.lua")
 
-kDefaultPingSound = "sound/NS2.fev/common/ping"
-kMarinePingSound = "sound/NS2.fev/marine/commander/ping"
-kAlienPingSound = "sound/NS2.fev/alien/commander/ping"
-
+// These screen effects are only used on the local player so create them statically.
 Player.screenEffects = { }
 Player.screenEffects.darkVision = Client.CreateScreenEffect("shaders/DarkVision.screenfx")
 Player.screenEffects.darkVision:SetActive(false)
 Player.screenEffects.cloaked = Client.CreateScreenEffect("shaders/Cloaked.screenfx")
 Player.screenEffects.cloaked:SetActive(false)
+
+local kDefaultPingSound = PrecacheAsset("sound/NS2.fev/common/ping")
+local kMarinePingSound = PrecacheAsset("sound/NS2.fev/marine/commander/ping")
+local kAlienPingSound = PrecacheAsset("sound/NS2.fev/alien/commander/ping")
 
 local kDefaultFirstPersonEffectName = PrecacheAsset("cinematics/marine/hit_1p.cinematic")
 
@@ -1818,14 +1818,6 @@ function Player:OnInitLocalClient()
     // Just in case the danger music wasn't stopped already for some reason.
     DisableDanger(self)
     
-    if self:GetTeamNumber() == kTeamReadyRoom then
-    
-        if self.guiReadyRoomOrders == nil then
-            self.guiReadyRoomOrders = GetGUIManager():CreateGUIScript("GUIReadyRoomOrders")
-        end
-    
-    end
-    
 end
 
 function Player:SetEthereal(ethereal)
@@ -1833,7 +1825,7 @@ end
 
 function Player:SetCloakShaderState(state)
 
-    if Player.screenEffects.cloaked then
+    if self:GetIsLocalPlayer() and Player.screenEffects.cloaked then
         Player.screenEffects.cloaked:SetActive(state)
     end
     
@@ -1855,14 +1847,6 @@ function Player:UpdateCloakSoundLoop(state)
 end
 
 function Player:UpdateDisorientFX()
-end
-
-local function DisableScreenEffects()
-
-    for _, effect in pairs(Player.screenEffects) do
-        effect:SetActive(false)
-    end
-    
 end
 
 /**
@@ -3250,7 +3234,6 @@ end
 
     
 function Player:UpdateDeadSound()
-    
 end
 
 function Player:GetDamageIndicatorTime()

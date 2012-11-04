@@ -90,7 +90,6 @@ kGeneralEffectData =
         
             // alien
             {sound = "sound/NS2.fev/alien/structures/shade/cloak_triggered", classname = "Hallucination", done = true}, // TODO: replace
-            {sound = "sound/NS2.fev/alien/common/hatch", classname = "Clog", done = true}, // TODO: replace
             
             {sound = "sound/NS2.fev/alien/structures/egg/spawn", classname = "Egg", done = true},
             {sound = "sound/NS2.fev/alien/structures/egg/spawn", classname = "Embryo", done = true},

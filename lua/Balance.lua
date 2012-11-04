@@ -229,7 +229,7 @@ kWeapons3DamageScalar = 1.3
 
 kElectricalDamage = 20
 kElectricalMaxTargets = 2
-kElectricalRange = 5
+kElectricalRange = 3.25
 kElectricalUpgradeResearchCost = 20
 kElectricalUpgradeResearchTime = 30
 kElectrifyDamageTime = 1

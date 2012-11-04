@@ -215,7 +215,7 @@ function Skulk:GetCanJump()
     return Alien.GetCanJump(self) or self:GetCanWallJump()    
 end
 
-function Skulk:OverrideStrafeJump()
+function Skulk:OverrideAirControl()
     return self:GetIsWallWalking()
 end
 
@@ -237,7 +237,7 @@ function Skulk:GetIsOnLadder()
 end
 
 function Skulk:GetIsWallWalkingPossible() 
-    return not self.crouching and not self:GetRecentlyJumped() and not Player.GetIsJumping(self)
+    return not self.crouching
 end
 
 function Skulk:GetRecentlyJumped()

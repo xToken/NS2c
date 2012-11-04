@@ -99,7 +99,7 @@ function Onos:OnCreate()
     self.timeLastCharge = 0
     self.timeLastChargeEnd = 0
     self.chargeSpeed = 0
-    self.devouring = nil
+    self.devouring = 0
     self.timeSinceLastDevourUpdate = 0
     
     if Client then    
@@ -235,7 +235,7 @@ end
 
 function Onos:TriggerCharge(move)
     
-    if not self.charging and self.timeLastChargeEnd + Onos.kChargeDelay < Shared.GetTime() and self:GetIsOnGround() and not self:GetCrouching() and self.oneHive then
+    if not self.charging and self.timeLastChargeEnd + Onos.kChargeDelay < Shared.GetTime() and self:GetIsOnGround() and not self:GetCrouching() and self:GetHasOneHive() then
 
         self.charging = true
         self.timeLastCharge = Shared.GetTime()
@@ -278,7 +278,7 @@ end
 
 function Onos:CheckEndDevour()
 
-    if self.devouring ~= nil then
+    if self.devouring ~= 0 then
         local food = Shared.GetEntity(self.devouring)
         if food then
             if food.OnDevouredEnd then
@@ -289,7 +289,7 @@ function Onos:CheckEndDevour()
             end
         end
     end
-    self.devouring = nil
+    self.devouring = 0
     
 end
 
@@ -403,7 +403,7 @@ end
 
 function Onos:DevourUpdate()
 
-    if self.devouring ~= nil then
+    if self.devouring ~= 0 then
         local food = Shared.GetEntity(self.devouring)
         local devour = self:GetWeapon("devour")
         if food and devour then

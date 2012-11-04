@@ -222,12 +222,12 @@ function Alien:ProcessBuyAction(techIds)
     local position = self:GetOrigin()
     local newLifeFormTechId = kTechId.None
     
-    //local evolveAllowed = self:GetIsOnGround()
     local evolveAllowed = true
     evolveAllowed = evolveAllowed and GetHasRoomForCapsule(eggExtents, position + Vector(0, eggExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
     evolveAllowed = evolveAllowed and GetHasRoomForCapsule(newAlienExtents, position + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
     if self:GetTechId() == kTechId.Onos then
-        if self.devouring then
+        if self.devouring ~= 0 then
+            Print(ToString(self.devouring))
             evolveAllowed = false
         end
     end

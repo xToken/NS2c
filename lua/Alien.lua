@@ -44,7 +44,7 @@ Alien.kNotEnoughResourcesSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/m
 
 Alien.kChatSound = PrecacheAsset("sound/NS2.fev/alien/common/chat")
 Alien.kSpendResourcesSoundName = PrecacheAsset("sound/NS2.fev/alien/commander/spend_nanites")
-Alien.kTeleportSound = PrecacheAsset("sound/NS2.fev/alien/commander/catalyze_3D")
+Alien.kTeleportSound = PrecacheAsset("sound/NS2.fev/alien/structures/generic_spawn_large")
 
 // Representative portrait of selected units in the middle of the build button cluster
 Alien.kPortraitIconsTexture = "ui/alien_portraiticons.dds"
@@ -84,9 +84,7 @@ local networkVars =
     
     primalScreamBoost = "compensated boolean",
     unassignedhives = string.format("integer (0 to 4"),
-    darkVisionOn = "private boolean",
     nextredeploy = "private time",
-    darkVisionLastFrame = "private boolean"
 }
 
 AddMixinNetworkVars(CloakableMixin, networkVars)
@@ -332,10 +330,6 @@ function Alien:GetCarapaceMovementScalar()
 
 end
 
-function  Alien:OverrideStrafeJump()
-    return false
-end
-
 function Alien:GetSlowSpeedModifier()
     return Player.GetSlowSpeedModifier(self)
 end
@@ -411,9 +405,6 @@ function Alien:DeductAbilityEnergy(energyCost)
 end
 
 function Alien:GetRecuperationRate()
-
-    local scalar = 1
-    scalar = scalar * ConditionalValue(self.darkVisionOn, kAlienVisionEnergyRegenMod, 1)
 
     local scalar = 1
     local hasupg, level = GetHasAdrenalineUpgrade(self)

@@ -398,20 +398,6 @@ function JetpackMarine:GetMaxSpeed(possible)
     
 end
 
-/*
-function JetpackMarine:AdjustGravityForce(input, gravity)
-    
-    if self:GetIsJetpacking() then
-        gravity = 0
-    else
-        gravity = JetpackMarine.kJetpackGravity
-    end
-    
-    return gravity
-      
-end
-*/
-
 function JetpackMarine:GetIsTakingOffFromGround()
     return self.startedFromGround and (self.timeJetpackingChanged + JetpackMarine.kJetpackTakeOffTime > Shared.GetTime())
 end

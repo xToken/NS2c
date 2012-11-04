@@ -35,7 +35,7 @@ function HealSprayMixin:__initmixin()
 end
 
 function HealSprayMixin:GetHasSecondary(player)
-    return player.oneHive
+    return player:GetHasOneHive()
 end
 
 function HealSprayMixin:GetSecondaryAttackDelay()

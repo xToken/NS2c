@@ -564,20 +564,6 @@ local function OnCommandDisrupt(client)
     
 end
 
-local function OnCommandHatch(client)
-
-    if Shared.GetCheatsEnabled() then
-    
-        local player = client:GetControllingPlayer()  
-        local ent = GetNearest(player:GetOrigin(), "Shift", player:GetTeamNumber())
-        if ent and ent.TriggerHatch then
-            ent:TriggerHatch()
-        end
-        
-    end
-    
-end
-
 local function OnCommandPush(client)
 
     if Shared.GetCheatsEnabled() then
@@ -1107,7 +1093,6 @@ Event.Hook("Console_catpack", OnCommandCatPack)
 Event.Hook("Console_alltech", OnCommandAllTech)
 Event.Hook("Console_location", OnCommandLocation)
 Event.Hook("Console_disrupt", OnCommandDisrupt)
-Event.Hook("Console_hatch", OnCommandHatch)
 Event.Hook("Console_push", OnCommandPush)
 Event.Hook("Console_deployarcs", OnCommandDeployARCs)
 Event.Hook("Console_undeployarcs", OnCommandUndeployARCs)

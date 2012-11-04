@@ -265,10 +265,6 @@ function Gorge:OnUpdatePoseParameters(viewModel)
     
 end
 
-function Gorge:OverrideStrafeJump()
-    return false
-end
-
 function Gorge:SetCrouchState(newCrouchState)
     self.crouching = newCrouchState
 end

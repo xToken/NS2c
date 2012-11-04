@@ -103,13 +103,6 @@ function Fade:OnInitialized()
     
 end
 
-function Fade:OnDestroy()
-    Alien.OnDestroy(self)
-    if Client then    
-        self:DestroyTrailCinematic()    
-    end
-end
-
 function Fade:GetHeadAttachpointName()
     return "fade_tongue2"
 end

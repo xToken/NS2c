@@ -10,9 +10,6 @@
 
 kAlienWeaponEffects =
 {
-    draw = 
-    {
-    },
         
     spit_hit =
     {
@@ -125,36 +122,6 @@ kAlienWeaponEffects =
             {sound = "sound/NS2.fev/alien/gorge/heal_spray"}
         },
     },
-
-    digest = 
-    {
-        sprayFireEffects = 
-        {
-            {sound = "", silenceupgrade = true, done = true}, 
-            {sound = "sound/NS2.fev/alien/gorge/build"}
-        },
-    },
-    
-    bilebomb_onstructure =
-    {
-        bileBombOnStructureEffects =
-        {
-            {sound = "sound/NS2.fev/alien/structures/deploy_large"},
-            // structure specific effects
-
-            {cinematic = "cinematics/alien/lerk/bomb_small.cinematic", classname = "InfantryPortal", done = true },
-            {cinematic = "cinematics/alien/lerk/bomb_big.cinematic", classname = "CommandStation", done = true },
-            {cinematic = "cinematics/alien/lerk/bomb_big.cinematic", classname = "RoboticsFactory", done = true },
-            {cinematic = "cinematics/alien/lerk/bomb_small.cinematic", classname = "Sentry", done = true },
-            {parented_cinematic = "cinematics/alien/lerk/bomb_structure.cinematic", classname = "ARC", done = true },
-            {parented_cinematic = "cinematics/alien/lerk/bomb_marine.cinematic", classname = "Marine", done = true},
-            
-            {cinematic = "cinematics/alien/lerk/bomb_structure.cinematic"},
-            
-            
-        }
-    
-    },
     
     bilebomb_attack =
     {
@@ -221,16 +188,6 @@ kAlienWeaponEffects =
             {sound = "sound/NS2.fev/alien/gorge/create_structure_start", world_space = true},
         }
     },
-    
-    start_create_cyst =
-    {
-        startCystCreate = 
-        {
-            {player_cinematic = "cinematics/alien/gorge/create.cinematic", attach_point = "Head"},
-            {sound = "", silenceupgrade = true, done = true}, 
-            {sound = "sound/NS2.fev/alien/gorge/create_structure_start"},
-        },
-    },
 
     spikes_attack =
     {   
@@ -261,34 +218,6 @@ kAlienWeaponEffects =
             {sound = "sound/ns2c.fev/ns2c/alien/lerk/umbra_fire"},
         },
     },
-
-    
-    spores_attack_end =
-    {
-        sporesAttackEndEffects = 
-        {
-        },
-    },
-    
-    spores_alt_attack =
-    {
-        sporesAttackEffects = 
-        {
-            {sound = "", silenceupgrade = true, done = true}, 
-            {sound = "sound/NS2.fev/alien/lerk/spores_shoot"},
-            //{viewmodel_cinematic = "cinematics/alien/lerk/spore_view_fire.cinematic", attach_point = "?"},
-            //{weapon_cinematic = "cinematics/alien/lerk/spores.cinematic", attach_point = "?"},
-        },
-    },
-    
-    poison_dart_trail = 
-    {
-        PoisonDartTrail =
-        {
-            {cinematic = "cinematics/alien/lerk/poison_trail.cinematic"},
-            {sound = "sound/NS2.fev/alien/lerk/spores_shoot"},
-        }
-    },
     
     swipe_attack = 
     {
@@ -300,9 +229,9 @@ kAlienWeaponEffects =
         },
     },
 
-    stab_attack = 
+    metabolize = 
     {
-        stabAttackEffects =
+        metabolizeEffects =
         {
             {sound = "", silenceupgrade = true, done = true}, 
             {sound = "sound/ns2c.fev/ns2c/alien/fade/metabolize"},
@@ -372,16 +301,6 @@ kAlienWeaponEffects =
             {sound = "", silenceupgrade = true, done = true},
             {sound = "sound/NS2.fev/alien/onos/stomp"},
         },
-    },
-
-        
-    onos_charge_crash =
-    {
-        onosChargeCrashEffects =
-        {
-            {cinematic = "cinematics/alien/onos/stomp_hit.cinematic"},
-        },    
-    
     },
     
     primal_scream =

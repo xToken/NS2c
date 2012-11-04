@@ -105,7 +105,7 @@ function InitTechTreeMaterialOffsets()
     //kTechIdToMaterialOffset[kTechId.WhipBombard] = 41
     kTechIdToMaterialOffset[kTechId.Bombard] = 41
     //kTechIdToMaterialOffset[kTechId.EnzymeCloud] = 42
-    kTechIdToMaterialOffset[kTechId.Redemption] = 42
+    kTechIdToMaterialOffset[kTechId.Focus] = 42
     //kTechIdToMaterialOffset[kTechId.MACEMPTech] = 43
     //kTechIdToMaterialOffset[kTechId.MACEMP] = 43
     //kTechIdToMaterialOffset[kTechId.Rupture] = 44
@@ -125,7 +125,7 @@ function InitTechTreeMaterialOffsets()
     kTechIdToMaterialOffset[kTechId.Scan] = 54
     //kTechIdToMaterialOffset[kTechId.NanoShield] = 55
     //kTechIdToMaterialOffset[kTechId.NutrientMist] = 56
-    kTechIdToMaterialOffset[kTechId.Focus] = 56
+    kTechIdToMaterialOffset[kTechId.Redemption] = 56
     //kTechIdToMaterialOffset[kTechId.Welding] = 57
     //kTechIdToMaterialOffset[kTechId.EvolveHallucinations] = 58
     //kTechIdToMaterialOffset[kTechId.EvolveEcho] = 59

@@ -80,7 +80,7 @@ end
 
 function SwipeBlink:OnPrimaryAttack(player)
 
-    if not self:GetIsBlinking() and player:GetEnergy() >= self:GetEnergyCost() and not GetHasAttackDelay(self, player) then
+    if player:GetEnergy() >= self:GetEnergyCost() and not GetHasAttackDelay(self, player) then
         //self:PerformPrimaryAttack(player)
         self.primaryAttacking = true
     else
