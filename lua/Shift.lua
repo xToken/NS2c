@@ -31,11 +31,12 @@ Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
-Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
+Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/DissolveMixin.lua")
 
 class 'Shift' (ScriptActor)
 
@@ -73,8 +74,9 @@ AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
-AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
+AddMixinNetworkVars(HasUmbraMixin, networkVars)
+AddMixinNetworkVars(DissolveMixin, networkVars)
 
 function Shift:OnCreate()
 
@@ -97,8 +99,9 @@ function Shift:OnCreate()
     InitMixin(self, ResearchMixin)
     InitMixin(self, RagdollMixin)
     InitMixin(self, ObstacleMixin)
-    InitMixin(self, UmbraMixin)
     InitMixin(self, CombatMixin)
+    InitMixin(self, HasUmbraMixin)
+	InitMixin(self, DissolveMixin)
     
     if Client then
         InitMixin(self, CommanderGlowMixin)    
@@ -107,7 +110,7 @@ function Shift:OnCreate()
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
-
+    
 end
 
 function Shift:OnInitialized()
@@ -120,8 +123,6 @@ function Shift:OnInitialized()
     
         InitMixin(self, StaticTargetMixin)
     
-        self:AddTimedCallback(Shift.EnergizeInRange, Shift.kEnergizeThinkTime)
-        
         // This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
@@ -142,16 +143,16 @@ end
 
 function Shift:GetCanBeUsed(player, useSuccessTable)
     local hasupg, level = GetHasRedeploymentUpgrade(player)
-    if not self:GetCanConstruct(player) and not(hasupg and level > 0) then
-        useSuccessTable.useSuccess = false
-    else
+    if self:GetCanConstruct(player) or (hasupg and level > 0 and player.nextredeploy < Shared.GetTime()) then
         useSuccessTable.useSuccess = true
+    else
+        useSuccessTable.useSuccess = false
     end
 end
 
 function Shift:EnergizeInRange()
 
-    if self:GetIsBuilt() then
+    if self:GetIsBuilt() and self:GetIsAlive() then
     
         local energizeAbles = GetEntitiesWithMixinForTeamWithinRange("Energize", self:GetTeamNumber(), self:GetOrigin(), kEnergizeRange)
         
@@ -179,7 +180,7 @@ end
 
 function Shift:GetShowOrderLine()
     return true
-end  
+end
 
 function Shift:ConstructOverride(deltaTime)
     return deltaTime / 2
@@ -193,10 +194,24 @@ function Shift:OnUse(player, elapsedTime, useAttachPoint, usePoint, useSuccessTa
 end
 
 if Server then
-
-    function Shift:OnUpdate(deltaTime)
-        PROFILE("Shift:OnUpdate")
-        ScriptActor.OnUpdate(self, deltaTime)
+    
+    function Shift:OnConstructionComplete()
+        self:AddTimedCallback(Shift.EnergizeInRange, Shift.kEnergizeThinkTime)
+        local team = self:GetTeam()
+        if team then
+            team:OnUpgradeChamberConstructed(self)
+        end
+    end
+    
+    function Shift:OnKill(attacker, doer, point, direction)
+    
+        ScriptActor.OnKill(self, attacker, doer, point, direction)
+        
+        local team = self:GetTeam()
+        if team then
+            team:OnUpgradeChamberDestroyed(self)
+        end
+        
     end
     
 end
@@ -207,6 +222,11 @@ function Shift:TeleportPlayer(player, level)
             local validshifts = { }
             local shifts = GetEntitiesForTeam("Shift", self:GetTeamNumber())
             local success = false
+
+            local function SortByDistance(shift1, shift2)
+                return shift1.dist > shift2.dist
+            end
+            
             for i, shift in ipairs(shifts) do
                 local shiftinfo = { shift = shift, dist = 0 }
                 local toTarget = shift:GetOrigin() - player:GetOrigin()
@@ -216,36 +236,39 @@ function Shift:TeleportPlayer(player, level)
                     table.insert(validshifts, shiftinfo)
                 end
              end
-             local selectedshift
-             local selectedshiftdist = 0
+             
+             table.sort(validshifts, SortByDistance)
+
              for s = 1, #validshifts do
-                if selectedshiftdist < validshifts[s].dist then
-                    selectedshift = validshifts[s].shift
-                    selectedshiftdist = validshifts[s].dist
-                end
-             end
-             if selectedshift then
+                selectedshift = validshifts[s].shift
                 local TechID = kTechId.Skulk
                 if player:GetIsAlive() then
                     TechID = player:GetTechId()
                 end
                 local extents = LookupTechData(TechID, kTechDataMaxExtents)
                 local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)
-                local range = 4
-                local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, selectedshift:GetOrigin(), 2, range, EntityFilterAll())
-                if spawnPoint then
-                    local validForPlayer = GetIsPlacementForTechId(spawnPoint, true, TechID)
-                    local notNearResourcePoint = #GetEntitiesWithinRange("ResourcePoint", spawnPoint, 2) == 0
-                    if notNearResourcePoint then
-                        Shared.PlayWorldSound(nil, Alien.kTeleportSound, nil, self:GetOrigin())
-                        SpawnPlayerAtPoint(player, spawnPoint)
-                        success = true
-                        player.nextredeploy = Shared.GetTime() + (kRedploymentCooldownBase / level)
+                local range = 6
+                for t = 1, 100 do //Persistance...
+                    local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, selectedshift:GetOrigin(), 2, range, EntityFilterAll())
+                    if spawnPoint then
+                        local validForPlayer = GetIsPlacementForTechId(spawnPoint, true, TechID)
+                        local notNearResourcePoint = #GetEntitiesWithinRange("ResourcePoint", spawnPoint, 2) == 0
+                        if notNearResourcePoint then
+                            Shared.PlayWorldSound(nil, Alien.kTeleportSound, nil, self:GetOrigin())
+                            SpawnPlayerAtPoint(player, spawnPoint)
+                            success = true
+                            player.nextredeploy = Shared.GetTime() + (kRedploymentCooldownBase / level)
+                            break
+                        end
                     end
                 end
-                if not success then
-                    player:TriggerInvalidSound()
-                end
+                if success then
+                    break
+                 end
+             end
+             
+            if not success then
+                player:TriggerInvalidSound()
             end
         end
     end

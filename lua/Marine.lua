@@ -28,6 +28,8 @@ Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/DetectorMixin.lua")
 Script.Load("lua/AlienDetectableMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
+Script.Load("lua/OrdersMixin.lua")
+Script.Load("lua/RagdollMixin.lua")
 
 if Client then
     Script.Load("lua/TeamMessageMixin.lua")
@@ -39,7 +41,7 @@ Marine.kMapName = "marine"
 
 if Server then
     Script.Load("lua/Marine_Server.lua")
-else
+elseif Client then
     Script.Load("lua/Marine_Client.lua")
 end
 
@@ -47,7 +49,8 @@ Shared.PrecacheSurfaceShader("models/marine/marine.surface_shader")
 Shared.PrecacheSurfaceShader("models/marine/marine_noemissive.surface_shader")
 
 Marine.kModelName = PrecacheAsset("models/marine/male/male.model")
-Marine.kSpecialModelName = PrecacheAsset("models/marine/male/male_special.model")
+Marine.kBlackArmorModelName = PrecacheAsset("models/marine/male/male_special.model")
+Marine.kSpecialEditionModelName = PrecacheAsset("models/marine/male/male_special_v1.model")
 
 Marine.kMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_graph")
 
@@ -68,12 +71,9 @@ Marine.kArmorPerUpgradeLevel = kArmorPerUpgradeLevel
 // Player phase delay - players can only teleport this often
 Marine.kPlayerPhaseDelay = 2
 Marine.kStunDuration = 2
-Marine.kAcceleration = 58
-Marine.kAirAcceleration = 28
 Marine.kWalkMaxSpeed = 3.75                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
-Marine.kRunMaxSpeed = 9
+Marine.kRunMaxSpeed = 7
 Marine.kDoubleJumpMinHeightChange = 0.4
-Marine.kGroundFriction = 8
 
 // How fast does our armor get repaired by welders
 Marine.kArmorWeldRate = 25
@@ -94,9 +94,13 @@ local networkVars =
     flashlightLastFrame = "private boolean",
     devoured = "private boolean",
     lastjumpheight = "private float",
-    catpackboost = "private boolean"
+    catpackboost = "private boolean",
+    weaponUpgradeLevel = "integer (0 to 3)",
+    
+    unitStatusPercentage = "private integer (0 to 100)"
 }
 
+AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(BaseMoveMixin, networkVars)
 AddMixinNetworkVars(GroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
@@ -128,9 +132,13 @@ function Marine:OnCreate()
     InitMixin(self, LOSMixin)
     InitMixin(self, ParasiteMixin)
     InitMixin(self, AlienDetectableMixin)
-       
+    InitMixin(self, RagdollMixin)   
     if Server then
 
+
+        // stores welder / builder progress
+        self.unitStatusPercentage = 0
+        self.timeLastUnitPercentageUpdate = 0
         
     elseif Client then
     
@@ -151,7 +159,7 @@ function Marine:OnCreate()
         InitMixin(self, DisorientableMixin)
         
     end
-    
+
 end
 
 function Marine:OnInitialized()
@@ -159,6 +167,7 @@ function Marine:OnInitialized()
     // These mixins must be called before SetModel because SetModel eventually
     // calls into OnUpdatePoseParameters() which calls into these mixins.
     // Yay for convoluted class hierarchies!!!
+    InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kPlayerMoveOrderCompleteDistance })
     InitMixin(self, OrderSelfMixin, { kPriorityAttackTargets = { "Harvester" } })
     InitMixin(self, WeldableMixin)
     
@@ -185,11 +194,16 @@ function Marine:OnInitialized()
     
         InitMixin(self, HiveVisionMixin)
         
+        self:AddHelpWidget("GUIMarineHealthRequestHelp", 2)
+        //self:AddHelpWidget("GUIMarineFlashlightHelp", 2)
+        //self:AddHelpWidget("GUIBuyShotgunHelp", 2)
+        self:AddHelpWidget("GUIMarineWeldHelp", 2)
         self:AddHelpWidget("GUIMapHelp", 1)
+        
     end
     
     self.weaponDropTime = 0
-    self.timeOfLastPhase = nil
+    self.timeOfLastPhase = 0
     
     local viewAngles = self:GetViewAngles()
     self.lastYaw = viewAngles.yaw
@@ -223,16 +237,6 @@ end
 
 function Marine:DeCloak()
     return false
-end
-
-function Marine:MakeSpecialEdition()
-
-    if not blockBlackArmor then
-        self:SetModel(Marine.kSpecialModelName, Marine.kMarineAnimationGraph)
-    else
-        self:SetModel(Marine.kModelName, Marine.kMarineAnimationGraph)        
-    end
-    
 end
 
 function Marine:IsValidDetection(detectable)
@@ -316,7 +320,8 @@ function Marine:GetCanRepairOverride(target)
 end
 
 function Marine:GetSlowOnLand()
-    return ((self:GetOrigin().y - self.lastjumpheight) <= Marine.kDoubleJumpMinHeightChange)
+    local adjustedy = ConditionalValue(self.crouching, self:GetOrigin().y - 0.5, self:GetOrigin().y)
+    return ((adjustedy - self.lastjumpheight) <= Marine.kDoubleJumpMinHeightChange)
 end
 
 function Marine:GetArmorAmount()
@@ -406,12 +411,15 @@ function Marine:OnDestroy()
             
         end
         
+        if self.requestMenu then
+        
+            GetGUIManager():DestroyGUIScript(self.requestMenu)
+            self.requestMenu = nil
+            
+        end
+        
     end
     
-end
-
-function Marine:GetGroundFrictionForce()
-    return Marine.kGroundFriction
 end
 
 function Marine:HandleButtons(input)
@@ -455,8 +463,8 @@ function Marine:HandleButtons(input)
                         end
                         
                         self:AddWeapon(nearbyDroppedWeapon, true)
-                        Shared.PlayWorldSound(nil, Marine.kGunPickupSound, nil, self:GetOrigin())
-                        self:SetScoreboardChanged(true)
+		                self:SetScoreboardChanged(true)
+		                Shared.PlayWorldSound(nil, Marine.kGunPickupSound, nil, self:GetOrigin())
                         self.timeOfLastPickUpWeapon = Shared.GetTime()
                         
                     end
@@ -507,7 +515,11 @@ function Marine:GetMaxSpeed(possible)
     end
     
     //Walking
-    local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Marine.kWalkMaxSpeed,  Marine.kRunMaxSpeed)
+    local maxSpeed = Marine.kRunMaxSpeed
+    
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = Marine.kWalkMaxSpeed
+    end
     
     // Take into account crouching
     if self:GetCrouching() and self:GetIsOnGround() then
@@ -533,22 +545,8 @@ function Marine:GetMaxBackwardSpeedScalar()
     return Marine.kWalkBackwardSpeedScalar
 end
 
-function Marine:GetAirFrictionForce()
-    return 0.5
-end
-
 function Marine:GetCanBeWeldedOverride()
     return self:GetArmor() < self:GetMaxArmor(), false
-end
-
-function Marine:GetAcceleration()
-    local acceleration = Marine.kAcceleration
-    if not self:GetIsOnGround() then
-        acceleration = Marine.kAirAcceleration
-    end
-    acceleration = acceleration * self:GetSlowSpeedModifier() * self:GetInventorySpeedScalar()
-
-    return acceleration * self:GetCatalystMoveSpeedModifier()
 end
 
 // Returns -1 to 1
@@ -560,12 +558,14 @@ function Marine:GetWeaponDropTime()
     return self.weaponDropTime
 end
 
-local marineTechButtons = { kTechId.Attack, kTechId.Move, kTechId.Defend  }
+local marineTechButtons = { kTechId.Attack, kTechId.Move, kTechId.Defend, kTechId.None, 
+                                  kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+                                  
 function Marine:GetTechButtons(techId)
 
     local techButtons = nil
     
-    if techId == kTechId.RootMenu then
+    if techId == kTechId.WeaponsMenu then
         techButtons = marineTechButtons
     end
     
@@ -586,31 +586,6 @@ end
 
 function Marine:GetCatalystMoveSpeedModifier()
     return ConditionalValue(self:GetHasCatpackBoost(), CatPack.kMoveSpeedScalar, 1)
-end
-
-function Marine:GetHasSayings()
-    return true
-end
-
-// Other
-function Marine:GetSayings()
-
-    if(self.showSayings) then
-    
-        if(self.showSayingsMenu == 1) then
-            return marineRequestSayingsText
-        end
-        if(self.showSayingsMenu == 2) then
-            return marineGroupSayingsText
-        end
-        if(self.showSayingsMenu == 3) then
-            return GetVoteActionsText(self:GetTeamNumber())
-        end
-        
-    end
-    
-    return nil
-    
 end
 
 function Marine:GetChatSound()
@@ -686,9 +661,6 @@ function Marine:Drop(weapon, ignoreDropTimeLimit, ignoreReplacementWeapon)
         // Remove from player's inventory
         if Server then
             self:RemoveWeapon(weapon)
-        end
-        
-        if Server then
         
             local weaponSpawnCoords = self:GetAttachPointCoords(Weapon.kHumanAttachPoint)
             weapon:SetCoords(weaponSpawnCoords)
@@ -757,18 +729,9 @@ end
 
 function Marine:GetCanChangeViewAngles()
     return true
-end    
-
-//function Marine:GetPlayFootsteps()
-
-    //local velocity = self:GetVelocity()
-    //local velocityLength = velocity:GetLength() 
-    //return self:GetIsOnGround() and velocityLength > .75 and not self.movementModiferState and not self.crouching
-    
-//end
+end
 
 function Marine:OnDisrupt()
-
 end
 
 function Marine:OnUseTarget(target)
@@ -815,7 +778,11 @@ function Marine:OnProcessMove(input)
 
     if Server then
     	self.catpackboost = Shared.GetTime() - self.timeCatpackboost < CatPack.kDuration
+        if self.unitStatusPercentage ~= 0 and self.timeLastUnitPercentageUpdate + 2 < Shared.GetTime() then
+            self.unitStatusPercentage = 0
+        end
 	end
+
 
     Player.OnProcessMove(self, input)
 

@@ -9,7 +9,7 @@
 kTeamMessageTypes = enum({ 'GameStarted', 'PowerLost', 'PowerRestored', 'Eject', 'CannotSpawn',
                            'SpawningWait', 'Spawning', 'ResearchComplete', 'ResearchLost',
                            'HiveConstructed', 'HiveLowHealth', 'HiveKilled',
-                           'CommandStationUnderAttack', 'IPUnderAttack', 'HiveUnderAttack',
+                           'CommandStationUnderAttack', 'IPUnderAttack', 'HiveUnderAttack', 'HiveInDanger',
                            'PowerPointUnderAttack', 'Beacon', 'NoCommander', 'TeamsUnbalanced',
                            'TeamsBalanced'})
 
@@ -46,6 +46,8 @@ kTeamMessages[kTeamMessageTypes.CommandStationUnderAttack] = { text = { [kMarine
 kTeamMessages[kTeamMessageTypes.IPUnderAttack] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "IP_UNDER_ATTACK") end } }
 
 kTeamMessages[kTeamMessageTypes.HiveUnderAttack] = { text = { [kAlienTeamType] = function(data) return locationStringGen(data, "HIVE_UNDER_ATTACK") end } }
+
+kTeamMessages[kTeamMessageTypes.HiveInDanger] = { text = { [kAlienTeamType] = function(data) return locationStringGen(data, "HIVE_IN_DANGER") end } }
 
 kTeamMessages[kTeamMessageTypes.Beacon] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "BEACON_TO") end } }
 

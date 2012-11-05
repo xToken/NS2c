@@ -8,16 +8,27 @@
 
 Script.Load("lua/Commander_Alerts.lua")
 Script.Load("lua/Commander_Buttons.lua")
-Script.Load("lua/Commander_FocusPanel.lua")
 Script.Load("lua/Commander_HotkeyPanel.lua")
 Script.Load("lua/Commander_IdleWorkerPanel.lua")
 Script.Load("lua/Commander_PlayerAlertPanel.lua")
 Script.Load("lua/Commander_ResourcePanel.lua")
 Script.Load("lua/Commander_SelectionPanel.lua")
+
+// These are not predicted
+if Client then
+    Script.Load("lua/Commander_MarqueeSelection.lua")
+    Script.Load("lua/Commander_Ping.lua")
+    Script.Load("lua/Commander_GhostStructure.lua")
+    Script.Load("lua/Commander_MouseActions.lua")
+end
+   
 Script.Load("lua/DynamicMeshUtility.lua")
-Script.Load("lua/GhostModelUI.lua")
 
 kCommanderLeftClickDelay = 0.4
+
+function Commander:OnGetIsVisible(visibleTable)
+    visibleTable.Visible = false
+end
 
 function Commander:GetCrossHairTarget()
     return nil
@@ -25,6 +36,22 @@ end
 
 function Commander:GetCanRepairOverride(target)
     return false
+end
+
+function CommanderUI_GetNumCapturedTechpoint()
+
+    local player = Client.GetLocalPlayer()
+    if player then
+    
+        local teamInfo = GetTeamInfoEntity(player:GetTeamNumber())
+        if teamInfo then
+            return teamInfo:GetNumCapturedTechPoints()
+        end
+        
+    end
+
+    return 0    
+
 end
 
 function CommanderUI_GetUnitVisions()
@@ -69,11 +96,13 @@ function CommanderUI_GetUnitVisions()
 
 end
 
-function CommanderUI_UpdateMouseOverUIState(overUI)
+local mouseOverUI = false
+function CommanderUI_SetMouseIsOverUI(overUI)
+    mouseOverUI = overUI
+end
 
-    local player = Client.GetLocalPlayer()
-    player.cursorOverUI = overUI
-
+function CommanderUI_GetMouseIsOverUI()
+    return mouseOverUI
 end
 
 function CommanderUI_IsLocalPlayerCommander()
@@ -97,10 +126,12 @@ function CommanderUI_TriggerPingInWorld(x, y)
         local trace = Shared.TraceRay(player:GetOrigin(), player:GetOrigin() + pickVec * 1000, CollisionRep.Select, PhysicsMask.CommanderSelect, EntityFilterAll())
         
         if trace.fraction ~= 1 then
+        
             local message = BuildCommanderPingMessage(trace.endPoint)
             Client.SendNetworkMessage("CommanderPing", message, true)
+            
         end
-    
+        
     end
     
 end
@@ -116,37 +147,14 @@ function CommanderUI_TriggerPingOnMinimap(x, y)
         local trace = Shared.TraceRay(startPos, startPos + Vector(0, -200, 0), CollisionRep.Select, PhysicsMask.CommanderSelect, EntityFilterAll())
         
         if trace.fraction ~= 1 then
+        
             local message = BuildCommanderPingMessage(trace.endPoint)
             Client.SendNetworkMessage("CommanderPing", message, true)
-        end
-    
-    end
-    
-end
-
-function CommanderUI_OnMousePress(mouseButton, x, y)
-
-    local player = Client.GetLocalPlayer()
-    return player:ClientOnMousePress(mouseButton, x, y)
-    
-end
-
-function CommanderUI_OnDoubleClick(x, y)
-
-    local player = Client.GetLocalPlayer()
-    if player then
-        // Only allowed when there is not a ghost structure or the structure is valid.
-        if not player.ghostMode then
-            local techNode = GetTechNode(player.currentTechId)
-            if((player.currentTechId == nil) or (techNode == nil) or not techNode:GetRequiresTarget()) then
-                // Select things near click.
-                return player:ClickSelect(x, y, true)
-            end
-        end
-    end
-    
-    return false, false
             
+        end
+        
+    end
+    
 end
 
 function CommanderUI_OnMouseRelease(mouseButton, x, y)
@@ -213,51 +221,43 @@ end
 // use only client side (for bringing up menus for example). Key events, and their consequences, are not send to the server
 function Commander:SendKeyEvent(key, down)
 
-    local success = false
+    local success = CheckKeyEventForCommanderPing(key, down)
     
-    if not Shared.GetIsRunningPrediction() then
-
-        // When exit hit cancel current action, bring up menu otherwise
-        if down and key == InputKey.Escape and self.currentTechId ~= kTechId.None then
+    // When exit hit cancel current action, bring up menu otherwise
+    if down and key == InputKey.Escape and self.currentTechId ~= kTechId.None then
+    
+        self:SetCurrentTech(techId)
+        success = true
         
-            self:SetCurrentTech(techId) 
+    end
+    
+    if key == InputKey.LeftControl or key == InputKey.RightControl then
+        self.ctrlDown = down
+    end
+    
+    if not down then
+    
+        local hotkeyGroup = 0
+        if key == InputKey.Num1 then
+            hotkeyGroup = 1
+        elseif key == InputKey.Num2 then
+            hotkeyGroup = 2
+        elseif key == InputKey.Num3 then
+            hotkeyGroup = 3
+        elseif key == InputKey.Num4 then
+            hotkeyGroup = 4
+        elseif key == InputKey.Num5 then
+            hotkeyGroup = 5
+        end
+        
+        if hotkeyGroup ~= 0 then
+        
             success = true
             
-        end
-        
-        if key == InputKey.LeftControl or key == InputKey.RightControl then
-            self.ctrlDown = down
-        end
-        
-        if key == InputKey.LeftShift or key == InputKey.RightShift then
-            self.shiftDown = down
-        end
-
-        if not down then
-
-            local hotkeyGroup = 0
-            if key == InputKey.Num1 then
-                hotkeyGroup = 1
-            elseif key == InputKey.Num2 then
-                hotkeyGroup = 2
-            elseif key == InputKey.Num3 then
-                hotkeyGroup = 3
-            elseif key == InputKey.Num4 then
-                hotkeyGroup = 4
-            elseif key == InputKey.Num5 then
-                hotkeyGroup = 5
-            end
-            
-            if hotkeyGroup ~= 0 then
-            
-                success = true
-                
-                if not self.ctrlDown then
-                    self:SelectHotkeyGroup(hotkeyGroup)
-                else
-                    self:CreateHotkeyGroup(hotkeyGroup, self:GetSelection())
-                end
-                
+            if not self.ctrlDown then
+                self:SelectHotkeyGroup(hotkeyGroup)
+            else
+                self:CreateHotkeyGroup(hotkeyGroup, self:GetSelection())
             end
             
         end
@@ -265,16 +265,16 @@ function Commander:SendKeyEvent(key, down)
     end
     
     if not success then
-        success = Player.SendKeyEvent(self, key, down)        
+        success = Player.SendKeyEvent(self, key, down)
     end
     
     return success
-
+    
 end
 
 function Commander:OnDestroy()
 
-    Player.OnDestroy(self)
+    Player.OnDestroy(self) 
 
     if self.hudSetup == true then
     
@@ -299,7 +299,6 @@ function Commander:OnDestroy()
         
         GetGUIManager():DestroyGUIScriptSingle("GUICommanderTooltip")
         
-        self.ghostMode = false
         self:DestroySelectionCircles()
         self:DestroyGhostGuides()
         
@@ -348,8 +347,19 @@ end
 
 function Commander:AddGhostGuide(origin, radius)
 
+    local guide = nil
+    
+    if #self.reuseGhostGuides > 0 then
+        guide = self.reuseGhostGuides[#self.reuseGhostGuides]
+        table.remove(self.reuseGhostGuides, #self.reuseGhostGuides)
+    end
+
     // Insert point, circle
-    local guide = Client.CreateRenderModel(RenderScene.Zone_Default)
+    
+    if not guide then
+        guide = Client.CreateRenderModel(RenderScene.Zone_Default)
+    end
+
     local modelName = ConditionalValue(self:GetTeamType() == kAlienTeamType, Commander.kAlienCircleModelName, Commander.kMarineCircleModelName)
     guide:SetModel(modelName)
     local coords = Coords.GetLookIn( origin + Vector(0, kZFightingConstant, 0), Vector(1, 0, 0) )
@@ -365,157 +375,108 @@ end
 // visual range for selected units if they are specified.
 function Commander:UpdateGhostGuides()
 
-    local kGhostGuideUpdateTime = .3
+    self:DestroyGhostGuides(true)
 
-    // Only update every so often (update immediately after minimap click?)
-    if self.timeOfLastGhostGuideUpdate == nil or Shared.GetTime() > self.timeOfLastGhostGuideUpdate + kGhostGuideUpdateTime then
-
-        self:DestroyGhostGuides()
-    
-        local techId = self.currentTechId
-        if techId ~= nil and techId ~= kTechId.None then
+    local techId = self.currentTechId
+    if techId ~= nil and techId ~= kTechId.None then
+        
+        // check if entity has a special ghost guide method
+        local method = LookupTechData(techId, kTechDataGhostGuidesMethod, nil)
+        
+        if method then
+            local guides = method(self)
+            for entity, radius in pairs(guides) do
+                self:AddGhostGuide(Vector(entity:GetOrigin()), radius)
+            end
+        end
+        
+        // If entity can only be placed within range of attach structures, get all the ents that
+        // count for this and draw circles around them
+        local ghostRadius = LookupTechData(techId, kStructureAttachRange, 0)
+        
+        if ghostRadius ~= 0 then
+        
+            // Lookup attach entity 
+            local attachId = LookupTechData(techId, kStructureAttachId)
             
-            // check if entity has a special ghost guide method
-            local method = LookupTechData(techId, kTechDataGhostGuidesMethod, nil)
-            
-            if method then
-                local guides = method(self)
-                for entity, radius in pairs(guides) do
-                    self:AddGhostGuide(Vector(entity:GetOrigin()), radius)
+            // Handle table of attach ids
+            local supportingTechIds = {}
+            if type(attachId) == "table" then
+                for index, currentAttachId in ipairs(attachId) do
+                    table.insert(supportingTechIds, currentAttachId)
                 end
+            else
+                table.insert(supportingTechIds, attachId)
             end
             
-            // If entity can only be placed within range of attach structures, get all the ents that
-            // count for this and draw circles around them
-            local ghostRadius = LookupTechData(techId, kStructureAttachRange, 0)
+            for index, ent in ipairs(GetEntsWithTechIdIsActive(supportingTechIds)) do 
+                self:AddGhostGuide(Vector(ent:GetOrigin()), ghostRadius)         
+            end
+
+        else
+
+            // Otherwise, draw only the free attach entities for this build tech (this is the common case)
+            for index, ent in ipairs(GetFreeAttachEntsForTechId(techId)) do                    
+                self:AddGhostGuide(Vector(ent:GetOrigin()), kStructureSnapRadius)                    
+            end
+
+        end
+        
+        // If attach range specified, then structures don't go on this attach point, but within this range of it            
+        self.attachRange = LookupTechData(techId, kStructureAttachRange, nil)
+        
+    end
+    
+    // Now draw visual ranges for selected units
+    for index, entityEntry in pairs(self.selectedEntities) do    
+    
+        // Draw visual range on structures that specify it (no building effects)
+        local entity = Shared.GetEntity(entityEntry[1])
+        if entity ~= nil then
+        
+            // if GetVisualRadius() returns an array of radiuses, draw them all
+            local visualRadius = entity:GetVisualRadius()
             
-            if ghostRadius ~= 0 then
-            
-                // Lookup attach entity 
-                local attachId = LookupTechData(techId, kStructureAttachId)
-                
-                // Handle table of attach ids
-                local supportingTechIds = {}
-                if type(attachId) == "table" then
-                    for index, currentAttachId in ipairs(attachId) do
-                        table.insert(supportingTechIds, currentAttachId)
+            if visualRadius ~= nil then
+                if type(visualRadius) == "table" then
+                    for i,r in ipairs(visualRadius) do
+                        self:AddGhostGuide(Vector(entity:GetOrigin()), r)
                     end
                 else
-                    table.insert(supportingTechIds, attachId)
+                    self:AddGhostGuide(Vector(entity:GetOrigin()), visualRadius)
                 end
-                
-                for index, ent in ipairs(GetEntsWithTechIdIsActive(supportingTechIds)) do 
-                    self:AddGhostGuide(Vector(ent:GetOrigin()), ghostRadius)         
-                end
-   
-            else
- 
-                // Otherwise, draw only the free attach entities for this build tech (this is the common case)
-                for index, ent in ipairs(GetFreeAttachEntsForTechId(techId)) do                    
-                    self:AddGhostGuide(Vector(ent:GetOrigin()), Commander.kStructureSnapRadius)                    
-                end
-
-            end
-            
-            // If attach range specified, then structures don't go on this attach point, but within this range of it            
-            self.attachRange = LookupTechData(techId, kStructureAttachRange, nil)
-            
-        end
-        
-        // Now draw visual ranges for selected units
-        for index, entityEntry in pairs(self.selectedEntities) do    
-        
-            // Draw visual range on structures that specify it (no building effects)
-            local entity = Shared.GetEntity(entityEntry[1])
-            if entity ~= nil then
-            
-                // if GetVisualRadius() returns an array of radiuses, draw them all
-                local visualRadius = entity:GetVisualRadius()
-                
-                if visualRadius ~= nil then
-                    if type(visualRadius) == "table" then
-                        for i,r in ipairs(visualRadius) do
-                            self:AddGhostGuide(Vector(entity:GetOrigin()), r)
-                        end
-                    else
-                        self:AddGhostGuide(Vector(entity:GetOrigin()), visualRadius)
-                    end
-                end
-                
             end
             
         end
-       
-        self.timeOfLastGhostGuideUpdate = Shared.GetTime()
- 
+        
     end
     
 end
 
-function Commander:DestroyGhostGuides()
 
-    if self.ghostGuides then
-    
-        for index, guide in ipairs(self.ghostGuides) do
-        
+function Commander:DestroyGhostGuides(reuse)
+
+    for index, guide in ipairs(self.ghostGuides) do
+        if not reuse then
             Client.DestroyRenderModel(guide[2])
-            
-        end
-        
-    end
-        
-    self.ghostGuides = {}
-    
-end
 
-// Update ghost structure position to show where building would go
-function Commander:UpdateGhostStructureVisuals()
-
-    if self:GetShowGhostModel() then
-
-        local x, y = Client.GetCursorPosScreen()           
-        
-        local trace = GetCommanderPickTarget(self, CreatePickRay(self, x, y), false, true)
-        
-        local valid, position, attachEntity = GetIsBuildLegal(self.currentTechId, trace.endPoint, Commander.kStructureSnapRadius, self)
-
-        local item = GUI.GetCursorFocus(x, y, Client.GetScreenWidth(), Client.GetScreenHeight())
-        if item ~= nil then
-            valid = false
-        end
-        
-        local coords = Coords.GetIdentity()        
-        
-        if self.specifyingOrientation then
-        
-            // Preserve position, but update angle from mouse (pass pitch yaw roll to Angles)
-            local angles = Angles(0, self.orientationAngle, 0)
-            coords = Coords.GetLookIn(self.ghostStructureCoords.origin, angles:GetCoords().zAxis)
-            
-        elseif attachEntity then
-        
-            coords = attachEntity:GetAngles():GetCoords()
-            coords.origin = position
-            
         else
-            coords.origin = position
+            guide[2]:SetIsVisible(false)
+            table.insert(self.reuseGhostGuides, guide[2])
         end
-        
-        local coordsMethod = LookupTechData(self.currentTechId, kTechDataOverrideCoordsMethod, nil)
-        
-        if coordsMethod then
-            coords = coordsMethod(coords)
+    end
+    
+    if not reuse then
+    
+        for index, guide in ipairs(self.reuseGhostGuides) do
+            Client.DestroyRenderModel(guide[2])
         end
-        
-        self.ghostStructureCoords = coords
 
-        if not self.specifyingOrientation then
-
-            self.ghostStructureValid = valid
-            
-        end
+        self.reuseGhostGuides = {}
         
     end
+
+    self.ghostGuides = {}
 
 end
 
@@ -534,43 +495,14 @@ function CommanderUI_ActionCancelled()
     // Clear cancel after we trigger it
     player.commanderCancel = false
     
-    player.ghostMode = false
+    SetCommanderGhostStructureEnabled(false)
     
     return cancelled
     
 end
 
-/**
- * Called when the user drags out a selection box. The coordinates are in
- * pixel space.
- */
-function CommanderUI_SelectMarquee(selectStartX, selectStartY, selectEndX, selectEndY)
-   
-    local player = Client.GetLocalPlayer()        
-    player:SelectMarquee(selectStartX, selectStartY, selectEndX, selectEndY)
-
-end
-
-/**
- * Called by Flash when the mouse is at the edge of the screen.
- */
-function CommanderUI_ScrollView(deltaX, deltaY) 
-   
-    local player = Client.GetLocalPlayer()        
-    player.scrollX = deltaX
-    player.scrollY = deltaY
-
-end
-
 function CommanderUI_GetUIClickable()
-
-    local player = Client.GetLocalPlayer()
-    if player and player:isa("Commander") then
-        return not player.managerScript:GetIsSelectorDown()
-    end
-    
-    return false
-    
+    return not GetIsCommanderMarqueeSelectorDown()
 end
 
 function GetTechIdFromButtonIndex(index)
@@ -588,93 +520,9 @@ end
 
 function Commander:CloseMenu()
 
-    self.ghostMode = false
+    SetCommanderGhostStructureEnabled(false)
+    
     return Player.CloseMenu(self)
-    
-end
-
-// var mouseButton:Number = (_lbutton?1:0) + (_mbutton?4:0) + (_rbutton?2:0);
-function CommanderUI_TargetedAction(index, x, y, button)
-
-    local techId = GetTechIdFromButtonIndex(index)   
-    local player = Client.GetLocalPlayer()
-    local normalizedPickRay = CreatePickRay(player, x, y)
-    
-    // Don't execute targeted action if we're still on top of the UI    
-    if not player.cursorOverUI then
-    
-        if button == 1 then
-        
-            if player:TechCausesDelay(player.currentTechId) then
-                player.leftClickActionDelay = kCommanderLeftClickDelay
-            end
-        
-            // Send order target to where ghost structure is, in case it was snapped to an attach point
-            if player.ghostStructureValid then
-
-                local ghostOrigin = player.ghostStructureCoords.origin
-                local ghostScreenPos = Client.WorldToScreen(ghostOrigin)
-                
-                local pickRay = CreatePickRay(player, ghostScreenPos.x, ghostScreenPos.y)
-                VectorCopy(pickRay, normalizedPickRay)
-                
-            end
-
-            // Don't destroy ghost when they first place the sentry - allow commander to specify orientation
-            if not LookupTechData(techId, kTechDataSpecifyOrientation, false) or player.specifyingOrientation then
-
-                player:SendTargetedAction(techId, normalizedPickRay)
-                
-            end
-            
-        end
-        
-    end
-    
-end
-
-/**
- * Called to determine if target is valid for a targeted tech id. For example, this function
- * could return false when trying to place a medpack on an alien. 
- */
-function CommanderUI_IsValid(button, x, y)
-
-    // Check for valid structure placement
-    local valid = false
-    
-    local player = Client.GetLocalPlayer()
-    if player.currentTechId ~= nil and player.currentTechId ~= kTechId.None then
-
-        // To allow canceling structures, esp. ones with attach points (this button index seems off by 1)
-        if button == 2 then
-            valid = true
-        else
-        
-            local techNode = GetTechNode(player.currentTechId)
-            if techNode ~= nil and (techNode:GetIsBuild() or techNode:GetIsBuy() or techNode:GetIsEnergyBuild()) then
-            
-                local trace = GetCommanderPickTarget(player, CreatePickRay(player, x, y), false, true)        
-                valid = GetIsBuildLegal(player.currentTechId, trace.endPoint, Commander.kStructureSnapRadius, player)
-                
-                if (techNode:GetIsBuild() or techNode:GetIsEnergyBuild()) then
-                    local item = GUI.GetCursorFocus(x, y, Client.GetScreenWidth(), Client.GetScreenHeight())
-                    if (item ~= nil) then
-                        valid = false
-                    end
-                end
-                
-            else
-                valid = true
-            end
-            
-        end
-        
-    else
-        // Needed to make sure we can leave targeting mode
-        valid = true        
-    end
-    
-    return valid
     
 end
 
@@ -708,7 +556,7 @@ function CommanderUI_GetDynamicMapBlips()
 
     local player = Client.GetLocalPlayer()
     if player then
-        return player:GetAndClearAlertBlips()
+        return player:GetAlertBlips()
     end
     
     return { }
@@ -730,38 +578,35 @@ function Commander:OnInitLocalClient()
     
     self.selectionCircles = { }
     self.sentryArcs = { }
-    self.ghostGuides = { }
+    self.ghostGuides = {}
+    self.reuseGhostGuides = {}
     
     self:SetupHud()
     
-    // Turn off skybox rendering when commanding
+    // Turn off skybox rendering when commanding.
     SetSkyboxDrawState(false)
     
-    // Set props invisible for Comm      
+    // Set props invisible for Comm.
     SetCommanderPropState(true)
     
-    // Turn off sound occlusion for Comm
+    // Turn off sound occlusion for Comm.
     Client.SetSoundGeometryEnabled(false)
     
-    // Set commander geometry invisible
+    // Set commander geometry invisible.
     Client.SetGroupIsVisible(kCommanderInvisibleGroupName, false)
     
-    // Turn off fog to improve look
+    // Turn off fog to improve look.
     Client.SetEnableFog(false)
     
-    // Set our location so we are viewing the command structure we're in
-    self:SetStartPosition() 
-
+    // Set our location so we are viewing the command structure we're in.
+    self:SetStartPosition()
+    
     if self.guiOrders == nil then
         self.guiOrders = GetGUIManager():CreateGUIScriptSingle("GUIOrders")
     end
     
-    
-    
-    self.cursorOverUI = false
-    
     self.lastHotkeyIndex = nil
-
+    
 end
 
 function Commander:SetStartPosition()
@@ -790,6 +635,9 @@ function Commander:OverrideInput(input)
     input.move.z = 0
     
     // Move to position if minimap clicked or idle work clicked
+    input.yaw = self.minimapNormX
+    input.pitch = self.minimapNormY
+
     if self.setScrollPosition then
     
         input.commands = bit.bor(input.commands, Move.Minimap)
@@ -797,10 +645,7 @@ function Commander:OverrideInput(input)
         // Put in yaw and pitch because they are 16 bits
         // each. Without them we get a "settling" after
         // clicking the minimap due to differences after
-        // sending to the server
-        input.yaw = self.minimapNormX
-        input.pitch = self.minimapNormY
-        
+        // sending to the server        
         self.setScrollPosition = false
 
     end
@@ -874,7 +719,7 @@ function Commander:SetupHud()
     
     local selectionPanelScript = GetGUIManager():CreateGUIScriptSingle("GUISelectionPanel")
     
-    local buttonsScriptName = ConditionalValue(self:GetTeamType() == kAlienTeamType, "GUICommanderButtonsAliens", "GUICommanderButtonsMarines")
+    local buttonsScriptName = "GUICommanderButtonsMarines"
     self.buttonsScript = GetGUIManager():CreateGUIScript(buttonsScriptName)
     self.buttonsScript:GetBackground():AddChild(selectionPanelScript:GetBackground())
     minimapScript:SetButtonsScript(self.buttonsScript)
@@ -884,7 +729,7 @@ function Commander:SetupHud()
     GetGUIManager():CreateGUIScriptSingle("GUIResourceDisplay")
     
     local minimapButtons = GetGUIManager():CreateGUIScriptSingle("GUIMinimapButtons")
-    minimapButtons:SetMinimapScript(minimapScript)
+    minimapScript:GetBackground():AddChild(minimapButtons:GetBackground())
     
     minimapScript:GetBackground():AddChild(hotkeyIconScript:GetBackground())
     self.managerScript = GetGUIManager():CreateGUIScript("GUICommanderManager")
@@ -896,7 +741,7 @@ function Commander:SetupHud()
     self.managerScript:AddChildScript(alertsScript)
     self.managerScript:AddChildScript(minimapScript)
     self.managerScript:AddChildScript(selectionPanelScript)
-    self.managerScript:AddChildScript(self.buttonsScript)
+    //self.managerScript:AddChildScript(self.buttonsScript)
     self.managerScript:AddChildScript(hotkeyIconScript)
     self.managerScript:AddChildScript(logoutScript)
     self.managerScript:AddChildScript(minimapButtons)
@@ -925,10 +770,6 @@ function Commander:ClickSelect(x, y, controlSelect)
 
     local success = false
     local hitEntity = false
-
-    if Client and self.leftClickActionDelay > 0 then
-        return false
-    end
     
     if Client and self.timeLastTargetedAction and self.timeLastTargetedAction + kCommanderLeftClickDelay > Shared.GetTime() then
         return false
@@ -949,29 +790,13 @@ function Commander:ClickSelect(x, y, controlSelect)
     else
         success, hitEntity = self:ClickSelectEntities(pickVec)        
     end
-
-    self.clickStartX = x
-    self.clickStartY = y
-    self.clickEndX = x
-    self.clickEndY = y
     
     return success, hitEntity
-            
+    
 end
 
 local function GetSendsCommanderMessages(self)
     return Client.GetLocalPlayer() == self and not Shared.GetIsRunningPrediction()
-end
-
-function Commander:SendMarqueeSelectCommand(pickStartVec, pickEndVec)
-
-    if GetSendsCommanderMessages(self) then
-    
-        local message = BuildMarqueeSelectCommand(pickStartVec, pickEndVec)
-        Client.SendNetworkMessage("MarqueeSelect", message, true)
-        
-    end
-    
 end
 
 function Commander:SendClickSelectCommand(pickVec)
@@ -1059,20 +884,6 @@ function Commander:GetTimeLastTargetedAction()
     return self.timeLastTargetedAction or 0
 end
 
-function Commander:SendTargetedOrientedAction(techId, normalizedPickRay, orientation)
-
-    if GetSendsCommanderMessages(self) then
-    
-        local message = BuildCommTargetedActionMessage(techId, normalizedPickRay.x, normalizedPickRay.y, normalizedPickRay.z, orientation)
-        Client.SendNetworkMessage("CommTargetedAction", message, true)
-        //UpdateCooldown(self, techId)
-        self.timeLastTargetedAction = Shared.GetTime()
-        self:SetCurrentTech(kTechId.None)
-        
-    end
-    
-end
-
 function Commander:SendTargetedActionWorld(techId, worldCoords, orientation)
 
     if GetSendsCommanderMessages(self) then
@@ -1087,86 +898,28 @@ function Commander:SendTargetedActionWorld(techId, worldCoords, orientation)
     
 end
 
-local function GetIsStructureExitValid(origin, direction, range)
+local function UpdateGhostStructureVisuals(self)
 
-    local valid = true
-
-    // Make sure we don't hit a wall or other entity
-    local trace = Shared.TraceRay(origin, origin + direction * range, CollisionRep.Move, PhysicsMask.CommanderSelect, nil)
+    local commSpecifyingOrientation = GetCommanderGhostStructureSpecifyingOrientation()
     
-    if trace.fraction ~= 1 then
-        valid = false
-    else
+    self.sentryRangeRenderModel:SetIsVisible(self.currentTechId == kTechId.Sentry and commSpecifyingOrientation)
     
-        // Now check to make sure end point isn't close to an attach point
-        local ents = GetEntitiesWithinRange("ScriptActor", origin + direction * 2, 2)
-        for index, entity in ipairs(ents) do
-        
-            if GetIsAttachment(entity:GetClassName()) then
-                valid = false
-                break
-            end
-            
-        end
+    local coords = GetCommanderGhostStructureCoords()
+    
+    local displayOrientation = GetCommanderGhostStructureValid() and commSpecifyingOrientation
+    self.orientationRenderModel:SetIsVisible(displayOrientation)
+    if displayOrientation then
+    
+        coords:Scale(Commander.kSentryArcScale)
+        coords.zAxis = -coords.zAxis
+        self.orientationRenderModel:SetCoords(coords)
         
     end
     
-    //DebugLineSuccess(origin, trace.endPoint, .2, valid)
-
-    return valid
+    if self.currentTechId == kTechId.Sentry then
     
-end
-
-function Commander:UpdateOrientationAngle(x, y)
-
-    if(self.specifyingOrientation) then
-    
-        // Get screen coords from world position       
-        local normalizedPickRay = CreatePickRay (self, x, y)
-        local trace = GetCommanderPickTarget(self, normalizedPickRay, false, true)
-        
-        local vecDiff = trace.endPoint - self.specifyingOrientationPosition
-        vecDiff.y = 0
-        
-        if vecDiff:GetLength() > 1 then
-        
-            local normToMouse = GetNormalizedVector(vecDiff)
-            
-            local coords = Coords.GetLookIn(self.specifyingOrientationPosition, -normToMouse)
-            coords:Scale(Commander.kSentryArcScale)
-            self.orientationRenderModel:SetCoords(coords)
-            self.orientationRenderModel:SetIsVisible(true)
-            
-            // Only for sentries
-            if self.currentTechId == kTechId.Sentry then
-                coords = Coords.GetLookIn(self.specifyingOrientationPosition, -normToMouse)
-                coords.zAxis = coords.zAxis * Sentry.kRange
-                self.sentryRangeRenderModel:SetCoords(coords)
-                self.sentryRangeRenderModel:SetIsVisible(true)
-            end
-            
-            // Don't let robotics factory orient into wall (which makes MACs and ARCs create outside the world)
-            local valid = true
-            if self.currentTechId == kTechId.RoboticsFactory then           
-            
-                valid = GetIsStructureExitValid(self.specifyingOrientationPosition, -GetNormalizedVector(vecDiff), 5)                
-                
-            elseif self.currentTechId == kTechId.PhaseGate  then
-            
-                valid = GetIsStructureExitValid(self.specifyingOrientationPosition, -GetNormalizedVector(vecDiff), 1.5)                
-                
-            end
-            
-            self.ghostStructureValid = valid
-            self.orientationRenderModel:SetIsVisible(valid)
-            self.orientationAngle = GetYawFromVector(normToMouse)
-            
-        end
-        
-    else
-        self.orientationAngle = 0
-        self.orientationRenderModel:SetIsVisible(false)
-        self.sentryRangeRenderModel:SetIsVisible(false)
+        coords.zAxis = coords.zAxis * Sentry.kRange
+        self.sentryRangeRenderModel:SetCoords(coords)
     end
     
 end
@@ -1185,7 +938,7 @@ function Commander:UpdateClientEffects(deltaTime, isLocal)
         local x = xScalar * Client.GetScreenWidth()
         local y = yScalar * Client.GetScreenHeight()
         
-        if not self.ghostMode and not self.cursorOverUI then
+        if not GetCommanderGhostStructureEnabled() and not CommanderUI_GetMouseIsOverUI() then
         
             local oldEntityIdUnderCursor = self.entityIdUnderCursor
             self.entityIdUnderCursor = self:GetUnitIdUnderCursor(CreatePickRay(self, x, y))
@@ -1198,9 +951,7 @@ function Commander:UpdateClientEffects(deltaTime, isLocal)
             self.entityIdUnderCursor = Entity.invalidId
         end
         
-        self:UpdateOrientationAngle(x, y)
-        
-        self:UpdateGhostStructureVisuals()        
+        UpdateGhostStructureVisuals(self)        
         
         self:UpdateSelectionCircles()
         
@@ -1408,7 +1159,7 @@ function Commander:UpdateCursor()
     end
     
     // If we're building or in a targeted mode, use a special targeting cursor
-    if self.ghostMode then
+    if GetCommanderGhostStructureEnabled() then
     
         hotspot = Vector(16, 16, 0)
         baseCursor = "BuildTargetDefault"
@@ -1433,7 +1184,7 @@ function Commander:UpdateCursor()
     
     // Set the cursor if it changed
     local cursorTexture = string.format("ui/Cursor_%s.dds", baseCursor)
-    if self.cursorOverUI and self.currentTechId == kTechId.None then
+    if CommanderUI_GetMouseIsOverUI() and self.currentTechId == kTechId.None then
     
         hotspot = Vector(0, 0, 0)
         cursorTexture = "ui/Cursor_MenuDefault.dds"
@@ -1449,100 +1200,12 @@ function Commander:UpdateCursor()
     
 end
 
-function Commander:ClientOnMousePress(mouseButton, x, y)
-
-    local success = false
-    local hitEntity = false
-
-    return success, hitEntity
-    
-end
-
 function Commander:ClientOnMouseRelease(mouseButton, x, y)
 
     local displayConfirmationEffect = false
     
-    local normalizedPickRay = CreatePickRay(self, x, y)    
-    if mouseButton == 0 then
-    
-        local minimapScript = GetGUIManager():GetGUIScriptSingle("GUIMinimapFrame")
-
-        // Only allowed when there is not a ghost structure or the structure is valid.
-        if not self.ghostMode then
-        
-            local techNode = GetTechNode(self.currentTechId) 
-
-            if self.currentTechId == nil or techNode == nil or not techNode:GetRequiresTarget() then
-                // Select things near click.
-                success, hitEntity = self:ClickSelect(x, y, self.ctrlDown)
-            end
-            
-        end
-        
-        if minimapScript and minimapScript:GetPingEnabled() then        
-            minimapScript:SetPingEnabled(false)            
-        end
-        
-        // Don't do anything if we're ghost structure is at invalid place
-        if self.ghostStructureValid == true then
-
-            // See if we have indicated an orientation for the structure yet (sentries only right now)
-            if LookupTechData(self.currentTechId, kTechDataSpecifyOrientation, false) and not self.specifyingOrientation then
-            
-                // Compute world position where we will place this entity
-                local trace = GetCommanderPickTarget(self, normalizedPickRay, false, true)
-                VectorCopy(trace.endPoint, self.specifyingOrientationPosition)
-                
-                self.specifyingOrientationPickVec = Vector()
-                VectorCopy(normalizedPickRay, self.specifyingOrientationPickVec)
-                
-                self.specifyingOrientation = true
-                
-                self:UpdateOrientationAngle(x, y)
-                
-            else
-                
-                // If we're in a mode, clear it and handle it
-                local techNode = GetTechNode(self.currentTechId)
-                if self.currentTechId ~= nil and techNode ~= nil and techNode:GetRequiresTarget() then
-
-                    if(techNode ~= nil and techNode.available) then
-
-                        local orientationAngle = ConditionalValue(self.specifyingOrientation, self.orientationAngle, math.random() * 2 * math.pi)
-                        if((self.currentTechId == kTechId.CommandStation) or (self.currentTechId == kTechId.Hive)) then
-                            orientationAngle = 0
-                        end
-                        
-                        // Don't execute action if we're still on top of the UI    
-                        if not self.cursorOverUI then    
-                        
-                            if LookupTechData(self.currentTechId, kTechDataSpecifyOrientation, false) then
-                
-                                // Send world coords of sentry placement instead of normalized pick ray.
-                                // Because the player may have moved since dropping the sentry and orienting it.
-                                self:SendTargetedActionWorld(self.currentTechId, self.specifyingOrientationPosition, orientationAngle)
-                                
-                            else                        
-                            
-                                local pickVec = ConditionalValue(self.specifyingOrientation, self.specifyingOrientationPickVec, normalizedPickRay)
-                                self:SendTargetedOrientedAction(self.currentTechId, pickVec, orientationAngle)
-                                
-                            end 
-
-                        end
-                        
-                    end
-                    
-                end
-                
-                self:SetCurrentTech(kTechId.None)
-                
-            end
-            
-        end
-        
-    // right-click order
-    elseif mouseButton == 1 then
+    local normalizedPickRay = CreatePickRay(self, x, y)
+    if mouseButton == 1 then
        
        if self.currentTechId ~= kTechId.None then
             self:SetCurrentTech(kTechId.None)
@@ -1550,78 +1213,41 @@ function Commander:ClientOnMouseRelease(mouseButton, x, y)
             self:SendTargetedAction(kTechId.Default, normalizedPickRay)
             displayConfirmationEffect = true
         end
-       
-    elseif mouseButton == 2 then
 
-        CommanderUI_TriggerPingInWorld(x, y)
-        
-        local minimapScript = GetGUIManager():GetGUIScriptSingle("GUIMinimapFrame")
-        if minimapScript then
-            minimapScript:SetPingEnabled(false)
-        end
-    
     end
     
     if displayConfirmationEffect then
     
         local trace = GetCommanderPickTarget(self, normalizedPickRay)
-        
         self:TriggerEffects("issue_order", { effecthostcoords = Coords.GetTranslation(trace.endPoint) } )
-        /*
-        local effectName = self:GetOrderConfirmedEffect()
-        if effectName ~= "" then
-            Shared.CreateEffect(nil, effectName, nil, Coords.GetTranslation(trace.endPoint))
-        end
-        */
         
     end
     
-end
-
-function Commander:SelectMarquee(selectStartX, selectStartY, selectEndX, selectEndY)
-   
-    // Create normalized coords which can be used on client and server
-    local pickStartVec = CreatePickRay(self, selectStartX, selectStartY)
-    local pickEndVec  = CreatePickRay(self, selectEndX, selectEndY)
-
-    // Process selection locally
-    self:MarqueeSelectEntities(pickStartVec, pickEndVec)
-    
-    // Send selection command to server
-    self:SendMarqueeSelectCommand(pickStartVec, pickEndVec)
-    
-    self.clickStartX = selectStartX*Client.GetScreenWidth()
-    self.clickStartY = selectStartY*Client.GetScreenHeight()
-    self.clickEndX = selectEndX*Client.GetScreenWidth()
-    self.clickEndY = selectEndY*Client.GetScreenHeight()
-
 end
 
 function Commander:TechCausesDelay(techId)
     return false
 end
 
-function Commander:SetCurrentTech(techId)   
+function Commander:SetCurrentTech(techId)
 
-    // Change menu if it is a menu
+    // Change menu if it is a menu.
     local techNode = GetTechNode(techId)
-    local showGhost = false
     local isMenu = false
     local requiresTarget = false
     
     if techNode ~= nil then
     
         if techNode:GetIsMenu() then
+        
             self.menuTechId = techId
             isMenu = true
+            
         end
         
         if techNode:GetRequiresTarget() then
             requiresTarget = true
         end
-        
-        showGhost = not techNode:GetIsEnergyManufacture() and not techNode:GetIsManufacture() and not techNode:GetIsPlasmaManufacture() 
-                    and not techNode:GetIsResearch() and not techNode:GetIsUpgrade()
         
     end
     
@@ -1648,9 +1274,7 @@ function Commander:SetCurrentTech(techId)
         
     end
     
-    self.specifyingOrientation = false
-    self.ghostMode = showGhost and self.currentTechId and techId ~= kTechId.None and LookupTechData(techId, kTechDataModel) ~= nil
-    self.ghostStructureValid = false
+    CommanderGhostStructureSetTech(self.currentTechId)
     
 end
 
@@ -1687,17 +1311,21 @@ function Commander:GetSelectedTabIndex()
 end
 
 function Commander:GetShowGhostModel()
-    return self.ghostMode
-end    
+    return GetCommanderGhostStructureEnabled()
+end
 
 function Commander:GetGhostModelTechId()
     return self.currentTechId
 end
 
 function Commander:GetGhostModelCoords()
-    return self.ghostStructureCoords
+    return GetCommanderGhostStructureCoords()
 end
 
 function Commander:GetIsPlacementValid()
-    return self.ghostStructureValid
+    return GetCommanderGhostStructureValid()
+end
+
+function Commander:GetShowAtmosphericLight()
+    return false
 end

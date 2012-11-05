@@ -103,10 +103,6 @@ function Ability:GetPrimaryAttackUsesFocus()
     return false
 end
 
-function Ability:GetisUsingPrimaryAttack()
-    return false
-end
-
 // Child class should override if preventing the primary attack is needed.
 function Ability:GetPrimaryAttackAllowed()
     return true

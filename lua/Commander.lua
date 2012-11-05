@@ -51,29 +51,22 @@ Commander.kAttachStructuresRadius = 5
 
 Commander.kScrollVelocity = 40
 
-// Snap structures within this range to attach points.
-Commander.kStructureSnapRadius = kStructureSnapRadius
-
 Script.Load("lua/Commander_Selection.lua")
 
 if (Server) then
     Script.Load("lua/Commander_Server.lua")
-else
+elseif Client then
     Script.Load("lua/Commander_Client.lua")
 end
 
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/placement_valid.surface_shader")
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/placement_invalid.surface_shader")
 
-Commander.kMaxSubGroupIndex = 32
-
 Commander.kSelectMode = enum( {'None', 'SelectedGroup', 'JumpedToGroup'} )
 
 local networkVars =
 {
     timeScoreboardPressed   = "float",
-    focusGroupIndex         = string.format("integer (1 to %d)", Commander.kMaxSubGroupIndex),
-    numIdleWorkers          = string.format("integer (0 to %d)", kMaxIdleWorkers),
     numPlayerAlerts         = string.format("integer (0 to %d)", kMaxPlayerAlerts),
     commanderCancel         = "boolean",
     commandStationId        = "entityid",
@@ -88,10 +81,17 @@ AddMixinNetworkVars(OverheadMoveMixin, networkVars)
 AddMixinNetworkVars(MinimapMoveMixin, networkVars)
 AddMixinNetworkVars(HotkeyMoveMixin, networkVars)
 
-function Commander:OnInitialized()
+function Commander:OnCreate()
 
+    Player.OnCreate(self)
+    
     InitMixin(self, CameraHolderMixin, { kFov = Commander.kFov })
     InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
+    
+end
+
+function Commander:OnInitialized()
+
     InitMixin(self, OverheadMoveMixin)
     InitMixin(self, MinimapMoveMixin)
     InitMixin(self, HotkeyMoveMixin)
@@ -101,25 +101,14 @@ function Commander:OnInitialized()
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
     
     self.selectedEntities = { }
-    self.selectedSubGroupEntityIds = { }
     
     Player.OnInitialized(self)
     
     self:SetIsVisible(false)
-    
-    // set to a time to delay any left click action
-    self.leftClickActionDelay = 0
-    
+
     if Client then
     
         self.drawResearch = false
-        
-        self.specifyingOrientation = false
-        self.orientationAngle = 0
-        self.specifyingOrientationPosition = Vector(0, 0, 0)
-        
-        self.ghostStructure = nil
-        self.ghostStructureValid = false
         
         // Start in build menu (more useful then command station menu)
         if self:GetIsLocalPlayer() then
@@ -138,7 +127,6 @@ function Commander:OnInitialized()
 
     self.timeScoreboardPressed = 0
     self.focusGroupIndex = 1
-    self.numIdleWorkers = 0
     self.numPlayerAlerts = 0
     self.positionBeforeJump = Vector(0, 0, 0)
     self.selectMode = Commander.kSelectMode.None
@@ -159,7 +147,8 @@ end
 
 function Commander:GetTechAllowed(techId, techNode, self)
 
-    local allowed, canAfford = Player.GetTechAllowed(self, techId, techNode, self)    
+    local allowed, canAfford = Player.GetTechAllowed(self, techId, techNode, self)
+    
     return allowed, canAfford
 
 end
@@ -194,44 +183,9 @@ function Commander:HandleButtons(input)
     end
     
     if Client then
-        self:ShowMap(true, bit.band(input.commands, Move.ShowMap) ~= 0)
+        //self:ShowMap(true, bit.band(input.commands, Move.ShowMap) ~= 0)
     end
     
-end
-
-// Don't show scoreboard right away, also use tab to handle sub-group selection through UI cleverness
-function Commander:UpdateScoreboard(input)
-
-    // If player holds scoreboard key (tab), show scores. If they tap it, switch
-    // focus to next sub-group within selection
-    if (bit.band(input.commands, Move.Scoreboard) ~= 0) then
-    
-        if self.timeScoreboardPressed == 0 then
-            self.timeScoreboardPressed = Shared.GetTime()
-        end
-        
-        if Shared.GetTime() > (self.timeScoreboardPressed + Commander.kScoreBoardDisplayDelay) then
-            self.showScoreboard = true
-        end
-    
-    else
-    
-        // If we're showing scoreboard, hide it
-        if self.showScoreboard then
-        
-            self.showScoreboard = false
-
-        elseif self.timeScoreboardPressed ~= 0 then
-        
-            // else switch to next sub group
-            self.focusGroupIndex = ( self.focusGroupIndex + 1 ) % Commander.kMaxSubGroupIndex
-            
-        end
-        
-        self.timeScoreboardPressed = 0
-        
-    end
-
 end
 
 function Commander:UpdateCrouch()
@@ -259,10 +213,6 @@ function Commander:UpdatePosition(velocity, time)
 
     return velocity
     
-end
-
-function Commander:GetNumIdleWorkers()
-    return self.numIdleWorkers
 end
 
 function Commander:GetNumPlayerAlerts()
@@ -428,12 +378,7 @@ function Commander:GetCurrentTechButtons(techId, entity)
             
         end
         
-        // add recycle button if not researching
-        if HasMixin(entity, "Recycle") and not entity:GetIsResearching() and entity:GetCanRecycle() and entity:GetTeamType() ~= kAlienTeamType then // TODO: don't check for team here, alien structures should simply not add the recycle mixin 
-            techButtons[kRecycleCancelButtonIndex] = kTechId.Recycle  
-
-        // If we're researching or already recycling, add cancel button if there is not already one.          
-        elseif HasMixin(entity, "Research") and entity:GetIsResearching() then
+        if (HasMixin(entity, "Research") and entity:GetIsResearching()) or (HasMixin(entity, "GhostStructure") and entity:GetIsGhostStructure()) then
         
             local foundCancel = false
             for b = 1, #techButtons do
@@ -450,7 +395,10 @@ function Commander:GetCurrentTechButtons(techId, entity)
             if not foundCancel then
                 techButtons[kRecycleCancelButtonIndex] = kTechId.Cancel
             end
-            
+        
+        // add recycle button if not researching / ghost structure mode
+        elseif HasMixin(entity, "Recycle") and not entity:GetIsResearching() and entity:GetCanRecycle() and not entity:GetIsRecycled() then
+            techButtons[kRecycleCancelButtonIndex] = kTechId.Recycle
         end
         
     end
@@ -500,24 +448,69 @@ function Commander:OnEntityChange(oldEntityId, newEntityId)
     
 end
 
-function Commander:GetIsEntityNameSelected(className)
+function Commander:SetTechCooldown(techId, cooldownDuration, startTime)
 
-    for tableIndex, entityPair in ipairs(self.selectedEntities) do
+    if techId == kTechId.None or not techId then
+        return
+    end    
+
+    local reusedEntry = false
     
-        local entityIndex = entityPair[1]
-        local entity = Shared.GetEntity(entityIndex)
+    for _, techIdCD in ipairs(GetTechIdCooldowns(self:GetTeamNumber())) do
+    
+        if techIdCD.TechId == techId then
         
-        // Don't allow it to be researched while researching
-        if( entity ~= nil and entity:isa(className) ) then
+            techIdCD.StartTime = startTime
+            techIdCD.CooldownDuration = cooldownDuration
+            reusedEntry = true
+            break
         
-            return true
-            
         end
-        
+    
     end
     
-    return false
+    if not reusedEntry then    
+        table.insert( GetTechIdCooldowns(self:GetTeamNumber()), { StartTime = startTime, TechId = techId, CooldownDuration = cooldownDuration } )    
+    end
     
+    if Server then
+    
+        // send message to commander to sync the cd
+    
+    end
+
+end
+
+function Commander:GetIsTechOnCooldown(techId)
+
+    for _, techIdCD in ipairs(GetTechIdCooldowns(self:GetTeamNumber())) do
+    
+        if techIdCD.TechId == techId then
+            
+            local time = Shared.GetTime()
+            return time < techIdCD.StartTime + techIdCD.CooldownDuration
+
+        end
+    
+    end
+
+end
+
+function Commander:GetCooldownFraction(techId)
+
+    for _, techIdCD in ipairs(GetTechIdCooldowns(self:GetTeamNumber())) do
+    
+        if techIdCD.TechId == techId then
+            
+            local timePassed = Shared.GetTime() - techIdCD.StartTime
+            return 1 - math.min(1, timePassed / techIdCD.CooldownDuration)
+
+        end
+    
+    end
+    
+    return 0
+
 end
 
 function Commander:OnProcessMove(input)
@@ -541,10 +534,6 @@ function Commander:OnProcessMove(input)
         end
         
     elseif Client then
-    
-        if self.leftClickActionDelay > 0 then
-            self.leftClickActionDelay = math.max(self.leftClickActionDelay - input.time, 0)
-        end
     
     end
     
@@ -579,5 +568,10 @@ end
 function Commander:OverrideCheckVision()
     return false
 end
+
+function Commander:OnProcessIntermediate(input)
+    self:UpdateClientEffects(input.time, true)
+end
+
 
 Shared.LinkClassToMap("Commander", Commander.kMapName, networkVars)

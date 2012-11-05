@@ -18,11 +18,10 @@ SwipeBlink.kMapName = "swipe"
 
 local networkVars =
 {
-    lastSwipedEntityId = "entityid",
     lastPrimaryAttackTime = "time"
 }
 
-SwipeBlink.kRange = 1.4
+SwipeBlink.kRange = 1.5
 
 local kAnimationGraph = PrecacheAsset("models/alien/fade/fade_view.animation_graph")
 
@@ -41,7 +40,6 @@ function SwipeBlink:OnCreate()
 
     Blink.OnCreate(self)
     
-    self.lastSwipedEntityId = Entity.invalidId
     self.primaryAttacking = false
     self.lastPrimaryAttackTime = 0
     
@@ -82,7 +80,7 @@ end
 
 function SwipeBlink:OnPrimaryAttack(player)
 
-    if not self:GetIsBlinking() and player:GetEnergy() >= self:GetEnergyCost() and not GetHasAttackDelay(self, player) then
+    if player:GetEnergy() >= self:GetEnergyCost() and not GetHasAttackDelay(self, player) then
         //self:PerformPrimaryAttack(player)
         self.primaryAttacking = true
     else
@@ -94,15 +92,7 @@ end
 // Claw attack, or blink if we're in that mode
 function SwipeBlink:PerformPrimaryAttack(player)
 
-    self.primaryAttacking = true
-    
-    // Check if the swipe may hit an entity. Don't actually do any damage yet.
-    local didHit, trace = CheckMeleeCapsule(self, player, kSwipeDamage, SwipeBlink.kRange)
-    self.lastSwipedEntityId = Entity.invalidId
-    if didHit and trace and trace.entity then
-        self.lastSwipedEntityId = trace.entity:GetId()
-    end
-    
+    self.primaryAttacking = true    
     return true
     
 end
@@ -110,17 +100,12 @@ end
 function SwipeBlink:OnPrimaryAttackEnd()
     
     Blink.OnPrimaryAttackEnd(self)
-    
     self.primaryAttacking = false
     
 end
 
 function SwipeBlink:GetPrimaryAttackUsesFocus()
     return true
-end
-
-function SwipeBlink:GetisUsingPrimaryAttack()
-    return self.primaryAttacking
 end
 
 function SwipeBlink:OnHolster(player)
@@ -158,22 +143,6 @@ function SwipeBlink:PerformMeleeAttack()
     local player = self:GetParent()
     if player then
         local didHit, hitObject, endPoint, surface = AttackMeleeCapsule(self, player, kSwipeDamage, SwipeBlink.kRange)
-    end
-    
-end
-
-function SwipeBlink:GetEffectParams(tableParams)
-
-    Blink.GetEffectParams(self, tableParams)
-    
-    // There is a special case for biting structures.
-    if self.lastSwipedEntityId ~= Entity.invalidId then
-    
-        local lastSwipedEntity = Shared.GetEntity(self.lastSwipedEntityId)
-        if lastSwipedEntity and GetReceivesStructuralDamage(lastSwipedEntity) then
-            tableParams[kEffectFilterHitSurface] = "structure"
-        end
-        
     end
     
 end

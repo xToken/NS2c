@@ -19,6 +19,11 @@ TechMixin.optionalCallbacks =
     OnTechIdSet = "Will be called after the tech id is set inside SetTechId."
 }
 
+TechMixin.expectedCallbacks = 
+{
+    GetMapName = "Map name for looking up tech id"
+}
+
 TechMixin.networkVars =
 {
     techId = string.format("integer (0 to %d)", kTechIdMax)

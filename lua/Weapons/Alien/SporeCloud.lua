@@ -17,7 +17,6 @@ class 'SporeCloud' (Entity)
 SporeCloud.kMapName = "SporeCloud"
 
 SporeCloud.kLoopingEffect = PrecacheAsset("cinematics/alien/lerk/spores.cinematic")
-SporeCloud.kLoopingEffectAlien = PrecacheAsset("cinematics/alien/lerk/spores.cinematic")
 local kSporesSound = PrecacheAsset("sound/ns2c.fev/ns2c/alien/lerk/spore_hit")
 
 local gHurtBySpores = { }
@@ -73,14 +72,6 @@ end
     
 function SporeCloud:GetLifeSpan()
     return SporeCloud.kSporeCloudDuration
-end
-
-function SporeCloud:OnInitialized()
-    
-    if Server then
-
-    end
-    
 end
 
 function SporeCloud:SetTravelDestination(position)
@@ -140,7 +131,7 @@ function SporeCloud:OnUpdate(deltaTime)
             local distanceFraction = (self.destination - self:GetOrigin()):GetLength() / SporeCloud.kMaxRange
             self:SetOrigin( self:GetOrigin() + GetNormalizedVector(travelVector) * deltaTime * SporeCloud.kTravelSpeed * distanceFraction )
         end
-        if travelVector:GetLength() < 2 and not self.soundplayed then
+        if travelVector:GetLength() < 3 and not self.soundplayed then
             Shared.PlayWorldSound(nil, kSporesSound, nil, self:GetOrigin())
             self.soundplayed = true
         end
@@ -165,13 +156,8 @@ function SporeCloud:OnUpdate(deltaTime)
             self.sporeEffect:SetCoords(self:GetCoords())            
         else
         
-            self.sporeEffect = Client.CreateCinematic(RenderScene.Zone_Default)
-            local effectName = SporeCloud.kLoopingEffect
-            if not GetAreEnemies(self, Client.GetLocalPlayer()) then
-                effectName = SporeCloud.kLoopingEffectAlien
-            end
-            
-            self.sporeEffect:SetCinematic(effectName)
+            self.sporeEffect = Client.CreateCinematic(RenderScene.Zone_Default) 
+            self.sporeEffect:SetCinematic(SporeCloud.kLoopingEffect)
             self.sporeEffect:SetRepeatStyle(Cinematic.Repeat_Endless)
             self.sporeEffect:SetCoords(self:GetCoords())
         
@@ -200,7 +186,7 @@ if Server then
                     local trace = Shared.TraceRay(self:GetOrigin(), attackPoint, CollisionRep.Damage, PhysicsMask.Bullets, filterNonDoors)
                     if trace.fraction == 1.0 or trace.entity == entity then
                     
-                        self:DoDamage(kSporeDamage , entity, trace.endPoint, (attackPoint - trace.endPoint):GetUnit(), "none" )
+                        self:DoDamage(kSporeDamage , entity, trace.endPoint, (attackPoint - trace.endPoint):GetUnit(), "organic" )
                         
                         // Spores can't hurt this entity for kSporeDamageDelay
                         SetEntityRecentlyHurt(entity:GetId())

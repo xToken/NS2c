@@ -55,7 +55,7 @@ Armory.kDeployTime = 1
 
 if Server then
     Script.Load("lua/Armory_Server.lua")
-else
+elseif Client then
     Script.Load("lua/Armory_Client.lua")
 end
 
@@ -121,20 +121,9 @@ function Armory:OnCreate()
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup)
     
-end
-
-function Armory:OnInitialized()
-
-    ScriptActor.OnInitialized(self)
-
-    self:SetModel(Armory.kModelName, kAnimationGraph)
-    
-    InitMixin(self, WeldableMixin)
-    
     // False if the player that's logged into a side is only nearby, true if
     // the pressed their key to open the menu to buy something. A player
     // must use the armory once "logged in" to be able to buy anything.
-    
     self.loginEastAmount = 0
     self.loginNorthAmount = 0
     self.loginWestAmount = 0
@@ -147,12 +136,22 @@ function Armory:OnInitialized()
     
     self.deployed = false
     
+end
+
+function Armory:OnInitialized()
+
+    ScriptActor.OnInitialized(self)
+
+    self:SetModel(Armory.kModelName, kAnimationGraph)
+    
+    InitMixin(self, WeldableMixin)
+    
     if Server then    
     
-        self.loggedInArray = {false, false, false, false}
+        self.loggedInArray = { false, false, false, false }
         
         // Use entityId as index, store time last resupplied
-        self.resuppliedPlayers = {}
+        self.resuppliedPlayers = { }
 
         self:SetNextThink(Armory.kThinkTime)
         
@@ -196,25 +195,16 @@ function Armory:GetTechButtons(techId)
 
     if self:GetTechId() == kTechId.Armory then
     
-        techButtons = { kTechId.Mines, kTechId.Shotgun, kTechId.None, kTechId.None,
-                        kTechId.Welder, kTechId.None, kTechId.None, kTechId.None }
+        techButtons = { kTechId.AdvancedArmoryUpgrade, kTechId.None, kTechId.None, kTechId.None,
+                        kTechId.HandGrenadesTech, kTechId.None, kTechId.None, kTechId.None }
     
     else
     
-        techButtons = { kTechId.Mines, kTechId.Shotgun, kTechId.HeavyMachineGun, kTechId.GrenadeLauncher,
-                        kTechId.Welder, kTechId.None, kTechId.None, kTechId.None }
+        techButtons = { kTechId.None, kTechId.None, kTechId.None, kTechId.None,
+                        kTechId.HandGrenadesTech, kTechId.None, kTechId.None, kTechId.None }
         
     end
-
-    // Show button to upgraded to advanced armory
-    if self:GetTechId() == kTechId.Armory and self:GetResearchingId() ~= kTechId.AdvancedArmoryUpgrade then
-        techButtons[kMarineUpgradeButtonIndex] = kTechId.AdvancedArmoryUpgrade
-    end
     
-    if not GetHasTech(self, kTechId.HandGrenadesTech, true) and self:GetResearchingId() ~= kTechId.HandGrenadesTech then
-        techButtons[7] = kTechId.HandGrenadesTech
-    end
-
     return techButtons
     
 end

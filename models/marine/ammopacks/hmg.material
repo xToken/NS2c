@@ -1,0 +1,5 @@
+shader = "models/marine/marine.surface_shader"
+albedoMap = "models/marine/ammopacks/hmg.dds"
+specularMap = "models/marine/ammopacks/hmg_spec.dds"
+normalMap = "models/marine/ammopacks/hmg_norm.dds"
+emissiveMap = "models/black_ilum.dds"

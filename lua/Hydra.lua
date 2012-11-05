@@ -27,7 +27,6 @@ Script.Load("lua/SleeperMixin.lua")
 Script.Load("lua/TargetCacheMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
-Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/DamageMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 
@@ -35,6 +34,7 @@ Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/TriggerMixin.lua")
 Script.Load("lua/TargettingMixin.lua")
+Script.Load("lua/HasUmbraMixin.lua")
 
 class 'Hydra' (ScriptActor)
 
@@ -78,8 +78,8 @@ AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
-AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
+AddMixinNetworkVars(HasUmbraMixin, networkVars)
 
 function Hydra:OnCreate()
 
@@ -101,12 +101,13 @@ function Hydra:OnCreate()
     InitMixin(self, CombatMixin)
     InitMixin(self, RagdollMixin)
     InitMixin(self, DamageMixin)
-    InitMixin(self, UmbraMixin)
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
+    InitMixin(self, HasUmbraMixin)
     
     self.alerting = false
     self.attacking = false
+    self.umbratime = 0
     self.hydraParentId = Entity.invalidId
     
     self:SetLagCompensated(false)

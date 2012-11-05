@@ -49,7 +49,7 @@ end
 
 
 // Use this function to change damage according to current upgrades
-function NS2Gamerules_GetUpgradedDamage(attacker, doer, damage, damageType)
+function NS2Gamerules_GetUpgradedDamage(attacker, target, doer, damage, damageType)
 
     local damageScalar = 1
 
@@ -77,26 +77,26 @@ function NS2Gamerules_GetUpgradedDamage(attacker, doer, damage, damageType)
             damageScalar = kPrimalScreamDamageModifier
         end
     end
+    
+    if attacker and attacker:isa("Player") then
+        if target.GetReceivesStructuralDamage and target:GetReceivesStructuralDamage(damageType) then
+            local hasupg, level = GetHasBombardUpgrade(attacker)
+            if level > 0 and hasupg then
+                damageScalar = 1 + (((kBombardAttackDamageMultipler - 1)/3) * level)
+            end
+        else
+            local focuslevel = CheckWeaponForFocus(doer, attacker)
+            if focuslevel > 0 then
+                damageScalar = 1 + (((kFocusAttackDamageMultipler - 1)/3) * focuslevel)
+            end
+        end
+    end
         
     return damage * damageScalar
     
 end
 
-function Gamerules_GetDamageMultiplier(attacker, target)
-
-    if attacker and attacker:isa("Player") then
-        if target.GetReceivesStructuralDamage and target:GetReceivesStructuralDamage(damageType) then
-            local hasupg, level = GetHasBombardUpgrade(attacker)
-            if level > 0 and hasupg then
-                return 1 + (((kBombardAttackDamageMultipler - 1)/3) * level)
-            end
-        else
-            local focuslevel = CheckActiveWeaponForFocus(attacker)
-            if focuslevel > 0 then
-                return 1 + (((kFocusAttackDamageMultipler - 1)/3) * focuslevel)
-            end
-        end
-    end
+function Gamerules_GetDamageMultiplier()
     
     if Server and Shared.GetCheatsEnabled() then
         return GetGamerules():GetDamageMultiplier()
@@ -165,7 +165,7 @@ end
 
 local function ApplyAttackerModifiers(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType)
 
-    damage = NS2Gamerules_GetUpgradedDamage(attacker, doer, damage, damageType)
+    damage = NS2Gamerules_GetUpgradedDamage(attacker, target, doer, damage, damageType)
     damage = damage * Gamerules_GetDamageMultiplier()
     
     if attacker and attacker.ComputeDamageAttackerOverride then

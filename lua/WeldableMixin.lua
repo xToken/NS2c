@@ -25,7 +25,7 @@ WeldableMixin.expectedMixins =
     Team = "Required for GetTeamNumber"
 }
 
-function WeldableMixin:OnWeld(doer, elapsedTime)
+function WeldableMixin:OnWeld(doer, elapsedTime, player)
 
     if self:GetCanBeWelded(doer) then
     
@@ -33,6 +33,10 @@ function WeldableMixin:OnWeld(doer, elapsedTime)
             self:OnWeldOverride(doer, elapsedTime)
         elseif doer:isa("Welder") then
             self:AddHealth(doer:GetRepairRate(self) * elapsedTime)
+        end
+        
+        if player and player.OnWeldTarget then
+            player:OnWeldTarget(self)
         end
         
     end

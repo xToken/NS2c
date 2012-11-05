@@ -46,7 +46,6 @@ end
 function Grenade:GetProjectileModel()
     return Grenade.kModelName
 end 
-
 function Grenade:GetDeathIconIndex()
     return kDeathMessageIcon.Grenade
 end

@@ -27,9 +27,16 @@ SpikesMixin.overrideFunctions =
 SpikesMixin.networkVars =
 {
     shootingSpikes = "boolean",
+    lastSecondaryAttackTime = "time",
     // need to use a network variable for silence upgrade here, since the marines do not know the alien tech tree
     silenced = "boolean"
 }
+
+function SpikesMixin:__initmixin()
+    self.lastSecondaryAttackTime = 0
+    shootginSpikes = false
+    silenced = false
+end
 
 local function FireSpikes(self)
 
@@ -50,10 +57,6 @@ local function FireSpikes(self)
     self.spiked = true
     self.silenced = GetHasSilenceUpgrade(player)
 
-    if Client then
-        DbgTracer.MarkClientFire(player, startPoint)
-    end
-
     for spike = 1, numSpikes do
 
         // Calculate spread for each shot, in case they differ    
@@ -67,17 +70,9 @@ local function FireSpikes(self)
         startPoint = player:GetEyePos()
         
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
-        
-        if Server then
-            Server.dbgTracer:TraceBullet(player, startPoint, trace)
-        end
   
         local distToTarget = (trace.endPoint - startPoint):GetLength()
-        
-        if Server then
-            Server.dbgTracer:TraceBullet(player, startPoint, trace)  
-        end
-        
+
         if trace.fraction < 1 then
 
             // Have damage increase to reward close combat
@@ -120,8 +115,12 @@ function SpikesMixin:OnSecondaryAttackEnd(player)
 
 end
 
+function SpikesMixin:OnHolster()
+    self.secondaryAttacking = false
+end
+
 function SpikesMixin:GetHasSecondary(player)
-    return player:GetHasThreeHives()
+    return true
 end
 
 function SpikesMixin:GetSecondaryEnergyCost(player)
@@ -193,6 +192,13 @@ function SpikesMixin:OnClientSecondaryAttacking()
         self:TriggerEffects("spikes_attack")
     end
     
+end
+
+function SpikesMixin:GetTriggerSecondaryEffects()
+
+    local parent = self:GetParent()
+    return parent ~= nil and parent:GetIsAlive()
+
 end
 
 function SpikesMixin:GetDamageType()

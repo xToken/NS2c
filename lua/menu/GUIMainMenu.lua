@@ -18,6 +18,7 @@ Script.Load("lua/menu/Table.lua")
 Script.Load("lua/menu/Ticker.lua")
 Script.Load("lua/ServerBrowser.lua")
 Script.Load("lua/menu/Form.lua")
+Script.Load("lua/menu/ServerList.lua")
 Script.Load("lua/dkjson.lua")
 
 local kMainMenuLinkColor = Color(137 / 255, 137 / 255, 137 / 255, 1)
@@ -38,7 +39,13 @@ local kMaxAcceleration = 1.4
 
 local kDisplayModes = { "windowed", "fullscreen", "fullscreen-windowed" }
 local kAmbientOcclusionModes = { "off", "medium", "high" }
+local kInfestationModes = { "minimal", "rich" }
 
+// Mods that can be running on a server and still be considered pure
+local kPureMods =
+    {
+        ["5f7771c"] = true // derrrp
+    }
     
 local kLocales =
     {
@@ -68,7 +75,12 @@ function GUIMainMenu:Initialize()
     self.mainWindow:SetCSSClass("main_frame")
     
     self.tvGlareImage = CreateMenuElement(self.mainWindow, "Image")
-    self.tvGlareImage:SetCSSClass("tvglare")
+    
+    if MainMenu_IsInGame() then
+        self.tvGlareImage:SetCSSClass("tvglare_dark")
+    else
+        self.tvGlareImage:SetCSSClass("tvglare")
+    end    
     
     self.mainWindow:DisableTitleBar()
     self.mainWindow:DisableResizeTile()
@@ -117,6 +129,7 @@ function GUIMainMenu:Initialize()
     self:CreateOptionWindow()
     self:CreateModsWindow()
     self:CreatePasswordPromptWindow()
+    self:CreateAutoJoinWindow()
     self:CreateAlertWindow()
     
     local TriggerOpenAnimation = function(window)
@@ -256,7 +269,7 @@ function GUIMainMenu:Initialize()
             end
         })
         
-        self.quitLink = self:CreateMainLink("EXIT", "exit", "04")
+        self.quitLink = self:CreateMainLink("EXIT", "exit", "05")
         self.quitLink:AddEventCallbacks(
         {
             OnClick = function(self)
@@ -318,7 +331,7 @@ end
 
 function GUIMainMenu:Uninitialize()
 
-    self:DestroyAllWindows()    
+    self:DestroyAllWindows()
     GUIAnimatedScript.Uninitialize(self)
     
 end
@@ -356,8 +369,11 @@ function GUIMainMenu:CreateProfile()
     self.avatar = CreateMenuElement(self.profileBackground, "Image")
     self.avatar:SetCSSClass("avatar")
     self.avatar:SetBackgroundTexture("*avatar")
+
+    // Remove icons until we can get proper artwork in for them
         
     // create SE and dev tools icons, TODO: set correct CSS class
+    /*
     self.seIcon = CreateMenuElement(self.profileBackground, "Image")
     self.seIcon:SetCSSClass("se_enabled")
     self.seIcon:EnableHighlighting()
@@ -376,7 +392,7 @@ function GUIMainMenu:CreateProfile()
         table.insert(self.dlcIcons, dlcIcon)
     
     end
-    
+    */
     self.playerName = CreateMenuElement(self.profileBackground, "Font")
     self.playerName:SetCSSClass("profile")
     
@@ -390,10 +406,14 @@ local function RefreshServerList(self)
 
     self.numServers = 0
     self.refreshingServerList = true
-    self.serverTable:ClearChildren()
     Client.RebuildServerList()
     self.playWindow.refreshButton:SetText("REFRESHING...")
+    self.playWindow:ResetSlideBar()
+    self.timeRefreshButtonPressed = Shared.GetTime()
     self.selectServer:SetIsVisible(false)
+    self.serverList:ClearChildren()
+    // needs to be done here because the server IDs will change
+    self:ResetServerSelection()
     
 end
 
@@ -404,11 +424,22 @@ function GUIMainMenu:ProcessJoinServer()
         if MainMenu_GetSelectedRequiresPassword() then
             self.passwordPromptWindow:SetIsVisible(true)
         else
-            MainMenu_JoinSelected()
+            self:JoinServer()
         end
         
     end
     
+end
+
+function GUIMainMenu:JoinServer()
+
+    if MainMenu_GetSelectedIsFull() then
+        self.autoJoinWindow:SetIsVisible(true)
+        self.autoJoinText:SetText(ToString(MainMenu_GetSelectedServerName()))
+    else
+        MainMenu_JoinSelected()
+    end
+
 end
 
 function GUIMainMenu:CreateAlertWindow()
@@ -427,6 +458,8 @@ function GUIMainMenu:CreateAlertWindow()
     self.alertText = CreateMenuElement(self.alertWindow, "Font")
     self.alertText:SetCSSClass("alerttext")
     
+    self.alertText:SetTextClipped(true, 350, 100)
+    
     local okButton = CreateMenuElement(self.alertWindow, "MenuButton")
     okButton:SetCSSClass("bottomcenter")
     okButton:SetText("OK")
@@ -438,6 +471,56 @@ function GUIMainMenu:CreateAlertWindow()
     end  })
     
 end 
+
+function GUIMainMenu:CreateAutoJoinWindow()
+
+    self.autoJoinWindow = self:CreateWindow()    
+    self.autoJoinWindow:SetWindowName("WAITING FOR SLOT ...")
+    self.autoJoinWindow:SetInitialVisible(false)
+    self.autoJoinWindow:SetIsVisible(false)
+    self.autoJoinWindow:DisableTitleBar()
+    self.autoJoinWindow:DisableResizeTile()
+    self.autoJoinWindow:DisableSlideBar()
+    self.autoJoinWindow:DisableContentBox()
+    self.autoJoinWindow:SetCSSClass("autojoin_window")
+    self.autoJoinWindow:DisableCloseButton()
+    
+    local cancel = CreateMenuElement(self.autoJoinWindow, "MenuButton")
+    cancel:SetCSSClass("bottomcenter")
+    cancel:SetText("CANCEL")
+    
+    local text = CreateMenuElement(self.autoJoinWindow, "Font")
+    text:SetCSSClass("auto_join_text")
+    text:SetText("WAITING FOR SLOT...")
+    
+    self.autoJoinText = CreateMenuElement(self.autoJoinWindow, "Font")
+    self.autoJoinText:SetCSSClass("auto_join_text_servername")
+    self.autoJoinText:SetText("")
+    
+    self.blinkingArrowTwo = CreateMenuElement(self.autoJoinWindow, "Image")
+    self.blinkingArrowTwo:SetCSSClass("blinking_arrow_two")
+
+    cancel:AddEventCallbacks({ OnClick =
+    function (self)    
+        self:GetParent():SetIsVisible(false)        
+    end })
+    
+    local eventCallbacks =
+    {
+        OnShow = function(self)
+            self.scriptHandle.updateAutoJoin = true
+        end,
+        OnHide = function(self)
+            self.scriptHandle.updateAutoJoin = false
+        end,
+        OnBlur = function(self)
+            self:SetIsVisible(false)
+        end
+    }
+    
+    self.autoJoinWindow:AddEventCallbacks(eventCallbacks)
+
+end
 
 function GUIMainMenu:CreatePasswordPromptWindow()
 
@@ -474,16 +557,175 @@ function GUIMainMenu:CreatePasswordPromptWindow()
     
         local formData = self.scriptHandle.passwordForm:GetFormData()
         MainMenu_SetSelectedServerPassword(formData.PASSWORD)
-        MainMenu_JoinSelected()
+        self.scriptHandle:JoinServer()
         
     end })
     
 end
 
+local function GetFiltersAllowCommunityContent(self)
+    return self.filterModded:GetValue() == false
+end
+
+local kMaxPingDesciption = "MAX PING: %s"
+local kTickrateDescription = "PERFORMANCE: %s%%"
+
+local function CreateFilterForm(self)
+
+    self.filterForm = CreateMenuElement(self.playWindow, "Form", false)
+    self.filterForm:SetCSSClass("filter_form")
+
+    self.filterGameMode = self.filterForm:CreateFormElement(Form.kElementType.TextInput, "GAME MODE")
+    self.filterGameMode:SetCSSClass("filter_gamemode")
+    self.filterGameMode:AddSetValueCallback( function(self)
+    
+        local value = self:GetValue()
+        self.scriptHandle.serverList:SetFilter(1, FilterServerMode(value))   
+        self.scriptHandle.filterCustomContentHint:SetIsVisible(GetFiltersAllowCommunityContent(self.scriptHandle))
+        
+        Client.SetOptionString("filter_gamemode", value)
+     
+    end )
+    
+    self.filterCustomContentHint = CreateMenuElement(self.filterForm, "Font")
+    self.filterCustomContentHint:SetText("community content")
+    self.filterCustomContentHint:SetCSSClass("filter_custom_content_hint")
+    self.filterCustomContentHint:SetIsVisible(false)
+
+    local description = CreateMenuElement(self.filterGameMode, "Font")
+    description:SetText("GAME")
+    description:SetCSSClass("filter_description")
+    
+    self.filterMapName = self.filterForm:CreateFormElement(Form.kElementType.TextInput, "MAP NAME")
+    self.filterMapName:SetCSSClass("filter_mapname")
+    self.filterMapName:AddSetValueCallback( function(self)
+    
+        self.scriptHandle.serverList:SetFilter(2, FilterMapName(self:GetValue()))
+        Client.SetOptionString("filter_mapname", self.scriptHandle.filterMapName:GetValue())
+        
+    end )
+
+    local description = CreateMenuElement(self.filterMapName, "Font")
+    description:SetText("MAP")
+    description:SetCSSClass("filter_description")
+    
+    self.filterTickrate = self.filterForm:CreateFormElement(Form.kElementType.SlideBar, "TICK RATE")
+    self.filterTickrate:SetCSSClass("filter_tickrate")
+    self.filterTickrate:AddSetValueCallback( function(self)
+    
+        local value = self:GetValue()
+        self.scriptHandle.serverList:SetFilter(3, FilterMinRate(value))
+        Client.SetOptionString("filter_tickrate", ToString(value))
+        
+        self.scriptHandle.tickrateDescription:SetText(string.format(kTickrateDescription, ToString(math.round(value * 100)))) 
+        
+    end )
+
+    self.tickrateDescription = CreateMenuElement(self.filterTickrate, "Font")
+    self.tickrateDescription:SetCSSClass("filter_description")
+    
+    self.filterMaxPing = self.filterForm:CreateFormElement(Form.kElementType.SlideBar, "MAX PING")
+    self.filterMaxPing:SetCSSClass("filter_maxping")
+    self.filterMaxPing:AddSetValueCallback( function(self)
+        
+        local value = self.scriptHandle.filterMaxPing:GetValue()
+        self.scriptHandle.serverList:SetFilter(4, FilterMaxPing(math.round(value * kFilterMaxPing)))
+        Client.SetOptionString("filter_maxping", ToString(value))
+        
+        local textValue = ""
+        if value == 1.0 then
+            textValue = "unlimited"
+        else        
+            textValue = ToString(math.round(value * kFilterMaxPing))
+        end
+
+        self.scriptHandle.pingDescription:SetText(string.format(kMaxPingDesciption, textValue))    
+        
+    end )
+
+    self.pingDescription = CreateMenuElement(self.filterMaxPing, "Font")
+    self.pingDescription:SetCSSClass("filter_description")
+    
+    self.filterHasPlayers = self.filterForm:CreateFormElement(Form.kElementType.Checkbox, "FILTER EMPTY")
+    self.filterHasPlayers:SetCSSClass("filter_hasplayers")
+    self.filterHasPlayers:AddSetValueCallback( function(self)
+    
+        self.scriptHandle.serverList:SetFilter(5, FilterEmpty(self:GetValue()))
+        Client.SetOptionString("filter_hasplayers", ToString(self.scriptHandle.filterHasPlayers:GetValue()))
+        
+    end )
+
+    local description = CreateMenuElement(self.filterHasPlayers, "Font")
+    description:SetText("FILTER EMPTY")
+    description:SetCSSClass("filter_description")
+    
+    self.filterFull = self.filterForm:CreateFormElement(Form.kElementType.Checkbox, "FILTER FULL")
+    self.filterFull:SetCSSClass("filter_full")
+    self.filterFull:AddSetValueCallback( function(self)
+    
+        self.scriptHandle.serverList:SetFilter(6, FilterFull(self:GetValue()))
+        Client.SetOptionString("filter_full", ToString(self.scriptHandle.filterFull:GetValue()))
+        
+    end )
+    
+    local description = CreateMenuElement(self.filterFull, "Font")
+    description:SetText("FILTER FULL")
+    description:SetCSSClass("filter_description")
+    
+    self.filterModded = self.filterForm:CreateFormElement(Form.kElementType.Checkbox, "FILTER MODDED")
+    self.filterModded:SetCSSClass("filter_modded")
+    self.filterModded:AddSetValueCallback( function(self)
+    
+        self.scriptHandle.serverList:SetFilter(7, FilterModded(self:GetValue()))
+        self.scriptHandle.filterCustomContentHint:SetIsVisible(GetFiltersAllowCommunityContent(self.scriptHandle))
+        
+    end )
+    
+    local description = CreateMenuElement(self.filterModded, "Font")
+    description:SetText("FILTER MODDED")
+    description:SetCSSClass("filter_description")
+    
+    self.filterFavorites = self.filterForm:CreateFormElement(Form.kElementType.Checkbox, "FAVORITES")
+    self.filterFavorites:SetCSSClass("filter_favorites")
+    self.filterFavorites:AddSetValueCallback( function(self)
+    
+        self.scriptHandle.serverList:SetFilter(7, FilterFavoriteOnly(self:GetValue()))
+        Client.SetOptionString("filter_favorites", ToString(self.scriptHandle.filterFavorites:GetValue()))
+        
+    end )
+    
+    local description = CreateMenuElement(self.filterFavorites, "Font")
+    description:SetText("FAVORITES")
+    description:SetCSSClass("filter_description")
+    
+    
+    self.filterRookie = self.filterForm:CreateFormElement(Form.kElementType.Checkbox, "FILTER ROOKIE")
+    self.filterRookie:SetCSSClass("filter_rookie")
+    self.filterRookie:AddSetValueCallback( function(self)
+    
+        self.scriptHandle.serverList:SetFilter(8, FilterRookie(self:GetValue()))
+        Client.SetOptionString("filter_rookie", ToString(self.scriptHandle.filterRookie:GetValue()))
+        
+    end )
+    
+    local description = CreateMenuElement(self.filterRookie, "Font")
+    description:SetText("FILTER ROOKIE")
+    description:SetCSSClass("filter_description")
+    
+    self.filterGameMode:SetValue(Client.GetOptionString("filter_gamemode", ""))
+    self.filterMapName:SetValue(Client.GetOptionString("filter_mapname", ""))
+    self.filterTickrate:SetValue(tonumber(Client.GetOptionString("filter_tickrate", "0")) or 0)
+    self.filterHasPlayers:SetValue(Client.GetOptionString("filter_hasplayers", "false"))
+    self.filterFull:SetValue(Client.GetOptionString("filter_full", "false"))
+    self.filterMaxPing:SetValue(tonumber(Client.GetOptionString("filter_maxping", "1")) or 1)
+    self.filterModded:SetValue(true)
+    self.filterRookie:SetValue(Client.GetOptionString("filter_rookie", "false"))
+    self.filterFavorites:SetValue(Client.GetOptionString("filter_favorites", "false"))
+    
+end
+
 function GUIMainMenu:CreateServerListWindow()
 
-    self.playWindow:GetContentBox():SetCSSClass("server_list")
-    
     local refresh = CreateMenuElement(self.playWindow, "MenuButton")
     refresh:SetCSSClass("refresh")
     refresh:SetText("REFRESH")
@@ -508,255 +750,69 @@ function GUIMainMenu:CreateServerListWindow()
     self.blinkingArrow:SetCSSClass("blinking_arrow")
     self.blinkingArrow:GetBackground():SetInheritsParentStencilSettings(false)
     self.blinkingArrow:GetBackground():SetStencilFunc(GUIItem.Always)
-    
+
     self.selectServer = CreateMenuElement(self.playWindow:GetContentBox(), "Image")
     self.selectServer:SetCSSClass("select_server")
     self.selectServer:SetIsVisible(false)
     self.selectServer:SetIgnoreEvents(true)
 
-    self.serverRowNames = CreateMenuElement(self.playWindow, "Table")
-    self.serverTable = CreateMenuElement(self.playWindow:GetContentBox(), "Table")
+    self.serverRowNames = CreateMenuElement(self.playWindow, "Table")    
+    self.serverList = CreateMenuElement(self.playWindow:GetContentBox(), "ServerList")
 
     local columnClassNames =
     {
+        "favorite",
         "private",
         "servername",
         "game",
         "map",
         "players",
+        "rate",
         "ping"
     }
  
     
-    local rowNames = { { "", "NAME", "GAME", "MAP", "PLAYERS", "PING" } }
+    local rowNames = { { "FAVORITE", "PRIVATE", "NAME", "GAME", "MAP", "PLAYERS", "PERF.", "PING" } }
 
     -- closure
-    local serverTable   = self.serverTable
-    local reverse       = false
-    local sortedColumn  = nil
+    local serverList   = self.serverList
 
     local entryCallbacks = {
-        {
-                OnClick = function()
-
-                    serverTable:SetSortRow(true)
-                    if sortedColumn ~= 1 then
-                        sortedColumn = 1
-                        reverse = false
-                    else
-                        reverse = not reverse
-                    end
-                    
-                    if reverse then
-                        serverTable:SetComparator(function(a,b) 
-                            return (a[1] and 1 or 0) > (b[1] and 1 or 0)
-                        end, reverse)
-                    else
-                        serverTable:SetComparator(function(a,b) 
-                            return (a[1] and 1 or 0) < (b[1] and 1 or 0)
-                        end, reverse)
-                    end   
-
-                end
-        },
-        {
-            OnClick = function()
-                
-                serverTable:SetSortRow(true)
-                if sortedColumn ~= 2 then
-                    sortedColumn = 2
-                    reverse = false
-                else
-                    reverse = not reverse
-                end
-                
-                if reverse then
-                    serverTable:SetComparator(function(a,b) 
-                        return a[2][1]:upper() > b[2][1]:upper()
-                    end, reverse)
-                else
-                    serverTable:SetComparator(function(a,b) 
-                        return a[2][1]:upper() < b[2][1]:upper()
-                    end, reverse)
-                end
-
-            end
-        },
-
-        {
-            OnClick = function()
-
-                /* =Game type not used yet=
-                serverTable:SetSortRow(true)
-                reverse = not reverse
-                
-                if reverse then
-                    serverTable:SetComparator(function(a,b) 
-                        return a[2][1]:upper() > b[2][1]:upper()
-                    end, reverse)
-                else
-                    serverTable:SetComparator(function(a,b) 
-                        return a[2][1]:upper() < b[2][1]:upper()
-                    end, reverse)
-                end
-                */
-                
-            end
-        },
-
-        {
-            OnClick = function()
-
-                serverTable:SetSortRow(true)
-                if sortedColumn ~= 4 then
-                    sortedColumn = 4
-                    reverse = false
-                else
-                    reverse = not reverse
-                end
-                
-                if reverse then
-                    serverTable:SetComparator(function(a,b) 
-                        return a[4]:upper() > b[4]:upper()
-                    end, reverse)
-                else
-                    serverTable:SetComparator(function(a,b) 
-                        return a[4]:upper() < b[4]:upper()
-                    end, reverse)
-                end
-
-            end
-        },
-
-        {
-            OnClick = function()
-
-                serverTable:SetSortRow(true)
-                if sortedColumn ~= 5 then
-                    sortedColumn = 5
-                    // Sort player count in a descending order - we want full servers first!
-                    reverse = true
-                else
-                    reverse = not reverse
-                end
- 
-                if reverse then
-                    serverTable:SetComparator(function(a,b) 
-                        return tonumber(a[5][1]) > tonumber(b[5][1])
-                    end, reverse)
-                else
-                    serverTable:SetComparator(function(a,b) 
-                        return tonumber(a[5][1]) < tonumber(b[5][1])
-                    end, reverse)
-                end
-
-            end
-        },
-
-        {
-            OnClick = function()
-
-                serverTable:SetSortRow(true)
-                if sortedColumn ~= 6 then
-                    sortedColumn = 6
-                    reverse = false
-                else
-                    reverse = not reverse
-                end
-
-                if reverse then
-                    serverTable:SetComparator(function(a,b) 
-                        return tonumber(a[6]) > tonumber(b[6])
-                    end)
-                else
-                    serverTable:SetComparator(function(a,b) 
-                        return tonumber(a[6]) < tonumber(b[6])
-                    end)
-                end
-
-            end
-        },
+        { OnClick = function() UpdateSortOrder(1) serverList:SetComparator( SortByFavorite ) end },
+        { OnClick = function() UpdateSortOrder(2) serverList:SetComparator( SortByPrivate ) end },
+        { OnClick = function() UpdateSortOrder(3) serverList:SetComparator( SortByName ) end },
+        { OnClick = function() UpdateSortOrder(4) serverList:SetComparator( SortByMode ) end },
+        { OnClick = function() UpdateSortOrder(5) serverList:SetComparator( SortByMap ) end },
+        { OnClick = function() UpdateSortOrder(6) serverList:SetComparator( SortByPlayers ) end },
+        { OnClick = function() UpdateSortOrder(7) serverList:SetComparator( SortByTickrate ) end },
+        { OnClick = function() UpdateSortOrder(8) serverList:SetComparator( SortByPing ) end },
     }
-    
     
     self.serverRowNames:SetCSSClass("server_list_row_names")
+    self.serverRowNames:AddCSSClass("server_list_names")
     self.serverRowNames:SetColumnClassNames(columnClassNames)
     self.serverRowNames:SetEntryCallbacks(entryCallbacks)
-    self.serverRowNames:SetRowPattern( {RenderServerNameEntry} )
+    self.serverRowNames:SetRowPattern( { RenderServerNameEntry, RenderServerNameEntry, RenderServerNameEntry, RenderServerNameEntry, RenderServerNameEntry, RenderServerNameEntry, RenderServerNameEntry, RenderServerNameEntry, } )
     self.serverRowNames:SetTableData(rowNames)
-    
-    self.serverTable:SetCSSClass("server_list")
-    
-    local rowPattern =
-    {
-        RenderPrivateEntry,
-        RenderServerNameEntry,
-        RenderStatusIconsEntry,
-        RenderMapNameEntry,
-        RenderPlayerCountEntry,
-        RenderPingEntry
-    }
-    
-    self.serverTable:SetRowPattern(rowPattern)
-    self.serverTable:SetColumnClassNames(columnClassNames)
-    
-    local OnRowCreate = function(row)
-    
-        local eventCallbacks =
-        {
-            OnMouseIn = function(self, buttonPressed)
-                MainMenu_OnMouseIn()
-            end,
-            
-            OnMouseOver = function(self)
-            
-                local height = self:GetHeight()
-                local topOffSet = self:GetBackground():GetPosition().y + self:GetParent():GetBackground():GetPosition().y
-                self.scriptHandle.highlightServer:SetBackgroundPosition(Vector(0, topOffSet, 0), true)
-                self.scriptHandle.highlightServer:SetIsVisible(true)
-                
-            end,
-            
-            OnMouseOut = function(self)
-                self.scriptHandle.highlightServer:SetIsVisible(false)
-            end,
-            
-            OnMouseDown = function(self, key, doubleClick)
-            
-                local height = self:GetHeight()
-                local topOffSet = self:GetBackground():GetPosition().y + self:GetParent():GetBackground():GetPosition().y
-                self.scriptHandle.selectServer:SetBackgroundPosition(Vector(0, topOffSet, 0), true)
-                self.scriptHandle.selectServer:SetIsVisible(true)
-                MainMenu_SelectServer(self:GetId())
-                
-                if doubleClick then
-                
-                    if (self.timeOfLastClick ~= nil and (Shared.GetTime() < self.timeOfLastClick + .3)) then
-                        self.scriptHandle:ProcessJoinServer()
-                    end
-                    
-                end
-                
-                self.timeOfLastClick = Shared.GetTime()
-                
-            end
-        }
-        
-        row:AddEventCallbacks(eventCallbacks)
-        row:SetChildrenIgnoreEvents(true)
-        
-    end
-    
-    self.serverTable:SetRowCreateCallback(OnRowCreate)
-    
+
     self.playWindow:AddEventCallbacks({ 
         OnShow = function() 
             // Default to sorting by ping!
             sortedColumn = nil
             entryCallbacks[6].OnClick()
+            self.playWindow:ResetSlideBar()
             RefreshServerList(self) 
-        end 
+        end
     })
+    
+    CreateFilterForm(self)
+    
+end
+
+function GUIMainMenu:ResetServerSelection()
+    
+    self.selectServer:SetIsVisible(false)
+    MainMenu_SelectServer(nil)
     
 end
 
@@ -765,6 +821,7 @@ local function SaveServerSettings(self)
     local formData = self.createServerForm:GetFormData()
     Client.SetOptionString("serverName", formData.ServerName)
     Client.SetOptionString("mapName", formData.Map)
+    Client.SetOptionString("lastServerMapName", formData.Map)
     Client.SetOptionString("gameMod", formData.GameMode)
     Client.SetOptionInteger("playerLimit", formData.PlayerLimit)
     Client.SetOptionString("serverPassword", formData.Password)
@@ -787,6 +844,7 @@ local function CreateExploreServer(self)
     local maxPlayers    = formData.PlayerLimit
     local serverName    = formData.ServerName
     local mapName       = "ns2_" .. string.lower(formData.Map)
+    Client.SetOptionString("lastServerMapName", mapName)
     
     if Client.StartServer(modIndex, mapName, serverName, password, port, maxPlayers) then
         LeaveMenu()
@@ -870,11 +928,11 @@ GUIMainMenu.CreateOptionsForm = function(mainMenu, content, options)
             // HACK: Really should use input:AddSetValueCallback, but the slider bar bypasses that.
             if option.sliderCallback then
                 input:Register(
-					{OnSlide =
-						function(value, interest)
-							option.sliderCallback(mainMenu)
-						end
-					}, SLIDE_HORIZONTAL)
+                    {OnSlide =
+                        function(value, interest)
+                            option.sliderCallback(mainMenu)
+                        end
+                    }, SLIDE_HORIZONTAL)
             end
         else
             input = form:CreateFormElement(Form.kElementType.TextInput, option.name, option.value)
@@ -1055,6 +1113,37 @@ local function InitKeyBindings(keyInputs)
     
 end
 
+local function CheckForConflictedKeys(keyInputs)
+
+    // Reset back to non-conflicted state.
+    for k = 1, #keyInputs do
+        keyInputs[k]:SetCSSClass("option_input")
+    end
+    
+    // Check for conflicts.
+    for k1 = 1, #keyInputs do
+    
+        for k2 = 1, #keyInputs do
+        
+            if k1 ~= k2 then
+            
+                local boundKey1 = Client.GetOptionString("input/" .. keyInputs[k1].inputName, "")
+                local boundKey2 = Client.GetOptionString("input/" .. keyInputs[k2].inputName, "")
+                if boundKey1 == boundKey2 then
+                
+                    keyInputs[k1]:SetCSSClass("option_input_conflict")
+                    keyInputs[k2]:SetCSSClass("option_input_conflict")
+                    
+                end
+                
+            end
+            
+        end
+        
+    end
+    
+end
+
 local function CreateKeyBindingsForm(mainMenu, content)
 
     local keyBindingsForm = CreateMenuElement(content, "Form", false)
@@ -1083,6 +1172,10 @@ local function CreateKeyBindingsForm(mainMenu, content)
                     local keyString = Client.ConvertKeyCodeToString(key)
                     keyInput:SetValue(keyString)
                     
+                    Client.SetOptionString("input/" .. keyInput.inputName, keyString)
+                    
+                    CheckForConflictedKeys(mainMenu.keyInputs)
+                    
                 end
                 keyInput.ignoreFirstKey = true
                 
@@ -1105,6 +1198,8 @@ local function CreateKeyBindingsForm(mainMenu, content)
     end
     
     InitKeyBindings(mainMenu.keyInputs)
+    
+    CheckForConflictedKeys(mainMenu.keyInputs)
     
     keyBindingsForm:SetCSSClass("keybindings")
     
@@ -1133,39 +1228,59 @@ local function InitOptions(optionElements)
     local drawDamage            = Client.GetOptionBoolean( "drawDamage", true )
     local rookieMode            = Client.GetOptionBoolean( kRookieOptionsKey, true )
 
-    local screenResIdx          = OptionsDialogUI_GetScreenResolutionsIndex()
-    local visualDetailIdx       = OptionsDialogUI_GetVisualDetailSettingsIndex()
-    local displayMode           = table.find(kDisplayModes, OptionsDialogUI_GetWindowMode())
-    local displayBuffering      = Client.GetOptionInteger("graphics/display/display-buffering", 0)
-    local multicoreRendering    = Client.GetOptionBoolean("graphics/multithreaded", true)
-    local textureStreaming      = Client.GetOptionBoolean("graphics/texture-streaming", false)
-    local ambientOcclusion      = Client.GetOptionString("graphics/display/ambient-occlusion", kAmbientOcclusionModes[1])
-	local fovAdjustment			= Client.GetOptionFloat("graphics/display/fov-adjustment", 0)
-
+    local screenResIdx = OptionsDialogUI_GetScreenResolutionsIndex()
+    local visualDetailIdx = OptionsDialogUI_GetVisualDetailSettingsIndex()
+    local displayMode = table.find(kDisplayModes, OptionsDialogUI_GetWindowMode())
+    local displayBuffering = Client.GetOptionInteger("graphics/display/display-buffering", 0)
+    local multicoreRendering = Client.GetOptionBoolean("graphics/multithreaded", true)
+    local textureStreaming = Client.GetOptionBoolean("graphics/texture-streaming", false)
+    local ambientOcclusion = Client.GetOptionString("graphics/display/ambient-occlusion", kAmbientOcclusionModes[1])
+    local infestation = Client.GetOptionString("graphics/infestation", "rich")
+    local fovAdjustment = Client.GetOptionFloat("graphics/display/fov-adjustment", 0)
+    local cameraAnimation       = Client.GetOptionBoolean("CameraAnimation", true) and "ON" or "OFF"
+    
+    local minimapZoom = Client.GetOptionFloat( "minimap-zoom", 0.75 )
+    local armorType = Client.GetOptionString( "armorType", "" )
+    
+    if string.len(armorType) == 0 then
+    
+        if GetHasBlackArmor() then
+            armorType = "Black"
+        elseif GetHasDeluxeEdition() then
+            armorType = "Deluxe"
+        else
+            armorType = "Green"
+        end
+        
+    end
+    
+    Client.SetOptionString("armorType", armorType)
+    
     // support legacy values    
     if ambientOcclusion == "false" then
         ambientOcclusion = "off"
     elseif ambientOcclusion == "true" then
         ambientOcclusion = "high"
     end
-
-    local shadows               = OptionsDialogUI_GetShadows()
-    local reflections           = Client.GetOptionBoolean("graphics/display/reflections", false)
-    local bloom                 = OptionsDialogUI_GetBloom()
-    local atmospherics          = OptionsDialogUI_GetAtmospherics()
-    local anisotropicFiltering  = OptionsDialogUI_GetAnisotropicFiltering()
-    local antiAliasing          = OptionsDialogUI_GetAntiAliasing()
     
-    local soundVol              = Client.GetOptionInteger("soundVolume", 90) / 100
-    local musicVol              = Client.GetOptionInteger("musicVolume", 90) / 100
-    local voiceVol              = Client.GetOptionInteger("voiceVolume", 90) / 100
+    local shadows = OptionsDialogUI_GetShadows()
+    local bloom = OptionsDialogUI_GetBloom()
+    local atmospherics = OptionsDialogUI_GetAtmospherics()
+    local anisotropicFiltering = OptionsDialogUI_GetAnisotropicFiltering()
+    local antiAliasing = OptionsDialogUI_GetAntiAliasing()
     
-    for i=1,#kLocales do
+    local soundVol = Client.GetOptionInteger("soundVolume", 90) / 100
+    local musicVol = Client.GetOptionInteger("musicVolume", 90) / 100
+    local voiceVol = Client.GetOptionInteger("voiceVolume", 90) / 100
+    
+    for i = 1, #kLocales do
+    
         if kLocales[i].name == locale then
-            optionElements.Language:SetOptionActive( i )
-        end    
+            optionElements.Language:SetOptionActive(i)
+        end
+        
     end
-
+    
     optionElements.NickName:SetValue( nickName )
     optionElements.Sensitivity:SetValue( mouseSens )
     optionElements.AccelerationAmount:SetValue( accelerationAmount )
@@ -1181,6 +1296,7 @@ local function InitOptions(optionElements)
     optionElements.DisplayBuffering:SetOptionActive( displayBuffering + 1 )
     optionElements.Resolution:SetOptionActive( screenResIdx )
     optionElements.Shadows:SetOptionActive( BoolToIndex(shadows) )
+    optionElements.Infestation:SetOptionActive( table.find(kInfestationModes, infestation) )
     optionElements.Bloom:SetOptionActive( BoolToIndex(bloom) )
     optionElements.Atmospherics:SetOptionActive( BoolToIndex(atmospherics) )
     optionElements.AnisotropicFiltering:SetOptionActive( BoolToIndex(anisotropicFiltering) )
@@ -1189,8 +1305,11 @@ local function InitOptions(optionElements)
     optionElements.MulticoreRendering:SetOptionActive( BoolToIndex(multicoreRendering) )
     optionElements.TextureStreaming:SetOptionActive( BoolToIndex(textureStreaming) )
     optionElements.AmbientOcclusion:SetOptionActive( table.find(kAmbientOcclusionModes, ambientOcclusion) )
-    optionElements.Reflections:SetOptionActive( BoolToIndex(reflections) )
-	optionElements.FOVAdjustment:SetValue(fovAdjustment)
+    optionElements.FOVAdjustment:SetValue(fovAdjustment)
+    optionElements.MinimapZoom:SetValue(minimapZoom)
+    optionElements.ArmorType:SetValue(armorType)
+    optionElements.CameraAnimation:SetValue(cameraAnimation)
+    
     
     optionElements.SoundVolume:SetValue(soundVol)
     optionElements.MusicVolume:SetValue(musicVol)
@@ -1202,11 +1321,11 @@ local function SaveSecondaryGraphicsOptions(mainMenu)
     // These are options that are pretty quick to change, unlike screen resolution etc.
     // Have this separate, since graphics options are auto-applied
         
-    local multicoreRendering = mainMenu.optionElements.MulticoreRendering:GetActiveOptionIndex() > 1
-    local textureStreaming = mainMenu.optionElements.TextureStreaming:GetActiveOptionIndex() > 1
-    local ambientOcclusionIdx = mainMenu.optionElements.AmbientOcclusion:GetActiveOptionIndex()
-    local reflections = mainMenu.optionElements.Reflections:GetActiveOptionIndex() > 1
-    local visualDetailIdx = mainMenu.optionElements.Detail:GetActiveOptionIndex()
+    local multicoreRendering    = mainMenu.optionElements.MulticoreRendering:GetActiveOptionIndex() > 1
+    local textureStreaming      = mainMenu.optionElements.TextureStreaming:GetActiveOptionIndex() > 1
+    local ambientOcclusionIdx   = mainMenu.optionElements.AmbientOcclusion:GetActiveOptionIndex()
+    local visualDetailIdx       = mainMenu.optionElements.Detail:GetActiveOptionIndex()
+    local infestationIdx        = mainMenu.optionElements.Infestation:GetActiveOptionIndex()
     local shadows               = mainMenu.optionElements.Shadows:GetActiveOptionIndex() > 1
     local bloom                 = mainMenu.optionElements.Bloom:GetActiveOptionIndex() > 1
     local atmospherics          = mainMenu.optionElements.Atmospherics:GetActiveOptionIndex() > 1
@@ -1216,7 +1335,7 @@ local function SaveSecondaryGraphicsOptions(mainMenu)
     Client.SetOptionBoolean("graphics/multithreaded", multicoreRendering)
     Client.SetOptionBoolean("graphics/texture-streaming", textureStreaming)
     Client.SetOptionString("graphics/display/ambient-occlusion", kAmbientOcclusionModes[ambientOcclusionIdx] )
-    Client.SetOptionBoolean("graphics/display/reflections", reflections)  
+    Client.SetOptionString("graphics/infestation", kInfestationModes[infestationIdx] )
     Client.SetOptionInteger( kDisplayQualityOptionsKey, visualDetailIdx - 1 )
     Client.SetOptionBoolean ( kShadowsOptionsKey, shadows )
     Client.SetOptionBoolean ( kBloomOptionsKey, bloom )
@@ -1226,15 +1345,22 @@ local function SaveSecondaryGraphicsOptions(mainMenu)
     
 end
 
+local function SyncSecondaryGraphicsOptions()
+    Render_SyncRenderOptions() 
+    if Infestation_SyncOptions then
+        Infestation_SyncOptions()
+    end
+end
+
 local function OnGraphicsOptionsChanged(mainMenu)
-	SaveSecondaryGraphicsOptions(mainMenu)
-	Client.ReloadGraphicsOptions()
-	Render_SyncRenderOptions()    
+    SaveSecondaryGraphicsOptions(mainMenu)
+    Client.ReloadGraphicsOptions()
+    SyncSecondaryGraphicsOptions()
 end
 
 local function OnSoundVolumeChanged(mainMenu)
     local soundVol = mainMenu.optionElements.SoundVolume:GetValue() * 100
-	OptionsDialogUI_SetSoundVolume( soundVol )
+    OptionsDialogUI_SetSoundVolume( soundVol )
 end
 local function OnMusicVolumeChanged(mainMenu)
     local musicVol = mainMenu.optionElements.MusicVolume:GetValue() * 100
@@ -1248,6 +1374,17 @@ end
 local function OnFOVAdjustChanged(mainMenu)
     local value = mainMenu.optionElements.FOVAdjustment:GetValue()
     Client.SetOptionFloat("graphics/display/fov-adjustment", value)
+end
+
+local function OnMinimapZoomChanged(mainMenu)
+
+    local value = mainMenu.optionElements.MinimapZoom:GetValue()
+    Client.SetOptionFloat("minimap-zoom", value)
+
+    if SafeRefreshMinimapZoom then
+        SafeRefreshMinimapZoom()
+    end
+
 end
 
 local function SaveOptions(mainMenu)
@@ -1278,6 +1415,9 @@ local function SaveOptions(mainMenu)
     local musicVol              = mainMenu.optionElements.MusicVolume:GetValue() * 100
     local voiceVol              = mainMenu.optionElements.VoiceVolume:GetValue() * 100
     
+    local armorType             = mainMenu.optionElements.ArmorType:GetValue()
+    local cameraAnimation       = mainMenu.optionElements.CameraAnimation:GetActiveOptionIndex() > 1
+    
     Client.SetOptionString( "locale", locale )
 
     Client.SetOptionBoolean("input/mouse/rawinput", rawInput)
@@ -1286,6 +1426,8 @@ local function SaveOptions(mainMenu)
     Client.SetOptionBoolean( "commanderHelp", showCommanderHelp )
     Client.SetOptionBoolean( "drawDamage", drawDamage)
     Client.SetOptionBoolean( kRookieOptionsKey, rookieMode)
+    Client.SetOptionBoolean( "CameraAnimation", cameraAnimation)
+    Client.SetOptionString( "armorType", armorType )
 
     Client.SetOptionFloat("input/mouse/acceleration-amount", accelerationAmount)
     
@@ -1311,7 +1453,7 @@ local function SaveOptions(mainMenu)
     // This will reload the first three graphics settings
     OptionsDialogUI_ExitDialog()
 
-    Render_SyncRenderOptions() 
+    SyncSecondaryGraphicsOptions()
     
     for k = 1, #mainMenu.keyInputs do
     
@@ -1322,6 +1464,10 @@ local function SaveOptions(mainMenu)
     Client.ReloadKeyOptions()
     
 
+end
+
+local function StoreCameraAnimationOption(formElement)
+    Client.SetOptionBoolean("CameraAnimation", formElement:GetActiveOptionIndex() > 1)
 end
 
 function GUIMainMenu:CreateOptionWindow()
@@ -1351,14 +1497,26 @@ function GUIMainMenu:CreateOptionWindow()
     apply:SetText("APPLY")
     apply:AddEventCallbacks( { OnClick = function() SaveOptions(self) end } )
 
-	self.fpsDisplay = CreateMenuElement( self.optionWindow, "MenuButton" )
-	self.fpsDisplay:SetCSSClass("fps")
+    self.fpsDisplay = CreateMenuElement( self.optionWindow, "MenuButton" )
+    self.fpsDisplay:SetCSSClass("fps")
     
     local screenResolutions = OptionsDialogUI_GetScreenResolutions()
     
     local languages = { }
     for i = 1,#kLocales do
         languages[i] = kLocales[i].label
+    end
+    
+    local armorTypes = {
+        "Green"
+    }
+    
+    if GetHasBlackArmor() then
+        table.insert(armorTypes, "Black")
+    end
+    
+    if GetHasDeluxeEdition() then
+        table.insert(armorTypes, "Deluxe")
     end
 
     local generalOptions =
@@ -1431,6 +1589,27 @@ function GUIMainMenu:CreateOptionWindow()
                 type    = "slider",
                 sliderCallback = OnFOVAdjustChanged,
             },
+            { 
+                name    = "MinimapZoom",
+                label   = "MINIMAP ZOOM",
+                type    = "slider",
+                sliderCallback = OnMinimapZoomChanged,
+            },
+            
+            {
+                name    = "ArmorType",
+                label   = "ARMOR TYPE",
+                type    = "select",
+                values  = armorTypes
+            },
+            
+            {
+                name    = "CameraAnimation",
+                label   = "CAMERA ANIMATION",
+                type    = "select",
+                values  = { "OFF", "ON" },
+                callback = StoreCameraAnimationOption
+            }, 
         }
 
     local soundOptions =
@@ -1485,6 +1664,13 @@ function GUIMainMenu:CreateOptionWindow()
                 callback = autoApplyCallback
             },
             {
+                name    = "Infestation",
+                label   = "INFESTATION",
+                type    = "select",
+                values  = { "MINIMAL", "RICH" },
+                callback = autoApplyCallback
+            },
+            {
                 name    = "AntiAliasing",
                 label   = "ANTI-ALIASING",
                 type    = "select",
@@ -1520,13 +1706,6 @@ function GUIMainMenu:CreateOptionWindow()
                 callback = autoApplyCallback
             },    
             {
-                name    = "Reflections",
-                label   = "REFLECTIONS",
-                type    = "select",
-                values  = { "OFF", "ON" },
-                callback = autoApplyCallback
-            },            
-            {
                 name    = "Shadows",
                 label   = "SHADOWS",
                 type    = "select",
@@ -1546,7 +1725,7 @@ function GUIMainMenu:CreateOptionWindow()
                 type    = "select",
                 values  = { "OFF", "ON" },
                 callback = autoApplyCallback
-            },            
+            }, 
         }
         
     self.optionElements = { }
@@ -1558,7 +1737,7 @@ function GUIMainMenu:CreateOptionWindow()
     
     local tabs = 
         {
-            { label = "GENERAL",  form = generalForm },
+            { label = "GENERAL",  form = generalForm, scroll=true  },
             { label = "BINDINGS", form = keyBindingsForm, scroll=true },
             { label = "GRAPHICS", form = graphicsForm },
             { label = "SOUND",    form = soundForm },
@@ -1606,6 +1785,21 @@ function GUIMainMenu:CreateOptionWindow()
   
 end
 
+/**
+ * Returns true if the whitespace deliminated list of mods contains any mods that
+ * are not in the kPureMods table.
+ */
+local function GetIsModded(mods)
+
+    for mod in mods:gmatch("%w+") do
+        if kPureMods[mod] then
+            return false
+        end
+    end
+    return true
+
+end
+
 function GUIMainMenu:Update(deltaTime)
 
     PROFILE("GUIMainMenu:Update")
@@ -1645,59 +1839,56 @@ function GUIMainMenu:Update(deltaTime)
         
         if self.playWindow:GetIsVisible() then
         
+            if self.timeRefreshButtonPressed and self.timeRefreshButtonPressed + 4 < Shared.GetTime() then
+            
+                self.playWindow.refreshButton:SetText("REFRESH")
+                self.timeRefreshButtonPressed = nil
+            
+            end
+        
             if not Client.GetServerListRefreshed() then
-
-                local reload = false
             
                 for s = 0, Client.GetNumServers() - 1 do
                 
                     if s + 1 > self.numServers then
-
-                        local name = Client.GetServerName(s)
-                        local mode = "ns2"
-                        local map = GetTrimmedMapName(Client.GetServerMapName(s))
-                        local numPlayers = Client.GetServerNumPlayers(s)
-                        local maxPlayers = Client.GetServerMaxPlayers(s)
-                        local ping = Client.GetServerPing(s)
-                        local address = Client.GetServerAddress(s)
-                        local requiresPassword = Client.GetServerRequiresPassword(s)
-                        local rookieFriendly = Client.GetServerHasTag(s, "rookie")
-                        local friendsOnServer = false
-                        local lanServer = false
-                        local customGame = false
-
-                        reload = true
+                    
+                        local mods = Client.GetServerKeyValue(s, "mods")
+                        
+                        local serverEntry = {}
+                        serverEntry.name = Client.GetServerName(s)
+                        serverEntry.mode = Client.GetServerGameMode(s)
+                        serverEntry.map = GetTrimmedMapName(Client.GetServerMapName(s))
+                        serverEntry.numPlayers = Client.GetServerNumPlayers(s)
+                        serverEntry.maxPlayers = Client.GetServerMaxPlayers(s)
+                        serverEntry.ping = Client.GetServerPing(s)
+                        serverEntry.address = Client.GetServerAddress(s)
+                        serverEntry.requiresPassword = Client.GetServerRequiresPassword(s)
+                        serverEntry.rookieFriendly = Client.GetServerHasTag(s, "rookie")
+                        serverEntry.friendsOnServer = false
+                        serverEntry.lanServer = false
+                        serverEntry.tickrate = tonumber(Client.GetServerKeyValue(s, "tickrate")) or 30
+                        serverEntry.serverId = s
+                        serverEntry.modded = GetIsModded(mods)
+                        serverEntry.favorite = GetIsServerFavorite(serverEntry.address)
                     
                         self.numServers = self.numServers + 1
                         
                         // Change name to display "rookie friendly" at the end of the line
-                        if rookieFriendly then
-                            local maxLen = 25
-                            local separator = ConditionalValue(string.len(name) > 25, "...", " ")
-                            name = name:sub(0, maxLen) .. separator  .. Locale.ResolveString("ROOKIE_FRIENDLY")
+                        if serverEntry.rookieFriendly then
+                            local maxLen = 34
+                            local separator = ConditionalValue(string.len(serverEntry.name) > maxLen, "... ", " ")
+                            serverEntry.name = serverEntry.name:sub(0, maxLen) .. separator  .. Locale.ResolveString("ROOKIE_FRIENDLY")
+                        else
+                            local maxLen = 50
+                            local separator = ConditionalValue(string.len(serverEntry.name) > maxLen, "... ", " ")
+                            serverEntry.name = serverEntry.name:sub(0, maxLen) .. separator     
                         end
                         
-                        self.serverTable:AddRow({ requiresPassword, {name, rookieFriendly}, { friendsOnServer, lanServer, customGame }, map, { numPlayers, maxPlayers }, ping}, s)
+                        self.serverList:AddEntry(serverEntry)
                         
                     end
                     
                 end
-
-                if reload then
-                
-                    self.serverTable:Sort()
-                    
-                    self.serverListSize = self.createGame:GetBackground():GetSize()
-                    self.serverListSize.y = self.createGame:GetContentSize().y
-                    
-                    self.createGame:GetBackground():SetSize(self.serverListSize)
-                    
-                end
-                
-            elseif self.refreshingServerList then
-            
-                self.refreshingServerList = false
-                self.playWindow.refreshButton:SetText("REFRESH")
                 
             end
             
@@ -1706,7 +1897,24 @@ function GUIMainMenu:Update(deltaTime)
         self:UpdateFindPeople(deltaTime)        
         self.playNowWindow:UpdateLogic(self)
 
-		self.fpsDisplay:SetText(string.format("FPS: %.0f", Client.GetFrameRate()))
+        self.fpsDisplay:SetText(string.format("FPS: %.0f", Client.GetFrameRate()))
+        
+        if self.updateAutoJoin then
+            
+            if not self.timeLastAutoJoinUpdate or self.timeLastAutoJoinUpdate + 10 < Shared.GetTime() then
+            
+                Client.RefreshServer(gSelectedServerNum)
+                
+                if MainMenu_GetSelectedIsFull() then
+                    self.timeLastAutoJoinUpdate = Shared.GetTime()
+                else
+                    MainMenu_JoinSelected()
+                    self.autoJoinWindow:SetIsVisible(false)
+                end
+                
+            end
+            
+        end
         
     end
     
@@ -1783,6 +1991,10 @@ function GUIMainMenu:OnAnimationCompleted(animatedItem, animationName, itemHandl
     elseif animationName == "ANIMATE_BLINKING_ARROW" then
     
         self.blinkingArrow:SetCSSClass("blinking_arrow")
+        
+    elseif animationName == "ANIMATE_BLINKING_ARROW_TWO" then
+    
+        self.blinkingArrowTwo:SetCSSClass("blinking_arrow_two")
         
     elseif animationName == "MAIN_MENU_OPACITY" then
     

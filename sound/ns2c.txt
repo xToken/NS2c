@@ -1,3 +1,4 @@
+ns2c.fev/ns2c/marine/commander/drop
 ns2c.fev/ns2c/marine/weapon/lmg_draw
 ns2c.fev/ns2c/marine/weapon/lmg_fire
 ns2c.fev/ns2c/marine/weapon/lmg_reload
@@ -84,3 +85,5 @@ ns2c.fev/ns2c/ui/tooltip
 ns2c.fev/ns2c/ui/now_we_dance
 ns2c.fev/ns2c/ui/ayumi_rr
 ns2c.fev/ns2c/ui/nancy_rr
+ns2c.fev/ns2c/ui/enemy_approach1
+ns2c.fev/ns2c/ui/enemy_approach2

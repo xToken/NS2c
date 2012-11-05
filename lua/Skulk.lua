@@ -59,19 +59,11 @@ Skulk.kJumpRepeatTime = 0.1
 Skulk.kViewOffsetHeight = .55
 Skulk.kHealth = kSkulkHealth
 Skulk.kArmor = kSkulkArmor
-Skulk.kLeapVerticalVelocity = 8
-Skulk.kLeapVerticalForce = 7
-Skulk.kMinLeapVelocity = 13
 Skulk.kLeapTime = 0.2
-Skulk.kLeapForce = 14
-Skulk.kMaxSpeed = 20
-Skulk.kMaxGroundSpeed = 8
-Skulk.kMaxWallSpeed = 10
+Skulk.kLeapVerticalVelocity = 8
+Skulk.kLeapForce = 15
+Skulk.kMaxSpeed = 9
 Skulk.kMaxWalkSpeed = 4
-Skulk.kGroundFriction = 6.0
-Skulk.kGroundWalkFriction = 6.5
-Skulk.kAcceleration = 53
-Skulk.kAirAcceleration = 30
 Skulk.kJumpHeight = 1.3
 Skulk.kWallJumpForce = 2
 Skulk.kWallJumpYBoost = 6
@@ -188,14 +180,15 @@ end
 
 function Skulk:OnLeap()
 
-    local velocity = self:GetVelocity() * 0.5
-    local minSpeed = math.max(0, Skulk.kMinLeapVelocity - velocity:GetLengthXZ() - Skulk.kLeapVerticalForce) * self:GetMovementSpeedModifier()
+    local velocity = self:GetVelocity()
+    //local minSpeed = math.max(0, Skulk.kMinLeapVelocity - velocity:GetLengthXZ() - Skulk.kLeapVerticalForce) * self:GetMovementSpeedModifier()
 
     local forwardVec = self:GetViewAngles():GetCoords().zAxis
-    local newVelocity = (velocity + GetNormalizedVectorXZ(forwardVec) * (Skulk.kLeapForce * self:GetMovementSpeedModifier() + minSpeed))
+    local newVelocity = velocity + (GetNormalizedVector(forwardVec) * (Skulk.kLeapForce * self:GetMovementSpeedModifier()))
     
-    // Add in vertical component.
-    newVelocity.y = Skulk.kLeapVerticalVelocity * forwardVec.y + Skulk.kLeapVerticalForce * self:GetMovementSpeedModifier() + ConditionalValue(velocity.y < 0, velocity.y, 0)
+    if newVelocity.y < 1 then
+        newVelocity.y = Skulk.kLeapVerticalVelocity * self:GetMovementSpeedModifier()
+    end
     
     self:SetVelocity(newVelocity)
     
@@ -222,7 +215,7 @@ function Skulk:GetCanJump()
     return Alien.GetCanJump(self) or self:GetCanWallJump()    
 end
 
-function Skulk:OverrideStrafeJump()
+function Skulk:OverrideAirControl()
     return self:GetIsWallWalking()
 end
 
@@ -244,7 +237,7 @@ function Skulk:GetIsOnLadder()
 end
 
 function Skulk:GetIsWallWalkingPossible() 
-    return not self.crouching and not self:GetRecentlyJumped()
+    return not self.crouching
 end
 
 function Skulk:GetRecentlyJumped()
@@ -390,7 +383,7 @@ function Skulk:UpdatePosition(velocity, time)
         end
    
     else
-    
+
         // We need to make a copy so that we aren't holding onto a reference
         // which is updated when the origin changes.
         local start = Vector(self:GetOrigin())
@@ -472,52 +465,17 @@ end
 function Skulk:GetMaxSpeed(possible)
 
     if possible then
-        return 8
-    end
-
-    local maxspeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Skulk.kMaxWalkSpeed, Skulk.kMaxSpeed)    
-    return maxspeed * self:GetMovementSpeedModifier()
-    
-end
-
-function Skulk:GetAcceleration()
-    if self:GetIsOnSurface() then
-        local maccel = math.max(Skulk.kMaxGroundSpeed - self:GetVelocity():GetLengthXZ(), 0) * 10
-        if self:GetIsWallWalking() then
-            return Skulk.kAcceleration * self:GetMovementSpeedModifier()
-        else
-            return (Skulk.kAcceleration + maccel) * self:GetMovementSpeedModifier()
-        end
-    else
-        return Skulk.kAirAcceleration * self:GetMovementSpeedModifier()
-    end
-end
-
-function Skulk:GetMass()
-    return Skulk.kMass
-end
-
-/*
-function Skulk:ConstrainMoveVelocity(wishVelocity)
-end
-*/
-
-function Skulk:GetGroundFrictionForce()   
-
-    local groundFriction = ConditionalValue(self:GetIsWallWalking(), Skulk.kGroundWalkFriction, Skulk.kGroundFriction ) 
-    return groundFriction
-    
-end
-
-function Skulk:GetFrictionForce(input, velocity)
-
-    local friction = Player.GetFrictionForce(self, input, velocity)
-    if self:GetIsWallWalking() then
-        friction.y = -self:GetVelocity().y * self:GetGroundFrictionForce()
+        return Skulk.kMaxSpeed
     end
     
-    return friction
+    local maxSpeed = Skulk.kMaxSpeed
+    
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = Skulk.kMaxWalkSpeed
+    end
 
+    return maxSpeed * self:GetMovementSpeedModifier()
+    
 end
 
 function Skulk:GetGravityAllowed()
@@ -526,23 +484,6 @@ end
 
 function Skulk:GetIsOnSurface()
     return Alien.GetIsOnSurface(self) or (self:GetIsWallWalking() and not self.crouching)
-end
-
-function Skulk:GetIsAffectedByAirFriction()
-    return self:GetIsJumping() or not self:GetIsOnSurface()
-end
-
-function Skulk:AdjustGravityForce(input, gravity)
-
-    // No gravity when we're sticking to a wall.
-    if self:GetIsWallWalking() then
-        gravity = 0
-    elseif self.leaping then
-        return gravity * 1
-    end
-    
-    return gravity
-    
 end
 
 function Skulk:GetMoveDirection(moveVelocity)
@@ -574,7 +515,7 @@ end
 function Skulk:GetPlayFootsteps()
     
     // Don't play footsteps when we're walking
-    return self:GetVelocityLength() > .75 and not self.movementModiferState and not GetHasSilenceUpgrade(self) and not self:GetIsCloaked() and self:GetIsOnSurface()
+    return self:GetVelocityLength() > 5 and not GetHasSilenceUpgrade(self) and not self:GetIsCloaked() and self:GetIsOnSurface() and self:GetIsAlive()
     
 end
 
@@ -618,7 +559,7 @@ function Skulk:GetJumpVelocity(input, velocity)
     self.bonusVec:Normalize()
     
     if self:GetCanWallJump() then
-        if velocity:GetLengthXZ() < Skulk.kMaxWallSpeed then
+        if velocity:GetLengthXZ() < Skulk.kMaxSpeed then
             local jumpForce = Skulk.kWallJumpForce * self:GetMovementSpeedModifier()
             self.lastwalljump = Shared.GetTime()
             velocity.x = velocity.x + self.bonusVec.x * jumpForce
@@ -663,6 +604,12 @@ function Skulk:OnUpdateAnimationInput(modelMixin)
     
     modelMixin:SetAnimationInput("onwall", self:GetIsWallWalking() and not self:GetIsJumping())
     modelMixin:SetAnimationInput("attack_speed", self:GetIsPrimaled() and (kDefaultAttackSpeed * kPrimalScreamROFIncrease) or kDefaultAttackSpeed)
+end
+
+
+local kSkulkEngageOffset = Vector(0, 0.28, 0)
+function Skulk:GetEngagementPointOverride()
+    return self:GetOrigin() + kSkulkEngageOffset
 end
 
 Shared.LinkClassToMap("Skulk", Skulk.kMapName, networkVars)

@@ -16,8 +16,13 @@ local function JoinTeam(player, teamIndex)
     if player ~= nil and player:GetTeamNumber() == kTeamReadyRoom then
     
         // Auto team balance checks.
-        if GetGamerules():GetCanJoinTeamNumber(teamIndex) or Shared.GetCheatsEnabled() then
+        local allowed = GetGamerules():GetCanJoinTeamNumber(teamIndex)
+                
+        if allowed or Shared.GetCheatsEnabled() then
             return GetGamerules():JoinTeam(player, teamIndex)
+        else
+            Server.SendNetworkMessage(player, "JoinError", BuildJoinErrorMessage(), false)
+            return false
         end
         
     end
@@ -559,20 +564,6 @@ local function OnCommandDisrupt(client)
     
 end
 
-local function OnCommandHatch(client)
-
-    if Shared.GetCheatsEnabled() then
-    
-        local player = client:GetControllingPlayer()  
-        local ent = GetNearest(player:GetOrigin(), "Shift", player:GetTeamNumber())
-        if ent and ent.TriggerHatch then
-            ent:TriggerHatch()
-        end
-        
-    end
-    
-end
-
 local function OnCommandPush(client)
 
     if Shared.GetCheatsEnabled() then
@@ -857,6 +848,27 @@ local function OnCommandEggSpawnTimes(client, cmd)
     
 end
 
+local function OnCommandTestOrder(client)
+
+    if Shared.GetCheatsEnabled() then
+    
+        local player = client:GetControllingPlayer()
+
+        if player and HasMixin(player, "Orders") then
+
+            local eyePos = player:GetEyePos()
+            local endPos = eyePos + player:GetViewAngles():GetCoords().zAxis * 50
+            local trace = Shared.TraceRay(eyePos, endPos, CollisionRep.Default, PhysicsMask.Bullets, EntityFilterAll())
+            local target = trace.endPoint
+
+            player:GiveOrder(kTechId.Move, 0, target)
+        
+        end
+        
+    end    
+
+end
+
 // call for the nearest AI unit to come to your location. Useful when testing pathing/animation
 local function OnCommandGoThere(client)
     
@@ -984,6 +996,45 @@ local function OnCommandRespawnTeam(client, teamNum)
     
 end
 
+local function OnCommandMakeSpecialEdition(client)
+
+    if Shared.GetCheatsEnabled() then
+    
+        local player = client:GetControllingPlayer()
+        if player and player:isa("Marine") then        
+            player:SetModel(Marine.kSpecialEditionModelName, Marine.kMarineAnimationGraph)            
+        end
+        
+    end    
+
+end
+
+local function OnCommandGreenEdition(client)
+
+    if Shared.GetCheatsEnabled() then
+    
+        local player = client:GetControllingPlayer()
+        if player and player:isa("Marine") then        
+            player:SetModel(Marine.kModelName, Marine.kMarineAnimationGraph)            
+        end
+        
+    end    
+
+end
+
+local function OnCommandBlackEdition(client)
+
+    if Shared.GetCheatsEnabled() then
+    
+        local player = client:GetControllingPlayer()
+        if player and player:isa("Marine") then        
+            player:SetModel(Marine.kBlackArmorModelName, Marine.kMarineAnimationGraph)            
+        end
+        
+    end    
+
+end
+
 // GC commands
 Event.Hook("Console_changegcsettingserver", OnCommandChangeGCSettingServer)
 
@@ -1042,7 +1093,6 @@ Event.Hook("Console_catpack", OnCommandCatPack)
 Event.Hook("Console_alltech", OnCommandAllTech)
 Event.Hook("Console_location", OnCommandLocation)
 Event.Hook("Console_disrupt", OnCommandDisrupt)
-Event.Hook("Console_hatch", OnCommandHatch)
 Event.Hook("Console_push", OnCommandPush)
 Event.Hook("Console_deployarcs", OnCommandDeployARCs)
 Event.Hook("Console_undeployarcs", OnCommandUndeployARCs)
@@ -1064,5 +1114,8 @@ Event.Hook("Console_eggspawntimes", OnCommandEggSpawnTimes)
 Event.Hook("Console_gothere", OnCommandGoThere)
 
 Event.Hook("Console_rupture", OnCommandRupture)
+Event.Hook("Console_makespecial", OnCommandMakeSpecialEdition)
+Event.Hook("Console_makegreen", OnCommandGreenEdition)
+Event.Hook("Console_makeblack", OnCommandBlackEdition)
 
 Event.Hook("Console_debugcommander", OnCommandDebugCommander)

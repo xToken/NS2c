@@ -68,7 +68,7 @@ if Server then
 
     function Bomb:ProcessHit(targetHit, surface)
 
-        if targetHit ~= self:GetOwner() and not self.detonated then
+        if (not self:GetOwner() or targetHit ~= self:GetOwner()) and not self.detonated then
     
             self:TriggerEffects("bilebomb_hit")
 
@@ -102,6 +102,10 @@ if Server then
     
     end
 
+end
+
+function Bomb:GetNotifiyTarget()
+    return false
 end
 
 

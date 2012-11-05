@@ -12,23 +12,22 @@ Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/CommandStructure.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
-Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
+Script.Load("lua/HasUmbraMixin.lua")
 
 class 'Hive' (CommandStructure)
 
 local networkVars = 
 {
-    scared = "boolean",
 }
 
 AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
-AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(HiveVisionMixin, networkVars)
+AddMixinNetworkVars(HasUmbraMixin, networkVars)
 
 kResearchToHiveType =
 {
@@ -60,6 +59,8 @@ Hive.kStructureUnderAttackSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/
 Hive.kHarvesterUnderAttackSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/harvester_under_attack")
 Hive.kLifeformUnderAttackSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/lifeform_under_attack")
 Hive.kDyingSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/hive_dying")
+Hive.kEnemyApproachesSound1 = PrecacheAsset("sound/ns2c.fev/ns2c/ui/enemy_approach1")
+Hive.kEnemyApproachesSound2 = PrecacheAsset("sound/ns2c.fev/ns2c/ui/enemy_approach2")
 
 Hive.kTriggerCatalyst2DSound = PrecacheAsset("sound/NS2.fev/alien/commander/catalyze_2D")
 Hive.kTriggerCatalystSound = PrecacheAsset("sound/NS2.fev/alien/commander/catalyze_3D")
@@ -70,7 +71,7 @@ Hive.kHealthUpdateTime = 2
 
 if Server then
     Script.Load("lua/Hive_Server.lua")
-else
+elseif Client then
     Script.Load("lua/Hive_Client.lua")
 end
 
@@ -79,9 +80,9 @@ function Hive:OnCreate()
     CommandStructure.OnCreate(self)
     
     InitMixin(self, CloakableMixin)
-    InitMixin(self, UmbraMixin)
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
+    InitMixin(self, HasUmbraMixin)
     
     if Server then
         
@@ -151,7 +152,7 @@ function Hive:OnCollision(entity)
     /*if entity:isa("Player") and GetEnemyTeamNumber(self:GetTeamNumber()) == entity:GetTeamNumber() then    
         self.lastTimeEnemyTouchedHive = Shared.GetTime()
     end*/
-    
+        
 end
 
 function GetIsHiveTypeResearch(techId)

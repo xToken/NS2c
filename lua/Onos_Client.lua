@@ -53,15 +53,6 @@ function Onos:OnJumpLandNonLocalClient()
     
 end
 
-// Shake camera for nearby players
-function Onos:_PlayFootstepShake(player, scalar)
-        
-end
-
-function Onos:OnLocationChange(locationName)
-    
-end
-
 function Onos:GetHeadAttachpointName()
     return "Onos_Head"
 end

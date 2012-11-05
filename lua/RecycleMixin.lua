@@ -13,7 +13,7 @@ Script.Load("lua/FunctionContracts.lua")
 RecycleMixin = CreateMixin( RecycleMixin )
 RecycleMixin.type = "Recycle"
 
-local kRecycleEffectDuration = 2
+local kRecycleEffectDuration = 1
 
 RecycleMixin.expectedCallback =
 {
@@ -71,7 +71,7 @@ function RecycleMixin:OnResearchComplete(researchId)
         
         local amount = GetRecycleAmount(self:GetTechId(), upgradeLevel)
         // returns a scalar from 0-1 depending on health the structure has (at the present moment)
-        local scalar = self:GetRecycleScalar() * kRecyclePaybackScalar
+        local scalar = kRecycleRefundScalar
         
         // We round it up to the nearest value thus not having weird
         // fracts of costs being returned which is not suppose to be 

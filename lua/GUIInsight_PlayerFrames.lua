@@ -387,7 +387,8 @@ function GUIInsight_PlayerFrames:SendKeyEvent( key, down )
                     if blip.ownerEntityId == entityId then
                     
                         local player = Client.GetLocalPlayer()
-                        player:SetWorldScrollPosition(blip.worldX-5, blip.worldZ)
+                        local blipOrig = blip:GetOrigin()
+                        player:SetWorldScrollPosition(blipOrig.x-5, blipOrig.z)
                         
                     end
                     

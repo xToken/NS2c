@@ -33,6 +33,22 @@ function AmmoPack:OnInitialized()
 
 end
 
+function AmmoPack:OnUpdate(deltaTime)
+
+    if Client then
+        EquipmentOutline_UpdateModel(self)
+    end
+    
+end
+
+function AmmoPack:OnProcessMove(input)
+
+    if Client then
+        EquipmentOutline_UpdateModel(self)
+    end
+    
+end
+
 function AmmoPack:OnTouch(recipient)
 
     local weapon = recipient:GetActiveWeapon()
@@ -99,15 +115,15 @@ Shared.LinkClassToMap("WeaponAmmoPack", WeaponAmmoPack.kMapName)
 
 class 'RifleAmmo' (WeaponAmmoPack)
 RifleAmmo.kMapName = "rifleammo"
-RifleAmmo.kModelName = PrecacheAsset("models/marine/rifle/rifleammo.model")
-/*
+RifleAmmo.kModelName = PrecacheAsset("models/marine/ammopacks/lmg.model")
+
 function RifleAmmo:OnInitialized()
 
     WeaponAmmoPack.OnInitialized(self)
     self:SetModel(RifleAmmo.kModelName)
 
 end
-*/
+
 function RifleAmmo:GetWeaponClassName()
     return "Rifle"
 end  
@@ -118,37 +134,33 @@ Shared.LinkClassToMap("RifleAmmo", RifleAmmo.kMapName)
 
 class 'ShotgunAmmo' (WeaponAmmoPack)
 ShotgunAmmo.kMapName = "shotgunammo"
-ShotgunAmmo.kModelName = PrecacheAsset("models/marine/shotgun/shotgunammo.model")
-/*
+ShotgunAmmo.kModelName = PrecacheAsset("models/marine/ammopacks/sg.model")
+
 function ShotgunAmmo:OnInitialized()
 
     WeaponAmmoPack.OnInitialized(self)    
     self:SetModel(ShotgunAmmo.kModelName)
 
 end
-*/
+
 function ShotgunAmmo:GetWeaponClassName()
     return "Shotgun"
 end    
 
 Shared.LinkClassToMap("ShotgunAmmo", ShotgunAmmo.kMapName)
 
-// -------------
-
-
-// -------------
 
 class 'GrenadeLauncherAmmo' (WeaponAmmoPack)
 GrenadeLauncherAmmo.kMapName = "grenadelauncherammo"
-GrenadeLauncherAmmo.kModelName = PrecacheAsset("models/marine/grenadelauncher/grenadelauncherammo.model")
-/*
+GrenadeLauncherAmmo.kModelName = PrecacheAsset("models/marine/ammopacks/gl.model")
+
 function GrenadeLauncherAmmo:OnInitialized()
 
     WeaponAmmoPack.OnInitialized(self)    
     self:SetModel(GrenadeLauncherAmmo.kModelName)
 
 end
-*/
+
 function GrenadeLauncherAmmo:GetWeaponClassName()
     return "GrenadeLauncher"
 end
@@ -158,15 +170,15 @@ Shared.LinkClassToMap("GrenadeLauncherAmmo", GrenadeLauncherAmmo.kMapName)
 
 class 'HeavyMachineGunAmmo' (WeaponAmmoPack)
 HeavyMachineGunAmmo.kMapName = "heavymachinegunammo"
-HeavyMachineGunAmmo.kModelName = PrecacheAsset("models/marine/rifle/rifleammo.model")
-/*
-function ShotgunAmmo:OnInitialized()
+HeavyMachineGunAmmo.kModelName = PrecacheAsset("models/marine/ammopacks/hmg.model")
+
+function HeavyMachineGunAmmo:OnInitialized()
 
     WeaponAmmoPack.OnInitialized(self)    
-    self:SetModel(ShotgunAmmo.kModelName)
+    self:SetModel(HeavyMachineGunAmmo.kModelName)
 
 end
-*/
+
 function HeavyMachineGunAmmo:GetWeaponClassName()
     return "HeavyMachineGun"
 end    

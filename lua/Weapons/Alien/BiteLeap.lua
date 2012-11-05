@@ -41,7 +41,6 @@ end
 
 local networkVars =
 {
-    lastBittenEntityId = "entityid",
     lastPrimaryAttackTime = "time"
 }
 
@@ -62,7 +61,6 @@ function BiteLeap:OnCreate()
     
     InitMixin(self, LeapMixin)
     
-    self.lastBittenEntityId = Entity.invalidId
     self.lastPrimaryAttackTime = 0
     self.primaryAttacking = false
 
@@ -112,26 +110,6 @@ end
 
 function BiteLeap:GetPrimaryAttackUsesFocus()
     return true
-end
-
-function BiteLeap:GetisUsingPrimaryAttack()
-    return self.primaryAttacking
-end
-
-function BiteLeap:GetEffectParams(tableParams)
-
-    Ability.GetEffectParams(self, tableParams)
-    
-    // There is a special case for biting structures.
-    if self.lastBittenEntityId ~= Entity.invalidId then
-    
-        local lastBittenEntity = Shared.GetEntity(self.lastBittenEntityId)
-        if lastBittenEntity and GetReceivesStructuralDamage(lastBittenEntity) then
-            tableParams[kEffectFilterHitSurface] = "structure"
-        end
-        
-    end
-    
 end
 
 function BiteLeap:GetMeleeBase()

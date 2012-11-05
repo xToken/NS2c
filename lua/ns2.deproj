@@ -70,6 +70,9 @@
     <filename>ArmsLab.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Marine\Axe.lua</filename>
+  </file>
+  <file>
     <filename>Balance.lua</filename>
   </file>
   <file>
@@ -94,13 +97,13 @@
     <filename>BuildUtility.lua</filename>
   </file>
   <file>
+    <filename>Weapons\BulletsMixin.lua</filename>
+  </file>
+  <file>
     <filename>CatPack.lua</filename>
   </file>
   <file>
     <filename>Client.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\ClientWeaponEffectsMixin.lua</filename>
   </file>
   <file>
     <filename>Weapons\Marine\ClipWeapon.lua</filename>
@@ -130,9 +133,6 @@
     <filename>Commander_Client.lua</filename>
   </file>
   <file>
-    <filename>Commander_IdleWorkerPanel.lua</filename>
-  </file>
-  <file>
     <filename>Commander_PlayerAlertPanel.lua</filename>
   </file>
   <file>
@@ -149,9 +149,6 @@
   </file>
   <file>
     <filename>Weapons\Alien\CragAbility.lua</filename>
-  </file>
-  <file>
-    <filename>DAKLoader.lua</filename>
   </file>
   <file>
     <filename>DamageEffects.lua</filename>
@@ -172,6 +169,9 @@
     <filename>DetectorMixin.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Alien\Devour.lua</filename>
+  </file>
+  <file>
     <filename>DisruptMixin.lua</filename>
   </file>
   <file>
@@ -185,6 +185,9 @@
   </file>
   <file>
     <filename>Egg.lua</filename>
+  </file>
+  <file>
+    <filename>ElectrifyMixin.lua</filename>
   </file>
   <file>
     <filename>Embryo.lua</filename>
@@ -214,7 +217,7 @@
     <filename>GUIAlienHUD.lua</filename>
   </file>
   <file>
-    <filename>GUIBuyShotgunHelp.lua</filename>
+    <filename>GUIAlienSpectatorHUD.lua</filename>
   </file>
   <file>
     <filename>GUICommanderAlerts.lua</filename>
@@ -235,6 +238,9 @@
     <filename>GUICrosshair.lua</filename>
   </file>
   <file>
+    <filename>GUIDeathMessages.lua</filename>
+  </file>
+  <file>
     <filename>GUIDeathScreen.lua</filename>
   </file>
   <file>
@@ -245,6 +251,9 @@
   </file>
   <file>
     <filename>GUIGorgeBuildMenu.lua</filename>
+  </file>
+  <file>
+    <filename>GUIGorgeBuildMenu2.lua</filename>
   </file>
   <file>
     <filename>GUIInsight_OtherHealthbars.lua</filename>
@@ -265,9 +274,6 @@
     <filename>Hud\Marine\GUIMarineStatus.lua</filename>
   </file>
   <file>
-    <filename>GUIMinimap.lua</filename>
-  </file>
-  <file>
     <filename>GUIOrders.lua</filename>
   </file>
   <file>
@@ -283,6 +289,9 @@
     <filename>GUIReadyRoomOrders.lua</filename>
   </file>
   <file>
+    <filename>GUIResourceDisplay.lua</filename>
+  </file>
+  <file>
     <filename>GUISelectionPanel.lua</filename>
   </file>
   <file>
@@ -293,12 +302,6 @@
   </file>
   <file>
     <filename>GUIUnitStatus.lua</filename>
-  </file>
-  <file>
-    <filename>GUIWaypoints.lua</filename>
-  </file>
-  <file>
-    <filename>Gamerules.lua</filename>
   </file>
   <file>
     <filename>GeneralEffects.lua</filename>
@@ -340,6 +343,9 @@
     <filename>Weapons\Alien\HarvesterAbility.lua</filename>
   </file>
   <file>
+    <filename>HasUmbraMixin.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Alien\HealSprayMixin.lua</filename>
   </file>
   <file>
@@ -379,9 +385,6 @@
     <filename>InfantryPortal.lua</filename>
   </file>
   <file>
-    <filename>InvalidOriginMixin.lua</filename>
-  </file>
-  <file>
     <filename>Jetpack.lua</filename>
   </file>
   <file>
@@ -403,7 +406,13 @@
     <filename>Weapons\Alien\LerkBite.lua</filename>
   </file>
   <file>
-    <filename>Weapons\Alien\LerkUmbra.lua</filename>
+    <filename>Weapons\Alien\LerkBitePrimal.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\LerkBiteSpikes.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\LerkBiteUmbra.lua</filename>
   </file>
   <file>
     <filename>Lerk_Server.lua</filename>
@@ -478,6 +487,9 @@
     <filename>NetworkMessages_Client.lua</filename>
   </file>
   <file>
+    <filename>NetworkMessages_Server.lua</filename>
+  </file>
+  <file>
     <filename>Observatory.lua</filename>
   </file>
   <file>
@@ -536,9 +548,6 @@
   </file>
   <file>
     <filename>PrototypeLab_Server.lua</filename>
-  </file>
-  <file>
-    <filename>RagdollMixin.lua</filename>
   </file>
   <file>
     <filename>ReadyRoomTeam.lua</filename>
@@ -679,7 +688,7 @@
     <filename>Weapons\Alien\UmbraCloud.lua</filename>
   </file>
   <file>
-    <filename>UmbraMixin.lua</filename>
+    <filename>Weapons\Alien\UmbraMixin.lua</filename>
   </file>
   <file>
     <filename>UnitStatusMixin.lua</filename>
@@ -695,6 +704,9 @@
   </file>
   <file>
     <filename>WeaponOwnerMixin.lua</filename>
+  </file>
+  <file>
+    <filename>WeaponUtility.lua</filename>
   </file>
   <file>
     <filename>Weapons\Weapon_Server.lua</filename>

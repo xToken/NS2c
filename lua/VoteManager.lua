@@ -26,7 +26,9 @@ end
 function VoteManager:PlayerVotesFor(playerId, target, time)
 
     if type(playerId) == "number" and target ~= nil and type(time) == "number" then
+    
         if not self.target or (self.target == target) then
+    
             // Make sure player hasn't voted already    
             if not table.find(self.playersVoted, playerId) then
             
@@ -34,9 +36,12 @@ function VoteManager:PlayerVotesFor(playerId, target, time)
                 self.target = target
                 self.timeVoteStarted = time
                 
-                return true    
-            end  
+                return true
+                
+            end
+            
         end
+        
     end
     
     return false
@@ -77,10 +82,15 @@ end
 function VoteManager:GetVoteElapsed(time)
 
     if self.timeVoteStarted and type(time) == "number" then
+    
         if (time - self.timeVoteStarted) >= VoteManager.kVoteDuration then
+        
             return true
+            
         end
+        
     end
+    
     return false
     
 end

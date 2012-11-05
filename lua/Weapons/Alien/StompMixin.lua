@@ -90,7 +90,7 @@ end
 
 function StompMixin:OnSecondaryAttack(player)
 
-    if player:GetEnergy() >= kStompEnergyCost and player:GetVelocityLength() < kMaxPlayerVelocityToStomp and player:GetIsOnGround() then
+    if player:GetEnergy() >= kStompEnergyCost and player:GetIsOnGround() then
         self.stomping = true
         Ability.OnSecondaryAttack(self, player)
     end
@@ -112,7 +112,7 @@ function StompMixin:OnTag(tagName)
         
         local player = self:GetParent()
         
-        if player and player:GetHasTwoHives() then
+        if player then
                 
             self:PerformStomp(player)
 
