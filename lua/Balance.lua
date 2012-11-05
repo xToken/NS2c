@@ -179,9 +179,9 @@ kShotgunDamageType = kDamageType.Normal
 kShotgunClipSize = 8
 kShotgunBulletsPerShot = 10
 kShotgunMaxRange = 18
-kShotgunMinSpread = 17
+kShotgunMinSpread = 15
 kShotgunMinSpreadBullets = 5
-kShotgunMaxSpread = 25
+kShotgunMaxSpread = 22
 //kShotgunDropOffStartRange = 4
 kShotgunWeight = 0.15
 
