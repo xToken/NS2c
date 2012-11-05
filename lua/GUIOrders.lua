@@ -12,7 +12,7 @@ Script.Load("lua/DynamicMeshUtility.lua")
 
 class 'GUIOrders' (GUIScript)
 
-GUIOrders.kOrderImageName = "ui/marine_buildmenu.dds"
+GUIOrders.kOrderImageName = "ui/buildmenu.dds"
 
 GUIOrders.kOrderTextureSize = 80
 GUIOrders.kDefaultOrderSize = 25

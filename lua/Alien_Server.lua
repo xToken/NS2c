@@ -56,18 +56,6 @@ function Alien:TeleportToHive(usedhive)
 
 end
 
-function Alien:RequestHeal()
-
-    if not self.timeLastHealRequest or self.timeLastHealRequest + 4 < Shared.GetTime() then
-    
-        self:GetTeam():TriggerAlert(kTechId.AlienAlertNeedHealing, self)
-        self:PlaySound("sound/NS2.fev/alien/voiceovers/need_healing")
-        self.timeLastHealRequest = Shared.GetTime()
-            
-    end
-
-end
-
 function Alien:CheckRedemption()
 
     local hasupg, level = GetHasRedemptionUpgrade(self)
@@ -109,13 +97,14 @@ function Alien:OnProcessMove(input)
     
     Player.OnProcessMove(self, input)
     
+	if not self:GetIsDestroyed() then
     // Calculate two and three hives so abilities for abilities        
-    self:UpdateNumHives()
-    self:CheckRedemption()
-    self.primalScreamBoost = self.timeWhenPrimalScreamExpires > Shared.GetTime()  
-    self:UpdateAutoHeal()
-    self:UpdateNumUpgradeStructures()
-    self:UpdateHiveInformation()
+    	self:UpdateNumHives()
+    	self:CheckRedemption()
+    	self.primalScreamBoost = self.timeWhenPrimalScreamExpires > Shared.GetTime()  
+    	self:UpdateAutoHeal()
+    	self:UpdateNumUpgradeStructures()
+	end
     
 end
 
@@ -126,36 +115,36 @@ function Alien:UpdateAutoHeal()
     if self:GetIsHealable() and self.timeLastAlienAutoHeal == nil or self.timeLastAlienAutoHeal + kAlienRegenerationTime <= Shared.GetTime() then
 
         local healRate = kAlienInnateRegenerationPercentage
-        self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), false)  
+        self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), false, false, true)    
         self.timeLastAlienAutoHeal = Shared.GetTime()
     
     end 
 
 end
 
-function Alien:GetDamagedAlertId()
-    return kTechId.AlienAlertLifeformUnderAttack
+local kAbilityData = { [kTechId.Skulk] = { kTechId.Parasite, kTechId.Leap, kTechId.Xenocide }, 
+                       [kTechId.Gorge] = { kTechId.Spray, kTechId.BileBomb, kTechId.Web },
+                       [kTechId.Lerk] = { kTechId.Spores, kTechId.Umbra, kTechId.PrimalScream }, 
+                       [kTechId.Fade] = { kTechId.Blink, kTechId.Metabolize, kTechId.AcidRocket },
+                       [kTechId.Onos] = { kTechId.Charge, kTechId.Stomp, kTechId.Smash } }
+
+function Alien:OnHiveConstructed(newHive, activeHiveCount)
+    
+    local AbilityData = kAbilityData[self:GetTechId()]
+    if AbilityData[activeHiveCount] ~= nil then
+        SendPlayersMessage({self}, kTeamMessageTypes.ResearchComplete, AbilityData[activeHiveCount])
+    end
 end
 
-function Alien:UpdateHiveInformation()
-
-    if self.timeToUpdateHiveInfo == nil or Shared.GetTime() >= self.timeToUpdateHiveInfo then
-        for index, hive in ipairs(GetEntitiesForTeam("Hive", self:GetTeamNumber())) do
-            if hive:GetIsAlive() then
-                local hiveinfo = {
-                                    key = index, 
-                                    location = hive:GetLocationName(), 
-                                    healthpercent = (hive:GetHealth() / hive:GetMaxHealth()), 
-                                    buildprogress = ConditionalValue(hive:GetIsBuilt(), 1, hive:GetBuiltFraction()),
-                                    timelastdamaged = hive.lastHiveFlinchEffectTime,
-                                    techId = hive:GetTechId()
-                                 }
-                 Server.SendNetworkMessage("HiveInfo", hiveinfo, false)
-            end
-        end
-        self.timeToUpdateHiveInfo =  Shared.GetTime() + 1
+function Alien:OnHiveDestroyed(destroyedHive, activeHiveCount)
+    local AbilityData = kAbilityData[self:GetTechId()]
+    if AbilityData[activeHiveCount + 1] ~= nil then
+        SendPlayersMessage({self}, kTeamMessageTypes.ResearchLost, AbilityData[activeHiveCount + 1])
     end
-    
+end
+
+function Alien:GetDamagedAlertId()
+    return kTechId.AlienAlertLifeformUnderAttack
 end
 
 function Alien:UpdateNumUpgradeStructures()
@@ -206,8 +195,8 @@ function Alien:ProcessBuyAction(techIds)
     ASSERT(table.count(techIds) > 0)
 
     local success = false
-    local healthScalar = 1
-    local armorScalar = 1
+    local healthScalar = self:GetHealth() / self:GetMaxHealth()
+    local armorScalar = self:GetMaxArmor() == 0 and 1 or self:GetArmor() / self:GetMaxArmor()
     local totalCosts = 0
     
     // Check for room
@@ -233,33 +222,15 @@ function Alien:ProcessBuyAction(techIds)
     local position = self:GetOrigin()
     local newLifeFormTechId = kTechId.None
     
-    //local evolveAllowed = self:GetIsOnGround()
     local evolveAllowed = true
     evolveAllowed = evolveAllowed and GetHasRoomForCapsule(eggExtents, position + Vector(0, eggExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
     evolveAllowed = evolveAllowed and GetHasRoomForCapsule(newAlienExtents, position + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
-    
-    // If not on the ground for the buy action, attempt to automatically
-    // put the player on the ground in an area with enough room for the new Alien.
-    // Derp code below
-    /*
-    if not evolveAllowed then
-    
-        for index = 1, 100 do
-        
-            local spawnPoint = GetRandomSpawnForCapsule(newAlienExtents.y, math.max(newAlienExtents.x, newAlienExtents.z), self:GetModelOrigin(), 0.5, 5, EntityFilterOne(self))
-            if spawnPoint then
-            
-                self:SetOrigin(spawnPoint)
-                position = spawnPoint
-                evolveAllowed = true
-                break
-                
-            end
-            
+    if self:GetTechId() == kTechId.Onos then
+        if self.devouring ~= 0 then
+            Print(ToString(self.devouring))
+            evolveAllowed = false
         end
-        
     end
-    */
     if evolveAllowed then
     
         // Deduct cost here as player is immediately replaced and copied.
@@ -297,16 +268,10 @@ function Alien:ProcessBuyAction(techIds)
         else    
 
             self:AddResources(math.min(0, -totalCosts))
-            
+
             local newPlayer = self:Replace(Embryo.kMapName)
             position.y = position.y + Embryo.kEvolveSpawnOffset
             newPlayer:SetOrigin(position)
-
-            if not newPlayer:IsAnimated() then
-                newPlayer:SetDesiredCamera(1.1, { follow = true, tweening = kTweeningFunctions.easeout7 })
-            end
-            newPlayer:SetCameraDistance(kGestateCameraDistance)
-            newPlayer:SetViewOffsetHeight(.5)
             
             if totalCosts < 0 then
                 newPlayer.resOnGestationComplete = -totalCosts

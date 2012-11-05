@@ -11,7 +11,7 @@ Script.Load("lua/TechTreeButtons.lua")
 // Maps tech buttons to keys in "grid" system
 kGridHotkeys =
 {
-    Move.Q, Move.W, Move.E, "",
+    Move.Q, Move.W, Move.E, Move.R,
     Move.A, Move.S, Move.D, Move.F,
     Move.Z, Move.X, Move.C, Move.V,
 }
@@ -118,7 +118,11 @@ function CommanderUI_MenuButtonStatus(index)
                 if techNode:GetResearching() and not techNode:GetIsUpgrade() then
                 
                     // Don't display
-                    buttonStatus = 0                    
+                    buttonStatus = 0
+
+                elseif techNode:GetIsPassive() then
+
+                    buttonStatus = 4         
                     
                 elseif not techNode:GetAvailable() or not player.menuTechButtonsAllowed[index] then
                 
@@ -129,19 +133,14 @@ function CommanderUI_MenuButtonStatus(index)
                 
                     // red, can't afford, but allowed
                     buttonStatus = 2
-                    
-                elseif techNode:GetIsPassive() then
-                
-                    // normal color but not clickable
-                    buttonStatus = 4
-                   
+                                       
                 else
                     // Available
                     buttonStatus = 1
                 end
 
             else
-                Print("CommanderUI_MenuButtonStatus(%s): Tech node for id %s not found (%s)", tostring(index), EnumToString(kTechId, techId), table.tostring(player.menuTechButtons))
+                // Print("CommanderUI_MenuButtonStatus(%s): Tech node for id %s not found (%s)", tostring(index), EnumToString(kTechId, techId), table.tostring(player.menuTechButtons))
             end
             
         end
@@ -244,22 +243,24 @@ end
 local function UpdateSharedTechButtons(self)
 
     self.menuTechButtons = { }
-    
-    if #self.selectedSubGroupEntityIds > 0 then
+    local selection = self:GetSelection()
+    if #selection > 0 then
     
         // Loop through all entities and get their tech buttons
         local selectedTechButtons = { }
         local maxTechButtons = 0
-        for selectedEntityIndex, entityId in ipairs(self.selectedSubGroupEntityIds) do
-        
-            local entity = Shared.GetEntity(entityId)        
-            if(entity ~= nil) then
+        for i = 1, #selection do
+
+            local entity = Shared.GetEntity(selection[i])
+            if entity then
 
                 local techButtons = self:GetCurrentTechButtons(self.menuTechId, entity)
                 
-                if(techButtons ~= nil) then
+                if techButtons then
+                
                     table.insert(selectedTechButtons, techButtons)
                     maxTechButtons = math.max(maxTechButtons, table.count(techButtons))
+                    
                 end
                 
             end
@@ -312,6 +313,8 @@ local function UpdateSharedTechButtons(self)
             
             if not buttonConflicts then
                 table.insert(self.menuTechButtons, buttonTechId)
+            else
+                table.insert(self.menuTechButtons, kTechId.None)
             end
             
         end
@@ -361,16 +364,18 @@ local function ComputeMenuTechAvailability(self)
             
         elseif techNode then
         
-            if #self.selectedSubGroupEntityIds > 0 then
+            local selection = self:GetSelection()
+        
+            if #selection > 0 then
             
-                for e = 1, #self.selectedSubGroupEntityIds do
+                for e = 1, #selection do
                 
-                    local entityId = self.selectedSubGroupEntityIds[e]
+                    local entityId = selection[e]
                     local entity = Shared.GetEntity(entityId)
                     local isTechAllowed = false
                     local canAfford = false
                     
-                    local _, isSelectTabSelected = self:IsTabSelected(kTechId.RootMenu)
+                    local _, isSelectTabSelected = self:IsTabSelected(kTechId.WeaponsMenu)
                     if isSelectTabSelected then
                         isTechAllowed, canAfford = entity:GetTechAllowed(techId, techNode, self)
                     else
@@ -418,7 +423,7 @@ end
 function Commander:UpdateMenu()
 
     if self.menuTechId == nil then
-        self.menuTechId = kTechId.RootMenu
+        self.menuTechId = kTechId.BuildMenu
     end
     
     UpdateSharedTechButtons(self)

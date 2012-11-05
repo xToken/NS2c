@@ -71,7 +71,7 @@ function Devour:GetEnergyCost(player)
 end
 
 function Devour:GetHUDSlot()
-    return 2
+    return 3
 end
 
 function Devour:OnHolster(player)
@@ -143,14 +143,6 @@ end
 function Devour:OnPrimaryAttackEnd(player)  
     Ability.OnPrimaryAttackEnd(self, player)
     self:OnAttackEnd()
-end
-
-function Devour:GetPrimaryAttackUsesFocus()
-    return false
-end
-
-function Devour:GetisUsingPrimaryAttack()
-    return self.primaryAttacking
 end
 
 function Devour:OnAttackEnd()

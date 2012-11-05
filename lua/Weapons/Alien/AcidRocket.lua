@@ -94,37 +94,24 @@ function AcidRocket:FireRocketProjectile(player)
     if Server then
         
         local viewAngles = player:GetViewAngles()
+        local velocity = player:GetVelocity()
         local viewCoords = viewAngles:GetCoords()
-        local startPoint = player:GetOrigin() + viewCoords.zAxis * 1.5
-        local endPoint = startPoint + Vector(0, 1.5, 0)
+        local startPoint = player:GetEyePos() + viewCoords.zAxis * 0.35 + Vector(0, 0, -0.25)
         
-        // trace from start to end to make sure the bomb won't wall through the ground
-        local trace = Shared.TraceRay(player:GetOrigin(), endPoint, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterOne(player))
-         startPoint = trace.endPoint
-        if trace.fraction ~= 1 then
-            startPoint = startPoint + trace.normal * 0.3
-        end
-        local startVelocity = player:GetVelocity() * kPlayerVelocityFraction + viewCoords.zAxis * kRocketVelocity
+        local startPointTrace = Shared.TraceRay(player:GetEyePos(), startPoint, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterOne(player))
+        startPoint = startPointTrace.endPoint
+        
+        local startVelocity = velocity * kPlayerVelocityFraction + viewCoords.zAxis * kRocketVelocity
         
         local rocket = CreateEntity(Rocket.kMapName, startPoint, player:GetTeamNumber())
-        rocket:Setup(player, startVelocity, true)
+        rocket:Setup(player, startVelocity, true, Vector(0.20,0.20,0.20))
         
     end
 
 end
 
 function AcidRocket:OnUpdateAnimationInput(modelMixin)
-
-    PROFILE("AcidRocket:OnUpdateAnimationInput")
-    
-    //modelMixin:SetAnimationInput("ability", "bomb")
-        
-    //local activityString = "none"
-    //if self.firingPrimary then
-        //activityString = "primary"
-    //end
-    //modelMixin:SetAnimationInput("activity", activityString)
-    
+    PROFILE("AcidRocket:OnUpdateAnimationInput")    
 end
 
 Shared.LinkClassToMap("AcidRocket", AcidRocket.kMapName, AcidRocket.networkVars )

@@ -69,7 +69,8 @@ local function GetBuildAttachRequirementsMet(techId, position, teamNumber, snapR
             table.insert(supportingTechIds, attachId)
         end
         
-        local ents = GetEntsWithTechIdIsActive(supportingTechIds, attachRange, position)           
+        local ents = GetEntsWithTechIdIsActive(supportingTechIds, attachRange, position)
+        
         legalBuild = (table.count(ents) > 0) 
     
     end
@@ -143,6 +144,10 @@ local function CheckBuildEntityRequirements(techId, position, player, ignoreEnti
             
         end
         
+        if not legalBuild then
+            errorString = "COMMANDERERROR_CANT_BUILD_ON_TOP" 
+        end
+        
     end
     
     if techNode and (techNode:GetIsBuild() or techNode:GetIsBuy() or techNode:GetIsEnergyBuild()) and legalBuild then        
@@ -159,7 +164,7 @@ local function CheckBuildEntityRequirements(techId, position, player, ignoreEnti
                 
                 if numFriendlyEntitiesInRadius >= (kMaxEntitiesInRadius - 1) then
                 
-                    errorString = "TOO_MANY_ENTITES"
+                    errorString = "COMMANDERERROR_TOO_MANY_ENTITIES"
                     legalBuild = false
                     break
                     
@@ -174,7 +179,8 @@ local function CheckBuildEntityRequirements(techId, position, player, ignoreEnti
         
             local nearbyClassName = currentEnt:GetClassName()
             if GetIsAttachment(nearbyClassName) and (nearbyClassName ~= attachClass) then            
-                legalBuild = false                
+                legalBuild = false    
+                errorString = "COMMANDERERROR_CANT_BUILD_TOO_CLOSE"            
             end
             
         end
@@ -213,20 +219,44 @@ local function BuildUtility_Print(formatString, ...)
         Print(formatString, ...)
     end
     
-end    
+end
+
+local function GetIsStructureExitValid(origin, direction, range)
+
+    local trace = Shared.TraceRay(origin + Vector(0, 0.2, 0), origin + Vector(0, 0.2, 0) + direction * range, CollisionRep.Move, PhysicsMask.CommanderSelect, nil)
+    return trace.fraction == 1
+    
+end
+
+local function CheckValidExit(techId, position, angle)
+
+    //local directionVec = GetNormalizedVector(Vector(math.sin(angle), 0, math.cos(angle)))
+    // TODO: Add something to tech data for "ExitDistance".
+    local validExit = true
+    //if techId == kTechId.RoboticsFactory then
+        //validExit = GetIsStructureExitValid(position, directionVec, 5)
+    //elseif techId == kTechId.PhaseGate then
+        //validExit = GetIsStructureExitValid(position, directionVec, 1.5)
+    //end
+    
+    BuildUtility_Print("validExit legal: %s", ToString(validExit))
+    
+    return validExit, not validExit and "COMMANDERERROR_NO_EXIT" or nil
+    
+end
 
 /**
  * Returns true or false if build attachments are fulfilled, as well as possible attach entity 
  * to be hooked up to. If snap radius passed, then snap build origin to it when nearby. Otherwise
  * use only a small tolerance to see if entity is close enough to an attach class.
  */
-function GetIsBuildLegal(techId, position, snapRadius, player, ignoreEntity)
+function GetIsBuildLegal(techId, position, angle, snapRadius, player, ignoreEntity, ignoreChecks)
 
     local legalBuild = true
     local extents = GetExtents(techId)
     
     local attachEntity = nil
-    local errorString = ""
+    local errorString = nil
     local ignoreEntities = LookupTechData(techId, kTechDataCollideWithWorldOnly, false)
     
     BuildUtility_Print("------------- GetIsBuildLegal(%s) ---------------", EnumToString(kTechId, techId))
@@ -244,22 +274,39 @@ function GetIsBuildLegal(techId, position, snapRadius, player, ignoreEntity)
     local teamNumber = GetTeamNumber(player, ignoreEntity)
     legalBuild, legalPosition, attachEntity = GetBuildAttachRequirementsMet(techId, legalPosition, teamNumber, snapRadius)
     
+    if not legalBuild then
+        errorString = "COMMANDERERROR_OUT_OF_RANGE"
+    end
+    
     BuildUtility_Print("GetBuildAttachRequirementsMet legal: %s", ToString(legalBuild))
     
     // Check collision and make sure there aren't too many entities nearby
-    if legalBuild and player then
+    if legalBuild and player and not ignoreEntities then
         legalBuild, errorString = CheckBuildEntityRequirements(techId, legalPosition, player, ignoreEntity)
     end
     
     BuildUtility_Print("CheckBuildEntityRequirements legal: %s", ToString(legalBuild))
     
-    legalBuild = legalBuild and CheckBuildTechAvailable(techId, teamNumber)
+    if legalBuild then
+    
+        legalBuild = legalBuild and CheckBuildTechAvailable(techId, teamNumber)
+        
+        if not legalBuild then
+            errorString = "COMMANDERERROR_TECH_NOT_AVAILABLE"
+        end
+        
+    end
     
     BuildUtility_Print("CheckBuildTechAvailable legal: %s", ToString(legalBuild))
     
     // Ignore entities means ignore pathing as well.
     if not ignoreEntities and legalBuild then
-        legalBuild = GetPathingRequirementsMet(legalPosition, extents)        
+    
+        legalBuild = GetPathingRequirementsMet(legalPosition, extents)
+        if not legalBuild then
+            errorString = "COMMANDERERROR_INVALID_PLACEMENT"
+        end
+        
     end
     
     BuildUtility_Print("GetPathingRequirementsMet legal: %s", ToString(legalBuild))
@@ -267,7 +314,12 @@ function GetIsBuildLegal(techId, position, snapRadius, player, ignoreEntity)
     if legalBuild then
     
         if not LookupTechData(techId, kTechDataAllowStacking, false) then
+        
             legalBuild = CheckClearForStacking(legalPosition, extents, attachEntity, ignoreEntity)
+            if not legalBuild then
+                errorString = "COMMANDERERROR_CANT_BUILD_ON_TOP"
+            end
+            
         end
         
     end
@@ -283,17 +335,26 @@ function GetIsBuildLegal(techId, position, snapRadius, player, ignoreEntity)
             // DL: As the normal passed in here isn't used to orient the building - don't bother working it out exactly. Up should be good enough.
             legalBuild = method(techId, legalPosition, Vector(0, 1, 0), player)
             
+            if not legalBuild then
+            
+                local customMessage = LookupTechData(techId, kTechDataBuildMethodFailedMessage, nil)
+                
+                if customMessage then
+                    errorString = customMessage
+                else
+                    errorString = "COMMANDERERROR_BUILD_FAILED"
+                end
+                
+            end
+            
             BuildUtility_Print("customMethod legal: %s", ToString(legalBuild))
             
         end
         
     end
     
-    // TODO: Also check that we're not building in front of a structure "exit" (robotics factory, phase gate)
-    
-    // Display tooltip error
-    if not legalBuild and errorString ~= "" and player then
-        player:TriggerInvalidSound()     
+    if legalBuild and (not ignoreChecks or ignoreChecks["ValidExit"] ~= true) then
+        legalBuild, errorString = CheckValidExit(techId, legalPosition, angle)
     end
     
     return legalBuild, legalPosition, attachEntity, errorString
@@ -301,8 +362,10 @@ function GetIsBuildLegal(techId, position, snapRadius, player, ignoreEntity)
 end
 
 local function FlipDebug()
+
     gDebugBuildUtility = not gDebugBuildUtility
-    Print("set commander debug to %s", ToString(gDebugBuildUtility))
+    Print("Set commander debug to " .. ToString(gDebugBuildUtility))
+    
 end
 
 function BuildUtility_SetDebug(vm)
@@ -310,7 +373,7 @@ function BuildUtility_SetDebug(vm)
     if not vm then
         Print("use: debugcommander client, server or all")
     end
-
+    
     if Shared.GetCheatsEnabled() then
     
         if Client and vm == "client" then
@@ -320,9 +383,7 @@ function BuildUtility_SetDebug(vm)
         elseif vm == "all" then
             FlipDebug()
         end
-            
+        
     end
-
+    
 end
-
-

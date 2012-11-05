@@ -233,10 +233,6 @@ if Client then
         return 0.07
     end
     
-    function Rifle:GetPreventCameraAnimation()
-        return true
-    end
-    
     function Rifle:GetBarrelPoint()
     
         local player = self:GetParent()
@@ -245,7 +241,7 @@ if Client then
             local origin = player:GetEyePos()
             local viewCoords= player:GetViewCoords()
             
-            return origin + viewCoords.zAxis * 0.4 + viewCoords.xAxis * -0.2 + viewCoords.yAxis * -0.22
+            return origin + viewCoords.zAxis * 0.4 + viewCoords.xAxis * -0.15 + viewCoords.yAxis * -0.22
             
         end
         

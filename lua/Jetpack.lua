@@ -51,6 +51,26 @@ function Jetpack:OnInitialized()
     ScriptActor.OnInitialized(self)    
     self:SetModel(Jetpack.kModelName)
     
+    local coords = self:GetCoords()
+
+    self.jetpackBody = Shared.CreatePhysicsSphereBody(false, 0.4, 0, coords)
+    self.jetpackBody:SetCollisionEnabled(true)    
+    self.jetpackBody:SetGroup(PhysicsGroup.WeaponGroup)    
+    self.jetpackBody:SetEntity(self)
+    
+end
+
+function Jetpack:OnDestroy() 
+
+    ScriptActor.OnDestroy(self)
+
+    if self.jetpackBody then
+    
+        Shared.DestroyCollisionObject(self.jetpackBody)
+        self.jetpackBody = nil
+        
+    end
+
 end
 
 function Jetpack:OnTouch(recipient)

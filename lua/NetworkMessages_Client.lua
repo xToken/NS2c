@@ -198,9 +198,21 @@ function OnCommandRecieveHiveInfo(hiveinfo)
     
 end
 
+function OnCommandCommanderError(message)
+
+    local messageStr = Locale.ResolveString(message.data)
+    Client.AddWorldMessage(kWorldTextMessageType.CommanderError, messageStr, message.position)
+    
+end
+
+function OnCommandJoinError(message)
+    ChatUI_AddSystemMessage( Locale.ResolveString("JOIN_ERROR_TOO_MANY") )
+end
+
 Client.HookNetworkMessage("Ping", OnCommandPing)
 Client.HookNetworkMessage("HitEffect", OnCommandHitEffect)
 Client.HookNetworkMessage("Damage", OnCommandDamage)
+Client.HookNetworkMessage("JoinError", OnCommandJoinError)
 Client.HookNetworkMessage("Scores", OnCommandScores)
 
 Client.HookNetworkMessage("ClearTechTree", OnCommandClearTechTree)
@@ -218,3 +230,4 @@ Client.HookNetworkMessage("DebugCapsule", OnCommandDebugCapsule)
 
 Client.HookNetworkMessage("WorldText", OnCommandWorldText)
 Client.HookNetworkMessage("HiveInfo", OnCommandRecieveHiveInfo)
+Client.HookNetworkMessage("CommanderError", OnCommandCommanderError)

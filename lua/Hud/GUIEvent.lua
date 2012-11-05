@@ -25,8 +25,8 @@ function CreateEventDisplay(scriptHandle, hudLayer, frame, useMarineStyle)
 
 end
 
-GUIEvent.kUnlockTexture = "ui/marine_HUD_unlocked.dds"
-GUIEvent.kAlienUnlockTexture = "ui/alien_HUD_unlocked.dds"
+GUIEvent.kUnlockTexture = PrecacheAsset("ui/marine_HUD_unlocked.dds")
+GUIEvent.kAlienUnlockTexture = PrecacheAsset("ui/alien_HUD_unlocked.dds")
 
 GUIEvent.kUnlockFontSize = 16
 GUIEvent.kUnlockBottomTextColor = Color(246/255, 254/255, 37/255 )
@@ -35,9 +35,12 @@ GUIEvent.kUnlockBottomTextColor = Color(246/255, 254/255, 37/255 )
 local sizeScale = 1.2
 
 local kUnlockIconParams = nil
-local kUnlockIconHeight = 150
-local kUnlockIconWidth = 256
+local kUnlockIconHeight = 90
+local kUnlockIconWidth = 90
 local kUnlockIconSize = Vector(kUnlockIconWidth, kUnlockIconHeight, 0)
+
+local kBackgroundSize = Vector(250, 160, 0)
+
 local function GetUnlockIconParams(unlockId)
 
     if not kUnlockIconParams then
@@ -66,38 +69,30 @@ local function GetUnlockIconParams(unlockId)
     
     if kUnlockIconParams[unlockId] then
     
-        return kUnlockIconParams[unlockId].techLevel, kUnlockIconParams[unlockId].coords,
-               Locale.ResolveString(kUnlockIconParams[unlockId].description),
+        return Locale.ResolveString(kUnlockIconParams[unlockId].description),
                kUnlockIconParams[unlockId].bottomText and Locale.ResolveString(kUnlockIconParams[unlockId].bottomText) or nil
         
     end
     
 end
 
-GUIEvent.kTexture = "ui/marine_HUD_notifyFrame.dds"
-GUIEvent.kTextureMiddleBackground = "ui/marine_HUD_notifyMiddleBackground.dds"
-GUIEvent.kTextureMiddleBorder = "ui/marine_HUD_notifyMiddleBorder.dds"
+GUIEvent.kTexture = PrecacheAsset("ui/marine_HUD_notifyFrame.dds")
+GUIEvent.kTextureMiddleBackground = PrecacheAsset("ui/marine_HUD_notifyMiddleBackground.dds")
+GUIEvent.kTextureMiddleBorder = PrecacheAsset("ui/marine_HUD_notifyMiddleBorder.dds")
 
-GUIEvent.kAlienTexture = "ui/alien_HUD_notifyFrame.dds"
-GUIEvent.kAlienTextureMiddleBackground = "ui/alien_HUD_notifyMiddleBackground.dds"
-GUIEvent.kAlienTextureMiddleBorder = "ui/alien_HUD_notifyMiddleBorder.dds"
+GUIEvent.kAlienTexture = PrecacheAsset("ui/alien_HUD_notifyFrame.dds")
+GUIEvent.kAlienTextureMiddleBorder = PrecacheAsset("ui/alien_HUD_notifyMiddleBorder.dds")
 
-GUIEvent.kFramepos = Vector(30 , 380, 0)
-GUIEvent.kAlienFramepos = Vector(-128 , 40, 0)
-
+GUIEvent.kFramepos = Vector(20 , 400, 0)
 GUIEvent.kBorderTopTextureCoords = { 0, 0, 320, 24 + 6 }
-
 GUIEvent.kBackgroundTopTextureCoords = { 0, 57, 320, 57 + 24 }
-
 GUIEvent.kTopSize = Vector(400, 128, 0)
-
 GUIEvent.kMiddleTextureCoords = { 0, 0, 320, 0 }
 GUIEvent.kMiddleWidth = GUIEvent.kMiddleTextureCoords[3]
 
-GUIEvent.kPurchaseableBorderCoords = { 0, 0, 263, 49 }
-GUIEvent.kPurchaseableBgCoords = { 0, 49, 262, 98 }
-
 GUIEvent.kFontName = "fonts/AgencyFB_small.fnt"
+
+local kIconTexture = "ui/buildmenu.dds"
 
 GUIEvent.kBackgroundAlpha = 1
 
@@ -170,65 +165,45 @@ function GUIEvent:Initialize()
     self.frame:AddChild(self.unlockFrame)
     
     local unlockTexture = ConditionalValue(self.useMarineStyle, GUIEvent.kUnlockTexture, GUIEvent.kAlienUnlockTexture)
-    
-    // used for techLevel
-    self.unlockTechLevelStencil = self.script:CreateAnimatedGraphicItem()
-    self.unlockTechLevelStencil:SetIsStencil(true)
-    self.unlockTechLevelStencil:SetClearsStencilBuffer(true)
-    self.unlockTechLevelStencil:AddAsChildTo(self.unlockFrame)
-    
-    self.unlockScanLines = self.script:CreateAnimatedGraphicItem()
-    self.unlockScanLines:SetBlendTechnique(GUIItem.Add)
-    self.unlockScanLines:SetTexture(unlockTexture)
-    self.unlockScanLines:SetTexturePixelCoordinates(0, 0, kUnlockIconWidth, kUnlockIconHeight)
-    self.unlockScanLines:SetColor(Color(1,1,1,0.0))
-    self.unlockScanLines:AddAsChildTo(self.unlockFrame)
-    
-    self.unlockBorder = self.script:CreateAnimatedGraphicItem()
-    self.unlockBorder:SetBlendTechnique(GUIItem.Add)
-    self.unlockBorder:SetTexture(unlockTexture)
-    self.unlockBorder:SetTexturePixelCoordinates(0, kUnlockIconHeight, kUnlockIconWidth, kUnlockIconHeight * 2)
-    self.unlockBorder:SetStencilFunc(GUIItem.Equal)
-    self.unlockBorder:SetColor(Color(1,1,1,0))
-    self.unlockBorder:AddAsChildTo(self.unlockFrame)
+    local color = Color(ConditionalValue(self.useMarineStyle, kMarineFontColor, kAlienFontColor)) 
     
     self.unlockBackground = self.script:CreateAnimatedGraphicItem()
     self.unlockBackground:SetTexture(unlockTexture)
-    self.unlockBackground:SetTexturePixelCoordinates(0, kUnlockIconHeight * 2, kUnlockIconWidth, kUnlockIconHeight * 3)
     self.unlockBackground:SetColor(Color(1,1,1,0))
     self.unlockBackground:SetLayer(self.hudLayer)
     self.unlockBackground:AddAsChildTo(self.unlockFrame)
     
     self.unlockIcon = self.script:CreateAnimatedGraphicItem()
-    self.unlockIcon:SetTexture(unlockTexture)
+    self.unlockIcon:SetTexture(kIconTexture)
     self.unlockIcon:SetLayer(self.hudLayer + 1)
-    self.unlockIcon:SetColor(Color(1,1,1,0))
-    self.unlockIcon:AddAsChildTo(self.unlockFrame)
+    self.unlockIcon:SetColor(color)
+    self.unlockIcon:SetAnchor(GUIItem.Middle, GUIItem.Center)
+    self.unlockIcon:AddAsChildTo(self.unlockBackground)
+    self.unlockIcon:SetInheritsParentAlpha(true)
     
     self.unlockDescription = self.script:CreateAnimatedTextItem()
-    self.unlockDescription:SetFontSize(GUIEvent.kUnlockFontSize)
     
-    local color = Color(ConditionalValue(self.useMarineStyle, kMarineFontColor, kAlienFontColor))
-    color.a = 0
+    color.a = 0 
+
     self.unlockDescription:SetColor(color)
     self.unlockDescription:SetTextAlignmentX(GUIItem.Align_Center)
     self.unlockDescription:SetTextAlignmentY(GUIItem.Align_Min)
+    self.unlockDescription:SetAnchor(GUIItem.Middle, GUIItem.Top)
     self.unlockDescription:SetLayer(self.hudLayer + 1)
     self.unlockDescription:SetFontName(GUIEvent.kFontName)
-    self.unlockDescription:AddAsChildTo(self.unlockFrame)
+    self.unlockDescription:AddAsChildTo(self.unlockBackground)
     
     self.unlockBottomText = self.script:CreateAnimatedTextItem()
-    self.unlockBottomText:SetFontSize(GUIEvent.kUnlockFontSize)
     self.unlockBottomText:SetColor(Color(1,1,1,0))
     self.unlockBottomText:SetLayer(self.hudLayer + 1)
     self.unlockBottomText:SetTextAlignmentX(GUIItem.Align_Center)
     self.unlockBottomText:SetTextAlignmentY(GUIItem.Align_Max)
+    self.unlockBottomText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
     self.unlockBottomText:SetFontName(GUIEvent.kFontName)
-    self.unlockBottomText:AddAsChildTo(self.unlockFrame)
+    self.unlockBottomText:AddAsChildTo(self.unlockBackground)
     
     self.unlockFlashStencil = self.script:CreateAnimatedGraphicItem()
     self.unlockFlashStencil:SetTexture(unlockTexture)
-    self.unlockFlashStencil:SetTexturePixelCoordinates(0, kUnlockIconHeight * 2, kUnlockIconWidth, kUnlockIconHeight * 3)
     self.unlockFlashStencil:SetIsStencil(true)
     self.unlockFlashStencil:SetClearsStencilBuffer(false)
     self.unlockFlashStencil:SetLayer(self.hudLayer + 2)
@@ -252,18 +227,8 @@ function GUIEvent:Reset(scale)
 
     self.scale = scale
     
-    if self.useMarineStyle then
-        self.notificationFrame:SetPosition(GUIEvent.kFramepos * self.scale)
-    else
-        self.notificationFrame:SetPosition(GUIEvent.kAlienFramepos * self.scale)
-    end
-    
-    if self.useMarineStyle then
-        self.unlockFrame:SetAnchor(GUIItem.Right, GUIItem.Center)
-    else
-        self.unlockFrame:SetAnchor(GUIItem.Middle, GUIItem.Top)
-    end    
-    
+    self.notificationFrame:SetPosition(GUIEvent.kFramepos * self.scale)
+    self.unlockFrame:SetAnchor(GUIItem.Right, GUIItem.Center)
     self.notificationAlign:SetPosition(self.scale * Vector(0, GUIEvent.kNotificationYOffset, 0))
     
     self.borderTop:SetUniformScale(self.scale)
@@ -283,42 +248,28 @@ function GUIEvent:Reset(scale)
     self:SetFrameHeight(28, 0.5)
     
     self.unlockFrame:SetUniformScale(self.scale)
-    
-    if self.useMarineStyle then
-        self.unlockFrame:SetPosition(GUIEvent.kUnlockFramePos)
-    else
-        self.unlockFrame:SetPosition(GUIEvent.kAlienUnlockFramePos)
-    end
+    self.unlockFrame:SetPosition(GUIEvent.kUnlockFramePos)
 
-    self.unlockTechLevelStencil:SetUniformScale(self.scale)
-    self.unlockTechLevelStencil:SetSize(Vector(22, 0, 0) * sizeScale)
-    
-    self.unlockBorder:SetUniformScale(self.scale)
-    self.unlockBorder:SetSize(kUnlockIconSize * sizeScale)    
-
-    self.unlockScanLines:SetUniformScale(self.scale)
-    self.unlockScanLines:SetSize(kUnlockIconSize * sizeScale)
-    
     self.unlockBackground:SetUniformScale(self.scale)
-    self.unlockBackground:SetSize(kUnlockIconSize * sizeScale)  
+    self.unlockBackground:SetSize(kBackgroundSize * sizeScale)  
 
     self.unlockDescription:SetUniformScale(self.scale)
     self.unlockDescription:SetScale(Vector(1,1,1) * self.scale)
-    self.unlockDescription:SetPosition(Vector((kUnlockIconWidth * sizeScale)/2, 20, 0))
+    self.unlockDescription:SetPosition(Vector(0, 20, 0))
 
     self.unlockBottomText:SetUniformScale(self.scale)
     self.unlockBottomText:SetScale(Vector(1,1,1) * self.scale)
-    self.unlockBottomText:SetPosition(Vector((kUnlockIconWidth * sizeScale)/2, kUnlockIconHeight, 0))
+    self.unlockBottomText:SetPosition(Vector(0, -20, 0))
 
     self.unlockIcon:SetUniformScale(self.scale)
     self.unlockIcon:SetSize(kUnlockIconSize * sizeScale)
-    self.unlockIcon:SetPosition(Vector(0, -10, 0))
+    self.unlockIcon:SetPosition(-kUnlockIconSize * sizeScale * .5)
     
     self.unlockFlashStencil:SetUniformScale(self.scale)
-    self.unlockFlashStencil:SetSize(kUnlockIconSize * sizeScale)
+    self.unlockFlashStencil:SetSize(kBackgroundSize * sizeScale)
     
     self.unlockFlash:SetUniformScale(self.scale)
-    self.unlockFlash:SetSize(kUnlockIconSize * sizeScale)
+    self.unlockFlash:SetSize(kBackgroundSize * sizeScale)
     
     self:ClearNotifications()
 
@@ -445,26 +396,11 @@ end
 function GUIEvent:FadeOutUnlockItem(animationSpeed)
     
     self.unlockFrame:DestroyAnimations()
-    
-    if self.useMarineStyle then
-        self.unlockFrame:SetPosition(GUIEvent.kUnlockFramePos, animationSpeed)
-    else
-        self.unlockFrame:SetPosition(GUIEvent.kAlienUnlockFramePos, animationSpeed)
-    end
-    
-
-    self.unlockScanLines:DestroyAnimations()
-    self.unlockScanLines:FadeOut(animationSpeed)
-
-    self.unlockIcon:DestroyAnimations()
-    self.unlockIcon:FadeOut(animationSpeed)
-    
-    self.unlockBorder:DestroyAnimations()
-    self.unlockBorder:FadeOut(animationSpeed)
+    self.unlockFrame:SetPosition(GUIEvent.kUnlockFramePos, animationSpeed)
     
     self.unlockBackground:DestroyAnimations()
     self.unlockBackground:FadeOut(animationSpeed)
-    
+
     self.unlockDescription:DestroyAnimations()
     self.unlockDescription:FadeOut(animationSpeed)
     
@@ -476,31 +412,17 @@ end
 function GUIEvent:FadeInUnlockItem(animationSpeed)
 
     self.unlockFrame:DestroyAnimations()
-    
-    if self.useMarineStyle then
-        self.unlockFrame:SetPosition(GUIEvent.kUnlockFramePos + Vector(-64, 0, 0), animationSpeed)
-    else
-        self.unlockFrame:SetPosition(GUIEvent.kAlienUnlockFramePos + Vector(0, 128, 0), animationSpeed)
-    end
+    self.unlockFrame:SetPosition(GUIEvent.kUnlockFramePos + Vector(-64, 0, 0), animationSpeed)
 
     self.unlockFlash:DestroyAnimations()
     self.unlockFlash:SetColor(Color(1,1,1,1))
     self.unlockFlash:FadeOut(animationSpeed)
-    
-    self.unlockIcon:DestroyAnimations()
-    self.unlockIcon:SetColor(Color(1,1,1,1))
-    
-    self.unlockBorder:DestroyAnimations()
-    self.unlockBorder:SetColor(Color(1,1,1,1))
     
     self.unlockBackground:DestroyAnimations()
     self.unlockBackground:SetColor(Color(1,1,1,1))
     
     self.unlockDescription:DestroyAnimations()
     self.unlockDescription:SetColor(ConditionalValue(self.useMarineStyle, kMarineFontColor, kAlienFontColor))
-    
-    self.unlockScanLines:DestroyAnimations()
-    self.unlockScanLines:SetColor(Color(1,1,1,1))
     
     self.unlockBottomText:DestroyAnimations()
     self.unlockBottomText:SetColor(GUIEvent.kUnlockBottomTextColor)
@@ -509,21 +431,12 @@ end
 
 function GUIEvent:UpdateUnlockDisplay(unlockId)
 
-    local techLevel, coords, description, bottomText = GetUnlockIconParams(unlockId)
+    local description, bottomText = GetUnlockIconParams(unlockId)
     
-    local stencilHeight = kUnlockIconHeight
-    local stencilWidth = 22
-    
-    if techLevel then
-        stencilHeight = kUnlockIconHeight * (1 - techLevel / 3)
-    end
-    
-    self.unlockTechLevelStencil:SetSize(Vector(stencilWidth, stencilHeight, 0) * sizeScale)
- 
     self.unlockDescription:SetText(ConditionalValue(description ~= nil, description, ""))    
     self.unlockBottomText:SetText(ConditionalValue(bottomText ~= nil, bottomText, ""))
     
-    self.unlockIcon:SetTexturePixelCoordinates(unpack(coords))
+    self.unlockIcon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(unlockId)))
 
 end
 

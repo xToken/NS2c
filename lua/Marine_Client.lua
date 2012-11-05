@@ -80,6 +80,12 @@ function Marine:OnInitLocalClient()
         if self.unitStatusDisplay == nil then
             self.unitStatusDisplay = GetGUIManager():CreateGUIScript("GUIUnitStatus")
             self.unitStatusDisplay:EnableMarineStyle()
+		end
+
+		if self.requestMenu == nil then
+            self.requestMenu = GetGUIManager():CreateGUIScript("GUIRequestMenu")
+        
+
         end
         
     end
@@ -92,27 +98,8 @@ function Marine:TriggerHudInitEffects()
 
 end
 
-// check if player aims at a Weldable unit and return it's percentage
-function Marine:GetCurrentWeldPercentage()
-
-    local activeWeapon = self:GetActiveWeapon()
-    
-    if activeWeapon then
-    
-        local target = self:GetCrossHairTarget()
-        if target and GetAreFriends(self, target) then
-        
-            local weldPercentage = HasMixin(target, "Weldable") and target:GetWeldPercentage() or 1
-            local buildPercentage = HasMixin(target, "Construct") and target:GetBuiltFraction() or 1
-            
-            return ConditionalValue(weldPercentage > buildPercentage, buildPercentage, weldPercentage)
-        
-        end
-        
-    end
-    
-    return 0
-    
+function Marine:UnitStatusPercentage()
+    return self.unitStatusPercentage
 end
 
 function Marine:ShowMap(showMap, showBig, forceReset)
@@ -161,6 +148,26 @@ function Marine:SetHudParams(hudParams)
     self.hudParams = hudParams
 end
 
+
+function Marine:OnKillClient()
+
+    Player.OnKillClient(self)
+    
+    if self.requestMenu then
+        
+        GetGUIManager():DestroyGUIScript(self.requestMenu)
+        self.requestMenu = nil
+            
+    end
+    
+    if self.marineHUD then
+    
+        GetGUIManager():DestroyGUIScript(self.marineHUD)
+        self.marineHUD = nil
+        
+    end
+
+end
 function Marine:UpdateClientEffects(deltaTime, isLocal)
     
     Player.UpdateClientEffects(self, deltaTime, isLocal)

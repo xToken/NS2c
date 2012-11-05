@@ -38,18 +38,15 @@ end
 JetpackMarine.kJetpackFuelReplenishDelay = .2
 
 // Allow JPers to go faster in the air, but still capped
-JetpackMarine.kAirSpeedMultiplier = 2.2
-JetpackMarine.kJetpackGravity = -16
-JetpackMarine.kVerticalThrustAccelerationMod = 1.2
-JetpackMarine.kVerticalFlyAccelerationMod = 1.0
-JetpackMarine.kJetpackAcceleration = 35
+JetpackMarine.kVerticalThrustAccelerationMod = 10.0
+JetpackMarine.kVerticalFlyAccelerationMod = 1.3
+JetpackMarine.kJetpackAcceleration = 22
 JetpackMarine.kWalkMaxSpeed = 4.0                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
-JetpackMarine.kRunMaxSpeed = 8
-JetpackMarine.kFlyMaxSpeed = 16
-JetpackMarine.kAcceleration = 40
+JetpackMarine.kRunMaxSpeed = 6.5
+JetpackMarine.kFlyMaxSpeed = 8.5
 
 JetpackMarine.kJetpackArmorBonus = kJetpackArmor
-JetpackMarine.kJetpackTakeOffTime = .2
+JetpackMarine.kJetpackTakeOffTime = .01
 
 JetpackMarine.kJetpackMode = enum( {'Disabled', 'TakeOff', 'Flying', 'Landing'} )
 
@@ -61,7 +58,7 @@ local networkVars =
     // If jetpack is currently active and affecting our movement. If active, use loss rate, if inactive use gain rate
     jetpacking = "boolean",
     // when we last changed state of jetpack
-    timeJetpackingChanged = "time",
+    timeJetpackingChanged = "compensated time",
     // amount of fuel when we last changed jetpacking state
     jetpackFuelOnChange = "float (0 to 1 by 0.01)",
     
@@ -328,6 +325,7 @@ function JetpackMarine:UpdateJetpack(input)
 end
 
 // required to not stick to the ground during jetpacking
+/*
 function JetpackMarine:ComputeForwardVelocity(input)
 
     // Call the original function to get the base forward velocity.
@@ -340,6 +338,7 @@ function JetpackMarine:ComputeForwardVelocity(input)
     return forwardVelocity
     
 end
+*/
 
 function JetpackMarine:HandleButtons(input)
 
@@ -359,6 +358,10 @@ function JetpackMarine:GetCrouchSpeedScalar()
     
 end
 
+function JetpackMarine:GetInventorySpeedScalar()
+    return 1 - (self:GetWeaponsWeight() / kJetpackWeightAssist)
+end
+
 function JetpackMarine:GetMaxSpeed(possible)
 
     if possible then
@@ -369,8 +372,11 @@ function JetpackMarine:GetMaxSpeed(possible)
         return 0
     end
     
-    //Walking
-    local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), JetpackMarine.kWalkMaxSpeed,  JetpackMarine.kRunMaxSpeed)
+    local maxSpeed = JetpackMarine.kRunMaxSpeed
+    
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = JetpackMarine.kWalkMaxSpeed
+    end
     
     // GetIsOnGround is used to not lose our jetpacking speed when jump is released to lose height
     if self:GetIsJetpacking() or not self:GetIsOnGround() then
@@ -392,29 +398,15 @@ function JetpackMarine:GetMaxSpeed(possible)
     
 end
 
-function JetpackMarine:AdjustGravityForce(input, gravity)
-    
-    if self:GetIsJetpacking() then
-        gravity = 0
-    else
-        gravity = JetpackMarine.kJetpackGravity
-    end
-    
-    return gravity
-      
-end
-
 function JetpackMarine:GetIsTakingOffFromGround()
     return self.startedFromGround and (self.timeJetpackingChanged + JetpackMarine.kJetpackTakeOffTime > Shared.GetTime())
 end
 
 function JetpackMarine:ModifyVelocity(input, velocity)      
 
-    if (self:GetJetPackMode() == JetpackMarine.kJetpackMode.Disabled) then       
+    Marine.ModifyVelocity(self, input, velocity)
 
-        Marine.ModifyVelocity(self, input, velocity)
-
-    else // if (self:GetJetPackMode() == JetpackMarine.kJetpackMode.Flying) then
+    if self:GetIsJetpacking() then
 
         local move = GetNormalizedVector( input.move )  
         local viewCoords = self:GetViewAngles():GetCoords()     
@@ -423,38 +415,10 @@ function JetpackMarine:ModifyVelocity(input, velocity)
         
         velocity.x = velocity.x + deltaVelocity.x
         velocity.z = velocity.z + deltaVelocity.z
-        
-        // modify velocity according to input, but clamp the results to prevent extreme vertical speed
-        if input.move:GetLength() == 0 then
-        
-            velocity.y = Clamp(velocity.y + self:GetAcceleration() * input.time * JetpackMarine.kVerticalThrustAccelerationMod , -self:GetMaxSpeed(), self:GetMaxSpeed() * 0.6)
-       
-        else
-        
-            local thrustMod = JetpackMarine.kVerticalFlyAccelerationMod
-            local maxSpeedMod = 0.25
-            
-            local thrustScalar = 0
-            
-            
-            if self:GetIsTakingOffFromGround() then
-                thrustScalar = 1 - (self.timeJetpackingChanged - Shared.GetTime()) / 2              
-            end
-
-            thrustMod = JetpackMarine.kVerticalFlyAccelerationMod + (JetpackMarine.kVerticalThrustAccelerationMod - JetpackMarine.kVerticalFlyAccelerationMod) * thrustScalar
-            maxSpeedMod = 0.25 + (0.2) * thrustScalar
-            
-
-            velocity.y = Clamp(velocity.y + self:GetAcceleration() * input.time * thrustMod, -self:GetMaxSpeed(), self:GetMaxSpeed() * maxSpeedMod)
-
-        end
+        velocity.y = Clamp(velocity.y + self:GetAcceleration() * input.time * JetpackMarine.kVerticalFlyAccelerationMod, -self:GetMaxSpeed(), self:GetMaxSpeed())
 
     end
     
-end
-
-function JetpackMarine:GetAirFrictionForce()
-    return .5
 end
 
 function JetpackMarine:GetAcceleration()

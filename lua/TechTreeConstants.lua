@@ -10,6 +10,8 @@ kTechId = enum({
     
     'None', 
     
+    'SpawnMarine', 'SpawnAlien', 'CollectResources',
+    
     // General orders and actions ("Default" is right-click)
     'Default', 'Move', 'Attack', 'Build', 'Construct', 'Cancel', 'Recycle', 'Weld', 'AutoWeld', 'Stop', 'SetRally', 'SetTarget',
     // Alien specific orders
@@ -52,8 +54,8 @@ kTechId = enum({
 
     // Marine tech 
     'CommandStation', 'Armory', 'InfantryPortal', 'Extractor', 'Sentry', 'ARC',
-    'Scan', 'AmmoPack', 'MedPack', 'CatPack', 'CatPackTech', 'AdvancedArmoryUpgrade', 'Observatory', 'DistressBeacon', 'PhaseGate', 'RoboticsFactory', 'ARCRoboticsFactory', 'ArmsLab',
-    'PrototypeLab', 'AdvancedArmory', 'HandGrenadesTech', 
+    'Scan', 'AmmoPack', 'MedPack', 'CatPack', 'CatPackTech', 'AdvancedArmoryUpgrade', 'Observatory', 'Detector', 'DistressBeacon', 'PhaseGate', 'RoboticsFactory', 'ARCRoboticsFactory', 'ArmsLab',
+    'PrototypeLab', 'AdvancedArmory', 'HandGrenadesTech', 'Electrify', 
     
     // Research 
     'PhaseTech', 'Jetpack', 'JetpackTech','HeavyArmorTech', 'HeavyArmor', 
@@ -93,7 +95,7 @@ kTechId = enum({
     // Alien alerts
     'AlienAlertNeedHealing', 'AlienAlertStructureUnderAttack', 'AlienAlertHiveUnderAttack', 'AlienAlertHiveDying', 'AlienAlertHarvesterUnderAttack',
     'AlienAlertLifeformUnderAttack', 'AlienAlertGorgeBuiltHarvester', 'AlienCommanderEjected',
-    'AlienAlertOrderComplete',
+    'AlienAlertOrderComplete', 'AlienAlertEnemyApproaches1', 'AlienAlertEnemyApproaches2',
     'AlienAlertNotEnoughResources', 'AlienAlertResearchComplete', 'AlienAlertManufactureComplete', 'AlienAlertUpgradeComplete', 'AlienAlertHiveComplete', 'AlienAlertHiveSpecialComplete', 
     
     // Voting commands
@@ -116,6 +118,6 @@ kTechType = enum({ 'Invalid', 'Order', 'Research', 'Upgrade', 'Action', 'Buy', '
 
 // Button indices
 kRecycleCancelButtonIndex   = 12
-kMarineUpgradeButtonIndex   = 4
+kMarineUpgradeButtonIndex   = 5
 kAlienBackButtonIndex       = 8
 

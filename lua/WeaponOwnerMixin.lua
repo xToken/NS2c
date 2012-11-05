@@ -356,14 +356,14 @@ function WeaponOwnerMixin:AddWeapon(weapon, setActive)
         assert(success == true)
         
     end
-    
-    assert(self:GetWeaponInHUDSlot(weapon:GetHUDSlot()) == nil)
+        
+    if Server then
+        assert(self:GetWeaponInHUDSlot(weapon:GetHUDSlot()) == nil)
 
-    weapon:SetParent(self)
-    weapon:SetOrigin(Vector.origin)
+        weapon:SetParent(self)
+        weapon:SetOrigin(Vector.origin)
     
     // The weapon no longer belongs to the world once a weapon owner has it.
-    if Server then
         weapon:SetWeaponWorldState(false)
     end
     

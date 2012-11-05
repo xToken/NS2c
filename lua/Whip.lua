@@ -33,13 +33,13 @@ Script.Load("lua/StaticTargetMixin.lua")
 Script.Load("lua/TargetCacheMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
-Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/DamageMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
+Script.Load("lua/HasUmbraMixin.lua")
 
 class 'Whip' (ScriptActor)
 
@@ -78,9 +78,9 @@ AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
-AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
+AddMixinNetworkVars(HasUmbraMixin, networkVars)
 
 if Server then
 
@@ -113,16 +113,15 @@ function Whip:OnCreate()
     InitMixin(self, RagdollMixin)
     InitMixin(self, DamageMixin)
     InitMixin(self, ObstacleMixin)
-    InitMixin(self, UmbraMixin)
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
     InitMixin(self, CombatMixin)
+    InitMixin(self, HasUmbraMixin)
     
     self.attackYaw = 0 
     self.slapping = false
     
-    if Server then
-    else
+    if Client then
         InitMixin(self, CommanderGlowMixin)    
     end
     
@@ -169,16 +168,6 @@ function Whip:OnInitialized()
         InitMixin(self, UnitStatusMixin)
         InitMixin(self, HiveVisionMixin)
         
-    end
-    
-end
-
-function Whip:OnDestroy()
-
-    ScriptActor.OnDestroy(self)
-    
-    if Server then
-        self.movingSound = nil
     end
     
 end
@@ -309,7 +298,27 @@ elseif Server then
     function Whip:OnAiAttackHitFail(attackType)
         self.slapping = false
     end
-
+    
+    function Whip:OnConstructionComplete()
+    
+        local team = self:GetTeam()
+        if team then
+            team:OnUpgradeChamberConstructed(self)
+        end
+        
+    end
+    
+    function Whip:OnKill(attacker, doer, point, direction)
+    
+        ScriptActor.OnKill(self, attacker, doer, point, direction)
+        
+        local team = self:GetTeam()
+        if team then
+            team:OnUpgradeChamberDestroyed(self)
+        end
+    
+    end
+    
 end
 
 function Whip:GetCanBeUsed(player, useSuccessTable)

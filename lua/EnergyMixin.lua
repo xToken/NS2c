@@ -11,6 +11,7 @@ Script.Load("lua/FunctionContracts.lua")
 EnergyMixin = CreateMixin( EnergyMixin )
 EnergyMixin.type = "Energy"
 local kMaxEnergy = 100
+local kEnergyUpdateTime = 1
 
 EnergyMixin.expectedMixins =
 {
@@ -39,7 +40,9 @@ function EnergyMixin:__initmixin()
 
     self.energy = LookupTechData(self:GetTechId(), kTechDataInitialEnergy, 0)
     self.maxEnergy = LookupTechData(self:GetTechId(), kTechDataMaxEnergy, 0)
-    
+    if Server then
+        self:AddTimedCallback(EnergyMixin.Update, kEnergyUpdateTime)
+    end
     assert(self.maxEnergy <= kMaxEnergy)
     
 end
@@ -73,39 +76,19 @@ function EnergyMixin:GetEnergyFraction()
     return self:GetEnergy() / self:GetMaxEnergy()
 end
 
-if Server then
+local function GetEnergyUpdateRate(self)
 
-    local function GetEnergyUpdateRate(self)
+    if self.OverrideGetEnergyUpdateRate then
+        return self:OverrideGetEnergyUpdateRate()
+    end
     
-        if self.OverrideGetEnergyUpdateRate then
-            return self:OverrideGetEnergyUpdateRate()
-        end
-        
-        return kEnergyUpdateRate
-        
-    end
+    return kEnergyUpdateRate
+    
+end
 
-    local function SharedUpdate(self, timePassed)
-        
-        if GetGamerules():GetGameStarted() and self:GetCanUpdateEnergy() then
-        
-            local scalar = 1
-            
-            local energyRate = GetEnergyUpdateRate(self) * scalar            
-            self:AddEnergy(timePassed * energyRate)
-            
-        end    
-        
+function EnergyMixin:Update()
+    if GetGamerules():GetGameStarted() and self:GetCanUpdateEnergy() then      
+        self:AddEnergy(GetEnergyUpdateRate(self))
     end
-
-    function EnergyMixin:OnUpdate(deltaTime)
-        SharedUpdate(self, deltaTime)
-    end
-    AddFunctionContract(EnergyMixin.OnUpdate, { Arguments = { "Entity", "number" }, Returns = { } })
-
-    function EnergyMixin:OnProcessMove(input)
-        SharedUpdate(self, input.time)
-    end
-    AddFunctionContract(EnergyMixin.OnProcessMove, { Arguments = { "Entity", "Move" }, Returns = { } })
-
+    return self:GetIsAlive()
 end

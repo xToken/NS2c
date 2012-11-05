@@ -108,18 +108,6 @@ if Client then
         return Color(1, 0, 0, 0.07)
         
     end
-    
-    function Pistol:FirePrimary(player)
-    
-        ClipWeapon.FirePrimary(self, player)
-        
-        self:TriggerEffects("pistol_attack")
-        
-        if Client then
-            self:TriggerEffects("pistol_attack_shell")
-        end
-    
-    end
 
     function Pistol:GetLaserAttachCoords()
     
@@ -216,7 +204,7 @@ function Pistol:GetPrimaryAttackRequiresPress()
 end
 
 function Pistol:GetNumStartClips()
-    return 2
+    return 3
 end
 
 function Pistol:GetWeight()
@@ -266,14 +254,6 @@ end
 
 function Pistol:UpdateViewModelPoseParameters(viewModel)
     viewModel:SetPoseParam("empty", self.emptyPoseParam)
-end
-
-function Pistol:GetEffectParams(tableParams)
-
-    ClipWeapon.GetEffectParams(self, tableParams)
-    
-    tableParams[kEffectFilterInAltMode] = self.altMode
-    
 end
 
 function Pistol:OnTag(tagName)

@@ -7,75 +7,38 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-local function GetCanTriggerAlert(self, techId, timeOut)
+local function UpdateUnitStatusPercentage(self, target)
 
-    if not self.alertTimes then
-        self.alertTimes = {}
+    if HasMixin(target, "Construct") and not target:GetIsBuilt() then
+        self:SetUnitStatusPercentage(target:GetBuiltFraction() * 100)
+    elseif HasMixin(target, "Weldable") then
+        self:SetUnitStatusPercentage(target:GetWeldPercentage() * 100)
     end
-    
-    return not self.alertTimes[techId] or self.alertTimes[techId] + timeOut < Shared.GetTime()
 
 end
 
-function Marine:ExecuteSaying(index, menu)
+function Marine:OnConstructTarget(target)
+    UpdateUnitStatusPercentage(self, target)
+end
 
-    if not Player.ExecuteSaying(self, index, menu) then
+function Marine:OnWeldTarget(target)
+    UpdateUnitStatusPercentage(self, target)
+end
 
-        if Server then
-        
-            if menu == 3 and voteActionsActions[index] then
-                GetGamerules():CastVoteByPlayer(voteActionsActions[index], self)
-            else
-            
-                local sayings = marineRequestSayingsSounds
-                local sayingActions = marineRequestActions
-                
-                if menu == 2 then
-                
-                    sayings = marineGroupSayingsSounds
-                    sayingActions = marineGroupRequestActions
-                    
-                end
-                
-                if sayings[index] then
-                
-                    local techId = sayingActions[index]
-                    if techId ~= kTechId.None and GetCanTriggerAlert(self, techId, Marine.kMarineAlertTimeout) then
-                    
-                        self:PlaySound(sayings[index])
-                        self:GetTeam():TriggerAlert(techId, self)
-                        self.alertTimes[techId] = Shared.GetTime()
-                        
-                    end
-                    
-                end
-                
-            end
-            
-        end
-        
-    end
-    
+function Marine:SetUnitStatusPercentage(percentage)
+    self.unitStatusPercentage = Clamp(math.round(percentage), 0, 100)
+    self.timeLastUnitPercentageUpdate = Shared.GetTime()
 end
 
 function Marine:OnTakeDamage(damage, attacker, doer, point)
-
+    
     if damage > 50 and (not self.timeLastDamageKnockback or self.timeLastDamageKnockback + 1 < Shared.GetTime()) then    
     
-        self:AddPushImpulse(GetNormalizedVectorXZ(self:GetOrigin() - point) * damage * 0.2 * self:GetSlowSpeedModifier())
+        self:AddPushImpulse(GetNormalizedVectorXZ(self:GetOrigin() - point) * damage * 0.025 * self:GetSlowSpeedModifier())
         self.timeLastDamageKnockback = Shared.GetTime()
         
-        if self:GetIsAlive() and attacker and attacker:isa("Alien") then
-            local viewCoords = self:GetViewCoords()
-            local aviewCoords = attacker:GetViewCoords()
-            viewCoords.zAxis = viewCoords.zAxis - (aviewCoords.zAxis * 0.05)
-            local viewAngles = Angles()
-            viewAngles:BuildFromCoords(viewCoords)
-            self:SetViewAngles(viewAngles)
-        end
-        
     end
-
+    
 end
 
 function Marine:GetDamagedAlertId()
@@ -336,4 +299,12 @@ function Marine:GiveHeavyArmor()
     HAMarine:SetActiveWeapon(activeWeaponMapName)
     HAMarine:SetHealth(health)
     
+end
+
+function Marine:MakeSpecialEdition()
+    self:SetModel(Marine.kBlackArmorModelName, Marine.kMarineAnimationGraph)
+end
+
+function Marine:MakeDeluxeEdition()
+    self:SetModel(Marine.kSpecialEditionModelName, Marine.kMarineAnimationGraph)
 end

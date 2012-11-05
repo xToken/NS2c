@@ -17,7 +17,7 @@ class 'Welder' (Weapon)
 Welder.kMapName = "welder"
 
 Welder.kModelName = PrecacheAsset("models/marine/welder/welder.model")
-Welder.kViewModelName = PrecacheAsset("models/marine/welder/welder_view.model")
+local kViewModelName = PrecacheAsset("models/marine/welder/welder_view.model")
 local kAnimationGraph = PrecacheAsset("models/marine/welder/welder_view.animation_graph")
 
 kWelderHUDSlot = 4
@@ -70,7 +70,7 @@ function Welder:OnInitialized()
 end
 
 function Welder:GetViewModelName()
-    return Welder.kViewModelName
+    return kViewModelName
 end
 
 function Welder:GetAnimationGraphName()
@@ -162,18 +162,6 @@ function Welder:OnPrimaryAttack(player)
         
     end
     
-    if Server then
-    
-        if (not self.timeLastWeldHitEffect or self.timeLastWeldHitEffect + 0.15 < Shared.GetTime()) and hitPoint then
-        
-            local coords = Coords.GetTranslation(hitPoint)
-            self:TriggerEffects("welder_hit", {effecthostcoords = coords})
-            self.timeLastWeldHitEffect = Shared.GetTime()
-            
-        end
-        
-    end
-    
 end
 
 function Welder:GetDeathIconIndex()
@@ -228,13 +216,16 @@ function Welder:GetMeleeBase()
     return 2, 2
 end
 
+local function PrioritizeDamagedFriends(weapon, player, newTarget, oldTarget)
+    return not oldTarget or (HasMixin(newTarget, "Team") and newTarget:GetTeamNumber() == player:GetTeamNumber() and (HasMixin(newTarget, "Weldable") and newTarget:GetCanBeWelded(weapon)))
+end
+
 function Welder:PerformWeld(player)
 
     local attackDirection = player:GetViewCoords().zAxis
     local success = false
-    local didHit, target, endPoint, direction, surface = CheckMeleeCapsule(self, player, 0, self:GetRange(), nil, true)
-    
-    local trace = TraceMeleeBox(self, player:GetEyePos(), attackDirection, welderTraceExtents, self:GetRange(), PhysicsMask.Melee, EntityFilterTwo(self, player))
+    // prioritize friendlies
+    local didHit, target, endPoint, direction, surface = CheckMeleeCapsule(self, player, 0, self:GetRange(), nil, true, 1, PrioritizeDamagedFriends)
     
     if didHit and target and HasMixin(target, "Live") then
         
@@ -254,8 +245,6 @@ function Welder:PerformWeld(player)
             if HasMixin(target, "Construct") and target:GetCanConstruct(player) then
                 target:Construct(kWelderFireDelay, player)
             end
-
-            player:OnRepair(target, target:GetHealthScalar() < 1)
             
         end
         
@@ -269,23 +258,6 @@ end
 
 function Welder:GetShowDamageIndicator()
     return true
-end
-
-// copied from player:PerformUseTrace (exluded attach point check here)
-function Welder:PerformWeldTrace(player)
-
-    local trace = TraceMeleeBox(self, player:GetEyePos(), player:GetViewCoords().zAxis, welderTraceExtents, self:GetRange(), PhysicsMask.Melee, EntityFilterTwo(self, player))
-    
-    if trace.fraction < 1 and trace.entity ~= nil then
-    
-        if HasMixin(trace.entity, "Weldable") then
-            return trace.entity, trace.endPoint, trace.normal
-        end
-        
-    end
-    
-    return nil, nil
-    
 end
 
 function Welder:OnUpdateAnimationInput(modelMixin)
@@ -306,6 +278,37 @@ function Welder:OnUpdatePoseParameters(viewModel)
     PROFILE("Welder:OnUpdatePoseParameters")
     self:SetPoseParam("welder", 1)
     
+end
+
+function Welder:OnUpdateRender()
+
+    local parent = self:GetParent()
+    if parent and self.welding then
+
+        if (not self.timeLastWeldHitEffect or self.timeLastWeldHitEffect + 0.06 < Shared.GetTime()) then
+        
+            local viewCoords = parent:GetViewCoords()
+        
+            local trace = Shared.TraceRay(viewCoords.origin, viewCoords.origin + viewCoords.zAxis * self:GetRange(), CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterTwo(self, parent))
+            if trace.fraction ~= 1 then
+            
+                local coords = Coords.GetTranslation(trace.endPoint - viewCoords.zAxis * .1)
+                
+                local className = nil
+                if trace.entity then
+                    className = trace.entity:GetClassName()
+                end
+                
+                self:TriggerEffects("welder_hit", { classname = className, effecthostcoords = coords})
+                
+            end
+
+            self.timeLastWeldHitEffect = Shared.GetTime()
+            
+        end
+    
+    end
+
 end
 
 Shared.LinkClassToMap("Welder", Welder.kMapName, networkVars)

@@ -79,6 +79,10 @@ function Gore:OnHolster(player)
     
 end
 
+function Gore:GetMeleeBase()
+    return 1, 1.4
+end
+
 function Gore:GetIconOffsetY(secondary)
     return kAbilityOffset.Gore
 end
@@ -127,25 +131,14 @@ function Gore:GetPrimaryAttackUsesFocus()
     return true
 end
 
-function Gore:GetisUsingPrimaryAttack()
-    return self.primaryAttacking
-end
-
 function Gore:OnAttackEnd()
     self.primaryAttacking = false
-end
-
-function Gore:GetEffectParams(tableParams)
-
-    Ability.GetEffectParams(self, tableParams)
-    
 end
 
 function Gore:OnUpdateAnimationInput(modelMixin)
 
     local activityString = "none"
     local abilityString = "gore"
-    local attackMarine = false   
     
     if self.primaryAttacking then
         activityString = "primary"        
@@ -153,7 +146,6 @@ function Gore:OnUpdateAnimationInput(modelMixin)
    
     modelMixin:SetAnimationInput("ability", abilityString) 
     modelMixin:SetAnimationInput("activity", activityString)
-    modelMixin:SetAnimationInput("attack_marine", attackMarine)
     
 end
 

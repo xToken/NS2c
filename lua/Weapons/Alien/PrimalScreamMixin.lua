@@ -22,7 +22,6 @@ PrimalScreamMixin.networkVars =
 local function TriggerPrimal(self, lerk)
 
     local players = GetEntitiesForTeam("Player", lerk:GetTeamNumber())
-    self:TriggerEffects("primal_scream")
     for index, player in ipairs(players) do
         if player:GetIsAlive() and ((player:GetOrigin() - lerk:GetOrigin()):GetLength() < kPrimalScreamRange) then
             if player ~= lerk then
@@ -48,6 +47,12 @@ end
 function PrimalScreamMixin:OnSecondaryAttack(player)
 
     if player:GetEnergy() >= self:GetSecondaryEnergyCost(player) and not self.primaryAttacking and not GetHasAttackDelay(self, player) then
+        self:TriggerEffects("primal_scream")
+        if Server then        
+            TriggerPrimal(self, player)
+            self:GetParent():DeductAbilityEnergy(self:GetSecondaryEnergyCost())
+        end
+        self.lastSecondaryAttackTime = Shared.GetTime()
         self.secondaryAttacking = true
     else
         self.secondaryAttacking = false
@@ -56,10 +61,8 @@ function PrimalScreamMixin:OnSecondaryAttack(player)
 end
 
 function PrimalScreamMixin:OnSecondaryAttackEnd(player)
-
     Ability.OnSecondaryAttackEnd(self, player)    
     self.secondaryAttacking = false
-
 end
 
 function PrimalScreamMixin:GetHasSecondary(player)
@@ -70,38 +73,21 @@ function PrimalScreamMixin:GetSecondaryEnergyCost(player)
     return kPrimalScreamEnergyCost
 end
 
-function PrimalScreamMixin:OnTag(tagName)
-
-    PROFILE("PrimalScreamMixin:OnTag")
-
-    if self.secondaryAttacking and tagName == "shoot" then
-    
-        local player = self:GetParent()
-        if player and player:GetEnergy() > self:GetSecondaryEnergyCost() then
-        
-            TriggerPrimal(self, player)
-            self.lastSecondaryAttackTime = Shared.GetTime()
-            self:GetParent():DeductAbilityEnergy(self:GetSecondaryEnergyCost())
-
-        else
-            self.secondaryAttacking = false
-        end
-        
-    end
-
-end
-
 function PrimalScreamMixin:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("PrimalScreamMixin:OnUpdateAnimationInput")
-
+    
     local player = self:GetParent()
-    if player and self.secondaryAttacking and player:GetEnergy() >= self:GetSecondaryEnergyCost(player) then
-        modelMixin:SetAnimationInput("activity", "secondary")
+    if player then
+        if self.secondaryAttacking then
+            modelMixin:SetAnimationInput("ability", "umbra")
+        elseif not GetHasAttackDelay(self, player) then
+            modelMixin:SetAnimationInput("ability", "bite")
+        end
     end
     
 end
 
 function PrimalScreamMixin:GetIsSecondaryBlocking()
-    return self.secondaryAttacking or GetHasAttackDelay(self, self:GetParent())
+    return false
 end

@@ -125,9 +125,6 @@ if Server then
                 SendTeamMessage(self.team1, kTeamMessageTypes.GameStarted)
                 SendTeamMessage(self.team2, kTeamMessageTypes.GameStarted)
                 
-                // Reset disconnected player resources when a game starts to prevent shenanigans.
-                self.disconnectedPlayerResources = { }
-                
             end
             
             // On end game, check for map switch conditions
@@ -139,6 +136,8 @@ if Server then
                     self.timeToCycleMap = nil
                 end
                 
+                // Reset disconnected player resources when a game starts to prevent shenanigans.
+                self.disconnectedPlayerResources = { }
             end
             
         end
@@ -923,7 +922,7 @@ if Server then
                 self:UpdatePregame(timePassed)
                 self:UpdateToReadyRoom()
                 self:UpdateMapCycle()
-                UpdateAutoTeamBalance(self, timePassed)
+                //UpdateAutoTeamBalance(self, timePassed)
                 
                 self.timeSinceGameStateChanged = self.timeSinceGameStateChanged + timePassed
                 
@@ -1239,10 +1238,10 @@ if Server then
         end
         
     end
-
+    
     function NS2Gamerules:CheckGameEnd()
-        
-        if(self:GetGameStarted() and self.timeGameEnded == nil and not Shared.GetCheatsEnabled() and not self.preventGameEnd) then
+    
+        if self:GetGameStarted() and self.timeGameEnded == nil and not Shared.GetCheatsEnabled() and not self.preventGameEnd then
         
             if self.timeLastGameEndCheck == nil or (Shared.GetTime() > self.timeLastGameEndCheck + kGameEndCheckInterval) then
             
@@ -1251,28 +1250,47 @@ if Server then
                 local team1Won = self.team1:GetHasTeamWon()
                 local team2Won = self.team2:GetHasTeamWon()
                 
-                if((team1Lost and team2Lost) or (team1Won and team2Won)) then
+                local team1Players = self.team1:GetNumPlayers()
+                local team2Players = self.team2:GetNumPlayers()
+                local totalCount = team1Players + team2Players
+                
+                /*
+                // This is an optional end condition based on the teams being unbalanced.
+                local endGameOnUnbalancedAmount = Server.GetConfigSetting("end_round_on_team_unbalance")
+                // Don't consider unbalanced game end until enough people are playing.
+                if totalCount > 6 and endGameOnUnbalancedAmount and endGameOnUnbalancedAmount ~= 0 then
+                
+                    if (1 - (team1Players / team2Players)) >= endGameOnUnbalancedAmount then
+                        team1Lost = true
+                    elseif (1 - (team2Players / team1Players)) >= endGameOnUnbalancedAmount then
+                        team2Lost = true
+                    end
+                    
+                end
+                */
+                
+                if (team1Lost and team2Lost) or (team1Won and team2Won) then
                     self:DrawGame()
-                elseif(team1Lost or team2Won) then
+                elseif team1Lost or team2Won then
                     self:EndGame(self.team2)
-                elseif(team2Lost or team1Won) then
+                elseif team2Lost or team1Won then
                     self:EndGame(self.team1)
                 end
                 
                 self.timeLastGameEndCheck = Shared.GetTime()
                 
             end
-                    
+            
         end
         
     end
-
+    
     function NS2Gamerules:GetCountingDown()
         return self:GetGameState() == kGameState.Countdown
-    end    
-
+    end
+    
     local function StartCountdown(self)
-
+    
         self:ResetGame()
         
         self:SetGameState(kGameState.Countdown)
@@ -1293,7 +1311,7 @@ if Server then
         return preGameTime
         
     end
-
+    
     function NS2Gamerules:UpdatePregame(timePassed)
 
         if self:GetGameState() == kGameState.PreGame then
@@ -1453,15 +1471,6 @@ if Server then
 // End Server //
 ////////////////
 
-end
-
-////////////
-// Shared //
-////////////
-function NS2Gamerules:SetupConsoleCommands()
-
-    Gamerules.SetupConsoleCommands(self)    
-    
 end
 
 function NS2Gamerules:GetGameStartTime()

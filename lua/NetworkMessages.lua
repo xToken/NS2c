@@ -10,7 +10,45 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 Script.Load("lua/Globals.lua")
 Script.Load("lua/TechTreeConstants.lua")
+Script.Load("lua/VoiceOver.lua")
 Script.Load("lua/InsightNetworkMessages.lua")
+
+function BuildConnectMessage(armorId)
+
+    local t = {}
+    t.armorId = armorId
+    return t
+    
+end
+
+function ParseConnectMessage(message)
+    return message.armorId
+end
+
+local kConnectMessage =
+{
+    armorId = "enum kArmorType",
+}
+Shared.RegisterNetworkMessage( "ConnectMessage", kConnectMessage )
+
+function BuildVoiceMessage(voiceId)
+
+    local t = {}
+    t.voiceId = voiceId
+    return t
+    
+end
+
+function ParseVoiceMessage(message)
+    return message.voiceId
+end
+
+local kVoiceOverMessage =
+{
+    voiceId = "enum kVoiceId",
+}
+
+Shared.RegisterNetworkMessage( "VoiceMessage", kVoiceOverMessage )
 
 local kHitEffectMessage =
 {
@@ -63,6 +101,9 @@ end
 
 Shared.RegisterNetworkMessage( "HitEffect", kHitEffectMessage )
 
+/*
+For damage numbers
+*/
 local kDamageMessage =
 {
     posx = string.format("float (%d to %d by 0.05)", -kHitEffectMaxPosition, kHitEffectMaxPosition),
@@ -75,6 +116,9 @@ local kDamageMessage =
 function BuildDamageMessage(target, amount, hitpos)
     
     local t = {}
+    if hitpos.x > kHitEffectMaxPosition or hitpos.x < -kHitEffectMaxPosition then
+        assert(false)
+    end
     t.posx = hitpos.x
     t.posy = hitpos.y
     t.posz = hitpos.z
@@ -90,6 +134,19 @@ function ParseDamageMessage(message)
 end
 
 Shared.RegisterNetworkMessage( "Damage", kDamageMessage )
+
+// Tell players WHY they can't join a team
+local kJoinErrorMessage =
+{
+    // Don't really need anything here
+}
+function BuildJoinErrorMessage()
+    return {}
+end
+Shared.RegisterNetworkMessage( "JoinError", kJoinErrorMessage )
+
+/*
+*/
 
 local kCommanderPingMessage =
 {
@@ -183,6 +240,25 @@ function BuildWorldTextMessage(messageType, data, position)
 end
 
 Shared.RegisterNetworkMessage("WorldText", kWorldTextMessage)
+
+local kCommanderErrorMessage =
+{
+    data = "string (48)",
+    position = "vector"
+}
+
+function BuildCommanderErrorMessage(data, position)
+
+    local t = { }
+
+    t.data = data
+    t.position = position
+    
+    return t
+    
+end
+
+Shared.RegisterNetworkMessage("CommanderError", kCommanderErrorMessage)
 
 // Scores 
 local kScoresMessage = 
@@ -450,43 +526,26 @@ function ParseCommTargetedActionMessage(t)
     return t.techId, Vector(t.x, t.y, t.z), t.orientationRadians
 end
 
-local kExecuteSayingMessage = 
+local kGorgeBuildStructureMessage = 
 {
-    sayingIndex = "integer (1 to 5)",
-    sayingsMenu = "integer (1 to 3)"
-}
-
-function BuildExecuteSayingMessage(sayingIndex, sayingsMenu)
-
-    local t = {}
-    
-    t.sayingIndex = sayingIndex
-    t.sayingsMenu = sayingsMenu
-    
-    return t
-    
-end
-
-local kGorgeSelectStructureMessage = 
-{
+    origin = "vector",
+    direction = "vector",
     structureIndex = "integer (1 to 5)",
 }
 
-function BuildGorgeSelectStructureMessage(structureIndex)
+function BuildGorgeDropStructureMessage(origin, direction, structureIndex)
 
     local t = {}
     
+    t.origin = origin
+    t.direction = direction
     t.structureIndex = structureIndex
     
     return t
 end    
 
-function ParseExecuteSayingMessage(t)
-    return t.sayingIndex, t.sayingsMenu
-end
-
-function ParseGorgeSelectMessage(t)
-    return t.structureIndex
+function ParseGorgeBuildMessage(t)
+    return t.origin, t.direction, t.structureIndex
 end
 
 local kMutePlayerMessage = 
@@ -812,11 +871,11 @@ Shared.RegisterNetworkMessage("MinimapAlert", kMinimapAlertMessage)
 Shared.RegisterNetworkMessage("CommanderNotification", kCommanderNotificationMessage)
 
 // Player actions
-Shared.RegisterNetworkMessage("ExecuteSaying", kExecuteSayingMessage)
 Shared.RegisterNetworkMessage("MutePlayer", kMutePlayerMessage)
 
 // Gorge select structure message
-Shared.RegisterNetworkMessage("GorgeSelectStructure", kGorgeSelectStructureMessage)
+Shared.RegisterNetworkMessage("GorgeBuildStructure", kGorgeBuildStructureMessage)
+Shared.RegisterNetworkMessage("GorgeBuildStructure2", kGorgeBuildStructureMessage)
 
 // Chat
 Shared.RegisterNetworkMessage("ChatClient", kChatClientMessage)

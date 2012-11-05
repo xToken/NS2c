@@ -18,15 +18,8 @@ function Player:OnClientConnect(client)
     
 end
 
-// childs should override this
-function Player:RequestHeal()
-end
-
 function Player:GetClient()
     return self.client
-end
-
-function Player:SetEthereal(ethereal)
 end
 
 function Player:Reset()
@@ -105,7 +98,9 @@ AddFunctionContract(Player.GetClientMuted, { Arguments = { "Player", "number" },
 
 // Changes the visual appearance of the player to the special edition version.
 function Player:MakeSpecialEdition()
-    self:SetModel(Player.kSpecialModelName, Marine.kMarineAnimationGraph)
+end
+
+function Player:MakeDeluxeEdition()
 end
 
 // Not authoritative, only visual and information. TeamResources is stored in the team.
@@ -199,9 +194,6 @@ function Player:OnKill(killer, doer, point, direction)
     // Fade out screen
     self.timeOfDeath = Shared.GetTime()
     
-    // So we aren't moving in spectator mode
-    self:SetVelocity(Vector(0, 0, 0))
-    
     DestroyViewModel(self)
     
     // Set next think to 0 to disable
@@ -215,6 +207,7 @@ function Player:SetControllingPlayer(client)
     
         client:SetControllingPlayer(self)
         self:UpdateClientRelevancyMask()
+        self:OnClientUpdated(client)
         
     end
     
@@ -385,7 +378,6 @@ function Player:CopyPlayerDataFrom(player)
     self.baseYaw = player.baseYaw
     
     // MoveMixin fields.
-    self:SetVelocity(player:GetVelocity())
     self:SetGravityEnabled(player:GetGravityEnabled())
     
     self.name = player.name
@@ -453,8 +445,6 @@ function Player:CopyPlayerDataFrom(player)
     
     end
     
-    player:TransferOrders(self)
-    
     // Remember this player's muted clients.
     self.mutedClients = player.mutedClients
     
@@ -503,7 +493,7 @@ function Player:Replace(mapName, newTeamNumber, preserveWeapons, atOrigin, extra
     // Make model look where the player is looking
     player.standingBodyYaw = self:GetAngles().yaw
     
-    if not player:GetTeam():GetSupportsOrders() then
+    if not player:GetTeam():GetSupportsOrders() and HasMixin(player, "Orders") then
         player:ClearOrders()
     end
     
@@ -541,11 +531,6 @@ function Player:Replace(mapName, newTeamNumber, preserveWeapons, atOrigin, extra
     
     // Must happen after the owner has been set on the player.
     player:InitializeBadges()
-    
-    // Set up special armor marines if player owns special edition 
-    if owner and Server.GetIsDlcAuthorized(owner, kSpecialEditionProductId) then
-        player:MakeSpecialEdition()
-    end
     
     // Log player spawning
     if teamNumber ~= 0 then
@@ -778,4 +763,18 @@ function Player:SetRookieMode(rookieMode)
         
     end
     
+end
+
+function Player:OnClientUpdated(client)
+
+    if client then
+    
+        if client.armorType == kArmorType.Black and GetHasBlackArmor(client) then
+            self:MakeSpecialEdition()
+        elseif client.armorType == kArmorType.Deluxe and GetHasDeluxeEdition(client) then
+            self:MakeDeluxeEdition()
+        end
+    
+    end
+
 end

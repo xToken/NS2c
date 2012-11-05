@@ -335,13 +335,14 @@ function Sentry:OnCreate()
         // Play a "ping" sound effect every Sentry.kPingInterval while scanning.
         local function PlayScanPing(sentry)
         
-            if sentry.mode == Sentry.kMode.Scanning and self:GetIsPowered() then
-                StartSoundEffectAtOrigin(kSentryScanSoundName, sentry:GetModelOrigin())
+            if GetIsUnitActive(self) and not self.attacking then
+                //local player = Client.GetLocalPlayer()
+                //Shared.PlayPrivateSound(player, kSentryScanSoundName, nil, 1, sentry:GetModelOrigin())
             end
             return true
             
         end
-        self:AddTimedCallback(PlayScanPing, Sentry.kPingInterval)
+        //self:AddTimedCallback(PlayScanPing, Sentry.kPingInterval)
         
         self.attackSound = Server.CreateEntity(SoundEffect.kMapName)
         self.attackSound:SetParent(self)
@@ -462,7 +463,7 @@ end
 
 function Sentry:GetTechButtons(techId)
 
-    if techId == kTechId.RootMenu then 
+    if techId == kTechId.WeaponsMenu then 
         
         if self.mode == Sentry.kMode.Attacking then
             return kAttackingButtons

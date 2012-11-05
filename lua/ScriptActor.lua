@@ -20,7 +20,7 @@ ScriptActor.kMapName = "scriptactor"
 
 if Server then
     Script.Load("lua/ScriptActor_Server.lua", true)
-else
+elseif Client then
     Script.Load("lua/ScriptActor_Client.lua", true)
 end
 
@@ -87,13 +87,11 @@ function ScriptActor:OnInitialized()
 end
 
 function ScriptActor:SetLocationEntity(location)
-    self.locationEntId = location:GetId()
+    self.locationEntId = location and location:GetId() or Entity.invalidId
 end
 
 function ScriptActor:GetLocationEntity()
-    if self.locationEntId ~= Entity.invalidId then
-        return Shared.GetEntity(self.locationEntId)
-    end    
+    return Shared.GetEntity(self.locationEntId)
 end
 
 function ScriptActor:ComputeLocation()
@@ -104,10 +102,8 @@ function ScriptActor:ComputeLocation()
         local locationName = location and location:GetName() or ""
         self:SetLocationName(locationName, true)
         
-        // dynamic props are possibly not inside a location
-        if location then        
-            self:SetLocationEntity(location)
-        end
+        // dynamic props are possibly not inside a location     
+        self:SetLocationEntity(location)
         
     end
 

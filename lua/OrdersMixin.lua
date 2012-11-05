@@ -612,3 +612,11 @@ function OrdersMixin:OnPerformAction(techNode, position)
     end
     
 end
+
+function OrdersMixin:CopyPlayerDataFrom(player)
+
+    if HasMixin(player, "Orders") then
+        player:TransferOrders(self)
+    end
+    
+end

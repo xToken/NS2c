@@ -20,6 +20,8 @@ Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
+Script.Load("lua/ElectrifyMixin.lua")
+Script.Load("lua/EnergyMixin.lua")
 
 class 'Extractor' (ResourceTower)
 
@@ -39,6 +41,8 @@ AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(AlienDetectableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
+AddMixinNetworkVars(EnergyMixin, networkVars)
+AddMixinNetworkVars(ElectrifyMixin, networkVars)
 
 function Extractor:OnCreate()
 
@@ -50,6 +54,10 @@ function Extractor:OnCreate()
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, AlienDetectableMixin)
     InitMixin(self, ParasiteMixin)
+    InitMixin(self, EnergyMixin)
+    InitMixin(self, ElectrifyMixin)
+    InitMixin(self, DamageMixin)
+    InitMixin(self, TeamMixin)
     
     if Client then
         InitMixin(self, CommanderGlowMixin)
@@ -80,6 +88,23 @@ end
 
 function Extractor:GetDamagedAlertId()
     return kTechId.MarineAlertExtractorUnderAttack
+end
+
+function Extractor:GetTechButtons(techId)
+    if self:GetIsElectrified() then
+        return { kTechId.None, kTechId.None, kTechId.None, kTechId.None,
+             kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+    end
+    return { kTechId.Electrify, kTechId.None, kTechId.None, kTechId.None,
+             kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+end
+
+function Extractor:OverrideGetEnergyUpdateRate()
+    return kElectrifyEnergyRegain
+end
+
+function Extractor:GetCanUpdateEnergy()
+    return self:GetIsElectrified() and self:GetCanRegainEnergy()
 end
 
 function Extractor:OnUpdateAnimationInput(modelMixin)

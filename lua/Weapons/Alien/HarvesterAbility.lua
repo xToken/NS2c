@@ -22,7 +22,7 @@ function HarvesterStructureAbility:GetGhostModelName(ability)
 end
 
 function HarvesterStructureAbility:GetIsPositionValid(position, player)
-    return GetIsBuildPickVecLegal(self:GetDropStructureId(), player, position)
+    return GetIsBuildPickVecLegal(self:GetDropStructureId(), player, position, kStructureSnapRadius, player:GetViewCoords().zAxis)
 end
 
 function HarvesterStructureAbility:GetDropStructureId()

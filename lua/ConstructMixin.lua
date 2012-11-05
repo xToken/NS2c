@@ -44,6 +44,7 @@ ConstructMixin.optionalCallbacks =
     OnConstruct = "Called whenever construction progress changes.",
     OnConstructionComplete = "Called whenever construction is completes.",
     GetCanBeUsedConstructed = "Return true when this entity has a use function when constructed."
+    
 }
 
 function ConstructMixin:__initmixin()
@@ -252,7 +253,7 @@ function ConstructMixin:AddBuildHealth(scalar)
     if (scalar > 0) then
     
         local maxHealth = self:GetMaxHealth()        
-        self:AddHealth( scalar * (1 - kStartHealthScalar) * maxHealth )
+        self:AddHealth( scalar * (1 - kStartHealthScalar) * maxHealth, false, false, true)
     
     end
 
@@ -267,9 +268,11 @@ function ConstructMixin:GetCanBeUsedConstructed()
 end
 
 function ConstructMixin:GetCanBeUsed(player, useSuccessTable)
+
     if self:GetIsBuilt() and not self:GetCanBeUsedConstructed() then
         useSuccessTable.useSuccess = false
-    end    
+    end
+    
 end
 
 // Add health to structure as it builds

@@ -13,6 +13,7 @@ Script.Load("lua/Commander.lua")
 class 'MarineCommander' (Commander)
 
 MarineCommander.kMapName = "marine_commander"
+MarineCommander.kDropSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/commander/drop")
 
 if Client then
     Script.Load("lua/MarineCommander_Client.lua")
@@ -91,49 +92,7 @@ function MarineCommander:GetOrderConfirmedEffect()
 end
 
 function MarineCommander:GetIsInQuickMenu(techId)
-    return Commander.GetIsInQuickMenu(self, techId) or techId == kTechId.WeaponsMenu
-end
-
-// Top row always the same. Alien commander can override to replace. 
-function MarineCommander:GetQuickMenuTechButtons(techId)
-
-    // Top row always for quick access
-    local marineTechButtons = { kTechId.BuildMenu, kTechId.AdvancedMenu, kTechId.AssistMenu, kTechId.RootMenu }
-    local menuButtons = nil    
-    
-    // Ignore selected and use set tech buttons when in a quick-access menu
-    if techId == kTechId.BuildMenu then 
-    
-        menuButtons = { kTechId.Extractor, kTechId.InfantryPortal, kTechId.Armory, kTechId.CommandStation,
-                        kTechId.RoboticsFactory, kTechId.Sentry, kTechId.ARC, kTechId.None}
-                        
-    elseif techId == kTechId.AdvancedMenu then 
-    
-        menuButtons = { kTechId.Observatory, kTechId.ArmsLab, kTechId.PrototypeLab, kTechId.PhaseGate, 
-                              kTechId.None, kTechId.None, kTechId.None, kTechId.None}
-        
-    elseif techId == kTechId.AssistMenu then
-    
-        menuButtons = { kTechId.AmmoPack, kTechId.MedPack, kTechId.CatPack, kTechId.None,
-                        kTechId.WeaponsMenu, kTechId.None, kTechId.None, kTechId.None}
-        
-    elseif techId == kTechId.WeaponsMenu then
-    
-        menuButtons = { kTechId.Mines, kTechId.Shotgun, kTechId.HeavyMachineGun, kTechId.GrenadeLauncher,
-                        kTechId.Welder, kTechId.Jetpack, kTechId.HeavyArmor, kTechId.None}
-        
-    else
-    
-        // Make sure all slots are initialized so entities can override simply
-        menuButtons = {kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None }
-        
-    end
-
-    table.copy(menuButtons, marineTechButtons, true)        
-
-    // Return buttons and true/false if we are in a quick-access menu
-    return marineTechButtons
-    
+    return Commander.GetIsInQuickMenu(self, techId)
 end
 
 local gMarineMenuButtons =
@@ -146,7 +105,7 @@ local gMarineMenuButtons =
                               kTechId.None, kTechId.None, kTechId.None, kTechId.None},
 
     [kTechId.AssistMenu] = { kTechId.AmmoPack, kTechId.MedPack, kTechId.CatPack, kTechId.None,
-                        kTechId.WeaponsMenu, kTechId.None, kTechId.None, kTechId.None},
+                        kTechId.None, kTechId.None, kTechId.None, kTechId.None},
                           
     [kTechId.WeaponsMenu] = { kTechId.Mines, kTechId.Shotgun, kTechId.HeavyMachineGun, kTechId.GrenadeLauncher,
                         kTechId.Welder, kTechId.Jetpack, kTechId.HeavyArmor, kTechId.None}
@@ -162,7 +121,7 @@ end
 function MarineCommander:GetQuickMenuTechButtons(techId)
 
     // Top row always for quick access
-    local marineTechButtons = { kTechId.BuildMenu, kTechId.AdvancedMenu, kTechId.AssistMenu, kTechId.RootMenu }
+    local marineTechButtons = { kTechId.BuildMenu, kTechId.AdvancedMenu, kTechId.AssistMenu, kTechId.WeaponsMenu}
     local menuButtons = gMarineMenuButtons[techId]    
     
     if not menuButtons then

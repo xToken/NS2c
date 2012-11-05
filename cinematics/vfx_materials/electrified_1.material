@@ -1,0 +1,4 @@
+shader = "cinematics/vfx_materials/electrified_1.surface_shader"
+greebMap = "materials/effects/mesh_effects/electrified_greeb.dds"
+noiseMap = "materials/effects/mesh_effects/electrified_noise.dds"
+circuitMap = "materials/effects/mesh_effects/electrified_circuit.dds"

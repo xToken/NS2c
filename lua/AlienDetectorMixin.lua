@@ -5,7 +5,7 @@ AlienDetectorMixin = { }
 AlienDetectorMixin.type = "AlienDetector"
 
 // Should be smaller than DetectableMixin:kResetDetectionInterval
-AlienDetectorMixin.kUpdateDetectionInterval = 2
+AlienDetectorMixin.kUpdateDetectionInterval = 1
 
 AlienDetectorMixin.expectedCallbacks =
 {

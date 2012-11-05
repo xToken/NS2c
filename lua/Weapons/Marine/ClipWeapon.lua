@@ -57,8 +57,7 @@ function ClipWeapon:OnCreate()
     self.blockingSecondary = false
     self.timeAttackStarted = 0
     self.deployed = false
-    
-    InitMixin(self, BulletsMixin)
+	InitMixin(self, BulletsMixin)
     
 end
 
@@ -172,11 +171,6 @@ end
 function ClipWeapon:OnProcessMove(input)
 
     Weapon.OnProcessMove(self, input)
-    
-    // We need to clear this out in OnProcessMove (rather than ProcessMoveOnWeapon)
-    // since this will get called after the view model has been updated from
-    // Player:OnProcessMove. 
-    self.secondaryAttacking = false
 
 end
 
@@ -398,11 +392,7 @@ local function FireBullets(self, player)
       
     local numberBullets = self:GetBulletsPerShot()
     local startPoint = player:GetEyePos()
-    
-    if Client then
-        DbgTracer.MarkClientFire(player, startPoint)
-    end
-    
+
     for bullet = 1, numberBullets do
     
         local spreadDirection = CalculateSpread(shootCoords, self:GetSpread(bullet) * self:GetInaccuracyScalar(player), NetworkRandom)
@@ -410,10 +400,6 @@ local function FireBullets(self, player)
         local endPoint = startPoint + spreadDirection * range
         
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
-        
-        if Server then
-            Server.dbgTracer:TraceBullet(player, startPoint, trace)
-        end
         
         local damage = 0
 
@@ -442,6 +428,10 @@ local function FireBullets(self, player)
             local showTracer = math.random() < effectFrequency
             
             self:ApplyBulletGameplayEffects(player, trace.entity, impactPoint, direction, damage, trace.surface, showTracer)
+            
+            if Client and showTracer then
+                TriggerFirstPersonTracer(self, trace.endPoint)
+            end
 
         end
         
@@ -455,12 +445,6 @@ local function FireBullets(self, player)
 end
 
 function ClipWeapon:FirePrimary(player)
-    //if Server then
-        //if self.lastfired ~= nil then
-            //Print(ToString(Shared.GetTime() - self.lastfired))
-        //end
-        //self.lastfired = Shared.GetTime()
-    //end
     FireBullets(self, player)
 end
 

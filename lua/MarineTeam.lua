@@ -73,6 +73,20 @@ function MarineTeam:GetHasAbilityToRespawn()
     
 end
 
+function MarineTeam:OnRespawnQueueChanged()
+
+    local spawningStructures = GetEntitiesForTeam("InfantryPortal", self:GetTeamNumber())
+    
+    for index, current in ipairs(spawningStructures) do
+    
+        if GetIsUnitActive(current) then
+            current:FillQueueIfFree()
+        end
+        
+    end        
+    
+end
+
 // Clear distress flag for all players on team, unless affected by distress beaconing Observatory. 
 // This function is here to make sure case with multiple observatories and distress beacons is
 // handled properly.
@@ -176,7 +190,8 @@ function MarineTeam:InitTechTree()
     self.techTree:AddTechInheritance(kTechId.RoboticsFactory, kTechId.ARCRoboticsFactory)
     self.techTree:AddBuildNode(kTechId.ARC,                          kTechId.ARCRoboticsFactory,                kTechId.None)       
     self.techTree:AddBuildNode(kTechId.PrototypeLab,          kTechId.AdvancedArmory,              kTechId.ArmsLab)        
-     
+    self.techTree:AddUpgradeNode(kTechId.Electrify,           kTechId.Extractor,               kTechId.None)
+    
     // Marine Upgrades
     self.techTree:AddResearchNode(kTechId.PhaseTech,                    kTechId.Observatory,        kTechId.None)
     self.techTree:AddUpgradeNode(kTechId.AdvancedArmoryUpgrade,     kTechId.Armory,        kTechId.InfantryPortal)

@@ -53,21 +53,16 @@ Gorge.kYExtents = 0.475
 
 Gorge.kMass = 80
 Gorge.kJumpHeight = 1.2
-local kStartSlideForce = 8
+local kStartSlideForce = 15
 local kViewOffsetHeight = 0.6
-Gorge.kMaxSpeed = 15
-Gorge.kAcceleration = 55
-Gorge.kAirAcceleration = 25
-Gorge.kSlidingAccelBoost = 20
+Gorge.kMaxSpeed = 6.5
+Gorge.kMaxSlideSpeed = 13
+Gorge.kSlidingAccelBoost = 3
 Gorge.kGorgeCreateDistance = 3
 Gorge.kBellySlideCost = 25
 local kSlidingMoveInputScalar = 0.1
 local kBuildingModeMovementScalar = 0.001
 local kSlideCoolDown = 1.5
-
-Gorge.kAirZMoveWeight = 2.5
-Gorge.kAirStrafeWeight = 2.5
-Gorge.kAirBrakeWeight = 0.1
 
 local kGorgeBellyYaw = "belly_yaw"
 local kGorgeLeanSpeed = 2
@@ -103,7 +98,7 @@ function Gorge:OnInitialized()
         self.slideLoopSound:SetAsset(Gorge.kSlideLoopSound)
         self.slideLoopSound:SetParent(self)
         
-    else
+    elseif Client then
     
         self:AddHelpWidget("GUIGorgeHealHelp", 2)
         self:AddHelpWidget("GUIGorgeBellySlideHelp", 2)
@@ -163,29 +158,11 @@ end
 function Gorge:GetIsBellySliding()
     return self.sliding
 end
-
-function Gorge:GetAcceleration()
-    if self.sliding then
-        return (Gorge.kAcceleration + Gorge.kSlidingAccelBoost) * self:GetMovementSpeedModifier()
-    end
-    
-    if self:GetIsOnGround() then
-        return Gorge.kAcceleration * self:GetMovementSpeedModifier()
-    else
-        return Gorge.kAirAcceleration * self:GetMovementSpeedModifier()
-    end
+/*
+function Gorge:GetCanJump()
+    return not self:GetIsBellySliding()
 end
-
-function Gorge:HandleJump(input, velocity)
-
-    if not self:GetIsBellySliding() then
-        return Alien.HandleJump(self, input, velocity)
-    end
-    
-    return false
-    
-end
-
+*/
 local function GetIsSlidingDesired(self, input)
 
     if bit.band(input.commands, Move.MovementModifier) == 0 then
@@ -196,7 +173,7 @@ local function GetIsSlidingDesired(self, input)
         return false
     end
     
-    if self:GetVelocity():GetLengthXZ() < 3 then
+    if self:GetVelocity():GetLengthXZ() < 3 or self:GetIsJumping() then
     
         if self:GetIsBellySliding() then    
             return false
@@ -288,29 +265,6 @@ function Gorge:OnUpdatePoseParameters(viewModel)
     
 end
 
-function Gorge:OverrideStrafeJump()
-    return false
-end
-
-function Gorge:ConstrainMoveVelocity(moveVelocity)   
-
-    Alien.ConstrainMoveVelocity(self, moveVelocity)
-    
-    if self:GetIsBellySliding() then
-        moveVelocity:Scale(0)
-    end
-    
-end
-
-function Gorge:GetGroundFrictionForce()
-
-    if self:GetIsBellySliding() then
-        return 0.2
-    end
-
-    return Alien.GetGroundFrictionForce(self)
-end
-
 function Gorge:SetCrouchState(newCrouchState)
     self.crouching = newCrouchState
 end
@@ -318,9 +272,16 @@ end
 function Gorge:GetMaxSpeed(possible)
 
     if possible then
-        return 7
+        return Gorge.kMaxSpeed
     end
-    return Gorge.kMaxSpeed * self:GetMovementSpeedModifier()
+    
+    local maxSpeed = Gorge.kMaxSpeed
+
+    if self:GetIsBellySliding() then
+        maxSpeed = Gorge.kMaxSlideSpeed
+    end
+
+    return maxSpeed * self:GetMovementSpeedModifier()
     
 end
 
@@ -432,48 +393,52 @@ end
 
 if Client then
 
-    function Gorge:OnProcessMove(input)
-
-        Alien.OnProcessMove(self, input)
-
-        self.currentTechId = nil
-        self.ghostStructureCoords = nil
-        self.ghostStructureValid = false
-        self.showGhostModel = false
-        
+    function Gorge:GetShowGhostModel()
+    
         local weapon = self:GetActiveWeapon()
+        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
+            return weapon:GetShowGhostModel()
+        end
         
-        if weapon and (weapon.kMapName == "drop_structure_ability" or weapon.kMapName == "drop_structure_ability2") then
+        return false
         
-            self.currentTechId = weapon:GetActiveStructure():GetDropStructureId()
-            self.ghostStructureCoords = weapon:GetGhostModelCoords()
-            self.ghostStructureValid = weapon:GetIsPlacementValid()
-            self.showGhostModel = weapon:GetShowGhostModel()
+    end    
+
+    function Gorge:GetGhostModelTechId()
+    
+        local weapon = self:GetActiveWeapon()
+        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
+            return weapon:GetGhostModelTechId()
+        end
         
+    end
+
+    function Gorge:GetGhostModelCoords()
+    
+        local weapon = self:GetActiveWeapon()
+        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
+            return weapon:GetGhostModelCoords()
         end
 
     end
 
-    function Gorge:GetShowGhostModel()
-        return self.showGhostModel
-    end    
-
-    function Gorge:GetGhostModelTechId()
-        return self.currentTechId
-    end
-
-    function Gorge:GetGhostModelCoords()
-        return self.ghostStructureCoords
-    end
-
     function Gorge:GetIsPlacementValid()
-        return self.ghostStructureValid
+    
+        local weapon = self:GetActiveWeapon()
+        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
+            return weapon:GetIsPlacementValid()
+        end
+    
     end
 
 end
 
 function Gorge:GetCanAttack()
     return Alien.GetCanAttack(self) and not self:GetIsBellySliding()
+end
+
+function Gorge:GetEngagementPointOverride()
+    return self:GetOrigin() + Vector(0, 0.28, 0)
 end
 
 Shared.LinkClassToMap("Gorge", Gorge.kMapName, networkVars)

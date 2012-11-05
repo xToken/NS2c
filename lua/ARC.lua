@@ -54,7 +54,7 @@ ARC.kHealth                 = kARCHealth
 ARC.kAttackDamage           = kARCDamage
 ARC.kFireRange              = kARCRange         // From NS1
 ARC.kMinFireRange           = kARCMinRange
-ARC.kSplashRadius           = 3
+ARC.kSplashRadius           = 2
 ARC.kFov                    = 360
 ARC.kBarrelMoveRate         = 150
 ARC.kMaxPitch               = 45
@@ -128,7 +128,8 @@ function ARC:OnCreate()
     
     if Server then
         InitMixin(self, SleeperMixin)
-    else
+        
+    elseif Client then
         InitMixin(self, CommanderGlowMixin)
     end
     

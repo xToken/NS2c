@@ -67,11 +67,7 @@ function Sentry:FireBullets()
         local endPoint = startPoint + spreadDirection * Sentry.kRange
         
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterOne(self))
-        
-        if Server then
-            Server.dbgTracer:TraceBullet(self, startPoint, trace)
-        end
-        
+
         if trace.fraction < 1 then
         
             local rampUpFraction = Clamp((Shared.GetTime() - self.timeLastTargetChange) / kSentryDamageRampUpDuration, 0, 1)

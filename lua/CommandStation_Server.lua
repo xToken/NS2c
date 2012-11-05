@@ -15,41 +15,53 @@ function CommandStation:GetCommanderClassName()
 end
 
 function CommandStation:GetIsPlayerValidForCommander(player)
-    return player ~= nil and player:isa("Marine") and self:GetIsPlayerInside(player) and CommandStructure.GetIsPlayerValidForCommander(self, player)
+    return player ~= nil and player:isa("Marine") and CommandStructure.GetIsPlayerValidForCommander(self, player)
 end
 
-function CommandStation:GetKillOrigin()
-    return self:GetOrigin() + Vector(0, 1.5, 0)
-end
+// Put player into Commander mode
+function CommandStation:OnUse(player, elapsedTime, useAttachPoint, usePoint, useSuccessTable)
 
-local function KillPlayersInside(self)
+    local csUseSuccess = false
 
-    // Now kill any other players that are still inside the command station so they're not stuck!
-    // Draw debug box if players are players on inside aren't dying or players on the outside are
-    //DebugCircle(self:GetKillOrigin(), CommandStation.kCommandStationKillConstant, Vector(0, 1, 0), 1, 1, 1, 1, 1)
+    if self:GetIsBuilt() then
     
-    for index, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
-    
-        if not player:isa("Commander") and not player:isa("Spectator") then
+        // Make sure player wasn't ejected early in the game from either team's command
+        local playerSteamId = Server.GetOwner(player):GetUserId()
+        if not GetGamerules():GetPlayerBannedFromCommand(playerSteamId) then
         
-            if self:GetIsPlayerInside(player) and player:GetId() ~= self.playerIdStartedLogin then
+            local team = self:GetTeam()
+            if not team:GetHasCommander() then
             
-                //player:Kill(self, self, self:GetOrigin())
+                // Must use attach point if specified (Command Station)            
+                if not self.occupied and self.loginAllowed and self:GetIsPlayerValidForCommander(player) and GetIsUnitActive(self) then
+                
+                    self:LoginPlayer(player)                      
+                    self.occupied = true
+                    csUseSuccess = true
+                    
+                    // TODO: trigger client side in OnTag
+                    self:TriggerEffects("commandstation_login")
+                    
+                end
                 
             end
             
         end
-    
+        
+    elseif not self:GetIsBuilt() then
+        csUseSuccess = true
     end
-
+    
+    if not csUseSuccess then
+        player:TriggerInvalidSound()
+    end
+    
+    useSuccessTable.useSuccess = useSuccessTable.useSuccess and csUseSuccess
+    
 end
 
-function CommandStation:LoginPlayer(player)
-
-    local commander = CommandStructure.LoginPlayer(self, player)
-    
-    //KillPlayersInside(self)
-    
+function CommandStation:GetKillOrigin()
+    return self:GetOrigin() + Vector(0, 1.5, 0)
 end
 
 function CommandStation:OnConstructionComplete()

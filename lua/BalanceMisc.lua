@@ -19,20 +19,26 @@ kHiveUnderAttackTime = 15
 kMaxAlienStructureRange = 25
 kMaxAlienStructuresofType = 8
 kMaxBuildingHives = 1
+kChamberLostNotification = 1
 kPingOfDeathDelay = 2
 kPingOfDeathDamagePercent = 12
 kResearchMod = 1
+kAirMaxSpeedScalar = 1.8
+kOnLandDelay = 0.1
 
 kGhostStructureModifier = .75
 kEnergyUpdateRate = 0.25
 kDropWeaponTimeLimit = 1
 kPickupWeaponTimeLimit = 1
 kItemStayTime = 30    // NS1
+kRecycleCancelWindow = 0.25
+kRecycleRefundScalar = 0.5
 
 // set to -1 for no time limit
 kParasiteDuration = -1
-kFallDamageMinimumVelocity = 20
-kFallDamageScalar = 10
+kFallDamageMinimumVelocity = 15
+kFallDamageScalar = 13
+kKnockbackTime = 0.05
 
 kCeleritySpeedModifier = 0.2
 kFocusAttackSlowdown = 0.5
@@ -44,15 +50,15 @@ kRedemptionCheckTime = 2
 kRedemptionCooldown = 20
 kRedploymentCooldownBase = 15
 kAuraDetectionRange = 30
-kFuryHealthRegained = 4
+kFuryHealthRegained = 10
 kFuryHealthPercentageRegained = 0.1
 kFuryEnergyRegained = 10
 kGhostMotionTrackingDodgePerLevel = 33
 kGhostObservatoryDodgePerLevel = 33
 kGhostMinimapDodgePerLevel = 33
 kGhostScanDodgePerLevel = 33
-kAlienBaseMoveNoise = 5
-kAlienRandMoveNoise = 12
+kAlienBaseMoveNoise = 4
+kAlienRandMoveNoise = 8
 
 // per second
 kAlienVisionCost = 0
@@ -83,9 +89,10 @@ kEnergizeUpdateRate = 1
 kUpgradeGestationTime = 2
 
 // Jetpack
-kJetpackUseFuelRate = 0.36
+kJetpackUseFuelRate = 0.22
 kJetpackUpgradeUseFuelRate = 0.15
-kJetpackReplenishFuelRate = 0.16
+kJetpackReplenishFuelRate = 0.17
+kJetpackWeightAssist = 1.75
 
 //HA
 kHeavyArmorWeightAssist = 2.5

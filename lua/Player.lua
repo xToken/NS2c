@@ -19,7 +19,6 @@ Script.Load("lua/WeaponOwnerMixin.lua")
 Script.Load("lua/DoorMixin.lua")
 Script.Load("lua/mixins/ControllerMixin.lua")
 Script.Load("lua/LiveMixin.lua")
-Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
@@ -46,10 +45,23 @@ Player.kPushDuration = 0.5
 
 if Server then
     Script.Load("lua/Player_Server.lua")
-else
+end
 
+if Client then
     Script.Load("lua/Player_Client.lua")
     Script.Load("lua/Chat.lua")
+end
+
+if Predict then
+
+function Player:OnUpdatePlayer(deltaTime)    
+    // do nothing
+end
+
+function Player:UpdateMisc(input)
+    // do nothing
+end
+
 end
 
 ------------
@@ -132,16 +144,12 @@ Player.kThinkInterval = .2
 Player.kMinimumPlayerVelocity = .05    // Minimum player velocity for network performance and ease of debugging
 
 // Player speeds
-Player.kWalkMaxSpeed = 5             // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
-Player.kRunMaxSpeed = 10
-Player.kAcceleration = 58
-Player.kAirAcceleration = 32
-Player.kAirBrakeWeight = 0.1
+Player.kWalkMaxSpeed = 4             // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
+Player.kRunMaxSpeed = 8
+Player.kAcceleration = 45
 Player.kAirZMoveWeight = 2.5
 Player.kAirZStrafeWeight = 2.5
 Player.kAirStrafeWeight = 2
-Player.kTargetViewAngle = 7.5
-Player.kStrafeJumpAccel = 1.15
 
 local kLadderAcceleration = 16
 
@@ -181,9 +189,6 @@ local kTurnRunDelaySpeed = 2.5
 // Controls how fast the body_yaw pose parameter used for turning while standing
 // still blends back to default when the player starts moving.
 local kTurnMoveYawBlendToMovingSpeed = 5
-
-// This is used to push players away from each other.
-local kPlayerRepelForce = 7
 
 // Max amount of step allowed
 Player.kMaxStepAmount = 1
@@ -225,9 +230,6 @@ local networkVars =
     
     bodyYawRun = "compensated interpolated angle (11 bits)",
     runningBodyYaw = "angle interpolated (11 bits)",
-    
-    showScoreboard = "private boolean",
-    sayingsMenu = "private integer (0 to 6)",
     timeLastMenu = "private time",
     darwinMode = "private boolean",
     
@@ -235,7 +237,6 @@ local networkVars =
     // Used to require the key to pressed multiple times
     jumpHandled = "private boolean",
     timeOfLastJump = "private time",
-    landtime = "private time",
     jumping = "compensated boolean",
     onGround = "compensated boolean",
     onGroundNeedsUpdate = "private boolean",
@@ -289,7 +290,6 @@ AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(UpgradableMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
-AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(HintMixin, networkVars)
 AddMixinNetworkVars(BadgeMixin, networkVars)
 
@@ -312,13 +312,12 @@ function Player:OnCreate()
     InitMixin(self, ControllerMixin)
     InitMixin(self, WeaponOwnerMixin, { kStowedWeaponWeightScalar = Player.kStowedWeaponWeightScalar })
     InitMixin(self, DoorMixin)
+    // TODO: move LiveMixin to child classes (some day)
     InitMixin(self, LiveMixin)
-    InitMixin(self, RagdollMixin)
     InitMixin(self, UpgradableMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
-    InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kPlayerMoveOrderCompleteDistance })
     InitMixin(self, HintMixin, { kHintSound = Player.kTooltipSound, kHintInterval = Player.kHintInterval })
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, BadgeMixin)
@@ -352,14 +351,8 @@ function Player:OnCreate()
         self.sendTechTreeBase = false
     end
     
-    if Client then
-        self.showSayings = false
-    end
-    
-    self.sayingsMenu = 0
     self.timeLastMenu = 0    
     self.darwinMode = false
-    self.timeLastSayingsAction = 0
     self.kills = 0
     self.deaths = 0
     
@@ -604,8 +597,6 @@ function Player:OverrideInput(input)
         
     end
     
-    self:OverrideSayingsMenu(input)
-    
     if self.shortcircuitInput then
         input.commands = 0x00000000
         input.move = Vector(0,0,0)
@@ -614,87 +605,6 @@ function Player:OverrideInput(input)
     self.shortcircuitInput = MainMenu_GetIsOpened()
     
     return input
-    
-end
-
-function Player:OverrideSayingsMenu(input)
-
-    local sayingsButtonPressed = bit.band(input.commands, Move.ToggleRequest) ~= 0 or
-                                 bit.band(input.commands, Move.ToggleSayings) ~= 0 or
-                                 bit.band(input.commands, Move.ToggleVoteMenu) ~= 0
-    
-    local voteButtonPressed = (self:GetTeamNumber() == kTeam1Index or self:GetTeamNumber() == kTeam2Index) and
-                              bit.band(input.commands, Move.ToggleVoteMenu) ~= 0
-    
-    // Allow voting while dead.
-    if self:GetHasSayings() and sayingsButtonPressed and (self:GetIsAlive() or voteButtonPressed) then
-    
-        // If enough time has passed.
-        if self.timeLastSayingsAction == nil or (Shared.GetTime() > self.timeLastSayingsAction + 0.2) then
-        
-            local newMenu = 1
-            if bit.band(input.commands, Move.ToggleSayings) ~= 0 then
-                newMenu = ConditionalValue(self:isa("Alien"), 1, 2)
-            elseif voteButtonPressed then
-                newMenu = ConditionalValue(self:isa("Alien"), 2, 3)
-            end
-            
-            // If not visible, bring up menu
-            if not self.showSayings then
-            
-                self.showSayings = true
-                self.showSayingsMenu = newMenu
-                
-            // else if same menu and visible, hide it
-            elseif newMenu == self.showSayingsMenu then
-            
-                self.showSayings = false
-                self.showSayingsMenu = nil
-                
-            // If different, change menu without showing or hiding
-            elseif newMenu ~= self.showSayingsMenu then
-                self.showSayingsMenu = newMenu
-            end
-            
-        end
-        
-        // Sayings toggles are handled client side.
-        local removeToggleMenuMask = bit.bxor(0xFFFFFFFF, Move.ToggleRequest)
-        input.commands = bit.band(input.commands, removeToggleMenuMask)
-        removeToggleMenuMask = bit.bxor(0xFFFFFFFF, Move.ToggleSayings)
-        input.commands = bit.band(input.commands, removeToggleMenuMask)
-        removeToggleMenuMask = bit.bxor(0xFFFFFFFF, Move.ToggleVoteMenu)
-        input.commands = bit.band(input.commands, removeToggleMenuMask)
-        
-        // Record time
-        self.timeLastSayingsAction = Shared.GetTime()
-        
-    end
-    
-    // Intercept any execute sayings commands.
-    if self.showSayings and self:GetIsAlive() then
-    
-        local weaponSwitchCommands = { Move.Weapon1, Move.Weapon2, Move.Weapon3, Move.Weapon4, Move.Weapon5 }
-        
-        for i, weaponSwitchCommand in ipairs(weaponSwitchCommands) do
-        
-            if bit.band(input.commands, weaponSwitchCommand) ~= 0 then
-            
-                // Tell the server to execute this saying.
-                local message = BuildExecuteSayingMessage(i, self.showSayingsMenu)
-                Client.SendNetworkMessage("ExecuteSaying", message, true)
-                
-                local removeWeaponMask = bit.bxor(0xFFFFFFFF, weaponSwitchCommand)
-                input.commands = bit.band(input.commands, removeWeaponMask)
-                self.showSayings = false
-                
-                break
-                
-            end
-            
-        end
-        
-    end
     
 end
 
@@ -1007,32 +917,6 @@ local function AttemptToUse(self, timePassed)
 
 end
 
-function Player:GetCurrentBuildPercentage()
-
-    local buildPercentage = 0
-    
-    if self:GetIsUsing() then
-        local entity, attachPoint = self:PerformUseTrace() 
-
-        if entity and HasMixin(entity, "Construct") then
-            buildPercentage = entity:GetBuiltFraction()
-        end
-    end
-
-    return buildPercentage
-
-end
-
-// Play different animations depending on current weapon
-function Player:GetCustomAnimationName(animName)
-    local activeWeapon = self:GetActiveWeapon()
-    if (activeWeapon ~= nil) then
-        return string.format("%s_%s", activeWeapon:GetMapName(), animName)
-    else
-        return animName
-    end
-end
-
 function Player:Buy()
 end
 
@@ -1161,52 +1045,36 @@ function Player:GetTeamResources()
     return self.teamResources
 end
 
+function Player:GetVerticleMove()
+    return false
+end
+
 // MoveMixin callbacks.
 // Compute the desired velocity based on the input. Make sure that going off at 45 degree angles
 // doesn't make us faster.
 function Player:ComputeForwardVelocity(input)
 
     local forwardVelocity = Vector(0, 0, 0)
-    
     local move = GetNormalizedVector(input.move)
-    local angles = self:ConvertToViewAngles(input.pitch, input.yaw, 0)
+    local angles = self:ConvertToViewAngles(0, input.yaw, 0)
+    local accel = self:GetAcceleration()
+    if self:GetIsOnLadder() then
+        accel = kLadderAcceleration
+        angles = self:ConvertToViewAngles(input.pitch, input.yaw, 0)
+    end
+    if self.GetIsWallWalking and self:GetIsWallWalking() then
+        angles = self:ConvertToViewAngles(input.pitch, input.yaw, 0)
+    end
     local viewCoords = angles:GetCoords()
     
-    local accel = ConditionalValue(self:GetIsOnLadder(), kLadderAcceleration, self:GetAcceleration())
-    
-    local moveVelocity = viewCoords:TransformVector(move) * accel
-    if input.move.z < 0 and self:GetVelocity():GetLength() > self:GetMaxSpeed() * 0.4 then
+    local moveVelocity = viewCoords:TransformVector(move)
+    if input.move.z < 0 and self:GetVelocity():GetLength() > self:GetMaxSpeed() * self:GetMaxBackwardSpeedScalar() then
         moveVelocity = moveVelocity * self:GetMaxBackwardSpeedScalar()
     end
-
+    
     self:ConstrainMoveVelocity(moveVelocity)
     
-    // The active weapon can also constain the move velocity.
-    local activeWeapon = self:GetActiveWeapon()
-    if activeWeapon ~= nil then
-        activeWeapon:ConstrainMoveVelocity(moveVelocity)
-    end
-    
-    // Make sure that moving forward while looking down doesn't slow 
-    // us down (get forward velocity, not view velocity)
-    local moveVelocityLength = moveVelocity:GetLength()
-    
-    if moveVelocityLength > 0 then
-
-        local moveDirection = self:GetMoveDirection(moveVelocity)
-        
-        // Trying to move straight down
-        if not ValidateValue(moveDirection) then
-            moveDirection = Vector(0, -1, 0)
-        end
-        
-        forwardVelocity = moveDirection * moveVelocityLength
-        
-    end
-    
-    local pushVelocity = Vector( self.pushImpulse * ( 1 - Clamp( (Shared.GetTime() - self.pushTime) / Player.kPushDuration, 0, 1) ) )
-    
-    return forwardVelocity + pushVelocity * (self:GetGroundFrictionForce()/7)
+    return moveVelocity * accel
 
 end
 
@@ -1215,11 +1083,11 @@ function Player:GetIsAffectedByAirFriction()
 end
 
 function Player:GetGroundFrictionForce()
-    return ConditionalValue(self.crouching or self.isUsing, 14, 8)
+    return ConditionalValue(self.crouching or self.isUsing, 10, 4)
 end   
 
 function Player:GetAirFrictionForce()
-    return 0.5
+    return 0.50
 end
 
 function Player:GetClimbFrictionForce()
@@ -1231,7 +1099,7 @@ function Player:GetCanClimb()
 end
 
 function Player:GetStopSpeed()
-    return 2.4
+    return 3
 end
 
 function Player:PerformsVerticalMove()
@@ -1242,48 +1110,32 @@ function Player:GetFrictionForce(input, velocity)
 
     local friction = Vector(0, 0, 0)
     local frictionScalar = 0
-    // 2 frames at 100 fps, maybe should be a function of input.time?
-	if (self.landtime + .02) > Shared.GetTime()  then
-        return friction
-    end
 
     local stopSpeed = self:GetStopSpeed()
-    local friction = GetNormalizedVector(-velocity)
-    local velocityLength = 0
-    
-    if self:PerformsVerticalMove() then
-        velocityLength = self:GetVelocity():GetLength()
-    else
-        velocityLength = self:GetVelocity():GetLengthXZ()
-    end
-    
-    // ground friction by default
-    local frictionScalar = velocityLength * self:GetGroundFrictionForce()
+    friction = -velocity
+    local velocitylength = self:GetVelocity():GetLength()
 
-    // use custom climb friction
     if self:GetIsOnLadder() then
-    
-        if input.move:GetLength() == 0 and self:GetVelocity():GetLength() > 0 then
+        if input.move:GetLength() == 0 and velocitylength > 0 then
             local control = self:GetVelocity():GetUnit()
             friction = -stopSpeed * control
         end
-        
-        frictionScalar = self:GetClimbFrictionForce() * self:GetVelocity():GetLength()
-
-    // if the player is in air we apply a different friction to allow utilizing momentum
-    elseif self:GetIsAffectedByAirFriction() then
-
-        // disable vertical friction when in air.
+        frictionScalar = self:GetClimbFrictionForce()
+    elseif self:GetIsOnSurface() and (self.landtime + kOnLandDelay) < Shared.GetTime() then
+        frictionScalar = self:GetGroundFrictionForce()
+    else
         if not self:PerformsVerticalMove() then
             friction.y = 0
         end
-        
-        frictionScalar = velocityLength * self:GetAirFrictionForce(input, velocity)
-        
-    end    
+        if not self:GetIsOnSurface() then
+            frictionScalar = self:GetAirFrictionForce()
+        else
+            frictionScalar = self:GetAirFrictionForce() * 3
+        end
+    end
 
     // Calculate friction when going slower than stopSpeed
-    if stopSpeed > velocityLength and 0 < velocityLength and input.move:GetLength() == 0 then
+    if stopSpeed > velocitylength and 0 < velocitylength and input.move:GetLength() == 0 then
 
         local control = velocity:GetUnit()
         friction = -stopSpeed * control
@@ -1354,7 +1206,7 @@ end
 function Player:GetMinimapFov(targetEntity)
 
     if targetEntity and targetEntity:isa("Player") then
-        return 28
+        return 60
     end
     
     return 90
@@ -1385,8 +1237,12 @@ function Player:OnClampSpeed(input, velocity)
         maxSpeed = maxSpeed * self:GetMaxBackwardSpeedScalar()
     end
     
-    if moveSpeed > maxSpeed then
+    if not self:GetIsOnSurface() or (self.landtime + kOnLandDelay) > Shared.GetTime() then
+        maxSpeed = maxSpeed * kAirMaxSpeedScalar
+    end
     
+    if moveSpeed > maxSpeed then
+
         local velocityY = velocity.y
         velocity:Scale(maxSpeed / moveSpeed)
         
@@ -1517,10 +1373,11 @@ end
 
 function Player:OnJumpLand(landIntensity, slowDown)
 
+    self.landtime = Shared.GetTime()
+    
     if Client and self:GetIsLocalPlayer() then
         self:OnJumpLandLocalClient()
     end
-    self.landtime = Shared.GetTime()
     
 end
 
@@ -1563,7 +1420,7 @@ local function UpdateFallDamage(self, wasOnGround, previousVelocity)
 
     if wasOnGround == false and self:GetIsOnSurface() and self:ReceivesFallDamage() then
         if math.abs(previousVelocity.y) > kFallDamageMinimumVelocity then
-            local damage = math.max(0, math.abs(previousVelocity.y * kFallDamageScalar) - 200)
+            local damage = math.max(0, math.abs(previousVelocity.y * kFallDamageScalar) - 195)
             self:TakeDamage(damage, self, self, self:GetOrigin(), nil, 0, damage, kDamageType.Falling)
         end
     end
@@ -1629,6 +1486,28 @@ local function UpdateAnimationInputs(self, input)
 
 end
 
+
+function Player:OnProcessIntermediate(input)
+   
+    if self:GetIsAlive() and not self.countingDown then
+        // Update to the current view angles so that the mouse feels smooth and responsive.
+        self:UpdateViewAngles(input)
+    end
+    
+    // This is necessary to update the child entity bones so that the view model
+    // animates smoothly and attached weapons will have the correct coords.
+    local numChildren = self:GetNumChildren()
+    for i = 1,numChildren do
+        local child = self:GetChildAtIndex(i - 1)
+        if child.OnProcessIntermediate then
+            child:OnProcessIntermediate(input)
+        end
+    end
+    
+    self:UpdateClientEffects(input.time, true)
+    
+end
+
 // You can't modify a compensated field for another (relevant) entity during OnProcessMove(). The
 // "local" player doesn't undergo lag compensation it's only all of the other players and entities.
 // For example, if health was compensated, you can't modify it when a player was shot -
@@ -1638,28 +1517,10 @@ end
 function Player:OnProcessMove(input)
 
     PROFILE("Player:OnProcessMove")
-    
-    self:OnUpdatePlayer(input.time)
-    
-    ScriptActor.OnProcessMove(self, input)
-    
-    self:HandleButtons(input)
-    
-    UpdateAnimationInputs(self, input)
-    
+
+    local commands = input.commands
     if self:GetIsAlive() then
     
-        ASSERT(self.controller ~= nil)
-        
-        // Force an update to whether or not we're on the ground in case something
-        // has moved out from underneath us.
-             
-        local wasOnGround = self.onGround
-        local previousVelocity = self:GetVelocity()
-        self.onGroundNeedsUpdate = previousVelocity ~= nil or not previousVelocity.y < 0
-        
-        local commands = input.commands
-        
         if self.countingDown then
         
             input.move:Scale(0)
@@ -1677,6 +1538,26 @@ function Player:OnProcessMove(input)
             
         end
         
+    end
+    
+    self:OnUpdatePlayer(input.time)
+    
+    ScriptActor.OnProcessMove(self, input)
+    
+    self:HandleButtons(input)
+    
+    UpdateAnimationInputs(self, input)
+    
+    if self:GetIsAlive() then
+    
+        ASSERT(self.controller ~= nil)
+        
+        // Force an update to whether or not we're on the ground in case something
+        // has moved out from underneath us.
+        self.onGroundNeedsUpdate = true      
+        local wasOnGround = self.onGround
+        local previousVelocity = self:GetVelocity()
+                
         // Update origin and velocity from input move (main physics behavior).
         self:UpdateMove(input)
         
@@ -1698,8 +1579,10 @@ function Player:OnProcessMove(input)
         UpdateBodyYaw(self, input.time, input)
         
         //self:PushAIUnits()
-        
-    elseif not self:GetIsAlive() and Client and (Client.GetLocalPlayer() == self) then
+
+    end
+    
+    if Client then
     
         // Allow the use of scoreboard, chat, and map even when not alive.
         self:UpdateScoreboardDisplay(input)
@@ -1759,7 +1642,7 @@ function Player:UpdateMaxMoveSpeed(deltaTime)
 
     ASSERT(deltaTime >= 0)
     
-    // Only recover max speed when on the ground
+    // Only recover max speed when on the 
     if self:GetIsOnGround() then
     
         local newSlow = math.max(0, self.slowAmount - deltaTime)
@@ -1829,8 +1712,33 @@ function Player:DropToFloor()
 
 end
 
+
 function Player:GetCanStep()
     return self:GetIsOnGround()
+end
+
+function Player:GetCanStepOver(entity)
+    return false
+end
+
+local function CheckCanStepOver(self, hitEntities)
+
+    local canStepOver = true
+
+    if hitEntities then
+    
+        for _, entity in ipairs(hitEntities) do
+        
+            if not self:GetCanStepOver(entity) then
+                canStepOver = false
+            end
+            
+        end
+    
+    end 
+    
+    return canStepOver
+
 end
 
 function Player:UpdatePosition(velocity, time)
@@ -1840,228 +1748,19 @@ function Player:UpdatePosition(velocity, time)
     if not self.controller then
         return velocity
     end
-
-    // We need to make a copy so that we aren't holding onto a reference
-    // which is updated when the origin changes.
-    local start         = Vector(self:GetOrigin())
-    local startVelocity = Vector(velocity)
-   
+    
     local maxSlideMoves = 3
     
     local offset = nil
-    local stepHeight = self:GetStepHeight()
-    local canStep = self:GetCanStep()
-    local onGround = self:GetIsOnGround()
     
     local offset = velocity * time
-    local horizontalOffset = Vector(offset)
-    horizontalOffset.y = 0
-    
-    local stepUpOffset = 0
-    
-    if canStep then
-        
-        local horizontalOffsetLength = horizontalOffset:GetLength()
-        local fractionOfOffset = 1
-        
-        if horizontalOffsetLength > 0 then
+    local hitEntities = nil
+    local completedMove = false
+    local averageSurfaceNormal = nil
+   
+    completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(offset, maxSlideMoves, velocity)
 
-            // Move up
-            self:PerformMovement(Vector(0, stepHeight, 0), 1)
-            local steppedStart = self:GetOrigin()
-            stepUpOffset = steppedStart.y - start.y
-        
-            // Horizontal move
-            self:PerformMovement(horizontalOffset, maxSlideMoves, velocity)
-            
-            local movePerformed = self:GetOrigin() - steppedStart
-            fractionOfOffset = movePerformed:DotProduct(horizontalOffset) / (horizontalOffsetLength*horizontalOffsetLength)
-            
-        end
-
-        local downStepAmount = offset.y - stepUpOffset - horizontalOffsetLength*Player.kDownSlopeFactor
-        
-        if fractionOfOffset < 0.5 then
-        
-            // Didn't really move very far, try moving without step up
-            local savedOrigin = Vector(self:GetOrigin())
-            local savedVelocity = Vector(velocity)
-
-            self:SetOrigin(start)
-            velocity = Vector(startVelocity)
-            
-            // Just do the move            
-            self:PerformMovement(offset, maxSlideMoves, velocity)
-            
-            local movePerformed = self:GetOrigin() - start
-            local alternativeFractionOfOffset = movePerformed:DotProduct(offset) / offset:GetLengthSquared()
-            
-            if alternativeFractionOfOffset > fractionOfOffset then
-                // This move is better!
-                downStepAmount = 0
-            else
-                // Stepped move was better - go back to it!
-                self:SetOrigin(savedOrigin)
-                velocity = savedVelocity                    
-            end            
-
-        end
-        
-        // Vertical move
-        if downStepAmount ~= 0 then
-            self:PerformMovement(Vector(0, downStepAmount, 0), 1)
-        end
-        
-        // Check to see if we moved up a step and need to smooth out
-        // the movement.
-        local yDelta = self:GetOrigin().y - start.y
-        
-        if yDelta ~= 0 then
-        
-            // If we're already interpolating up a step, we need to take that into account
-            // so that we continue that interpolation, plus our new step interpolation
-            
-            local deltaTime      = Shared.GetTime() - self.stepStartTime
-            local prevStepAmount = 0
-            
-            if deltaTime < Player.stepTotalTime then
-                prevStepAmount = self.stepAmount * (1 - deltaTime / Player.stepTotalTime)
-            end        
-            
-            self.stepStartTime = Shared.GetTime()
-            self.stepAmount    = Clamp(yDelta + prevStepAmount, -Player.kMaxStepAmount, Player.kMaxStepAmount)
-            
-        end      
-
-    else
-        
-        // Just do the move
-        self:PerformMovement(offset, maxSlideMoves, velocity)        
-            
-    end
-           
-    /*
-    local completedMove = self:PerformMovement(  velocity * time, maxSlideMoves, velocity )
-
-    if not completedMove and canStep then
-    
-        // Go back to the beginning and now try a step move.
-        self:SetOrigin(start)
-        
-        // First move the character upwards to allow them to go up stairs and over small obstacles. 
-        local stepMove = 
-        self:PerformMovement( Vector(0, stepHeight, 0), 1 )
-        
-        local steppedStart = self:GetOrigin()
-        if steppedStart.y == start.y then
-        
-            // Moving up didn't allow us to go over anything, so move back
-            // to the start position so we don't get stuck in an elevated position
-            // due to not being able to move back down.
-            self:SetOrigin(start)
-            offset = Vector(0, 0, 0)
-            
-        else
-        
-            offset = steppedStart - start
-            
-            // Now try moving the controller the desired distance.
-            VectorCopy( startVelocity, velocity )
-            self:PerformMovement( startVelocity * time, maxSlideMoves, velocity )
-            
-        end
-        
-    else
-        offset = Vector(0, 0, 0)
-    end
-    
-    if canStep then
-    
-        // Finally, move the player back down to compensate for moving them up.
-        // We add in an additional step  height for moving down steps/ramps.
-        if onGround then        
-            offset.y = -(offset.y + stepHeight)
-        end
-        self:PerformMovement( offset, 1, nil )
-        
-        // Check to see if we moved up a step and need to smooth out
-        // the movement.
-        local yDelta = self:GetOrigin().y - start.y
-        
-        if yDelta ~= 0 then
-        
-            // If we're already interpolating up a step, we need to take that into account
-            // so that we continue that interpolation, plus our new step interpolation
-            
-            local deltaTime      = Shared.GetTime() - self.stepStartTime
-            local prevStepAmount = 0
-            
-            if deltaTime < Player.stepTotalTime then
-                prevStepAmount = self.stepAmount * (1 - deltaTime / Player.stepTotalTime)
-            end        
-            
-            self.stepStartTime = Shared.GetTime()
-            self.stepAmount    = Clamp(yDelta + prevStepAmount, -Player.kMaxStepAmount, Player.kMaxStepAmount)
-            
-        end
-        
-    end
-    */
-    
-    /*
-    local delta = (self:GetOrigin() - start):GetLength()
-    local moved = delta > 0.01
-    //Log("%s: delta %s, moved %s, v %s, coll %s", self, delta, moved, velocity, self:GetIsColliding())
-    if moved then
-    
-        self.lastKnownGoodPosition = start
-
-    elseif velocity:GetLength() > 0.01 then
-
-        // May be stuck. Teleport 0.1m and see if we are no longer colliding
-        local newPos = start + GetNormalizedVector(startVelocity) * 0.1
-        self:SetOrigin(newPos)
-        local msg = "%s: unstuck; inch out"
-
-        if self:GetIsColliding() then
-            msg = "%s: back to start"
-            self:SetOrigin(start)
-
-            if self:GetIsColliding() and self.lastKnownGoodPosition then
-                msg = "%s: last known good"
-                self:SetOrigin(self.lastKnownGoodPosition)
-
-                if self:GetIsColliding() then
-                    msg = "%s: failed unstuck"
-                end
-            end
-        end
-        Log(msg, self)
-    end
-    
-    local wasStuck = self:GetIsColliding()
-    // round off the origin to network precision. Always
-    // round towards the startingOrigin (which should be
-    // in network precision)
-    local o = self:GetOrigin()
-    local networkOrigin = Vector(
-        RoundToNetwork(start.x, o.x),
-        RoundToNetwork(start.y, o.y),
-        RoundToNetwork(start.z, o.z))
-    //if (o - networkOrigin):GetLength() > 0.001 then
-    //    Log("%s: start %s, new %s, rounded %s, d1 %s, d2 %s, d3 %s", self, startingOrigin, o, networkOrigin, o - startingOrigin, networkOrigin - o, networkOrigin - startingOrigin)
-    //end
-    self:SetOrigin(networkOrigin)
-    local isStuck = self:GetIsColliding()
-    if isStuck and not wasStuck then
-        Log("%s: Stuck, start %s, new %s, rounded %s, d1 %s, d2 %s, d3 %s", self, start, o, networkOrigin, o - start, networkOrigin - o, networkOrigin - start)    
-    end
-    */
-
-    if not wasOnGround and self:GetIsOnGround() then
-        self.timeOfLastLand = Shared.GetTime()
-    end
-    return velocity
+    return velocity, hitEntities, averageSurfaceNormal
     
 end
 
@@ -2162,7 +1861,7 @@ function Player:GetIsCloseToGround(distanceToGround)
         return false
     end
 
-    if (self:GetVelocityPitch() > 0 and self.timeOfLastJump ~= nil and (Shared.GetTime() - self.timeOfLastJump < .2)) then
+    if (self:GetVelocityPitch() > 0 and self.timeOfLastJump ~= nil and (Shared.GetTime() - self.timeOfLastJump < .1)) then
     
         // If we are moving away from the ground, don't treat
         // us as standing on it.
@@ -2196,9 +1895,7 @@ end
 
 
 function Player:GetPlayFootsteps()
-
-    return not self.crouching and self:GetVelocityLength() > 0.75 and self:GetIsOnGround() and not self:GetMovementModifierState()
-    
+    return self:GetVelocityLength() > 4.5 and self:GetIsOnGround()
 end
 
 function Player:GetMovementModifierState()
@@ -2213,8 +1910,6 @@ function Player:UpdateSharedMisc(input)
     
     self:UpdateMode()
     
-    self:UpdateScoreboardDisplay(input)
-    
 end
 
 function Player:UpdateScoreboardDisplay(input)
@@ -2226,8 +1921,10 @@ function Player:UpdateShowMap(input)
     PROFILE("Player:UpdateShowMap")
     
     if Client then
+    
         self.minimapVisible = bit.band(input.commands, Move.ShowMap) ~= 0
-        self:ShowMap(self.minimapVisible, true)
+        self:ShowMap(self.minimapVisible, self.minimapVisible == true)
+        
     end
     
 end
@@ -2300,8 +1997,11 @@ function Player:GetMaxSpeed(possible)
         return Player.kRunMaxSpeed
     end
     
-    //Walking
-    local maxSpeed = ConditionalValue(self:GetMovementModifierState() and self:GetIsOnSurface(), Player.kWalkMaxSpeed,  Player.kRunMaxSpeed)
+    local maxSpeed = Player.kRunMaxSpeed
+    
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = Player.kWalkMaxSpeed
+    end
     
     // Take into account crouching
     if self:GetCrouching() and self.onGround then
@@ -2313,11 +2013,7 @@ function Player:GetMaxSpeed(possible)
 end
 
 function Player:GetAcceleration()
-    if self:GetIsOnGround() then
-        return Player.kAcceleration * self:GetSlowSpeedModifier()
-    else
-        return Player.kAirAcceleration * self:GetSlowSpeedModifier()
-    end
+    return Player.kAcceleration
 end
 
 // Maximum speed a player can move backwards
@@ -2326,7 +2022,7 @@ function Player:GetMaxBackwardSpeedScalar()
 end
 
 function Player:GetAirMoveScalar()
-    return 1
+    return 0.7
 end
 
 /**
@@ -2578,7 +2274,11 @@ function Player:GetSecondaryAttackLastFrame()
     return self.secondaryAttackLastFrame
 end
 
-function Player:OverrideStrafeJump()
+function Player:OverrideAirControl()
+    return false
+end
+
+function Player:OverrideJumpQueue()
     return false
 end
 
@@ -2596,7 +2296,7 @@ function Player:ModifyVelocity(input, velocity)
 	end
     
     local onground = false
-    // Must press jump multiple times to get multiple jumps 
+    //not Shared.GetIsRunningPrediction()
     if bit.band(input.commands, Move.Jump) ~= 0 and not self.jumpHandled then
         
         local jumped = self:HandleJump(input, velocity)
@@ -2605,9 +2305,9 @@ function Player:ModifyVelocity(input, velocity)
         end
         
         if kJumpMode == 2 then
-            self.jumpHandled = self:OverrideStrafeJump()
+            self.jumpHandled = self:OverrideJumpQueue()
         elseif kJumpMode == 1 then
-            if jumped and not self:OverrideStrafeJump() then
+            if jumped and not self:OverrideJumpQueue() then
                 self.jumpHandled = true
             else
                 self.jumpHandled = false
@@ -2621,13 +2321,12 @@ function Player:ModifyVelocity(input, velocity)
         self:HandleOnGround(input, velocity)
     end
     
-    if not self:OverrideStrafeJump() and not onground and (not self.GetIsBlinking or not self:GetIsBlinking()) then
+    if not self:OverrideAirControl() and not onground then
         if input.move:GetLength() ~= 0 then
             local moveLengthXZ = velocity:GetLengthXZ()
             local viewCoords = self:GetViewCoords()
             local previousY = velocity.y
             local adjustedZ = false
-            local accelerationangle = 0.86
             
             if input.move.z ~= 0 then
                 local redirectedVelocityZ = GetNormalizedVectorXZ(viewCoords.zAxis) * input.move.z
@@ -2636,13 +2335,10 @@ function Player:ModifyVelocity(input, velocity)
                 if input.move.z < 0 then
                     redirectedVelocityZ = GetNormalizedVectorXZ(velocity)
                     redirectedVelocityZ:Normalize()
-                    local xzVelocity = Vector(velocity)
-                    xzVelocity.y = 0
-                    VectorCopy(velocity - (xzVelocity * input.time * Player.kAirBrakeWeight), velocity)
-                else                    
-                    accelerationangle = math.max(0, GetNormalizedVectorXZ(velocity):DotProduct(redirectedVelocityZ))
-                    accelerationangle = math.pow(accelerationangle, 2)
-                    redirectedVelocityZ = redirectedVelocityZ * input.time * Skulk.kAirZMoveWeight * accelerationangle * Player.kStrafeJumpAccel + GetNormalizedVectorXZ(velocity)
+                    local xzVelocity = velocity
+                    VectorCopy(velocity - (xzVelocity * input.time), velocity)
+                else         
+                    redirectedVelocityZ = redirectedVelocityZ * input.time * Player.kAirZMoveWeight + GetNormalizedVectorXZ(velocity)
                     redirectedVelocityZ:Normalize()                
                     redirectedVelocityZ:Scale(moveLengthXZ)
                     redirectedVelocityZ.y = previousY
@@ -2653,28 +2349,28 @@ function Player:ModifyVelocity(input, velocity)
             if input.move.x ~= 0  then                
                 local redirectedVelocityX = GetNormalizedVectorXZ(viewCoords.xAxis) * input.move.x
                 if adjustedZ then
-                    redirectedVelocityX = redirectedVelocityX * input.time * Skulk.kAirStrafeWeight * accelerationangle * Player.kStrafeJumpAccel + GetNormalizedVectorXZ(velocity)
+                    redirectedVelocityX = redirectedVelocityX * input.time * Player.kAirStrafeWeight + GetNormalizedVectorXZ(velocity)
                 else
-                    redirectedVelocityX = redirectedVelocityX * input.time * Skulk.kAirStrafeWeight * 0.5 + GetNormalizedVectorXZ(velocity)
+                    redirectedVelocityX = redirectedVelocityX * input.time * Player.kAirStrafeWeight * 0.5 + GetNormalizedVectorXZ(velocity)
                 end
                 redirectedVelocityX:Normalize()            
                 redirectedVelocityX:Scale(moveLengthXZ)
                 redirectedVelocityX.y = previousY       
                 VectorCopy(redirectedVelocityX,  velocity)
             end
-            self.lastspeedgain = accelerationangle
         end
     end
     
 end
 
-
 function Player:GetSpeedDebugSpecial()
-    return self.lastspeedgain
+    return 0
 end
 
 function Player:HandleOnGround(input, velocity)
-    velocity.y = 0
+    if velocity.y < 0 then
+        velocity.y = 0
+    end
 end
 
 function Player:GetIsAbleToUse()
@@ -2754,11 +2450,6 @@ function Player:HandleButtons(input)
         self:Reload()
     end
     
-    if bit.band(input.commands, Move.Taunt) ~= 0 then
-        self:Taunt()
-        self.timeOfLastTaunt = Shared.GetTime()
-    end
-    
     // Weapon switch
     if not self:GetIsCommander() and not self:GetIsUsing() then
     
@@ -2834,20 +2525,6 @@ function Player:GetIsOverhead()
     return false
 end
 
-// Children should override with specific menu actions
-function Player:ExecuteSaying(index, menu)
-    self.executeSaying = index
-end
-
-function Player:GetAndClearSaying()
-    if(self.executeSaying ~= nil) then
-        local saying = self.executeSaying
-        self.executeSaying = nil
-        return saying
-    end
-    return nil
-end
-
 /**
  * Returns the view model entity.
  */
@@ -2893,24 +2570,6 @@ function Player:SetViewModel(viewModelName, weapon)
     
 end
 
-// temporary using taunt for requesting heal. such kind of user input will be handled in another way later
-function Player:Taunt()
-
-    if Server then
-        self:RequestHeal()
-    end
-
-    /*
-    if self.timeOfLastTaunt == nil or Shared.GetTime() > (self.timeOfLastTaunt + 8) then
-    
-        self:TriggerEffects("taunt")
-        self.timeOfLastTaunt = Shared.GetTime()
-        
-    end
-    */
-    
-end
-
 function Player:GetCanBeUsed(player, useSuccessTable)
     useSuccessTable.useSuccess = false
 end
@@ -2922,22 +2581,6 @@ end
 // Set to true when score, name, kills, team, etc. changes so it's propagated to players
 function Player:SetScoreboardChanged(state)
     self.scoreboardChanged = state
-end
-
-function Player:GetHasSayings()
-    return false
-end
-
-function Player:GetSayings()
-    return {}
-end
-
-// Index starts with 1
-function Player:ChooseSaying(sayingIndex)
-end
-
-function Player:GetShowSayings()
-    return self.showSayings
 end
 
 function Player:SpaceClearForEntity(position, printResults)
@@ -3094,7 +2737,6 @@ kStepTagNames["step"] = true
 kStepTagNames["step_run"] = true
 kStepTagNames["step_sprint"] = true
 kStepTagNames["step_crouch"] = true
-
 function Player:OnTag(tagName)
 
     PROFILE("Player:OnTag")
@@ -3105,7 +2747,7 @@ function Player:OnTag(tagName)
     end
     
     // Play footstep when foot hits the ground. Client side only.
-    if Client and self:GetPlayFootsteps() and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] and not self:GetMovementModifierState() then
+    if Client and self:GetPlayFootsteps() and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] then
         self:TriggerFootstep()
     end
     
@@ -3197,48 +2839,6 @@ function Player:OnInitialSpawn(techPointOrigin)
     self:SetViewAngles(angles)
     
 end
-
-
-// welding, constructing or attacking command structures will show the progress bar
-function Player:OnRepair(target, success)
-
-    if Client and self:GetIsLocalPlayer() then
-    
-        if self.timeLastConstructed ~= Shared.GetTime() and target and target ~= self and not target:isa("CommandStructure") and (not HasMixin(target, "Construct") or target:GetIsBuilt()) then
-        
-            if target:isa("Marine") then
-                self.progressFraction = target:GetArmorScalar()
-            else
-                self.progressFraction = target:GetHealthScalar()
-            end
-        
-            if target:isa("Player") then
-                self.progressText = target:GetName()
-            else        
-                self.progressText = GetDisplayName(target)
-            end    
-            
-            if success then
-                self.timeLastRepaired = Shared.GetTime()
-            end
-        
-        end
-    
-    end
-
-end
-
-function Player:OnConstructTarget(target)
-
-    if Client and self:GetIsLocalPlayer() and HasMixin(target, "Construct") then
-
-        self.progressText = GetDisplayName(target)
-        self.progressFraction = target:GetBuiltFraction()
-        self.timeLastConstructed = Shared.GetTime()
-    
-    end
-
-end  
 
 // This causes problems when doing a trace ray against CollisionRep.Move.
 function Player:OnCreateCollisionModel()
