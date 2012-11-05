@@ -11,8 +11,6 @@ class 'HandGrenade' (Projectile)
 HandGrenade.kMapName = "handgrenade"
 HandGrenade.kModelName = PrecacheAsset("models/marine/rifle/rifle_grenade.model")
 
-local kMinLifeTime = .7
-
 // prevents collision with friendly players in range to spawnpoint
 HandGrenade.kDisableCollisionRange = 10
 
@@ -117,7 +115,7 @@ if Server then
     
     function HandGrenade:GetCanDetonate()
         if self.creationTime then
-            return self.creationTime + kMinLifeTime < Shared.GetTime()
+            return true
         end
         return false
     end

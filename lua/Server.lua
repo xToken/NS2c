@@ -22,17 +22,10 @@ Script.Load("lua/Bot.lua")
 Script.Load("lua/VoteManager.lua")
 
 Script.Load("lua/ServerConfig.lua")
-Script.Load("lua/DAKLoader.lua")
-
-if kDAKConfig and kDAKConfig.BaseAdminCommands and kDAKConfig.BaseAdminCommands.kEnabled then
-else
-	Print("Falling back")
-	Script.Load("lua/ServerAdmin.lua")
-	Script.Load("lua/ServerAdminCommands.lua")
-	Script.Load("lua/MapCycle.lua")
-end
-
+Script.Load("lua/ServerAdmin.lua")
+Script.Load("lua/ServerAdminCommands.lua")
 Script.Load("lua/ServerWebInterface.lua")
+Script.Load("lua/MapCycle.lua")
 Script.Load("lua/ConsistencyConfig.lua")
 
 Script.Load("lua/ConsoleCommands_Server.lua")
@@ -40,12 +33,7 @@ Script.Load("lua/NetworkMessages_Server.lua")
 
 Script.Load("lua/dkjson.lua")
 
-Script.Load("lua/DbgTracer_Server.lua")
-
 Script.Load("lua/NetworkDebug.lua")
- 
-Server.dbgTracer = DbgTracer()
-Server.dbgTracer:Init()
 
 Server.readyRoomSpawnList = table.array(32)
 
@@ -70,9 +58,7 @@ function Server.AddChatToHistory(message, playerName, steamId, teamNumber, teamO
     chatMessageCount = chatMessageCount + 1
     Server.recentChatMessages:Insert({ id = chatMessageCount, message = message, player = playerName,
                                        steamId = steamId, team = teamNumber, teamOnly = teamOnly })
-	if kDAKConfig and kDAKConfig.DAKLoader and kDAKConfig.DAKLoader.GamerulesExtensions then
-		DAKChatLogging(message, playerName, steamId, teamNumber, teamOnly)
-	end
+    
 end
 
 /**
@@ -93,10 +79,12 @@ local function GetMapEntityLoadPriority(mapName)
 end
 
 // filter the entities which are explore mode only
+// MUST BE GLOBAL - overridden by mods
 function GetLoadEntity(mapName, groupName, values)
     return values.onlyexplore ~= true
 end
 
+// MUST BE GLOBAL - overridden by mods
 function GetCreateEntityOnStart(mapName, groupName, values)
 
     return mapName ~= "prop_static"
@@ -113,18 +101,20 @@ function GetCreateEntityOnStart(mapName, groupName, values)
        and mapName ~= Hive.kMapName
        and mapName ~= CommandStation.kMapName
        //and mapName ~= Cyst.kMapName
-       and mapName ~= Particles.kMapName
        and mapName ~= InfantryPortal.kMapName
 
 end
 
+// MUST BE GLOBAL - overridden by mods
 function GetLoadSpecial(mapName, groupName, values)
 
     local success = false
-
+    
     if mapName == Hive.kMapName or mapName == CommandStation.kMapName then
+    
        table.insert(Server.mapLoadLiveEntityValues, { mapName, groupName, values })
        success = true
+       
     elseif mapName == ReadyRoomSpawn.kMapName then
     
         local entity = ReadyRoomSpawn()
@@ -138,10 +128,6 @@ function GetLoadSpecial(mapName, groupName, values)
         // Make sure sound index is precached but only create ambient sound object on client
         //Shared.PrecacheSound(values.eventName)
         //success = true
-        
-    elseif mapName == Particles.kMapName then
-        Shared.PrecacheCinematic(values.cinematicName)
-        success = true
     elseif mapName == InfantryPortal.kMapName then
         //table.insert(Server.infantryPortalSpawnPoints, values.origin)
         success = false
@@ -151,9 +137,35 @@ function GetLoadSpecial(mapName, groupName, values)
     elseif mapName == "pathing_settings" then
         ParsePathingSettings(values)
         success = true
+        
+    elseif mapName == "cinematic" then
+    
+        success = values.startsOnMessage ~= nil and values.startsOnMessage ~= ""
+        if success then
+        
+            PrecacheAsset(values.cinematicName)
+            local entity = Server.CreateEntity(ServerParticleEmitter.kMapName, values)
+            if entity then
+                entity:SetMapEntity()
+            end
+            
+        end
+        
     end
+    
+    return success
+    
+end
 
-    return success    
+local function DumpServerEntity(mapName, groupName, values)
+
+    Print("------------ %s ------------", ToString(mapName))
+    
+    for key, value in pairs(values) do    
+        Print("[%s] %s", ToString(key), ToString(value))
+    end
+    
+    Print("---------------------------------------------")
 
 end
 
@@ -165,7 +177,7 @@ local function LoadServerMapEntity(mapName, groupName, values)
     
     if mapName == InfantryPortal.kMapName then
         return
-    end
+	end
     
     // Skip the classes that are not true entities and are handled separately
     // on the client.
@@ -205,8 +217,10 @@ local function LoadServerMapEntity(mapName, groupName, values)
             
         end
         
-    end  
+        //DumpServerEntity(mapName, groupName, values)
         
+    end
+    
     if not GetLoadSpecial(mapName, groupName, values) then
     
         // Allow the MapEntityLoader to load it if all else fails.

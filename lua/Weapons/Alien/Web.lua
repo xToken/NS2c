@@ -98,6 +98,10 @@ local function CheckAllEntsInTrigger(self)
     
 end
 
+function Web:GetCanBeUsed(player, useSuccessTable)
+    useSuccessTable.useSuccess = false
+end
+
 function Web:OnInitialized()
     
     ScriptActor.OnInitialized(self)
@@ -116,7 +120,7 @@ function Web:OnInitialized()
         self:SetArmor(self:GetMaxArmor())
         
         InitMixin(self, TriggerMixin)
-        self:SetBox(Vector(2,2,2))
+        self:SetBox(Vector(3,3,3))
         
     end
     

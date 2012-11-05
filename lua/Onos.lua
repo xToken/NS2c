@@ -43,18 +43,16 @@ Onos.kJumpHeight = 1.2
 
 // triggered when the momentum value has changed by this amount (negative because we trigger the effect when the onos stops, not accelerates)
 Onos.kMomentumEffectTriggerDiff = 3
-Onos.kGroundFrictionForce = 8
-Onos.kBaseAcceleration = 58
-Onos.kAirAcceleration = 28
-Onos.kMaxSpeed = 16
+Onos.kMaxSpeed = 8
+Onos.kMaxChargeSpeed = 15
 Onos.kMaxCrouchSpeed = 3
 
 Onos.kHealth = kOnosHealth
 Onos.kArmor = kOnosArmor
-Onos.kChargeEnergyCost = 60
-Onos.kChargeAcceleration = 120
-Onos.kChargeUpDuration = .35
-Onos.kChargeDelay = .1
+Onos.kChargeEnergyCost = 50
+Onos.kChargeAcceleration = 40
+Onos.kChargeUpDuration = 0.4
+Onos.kChargeDelay = 0.1
 Onos.kMinChargeDamage = kChargeMinDamage
 Onos.kMaxChargeDamage = kChargeMaxDamage
 Onos.kChargeKnockbackForce = 4
@@ -67,7 +65,7 @@ local kAutoCrouchCheckInterval = 0.4
 
 if Server then
     Script.Load("lua/Onos_Server.lua")
-else
+elseif Client then
     Script.Load("lua/Onos_Client.lua")
 end
 
@@ -101,13 +99,11 @@ function Onos:OnCreate()
     self.timeLastCharge = 0
     self.timeLastChargeEnd = 0
     self.chargeSpeed = 0
-    self.devouring = nil
+    self.devouring = 0
     self.timeSinceLastDevourUpdate = 0
     
     if Client then    
         self:SetUpdates(true)
-    else
-    
     end
     
 end
@@ -146,15 +142,12 @@ end
 
 function Onos:GetAcceleration()
 
-    local acceleration = Onos.kBaseAcceleration
-    if not self:GetIsOnGround() then
-        acceleration = Onos.kAirAcceleration
-    end
+    local acceleration = Player.GetAcceleration()
     if self.charging then
-        acceleration = Onos.kBaseAcceleration + (Onos.kChargeAcceleration - Onos.kBaseAcceleration) * self:GetChargeFraction() 
+        acceleration = acceleration + Onos.kChargeAcceleration * self:GetChargeFraction() 
     end
     
-    return acceleration * self:GetMovementSpeedModifier()
+    return acceleration
     
 end
 
@@ -242,7 +235,7 @@ end
 
 function Onos:TriggerCharge(move)
     
-    if not self.charging and self.timeLastChargeEnd + Onos.kChargeDelay < Shared.GetTime() and self:GetIsOnGround() and not self:GetCrouching() and self.oneHive then
+    if not self.charging and self.timeLastChargeEnd + Onos.kChargeDelay < Shared.GetTime() and self:GetIsOnGround() and not self:GetCrouching() and self:GetHasOneHive() then
 
         self.charging = true
         self.timeLastCharge = Shared.GetTime()
@@ -263,20 +256,16 @@ end
 function Onos:HandleButtons(input)
 
     Alien.HandleButtons(self, input)
+
+    if self.movementModiferState then
     
-    if not Shared.GetIsRunningPrediction() then
+        self:TriggerCharge(input.move)
+        
+    else
     
-        if self.movementModiferState then
-        
-            self:TriggerCharge(input.move)
-            
-        else
-        
-            if self.charging then
-                self:EndCharge()
-            end
-        
-        end  
+        if self.charging then
+            self:EndCharge()
+        end
     
     end
 
@@ -289,7 +278,7 @@ end
 
 function Onos:CheckEndDevour()
 
-    if self.devouring ~= nil then
+    if self.devouring ~= 0 then
         local food = Shared.GetEntity(self.devouring)
         if food then
             if food.OnDevouredEnd then
@@ -300,7 +289,7 @@ function Onos:CheckEndDevour()
             end
         end
     end
-    self.devouring = nil
+    self.devouring = 0
     
 end
 
@@ -324,22 +313,20 @@ function Onos:GetMaxViewOffsetHeight()
     return Onos.kViewOffsetHeight
 end
 
-function Onos:GetGroundFrictionForce()
-    return Onos.kGroundFrictionForce
-end
-
 function Onos:GetMaxSpeed(possible)
 
     if possible then
-        return 10
+        return Onos.kMaxSpeed
     end
     
     local maxSpeed = Onos.kMaxSpeed
     
-    // Take into account crouching
-    
     if self:GetCrouching() and self.onGround then
         maxSpeed = Onos.kMaxCrouchSpeed
+    end
+    
+    if self.charging then
+        maxSpeed = Onos.kMaxChargeSpeed
     end
 
     return maxSpeed * self:GetMovementSpeedModifier()
@@ -416,7 +403,7 @@ end
 
 function Onos:DevourUpdate()
 
-    if self.devouring ~= nil then
+    if self.devouring ~= 0 then
         local food = Shared.GetEntity(self.devouring)
         local devour = self:GetWeapon("devour")
         if food and devour then
@@ -424,14 +411,15 @@ function Onos:DevourUpdate()
             if self.timeSinceLastDevourUpdate + Devour.kDigestionSpeed < Shared.GetTime() then   
                 //Player still being eaten, damage them
                 self.timeSinceLastDevourUpdate = Shared.GetTime()
-                if devour:DoDamage(kDevourDamage , food, nil, nil, "none" ) then
+                if devour:DoDamage(kDevourDamage , food, self:GetOrigin(), 0, "none" ) then
                     if food.OnDevouredEnd then 
                         food:OnDevouredEnd()
                     end
                     self.devouring = nil
                 end
             end
-            self:SetModel(nil)
+            
+            food:DestroyController()
             //Always update players POS relative to the onos
             food:SetOrigin(self:GetOrigin())
         else
@@ -465,16 +453,6 @@ function Onos:OnUpdatePoseParameters(viewModel)
     
     self:SetPoseParam("stoop", self.stoopIntensity)
     
-end
-
-function Onos:OnUpdateAnimationInput(modelMixin)
-
-    PROFILE("Onos:OnUpdateAnimationInput")
-
-    Alien.OnUpdateAnimationInput(self, modelMixin)
-    
-    modelMixin:SetAnimationInput("weapon", activeWeapon)
-
 end
 
 local kOnosHeadMoveAmount = 0.0

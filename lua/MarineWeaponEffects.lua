@@ -306,7 +306,6 @@ kMarineWeaponEffects =
         welderHitEffects =
         {
             {cinematic = "cinematics/marine/welder/welder_hit.cinematic"},
-            {sound = "sound/NS2.fev/marine/structures/mac/build"},
         },
     },
     

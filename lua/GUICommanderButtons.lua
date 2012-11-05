@@ -13,10 +13,15 @@ Script.Load("lua/GUICommanderTooltip.lua")
 
 class 'GUICommanderButtons' (GUIScript)
 
+GUICommanderButtons.kButtonWidth = (CommanderUI_MenuButtonWidth() + 18) * kCommanderGUIsGlobalScale
+GUICommanderButtons.kButtonHeight = (CommanderUI_MenuButtonHeight() + 18) * kCommanderGUIsGlobalScale
+GUICommanderButtons.kButtonXOffset = 40 * kCommanderGUIsGlobalScale
+GUICommanderButtons.kButtonYOffset = 58 * kCommanderGUIsGlobalScale
+
 GUICommanderButtons.kButtonStatusDisabled = { Id = 0, Color = Color(0, 0, 0, 0), Visible = false }
 GUICommanderButtons.kButtonStatusEnabled = { Id = 1, Color = Color(1, 1, 1, 1), Visible = true }
 GUICommanderButtons.kButtonStatusRed = { Id = 2, Color = Color(1, 0, 0, 1), Visible = true }
-GUICommanderButtons.kButtonStatusOff = { Id = 3, Color = Color(0.6, 0.45, 0.45, 1), Visible = true }
+GUICommanderButtons.kButtonStatusOff = { Id = 3, Color = Color(0.45, 0.45, 0.45, 1), Visible = true }
 GUICommanderButtons.kButtonStatusPassive = { Id = 4, Color = Color(1, 1, 1, 1), Visible = true }
 GUICommanderButtons.kButtonStatusData = { }
 GUICommanderButtons.kButtonStatusData[GUICommanderButtons.kButtonStatusDisabled.Id] = GUICommanderButtons.kButtonStatusDisabled
@@ -24,6 +29,65 @@ GUICommanderButtons.kButtonStatusData[GUICommanderButtons.kButtonStatusEnabled.I
 GUICommanderButtons.kButtonStatusData[GUICommanderButtons.kButtonStatusRed.Id] = GUICommanderButtons.kButtonStatusRed
 GUICommanderButtons.kButtonStatusData[GUICommanderButtons.kButtonStatusOff.Id] = GUICommanderButtons.kButtonStatusOff
 GUICommanderButtons.kButtonStatusData[GUICommanderButtons.kButtonStatusPassive.Id] = GUICommanderButtons.kButtonStatusPassive
+
+local kButtonBackgroundTextures =
+{
+    [kMarineTeamType] = "ui/marine_buildmenu_buttonbg.dds",
+    [kAlienTeamType] = "ui/alien_buildmenu_buttonbg.dds"
+}
+
+local kHighlightTexture =
+{
+    [kMarineTeamType] = "ui/marine_buildmenu_highlight.dds",
+    [kAlienTeamType] = "ui/alien_buildmenu_highlight.dds"
+}
+
+local kHealthCircleSettings =
+{
+    [kMarineTeamType] = {
+        BackgroundWidth = GUICommanderButtons.kButtonWidth,
+        BackgroundHeight = GUICommanderButtons.kButtonHeight,
+        BackgroundAnchorX = GUIItem.Left,
+        BackgroundAnchorY = GUIItem.Bottom,
+        BackgroundOffset = Vector(0, 0, 0),
+        BackgroundTextureName = "ui/marine_command_cooldown.dds",
+        BackgroundTextureX1 = 0,
+        BackgroundTextureY1 = 0,
+        BackgroundTextureX2 = 128,
+        BackgroundTextureY2 = 128,
+        ForegroundTextureName = "ui/marine_command_cooldown.dds",
+        ForegroundTextureWidth = 128,
+        ForegroundTextureHeight = 128,
+        ForegroundTextureX1 = 128,
+        ForegroundTextureY1 = 0,
+        ForegroundTextureX2 = 256,
+        ForegroundTextureY2 = 128,
+        InheritParentAlpha = false,
+    },
+
+    [kAlienTeamType] = {
+        BackgroundWidth = GUICommanderButtons.kButtonWidth,
+        BackgroundHeight = GUICommanderButtons.kButtonHeight,
+        BackgroundAnchorX = GUIItem.Left,
+        BackgroundAnchorY = GUIItem.Bottom,
+        BackgroundOffset = Vector(0, 0, 0),
+        BackgroundTextureName = "ui/alien_command_cooldown.dds",
+        BackgroundTextureX1 = 0,
+        BackgroundTextureY1 = 0,
+        BackgroundTextureX2 = 128,
+        BackgroundTextureY2 = 128,
+        ForegroundTextureName = "ui/alien_command_cooldown.dds",
+        ForegroundTextureWidth = 128,
+        ForegroundTextureHeight = 128,
+        ForegroundTextureX1 = 128,
+        ForegroundTextureY1 = 0,
+        ForegroundTextureX2 = 256,
+        ForegroundTextureY2 = 128,
+        InheritParentAlpha = false,
+    }  
+}
+
+
 
 GUICommanderButtons.kBackgroundTexturePartWidth = 60
 GUICommanderButtons.kBackgroundTexturePartHeight = 46
@@ -41,11 +105,6 @@ GUICommanderButtons.kBackgroundOffset = 4
 
 // Used just for testing.
 GUICommanderButtons.kExtraYOffset = 0
-
-GUICommanderButtons.kButtonWidth = (CommanderUI_MenuButtonWidth() + 18) * kCommanderGUIsGlobalScale
-GUICommanderButtons.kButtonHeight = (CommanderUI_MenuButtonHeight() + 18) * kCommanderGUIsGlobalScale
-GUICommanderButtons.kButtonXOffset = 40 * kCommanderGUIsGlobalScale
-GUICommanderButtons.kButtonYOffset = 58 * kCommanderGUIsGlobalScale
 
 GUICommanderButtons.kMarineTabTextureCoords = { }
 GUICommanderButtons.kMarineTabTextureCoords.TopNormal = { X1 = 7, Y1 = 340, X2 = 106, Y2 = 381 }
@@ -77,27 +136,32 @@ GUICommanderButtons.kSelectAllPlayersX = 10
 GUICommanderButtons.kSelectAllPlayersY = 90
 GUICommanderButtons.kSelectAllPlayersSize = 48
 
+GUICommanderButtons.kCooldownColor = Color(1, 1, 1, 0.3)
+
 local kBackgroundNoiseTexture = "ui/alien_commander_bg_smoke.dds"
 local kSmokeyBackgroundSize = GUIScale(Vector(480, 640, 0))
 
 function GUICommanderButtons:Initialize()
 
+    self.teamType = PlayerUI_GetTeamType()
     self.backgroundTextureName = self:GetBackgroundTextureName()
     
     // The Marine buttons have tabs at the top for the first row of buttons.
     self.tabs = { }
     // The rest of the non-tab buttons are stored here.
     self.bottomButtons = { }
+    self.buttonbackground = { }
     // All buttons are always stored here for Marine and Aliens.
     self.buttons = { }
+    self.cooldowns = { }
 
     self.background = GUIManager:CreateGraphicItem()
-    
+
     self:InitializeMarineBackground()
+    
+    self.timeLastErrorMessage = 0
 
     self:InitializeButtons()
-    
-    self:InitializeIdleWorkersIcon()
     
     self:InitializePlayerAlertIcon()
     
@@ -117,7 +181,6 @@ function GUICommanderButtons:InitializeAlienBackground()
     local posX = -GUICommanderButtons.kBackgroundWidth - GUICommanderButtons.kBackgroundOffset
     local posY = -GUICommanderButtons.kBackgroundHeight - GUICommanderButtons.kBackgroundOffset - GUICommanderButtons.kExtraYOffset
     self.background:SetPosition(Vector(posX, posY, 0))
-    //self.background:SetTexture(self.backgroundTextureName)
     self.background:SetColor(Color(0,0,0,0))
     self.background:SetTexturePixelCoordinates( unpack(GUICommanderButtons.kFrameTextureCoords) )
 
@@ -165,11 +228,10 @@ function GUICommanderButtons:InitializeHighlighter()
     self.highlightItem = GUIManager:CreateGraphicItem()
     self.highlightItem:SetAnchor(GUIItem.Left, GUIItem.Top)
     self.highlightItem:SetSize(Vector(GUICommanderButtons.kButtonWidth, GUICommanderButtons.kButtonHeight, 0))
-    self.highlightItem:SetTexture("ui/" .. CommanderUI_MenuImage() .. ".dds")
+    self.highlightItem:SetTexture(kHighlightTexture[self.teamType])
     local textureWidth, textureHeight = CommanderUI_MenuImageSize()
     local buttonWidth = CommanderUI_MenuButtonWidth()
     local buttonHeight = CommanderUI_MenuButtonHeight()
-    self.highlightItem:SetTexturePixelCoordinates(textureWidth - buttonWidth, textureHeight - buttonHeight, textureWidth, textureHeight)
     self.highlightItem:SetIsVisible(false)
 
 end
@@ -202,7 +264,7 @@ local function UpdateTabs(self)
         if self.lastPressedTab ~= tabTable then        
             tabTable.TopItem:SetColor(GUICommanderButtons.kTabDisabledColor)            
         else        
-            tabTable.TopItem:SetColor(GUICommanderButtons.kTabEnabledColor)            
+            tabTable.TopItem:SetColor(kIconColors[self.teamType])            
         end
         
         local buttonWidth = CommanderUI_MenuButtonWidth()
@@ -242,13 +304,13 @@ function GUICommanderButtons:SharedInitializeButtons(settingsTable)
         if t == 4 then
             topItem:SetSize(Vector(GUICommanderButtons.kButtonWidth * 0.7, GUICommanderButtons.kButtonHeight * 0.7, 0))
             topItem:SetPosition(Vector(xPos + GUICommanderButtons.kButtonWidth * 0.15, yPos + GUICommanderButtons.kButtonHeight * 0.15, 0))
-            topItem:SetTexture("ui/" .. CommanderUI_MenuImage() .. "_profile.dds")
+            topItem:SetTexture("ui/buildmenu.dds")
         else
             topItem:SetSize(Vector(GUICommanderButtons.kButtonWidth, GUICommanderButtons.kButtonHeight, 0))
             topItem:SetPosition(Vector(xPos, yPos, 0))
-            topItem:SetTexture("ui/" .. CommanderUI_MenuImage() .. ".dds")
+            topItem:SetTexture("ui/buildmenu.dds")
         end
-        topItem:SetColor(Color(1, 1, 1, GUICommanderButtons.kTabAlpha))
+        topItem:SetColor(kIconColors[self.teamType])
         self.background:AddChild(topItem)
         
         // Tab text.
@@ -273,6 +335,16 @@ function GUICommanderButtons:SharedInitializeButtons(settingsTable)
     // Button rows.
     for i = 1, settingsTable.NumberOfButtons do
     
+        local backgroundItem = GUIManager:CreateGraphicItem()
+        backgroundItem:SetAnchor(GUIItem.Left, GUIItem.Top)
+        backgroundItem:SetSize(Vector(GUICommanderButtons.kButtonWidth, GUICommanderButtons.kButtonHeight, 0))
+        local xPos = ((i - 1) % settingsTable.NumberOfColumns) * GUICommanderButtons.kButtonWidth
+        local yPos = math.floor(((i - 1) / settingsTable.NumberOfColumns)) * GUICommanderButtons.kButtonHeight
+        yPos = yPos + settingsTable.ButtonYOffset + settingsTable.TabTopHeight + settingsTable.TabBottomHeight
+        backgroundItem:SetPosition(Vector(xPos + GUICommanderButtons.kButtonXOffset, yPos + GUICommanderButtons.kButtonYOffset, 0))
+        backgroundItem:SetTexture(kButtonBackgroundTextures[self.teamType])
+        self.background:AddChild(backgroundItem)
+    
         local buttonItem = GUIManager:CreateGraphicItem()
         buttonItem:SetAnchor(GUIItem.Left, GUIItem.Top)
         buttonItem:SetSize(Vector(GUICommanderButtons.kButtonWidth, GUICommanderButtons.kButtonHeight, 0))
@@ -280,39 +352,17 @@ function GUICommanderButtons:SharedInitializeButtons(settingsTable)
         local yPos = math.floor(((i - 1) / settingsTable.NumberOfColumns)) * GUICommanderButtons.kButtonHeight
         yPos = yPos + settingsTable.ButtonYOffset + settingsTable.TabTopHeight + settingsTable.TabBottomHeight
         buttonItem:SetPosition(Vector(xPos + GUICommanderButtons.kButtonXOffset, yPos + GUICommanderButtons.kButtonYOffset, 0))
-        buttonItem:SetTexture("ui/" .. CommanderUI_MenuImage() .. ".dds")
+        buttonItem:SetTexture("ui/buildmenu.dds")
         self.background:AddChild(buttonItem)
+        
         table.insert(self.buttons, buttonItem)
-        table.insert(self.bottomButtons, buttonItem)
+        table.insert(self.bottomButtons, buttonItem)        
+        self.buttonbackground[i + self.numberOfTabs] = backgroundItem        
+        
         self:UpdateButtonStatus(i + self.numberOfTabs)
 
     end
     
-end
-function GUICommanderButtons:InitializeIdleWorkersIcon()
-
-    self.idleWorkers = GUIManager:CreateGraphicItem()
-    self.idleWorkers:SetSize(Vector(GUICommanderButtons.kIdleWorkersSize, GUICommanderButtons.kIdleWorkersSize, 0))
-    self.idleWorkers:SetAnchor(GUIItem.Left, GUIItem.Top)
-    self.idleWorkers:SetPosition(Vector(-GUICommanderButtons.kIdleWorkersSize - GUICommanderButtons.kIdleWorkersXOffset, 0, 0))
-    self.idleWorkers:SetTexture("ui/" .. CommanderUI_MenuImage() .. ".dds")
-    local coordinates = CommanderUI_GetIdleWorkerOffset()
-    local x1 = GUICommanderButtons.kBuildMenuTextureWidth * coordinates[1]
-    local x2 = x1 + GUICommanderButtons.kBuildMenuTextureWidth
-    local y1 = GUICommanderButtons.kBuildMenuTextureHeight * coordinates[2]
-    local y2 = y1 + GUICommanderButtons.kBuildMenuTextureHeight
-    self.idleWorkers:SetTexturePixelCoordinates(x1, y1, x2, y2)
-    self.idleWorkers:SetIsVisible(false)
-    self.background:AddChild(self.idleWorkers)
-    
-    self.idleWorkersText = GUIManager:CreateTextItem()
-    self.idleWorkersText:SetFontSize(GUICommanderButtons.kIdleWorkersFontSize)
-    self.idleWorkersText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
-    self.idleWorkersText:SetTextAlignmentX(GUIItem.Align_Center)
-    self.idleWorkersText:SetTextAlignmentY(GUIItem.Align_Min)
-    self.idleWorkersText:SetColor(Color(1, 1, 1, 1))
-    self.idleWorkers:AddChild(self.idleWorkersText)
-
 end
 
 function GUICommanderButtons:InitializePlayerAlertIcon()
@@ -321,7 +371,7 @@ function GUICommanderButtons:InitializePlayerAlertIcon()
     self.playerAlerts:SetSize(Vector(GUICommanderButtons.kIdleWorkersSize, GUICommanderButtons.kIdleWorkersSize, 0))
     self.playerAlerts:SetAnchor(GUIItem.Left, GUIItem.Top)
     self.playerAlerts:SetPosition(Vector(GUICommanderButtons.kPlayerAlertX, 0, 0))
-    self.playerAlerts:SetTexture("ui/" .. CommanderUI_MenuImage() .. ".dds")
+    self.playerAlerts:SetTexture("ui/buildmenu.dds")
     
     local coordinates = CommanderUI_GetPlayerAlertOffset()
     local x1 = GUICommanderButtons.kBuildMenuTextureWidth * coordinates[1]
@@ -349,14 +399,10 @@ function GUICommanderButtons:InitializeSelectAllPlayersIcon()
     self.selectAllPlayers:SetSize(Vector(GUICommanderButtons.kSelectAllPlayersSize, GUICommanderButtons.kSelectAllPlayersSize, 0))
     self.selectAllPlayers:SetAnchor(GUIItem.Left, GUIItem.Top)
     self.selectAllPlayers:SetPosition(Vector(GUICommanderButtons.kSelectAllPlayersX, GUICommanderButtons.kSelectAllPlayersY, 0))
-    self.selectAllPlayers:SetTexture("ui/" .. CommanderUI_MenuImage() .. ".dds")
+    self.selectAllPlayers:SetTexture("ui/buildmenu.dds")
     
-    local coordinates = CommanderUI_GetPlayerAlertOffset()
-    local x1 = GUICommanderButtons.kBuildMenuTextureWidth * coordinates[1]
-    local x2 = x1 + GUICommanderButtons.kBuildMenuTextureWidth
-    local y1 = GUICommanderButtons.kBuildMenuTextureHeight * coordinates[2]
-    local y2 = y1 + GUICommanderButtons.kBuildMenuTextureHeight
-    self.selectAllPlayers:SetTexturePixelCoordinates(x1, y1, x2, y2)
+    local coordinates = GetTextureCoordinatesForIcon(kTechId.Marine)
+    self.selectAllPlayers:SetTexturePixelCoordinates(unpack(coordinates))
     self.selectAllPlayers:SetIsVisible(false)
     
 end
@@ -366,11 +412,6 @@ function GUICommanderButtons:Uninitialize()
     if self.highlightItem then
         GUI.DestroyItem(self.highlightItem)
         self.highlightItem = nil
-    end
-    
-    if self.idleWorkers then
-        GUI.DestroyItem(self.idleWorkers)
-        self.idleWorkers = nil
     end
 
     if self.playerAlerts then
@@ -503,18 +544,6 @@ function GUICommanderButtons:GetTooltipData()
 
 end
 
-function GUICommanderButtons:UpdateIdleWorkersIcon()
-
-    local numIdleWorkers = CommanderUI_GetIdleWorkerCount()
-    if numIdleWorkers > 0 then
-        self.idleWorkers:SetIsVisible(true)
-        self.idleWorkersText:SetText(ToString(numIdleWorkers))
-    else
-        self.idleWorkers:SetIsVisible(false)
-    end
-
-end
-
 function ScalePlayerAlertOperator(item, scalar)
 
     local newScalar = math.cos(scalar * math.sin(scalar * math.pi))
@@ -586,33 +615,46 @@ end
 function GUICommanderButtons:UpdateButtonStatus(buttonIndex)
 
     local buttonStatus = CommanderUI_MenuButtonStatus(buttonIndex)
+    //local buttonCooldownFraction = CommanderUI_MenuButtonCooldownFraction(buttonIndex)
     local buttonItem = self.buttons[buttonIndex]
+    local backgroundItem = self.buttonbackground[buttonIndex]
 
     buttonItem:SetIsVisible(GUICommanderButtons.kButtonStatusData[buttonStatus].Visible)
-    buttonItem:SetColor(GUICommanderButtons.kButtonStatusData[buttonStatus].Color)
+    
+    if buttonStatus == GUICommanderButtons.kButtonStatusEnabled.Id or buttonStatus == GUICommanderButtons.kButtonStatusPassive.Id then
+        buttonItem:SetColor(kIconColors[self.teamType])
+    else    
+        buttonItem:SetColor(GUICommanderButtons.kButtonStatusData[buttonStatus].Color)
+    end
     
     if buttonItem:GetIsVisible() then
     
         local buttonWidth = CommanderUI_MenuButtonWidth()
         local buttonHeight = CommanderUI_MenuButtonHeight()
         local buttonXOffset, buttonYOffset = CommanderUI_MenuButtonOffset(buttonIndex)
-
+        
         if buttonXOffset and buttonYOffset then
+        
             local textureXOffset = buttonXOffset * buttonWidth
             local textureYOffset = buttonYOffset * buttonHeight
             buttonItem:SetTexturePixelCoordinates(textureXOffset, textureYOffset, textureXOffset + buttonWidth, textureYOffset + buttonHeight)
+            
         end
         
     end
     
     if self.targetedButton ~= nil then
+    
         if self.targetedButton == buttonIndex then
-            buttonItem:SetColor(GUICommanderButtons.kButtonStatusEnabled.Color)
+            buttonItem:SetColor(kIconColors[self.teamType])
         else
             buttonItem:SetColor(GUICommanderButtons.kButtonStatusOff.Color)
         end
+        
     end
-
+    
+    backgroundItem:SetIsVisible(buttonItem:GetIsVisible() and buttonStatus ~= GUICommanderButtons.kButtonStatusPassive.Id)
+    
 end
 
 function GUICommanderButtons:UpdateButtonHotkeys()
@@ -629,8 +671,9 @@ function GUICommanderButtons:UpdateButtonHotkeys()
             player:TriggerButtonIndex(triggeredButton)
             
         end
+        
     end
-
+    
 end
 
 function GUICommanderButtons:SetTargetedButton(setButton)
@@ -640,13 +683,11 @@ function GUICommanderButtons:SetTargetedButton(setButton)
     for i, buttonItem in ipairs(buttonList) do
         self:UpdateButtonStatus(i + indexOffset)
     end
-
+    
 end
 
 function GUICommanderButtons:GetTargetedButton()
-
     return self.targetedButton
-
 end
 
 function GUICommanderButtons:SendKeyEvent(key, down)
@@ -671,6 +712,35 @@ function GUICommanderButtons:SendKeyEvent(key, down)
     
 end
 
+local function SendButtonTargetedAction(index, x, y)
+
+    local techId = GetTechIdFromButtonIndex(index)
+    local player = Client.GetLocalPlayer()
+    local normalizedPickRay = CreatePickRay(player, x, y)
+    
+    // Don't execute targeted action if we're still on top of the UI
+    if not CommanderUI_GetMouseIsOverUI() then
+        player:SendTargetedAction(techId, normalizedPickRay)
+        return true
+        
+    end
+    
+    return false
+    
+end
+
+local function ButtonPressed(self, index, mouseX, mouseY)
+
+    if CommanderUI_MenuButtonRequiresTarget(index) then
+        self:SetTargetedButton(index)
+    end
+    
+    CommanderUI_MenuButtonAction(index)
+    
+    self:SelectTab(index)
+    
+end
+
 function GUICommanderButtons:MousePressed(key, mouseX, mouseY)
 
     if CommanderUI_GetUIClickable() then
@@ -684,32 +754,32 @@ function GUICommanderButtons:MousePressed(key, mouseX, mouseY)
             
         elseif key == InputKey.MouseButton0 then
         
-            if self.idleWorkers:GetIsVisible() and GUIItemContainsPoint(self.idleWorkers, mouseX, mouseY) then
-                CommanderUI_ClickedIdleWorker()
-            elseif self.playerAlerts:GetIsVisible() and GUIItemContainsPoint(self.playerAlerts, mouseX, mouseY) then
-                CommanderUI_ClickedPlayerAlert()           
+            if self.playerAlerts:GetIsVisible() and GUIItemContainsPoint(self.playerAlerts, mouseX, mouseY) then
+                CommanderUI_ClickedPlayerAlert()
             elseif self.selectAllPlayers:GetIsVisible() and GUIItemContainsPoint(self.selectAllPlayers, mouseX, mouseY) then
                 CommanderUI_ClickedSelectAllPlayers()
             elseif self.targetedButton ~= nil then
             
-                if CommanderUI_IsValid(self.targetedButton, mouseX, mouseY) then
+                // Commander_GhostStructure handles ghost structures. This code path handles tech that doesn't
+                // have a ghost model like Scan and Nano Shield.
+                if not GetCommanderGhostStructureEnabled() then
                 
-                    CommanderUI_TargetedAction(self.targetedButton, mouseX, mouseY, 1)
-                    self:SetTargetedButton(nil)
+                    if SendButtonTargetedAction(self.targetedButton, mouseX, mouseY) then
+                        self:SetTargetedButton(nil)
+                    end
                     
                 end
                 
             else
             
-                for i, buttonItem in ipairs(self.buttons) do
+                for i = 1, #self.buttons do
                 
+                    local buttonItem = self.buttons[i]
                     local buttonStatus = CommanderUI_MenuButtonStatus(i)
-                    
                     if buttonItem:GetIsVisible() and buttonStatus == GUICommanderButtons.kButtonStatusEnabled.Id and
-                    
                        GUIItemContainsPoint(buttonItem, mouseX, mouseY) then
                        
-                        self:ButtonPressed(i, mouseX, mouseY)
+                        ButtonPressed(self, i, mouseX, mouseY)
                         break
                         
                     end
@@ -725,21 +795,7 @@ function GUICommanderButtons:MousePressed(key, mouseX, mouseY)
 end
 
 function GUICommanderButtons:DeselectTab()
-
     self.lastPressedTab = nil
-
-end
-
-function GUICommanderButtons:ButtonPressed(index, mouseX, mouseY)
-
-    if CommanderUI_MenuButtonRequiresTarget(index) then
-        self:SetTargetedButton(index)
-    end
-    
-    CommanderUI_MenuButtonAction(index)
-    
-    self:SelectTab(index)
-    
 end
 
 function GUICommanderButtons:SelectTab(index)
@@ -749,17 +805,9 @@ function GUICommanderButtons:SelectTab(index)
     local foundTabTable = nil
     table.foreachfunctor(self.tabs, function (tabTable) if tabTable.TopItem == buttonItem then foundTabTable = tabTable end end)
     if foundTabTable then
-    
-        if index ~= 4 or #CommanderUI_GetSelectedEntities() > 0 then
-
-            self.tabs[4].TopItem:SetIsVisible(false) // always hide the select tab
-            foundTabTable.TopItem:SetIsVisible(true)
-            self.lastPressedTab = foundTabTable
-            
-            self.selectedTabIndex = index
-        
-        end
-        
+        foundTabTable.TopItem:SetIsVisible(true)
+        self.lastPressedTab = foundTabTable
+        self.selectedTabIndex = index
     else
     
         // This is a bit of a hack for now.
@@ -862,7 +910,6 @@ end
 function GUICommanderButtons:ContainsPoint(pointX, pointY)
 
     // Check if the point is over any of the UI managed by the GUICommanderButtons.
-    local containsPoint = GUIItemContainsPoint(self.idleWorkers, pointX, pointY)
     containsPoint = containsPoint or GUIItemContainsPoint(self.playerAlerts, pointX, pointY)
     containsPoint = containsPoint or GUIItemContainsPoint(self.selectAllPlayers, pointX, pointY)
     return containsPoint or GUIItemContainsPoint(self.background, pointX, pointY)

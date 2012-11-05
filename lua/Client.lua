@@ -9,15 +9,13 @@
 // Set the name of the VM for debugging
 decoda_name = "Client"
 
-// Load all specular maps at 1/2 resolution
-Client.AddTextureLoadRule("*_spec.dds", 1)
-
 Script.Load("lua/Shared.lua")
+Script.Load("lua/GhostModelUI.lua")
 Script.Load("lua/Render.lua")
 Script.Load("lua/MapEntityLoader.lua")
-Script.Load("lua/Button.lua")
 Script.Load("lua/Chat.lua")
 Script.Load("lua/DeathMessage_Client.lua")
+Script.Load("lua/DSPEffects.lua")
 Script.Load("lua/Notifications.lua")
 Script.Load("lua/Scoreboard.lua")
 Script.Load("lua/ScoreDisplay.lua")
@@ -48,8 +46,6 @@ Shared.PrecacheSurfaceShader("shaders/Model_alpha.surface_shader")
 Client.propList = { }
 Client.lightList = { }
 Client.skyBoxList = { }
-Client.ambientSoundList = { }
-Client.particlesList = { }
 Client.tracersList = { }
 Client.fogAreaModifierList = { }
 Client.rules = { }
@@ -62,8 +58,6 @@ Client.worldMessages = { }
 // For logging total time played for rookie mode, even with map switch
 local timePlayed = nil
 local kTimePlayedOptionsKey = "timePlayedSeconds"
-
-local waitingForAutoTeamBalanceUI = GetGUIManager():CreateGUIScript("GUIWaitingForAutoTeamBalance")
 
 function GetRenderCameraCoords()
 
@@ -121,30 +115,32 @@ function DestroyLevelObjects()
         Client.billboardList = { }
     end
 
-    // Remove the reflection probes.      
-    if Client.reflectionProbeList ~= nil then  
+    // Remove the reflection probes.
+    if Client.reflectionProbeList ~= nil then
+    
         for index, reflectionProbe in ipairs(Client.reflectionProbeList) do
             Client.DestroyRenderReflectionProbe(reflectionProbe)
         end
         Client.reflectionProbeList = { }
-    end    
+        
+    end
     
     // Remove the cinematics.
     if Client.cinematics ~= nil then
+    
         for index, cinematic in ipairs(Client.cinematics) do
             Client.DestroyCinematic(cinematic)
         end
         Client.cinematics = { }
+        
     end
     
-    // Remove the skyboxes.    
+    // Remove the skyboxes.
     Client.skyBoxList = { }
     
-    Client.particlesList = {}
-    Client.tracersList = {}
-    Client.ambientSoundList = {}
-    Client.rules = {}
-
+    Client.tracersList = { }
+    Client.rules = { }
+    
 end
 
 function ExitPressed()
@@ -213,7 +209,9 @@ function OnMapLoadEntity(className, groupName, values)
         Client.minimapExtentScale = values.scale
         Client.minimapExtentOrigin = values.origin
         
-    elseif className == "skybox" or className == "cinematic" then
+    // Only create the client side cinematic if it isn't waiting for a signal to start.
+    // Otherwise the server will create the cinematic.
+    elseif className == "skybox" or (className == "cinematic" and (values.startsOnMessage == "" or values.startsOnMessage == nil)) then
     
         local coords = values.angles:GetCoords(values.origin)
         
@@ -225,8 +223,8 @@ function OnMapLoadEntity(className, groupName, values)
         
         local cinematic = Client.CreateCinematic(zone)
         
-        cinematic:SetCinematic( values.cinematicName )
-        cinematic:SetCoords( coords )
+        cinematic:SetCinematic(values.cinematicName)
+        cinematic:SetCoords(coords)
         
         local repeatStyle = Cinematic.Repeat_None
         
@@ -251,13 +249,13 @@ function OnMapLoadEntity(className, groupName, values)
         cinematic:SetRepeatStyle(repeatStyle)
         table.insert(Client.cinematics, cinematic)
         
-    elseif className == "ambient_sound" then
-        
-    elseif className == Particles.kMapName then
+    //elseif className == AmbientSound.kMapName then
     
-        //local entity = Particles()
+        //local entity = AmbientSound()
         //LoadEntityFromValues(entity, values)
-        //table.insert(Client.particlesList, entity)
+        // Precache the ambient sound effects
+        //Shared.PrecacheSound(entity.eventName)
+        //table.insert(Client.ambientSoundList, entity)
         
     elseif className == Reverb.kMapName then
     
@@ -292,6 +290,16 @@ function SetCommanderPropState(isComm)
         end
     end
 
+end
+
+function UpdateAmbientSounds(deltaTime)
+    
+    PROFILE("Client:UpdateAmbientSounds")
+
+    for index, ambientSound in ipairs(Client.ambientSoundList) do
+        ambientSound:OnUpdate(deltaTime)
+    end
+    
 end
 
 local function ExpireDebugText()
@@ -359,6 +367,8 @@ local function UpdateWaitingToSpawnUI(player)
     
 end
 
+local optionsSent = false
+
 function OnUpdateClient(deltaTime)
 
     PROFILE("Client:OnUpdateClient")
@@ -368,8 +378,15 @@ function OnUpdateClient(deltaTime)
     
     local player = Client.GetLocalPlayer()
     if player ~= nil then
-        //UpdateParticles(deltaTime)
-        UpdateTracers(deltaTime) 
+    
+        //UpdateAmbientSounds(deltaTime)
+        
+        //UpdateDSPEffects()
+        
+        UpdateTracers(deltaTime)
+        
+        UpdateTimePlayed(deltaTime)
+        
     end
     
     GetEffectManager():OnUpdate(deltaTime)
@@ -380,7 +397,16 @@ function OnUpdateClient(deltaTime)
         UpdateHelpAutoReset()
     end
     
-    UpdateWaitingToSpawnUI(player)
+    //UpdateWaitingToSpawnUI(player)
+    
+    if not optionsSent then
+
+        local armorType = StringToEnum(kArmorType, Client.GetOptionString("armorType", "Green"))
+        Client.SendNetworkMessage("ConnectMessage", BuildConnectMessage(armorType), true)
+        
+        optionsSent = true
+    
+    end
     
 end
 
@@ -390,13 +416,18 @@ function OnNotifyGUIItemDestroyed(destroyedItem)
 
 end
 
-function CreateTracer(startPoint, endPoint, velocity, doer)
+function CreateTracer(startPoint, endPoint, velocity, doer, effectName)
 
     if not Shared.GetIsRunningPrediction() then
-    
-        local effectName = kDefaultTracerEffectName
-        if doer.GetTracerEffectName then
-            effectName = doer:GetTracerEffectName()
+
+        if not effectName then
+        
+            if doer.GetTracerEffectName then
+                effectName = doer:GetTracerEffectName()
+            else
+                effectName = kDefaultTracerEffectName
+            end
+        
         end
 
         local tracer = BuildTracer(startPoint, endPoint, velocity, effectName)
@@ -489,17 +520,15 @@ end
 function OnMapPreLoad()
 
     // Add our current time we played
-    SaveTimePlayed(timePlayed)    
+    SaveTimePlayed(timePlayed)
     
     // Clear our list of render objects, lights, props
-    Client.propList = {}
-    Client.lightList = {}
-    Client.skyBoxList = {}
-    Client.ambientSoundList = {}
-    Client.particlesList = {}
-    Client.tracersList = {}
+    Client.propList = { }
+    Client.lightList = { }
+    Client.skyBoxList = { }
+    Client.tracersList = { }
     
-    Client.rules = {}
+    Client.rules = { }
     Client.DestroyReverbs()
     Client.ResetSoundSystem()
     
@@ -670,8 +699,8 @@ function OnUpdateRender()
         
         gRenderCamera:SetCoords(camera:GetCoords())
         gRenderCamera:SetFov(horizontalFov)
-        gRenderCamera:SetNearPlane(0.01)
-        gRenderCamera:SetFarPlane(1000.0)
+        gRenderCamera:SetNearPlane(0.03)
+        gRenderCamera:SetFarPlane(400.0)
         gRenderCamera:SetCullingMode(cullingMode)
         Client.SetRenderCamera(gRenderCamera)
         
@@ -680,6 +709,12 @@ function OnUpdateRender()
         
         EquipmentOutline_SetEnabled( GetIsMarineUnit(player) )
         EquipmentOutline_SyncCamera( gRenderCamera, player:isa("Commander") )
+        
+        if player:GetShowAtmosphericLight() then
+            EnableAtmosphericDensity()
+        else
+            DisableAtmosphericDensity()
+        end
         
     else
     
@@ -697,8 +732,10 @@ function UpdateWorldMessages()
     
     for _, message in ipairs(Client.worldMessages) do
     
-        if (Client.GetTime() - message.creationTime) >= kWorldMessageLifeTime then
+        if (Client.GetTime() - message.creationTime) >= message.lifeTime then
             table.insert(removeEntries, message)
+        else
+            message.animationFraction = (Client.GetTime() - message.creationTime) / message.lifeTime
         end
     
     end
@@ -750,6 +787,16 @@ function Client.AddWorldMessage(messageType, message, position, entityId)
             worldMessage.creationTime = time
             worldMessage.entityId = entityId
             worldMessage.animationFraction = 0
+            worldMessage.lifeTime = ConditionalValue(kWorldTextMessageType.CommanderError == messageType, kCommanderErrorMessageLifeTime, kWorldMessageLifeTime)
+            
+            if messageType == kWorldTextMessageType.CommanderError then
+            
+                local commander = Client.GetLocalPlayer()
+                if commander then
+                    commander:TriggerInvalidSound()
+                end
+                
+            end
             
             table.insert(Client.worldMessages, worldMessage)
             
@@ -762,8 +809,6 @@ end
 function Client.GetWorldMessages()
     return Client.worldMessages
 end
-
-
 
 function Client.CreateTrailCinematic(renderZone)
     local trailCinematic = TrailCinematic()
@@ -802,7 +847,6 @@ function OnClientDisconnected(reason)
     GetGUIManager():DestroyGUIScriptSingle("GUICrosshair")
     GetGUIManager():DestroyGUIScriptSingle("GUIScoreboard")
     GetGUIManager():DestroyGUIScriptSingle("GUINotifications")
-    GetGUIManager():DestroyGUIScriptSingle("GUIRequests")
     GetGUIManager():DestroyGUIScriptSingle("GUIDamageIndicators")
     GetGUIManager():DestroyGUIScriptSingle("GUIDeathMessages")
     GetGUIManager():DestroyGUIScriptSingle("GUIChat")
@@ -813,13 +857,43 @@ function OnClientDisconnected(reason)
     GetGUIManager():DestroyGUIScriptSingle("GUIWorldText")
     GetGUIManager():DestroyGUIScriptSingle("GUICommunicationStatusIcons")
     
-    GetGUIManager():DestroyGUIScript(waitingForAutoTeamBalanceUI)
-    waitingForAutoTeamBalanceUI = nil
-    
     // Destroy graphical debug text items
     for index, item in ipairs(gDebugTextList) do
         GetGUIManager():DestroyGUIScript(item)
     end
+    
+    // Hack to avoid script error if load hasn't completed yet.
+    if Client.SetOptionString then
+        Client.SetOptionString("lastServerMapName", "")
+    end
+    
+end
+
+/**
+ * UI scripts that need to precache assets are loaded here.
+ * Not all GUI scripts need to be listed here.
+ * They must be loaded after OnLoadComplete() below because they need functions
+ * that are only available after the Client is fully loaded.
+ */
+local function LoadGUIScripts()
+
+    Script.Load("lua/GUIMinimapFrame.lua")
+    Script.Load("lua/GUIMinimap.lua")
+    Script.Load("lua/Hud/Marine/GUIMarineHud.lua")
+    Script.Load("lua/GUIActionIcon.lua")
+    Script.Load("lua/GUIMarineTeamMessage.lua")
+    Script.Load("lua/GUINotifications.lua")
+    Script.Load("lua/Hud/GUINotificationItem.lua")
+    Script.Load("lua/Hud/Marine/GUIMarineStatus.lua")
+    Script.Load("lua/Hud/Marine/GUIMarineHUDStyle.lua")
+    Script.Load("lua/Hud/Marine/GUIExoHud.lua")
+    Script.Load("lua/Hud/GUIEvent.lua")
+    Script.Load("lua/Hud/GUIPlayerResource.lua")
+    Script.Load("lua/GUIAlienBuyMenu.lua")
+    Script.Load("lua/GUIWaypoints.lua")
+    Script.Load("lua/GUIProgressBar.lua")
+    Script.Load("lua/GUIAlienTeamMessage.lua")
+    Script.Load("lua/GUIAlienHUD.lua")
     
 end
 
@@ -832,10 +906,12 @@ local function OnLoadComplete()
     gRenderCamera:SetRenderSetup("renderer/Deferred.render_setup")
     
     Render_SyncRenderOptions()
-
+    OptionsDialogUI_SyncSoundVolumes()
+    
     GetGUIManager():CreateGUIScript("GUIDeathScreen")
     HiveVision_Initialize()
     EquipmentOutline_Initialize()
+    LoadGUIScripts()
     
 end
 

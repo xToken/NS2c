@@ -2,7 +2,7 @@
 //
 // lua\GUIReadyRoomOrders.lua
 //
-// Created by: Andreas Urwalek (a_urwa@sbox.tugraz.at)
+// Created by: Andreas Urwalek (andi@unknownworlds.com)
 //
 // Shows enemy command structures
 //

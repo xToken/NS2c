@@ -7,7 +7,7 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 function MarineCommander:TechCausesDelay(techId)
-    return techId == kTechId.MedPack or techId == kTechId.AmmoPack or techId == kTechId.Scan
+    return false
 end
 
 function MarineCommander:OnInitLocalClient()

@@ -162,7 +162,7 @@ end
 
 function RoboticsFactory:GetTechButtons(techId)
 
-    if(techId == kTechId.RootMenu) then
+    if(techId == kTechId.WeaponsMenu) then
     
         local techButtons = {   kTechId.UpgradeRoboticsFactory, kTechId.None, kTechId.None, kTechId.None, 
                    kTechId.None, kTechId.None, kTechId.None, kTechId.None }

@@ -90,7 +90,6 @@ kGeneralEffectData =
         
             // alien
             {sound = "sound/NS2.fev/alien/structures/shade/cloak_triggered", classname = "Hallucination", done = true}, // TODO: replace
-            {sound = "sound/NS2.fev/alien/common/hatch", classname = "Clog", done = true}, // TODO: replace
             
             {sound = "sound/NS2.fev/alien/structures/egg/spawn", classname = "Egg", done = true},
             {sound = "sound/NS2.fev/alien/structures/egg/spawn", classname = "Embryo", done = true},
@@ -129,19 +128,6 @@ kGeneralEffectData =
             //{cinematic = "cinematics/alien/drifter/enzyme_muzzle.cinematic"},
             {sound = "sound/NS2.fev/alien/drifter/parasite", done = true}            
         }
-    },
-    
-    energize =
-    {
-        energizeEffects =
-        {
-            //{sound = "sound/NS2.fev/alien/structures/shift/energize_player"},
-        
-            {parented_cinematic = "cinematics/alien/energize_big.cinematic", classname = "Onos", done = true},
-            {parented_cinematic = "cinematics/alien/energize_big.cinematic", classname = "Hive", done = true},
-            {parented_cinematic = "cinematics/alien/energize_middle.cinematic", classname = "Structure", done = true},
-            {parented_cinematic = "cinematics/alien/energize_small.cinematic", classname = "Player", done = true},
-        }    
     },
     
     // alien commander foresight effect
@@ -398,24 +384,6 @@ kGeneralEffectData =
             {stop_sound = "sound/NS2.fev/common/fire_large", classname = "Onos", done = true},
             {stop_sound = "sound/NS2.fev/common/fire_small"},
         },
-    },
-    
-    regenerate =
-    {
-        regenerateEffects =
-        {
-            {sound = "sound/NS2.fev/alien/common/regeneration"},
-            {private_sound = "sound/NS2.fev/alien/common/regeneration"},
-        },
-    },
-    
-    regenerate_ability =
-    {
-        regenerateAbilityEffects =
-        {
-            {sound = "sound/NS2.fev/alien/common/regeneration_ability"},
-            {private_sound = "sound/NS2.fev/alien/common/regeneration_ability"},
-        }
     },
     
     res_received =

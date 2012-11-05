@@ -132,6 +132,7 @@ local animationInputsDisplayedOnScreen = nil
 local function OnCommandAnimInputs(entId)
 
     if Shared.GetCheatsEnabled() then
+        Log("Showing animation inputs for %s", entId)
         animationInputsDisplayedOnScreen = tonumber(entId)
     end
     
@@ -191,11 +192,6 @@ function OnCommandSetName(nickname)
     
     Client.SetOptionString(kNicknameOptionsKey, nickname)
     
-end
-
-// Save this setting if we set it via a console command
-function OnCommandToggleWeaponPickup()
-    Client.SetOptionString(kAutoPickupWeapons, not Client.GetOptionString(kAutoPickupWeapons))
 end
 
 local function OnCommandFunctionContractsEnabled(enabled)
@@ -271,7 +267,6 @@ Event.Hook("Console_locate", OnCommandLocate)
 Event.Hook("Console_distance", OnCommandDistance)
 Event.Hook("Console_animinputs", OnCommandAnimInputs)
 Event.Hook("Console_name", OnCommandSetName)
-Event.Hook("Console_autoweaponpickup", OnCommandToggleWeaponPickup)
 Event.Hook("Console_functioncontractsenabled", OnCommandFunctionContractsEnabled)
 Event.Hook("Console_cleardebuglines", OnCommandClearDebugLines)
 Event.Hook("Console_guiinfo", OnCommandGUIInfo)

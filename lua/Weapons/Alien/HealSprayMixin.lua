@@ -9,8 +9,8 @@
 HealSprayMixin = CreateMixin( HealSprayMixin )
 HealSprayMixin.type = "HealSpray"
 
-local kRange = 6
-local kHealCylinderWidth = 3
+local kRange = 4
+local kHealCylinderWidth = 2
 
 // HealSprayMixin:GetHasSecondary should completely override any existing
 // GetHasSecondary function defined in the object.
@@ -35,7 +35,7 @@ function HealSprayMixin:__initmixin()
 end
 
 function HealSprayMixin:GetHasSecondary(player)
-    return player.oneHive
+    return player:GetHasOneHive()
 end
 
 function HealSprayMixin:GetSecondaryAttackDelay()
@@ -123,10 +123,6 @@ local function DamageEntity(self, player, targetEntity)
 
     local healthScalar = targetEntity:GetHealthScalar()
     self:DoDamage(kHealsprayDamage, targetEntity, targetEntity:GetEngagementPoint(), GetNormalizedVector(targetEntity:GetOrigin(), player:GetEyePos()), "none")
-    
-    if Server and healthScalar ~= targetEntity:GetHealthScalar() then
-        targetEntity:TriggerEffects("sprayed")
-    end
 
 end
 
@@ -156,8 +152,6 @@ local function HealEntity(self, player, targetEntity)
     if Server and amountHealed > 0 then
         targetEntity:TriggerEffects("sprayed")
     end
-    
-    player:OnRepair(targetEntity, amountHealed > 0)
         
 end
 
@@ -183,11 +177,7 @@ local function GetEntitiesWithCapsule(self, player)
         end
         
         local trace = TraceMeleeBox(self, startPoint, fireDirection, extents, remainingRange, PhysicsMask.Melee, EntityFilterOne(player))
-        
-        if Server then
-            Server.dbgTracer:TraceMelee(player, startPoint, trace, extents, player:GetViewAngles():GetCoords())
-        end
-        
+
         if trace.fraction ~= 1 then
         
             if trace.entity then
@@ -200,10 +190,6 @@ local function GetEntitiesWithCapsule(self, player)
             
                 // Make another trace to see if the shot should get deflected.
                 local lineTrace = Shared.TraceRay(startPoint, startPoint + remainingRange * fireDirection, CollisionRep.LOS, PhysicsMask.Melee, EntityFilterOne(player))
-                
-                if Server then
-                    Server.dbgTracer:TraceBullet(player, startPoint, lineTrace)
-                end
 
                 if lineTrace.fraction < 0.8 then
                 
@@ -273,36 +259,28 @@ local function GetEntitiesInCone(self, player)
     
     local startPoint = viewCoords.origin + viewCoords.yAxis * kHealCylinderWidth * 0.2
     local lineTrace1 = Shared.TraceRay(startPoint, startPoint + kRange * fireDirection, CollisionRep.LOS, PhysicsMask.Melee, EntityFilterAll())
-    if Server then
-        Server.dbgTracer:TraceBullet(player, startPoint, lineTrace1)
-    end    
+  
     if (lineTrace1.endPoint - startPoint):GetLength() > range then
         range = (lineTrace1.endPoint - startPoint):GetLength()
     end
 
     startPoint = viewCoords.origin - viewCoords.yAxis * kHealCylinderWidth * 0.2
     local lineTrace2 = Shared.TraceRay(startPoint, startPoint + kRange * fireDirection, CollisionRep.LOS, PhysicsMask.Melee, EntityFilterAll())    
-    if Server then
-        Server.dbgTracer:TraceBullet(player, startPoint, lineTrace2)
-    end
+
     if (lineTrace2.endPoint - startPoint):GetLength() > range then
         range = (lineTrace2.endPoint - startPoint):GetLength()
     end
     
     startPoint = viewCoords.origin - viewCoords.xAxis * kHealCylinderWidth * 0.2
     local lineTrace3 = Shared.TraceRay(startPoint, startPoint + kRange * fireDirection, CollisionRep.LOS, PhysicsMask.Melee, EntityFilterAll())    
-    if Server then
-        Server.dbgTracer:TraceBullet(player, startPoint, lineTrace3)
-    end
+
     if (lineTrace3.endPoint - startPoint):GetLength() > range then
         range = (lineTrace3.endPoint - startPoint):GetLength()
     end
     
     startPoint = viewCoords.origin + viewCoords.xAxis * kHealCylinderWidth * 0.2
     local lineTrace4 = Shared.TraceRay(startPoint, startPoint + kRange * fireDirection, CollisionRep.LOS, PhysicsMask.Melee, EntityFilterAll())
-    if Server then
-        Server.dbgTracer:TraceBullet(player, startPoint, lineTrace4)
-    end
+
     if (lineTrace4.endPoint - startPoint):GetLength() > range then
         range = (lineTrace4.endPoint - startPoint):GetLength()
     end

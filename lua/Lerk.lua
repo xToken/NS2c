@@ -12,7 +12,9 @@
 Script.Load("lua/Utility.lua")
 Script.Load("lua/Alien.lua")
 Script.Load("lua/Weapons/Alien/LerkBite.lua")
-Script.Load("lua/Weapons/Alien/LerkUmbra.lua")
+Script.Load("lua/Weapons/Alien/LerkBiteUmbra.lua")
+Script.Load("lua/Weapons/Alien/LerkBitePrimal.lua")
+Script.Load("lua/Weapons/Alien/LerkBiteSpikes.lua")
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
 Script.Load("lua/Mixins/GroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
@@ -37,7 +39,6 @@ Shared.PrecacheSurfaceShader("models/alien/lerk/lerk.surface_shader")
 
 local networkVars =
 {
-    flappedSinceLeftGround  = "boolean",
     gliding = "boolean",
     
     lastTimeFlapped = "compensated time",
@@ -51,7 +52,9 @@ local networkVars =
     // if wallChecking is enabled. Means that the next time you press use
     wallGripCheckEnabled = "private compensated boolean",
     
-    prevInputMove = "private boolean"
+    prevInputMove = "private boolean",
+    
+    bombPoseParam = "float (0 to 1 by 0.05)",
 }
 
 AddMixinNetworkVars(BaseMoveMixin, networkVars)
@@ -101,13 +104,14 @@ function Lerk:OnCreate()
     InitMixin(self, DissolveMixin)
     
     self.prevInputMove = false
-    self.flappedSinceLeftGround = false
     self.gliding = false
     self.lastTimeFlapped = 0
     
     self.wallGripTime = 0
     self.wallGripRecheckDone = false
     self.wallGripCheckEnabled = false
+    
+    self.bombPoseParam = 0
     
 end
 
@@ -152,11 +156,11 @@ function Lerk:GetDesiredAngles()
     end
 
     local desiredAngles = Alien.GetDesiredAngles(self)
-    /*
-    if not self:GetIsOnGround() then
+
+    if not self:GetIsOnGround() and self.gliding then
         desiredAngles.pitch = self.viewPitch
     end    
-    */
+
     if not self:GetIsOnSurface() then    
         desiredAngles.roll = Clamp( RadianDiff( self:GetAngles().yaw, self.viewYaw ), -kMaxGlideRoll, kMaxGlideRoll)    
     end
@@ -233,7 +237,11 @@ function Lerk:GetAcceleration()
     return ConditionalValue(self:GetIsOnGround(), Alien.GetAcceleration(self), kAirAcceleration) * self:GetMovementSpeedModifier()
 end
 
-function Lerk:OverrideStrafeJump()
+function Lerk:OverrideAirControl()
+    return true
+end
+
+function Lerk:OverrideJumpQueue()
     return true
 end
 
@@ -251,19 +259,7 @@ function Lerk:GetFrictionForce(input, velocity)
     local prevVelocity = self:GetVelocity()
     
     if self.gliding then
-        return Vector(-prevVelocity.x, -prevVelocity.y, -prevVelocity.z) * .02
-    end
-    
-    // When in the air, but not gliding (spinning out of control)
-    // Allow holding the jump key to reduce velocity, and slow the fall
-    if (not self:GetIsOnGround()) and (bit.band(input.commands, Move.Jump) ~= 0) and (not self.gliding) then
-    
-        if prevVelocity.y < 0 then
-            return Vector(-prevVelocity.x, -prevVelocity.y, -prevVelocity.z) * frictionScalar
-        else
-            return Vector(-prevVelocity.x, 0, -prevVelocity.z) * frictionScalar
-        end
-        
+        return Vector(0, 0, 0)
     end
     
     return Alien.GetFrictionForce(self, input, velocity)
@@ -272,6 +268,7 @@ end
 
 local function Flap(self, input, velocity)
 
+    local flapStraightMod = ConditionalValue(input.move.z >= 0, 1.2, 1)
     local lift = 0
     local flapVelocity = Vector(0, 0, 0)
     local flapDirection = self:GetViewCoords():TransformVector( input.move )
@@ -312,8 +309,6 @@ local function Flap(self, input, velocity)
         VectorCopy(velocity * 0.5 + flapVelocity, velocity)
         
         self:TriggerEffects("flap")
-        
-        self.flappedSinceLeftGround = true
         
         self.lastTimeFlapped = Shared.GetTime()
         
@@ -362,10 +357,6 @@ function Lerk:HandleButtons(input)
 
     Alien.HandleButtons(self, input)
     
-    if self:GetIsOnGround() or self:GetIsWallGripping() then
-        self.flappedSinceLeftGround = false
-    end
-    
     if not self:GetIsWallGripping()  then
     
         if bit.band(input.commands, Move.MovementModifier) ~= 0 then
@@ -382,6 +373,7 @@ function Lerk:HandleButtons(input)
                         self.wallGripTime = Shared.GetTime()
                         self.wallGripNormalGoal = wallNormal
                         self.wallGripRecheckDone = false
+                        self:SetVelocity(Vector(0,0,0))
                         
                     end
                     
@@ -436,7 +428,6 @@ function Lerk:ComputeForwardVelocity(input)
             if input.move:GetLength() == 0 then
                 return GetNormalizedVector(self:GetVelocity()) * 0.5
             end
-        
 
             // Gliding: ignore air control
             // Add or remove velocity depending if we're looking up or down
@@ -496,15 +487,21 @@ end
 function Lerk:UpdatePosition(velocity, time)
 
     PROFILE("Lerk:UpdatePosition")
-
+    
+    local wasOnSurface = self:GetIsOnSurface()
+    local moveDirection = GetNormalizedVector(velocity)
     local requestedVelocity = Vector(velocity)
+    
+    local completedMove = nil
+    local hitEntities = nil
+    local averageSurfaceNormal = nil
     
     // slow down (to zero) if we are wallgripping
     if self:GetIsWallGripping() then   
         velocity = velocity * self:CalcWallGripSpeedFraction()
     end
     
-    velocity = Alien.UpdatePosition(self, velocity, time)
+    velocity, hitEntities, averageSurfaceNormal = Alien.UpdatePosition(self, velocity, time)
     
     if not self:GetIsWallGripping() and not self.wallGripCheckEnabled then
         // if we bounced into something and we are not on the ground, we enable one
@@ -512,9 +509,16 @@ function Lerk:UpdatePosition(velocity, time)
         // Lerks don't have any use other use for their use key, so this works in practice
         local deltaV = (requestedVelocity - velocity):GetLength()
         self.wallGripCheckEnabled = deltaV > 0 and not self:GetIsOnGround()
+        
     end
     
-    return velocity
+    local steepImpact = averageSurfaceNormal ~= nil and hitEntities == nil and moveDirection:DotProduct(averageSurfaceNormal) < -.85
+
+    if self.gliding and not steepImpact then
+        return requestedVelocity
+    else
+        return velocity
+    end
 
 end
 
@@ -526,9 +530,6 @@ function Lerk:PreUpdateMove(input, runningPrediction)
     // so we get that cool soaring feeling from NS1
     // Now with strafing and air brake
     if not self:GetIsOnGround() then
-    
-
-
 
         local move = GetNormalizedVector(input.move)     
         local viewCoords = self:GetViewAngles():GetCoords()
@@ -538,7 +539,6 @@ function Lerk:PreUpdateMove(input, runningPrediction)
         if self.gliding then
         
             if not self.prevInputMove and input.move:GetLength() ~= 0 then
-                self.flappedSinceLeftGround = false
                 redirectDir = velocity
             end
             
@@ -594,32 +594,22 @@ function Lerk:HandleAttacks(input)
 
     Player.HandleAttacks(self, input)
     
+    local moveDirection = GetNormalizedVector( self:GetVelocity() )
+    local turnedSharp = self:GetViewCoords().zAxis:DotProduct(moveDirection) < .4
+    local holdingJump = bit.band(input.commands, Move.Jump) ~= 0
+    
     // If we're holding down jump, glide
-
-    local zAxis = self:GetViewAngles():GetCoords().zAxis    
-    local velocity = self:GetVelocity()
-    
-    local changedDirection = false
-    
-    if input.move.z == 1 then
-    
-        local dot = 0
-        if velocity:GetLength() > 1 then
-            dot = GetNormalizedVector(velocity):DotProduct(zAxis)
-        end
-    
-        changedDirection = dot <= .7
-        
-    end
-    
-    self.gliding = not self:GetIsOnGround() and self.flappedSinceLeftGround and bit.band(input.commands, Move.Jump) ~= 0 and (input.move.z > 0 or input.move:GetLength() == 0) and not changedDirection
+    self.gliding = input.move.z > 0 and self:GetVelocityLength() > kMaxSpeed *.5 and not self:GetIsOnSurface() and not turnedSharp and holdingJump
     
 end
 
 // Glide if jump held down.
 function Lerk:AdjustGravityForce(input, gravity)
 
-    if bit.band(input.commands, Move.Crouch) ~= 0 then
+    if self:GetIsWallGripping() then
+        return 0
+
+    elseif bit.band(input.commands, Move.Crouch) ~= 0 then
         // Swoop
         gravity = kSwoopGravityScalar
     elseif self.gliding and self:GetVelocity().y <= 0 then

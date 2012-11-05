@@ -105,7 +105,7 @@ function Metabolize:OnTag(tagName)
                 player:DeductAbilityEnergy(self:GetEnergyCost())
             end
             PerformMetabolize(self)
-            self:TriggerEffects("stab_attack")
+            self:TriggerEffects("metabolize")
             
         elseif tagName == "attack_end" then
             self.primaryAttacking = false

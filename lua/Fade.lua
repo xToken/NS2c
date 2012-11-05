@@ -41,15 +41,12 @@ Fade.kHealth = kFadeHealth
 Fade.kArmor = kFadeArmor
 Fade.kMass = 50 // ~350 pounds
 Fade.kJumpHeight = 1.1
-Fade.kMaxSpeed = 20
-Fade.kBlinkAccelSpeed = 12
+Fade.kMaxSpeed = 7.0
+Fade.kMaxBlinkSpeed = 11
 Fade.kWalkSpeed = 4
+Fade.kBlinkAcceleration = 50
+Fade.kBlinkAccelerationDuration = 2
 Fade.kMaxCrouchSpeed = 3
-Fade.kAcceleration = 50
-Fade.kAirAcceleration = 25
-Fade.kBlinkAirAcceleration = 40
-Fade.kBlinkAirAccelerationDuration = 2
-Fade.kBlinkAcceleration = 20
 
 if Server then
     Script.Load("lua/Fade_Server.lua")
@@ -106,13 +103,6 @@ function Fade:OnInitialized()
     
 end
 
-function Fade:OnDestroy()
-    Alien.OnDestroy(self)
-    if Client then    
-        self:DestroyTrailCinematic()    
-    end
-end
-
 function Fade:GetHeadAttachpointName()
     return "fade_tongue2"
 end
@@ -149,10 +139,6 @@ function Fade:ReceivesFallDamage()
     return false
 end
 
-function Fade:GetGroundFrictionForce()
-    return ConditionalValue(self:GetIsBlinking() or (self:GetRecentlyBlinked() and self:GetVelocity():GetLengthXZ() > Fade.kBlinkAccelSpeed), 6, 7.2)
-end
-
 function Fade:GetCanJump()
     if self:GetIsBlinking() then
         return true
@@ -179,9 +165,6 @@ function Fade:HandleJump(input, velocity)
             end
             
         end
-
-        // TODO: Set this somehow (set on sounds for entity, not by sound name?)
-        //self:SetSoundParameter(soundName, "speed", self:GetFootstepSpeedScalar(), 1)
         
         self.timeOfLastJump = Shared.GetTime()
         
@@ -200,33 +183,25 @@ function Fade:GetIsOnGround()
     return Alien.GetIsOnGround(self)
 end
 
-function Fade:GetAcceleration()
-    
-    if self:GetIsBlinking() then
-        return Fade.kBlinkAcceleration * self:GetMovementSpeedModifier()
-    end
-    if self:GetRecentlyBlinked() and self:GetVelocity():GetLengthXZ() > Fade.kBlinkAccelSpeed then
-        return Fade.kBlinkAirAcceleration * self:GetMovementSpeedModifier()
-    end
-    if not self:GetIsOnGround() then
-        return Fade.kAirAcceleration * self:GetMovementSpeedModifier()
-    end
-    
-    return Fade.kAcceleration * self:GetMovementSpeedModifier()
-end
-
 function Fade:GetMaxSpeed(possible)
 
     if possible then
-        return 8
+        return Fade.kMaxSpeed
     end
     
-    //Walking
-    local maxSpeed = ConditionalValue(self.movementModiferState and self:GetIsOnSurface(), Fade.kWalkSpeed, Fade.kMaxSpeed)
+    local maxSpeed = Fade.kMaxSpeed
+        
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = Fade.kWalkSpeed
+    end
     
-        // Take into account crouching
-    if self:GetCrouching() and self:GetIsOnGround() and not self:GetRecentlyBlinked() then
+    // Take into account crouching
+    if self:GetCrouching() and self:GetIsOnGround() then
         maxSpeed = Fade.kMaxCrouchSpeed
+    end
+    
+    if self:GetIsBlinking() or self:GetRecentlyBlinked() then
+        maxSpeed = Fade.kMaxBlinkSpeed
     end
 
     return maxSpeed * self:GetMovementSpeedModifier()
@@ -250,7 +225,7 @@ function Fade:GetIsBlinking()
 end
 
 function Fade:GetRecentlyBlinked()
-    return Shared.GetTime() - self.etherealEndTime < Fade.kBlinkAirAccelerationDuration
+    return Shared.GetTime() - self.etherealEndTime < Fade.kBlinkAccelerationDuration
 end
 
 function Fade:GetBlinkCooldown()
@@ -300,6 +275,12 @@ function Fade:OnBlinking(input)
     
     if self:GetIsOnGround() and velocity.y < 4 then
         newVelocity.y = newVelocity.y + math.sqrt(math.abs(2 * self:GetJumpHeight() * self:GetGravityForce(input)))
+    end
+    
+    local upangle = self:GetViewCoords().zAxis.y
+    if upangle > 0.5 then
+        if newVelocity.y < 0 then newVelocity.y = 0 end
+        newVelocity.y = self:GetViewCoords().zAxis.y * (Fade.kBlinkAcceleration * 2) * input.time
     end
 
     self:SetVelocity(velocity + newVelocity)

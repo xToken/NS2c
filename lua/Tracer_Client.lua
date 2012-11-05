@@ -38,7 +38,7 @@ function Tracer:OnUpdate(deltaTime)
         
         coords.origin = self.startPoint + self.timePassed * self.tracerVelocity
         
-        coords.zAxis =self.tracerVelocity:GetUnit()
+        coords.zAxis = self.tracerVelocity:GetUnit()
         coords.yAxis = coords.zAxis:GetPerpendicular()
         coords.xAxis = Math.CrossProduct(coords.yAxis, coords.zAxis)
         

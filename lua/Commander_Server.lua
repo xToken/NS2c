@@ -114,8 +114,10 @@ function Commander:AttemptToResearchOrUpgrade(techNode, entity)
     // research is only allowed for single selection
     if techNode:GetIsResearch() then
     
-        if table.maxn(self.selectedSubGroupEntityIds) == 1 then
-            entity = Shared.GetEntity( self.selectedSubGroupEntityIds[1] )
+        local selection = self:GetSelection()
+    
+        if #selection == 1 then
+            entity = Shared.GetEntity( selection[1] )
         else
             return false
         end
@@ -481,7 +483,7 @@ function Commander:ProcessTechTreeAction(techId, pickVec, orientation, worldCoor
             // the order first and in some cases this will be the only entity to be
             // given the order.
             local sortedList = { }
-            for index, selectedEntityId in ipairs(self.selectedSubGroupEntityIds) do
+            for index, selectedEntityId in ipairs(self:GetSelection()) do
                 table.insert(sortedList, Shared.GetEntity(selectedEntityId))
             end
             Shared.SortEntitiesByDistance(targetPosition, sortedList)

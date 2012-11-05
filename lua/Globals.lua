@@ -70,7 +70,7 @@ kTeam2Type = kAlienTeamType
 kTeam1Name = "Frontiersmen"
 kTeam2Name = "Kharaa"
 kSpectatorTeamName = "Ready room"
-kDefaultPlayerName = "NsPlayer"
+kDefaultPlayerName = "NSPlayer"
 
 kDefaultWaypointGroup = "GroundWaypoints"
 kAirWaypointsGroup = "AirWaypoints"
@@ -83,6 +83,7 @@ kMaxEntitiesInRadius = 25
 kMaxEntityRadius = 15
 
 kWorldMessageLifeTime = 1.0
+kCommanderErrorMessageLifeTime = 2.0
 kWorldMessageResourceOffset = Vector(0, 2.5, 0)
 kResourceMessageRange = 35
 kWorldDamageNumberAnimationSpeed = 150
@@ -108,12 +109,12 @@ kSurfaceList = { "door", "electronic", "metal", "organic", "rock", "thin_metal",
 kHitEffectSurface = enum( { "metal", "door", "electronic", "organic", "rock", "thin_metal", "membrane", "armor", "flesh", "glass", "ethereal", "umbra" } )
 kHitEffectRelevancyDistance = 40
 kHitEffectMaxPosition = 1638 // used for precision in hiteffect message
-kTracerSpeed = 75
+kTracerSpeed = 115
 kMaxHitEffectsPerSecond = 200
 
 kMainMenuFlash = "ui/main_menu.swf"
 
-kPlayerStatus = enum( { "Hidden", "Dead", "Evolving", "Embryo", "Commander", "HeavyArmor", "GrenadeLauncher", "Rifle", "Shotgun", "HeavyMachineGun", "Void", "Spectator", "Skulk", "Gorge", "Fade", "Lerk", "Onos" } )
+kPlayerStatus = enum( { "Hidden", "Dead", "Evolving", "Embryo", "Commander", "GrenadeLauncher", "Rifle", "Shotgun", "HeavyMachineGun", "Void", "Spectator", "Skulk", "Gorge", "Fade", "Lerk", "Onos" } )
 kPlayerCommunicationStatus = enum( {'None', 'Voice', 'Typing', 'Menu'} )
 
 kMaxAlienAbilities = 3
@@ -127,13 +128,10 @@ kTertiaryWeaponSlot = 3
 // How long to display weapon picker after selecting weapons
 kDisplayWeaponTime = 1.5
 
-// If player bought Special Edition
-kSpecialEditionProductId = 4930
-
 // Death message indices 
 kDeathMessageIcon = enum( { 'None', 
                             'Rifle', 'RifleButt', 'Pistol', 'Axe', 'Shotgun',
-                            'Flamethrower', 'ARC', 'Grenade', 'Sentry', 'Welder',
+                            'HeavyMachineGun', 'ARC', 'Grenade', 'Sentry', 'Welder',
                             'Bite', 'HydraSpike', 'Spray', 'PrimalScream', 'Parasite',
                             'SporeCloud', 'Swipe', 'BuildAbility', 'Whip', 'BileBomb',
                             'Mine', 'Gore', 'Spit', 'Jetpack', 'Claw',
@@ -242,7 +240,6 @@ kNonCollisionGeometryGroupName  = "NonCollisionGeometry"
 // Max players allowed in game
 kMaxPlayers = 32
 
-kMaxIdleWorkers = 127
 kMaxPlayerAlerts = 127
 
 // Max distance to propagate entities with
@@ -269,6 +266,7 @@ kDisplayQualityOptionsKey = "graphics/display/quality"
 kInvertedMouseOptionsKey = "input/mouse/invert"
 kLastServerConnected = "lastConnectedServer"
 kLastServerPassword  = "lastServerPassword"
+kLastServerMapName  = "lastServerMapName"
 
 kGraphicsXResolutionOptionsKey = "graphics/display/x-resolution"
 kGraphicsYResolutionOptionsKey = "graphics/display/y-resolution"
@@ -280,7 +278,6 @@ kBloomOptionsKey = "graphics/display/bloom"
 kAnisotropicFilteringOptionsKey = "graphics/display/anisotropic-filtering"
 
 kMouseSensitivityScalar         = 50
-kAutoPickupWeapons         = "autopickupweapons"
 
 // Player use range
 kPlayerUseRange = 2
@@ -330,5 +327,41 @@ kRookieTimeThreshold = 4 * 60 * 60 // 4 hours
 kRookieNetworkCheckInterval = 2
 kRookieOptionsKey = "rookieMode"
 
-kMinFOVAdjustmentDegrees = 0
-kMaxFOVAdjustmentDegrees = 0
+kMinFOVAdjustmentDegrees = -5
+kMaxFOVAdjustmentDegrees = 5
+kDamageEffectType = enum({ 'Blood', 'AlienBlood', 'Sparks' })
+
+kIconColors = 
+{
+    [kMarineTeamType] = Color(0.8, 0.96, 1, 1),
+    [kAlienTeamType] = Color(1, 0.9, 0.4, 1),
+    [kNeutralTeamType] = Color(1, 1, 1, 1),
+}
+
+// TODO: should move this keys, functions into a separate file (Products.lua?)
+
+// If player bought Special Edition
+kSpecialEditionProductId = 4930
+kDeluxeEditionProductId = 4932
+
+kArmorType = enum( { 'Green', 'Black', 'Deluxe'})
+
+function GetHasBlackArmor(client)
+
+    if Client then    
+        return Client.GetIsDlcAuthorized(kSpecialEditionProductId)    
+    elseif Server and client then
+        return Server.GetIsDlcAuthorized(client, kSpecialEditionProductId)
+    end
+    
+end
+
+function GetHasDeluxeEdition(client)
+
+    if Client then    
+        return Client.GetIsDlcAuthorized(kDeluxeEditionProductId)
+    elseif Server and client then    
+        return Server.GetIsDlcAuthorized(client, kDeluxeEditionProductId)
+    end
+
+end

@@ -6,28 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Skulk.kCameraRollSpeedModifier = 0.5
-Skulk.kCameraRollTiltModifier = 0.05
-
 local kSkulkHealthbarOffset = Vector(0, 0.7, 0)
 function Skulk:GetHealthbarOffset()
     return kSkulkHealthbarOffset
-end
-
-function Skulk:OnInitLocalClient()
-
-    Alien.OnInitLocalClient(self)
-    
-    if gEnableSpeedMeter then
-        self:CreateSpeedMeter()
-    end    
-
-end
-
-function Skulk:UpdateMisc(input)
-
-    Alien.UpdateMisc(self, input)
-
 end
 
 function Skulk:GetHeadAttachpointName()

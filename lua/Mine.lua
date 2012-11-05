@@ -238,7 +238,7 @@ function Mine:GetTechButtons(techId)
 
     local techButtons = nil
     
-    if techId == kTechId.RootMenu then
+    if techId == kTechId.WeaponsMenu then
     
         techButtons = { kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
                         kTechId.None, kTechId.None, kTechId.None, kTechId.None }

@@ -45,13 +45,14 @@ end
 
 local function GetDroppackSoundName(techId)
 
-    if techId == kTechId.MedPack then
+    /*if techId == kTechId.MedPack then
         return MedPack.kHealthSound
     elseif techId == kTechId.AmmoPack then
         return AmmoPack.kPickupSound
     elseif techId == kTechId.CatPack then
         return CatPack.kPickupSound
-    end 
+    end*/
+    return MarineCommander.kDropSound
    
 end
 
@@ -63,6 +64,7 @@ function MarineCommander:TriggerDropPack(position, techId)
     
         local droppack = CreateEntity(mapName, position, self:GetTeamNumber())
         StartSoundEffectForPlayer(GetDroppackSoundName(techId), self)
+        //Shared.PlaySound(nil, GetDroppackSoundName(techId))
         self:ProcessSuccessAction(techId)
         success = true
         

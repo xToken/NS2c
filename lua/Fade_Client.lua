@@ -10,34 +10,12 @@ Fade.kFirstPersonMiniBlinkCinematic = "cinematics/alien/fade/miniblink1p.cinemat
 
 local kFadeCameraYOffset = 0.6
 
-function Fade:UpdateClientEffects(deltaTime, isLocal)
-
-    Alien.UpdateClientEffects(self, deltaTime, isLocal)
-
-    if isLocal then
-        self:UpdateBlink2DSound()
-    end
-    
-end
-
-function Fade:UpdateBlink2DSound()
-
-end
-
 function Fade:OnUpdateRender()
     
     PROFILE("Fade:OnUpdateRender")
     Player.OnUpdateRender(self)
 
 end  
-
-function Fade:CreateTrailCinematic()
-
-end
-
-function Fade:DestroyTrailCinematic()
-
-end
 
 function Fade:TriggerFirstPersonMiniBlinkEffect(direction)
 
