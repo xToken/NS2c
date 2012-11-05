@@ -13,6 +13,7 @@ Script.Load("lua/Commander.lua")
 class 'MarineCommander' (Commander)
 
 MarineCommander.kMapName = "marine_commander"
+MarineCommander.kDropSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/commander/drop")
 
 if Client then
     Script.Load("lua/MarineCommander_Client.lua")

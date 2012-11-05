@@ -1,3 +1,4 @@
+ns2c.fev/ns2c/marine/commander/drop
 ns2c.fev/ns2c/marine/weapon/lmg_draw
 ns2c.fev/ns2c/marine/weapon/lmg_fire
 ns2c.fev/ns2c/marine/weapon/lmg_reload
