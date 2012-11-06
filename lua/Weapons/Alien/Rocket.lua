@@ -58,36 +58,20 @@ if Server then
 
     function Rocket:ProcessHit(targetHit)
 
-        if targetHit ~= self:GetOwner() and not self.detonated then
-        
-            local hitEntities
-            if GetGamerules():GetFriendlyFire() then
-                hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kAcidRocketRadius)
-            else
-                hitEntities = GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), kAcidRocketRadius)
-            end
-        
-            // Remove grenade and add firing player.
-            table.removevalue(hitEntities, self)
-            local owner = self:GetOwner()
-            // It is possible this grenade does not have an owner.
-            if owner then
-                table.insertunique(hitEntities, owner)
-            end
-        
+        if (not self:GetOwner() or targetHit ~= self:GetOwner()) and not self:GetIsDestroyed() then
+            local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kAcidRocketRadius)
             RadiusDamage(hitEntities, self:GetOrigin(), kAcidRocketRadius, kAcidRocketDamage, self, true)
             self:TriggerEffects("acidrocket_hit")
             DestroyEntity(self)
-
         end
 
     end
     
     function Rocket:TimeUp(currentRate)
-
-        DestroyEntity(self)
+        if not self:GetIsDestroyed() then
+            DestroyEntity(self)
+        end
         return false
-    
     end
 
 end
