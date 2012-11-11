@@ -203,6 +203,10 @@ function Skulk:OnLeap()
     
 end
 
+function Skulk:GetGroundFrictionForce()
+   return ConditionalValue(self.isUsing, 10, 4)
+end
+
 function Skulk:GetCanWallJump()
     return self:GetIsWallWalking() or (not self:GetIsOnGround() and self:GetAverageWallWalkingNormal(Skulk.kJumpWallRange, Skulk.kJumpWallFeelerSize) ~= nil) and self.lastwalljump + Skulk.kJumpDelay < Shared.GetTime() and not self.crouching 
 end
