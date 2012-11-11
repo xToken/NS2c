@@ -1088,7 +1088,7 @@ function Player:GetGroundFrictionForce()
 end   
 
 function Player:GetAirFrictionForce()
-    return 0.50
+    return 0.0
 end
 
 function Player:GetClimbFrictionForce()
