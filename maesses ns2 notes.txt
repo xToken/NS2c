@@ -1,0 +1,38 @@
+1 foot = 16 goldSrc units = 0,3 meter
+
+Player:OnProcessMove(input)
+	self:AdjustMove(input)
+	self:UpdateViewAngles(input)
+	self:OnUpdatePlayer(input.time)
+	ScriptActor.OnProcessMove(self, input)
+	self:HandleButtons(input)
+
+	GroundMoveMixin:UpdateMove(input)
+		self:PreUpdateMove(input, runningPrediction) // skulk/onos/gorge & lerk uses this
+		self:ComputeForwardVelocity(input) // compute desired velocity (acceleration)
+			Player:ConstrainMoveVelocity(wishVelocity)
+		self:GetFrictionForce(input, velocity)
+		self:GetGravityForce(input)
+		self:ModifyVelocity(input, velocity)
+		self:OnClampSpeed(input, velocity)
+		self:UpdatePosition(velocity, input.time, input.move)
+			Player:UpdatePosition(velocity, time)
+				ControllerMixin:PerformMovement(offset, maxTraces, velocity, isMove)
+					self.controller:Move(offset, CollisionRep.Move, CollisionRep.Move, self:GetMovePhysicsMask())
+		self:PostUpdateMove(input, runningPrediction)
+	self:UpdateMaxMoveSpeed(input.time) 
+
+
+Rough goldSrc movement call-heirachy:
+build wish-direction
+groundtrace
+duck-handling
+jump-handling (if jump, set onground false)
+if onground: walkmove
+	friction
+	accelerate
+	tracing & moving
+else: airmove
+	airaccelerate: calls accelerate
+	tracing & moving
+
