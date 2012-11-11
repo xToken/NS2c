@@ -147,6 +147,7 @@ Player.kMinimumPlayerVelocity = .05    // Minimum player velocity for network pe
 Player.kWalkMaxSpeed = 4             // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
 Player.kRunMaxSpeed = 8
 Player.kAcceleration = 45
+Player.kAirAcceleration = 45
 Player.kAirZMoveWeight = 2.5
 Player.kAirZStrafeWeight = 2.5
 Player.kAirStrafeWeight = 2
@@ -2013,7 +2014,7 @@ function Player:GetMaxSpeed(possible)
 end
 
 function Player:GetAcceleration()
-    return Player.kAcceleration
+    return ConditionalValue(self:GetIsOnGround(), Player.kAcceleration, Player.kAirAcceleration)
 end
 
 // Maximum speed a player can move backwards
