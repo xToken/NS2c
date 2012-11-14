@@ -3,7 +3,7 @@
 
 Script.Load("lua/Marine.lua")
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/GroundMoveMixin.lua")
+Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/MarineActionFinderMixin.lua")
 Script.Load("lua/OrderSelfMixin.lua")

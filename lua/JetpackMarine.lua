@@ -421,6 +421,21 @@ function JetpackMarine:ModifyVelocity(input, velocity)
     
 end
 
+function JetpackMarine:GoldSrc_GetAcceleration()
+    local acceleration = 0
+
+    if self:GetIsJetpacking() then
+
+        acceleration = JetpackMarine.kJetpackAcceleration * 0.11
+        acceleration = acceleration * self:GetInventorySpeedScalar()
+
+    else
+        acceleration = Marine.GoldSrc_GetAcceleration(self)
+    end
+    
+    return acceleration * self:GetSlowSpeedModifier()
+end
+
 function JetpackMarine:GetAcceleration()
 
     local acceleration = 0

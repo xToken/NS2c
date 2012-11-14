@@ -9,7 +9,7 @@
 
 Script.Load("lua/Player.lua")
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/GroundMoveMixin.lua")
+Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/OrderSelfMixin.lua")
 Script.Load("lua/MarineActionFinderMixin.lua")
@@ -102,7 +102,7 @@ local networkVars =
 
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(BaseMoveMixin, networkVars)
-AddMixinNetworkVars(GroundMoveMixin, networkVars)
+AddMixinNetworkVars(CustomGroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(DisruptMixin, networkVars)
@@ -116,7 +116,7 @@ AddMixinNetworkVars(AlienDetectableMixin, networkVars)
 function Marine:OnCreate()
 
     InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
-    InitMixin(self, GroundMoveMixin)
+    InitMixin(self, CustomGroundMoveMixin)
     InitMixin(self, CameraHolderMixin, { kFov = kDefaultFov })
     InitMixin(self, MarineActionFinderMixin)
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })

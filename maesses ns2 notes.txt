@@ -10,10 +10,10 @@ Player:OnProcessMove(input)
 	GroundMoveMixin:UpdateMove(input)
 		self:PreUpdateMove(input, runningPrediction) // skulk/onos/gorge & lerk uses this
 		self:ComputeForwardVelocity(input) // compute desired velocity (acceleration)
-			Player:ConstrainMoveVelocity(wishVelocity)
+			Player:ConstrainMoveVelocity(wishVelocity) // airmove stuff
 		self:GetFrictionForce(input, velocity)
 		self:GetGravityForce(input)
-		self:ModifyVelocity(input, velocity)
+		self:ModifyVelocity(input, velocity) // jump
 		self:OnClampSpeed(input, velocity)
 		self:UpdatePosition(velocity, input.time, input.move)
 			Player:UpdatePosition(velocity, time)

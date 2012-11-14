@@ -14,7 +14,7 @@ Script.Load("lua/Weapons/Alien/DropStructureAbility2.lua")
 Script.Load("lua/Weapons/Alien/Web.lua")
 Script.Load("lua/Weapons/Alien/BileBomb.lua")
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/GroundMoveMixin.lua")
+Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/BuildingMixin.lua")
@@ -34,7 +34,7 @@ local networkVars =
 }
 
 AddMixinNetworkVars(BaseMoveMixin, networkVars)
-AddMixinNetworkVars(GroundMoveMixin, networkVars)
+AddMixinNetworkVars(CustomGroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 
@@ -70,7 +70,7 @@ local kGorgeLeanSpeed = 2
 function Gorge:OnCreate()
 
     InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
-    InitMixin(self, GroundMoveMixin)
+    InitMixin(self, CustomGroundMoveMixin)
     InitMixin(self, CameraHolderMixin, { kFov = kGorgeFov })
     InitMixin(self, BuildingMixin)
     

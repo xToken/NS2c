@@ -560,6 +560,10 @@ function Alien:GetAcceleration()
     return Player.GetAcceleration(self) * self:GetMovementSpeedModifier()
 end
 
+function Alien:GoldSrc_GetAcceleration()
+    return Player.GoldSrc_GetAcceleration(self) * self:GetMovementSpeedModifier()
+end
+
 function Alien:GetCeleritySpeedModifier()
     return kCeleritySpeedModifier
 end

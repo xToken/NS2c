@@ -151,6 +151,9 @@
     <filename>Weapons\Alien\CragAbility.lua</filename>
   </file>
   <file>
+    <filename>Mixins\CustomGroundMoveMixin.lua</filename>
+  </file>
+  <file>
     <filename>DamageEffects.lua</filename>
   </file>
   <file>
