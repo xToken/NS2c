@@ -2406,7 +2406,7 @@ function Player:HandleButtons(input)
     end
     
     self.movementModiferState = newMovementState
-    
+    self.latestinput = input
     self.idle = not (input.move:GetLength() > 0)
     
     local ableToUse = self:GetIsAbleToUse()

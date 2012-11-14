@@ -80,9 +80,14 @@ function GUISpeedDebug:Update(deltaTime)
         local speed = velocity:GetLengthXZ()
         local bonusSpeedFraction = speed / player:GetMaxSpeed()
         local currentFraction = player:GetSpeedDebugSpecial() 
+        
+        local input = ""
+        if player.latestinput then
+            input = string.format("keys: %s", ToString(player.latestinput.move))
+        end
 
         self.momentumFraction:SetSize(Vector(gMomentumBarWidth * bonusSpeedFraction, 30, 0))
-        self.xzSpeed:SetText( string.format( "current speed: %s  vertical speed: %s acceleration angle: %s", ToString(RoundVelocity(speed)), ToString(RoundVelocity(velocity.y)), ToString(currentFraction) ) )
+        self.xzSpeed:SetText( string.format( "current speed: %s  vertical speed: %s acceleration angle: %s %s", ToString(RoundVelocity(speed)), ToString(RoundVelocity(velocity.y)), ToString(currentFraction), input ) )
         
         if currentFraction then
             self.currentFraction:SetSize(Vector(15, -gFractionBarHeight * currentFraction, 0))
