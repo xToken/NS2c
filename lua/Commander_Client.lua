@@ -634,32 +634,40 @@ function Commander:OverrideInput(input)
     input.move.y = 0
     input.move.z = 0
     
-    // Move to position if minimap clicked or idle work clicked
+    // Move to position if minimap clicked or idle work clicked.
+    // Put in yaw and pitch because they are 16 bits
+    // each. Without them we get a "settling" after
+    // clicking the minimap due to differences after
+    // sending to the server
     input.yaw = self.minimapNormX
     input.pitch = self.minimapNormY
-
+    
     if self.setScrollPosition then
     
         input.commands = bit.bor(input.commands, Move.Minimap)
         
-        // Put in yaw and pitch because they are 16 bits
-        // each. Without them we get a "settling" after
-        // clicking the minimap due to differences after
-        // sending to the server        
-        self.setScrollPosition = false
-
+        // self.setScrollPosition is cleared in OnProcessMove() because
+        // this OverrideInput() function is called in intermediate mode
+        // in addition to non-intermediate mode. This means that sometimes
+        // OverrideInput() is called when the move is not going to be sent
+        // to the server which would mean this special Move.Minimap flag
+        // would not be sent and would be lost. So moving the clearing of
+        // the flag into OnProcessMove() fixes this problem as OnProcessMove()
+        // is called right before sending the move to the server.
+        
     end
     
-    if (self.hotkeyGroupButtonPressed) then
+    if self.hotkeyGroupButtonPressed then
     
-        if (self.hotkeyGroupButtonPressed == 1) then
+        if self.hotkeyGroupButtonPressed == 1 then
             input.commands = bit.bor(input.commands, Move.Weapon1)
-        end            
-            
+        end
+        
         self.hotkeyGroupButtonPressed = nil
+        
     end
     
-    if (self.selectHotkeyGroup ~= 0) then
+    if self.selectHotkeyGroup ~= 0 then
     
         // Process hotkey select and send up to server
         if self.selectHotkeyGroup == 1 then
@@ -673,17 +681,17 @@ function Commander:OverrideInput(input)
         elseif self.selectHotkeyGroup == 5 then
             input.commands = bit.bor(input.commands, Move.Weapon5)
         end
-    
+        
         self.selectHotkeyGroup = 0
         
     end
-
+    
     if self.OverrideMove then
         input = self:OverrideMove(input)
     end
-
+    
     return input
-
+    
 end
 
 function Commander:HotkeyGroupButtonPressed(index)

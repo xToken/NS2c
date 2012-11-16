@@ -572,14 +572,11 @@ local function OnMapPostLoad()
 
     // Set sound falloff defaults
     Client.SetMinMaxSoundDistance(7, 100)
-    
-    InitializePathing()
-    
-    //CreateDSPs()
-    
-    Scoreboard_Clear()
-    
-    CheckRules()
+
+    TimedRun("InitPathing", InitializePathing)
+    //TimedRun("CreateDSPs", CreateDSPs)
+    TimedRun("Scoreboard_Clear", Scoreboard_Clear)
+    TimedRun("CheckRules", CheckRules)
     
 end
 

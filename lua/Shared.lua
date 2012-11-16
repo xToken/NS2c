@@ -13,14 +13,15 @@ math.randomseed(Shared.GetSystemTime())
 // math.random() is more random the more you call it. Don't ask.
 for i = 1, 100 do math.random() end
 
+// NOTE: EventTester.lua needs to be loaded first.
+Script.Load("lua/EventTester.lua")
+
 // Utility and constants
 Script.Load("lua/Globals.lua")
 Script.Load("lua/DamageTypes.lua")
 Script.Load("lua/Debug.lua")
 Script.Load("lua/CollisionRep.lua")
 Script.Load("lua/Utility.lua")
-
-Log("Loading VM %s", VMNAME)
 
 Script.Load("lua/MixinUtility.lua")
 Script.Load("lua/Actor.lua")
@@ -98,9 +99,9 @@ Script.Load("lua/ServerParticleEmitter.lua")
 Script.Load("lua/Harvester.lua")
 Script.Load("lua/Hive.lua")
 Script.Load("lua/Crag.lua")
+Script.Load("lua/Whip.lua")
 Script.Load("lua/Shift.lua")
 Script.Load("lua/Shade.lua")
-Script.Load("lua/Whip.lua")
 Script.Load("lua/Hydra.lua")
 Script.Load("lua/Egg.lua")
 Script.Load("lua/Embryo.lua")
@@ -138,7 +139,6 @@ Script.Load("lua/Weapons/Marine/Mines.lua")
 Script.Load("lua/Weapons/Marine/Welder.lua")
 Script.Load("lua/Weapons/Marine/HandGrenades.lua")
 
-Script.Load("lua/Sayings.lua")
 Script.Load("lua/NS2Utility.lua")
 Script.Load("lua/WeaponUtility.lua")
 Script.Load("lua/TeamInfo.lua")

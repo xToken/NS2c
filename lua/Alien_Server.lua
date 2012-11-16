@@ -131,15 +131,19 @@ local kAbilityData = { [kTechId.Skulk] = { kTechId.Parasite, kTechId.Leap, kTech
 function Alien:OnHiveConstructed(newHive, activeHiveCount)
     
     local AbilityData = kAbilityData[self:GetTechId()]
-    if AbilityData[activeHiveCount] ~= nil then
-        SendPlayersMessage({self}, kTeamMessageTypes.ResearchComplete, AbilityData[activeHiveCount])
+    if AbilityData ~= nil then
+        if AbilityData[activeHiveCount] ~= nil then
+            SendPlayersMessage({self}, kTeamMessageTypes.ResearchComplete, AbilityData[activeHiveCount])
+        end
     end
 end
 
 function Alien:OnHiveDestroyed(destroyedHive, activeHiveCount)
     local AbilityData = kAbilityData[self:GetTechId()]
-    if AbilityData[activeHiveCount + 1] ~= nil then
-        SendPlayersMessage({self}, kTeamMessageTypes.ResearchLost, AbilityData[activeHiveCount + 1])
+    if AbilityData ~= nil then
+        if AbilityData[activeHiveCount + 1] ~= nil then
+            SendPlayersMessage({self}, kTeamMessageTypes.ResearchLost, AbilityData[activeHiveCount + 1])
+        end
     end
 end
 

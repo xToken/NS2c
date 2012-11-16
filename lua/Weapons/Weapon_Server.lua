@@ -29,7 +29,7 @@ function Weapon:Dropped(prevOwner)
     
     // when dropped weapons always need a physic model
     if not self.physicsModel then
-        self.physicsModel = Shared.CreatePhysicsModel(self.physicsModelIndex, true, prevOwner:GetCoords(), self)
+        self.physicsModel = Shared.CreatePhysicsModel(self.physicsModelIndex, true, self:GetCoords(), self)
     end
     
     if self.physicsModel then
@@ -63,7 +63,7 @@ function Weapon:SetWeaponWorldState(state)
             
             self.weaponWorldStateTime = Shared.GetTime()
             
-            function DestroyWorldWeapon()
+            local function DestroyWorldWeapon()
             
                 // We need to make sure this callback is still valid. It is possible
                 // for this weapon to be dropped and picked up before this callback fires off
@@ -91,7 +91,7 @@ function Weapon:SetWeaponWorldState(state)
             self:SetPhysicsGroupFilterMask(PhysicsMask.None)
             
             if self.physicsModel then
-				self:DestroyWeaponPhysics()
+                self.physicsModel:SetCCDEnabled(false)
             end
             
         end

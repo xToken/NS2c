@@ -270,7 +270,7 @@ local function OnMessageBuy(client, buyMessage)
 
     local player = client:GetControllingPlayer()
     
-    if player:GetIsAllowedToBuy() then
+    if player and player:GetIsAllowedToBuy() then
     
         local purchaseTechIds = ParseBuyMessage(buyMessage)
         player:ProcessBuyAction(purchaseTechIds)

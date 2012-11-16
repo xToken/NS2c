@@ -203,8 +203,12 @@ local function ShootGrenade(self, player)
         self.lastFiredGrenadeId = grenade:GetId()
         
     end
-
+    
+    TEST_EVENT("Grenade Launcher primary attack")
+    
 end
+
+
 
 function GrenadeLauncher:GetNumStartClips()
     return 2

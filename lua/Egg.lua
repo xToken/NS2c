@@ -275,9 +275,8 @@ local function GestatePlayer(self, player, fromTechId)
     
     newPlayer:DropToFloor()
     
-    local techIds = player:GetUpgrades()
-    
-    table.insert(techIds, self:GetGestateTechId())
+    local techIds = { self:GetGestateTechId() } // player:GetUpgrades()    
+    //table.insert(techIds, self:GetGestateTechId())
 
     newPlayer:SetGestationData(techIds, fromTechId, 1, 1)
     
