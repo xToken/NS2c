@@ -98,13 +98,18 @@ function GetPlayerSizeBasedRespawnTime(team, defaultTime)
 end
 
 function CreateEntityForCommander(techId, position, commander)
-    
+
     local newEnt = CreateEntityForTeam(techId, position, commander:GetTeamNumber(), commander)
     ASSERT(newEnt ~= nil, "Didn't create entity for techId: " .. EnumToString(kTechId, techId))
     
+    // It is possible the new entity was created in a spot where it was instantly destroyed.
+    if newEnt:GetIsDestroyed() then
+        newEnt = nil
+    end
+    
     if newEnt then
     
-        newEnt:SetOwner(commander)        
+        newEnt:SetOwner(commander)
         
     end
     

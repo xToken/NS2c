@@ -458,7 +458,13 @@ function ClipWeapon:GetIsDroppable()
 end
 
 function ClipWeapon:CanReload()
-    return self.ammo > 0 and self.clip < self:GetClipSize() and not self.reloading and not self.blockingSecondary
+
+    return self.ammo > 0 and
+           self.clip < self:GetClipSize() and
+           not self.reloading and
+           not self.blockingPrimary and
+           not self.blockingSecondary
+    
 end
 
 function ClipWeapon:OnReload(player)

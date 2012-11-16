@@ -93,6 +93,8 @@ local function Detonate(self, armFunc)
     
     DestroyEntity(self)
     
+    TEST_EVENT("Mine detonated")
+    
 end
 
 local function Arm(self)
@@ -198,6 +200,8 @@ if Server then
         end
         
         ScriptActor.OnKill(self, attacker, doer, point, direction)
+        
+        TEST_EVENT("Mine destroyed")
         
     end
     

@@ -281,7 +281,9 @@ function Pistol:FirePrimary(player)
     ClipWeapon.FirePrimary(self, player)
     
     self:TriggerEffects("pistol_attack")
-
+    
+    TEST_EVENT("Pistol primary attack")
+    
 end
 
 Shared.LinkClassToMap("Pistol", Pistol.kMapName, networkVars)

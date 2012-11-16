@@ -641,7 +641,7 @@ function Marine:GetCanDropWeapon(weapon, ignoreDropTimeLimit)
 end
 
 // Do basic prediction of the weapon drop on the client so that any client
-// effects for the weapon can be dealt with
+// effects for the weapon can be dealt with.
 function Marine:Drop(weapon, ignoreDropTimeLimit, ignoreReplacementWeapon)
 
     local activeWeapon = self:GetActiveWeapon()
@@ -651,17 +651,17 @@ function Marine:Drop(weapon, ignoreDropTimeLimit, ignoreReplacementWeapon)
     end
     
     if self:GetCanDropWeapon(weapon, ignoreDropTimeLimit) then
-        
+    
         if weapon == activeWeapon then
             self:SelectNextWeapon()
         end
-    
-        weapon:OnPrimaryAttackEnd(self)
-    
-        // Remove from player's inventory
-        if Server then
-            self:RemoveWeapon(weapon)
         
+        weapon:OnPrimaryAttackEnd(self)
+        
+        if Server then
+        
+            self:RemoveWeapon(weapon)
+            
             local weaponSpawnCoords = self:GetAttachPointCoords(Weapon.kHumanAttachPoint)
             weapon:SetCoords(weaponSpawnCoords)
             

@@ -39,6 +39,8 @@ function MedPack:OnTouch(recipient)
 
     StartSoundEffectAtOrigin(MedPack.kHealthSound, self:GetOrigin())
     
+    TEST_EVENT("Commander MedPack picked up")
+    
 end
 
 function MedPack:GetIsValidRecipient(recipient)
@@ -56,7 +58,7 @@ function GetAttachToMarineRequiresHealth(entity)
     end
     
     return valid
-
+    
 end
 
 Shared.LinkClassToMap("MedPack", MedPack.kMapName)
