@@ -38,7 +38,7 @@ function Alien:TeleportToHive(usedhive)
         //Success, now teleport the player, try 10 times?
         for i = 1, 10 do
             local position = table.random(selectedhive.eggSpawnPoints)
-            local validForPlayer = GetIsPlacementForTechId(position, true, self:GetTechId())
+            local validForPlayer = GetIsPlacementForTechId(position, self:GetTechId())
             local notNearResourcePoint = #GetEntitiesWithinRange("ResourcePoint", position, 2) == 0
 
             if validForPlayer and notNearResourcePoint then

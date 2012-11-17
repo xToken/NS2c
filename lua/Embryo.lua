@@ -291,9 +291,7 @@ if Server then
                 
             end
             
-            // Take into account catalyst effects
-            local amount = GetAlienCatalystTimeAmount(deltaTime, self)
-            self.evolveTime = self.evolveTime + deltaTime + amount
+            self.evolveTime = self.evolveTime + deltaTime
             
             self.evolvePercentage = Clamp((self.evolveTime / self.gestationTime) * 100, 0, 100)
             

@@ -806,75 +806,6 @@ if Server then
         
     end
     
-    local function UpdateAutoTeamBalance(self, dt)
-    
-        local wasDisabled = false
-        
-        // Check if auto-team balance should be enabled or disabled.
-        local autoTeamBalance = Server.GetConfigSetting("auto_team_balance")
-        if autoTeamBalance then
-        
-            local enabledOnUnbalanceAmount = autoTeamBalance.enabled_on_unbalance_amount or 2
-            // Prevent the unbalance amount from being 0 or less.
-            enabledOnUnbalanceAmount = enabledOnUnbalanceAmount > 0 and enabledOnUnbalanceAmount or 2
-            local enabledAfterSeconds = autoTeamBalance.enabled_after_seconds or 10
-            
-            local team1Players = self.team1:GetNumPlayers()
-            local team2Players = self.team2:GetNumPlayers()
-            
-            local unbalancedAmount = math.abs(team1Players - team2Players)
-            if unbalancedAmount >= enabledOnUnbalanceAmount then
-            
-                if not self.autoTeamBalanceEnabled then
-                
-                    self.teamsUnbalancedTime = self.teamsUnbalancedTime or 0
-                    self.teamsUnbalancedTime = self.teamsUnbalancedTime + dt
-                    
-                    if self.teamsUnbalancedTime >= enabledAfterSeconds then
-                    
-                        self.autoTeamBalanceEnabled = true
-                        if team1Players > team2Players then
-                            self.team1:SetAutoTeamBalanceEnabled(true, unbalancedAmount)
-                        else
-                            self.team2:SetAutoTeamBalanceEnabled(true, unbalancedAmount)
-                        end
-                        
-                        SendTeamMessage(self.team1, kTeamMessageTypes.TeamsUnbalanced)
-                        SendTeamMessage(self.team2, kTeamMessageTypes.TeamsUnbalanced)
-                        Print("Auto-team balance enabled")
-                        
-                        TEST_EVENT("Auto-team balance enabled")
-                        
-                    end
-                    
-                end
-                
-            // The autobalance system itself has turned itself off.
-            elseif self.autoTeamBalanceEnabled then
-                wasDisabled = true
-            end
-            
-        // The autobalance system was turned off by the admin.
-        elseif self.autoTeamBalanceEnabled then
-            wasDisabled = true
-        end
-        
-        if wasDisabled then
-        
-            self.team1:SetAutoTeamBalanceEnabled(false)
-            self.team2:SetAutoTeamBalanceEnabled(false)
-            self.teamsUnbalancedTime = 0
-            self.autoTeamBalanceEnabled = false
-            SendTeamMessage(self.team1, kTeamMessageTypes.TeamsBalanced)
-            SendTeamMessage(self.team2, kTeamMessageTypes.TeamsBalanced)
-            Print("Auto-team balance disabled")
-            
-            TEST_EVENT("Auto-team balance disabled")
-            
-        end
-        
-    end
-    
     local function CheckForNoCommander(self, onTeam, commanderType)
 
         self.noCommanderStartTime = self.noCommanderStartTime or { }
@@ -926,7 +857,6 @@ if Server then
                 self:UpdatePregame(timePassed)
                 self:UpdateToReadyRoom()
                 self:UpdateMapCycle()
-                //UpdateAutoTeamBalance(self, timePassed)
                 
                 self.timeSinceGameStateChanged = self.timeSinceGameStateChanged + timePassed
                 
@@ -1257,21 +1187,6 @@ if Server then
                 local team1Players = self.team1:GetNumPlayers()
                 local team2Players = self.team2:GetNumPlayers()
                 local totalCount = team1Players + team2Players
-                
-                /*
-                // This is an optional end condition based on the teams being unbalanced.
-                local endGameOnUnbalancedAmount = Server.GetConfigSetting("end_round_on_team_unbalance")
-                // Don't consider unbalanced game end until enough people are playing.
-                if totalCount > 6 and endGameOnUnbalancedAmount and endGameOnUnbalancedAmount ~= 0 then
-                
-                    if (1 - (team1Players / team2Players)) >= endGameOnUnbalancedAmount then
-                        team1Lost = true
-                    elseif (1 - (team2Players / team1Players)) >= endGameOnUnbalancedAmount then
-                        team2Lost = true
-                    end
-                    
-                end
-                */
                 
                 if (team1Lost and team2Lost) or (team1Won and team2Won) then
                     self:DrawGame()

@@ -544,12 +544,6 @@
     <filename>PrototypeLab.lua</filename>
   </file>
   <file>
-    <filename>PrototypeLab_Client.lua</filename>
-  </file>
-  <file>
-    <filename>PrototypeLab_Server.lua</filename>
-  </file>
-  <file>
     <filename>ReadyRoomTeam.lua</filename>
   </file>
   <file>
@@ -593,9 +587,6 @@
   </file>
   <file>
     <filename>Server.lua</filename>
-  </file>
-  <file>
-    <filename>ServerBrowser_Test.lua</filename>
   </file>
   <file>
     <filename>Shade.lua</filename>
@@ -700,16 +691,7 @@
     <filename>VoteManager.lua</filename>
   </file>
   <file>
-    <filename>Weapons\Weapon.lua</filename>
-  </file>
-  <file>
-    <filename>WeaponOwnerMixin.lua</filename>
-  </file>
-  <file>
     <filename>WeaponUtility.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Weapon_Server.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\Web.lua</filename>

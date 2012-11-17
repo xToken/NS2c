@@ -36,7 +36,7 @@ function Pistol:OnCreate()
 
     ClipWeapon.OnCreate(self)
     
-    InitMixin(self, PickupableWeaponMixin, { kRecipientType = "Marine" })
+    InitMixin(self, PickupableWeaponMixin)
     
     self.altMode = false
     self.emptyPoseParam = 0
@@ -166,22 +166,7 @@ end
 function Pistol:GetHasSecondary(player)
     return false
 end
-/*
-function Pistol:OnTouch(recipient)
-    recipient:AddWeapon(self, false)
-    Shared.PlayWorldSound(nil, Marine.kGunPickupSound, nil, recipient:GetOrigin())
-end
 
-function Pistol:GetIsValidRecipient(player)
-    if player then
-        local hasWeapon = player:GetWeaponInHUDSlot(self:GetHUDSlot())
-        if (not hasWeapon) and self.droppedtime + kPickupWeaponTimeLimit < Shared.GetTime() then
-            return true
-        end
-    end
-    return false
-end
-*/
 function Pistol:GetViewModelName()
     return kViewModelName
 end

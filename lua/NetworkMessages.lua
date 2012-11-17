@@ -116,9 +116,6 @@ local kDamageMessage =
 function BuildDamageMessage(target, amount, hitpos)
     
     local t = {}
-    if hitpos.x > kHitEffectMaxPosition or hitpos.x < -kHitEffectMaxPosition then
-        assert(false)
-    end
     t.posx = hitpos.x
     t.posy = hitpos.y
     t.posz = hitpos.z
@@ -678,7 +675,7 @@ local kTechNodeBaseMessage =
     // This node is an upgrade, addition, evolution or add-on to another node
     // This includes an alien upgrade for a specific lifeform or an alternate
     // ammo upgrade for a weapon. For research nodes, they can only be triggered
-    // on structures of this type (ie versions of a structure).
+    // on structures of this type (ie, mature versions of a structure).
     addOnTechId         = string.format("integer (0 to %d)", kTechIdMax),
 
     // Resource costs (team resources, individual resources or energy depending on type)

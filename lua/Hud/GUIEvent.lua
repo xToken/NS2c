@@ -55,7 +55,7 @@ local function GetUnlockIconParams(unlockId)
         kUnlockIconParams[kTechId.Weapons2] = { techLevel = 2, coords = { 0, 9 * kUnlockIconHeight, kUnlockIconWidth, 10 * kUnlockIconHeight }, description = "EVT_WEAPON_LEVEL_2_RESEARCHED" }
         kUnlockIconParams[kTechId.Weapons3] = { techLevel = 3, coords = { 0, 9 * kUnlockIconHeight, kUnlockIconWidth, 10 * kUnlockIconHeight }, description = "EVT_WEAPON_LEVEL_3_RESEARCHED" }
         
-        //kUnlockIconParams[kTechId.Leap] = { techLevel = 2, coords = { 0, 3 * kUnlockIconHeight, kUnlockIconWidth, 4 * kUnlockIconHeight }, description = "EVT_LEAP_RESEARCHED" }
+        kUnlockIconParams[kTechId.Leap] = { techLevel = 2, coords = { 0, 3 * kUnlockIconHeight, kUnlockIconWidth, 4 * kUnlockIconHeight }, description = "EVT_LEAP_RESEARCHED" }
         //kUnlockIconParams[kTechId.BileBomb] = { techLevel = 2, coords = { 0, 4 * kUnlockIconHeight, kUnlockIconWidth, 5 * kUnlockIconHeight }, description = "EVT_BILE_BOMB_RESEARCHED" }
         //kUnlockIconParams[kTechId.Spores] = { techLevel = 2, coords = { 0, 5 * kUnlockIconHeight, kUnlockIconWidth, 6 * kUnlockIconHeight }, description = "EVT_SPORES_RESEARCHED" }
         //kUnlockIconParams[kTechId.Metabolize] = { techLevel = 2, coords = { 0, 6 * kUnlockIconHeight, kUnlockIconWidth, 7 * kUnlockIconHeight }, description = "EVT_BLINK_RESEARCHED" }

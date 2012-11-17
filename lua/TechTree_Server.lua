@@ -61,7 +61,7 @@ function TechTree:AddOrder(techId)
     
 end
 
-// a child tech can be used a requirement in case there is no parent tech available (structures, upgraded robotics factory, etc)
+// a child tech can be used a requirement in case there is no parent tech available (mature structures, upgraded robotics factory, etc)
 function TechTree:AddTechInheritance(parentTech, childTech)
 
     if not self.techInheritance then

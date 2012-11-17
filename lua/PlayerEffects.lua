@@ -10,13 +10,7 @@ kPlayerEffectData =
 {
 
     // when hit by emp blast
-    enzymed =
-    {
-        enzymedEffects =
-        {
-            {parented_cinematic = "cinematics/alien/enzymed.cinematic", done = true},
-        }
-    },
+
 
     celerity_start =
     {

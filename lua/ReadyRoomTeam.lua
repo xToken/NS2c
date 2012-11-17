@@ -43,8 +43,7 @@ function ReadyRoomTeam:GetRespawnMapName(player)
     // We cannot currently allow the JetpackMarine in the Ready Room because
     // his Jetpack is destroyed when the game is reset and JetpackMarine
     // expects that the Jetpack always exists.
-    if mapName == Embryo.kMapName or
-       mapName == JetpackMarine.kMapName then
+    if mapName == Embryo.kMapName then
         mapName = ReadyRoomPlayer.kMapName
     end
     return mapName

@@ -53,6 +53,14 @@ local function ClearGhostStructure(self)
     
 end
 
+function GhostStructureMixin:PerformAction(techNode, position)
+
+    if techNode.techId == kTechId.Cancel and self:GetIsGhostStructure() then
+        ClearGhostStructure(self)
+    end
+    
+end
+
 if Server then
 
     local function CheckGhostState(self, doer)
@@ -63,15 +71,7 @@ if Server then
         
     end
     
-    // listen to game effect mask change of umbra
-    function GhostStructureMixin:OnUse(player, elapsedTime, useAttachPoint, usePoint, useSuccessTable)
-        CheckGhostState(self, player)
-    end
-    
-    function GhostStructureMixin:OnWeld(doer, elapsedTime)
-        CheckGhostState(self, doer)
-    end
-    
+	// If we start constructing, make us no longer a ghost
     function GhostStructureMixin:OnConstruct(builder, buildPercentage)
         CheckGhostState(self, builder)
     end

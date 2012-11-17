@@ -70,7 +70,6 @@ function OnCommandReset()
         
         player.guiSpectator.guiTech.gUpgradeIcons["Armor1"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.Armor1, true)))
         player.guiSpectator.guiTech.gUpgradeIcons["Weapons1"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.Weapons1, true)))
-        
         player.guiSpectator.guiTech.gUpgradeIcons["Leap"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.Leap, false)))
         player.guiSpectator.guiTech.gUpgradeIcons["BileBomb"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.BileBomb, false)))
         player.guiSpectator.guiTech.gUpgradeIcons["Umbra"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.Umbra, false)))
