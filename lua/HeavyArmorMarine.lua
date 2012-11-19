@@ -45,9 +45,6 @@ HeavyArmorMarine.kSpendResourcesSoundName = PrecacheAsset("sound/NS2.fev/marine/
 HeavyArmorMarine.kChatSound = PrecacheAsset("sound/NS2.fev/marine/common/chat")
 HeavyArmorMarine.kSoldierLostAlertSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/soldier_lost")
 
-HeavyArmorMarine.kFlinchEffect = PrecacheAsset("cinematics/marine/hit.cinematic")
-HeavyArmorMarine.kFlinchBigEffect = PrecacheAsset("cinematics/marine/hit_big.cinematic")
-
 HeavyArmorMarine.kEffectNode = "fxnode_playereffect"
 HeavyArmorMarine.kHealth = kHeavyArmorHealth
 HeavyArmorMarine.kBaseArmor = kHeavyArmorArmor

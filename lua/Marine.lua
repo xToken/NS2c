@@ -61,9 +61,6 @@ Marine.kSpendResourcesSoundName = PrecacheAsset("sound/NS2.fev/marine/common/pla
 Marine.kChatSound = PrecacheAsset("sound/NS2.fev/marine/common/chat")
 Marine.kSoldierLostAlertSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/soldier_lost")
 
-Marine.kFlinchEffect = PrecacheAsset("cinematics/marine/hit.cinematic")
-Marine.kFlinchBigEffect = PrecacheAsset("cinematics/marine/hit_big.cinematic")
-
 Marine.kEffectNode = "fxnode_playereffect"
 Marine.kHealth = kMarineHealth
 Marine.kBaseArmor = kMarineArmor

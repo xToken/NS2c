@@ -186,8 +186,6 @@ function Shotgun:FirePrimary(player)
 
 end
 
-//
-
 function Shotgun:OnProcessMove(input)
     ClipWeapon.OnProcessMove(self, input)
     self.emptyPoseParam = Clamp(Slerp(self.emptyPoseParam, ConditionalValue(self.clip == 0, 1, 0), input.time * 1), 0, 1)

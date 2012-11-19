@@ -123,12 +123,11 @@ function Rifle:GetWeight()
     return kRifleWeight
 end
 
-function Rifle:GetSecondaryCanInterruptReload()
-    return true
-end
-
 function Rifle:GetBarrelSmokeEffect()
     return Rifle.kBarrelSmokeEffect
+end
+
+function Rifle:OnSecondaryAttack(player)
 end
 
 function Rifle:GetShellEffect()
