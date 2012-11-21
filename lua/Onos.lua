@@ -141,7 +141,7 @@ function Onos:GetCanCrouch()
 end
 
 function Onos:GoldSrc_GetAcceleration()
-    local acceleration = Alien.GoldSrc_GetAcceleration()
+    local acceleration = Alien.GoldSrc_GetAcceleration(self)
     if self.charging then
         acceleration = acceleration + Onos.kChargeAcceleration * self:GetChargeFraction()  * 0.11
     end
@@ -320,6 +320,22 @@ end
 
 function Onos:GetMaxViewOffsetHeight()
     return Onos.kViewOffsetHeight
+end
+
+function Onos:GoldSrc_GetMaxSpeed(possible)
+
+    if possible then
+        return Onos.kMaxSpeed
+    end
+    
+    local maxSpeed = Onos.kMaxSpeed
+    
+    if self.charging then
+        maxSpeed = Onos.kMaxChargeSpeed
+    end
+
+    return maxSpeed * self:GetMovementSpeedModifier()
+
 end
 
 function Onos:GetMaxSpeed(possible)

@@ -141,7 +141,7 @@ end
 
 function Fade:GetCanJump()
     if self:GetIsBlinking() then
-        return true
+        return false
     end
     return Alien.GetCanJump(self)
 end
@@ -151,6 +151,8 @@ function Fade:HandleJump(input, velocity)
     local success = false
     
     if self:GetCanJump() then
+    
+        self:PreventMegaBunnyJumping(velocity)
     
         // Compute the initial velocity to give us the desired jump
         // height under the force of gravity.
@@ -168,7 +170,9 @@ function Fade:HandleJump(input, velocity)
         
         self.timeOfLastJump = Shared.GetTime()
         
-        self.onGroundNeedsUpdate = true
+        // Velocity may not have been set yet, so force onGround to false this frame
+        self.onGroundNeedsUpdate = false
+        self.onGround = false
         
         self.jumping = true
         success = true
@@ -181,6 +185,20 @@ end
 
 function Fade:GetIsOnGround()    
     return Alien.GetIsOnGround(self)
+end
+
+function Fade:GoldSrc_GetMaxSpeed(possible)
+    if possible then
+        return Fade.kMaxSpeed
+    end
+    
+    local maxSpeed = Fade.kMaxSpeed
+        
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = Fade.kWalkSpeed
+    end
+    
+    return maxSpeed * self:GetMovementSpeedModifier()
 end
 
 function Fade:GetMaxSpeed(possible)

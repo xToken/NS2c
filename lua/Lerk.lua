@@ -241,6 +241,10 @@ function Lerk:OverrideAirControl()
     return true
 end
 
+function Lerk:GetCanCrouch()
+    return false
+end
+
 function Lerk:OverrideJumpQueue()
     return true
 end
@@ -340,6 +344,10 @@ function Lerk:HandleJump(input, velocity)
         velocity.y = velocity.y + kJumpImpulse
         
         self.timeOfLastJump = Shared.GetTime()
+        
+        // Velocity may not have been set yet, so force onGround to false this frame
+        self.onGroundNeedsUpdate = false
+        self.onGround = false
         
         self.lastTimeFlapped = Shared.GetTime()
         

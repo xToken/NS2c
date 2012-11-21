@@ -147,6 +147,10 @@ function Gorge:GetExtentsCrouchShrinkAmount()
     return 0
 end
 
+function Gorge:GetCanCrouch()
+    return false
+end
+
 function Gorge:GetViewModelName()
     return kViewModelName
 end
@@ -267,6 +271,30 @@ end
 
 function Gorge:SetCrouchState(newCrouchState)
     self.crouching = newCrouchState
+end
+
+function Gorge:GoldSrc_GetFriction()
+    if self:GetIsBellySliding() then
+        return Player.kGoldSrcFriction * 0.2
+    else
+        return Player.kGoldSrcFriction
+    end
+end
+
+function Gorge:GoldSrc_GetMaxSpeed(possible)
+    
+    if possible then
+        return Gorge.kMaxSpeed
+    end
+    
+    local maxSpeed = Gorge.kMaxSpeed
+    /*
+    if self:GetIsBellySliding() then
+        maxSpeed = Gorge.kMaxSlideSpeed
+    end
+    */
+    return maxSpeed * self:GetMovementSpeedModifier()
+    
 end
 
 function Gorge:GetMaxSpeed(possible)

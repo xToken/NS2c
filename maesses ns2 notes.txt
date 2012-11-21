@@ -1,3 +1,39 @@
+Check if missing any functionality from un-called versions of OnClampSpeed and ModifyVelocity
+
+Fix:
+Jetpackmarine too much jump acceleration & bunnyhop OP
+Walking down on sloped surfaces bouncyness
+Collision jitter when touching multiple surfaces at the same time (probably wallwalking to blame)
+
+Investigate:
+Does all classes in NS1 slow down when holding use?
+
+
+To tweak:
+Cooldown on pogostick jumping to avoid abuse?
+Heavy friction & speed
+Jetpack marine should jump?
+Lerk friction&gravity
+
+AirAcceleration & maxAirVeer :
+	problem: Very very hard to tweak without being "too much" or "too little" or otherwise changing the feel.
+	idea: interpolate input commands and simulate acceleration&friction at 60+ hz
+Fade:
+	Blink acceleration
+Gorge:
+	slide & general movement seem a bit too fast
+	Spit is choppy when moving through the world (probably a sideeffect of how they handle projectiles)
+	building menu is a bit fumbly
+Onos:
+	Crouching sometimes gets you temporarily stuck
+	Verify charge is working like it should
+	Increase visual turnspeed
+	Collision box is very small, making bunnyhopping much easier (too easy I think)
+
+
+------------
+
+
 1 foot = 16 goldSrc units = 0,3 meter
 
 Player:OnProcessMove(input)
@@ -6,6 +42,7 @@ Player:OnProcessMove(input)
 	self:OnUpdatePlayer(input.time)
 	ScriptActor.OnProcessMove(self, input)
 	self:HandleButtons(input)
+		self:SetCrouchState // duck
 
 	GroundMoveMixin:UpdateMove(input)
 		self:PreUpdateMove(input, runningPrediction) // skulk/onos/gorge & lerk uses this
