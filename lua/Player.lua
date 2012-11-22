@@ -147,7 +147,7 @@ Player.kMinimumPlayerVelocity = .05    // Minimum player velocity for network pe
 Player.kWalkMaxSpeed = 4             // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
 Player.kRunMaxSpeed = 8
 Player.kAcceleration = 45
-Player.kGoldSrcAcceleration = 10
+Player.kGoldSrcAcceleration = 7
 Player.kGoldSrcAirAcceleration = 50
 Player.kGoldSrcFriction = 4
 Player.kBunnyJumpMaxSpeedFactor = 1.7
