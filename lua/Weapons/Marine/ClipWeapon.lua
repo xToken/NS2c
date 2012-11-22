@@ -405,10 +405,10 @@ local function FireBullets(self, player)
 
         
         // Check prediction
-        local values = GetPredictionValues(startPoint, endPoint, trace)
+        /*local values = GetPredictionValues(startPoint, endPoint, trace)
         if not CheckPredictionData( string.format("attack%d", bullet), true, values ) then
             Server.PlayPrivateSound(player, "sound/NS2.fev/marine/voiceovers/game_start", player, 1.0, Vector(0, 0, 0))
-        end
+        end*/
         
             
         // don't damage 'air'..

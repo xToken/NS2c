@@ -10,6 +10,7 @@
 decoda_name = "Client"
 
 Script.Load("lua/Shared.lua")
+Script.Load("lua/Effect.lua")
 Script.Load("lua/GhostModelUI.lua")
 Script.Load("lua/Render.lua")
 Script.Load("lua/MapEntityLoader.lua")

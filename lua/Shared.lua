@@ -92,7 +92,6 @@ Script.Load("lua/DropPack.lua")
 Script.Load("lua/AmmoPack.lua")
 Script.Load("lua/MedPack.lua")
 Script.Load("lua/CatPack.lua")
-Script.Load("lua/Effect.lua")
 Script.Load("lua/ServerParticleEmitter.lua")
 
 // Alien structures

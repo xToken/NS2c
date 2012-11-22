@@ -234,11 +234,11 @@ local networkVars =
     
     // Set to true when jump key has been released after jump processed
     // Used to require the key to pressed multiple times
-    jumpHandled = "private boolean",
+    jumpHandled = "private compensated boolean",
     timeOfLastJump = "private time",
     jumping = "compensated boolean",
     onGround = "compensated boolean",
-    onGroundNeedsUpdate = "private boolean",
+    onGroundNeedsUpdate = "private compensated boolean",
     
     onLadder = "boolean",
     

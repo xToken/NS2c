@@ -19,6 +19,10 @@ if Client then
     PrecacheAsset("ui/buildmenu.dds")
 end
 
+function GetIsRecycledUnit(unit)
+    return unit ~= nil and HasMixin(unit, "Recycle") and unit:GetIsRecycled()
+end
+
 function GetGameInfoEntity()
 
     local entityList = Shared.GetEntitiesWithClassname("GameInfo")
