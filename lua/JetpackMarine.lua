@@ -362,6 +362,37 @@ function JetpackMarine:GetInventorySpeedScalar()
     return 1 - (self:GetWeaponsWeight() / kJetpackWeightAssist)
 end
 
+function JetpackMarine:GoldSrc_GetMaxSpeed(possible)
+
+    if possible then
+        return JetpackMarine.kRunMaxSpeed
+    end
+    
+    if self:GetIsDisrupted() then
+        return 0
+    end
+    
+    local maxSpeed = JetpackMarine.kRunMaxSpeed
+    
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = JetpackMarine.kWalkMaxSpeed
+    end
+    
+    // GetIsOnGround is used to not lose our jetpacking speed when jump is released to lose height
+    if self:GetIsJetpacking() or not self:GetIsOnGround() then
+        maxSpeed = JetpackMarine.kFlyMaxSpeed
+    end
+    
+    // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
+    local inventorySpeedScalar = self:GetInventorySpeedScalar()
+
+    local adjustedMaxSpeed = maxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier() * inventorySpeedScalar 
+    //Print("Adjusted max speed => %.2f (without inventory: %.2f)", adjustedMaxSpeed, adjustedMaxSpeed / inventorySpeedScalar )
+    
+    return adjustedMaxSpeed
+    
+end
+
 function JetpackMarine:GetMaxSpeed(possible)
 
     if possible then

@@ -93,17 +93,13 @@ function CustomGroundMoveMixin:UpdateMove(input)
         velocity.y = oldvelocity
     end
     
-    
     local wishdir = self:GoldSrc_GetWishVelocity(input)
     local wishspeed = wishdir:Normalize()
-    
     
     // Take into account crouching
     if self:GetCanCrouch() and self:GetCrouched() and self:GetIsOnGround() then
         wishspeed = self:GetCrouchSpeedScalar() * wishspeed
     end
-    
-    
     
     // Jump
     self:ModifyVelocity(input, velocity)

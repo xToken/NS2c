@@ -78,7 +78,7 @@ function GUISpeedDebug:Update(deltaTime)
 
         local velocity = player:GetVelocity()
         local speed = velocity:GetLengthXZ()
-        local bonusSpeedFraction = speed / player:GetMaxSpeed()
+        local bonusSpeedFraction = speed / player:GoldSrc_GetMaxSpeed()
         local currentFraction = player:GetSpeedDebugSpecial() 
         
         local input = ""

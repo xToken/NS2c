@@ -466,6 +466,22 @@ function Skulk:UpdateCrouch()
     
 end
 
+function Skulk:GoldSrc_GetMaxSpeed(possible)
+
+    if possible then
+        return Skulk.kMaxSpeed
+    end
+    
+    local maxSpeed = Skulk.kMaxSpeed
+    
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = Skulk.kMaxWalkSpeed
+    end
+
+    return maxSpeed * self:GetMovementSpeedModifier()
+    
+end
+
 function Skulk:GetMaxSpeed(possible)
 
     if possible then

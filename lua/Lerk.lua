@@ -206,6 +206,33 @@ function Lerk:ReceivesFallDamage()
 end
 
 // Gain speed gradually the longer we stay in the air
+function Lerk:GoldSrc_GetMaxSpeed(possible)
+
+    if possible then
+        return 13
+    end
+
+    local speed = kMaxWalkSpeed
+    if not self:GetIsOnGround() then
+    
+        local kBaseAirScalar = 1.2      // originally 0.5
+        local kAirTimeToMaxSpeed = 5  // originally 10
+        local airTimeScalar = Clamp((Shared.GetTime() - self.timeLastOnGround) / kAirTimeToMaxSpeed, 0, 1)
+        local speedScalar = kBaseAirScalar + airTimeScalar * (1 - kBaseAirScalar)
+        speed = kMaxWalkSpeed + speedScalar * (kMaxSpeed - kMaxWalkSpeed)
+        
+        // half max speed while the walk key is pressed
+        if self.movementModiferState then
+            speed = speed * 0.5
+        end
+        
+    end 
+    
+    return speed * self:GetMovementSpeedModifier()
+    
+end
+
+// Gain speed gradually the longer we stay in the air
 function Lerk:GetMaxSpeed(possible)
 
     if possible then
