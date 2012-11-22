@@ -147,11 +147,11 @@ Player.kMinimumPlayerVelocity = .05    // Minimum player velocity for network pe
 Player.kWalkMaxSpeed = 4             // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
 Player.kRunMaxSpeed = 8
 Player.kAcceleration = 45
-Player.kGoldSrcAcceleration = 6
-Player.kGoldSrcAirAcceleration = 30
-Player.kGoldSrcFriction = 5
+Player.kGoldSrcAcceleration = 10
+Player.kGoldSrcAirAcceleration = 50
+Player.kGoldSrcFriction = 4
 Player.kBunnyJumpMaxSpeedFactor = 1.7
-Player.kMaxAirVeer = 2.5
+Player.kMaxAirVeer = 1.2
 Player.kAirZMoveWeight = 2.5
 Player.kAirZStrafeWeight = 2.5
 Player.kAirStrafeWeight = 2
@@ -1203,7 +1203,7 @@ function Player:GoldSrc_Friction(input, velocity)
             friction = self:GetClimbFrictionForce()
         end
         
-        local stopspeed = self:GetStopSpeed() * 0.5
+        local stopspeed = self:GetStopSpeed()
         // Bleed off some speed, but if we have less than the bleed
 		//  threshhold, bleed the theshold amount.
         local control = (speed < stopspeed) and stopspeed or speed
