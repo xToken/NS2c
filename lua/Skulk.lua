@@ -13,7 +13,7 @@ Script.Load("lua/Weapons/Alien/Parasite.lua")
 Script.Load("lua/Weapons/Alien/XenocideLeap.lua")
 Script.Load("lua/Alien.lua")
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/GroundMoveMixin.lua")
+Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/WallMovementMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
@@ -50,7 +50,7 @@ local networkVars =
 }
 
 AddMixinNetworkVars(BaseMoveMixin, networkVars)
-AddMixinNetworkVars(GroundMoveMixin, networkVars)
+AddMixinNetworkVars(CustomGroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 
@@ -95,7 +95,7 @@ Skulk.kZExtents = .45
 function Skulk:OnCreate()
 
     InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
-    InitMixin(self, GroundMoveMixin)
+    InitMixin(self, CustomGroundMoveMixin)
     InitMixin(self, CameraHolderMixin, { kFov = kSkulkFov })
     InitMixin(self, WallMovementMixin)
     
@@ -201,6 +201,10 @@ function Skulk:OnLeap()
     self.timeOfLeap = Shared.GetTime()
     self.timeOfLastJump = Shared.GetTime()
     
+end
+
+function Skulk:GetCanCrouch()
+    return false
 end
 
 function Skulk:GetCanWallJump()
@@ -459,6 +463,22 @@ end
 function Skulk:UpdateCrouch()
 
     // Skulks cannot crouch!
+    
+end
+
+function Skulk:GoldSrc_GetMaxSpeed(possible)
+
+    if possible then
+        return Skulk.kMaxSpeed
+    end
+    
+    local maxSpeed = Skulk.kMaxSpeed
+    
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = Skulk.kMaxWalkSpeed
+    end
+
+    return maxSpeed * self:GetMovementSpeedModifier()
     
 end
 

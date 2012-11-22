@@ -16,7 +16,7 @@ Script.Load("lua/Weapons/Alien/LerkBiteUmbra.lua")
 Script.Load("lua/Weapons/Alien/LerkBitePrimal.lua")
 Script.Load("lua/Weapons/Alien/LerkBiteSpikes.lua")
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/GroundMoveMixin.lua")
+Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/WallMovementMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
@@ -58,7 +58,7 @@ local networkVars =
 }
 
 AddMixinNetworkVars(BaseMoveMixin, networkVars)
-AddMixinNetworkVars(GroundMoveMixin, networkVars)
+AddMixinNetworkVars(CustomGroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 
 // if the user hits a wall and holds the use key and the resulting speed is < this, grip starts
@@ -95,7 +95,7 @@ local kDefaultAttackSpeed = 1.65
 function Lerk:OnCreate()
 
     InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
-    InitMixin(self, GroundMoveMixin)
+    InitMixin(self, CustomGroundMoveMixin)
     InitMixin(self, CameraHolderMixin, { kFov = kLerkFov })
     InitMixin(self, WallMovementMixin)
     
@@ -206,6 +206,33 @@ function Lerk:ReceivesFallDamage()
 end
 
 // Gain speed gradually the longer we stay in the air
+function Lerk:GoldSrc_GetMaxSpeed(possible)
+
+    if possible then
+        return 13
+    end
+
+    local speed = kMaxWalkSpeed
+    if not self:GetIsOnGround() then
+    
+        local kBaseAirScalar = 1.2      // originally 0.5
+        local kAirTimeToMaxSpeed = 5  // originally 10
+        local airTimeScalar = Clamp((Shared.GetTime() - self.timeLastOnGround) / kAirTimeToMaxSpeed, 0, 1)
+        local speedScalar = kBaseAirScalar + airTimeScalar * (1 - kBaseAirScalar)
+        speed = kMaxWalkSpeed + speedScalar * (kMaxSpeed - kMaxWalkSpeed)
+        
+        // half max speed while the walk key is pressed
+        if self.movementModiferState then
+            speed = speed * 0.5
+        end
+        
+    end 
+    
+    return speed * self:GetMovementSpeedModifier()
+    
+end
+
+// Gain speed gradually the longer we stay in the air
 function Lerk:GetMaxSpeed(possible)
 
     if possible then
@@ -239,6 +266,10 @@ end
 
 function Lerk:OverrideAirControl()
     return true
+end
+
+function Lerk:GetCanCrouch()
+    return false
 end
 
 function Lerk:OverrideJumpQueue()
@@ -340,6 +371,10 @@ function Lerk:HandleJump(input, velocity)
         velocity.y = velocity.y + kJumpImpulse
         
         self.timeOfLastJump = Shared.GetTime()
+        
+        // Velocity may not have been set yet, so force onGround to false this frame
+        self.onGroundNeedsUpdate = false
+        self.onGround = false
         
         self.lastTimeFlapped = Shared.GetTime()
         
