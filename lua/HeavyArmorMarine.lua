@@ -3,7 +3,7 @@
 
 Script.Load("lua/Marine.lua")
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/GroundMoveMixin.lua")
+Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/MarineActionFinderMixin.lua")
 Script.Load("lua/OrderSelfMixin.lua")
@@ -116,6 +116,31 @@ end
 
 function HeavyArmorMarine:GetCrouchSpeedScalar()
     return Marine.GetCrouchSpeedScalar(self)
+end
+
+function HeavyArmorMarine:GoldSrc_GetMaxSpeed(possible)
+
+    if possible then
+        return HeavyArmorMarine.kRunMaxSpeed
+    end
+    
+    if self:GetIsDisrupted() then
+        return 0
+    end
+    
+    local maxSpeed = HeavyArmorMarine.kRunMaxSpeed
+    
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = HeavyArmorMarine.kWalkMaxSpeed
+    end
+    
+    // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
+    local inventorySpeedScalar = self:GetInventorySpeedScalar()
+
+    local adjustedMaxSpeed = maxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier() * inventorySpeedScalar 
+    //Print("Adjusted max speed => %.2f (without inventory: %.2f)", adjustedMaxSpeed, adjustedMaxSpeed / inventorySpeedScalar )
+    return adjustedMaxSpeed
+    
 end
 
 function HeavyArmorMarine:GetMaxSpeed(possible)
