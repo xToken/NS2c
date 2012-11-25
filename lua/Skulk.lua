@@ -65,8 +65,8 @@ Skulk.kLeapForce = 15
 Skulk.kMaxSpeed = 9
 Skulk.kMaxWalkSpeed = 4
 Skulk.kJumpHeight = 1.3
-Skulk.kWallJumpForce = 2
-Skulk.kWallJumpYBoost = 6
+Skulk.kWallJumpForce = 7
+Skulk.kWallJumpYBoost = 2
 Skulk.kJumpDelay = 0.25
 
 Skulk.kMass = 45 // ~100 pounds
@@ -358,6 +358,10 @@ function Skulk:GetSmoothAngles()
     return not self:GetIsWallWalking()
 end  
 
+function Skulk:GoldSrc_GetFriction()
+    return ConditionalValue(self:GetIsWallWalking(), Player.kGoldSrcFriction + 3.0, Player.kGoldSrcFriction)
+end
+
 function Skulk:UpdatePosition(velocity, time)
 
     PROFILE("Skulk:UpdatePosition")
@@ -563,33 +567,28 @@ end
 
 function Skulk:GetJumpVelocity(input, velocity)
 
-    local viewCoords = self:GetViewAngles():GetCoords()
-    
-    // we add the bonus in the direction the move is going
-    local move = input.move
-    move.x = move.x * 0.01
-    
-    if input.move:GetLength() ~= 0 then
-        self.bonusVec = viewCoords:TransformVector(move)
-    else
-        self.bonusVec = viewCoords.zAxis
-    end
-
-    self.bonusVec.y = 0
-    self.bonusVec:Normalize()
-    
     if self:GetCanWallJump() then
         if velocity:GetLengthXZ() < Skulk.kMaxSpeed then
-            local jumpForce = Skulk.kWallJumpForce * self:GetMovementSpeedModifier()
-            self.lastwalljump = Shared.GetTime()
-            velocity.x = velocity.x + self.bonusVec.x * jumpForce
-            velocity.z = velocity.z + self.bonusVec.z * jumpForce
-            velocity.y = math.max(viewCoords.zAxis.y, 0.5) * Skulk.kWallJumpYBoost
+            // From testing in NS1:
+            // Only viewangle seem to be used for determining force direction
+            // Only wall-jump if facing away from the surface that we're currently sticking to
+            // Walljump velocity is slightly higher than normal maxspeed. Celerity bonus also applies.
+            // There seems to be a small upwards velocity added regardless of viewangles
+            // Previous velocity seems to be ignored
+            
+            local direction = self:GetViewAngles():GetCoords().zAxis
+            
+            if self.wallWalkingStickGoal:DotProduct(direction) >= 0.0 then
+                direction:Scale(Skulk.kWallJumpForce * self:GetMovementSpeedModifier())
+                direction.y = direction.y + Skulk.kWallJumpYBoost * self:GetMovementSpeedModifier()
+                
+                VectorCopy(direction, velocity)
+                self.lastwalljump = Shared.GetTime()
+            end
         end
     else
-        velocity.y = math.sqrt(-2 * self:GetJumpHeight() * self:GetMixinConstants().kGravity)
+        Alien.GetJumpVelocity(self, input, velocity)
     end
-
 end
 
 // skulk handles jump sounds itself
