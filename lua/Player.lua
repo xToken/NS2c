@@ -1871,18 +1871,233 @@ function Player:UpdatePosition(velocity, time)
     if not self.controller then
         return velocity
     end
-    
+
+    // We need to make a copy so that we aren't holding onto a reference
+    // which is updated when the origin changes.
+    local start         = Vector(self:GetOrigin())
+    local startVelocity = Vector(velocity)
+   
     local maxSlideMoves = 3
     
     local offset = nil
+    local stepHeight = self:GetStepHeight()
+    local canStep = self:GetCanStep()
+    local onGround = self:GetIsOnGround()
     
     local offset = velocity * time
+    local horizontalOffset = Vector(offset)
+    horizontalOffset.y = 0
     local hitEntities = nil
     local completedMove = false
     local averageSurfaceNormal = nil
-   
-    completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(offset, maxSlideMoves, velocity)
+    
+    local stepUpOffset = 0
 
+    if canStep then
+        
+        local horizontalOffsetLength = horizontalOffset:GetLength()
+        local fractionOfOffset = 1
+        
+        if horizontalOffsetLength > 0 then
+        
+            // check if we would collide with something, set fourth parameter to false
+            completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(horizontalOffset, maxSlideMoves, velocity, false)   
+            velocity = Vector(startVelocity)       
+
+            if CheckCanStepOver(self, hitEntities) then
+
+                // Move up
+                self:PerformMovement(Vector(0, stepHeight, 0), 1)
+                local steppedStart = self:GetOrigin()
+                stepUpOffset = steppedStart.y - start.y
+            
+            end
+        
+            // Horizontal move
+            self:PerformMovement(horizontalOffset, maxSlideMoves, velocity)
+            
+            local movePerformed = self:GetOrigin() - (steppedStart or start)
+            fractionOfOffset = movePerformed:DotProduct(horizontalOffset) / (horizontalOffsetLength*horizontalOffsetLength)
+            
+        end
+
+        local downStepAmount = offset.y - stepUpOffset - horizontalOffsetLength*Player.kDownSlopeFactor
+        
+        if fractionOfOffset < 0.5 then
+        
+            // Didn't really move very far, try moving without step up
+            local savedOrigin = Vector(self:GetOrigin())
+            local savedVelocity = Vector(velocity)
+
+            self:SetOrigin(start)
+            velocity = Vector(startVelocity)
+                 
+            self:PerformMovement(offset, maxSlideMoves, velocity)
+            
+            local movePerformed = self:GetOrigin() - start
+            local alternativeFractionOfOffset = movePerformed:DotProduct(offset) / offset:GetLengthSquared()
+            
+            if alternativeFractionOfOffset > fractionOfOffset then
+                // This move is better!
+                downStepAmount = 0
+            else
+                // Stepped move was better - go back to it!
+                self:SetOrigin(savedOrigin)
+                velocity = savedVelocity                    
+            end            
+
+        end
+        
+        // Vertical move
+        if downStepAmount ~= 0 then
+            self:PerformMovement(Vector(0, downStepAmount, 0), 1)
+        end
+        
+        // Check to see if we moved up a step and need to smooth out
+        // the movement.
+        local yDelta = self:GetOrigin().y - start.y
+        
+        if yDelta ~= 0 then
+        
+            // If we're already interpolating up a step, we need to take that into account
+            // so that we continue that interpolation, plus our new step interpolation
+            
+            local deltaTime      = Shared.GetTime() - self.stepStartTime
+            local prevStepAmount = 0
+            
+            if deltaTime < Player.stepTotalTime then
+                prevStepAmount = self.stepAmount * (1 - deltaTime / Player.stepTotalTime)
+            end        
+            
+            self.stepStartTime = Shared.GetTime()
+            self.stepAmount    = Clamp(yDelta + prevStepAmount, -Player.kMaxStepAmount, Player.kMaxStepAmount)
+            
+        end      
+
+    else
+        
+        // Just do the move
+        completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(offset, maxSlideMoves, velocity)        
+            
+    end
+           
+    /*
+    local completedMove = self:PerformMovement(  velocity * time, maxSlideMoves, velocity )
+
+    if not completedMove and canStep then
+    
+        // Go back to the beginning and now try a step move.
+        self:SetOrigin(start)
+        
+        // First move the character upwards to allow them to go up stairs and over small obstacles. 
+        local stepMove = 
+        self:PerformMovement( Vector(0, stepHeight, 0), 1 )
+        
+        local steppedStart = self:GetOrigin()
+        if steppedStart.y == start.y then
+        
+            // Moving up didn't allow us to go over anything, so move back
+            // to the start position so we don't get stuck in an elevated position
+            // due to not being able to move back down.
+            self:SetOrigin(start)
+            offset = Vector(0, 0, 0)
+            
+        else
+        
+            offset = steppedStart - start
+            
+            // Now try moving the controller the desired distance.
+            VectorCopy( startVelocity, velocity )
+            self:PerformMovement( startVelocity * time, maxSlideMoves, velocity )
+            
+        end
+        
+    else
+        offset = Vector(0, 0, 0)
+    end
+    
+    if canStep then
+    
+        // Finally, move the player back down to compensate for moving them up.
+        // We add in an additional step  height for moving down steps/ramps.
+        if onGround then        
+            offset.y = -(offset.y + stepHeight)
+        end
+        self:PerformMovement( offset, 1, nil )
+        
+        // Check to see if we moved up a step and need to smooth out
+        // the movement.
+        local yDelta = self:GetOrigin().y - start.y
+        
+        if yDelta ~= 0 then
+        
+            // If we're already interpolating up a step, we need to take that into account
+            // so that we continue that interpolation, plus our new step interpolation
+            
+            local deltaTime      = Shared.GetTime() - self.stepStartTime
+            local prevStepAmount = 0
+            
+            if deltaTime < Player.stepTotalTime then
+                prevStepAmount = self.stepAmount * (1 - deltaTime / Player.stepTotalTime)
+            end        
+            
+            self.stepStartTime = Shared.GetTime()
+            self.stepAmount    = Clamp(yDelta + prevStepAmount, -Player.kMaxStepAmount, Player.kMaxStepAmount)
+            
+        end
+        
+    end
+    */
+    
+    /*
+    local delta = (self:GetOrigin() - start):GetLength()
+    local moved = delta > 0.01
+    //Log("%s: delta %s, moved %s, v %s, coll %s", self, delta, moved, velocity, self:GetIsColliding())
+    if moved then
+    
+        self.lastKnownGoodPosition = start
+
+    elseif velocity:GetLength() > 0.01 then
+
+        // May be stuck. Teleport 0.1m and see if we are no longer colliding
+        local newPos = start + GetNormalizedVector(startVelocity) * 0.1
+        self:SetOrigin(newPos)
+        local msg = "%s: unstuck; inch out"
+
+        if self:GetIsColliding() then
+            msg = "%s: back to start"
+            self:SetOrigin(start)
+
+            if self:GetIsColliding() and self.lastKnownGoodPosition then
+                msg = "%s: last known good"
+                self:SetOrigin(self.lastKnownGoodPosition)
+
+                if self:GetIsColliding() then
+                    msg = "%s: failed unstuck"
+                end
+            end
+        end
+        Log(msg, self)
+    end
+    
+    local wasStuck = self:GetIsColliding()
+    // round off the origin to network precision. Always
+    // round towards the startingOrigin (which should be
+    // in network precision)
+    local o = self:GetOrigin()
+    local networkOrigin = Vector(
+        RoundToNetwork(start.x, o.x),
+        RoundToNetwork(start.y, o.y),
+        RoundToNetwork(start.z, o.z))
+    //if (o - networkOrigin):GetLength() > 0.001 then
+    //    Log("%s: start %s, new %s, rounded %s, d1 %s, d2 %s, d3 %s", self, startingOrigin, o, networkOrigin, o - startingOrigin, networkOrigin - o, networkOrigin - startingOrigin)
+    //end
+    self:SetOrigin(networkOrigin)
+    local isStuck = self:GetIsColliding()
+    if isStuck and not wasStuck then
+        Log("%s: Stuck, start %s, new %s, rounded %s, d1 %s, d2 %s, d3 %s", self, start, o, networkOrigin, o - start, networkOrigin - o, networkOrigin - start)    
+    end
+    */
     return velocity, hitEntities, averageSurfaceNormal
     
 end

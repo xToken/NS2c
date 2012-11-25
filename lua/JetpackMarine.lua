@@ -38,7 +38,7 @@ end
 JetpackMarine.kJetpackFuelReplenishDelay = .2
 
 // Allow JPers to go faster in the air, but still capped
-JetpackMarine.kVerticalThrustAccelerationMod = 10.0
+JetpackMarine.kVerticalThrustAccelerationMod = 1.8
 JetpackMarine.kVerticalFlyAccelerationMod = 1.3
 JetpackMarine.kJetpackAcceleration = 22
 JetpackMarine.kWalkMaxSpeed = 4.0                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)

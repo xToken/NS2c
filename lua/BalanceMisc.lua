@@ -46,7 +46,7 @@ kFocusAttackDamageMultipler = 2
 kBombardAttackDamageMultipler = 1.3
 kRedemptionEHPThreshold = 0.40
 kRedemptionChancePerLevel = 0.15
-kRedemptionCheckTime = 2
+kRedemptionCheckTime = 1
 kRedemptionCooldown = 20
 kRedploymentCooldownBase = 15
 kAuraDetectionRange = 30
@@ -97,8 +97,9 @@ kJetpackWeightAssist = 1.75
 //HA
 kHeavyArmorWeightAssist = 2.5
 
+kAlienInnateRegenerationTime = 1
 kAlienRegenerationTime = 2
 kAlienInnateRegenerationPercentage  = 0.02
-kAlienRegenerationPercentage = 0.04
+kAlienRegenerationPercentage = 0.09
 
 kAbilityMaxEnergy = 100
