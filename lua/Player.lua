@@ -138,6 +138,8 @@ local kExtentsCrouchShrinkAmount = 0.5
 // How long does it take to crouch or uncrouch
 local kCrouchAnimationTime = 0.4
 
+Player.kJumpMode = kJumpMode // default jumpmode copied into here, allows for classes to specify other modes
+
 Player.kMinVelocityForGravity = .5
 Player.kThinkInterval = .2
 Player.kMinimumPlayerVelocity = .05    // Minimum player velocity for network performance and ease of debugging
@@ -146,7 +148,7 @@ Player.kMinimumPlayerVelocity = .05    // Minimum player velocity for network pe
 Player.kWalkMaxSpeed = 4             // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
 Player.kRunMaxSpeed = 8
 Player.kAcceleration = 45
-Player.kGoldSrcAcceleration = 7
+Player.kGoldSrcAcceleration = 6.5
 Player.kGoldSrcAirAcceleration = 50
 Player.kGoldSrcFriction = 4
 Player.kBunnyJumpMaxSpeedFactor = 1.7
@@ -2668,9 +2670,9 @@ function Player:ModifyVelocity(input, velocity)
             self:OnJump()
         end
         
-        if kJumpMode == 2 then
+        if self.kJumpMode == 2 then
             self.jumpHandled = self:OverrideJumpQueue()
-        elseif kJumpMode == 1 then
+        elseif self.kJumpMode == 1 then
             if jumped and not self:OverrideJumpQueue() then
                 self.jumpHandled = true
             else
