@@ -1,18 +1,14 @@
 Check if missing any functionality from un-called versions of OnClampSpeed and ModifyVelocity
 
 Fix:
-Jetpackmarine too much jump acceleration & bunnyhop OP
-Walking down on sloped surfaces bouncyness
 Collision jitter when touching multiple surfaces at the same time (probably wallwalking to blame)
 
 Investigate:
 Does all classes in NS1 slow down when holding use?
 
-
 To tweak:
 Cooldown on pogostick jumping to avoid abuse?
 Heavy friction & speed
-Jetpack marine should jump?
 Lerk friction&gravity
 
 AirAcceleration & maxAirVeer :
@@ -72,4 +68,9 @@ if onground: walkmove
 else: airmove
 	airaccelerate: calls accelerate
 	tracing & moving
+
+
+ns1 speeds:
+Marine: 192
+Jetpack: 576 (airstrafe doesn't increase it)
 
