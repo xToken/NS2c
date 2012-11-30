@@ -151,7 +151,9 @@ Player.kAcceleration = 45
 Player.kGoldSrcAcceleration = 6.5
 Player.kGoldSrcAirAcceleration = 50
 Player.kGoldSrcFriction = 4
-Player.kBunnyJumpMaxSpeedFactor = 1.7
+
+//NS1 bhop skulk could get around 530-540 units with good bhop, 290 base makes for 1.84 - Trying 1.9 for now
+Player.kBunnyJumpMaxSpeedFactor = 1.9 
 Player.kMaxAirVeer = 1.2
 Player.kAirZMoveWeight = 2.5
 Player.kAirZStrafeWeight = 2.5
