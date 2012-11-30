@@ -72,6 +72,7 @@ Lerk.kWallGripSmoothTime = 0.6
 // how to grab for stuff ... same as the skulk tight-in code
 Lerk.kWallGripRange = 0.2
 Lerk.kWallGripFeelerSize = 0.25
+Lerk.kJumpMode = 0
 
 local kViewOffsetHeight = 0.5
 Lerk.XZExtents = 0.4
@@ -87,8 +88,8 @@ local kSwoopGravityScalar = -25.0
 local kRegularGravityScalar = -7
 local kFlightGravityScalar = -4
 // Lerks walk slowly to encourage flight
-local kMaxWalkSpeed = 2.8
-local kMaxSpeed = 13
+local kMaxWalkSpeed = 4.8
+local kMaxSpeed = 14
 local kAirAcceleration = 2.8
 local kDefaultAttackSpeed = 1.65
 
@@ -264,16 +265,8 @@ function Lerk:GetAcceleration()
     return ConditionalValue(self:GetIsOnGround(), Alien.GetAcceleration(self), kAirAcceleration) * self:GetMovementSpeedModifier()
 end
 
-function Lerk:OverrideAirControl()
-    return true
-end
-
 function Lerk:GetCanCrouch()
     return false
-end
-
-function Lerk:OverrideJumpQueue()
-    return true
 end
 
 function Lerk:GetMass()

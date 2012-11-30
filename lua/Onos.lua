@@ -43,8 +43,8 @@ Onos.kJumpHeight = 1.2
 
 // triggered when the momentum value has changed by this amount (negative because we trigger the effect when the onos stops, not accelerates)
 Onos.kMomentumEffectTriggerDiff = 3
-Onos.kMaxSpeed = 8
-Onos.kMaxChargeSpeed = 15
+Onos.kMaxSpeed = 6.5
+Onos.kMaxChargeSpeed = 13
 Onos.kMaxCrouchSpeed = 3
 
 Onos.kHealth = kOnosHealth

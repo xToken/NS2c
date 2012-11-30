@@ -43,9 +43,9 @@ JetpackMarine.kJumpMode = 0 // Default jumping allows for better jetpack control
 JetpackMarine.kVerticalThrustAccelerationMod = 2.3
 JetpackMarine.kVerticalThrustMaxSpeed = 12.0 // note: changing this impacts kVerticalThrustAccelerationMod
 JetpackMarine.kJetpackAcceleration = 17.0 // Horizontal acceleration
-JetpackMarine.kWalkMaxSpeed = 4.0                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
-JetpackMarine.kRunMaxSpeed = 6.5
-JetpackMarine.kFlyMaxSpeed = 12.0 // NS1 jetpack is 2.9x running speed (walk: 192, jetpack: 576)
+JetpackMarine.kWalkMaxSpeed = 3.5                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
+JetpackMarine.kRunMaxSpeed = 6.0
+JetpackMarine.kFlyMaxSpeed = 13.0 // NS1 jetpack is 2.9x running speed (walk: 192, jetpack: 576)
 
 JetpackMarine.kJetpackArmorBonus = kJetpackArmor
 JetpackMarine.kJetpackTakeOffTime = .01

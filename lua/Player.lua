@@ -273,7 +273,7 @@ local networkVars =
     // Reduce max player velocity in some cases (marine jumping)
     slowAmount = "float (0 to 1 by 0.01)",
     movementModiferState = "boolean",
-    
+    forwardModifier = "boolean",
     giveDamageTime = "private time",
     
     pushImpulse = "private vector",
@@ -352,7 +352,7 @@ function Player:OnCreate()
     self.runningBodyYaw = 0
     
     self.clientIndex = -1
-   
+    self.forwardModifier = false
     self.showScoreboard = false
     
     if Server then
@@ -472,7 +472,7 @@ function Player:OnInitialized()
         if not self:GetIsLocalPlayer() and not self:isa("Commander") and not self:isa("Spectator") then
             InitMixin(self, UnitStatusMixin)
         end
-        
+
     end
     
     if Server then
@@ -1094,6 +1094,10 @@ function Player:GoldSrc_Accelerate(velocity, time, wishdir, wishspeed, accelerat
     return velocity
 end
 
+function Player:UpdateMovementMode(movementmode)
+    self.forwardModifier = movementmode
+end
+
 function Player:GoldSrc_GetWishVelocity(input)
     if HasMixin(self, "Stun") and self:GetIsStunned() then
         return Vector(0,0,0)
@@ -1103,6 +1107,11 @@ function Player:GoldSrc_GetWishVelocity(input)
     // Here is it used as an acceleration target, in ns2
     // it's seemingly used for clamping the speed
     local maxspeed = self:GoldSrc_GetMaxSpeed()
+    
+    // Override forward input to allow greater ease of use if set.
+    if not self.forwardModifier and input.move.z > 0 and input.move.x ~= 0 and not self:GetIsOnGround() then
+        input.move.z = 0
+    end
 
     // wishdir
     local move = GetNormalizedVector(input.move)
@@ -2645,14 +2654,6 @@ function Player:GetSecondaryAttackLastFrame()
     return self.secondaryAttackLastFrame
 end
 
-function Player:OverrideAirControl()
-    return false
-end
-
-function Player:OverrideJumpQueue()
-    return false
-end
-
 local function veclerp(vec1, vec2, t)
     return vec1 + t *(vec2 - vec1)
 end
@@ -2671,13 +2672,9 @@ function Player:ModifyVelocity(input, velocity)
         end
         
         if self.kJumpMode == 2 then
-            self.jumpHandled = self:OverrideJumpQueue()
+            self.jumpHandled = false
         elseif self.kJumpMode == 1 then
-            if jumped and not self:OverrideJumpQueue() then
-                self.jumpHandled = true
-            else
-                self.jumpHandled = false
-            end
+            self.jumpHandled = jumped
         else
             self.jumpHandled = true
         end

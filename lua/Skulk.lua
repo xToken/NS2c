@@ -62,7 +62,7 @@ Skulk.kArmor = kSkulkArmor
 Skulk.kLeapTime = 0.2
 Skulk.kLeapVerticalVelocity = 8
 Skulk.kLeapForce = 15
-Skulk.kMaxSpeed = 9
+Skulk.kMaxSpeed = 8
 Skulk.kMaxWalkSpeed = 4
 Skulk.kJumpHeight = 1.3
 Skulk.kWallJumpForce = 7
@@ -217,10 +217,6 @@ end
 
 function Skulk:GetCanJump()
     return Alien.GetCanJump(self) or self:GetCanWallJump()    
-end
-
-function Skulk:OverrideAirControl()
-    return self:GetIsWallWalking()
 end
 
 function Skulk:GetIsWallWalking()

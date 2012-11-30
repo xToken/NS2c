@@ -827,6 +827,10 @@ function ParseRookieMessage(t)
     return t.isRookie
 end
 
+local kMovementMode = 
+{
+    movement = "boolean"
+}
 
 local kGameEndMessage =
 {
@@ -885,6 +889,7 @@ Shared.RegisterNetworkMessage("DebugCapsule", kDebugCapsuleMessage)
 Shared.RegisterNetworkMessage( "TechNodeBase", kTechNodeBaseMessage )
 Shared.RegisterNetworkMessage( "ClearTechTree", {} )
 
+Shared.RegisterNetworkMessage( "MovementMode", kMovementMode )
 Shared.RegisterNetworkMessage( "HiveInfo", kHiveInfoMessage )
 
 local kRookieMessage =
