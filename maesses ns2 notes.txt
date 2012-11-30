@@ -5,6 +5,7 @@ Collision jitter when touching multiple surfaces at the same time (probably wall
 
 Investigate:
 Does all classes in NS1 slow down when holding use?
+Does walking back while jetpacking slow down
 
 To tweak:
 Cooldown on pogostick jumping to avoid abuse?
@@ -73,4 +74,13 @@ else: airmove
 ns1 speeds:
 Marine: 192
 Jetpack: 576 (airstrafe doesn't increase it)
+
+Fade: 
+Speed: 240
+Blink: 719 (~3x normal speed)
+Fade accelerate hardlimit: 720 (same as blink)
+jump: scaling from forward down 45 deg. (looking down decreases jump height)
+anti-bh limit: ~400 (~1.7x normal speed)
+
+From testing: Blink is applied in pulses, each blink pulse has a cooldown of roughly 80ms and takes 4% energy. Having an FPS that doesn't align well with that cooldown means that blinking might miss some pulses/becomes choppy. It should be fairly straightforward to change blink into being frame-independant.
 

@@ -16,6 +16,7 @@ Blink.kMapName = "blink"
 
 local kEtherealForce = 8
 Blink.kMinEnterEtherealTime = 0.1
+Blink.kMinTimeBetweenEffects = 0.2
 
 local networkVars =
 {
@@ -26,7 +27,6 @@ function Blink:OnInitialized()
     Ability.OnInitialized(self)
 
     self.secondaryAttacking = false
-    self.timeBlinkStarted = 0
     
 end
 
@@ -77,22 +77,8 @@ end
 
 function Blink:OnSecondaryAttack(player)
 
-    local minTimePassed = not player:GetBlinkCooldown()
-    local hasEnoughEnergy = player:GetEnergy() > kStartBlinkEnergyCost
-    if hasEnoughEnergy and self:GetBlinkAllowed() and minTimePassed then
-    
-        // Enter "ether" fast movement mode, but don't keep going ethereal when button still held down after
-        // running out of energy
-        if not self.secondaryAttacking then
-        
-            self:SetEthereal(player, true)
-            self.timeBlinkStarted = Shared.GetTime()
-            self.secondaryAttacking = true
-            local newVelocity = player:GetViewCoords().zAxis * kEtherealForce  
-            player:SetVelocity(player:GetVelocity() + newVelocity)            
-			TEST_EVENT("Blink started")
-        end
-        
+    if self:GetBlinkAllowed() then
+        self.secondaryAttacking = true
     end
     
     Ability.OnSecondaryAttack(self, player)
@@ -102,10 +88,7 @@ end
 function Blink:OnSecondaryAttackEnd(player)
 
     if player.ethereal then
-    
         self:SetEthereal(player, false)
-        TEST_EVENT("Blink ended, button released")
-        
     end
     
     Ability.OnSecondaryAttackEnd(self, player)
@@ -147,20 +130,23 @@ function Blink:SetEthereal(player, state)
 end
 
 function Blink:ProcessMoveOnWeapon(player, input)
- 
-    if self:GetIsActive() and player.ethereal then
-    
-            player:OnBlinking(input)
-            local energyCost = input.time * kBlinkEnergyCost
-            player:DeductAbilityEnergy(energyCost)
-
+    if not self.secondaryAttacking then
+        return
     end
     
-    // End blink mode if out of energy
-    if player:GetEnergy() == 0 and player.ethereal then
-    
-        self:SetEthereal(player, false)
-        TEST_EVENT("Blink ended, out of energy")
+    local time = Shared.GetTime()
+    local deltaTime = time - player.lastBlinkTime
+    // Check time and energy
+    if deltaTime > kBlinkCooldown and player:GetEnergy() > kBlinkPulseEnergyCost then
+        // Blink.
+        player.lastBlinkTime = time
+        player:OnBlinking(input)
+        player:DeductAbilityEnergy(kBlinkPulseEnergyCost)
+        
+        if deltaTime > Blink.kMinTimeBetweenEffects then
+            // Just pressed blink, play effect
+            self:TriggerBlinkInEffects(player)
+        end
         
     end
     
