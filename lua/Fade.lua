@@ -42,11 +42,12 @@ Fade.kArmor = kFadeArmor
 Fade.kMass = 50 // ~350 pounds
 Fade.kJumpHeight = 1.1
 Fade.kMaxSpeed = 7.0
-Fade.kMaxBlinkSpeed = 11
+Fade.kMaxBlinkSpeed = 21 // ns1 fade blink is (3x maxSpeed) + celerity
 Fade.kWalkSpeed = 4
 Fade.kBlinkAcceleration = 50
 Fade.kBlinkAccelerationDuration = 2
 Fade.kMaxCrouchSpeed = 3
+Fade.kBlinkImpulseForce = 6.2
 
 if Server then
     Script.Load("lua/Fade_Server.lua")
@@ -58,6 +59,7 @@ local networkVars =
 {    
     etherealStartTime = "private time",
     etherealEndTime = "private time",
+    lastBlinkTime = "private time",
     // True when we're moving quickly "through the ether"
     ethereal = "boolean"
 }
@@ -83,6 +85,7 @@ function Fade:OnCreate()
     
     self.etherealStartTime = 0
     self.etherealEndTime = 0
+    self.lastBlinkTime = 0
     self.ethereal = false
 
 end
@@ -137,13 +140,6 @@ end
 
 function Fade:ReceivesFallDamage()
     return false
-end
-
-function Fade:GetCanJump()
-    if self:GetIsBlinking() then
-        return false
-    end
-    return Alien.GetCanJump(self)
 end
 
 function Fade:HandleJump(input, velocity)
@@ -246,10 +242,6 @@ function Fade:GetRecentlyBlinked()
     return Shared.GetTime() - self.etherealEndTime < Fade.kBlinkAccelerationDuration
 end
 
-function Fade:GetBlinkCooldown()
-    return Shared.GetTime() - self.etherealEndTime < Blink.kMinEnterEtherealTime
-end
-
 function Fade:GetRecentlyJumped()
     return self.timeOfLastJump ~= nil and self.timeOfLastJump + 0.2 > Shared.GetTime()
 end
@@ -286,7 +278,36 @@ function Fade:OnBlink()
 end
 
 function Fade:OnBlinking(input)
-
+    local velocity = self:GetVelocity()
+    
+    if self:GetIsOnGround() then
+        // Jump if the player isn't looking too far down
+        local pitchAngle = self:GetViewCoords().zAxis.y
+        pitchAngle = math.max((pitchAngle + 1.0), 1)
+        self:GetJumpVelocity(input, velocity)
+        velocity.y = pitchAngle * velocity.y
+    end
+    
+    // Blink impulse
+    velocity:Add( self:GetViewCoords().zAxis * Fade.kBlinkImpulseForce )
+    
+    // Cap groundspeed
+    local groundspeed = velocity:GetLengthXZ()
+    local maxspeed = Fade.kMaxBlinkSpeed * self:GetMovementSpeedModifier()
+    if groundspeed > maxspeed then
+        // Keep vertical velocity
+        local verticalVelocity = velocity.y
+        // Scale it back to maxspeed
+        velocity:Scale(maxspeed/groundspeed)
+        velocity.y = verticalVelocity
+    end
+    
+    // Finish
+    self:SetVelocity(velocity)
+    self.jumping = true // Animation
+    self.onGroundNeedsUpdate = true
+    
+    /*
     self.onGroundNeedsUpdate = true 
     local newVelocity = self:GetViewCoords().zAxis * Fade.kBlinkAcceleration * input.time
     local velocity = self:GetVelocity()
@@ -302,6 +323,7 @@ function Fade:OnBlinking(input)
     end
 
     self:SetVelocity(velocity + newVelocity)
+    */
 
 end
 
