@@ -270,7 +270,7 @@ local function OnMessageBuy(client, buyMessage)
 
     local player = client:GetControllingPlayer()
     
-    if player:GetIsAllowedToBuy() then
+    if player and player:GetIsAllowedToBuy() then
     
         local purchaseTechIds = ParseBuyMessage(buyMessage)
         player:ProcessBuyAction(purchaseTechIds)
@@ -340,6 +340,19 @@ local function OnConnectMessage(client, message)
 
 end
 
+local function OnMovementChanged(client, movement)
+
+    if client then
+        
+        local player = client:GetControllingPlayer()
+        if player then
+            player:UpdateMovementMode(movement.movement)
+        end
+    
+    end
+
+end
+
 Server.HookNetworkMessage("MarqueeSelect", OnCommandCommMarqueeSelect)
 Server.HookNetworkMessage("ClickSelect", OnCommandCommClickSelect)
 Server.HookNetworkMessage("ClearSelection", OnCommandClearSelection)
@@ -360,3 +373,4 @@ Server.HookNetworkMessage("SetCommunicationStatus", OnCommandSetCommStatus)
 Server.HookNetworkMessage("Buy", OnMessageBuy)
 Server.HookNetworkMessage("VoiceMessage", OnVoiceMessage)
 Server.HookNetworkMessage("ConnectMessage", OnConnectMessage)
+Server.HookNetworkMessage("MovementMode", OnMovementChanged)

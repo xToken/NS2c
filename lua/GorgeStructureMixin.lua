@@ -40,14 +40,7 @@ function GorgeStructureMixin:__initmixin()
     assert(Server)
     self.timeStarveBegin = 0
     self.hasGorgeOwner = true
-    self.isStarving = false
     
-end
-
-function GorgeStructureMixin:OnStarve()
-end
-
-function GorgeStructureMixin:OnStarveEnd()
 end
 
 function GorgeStructureMixin:SetOwner(owner)
@@ -58,37 +51,6 @@ function GorgeStructureMixin:SetOwner(owner)
     
         self.hasGorgeOwner = hasGorgeOwner
     
-        if self.hasGorgeOwner then
-            self:OnStarveEnd()
-        else
-            self:OnStarve()
-            self.timeStarveBegin = Shared.GetTime()
-        end
-    
     end
-    
-end
-
-function GorgeStructureMixin:GetIsStarving()
-    return self.isStarving
-end
-
-local function SharedUpdate(self, deltaTime)
-    
-end
-
-function GorgeStructureMixin:OnUpdate(deltaTime)
-    SharedUpdate(self, deltaTime)
-end
-AddFunctionContract(GorgeStructureMixin.OnUpdate, { Arguments = { "Entity", "number" }, Returns = { } })
-
-function GorgeStructureMixin:OnProcessMove(input)
-    SharedUpdate(self, input.time)
-end
-AddFunctionContract(GorgeStructureMixin.OnProcessMove, { Arguments = { "Entity", "Move" }, Returns = { } })
-
-function GorgeStructureMixin:OnUpdateAnimationInput(modelMixin)
-
-    PROFILE("ConstructMixin:OnUpdateAnimationInput")
     
 end

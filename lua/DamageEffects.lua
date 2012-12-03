@@ -26,13 +26,7 @@ kDamageEffects =
             // alien effects:
             {private_sound = "sound/NS2.fev/alien/gorge/spit_hit", doer = "Spit", done = true},
             {private_sound = "sound/NS2.fev/alien/skulk/parasite_hit", doer = "Parasite", ismarine = true, classname = "Player", done = true},
-            
-            {private_sound = "sound/NS2.fev/alien/common/spike_hit_marine", doer = "LerkBite", alt_mode = true, surface = "armor", done = true},
-            {private_sound = "sound/NS2.fev/alien/lerk/spikes_pierce", doer = "LerkBite", alt_mode = true, done = true},
-            {private_sound = "sound/NS2.fev/alien/common/spike_hit_marine", doer = "Spores", alt_mode = true, surface = "armor", done = true},
-            {private_sound = "sound/NS2.fev/alien/lerk/spikes_pierce", doer = "Spores", alt_mode = true, done = true},
-            {private_sound = "sound/NS2.fev/alien/lerk/spikes_pierce", doer = "LerkUmbra", alt_mode = true, done = true},
-            
+
         },
     },
     
@@ -110,20 +104,13 @@ kDamageEffects =
             
             {sound = "sound/NS2.fev/alien/gorge/spit_hit", doer = "Spit", classname = "Marine", world_space = true, done = true},        
             
-            {sound = "sound/NS2.fev/alien/lerk/spikes_structure", surface = "metal", doer = "LerkBite", alt_mode = true, done = true},
+
             {sound = "sound/NS2.fev/alien/common/spike_hit_marine", surface = "armor", doer = "LerkBite", alt_mode = true, done = true},
             {sound = "sound/NS2.fev/alien/lerk/spikes_pierce", surface = "flesh", doer = "LerkBite", alt_mode = true, done = true},
-            {sound = "sound/NS2.fev/materials/rock/ricochet", doer = "LerkBite", alt_mode = true, done = true},
-            
-            {sound = "sound/NS2.fev/alien/lerk/spikes_structure", surface = "metal", doer = "Spores", alt_mode = true, done = true},
             {sound = "sound/NS2.fev/alien/common/spike_hit_marine", surface = "armor", doer = "Spores", alt_mode = true, done = true},
             {sound = "sound/NS2.fev/alien/lerk/spikes_pierce", surface = "flesh", doer = "Spores", alt_mode = true, done = true},
-            {sound = "sound/NS2.fev/materials/rock/ricochet", doer = "Spores", alt_mode = true, done = true},
-        
-            {sound = "sound/NS2.fev/alien/lerk/spikes_structure", surface = "metal", doer = "LerkUmbra", alt_mode = true, done = true},
             {sound = "sound/NS2.fev/alien/common/spike_hit_marine", surface = "armor", doer = "LerkUmbra", alt_mode = true, done = true},
             {sound = "sound/NS2.fev/alien/lerk/spikes_pierce", surface = "flesh", doer = "LerkUmbra", alt_mode = true, done = true},
-            {sound = "sound/NS2.fev/materials/rock/ricochet", doer = "LerkUmbra", alt_mode = true, done = true},
             
             {sound = "sound/NS2.fev/alien/skulk/bite_hit_metal", surface = "metal", doer = "LerkBite", world_space = true, done = true},
             {sound = "sound/NS2.fev/alien/skulk/bite_hit_organic", surface = "organic", doer = "LerkBite", world_space = true, done = true},

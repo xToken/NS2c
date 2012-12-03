@@ -152,7 +152,7 @@ local function OnCommandEnergy(client)
     
 end
 
-local function OnCommandTakeDamage(client, amount)
+local function OnCommandTakeDamage(client, amount, optionalEntId)
 
     local player = client:GetControllingPlayer()
     
@@ -163,18 +163,26 @@ local function OnCommandTakeDamage(client, amount)
             damage = 20 + math.random() * 10
         end
         
-        local damageEntity = player
-        if player:isa("Commander") then
+        local damageEntity = nil
+        optionalEntId = optionalEntId and tonumber(optionalEntId)
+        if optionalEntId then
+            damageEntity = Shared.GetEntity(optionalEntId)
+        else
         
-            // Find command structure we're in and do damage to that instead
-            local commandStructures = Shared.GetEntitiesWithClassname("CommandStructure")
-            for index, commandStructure in ientitylist(commandStructures) do
+            damageEntity = player
+            if player:isa("Commander") then
             
-                local comm = commandStructure:GetCommander()
-                if comm and comm:GetId() == player:GetId() then
+                // Find command structure we're in and do damage to that instead.
+                local commandStructures = Shared.GetEntitiesWithClassname("CommandStructure")
+                for index, commandStructure in ientitylist(commandStructures) do
                 
-                    damageEntity = commandStructure
-                    break
+                    local comm = commandStructure:GetCommander()
+                    if comm and comm:GetId() == player:GetId() then
+                    
+                        damageEntity = commandStructure
+                        break
+                        
+                    end
                     
                 end
                 

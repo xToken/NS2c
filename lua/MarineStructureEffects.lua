@@ -190,6 +190,7 @@ kMarineStructureEffects =
         arcFireEffects =
         {
             // "trail" like a tracer
+            {stop_sound = "sound/NS2.fev/marine/structures/arc/charge"},
             {sound = "sound/NS2.fev/marine/structures/arc/fire"},
             {parented_cinematic = "cinematics/marine/arc/fire.cinematic", attach_point = "fxnode_arcmuzzle"},
         },
@@ -223,7 +224,7 @@ kMarineStructureEffects =
         arcHitStopEffects = 
         {
             {stop_effects = ""},
-            {sound = "sound/NS2.fev/marine/structures/power_down"},
+            //{sound = "sound/NS2.fev/marine/structures/power_down"},
         },
     },
     

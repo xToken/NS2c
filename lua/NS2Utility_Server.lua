@@ -98,31 +98,22 @@ function GetPlayerSizeBasedRespawnTime(team, defaultTime)
 end
 
 function CreateEntityForCommander(techId, position, commander)
-    
+
     local newEnt = CreateEntityForTeam(techId, position, commander:GetTeamNumber(), commander)
     ASSERT(newEnt ~= nil, "Didn't create entity for techId: " .. EnumToString(kTechId, techId))
     
+    // It is possible the new entity was created in a spot where it was instantly destroyed.
+    if newEnt:GetIsDestroyed() then
+        newEnt = nil
+    end
+    
     if newEnt then
     
-        newEnt:SetOwner(commander)        
+        newEnt:SetOwner(commander)
         
     end
     
     return newEnt
-    
-end
-
-// returns a time fraction of the passed base time
-function GetAlienCatalystTimeAmount(baseTime, entity)
-
-    if HasMixin(entity, "Catalyst") then
-        
-        local catalystTime = entity:GetCatalystScalar() * baseTime
-        return catalystTime
-        
-    end    
-    
-    return 0
     
 end
 
@@ -199,7 +190,7 @@ function GetFullyOnGround(position, maxExtentsDimension, numSlices, variationAll
 end
 
 // Assumes position is at the bottom center of the egg
-function GetIsPlacementForTechId(position, nullbool, techId)
+function GetIsPlacementForTechId(position, techId)
 
     local extents = Vector(LookupTechData(techId, kTechDataMaxExtents, Vector(0.4, 0.4, 0.4)))
     local center = position + Vector(0, extents.y, 0)
@@ -297,7 +288,7 @@ function CalculateRandomSpawn(filterEntity, origin, techId, checkPath, minDistan
     local possibleSpawn = FindPlaceForTechId(filterEntity, origin, techId, minDistance, maxDistance, checkPath, maxVerticalDistance)
     if possibleSpawn then
     
-        if GetIsPlacementForTechId(possibleSpawn, false, techId) then
+        if GetIsPlacementForTechId(possibleSpawn, techId) then
             return possibleSpawn
         end
         

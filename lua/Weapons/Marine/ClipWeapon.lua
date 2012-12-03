@@ -403,13 +403,13 @@ local function FireBullets(self, player)
         
         local damage = 0
 
-        /*
+        
         // Check prediction
-        local values = GetPredictionValues(startPoint, endPoint, trace)
+        /*local values = GetPredictionValues(startPoint, endPoint, trace)
         if not CheckPredictionData( string.format("attack%d", bullet), true, values ) then
             Server.PlayPrivateSound(player, "sound/NS2.fev/marine/voiceovers/game_start", player, 1.0, Vector(0, 0, 0))
-        end
-        */
+        end*/
+        
             
         // don't damage 'air'..
         if trace.fraction < 1 then
@@ -458,7 +458,13 @@ function ClipWeapon:GetIsDroppable()
 end
 
 function ClipWeapon:CanReload()
-    return self.ammo > 0 and self.clip < self:GetClipSize() and not self.reloading and not self.blockingSecondary
+
+    return self.ammo > 0 and
+           self.clip < self:GetClipSize() and
+           not self.reloading and
+           not self.blockingPrimary and
+           not self.blockingSecondary
+    
 end
 
 function ClipWeapon:OnReload(player)

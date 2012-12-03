@@ -47,10 +47,11 @@ function MarineActionFinderMixin:__initmixin()
     if Client and Client.GetLocalPlayer() == self then
     
         self.actionIconGUI = GetGUIManager():CreateGUIScript("GUIActionIcon")
+        self.actionIconGUI:SetColor(kMarineFontColor)
         self.lastMarineActionFindTime = 0
         
     end
-
+    
 end
 
 function MarineActionFinderMixin:OnDestroy()
@@ -61,7 +62,7 @@ function MarineActionFinderMixin:OnDestroy()
         self.actionIconGUI = nil
         
     end
-
+    
 end
 
 function MarineActionFinderMixin:GetNearbyPickupableWeapon()
@@ -105,7 +106,9 @@ if Client then
                                 local hintText = nil
                                 if ent:isa("CommandStation") and ent:GetIsBuilt() then
                                     hintText = "START_COMMANDING"
-                                else
+                                elseif ent:isa("PhaseGate") and ent:GetIsBuilt() then
+									hintText = "MARINE_USE_PHASE"
+								else
 								    hintText = "MARINE_CONSTRUCT"
                                 end
 

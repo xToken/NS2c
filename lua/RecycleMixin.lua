@@ -13,7 +13,7 @@ Script.Load("lua/FunctionContracts.lua")
 RecycleMixin = CreateMixin( RecycleMixin )
 RecycleMixin.type = "Recycle"
 
-local kRecycleEffectDuration = 1
+local kRecycleEffectDuration = 2
 
 RecycleMixin.expectedCallback =
 {

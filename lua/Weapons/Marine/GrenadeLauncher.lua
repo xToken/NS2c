@@ -30,7 +30,7 @@ function GrenadeLauncher:OnCreate()
 
     ClipWeapon.OnCreate(self)
     
-    InitMixin(self, PickupableWeaponMixin, { kRecipientType = "Marine" })
+    InitMixin(self, PickupableWeaponMixin)
     
     self.emptyPoseParam = 0
     
@@ -84,22 +84,7 @@ function GrenadeLauncher:UpdateViewModelPoseParameters(viewModel)
     viewModel:SetPoseParam("empty", self.emptyPoseParam)
     
 end
-/*
-function GrenadeLauncher:OnTouch(recipient)
-    recipient:AddWeapon(self, true)
-    Shared.PlayWorldSound(nil, Marine.kGunPickupSound, nil, recipient:GetOrigin())
-end
 
-function GrenadeLauncher:GetIsValidRecipient(player)
-    if player then
-        local hasWeapon = player:GetWeaponInHUDSlot(self:GetHUDSlot())
-        if (not hasWeapon or hasWeapon.kMapName == "rifle") and self.droppedtime + kPickupWeaponTimeLimit < Shared.GetTime() then
-            return true
-        end
-    end
-    return false
-end
-*/
 local function LoadBullet(self)
 
     if self.ammo > 0 and self.clip < self:GetClipSize() then
@@ -203,8 +188,12 @@ local function ShootGrenade(self, player)
         self.lastFiredGrenadeId = grenade:GetId()
         
     end
-
+    
+    TEST_EVENT("Grenade Launcher primary attack")
+    
 end
+
+
 
 function GrenadeLauncher:GetNumStartClips()
     return 2

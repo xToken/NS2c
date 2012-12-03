@@ -174,6 +174,36 @@ function GetConstructionTime(self)
 end    
 
 /**
+ * Add health to structure as it builds.
+ */
+local function AddBuildHealth(self, scalar)
+
+    // Add health according to build time.
+    if scalar > 0 then
+    
+        local maxHealth = self:GetMaxHealth()
+        self:AddHealth(scalar * (1 - kStartHealthScalar) * maxHealth, false, false, true)
+        
+    end
+    
+end
+
+/**
+ * Add health to structure as it builds.
+ */
+local function AddBuildArmor(self, scalar)
+
+    // Add health according to build time.
+    if scalar > 0 then
+    
+        local maxArmor = self:GetMaxArmor()
+        self:SetArmor(self:GetArmor() + scalar * (1 - kStartHealthScalar) * maxArmor, true)
+        
+    end
+    
+end
+
+/**
  * Build structure by elapsedTime amount and play construction sounds. Pass custom construction sound if desired, 
  * otherwise use Gorge build sound or Marine sparking build sounds. Returns two values - whether the construct
  * action was successful and if enough time has elapsed so a construction AV effect should be played.
@@ -221,8 +251,8 @@ function ConstructMixin:Construct(elapsedTime, builder)
                 self.buildFraction = math.max(math.min((self.buildTime / timeToComplete), 1), 0)
                 
                 local scalar = self.buildFraction - startBuildFraction
-                self:AddBuildHealth(scalar)
-                self:AddBuildArmor(scalar)
+                AddBuildHealth(self, scalar)
+                AddBuildArmor(self, scalar)
                 
                 if self.oldBuildFraction ~= self.buildFraction then
                 
@@ -246,23 +276,6 @@ function ConstructMixin:Construct(elapsedTime, builder)
     
 end
 
-// Add health to structure as it builds
-function ConstructMixin:AddBuildHealth(scalar)
-
-    // Add health according to build time
-    if (scalar > 0) then
-    
-        local maxHealth = self:GetMaxHealth()        
-        self:AddHealth( scalar * (1 - kStartHealthScalar) * maxHealth, false, false, true)
-    
-    end
-
-end
-
-function ConstructMixin:ConstructOverride(deltaTime)
-    return deltaTime
-end
-
 function ConstructMixin:GetCanBeUsedConstructed()
     return false
 end
@@ -275,33 +288,23 @@ function ConstructMixin:GetCanBeUsed(player, useSuccessTable)
     
 end
 
-// Add health to structure as it builds
-function ConstructMixin:AddBuildArmor(scalar)
-
-    // Add health according to build time
-    if (scalar > 0) then
-    
-        local maxArmor = self:GetMaxArmor()        
-        self:SetArmor( self:GetArmor() + scalar * (1 - kStartHealthScalar) * maxArmor )
-    
-    end
-
-end
-
 function ConstructMixin:SetConstructionComplete(builder)
 
-    local wasComplete = self.constructionComplete
-    self.constructionComplete = true
+    // Construction cannot resurrect the dead.
+    if self:GetIsAlive() then
     
-    self:AddBuildHealth(1 - self.buildFraction)
-    self:AddBuildArmor(1 - self.buildFraction)
-    
-    self.buildFraction = 1
-    
-    self:SetIsAlive(true)
-    
-    if wasComplete ~= self.constructionComplete then
-        self:OnConstructionComplete(builder)
+        local wasComplete = self.constructionComplete
+        self.constructionComplete = true
+        
+        AddBuildHealth(self, 1 - self.buildFraction)
+        AddBuildArmor(self, 1 - self.buildFraction)
+        
+        self.buildFraction = 1
+        
+        if wasComplete ~= self.constructionComplete then
+            self:OnConstructionComplete(builder)
+        end
+        
     end
     
 end

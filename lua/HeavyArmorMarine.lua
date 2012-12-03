@@ -3,7 +3,7 @@
 
 Script.Load("lua/Marine.lua")
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/GroundMoveMixin.lua")
+Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/MarineActionFinderMixin.lua")
 Script.Load("lua/OrderSelfMixin.lua")
@@ -45,9 +45,6 @@ HeavyArmorMarine.kSpendResourcesSoundName = PrecacheAsset("sound/NS2.fev/marine/
 HeavyArmorMarine.kChatSound = PrecacheAsset("sound/NS2.fev/marine/common/chat")
 HeavyArmorMarine.kSoldierLostAlertSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/soldier_lost")
 
-HeavyArmorMarine.kFlinchEffect = PrecacheAsset("cinematics/marine/hit.cinematic")
-HeavyArmorMarine.kFlinchBigEffect = PrecacheAsset("cinematics/marine/hit_big.cinematic")
-
 HeavyArmorMarine.kEffectNode = "fxnode_playereffect"
 HeavyArmorMarine.kHealth = kHeavyArmorHealth
 HeavyArmorMarine.kBaseArmor = kHeavyArmorArmor
@@ -59,8 +56,8 @@ HeavyArmorMarine.kMass = 200
 HeavyArmorMarine.kAcceleration = 45
 HeavyArmorMarine.kAirAcceleration = 17
 HeavyArmorMarine.kAirStrafeWeight = 4
-HeavyArmorMarine.kWalkMaxSpeed = 3.5
-HeavyArmorMarine.kRunMaxSpeed = 6
+HeavyArmorMarine.kWalkMaxSpeed = 3.0
+HeavyArmorMarine.kRunMaxSpeed = 5.5
 // How fast does our armor get repaired by welders
 HeavyArmorMarine.kArmorWeldRate = 25
 HeavyArmorMarine.kWeldedEffectsInterval = .5
@@ -86,6 +83,10 @@ function HeavyArmorMarine:OnInitialized()
 end
 
 function HeavyArmorMarine:MakeSpecialEdition()
+    self:SetModel(HeavyArmorMarine.kModelName, HeavyArmorMarine.kMarineAnimationGraph)
+end
+
+function HeavyArmorMarine:MakeDeluxeEdition()
     self:SetModel(HeavyArmorMarine.kModelName, HeavyArmorMarine.kMarineAnimationGraph)
 end
 
@@ -115,6 +116,31 @@ end
 
 function HeavyArmorMarine:GetCrouchSpeedScalar()
     return Marine.GetCrouchSpeedScalar(self)
+end
+
+function HeavyArmorMarine:GoldSrc_GetMaxSpeed(possible)
+
+    if possible then
+        return HeavyArmorMarine.kRunMaxSpeed
+    end
+    
+    if self:GetIsDisrupted() then
+        return 0
+    end
+    
+    local maxSpeed = HeavyArmorMarine.kRunMaxSpeed
+    
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = HeavyArmorMarine.kWalkMaxSpeed
+    end
+    
+    // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
+    local inventorySpeedScalar = self:GetInventorySpeedScalar()
+
+    local adjustedMaxSpeed = maxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier() * inventorySpeedScalar 
+    //Print("Adjusted max speed => %.2f (without inventory: %.2f)", adjustedMaxSpeed, adjustedMaxSpeed / inventorySpeedScalar )
+    return adjustedMaxSpeed
+    
 end
 
 function HeavyArmorMarine:GetMaxSpeed(possible)

@@ -1,0 +1,86 @@
+Check if missing any functionality from un-called versions of OnClampSpeed and ModifyVelocity
+
+Fix:
+Collision jitter when touching multiple surfaces at the same time (probably wallwalking to blame)
+
+Investigate:
+Does all classes in NS1 slow down when holding use?
+Does walking back while jetpacking slow down
+
+To tweak:
+Cooldown on pogostick jumping to avoid abuse?
+Heavy friction & speed
+Lerk friction&gravity
+
+AirAcceleration & maxAirVeer :
+	problem: Very very hard to tweak without being "too much" or "too little" or otherwise changing the feel.
+	idea: interpolate input commands and simulate acceleration&friction at 60+ hz
+Fade:
+	Blink acceleration
+Gorge:
+	slide & general movement seem a bit too fast
+	Spit is choppy when moving through the world (probably a sideeffect of how they handle projectiles)
+	building menu is a bit fumbly
+Onos:
+	Crouching sometimes gets you temporarily stuck
+	Verify charge is working like it should
+	Increase visual turnspeed
+	Collision box is very small, making bunnyhopping much easier (too easy I think)
+
+
+------------
+
+
+1 foot = 16 goldSrc units = 0,3 meter
+
+Player:OnProcessMove(input)
+	self:AdjustMove(input)
+	self:UpdateViewAngles(input)
+	self:OnUpdatePlayer(input.time)
+	ScriptActor.OnProcessMove(self, input)
+	self:HandleButtons(input)
+		self:SetCrouchState // duck
+
+	GroundMoveMixin:UpdateMove(input)
+		self:PreUpdateMove(input, runningPrediction) // skulk/onos/gorge & lerk uses this
+		self:ComputeForwardVelocity(input) // compute desired velocity (acceleration)
+			Player:ConstrainMoveVelocity(wishVelocity) // airmove stuff
+		self:GetFrictionForce(input, velocity)
+		self:GetGravityForce(input)
+		self:ModifyVelocity(input, velocity) // jump
+		self:OnClampSpeed(input, velocity)
+		self:UpdatePosition(velocity, input.time, input.move)
+			Player:UpdatePosition(velocity, time)
+				ControllerMixin:PerformMovement(offset, maxTraces, velocity, isMove)
+					self.controller:Move(offset, CollisionRep.Move, CollisionRep.Move, self:GetMovePhysicsMask())
+		self:PostUpdateMove(input, runningPrediction)
+	self:UpdateMaxMoveSpeed(input.time) 
+
+
+Rough goldSrc movement call-heirachy:
+build wish-direction
+groundtrace
+duck-handling
+jump-handling (if jump, set onground false)
+if onground: walkmove
+	friction
+	accelerate
+	tracing & moving
+else: airmove
+	airaccelerate: calls accelerate
+	tracing & moving
+
+
+ns1 speeds:
+Marine: 192
+Jetpack: 576 (airstrafe doesn't increase it)
+
+Fade: 
+Speed: 240
+Blink: 719 (~3x normal speed)
+Fade accelerate hardlimit: 720 (same as blink)
+jump: scaling from forward down 45 deg. (looking down decreases jump height)
+anti-bh limit: ~400 (~1.7x normal speed)
+
+From testing: Blink is applied in pulses, each blink pulse has a cooldown of roughly 80ms and takes 4% energy. Having an FPS that doesn't align well with that cooldown means that blinking might miss some pulses/becomes choppy. It should be fairly straightforward to change blink into being frame-independant.
+

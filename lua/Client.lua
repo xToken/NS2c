@@ -10,6 +10,7 @@
 decoda_name = "Client"
 
 Script.Load("lua/Shared.lua")
+Script.Load("lua/Effect.lua")
 Script.Load("lua/GhostModelUI.lua")
 Script.Load("lua/Render.lua")
 Script.Load("lua/MapEntityLoader.lua")
@@ -572,14 +573,11 @@ local function OnMapPostLoad()
 
     // Set sound falloff defaults
     Client.SetMinMaxSoundDistance(7, 100)
-    
-    InitializePathing()
-    
-    //CreateDSPs()
-    
-    Scoreboard_Clear()
-    
-    CheckRules()
+
+    TimedRun("InitPathing", InitializePathing)
+    //TimedRun("CreateDSPs", CreateDSPs)
+    TimedRun("Scoreboard_Clear", Scoreboard_Clear)
+    TimedRun("CheckRules", CheckRules)
     
 end
 

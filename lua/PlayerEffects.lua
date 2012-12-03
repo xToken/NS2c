@@ -10,13 +10,7 @@ kPlayerEffectData =
 {
 
     // when hit by emp blast
-    enzymed =
-    {
-        enzymedEffects =
-        {
-            {parented_cinematic = "cinematics/alien/enzymed.cinematic", done = true},
-        }
-    },
+
 
     celerity_start =
     {
@@ -311,18 +305,7 @@ kPlayerEffectData =
             {parented_cinematic = "cinematics/marine/beacon.cinematic"},
         }
     },
-    
-    regeneration =
-    {
-        regenerationEffect =
-        {
-            {parented_cinematic = "cinematics/alien/heal.cinematic"},
-            
-            {sound = "", silenceupgrade = true, done = true},
-            {sound = "sound/NS2.fev/alien/common/regeneration_ability", classname = "Alien", done = true, world_space = true},
-        
-        }
-    },
+
 }
 
 GetEffectManager():AddEffectData("PlayerEffectData", kPlayerEffectData)

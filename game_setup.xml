@@ -1,0 +1,6 @@
+<game>
+	<name>classic</name>
+	<description>Natural Selection 2 Classic</description>
+	<client>lua/Client.lua</client>
+	<server>lua/Server.lua</server>
+</game>

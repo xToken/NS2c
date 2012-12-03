@@ -68,26 +68,13 @@ if Server then
 
     function Bomb:ProcessHit(targetHit, surface)
 
-        if (not self:GetOwner() or targetHit ~= self:GetOwner()) and not self.detonated then
-    
-            self:TriggerEffects("bilebomb_hit")
+        if (not self:GetOwner() or targetHit ~= self:GetOwner()) and not self:GetIsDestroyed() then
 
-             local hitEntities
-            if GetGamerules():GetFriendlyFire() then
-                hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kBileBombSplashRadius)
-            else
-                hitEntities = GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), kBileBombSplashRadius)
-            end
-            
-            // Remove bomb and add firing player.
-            table.removevalue(hitEntities, self)
-            local owner = self:GetOwner()
-            // It is possible this bomb does not have an owner.
-            if owner then
-                table.insertunique(hitEntities, owner)
-            end
+            local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kBileBombSplashRadius)
             
             RadiusDamage(hitEntities, self:GetOrigin(), kBileBombSplashRadius, kBileBombDamage, self)
+            
+            self:TriggerEffects("bilebomb_hit")
             
             DestroyEntity(self)
 
@@ -96,10 +83,10 @@ if Server then
     end
     
     function Bomb:TimeUp(currentRate)
-
-        DestroyEntity(self)
+        if not self:GetIsDestroyed() then
+            DestroyEntity(self)
+        end
         return false
-    
     end
 
 end

@@ -76,6 +76,10 @@ if Server then
     
     local function GetCanSee(viewer, entity)
     
+        if HasMixin(viewer, "GhostStructure") then
+            return false
+        end
+    
         // If the other entity is not visible then we cannot see it.
         if not entity:GetIsVisible() then
             return false

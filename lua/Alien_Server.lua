@@ -38,7 +38,7 @@ function Alien:TeleportToHive(usedhive)
         //Success, now teleport the player, try 10 times?
         for i = 1, 10 do
             local position = table.random(selectedhive.eggSpawnPoints)
-            local validForPlayer = GetIsPlacementForTechId(position, true, self:GetTechId())
+            local validForPlayer = GetIsPlacementForTechId(position, self:GetTechId())
             local notNearResourcePoint = #GetEntitiesWithinRange("ResourcePoint", position, 2) == 0
 
             if validForPlayer and notNearResourcePoint then
@@ -111,14 +111,21 @@ end
 function Alien:UpdateAutoHeal()
 
     PROFILE("Alien:UpdateAutoHeal")
-
-    if self:GetIsHealable() and self.timeLastAlienAutoHeal == nil or self.timeLastAlienAutoHeal + kAlienRegenerationTime <= Shared.GetTime() then
-
-        local healRate = kAlienInnateRegenerationPercentage
-        self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), false, false, true)    
-        self.timeLastAlienAutoHeal = Shared.GetTime()
     
-    end 
+    local hasupg, level = GetHasRegenerationUpgrade(self)
+    if hasupg and level > 0 then
+        if self:GetIsHealable() and self.timeLastAlienAutoHeal == nil or self.timeLastAlienAutoHeal + kAlienRegenerationTime <= Shared.GetTime() then
+            local healRate = ((kAlienRegenerationPercentage / 3) * level)
+            self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), false, false, true)    
+            self.timeLastAlienAutoHeal = Shared.GetTime()
+        end
+    else
+        if self:GetIsHealable() and self.timeLastAlienAutoHeal == nil or self.timeLastAlienAutoHeal + kAlienInnateRegenerationTime <= Shared.GetTime() then
+            local healRate = kAlienInnateRegenerationPercentage
+            self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), false, false, true)    
+            self.timeLastAlienAutoHeal = Shared.GetTime()
+        end
+    end
 
 end
 
@@ -131,15 +138,19 @@ local kAbilityData = { [kTechId.Skulk] = { kTechId.Parasite, kTechId.Leap, kTech
 function Alien:OnHiveConstructed(newHive, activeHiveCount)
     
     local AbilityData = kAbilityData[self:GetTechId()]
-    if AbilityData[activeHiveCount] ~= nil then
-        SendPlayersMessage({self}, kTeamMessageTypes.ResearchComplete, AbilityData[activeHiveCount])
+    if AbilityData ~= nil then
+        if AbilityData[activeHiveCount] ~= nil then
+            SendPlayersMessage({self}, kTeamMessageTypes.ResearchComplete, AbilityData[activeHiveCount])
+        end
     end
 end
 
 function Alien:OnHiveDestroyed(destroyedHive, activeHiveCount)
     local AbilityData = kAbilityData[self:GetTechId()]
-    if AbilityData[activeHiveCount + 1] ~= nil then
-        SendPlayersMessage({self}, kTeamMessageTypes.ResearchLost, AbilityData[activeHiveCount + 1])
+    if AbilityData ~= nil then
+        if AbilityData[activeHiveCount + 1] ~= nil then
+            SendPlayersMessage({self}, kTeamMessageTypes.ResearchLost, AbilityData[activeHiveCount + 1])
+        end
     end
 end
 
