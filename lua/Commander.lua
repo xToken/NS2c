@@ -517,24 +517,32 @@ function Commander:OnProcessMove(input)
 
     Player.OnProcessMove(self, input)
     
-    // Remove selected units that are no longer valid for selection
+    // Remove selected units that are no longer valid for selection.
     self:UpdateSelection(input.time)
     
     if Server then
+    
         self:UpdateHotkeyGroups()
         
         if not self.timeLastEnergyCheck then
+        
             self.timeLastEnergyCheck = Shared.GetTime()
             self:CheckStructureEnergy()
+            
         end
         
-        if self.timeLastEnergyCheck + .5 < Shared.GetTime() then
+        if self.timeLastEnergyCheck + 0.5 < Shared.GetTime() then
+        
             self.timeLastEnergyCheck = Shared.GetTime()
             self:CheckStructureEnergy()
+            
         end
         
     elseif Client then
     
+		// This flag must be cleared inside OnProcessMove. See explaination in Commander:OverrideInput().
+        self.setScrollPosition = false
+        
     end
     
 end

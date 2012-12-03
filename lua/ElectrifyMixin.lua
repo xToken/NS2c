@@ -119,7 +119,6 @@ end
 function ElectrifyMixin:Update()
 
     if self:GetIsAlive() and self:GetIsElectrified() then
-        //GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(self:GetTeamNumber()), target:GetOrigin() + kARCDamageOffset, damageRadius)
         local enemies = GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), kElectricalRange + 4)
         local damageRadius = kElectricalRange
         local damagedentities = 0
@@ -127,16 +126,12 @@ function ElectrifyMixin:Update()
             local attackPoint = entity:GetOrigin()
             if (attackPoint - self:GetOrigin()):GetLength() < damageRadius and damagedentities < kElectricalMaxTargets and self:GetEnergy() >= kElectrifyEnergyCost then
                 if not entity:isa("Commander") and HasMixin(entity, "Live") and entity:GetIsAlive() then
-                    // Make sure electrifiedbuilding can "see" target
                     local trace = Shared.TraceRay(self:GetOrigin(), attackPoint, CollisionRep.Damage, PhysicsMask.Bullets, filterNonDoors)
-                    //if trace.fraction == 1.0 or trace.entity == entity then
                     self:SetEnergy(math.max(self:GetEnergy() - kElectrifyEnergyCost, 0))
                     self:DoDamage(kElectricalDamage , entity, trace.endPoint, (attackPoint - trace.endPoint):GetUnit(), "none" )
                     damagedentities = damagedentities + 1
-                    //end
                 end
             end
-            Print(ToString((attackPoint - self:GetOrigin()):GetLength()))
         end
         if damagedentities > 0 then
             self.lastElectrifiedTime = Shared.GetTime()

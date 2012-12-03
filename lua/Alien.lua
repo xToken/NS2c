@@ -9,7 +9,6 @@
 
 Script.Load("lua/Player.lua")
 Script.Load("lua/CloakableMixin.lua")
-Script.Load("lua/RegenerationMixin.lua")
 Script.Load("lua/ScoringMixin.lua")
 Script.Load("lua/Alien_Upgrade.lua")
 Script.Load("lua/UnitStatusMixin.lua")
@@ -99,7 +98,6 @@ function Alien:OnCreate()
 
     Player.OnCreate(self)
     InitMixin(self, AlienDetectorMixin)
-    InitMixin(self, RegenerationMixin)
     InitMixin(self, AlienActionFinderMixin)
     InitMixin(self, EnergizeMixin)
     InitMixin(self, CombatMixin)
@@ -270,9 +268,6 @@ function Alien:OnInitialized()
         
     end
 
-end
-
-function Alien:MakeSpecialEdition()    
 end
 
 function Alien:GetAlienDetectionRange()
@@ -558,6 +553,10 @@ end
 
 function Alien:GetAcceleration()
     return Player.GetAcceleration(self) * self:GetMovementSpeedModifier()
+end
+
+function Alien:GoldSrc_GetAcceleration()
+    return Player.GoldSrc_GetAcceleration(self) * self:GetMovementSpeedModifier()
 end
 
 function Alien:GetCeleritySpeedModifier()

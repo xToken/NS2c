@@ -13,7 +13,7 @@ Script.Load("lua/Weapons/Alien/Parasite.lua")
 Script.Load("lua/Weapons/Alien/XenocideLeap.lua")
 Script.Load("lua/Alien.lua")
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/GroundMoveMixin.lua")
+Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/WallMovementMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
@@ -50,7 +50,7 @@ local networkVars =
 }
 
 AddMixinNetworkVars(BaseMoveMixin, networkVars)
-AddMixinNetworkVars(GroundMoveMixin, networkVars)
+AddMixinNetworkVars(CustomGroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 
@@ -62,11 +62,11 @@ Skulk.kArmor = kSkulkArmor
 Skulk.kLeapTime = 0.2
 Skulk.kLeapVerticalVelocity = 8
 Skulk.kLeapForce = 15
-Skulk.kMaxSpeed = 9
+Skulk.kMaxSpeed = 8
 Skulk.kMaxWalkSpeed = 4
 Skulk.kJumpHeight = 1.3
-Skulk.kWallJumpForce = 2
-Skulk.kWallJumpYBoost = 6
+Skulk.kWallJumpForce = 7
+Skulk.kWallJumpYBoost = 2
 Skulk.kJumpDelay = 0.25
 
 Skulk.kMass = 45 // ~100 pounds
@@ -95,7 +95,7 @@ Skulk.kZExtents = .45
 function Skulk:OnCreate()
 
     InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
-    InitMixin(self, GroundMoveMixin)
+    InitMixin(self, CustomGroundMoveMixin)
     InitMixin(self, CameraHolderMixin, { kFov = kSkulkFov })
     InitMixin(self, WallMovementMixin)
     
@@ -203,6 +203,10 @@ function Skulk:OnLeap()
     
 end
 
+function Skulk:GetCanCrouch()
+    return false
+end
+
 function Skulk:GetCanWallJump()
     return self:GetIsWallWalking() or (not self:GetIsOnGround() and self:GetAverageWallWalkingNormal(Skulk.kJumpWallRange, Skulk.kJumpWallFeelerSize) ~= nil) and self.lastwalljump + Skulk.kJumpDelay < Shared.GetTime() and not self.crouching 
 end
@@ -213,10 +217,6 @@ end
 
 function Skulk:GetCanJump()
     return Alien.GetCanJump(self) or self:GetCanWallJump()    
-end
-
-function Skulk:OverrideAirControl()
-    return self:GetIsWallWalking()
 end
 
 function Skulk:GetIsWallWalking()
@@ -354,6 +354,10 @@ function Skulk:GetSmoothAngles()
     return not self:GetIsWallWalking()
 end  
 
+function Skulk:GoldSrc_GetFriction()
+    return ConditionalValue(self:GetIsWallWalking(), Player.kGoldSrcFriction + 3.0, Player.kGoldSrcFriction)
+end
+
 function Skulk:UpdatePosition(velocity, time)
 
     PROFILE("Skulk:UpdatePosition")
@@ -462,6 +466,22 @@ function Skulk:UpdateCrouch()
     
 end
 
+function Skulk:GoldSrc_GetMaxSpeed(possible)
+
+    if possible then
+        return Skulk.kMaxSpeed
+    end
+    
+    local maxSpeed = Skulk.kMaxSpeed
+    
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = Skulk.kMaxWalkSpeed
+    end
+
+    return maxSpeed * self:GetMovementSpeedModifier()
+    
+end
+
 function Skulk:GetMaxSpeed(possible)
 
     if possible then
@@ -543,33 +563,28 @@ end
 
 function Skulk:GetJumpVelocity(input, velocity)
 
-    local viewCoords = self:GetViewAngles():GetCoords()
-    
-    // we add the bonus in the direction the move is going
-    local move = input.move
-    move.x = move.x * 0.01
-    
-    if input.move:GetLength() ~= 0 then
-        self.bonusVec = viewCoords:TransformVector(move)
-    else
-        self.bonusVec = viewCoords.zAxis
-    end
-
-    self.bonusVec.y = 0
-    self.bonusVec:Normalize()
-    
     if self:GetCanWallJump() then
         if velocity:GetLengthXZ() < Skulk.kMaxSpeed then
-            local jumpForce = Skulk.kWallJumpForce * self:GetMovementSpeedModifier()
-            self.lastwalljump = Shared.GetTime()
-            velocity.x = velocity.x + self.bonusVec.x * jumpForce
-            velocity.z = velocity.z + self.bonusVec.z * jumpForce
-            velocity.y = math.max(viewCoords.zAxis.y, 0.5) * Skulk.kWallJumpYBoost
+            // From testing in NS1:
+            // Only viewangle seem to be used for determining force direction
+            // Only wall-jump if facing away from the surface that we're currently sticking to
+            // Walljump velocity is slightly higher than normal maxspeed. Celerity bonus also applies.
+            // There seems to be a small upwards velocity added regardless of viewangles
+            // Previous velocity seems to be ignored
+            
+            local direction = self:GetViewAngles():GetCoords().zAxis
+            
+            if self.wallWalkingStickGoal:DotProduct(direction) >= 0.0 then
+                direction:Scale(Skulk.kWallJumpForce * self:GetMovementSpeedModifier())
+                direction.y = direction.y + Skulk.kWallJumpYBoost * self:GetMovementSpeedModifier()
+                
+                VectorCopy(direction, velocity)
+                self.lastwalljump = Shared.GetTime()
+            end
         end
     else
-        velocity.y = math.sqrt(-2 * self:GetJumpHeight() * self:GetMixinConstants().kGravity)
+        Alien.GetJumpVelocity(self, input, velocity)
     end
-
 end
 
 // skulk handles jump sounds itself

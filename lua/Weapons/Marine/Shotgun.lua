@@ -26,13 +26,12 @@ local kAnimationGraph = PrecacheAsset("models/marine/shotgun/shotgun_view.animat
 
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/shotgun/muzzle_flash.cinematic")
 local kMuzzleAttachPoint = "fxnode_shotgunmuzzle"
-local kShotgunBaseFireSpeed = 1.3
 
 function Shotgun:OnCreate()
 
     ClipWeapon.OnCreate(self)
     
-    InitMixin(self, PickupableWeaponMixin, { kRecipientType = "Marine" })
+    InitMixin(self, PickupableWeaponMixin)
     
     self.emptyPoseParam = 0
 
@@ -71,22 +70,7 @@ end
 function Shotgun:GetBulletsPerShot()
     return kShotgunBulletsPerShot
 end
-/*
-function Shotgun:OnTouch(recipient)
-    recipient:AddWeapon(self, true)
-    Shared.PlayWorldSound(nil, Marine.kGunPickupSound, nil, recipient:GetOrigin())
-end
 
-function Shotgun:GetIsValidRecipient(player)
-    if player then
-        local hasWeapon = player:GetWeaponInHUDSlot(self:GetHUDSlot())
-        if (not hasWeapon or hasWeapon.kMapName == "rifle") and self.droppedtime + kPickupWeaponTimeLimit < Shared.GetTime() then
-            return true
-        end
-    end
-    return false
-end
-*/
 function Shotgun:GetSpread(bulletNum)
 
     // NS1 was 20 degrees for half the shots and 20 degrees plus 7 degrees for half the shots
@@ -201,8 +185,6 @@ function Shotgun:FirePrimary(player)
     self:TriggerEffects("shotgun_attack")
 
 end
-
-//
 
 function Shotgun:OnProcessMove(input)
     ClipWeapon.OnProcessMove(self, input)

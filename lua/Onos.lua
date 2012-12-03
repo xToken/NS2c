@@ -16,7 +16,7 @@ Script.Load("lua/Weapons/Alien/Devour.lua")
 Script.Load("lua/Weapons/Alien/Smash.lua")
 Script.Load("lua/Alien.lua")
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/GroundMoveMixin.lua")
+Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 
@@ -43,8 +43,8 @@ Onos.kJumpHeight = 1.2
 
 // triggered when the momentum value has changed by this amount (negative because we trigger the effect when the onos stops, not accelerates)
 Onos.kMomentumEffectTriggerDiff = 3
-Onos.kMaxSpeed = 8
-Onos.kMaxChargeSpeed = 15
+Onos.kMaxSpeed = 6.5
+Onos.kMaxChargeSpeed = 13
 Onos.kMaxCrouchSpeed = 3
 
 Onos.kHealth = kOnosHealth
@@ -78,14 +78,14 @@ local networkVars =
 }
 
 AddMixinNetworkVars(BaseMoveMixin, networkVars)
-AddMixinNetworkVars(GroundMoveMixin, networkVars)
+AddMixinNetworkVars(CustomGroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 
 function Onos:OnCreate()
 
     InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
-    InitMixin(self, GroundMoveMixin)
+    InitMixin(self, CustomGroundMoveMixin)
     InitMixin(self, CameraHolderMixin, { kFov = kOnosFov })
     
     Alien.OnCreate(self)
@@ -138,6 +138,15 @@ end
 
 function Onos:GetCanCrouch()
     return Alien.GetCanCrouch(self) and not self.charging
+end
+
+function Onos:GoldSrc_GetAcceleration()
+    local acceleration = Alien.GoldSrc_GetAcceleration(self)
+    if self.charging then
+        acceleration = acceleration + Onos.kChargeAcceleration * self:GetChargeFraction()  * 0.11
+    end
+    
+    return acceleration
 end
 
 function Onos:GetAcceleration()
@@ -311,6 +320,22 @@ end
 
 function Onos:GetMaxViewOffsetHeight()
     return Onos.kViewOffsetHeight
+end
+
+function Onos:GoldSrc_GetMaxSpeed(possible)
+
+    if possible then
+        return Onos.kMaxSpeed
+    end
+    
+    local maxSpeed = Onos.kMaxSpeed
+    
+    if self.charging then
+        maxSpeed = Onos.kMaxChargeSpeed
+    end
+
+    return maxSpeed * self:GetMovementSpeedModifier()
+
 end
 
 function Onos:GetMaxSpeed(possible)

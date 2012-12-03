@@ -325,6 +325,8 @@ kSwipeDelay = 0.48
 
 kStartBlinkEnergyCost = 8
 kBlinkEnergyCost = 65
+kBlinkPulseEnergyCost = 4
+kBlinkCooldown = 0.05
 
 kMetabolizeEnergyCost = 25
 kMetabolizeEnergyGain = 35

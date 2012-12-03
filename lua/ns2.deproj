@@ -151,6 +151,9 @@
     <filename>Weapons\Alien\CragAbility.lua</filename>
   </file>
   <file>
+    <filename>Mixins\CustomGroundMoveMixin.lua</filename>
+  </file>
+  <file>
     <filename>DamageEffects.lua</filename>
   </file>
   <file>
@@ -263,6 +266,9 @@
   </file>
   <file>
     <filename>GUIInsight_Tech.lua</filename>
+  </file>
+  <file>
+    <filename>menu\GUIMainMenu.lua</filename>
   </file>
   <file>
     <filename>GUIMarineBuyMenu.lua</filename>
@@ -544,19 +550,10 @@
     <filename>PrototypeLab.lua</filename>
   </file>
   <file>
-    <filename>PrototypeLab_Client.lua</filename>
-  </file>
-  <file>
-    <filename>PrototypeLab_Server.lua</filename>
-  </file>
-  <file>
     <filename>ReadyRoomTeam.lua</filename>
   </file>
   <file>
     <filename>RecycleMixin.lua</filename>
-  </file>
-  <file>
-    <filename>RegenerationMixin.lua</filename>
   </file>
   <file>
     <filename>ResearchMixin.lua</filename>
@@ -593,9 +590,6 @@
   </file>
   <file>
     <filename>Server.lua</filename>
-  </file>
-  <file>
-    <filename>ServerBrowser_Test.lua</filename>
   </file>
   <file>
     <filename>Shade.lua</filename>
@@ -697,19 +691,16 @@
     <filename>UpgradeStructureManager.lua</filename>
   </file>
   <file>
+    <filename>Utility.lua</filename>
+  </file>
+  <file>
     <filename>VoteManager.lua</filename>
   </file>
   <file>
-    <filename>Weapons\Weapon.lua</filename>
-  </file>
-  <file>
-    <filename>WeaponOwnerMixin.lua</filename>
+    <filename>WallMovementMixin.lua</filename>
   </file>
   <file>
     <filename>WeaponUtility.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Weapon_Server.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\Web.lua</filename>

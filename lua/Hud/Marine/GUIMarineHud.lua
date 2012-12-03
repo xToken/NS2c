@@ -111,6 +111,9 @@ GUIMarineHUD.kGameTimeTextPos = Vector(210, -170, 0)
 GUIMarineHUD.kLocationTextSize = 22
 GUIMarineHUD.kLocationTextOffset = Vector(280, 5, 0)
 
+GUIMarineHUD.kTeamResourcesTextSize = 22
+GUIMarineHUD.kTeamResourcesTextOffset = Vector(410, 280, 0)
+
 // the hud will not show more notifications than at this intervall to prevent too much spam
 GUIMarineHUD.kNotificationUpdateIntervall = 0.2
 
@@ -201,6 +204,16 @@ function GUIMarineHUD:Initialize()
     self.locationText:SetColor(kBrightColor)
     self.locationText:SetFontIsBold(true)
     self.locationText:AddAsChildTo(self.background)
+    
+    self.teamresources = self:CreateAnimatedTextItem()
+    self.teamresources:SetFontName(GUIMarineHUD.kTextFontName)
+    self.teamresources:SetTextAlignmentX(GUIItem.Align_Max)
+    self.teamresources:SetTextAlignmentY(GUIItem.Align_Min)
+    self.teamresources:SetAnchor(GUIItem.Left, GUIItem.Top)
+    self.teamresources:SetLayer(kGUILayerPlayerHUDForeground2)
+    self.teamresources:SetColor(kBrightColor)
+    self.teamresources:SetFontIsBold(true)
+    self.teamresources:AddAsChildTo(self.background)
 
     self.armorLevel = GetGUIManager():CreateGraphicItem()
     self.armorLevel:SetTexture(GUIMarineHUD.kUpgradesTexture)
@@ -412,6 +425,10 @@ function GUIMarineHUD:Reset()
     self.locationText:SetUniformScale(self.scale)
     self.locationText:SetScale(GetScaledVector())
     self.locationText:SetPosition(GUIMarineHUD.kLocationTextOffset)
+    
+    self.teamresources:SetUniformScale(self.scale)
+    self.teamresources:SetScale(GetScaledVector())
+    self.teamresources:SetPosition(GUIMarineHUD.kTeamResourcesTextOffset)
 
 end
 
@@ -552,6 +569,19 @@ function GUIMarineHUD:Update(deltaTime)
 
     if gameTime ~= 0 then
         gameTime = math.floor(Shared.GetTime()) - PlayerUI_GetGameStartTime()
+    end
+    
+   local teamres = PlayerUI_GetTeamResources()
+    
+    if self.lastTeamRes ~= teamres then
+
+        // Delete current string and start write animation
+        self.teamresources:DestroyAnimations()
+        self.teamresources:SetText("")
+        self.teamresources:SetText(string.format(Locale.ResolveString("TEAM_RES"), teamres), 0)
+
+        self.lastTeamRes = teamres
+
     end
 
     //local minutes = math.floor(gameTime/60)

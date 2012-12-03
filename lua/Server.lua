@@ -102,7 +102,7 @@ function GetCreateEntityOnStart(mapName, groupName, values)
        and mapName ~= CommandStation.kMapName
        //and mapName ~= Cyst.kMapName
        and mapName ~= InfantryPortal.kMapName
-
+    
 end
 
 // MUST BE GLOBAL - overridden by mods

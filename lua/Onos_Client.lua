@@ -9,7 +9,6 @@
 Onos.kYStoopCameraOffset = 0.3
 
 // Play footstep effects when moving
-
 function Onos:UpdateClientEffects(deltaTime, isLocal)
 
     Alien.UpdateClientEffects(self, deltaTime, isLocal)

@@ -1734,6 +1734,14 @@ local function DisableScreenEffects(self)
     
 end
 
+function UpdateMovementMode()
+
+    if Client and Client.GetLocalPlayer() and Client.GetLocalPlayer().forwardModifier ~= Client.GetOptionBoolean("AdvancedMovement", false) then
+        Client.SendNetworkMessage("MovementMode", {movement = Client.GetOptionBoolean("AdvancedMovement", false)}, true)
+    end
+
+end
+
 // Called on the Client only, after OnInitialized(), for a ScriptActor that is controlled by the local player.
 // Ie, the local player is controlling this Marine and wants to intialize local UI, flash, etc.
 function Player:OnInitLocalClient()
@@ -1742,7 +1750,9 @@ function Player:OnInitLocalClient()
     
     self.alertBlips = { }
     self.alertMessages = { }
-    
+    if self.forwardModifier ~= Client.GetOptionBoolean("AdvancedMovement", false) then
+        Client.SendNetworkMessage("MovementMode", {movement = Client.GetOptionBoolean("AdvancedMovement", false)}, true)
+    end
     // Initialize offsets used for drawing tech ids as buttons
     InitTechTreeMaterialOffsets()
 

@@ -9,7 +9,8 @@
 
 Script.Load("lua/Player.lua")
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/GroundMoveMixin.lua")
+Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
+//Script.Load("lua/Mixins/GroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/OrderSelfMixin.lua")
 Script.Load("lua/MarineActionFinderMixin.lua")
@@ -61,9 +62,6 @@ Marine.kSpendResourcesSoundName = PrecacheAsset("sound/NS2.fev/marine/common/pla
 Marine.kChatSound = PrecacheAsset("sound/NS2.fev/marine/common/chat")
 Marine.kSoldierLostAlertSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/soldier_lost")
 
-Marine.kFlinchEffect = PrecacheAsset("cinematics/marine/hit.cinematic")
-Marine.kFlinchBigEffect = PrecacheAsset("cinematics/marine/hit_big.cinematic")
-
 Marine.kEffectNode = "fxnode_playereffect"
 Marine.kHealth = kMarineHealth
 Marine.kBaseArmor = kMarineArmor
@@ -71,8 +69,8 @@ Marine.kArmorPerUpgradeLevel = kArmorPerUpgradeLevel
 // Player phase delay - players can only teleport this often
 Marine.kPlayerPhaseDelay = 2
 Marine.kStunDuration = 2
-Marine.kWalkMaxSpeed = 3.75                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
-Marine.kRunMaxSpeed = 7
+Marine.kWalkMaxSpeed = 3.5                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
+Marine.kRunMaxSpeed = 6
 Marine.kDoubleJumpMinHeightChange = 0.4
 
 // How fast does our armor get repaired by welders
@@ -102,7 +100,8 @@ local networkVars =
 
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(BaseMoveMixin, networkVars)
-AddMixinNetworkVars(GroundMoveMixin, networkVars)
+AddMixinNetworkVars(CustomGroundMoveMixin, networkVars)
+//AddMixinNetworkVars(GroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(DisruptMixin, networkVars)
@@ -116,7 +115,8 @@ AddMixinNetworkVars(AlienDetectableMixin, networkVars)
 function Marine:OnCreate()
 
     InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
-    InitMixin(self, GroundMoveMixin)
+    InitMixin(self, CustomGroundMoveMixin)
+    //InitMixin(self, GroundMoveMixin)
     InitMixin(self, CameraHolderMixin, { kFov = kDefaultFov })
     InitMixin(self, MarineActionFinderMixin)
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
@@ -504,6 +504,32 @@ function Marine:GetCrouchSpeedScalar()
     return Player.kCrouchSpeedScalar
 end
 
+function Marine:GoldSrc_GetMaxSpeed(possible)
+
+    if possible then
+        return Marine.kRunMaxSpeed
+    end
+    
+    if self:GetIsDisrupted() then
+        return 0
+    end
+    
+    //Walking
+    local maxSpeed = Marine.kRunMaxSpeed
+    
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = Marine.kWalkMaxSpeed
+    end
+    
+    // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
+    local inventorySpeedScalar = self:GetInventorySpeedScalar()
+
+    local adjustedMaxSpeed = maxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier() * inventorySpeedScalar 
+    //Print("Adjusted max speed => %.2f (without inventory: %.2f)", adjustedMaxSpeed, adjustedMaxSpeed / inventorySpeedScalar )
+    
+    return adjustedMaxSpeed
+end
+
 function Marine:GetMaxSpeed(possible)
 
     if possible then
@@ -641,7 +667,7 @@ function Marine:GetCanDropWeapon(weapon, ignoreDropTimeLimit)
 end
 
 // Do basic prediction of the weapon drop on the client so that any client
-// effects for the weapon can be dealt with
+// effects for the weapon can be dealt with.
 function Marine:Drop(weapon, ignoreDropTimeLimit, ignoreReplacementWeapon)
 
     local activeWeapon = self:GetActiveWeapon()
@@ -651,17 +677,17 @@ function Marine:Drop(weapon, ignoreDropTimeLimit, ignoreReplacementWeapon)
     end
     
     if self:GetCanDropWeapon(weapon, ignoreDropTimeLimit) then
-        
+    
         if weapon == activeWeapon then
             self:SelectNextWeapon()
         end
-    
-        weapon:OnPrimaryAttackEnd(self)
-    
-        // Remove from player's inventory
-        if Server then
-            self:RemoveWeapon(weapon)
         
+        weapon:OnPrimaryAttackEnd(self)
+        
+        if Server then
+        
+            self:RemoveWeapon(weapon)
+            
             local weaponSpawnCoords = self:GetAttachPointCoords(Weapon.kHumanAttachPoint)
             weapon:SetCoords(weaponSpawnCoords)
             

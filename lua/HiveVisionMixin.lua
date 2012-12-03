@@ -30,10 +30,6 @@ end
 
 if Client then
 
-    //function HiveVisionMixin:OnTakeDamageClient()
-        //self.hiveSightTime = Shared_GetTime()
-    //end
-
     function HiveVisionMixin:OnUpdate(deltaTime)   
             
         local time = Shared_GetTime()

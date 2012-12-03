@@ -37,25 +37,10 @@ class 'PrototypeLab' (ScriptActor)
 
 PrototypeLab.kMapName = "prototypelab"
 
-PrototypeLab.kThinkTime = 2
-// Players can use menu and be supplied by PrototypeLab inside this range
-PrototypeLab.kResupplyUseRange = 2.0
-
 PrototypeLab.kModelName = PrecacheAsset("models/marine/prototype_lab/prototype_lab.model")
-
-if Server then
-    Script.Load("lua/PrototypeLab_Server.lua")
-elseif Client then
-    Script.Load("lua/PrototypeLab_Client.lua")
-end    
 
 local networkVars =
 {
-    // How far out the arms are for animation (0-1)
-    loggedInEast = "boolean",
-    loggedInNorth = "boolean",
-    loggedInSouth = "boolean",
-    loggedInWest = "boolean"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -115,26 +100,9 @@ function PrototypeLab:OnInitialized()
     self:SetModel(PrototypeLab.kModelName, kAnimationGraph)
     
     InitMixin(self, WeldableMixin)
-    
-    self.loginEastAmount = 0
-    self.loginNorthAmount = 0
-    self.loginWestAmount = 0
-    self.loginSouthAmount = 0
-    
-    self.timeScannedEast = 0
-    self.timeScannedNorth = 0
-    self.timeScannedWest = 0
-    self.timeScannedSouth = 0
-
-    self.loginNorthAmount = 0
-    self.loginEastAmount = 0
-    self.loginSouthAmount = 0
-    self.loginWestAmount = 0
 
     if Server then    
-    
-        self.loggedInArray = {false, false, false, false}
-        self:SetNextThink(PrototypeLab.kThinkTime)
+
         
         // This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
@@ -156,58 +124,13 @@ function PrototypeLab:GetTechButtons(techId)
                   kTechId.None, kTechId.None, kTechId.None, kTechId.None }    
 end
 
-function PrototypeLab:UpdatePrototypeLabAnim(extension, loggedIn, scanTime, timePassed)
-
-    local loggedInName = "log_" .. extension
-    local loggedInParamValue = ConditionalValue(loggedIn, 1, 0)
-    
-    if extension == "n" then
-    
-        self.loginNorthAmount = Clamp(Slerp(self.loginNorthAmount, loggedInParamValue, timePassed*2), 0, 1)
-        self:SetPoseParam(loggedInName, self.loginNorthAmount)
-        
-    elseif extension == "s" then
-    
-        self.loginSouthAmount = Clamp(Slerp(self.loginSouthAmount, loggedInParamValue, timePassed*2), 0, 1)
-        self:SetPoseParam(loggedInName, self.loginSouthAmount)
-    elseif extension == "e" then
-        self.loginEastAmount = Clamp(Slerp(self.loginEastAmount, loggedInParamValue, timePassed*2), 0, 1)
-        self:SetPoseParam(loggedInName, self.loginEastAmount)
-    elseif extension == "w" then
-        self.loginWestAmount = Clamp(Slerp(self.loginWestAmount, loggedInParamValue, timePassed*2), 0, 1)
-        self:SetPoseParam(loggedInName, self.loginWestAmount)
-    end
-    
-    local scannedName = "scan_" .. extension
-    local scannedParamValue = ConditionalValue(scanTime == 0 or (Shared.GetTime() > scanTime + 3), 0, 1)
-    self:SetPoseParam(scannedName, scannedParamValue)
-    
-end
-
 function PrototypeLab:GetDamagedAlertId()
     return kTechId.MarineAlertStructureUnderAttack
-end
-
-function PrototypeLab:OnUpdate(deltaTime)
-
-    if Client then
-        self:UpdatePrototypeLabWarmUp()
-    end
-    
-    ScriptActor.OnUpdate(self, deltaTime)
-    
 end
 
 function PrototypeLab:GetItemList()
 
     return nil
-    
-end
-
-// TechName, UpgradeList, Max number of upgrades, upgrades mutual exlusive
-function PrototypeLab:GetUpgradeList()
-
-
     
 end
 

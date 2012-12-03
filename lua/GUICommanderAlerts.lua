@@ -53,29 +53,7 @@ function GUICommanderAlerts:Uninitialize()
     
 end
 
-function GUICommanderAlerts:SendKeyEvent(key, down)
-
-    local numberMessages = table.count(self.messages)
-    if down and numberMessages > 0 then
-        if key == InputKey.Space then
-            local latestMessage = self.messages[numberMessages]
-            self:AlertClicked(latestMessage)
-            return true
-        elseif key == InputKey.MouseButton0 then
-            local mouseX, mouseY = Client.GetCursorPosScreen()
-            for i, message in ipairs(self.messages) do
-                if GUIItemContainsPoint(message["Background"], mouseX, mouseY) then
-                    self:AlertClicked(message)
-                    return true
-                end
-            end
-        end
-    end
-    return false
-
-end
-
-function GUICommanderAlerts:AlertClicked(alertMessage)
+local function AlertClicked(alertMessage)
 
     local entityIsRelevant = Shared.GetEntity(alertMessage["EntityId"])
     if entityIsRelevant then
@@ -83,7 +61,39 @@ function GUICommanderAlerts:AlertClicked(alertMessage)
     else
         CommanderUI_ClickedLocationAlert(alertMessage["MapX"], alertMessage["MapZ"])
     end
+    
+end
 
+function GUICommanderAlerts:SendKeyEvent(key, down)
+
+    local numberMessages = table.count(self.messages)
+    if down and numberMessages > 0 then
+    
+        if key == InputKey.Space then
+        
+            local latestMessage = self.messages[numberMessages]
+            AlertClicked(latestMessage)
+            return true
+            
+        elseif key == InputKey.MouseButton0 then
+        
+            local mouseX, mouseY = Client.GetCursorPosScreen()
+            for i, message in ipairs(self.messages) do
+            
+                if GUIItemContainsPoint(message["Background"], mouseX, mouseY) then
+                
+                    AlertClicked(message)
+                    return true
+                    
+                end
+                
+            end
+            
+        end
+        
+    end
+    return false
+    
 end
 
 function GUICommanderAlerts:Update(deltaTime)

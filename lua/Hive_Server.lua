@@ -195,8 +195,8 @@ local function SpawnEgg(self)
     
     // Need to check if this spawn is valid for an Egg and for a Skulk because
     // the Skulk spawns from the Egg.
-    local validForEgg = GetIsPlacementForTechId(position, true, kTechId.Egg)
-    local validForSkulk = GetIsPlacementForTechId(position, true, kTechId.Skulk)
+    local validForEgg = GetIsPlacementForTechId(position, kTechId.Egg)
+    local validForSkulk = GetIsPlacementForTechId(position, kTechId.Skulk)
     
     // Prevent an Egg from spawning on top of a Resource Point.
     local notNearResourcePoint = #GetEntitiesWithinRange("ResourcePoint", position, 2) == 0

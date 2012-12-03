@@ -34,7 +34,7 @@ function Rifle:OnCreate()
 
     ClipWeapon.OnCreate(self)
     
-    InitMixin(self, PickupableWeaponMixin, { kRecipientType = "Marine" })
+    InitMixin(self, PickupableWeaponMixin)
     InitMixin(self, EntityChangeMixin)
     
     if Client then
@@ -74,32 +74,8 @@ function Rifle:OnPrimaryAttack(player)
 
 end
 
-/*
-function Rifle:OnTouch(recipient)
-    recipient:AddWeapon(self, true)
-    Shared.PlayWorldSound(nil, Marine.kGunPickupSound, nil, recipient:GetOrigin())
-end
-
-function Rifle:GetIsValidRecipient(player)
-    if player and GetPlayerAutoWeaponPickup(player) then
-        local hasWeapon = player:GetWeaponInHUDSlot(self:GetHUDSlot())
-        if (not hasWeapon) and self.droppedtime + kPickupWeaponTimeLimit < Shared.GetTime() then
-            return true
-        end
-    end
-    return false
-end
-*/
-
-function Rifle:OnSecondaryAttack(player)
-end
-
 function Rifle:GetNumStartClips()
     return 3
-end
-
-function Rifle:OnHolster(player)
-    ClipWeapon.OnHolster(self, player)  
 end
 
 function Rifle:GetAnimationGraphName()
@@ -147,12 +123,11 @@ function Rifle:GetWeight()
     return kRifleWeight
 end
 
-function Rifle:GetSecondaryCanInterruptReload()
-    return true
-end
-
 function Rifle:GetBarrelSmokeEffect()
     return Rifle.kBarrelSmokeEffect
+end
+
+function Rifle:OnSecondaryAttack(player)
 end
 
 function Rifle:GetShellEffect()

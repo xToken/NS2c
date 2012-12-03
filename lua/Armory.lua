@@ -11,7 +11,6 @@ Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
-Script.Load("lua/FlinchMixin.lua")
 Script.Load("lua/LOSMixin.lua")
 Script.Load("lua/ConstructMixin.lua")
 Script.Load("lua/ResearchMixin.lua")
@@ -75,7 +74,6 @@ AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
-AddMixinNetworkVars(FlinchMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
@@ -96,7 +94,6 @@ function Armory:OnCreate()
     InitMixin(self, ClientModelMixin)
     InitMixin(self, LiveMixin)
     InitMixin(self, GameEffectsMixin)
-    InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
     InitMixin(self, SelectableMixin)
@@ -318,17 +315,6 @@ function Armory:GetItemList()
     
     return itemList
     
-end
-
-if Server then
-    /* not used anymore since all animation are now client side
-    function Armory:OnTag(tagName)
-        if tagName == "deploy_end" then
-            self.deployed = true
-        end
-    end
-    */
-
 end
 
 Shared.LinkClassToMap("Armory", Armory.kMapName, networkVars)

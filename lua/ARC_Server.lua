@@ -105,6 +105,8 @@ local function PerformAttack(self)
             self:ClearOrders()
         end
         
+        TEST_EVENT("ARC attacked entity")
+        
     end
     
 end
@@ -144,11 +146,12 @@ function ARC:OnTag(tagName)
         self.deployMode = ARC.kDeployMode.Deployed
         self:ClearOrders()
         // notify the target selector that we have moved.
+		TEST_EVENT("ARC Deployed")
         
     elseif tagName == "undeploy_end" then
     
         self.deployMode = ARC.kDeployMode.Undeployed
-        
+        TEST_EVENT("ARC Undeployed")
     end
     
 end

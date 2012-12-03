@@ -87,10 +87,10 @@ if Server then
                 end    
             end
         end
+            
     end
-
-	function Location:OnTriggerExited(entity, triggerEnt)
-	
+    
+    function Location:OnTriggerExited(entity, triggerEnt)
         ASSERT(self == triggerEnt)
         if entity.SetLocationName then
             local enteredLoc = GetLocationForPoint(entity:GetOrigin(), self)
@@ -98,10 +98,8 @@ if Server then
             //Log("%s exited location %s('%s'), entered '%s'", entity, self, self:GetName(), name)
             entity:SetLocationName(name)
             entity:SetLocationEntity(enteredLoc)
-        end
-        
-	end
-
+        end            
+    end
 end
 
 Shared.LinkClassToMap("Location", Location.kMapName, networkVars)

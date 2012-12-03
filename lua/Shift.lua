@@ -251,7 +251,7 @@ function Shift:TeleportPlayer(player, level)
                 for t = 1, 100 do //Persistance...
                     local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, selectedshift:GetOrigin(), 2, range, EntityFilterAll())
                     if spawnPoint then
-                        local validForPlayer = GetIsPlacementForTechId(spawnPoint, true, TechID)
+                        local validForPlayer = GetIsPlacementForTechId(spawnPoint, TechID)
                         local notNearResourcePoint = #GetEntitiesWithinRange("ResourcePoint", spawnPoint, 2) == 0
                         if notNearResourcePoint then
                             Shared.PlayWorldSound(nil, Alien.kTeleportSound, nil, self:GetOrigin())

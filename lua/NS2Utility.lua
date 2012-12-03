@@ -19,6 +19,10 @@ if Client then
     PrecacheAsset("ui/buildmenu.dds")
 end
 
+function GetIsRecycledUnit(unit)
+    return unit ~= nil and HasMixin(unit, "Recycle") and unit:GetIsRecycled()
+end
+
 function GetGameInfoEntity()
 
     local entityList = Shared.GetEntitiesWithClassname("GameInfo")
@@ -48,14 +52,14 @@ end
 function GetTeamHasCommander(teamNumber)
 
     if Client then
-
+    
         local commTable = ScoreboardUI_GetOrderedCommanderNames(teamNumber)
         return #commTable > 0
         
     elseif Server then
-        return Shared.GetEntitiesWithClassname("Commander"):GetSize() ~= 0
+        return #GetEntitiesForTeam("Commander", teamNumber) ~= 0
     end
-
+    
 end
 
 function GetPlayerCanUseEntity(player, target)
@@ -423,7 +427,7 @@ end
 
 function GetHoverAt(entity, position, filter)
 
-    local ground = GetGroundAt(entity, position, PhysicsMask.AIMovement, filter)
+    local ground = GetGroundAt(entity, position, PhysicsMask.Movement, filter)
     local resultY = position.y
     // if we have a hover height, use it to find our minimum height above ground, otherwise use zero
     
