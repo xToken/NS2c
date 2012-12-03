@@ -197,6 +197,10 @@ function Whip:GetReceivesStructuralDamage()
     return true
 end
 
+function Whip:ConstructOverride(deltaTime)
+    return deltaTime / 2
+end
+
 function Whip:OnUpdatePoseParameters()
 
     self:SetPoseParam("attack_yaw", self.attackYaw)

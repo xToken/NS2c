@@ -78,7 +78,7 @@ function NS2Gamerules_GetUpgradedDamage(attacker, target, doer, damage, damageTy
         end
     end
     
-    if attacker and attacker:isa("Player") then
+    if attacker and attacker:isa("Alien") then
         if target.GetReceivesStructuralDamage and target:GetReceivesStructuralDamage(damageType) then
             local hasupg, level = GetHasBombardUpgrade(attacker)
             if level > 0 and hasupg then

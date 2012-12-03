@@ -697,6 +697,9 @@
     <filename>VoteManager.lua</filename>
   </file>
   <file>
+    <filename>WallMovementMixin.lua</filename>
+  </file>
+  <file>
     <filename>WeaponUtility.lua</filename>
   </file>
   <file>
