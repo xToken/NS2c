@@ -12,8 +12,6 @@ Script.Load("lua/Weapons/Alien/BiteLeap.lua")
 Script.Load("lua/Weapons/Alien/Parasite.lua")
 Script.Load("lua/Weapons/Alien/XenocideLeap.lua")
 Script.Load("lua/Alien.lua")
-Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/WallMovementMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
@@ -49,8 +47,6 @@ local networkVars =
     lastwalljump = "private time"
 }
 
-AddMixinNetworkVars(BaseMoveMixin, networkVars)
-AddMixinNetworkVars(CustomGroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 
@@ -74,8 +70,8 @@ Skulk.kWallWalkCheckInterval = .1
 Skulk.kWallWalkNormalSmoothRate = 4
 Skulk.kNormalWallWalkFeelerSize = 0.25
 Skulk.kStickyWallWalkFeelerSize = 0.35
-Skulk.kNormalWallWalkRange = 0.1
-Skulk.kStickyWallWalkRange = 0.25
+Skulk.kNormalWallWalkRange = 0.05
+Skulk.kStickyWallWalkRange = 0.15
 
 // jump is valid when you are close to a wall but not attached yet at this range
 Skulk.kJumpWallRange = 0.4
@@ -83,8 +79,8 @@ Skulk.kJumpWallFeelerSize = 0.1
 Skulk.kWallStickFactor = 0.97
 
 // kStickForce depends on wall walk normal, strongest when walking on ceilings
-local kStickForce = 3
-local kStickForceWhileSneaking = 5
+local kStickForce = 1
+local kStickForceWhileSneaking = 3
 local kStickWallRangeBoostWhileSneaking = 1.2
 local kDefaultAttackSpeed = 1.08
 
@@ -94,8 +90,6 @@ Skulk.kZExtents = .45
 
 function Skulk:OnCreate()
 
-    InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
-    InitMixin(self, CustomGroundMoveMixin)
     InitMixin(self, CameraHolderMixin, { kFov = kSkulkFov })
     InitMixin(self, WallMovementMixin)
     
@@ -172,10 +166,6 @@ end
 // only when wall walking.
 function Skulk:GetMoveSpeedIs2D()
     return not self:GetIsWallWalking()
-end
-
-function Skulk:HandleOnGround(input, velocity)   
-    self.adjustToGround = true    
 end
 
 function Skulk:OnLeap()
@@ -467,22 +457,6 @@ function Skulk:UpdateCrouch()
 end
 
 function Skulk:GoldSrc_GetMaxSpeed(possible)
-
-    if possible then
-        return Skulk.kMaxSpeed
-    end
-    
-    local maxSpeed = Skulk.kMaxSpeed
-    
-    if self.movementModiferState and self:GetIsOnSurface() then
-        maxSpeed = Skulk.kMaxWalkSpeed
-    end
-
-    return maxSpeed * self:GetMovementSpeedModifier()
-    
-end
-
-function Skulk:GetMaxSpeed(possible)
 
     if possible then
         return Skulk.kMaxSpeed

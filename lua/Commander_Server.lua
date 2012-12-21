@@ -182,12 +182,17 @@ function Commander:ProcessTechTreeActionForEntity(techNode, position, normal, pi
     if techButtons == nil or table.find(techButtons, techId) == nil then
         return success, keepProcessing
     end
-    
-    /* needs to be checked in another way
-    if not entity:GetTechAllowed(techId, techNode, self) then
-        return false, true
+
+    // TODO: check if this really works fine. the entity should check here if something is alloed / can be afforded.
+    // if no entity is selected this check is not necessary, the commander already performed the check
+    if entity then
+        local allowed, canAfford = entity:GetTechAllowed(techId, techNode, self)
+        
+        if not allowed or not canAfford then
+            // no succes, but continue (can afford revers maybe to a unit specific resource type which is maybe affordable at another selected unit)
+            return false, true
+        end
     end
-    */
     
     // Cost is in team resources, energy or individual resources, depending on tech node type        
     local cost = GetCostForTech(techId)
@@ -273,15 +278,14 @@ function Commander:ProcessTechTreeActionForEntity(techNode, position, normal, pi
         else
             self:TriggerNotEnoughResourcesAlert()
         end
-    
-    // Energy-based and misc. abilities  
+
     elseif techNode:GetIsActivation() then
     
         // Deduct energy cost if any
         if cost == 0 or cost <= teamResources then
         
             success, keepProcessing = entity:PerformActivation(techId, position, normal, self)
-            
+
             if success and cost ~= 0 then
                 team:AddTeamResources(-cost)
             end

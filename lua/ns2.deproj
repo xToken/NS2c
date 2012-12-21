@@ -70,9 +70,6 @@
     <filename>ArmsLab.lua</filename>
   </file>
   <file>
-    <filename>Weapons\Marine\Axe.lua</filename>
-  </file>
-  <file>
     <filename>Balance.lua</filename>
   </file>
   <file>
@@ -722,5 +719,8 @@
   </file>
   <file>
     <filename>Weapons\Alien\XenocideLeap.lua</filename>
+  </file>
+  <file>
+    <filename>ReadyRoomPlayer.lua</filename>
   </file>
 </project>

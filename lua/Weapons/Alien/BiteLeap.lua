@@ -20,7 +20,7 @@ Shared.PrecacheSurfaceShader("materials/effects/mesh_effects/view_blood.surface_
 // NS1 was 20 inches, which is .5 meters. The eye point in NS1 was correct but in NS2 it's the model origin.
 // Melee attacks must originate from the player's eye instead of the world model's eye to make sure you 
 // can't attack through walls.
-local kRange = 1.1
+local kRange = 1.2
 
 local kStructureHitEffect = PrecacheAsset("cinematics/alien/skulk/bite_view_structure.cinematic")
 local kMarineHitEffect = PrecacheAsset("cinematics/alien/skulk/bite_view_marine.cinematic")
@@ -114,7 +114,7 @@ end
 
 function BiteLeap:GetMeleeBase()
     // Width of box, height of box
-    return Weapon.kMeleeBaseWidth, 1
+    return kBiteMeleeBaseWidth, kBiteMeleeBaseHeight
 end
 
 function BiteLeap:GetMeleeOffset()

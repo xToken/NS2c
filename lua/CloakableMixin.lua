@@ -11,7 +11,7 @@ Script.Load("lua/FunctionContracts.lua")
 CloakableMixin = CreateMixin( CloakableMixin )
 CloakableMixin.type = "Cloakable"
 
-CloakableMixin.kCloakRate = 0.5
+CloakableMixin.kCloakRate = 1
 CloakableMixin.kUnCloakRate = 3
 
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/cloaked.surface_shader")
@@ -23,7 +23,7 @@ if Client then
     Client_GetLocalPlayer = Client.GetLocalPlayer
 end
 
-local kCloakedMaxSpeed = 4
+local kCloakedMaxSpeed = 3
 
 // This is needed so alien structures can be cloaked, but not marine structures
 CloakableMixin.expectedCallbacks =
@@ -321,21 +321,6 @@ function CloakableMixin:OnJump()
     end
     
     self:TriggerUncloak()
-    
-end
-
-function CloakableMixin:OnClampSpeed(input, velocity)
-
-    PROFILE("CloakableMixin:OnClampSpeed")
-    
-    if self:GetIsCloaked() and bit.band(input.commands, Move.Jump) == 0 and (self.GetIsOnSurface and self:GetIsOnSurface()) then
-    
-        local moveSpeed = velocity:GetLength()
-        if moveSpeed > kCloakedMaxSpeed then
-            velocity:Scale(kCloakedMaxSpeed / moveSpeed)
-        end
-        
-    end
     
 end
 

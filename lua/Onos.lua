@@ -15,8 +15,6 @@ Script.Load("lua/Weapons/Alien/Gore.lua")
 Script.Load("lua/Weapons/Alien/Devour.lua")
 Script.Load("lua/Weapons/Alien/Smash.lua")
 Script.Load("lua/Alien.lua")
-Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 
@@ -77,15 +75,11 @@ local networkVars =
     devouring = "private entityid"
 }
 
-AddMixinNetworkVars(BaseMoveMixin, networkVars)
-AddMixinNetworkVars(CustomGroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 
 function Onos:OnCreate()
 
-    InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
-    InitMixin(self, CustomGroundMoveMixin)
     InitMixin(self, CameraHolderMixin, { kFov = kOnosFov })
     
     Alien.OnCreate(self)
@@ -147,17 +141,6 @@ function Onos:GoldSrc_GetAcceleration()
     end
     
     return acceleration
-end
-
-function Onos:GetAcceleration()
-
-    local acceleration = Player.GetAcceleration()
-    if self.charging then
-        acceleration = acceleration + Onos.kChargeAcceleration * self:GetChargeFraction() 
-    end
-    
-    return acceleration
-    
 end
 
 function Onos:GetChargeFraction()
@@ -338,26 +321,6 @@ function Onos:GoldSrc_GetMaxSpeed(possible)
 
 end
 
-function Onos:GetMaxSpeed(possible)
-
-    if possible then
-        return Onos.kMaxSpeed
-    end
-    
-    local maxSpeed = Onos.kMaxSpeed
-    
-    if self:GetCrouching() and self.onGround then
-        maxSpeed = Onos.kMaxCrouchSpeed
-    end
-    
-    if self.charging then
-        maxSpeed = Onos.kMaxChargeSpeed
-    end
-
-    return maxSpeed * self:GetMovementSpeedModifier()
-
-end
-
 // Half a ton
 function Onos:GetMass()
     return Onos.kMass
@@ -489,18 +452,6 @@ function Onos:OnUpdateCamera(deltaTime)
     
     if not self:GetIsJumping() then
         camOffsetHeight = -self:GetMaxViewOffsetHeight() * self:GetCrouchShrinkAmount() * self:GetCrouchAmount()
-    end
-    
-    if self:GetIsFirstPerson() then
-    
-        if not self:GetIsJumping() then
-        
-            //local movementScalar = Clamp((self:GetVelocity():GetLength() / self:GetMaxSpeed(true)), 0.0, 0.8)
-            //local bobbing = ( math.sin(Shared.GetTime() * 7) - 1 )
-            //camOffsetHeight = camOffsetHeight + kOnosHeadMoveAmount * movementScalar * bobbing
-            
-        end
-        
     end
     
     self:SetCameraYOffset(camOffsetHeight)

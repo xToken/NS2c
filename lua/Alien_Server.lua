@@ -238,7 +238,6 @@ function Alien:ProcessBuyAction(techIds)
     evolveAllowed = evolveAllowed and GetHasRoomForCapsule(newAlienExtents, position + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
     if self:GetTechId() == kTechId.Onos then
         if self.devouring ~= 0 then
-            Print(ToString(self.devouring))
             evolveAllowed = false
         end
     end

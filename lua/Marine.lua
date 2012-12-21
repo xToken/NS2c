@@ -8,10 +8,6 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Player.lua")
-Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
-//Script.Load("lua/Mixins/GroundMoveMixin.lua")
-Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/OrderSelfMixin.lua")
 Script.Load("lua/MarineActionFinderMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
@@ -99,9 +95,6 @@ local networkVars =
 }
 
 AddMixinNetworkVars(OrdersMixin, networkVars)
-AddMixinNetworkVars(BaseMoveMixin, networkVars)
-AddMixinNetworkVars(CustomGroundMoveMixin, networkVars)
-//AddMixinNetworkVars(GroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(DisruptMixin, networkVars)
@@ -114,9 +107,6 @@ AddMixinNetworkVars(AlienDetectableMixin, networkVars)
 
 function Marine:OnCreate()
 
-    InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
-    InitMixin(self, CustomGroundMoveMixin)
-    //InitMixin(self, GroundMoveMixin)
     InitMixin(self, CameraHolderMixin, { kFov = kDefaultFov })
     InitMixin(self, MarineActionFinderMixin)
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
@@ -530,40 +520,8 @@ function Marine:GoldSrc_GetMaxSpeed(possible)
     return adjustedMaxSpeed
 end
 
-function Marine:GetMaxSpeed(possible)
-
-    if possible then
-        return Marine.kRunMaxSpeed
-    end
-    
-    if self:GetIsDisrupted() then
-        return 0
-    end
-    
-    //Walking
-    local maxSpeed = Marine.kRunMaxSpeed
-    
-    if self.movementModiferState and self:GetIsOnSurface() then
-        maxSpeed = Marine.kWalkMaxSpeed
-    end
-    
-    // Take into account crouching
-    if self:GetCrouching() and self:GetIsOnGround() then
-        maxSpeed = ( 1 - self:GetCrouchAmount() * self:GetCrouchSpeedScalar() ) * maxSpeed
-    end
-    
-    // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
-    local inventorySpeedScalar = self:GetInventorySpeedScalar()
-
-    local adjustedMaxSpeed = maxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier() * inventorySpeedScalar 
-    //Print("Adjusted max speed => %.2f (without inventory: %.2f)", adjustedMaxSpeed, adjustedMaxSpeed / inventorySpeedScalar )
-    
-    return adjustedMaxSpeed
-    
-end
-
 function Marine:GetFootstepSpeedScalar()
-    return Clamp(self:GetVelocityLength() / (Marine.kRunMaxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier()), 0, 1)
+    return Clamp(self:GetVelocityLength() / (self:GoldSrc_GetMaxSpeed() * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier()), 0, 1)
 end
 
 // Maximum speed a player can move backwards

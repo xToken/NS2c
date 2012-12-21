@@ -31,7 +31,6 @@ CustomGroundMoveMixin.optionalCallbacks =
 {
     PreUpdateMove = "Allows children to update state before the update happens.",
     PostUpdateMove = "Allows children to update state after the update happens.",
-    OnClampSpeed = "The passed in velocity is clamped to min or max speeds based on the input passed in."
 }
 
 function CustomGroundMoveMixin:__initmixin()

@@ -349,7 +349,7 @@ end
 
 local function CalcEnergy(self, rate)
     local dt = Shared.GetTime() - self.timeAbilityEnergyChanged
-    local result = Clamp(self.abilityEnergyOnChange + dt * rate, 0, kAbilityMaxEnergy)
+    local result = Clamp(self.abilityEnergyOnChange + dt * rate, 0, self:GetMaxEnergy())
     return result
 end
 
@@ -381,19 +381,22 @@ end
 
 function Alien:AddEnergy(energy)
     assert(energy >= 0)
-    self.abilityEnergyOnChange = Clamp(self:GetEnergy() + energy, 0, kAbilityMaxEnergy)
+    self.abilityEnergyOnChange = Clamp(self:GetEnergy() + energy, 0, self:GetMaxEnergy())
     self.timeAbilityEnergyChanged = Shared.GetTime()
 end
 
 function Alien:SetEnergy(energy)
-    self.abilityEnergyOnChange = Clamp(energy, 0, kAbilityMaxEnergy)
+    self.abilityEnergyOnChange = Clamp(energy, 0, self:GetMaxEnergy())
     self.timeAbilityEnergyChanged = Shared.GetTime()
 end
 
 function Alien:DeductAbilityEnergy(energyCost)
 
     if not self:GetDarwinMode() then
-        self.abilityEnergyOnChange = Clamp(self:GetEnergy() - energyCost, 0, kAbilityMaxEnergy)
+    
+        local maxEnergy = self:GetMaxEnergy()
+    
+        self.abilityEnergyOnChange = Clamp(self:GetEnergy() - energyCost, 0, maxEnergy)
         self.timeAbilityEnergyChanged = Shared.GetTime()
     end
     
@@ -458,6 +461,7 @@ end
 function Alien:UpdateSharedMisc(input)
 
     self:UpdateSpeedModifiers(input)
+    
     Player.UpdateSharedMisc(self, input)
     self:UpdateMoveNoise()
     
@@ -549,10 +553,6 @@ end
 
 function Alien:GetCanTakeDamageOverride()
     return Player.GetCanTakeDamageOverride(self)
-end
-
-function Alien:GetAcceleration()
-    return Player.GetAcceleration(self) * self:GetMovementSpeedModifier()
 end
 
 function Alien:GoldSrc_GetAcceleration()

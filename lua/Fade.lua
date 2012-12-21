@@ -19,8 +19,6 @@ Script.Load("lua/Weapons/Alien/SwipeBlink.lua")
 Script.Load("lua/Weapons/Alien/Metabolize.lua")
 Script.Load("lua/Weapons/Alien/AcidRocket.lua")
 Script.Load("lua/Alien.lua")
-Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 
@@ -64,15 +62,11 @@ local networkVars =
     ethereal = "boolean"
 }
 
-AddMixinNetworkVars(BaseMoveMixin, networkVars)
-AddMixinNetworkVars(CustomGroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 
 function Fade:OnCreate()
 
-    InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
-    InitMixin(self, CustomGroundMoveMixin)
     InitMixin(self, CameraHolderMixin, { kFov = kFadeFov })
     
     Alien.OnCreate(self)
@@ -197,35 +191,6 @@ function Fade:GoldSrc_GetMaxSpeed(possible)
     return maxSpeed * self:GetMovementSpeedModifier()
 end
 
-function Fade:GetMaxSpeed(possible)
-
-    if possible then
-        return Fade.kMaxSpeed
-    end
-    
-    local maxSpeed = Fade.kMaxSpeed
-        
-    if self.movementModiferState and self:GetIsOnSurface() then
-        maxSpeed = Fade.kWalkSpeed
-    end
-    
-    // Take into account crouching
-    if self:GetCrouching() and self:GetIsOnGround() then
-        maxSpeed = Fade.kMaxCrouchSpeed
-    end
-    
-    if self:GetIsBlinking() or self:GetRecentlyBlinked() then
-        maxSpeed = Fade.kMaxBlinkSpeed
-    end
-
-    return maxSpeed * self:GetMovementSpeedModifier()
-
-end
-
-function Fade:ModifyVelocity(input, velocity)
-    Alien.ModifyVelocity(self, input, velocity)
-end
-
 function Fade:GetMass()
     return Fade.kMass 
 end
@@ -248,12 +213,6 @@ end
 
 function Fade:OnProcessMove(input)
     Alien.OnProcessMove(self, input)
-end
-
-function Fade:HandleOnGround(input, velocity)
-    if Sign(velocity.y) == -1 then
-        velocity.y = 0
-    end
 end
 
 // for update position

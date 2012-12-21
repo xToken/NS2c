@@ -99,14 +99,14 @@ if Client then
 
     function AlienSpectator:OnInitLocalClient()
     
-            Spectator.OnInitLocalClient(self)
-            
-            if self.requestMenu == nil then
-                self.requestMenu = GetGUIManager():CreateGUIScript("GUIRequestMenu")
-            end
+        TeamSpectator.OnInitLocalClient(self)
+        
+        if self.requestMenu == nil then
+            self.requestMenu = GetGUIManager():CreateGUIScript("GUIRequestMenu")
+        end
         
     end
-
+    
 end
 
 function AlienSpectator:GetIsValidToSpawn()
@@ -148,29 +148,24 @@ function AlienSpectator:GetAutoSpawnTime()
     return self.timeWaveSpawnEnd - Shared.GetTime()
 end
 
-function AlienSpectator:SpawnPlayerOnAttack()
-    /*
-    if Server and self:GetEggId() then
-        local newegg
-        local curegg = self:GetHostEgg()
-        local eggs = GetEntitiesForTeam("Egg", self:GetTeamNumber())
-        local playerorigin = self:GetOrigin()
-        Shared.SortEntitiesByDistance(playerorigin, eggs)
-        for _, egg in ipairs(eggs) do
-            if egg:GetIsFree() and egg ~= curegg then
-                newegg = egg
-                break
-            end
-        end
-        if newegg and curegg and newegg:GetIsFree() then
-            newegg:SetQueuedPlayerId(self:GetId(), self:GetWaveSpawnEndTime())
-        end
-    else
-        self:TriggerInvalidSound()
-    end
+function AlienSpectator:OnProcessMove(input)
 
-    return false, nil
-    */
+    TeamSpectator.OnProcessMove(self, input)
+    
+    if Server then
+            
+        if not self.waitingToSpawnMessageSent then
+        
+            SendPlayersMessage({ self }, kTeamMessageTypes.SpawningWait)
+            self.waitingToSpawnMessageSent = true
+            
+        end
+        
+    end
+    
+end
+
+function AlienSpectator:SpawnPlayerOnAttack()
 end
 
 // Same as Skulk so his view height is right when spawning in

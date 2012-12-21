@@ -28,9 +28,15 @@ local kLaserAttachPoint = "fxnode_laser"
 local networkVars =
 {
     altMode = "boolean",
-    emptyPoseParam = "private float (0 to 1 by 0.01)",
-    timeLastShot = "time"
+    emptyPoseParam = "private float (0 to 1 by 0.01)"
 }
+
+local function GetHasAttackDelay(self, player)
+
+    local attackDelay = kPistolFireDelay
+    return self.timeAttackStarted + attackDelay > Shared.GetTime()
+    
+end
 
 function Pistol:OnCreate()
 
@@ -40,7 +46,6 @@ function Pistol:OnCreate()
     
     self.altMode = false
     self.emptyPoseParam = 0
-    self.timeLastShot = 0
 
 end
 
@@ -165,6 +170,15 @@ end
 
 function Pistol:GetHasSecondary(player)
     return false
+end
+
+function Pistol:GetIsPrimaryAttackAllowed(player)
+
+    if GetHasAttackDelay(self, player) then
+        return false
+    end
+    ClipWeapon.GetIsPrimaryAttackAllowed(self, player)
+	
 end
 
 function Pistol:GetViewModelName()

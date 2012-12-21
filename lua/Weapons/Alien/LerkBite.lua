@@ -18,7 +18,7 @@ Shared.PrecacheSurfaceShader("materials/effects/mesh_effects/view_blood.surface_
 // kRange is now the range from eye to edge of attack range, ie its independent of the size of
 // the melee box, so for the skulk, it needs to increase to 1.2 to say at its previous range.
 // previously this value had an offset, which caused targets to be behind the melee attack (too close to the target and you missed)
-local kRange = 1.6
+local kRange = 1.2
 
 local kStructureHitEffect = PrecacheAsset("cinematics/alien/lerk/bite_view_structure.cinematic")
 local kMarineHitEffect = PrecacheAsset("cinematics/alien/lerk/bite_view_marine.cinematic")
@@ -124,7 +124,7 @@ function LerkBite:GetPrimaryAttackUsesFocus()
 end
 
 function LerkBite:GetMeleeBase()
-    return Weapon.kMeleeBaseWidth, 1
+    return kLerkBiteMeleeBaseWidth, kLerkBiteMeleeBaseHeight
 end
 
 function LerkBite:GetMeleeOffset()

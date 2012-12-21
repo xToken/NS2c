@@ -913,7 +913,9 @@ local function OnCommandGoThere(client)
         if selected then
         
             Shared.Message(string.format("Giving order to %s-%s", selected:GetClassName(), selected:GetId()))
-            selected:GiveOrder(kTechId.Move, 0, target)
+            selected:GiveOrder(kTechId.Move, player:GetId(), target)
+            // Override the target Id to be invalidId so the AI unit doesn't follow the player.
+            selected:GetCurrentOrder():Initialize(kTechId.Move, Entity.invalidId, target, 0)
             
         else
             Shared.Message("No AI entitity available")

@@ -21,7 +21,7 @@ local networkVars =
     lastPrimaryAttackTime = "time"
 }
 
-SwipeBlink.kRange = 1.5
+SwipeBlink.kRange = 1.6
 
 local kAnimationGraph = PrecacheAsset("models/alien/fade/fade_view.animation_graph")
 
@@ -65,13 +65,16 @@ function SwipeBlink:GetPrimaryAttackRequiresPress()
     return false
 end
 
-function SwipeBlink:GetSecondaryTechId()
-    return kTechId.Blink
+function SwipeBlink:GetMeleeBase()
+    return kSwipeMeleeBaseWidth, kSwipeMeleeBaseHeight
 end
-
 
 function SwipeBlink:GetDeathIconIndex()
     return kDeathMessageIcon.Swipe
+end
+
+function SwipeBlink:GetSecondaryTechId()
+    return kTechId.Blink
 end
 
 function SwipeBlink:GetBlinkAllowed()

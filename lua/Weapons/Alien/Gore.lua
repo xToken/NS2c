@@ -80,7 +80,7 @@ function Gore:OnHolster(player)
 end
 
 function Gore:GetMeleeBase()
-    return 1, 1.4
+    return kGoreMeleeBaseWidth, kGoreMeleeBaseHeight
 end
 
 function Gore:GetIconOffsetY(secondary)
