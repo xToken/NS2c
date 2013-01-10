@@ -26,10 +26,6 @@ local networkVars =
 
 AddMixinNetworkVars(StompMixin, networkVars)
 
-local kAttackRadius = 1.5
-local kAttackOriginDistance = 2
-local kAttackRange = 1.9
-
 local function GetHasAttackDelay(self, player)
 
     local attackDelay = ConditionalValue( player:GetIsPrimaled(), (kGoreDelay / kPrimalScreamROFIncrease), kGoreDelay)
@@ -79,6 +75,10 @@ function Gore:OnHolster(player)
     
 end
 
+function Gore:GetRange()
+    return kGoreRange
+end
+
 function Gore:GetMeleeBase()
     return kGoreMeleeBaseWidth, kGoreMeleeBaseHeight
 end
@@ -98,7 +98,7 @@ function Gore:OnTag(tagName)
         
             self.lastPrimaryAttackTime = Shared.GetTime()
             //local didHit, impactPoint, target = self:Attack(player)
-            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kGoreDamage, kAttackRange)
+            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kGoreDamage, self:GetRange())
             self.lastPrimaryAttackTime = Shared.GetTime()
             self:TriggerEffects("gore_attack")
             player:DeductAbilityEnergy(self:GetEnergyCost())

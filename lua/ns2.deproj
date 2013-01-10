@@ -70,6 +70,9 @@
     <filename>ArmsLab.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Marine\Axe.lua</filename>
+  </file>
+  <file>
     <filename>Balance.lua</filename>
   </file>
   <file>
@@ -269,6 +272,9 @@
   </file>
   <file>
     <filename>GUIMarineBuyMenu.lua</filename>
+  </file>
+  <file>
+    <filename>GUIMarineDevoured.lua</filename>
   </file>
   <file>
     <filename>Hud\Marine\GUIMarineHud.lua</filename>
@@ -547,6 +553,9 @@
     <filename>PrototypeLab.lua</filename>
   </file>
   <file>
+    <filename>ReadyRoomPlayer.lua</filename>
+  </file>
+  <file>
     <filename>ReadyRoomTeam.lua</filename>
   </file>
   <file>
@@ -719,8 +728,5 @@
   </file>
   <file>
     <filename>Weapons\Alien\XenocideLeap.lua</filename>
-  </file>
-  <file>
-    <filename>ReadyRoomPlayer.lua</filename>
   </file>
 </project>

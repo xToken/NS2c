@@ -21,8 +21,6 @@ local networkVars =
     lastPrimaryAttackTime = "time"
 }
 
-SwipeBlink.kRange = 1.6
-
 local kAnimationGraph = PrecacheAsset("models/alien/fade/fade_view.animation_graph")
 
 local function GetHasAttackDelay(self, player)
@@ -63,6 +61,10 @@ end
 
 function SwipeBlink:GetPrimaryAttackRequiresPress()
     return false
+end
+
+function SwipeBlink:GetRange()
+    return kSwipeRange
 end
 
 function SwipeBlink:GetMeleeBase()
@@ -145,7 +147,7 @@ function SwipeBlink:PerformMeleeAttack()
 
     local player = self:GetParent()
     if player then
-        local didHit, hitObject, endPoint, surface = AttackMeleeCapsule(self, player, kSwipeDamage, SwipeBlink.kRange)
+        local didHit, hitObject, endPoint, surface = AttackMeleeCapsule(self, player, kSwipeDamage, self:GetRange())
     end
     
 end

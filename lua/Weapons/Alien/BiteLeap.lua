@@ -14,14 +14,6 @@ Script.Load("lua/Weapons/Alien/LeapMixin.lua")
 
 Shared.PrecacheSurfaceShader("materials/effects/mesh_effects/view_blood.surface_shader")
 
-// kRange is the range from eye to edge of attack range, ie its independent of the size of
-// the melee box. previously this value had an offset, which caused targets to be behind the melee 
-// attack (too close to the target and you missed)
-// NS1 was 20 inches, which is .5 meters. The eye point in NS1 was correct but in NS2 it's the model origin.
-// Melee attacks must originate from the player's eye instead of the world model's eye to make sure you 
-// can't attack through walls.
-local kRange = 1.2
-
 local kStructureHitEffect = PrecacheAsset("cinematics/alien/skulk/bite_view_structure.cinematic")
 local kMarineHitEffect = PrecacheAsset("cinematics/alien/skulk/bite_view_marine.cinematic")
 
@@ -83,7 +75,7 @@ function BiteLeap:GetSecondaryTechId()
 end
 
 function BiteLeap:GetRange()
-    return kRange
+    return kBiteRange
 end
 
 function BiteLeap:GetDeathIconIndex()
@@ -131,7 +123,7 @@ function BiteLeap:OnTag(tagName)
         
         if player and not GetHasAttackDelay(self, player) then  
         
-            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kBiteDamage, kRange, nil, false)
+            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kBiteDamage, self:GetRange(), nil, false)
             self.lastPrimaryAttackTime = Shared.GetTime()
             self:TriggerEffects("bite_attack")
             player:DeductAbilityEnergy(self:GetEnergyCost())

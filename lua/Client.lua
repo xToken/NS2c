@@ -747,7 +747,7 @@ end
 function Client.AddWorldMessage(messageType, message, position, entityId)
 
     // Only add damage messages if we have it enabled
-    if messageType ~= kWorldTextMessageType.Damage or (Client.GetOptionBoolean( "drawDamage", true ) and Shared.GetCheatsEnabled()) then
+    if messageType ~= kWorldTextMessageType.Damage or Client.GetOptionBoolean( "drawDamage", true ) then
 
         // If we already have a message for this entity id, update existing message instead of adding new one
         local time = Client.GetTime()

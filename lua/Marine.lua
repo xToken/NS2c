@@ -238,7 +238,7 @@ function Marine:IsValidDetection(detectable)
     if detectable:isa("Alien") then
         local hasupg, level = GetHasGhostUpgrade(detectable)
         if hasupg and level > 0 then
-            return math.random(1, 100) <= (level * 25)
+            return math.random(1, 100) <= (level * kGhostMotionTrackingDodgePerLevel)
         end
     end
     
@@ -408,8 +408,19 @@ function Marine:OnDestroy()
             
         end
         
+        if self.devouredscreen then
+        
+            GetGUIManager():DestroyGUIScript(self.devouredscreen)
+            self.devouredscreen = nil
+            
+        end
+        
     end
     
+end
+
+function Marine:GetCanControl()
+    return (not self.isMoveBlocked) and self:GetIsAlive() and ( not self.GetIsDevoured or not self:GetIsDevoured() ) and not self.countingDown
 end
 
 function Marine:HandleButtons(input)
@@ -527,6 +538,16 @@ end
 // Maximum speed a player can move backwards
 function Marine:GetMaxBackwardSpeedScalar()
     return Marine.kWalkBackwardSpeedScalar
+end
+
+function Marine:OnClampSpeed(input, velocity)
+    // Players moving backwards can't go full speed.
+    if input.move.z < 0 and self:GetIsOnGround() then
+        local moveSpeed = velocity:GetLengthXZ()
+        local maxSpeed = self:GoldSrc_GetMaxSpeed()
+        maxSpeed = maxSpeed * self:GetMaxBackwardSpeedScalar()
+        velocity:Scale(maxSpeed / moveSpeed)
+    end
 end
 
 function Marine:GetCanBeWeldedOverride()
@@ -647,6 +668,7 @@ function Marine:Drop(weapon, ignoreDropTimeLimit, ignoreReplacementWeapon)
             self:RemoveWeapon(weapon)
             
             local weaponSpawnCoords = self:GetAttachPointCoords(Weapon.kHumanAttachPoint)
+            if weaponSpawnCoords == nil then weaponSpawnCoords = self:GetCoords()
             weapon:SetCoords(weaponSpawnCoords)
             
         end
@@ -679,17 +701,32 @@ function Marine:GetIsDevoured()
     return self.devoured
 end
 
-function Marine:OnDevoured()
+function Marine:OnDevoured(hungrycow)
+    self.devourer = hungrycow:GetId()
+    self.prevModelName = self:GetModelName()
+    self.prevAnimGraph = self:GetGraphName()
     self.devoured = true
+    self:SetModel(nil)
+    //self:SetIsThirdPerson(4)
+
+    local activeWeapon = self:GetActiveWeapon()
+    if activeWeapon then
+        activeWeapon:OnPrimaryAttackEnd(self)
+        activeWeapon:OnSecondaryAttackEnd(self)
+    end
 end
 
 function Marine:GetCanSkipPhysics()
-    return self.devoured
+    return self:GetIsDevoured()
 end
 
 function Marine:OnDevouredEnd()    
-    self.devoured = false
-    self:SetModel(Marine.kModelName, Marine.kMarineAnimationGraph)
+    if self:GetIsAlive() then
+        self.devoured = false
+        self.devourer = nil
+        self:SetModel(self.prevModelName, self.prevAnimGraph)
+        //self:SetDesiredCamera(0.3, { move = true })
+    end
 end
 
 function Marine:GetWeldPercentageOverride()
@@ -705,10 +742,6 @@ function Marine:OnWeldOverride(doer, elapsedTime)
         
     end
     
-end
-
-function Marine:OnSpitHit(direction)
-
 end
 
 function Marine:GetCanChangeViewAngles()
@@ -758,12 +791,22 @@ function Marine:OnUpdateAnimationInput(modelMixin)
     
 end
 
+function Marine:ReceivesFallDamage()
+    return not self:GetIsDevoured()
+end
+
 function Marine:OnProcessMove(input)
 
     if Server then
     	self.catpackboost = Shared.GetTime() - self.timeCatpackboost < CatPack.kDuration
         if self.unitStatusPercentage ~= 0 and self.timeLastUnitPercentageUpdate + 2 < Shared.GetTime() then
             self.unitStatusPercentage = 0
+        end
+        if self:GetIsDevoured() then
+            local onos = self.devourer and Shared.GetEntity(self.devourer)
+            if onos and onos:isa("Onos") then
+                self:SetOrigin(onos:GetOrigin())
+            end
         end
 	end
 

@@ -60,10 +60,11 @@ local kHitEffectMessage =
     surface = "enum kHitEffectSurface",
     targetId = "entityid",
     showtracer = "boolean",
-    altMode = "boolean"
+    altMode = "boolean",
+    flinch_severe = "boolean"
 }
 
-function BuildHitEffectMessage(position, doer, surface, target, showtracer, altMode)
+function BuildHitEffectMessage(position, doer, surface, target, showtracer, altMode, flinch_severe)
 
     local t = {}
     t.posx = position.x
@@ -74,6 +75,7 @@ function BuildHitEffectMessage(position, doer, surface, target, showtracer, altM
     t.targetId = (target and target:GetId()) or Entity.invalidId
     t.showtracer = showtracer == true   
     t.altMode = altMode == true 
+    t.flinch_severe = flinch_severe == true
     return t
     
 end
@@ -86,6 +88,7 @@ function ParseHitEffectMessage(message)
     local target = Shared.GetEntity(message.targetId)
     local showtracer = message.showtracer
     local altMode = message.altMode
+    local flinch_severe = message.flinch_severe
     
     /*
     Print("position %s", ToString(position))
@@ -95,7 +98,7 @@ function ParseHitEffectMessage(message)
     Print("showtracer %s", ToString(showtracer))
     */
     
-    return position, doer, surface, target, showtracer, altMode
+    return position, doer, surface, target, showtracer, altMode, flinch_severe
 
 end
 

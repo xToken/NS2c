@@ -45,7 +45,7 @@ function GUIDeathMessages:Update(deltaTime)
     PROFILE("GUIDeathMessages:Update")
     
     local addDeathMessages = DeathMsgUI_GetMessages()
-    local numberElementsPerMessage = 5
+    local numberElementsPerMessage = 6 // FIXME - pretty error prone
     local numberMessages = table.count(addDeathMessages) / numberElementsPerMessage
     local currentIndex = 1
     while numberMessages > 0 do

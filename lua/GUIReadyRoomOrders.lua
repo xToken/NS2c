@@ -92,7 +92,11 @@ function GUIReadyRoomOrders:Initialize()
     self.welcomeText:SetColor(kFadeOutColor)
     self.welcomeTextStartTime = Shared.GetTime()
     self.welcometextCount = 0
-    self.musicstarted = false
+    
+    local localPlayer = Client.GetLocalPlayer()
+    if localPlayer then
+        localPlayer:TriggerEffects("ayumi")
+    end
     
 end
 
@@ -149,14 +153,6 @@ end
 function GUIReadyRoomOrders:Update(deltaTime)
 
     PROFILE("GUIReadyRoomOrders:Update")
-    
-    if not self.musicstarted then
-        local localPlayer = Client.GetLocalPlayer()
-        if localPlayer then
-            localPlayer:TriggerEffects("ayumi")
-        end
-        self.musicstarted = true
-    end
     
     local unitVisions = PlayerUI_GetReadyRoomOrders()
     

@@ -71,8 +71,7 @@ local networkVars =
 {
     stooping = "boolean",
     stoopIntensity = "compensated float",
-    charging = "private boolean",
-    devouring = "private entityid"
+    charging = "private boolean"
 }
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
@@ -93,8 +92,6 @@ function Onos:OnCreate()
     self.timeLastCharge = 0
     self.timeLastChargeEnd = 0
     self.chargeSpeed = 0
-    self.devouring = 0
-    self.timeSinceLastDevourUpdate = 0
     
     if Client then    
         self:SetUpdates(true)
@@ -268,27 +265,6 @@ function Onos:GetMovePhysicsMask()
     return PhysicsMask.OnosMovement
 end
 
-function Onos:CheckEndDevour()
-
-    if self.devouring ~= 0 then
-        local food = Shared.GetEntity(self.devouring)
-        if food then
-            if food.OnDevouredEnd then
-                food:OnDevouredEnd()
-            end
-            if food.physicsModel then
-                food.physicsModel:SetCollisionEnabled(true)
-            end
-        end
-    end
-    self.devouring = 0
-    
-end
-
-function Onos:OnHiveTeleport()
-    self:CheckEndDevour()
-end
-
 function Onos:GetBaseArmor()
     return Onos.kArmor
 end
@@ -389,41 +365,11 @@ function Onos:UpdateAutoCrouch(move)
 
 end
 
-function Onos:DevourUpdate()
-
-    if self.devouring ~= 0 then
-        local food = Shared.GetEntity(self.devouring)
-        local devour = self:GetWeapon("devour")
-        if food and devour then
-        
-            if self.timeSinceLastDevourUpdate + Devour.kDigestionSpeed < Shared.GetTime() then   
-                //Player still being eaten, damage them
-                self.timeSinceLastDevourUpdate = Shared.GetTime()
-                if devour:DoDamage(kDevourDamage , food, self:GetOrigin(), 0, "none" ) then
-                    if food.OnDevouredEnd then 
-                        food:OnDevouredEnd()
-                    end
-                    self.devouring = nil
-                end
-            end
-            
-            food:DestroyController()
-            //Always update players POS relative to the onos
-            food:SetOrigin(self:GetOrigin())
-        else
-            self.devouring = nil
-        end
-    end
-    
-end
-
 function Onos:OnProcessMove(input)
 
     PROFILE("Onos:OnProcessMove")
     
     Alien.OnProcessMove(self, input)
-    
-    self:DevourUpdate()
 
     if self.stooping then    
         self.stoopIntensity = math.min(1, self.stoopIntensity + Onos.kStoopingAnimationSpeed * input.time)

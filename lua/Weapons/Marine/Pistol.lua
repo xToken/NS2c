@@ -19,7 +19,6 @@ local kViewModelName = PrecacheAsset("models/marine/pistol/pistol_view.model")
 local kAnimationGraph = PrecacheAsset("models/marine/pistol/pistol_view.animation_graph")
 
 local kClipSize = 10
-local kRange = 200
 local kSpread = ClipWeapon.kCone0Degrees
 local kAltSpread = ClipWeapon.kCone0Degrees
 
@@ -177,7 +176,7 @@ function Pistol:GetIsPrimaryAttackAllowed(player)
     if GetHasAttackDelay(self, player) then
         return false
     end
-    ClipWeapon.GetIsPrimaryAttackAllowed(self, player)
+    return ClipWeapon.GetIsPrimaryAttackAllowed(self, player)
 	
 end
 
@@ -199,7 +198,7 @@ function Pistol:GetHUDSlot()
 end
 
 function Pistol:GetPrimaryAttackRequiresPress()
-    return true
+    return false
 end
 
 function Pistol:GetNumStartClips()

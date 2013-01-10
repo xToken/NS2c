@@ -56,8 +56,6 @@ Alien.kUpgradeIconsTexture = "ui/alien_upgradeicons.dds"
 
 Alien.kAnimOverlayAttack = "attack"
 
-Alien.kWalkBackwardSpeedScalar = 0.75
-
 Alien.kEnergyRecuperationRate = 8
 
 // How long our "need healing" text gets displayed under our blip
@@ -416,10 +414,6 @@ end
 
 function Alien:GetMaxEnergy()
     return kAbilityMaxEnergy
-end
-
-function Alien:GetMaxBackwardSpeedScalar()
-    return Alien.kWalkBackwardSpeedScalar
 end
 
 function Alien:UpdateSpeedModifiers(input)

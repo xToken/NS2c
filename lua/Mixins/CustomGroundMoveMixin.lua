@@ -30,6 +30,7 @@ CustomGroundMoveMixin.expectedCallbacks =
 CustomGroundMoveMixin.optionalCallbacks =
 {
     PreUpdateMove = "Allows children to update state before the update happens.",
+    OnClampSpeed = "Allows children to clamp speed (sucks 2 add this just for marine backpedalling.",
     PostUpdateMove = "Allows children to update state after the update happens.",
 }
 
@@ -120,6 +121,10 @@ function CustomGroundMoveMixin:UpdateMove(input)
     self:ApplyHalfGravity(input, velocity)
     
     velocity = self:UpdatePosition(velocity, input.time, input.move)
+    
+    if self.OnClampSpeed then
+        self:OnClampSpeed(input, velocity)
+    end
 
     // Store new velocity
     self:SetVelocity(velocity)

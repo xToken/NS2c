@@ -230,7 +230,6 @@ function Fade:GetGravityAllowed()
 end
 
 function Fade:OnBlink()
-    self.ethereal = true
     self.onGroundNeedsUpdate = false
     self.onGround = false
     self.jumping = true
@@ -299,7 +298,6 @@ function Fade:OnBlinkEnd()
     if self:GetIsOnGround() then
         self.jumping = false
     end
-    self.ethereal = false
 end
 
 local kFadeEngageOffset = Vector(0, 0.6, 0)

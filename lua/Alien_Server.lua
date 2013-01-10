@@ -509,9 +509,6 @@ end
 function Alien:OnKill(attacker, doer, point, direction)
 
     Player.OnKill(self, attacker, doer, point, direction)
-    if self:GetTechId() == kTechId.Onos then
-        self:CheckEndDevour()
-    end
     self.oneHive = false
     self.twoHives = false
     self.threeHives = false

@@ -1045,6 +1045,23 @@ local function OnCommandBlackEdition(client)
 
 end
 
+local function OnCommandDevour(client)
+
+    if Shared.GetCheatsEnabled() then
+    
+        local player = client:GetControllingPlayer()
+        if player and player:isa("Marine") then
+            if not player:GetIsDevoured() then
+                player:OnDevoured(player)
+            else
+                player:OnDevouredEnd()
+            end 
+        end
+        
+    end   
+
+end
+
 // GC commands
 Event.Hook("Console_changegcsettingserver", OnCommandChangeGCSettingServer)
 
@@ -1127,5 +1144,6 @@ Event.Hook("Console_rupture", OnCommandRupture)
 Event.Hook("Console_makespecial", OnCommandMakeSpecialEdition)
 Event.Hook("Console_makegreen", OnCommandGreenEdition)
 Event.Hook("Console_makeblack", OnCommandBlackEdition)
-
+Event.Hook("Console_devour", OnCommandDevour)
+    
 Event.Hook("Console_debugcommander", OnCommandDebugCommander)

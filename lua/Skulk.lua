@@ -491,11 +491,6 @@ function Skulk:GetMoveDirection(moveVelocity)
     
 end
 
-// Normally players moving backwards can't go full speed, but wall-walking skulks can
-function Skulk:GetMaxBackwardSpeedScalar()
-    return ConditionalValue(self:GetIsWallWalking(), 1, Alien.GetMaxBackwardSpeedScalar(self))
-end
-
 function Skulk:GetIsCloseToGround(distanceToGround)
 
     if self:GetIsWallWalking() then

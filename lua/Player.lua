@@ -118,7 +118,8 @@ Player.kCountDownLength = kCountDownLength
     
 Player.kGravity = -20
 Player.kMass = 90.7 // ~200 pounds (incl. armor, weapons)
-Player.kWalkBackwardSpeedScalar = 0.4
+Player.kWalkBackwardSpeedScalar = 1
+
 // Weapon weight scalars (from NS1)
 Player.kStowedWeaponWeightScalar = 0.7
 Player.kJumpHeight =  1.2
@@ -1137,12 +1138,7 @@ function Player:GoldSrc_GetWishVelocity(input)
     
     local viewCoords = angles:GetCoords() // to matrix?
     local moveVelocity = viewCoords:TransformVector(move) // get world-space move direction
-    
-    // Scale down velocity if moving backwards
-    if input.move.z < 0 then
-        moveVelocity:Scale(self:GetMaxBackwardSpeedScalar())
-    end
-    
+
     return moveVelocity
 end
 
@@ -2395,9 +2391,7 @@ end
 function Player:ModifyVelocity(input, velocity)   
     PROFILE("Player:ModifyVelocity")
     
-    if self.GetIsDevoured and self:GetIsDevoured() then
-		return
-    elseif bit.band(input.commands, Move.Jump) ~= 0 and not self.jumpHandled then
+    if bit.band(input.commands, Move.Jump) ~= 0 and not self.jumpHandled then
         
         local jumped = self:HandleJump(input, velocity)
         if jumped and self.OnJump then
@@ -3005,7 +2999,7 @@ function Player:RetrieveMove()
 end
 
 function Player:GetCanControl()
-    return (not self.isMoveBlocked) and self:GetIsAlive() and ( not self.GetIsDevoured or not self:GetIsDevoured() ) and not self.countingDown
+    return (not self.isMoveBlocked) and self:GetIsAlive() and not self.countingDown
 end
 
 function Player:GetCanAttack()

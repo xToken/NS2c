@@ -59,7 +59,6 @@ HeavyArmorMarine.kRunMaxSpeed = 5.5
 // How fast does our armor get repaired by welders
 HeavyArmorMarine.kArmorWeldRate = 25
 HeavyArmorMarine.kWeldedEffectsInterval = .5
-HeavyArmorMarine.kWalkBackwardSpeedScalar = 0.4
 
 // tracked per techId
 HeavyArmorMarine.kMarineAlertTimeout = 4
@@ -143,11 +142,6 @@ end
 
 function HeavyArmorMarine:GetFootstepSpeedScalar()
     return Clamp(self:GetVelocity():GetLength() / (self:GoldSrc_GetMaxSpeed() * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier()), 0, 1)
-end
-
-// Maximum speed a player can move backwards
-function HeavyArmorMarine:GetMaxBackwardSpeedScalar()
-    return HeavyArmorMarine.kWalkBackwardSpeedScalar
 end
 
 function HeavyArmorMarine:GetCanBeWeldedOverride()

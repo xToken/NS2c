@@ -174,6 +174,10 @@ function Embryo:GetMaxViewOffsetHeight()
     return .2
 end
 
+function Embryo:GetGestationTime(gestationTypeTechId)
+    return LookupTechData(gestationTypeTechId, kTechDataGestateTime)
+end
+
 function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorScalar)
 
     // Save upgrades so they can be given when spawned
