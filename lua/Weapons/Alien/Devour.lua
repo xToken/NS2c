@@ -174,7 +174,7 @@ if Server then
         if self.devouring ~= 0 then
             local food = Shared.GetEntity(self.devouring)
             local player = self:GetParent()
-            if food and player then
+            if food and player and player:GetIsAlive() then
                 if self.timeSinceLastDevourUpdate + kDevourDigestionSpeed < Shared.GetTime() then   
                     //Player still being eaten, damage them
                     self.timeSinceLastDevourUpdate = Shared.GetTime()
@@ -209,6 +209,10 @@ if Server then
     
     function Devour:OnKillPlayer(player, killer, doer, point, direction)   
         EndDevour(self)    
+    end
+    
+    function Devour:OnForceUnDevour()    
+        EndDevour(self)
     end
     
 end

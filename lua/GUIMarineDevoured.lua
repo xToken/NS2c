@@ -1,6 +1,6 @@
 
 Script.Load("lua/GUIScript.lua")
-local kConsumptionTexture = "ui/digesting.dds"`
+local kConsumptionTexture = "ui/digesting.dds"
 
 class 'GUIMarineDevoured' (GUIScript)
 

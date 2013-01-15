@@ -259,6 +259,9 @@
     <filename>GUIGorgeBuildMenu2.lua</filename>
   </file>
   <file>
+    <filename>GUIGorgeBuildMenuHelp.lua</filename>
+  </file>
+  <file>
     <filename>GUIInsight_OtherHealthbars.lua</filename>
   </file>
   <file>
@@ -488,6 +491,9 @@
   </file>
   <file>
     <filename>NS2Utility_Server.lua</filename>
+  </file>
+  <file>
+    <filename>NS2cGameStrings.lua</filename>
   </file>
   <file>
     <filename>NetworkMessages.lua</filename>

@@ -96,6 +96,7 @@ function Gorge:OnInitialized()
     
         self:AddHelpWidget("GUIGorgeHealHelp", 2)
         self:AddHelpWidget("GUIGorgeBellySlideHelp", 2)
+        self:AddHelpWidget("GUIGorgeBuildMenuHelp", 2)
         
     end
     

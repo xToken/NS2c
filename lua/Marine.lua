@@ -668,7 +668,7 @@ function Marine:Drop(weapon, ignoreDropTimeLimit, ignoreReplacementWeapon)
             self:RemoveWeapon(weapon)
             
             local weaponSpawnCoords = self:GetAttachPointCoords(Weapon.kHumanAttachPoint)
-            if weaponSpawnCoords == nil then weaponSpawnCoords = self:GetCoords()
+            if weaponSpawnCoords == nil then weaponSpawnCoords = self:GetCoords() end
             weapon:SetCoords(weaponSpawnCoords)
             
         end
