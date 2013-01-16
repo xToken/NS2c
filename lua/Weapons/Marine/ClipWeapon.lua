@@ -140,15 +140,7 @@ end
 function ClipWeapon:GetMaxAmmo()
     return 5 * self:GetClipSize()
 end
-/*
-function ClipWeapon:OnTouch(recipient)
-    assert(false)
-end
 
-function ClipWeapon:GetIsValidRecipient(player)
-    return false   
-end
-*/
 // Return world position of gun barrel, used for weapon effects.
 function ClipWeapon:GetBarrelPoint()
 
@@ -262,7 +254,7 @@ function ClipWeapon:GetIsPrimaryAttackAllowed(player)
     attackAllowed = attackAllowed and not self.blockingSecondary
     attackAllowed = attackAllowed and (not self:GetPrimaryIsBlocking() or not self.blockingPrimary)
     
-    return self:GetIsDeployed() and attackAllowed and not player:GetIsDisrupted()
+    return self:GetIsDeployed() and attackAllowed and not player:GetIsDisrupted() and (not player.GetIsDevoured or not player:GetIsDevoured())
 
 end
 
@@ -392,7 +384,7 @@ local function FireBullets(self, player)
       
     local numberBullets = self:GetBulletsPerShot()
     local startPoint = player:GetEyePos()
-
+    
     for bullet = 1, numberBullets do
     
         local spreadDirection = CalculateSpread(shootCoords, self:GetSpread(bullet) * self:GetInaccuracyScalar(player), NetworkRandom)
@@ -403,13 +395,13 @@ local function FireBullets(self, player)
         
         local damage = 0
 
-        
+        /*
         // Check prediction
-        /*local values = GetPredictionValues(startPoint, endPoint, trace)
+        local values = GetPredictionValues(startPoint, endPoint, trace)
         if not CheckPredictionData( string.format("attack%d", bullet), true, values ) then
             Server.PlayPrivateSound(player, "sound/NS2.fev/marine/voiceovers/game_start", player, 1.0, Vector(0, 0, 0))
-        end*/
-        
+        end
+        */
             
         // don't damage 'air'..
         if trace.fraction < 1 then

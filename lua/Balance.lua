@@ -156,6 +156,7 @@ kPistolDamage = 20
 kPistolDamageType = kDamageType.Normal
 kPistolClipSize = 10
 kPistolWeight = 0.03
+kPistolFireDelay = 0.1
 
 kWelderDamage = 4
 kWelderDamageType = kDamageType.Normal
@@ -166,11 +167,14 @@ kWelderStructureMultipler = 2
 
 kAxeDamage = 30
 kAxeDamageType = kDamageType.Normal
+kAxeRange = 0.8
+kAxeMeleeBaseWidth = 0.5
+kAxeMeleeBaseHeight = 0.8
 
 kGrenadeLauncherGrenadeDamage = 125
 kGrenadeLauncherGrenadeDamageType = kDamageType.Structural
 kGrenadeLauncherClipSize = 4
-kGrenadeLauncherGrenadeDamageRadius = 8
+kGrenadeLauncherGrenadeDamageRadius = 5
 kGrenadeLifetime = 2.0
 kGrenadeLauncherWeight = 0.22
 
@@ -179,9 +183,9 @@ kShotgunDamageType = kDamageType.Normal
 kShotgunClipSize = 8
 kShotgunBulletsPerShot = 10
 kShotgunMaxRange = 18
-kShotgunMinSpread = 15
+kShotgunMinSpread = 13
 kShotgunMinSpreadBullets = 5
-kShotgunMaxSpread = 22
+kShotgunMaxSpread = 18
 //kShotgunDropOffStartRange = 4
 kShotgunWeight = 0.15
 
@@ -190,6 +194,7 @@ kHeavyMachineGunDamageType = kDamageType.HalfStructure
 kHeavyMachineGunClipSize = 125
 kHeavyMachineGunWeight = 0.20
 kHeavyMachineGunROF = 0.05
+kHeavyMachineGunReloadTime = 6.3
 
 kMineDamage = 125
 kMineDamageType = kDamageType.Normal
@@ -221,7 +226,7 @@ kSentryDamageRampUpDuration = 5
 
 kARCDamage = 400
 kARCDamageType = kDamageType.StructuresOnly // splash damage hits friendly arcs as well
-kARCRange = 26 //1100 NS1
+kARCRange = 25 //1100 NS1 - Bigger than NS1, dropping to 25
 
 kWeapons1DamageScalar = 1.1
 kWeapons2DamageScalar = 1.2
@@ -244,6 +249,9 @@ kBiteDamage = 75
 kBiteDamageType = kDamageType.Normal
 kBiteEnergyCost = 5.0
 kBiteDelay = 0.4
+kBiteRange = 1
+kBiteMeleeBaseWidth = 0.7
+kBiteMeleeBaseHeight = 0.9
 
 kLeapEnergyCost = 45
 
@@ -284,6 +292,9 @@ kLerkBiteDamage = 60
 kLerkBiteEnergyCost = 5
 kLerkBiteDamageType = kDamageType.Normal
 kLerkBiteDelay = 0.32
+kLerkBiteRange = 1.1
+kLerkBiteMeleeBaseWidth = 0.8
+kLerkBiteMeleeBaseHeight = 0.8
 
 kSporeEnergyCost = 20
 kSporeDuration = 4
@@ -322,6 +333,9 @@ kSwipeDamage = 80
 kSwipeDamageType = kDamageType.Normal
 kSwipeEnergyCost = 6.5
 kSwipeDelay = 0.48
+kSwipeRange = 1.1
+kSwipeMeleeBaseWidth = 0.9
+kSwipeMeleeBaseHeight = 1
 
 kStartBlinkEnergyCost = 8
 kBlinkEnergyCost = 65
@@ -343,12 +357,20 @@ kGoreDamage = 90
 kGoreDamageType = kDamageType.Normal
 kGoreEnergyCost = 7
 kGoreDelay = 0.45
+kGoreRange = 1.7
+kGoreMeleeBaseWidth = 1
+kGoreMeleeBaseHeight = 1.4
 
 kDevourInitialDamage = 10
 kDevourDamage = 10
 kDevourEnergyCost = 35
-kDevourDelay = 2
+kDevourAttackDelay = 2
+kDevourDigestionSpeed = 1
+kDevourHealthPerSecond = 20
 kDevourDamageType = kDamageType.Falling
+kDevourRange = 1.2
+kDevourMeleeBaseWidth = 0.8
+kDevourMeleeBaseHeight = 0.9
 
 kStompEnergyCost = 30
 kStompRange = 12
@@ -357,6 +379,9 @@ kDisruptMarineTime = 2
 kSmashDamage = 125
 kSmashDamageType = kDamageType.Structural
 kSmashEnergyCost = 9
+kSmashRange = 1.9
+kSmashMeleeBaseWidth = 1.1
+kSmashMeleeBaseHeight = 1.4
 
 kChargeMaxDamage = 4
 kChargeMinDamage = 1
@@ -366,10 +391,6 @@ kHydraAttackDamageType = kDamageType.Normal
 
 kWhipDamage = 50
 kWhipAttackDamageType = kDamageType.Normal
-
-kMelee1DamageScalar = 1.1
-kMelee2DamageScalar = 1.2
-kMelee3DamageScalar = 1.3
 
 // SPAWN TIMES
 kMarineRespawnTime = 10

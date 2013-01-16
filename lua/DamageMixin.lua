@@ -17,6 +17,7 @@ end
 function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode, showtracer)
 
     local killedFromDamage = false
+    local flinch_severe = false
     local doer = self
 
     // attacker is always a player, doer is 'self'
@@ -70,7 +71,7 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                 // Send the player a message so they get feedback about what damage they've done.
                 // We use messages to handle multiple-hits per frame, such as splash damage from grenades.
                 if Server and attacker:isa("Player") and (not doer.GetShowHitIndicator or doer:GetShowHitIndicator()) then
-                    local showNumbers = GetAreEnemies(attacker,target) and target:GetIsAlive()
+                    local showNumbers = GetAreEnemies(attacker,target) and target:GetIsAlive() and Shared.GetCheatsEnabled()
                     if showNumbers then
                         local msg = BuildDamageMessage(target, damage, point)
                         Server.SendNetworkMessage(attacker, "Damage", msg, false)
@@ -81,6 +82,23 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                 end
                 
                 killedFromDamage = target:TakeDamage(damage, attacker, doer, point, direction, armorUsed, healthUsed, damageType)
+                
+                if target.damagetable ~= nil and not killedFromDamage then
+                    if target.damagetable.dtime ~= nil and target.damagetable.dtime + kFlinchDamageInterval > Shared.GetTime() then
+                        if target.damagetable.ddamage ~= nil and target.damagetable.ddamage + damage > ((target:GetMaxHealth() + target:GetMaxArmor()) * kFlinchDamagePercent) then
+                            target.damagetable.ddamage = 0
+                            target.damagetable.dtime = 0
+                            flinch_severe = true
+                        else
+                            target.damagetable.ddamage = target.damagetable.ddamage + damage
+                        end
+                    else
+                        target.damagetable.dtime = Shared.GetTime()
+                        target.damagetable.ddamage = damage
+                    end
+                elseif target.damagetable == nil then
+                    target.damagetable = {ddamage = damage, dtime = 0}
+                end
                 
                 if self.OnDamageDone then
                     self:OnDamageDone(doer, target)
@@ -144,18 +162,18 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
             if Server then
             
                 if GetShouldSendHitEffect() then
-            
-                    local message = BuildHitEffectMessage(point, doer, surface, target, showtracer, altMode)
+                    
+                    local message = BuildHitEffectMessage(point, doer, surface, target, showtracer, altMode, flinch_severe)
                     
                     local toPlayers = GetEntitiesWithinRange("Player", point, kHitEffectRelevancyDistance)
-                    table.removevalue(toPlayers, attacker)
+                    //table.removevalue(toPlayers, attacker)
                     
                     for _, player in ipairs(toPlayers) do
                         Server.SendNetworkMessage(player, "HitEffect", message, false) 
                     end
                 
                 end
-
+            /*
             elseif Client then
             
                 local tableParams = { damagetype = damageType, flinch_severe = ConditionalValue(damage > 20, true, false) }
@@ -193,7 +211,7 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                     end
                     
                 end
-                
+            */
             end
         
         end

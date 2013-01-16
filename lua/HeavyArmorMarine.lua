@@ -2,8 +2,6 @@
 // lua\HeavyArmorMarine.lua
 
 Script.Load("lua/Marine.lua")
-Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/MarineActionFinderMixin.lua")
 Script.Load("lua/OrderSelfMixin.lua")
@@ -61,7 +59,6 @@ HeavyArmorMarine.kRunMaxSpeed = 5.5
 // How fast does our armor get repaired by welders
 HeavyArmorMarine.kArmorWeldRate = 25
 HeavyArmorMarine.kWeldedEffectsInterval = .5
-HeavyArmorMarine.kWalkBackwardSpeedScalar = 0.4
 
 // tracked per techId
 HeavyArmorMarine.kMarineAlertTimeout = 4
@@ -143,43 +140,8 @@ function HeavyArmorMarine:GoldSrc_GetMaxSpeed(possible)
     
 end
 
-function HeavyArmorMarine:GetMaxSpeed(possible)
-
-    if possible then
-        return HeavyArmorMarine.kRunMaxSpeed
-    end
-    
-    if self:GetIsDisrupted() then
-        return 0
-    end
-    
-    local maxSpeed = HeavyArmorMarine.kRunMaxSpeed
-    
-    if self.movementModiferState and self:GetIsOnSurface() then
-        maxSpeed = HeavyArmorMarine.kWalkMaxSpeed
-    end
-    
-    // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
-    local inventorySpeedScalar = self:GetInventorySpeedScalar()
-
-    // Take into account crouching
-    if not self:GetIsJumping() then
-        maxSpeed = ( 1 - self:GetCrouchAmount() * self:GetCrouchSpeedScalar() ) * maxSpeed
-    end
-
-    local adjustedMaxSpeed = maxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier() * inventorySpeedScalar 
-    //Print("Adjusted max speed => %.2f (without inventory: %.2f)", adjustedMaxSpeed, adjustedMaxSpeed / inventorySpeedScalar )
-    return adjustedMaxSpeed
-    
-end
-
 function HeavyArmorMarine:GetFootstepSpeedScalar()
-    return Clamp(self:GetVelocity():GetLength() / (self:GetMaxSpeed() * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier()), 0, 1)
-end
-
-// Maximum speed a player can move backwards
-function HeavyArmorMarine:GetMaxBackwardSpeedScalar()
-    return HeavyArmorMarine.kWalkBackwardSpeedScalar
+    return Clamp(self:GetVelocity():GetLength() / (self:GoldSrc_GetMaxSpeed() * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier()), 0, 1)
 end
 
 function HeavyArmorMarine:GetCanBeWeldedOverride()

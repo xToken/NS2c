@@ -20,28 +20,19 @@ end
 
 function OnCommandHitEffect(hitEffectTable)
 
-    local position, doer, surface, target, showtracer, altMode = ParseHitEffectMessage(hitEffectTable)
+    local position, doer, surface, target, showtracer, altMode, flinchsevere = ParseHitEffectMessage(hitEffectTable)
 
     local tableParams = {}
+    
+    tableParams[kEffectFilterFlinchSevere] = flinchsevere
     tableParams[kEffectHostCoords] = Coords.GetTranslation(position)
+    tableParams[kEffectSurface] = surface
+    tableParams[kEffectFilterInAltMode] = altMode
     if doer then
         tableParams[kEffectFilterDoerName] = doer:GetClassName()
     end
-    tableParams[kEffectSurface] = surface
-    tableParams[kEffectFilterInAltMode] = altMode
-    
     if target then
-    
         tableParams[kEffectFilterClassName] = target:GetClassName()
-        
-        if target.GetTeamType then
-            tableParams[kEffectFilterIsMarine] = target:GetTeamType() == kMarineTeamType
-            tableParams[kEffectFilterIsAlien] = target:GetTeamType() == kAlienTeamType
-        end
-        
-    else
-            tableParams[kEffectFilterIsMarine] = false
-            tableParams[kEffectFilterIsAlien] = false
     end
     
     // don't play the hit cinematic, those are made for third person
@@ -50,10 +41,9 @@ function OnCommandHitEffect(hitEffectTable)
     end
     
     // always play sound effect
-    GetEffectManager():TriggerEffects("damage_sound", tableParams)
+    GetEffectManager():TriggerEffects("damage_sound", tableParams, target)
     
     if showtracer == true and doer then
-    
         
         local tracerStart = (doer.GetBarrelPoint and doer:GetBarrelPoint()) or (doer.GetEyePos and doer:GetEyePos()) or doer:GetOrigin()
     

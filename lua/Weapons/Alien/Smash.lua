@@ -17,10 +17,6 @@ local networkVars =
 
 AddMixinNetworkVars(StompMixin, networkVars)
 
-local kAttackRadius = 1.5
-local kAttackOriginDistance = 2
-local kAttackRange = 2.2
-
 // required here to deals different damage depending on if we are goring
 function Smash:GetDamageType()
     return kSmashDamageType
@@ -51,6 +47,14 @@ function Smash:GetHUDSlot()
     return 2
 end
 
+function Smash:GetRange()
+    return kSmashRange
+end
+
+function Smash:GetMeleeBase()
+    return kSmashMeleeBaseWidth, kSmashMeleeBaseHeight
+end
+
 function Smash:OnHolster(player)
 
     Ability.OnHolster(self, player)
@@ -74,7 +78,7 @@ function Smash:OnTag(tagName)
         
             self.lastPrimaryAttackTime = Shared.GetTime()
             //local didHit, impactPoint, target = self:Attack(player)
-            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kSmashDamage, kAttackRange)
+            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kSmashDamage, self:GetRange())
             self.lastPrimaryAttackTime = Shared.GetTime()
             self:TriggerEffects("smash_attack")
             player:DeductAbilityEnergy(self:GetEnergyCost())

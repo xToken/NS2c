@@ -69,6 +69,12 @@ function Alien:CheckRedemption()
             //Double Random Check to insure its actually random
             if chance <= (kRedemptionChancePerLevel * level) and self.redemed + kRedemptionCooldown < Shared.GetTime() then
                 //Redemed
+                if self:GetTechId() == kTechId.Onos then
+                    local devourWeapon = self:GetWeapon("devour")
+                    if devourWeapon and devourWeapon:IsAlreadyEating() then
+                        devourWeapon:OnForceUnDevour()
+                    end
+                end
                 self:TeleportToHive()
                 self.redemed = Shared.GetTime()
             end
@@ -237,8 +243,8 @@ function Alien:ProcessBuyAction(techIds)
     evolveAllowed = evolveAllowed and GetHasRoomForCapsule(eggExtents, position + Vector(0, eggExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
     evolveAllowed = evolveAllowed and GetHasRoomForCapsule(newAlienExtents, position + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
     if self:GetTechId() == kTechId.Onos then
-        if self.devouring ~= 0 then
-            Print(ToString(self.devouring))
+        local devourWeapon = self:GetWeapon("devour")
+        if devourWeapon and devourWeapon:IsAlreadyEating() then
             evolveAllowed = false
         end
     end
@@ -508,11 +514,13 @@ function Alien:LockTierThree()
 end
 
 function Alien:OnKill(attacker, doer, point, direction)
-
-    Player.OnKill(self, attacker, doer, point, direction)
     if self:GetTechId() == kTechId.Onos then
-        self:CheckEndDevour()
+        local devourWeapon = self:GetWeapon("devour")
+        if devourWeapon and devourWeapon:IsAlreadyEating() then
+            devourWeapon:OnForceUnDevour()
+        end
     end
+    Player.OnKill(self, attacker, doer, point, direction)
     self.oneHive = false
     self.twoHives = false
     self.threeHives = false

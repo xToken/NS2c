@@ -783,6 +783,7 @@ if Server then
                 local function SetReadyRoomTeam(player)
                     player:SetCameraDistance(0)
                     self:JoinTeam(player, kTeamReadyRoom)
+					player:SetResources(0)
                 end
                 Server.ForAllPlayers(SetReadyRoomTeam)
 

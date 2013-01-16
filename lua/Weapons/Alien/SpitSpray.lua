@@ -22,6 +22,7 @@ local kSpitSpeed = 55
 local kAnimationGraph = PrecacheAsset("models/alien/gorge/gorge_view.animation_graph")
 
 local kSpitViewEffect = PrecacheAsset("cinematics/alien/gorge/spit_1p.cinematic")
+local kSpitProjectileEffect = PrecacheAsset("cinematics/alien/gorge/spit_1p_projectile.cinematic")
 local attackEffectMaterial = nil
 
 if Client then
@@ -98,6 +99,22 @@ local function CreateSpitProjectile(self, player)
 
 end
 
+local function CreatePredictedProjectile(self, player)
+
+    if Client then
+
+        local viewAngles = player:GetViewAngles()
+        local viewCoords = viewAngles:GetCoords()
+        local tracerStart = player:GetEyePos() - viewCoords.yAxis * 0.2
+        local trace = Shared.TraceRay(tracerStart, player:GetEyePos() + viewCoords.zAxis * 20, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterAll())
+
+        local tracerVelocity = viewCoords.zAxis * kSpitSpeed * 0.7
+        CreateTracer(tracerStart, trace.endPoint, tracerVelocity, self, kSpitProjectileEffect)
+    
+    end
+
+end
+
 function SpitSpray:OnPrimaryAttack(player)
 
     if player:GetEnergy() >= self:GetEnergyCost() and not GetHasAttackDelay(self, player) then
@@ -127,15 +144,17 @@ function SpitSpray:OnTag(tagName)
         if player and not GetHasAttackDelay(self, player) then
         
             self.lastPrimaryAttackTime = Shared.GetTime()
-            CreateSpitProjectile(self, player)            
+            CreateSpitProjectile(self, player)
+            CreatePredictedProjectile(self, player)
+            
             player:DeductAbilityEnergy(self:GetEnergyCost())
             
             self:TriggerEffects("spitspray_attack")
             
             if Client then
             
-                //local cinematic = Client.CreateCinematic(RenderScene.Zone_ViewModel)
-                //cinematic:SetCinematic(kSpitViewEffect)
+                local cinematic = Client.CreateCinematic(RenderScene.Zone_ViewModel)
+                cinematic:SetCinematic(kSpitViewEffect)
                 
                 local model = player:GetViewModelEntity():GetRenderModel()
 

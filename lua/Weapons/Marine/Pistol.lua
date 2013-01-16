@@ -19,7 +19,6 @@ local kViewModelName = PrecacheAsset("models/marine/pistol/pistol_view.model")
 local kAnimationGraph = PrecacheAsset("models/marine/pistol/pistol_view.animation_graph")
 
 local kClipSize = 10
-local kRange = 200
 local kSpread = ClipWeapon.kCone0Degrees
 local kAltSpread = ClipWeapon.kCone0Degrees
 
@@ -28,9 +27,15 @@ local kLaserAttachPoint = "fxnode_laser"
 local networkVars =
 {
     altMode = "boolean",
-    emptyPoseParam = "private float (0 to 1 by 0.01)",
-    timeLastShot = "time"
+    emptyPoseParam = "private float (0 to 1 by 0.01)"
 }
+
+local function GetHasAttackDelay(self, player)
+
+    local attackDelay = kPistolFireDelay
+    return self.timeAttackStarted + attackDelay > Shared.GetTime()
+    
+end
 
 function Pistol:OnCreate()
 
@@ -40,7 +45,6 @@ function Pistol:OnCreate()
     
     self.altMode = false
     self.emptyPoseParam = 0
-    self.timeLastShot = 0
 
 end
 
@@ -167,6 +171,15 @@ function Pistol:GetHasSecondary(player)
     return false
 end
 
+function Pistol:GetIsPrimaryAttackAllowed(player)
+
+    if GetHasAttackDelay(self, player) then
+        return false
+    end
+    return ClipWeapon.GetIsPrimaryAttackAllowed(self, player)
+	
+end
+
 function Pistol:GetViewModelName()
     return kViewModelName
 end
@@ -185,7 +198,7 @@ function Pistol:GetHUDSlot()
 end
 
 function Pistol:GetPrimaryAttackRequiresPress()
-    return true
+    return false
 end
 
 function Pistol:GetNumStartClips()

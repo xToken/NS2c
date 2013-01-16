@@ -8,10 +8,6 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Player.lua")
-Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
-//Script.Load("lua/Mixins/GroundMoveMixin.lua")
-Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/OrderSelfMixin.lua")
 Script.Load("lua/MarineActionFinderMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
@@ -99,9 +95,6 @@ local networkVars =
 }
 
 AddMixinNetworkVars(OrdersMixin, networkVars)
-AddMixinNetworkVars(BaseMoveMixin, networkVars)
-AddMixinNetworkVars(CustomGroundMoveMixin, networkVars)
-//AddMixinNetworkVars(GroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(DisruptMixin, networkVars)
@@ -114,9 +107,6 @@ AddMixinNetworkVars(AlienDetectableMixin, networkVars)
 
 function Marine:OnCreate()
 
-    InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
-    InitMixin(self, CustomGroundMoveMixin)
-    //InitMixin(self, GroundMoveMixin)
     InitMixin(self, CameraHolderMixin, { kFov = kDefaultFov })
     InitMixin(self, MarineActionFinderMixin)
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
@@ -248,7 +238,7 @@ function Marine:IsValidDetection(detectable)
     if detectable:isa("Alien") then
         local hasupg, level = GetHasGhostUpgrade(detectable)
         if hasupg and level > 0 then
-            return math.random(1, 100) <= (level * 25)
+            return math.random(1, 100) <= (level * kGhostMotionTrackingDodgePerLevel)
         end
     end
     
@@ -418,8 +408,19 @@ function Marine:OnDestroy()
             
         end
         
+        if self.devouredscreen then
+        
+            GetGUIManager():DestroyGUIScript(self.devouredscreen)
+            self.devouredscreen = nil
+            
+        end
+        
     end
     
+end
+
+function Marine:GetCanControl()
+    return (not self.isMoveBlocked) and self:GetIsAlive() and ( not self.GetIsDevoured or not self:GetIsDevoured() ) and not self.countingDown
 end
 
 function Marine:HandleButtons(input)
@@ -530,45 +531,23 @@ function Marine:GoldSrc_GetMaxSpeed(possible)
     return adjustedMaxSpeed
 end
 
-function Marine:GetMaxSpeed(possible)
-
-    if possible then
-        return Marine.kRunMaxSpeed
-    end
-    
-    if self:GetIsDisrupted() then
-        return 0
-    end
-    
-    //Walking
-    local maxSpeed = Marine.kRunMaxSpeed
-    
-    if self.movementModiferState and self:GetIsOnSurface() then
-        maxSpeed = Marine.kWalkMaxSpeed
-    end
-    
-    // Take into account crouching
-    if self:GetCrouching() and self:GetIsOnGround() then
-        maxSpeed = ( 1 - self:GetCrouchAmount() * self:GetCrouchSpeedScalar() ) * maxSpeed
-    end
-    
-    // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
-    local inventorySpeedScalar = self:GetInventorySpeedScalar()
-
-    local adjustedMaxSpeed = maxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier() * inventorySpeedScalar 
-    //Print("Adjusted max speed => %.2f (without inventory: %.2f)", adjustedMaxSpeed, adjustedMaxSpeed / inventorySpeedScalar )
-    
-    return adjustedMaxSpeed
-    
-end
-
 function Marine:GetFootstepSpeedScalar()
-    return Clamp(self:GetVelocityLength() / (Marine.kRunMaxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier()), 0, 1)
+    return Clamp(self:GetVelocityLength() / (self:GoldSrc_GetMaxSpeed() * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier()), 0, 1)
 end
 
 // Maximum speed a player can move backwards
 function Marine:GetMaxBackwardSpeedScalar()
     return Marine.kWalkBackwardSpeedScalar
+end
+
+function Marine:OnClampSpeed(input, velocity)
+    // Players moving backwards can't go full speed.
+    if input.move.z < 0 and self:GetIsOnGround() then
+        local moveSpeed = velocity:GetLengthXZ()
+        local maxSpeed = self:GoldSrc_GetMaxSpeed()
+        maxSpeed = maxSpeed * self:GetMaxBackwardSpeedScalar()
+        velocity:Scale(maxSpeed / moveSpeed)
+    end
 end
 
 function Marine:GetCanBeWeldedOverride()
@@ -689,6 +668,7 @@ function Marine:Drop(weapon, ignoreDropTimeLimit, ignoreReplacementWeapon)
             self:RemoveWeapon(weapon)
             
             local weaponSpawnCoords = self:GetAttachPointCoords(Weapon.kHumanAttachPoint)
+            if weaponSpawnCoords == nil then weaponSpawnCoords = self:GetCoords() end
             weapon:SetCoords(weaponSpawnCoords)
             
         end
@@ -721,17 +701,32 @@ function Marine:GetIsDevoured()
     return self.devoured
 end
 
-function Marine:OnDevoured()
+function Marine:OnDevoured(hungrycow)
+    self.devourer = hungrycow:GetId()
+    self.prevModelName = self:GetModelName()
+    self.prevAnimGraph = self:GetGraphName()
     self.devoured = true
+    self:SetModel(nil)
+    //self:SetIsThirdPerson(4)
+
+    local activeWeapon = self:GetActiveWeapon()
+    if activeWeapon then
+        activeWeapon:OnPrimaryAttackEnd(self)
+        activeWeapon:OnSecondaryAttackEnd(self)
+    end
 end
 
 function Marine:GetCanSkipPhysics()
-    return self.devoured
+    return self:GetIsDevoured()
 end
 
 function Marine:OnDevouredEnd()    
-    self.devoured = false
-    self:SetModel(Marine.kModelName, Marine.kMarineAnimationGraph)
+    if self:GetIsAlive() then
+        self.devoured = false
+        self.devourer = nil
+        self:SetModel(self.prevModelName, self.prevAnimGraph)
+        //self:SetDesiredCamera(0.3, { move = true })
+    end
 end
 
 function Marine:GetWeldPercentageOverride()
@@ -747,10 +742,6 @@ function Marine:OnWeldOverride(doer, elapsedTime)
         
     end
     
-end
-
-function Marine:OnSpitHit(direction)
-
 end
 
 function Marine:GetCanChangeViewAngles()
@@ -800,12 +791,22 @@ function Marine:OnUpdateAnimationInput(modelMixin)
     
 end
 
+function Marine:ReceivesFallDamage()
+    return not self:GetIsDevoured()
+end
+
 function Marine:OnProcessMove(input)
 
     if Server then
     	self.catpackboost = Shared.GetTime() - self.timeCatpackboost < CatPack.kDuration
         if self.unitStatusPercentage ~= 0 and self.timeLastUnitPercentageUpdate + 2 < Shared.GetTime() then
             self.unitStatusPercentage = 0
+        end
+        if self:GetIsDevoured() then
+            local onos = self.devourer and Shared.GetEntity(self.devourer)
+            if onos and onos:isa("Onos") then
+                self:SetOrigin(onos:GetOrigin())
+            end
         end
 	end
 

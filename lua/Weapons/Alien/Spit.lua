@@ -64,9 +64,51 @@ function Spit:GetIsOnSurface()
     return self.onSurface
 end
 
+if Client then
+
+    function Spit:OnInitialized()
+    
+        Projectile.OnInitialized(self)
+        
+        local player = Client.GetLocalPlayer()
+        if not player or player:GetId() ~= self.ownerId then
+        
+            self.trailCinematic = Client.CreateTrailCinematic(RenderScene.Zone_Default)
+            self.trailCinematic:SetCinematicNames(kSpitTrail)
+            self.trailCinematic:AttachTo(self, TRAIL_ALIGN_MOVE, Vector(0, 0, 0))
+            
+            self.trailCinematic:SetRepeatStyle(Cinematic.Repeat_Endless)
+            self.trailCinematic:SetOptions( {
+                    numSegments = 1,
+                    collidesWithWorld = false,
+                    visibilityChangeDuration = 0.0,
+                    fadeOutCinematics = true,
+                    stretchTrail = false,
+                    trailLength = 1.5,
+                    minHardening = 1,
+                    maxHardening = 1,
+                    hardeningModifier = 1,
+                    trailWeight = 0.2
+                } )
+                
+            self.trailCinematic:SetIsVisible(true)
+        
+        end
+    
+    end
+
+end
+
 function Spit:OnDestroy()
 
     if Client then
+    
+        if self.trailCinematic then
+        
+            Client.DestroyTrailCinematic(self.trailCinematic)
+            self.trailCinematic = nil
+            
+        end
         
         if self.decal then
         
@@ -114,6 +156,23 @@ function Spit:ProcessHit(targetHit, surface, normal)
         
     end    
     
+end
+
+function Spit:OnUpdate(deltaTime)
+
+    Projectile.OnUpdate(self, deltaTime)
+    
+    if Client then
+    
+        if self:GetIsOnSurface() and self.trailCinematic then
+
+            Client.DestroyTrailCinematic(self.trailCinematic)
+            self.trailCinematic = nil
+            
+        end
+    
+    end
+
 end
 
 if Client then

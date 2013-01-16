@@ -595,9 +595,6 @@ function Commander:OnInitLocalClient()
     // Set commander geometry invisible.
     Client.SetGroupIsVisible(kCommanderInvisibleGroupName, false)
     
-    // Turn off fog to improve look.
-    Client.SetEnableFog(false)
-    
     // Set our location so we are viewing the command structure we're in.
     self:SetStartPosition()
     
@@ -628,7 +625,7 @@ end
  * Allow player to create a different move if desired (Client only).
  */
 function Commander:OverrideInput(input)
-    
+
     // Completely override movement and impulses
     input.move.x = 0
     input.move.y = 0
@@ -880,7 +877,6 @@ function Commander:SendTargetedAction(techId, normalizedPickRay, orientation)
         local orientation = ConditionalValue(orientation, orientation, math.random() * 2 * math.pi)
         local message = BuildCommTargetedActionMessage(techId, normalizedPickRay.x, normalizedPickRay.y, normalizedPickRay.z, orientation)
         Client.SendNetworkMessage("CommTargetedAction", message, true)
-        //UpdateCooldown(self, techId)
         self.timeLastTargetedAction = Shared.GetTime()
         self:SetCurrentTech(kTechId.None)
         
@@ -898,7 +894,6 @@ function Commander:SendTargetedActionWorld(techId, worldCoords, orientation)
     
         local message = BuildCommTargetedActionMessage(techId, worldCoords.x, worldCoords.y, worldCoords.z, ConditionalValue(orientation, orientation, 0))
         Client.SendNetworkMessage("CommTargetedActionWorld", message, true)
-        //UpdateCooldown(self, techId)
         self:SetCurrentTech(kTechId.None)
         self.timeLastTargetedAction = Shared.GetTime()
         

@@ -9,8 +9,6 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/Alien.lua")
 
@@ -39,8 +37,6 @@ local networkVars =
     gestationTypeTechId = "enum kTechId"
 }
 
-AddMixinNetworkVars(BaseMoveMixin, networkVars)
-AddMixinNetworkVars(CustomGroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 
 if Client then
@@ -59,8 +55,6 @@ end
 
 function Embryo:OnInitialized()
 
-    InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
-    InitMixin(self, CustomGroundMoveMixin)
     InitMixin(self, CameraHolderMixin, { kFov = kEmbryoFov })
     
     Alien.OnInitialized(self)
@@ -180,6 +174,10 @@ function Embryo:GetMaxViewOffsetHeight()
     return .2
 end
 
+function Embryo:GetGestationTime(gestationTypeTechId)
+    return LookupTechData(gestationTypeTechId, kTechDataGestateTime)
+end
+
 function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorScalar)
 
     // Save upgrades so they can be given when spawned
@@ -206,7 +204,7 @@ function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorSca
     end
     self.gestationStartTime = Shared.GetTime()
     
-    local lifeformTime = ConditionalValue(self.gestationTypeTechId ~= previousTechId, LookupTechData(self.gestationTypeTechId, kTechDataGestateTime), 0)
+    local lifeformTime = ConditionalValue(self.gestationTypeTechId ~= previousTechId, self:GetGestationTime(self.gestationTypeTechId), 0)
     
     local newUpgradesAmount = 0    
     local currentUpgrades = self:GetUpgrades()
@@ -254,15 +252,6 @@ function Embryo:OverrideInput(input)
     input.commands = bit.band(input.commands, Move.Exit) + bit.band(input.commands, Move.TeamChat) + bit.band(input.commands, Move.TextChat) + bit.band(input.commands, Move.Scoreboard) + bit.band(input.commands, Move.ShowMap)
     
     return input
-    
-end
-
-function Embryo:ConstrainMoveVelocity(moveVelocity)
-
-    // Embryos can't move    
-    moveVelocity.x = 0
-    moveVelocity.y = 0
-    moveVelocity.z = 0
     
 end
 

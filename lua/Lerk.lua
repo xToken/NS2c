@@ -15,8 +15,6 @@ Script.Load("lua/Weapons/Alien/LerkBite.lua")
 Script.Load("lua/Weapons/Alien/LerkBiteUmbra.lua")
 Script.Load("lua/Weapons/Alien/LerkBitePrimal.lua")
 Script.Load("lua/Weapons/Alien/LerkBiteSpikes.lua")
-Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/WallMovementMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
@@ -57,8 +55,6 @@ local networkVars =
     bombPoseParam = "float (0 to 1 by 0.05)",
 }
 
-AddMixinNetworkVars(BaseMoveMixin, networkVars)
-AddMixinNetworkVars(CustomGroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 
 // if the user hits a wall and holds the use key and the resulting speed is < this, grip starts
@@ -95,8 +91,6 @@ local kDefaultAttackSpeed = 1.65
 
 function Lerk:OnCreate()
 
-    InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
-    InitMixin(self, CustomGroundMoveMixin)
     InitMixin(self, CameraHolderMixin, { kFov = kLerkFov })
     InitMixin(self, WallMovementMixin)
     
@@ -233,38 +227,6 @@ function Lerk:GoldSrc_GetMaxSpeed(possible)
     
 end
 
-// Gain speed gradually the longer we stay in the air
-function Lerk:GetMaxSpeed(possible)
-
-    if possible then
-        return 13
-    end
-
-    local speed = kMaxWalkSpeed
-    if not self:GetIsOnGround() then
-    
-        local kBaseAirScalar = 1.2      // originally 0.5
-        local kAirTimeToMaxSpeed = 5  // originally 10
-        local airTimeScalar = Clamp((Shared.GetTime() - self.timeLastOnGround) / kAirTimeToMaxSpeed, 0, 1)
-        local speedScalar = kBaseAirScalar + airTimeScalar * (1 - kBaseAirScalar)
-        speed = kMaxWalkSpeed + speedScalar * (kMaxSpeed - kMaxWalkSpeed)
-        
-        // half max speed while the walk key is pressed
-        if self.movementModiferState then
-            speed = speed * 0.5
-        end
-        
-    end 
-    
-    return speed * self:GetMovementSpeedModifier()
-    
-end
-
-function Lerk:GetAcceleration()
-    //return Alien.GetAcceleration(self) * self:GetMovementSpeedModifier()
-    return ConditionalValue(self:GetIsOnGround(), Alien.GetAcceleration(self), kAirAcceleration) * self:GetMovementSpeedModifier()
-end
-
 function Lerk:GetCanCrouch()
     return false
 end
@@ -275,19 +237,6 @@ end
 
 function Lerk:GetJumpHeight()
     return kJumpHeight
-end
-
-function Lerk:GetFrictionForce(input, velocity)
-    
-    local frictionScalar = 0.3
-    local prevVelocity = self:GetVelocity()
-    
-    if self.gliding then
-        return Vector(0, 0, 0)
-    end
-    
-    return Alien.GetFrictionForce(self, input, velocity)
-    
 end
 
 local function Flap(self, input, velocity)
@@ -439,58 +388,6 @@ local kLerkEngageOffset = Vector(0, 0.6, 0)
 function Lerk:GetEngagementPointOverride()
     return self:GetOrigin() + kLerkEngageOffset
 end
-
-// Called from GroundMoveMixin.
-function Lerk:ComputeForwardVelocity(input)
-
-    // If we're in the air, move a little to left and right, but move in view direction when 
-    // pressing forward. Modify velocity when looking up or down.
-    if not self:GetIsOnGround() then
-        
-        local move          = GetNormalizedVector(input.move)
-        local viewCoords    = self:GetViewAngles():GetCoords()
-        
-
-        if self.gliding then
-        
-            if input.move:GetLength() == 0 then
-                return GetNormalizedVector(self:GetVelocity()) * 0.5
-            end
-
-            // Gliding: ignore air control
-            // Add or remove velocity depending if we're looking up or down
-            local zAxis = viewCoords.zAxis
-           
-            local dot = Clamp(Vector(0, -1, 0):DotProduct(zAxis), 0, 1)
-
-            local glideAmount = dot// math.sin( dot * math.pi / 2 )
-
-            local glideVelocity = viewCoords.zAxis * math.abs(glideAmount) * self:GetAcceleration()
-
-            return glideVelocity
-            
-        else
-        
-            // Not gliding: use normal ground movement, or air control if we're in the air
-            local transformedVertical = viewCoords:TransformVector( Vector(0, 0, move.z) )
-
-
-            local moveVelocity = viewCoords:TransformVector( move ) * self:GetAcceleration()
-
-
-            return moveVelocity
-
-            
-        end
-    
-    else
-
-        // Fallback on the base function.
-        return Alien.ComputeForwardVelocity(self, input)
-    end
-    
-end
-
 
 function Lerk:RedirectVelocity(redirectDir)
 

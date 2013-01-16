@@ -614,13 +614,11 @@ function GUIMarineHUD:Update(deltaTime)
     local weaponLevel = 0
     local motiontracking = false
     
-    if PlayerUI_GetIsPlaying() then
+    armorLevel = PlayerUI_GetArmorLevel()
+    weaponLevel = PlayerUI_GetWeaponLevel()
 
-        armorLevel = PlayerUI_GetArmorLevel()
-        weaponLevel = PlayerUI_GetWeaponLevel()
-        motiontracking = PlayerUI_GetHasMotionTracking()
-        
-    end
+    self.armorLevel:SetIsVisible(armorLevel ~= 0)
+    self.weaponLevel:SetIsVisible(weaponLevel ~= 0)
     
     if armorLevel ~= self.lastArmorLevel then
     

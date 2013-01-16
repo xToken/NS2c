@@ -177,33 +177,30 @@ function AddDeathMessage(killerIsPlayer, killerIndex, killerTeamNumber, iconInde
     local killerName = GetDeathMessageEntityName(killerIsPlayer, killerIndex)
     local targetName = GetDeathMessageEntityName(targetIsPlayer, targetIndex)
     
-
     if targetIsPlayer ~= 1 then
-
+    
         if targetTeamNumber == kTeam1Index then
-
+        
             local techIdString = string.gsub(targetName, "%s+", "")
             local techId = StringToEnum(kTechId, techIdString)
             local resOverride = false
-
+            
             if techIdString == "AdvancedArmory" then
-
                 resOverride = kArmoryCost + kAdvancedArmoryUpgradeCost
-
             elseif techIdString == "ARCRoboticsFactory" then
-
                 resOverride = kRoboticsFactoryCost + kUpgradeRoboticsFactoryCost
-
             end
-
+            
             local amount = resOverride or LookupTechData(techId, kTechDataCostKey, 0)
-
+            
             DeathMsgUI_AddResLost(kTeam1Index, amount)
-
-            if techIdString == "Extractor" then DeathMsgUI_AddRtsLost(kTeam1Index, 1) end
-
+            
+            if techIdString == "Extractor" then
+                DeathMsgUI_AddRtsLost(kTeam1Index, 1)
+            end
+            
         elseif targetTeamNumber == kTeam2Index then
-
+        
             local techIdString = string.gsub(targetName, "%s+", "")
             local techId = StringToEnum(kTechId, techIdString)
             local resOverride = false
@@ -233,30 +230,31 @@ function AddDeathMessage(killerIsPlayer, killerIndex, killerTeamNumber, iconInde
                 resOverride = kWhipCost
 
             end
-                            
-            -- change to only add cost if TRes, gonna add exceptions manually for now -DGH
+            
+            -- Change to only add cost if TRes, gonna add exceptions manually for now -DGH
             local amount = (resOverride or LookupTechData(techId, kTechDataCostKey, 0))
             
             DeathMsgUI_AddResLost(kTeam2Index, amount)
-
-            if techIdString == "Harvester" then
             
+            if techIdString == "Harvester" then
                 DeathMsgUI_AddRtsLost(kTeam2Index, 1)
-                
             end
             
         end
-
+        
     end
-
-    local deathMessage = {GetColorForTeamNumber(killerTeamNumber), killerName, GetColorForTeamNumber(targetTeamNumber), ConditionalValue(killerName == targetName, "", targetName), iconIndex}
     
+    local killedSelf = killerIsPlayer and targetIsPlayer and killerIndex == targetIndex
+    
+    local deathMessage = { GetColorForTeamNumber(killerTeamNumber), killerName, GetColorForTeamNumber(targetTeamNumber), killedSelf and "" or targetName, iconIndex, targetIsPlayer }
     table.insertunique(queuedDeathMessages, deathMessage)
     
     local player = Client.GetLocalPlayer()
     if player and player:GetName() == targetName then
-        gKillerName = ConditionalValue(killerName == targetName, "", killerName)
+    
+        gKillerName = killedSelf and "" or killerName
         gKillerWeaponIconIndex = iconIndex
-    end    
+        
+    end
     
 end

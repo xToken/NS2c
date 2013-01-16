@@ -259,6 +259,9 @@
     <filename>GUIGorgeBuildMenu2.lua</filename>
   </file>
   <file>
+    <filename>GUIGorgeBuildMenuHelp.lua</filename>
+  </file>
+  <file>
     <filename>GUIInsight_OtherHealthbars.lua</filename>
   </file>
   <file>
@@ -272,6 +275,9 @@
   </file>
   <file>
     <filename>GUIMarineBuyMenu.lua</filename>
+  </file>
+  <file>
+    <filename>GUIMarineDevoured.lua</filename>
   </file>
   <file>
     <filename>Hud\Marine\GUIMarineHud.lua</filename>
@@ -487,6 +493,9 @@
     <filename>NS2Utility_Server.lua</filename>
   </file>
   <file>
+    <filename>NS2cGameStrings.lua</filename>
+  </file>
+  <file>
     <filename>NetworkMessages.lua</filename>
   </file>
   <file>
@@ -548,6 +557,9 @@
   </file>
   <file>
     <filename>PrototypeLab.lua</filename>
+  </file>
+  <file>
+    <filename>ReadyRoomPlayer.lua</filename>
   </file>
   <file>
     <filename>ReadyRoomTeam.lua</filename>

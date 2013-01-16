@@ -22,7 +22,7 @@ Script.Load("lua/DamageTypes.lua")
 Script.Load("lua/Debug.lua")
 Script.Load("lua/CollisionRep.lua")
 Script.Load("lua/Utility.lua")
-
+Script.Load("lua/NS2cGameStrings.lua")
 Script.Load("lua/MixinUtility.lua")
 Script.Load("lua/Actor.lua")
 Script.Load("lua/AnimatedModel.lua")
@@ -137,6 +137,8 @@ Script.Load("lua/Weapons/Marine/GrenadeLauncher.lua")
 Script.Load("lua/Weapons/Marine/Mines.lua")
 Script.Load("lua/Weapons/Marine/Welder.lua")
 Script.Load("lua/Weapons/Marine/HandGrenades.lua")
+// Holiday 2012
+Script.Load("lua/Weapons/SnowBallThrower.lua")
 
 Script.Load("lua/NS2Utility.lua")
 Script.Load("lua/WeaponUtility.lua")

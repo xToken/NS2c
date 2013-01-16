@@ -137,7 +137,7 @@ kDeathMessageIcon = enum( { 'None',
                             'Mine', 'Gore', 'Spit', 'Jetpack', 'Claw',
                             'Minigun', 'Metabolize', 'LerkBite', 'Umbra', 
                             'Xenocide', 'Blink', 'Leap', 'Stomp',
-                            'Consumed',
+                            'Consumed', 'GL', 'Recycled'
                             } )
 
 kMinimapBlipType = enum( { 'Undefined', 'TechPoint', 'ResourcePoint', 'Scan',
@@ -291,7 +291,7 @@ kAIMoveOrderCompleteDistance = 0.01
 kPlayerMoveOrderCompleteDistance = 1.5
 
 // Statistics
-kStatisticsURL = "http://strong-ocean-7422.herokuapp.com"
+kStatisticsURL = "http://sponitor2.herokuapp.com/api/send"
 
 kCatalyzURL = "https://catalyz.herokuapp.com/v1"
 

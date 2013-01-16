@@ -29,6 +29,7 @@ Script.Load("lua/menu/GUIMainMenu_FindPeople.lua")
 Script.Load("lua/menu/GUIMainMenu_PlayNow.lua")
 Script.Load("lua/menu/GUIMainMenu_Mods.lua")
 Script.Load("lua/menu/GUIMainMenu_Tutorial.lua")
+Script.Load("lua/menu/GUIMainMenu_Web.lua")
 
 // Min and maximum values for the mouse sensitivity slider
 local kMinSensitivity = 1
@@ -40,6 +41,7 @@ local kMaxAcceleration = 1.4
 local kDisplayModes = { "windowed", "fullscreen", "fullscreen-windowed" }
 local kAmbientOcclusionModes = { "off", "medium", "high" }
 local kInfestationModes = { "minimal", "rich" }
+local kParticleQualityModes = { "low", "high" }
     
 local kLocales =
     {
@@ -360,34 +362,11 @@ function GUIMainMenu:CreateProfile()
     
     self.profileBackground:AddEventCallbacks(eventCallbacks)
     
-    // create avatar icon.
+    // Create avatar icon.
     self.avatar = CreateMenuElement(self.profileBackground, "Image")
     self.avatar:SetCSSClass("avatar")
     self.avatar:SetBackgroundTexture("*avatar")
-
-    // Remove icons until we can get proper artwork in for them
-        
-    // create SE and dev tools icons, TODO: set correct CSS class
-    /*
-    self.seIcon = CreateMenuElement(self.profileBackground, "Image")
-    self.seIcon:SetCSSClass("se_enabled")
-    self.seIcon:EnableHighlighting()
     
-    self.devToolsIcon = CreateMenuElement(self.profileBackground, "Image")
-    self.devToolsIcon:SetCSSClass("devtoolsicon")  
-    self.devToolsIcon:EnableHighlighting()  
-    
-    // create dlc icons    
-    self.dlcIcons = {}
-    for _, dlc in ipairs(MainMenu_GetDLCs()) do
-    
-        local dlcIcon = CreateMenuElement(self.profileBackground, "Image")
-        dlcIcon:SetCSSClass(dlc)
-        dlcIcon:EnableHighlighting() 
-        table.insert(self.dlcIcons, dlcIcon)
-    
-    end
-    */
     self.playerName = CreateMenuElement(self.profileBackground, "Font")
     self.playerName:SetCSSClass("profile")
     
@@ -395,7 +374,69 @@ end
 
 local function FinishWindowAnimations(self)
     self:GetBackground():EndAnimations()
-end    
+end
+
+local function FormatServerName(serverName, rookieFriendly)
+
+    // Change name to display "rookie friendly" at the end of the line.
+    if rookieFriendly then
+    
+        local maxLen = 34
+        local separator = ConditionalValue(string.len(serverName) > maxLen, "... ", " ")
+        serverName = serverName:sub(0, maxLen) .. separator .. Locale.ResolveString("ROOKIE_FRIENDLY")
+        
+    else
+    
+        local maxLen = 50
+        local separator = ConditionalValue(string.len(serverName) > maxLen, "... ", " ")
+        serverName = serverName:sub(0, maxLen) .. separator
+        
+    end
+    
+    return serverName
+    
+end
+
+local function AddFavoritesToServerList(serverList)
+
+    local favoriteServers = GetFavoriteServers()
+    for f = 1, #favoriteServers do
+    
+        local currentFavorite = favoriteServers[f]
+        if type(currentFavorite) == "string" then
+            currentFavorite = { address = currentFavorite }
+        end
+        
+        local serverEntry = { }
+        serverEntry.name = currentFavorite.name or "No name"
+        serverEntry.mode = "?"
+        serverEntry.map = "?"
+        serverEntry.numPlayers = 0
+        serverEntry.maxPlayers = currentFavorite.maxPlayers or 24
+        serverEntry.ping = 999
+        serverEntry.address = currentFavorite.address or "127.0.0.1:27015"
+        serverEntry.requiresPassword = currentFavorite.requiresPassword or false
+        serverEntry.rookieFriendly = currentFavorite.rookieFriendly or false
+        serverEntry.friendsOnServer = false
+        serverEntry.lanServer = false
+        serverEntry.tickrate = 30
+        serverEntry.serverId = -f
+        serverEntry.modded = currentFavorite.modded or false
+        serverEntry.favorite = true
+        
+        serverEntry.name = FormatServerName(serverEntry.name, serverEntry.rookieFriendly)
+        
+        local function OnServerRefreshed(serverData)
+            local tt = serverEntry.address
+            serverList:UpdateEntry(serverData)
+        end
+        Client.RefreshServer(serverEntry.address, OnServerRefreshed)
+        
+        serverList:AddEntry(serverEntry)
+        
+    end
+    
+end
 
 local function UpdateServerList(self)
 
@@ -403,11 +444,25 @@ local function UpdateServerList(self)
     Client.RebuildServerList()
     self.playWindow.updateButton:SetText("UPDATING...")
     self.playWindow:ResetSlideBar()
-    self.timeUpdateButtonPressed = Shared.GetTime()
     self.selectServer:SetIsVisible(false)
     self.serverList:ClearChildren()
     // Needs to be done here because the server IDs will change.
     self:ResetServerSelection()
+    
+    AddFavoritesToServerList(self.serverList)
+    
+end
+
+local function JoinServer(self)
+
+    if MainMenu_GetSelectedServer() >= 0 and MainMenu_GetSelectedIsFull() then
+    
+        self.autoJoinWindow:SetIsVisible(true)
+        self.autoJoinText:SetText(ToString(MainMenu_GetSelectedServerName()))
+        
+    else
+        MainMenu_JoinSelected()
+    end
     
 end
 
@@ -415,25 +470,14 @@ function GUIMainMenu:ProcessJoinServer()
 
     if MainMenu_GetSelectedServer() ~= nil then
     
-        if MainMenu_GetSelectedRequiresPassword() then
+        if MainMenu_GetSelectedServer() >= 0 and MainMenu_GetSelectedRequiresPassword() then
             self.passwordPromptWindow:SetIsVisible(true)
         else
-            self:JoinServer()
+            JoinServer(self)
         end
         
     end
     
-end
-
-function GUIMainMenu:JoinServer()
-
-    if MainMenu_GetSelectedIsFull() then
-        self.autoJoinWindow:SetIsVisible(true)
-        self.autoJoinText:SetText(ToString(MainMenu_GetSelectedServerName()))
-    else
-        MainMenu_JoinSelected()
-    end
-
 end
 
 function GUIMainMenu:CreateAlertWindow()
@@ -518,7 +562,7 @@ end
 
 function GUIMainMenu:CreatePasswordPromptWindow()
 
-    self.passwordPromptWindow = self:CreateWindow()    
+    self.passwordPromptWindow = self:CreateWindow()
     self.passwordPromptWindow:SetWindowName("ENTER PASSWORD")
     self.passwordPromptWindow:SetInitialVisible(false)
     self.passwordPromptWindow:SetIsVisible(false)
@@ -528,20 +572,18 @@ function GUIMainMenu:CreatePasswordPromptWindow()
     self.passwordPromptWindow:SetCSSClass("passwordprompt_window")
     self.passwordPromptWindow:DisableCloseButton()
     
-    self.passwordPromptWindow:AddEventCallbacks( { OnBlur = function(self) self:SetIsVisible(false) end } )
+    self.passwordPromptWindow:AddEventCallbacks({ OnBlur = function(self) self:SetIsVisible(false) end })
     
     self.passwordForm = CreateMenuElement(self.passwordPromptWindow, "Form", false)
     self.passwordForm:SetCSSClass("passwordprompt")
-
-    // Password entry
+    
     local textinput = self.passwordForm:CreateFormElement(Form.kElementType.TextInput, "PASSWORD", Client.GetOptionString("serverPassword", ""))
     textinput:SetCSSClass("serverpassword")
-    
     
     local descriptionText = CreateMenuElement(self.passwordPromptWindow.titleBar, "Font", false)
     descriptionText:SetCSSClass("passwordprompt_title")
     descriptionText:SetText("ENTER PASSWORD")
-
+    
     local joinServer = CreateMenuElement(self.passwordPromptWindow, "MenuButton")
     joinServer:SetCSSClass("bottomcenter")
     joinServer:SetText("JOIN")
@@ -551,7 +593,7 @@ function GUIMainMenu:CreatePasswordPromptWindow()
     
         local formData = self.scriptHandle.passwordForm:GetFormData()
         MainMenu_SetSelectedServerPassword(formData.PASSWORD)
-        self.scriptHandle:JoinServer()
+        JoinServer(self.scriptHandle)
         
     end })
     
@@ -568,37 +610,38 @@ local function CreateFilterForm(self)
 
     self.filterForm = CreateMenuElement(self.playWindow, "Form", false)
     self.filterForm:SetCSSClass("filter_form")
-
+    
     self.filterGameMode = self.filterForm:CreateFormElement(Form.kElementType.TextInput, "GAME MODE")
     self.filterGameMode:SetCSSClass("filter_gamemode")
-    self.filterGameMode:AddSetValueCallback( function(self)
+    self.filterGameMode:AddSetValueCallback(function(self)
     
-        local value = self:GetValue()
-        self.scriptHandle.serverList:SetFilter(1, FilterServerMode(value))   
+        local value = StringTrim(self:GetValue())
+        self.scriptHandle.serverList:SetFilter(1, FilterServerMode(value))
         self.scriptHandle.filterCustomContentHint:SetIsVisible(GetFiltersAllowCommunityContent(self.scriptHandle))
         
         Client.SetOptionString("filter_gamemode", value)
-     
-    end )
+        
+    end)
     
     self.filterCustomContentHint = CreateMenuElement(self.filterForm, "Font")
     self.filterCustomContentHint:SetText(Locale.ResolveString("SERVERBROWSER_SHOWING_MODDED_HINT"))
     self.filterCustomContentHint:SetCSSClass("filter_custom_content_hint")
     self.filterCustomContentHint:SetIsVisible(false)
-
+    
     local description = CreateMenuElement(self.filterGameMode, "Font")
     description:SetText("GAME")
     description:SetCSSClass("filter_description")
     
     self.filterMapName = self.filterForm:CreateFormElement(Form.kElementType.TextInput, "MAP NAME")
     self.filterMapName:SetCSSClass("filter_mapname")
-    self.filterMapName:AddSetValueCallback( function(self)
+    self.filterMapName:AddSetValueCallback(function(self)
     
-        self.scriptHandle.serverList:SetFilter(2, FilterMapName(self:GetValue()))
+        local value = StringTrim(self:GetValue())
+        self.scriptHandle.serverList:SetFilter(2, FilterMapName(value))
         Client.SetOptionString("filter_mapname", self.scriptHandle.filterMapName:GetValue())
         
-    end )
-
+    end)
+    
     local description = CreateMenuElement(self.filterMapName, "Font")
     description:SetText("MAP")
     description:SetCSSClass("filter_description")
@@ -689,19 +732,34 @@ local function CreateFilterForm(self)
         
     end)
     
+    local favoriteIcon = CreateMenuElement(self.filterFavorites, "Image", false)
+    favoriteIcon:SetCSSClass("filter_favorites_icon", false)
+    
     local description = CreateMenuElement(self.filterFavorites, "Font")
     description:SetText("FAVORITES")
     description:SetCSSClass("filter_description")
     
+    self.filterPassworded = self.filterForm:CreateFormElement(Form.kElementType.Checkbox, "PASSWORDED")
+    self.filterPassworded:SetCSSClass("filter_passworded")
+    self.filterPassworded:AddSetValueCallback(function(self)
+    
+        self.scriptHandle.serverList:SetFilter(9, FilterPassworded(self:GetValue()))
+        Client.SetOptionString("filter_passworded", ToString(self.scriptHandle.filterPassworded:GetValue()))
+        
+    end)
+    
+    local description = CreateMenuElement(self.filterPassworded, "Font")
+    description:SetText("PASSWORDED")
+    description:SetCSSClass("filter_description")
     
     self.filterRookie = self.filterForm:CreateFormElement(Form.kElementType.Checkbox, "FILTER ROOKIE")
     self.filterRookie:SetCSSClass("filter_rookie")
-    self.filterRookie:AddSetValueCallback( function(self)
+    self.filterRookie:AddSetValueCallback(function(self)
     
-        self.scriptHandle.serverList:SetFilter(9, FilterRookie(self:GetValue()))
+        self.scriptHandle.serverList:SetFilter(10, FilterRookie(self:GetValue()))
         Client.SetOptionString("filter_rookie", ToString(self.scriptHandle.filterRookie:GetValue()))
         
-    end )
+    end)
     
     local description = CreateMenuElement(self.filterRookie, "Font")
     description:SetText("FILTER ROOKIE")
@@ -716,6 +774,7 @@ local function CreateFilterForm(self)
     self.filterModded:SetValue(Client.GetOptionString("filter_modded", "false"))
     self.filterRookie:SetValue(Client.GetOptionString("filter_rookie", "false"))
     self.filterFavorites:SetValue(Client.GetOptionString("filter_favorites", "false"))
+    self.filterPassworded:SetValue(Client.GetOptionString("filter_passworded", "true"))
     
 end
 
@@ -771,14 +830,14 @@ function GUIMainMenu:CreateServerListWindow()
     local serverList = self.serverList
     
     local entryCallbacks = {
-        { OnClick = function() UpdateSortOrder(1) serverList:SetComparator( SortByFavorite ) end },
-        { OnClick = function() UpdateSortOrder(2) serverList:SetComparator( SortByPrivate ) end },
-        { OnClick = function() UpdateSortOrder(3) serverList:SetComparator( SortByName ) end },
-        { OnClick = function() UpdateSortOrder(4) serverList:SetComparator( SortByMode ) end },
-        { OnClick = function() UpdateSortOrder(5) serverList:SetComparator( SortByMap ) end },
-        { OnClick = function() UpdateSortOrder(6) serverList:SetComparator( SortByPlayers ) end },
-        { OnClick = function() UpdateSortOrder(7) serverList:SetComparator( SortByTickrate ) end },
-        { OnClick = function() UpdateSortOrder(8) serverList:SetComparator( SortByPing ) end },
+        { OnClick = function() UpdateSortOrder(1) serverList:SetComparator(SortByFavorite) end },
+        { OnClick = function() UpdateSortOrder(2) serverList:SetComparator(SortByPrivate) end },
+        { OnClick = function() UpdateSortOrder(3) serverList:SetComparator(SortByName) end },
+        { OnClick = function() UpdateSortOrder(4) serverList:SetComparator(SortByMode) end },
+        { OnClick = function() UpdateSortOrder(5) serverList:SetComparator(SortByMap) end },
+        { OnClick = function() UpdateSortOrder(6) serverList:SetComparator(SortByPlayers) end },
+        { OnClick = function() UpdateSortOrder(7) serverList:SetComparator(SortByTickrate) end },
+        { OnClick = function() UpdateSortOrder(8) serverList:SetComparator(SortByPing) end }
     }
     
     self.serverRowNames:SetCSSClass("server_list_row_names")
@@ -1227,15 +1286,16 @@ local function InitOptions(optionElements)
     local rookieMode            = Client.GetOptionBoolean( kRookieOptionsKey, true )
     local advancedmovement      = Client.GetOptionBoolean( "AdvancedMovement", false )
 
-    local screenResIdx = OptionsDialogUI_GetScreenResolutionsIndex()
-    local visualDetailIdx = OptionsDialogUI_GetVisualDetailSettingsIndex()
-    local displayMode = table.find(kDisplayModes, OptionsDialogUI_GetWindowMode())
-    local displayBuffering = Client.GetOptionInteger("graphics/display/display-buffering", 0)
-    local multicoreRendering = Client.GetOptionBoolean("graphics/multithreaded", true)
-    local textureStreaming = Client.GetOptionBoolean("graphics/texture-streaming", false)
-    local ambientOcclusion = Client.GetOptionString("graphics/display/ambient-occlusion", kAmbientOcclusionModes[1])
-    local infestation = Client.GetOptionString("graphics/infestation", "rich")
-    local fovAdjustment = Client.GetOptionFloat("graphics/display/fov-adjustment", 0)
+    local screenResIdx          = OptionsDialogUI_GetScreenResolutionsIndex()
+    local visualDetailIdx       = OptionsDialogUI_GetVisualDetailSettingsIndex()
+    local displayMode           = table.find(kDisplayModes, OptionsDialogUI_GetWindowMode())
+    local displayBuffering      = Client.GetOptionInteger("graphics/display/display-buffering", 0)
+    local multicoreRendering    = Client.GetOptionBoolean("graphics/multithreaded", true)
+    local textureStreaming      = Client.GetOptionBoolean("graphics/texture-streaming", false)
+    local ambientOcclusion      = Client.GetOptionString("graphics/display/ambient-occlusion", kAmbientOcclusionModes[1])
+    local particleQuality       = Client.GetOptionString("graphics/display/particles", "low")
+    local infestation           = Client.GetOptionString("graphics/infestation", "rich")
+    local fovAdjustment         = Client.GetOptionFloat("graphics/display/fov-adjustment", 0)
     local cameraAnimation       = Client.GetOptionBoolean("CameraAnimation", false) and "ON" or "OFF"
     
     local minimapZoom = Client.GetOptionFloat( "minimap-zoom", 0.75 )
@@ -1309,7 +1369,7 @@ local function InitOptions(optionElements)
     optionElements.MinimapZoom:SetValue(minimapZoom)
     optionElements.ArmorType:SetValue(armorType)
     optionElements.CameraAnimation:SetValue(cameraAnimation)
-    
+    optionElements.ParticleQuality:SetOptionActive( table.find(kParticleQualityModes, particleQuality) ) 
     
     optionElements.SoundVolume:SetValue(soundVol)
     optionElements.MusicVolume:SetValue(musicVol)
@@ -1331,10 +1391,12 @@ local function SaveSecondaryGraphicsOptions(mainMenu)
     local atmospherics          = mainMenu.optionElements.Atmospherics:GetActiveOptionIndex() > 1
     local anisotropicFiltering  = mainMenu.optionElements.AnisotropicFiltering:GetActiveOptionIndex() > 1
     local antiAliasing          = mainMenu.optionElements.AntiAliasing:GetActiveOptionIndex() > 1
+    local particleQualityIdx    = mainMenu.optionElements.ParticleQuality:GetActiveOptionIndex()
     
     Client.SetOptionBoolean("graphics/multithreaded", multicoreRendering)
     Client.SetOptionBoolean("graphics/texture-streaming", textureStreaming)
     Client.SetOptionString("graphics/display/ambient-occlusion", kAmbientOcclusionModes[ambientOcclusionIdx] )
+    Client.SetOptionString("graphics/display/particles", kParticleQualityModes[particleQualityIdx] )
     Client.SetOptionString("graphics/infestation", kInfestationModes[infestationIdx] )
     Client.SetOptionInteger( kDisplayQualityOptionsKey, visualDetailIdx - 1 )
     Client.SetOptionBoolean ( kShadowsOptionsKey, shadows )
@@ -1417,7 +1479,8 @@ local function SaveOptions(mainMenu)
     
     local armorType             = mainMenu.optionElements.ArmorType:GetValue()
     local cameraAnimation       = mainMenu.optionElements.CameraAnimation:GetActiveOptionIndex() > 1
-    local advancedmovement       = mainMenu.optionElements.AdvancedMovement:GetActiveOptionIndex() > 1
+    local advancedmovement      = mainMenu.optionElements.AdvancedMovement:GetActiveOptionIndex() > 1
+	local particleQuality       = mainMenu.optionElements.ParticleQuality:GetActiveOptionIndex()
     
     Client.SetOptionString( "locale", locale )
 
@@ -1681,6 +1744,13 @@ function GUIMainMenu:CreateOptionWindow()
                 callback = autoApplyCallback
             },
             {
+                name    = "ParticleQuality",
+                label   = "PARTICLE QUALITY",
+                type    = "select",
+                values  = { "LOW", "HIGH" },
+                callback = autoApplyCallback
+            },    
+            {
                 name    = "Infestation",
                 label   = "INFESTATION",
                 type    = "select",
@@ -1821,22 +1891,9 @@ local function BuildServerEntry(serverIndex)
     serverEntry.tickrate = Client.GetServerTickRate(serverIndex)
     serverEntry.serverId = serverIndex
     serverEntry.modded = Client.GetServerIsModded(serverIndex)
-    serverEntry.favorite = GetIsServerFavorite(serverEntry.address)
+    serverEntry.favorite = GetServerIsFavorite(serverEntry.address)
     
-    // Change name to display "rookie friendly" at the end of the line.
-    if serverEntry.rookieFriendly then
-    
-        local maxLen = 34
-        local separator = ConditionalValue(string.len(serverEntry.name) > maxLen, "... ", " ")
-        serverEntry.name = serverEntry.name:sub(0, maxLen) .. separator  .. Locale.ResolveString("ROOKIE_FRIENDLY")
-        
-    else
-    
-        local maxLen = 50
-        local separator = ConditionalValue(string.len(serverEntry.name) > maxLen, "... ", " ")
-        serverEntry.name = serverEntry.name:sub(0, maxLen) .. separator
-        
-    end
+    serverEntry.name = FormatServerName(serverEntry.name, serverEntry.rookieFriendly)
     
     return serverEntry
     
@@ -1847,31 +1904,39 @@ function GUIMainMenu:Update(deltaTime)
     PROFILE("GUIMainMenu:Update")
     
     if self:GetIsVisible() then
-
-        local currentTime = Client.GetTime();
+    
+        local currentTime = Client.GetTime()
         
-        // Refresh the mod list once every 5 seconds
+        // Refresh the mod list once every 5 seconds.
         self.timeOfLastRefresh = self.timeOfLastRefresh or currentTime
         if self.modsWindow:GetIsVisible() and currentTime - self.timeOfLastRefresh >= 5 then
+        
             self:RefreshModsList()
-            self.timeOfLastRefresh = currentTime;
+            self.timeOfLastRefresh = currentTime
+            
         end
-
+        
         self.tweetText:Update(deltaTime)
-    
+        
         local alertText = MainMenu_GetAlertMessage()
         if self.currentAlertText ~= alertText then
         
             self.currentAlertText = alertText
             
             if self.currentAlertText then
-                self.alertText:SetText(self.currentAlertText)
+            
+                local setAlertText = self.currentAlertText
+                if setAlertText:len() > 32 then
+                    setAlertText = setAlertText:sub(0, 32) .. "\n" .. setAlertText:sub(33, setAlertText:len())
+                end
+                self.alertText:SetText(setAlertText)
                 self.alertWindow:SetIsVisible(true)
+                
             end
             
         end
-    
-        // update only when visible
+        
+        // Update only when visible.
         GUIAnimatedScript.Update(self, deltaTime)
         self.playerName:SetText(OptionsDialogUI_GetNickname())
         
@@ -1881,13 +1946,6 @@ function GUIMainMenu:Update(deltaTime)
         
         if self.playWindow:GetIsVisible() then
         
-            if self.timeUpdateButtonPressed and self.timeUpdateButtonPressed + 10 < Shared.GetTime() then
-            
-                self.playWindow.updateButton:SetText("UPDATE")
-                self.timeUpdateButtonPressed = nil
-                
-            end
-            
             if not Client.GetServerListRefreshed() then
             
                 for s = 0, Client.GetNumServers() - 1 do
@@ -1895,14 +1953,28 @@ function GUIMainMenu:Update(deltaTime)
                     if s + 1 > self.numServers then
                     
                         local serverEntry = BuildServerEntry(s)
-                        self.serverList:AddEntry(serverEntry)
+                        if self.serverList:GetEntryExists(serverEntry) then
                         
-                        self.numServers = self.numServers + 1
+                            self.serverList:UpdateEntry(serverEntry)
+                            if GetServerIsFavorite(serverEntry.address) then
+                                UpdateFavoriteServerData(serverEntry)
+                            end
+                            
+                        else
+                        
+                            self.serverList:AddEntry(serverEntry)
+                            self.numServers = self.numServers + 1
+                            
+                        end
+                        
+                        
                         
                     end
                     
                 end
                 
+            else
+                self.playWindow.updateButton:SetText("UPDATE")
             end
             
             local countTxt = ToString(Client.GetNumServers()) .. (Client.GetServerListRefreshed() and "" or "...")

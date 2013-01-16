@@ -51,7 +51,8 @@ local techIdGridPosition =
 {
     
     [kTechId.AdvancedArmory] =      Vector(0, 1, 0),
-
+    [kTechId.HandGrenadesTech] =      Vector(1, 1, 0),
+    
     [kTechId.Weapons1] =            Vector(0, 2, 0),
 --  [kTechId.Weapons2] =            Vector(0, 2, 0),
 --  [kTechId.Weapons3] =            Vector(0, 2, 0),
@@ -508,7 +509,7 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
 
             if ArmorIdStrings[techIdString] then
 
-                self.gUpgradeIcons["Armor1"]:SetColor(self.kButtonStatusEnabled)
+                self.gUpgradeIcons["Armor1"]:SetColor(kIconColors[kTeam1Index])
 
                 self.gUpgradeIcons["Armor1"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, true)))
 
@@ -518,7 +519,7 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
 
             elseif WeaponsIdStrings[techIdString] then
 
-                self.gUpgradeIcons["Weapons1"]:SetColor(self.kButtonStatusEnabled)
+                self.gUpgradeIcons["Weapons1"]:SetColor(kIconColors[kTeam1Index])
 
                 self.gUpgradeIcons["Weapons1"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, true)))
 
@@ -528,7 +529,7 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
 
             elseif self.gUpgradeIcons[techIdString] then -- needed since there may be other research which isn't actually on the grid (like the fake entries)
 
-                self.gUpgradeIcons[techIdString]:SetColor(self.kButtonStatusEnabled)
+                self.gUpgradeIcons[techIdString]:SetColor(kIconColors[kTeam1Index])
 
                 if techIdString == "JetpackTech" then
 

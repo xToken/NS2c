@@ -177,7 +177,7 @@ local function ShootGrenade(self, player)
 
         startVelocity = startVelocity * 15
         startVelocity.y = startVelocity.y + 3
-
+        
         local angles = Angles(0,0,0)
         angles.yaw = GetYawFromVector(grenadeDirection)
         angles.pitch = GetPitchFromVector(grenadeDirection)

@@ -13,8 +13,6 @@ Script.Load("lua/Weapons/Alien/DropStructureAbility.lua")
 Script.Load("lua/Weapons/Alien/DropStructureAbility2.lua")
 Script.Load("lua/Weapons/Alien/Web.lua")
 Script.Load("lua/Weapons/Alien/BileBomb.lua")
-Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/BuildingMixin.lua")
@@ -33,8 +31,6 @@ local networkVars =
     sliding = "boolean"
 }
 
-AddMixinNetworkVars(BaseMoveMixin, networkVars)
-AddMixinNetworkVars(CustomGroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 
@@ -69,8 +65,6 @@ local kGorgeLeanSpeed = 2
 
 function Gorge:OnCreate()
 
-    InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
-    InitMixin(self, CustomGroundMoveMixin)
     InitMixin(self, CameraHolderMixin, { kFov = kGorgeFov })
     InitMixin(self, BuildingMixin)
     
@@ -102,6 +96,7 @@ function Gorge:OnInitialized()
     
         self:AddHelpWidget("GUIGorgeHealHelp", 2)
         self:AddHelpWidget("GUIGorgeBellySlideHelp", 2)
+        self:AddHelpWidget("GUIGorgeBuildMenuHelp", 2)
         
     end
     
@@ -238,7 +233,7 @@ local function UpdateGorgeSliding(self, input)
     // Have Gorge lean into turns depending on input. He leans more at higher rates of speed.
     if self:GetIsBellySliding() then
 
-        local desiredBellyYaw = 2 * (-input.move.x / kSlidingMoveInputScalar) * (self:GetVelocity():GetLength() / self:GetMaxSpeed())
+        local desiredBellyYaw = 2 * (-input.move.x / kSlidingMoveInputScalar) * (self:GetVelocity():GetLength() / self:GoldSrc_GetMaxSpeed())
         self.bellyYaw = Slerp(self.bellyYaw, desiredBellyYaw, input.time * kGorgeLeanSpeed)
         
     end
@@ -293,22 +288,6 @@ function Gorge:GoldSrc_GetMaxSpeed(possible)
         maxSpeed = Gorge.kMaxSlideSpeed
     end
     */
-    return maxSpeed * self:GetMovementSpeedModifier()
-    
-end
-
-function Gorge:GetMaxSpeed(possible)
-
-    if possible then
-        return Gorge.kMaxSpeed
-    end
-    
-    local maxSpeed = Gorge.kMaxSpeed
-
-    if self:GetIsBellySliding() then
-        maxSpeed = Gorge.kMaxSlideSpeed
-    end
-
     return maxSpeed * self:GetMovementSpeedModifier()
     
 end

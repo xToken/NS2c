@@ -913,7 +913,9 @@ local function OnCommandGoThere(client)
         if selected then
         
             Shared.Message(string.format("Giving order to %s-%s", selected:GetClassName(), selected:GetId()))
-            selected:GiveOrder(kTechId.Move, 0, target)
+            selected:GiveOrder(kTechId.Move, player:GetId(), target)
+            // Override the target Id to be invalidId so the AI unit doesn't follow the player.
+            selected:GetCurrentOrder():Initialize(kTechId.Move, Entity.invalidId, target, 0)
             
         else
             Shared.Message("No AI entitity available")
@@ -1043,6 +1045,23 @@ local function OnCommandBlackEdition(client)
 
 end
 
+local function OnCommandDevour(client)
+
+    if Shared.GetCheatsEnabled() then
+    
+        local player = client:GetControllingPlayer()
+        if player and player:isa("Marine") then
+            if not player:GetIsDevoured() then
+                player:OnDevoured(player)
+            else
+                player:OnDevouredEnd()
+            end 
+        end
+        
+    end   
+
+end
+
 // GC commands
 Event.Hook("Console_changegcsettingserver", OnCommandChangeGCSettingServer)
 
@@ -1125,5 +1144,6 @@ Event.Hook("Console_rupture", OnCommandRupture)
 Event.Hook("Console_makespecial", OnCommandMakeSpecialEdition)
 Event.Hook("Console_makegreen", OnCommandGreenEdition)
 Event.Hook("Console_makeblack", OnCommandBlackEdition)
-
+Event.Hook("Console_devour", OnCommandDevour)
+    
 Event.Hook("Console_debugcommander", OnCommandDebugCommander)

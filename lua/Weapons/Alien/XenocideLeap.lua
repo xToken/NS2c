@@ -11,8 +11,6 @@
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/BiteLeap.lua")
 
-local kRange = 1.4
-
 class 'XenocideLeap' (BiteLeap)
 
 XenocideLeap.kMapName = "xenocide"
@@ -83,10 +81,6 @@ function XenocideLeap:GetIconOffsetY(secondary)
         return kAbilityOffset.Bite
     end
     
-end
-
-function XenocideLeap:GetRange()
-    return kRange
 end
 
 function XenocideLeap:OnPrimaryAttack(player)

@@ -469,12 +469,16 @@ function GetBitMaskNumBits(bitMask)
     return math.ceil(math.log(bits) / math.log(2))
 end
 
+function Print(format, ...)
+    Shared.Message(string.format(format, ...))
+end
+
 // Can print one argument (string or not), or a string and variable list of parameters passed to string.format()
 // Print formatted message to console:
 // Print("%s %.2f", "Animation fraction:", .5)
 // Print(intValue)
 // Only prints in dev mode, or if SetPrintEnabled(true) and not predicting
-function Print(formatString, ...)
+function DebugPrint(formatString, ...)
 
     local result = string.format(formatString, ...)
 

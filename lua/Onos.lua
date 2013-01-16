@@ -15,8 +15,6 @@ Script.Load("lua/Weapons/Alien/Gore.lua")
 Script.Load("lua/Weapons/Alien/Devour.lua")
 Script.Load("lua/Weapons/Alien/Smash.lua")
 Script.Load("lua/Alien.lua")
-Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 
@@ -73,19 +71,14 @@ local networkVars =
 {
     stooping = "boolean",
     stoopIntensity = "compensated float",
-    charging = "private boolean",
-    devouring = "private entityid"
+    charging = "private boolean"
 }
 
-AddMixinNetworkVars(BaseMoveMixin, networkVars)
-AddMixinNetworkVars(CustomGroundMoveMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 
 function Onos:OnCreate()
 
-    InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
-    InitMixin(self, CustomGroundMoveMixin)
     InitMixin(self, CameraHolderMixin, { kFov = kOnosFov })
     
     Alien.OnCreate(self)
@@ -99,8 +92,6 @@ function Onos:OnCreate()
     self.timeLastCharge = 0
     self.timeLastChargeEnd = 0
     self.chargeSpeed = 0
-    self.devouring = 0
-    self.timeSinceLastDevourUpdate = 0
     
     if Client then    
         self:SetUpdates(true)
@@ -147,17 +138,6 @@ function Onos:GoldSrc_GetAcceleration()
     end
     
     return acceleration
-end
-
-function Onos:GetAcceleration()
-
-    local acceleration = Player.GetAcceleration()
-    if self.charging then
-        acceleration = acceleration + Onos.kChargeAcceleration * self:GetChargeFraction() 
-    end
-    
-    return acceleration
-    
 end
 
 function Onos:GetChargeFraction()
@@ -285,27 +265,6 @@ function Onos:GetMovePhysicsMask()
     return PhysicsMask.OnosMovement
 end
 
-function Onos:CheckEndDevour()
-
-    if self.devouring ~= 0 then
-        local food = Shared.GetEntity(self.devouring)
-        if food then
-            if food.OnDevouredEnd then
-                food:OnDevouredEnd()
-            end
-            if food.physicsModel then
-                food.physicsModel:SetCollisionEnabled(true)
-            end
-        end
-    end
-    self.devouring = 0
-    
-end
-
-function Onos:OnHiveTeleport()
-    self:CheckEndDevour()
-end
-
 function Onos:GetBaseArmor()
     return Onos.kArmor
 end
@@ -329,26 +288,6 @@ function Onos:GoldSrc_GetMaxSpeed(possible)
     end
     
     local maxSpeed = Onos.kMaxSpeed
-    
-    if self.charging then
-        maxSpeed = Onos.kMaxChargeSpeed
-    end
-
-    return maxSpeed * self:GetMovementSpeedModifier()
-
-end
-
-function Onos:GetMaxSpeed(possible)
-
-    if possible then
-        return Onos.kMaxSpeed
-    end
-    
-    local maxSpeed = Onos.kMaxSpeed
-    
-    if self:GetCrouching() and self.onGround then
-        maxSpeed = Onos.kMaxCrouchSpeed
-    end
     
     if self.charging then
         maxSpeed = Onos.kMaxChargeSpeed
@@ -426,41 +365,11 @@ function Onos:UpdateAutoCrouch(move)
 
 end
 
-function Onos:DevourUpdate()
-
-    if self.devouring ~= 0 then
-        local food = Shared.GetEntity(self.devouring)
-        local devour = self:GetWeapon("devour")
-        if food and devour then
-        
-            if self.timeSinceLastDevourUpdate + Devour.kDigestionSpeed < Shared.GetTime() then   
-                //Player still being eaten, damage them
-                self.timeSinceLastDevourUpdate = Shared.GetTime()
-                if devour:DoDamage(kDevourDamage , food, self:GetOrigin(), 0, "none" ) then
-                    if food.OnDevouredEnd then 
-                        food:OnDevouredEnd()
-                    end
-                    self.devouring = nil
-                end
-            end
-            
-            food:DestroyController()
-            //Always update players POS relative to the onos
-            food:SetOrigin(self:GetOrigin())
-        else
-            self.devouring = nil
-        end
-    end
-    
-end
-
 function Onos:OnProcessMove(input)
 
     PROFILE("Onos:OnProcessMove")
     
     Alien.OnProcessMove(self, input)
-    
-    self:DevourUpdate()
 
     if self.stooping then    
         self.stoopIntensity = math.min(1, self.stoopIntensity + Onos.kStoopingAnimationSpeed * input.time)
@@ -489,18 +398,6 @@ function Onos:OnUpdateCamera(deltaTime)
     
     if not self:GetIsJumping() then
         camOffsetHeight = -self:GetMaxViewOffsetHeight() * self:GetCrouchShrinkAmount() * self:GetCrouchAmount()
-    end
-    
-    if self:GetIsFirstPerson() then
-    
-        if not self:GetIsJumping() then
-        
-            //local movementScalar = Clamp((self:GetVelocity():GetLength() / self:GetMaxSpeed(true)), 0.0, 0.8)
-            //local bobbing = ( math.sin(Shared.GetTime() * 7) - 1 )
-            //camOffsetHeight = camOffsetHeight + kOnosHeadMoveAmount * movementScalar * bobbing
-            
-        end
-        
     end
     
     self:SetCameraYOffset(camOffsetHeight)

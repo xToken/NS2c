@@ -104,4 +104,8 @@ kAlienRegenerationTime = 2
 kAlienInnateRegenerationPercentage  = 0.02
 kAlienRegenerationPercentage = 0.09
 
+//Severe Flinch Effects
+kFlinchDamageInterval = 0.1
+kFlinchDamagePercent = 0.30
+
 kAbilityMaxEnergy = 100

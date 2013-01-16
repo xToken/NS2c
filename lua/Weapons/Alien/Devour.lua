@@ -12,24 +12,19 @@ class 'Devour' (Ability)
 
 Devour.kMapName = "devour"
 
-//Digest too fast and youll hurt your stomache
-Devour.kDigestionSpeed = 1
-local kAttackRadius = 1.5
-local kAttackOriginDistance = 2
-local kAttackRange = 1.5
-
 local kAnimationGraph = PrecacheAsset("models/alien/onos/onos_view.animation_graph")
 
 local networkVars =
 {
-    lastPrimaryAttackTime = "time"
+    lastPrimaryAttackTime = "time",
+    devouring = "private entityid"
 }
 
 AddMixinNetworkVars(StompMixin, networkVars)
 
 local function GetHasAttackDelay(self, player)
 
-    local attackDelay = ConditionalValue( player:GetIsPrimaled(), (kDevourDelay / kPrimalScreamROFIncrease), kDevourDelay)
+    local attackDelay = ConditionalValue( player:GetIsPrimaled(), (kDevourAttackDelay / kPrimalScreamROFIncrease), kDevourAttackDelay)
     return self.lastPrimaryAttackTime + attackDelay > Shared.GetTime()
     
 end
@@ -51,6 +46,7 @@ function Devour:OnCreate()
     end
     self.timeSinceLastDevourUpdate = 0
     self.lastPrimaryAttackTime = 0
+    self.devouring = 0
     
 end
 
@@ -79,6 +75,14 @@ function Devour:OnHolster(player)
     self:OnAttackEnd()
 end
 
+function Devour:GetRange()
+    return kDevourRange
+end
+
+function Devour:GetMeleeBase()
+    return kDevourMeleeBaseWidth, kDevourMeleeBaseHeight
+end
+
 function Devour:GetIconOffsetY(secondary)
     return kAbilityOffset.Gore
 end
@@ -93,8 +97,7 @@ function Devour:OnTag(tagName)
         if player and not GetHasAttackDelay(self, player) then
         
             self.lastPrimaryAttackTime = Shared.GetTime()
-            //local didHit, impactPoint, target = self:Attack(player)
-            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kDevourInitialDamage, kAttackRange)
+            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kDevourInitialDamage, self:GetRange())
             self.lastPrimaryAttackTime = Shared.GetTime()
             self:TriggerEffects("gore_attack")
             player:DeductAbilityEnergy(self:GetEnergyCost())
@@ -115,9 +118,9 @@ function Devour:Devour(player, target)
     end
 
     if allowed then
-        player.devouring = target:GetId()
+        self.devouring = target:GetId()
         if target.OnDevoured then
-            target:OnDevoured()
+            target:OnDevoured(player)
         end
     end
     
@@ -125,11 +128,7 @@ end
 
 //Silly onos, you cant eat multiple marines at once
 function Devour:IsAlreadyEating()
-    local player = self:GetParent()
-    if player then
-        return player.devouring ~= 0
-    end
-    return false
+    return self.devouring ~= 0
 end
 
 function Devour:OnPrimaryAttack(player)
@@ -166,6 +165,55 @@ function Devour:OnUpdateAnimationInput(modelMixin)
     modelMixin:SetAnimationInput("ability", abilityString) 
     modelMixin:SetAnimationInput("activity", activityString)
     modelMixin:SetAnimationInput("attack_marine", attackMarine)
+    
+end
+
+if Server then
+
+    function Devour:OnProcessMove(input)
+        if self.devouring ~= 0 then
+            local food = Shared.GetEntity(self.devouring)
+            local player = self:GetParent()
+            if food and player and player:GetIsAlive() then
+                if self.timeSinceLastDevourUpdate + kDevourDigestionSpeed < Shared.GetTime() then   
+                    //Player still being eaten, damage them
+                    self.timeSinceLastDevourUpdate = Shared.GetTime()
+                    player:AddHealth(kDevourHealthPerSecond)
+                    if self:DoDamage(kDevourDamage, food, self:GetOrigin(), 0, "none") then
+                        if food.OnDevouredEnd then 
+                            food:OnDevouredEnd()
+                        end
+                        self.devouring = 0
+                    end
+                end
+            else
+                self.devouring = 0
+            end
+        end
+    end
+
+    local function EndDevour(self)
+        if self.devouring ~= 0 then
+            local food = Shared.GetEntity(self.devouring)
+            if food and food.OnDevouredEnd then
+                food:OnDevouredEnd()
+            end
+        end
+        self.devouring = 0
+    end
+
+    function Devour:OnDestroy()
+        Ability.OnDestroy(self)        
+        EndDevour(self)
+    end
+    
+    function Devour:OnKillPlayer(player, killer, doer, point, direction)   
+        EndDevour(self)    
+    end
+    
+    function Devour:OnForceUnDevour()    
+        EndDevour(self)
+    end
     
 end
 
