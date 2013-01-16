@@ -14,11 +14,6 @@ Script.Load("lua/Weapons/ClientWeaponEffectsMixin.lua")
 
 Shared.PrecacheSurfaceShader("materials/effects/mesh_effects/view_blood.surface_shader")
 
-// kRange is now the range from eye to edge of attack range, ie its independent of the size of
-// the melee box, so for the skulk, it needs to increase to 1.2 to say at its previous range.
-// previously this value had an offset, which caused targets to be behind the melee attack (too close to the target and you missed)
-local kRange = 1.6
-
 local kStructureHitEffect = PrecacheAsset("cinematics/alien/lerk/bite_view_structure.cinematic")
 local kMarineHitEffect = PrecacheAsset("cinematics/alien/lerk/bite_view_marine.cinematic")
 
@@ -89,7 +84,7 @@ function LerkBitePrimal:GetSecondaryTechId()
 end
 
 function LerkBitePrimal:GetRange()
-    return kRange
+    return kLerkBiteRange
 end
 
 function LerkBitePrimal:GetIconOffsetY(secondary)
@@ -143,7 +138,7 @@ function LerkBitePrimal:GetEffectParams(tableParams)
 end
 
 function LerkBitePrimal:GetMeleeBase()
-    return Weapon.kMeleeBaseWidth, 1
+    return kLerkBiteMeleeBaseWidth, kLerkBiteMeleeBaseHeight
 end
 
 function LerkBitePrimal:GetMeleeOffset()
@@ -163,7 +158,7 @@ function LerkBitePrimal:OnTag(tagName)
             player:DeductAbilityEnergy(self:GetEnergyCost())            
             self:TriggerEffects("lerkbite_attack")
             self.lastPrimaryAttackTime = Shared.GetTime()    
-            local didHit, target = AttackMeleeCapsule(self, player, kLerkBiteDamage, kRange)
+            local didHit, target = AttackMeleeCapsule(self, player, kLerkBiteDamage, self:GetRange())
             
             if didHit and target then
             

@@ -242,7 +242,7 @@ kAlienWeaponEffects =
     {
         blinkInEffects =
         {        
-            {player_cinematic = "cinematics/alien/fade/blink_in_silent.cinematic", done = true},    
+            //{player_cinematic = "cinematics/alien/fade/blink_in_silent.cinematic", done = true},
         },
     },
 
@@ -250,9 +250,10 @@ kAlienWeaponEffects =
     {
         blinkOutEffects =
         {   
-            {sound = "", silenceupgrade = true, done = true},  
+            {sound = "", silenceupgrade = true, done = true},
+            {stop_sound = "sound/ns2c.fev/ns2c/alien/fade/blink"},
             {sound = "sound/ns2c.fev/ns2c/alien/fade/blink"},  
-            {player_cinematic = "cinematics/alien/fade/blink_out_silent.cinematic", done = true},
+            //{player_cinematic = "cinematics/alien/fade/blink_out_silent.cinematic", done = true},
         },
     },
     

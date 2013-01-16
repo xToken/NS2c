@@ -84,8 +84,10 @@ function Marine:OnInitLocalClient()
 
 		if self.requestMenu == nil then
             self.requestMenu = GetGUIManager():CreateGUIScript("GUIRequestMenu")
+        end
         
-
+        if self.devouredscreen == nil then
+            self.devouredscreen = GetGUIManager():CreateGUIScript("GUIMarineDevoured")
         end
         
     end

@@ -17,8 +17,6 @@ Axe.kModelName = PrecacheAsset("models/marine/axe/axe.model")
 Axe.kViewModelName = PrecacheAsset("models/marine/axe/axe_view.model")
 local kAnimationGraph = PrecacheAsset("models/marine/axe/axe_view.animation_graph")
 
-local kRange = 0.7
-
 local networkVars =
 {
     sprintAllowed = "boolean",
@@ -53,7 +51,7 @@ function Axe:GetHUDSlot()
 end
 
 function Axe:GetRange()
-    return kRange
+    return kAxeRange
 end
 
 // Max degrees that weapon can swing left or right
@@ -71,6 +69,11 @@ end
 
 function Axe:GetDeathIconIndex()
     return kDeathMessageIcon.Axe
+end
+
+function Axe:GetMeleeBase()
+    // Width of box, height of box
+    return kAxeMeleeBaseWidth, kAxeMeleeBaseHeight
 end
 
 function Axe:OnDraw(player, previousWeaponMapName)

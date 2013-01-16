@@ -123,7 +123,8 @@ function Observatory:OnCreate()
     
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
-    self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)  
+    self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
+    self.distressorigin = nil
     
 end
 
@@ -219,10 +220,10 @@ end
 
 function Observatory:GetDistressOrigin()
 
-    // Respawn at nearest built command station
+    // Respawn at nearest occupied command station
     local origin = self:GetModelOrigin()
     
-    local nearest = GetNearest(origin, "CommandStation", self:GetTeamNumber(), function(ent) return ent:GetIsBuilt() end)
+    local nearest = GetNearest(origin, "CommandStation", self:GetTeamNumber(), function(ent) return ent:GetIsBuilt() and ent:GetIsOccupied() end)
     if nearest then
         origin = nearest:GetModelOrigin()
     end
@@ -257,6 +258,7 @@ function Observatory:TriggerDistressBeacon()
         self.distressBeaconSoundAlien:Start()
         
         local origin = self:GetDistressOrigin()
+        self.distressorigin = origin
         self.distressBeaconSoundMarine:SetOrigin(origin)
         self.distressBeaconSoundAlien:SetOrigin(origin)
         
@@ -285,6 +287,7 @@ end
 function Observatory:CancelDistressBeacon()
 
     self.distressBeaconTime = nil
+    self.distressorigin = nil
     self.distressBeaconSoundMarine:Stop()
     self.distressBeaconSoundAlien:Stop()
 
@@ -363,7 +366,8 @@ function Observatory:PerformDistressBeacon()
     
     local anyPlayerWasBeaconed = false
     
-    local distressOrigin = self:GetDistressOrigin()
+    //local distressOrigin = self:GetDistressOrigin()
+    local distressOrigin = self.distressorigin
     for index, player in ipairs(GetPlayersToBeacon(self, distressOrigin)) do
         local success = false
         if player:GetIsAlive() then
@@ -381,7 +385,7 @@ function Observatory:PerformDistressBeacon()
     //for index, ip in ipairs(GetEntitiesForTeamWithinRange("InfantryPortal", self:GetTeamNumber(), distressOrigin, kInfantryPortalAttachRange + 1)) do
         //ip:FinishSpawn()
     //end
-       
+    self.distressorigin = nil   
     // Play mega-spawn sound in world.
     if anyPlayerWasBeaconed then
         self:TriggerEffects("distress_beacon_complete")

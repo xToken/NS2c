@@ -22,19 +22,11 @@ local networkVars =
 {
 }
 
-function Blink:OnInitialized()
-
-    Ability.OnInitialized(self)
-
-    self.secondaryAttacking = false
-    
-end
-
 function Blink:OnHolster(player)
 
     Ability.OnHolster(self, player)
     
-    //self:SetEthereal(player, false)
+    self:SetEthereal(player, false)
     
 end
 
@@ -47,11 +39,11 @@ function Blink:GetSecondaryAttackRequiresPress()
 end
 
 function Blink:TriggerBlinkOutEffects(player)
-    self:TriggerEffects("blink_out", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
+    player:TriggerEffects("blink_out")
 end
 
 function Blink:TriggerBlinkInEffects(player)
-    self:TriggerEffects("blink_in", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
+    player:TriggerEffects("blink_in")
 end
 
 function Blink:GetIsBlinking()
@@ -78,7 +70,7 @@ end
 function Blink:OnSecondaryAttack(player)
 
     if self:GetBlinkAllowed() then
-        self.secondaryAttacking = true
+        self:SetEthereal(player, true)
     end
     
     Ability.OnSecondaryAttack(self, player)
@@ -93,13 +85,10 @@ function Blink:OnSecondaryAttackEnd(player)
     
     Ability.OnSecondaryAttackEnd(self, player)
     
-    self.secondaryAttacking = false
-    
 end
 
 function Blink:SetEthereal(player, state)
 
-    // Enter or leave invulnerable invisible fast-moving mode
     if player.ethereal ~= state then
     
         if state then
@@ -112,17 +101,10 @@ function Blink:SetEthereal(player, state)
         
         player.ethereal = state
         
-        // Give player initial velocity in direction we're pressing, or forward if not pressing anything.
         if player.ethereal then
-            
-            // Deduct blink start energy amount.
-            player:DeductAbilityEnergy(kStartBlinkEnergyCost)
             player:OnBlink()
-        
         else
-            
-            player:OnBlinkEnd()
-            
+            player:OnBlinkEnd()  
         end
         
     end
@@ -130,7 +112,7 @@ function Blink:SetEthereal(player, state)
 end
 
 function Blink:ProcessMoveOnWeapon(player, input)
-    if not self.secondaryAttacking then
+    if not player.ethereal then
         return
     end
     
@@ -147,7 +129,6 @@ function Blink:ProcessMoveOnWeapon(player, input)
             // Just pressed blink, play effect
             self:TriggerBlinkInEffects(player)
         end
-        
     end
     
 end

@@ -81,6 +81,11 @@ function ReadyRoomTeam:ReplaceRespawnPlayer(player, origin, angles)
     
     newPlayer:ClearGameEffects()
     
+    // Holiday 2012
+    if not newPlayer:GetWeapon(SnowBallThrower.kMapName) then
+        newPlayer:GiveItem(SnowBallThrower.kMapName)
+    end
+    
     return (newPlayer ~= nil), newPlayer
     
 end

@@ -107,9 +107,9 @@ if Client then
                                 if ent:isa("CommandStation") and ent:GetIsBuilt() then
                                     hintText = "START_COMMANDING"
                                 elseif ent:isa("PhaseGate") and ent:GetIsBuilt() then
-									hintText = "MARINE_USE_PHASE"
+									hintText = kNS2cLocalizedStrings.MARINE_USE_PHASE
 								else
-								    hintText = "MARINE_CONSTRUCT"
+								    hintText = kNS2cLocalizedStrings.MARINE_CONSTRUCT
                                 end
 
                                 self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Use"), nil, hintText)

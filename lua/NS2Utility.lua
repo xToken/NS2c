@@ -926,7 +926,7 @@ function GetCanSeeEntity(seeingEntity, targetEntity, considerObstacles)
         
         if withinFOV then
         
-            local filter = EntityFilterAll()
+            local filter = EntityFilterAllButIsa("Door") // EntityFilterAll()
             if considerObstacles then
                 filter = EntityFilterTwo(seeingEntity, targetEntity)
             end
@@ -1100,7 +1100,7 @@ function SetPlayerPoseParameters(player, viewModel)
     local z = Math.DotProduct(viewCoords.zAxis, velocity)
     
     local moveYaw = Math.Wrap(Math.Degrees( math.atan2(z,x) * orientation ), -180, 180)
-    local speedScalar = velocity:GetLength() / player:GetMaxSpeed(true)
+    local speedScalar = velocity:GetLength() / player:GoldSrc_GetMaxSpeed(true)
     
     player:SetPoseParam("move_yaw", moveYaw)
     player:SetPoseParam("move_speed", speedScalar)
@@ -1906,6 +1906,7 @@ end
 
 -- add comma to separate thousands
 function CommaValue(amount)
+
     local formatted = ""
     if amount ~= nil then
         formatted = amount
@@ -1917,6 +1918,24 @@ function CommaValue(amount)
         end
     end
     return formatted
+    
+end
+
+/**
+ * Trim off unnecessary path and extension.
+ */
+function GetTrimmedMapName(mapName)
+
+    if mapName == nil then
+        return ""
+    end
+    
+    for trimmedName in string.gmatch(mapName, [[\/(.+)\.level]]) do
+        return trimmedName
+    end
+    
+    return mapName
+    
 end
 
 // Look for "BIND_" in the string and substitute with key to press

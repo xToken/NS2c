@@ -1804,8 +1804,8 @@ function Player:OnInitLocalClient()
     // Set commander geometry visible
     Client.SetGroupIsVisible(kCommanderInvisibleGroupName, true)
     
-    Client.SetEnableFog(false)
-    Shared.ConsoleCommand("r_fog false")
+    //Client.SetEnableFog(false)
+    //Shared.ConsoleCommand("r_fog false")
     
     local loopingIdleSound = self:GetIdleSoundName()
     if loopingIdleSound then

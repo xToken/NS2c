@@ -149,7 +149,7 @@ AddFunctionContract(ConstructMixin.OnProcessMove, { Arguments = { "Entity", "Mov
 
 function ConstructMixin:OnUpdateAnimationInput(modelMixin)
 
-    PROFILE("ConstructMixin:OnUpdateAnimationInput")
+    PROFILE("ConstructMixin:OnUpdateAnimationInput")    
     modelMixin:SetAnimationInput("built", self.constructionComplete)
     modelMixin:SetAnimationInput("active", self.constructionComplete) // TODO: remove this and adjust animation graphs
     
