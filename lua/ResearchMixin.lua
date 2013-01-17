@@ -151,11 +151,19 @@ function ResearchMixin:ClearResearch()
     self.timeResearchStarted = 0
     self.timeResearchComplete = 0
     self.researchProgress = 0
-
+    
 end
 
 function ResearchMixin:GetIsResearching()
-    return self:GetResearchProgress() ~= 0
+
+    local researchProgress = self:GetResearchProgress()
+    // Note: We need to treat 1 as "not researching" as there
+    // is a delay in the tech tree code that means the entity will
+    // have a researchProgress of 1 for longer than we would expect.
+    // This delay allows the player to cancel research before the
+    // tech tree updates and get a free research.
+    return researchProgress > 0 and researchProgress < 1
+    
 end
 
 function ResearchMixin:GetIsManufacturing()
@@ -334,15 +342,15 @@ function ResearchMixin:TechResearched(structure, researchId)
     if structure and structure:GetId() == self:GetId() then
     
         local researchNode = self:GetTeam():GetTechTree():GetTechNode(researchId)
-        if researchNode and (researchNode:GetIsEnergyManufacture() or researchNode:GetIsManufacture() or researchNode:GetIsPlasmaManufacture()) then        
-
-            // Handle manufacture actions        
+        if researchNode and (researchNode:GetIsEnergyManufacture() or researchNode:GetIsManufacture() or researchNode:GetIsPlasmaManufacture()) then
+        
+            // Handle manufacture actions
             self:CreateManufactureEntity(researchId)
             
         elseif self.OnResearchComplete then
             self:OnResearchComplete(researchId)
         end
-    
+        
         self:ClearResearch()
         
     end

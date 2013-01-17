@@ -248,6 +248,7 @@ function Alien:OnInitialized()
     
     if Server then
     
+        //UpdateAbilityAvailability(self, self:GetTierOneTechId(), self:GetTierTwoTechId(), self:GetTierThreeTechId())
         self:UpdateNumHives()
         
         // This Mixin must be inited inside this OnInitialized() function.

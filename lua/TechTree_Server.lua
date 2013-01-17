@@ -534,6 +534,31 @@ function TechTree:TriggerQueuedResearchComplete()
     
 end
 
+function TechTree:GetIsResearchQueued(techId)
+
+    if self.queuedOnResearchComplete then
+    
+        for r = 1, #self.queuedOnResearchComplete do
+        
+            local queuedResearch = self.queuedOnResearchComplete[r]
+            local entId = queuedResearch[1]
+            local researchId = queuedResearch[2]
+            if techId == researchId then
+                return true
+            end
+            
+        end
+        
+    end
+    
+    return false
+    
+end
+
+function TechTree:GetNumberOfQueuedResearch()
+    return self.queuedOnResearchComplete and #self.queuedOnResearchComplete or 0
+end
+
 function TechTree:Update(techIdList, techIdCount)
 
     // Only compute if needed

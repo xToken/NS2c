@@ -16,6 +16,9 @@ kMarineTeamType = 1
 kAlienTeamType = 2
 kRandomTeamType = 3
 
+// after 5 minutes players are allowed to give up a round
+kTimeGiveupPossible = 5 * 60
+
 // Team colors
 kMarineFontName = "fonts/AgencyFB_large.fnt"
 kMarineFontColor = Color(0.756, 0.952, 0.988, 1)
@@ -283,10 +286,6 @@ kMouseSensitivityScalar         = 50
 kPlayerUseRange = 2
 kMaxPitch = (math.pi / 2) - math.rad(3)
 
-// Pathing flags
-kPathingFlags = enum ({'UnBuildable', 'UnPathable', 'Blockable'})
-
-// How far from the order location must units be to complete it.
 kAIMoveOrderCompleteDistance = 0.01
 kPlayerMoveOrderCompleteDistance = 1.5
 

@@ -67,11 +67,14 @@ Script.Load("lua/Ladder.lua")
 Script.Load("lua/MinimapExtents.lua")
 Script.Load("lua/DeathTrigger.lua")
 Script.Load("lua/TimedEmitter.lua")
+Script.Load("lua/ButtonEmitter.lua")
+Script.Load("lua/PropDynamicAnimator.lua")
 Script.Load("lua/Gamerules.lua")
 Script.Load("lua/NS2Gamerules.lua")
 Script.Load("lua/TechPoint.lua")
 Script.Load("lua/BaseSpawn.lua")
 Script.Load("lua/ReadyRoomSpawn.lua")
+Script.Load("lua/Pheromone.lua")
 Script.Load("lua/Weapons/ViewModel.lua")
 
 // Marine structures
@@ -137,8 +140,6 @@ Script.Load("lua/Weapons/Marine/GrenadeLauncher.lua")
 Script.Load("lua/Weapons/Marine/Mines.lua")
 Script.Load("lua/Weapons/Marine/Welder.lua")
 Script.Load("lua/Weapons/Marine/HandGrenades.lua")
-// Holiday 2012
-Script.Load("lua/Weapons/SnowBallThrower.lua")
 
 Script.Load("lua/NS2Utility.lua")
 Script.Load("lua/WeaponUtility.lua")

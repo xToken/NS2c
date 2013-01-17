@@ -13,6 +13,7 @@ Script.Load("lua/ExtentsMixin.lua")
 Script.Load("lua/OwnerMixin.lua")
 Script.Load("lua/TechMixin.lua")
 Script.Load("lua/TargetMixin.lua")
+Script.Load("lua/UsableMixin.lua")
 
 class 'ScriptActor' (Actor)
 
@@ -68,6 +69,7 @@ function ScriptActor:OnCreate()
     
     InitMixin(self, ExtentsMixin)
     InitMixin(self, TargetMixin)
+    InitMixin(self, UsableMixin)
     
 end
 
@@ -251,14 +253,8 @@ function ScriptActor:GetCanBeUsed(player, useSuccessTable)
     
 end
 
-// To require that the entity needs to be used a certain point, return the name
-// of an attach point here
-function ScriptActor:GetUseAttachPoint()
-    return ""
-end
-
-function ScriptActor:GetUseAttachPoint2()
-    return ""
+function ScriptActor:GetUsablePoints()
+    return nil
 end
 
 function ScriptActor:ForEachChild(functor)

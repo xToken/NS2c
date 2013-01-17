@@ -703,9 +703,6 @@
     <filename>UpgradeStructureManager.lua</filename>
   </file>
   <file>
-    <filename>Utility.lua</filename>
-  </file>
-  <file>
     <filename>VoteManager.lua</filename>
   </file>
   <file>

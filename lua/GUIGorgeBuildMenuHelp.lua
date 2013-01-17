@@ -44,7 +44,6 @@ function GUIGorgeBuildMenuHelp:Update(dt)
     GUIAnimatedScript.Update(self, dt)
     
     self.keyBackground:SetIsVisible(false)
-    self.attackKeyBackground:SetIsVisible(false)
     
     if not self.buildmenuUsed then
     
@@ -58,6 +57,7 @@ function GUIGorgeBuildMenuHelp:Update(dt)
             
             // Show the switch weapon key until they change to the build menu.
             local BuildMenuEquipped = player:GetActiveWeapon() and player:GetActiveWeapon():isa("DropStructureAbility")
+            self.keyBackground:SetIsVisible(BuildMenuEquipped ~= true)
             if BuildMenuEquipped then
             
                 self.keyBackground:SetIsVisible(false)

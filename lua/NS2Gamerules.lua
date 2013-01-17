@@ -125,6 +125,9 @@ if Server then
                 SendTeamMessage(self.team1, kTeamMessageTypes.GameStarted)
                 SendTeamMessage(self.team2, kTeamMessageTypes.GameStarted)
                 
+                // Reset disconnected player resources when a game starts to prevent shenanigans.
+                self.disconnectedPlayerResources = { }
+                
             end
             
             // On end game, check for map switch conditions
@@ -412,7 +415,7 @@ if Server then
         self.team2:OnEntityKilled(targetEntity, attacker, doer, point, direction)
         self.worldTeam:OnEntityKilled(targetEntity, attacker, doer, point, direction)
         self.spectatorTeam:OnEntityKilled(targetEntity, attacker, doer, point, direction)
-        
+
     end
 
     // logs out any players currently as the commander
@@ -734,8 +737,17 @@ if Server then
     
     // Commander ejection functionality
     function NS2Gamerules:CastVoteByPlayer( voteTechId, player )
-
-        if voteTechId == kTechId.VoteDownCommander1 or voteTechId == kTechId.VoteDownCommander2 or voteTechId == kTechId.VoteDownCommander3 then
+    
+        if voteTechId == kTechId.VoteConcedeRound then
+        
+            if self.timeSinceGameStateChanged > kTimeGiveupPossible and self:GetGameStarted() then
+            
+                local team = player:GetTeam()
+                team:VoteToGiveUp(player)
+                
+            end
+        
+        elseif voteTechId == kTechId.VoteDownCommander1 or voteTechId == kTechId.VoteDownCommander2 or voteTechId == kTechId.VoteDownCommander3 then
 
             // Get the 1st, 2nd or 3rd commander by entity order (does this on client as well)    
             local playerIndex = (voteTechId - kTechId.VoteDownCommander1 + 1)        
@@ -873,6 +885,7 @@ if Server then
                 self:UpdateTechPoints()
                 
                 CheckForNoCommander(self, self.team1, "MarineCommander")
+                CheckForNoCommander(self, self.team2, "AlienCommander")
                 
             end
             
@@ -935,7 +948,7 @@ if Server then
             
             // Automatically end any performance logging when the round has ended.
             Shared.ConsoleCommand("p_endlog")
-            
+
         end
         
     end
@@ -1130,11 +1143,11 @@ if Server then
             end
             
             newPlayer:TriggerEffects("join_team")
-            
-            return success, newPlayer
+
+			return success, newPlayer
             
         end
-        
+
         // Return old player
         return success, player
         
@@ -1270,7 +1283,6 @@ if Server then
                 self.team2:PlayPrivateTeamSound(ConditionalValue(self.team2:GetTeamType() == kAlienTeamType, NS2Gamerules.kAlienStartSound, NS2Gamerules.kMarineStartSound))
                 
                 self:SetGameState(kGameState.Started)
-                
             end
             
         end

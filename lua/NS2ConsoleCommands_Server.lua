@@ -877,67 +877,6 @@ local function OnCommandTestOrder(client)
 
 end
 
-// call for the nearest AI unit to come to your location. Useful when testing pathing/animation
-local function OnCommandGoThere(client)
-    
-    if Shared.GetCheatsEnabled() then
-    
-        local player = client:GetControllingPlayer()
-        // find where player is looking
-        local eyePos = player:GetEyePos()
-        local endPos = eyePos + player:GetViewAngles():GetCoords().zAxis * 50
-        local trace = Shared.TraceRay(eyePos, endPos, CollisionRep.Default, PhysicsMask.Bullets, EntityFilterAll())
-        local target = trace.endPoint
-        
-        local ents = Shared.GetEntitiesWithClassname("ScriptActor")
-        
-        local selected = nil
-        local selectedRange = 0
-        
-        for i,entity in ientitylist(ents) do
-        
-            if entity:isa("Whip") or entity:isa("Drifter") or entity:isa("MAC") or entity:isa("ARC") then
-            
-                local r = (entity:GetOrigin() - target):GetLength()           
-                if not selected or r < selectedRange then
-                
-                    selected = entity 
-                    selectedRange = r
-                    
-                end
-                
-            end
-            
-        end
-        
-        if selected then
-        
-            Shared.Message(string.format("Giving order to %s-%s", selected:GetClassName(), selected:GetId()))
-            selected:GiveOrder(kTechId.Move, player:GetId(), target)
-            // Override the target Id to be invalidId so the AI unit doesn't follow the player.
-            selected:GetCurrentOrder():Initialize(kTechId.Move, Entity.invalidId, target, 0)
-            
-        else
-            Shared.Message("No AI entitity available")
-        end
-        
-    end
-    
-end
-
-local function OnCommandRupture(client, classname)
-
-    if Shared.GetCheatsEnabled() then
-        
-            local player = client:GetControllingPlayer()
-            if player and player:isa("Marine") then            
-                player:SetRuptured()            
-            end
-        
-    end
-    
-end
-
 local function OnCommandCommanderPing(client, classname)
 
     if Shared.GetCheatsEnabled() then
@@ -1138,9 +1077,7 @@ Event.Hook("Console_eject", OnCommandEject)
 Event.Hook("Console_target", OnCommandTarget)
 Event.Hook("Console_hastech", OnCommandHasTech)
 Event.Hook("Console_eggspawntimes", OnCommandEggSpawnTimes)
-Event.Hook("Console_gothere", OnCommandGoThere)
 
-Event.Hook("Console_rupture", OnCommandRupture)
 Event.Hook("Console_makespecial", OnCommandMakeSpecialEdition)
 Event.Hook("Console_makegreen", OnCommandGreenEdition)
 Event.Hook("Console_makeblack", OnCommandBlackEdition)

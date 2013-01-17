@@ -1038,10 +1038,11 @@ end
 function PlayerUI_GetMinimapPlayerDirection()
 
     local player = Client.GetLocalPlayer()
-    if player then
-        local coords = player:GetViewAngles():GetCoords().zAxis
-        return math.atan2(coords.x, coords.z)
+    
+    if player then    
+        return player:GetDirectionForMinimap()        
     end
+    
     return 0
 
 end
@@ -2592,6 +2593,17 @@ function PlayerUI_GetOrigin()
     
     return Vector(0, 0, 0)
     
+end
+
+function PlayerUI_GetPositionOnMinimap()
+
+    local player = Client.GetLocalPlayer()    
+    if player ~= nil then
+        return player:GetPositionForMinimap()
+    end
+    
+    return Vector(0, 0, 0)
+
 end
 
 function PlayerUI_GetYaw()
