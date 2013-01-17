@@ -11,6 +11,7 @@ decoda_name = "Client"
 
 Script.Load("lua/Shared.lua")
 Script.Load("lua/Effect.lua")
+Script.Load("lua/AmbientSound.lua")
 Script.Load("lua/GhostModelUI.lua")
 Script.Load("lua/Render.lua")
 Script.Load("lua/MapEntityLoader.lua")
@@ -47,6 +48,7 @@ Shared.PrecacheSurfaceShader("shaders/Model_alpha.surface_shader")
 Client.propList = { }
 Client.lightList = { }
 Client.skyBoxList = { }
+Client.ambientSoundList = { }
 Client.tracersList = { }
 Client.fogAreaModifierList = { }
 Client.rules = { }
@@ -115,6 +117,14 @@ function DestroyLevelObjects()
         end
         Client.billboardList = { }
     end
+    
+    // Remove the decals.  
+    if Client.decalList ~= nil then  
+        for index, decal in ipairs(Client.decalList) do
+            Client.DestroyRenderDecal(decal)
+        end
+        Client.decalList = { }
+    end
 
     // Remove the reflection probes.
     if Client.reflectionProbeList ~= nil then
@@ -140,6 +150,10 @@ function DestroyLevelObjects()
     Client.skyBoxList = { }
     
     Client.tracersList = { }
+    for a = 1, #Client.ambientSoundList do
+        Client.ambientSoundList[a]:OnDestroy()
+    end
+    Client.ambientSoundList = { }
     Client.rules = { }
     
 end
@@ -187,13 +201,13 @@ function OnMapLoadEntity(className, groupName, values)
     elseif className == "fog_controls" then
     
         Client.globalFogControls = values
-        Client.SetZoneFogDepthScale(RenderScene.Zone_ViewModel, 0.0 / values.view_zone_scale)
+        Client.SetZoneFogDepthScale(RenderScene.Zone_ViewModel, 1.0 / values.view_zone_scale)
         Client.SetZoneFogColor(RenderScene.Zone_ViewModel, values.view_zone_color)
         
-        Client.SetZoneFogDepthScale(RenderScene.Zone_SkyBox, 0.0 / values.skybox_zone_scale)
+        Client.SetZoneFogDepthScale(RenderScene.Zone_SkyBox, 1.0 / values.skybox_zone_scale)
         Client.SetZoneFogColor(RenderScene.Zone_SkyBox, values.skybox_zone_color)
         
-        Client.SetZoneFogDepthScale(RenderScene.Zone_Default, 0.0 / values.default_zone_scale)
+        Client.SetZoneFogDepthScale(RenderScene.Zone_Default, 1.0 / values.default_zone_scale)
         Client.SetZoneFogColor(RenderScene.Zone_Default, values.default_zone_color)
         
     elseif className == "fog_area_modifier" then
@@ -229,11 +243,11 @@ function OnMapLoadEntity(className, groupName, values)
         
         local repeatStyle = Cinematic.Repeat_None
         
-        if (values.repeatStyle == 0) then
+        if values.repeatStyle == 0 then
             repeatStyle = Cinematic.Repeat_None
-        elseif (values.repeatStyle == 1) then
+        elseif values.repeatStyle == 1 then
             repeatStyle = Cinematic.Repeat_Loop
-        elseif (values.repeatStyle == 2) then
+        elseif values.repeatStyle == 2 then
             repeatStyle = Cinematic.Repeat_Endless
         end
         
@@ -250,19 +264,18 @@ function OnMapLoadEntity(className, groupName, values)
         cinematic:SetRepeatStyle(repeatStyle)
         table.insert(Client.cinematics, cinematic)
         
-    //elseif className == AmbientSound.kMapName then
+    elseif className == "ambient_sound" then
     
-        //local entity = AmbientSound()
-        //LoadEntityFromValues(entity, values)
-        // Precache the ambient sound effects
-        //Shared.PrecacheSound(entity.eventName)
-        //table.insert(Client.ambientSoundList, entity)
+        local entity = AmbientSound()
+        LoadEntityFromValues(entity, values)
+        Client.PrecacheLocalSound(entity.eventName)
+        table.insert(Client.ambientSoundList, entity)
         
     elseif className == Reverb.kMapName then
     
-        //local entity = Reverb()
-        //LoadEntityFromValues(entity, values)
-        //entity:OnLoad()
+        local entity = Reverb()
+        LoadEntityFromValues(entity, values)
+        entity:OnLoad()
         
     elseif className == "pathing_settings" then
         ParsePathingSettings(values)
@@ -380,9 +393,9 @@ function OnUpdateClient(deltaTime)
     local player = Client.GetLocalPlayer()
     if player ~= nil then
     
-        //UpdateAmbientSounds(deltaTime)
+        UpdateAmbientSounds(deltaTime)
         
-        //UpdateDSPEffects()
+        UpdateDSPEffects()
         
         UpdateTracers(deltaTime)
         
@@ -527,6 +540,7 @@ function OnMapPreLoad()
     Client.propList = { }
     Client.lightList = { }
     Client.skyBoxList = { }
+    Client.ambientSoundList = { }
     Client.tracersList = { }
     
     Client.rules = { }
@@ -546,10 +560,6 @@ function OnMapPreLoad()
     // Don't have bullets collide with collision geometry
     Shared.PreLoadSetGroupPhysicsId(kCollisionGeometryGroupName, PhysicsGroup.CollisionGeometryGroup)   
     
-end
-
-function ShowFeedbackPage()
-    Client.ShowWebpage(kFeedbackURL)
 end
 
 local function CheckRules()
@@ -573,11 +583,11 @@ local function OnMapPostLoad()
 
     // Set sound falloff defaults
     Client.SetMinMaxSoundDistance(7, 100)
-	Locale.SetLocale(Locale.GetLocale())
-    TimedRun("InitPathing", InitializePathing)
-    //TimedRun("CreateDSPs", CreateDSPs)
-    TimedRun("Scoreboard_Clear", Scoreboard_Clear)
-    TimedRun("CheckRules", CheckRules)
+
+    InitializePathing()
+    CreateDSPs()
+    Scoreboard_Clear()
+    CheckRules()
     
 end
 
@@ -642,13 +652,13 @@ local function UpdateFogAreaModifiers(fromOrigin)
             
         end
         
-        Client.SetZoneFogDepthScale(RenderScene.Zone_ViewModel, 0.0 / viewZoneScale)
+        Client.SetZoneFogDepthScale(RenderScene.Zone_ViewModel, 1.0 / viewZoneScale)
         Client.SetZoneFogColor(RenderScene.Zone_ViewModel, viewZoneColor)
         
-        Client.SetZoneFogDepthScale(RenderScene.Zone_SkyBox, 0.0 / skyboxZoneScale)
+        Client.SetZoneFogDepthScale(RenderScene.Zone_SkyBox, 1.0 / skyboxZoneScale)
         Client.SetZoneFogColor(RenderScene.Zone_SkyBox, skyboxZoneColor)
         
-        Client.SetZoneFogDepthScale(RenderScene.Zone_Default, 0.0 / defaultZoneScale)
+        Client.SetZoneFogDepthScale(RenderScene.Zone_Default, 1.0 / defaultZoneScale)
         Client.SetZoneFogColor(RenderScene.Zone_Default, defaultZoneColor)
         
     end
@@ -662,8 +672,9 @@ function OnUpdateRender()
 
     local player = Client.GetLocalPlayer()
     
-    local camera = Camera()
+    //Infestation_UpdateForPlayer()
     
+    local camera = Camera()
     local cullingMode = RenderCamera.CullingMode_Occlusion
     
     // If we have a player, use them to setup the camera. 
@@ -671,7 +682,7 @@ function OnUpdateRender()
     
         local coords = player:GetCameraViewCoords()
         
-        //UpdateFogAreaModifiers(coords.origin)
+        UpdateFogAreaModifiers(coords.origin)
         
         camera:SetCoords(coords)
 		
