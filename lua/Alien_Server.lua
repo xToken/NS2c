@@ -106,6 +106,7 @@ function Alien:OnProcessMove(input)
 	if not self:GetIsDestroyed() then
     // Calculate two and three hives so abilities for abilities        
     	self:UpdateNumHives()
+    	//UpdateAbilityAvailability(self, self:GetTierOneTechId(), self:GetTierTwoTechId(), self:GetTierThreeTechId())
     	self:CheckRedemption()
     	self.primalScreamBoost = self.timeWhenPrimalScreamExpires > Shared.GetTime()  
     	self:UpdateAutoHeal()

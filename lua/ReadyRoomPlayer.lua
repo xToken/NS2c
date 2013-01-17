@@ -47,11 +47,6 @@ function ReadyRoomPlayer:OnInitialized()
     
     self:SetModel(Marine.kModelName, kAnimationGraph)
     
-    // Holiday 2012
-    if Server then
-        self:GiveItem(SnowBallThrower.kMapName)
-    end
-    
 end
 
 if Client then

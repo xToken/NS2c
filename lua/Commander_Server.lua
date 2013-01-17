@@ -124,30 +124,32 @@ function Commander:AttemptToResearchOrUpgrade(techNode, entity)
         
     end
     
-    // Don't allow it to be researched while researching
+    // Don't allow it to be researched while researching.
     if entity and HasMixin(entity, "Research") then
     
         if (techNode:GetCanResearch() or techNode:GetIsManufacture()) and entity:GetCanResearch(techNode:GetTechId()) then
-
-            entity:SetResearching(techNode, self)
+        
+            if self:GetTechTree():GetNumberOfQueuedResearch() == 0 then
             
-            if not techNode:GetIsEnergyManufacture() and not techNode:GetIsPlasmaManufacture() then
-                techNode:SetResearching()
+                entity:SetResearching(techNode, self)
+                
+                if not techNode:GetIsEnergyManufacture() and not techNode:GetIsPlasmaManufacture() then
+                    techNode:SetResearching()
+                end
+                
+                self:GetTechTree():SetTechNodeChanged(techNode, "researching")
+                
+                return true
+                
             end
             
-            self:GetTechTree():SetTechNodeChanged(techNode, "researching")
-            
-            return true
-            
-        end 
-   
-    end  
-
+        end
+        
+    end
+    
     return false
     
 end
-
-
 
 // TODO: Add parameters for energy or resources
 function Commander:TriggerNotEnoughResourcesAlert()

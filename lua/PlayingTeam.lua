@@ -47,6 +47,9 @@ function PlayingTeam:Initialize(teamName, teamNumber)
     
     self.ejectCommVoteManager = VoteManager()
     self.ejectCommVoteManager:Initialize()
+    
+    self.concedeVoteManager = VoteManager()
+    self.concedeVoteManager:Initialize()
 
     // child classes can specify a custom team info class
     local teamInfoMapName = TeamInfo.kMapName
@@ -64,6 +67,23 @@ function PlayingTeam:Initialize(teamName, teamNumber)
     
     self.entityTechIds = {}
     self.techIdCount = {}
+
+    self.eventListeners = {}
+
+end
+
+function PlayingTeam:AddListener( event, func )
+
+    local listeners = self.eventListeners[event]
+
+    if not listeners then
+        listeners = {}
+        self.eventListeners[event] = listeners
+    end
+
+    table.insert( listeners, func )
+
+    //DebugPrint( 'event %s has %d listeners', event, #self.eventListeners[event] )
 
 end
 
@@ -120,8 +140,13 @@ function PlayingTeam:OnInitialized()
     
     self.teamResources = 0
     self.totalTeamResourcesCollected = 0
+    self.totalTeamResFromTowers = 0
     
     self.ejectCommVoteManager:Reset()
+    self.concedeVoteManager:Reset()
+    
+    self.conceded = false
+    
     self.lastCommPingTime = 0
     self.lastCommPingPosition = Vector(0,0,0)
 
@@ -134,6 +159,7 @@ function PlayingTeam:ResetTeam()
     self:SpawnInitialStructures(initialTechPoint)
     
     self.overflowres = 0
+    self.conceded = false
     
     local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
     for p = 1, #players do
@@ -287,7 +313,47 @@ function PlayingTeam:OnResearchComplete(structure, researchId)
         teamInfoEntity:SetLatestResearchedTech(researchId, Shared.GetTime() + PlayingTeam.kResearchDisplayTime, techPriority) 
         
     end
+
+    // inform listeners
+
+    local listeners = self.eventListeners['OnResearchComplete']
+
+    if listeners then
     
+        for _, listener in ipairs(listeners) do
+            listener(structure, researchId)
+        end
+
+    end
+
+end
+
+function PlayingTeam:OnCommanderAction(techId)
+
+    local listeners = self.eventListeners['OnCommanderAction']
+
+    if listeners then
+
+        for _, listener in ipairs(listeners) do
+            listener(techId)
+        end
+
+    end
+
+end
+
+function PlayingTeam:OnConstructionComplete(structure)
+
+    local listeners = self.eventListeners['OnConstructionComplete']
+
+    if listeners then
+
+        for _, listener in ipairs(listeners) do
+            listener(structure)
+        end
+
+    end
+
 end
 
 // Returns sound name of last alert and time last alert played (for testing)
@@ -412,6 +478,14 @@ function PlayingTeam:GetTotalTeamResources()
     return self.totalTeamResourcesCollected
 
 end
+
+
+function PlayingTeam:GetTotalTeamResourcesFromTowers()
+
+    return self.totalTeamResFromTowers
+
+end
+
 function PlayingTeam:GetHasTeamLost()
 
     if GetGamerules():GetGameStarted() and not Shared.GetCheatsEnabled() then
@@ -605,7 +679,7 @@ function PlayingTeam:TechAdded(entity)
     // don't do anything if this tech is not prereq of another tech
     if not self.requiredTechIds[techId] then
         return
-    end
+    end    
     
     table.insertunique(self.entityTechIds, techId)
     
@@ -663,7 +737,7 @@ function PlayingTeam:Update(timePassed)
     
     self:UpdateGameEffects(timePassed)
     
-    self:UpdateVoteToEject()
+    self:UpdateVotes()
     
     if GetGamerules():GetGameStarted() then
         self:UpdateResourceTowers()
@@ -775,6 +849,16 @@ end
 function PlayingTeam:UpdateTeamSpecificGameEffects()
 end
 
+function PlayingTeam:VoteToGiveUp(votingPlayer)
+
+    local votingPlayerSteamId = tonumber(Server.GetOwner(votingPlayer):GetUserId())
+
+    if self.concedeVoteManager:PlayerVotes(votingPlayerSteamId, Shared.GetTime()) then
+        PrintToLog("%s cast vote to give up.", votingPlayer:GetName())
+    end
+
+end
+
 function PlayingTeam:VoteToEjectCommander(votingPlayer, targetCommander)
 
     local votingPlayerSteamId = tonumber(Server.GetOwner(votingPlayer):GetUserId())
@@ -786,12 +870,13 @@ function PlayingTeam:VoteToEjectCommander(votingPlayer, targetCommander)
     
 end
 
-function PlayingTeam:UpdateVoteToEject()
+function PlayingTeam:UpdateVotes()
 
-    PROFILE("PlayingTeam:UpdateVoteToEject")
+    PROFILE("PlayingTeam:UpdateVotes")
     
     // Update with latest team size
     self.ejectCommVoteManager:SetNumPlayers(self:GetNumPlayers())
+    self.concedeVoteManager:SetNumPlayers(self:GetNumPlayers())
 
     // Eject commander if enough votes cast
     if self.ejectCommVoteManager:GetVotePassed() then    
@@ -810,6 +895,23 @@ function PlayingTeam:UpdateVoteToEject()
             
     end
     
+    // give up when enough votes
+    if self.concedeVoteManager:GetVotePassed() then
+    
+        self.concedeVoteManager:Reset()
+        self.conceded = true
+        
+    elseif self.concedeVoteManager:GetVoteElapsed(Shared.GetTime()) then
+    
+        self.concedeVoteManager:Reset()
+            
+    end 
+        
+    
+end
+
+function PlayingTeam:GetHasConceded()
+    return self.conceded
 end
 
 function PlayingTeam:AddOverflowResources(resAwarded)
