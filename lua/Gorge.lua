@@ -47,15 +47,14 @@ Gorge.kBuildSoundName = PrecacheAsset("sound/NS2.fev/alien/gorge/build")
 Gorge.kXZExtents = 0.5
 Gorge.kYExtents = 0.475
 
-Gorge.kMass = 80
-Gorge.kJumpHeight = 1.2
+local kMass = 80
+local kJumpHeight = 1.2
 local kStartSlideForce = 15
 local kViewOffsetHeight = 0.6
-Gorge.kMaxSpeed = 4.6
-Gorge.kMaxSlideSpeed = 13
-Gorge.kSlidingAccelBoost = 3
-Gorge.kGorgeCreateDistance = 3
-Gorge.kBellySlideCost = 25
+local kMaxSpeed = 4.6
+local kMaxSlideSpeed = 13
+
+local kBellySlideCost = 25
 local kSlidingMoveInputScalar = 0.1
 local kBuildingModeMovementScalar = 0.001
 local kSlideCoolDown = 1.5
@@ -151,7 +150,7 @@ function Gorge:GetViewModelName()
 end
 
 function Gorge:GetJumpHeight()
-    return Gorge.kJumpHeight
+    return kJumpHeight
 end
 
 function Gorge:GetIsBellySliding()
@@ -200,7 +199,7 @@ local function UpdateGorgeSliding(self, input)
     PROFILE("Gorge:UpdateGorgeSliding")
     
     local slidingDesired = GetIsSlidingDesired(self, input)
-    if slidingDesired and not self.sliding and self.timeSlideEnd + kSlideCoolDown < Shared.GetTime() and self:GetIsOnGround() and self:GetEnergy() >= Gorge.kBellySlideCost then
+    if slidingDesired and not self.sliding and self.timeSlideEnd + kSlideCoolDown < Shared.GetTime() and self:GetIsOnGround() and self:GetEnergy() >= kBellySlideCost then
     
         self.sliding = true
         self.startedSliding = true
@@ -211,7 +210,7 @@ local function UpdateGorgeSliding(self, input)
             end
         end
         
-        self:DeductAbilityEnergy(Gorge.kBellySlideCost)
+        self:DeductAbilityEnergy(kBellySlideCost)
         self:TriggerUncloak()
         self:PrimaryAttackEnd()
         self:SecondaryAttackEnd()
@@ -279,13 +278,13 @@ end
 function Gorge:GoldSrc_GetMaxSpeed(possible)
     
     if possible then
-        return Gorge.kMaxSpeed
+        return kMaxSpeed
     end
     
-    local maxSpeed = Gorge.kMaxSpeed
+    local maxSpeed = kMaxSpeed
     /*
     if self:GetIsBellySliding() then
-        maxSpeed = Gorge.kMaxSlideSpeed
+        maxSpeed = kMaxSlideSpeed
     end
     */
     return maxSpeed * self:GetMovementSpeedModifier()
@@ -293,7 +292,7 @@ function Gorge:GoldSrc_GetMaxSpeed(possible)
 end
 
 function Gorge:GetMass()
-    return Gorge.kMass
+    return kMass
 end
 
 function Gorge:OnUpdateAnimationInput(modelMixin)
@@ -380,7 +379,7 @@ function Gorge:PostUpdateMove(input, runningPrediction)
         
         xzSpeed = xzSpeed + yTravel * -4
         
-        if xzSpeed < Gorge.kMaxSpeed or yTravel > 0 then
+        if xzSpeed < kMaxSpeed or yTravel > 0 then
         
             local directionXZ = GetNormalizedVectorXZ(velocity)
             directionXZ:Scale(xzSpeed)
@@ -427,6 +426,15 @@ if Client then
             return weapon:GetGhostModelCoords()
         end
 
+    end
+    
+    function Gorge:GetLastClickedPosition()
+    
+        local weapon = self:GetActiveWeapon()
+        if weapon and weapon:isa("DropStructureAbility") then
+            return weapon.lastClickedPosition
+        end
+        
     end
 
     function Gorge:GetIsPlacementValid()

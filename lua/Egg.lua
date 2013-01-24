@@ -435,7 +435,7 @@ if Server then
         
     end
 
-    function Egg:OnUse(player, elapsedTime, useAttachPoint, usePoint, useSuccessTable)
+    function Egg:OnUse(player, elapsedTime, useSuccessTable)
     
         local useSuccess = false
 

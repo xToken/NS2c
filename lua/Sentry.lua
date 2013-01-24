@@ -3,10 +3,11 @@
 // lua\Sentry.lua
 //
 //    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+//                  Andreas Urwalek (andi@unknownworlds.com)
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
@@ -41,154 +42,9 @@ Script.Load("lua/CommanderGlowMixin.lua")
 local kSpinUpSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/sentry_spin_up")
 local kSpinDownSoundName = PrecacheAsset("sound/NS2.fev/marine/structures/sentry_spin_down")
 
-local function UpdateMode(self, deltaTime)
-
-    assert(Server)
-    
-    PROFILE("Sentry:UpdateMode")
-    
-    if self.desiredMode ~= self.mode then
-    
-        if self.desiredMode == Sentry.kMode.Attacking and self.mode ~= Sentry.kMode.Attacking then
-        
-            StartSoundEffectAtOrigin(kSpinUpSoundName, self:GetModelOrigin())
-            //self.attackSound:Start()
-            self:SetMode(Sentry.kMode.Attacking)
-            // match the network field to the calculated one
-            self.barrelYawDegrees = self.calculatedBarrelYawDegrees
-            
-        elseif self.desiredMode ~= Sentry.kMode.Attacking and self.mode == Sentry.kMode.Attacking then
-        
-            StartSoundEffectAtOrigin(kSpinDownSoundName, self:GetModelOrigin())
-            //self.attackSound:Stop()
-            self:SetMode(Sentry.kMode.Scanning)
-
-        elseif self.desiredMode == Sentry.kMode.SettingTarget then
-            
-            self:SetMode(Sentry.kMode.SettingTarget)
-            
-        end
-        
-    end
-
-end
-
-local function UpdateAcquireTarget(self, deltaTime)
-
-    PROFILE("Sentry:UpdateAcquireTarget")
-
-    if not self:GetTarget() then
-    
-        self.target = self.targetSelector:AcquireTarget()
-        
-        if self.target then    
-        
-           self:SetDesiredMode(Sentry.kMode.Attacking)
-           self:OnTargetChanged()
-           
-           if not self:GetCurrentOrder() then
-               self:GiveOrder(kTechId.Attack, self.target:GetId(), nil)
-           end
-           
-        else
-        
-            self:SetDesiredMode(Sentry.kMode.Scanning)
-            self.lastTargetId = nil
-            self:ClearOrders()
-            
-        end
-    
-    end
-    
-end
-
-local function UpdateAttackTarget(self, deltaTime)
-
-    PROFILE("Sentry:UpdateAttackTarget")
-    
-    local orderLocation = nil
-    local order = self:GetCurrentOrder()
-    if order then
-    
-        orderLocation = order:GetLocation()
-        
-        local target = self:GetTarget()
-        local currentTime = Shared.GetTime()
-        
-        if target and (self.timeNextAttack == nil or (currentTime > self.timeNextAttack)) then
-        
-            local mode = self:GetSentryMode()
-            if mode == Sentry.kMode.Attacking then
-            
-                local attackEntValid = self.targetSelector:ValidateTarget(target)
-                if attackEntValid then
-                
-                    self:FireBullets()
-                    
-                    // slower fire rate when confused
-                    local confusedTime = ConditionalValue(self.confused, kConfusedSentryBaseROF, 0)
-                    
-                    // Random rate of fire so it can't be gamed         
-                    self.timeNextAttack = confusedTime + currentTime + Sentry.kBaseROF + math.random() * Sentry.kRandROF
-                    
-                else
-                
-                    self:ClearOrders()
-                    self:SetDesiredMode(Sentry.kMode.Scanning)
-                    
-                end
-                
-            else
-                self.timeNextAttack = currentTime + .1
-            end
-            
-        end  
-        
-        if not target then
-            self:ClearOrders()
-        end
-        
-    end
-    
-end
-
-local function UpdateAttack(self, deltaTime)
-
-    assert(Server)
-    
-    if GetIsUnitActive(self) and self.powered then
-
-        // If we have order
-        local order = self:GetCurrentOrder()
-
-        if order ~= nil and order:GetType() == kTechId.SetTarget then
-            self:UpdateSetTarget()
-        else
-        
-            if self.timeOfLastTargetAcquisition == nil or self.timeOfLastTargetAcquisition + 0.6 < Shared.GetTime() then
-            
-                UpdateAcquireTarget(self, deltaTime)
-                self.timeOfLastTargetAcquisition = Shared.GetTime()
-                
-            end
-            
-            UpdateAttackTarget(self, deltaTime)
-
-        end
-
-        self:UpdateTargetState()
-  
-    end
-
-end
-
 class 'Sentry' (ScriptActor)
 
 Sentry.kMapName = "sentry"
-
-if Server then
-    Script.Load("lua/Sentry_Server.lua")
-end
 
 Sentry.kModelName = PrecacheAsset("models/marine/sentry/sentry.model")
 local kAnimationGraph = PrecacheAsset("models/marine/sentry/sentry.animation_graph")
@@ -202,30 +58,26 @@ Sentry.kFiringAlertSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/comman
 Sentry.kConfusedSound = PrecacheAsset("sound/NS2.fev/marine/structures/sentry_confused")
 
 Sentry.kFireShellEffect = PrecacheAsset("cinematics/marine/sentry/fire_shell.cinematic")
-//Sentry.kTracerEffect = PrecacheAsset("cinematics/marine/tracer.cinematic")
 
 // Balance
-Sentry.kPingInterval = 4
+Sentry.kPingInterval = 20
 Sentry.kFov = 160
-Sentry.kMaxPitch = 45
+Sentry.kMaxPitch = 80 // 160 total
 Sentry.kMaxYaw = Sentry.kFov / 2
 
 Sentry.kBaseROF = kSentryAttackBaseROF
 Sentry.kRandROF = kSentryAttackRandROF
 Sentry.kSpread = Math.Radians(3)
 Sentry.kBulletsPerSalvo = kSentryAttackBulletsPerSalvo
-Sentry.kDamagePerBullet = kSentryAttackDamage
 Sentry.kBarrelScanRate = 60      // Degrees per second to scan back and forth with no target
-Sentry.kBarrelMoveRate = 150     // Degrees per second to move sentry orientation towards target or back to flat when targeted
-Sentry.kTargetCheckTime = .3
-Sentry.kRange = 15
+Sentry.kBarrelMoveRate = 150    // Degrees per second to move sentry orientation towards target or back to flat when targeted
+Sentry.kRange = 20
 Sentry.kReorientSpeed = .05
-// Don't choose new target right away, to make sure multiple attacks can overwhelm sentry
-Sentry.kTargetReacquireTime = .5
-Sentry.kConfusedTargetReacquireTime = 1.5
-Sentry.kConfuseDuration = 3
-Sentry.kAttackEffectIntervall = kConfusedSentryBaseROF * .5
-Sentry.kConfusedAttackEffectIntervall = kConfusedSentryBaseROF
+
+Sentry.kTargetAcquireTime = 0.15
+Sentry.kConfuseDuration = 4
+Sentry.kAttackEffectIntervall = 0.2
+Sentry.kConfusedAttackEffectInterval = kConfusedSentryBaseROF
 
 // Animations
 Sentry.kYawPoseParam = "sentry_yaw" // Sentry yaw pose parameter for aiming
@@ -235,37 +87,19 @@ Sentry.kEyeNode = "fxnode_eye"
 Sentry.kLaserNode = "fxnode_eye"
 
 // prevents attacking during deploy animation for kDeployTime seconds
-Sentry.kDeployTime = 3.5
-
-Sentry.kMode = enum( {'Unbuilt', 'Scanning', 'Attacking', 'SettingTarget'} )
-
-local kDefaultButtons = { kTechId.Attack, kTechId.None, kTechId.SetTarget, kTechId.None,
-                          kTechId.None, kTechId.None, kTechId.None, kTechId.None }
-local kAttackingButtons = { kTechId.None, kTechId.Stop, kTechId.SetTarget, kTechId.None,
-                            kTechId.None, kTechId.None, kTechId.None, kTechId.None }
-local kSettingTargetButtons = { kTechId.None, kTechId.None, kTechId.SetTarget, kTechId.None,
-                                kTechId.None, kTechId.None, kTechId.None, kTechId.None }
-local kPoweredDownButtons = { kTechId.None, kTechId.None, kTechId.None, kTechId.None,
-                              kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+local kDeployTime = 3.5
 
 local networkVars =
-{
-    mode = "enum Sentry.kMode",
-    desiredMode = "enum Sentry.kMode",
-    
-    barrelYawDegrees = "interpolated float",
-    barrelPitchDegrees = "interpolated float",
-    
+{    
     // So we can update angles and pose parameters smoothly on client
     targetDirection = "vector",  
-    
     confused = "boolean",
-    
-    deployed = "boolean"
+    deployed = "boolean",
+    attacking = "boolean"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
@@ -288,7 +122,7 @@ function Sentry:OnCreate()
     ScriptActor.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, LiveMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, FlinchMixin)
@@ -319,37 +153,33 @@ function Sentry:OnCreate()
     self.desiredPitchDegrees = 0
     self.barrelYawDegrees = 0
     self.barrelPitchDegrees = 0
-    self.calculatedBarrelYawDegrees = 0
-    
-    self.timeOfLastTargetAcquisition = 0
-    
-    self.timeLastTargetChange = 0
-    self.powered = false
+
     self.confused = false
-    
-    self.mode = Sentry.kMode.Unbuilt
-    self.desiredMode = Sentry.kMode.Unbuilt
+    self.powered = false
     
     if Server then
-    
-        // Play a "ping" sound effect every Sentry.kPingInterval while scanning.
-        local function PlayScanPing(sentry)
-        
-            if GetIsUnitActive(self) and not self.attacking then
-                //local player = Client.GetLocalPlayer()
-                //Shared.PlayPrivateSound(player, kSentryScanSoundName, nil, 1, sentry:GetModelOrigin())
-            end
-            return true
-            
-        end
-        //self:AddTimedCallback(PlayScanPing, Sentry.kPingInterval)
-        
+
         self.attackSound = Server.CreateEntity(SoundEffect.kMapName)
         self.attackSound:SetParent(self)
         self.attackSound:SetAsset(kAttackSoundName)
         
     elseif Client then
+    
         self.timeLastAttackEffect = Shared.GetTime()
+        
+        // Play a "ping" sound effect every Sentry.kPingInterval while scanning.
+        local function PlayScanPing(sentry)
+        
+            if GetIsUnitActive(self) and not self.attacking and self.powered then
+                local player = Client.GetLocalPlayer()
+                Shared.PlayPrivateSound(player, kSentryScanSoundName, nil, 1, sentry:GetModelOrigin())
+            end
+            return true
+            
+        end
+        
+        self:AddTimedCallback(PlayScanPing, Sentry.kPingInterval)
+        
     end
     
     self:SetLagCompensated(false)
@@ -363,6 +193,7 @@ function Sentry:OnInitialized()
     ScriptActor.OnInitialized(self)
     
     InitMixin(self, WeldableMixin)
+    
     //InitMixin(self, LaserMixin)
     
     self:SetModel(Sentry.kModelName, kAnimationGraph)
@@ -372,6 +203,8 @@ function Sentry:OnInitialized()
     if Server then 
     
         InitMixin(self, SleeperMixin)
+        
+        self.timeLastTargetChange = Shared.GetTime()
         
         // This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
@@ -387,7 +220,8 @@ function Sentry:OnInitialized()
             Sentry.kRange, 
             true,
             { kMarineStaticTargets, kMarineMobileTargets },
-            { PitchTargetFilter(self,  -Sentry.kMaxPitch, Sentry.kMaxPitch), CloakTargetFilter() })
+            { PitchTargetFilter(self,  -Sentry.kMaxPitch, Sentry.kMaxPitch), CloakTargetFilter() },
+            { function(target) return not target:isa("Cyst") end } )
 
         InitMixin(self, StaticTargetMixin)
         
@@ -410,21 +244,13 @@ function Sentry:OnDestroy()
     
 end
 
-function Sentry:GetCanDie(byDeathTrigger)
-    return not byDeathTrigger
-end
-
-function Sentry:GetSentryMode()
-    return self.mode
-end
-
 function Sentry:GetCanSleep()
-    return self.mode == Sentry.kMode.Scanning or self.mode == Sentry.kMode.Unbuilt
+    return self.attacking == false
 end
 
 function Sentry:GetMinimumAwakeTime()
     return 10
-end    
+end 
 
 function Sentry:GetFov()
     return Sentry.kFov
@@ -433,85 +259,10 @@ end
 local kSentryEyeHeight = Vector(0, 0.8, 0)
 function Sentry:GetEyePos()
     return self:GetOrigin() + kSentryEyeHeight
-    //return self:GetAttachPointOrigin(Sentry.kMuzzleNode)
-end
-
-/**
- * Fire out out muzzle attach point.
- */
-function Sentry:GetViewOffset()
-
-    // Great idea .. but it doesn't quite work - the eyepos being offset from the
-    // center of the scan means that sometimes the sensor will see a target and
-    // sometimes not. An alien placing itself at the edge of the fov would be a valid 
-    // target when the barrel faces in the middle, but become invalid when it faces
-    // the alien. To solve it would reqire the introduction of a field-of-fire for the
-    // gun itself, while the field-of-view belonged to the sensor.
-    // Too much work, and the simple fix is to move the eye to the center of rotation. 
-    // return self:GetAttachPointOrigin(Sentry.kEyeNode)
-    // ... and this doesn't work either ... the height of the eyenode drops down when the barrel elevates, thus
-    // lowering the sentry eyepos.
-    // lets go for a hack: manually measusured; height of muzzle when at zero pitch is at 1.0162.
-    // note: the caching here assumes that you don't change the origin of the sentry
-    return Vector(0, 1.0162, 0)
-    
 end
 
 function Sentry:GetDeathIconIndex()
     return kDeathMessageIcon.Sentry
-end
-
-function Sentry:GetTechButtons(techId)
-
-    if techId == kTechId.WeaponsMenu then 
-        
-        if self.mode == Sentry.kMode.Attacking then
-            return kAttackingButtons
-        elseif self.mode == Sentry.kMode.SettingTarget then
-            return kSettingTargetButtons
-        end
-        return kDefaultButtons
-        
-    end
-    
-    return nil
-    
-end
-
-function Sentry:UpdateAngles(deltaTime)
-    
-    // Swing barrel yaw towards target        
-    if self:GetSentryMode() == Sentry.kMode.Attacking then
-    
-        if self.targetDirection then
-        
-            local invSentryCoords = self:GetAngles():GetCoords():GetInverse()
-            self.relativeTargetDirection = GetNormalizedVector( invSentryCoords:TransformVector( self.targetDirection ) )
-            self.desiredYawDegrees = Clamp(math.asin(-self.relativeTargetDirection.x) * 180 / math.pi, -Sentry.kMaxYaw, Sentry.kMaxYaw)            
-            self.desiredPitchDegrees = Clamp(math.asin(self.relativeTargetDirection.y) * 180 / math.pi, -Sentry.kMaxPitch, Sentry.kMaxPitch)       
-            
-        end
-        
-    // Else when we have no target, swing it back and forth looking for targets
-    else
-    
-        local sin = math.sin(math.rad((Shared.GetTime() + self:GetId() * .3) * Sentry.kBarrelScanRate))
-        self.desiredYawDegrees = sin * self:GetFov() / 2
-        
-        // Swing barrel pitch back to flat
-        self.desiredPitchDegrees = 0
-    
-    end
-    
-    // No matter what, swing barrel pitch towards desired pitch
-    self.barrelPitchDegrees = Slerp(self.barrelPitchDegrees, self.desiredPitchDegrees, Sentry.kBarrelMoveRate * deltaTime)    
-    self.calculatedBarrelYawDegrees = Slerp(self.calculatedBarrelYawDegrees , self.desiredYawDegrees, Sentry.kBarrelMoveRate * deltaTime)
-
-    // the yaw network field is only used when attacking
-    if self:GetSentryMode() == Sentry.kMode.Attacking then    
-        self.barrelYawDegrees = self.calculatedBarrelYawDegrees
-    end
-    
 end
 
 function Sentry:GetReceivesStructuralDamage()
@@ -532,85 +283,16 @@ function Sentry:GetLaserAttachCoords()
     return coords   
 end
 
-function Sentry:UpdateAttackSound(play)
-
-    if Server then
-    
-        if not GetIsUnitActive(self) and not self.powered or self.confused or not play then
-        
-            if self.attackSound:GetIsPlaying() then
-                self.attackSound:Stop()
-            end
-            
-        else
-        
-            if play and not self.attackSound:GetIsPlaying() then
-                self.attackSound:Start()
-            end
-            
-        end
-        
-    elseif Client and GetIsUnitActive(self) and self.powered then
-    
-        local intervall = ConditionalValue(self.confused, Sentry.kConfusedAttackEffectIntervall, Sentry.kAttackEffectIntervall)
-        if play and (self.timeLastAttackEffect + intervall < Shared.GetTime()) then
-        
-            if self.confused then
-                self:TriggerEffects("sentry_single_attack")
-            end
-            
-            // plays muzzle flash and smoke
-            self:TriggerEffects("sentry_attack")
-
-            self.timeLastAttackEffect = Shared.GetTime()
-        end
-    
-    end
-    
+function Sentry:OverrideLaserLength()
+    return Sentry.kRange
 end
 
 function Sentry:GetPlayInstantRagdoll()
     return true
-end    
+end
 
 function Sentry:GetIsLaserActive()
     return GetIsUnitActive(self) and self.deployed and self.powered
-end
-
-function Sentry:OnUpdate(deltaTime)
-
-    PROFILE("Sentry:OnUpdate")
-    
-    ScriptActor.OnUpdate(self, deltaTime)
-    
-    if GetIsUnitActive(self) and self.powered then
-    
-        if Server then
-        
-            if self.confused and self.timeConfused < Shared.GetTime() then
-                self.confused = false
-            end
-            
-            // Handle sentry state changes
-            UpdateMode(self, deltaTime)
-            
-            if self.deployed then
-                UpdateAttack(self, deltaTime)
-            end
-            
-        end
-        
-        // Update barrel position    
-        local mode = self:GetSentryMode()
-        
-        if mode == Sentry.kMode.Scanning or mode == Sentry.kMode.Attacking then
-            self:UpdateAngles(deltaTime)
-        end
-        
-    end
-    
-    self:UpdateAttackSound(self.mode == Sentry.kMode.Attacking)
-    
 end
 
 function Sentry:OnUpdatePoseParameters()
@@ -631,41 +313,14 @@ function Sentry:OnUpdatePoseParameters()
     self:SetPoseParam(Sentry.kPitchPoseParam, self.barrelPitchDegrees + pitchConfused)
     self:SetPoseParam(Sentry.kYawPoseParam, self.barrelYawDegrees + yawConfused)
     
-    // when the sentry is in scan mode, the network field barrelYawDegrees is not used
-    local yaw = self.mode == Sentry.kMode.Scanning and self.calculatedBarrelYawDegrees or self.barrelYawDegrees
-    self:SetPoseParam(Sentry.kYawPoseParam, yaw + yawConfused)
-    
-end
-
-function Sentry:GetCanGiveDamageOverride()
-    return true
-end
-
-/*
-function Sentry:OnTag(tagName)
-
-    // Go into scanning after the deploy animation has completed.
-    if self.desiredMode == Sentry.kMode.Scanning and tagName == "end" then
-        self.mode = Sentry.kMode.Scanning
-    elseif tagName == "deploy_end" then
-        self.deployed = true
-    end
-
-end
-*/
-
-function Sentry:OnPowerOn()
-    // 
-end
-
-function Sentry:OnPowerOff()
-    //
 end
 
 function Sentry:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Sentry:OnUpdateAnimationInput")    
-    modelMixin:SetAnimationInput("attack", self.mode == Sentry.kMode.Attacking)    
+    modelMixin:SetAnimationInput("attack", self.attacking)
+    modelMixin:SetAnimationInput("powered", self.powered)
+    
 end
 
 // used to prevent showing the hit indicator for the commander
@@ -673,9 +328,375 @@ function Sentry:GetShowHitIndicator()
     return false
 end
 
+function Sentry:GetTechButtons(techId)
+
+    if(techId == kTechId.WeaponsMenu) then
+    
+        local techButtons = {   kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
+                   kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+        
+        return techButtons        
+    end
+    
+    return nil
+    
+end
+
+function Sentry:OnWeldOverride(entity, elapsedTime)
+
+    local welded = false
+    
+    // faster repair rate for sentries, promote use of welders
+    if entity:isa("Welder") then
+
+        local amount = kWelderSentryRepairRate * elapsedTime     
+        self:AddHealth(amount)
+        
+    elseif entity:isa("MAC") then
+    
+        self:AddHealth(MAC.kRepairHealthPerSecond * elapsedTime) 
+        
+    end
+    
+end
+
 local kSentryHealthbarOffset = Vector(0, 0.4, 0)
 function Sentry:GetHealthbarOffset()
     return kSentryHealthbarOffset
 end 
+
+if Server then
+
+    local function OnDeploy(self)
+    
+        self.attacking = false
+        self.deployed = true
+        return false
+        
+    end
+    
+    function Sentry:OnConstructionComplete()
+        self:AddTimedCallback(OnDeploy, kDeployTime)      
+    end
+    
+    function Sentry:OnStun(duration)
+        self:Confuse(duration)
+    end
+    
+    function Sentry:GetDamagedAlertId()
+        return kTechId.MarineAlertSentryUnderAttack
+    end
+    
+    function Sentry:FireBullets()
+
+        local fireCoords = Coords.GetLookIn(Vector(0,0,0), self.targetDirection)     
+        local startPoint = self:GetBarrelPoint()
+
+        for bullet = 1, Sentry.kBulletsPerSalvo do
+        
+            local spreadDirection = CalculateSpread(fireCoords, Sentry.kSpread, math.random)
+            
+            local endPoint = startPoint + spreadDirection * Sentry.kRange
+            
+            local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterOne(self))
+            
+            if trace.fraction < 1 then
+            
+                local damage = kSentryAttackDamage
+                local surface = trace.surface
+                
+                // Disable friendly fire.
+                trace.entity = (not trace.entity or GetAreEnemies(trace.entity, self)) and trace.entity or nil
+                
+                local blockedByUmbra = trace.entity and GetBlockedByUmbra(trace.entity) or false
+                
+                if blockedByUmbra then
+                
+                    surface = "umbra"
+                    damage = 0
+                    
+                end
+                
+                local direction = (trace.endPoint - startPoint):GetUnit()
+                //Print("Sentry %d doing %.2f damage to %s (ramp up %.2f)", self:GetId(), damage, SafeClassName(trace.entity), rampUpFraction)
+                self:DoDamage(damage, trace.entity, trace.endPoint, direction, surface, false, math.random() < 0.2)
+                                
+            end
+            
+            bulletsFired = true
+            
+        end
+        
+    end
+    
+    // checking at range 1.8 for overlapping the radius a bit. no LOS check here since i think it would become too expensive with multiple sentries
+    function Sentry:GetFindsSporesAt(position)
+        return #GetEntitiesWithinRange("SporeCloud", position, 1.8) > 0
+    end
+    
+    function Sentry:Confuse(duration)
+
+        if not self.confused then
+        
+            self.confused = true
+            self.timeConfused = Shared.GetTime() + duration
+            
+            StartSoundEffectOnEntity(Sentry.kConfusedSound, self)
+            
+        end
+        
+    end
+    
+    // check for spores in our way every 0.3 seconds
+    local function UpdateConfusedState(self, target)
+
+        if not self.confused and target then
+            
+            if not self.timeCheckedForSpores then
+                self.timeCheckedForSpores = Shared.GetTime() - 0.3
+            end
+            
+            if self.timeCheckedForSpores + 0.3 < Shared.GetTime() then
+            
+                self.timeCheckedForSpores = Shared.GetTime()
+            
+                local eyePos = self:GetEyePos()
+                local toTarget = target:GetOrigin() - eyePos
+                local distanceToTarget = toTarget:GetLength()
+                toTarget:Normalize()
+                
+                local stepLength = 3
+                local numChecks = math.ceil(Sentry.kRange/stepLength)
+                
+                // check every few meters for a spore in the way, min distance 3 meters, max 12 meters (but also check sentry eyepos)
+                for i = 0, numChecks do
+                
+                    // stop when target has reached, any spores would be behind
+                    if distanceToTarget < (i * stepLength) then
+                        break
+                    end
+                
+                    local checkAtPoint = eyePos + toTarget * i * stepLength
+                    if self:GetFindsSporesAt(checkAtPoint) then
+                        self:Confuse(Sentry.kConfuseDuration)
+                        break
+                    end
+                
+                end
+            
+            end
+            
+        elseif self.confused then
+        
+            if self.timeConfused < Shared.GetTime() then
+                self.confused = false
+            end
+        
+        end
+
+    end
+    
+    function Sentry:UpdateFactoryState()
+
+        local time = Shared.GetTime()
+        
+        if self.lastFactoryCheckTime == nil or (time > self.lastFactoryCheckTime + .5) then
+        
+            // Update if we're powered or not
+            self.powered = false
+            
+            local ents = GetEntitiesForTeamWithinRange("RoboticsFactory", self:GetTeamNumber(), self:GetOrigin(), kRoboticsFactoryAttachRange)
+            for index, ent in ipairs(ents) do
+            
+                if GetIsUnitActive(ent) then
+                
+                    self.powered = true
+                    break
+                    
+                end
+                
+            end
+            
+            self.lastFactoryCheckTime = time
+            
+        end
+        
+    end
+    
+    function Sentry:OnUpdate(deltaTime)
+    
+        PROFILE("Sentry:OnUpdate")
+    
+        ScriptActor.OnUpdate(self, deltaTime)  
+        
+        //self:UpdateFactoryState()
+    
+        if self.timeNextAttack == nil or (Shared.GetTime() > self.timeNextAttack) then
+        
+            local initialAttack = self.target == nil
+        
+            local prevTarget = nil
+            if self.target then
+                prevTarget = self.target
+            end
+            
+            self.target = nil
+            
+            if GetIsUnitActive(self) and self.powered and self.deployed then
+                self.target = self.targetSelector:AcquireTarget()
+            end
+            
+            if self.target then
+            
+                local previousTargetDirection = self.targetDirection
+                self.targetDirection = GetNormalizedVector(self.target:GetEngagementPoint() - self:GetAttachPointOrigin(Sentry.kMuzzleNode))
+                
+                // Reset damage ramp up if we moved barrel at all                
+                if previousTargetDirection then
+                    local dotProduct = previousTargetDirection:DotProduct(self.targetDirection)
+                    if dotProduct < .99 then
+                    
+                        self.timeLastTargetChange = Shared.GetTime()
+                        
+                    end    
+                end
+
+                // Or if target changed, reset it even if we're still firing in the exact same direction
+                if self.target ~= prevTarget then
+                    self.timeLastTargetChange = Shared.GetTime()
+                end            
+                
+                // don't shoot immediately
+                if not initialAttack then
+                
+                    self.attacking = true
+                    self:FireBullets()
+                    
+                end    
+                
+            else
+            
+                self.attacking = false
+                self.timeLastTargetChange = Shared.GetTime()
+
+            end
+            
+            UpdateConfusedState(self, self.target)
+            // slower fire rate when confused
+            local confusedTime = ConditionalValue(self.confused, kConfusedSentryBaseROF, 0)
+            
+            // Random rate of fire so it can't be gamed
+
+            if initialAttack and self.target then
+                self.timeNextAttack = Shared.GetTime() + Sentry.kTargetAcquireTime
+            else
+                self.timeNextAttack = confusedTime + Shared.GetTime() + Sentry.kBaseROF + math.random() * Sentry.kRandROF
+            end    
+            
+            if not GetIsUnitActive() or self.confused or not self.attacking or not self.powered then
+            
+                if self.attackSound:GetIsPlaying() then
+                    self.attackSound:Stop()
+                end
+                
+            elseif self.attacking then
+            
+                if not self.attackSound:GetIsPlaying() then
+                    self.attackSound:Start()
+                end
+
+            end 
+        
+        end
+    
+    end
+
+elseif Client then
+
+    local function UpdateAttackEffects(self, deltaTime)
+    
+        local intervall = ConditionalValue(self.confused, Sentry.kConfusedAttackEffectInterval, Sentry.kAttackEffectIntervall)
+        if self.attacking and (self.timeLastAttackEffect + intervall < Shared.GetTime()) then
+        
+            if self.confused then
+                self:TriggerEffects("sentry_single_attack")
+            end
+            
+            // plays muzzle flash and smoke
+            self:TriggerEffects("sentry_attack")
+
+            self.timeLastAttackEffect = Shared.GetTime()
+            
+        end
+        
+    end
+
+    function Sentry:OnUpdate(deltaTime)
+    
+        ScriptActor.OnUpdate(self, deltaTime)
+        
+        if GetIsUnitActive(self) and self.deployed and self.powered then
+      
+            // Swing barrel yaw towards target        
+            if self.attacking then
+            
+                if self.targetDirection then
+                
+                    local invSentryCoords = self:GetAngles():GetCoords():GetInverse()
+                    self.relativeTargetDirection = GetNormalizedVector( invSentryCoords:TransformVector( self.targetDirection ) )
+                    self.desiredYawDegrees = Clamp(math.asin(-self.relativeTargetDirection.x) * 180 / math.pi, -Sentry.kMaxYaw, Sentry.kMaxYaw)            
+                    self.desiredPitchDegrees = Clamp(math.asin(self.relativeTargetDirection.y) * 180 / math.pi, -Sentry.kMaxPitch, Sentry.kMaxPitch)       
+                    
+                end
+                
+                UpdateAttackEffects(self, deltaTime)
+                
+            // Else when we have no target, swing it back and forth looking for targets
+            else
+            
+                local sin = math.sin(math.rad((Shared.GetTime() + self:GetId() * .3) * Sentry.kBarrelScanRate))
+                self.desiredYawDegrees = sin * self:GetFov() / 2
+                
+                // Swing barrel pitch back to flat
+                self.desiredPitchDegrees = 0
+            
+            end
+            
+            // swing towards desired direction
+            self.barrelPitchDegrees = Slerp(self.barrelPitchDegrees, self.desiredPitchDegrees, Sentry.kBarrelMoveRate * deltaTime)    
+            self.barrelYawDegrees = Slerp(self.barrelYawDegrees , self.desiredYawDegrees, Sentry.kBarrelMoveRate * deltaTime)
+        
+        end
+    
+    end
+
+end
+
+function GetCheckSentryLimit(techId, origin, normal, commander)
+
+    local robos = GetEntitiesForTeamWithinRange("RoboticsFactory", commander:GetTeamNumber(), origin, kRoboticsFactoryAttachRange)
+    if #robos > 0 then
+
+        local roboPos = robos[1]:GetOrigin()
+
+        local sentries = GetEntitiesForTeamWithinRange("Sentry", commander:GetTeamNumber(), roboPos, kRoboticsFactoryAttachRange + 0.4)
+        return #sentries < kSentriesPerFactory
+    
+    end
+    
+    return false
+    
+end
+
+function GetRoboticsInRange(commander)
+
+    local robos = {}
+    for _, robo in ipairs(GetEntitiesForTeam("RoboticsFactory", commander:GetTeamNumber())) do
+        robos[robo] = kRoboticsFactoryAttachRange
+    end
+    
+    return robos
+    
+end
 
 Shared.LinkClassToMap("Sentry", Sentry.kMapName, networkVars)

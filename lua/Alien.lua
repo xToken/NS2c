@@ -248,9 +248,6 @@ function Alien:OnInitialized()
     
     if Server then
     
-        //UpdateAbilityAvailability(self, self:GetTierOneTechId(), self:GetTierTwoTechId(), self:GetTierThreeTechId())
-        self:UpdateNumHives()
-        
         // This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
@@ -574,11 +571,12 @@ end
 function Alien:GetEffectParams(tableParams)
 
     Player.GetEffectParams(self,tableParams)
-    local upg, level = GetHasSilenceUpgrade(self)
-    if level == 3 and upg then
+    //Silence Controls volume levels, dont think this actually works tho.
+    local upg, level = GetHasSilenceUpgrade(player)
+    if level == 3 then
         tableParams[kEffectFilterSilenceUpgrade] = upg
     end
-    tableParams[kEffectParamVolume] = (1 - (.33 * level))
+    //tableParams[kEffectParamVolume] = (1 - (.33 * level))
 
 end
 

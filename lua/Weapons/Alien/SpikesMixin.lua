@@ -56,7 +56,7 @@ local function FireSpikes(self)
     
     self.spiked = true
     self.silenced = GetHasSilenceUpgrade(player)
-
+    
     for spike = 1, numSpikes do
 
         // Calculate spread for each shot, in case they differ    
@@ -70,9 +70,9 @@ local function FireSpikes(self)
         startPoint = player:GetEyePos()
         
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
-  
+        
         local distToTarget = (trace.endPoint - startPoint):GetLength()
-
+        
         if trace.fraction < 1 then
 
             // Have damage increase to reward close combat

@@ -109,13 +109,13 @@ end
 function OnCommandGorgeBuildStructure(client, message)
 
     local player = client:GetControllingPlayer()
-    local origin, direction, structureIndex = ParseGorgeBuildMessage(message)
+    local origin, direction, structureIndex, lastClickedPosition = ParseGorgeBuildMessage(message)
     
     local dropStructureAbility = player:GetWeapon(DropStructureAbility.kMapName)
     // The player may not have an active weapon if the message is sent
     // after the player has gone back to the ready room for example.
     if dropStructureAbility then
-        dropStructureAbility:OnDropStructure(origin, direction, structureIndex)
+        dropStructureAbility:OnDropStructure(origin, direction, structureIndex, lastClickedPosition)
     end
     
 end
@@ -123,13 +123,13 @@ end
 function OnCommandGorgeBuildStructure2(client, message)
 
     local player = client:GetControllingPlayer()
-    local origin, direction, structureIndex = ParseGorgeBuildMessage(message)
+    local origin, direction, structureIndex, lastClickedPosition = ParseGorgeBuildMessage(message)
     
     local dropStructureAbility = player:GetWeapon(DropStructureAbility2.kMapName)
     // The player may not have an active weapon if the message is sent
     // after the player has gone back to the ready room for example.
     if dropStructureAbility then
-        dropStructureAbility:OnDropStructure(origin, direction, structureIndex)
+        dropStructureAbility:OnDropStructure(origin, direction, structureIndex, lastClickedPosition)
     end
     
 end

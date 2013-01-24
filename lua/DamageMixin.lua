@@ -202,22 +202,22 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                 // If we are far away from our target, trigger a private sound so we can hear we hit something
                 if target then
                 
-                    if (point - attacker:GetOrigin()):GetLength() > 5 then           
+                    if (point - attacker:GetOrigin()):GetLength() > 5 then
                         attacker:TriggerEffects("hit_effect_local", tableParams)
                     end
                     
-                    if not Shared.GetIsRunningPrediction() and target.OnTakeDamageClient then
+                    if damage > 0 and target.OnTakeDamageClient then
                         target:OnTakeDamageClient(damage, doer, point)
                     end
                     
                 end
             */
             end
-        
+            
         end
-    
+        
     end
-
+    
     return killedFromDamage
     
 end

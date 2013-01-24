@@ -209,6 +209,14 @@ function Onos:GetAngleSmoothRate()
     return 3
 end
 
+function Onos:OnKill(attacker, doer, point, direction)
+    local devourWeapon = self:GetWeapon("devour")
+    if devourWeapon and devourWeapon:IsAlreadyEating() then
+        devourWeapon:OnForceUnDevour()
+    end
+    Alien.OnKill(self, attacker, doer, point, direction)
+end
+
 function Onos:PostUpdateMove(input, runningPrediction)
 
     if self.charging then

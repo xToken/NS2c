@@ -27,6 +27,7 @@ Script.Load("lua/AlienDetectableMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/RagdollMixin.lua")
+Script.Load("lua/WebableMixin.lua")
 
 if Client then
     Script.Load("lua/TeamMessageMixin.lua")
@@ -104,6 +105,7 @@ AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
 AddMixinNetworkVars(AlienDetectableMixin, networkVars)
+AddMixinNetworkVars(WebableMixin, networkVars)
 
 function Marine:OnCreate()
 
@@ -123,6 +125,7 @@ function Marine:OnCreate()
     InitMixin(self, ParasiteMixin)
     InitMixin(self, AlienDetectableMixin)
     InitMixin(self, RagdollMixin)   
+	InitMixin(self, WebableMixin)
     if Server then
 
 

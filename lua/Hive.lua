@@ -16,6 +16,7 @@ Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/HasUmbraMixin.lua")
+//Script.Load("lua/InfestationMixin.lua")
 
 class 'Hive' (CommandStructure)
 
@@ -83,7 +84,7 @@ function Hive:OnCreate()
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
     InitMixin(self, HasUmbraMixin)
-    
+	
     if Server then
         
         self.upgradeTechId = kTechId.None
@@ -125,7 +126,8 @@ function Hive:OnInitialized()
         
         InitMixin(self, UnitStatusMixin)
         InitMixin(self, HiveVisionMixin)
-        
+        //InitMixin(self, InfestationMixin)
+			
         self.glowIntensity = ConditionalValue(self:GetIsBuilt(), 1, 0)
         
     end

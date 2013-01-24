@@ -13,11 +13,7 @@ Script.Load("lua/Weapons/Alien/StructureAbility.lua")
 class 'HydraStructureAbility' (StructureAbility)
 
 function HydraStructureAbility:GetEnergyCost(player)
-    return 0
-end
-
-function HydraStructureAbility:GetIconOffsetY(secondary)
-    return kAbilityOffset.Hydra
+    return kDropStructureEnergyCost
 end
 
 function HydraStructureAbility:GetGhostModelName(ability)

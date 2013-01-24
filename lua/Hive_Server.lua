@@ -396,7 +396,7 @@ end
 
 local EnemyApproachesAlerts = {kTechId.AlienAlertEnemyApproaches1, kTechId.AlienAlertEnemyApproaches2}
 
-function Hive:OnUse(player, elapsedTime, useAttachPoint, usePoint, useSuccessTable)
+function Hive:OnUse(player, elapsedTime, useSuccessTable)
 
     local csUseSuccess = false
     
@@ -478,15 +478,17 @@ function Hive:SetAttached(structure)
 
     CommandStructure.SetAttached(self, structure)
     
-    if self:GetIsBuilt() and structure:isa("TechPoint") then
+    self.extendAmount = structure:GetExtendAmount()
+    
+    if self:GetIsBuilt() then
         structure:SetIsSmashed(true)
     end
-
+    
 end
 
 function Hive:OnConstructionComplete()
 
-    // Play special tech point animation at same time so it appears that we bash through it
+    // Play special tech point animation at same time so it appears that we bash through it.
     local attachedTechPoint = self:GetAttached()
     if attachedTechPoint then
         attachedTechPoint:SetIsSmashed(true)
@@ -496,8 +498,8 @@ function Hive:OnConstructionComplete()
     
     local team = self:GetTeam()
     
-    if team then    
-        team:OnHiveConstructed(self)        
+    if team then
+        team:OnHiveConstructed(self)
     end
     
     if self.hiveType == 1 then

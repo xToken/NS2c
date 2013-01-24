@@ -340,7 +340,7 @@ if Server then
         self.phaseallowed = Shared.GetTime() + 1
     end
     
-    function PhaseGate:OnUse(player, elapsedTime, useAttachPoint, usePoint, useSuccessTable)
+    function PhaseGate:OnUse(player, elapsedTime, useSuccessTable)
 
         local destinationPhaseGate = GetDestinationGate(self)
         

@@ -123,7 +123,7 @@ function Shotgun:GetPrimaryCanInterruptReload()
 end
 
 function Shotgun:GetWeight()
-    return kShotgunWeight
+    return kShotgunWeight + ((self.clip + self.ammo) * kShotgunShellWeight)
 end
 
 function Shotgun:UpdateViewModelPoseParameters(viewModel)
@@ -138,7 +138,10 @@ local function LoadBullet(self)
     
         self.clip = self.clip + 1
         self.ammo = self.ammo - 1
-        
+        local player = self:GetParent()
+        if player then
+            player:UpdateWeaponWeights()
+        end
     end
     
 end

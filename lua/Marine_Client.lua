@@ -206,7 +206,7 @@ function Marine:OnUpdateRender()
         self.flashlight:SetCoords(coords)
         
         // Only display atmospherics for third person players.
-        local density = 0.4
+        local density = 0.2
         if isLocal and not self:GetIsThirdPerson() then
             density = 0
         end

@@ -150,13 +150,15 @@ kResourceScaling = 20
 kRifleDamage = 10
 kRifleDamageType = kDamageType.Normal
 kRifleClipSize = 50
-kRifleWeight = 0.08
+kRifleWeight = 0.03
+kRifleClipWeight = 0.01
 
 kPistolDamage = 20
 kPistolDamageType = kDamageType.Normal
 kPistolClipSize = 10
-kPistolWeight = 0.03
+kPistolWeight = 0.01
 kPistolFireDelay = 0.1
+kPistolClipWeight = 0.01
 
 kWelderDamage = 4
 kWelderDamageType = kDamageType.Normal
@@ -176,7 +178,8 @@ kGrenadeLauncherGrenadeDamageType = kDamageType.Structural
 kGrenadeLauncherClipSize = 4
 kGrenadeLauncherGrenadeDamageRadius = 5
 kGrenadeLifetime = 2.0
-kGrenadeLauncherWeight = 0.22
+kGrenadeLauncherWeight = 0.10
+kGrenadeLauncherShellWeight = 0.0075
 
 kShotgunDamage = 17
 kShotgunDamageType = kDamageType.Normal
@@ -187,7 +190,8 @@ kShotgunMinSpread = 13
 kShotgunMinSpreadBullets = 5
 kShotgunMaxSpread = 18
 //kShotgunDropOffStartRange = 4
-kShotgunWeight = 0.15
+kShotgunWeight = 0.08
+kShotgunShellWeight = 0.0033
 
 kHeavyMachineGunDamage = 20
 kHeavyMachineGunDamageType = kDamageType.HalfStructure
@@ -214,15 +218,11 @@ kHandGrenadesWeight = 0.025
 
 kSentryAttackDamage = 10
 kSentryAttackDamageType = kDamageType.Normal
-kSentryAttackBaseROF = 0.12
-kSentryAttackRandROF = 0.16
+kSentryAttackBaseROF = 0.15
+kSentryAttackRandROF = 0.0
 kSentryAttackBulletsPerSalvo = 1
 kConfusedSentryBaseROF = 1.0
-
-// sentry increases damage when shooting at the same target (resets when switching targets)
-kSentryMinAttackDamage = 5
-kSentryMaxAttackDamage = 20
-kSentryDamageRampUpDuration = 5
+kSentriesPerFactory = 3
 
 kARCDamage = 400
 kARCDamageType = kDamageType.StructuresOnly // splash damage hits friendly arcs as well
@@ -277,6 +277,9 @@ kHealsprayDamageType = kDamageType.Biological
 kHealsprayFireDelay = 0.8
 kHealsprayEnergyCost = 15
 kHealsprayRadius = 3.5
+
+kDropStructureEnergyCost = 5
+kGorgeCreateDistance = 3
 
 kBileBombDamage = 200
 kBileBombDamageType = kDamageType.StructuresOnly

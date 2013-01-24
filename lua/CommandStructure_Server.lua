@@ -106,8 +106,7 @@ function CommandStructure:GetCommander()
     return Shared.GetEntity(self.commanderId)
 end
 
-// Put player into Commander mode
-function CommandStructure:OnUse(player, elapsedTime, useAttachPoint, usePoint, useSuccessTable)    
+function CommandStructure:OnUse(player, elapsedTime, useSuccessTable)
 end
 
 function CommandStructure:OnEntityChange(oldEntityId, newEntityId)

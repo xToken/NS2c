@@ -1,213 +1,167 @@
+// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
-// lua\Web.lua
+// lua\Weapons\Alien\Web.lua
+//
+//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+//
+// Spit attack on primary.
+//
+// ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Script.Load("lua/ScriptActor.lua")
-Script.Load("lua/TriggerMixin.lua")
-Script.Load("lua/LiveMixin.lua")
-Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/TeamMixin.lua")
-Script.Load("lua/DamageMixin.lua")
+Script.Load("lua/TriggerMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/OwnerMixin.lua")
-Script.Load("lua/SleeperMixin.lua")
 
-class 'Web' (ScriptActor)
-
-kWebActivateTime = 2
+class 'Web' (Actor)
 
 Web.kMapName = "web"
 
-Web.kModelName = PrecacheAsset("models/alien/gorge/goowallnode.model")
+local networkVars =
+{
+    endPoint = "vector"
+}
 
-local networkVars = { }
-
-AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
-AddMixinNetworkVars(LiveMixin, networkVars)
+AddMixinNetworkVars(TechMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
+
+Shared.PrecacheSurfaceShader("models/alien/gorge/web.surface_shader")
+local kWebMaterial = "models/alien/gorge/web.material"
+local kWebWidth = 0.1
+
+function EntityFilterNonWebables()
+    return function(test) return not HasMixin(test, "Webable") end
+end
+
+function Web:SpaceClearForEntity(location)
+    return true
+end
 
 function Web:OnCreate()
 
-    ScriptActor.OnCreate(self)
+    Entity.OnCreate(self)
     
-    InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
-    InitMixin(self, LiveMixin)
-    InitMixin(self, GameEffectsMixin)
+    InitMixin(self, TechMixin)
     InitMixin(self, TeamMixin)
-    InitMixin(self, DamageMixin)
-
+    
     if Server then
     
-        InitMixin(self, OwnerMixin)
-        // init after OwnerMixin since 'OnEntityChange' is expected callback
         InitMixin(self, EntityChangeMixin)
-        InitMixin(self, SleeperMixin)
+        InitMixin(self, TriggerMixin, {kPhysicsGroup = PhysicsGroup.TriggerGroup, kFilterMask = PhysicsMask.AllButTriggers} )
+        InitMixin(self, OwnerMixin)
         
-        self:SetUpdates(true)
-        
-    end
-    
-end
-
-function Web:GetReceivesStructuralDamage()
-    return false
-end    
-
-local function CheckEntityTriggers(self, entity)
-
-    if not self.active then
-        return false
-    end
-    
-    if not HasMixin(entity, "Team") or GetEnemyTeamNumber(self:GetTeamNumber()) ~= entity:GetTeamNumber() then
-        return false
-    end
-    
-    if not HasMixin(entity, "Live") or not entity:GetIsAlive() or not entity:GetCanTakeDamage() then
-        return false
-    end
-    
-    if not (entity:isa("Player") or entity:isa("Whip")) then
-        return false
-    end
-    
-    if entity:isa("Commander") then
-        return false
-    end
-    
-    local webPos = self:GetEngagementPoint()
-    local targetPos = entity:GetEngagementPoint()
-    // Do not trigger through walls. But do trigger through other entities.
-    if not GetWallBetween(webPos, targetPos, entity) then
-        entity:SetDisruptDuration(kWebImobilizeTime, true)
-        self:TriggerEffects("death")
-        DestroyEntity(self)
-        return true      
-    end
-    return false
-    
-end
-
-local function CheckAllEntsInTrigger(self)
-
-    local ents = self:GetEntitiesInTrigger()
-    for e = 1, #ents do
-        CheckEntityTriggers(self, ents[e])
-    end
-    
-end
-
-function Web:GetCanBeUsed(player, useSuccessTable)
-    useSuccessTable.useSuccess = false
-end
-
-function Web:OnInitialized()
-    
-    ScriptActor.OnInitialized(self)
-    
-    if Server then
-    
-        self.active = false
-        
-        local activateFunc = function(self)
-                                 self.active = true
-                                 CheckAllEntsInTrigger(self)
-                             end
-        self:AddTimedCallback(activateFunc, kWebActivateTime)
-        
-        self:SetHealth(self:GetMaxHealth())
-        self:SetArmor(self:GetMaxArmor())
-        
-        InitMixin(self, TriggerMixin)
-        self:SetBox(Vector(3,3,3))
+        self.nearbyWebAbleIds = {}
+        self:SetTechId(kTechId.Web)
         
     end
     
-    self:SetModel(Web.kModelName)
+    self:SetUpdates(false)
     
 end
 
 if Server then
-
-    function Web:OnKill(attacker, doer, point, direction)
-        ScriptActor.OnKill(self, attacker, doer, point, direction)
-        self:TriggerEffects("death")
-        DestroyEntity(self)
-    end
     
-    function Web:OnTriggerEntered(entity)
-        CheckEntityTriggers(self, entity)
-    end
+    local function CreateTrigger(self)
     
-    /**
-     * LOL
-     */
-    function Web:GetCanSleep()
-        return self:GetNumberOfEntitiesInTrigger() == 0
-    end
-    
-    /**
-     * We need to check when there are entities within the trigger area often.
-     */
-    function Web:OnUpdate(dt)
-    
-        local now = Shared.GetTime()
-        self.lastWebUpdateTime = self.lastWebUpdateTime or now
-        if now - self.lastWebUpdateTime >= 0.5 then
+        if self.triggerBody then
         
-            CheckAllEntsInTrigger(self)
-            self.lastWebUpdateTime = now
+            Shared.DestroyCollisionObject(self.triggerBody)
+            self.triggerBody = nil
             
+        end
+        
+        local coords = Coords.GetTranslation((self:GetOrigin() - self.endPoint) * .5 + self.endPoint)
+        local radius = (self:GetOrigin() - self.endPoint):GetLength() * .5
+
+        self.triggerBody = Shared.CreatePhysicsSphereBody(false, radius, 0, coords)
+        self.triggerBody:SetTriggerEnabled(true)
+        self.triggerBody:SetCollisionEnabled(true)
+        
+        if self:GetMixinConstants().kPhysicsGroup then
+            //Print("set trigger physics group to %s", EnumToString(PhysicsGroup, self:GetMixinConstants().kPhysicsGroup))
+            self.triggerBody:SetGroup(self:GetMixinConstants().kPhysicsGroup)
+        end
+        
+        if self:GetMixinConstants().kFilterMask then
+            //Print("set trigger filter mask to %s", EnumToString(PhysicsMask, self:GetMixinConstants().kFilterMask))
+            self.triggerBody:SetGroupFilterMask(self:GetMixinConstants().kFilterMask)
+        end
+        
+        self.triggerBody:SetEntity(self)
+        
+    end
+
+    function Web:SetEndPoint(endPoint)
+        self.endPoint = Vector(endPoint)
+        CreateTrigger(self)
+    end
+
+    // OnUpdate is only called when entities are in interest range    
+    function Web:OnUpdate(deltaTime)
+
+        local trace = Shared.TraceRay(self:GetOrigin(), self.endPoint, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterNonWebables())
+        if trace.entity then
+            trace.entity:SetWebbed(kWebbedDuration)
+            DestroyEntity(self)
+        end
+    
+    end
+    
+    function Web:OnTriggerEntered(enterEntity)
+    
+        if HasMixin(enterEntity, "Webable") then
+            table.insertunique(self.nearbyWebAbleIds, enterEntity:GetId())
+            self:SetUpdates(true)
         end
         
     end
     
-end
-
-function Web:GetAttachPointOriginHardcoded(attachPointName)
-    return self:GetOrigin() + self:GetCoords().yAxis * 0.01
-end
-
-function Web:ComputeDamageOverride(attacker, damage, damageType, doer)
-    //Print(ToString(doer.kMapName))
-    if doer.kMapName ~= "welder" and doer.kMapName ~= "grenade" and doer.kMapName ~= "handgrenade" then
-        return 0
-    else
-        return damage
+    function Web:OnTriggerExited(exitEntity)
+    
+        if HasMixin(enterEntity, "Webable") then
+        
+            table.removevalue(self.nearbyWebAbleIds, exitEntity:GetId())
+            
+            if #self.nearbyWebAbleIds == 0 then
+                self:SetUpdates(false)
+            end
+            
+        end    
+    
     end
+
 end
 
 function Web:OnDestroy()
 
-    if self._renderModel ~= nil then
+    Entity.OnDestroy(self)
     
-        Client.DestroyRenderModel(self._renderModel)
-        self._renderModel = nil
+    if self.webRenderModel then
+    
+        DynamicMesh_Destroy(self.webRenderModel)
+        self.webRenderModel = nil
         
     end
-    
-    if self.physicsModel then
-    
-        Shared.DestroyCollisionObject(self.physicsModel)
-        self.physicsModel = nil
-        
-    end
-    
+
 end
 
-if Client then
+function Web:OnUpdateRender()
 
-    function Web:OnGetIsVisible(visibleTable, viewerTeamNumber)
+    // we are smart and do that only once.
+    if not self.webRenderModel then
     
-        local player = Client.GetLocalPlayer()
+        self.webRenderModel = DynamicMesh_Create()
+        self.webRenderModel:SetMaterial(kWebMaterial)
         
-        if player and player:isa("Commander") and viewerTeamNumber == GetEnemyTeamNumber(self:GetTeamNumber()) then
-            
-            visibleTable.Visible = false
+        local length = (self.endPoint - self:GetOrigin()):GetLength()
+        local coords = Coords.GetIdentity()
+        coords.origin = self:GetOrigin()
+        coords.zAxis = GetNormalizedVector(self.endPoint - self:GetOrigin())
+        coords.xAxis = coords.zAxis:GetPerpendicular()
+        coords.yAxis = coords.zAxis:CrossProduct(coords.xAxis)
         
-        end
-
+        DynamicMesh_SetTwoSidedLine(self.webRenderModel, coords, kWebWidth, length)
+    
     end
 
 end

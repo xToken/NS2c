@@ -116,6 +116,7 @@ function GUIUnitStatus:Uninitialize()
     
     for _, blip in ipairs(self.activeBlipList) do
         GUI.DestroyItem(blip.statusBg)
+        blip.GraphicsItem:Destroy()
     end
 
     self.activeBlipList = { }
@@ -367,13 +368,13 @@ function GUIUnitStatus:CreateBlipItem()
     newBlip.ProgressText:SetFontIsBold(true)
     newBlip.ProgressingIcon:AddChild(newBlip.ProgressText)
     
-    newBlip.statusBg = GUIManager:CreateGraphicItem()
+    newBlip.statusBg = GetGUIManager():CreateGraphicItem()
     
     newBlip.statusBg:SetSize(GUIUnitStatus.kStatusBgSize)
     newBlip.statusBg:SetPosition(-GUIUnitStatus.kStatusBgSize * .5 + GUIUnitStatus.kStatusBgOffset )
     newBlip.statusBg:SetClearsStencilBuffer(true)
     
-    newBlip.smokeyBackground = GUIManager:CreateGraphicItem()
+    newBlip.smokeyBackground = GetGUIManager():CreateGraphicItem()
     newBlip.smokeyBackground:SetAnchor(GUIItem.Middle, GUIItem.Center)
     newBlip.smokeyBackground:SetSize(kSmokeyBackgroundSize)
     newBlip.smokeyBackground:SetPosition(-kSmokeyBackgroundSize * .5)
@@ -387,7 +388,7 @@ function GUIUnitStatus:CreateBlipItem()
     newBlip.smokeyBackground:SetColor(Color(1,1,1,0.6))
     newBlip.smokeyBackground:SetInheritsParentAlpha(true)
     
-    newBlip.HealthBarBg = GUIManager:CreateGraphicItem()
+    newBlip.HealthBarBg = GetGUIManager():CreateGraphicItem()
     newBlip.HealthBarBg:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
     newBlip.HealthBarBg:SetSize(Vector(kHealthBarWidth, kHealthBarHeight, 0))
     newBlip.HealthBarBg:SetPosition(Vector(-kHealthBarWidth / 2, -kHealthBarHeight - kArmorBarHeight - 4, 0))
@@ -396,7 +397,7 @@ function GUIUnitStatus:CreateBlipItem()
     newBlip.HealthBarBg:SetInheritsParentAlpha(true)
     newBlip.HealthBarBg:SetTexturePixelCoordinates(unpack(GUIUnitStatus.kUnitStatusBarTexCoords))
     
-    newBlip.HealthBar = GUIManager:CreateGraphicItem()
+    newBlip.HealthBar = GetGUIManager():CreateGraphicItem()
     newBlip.HealthBar:SetColor(kHealthBarColors[teamType])
     newBlip.HealthBar:SetSize(Vector(kHealthBarWidth, kHealthBarHeight, 0))
     newBlip.HealthBar:SetTexture(neutralTexture)
@@ -405,7 +406,7 @@ function GUIUnitStatus:CreateBlipItem()
     newBlip.HealthBar:SetInheritsParentAlpha(true)
     newBlip.HealthBarBg:AddChild(newBlip.HealthBar)
     
-    newBlip.ArmorBarBg = GUIManager:CreateGraphicItem()
+    newBlip.ArmorBarBg = GetGUIManager():CreateGraphicItem()
     newBlip.ArmorBarBg:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
     newBlip.ArmorBarBg:SetSize(Vector(kArmorBarWidth, kArmorBarHeight, 0))
     newBlip.ArmorBarBg:SetPosition(Vector(-kArmorBarWidth / 2, -kArmorBarHeight - 4, 0))

@@ -531,21 +531,24 @@ local kGorgeBuildStructureMessage =
     origin = "vector",
     direction = "vector",
     structureIndex = "integer (1 to 5)",
+    lastClickedPosition = "vector"
 }
 
-function BuildGorgeDropStructureMessage(origin, direction, structureIndex)
+function BuildGorgeDropStructureMessage(origin, direction, structureIndex, lastClickedPosition)
 
     local t = {}
     
     t.origin = origin
     t.direction = direction
     t.structureIndex = structureIndex
-    
+    t.lastClickedPosition = lastClickedPosition or Vector(0,0,0)
+
     return t
+    
 end    
 
 function ParseGorgeBuildMessage(t)
-    return t.origin, t.direction, t.structureIndex
+    return t.origin, t.direction, t.structureIndex, t.lastClickedPosition
 end
 
 local kMutePlayerMessage = 

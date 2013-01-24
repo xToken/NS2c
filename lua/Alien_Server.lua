@@ -104,9 +104,6 @@ function Alien:OnProcessMove(input)
     Player.OnProcessMove(self, input)
     
 	if not self:GetIsDestroyed() then
-    // Calculate two and three hives so abilities for abilities        
-    	self:UpdateNumHives()
-    	//UpdateAbilityAvailability(self, self:GetTierOneTechId(), self:GetTierTwoTechId(), self:GetTierThreeTechId())
     	self:CheckRedemption()
     	self.primalScreamBoost = self.timeWhenPrimalScreamExpires > Shared.GetTime()  
     	self:UpdateAutoHeal()
@@ -143,7 +140,6 @@ local kAbilityData = { [kTechId.Skulk] = { kTechId.Parasite, kTechId.Leap, kTech
                        [kTechId.Onos] = { kTechId.Charge, kTechId.Stomp, kTechId.Smash } }
 
 function Alien:OnHiveConstructed(newHive, activeHiveCount)
-    
     local AbilityData = kAbilityData[self:GetTechId()]
     if AbilityData ~= nil then
         if AbilityData[activeHiveCount] ~= nil then
@@ -353,220 +349,84 @@ function Alien:GetTierThreeTechId()
     return kTechId.None
 end
 
-function Alien:GetTierOneWeaponMapName()
-    return LookupTechData(self:GetTierOneTechId(), kTechDataMapName)
-end
+local function UnlockAbility(forAlien, techId)
 
-function Alien:GetTierThreeWeaponMapName()
-    return LookupTechData(self:GetTierThreeTechId(), kTechDataMapName)
-end
-
-function Alien:GetTierTwoWeaponMapName()
-    return LookupTechData(self:GetTierTwoTechId(), kTechDataMapName)
-end
-
-function Alien:UnlockTierOne()
-
-    local tierOneMapName = self:GetTierOneWeaponMapName()
+    local mapName = LookupTechData(techId, kTechDataMapName)
+    if mapName and forAlien:GetIsAlive() then
     
-    if tierOneMapName and self:GetIsAlive() then
-    
-        local activeWeapon = self:GetActiveWeapon()
-        
-        if tierOneMapName then
-        
-            local tierOneWeapon = self:GetWeapon(tierOneMapName)
-            if not tierOneWeapon then
-                self:GiveItem(tierOneWeapon)
-            end
-        
+        local activeWeapon = forAlien:GetActiveWeapon()
+
+        local tierWeapon = forAlien:GetWeapon(mapName)
+        if not tierWeapon then
+            forAlien:GiveItem(mapName)
         end
         
         if activeWeapon then
-            self:SetActiveWeapon(activeWeapon:GetMapName())
+            forAlien:SetActiveWeapon(activeWeapon:GetMapName())
         end
     
     end
-    
+
 end
 
-function Alien:LockTierOne()
+local function LockAbility(forAlien, techId)
 
-    local tierOneMapName = self:GetTierOneWeaponMapName()
+    local mapName = LookupTechData(techId, kTechDataMapName)    
+    if mapName and forAlien:GetIsAlive() then
     
-    if tierOneMapName and self:GetIsAlive() then
-    
-        local tierOneWeapon = self:GetWeapon(tierOneMapName)
-        local activeWeapon = self:GetActiveWeapon()
+        local tierWeapon = forAlien:GetWeapon(mapName)
+        local activeWeapon = forAlien:GetActiveWeapon()
         local activeWeaponMapName = nil
         
         if activeWeapon ~= nil then
             activeWeaponMapName = activeWeapon:GetMapName()
         end
         
-        if tierOneWeapon then
-            self:RemoveWeapon(tierOneWeapon)
+        if tierWeapon then
+            forAlien:RemoveWeapon(tierWeapon)
         end
         
-        if activeWeaponMapName == tierOneMapName then
-            self:SwitchWeapon(1)
+        if activeWeaponMapName == mapName then
+            forAlien:SwitchWeapon(1)
         end
         
     end    
     
 end
 
-function Alien:UnlockTierTwo()
+function Alien:UpdateNumHives(hives)
 
-    local tierTwoMapName = self:GetTierTwoWeaponMapName()
-    
-    if tierTwoMapName and self:GetIsAlive() then
-    
-        local activeWeapon = self:GetActiveWeapon()
-        
-        if tierTwoMapName then
-        
-            local tierTwoWeapon = self:GetWeapon(tierTwoMapName)
-            if not tierTwoWeapon then
-                self:GiveItem(tierTwoMapName)
-            end
-        
-        end
-        
-        if activeWeapon then
-            self:SetActiveWeapon(activeWeapon:GetMapName())
-        end
-    
+    if not self.oneHive and hives >= 1 then
+        UnlockAbility(self, self:GetTierOneTechId())
+        self.oneHive = true
+    elseif self.oneHive and hives < 1 then
+        LockAbility(self, self:GetTierOneTechId())
+        self.oneHive = false
+    end
+
+    if not self.twoHives and hives >= 2 then
+        UnlockAbility(self, self:GetTierTwoTechId())
+        self.twoHives = true
+    elseif self.twoHives and hives < 2 then
+        LockAbility(self, self:GetTierTwoTechId())
+        self.twoHives = false
     end
     
-end
-
-function Alien:LockTierTwo()
-
-    local tierTwoMapName = self:GetTierTwoWeaponMapName()
-    
-    if tierTwoMapName and self:GetIsAlive() then
-    
-        local tierTwoWeapon = self:GetWeapon(tierTwoMapName)
-        local activeWeapon = self:GetActiveWeapon()
-        local activeWeaponMapName = nil
-        
-        if activeWeapon ~= nil then
-            activeWeaponMapName = activeWeapon:GetMapName()
-        end
-        
-        if tierTwoWeapon then
-            self:RemoveWeapon(tierTwoWeapon)
-        end
-        
-        if activeWeaponMapName == tierTwoMapName then
-            self:SwitchWeapon(1)
-        end
-        
-    end    
-    
-end
-
-function Alien:UnlockTierThree()
-
-    local tierThreeMapName = self:GetTierThreeWeaponMapName()
-    
-    if tierThreeMapName and self:GetIsAlive() then
-    
-        local activeWeapon = self:GetActiveWeapon()
-    
-        local tierThreeWeapon = self:GetWeapon(tierThreeMapName)
-        if not tierThreeWeapon then
-            self:GiveItem(tierThreeMapName)
-        end
-        
-        if activeWeapon then
-            self:SetActiveWeapon(activeWeapon:GetMapName())
-        end
-    
-    end
-    
-end
-
-function Alien:LockTierThree()
-
-    local tierThreeMapName = self:GetTierThreeWeaponMapName()
-    
-    if tierThreeMapName and self:GetIsAlive() then
-    
-        local tierThreeWeapon = self:GetWeapon(tierThreeMapName)
-        local activeWeapon = self:GetActiveWeapon()
-        local activeWeaponMapName = nil
-        
-        if activeWeapon ~= nil then
-            activeWeaponMapName = activeWeapon:GetMapName()
-        end
-        
-        if tierThreeWeapon then
-            self:RemoveWeapon(tierThreeWeapon)
-        end
-        
-        if activeWeaponMapName == tierThreeMapName then
-            self:SwitchWeapon(1)
-        end
-        
+    if not self.threeHives and hives >= 3 then
+        UnlockAbility(self, self:GetTierThreeTechId())
+        self.threeHives = true
+    elseif self.threeHives and hives < 3 then
+        LockAbility(self, self:GetTierThreeTechId())
+        self.threeHives = false
     end
     
 end
 
 function Alien:OnKill(attacker, doer, point, direction)
-    if self:GetTechId() == kTechId.Onos then
-        local devourWeapon = self:GetWeapon("devour")
-        if devourWeapon and devourWeapon:IsAlreadyEating() then
-            devourWeapon:OnForceUnDevour()
-        end
-    end
     Player.OnKill(self, attacker, doer, point, direction)
     self.oneHive = false
     self.twoHives = false
-    self.threeHives = false
-    
-end
-
-function Alien:UpdateNumHives()
-
-    local time = Shared.GetTime()
-    if self.timeOfLastNumHivesUpdate == nil or (time > self.timeOfLastNumHivesUpdate + 0.5) then
-    
-        local team = self:GetTeam()
-        if team and team.GetTechTree then
-
-            local hives = team:GetActiveHiveCount()
-            if not self.oneHive and hives >= 1 or GetGamerules():GetAllTech() then
-                self:UnlockTierOne()
-                self.oneHive = true
-            elseif self.oneHive and hives < 1 then
-                self:LockTierOne()
-                self.oneHive = false
-            end
-
-            if not self.twoHives and hives >= 2 or GetGamerules():GetAllTech() then
-                self:UnlockTierTwo()
-                self.twoHives = true
-            elseif self.twoHives and hives < 2 then
-                self:LockTierTwo()
-                self.twoHives = false
-            end
-            
-            if not self.threeHives and hives >= 3 or GetGamerules():GetAllTech() then
-                self:UnlockTierThree()
-                self.threeHives = true
-            elseif self.threeHives and hives < 3 then
-                self:LockTierThree()
-                self.threeHives = false
-            end
-            
-        end
-        
-        self.timeOfLastNumHivesUpdate = time
-        
-    end
-    
+    self.threeHives = false    
 end
 
 function Alien:CopyPlayerDataFrom(player)

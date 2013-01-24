@@ -52,7 +52,7 @@ function Spit:TimeUp()
     
 end
 
-function Spit:GetPrimaryAttackUsesFocus()
+function Spit:GetAbilityUsesFocus()
     return true
 end
 

@@ -427,7 +427,6 @@ local function AddFavoritesToServerList(serverList)
         serverEntry.name = FormatServerName(serverEntry.name, serverEntry.rookieFriendly)
         
         local function OnServerRefreshed(serverData)
-            local tt = serverEntry.address
             serverList:UpdateEntry(serverData)
         end
         Client.RefreshServer(serverEntry.address, OnServerRefreshed)
@@ -470,7 +469,7 @@ function GUIMainMenu:ProcessJoinServer()
 
     if MainMenu_GetSelectedServer() ~= nil then
     
-        if MainMenu_GetSelectedServer() >= 0 and MainMenu_GetSelectedRequiresPassword() then
+        if MainMenu_GetSelectedRequiresPassword() then
             self.passwordPromptWindow:SetIsVisible(true)
         else
             JoinServer(self)
@@ -1090,7 +1089,7 @@ function GUIMainMenu:CreateHostGameWindow()
     self.createGame:AddEventCallbacks({ OnHide = function() SaveServerSettings(self) end })
 
     local minPlayers            = 2
-    local maxPlayers            = 32
+    local maxPlayers            = 24
     local playerLimitOptions    = { }
     
     for i = minPlayers, maxPlayers do
@@ -1480,7 +1479,7 @@ local function SaveOptions(mainMenu)
     local armorType             = mainMenu.optionElements.ArmorType:GetValue()
     local cameraAnimation       = mainMenu.optionElements.CameraAnimation:GetActiveOptionIndex() > 1
     local advancedmovement      = mainMenu.optionElements.AdvancedMovement:GetActiveOptionIndex() > 1
-	local particleQuality       = mainMenu.optionElements.ParticleQuality:GetActiveOptionIndex()
+    local particleQuality       = mainMenu.optionElements.ParticleQuality:GetActiveOptionIndex()
     
     Client.SetOptionString( "locale", locale )
 
@@ -1946,8 +1945,10 @@ function GUIMainMenu:Update(deltaTime)
         
         if self.playWindow:GetIsVisible() then
         
+            local listChanged = false
+        
             if not Client.GetServerListRefreshed() then
-            
+   
                 for s = 0, Client.GetNumServers() - 1 do
                 
                     if s + 1 > self.numServers then
@@ -1955,26 +1956,31 @@ function GUIMainMenu:Update(deltaTime)
                         local serverEntry = BuildServerEntry(s)
                         if self.serverList:GetEntryExists(serverEntry) then
                         
-                            self.serverList:UpdateEntry(serverEntry)
+                            self.serverList:UpdateEntry(serverEntry, true)
                             if GetServerIsFavorite(serverEntry.address) then
                                 UpdateFavoriteServerData(serverEntry)
                             end
                             
                         else
                         
-                            self.serverList:AddEntry(serverEntry)
+                            self.serverList:AddEntry(serverEntry, true)
                             self.numServers = self.numServers + 1
                             
                         end
                         
-                        
+                        listChanged = true
                         
                     end
                     
                 end
+
                 
             else
                 self.playWindow.updateButton:SetText("UPDATE")
+            end
+            
+            if listChanged then
+                self.serverList:RenderNow()
             end
             
             local countTxt = ToString(Client.GetNumServers()) .. (Client.GetServerListRefreshed() and "" or "...")

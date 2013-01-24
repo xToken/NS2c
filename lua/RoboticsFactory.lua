@@ -243,6 +243,31 @@ function RoboticsFactory:OnUpdateAnimationInput(modelMixin)
 
 end
 
+function GetRoomHasNoRoboticsFactory(techId, origin, normal, commander)
+
+    local location = GetLocationForPoint(origin)
+    local locationName = location and location:GetName() or nil
+    local validRoom = false
+    
+    if locationName then
+    
+        validRoom = true
+    
+        for index, sentryBattery in ientitylist(Shared.GetEntitiesWithClassname("RoboticsFactory")) do
+            
+            if sentryBattery:GetLocationName() == locationName then
+                validRoom = false
+                break
+            end
+            
+        end
+    
+    end
+    
+    return validRoom
+
+end
+
 if Server then
 
     function RoboticsFactory:OnUpdate()

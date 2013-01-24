@@ -109,7 +109,7 @@ Player.kRunIdleSpeed = 1
 
 Player.kLoginBreakingDistance = 150
 local kDownwardUseRange = 2.2
-Player.kUseHolsterTime = .5
+Player.kUseHolsterTime = 0.5
 Player.kDefaultBuildTime = .2
 local kUseBoxSize = Vector(0.5, 0.5, 0.5)
 
@@ -350,9 +350,11 @@ function Player:OnCreate()
     if Server then
         self.name = ""
         self.giveDamageTime = 0
+        self.sendTechTreeBase = false
+        
     end
     
-    self.viewOffset = Vector( 0, 0, 0 )
+    self.viewOffset = Vector(0, 0, 0)
     
     self.bodyYaw = 0
     self.standingBodyYaw = 0
@@ -361,14 +363,15 @@ function Player:OnCreate()
     self.runningBodyYaw = 0
     
     self.clientIndex = -1
+	//NS2c Additions
     self.forwardModifier = false
+    self.movementModiferState = false
+	self.crouched = false
+	self.landtime = 0
+
     self.showScoreboard = false
     
-    if Server then
-        self.sendTechTreeBase = false
-    end
-    
-    self.timeLastMenu = 0    
+    self.timeLastMenu = 0
     self.darwinMode = false
     self.kills = 0
     self.deaths = 0
@@ -380,17 +383,15 @@ function Player:OnCreate()
     self.modeTime = -1
     self.primaryAttackLastFrame = false
     self.secondaryAttackLastFrame = false
-    self.movementModiferState = false
-    self.requestsScores = false   
+    
+    self.requestsScores = false
     self.viewModelId = Entity.invalidId
     
     self.usingStructure = nil
-    self.timeOfLastUse  = 0
-    self.respawnQueueEntryTime = nil
-
+    self.timeOfLastUse = 0
+    
     self.timeOfDeath = nil
     self.crouching = false
-    self.crouched = false
     self.timeOfCrouchChange = 0
     self.onGroundNeedsUpdate = true
     self.onGround = false
@@ -398,32 +399,31 @@ function Player:OnCreate()
     self.onLadder = false
     
     self.timeLastOnGround = 0
-    self.landtime = 0
-
+    
     self.resources = 0
     
     self.stepStartTime = 0
-    self.stepAmount    = 0
+    self.stepAmount = 0
     
     self.isMoveBlocked = false
     self.isRookie = false
-            
+    
     // Create the controller for doing collision detection.
     // Just use default values for the capsule size for now. Player will update to correct
     // values when they are known.
     self:CreateController(PhysicsGroup.PlayerControllersGroup)
-
+    
     // Make the player kinematic so that bullets and other things collide with it.
     self:SetPhysicsGroup(PhysicsGroup.PlayerGroup)
     
     self.isUsing = false
     self.slowAmount = 0
-
+    
     self.lastButtonReleased = TAP_NONE
     self.timeLastButtonReleased = 0
-    self.previousMove = Vector(0,0,0)
+    self.previousMove = Vector(0, 0, 0)
     
-    self.pushImpulse = Vector(0,0,0)
+    self.pushImpulse = Vector(0, 0, 0)
     self.pushTime = 0
     
     self.waitingForAutoTeamBalance = false
@@ -481,7 +481,7 @@ function Player:OnInitialized()
         if not self:GetIsLocalPlayer() and not self:isa("Commander") and not self:isa("Spectator") then
             InitMixin(self, UnitStatusMixin)
         end
-
+        
     end
     
     if Server then
@@ -891,7 +891,7 @@ function Player:PerformUseTrace()
     
 end
 
-function Player:UseTarget(entity, attachPoint, timePassed)
+function Player:UseTarget(entity, timePassed)
 
     assert(entity)
     
@@ -899,7 +899,7 @@ function Player:UseTarget(entity, attachPoint, timePassed)
     if entity.OnUse then
     
         useSuccessTable.useSuccess = true
-        entity:OnUse(self, timePassed, true, attachPoint, useSuccessTable)
+        entity:OnUse(self, timePassed, useSuccessTable)
         
     end
     
@@ -910,8 +910,8 @@ function Player:UseTarget(entity, attachPoint, timePassed)
 end
 
 /**
- * Check to see if there's a ScriptActor we can use. Checks any attachpoints returned from  
- * GetAttachPointOrigin() and if that fails, does a regular traceray. Returns true if we processed the action.
+ * Check to see if there's a ScriptActor we can use. Checks any usable points returned from  
+ * GetUsablePoints() and if that fails, does a regular trace ray. Returns true if we processed the action.
  */
 local function AttemptToUse(self, timePassed)
 
@@ -929,19 +929,21 @@ local function AttemptToUse(self, timePassed)
     end
     
     // Trace to find use entity.
-    local entity, attachPoint = self:PerformUseTrace()   
+    local entity, usablePoint = self:PerformUseTrace()
     
     // Use it.
     if entity then
     
-        if self:UseTarget(entity, attachPoint, kUseInterval) then
+        if self:UseTarget(entity, kUseInterval) then
+        
             self:SetIsUsing(true)
             self.timeOfLastUse = Shared.GetTime()
             return true
+            
         end
-
+        
     end
-
+    
 end
 
 function Player:Buy()
@@ -1159,7 +1161,7 @@ function Player:GetGroundFrictionForce()
 end   
 
 function Player:GetAirFrictionForce()
-    return 0.50
+    return 0.5
 end
 
 function Player:GetClimbFrictionForce()
@@ -1220,11 +1222,33 @@ function Player:GoldSrc_Friction(input, velocity)
     return velocity
 end
 
+function Player:GoldSrc_GetMaxSpeed(possible)
+    if possible then
+        return Player.kRunMaxSpeed
+    end
+    
+    local maxSpeed = Player.kRunMaxSpeed
+    
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = Player.kWalkMaxSpeed
+    end
+      
+    return maxSpeed
+end
+
+function Player:GoldSrc_GetAcceleration()
+    return ConditionalValue(self:GetIsOnGround(), Player.kGoldSrcAcceleration, Player.kGoldSrcAirAcceleration)
+end
+
 function Player:GetGravityAllowed()
 
     // No gravity when on ladders or on the ground.
     return not self:GetIsOnLadder() and not self:GetIsOnGround()
     
+end
+
+function Player:GetCrouchSpeedScalar()
+    return Player.kCrouchSpeedScalar
 end
 
 function Player:GetMoveDirection(moveVelocity)
@@ -1678,7 +1702,7 @@ function Player:UpdateMaxMoveSpeed(deltaTime)
 
     ASSERT(deltaTime >= 0)
     
-    // Only recover max speed when on the 
+    // Only recover max speed when on the ground
     if self:GetIsOnGround() then
     
         local newSlow = math.max(0, self.slowAmount - deltaTime)
@@ -1991,7 +2015,7 @@ function Player:GetIsCloseToGround(distanceToGround)
         return false
     end
 
-    if (self:GetVelocityPitch() > 0 and self.timeOfLastJump ~= nil and (Shared.GetTime() - self.timeOfLastJump < .1)) then
+    if (self:GetVelocityPitch() > 0 and self.timeOfLastJump ~= nil and (Shared.GetTime() - self.timeOfLastJump < .2)) then
     
         // If we are moving away from the ground, don't treat
         // us as standing on it.
@@ -2113,28 +2137,6 @@ function Player:ProcessEndMode()
     end
     
     return false
-end
-
-function Player:GetCrouchSpeedScalar()
-    return Player.kCrouchSpeedScalar
-end
-
-function Player:GoldSrc_GetMaxSpeed(possible)
-    if possible then
-        return Player.kRunMaxSpeed
-    end
-    
-    local maxSpeed = Player.kRunMaxSpeed
-    
-    if self.movementModiferState and self:GetIsOnSurface() then
-        maxSpeed = Player.kWalkMaxSpeed
-    end
-      
-    return maxSpeed
-end
-
-function Player:GoldSrc_GetAcceleration()
-    return ConditionalValue(self:GetIsOnGround(), Player.kGoldSrcAcceleration, Player.kGoldSrcAirAcceleration)
 end
 
 // Maximum speed a player can move backwards

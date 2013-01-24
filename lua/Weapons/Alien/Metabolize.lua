@@ -12,16 +12,10 @@ local kDefaultAttackSpeed = 1.4
 
 local networkVars =
 {
+    lastPrimaryAttackTime = "time"
 }
 
 local kAnimationGraph = PrecacheAsset("models/alien/fade/fade_view.animation_graph")
-
-local function GetHasAttackDelay(self, player)
-
-    local attackDelay = ConditionalValue( player:GetIsPrimaled(), (kMetabolizeDelay / kPrimalScreamROFIncrease), kMetabolizeDelay)
-    return self.lastPrimaryAttackTime + attackDelay > Shared.GetTime()
-    
-end
 
 function Metabolize:OnCreate()
 
@@ -56,9 +50,17 @@ function Metabolize:GetBlinkAllowed()
     return true
 end
 
+function Metabolize:GetAttackDelay()
+    return kMetabolizeDelay
+end
+
+function Metabolize:GetLastAttackTime()
+    return self.lastPrimaryAttackTime
+end
+
 function Metabolize:OnPrimaryAttack(player)
 
-    if not self:GetIsBlinking() and player:GetEnergy() >= self:GetEnergyCost() and not GetHasAttackDelay(self, player) then
+    if not self:GetIsBlinking() and player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(self, player) then
         self.primaryAttacking = true    
     else
         self:OnPrimaryAttackEnd()

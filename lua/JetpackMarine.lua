@@ -40,7 +40,7 @@ JetpackMarine.kJetpackMinimumFuelForLaunch = .03
 
 // Allow JPers to go faster in the air, but still capped
 JetpackMarine.kJumpMode = 0 // Default jumping allows for better jetpack control, while stopping jetpack-bunnyhopping
-JetpackMarine.kVerticalThrustAccelerationMod = 2.5
+JetpackMarine.kVerticalThrustAccelerationMod = 2.25
 JetpackMarine.kVerticalThrustMaxSpeed = 12.0 // note: changing this impacts kVerticalThrustAccelerationMod
 JetpackMarine.kJetpackAcceleration = 17.0 // Horizontal acceleration
 JetpackMarine.kWalkMaxSpeed = 3.5                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
@@ -413,7 +413,7 @@ function JetpackMarine:GoldSrc_Accelerate(velocity, time, wishdir, wishspeed, ac
 end
 
 function JetpackMarine:GetJumpVelocity(input, velocity)
-    velocity.y = math.sqrt(math.abs(0.5 * self:GetJumpHeight() * self:GetGravityForce(input)))
+    velocity.y = math.sqrt(math.abs(1 * self:GetJumpHeight() * self:GetGravityForce(input)))
 end
 
 function JetpackMarine:GoldSrc_GetWishVelocity(input)
@@ -453,7 +453,7 @@ function JetpackMarine:GoldSrc_GetAcceleration()
 
     if self:GetIsJetpacking() then
 
-        acceleration = JetpackMarine.kJetpackAcceleration * 0.11
+        acceleration = JetpackMarine.kJetpackAcceleration * 0.25
         acceleration = acceleration * self:GetInventorySpeedScalar()
 
     else

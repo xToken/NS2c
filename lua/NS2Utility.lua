@@ -73,7 +73,8 @@ function GetPlayerCanUseEntity(player, target)
     
     //Print("GetPlayerCanUseEntity(%s, %s) returns %s", ToString(player), ToString(target), ToString(useSuccessTable.useSuccess))
 
-    return useSuccessTable.useSuccess
+    // really need to move this functionality into two mixin (when for user, one for useable)
+    return useSuccessTable.useSuccess or (target.GetCanAlwaysBeUsed and target:GetCanAlwaysBeUsed())
 
 end
 
@@ -1750,15 +1751,11 @@ function CheckWeaponForFocus(doer, player)
         return 0 
     end
     if doer and hasupg and level > 0 then
-        if doer.GetPrimaryAttackUsesFocus and doer:GetPrimaryAttackUsesFocus() then
+        if doer.GetAbilityUsesFocus and doer:GetAbilityUsesFocus() then
             return level    
         end
     end
     return 0
-end
-
-function AdjustAttackDelayforFocus(delay, level)
-    return delay + (delay * (kFocusAttackSlowdown * level))
 end
 
 /**

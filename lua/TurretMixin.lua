@@ -9,8 +9,6 @@ TurretMixin.type = "Turret"
 // This is needed so alien structures can be cloaked, but not marine structures
 TurretMixin.expectedCallbacks =
 {
-    OnPowerOn = "called on power active",
-    OnPowerOff = "called on power loss",
 }
 
 TurretMixin.optionalCallbacks =
@@ -77,9 +75,6 @@ if Server then
                 tf:AddConsumer(self)
                 self.powered = true
                 self.tfId = tf:GetId()           
-                if self.OnPowerOn then
-                    self:OnPowerOn()
-                end
             elseif tf:GetId() ~= self.tfId then
                 self.tfId = tf:GetId()
                 tf:AddConsumer(self)     
@@ -88,9 +83,6 @@ if Server then
             if self.powered then
                 self.powered = false
                 self.tfId = Entity.invalidId         
-                if self.OnPowerOff then
-                    self:OnPowerOff()
-                end
             end
         end        
     end
