@@ -33,7 +33,7 @@ function CommandStructure:OnInitialized()
     self.commanderId = Entity.invalidId
     self.occupied = false
     self.closedTime = 0
-    self.loginAllowed = true
+    self.loginAllowed = false
 
 end
 
@@ -158,13 +158,9 @@ function CommandStructure:Logout()
         
         returnPlayer.parasited = parasiteState
         returnPlayer.timeParasited = parasiteTime
-        
-        // Restore previous alien energy, but let us recuperate at the regular rate while we're in the hive
-        if previousAlienEnergy and returnPlayer.SetEnergy and timeStartedCommanderMode then
-        
-            local timePassedSinceStartedComm = Shared.GetTime() - timeStartedCommanderMode
-            returnPlayer:SetEnergy(previousAlienEnergy + Alien.kEnergyRecuperationRate * timePassedSinceStartedComm)
-            
+
+        if previousAlienEnergy and returnPlayer.SetEnergy then
+            returnPlayer:SetEnergy(previousAlienEnergy)
         end
         
         returnPlayer:UpdateArmorAmount()

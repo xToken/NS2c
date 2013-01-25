@@ -25,6 +25,8 @@ kPingOfDeathDamagePercent = 12
 kResearchMod = 1
 kAirMaxSpeedScalar = 1.8
 kOnLandDelay = 0.1
+kFootstepsThreshold = 3.5
+kLerkFlapEnergyCost = 3
 
 kGhostStructureModifier = .75
 kEnergyUpdateRate = 0.25
@@ -91,13 +93,13 @@ kUpgradeGestationTime = 2
 // Jetpack
 // NS1: 6.5 seconds of fuel
 // NS1: 9 seconds for full refuel
-kJetpackUseFuelRate = 0.15
+kJetpackUseFuelRate = 0.18
 kJetpackUpgradeUseFuelRate = 0.15
 kJetpackReplenishFuelRate = 0.11
-kJetpackWeightAssist = 1.75
+kJetpackWeight = 0.08
 
 //HA
-kHeavyArmorWeightAssist = 2.5
+kHeavyArmorWeight = 0.10
 
 kAlienInnateRegenerationTime = 1
 kAlienRegenerationTime = 2
@@ -107,5 +109,7 @@ kAlienRegenerationPercentage = 0.09
 //Severe Flinch Effects
 kFlinchDamageInterval = 0.1
 kFlinchDamagePercent = 0.30
+
+kKillDelay = 3
 
 kAbilityMaxEnergy = 100

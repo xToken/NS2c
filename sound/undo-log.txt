@@ -1,0 +1,1 @@
+23:14:10 ..\..\src\propertyeditor.cpp:4234 ER: Set Compression

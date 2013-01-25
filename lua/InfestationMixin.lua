@@ -19,8 +19,8 @@ local kGrowthRateScalar = 1
 
 local kDefaultGrowthRate = 0.25
 local kMaxGrowthRate = 1
-local kInitialRadius = 0.2
-
+local kInitialRadius = 0.5
+local kHiveInfestationRadius = 20
 local kThinkTime = 3
 
 local kMaxRadius = 20
@@ -52,7 +52,7 @@ end
 
 local function GetDisplayBlobs(self)
 
-    if PlayerUI_IsOverhead() and self:GetCoords().yAxis:DotProduct(Vector(0, 1, 0)) < 0.2 then
+    if PlayerUI_IsOverhead() and self:ReturnPatchCoords(1).yAxis:DotProduct(Vector(0, 1, 0)) < 0.2 then
         return false
     end
 
@@ -63,17 +63,16 @@ end
 function InfestationMixin:__initmixin()
 
     self.growthRate = kDefaultGrowthRate
-	self.hostAlive = self:GetIsAlive()
 	self.timeCycleStarted = Shared.GetTime() 
 	self.minRadius = kInitialRadius
 	self.maxRadius = kMaxRadius
 	self.InfestationLocations = { }
-	self.InfestationLocations.Top = nil
-	self.InfestationLocations.North = nil
-	self.InfestationLocations.South = nil
-	self.InfestationLocations.East = nil
-	self.InfestationLocations.West = nil
-	self.InfestationLocations.Bottom = nil
+	self.InfestationLocations.top = nil
+	self.InfestationLocations.north = nil
+	self.InfestationLocations.south = nil
+	self.InfestationLocations.east = nil
+	self.InfestationLocations.west = nil
+	self.InfestationLocations.bottom = nil
 	
 	self:SetUpdates(true)
     
@@ -84,6 +83,7 @@ function InfestationMixin:__initmixin()
     self:ResetBlobPlacement()
     --self:EnforceOutcropLimits()
     --self:LimitBlobsAspectRatio()
+    self:SpawnInfestation()
     
     self.hasClientGeometry = false
     self.parentMissingTime = 0.0
@@ -94,8 +94,20 @@ function InfestationMixin:OnKill()
 	self:DestroyClientGeometry()
 end
 
-function InfestationMixin:OnConstructionComplete()
-    self:SpawnInfestation()
+function InfestationMixin:ReturnPatchCoords(index)
+    if index == 1 then
+        return self.InfestationLocations.bottom
+    elseif index == 2 then
+	    return self.InfestationLocations.north
+    elseif index == 3 then
+	    return self.InfestationLocations.south
+    elseif index == 4 then
+	    return self.InfestationLocations.east
+    elseif index == 5 then
+	    return self.InfestationLocations.west
+    elseif index == 6 then
+	    return self.InfestationLocations.top
+	end
 end
 
 function InfestationMixin:GetRadius()
@@ -104,7 +116,7 @@ function InfestationMixin:GetRadius()
     
     local radiusCached = self.radiusCached
     
-    if radiusCached and self.maxRadius == radiusCached and self.hostAlive then
+    if radiusCached and self.maxRadius == radiusCached and self:GetIsAlive() then
         return radiusCached
     end 
     
@@ -120,7 +132,7 @@ function InfestationMixin:GetRadius()
         local timeRequired = growRadius / self.growthRate
         local fraction = 0
         
-        if self.hostAlive then
+        if self:GetIsAlive() then
             fraction = Clamp(cycleDuration / timeRequired, 0, 1)
         else
             fraction = 1 - Clamp(cycleDuration / timeRequired, 0, 1)
@@ -193,7 +205,7 @@ function InfestationMixin:GetIsPointOnInfestation(point, verticalSize)
     
         // Check dot product
         local toPoint = point - self:GetOrigin()
-        local verticalProjection = math.abs( self:GetCoords().yAxis:DotProduct( toPoint ) )
+        local verticalProjection = math.abs( self:ReturnPatchCoords(1).yAxis:DotProduct( toPoint ) )
         
         onInfestation = (verticalProjection < verticalSize)
         
@@ -215,10 +227,14 @@ local function GenerateInfestationCoords(origin, normal)
     
 end
 
+function InfestationMixin:GetInfestationRadius()
+    return kHiveInfestationRadius
+end
+
 function InfestationMixin:SetAttached(structure)
 end
 
-function InfestationMixin:SpawnInfestation(percent)
+function InfestationMixin:SpawnInfestation()
 
     local coords = self:GetCoords()
     local attached = self:GetAttached()
@@ -231,6 +247,7 @@ function InfestationMixin:SpawnInfestation(percent)
     self.InfestationLocations.bottom = coords
     
     // Ceiling.
+    local radius = self:GetInfestationRadius()
     local trace = Shared.TraceRay(self:GetOrigin() + coords.yAxis * 0.1, self:GetOrigin() + coords.yAxis * radius,  CollisionRep.Default,  PhysicsMask.Bullets, EntityFilterAll())
     local roomMiddlePoint = self:GetOrigin() + coords.yAxis * 0.1
     if trace.fraction ~= 1 then
@@ -352,6 +369,10 @@ if Client then
 
 			if parent ~= nil then
 
+                if not GetCanSeeEntity(Client_GetLocalPlayer(), parent, true) then
+                    return
+                end
+                
 				if parent then
 				
 					if HasMixin(parent, "Cloakable") then
@@ -552,7 +573,7 @@ if Client then
 		local zOffset = 0
 		local maxRadius = self:GetMaxRadius()
 		
-		local hostCoords = self:GetCoords()
+		local hostCoords = self:ReturnPatchCoords(1)
 		local numBlobs   = 0
 		local numBlobTries = numBlobGens * 3
 
@@ -618,7 +639,7 @@ if Client then
 
 		self.blobCoords = { }
 		
-		local numBlobGens = 50
+		local numBlobGens = 250
 		local parent = self:GetParent()
 		if parent and parent.GetInfestationNumBlobSplats then
 			numBlobGens = numBlobGens * parent:GetInfestationNumBlobSplats()
@@ -674,24 +695,23 @@ if Client then
 	function InfestationMixin:DebugDrawInfest()
 
 		DebugWireSphere( self:GetOrigin(), 1.0, 0,   1,0,0,1 )
-		DebugLine( self:GetOrigin(), self:GetOrigin()+self:GetCoords().yAxis*2, 0,     0,1,0,1)
+		DebugLine( self:GetOrigin(), self:GetOrigin() + self:ReturnPatchCoords(1).yAxis*2, 0,     0,1,0,1)
 
 	end
 
 	function InfestationMixin:OnUpdate(deltaTime)
 
+        if _quality ~= "rich" then
+            return
+        end
+        
 		PROFILE("InfestationMixin:OnUpdate")
 		
 		ScriptActor.OnUpdate(self, deltaTime)
 		
-		if self.clientHostAlive ~= self.hostAlive then
-		
-			self.clientHostAlive = self.hostAlive
-			if not self.hostAlive then
-				OnHostKilledClient(self)
-			end
-			
-		end
+        if not self:GetIsAlive() then
+            OnHostKilledClient(self)
+        end
 		
 		if gDebugDrawBlobs then
 			self:DebugDrawBlobs()
@@ -699,10 +719,6 @@ if Client then
 
 		if gDebugDrawInfest then
 			self:DebugDrawInfest()
-		end
-		
-		if _numBlobsToGenerate == nil then
-		    _numBlobsToGenerate = 100
 		end
 
 		if self.numBlobsToGenerate > 0 then
@@ -789,7 +805,7 @@ if Client then
 		// Make blobs on the ground thinner to so that Skulks and buildings aren't
 		// obscured.
 		local scale = 1
-		if self:GetCoords().yAxis.y > 0.5 then
+		if self:ReturnPatchCoords(1).yAxis.y > 0.5 then
 			scale = 0.75
 		end
 
@@ -822,11 +838,7 @@ if Client then
 
 		if Client  then
 
-			local function Filter(entity)
-				return true
-			end
-
-			local infests = GetEntitiesWithFilter( Shared.GetEntitiesWithClassname("Infestation"), Filter )
+			local infests = GetEntitiesWithMixin("Infestation")
 
 			for id,infest in ipairs(infests) do
 				infest:EnforceOutcropLimits()
@@ -844,11 +856,7 @@ if Client then
 		_quality = quality
 		Client.SetRenderSetting("infestation", _quality)
 		
-		local function Filter(entity)
-			return true
-		end
-
-		local ents = GetEntitiesWithFilter( Shared.GetEntitiesWithClassname("Infestation"), Filter )
+		local ents = GetEntitiesWithMixin("Infestation")
 		for id,ent in ipairs(ents) do
 			ent:DestroyClientGeometry()
 		end

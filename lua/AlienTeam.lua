@@ -346,13 +346,6 @@ function AlienTeam:InitTechTree()
     
 end
 
-function AlienTeam:GetNumHives()
-
-    local teamInfoEntity = Shared.GetEntity(self.teamInfoEntityId)
-    return teamInfoEntity:GetNumCapturedTechPoints()
-    
-end
-
 function AlienTeam:GetActiveHiveCount()
 
     local activeHiveCount = 0
@@ -399,11 +392,19 @@ function AlienTeam:OnHiveDelayedConstructed(newHive)
     local activeHiveCount = self:GetActiveHiveCount()
     
     for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
-    
         if alien:GetIsAlive() and alien.OnHiveConstructed then
             alien:OnHiveConstructed(newHive, activeHiveCount)
         end
-        
+    end
+    
+end
+
+function AlienTeam:SetHiveTechIdChosen(hive, techId)
+
+    for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
+        if alien:GetIsAlive() and alien.OnHiveUpgraded then
+            alien:OnHiveUpgraded(hive, techId)
+        end
     end
     
 end
@@ -416,11 +417,9 @@ function AlienTeam:OnHiveDestroyed(destroyedHive)
     local activeHiveCount = self:GetActiveHiveCount()
     
     for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
-    
         if alien:GetIsAlive() and alien.OnHiveDestroyed then
             alien:OnHiveDestroyed(destroyedHive, activeHiveCount)
         end
-        
     end
     
 end
@@ -439,21 +438,22 @@ function AlienTeam:OnUpgradeChamberConstructed(upgradeChamber)
     local checkTech = checkForLostResearch[upgradeChamber:GetTechId()]
     if checkTech then
     
-        local alreadyhas = false
+        local anyremain = 0
         for _, ent in ientitylist(Shared.GetEntitiesWithClassname(checkTech[1])) do
-        
-            // Don't count the upgradeChamber as it is being destroyed now.
-            if ent ~= upgradeChamber and ent:GetTechId() == upgradeChamber:GetTechId() then
-            
-                alreadyhas = true
-                break
-                
+            if ent ~= upgradeChamber and ent:GetTechId() == upgradeChamber:GetTechId() and ent:GetIsBuilt() then
+                anyremain = anyremain + 1
             end
             
         end
         
-        if not alreadyhas then
+        if anyremain == 0 then
             SendTeamMessage(self, kTeamMessageTypes.ResearchComplete, checkTech[2])
+        end
+        
+        for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
+            if alien:GetIsAlive() and alien.UpdateNumUpgradeStructures then
+                alien:UpdateNumUpgradeStructures(checkTech[2], (anyremain + 1))
+            end
         end
         
     end
@@ -468,22 +468,25 @@ function AlienTeam:OnUpgradeChamberDestroyed(upgradeChamber)
     
     local checkTech = checkForLostResearch[upgradeChamber:GetTechId()]
     if checkTech then
-    
+
         local anyremain = 0
         for _, ent in ientitylist(Shared.GetEntitiesWithClassname(checkTech[1])) do
-        
-            // Don't count the upgradeChamber as it is being constructed now.
             if ent ~= upgradeChamber and ent:GetTechId() == upgradeChamber:GetTechId() then
-            
                 anyremain = anyremain + 1
-                break
-                
             end
             
         end
         
         if anyremain < kChamberLostNotification then
             SendTeamMessage(self, kTeamMessageTypes.ResearchLost, checkTech[2])
+        end
+        
+        for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
+    
+            if alien:GetIsAlive() and alien.UpdateNumUpgradeStructures then
+                alien:UpdateNumUpgradeStructures(checkTech[2], (anyremain))
+            end
+            
         end
         
     end

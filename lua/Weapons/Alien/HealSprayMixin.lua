@@ -17,8 +17,7 @@ local kHealCylinderWidth = 2
 HealSprayMixin.overrideFunctions =
 {
     "GetHasSecondary",
-    "GetSecondaryEnergyCost",
-    "GetDeathIconIndex"
+    "GetSecondaryEnergyCost"
 }
 
 HealSprayMixin.networkVars =

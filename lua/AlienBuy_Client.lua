@@ -69,15 +69,15 @@ function AlienBuy_GetClassStats(idx)
     local techId = IndexToAlienTechId(idx)
     
     if techId == kTechId.Fade then
-        return {"Fade", Fade.kHealth, Fade.kArmor, kFadeCost}
+        return {"Fade", kFadeHealth, kFadeArmor, kFadeCost}
     elseif techId == kTechId.Gorge then
         return {"Gorge", kGorgeHealth, kGorgeArmor, kGorgeCost}
     elseif techId == kTechId.Lerk then
         return {"Lerk", kLerkHealth, kLerkArmor, kLerkCost}
     elseif techId == kTechId.Onos then
-        return {"Onos", Onos.kHealth, Onos.kArmor, kOnosCost}
+        return {"Onos", kOnosHealth, kOnosArmor, kOnosCost}
     else
-        return {"Skulk", Skulk.kHealth, Skulk.kArmor, kSkulkCost}
+        return {"Skulk", kSkulkHealth, kSkulkArmor, kSkulkCost}
     end   
     
 end

@@ -33,22 +33,6 @@ function AmmoPack:OnInitialized()
 
 end
 
-function AmmoPack:OnUpdate(deltaTime)
-
-    if Client then
-        EquipmentOutline_UpdateModel(self)
-    end
-    
-end
-
-function AmmoPack:OnProcessMove(input)
-
-    if Client then
-        EquipmentOutline_UpdateModel(self)
-    end
-    
-end
-
 function AmmoPack:OnTouch(recipient)
 
     local weapon = recipient:GetActiveWeapon()

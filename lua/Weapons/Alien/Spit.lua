@@ -152,6 +152,10 @@ function Spit:ProcessHit(targetHit, surface, normal)
     
         self:DoDamage(Spit.kDamage, targetHit, self:GetOrigin(), nil, surface)
         
+        if targetHit.OnSpitHit then
+            targetHit:OnSpitHit()
+        end
+        
         DestroyEntity(self)
         
     end    

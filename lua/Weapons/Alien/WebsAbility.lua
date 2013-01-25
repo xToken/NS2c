@@ -10,6 +10,9 @@ Script.Load("lua/Weapons/Alien/StructureAbility.lua")
 
 class 'WebsAbility' (StructureAbility)
 
+local kMaxWebLength = 20
+local kMinWebLength = 4
+
 function WebsAbility:GetEnergyCost(player)
     return kDropStructureEnergyCost
 end
@@ -58,4 +61,8 @@ end
 
 function WebsAbility:GetDropMapName()
     return Web.kMapName
+end
+
+function WebsAbility:IsAllowed(player)
+    return player:GetHasThreeHives() and kWebEnabled
 end

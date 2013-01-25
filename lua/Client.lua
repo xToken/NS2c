@@ -672,7 +672,7 @@ function OnUpdateRender()
 
     local player = Client.GetLocalPlayer()
     
-    //Infestation_UpdateForPlayer()
+    Infestation_UpdateForPlayer()
     
     local camera = Camera()
     local cullingMode = RenderCamera.CullingMode_Occlusion

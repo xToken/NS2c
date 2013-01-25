@@ -19,30 +19,15 @@ Script.Load("lua/BuildingMixin.lua")
 
 class 'Gorge' (Alien)
 
-if Server then    
-    Script.Load("lua/Gorge_Server.lua")
-end
-
-local networkVars =
-{
-    bellyYaw = "private float",
-    timeSlideEnd = "private time",
-    startedSliding = "private boolean",
-    sliding = "boolean"
-}
-
-AddMixinNetworkVars(CameraHolderMixin, networkVars)
-AddMixinNetworkVars(DissolveMixin, networkVars)
-
 Gorge.kMapName = "gorge"
 
 Gorge.kModelName = PrecacheAsset("models/alien/gorge/gorge.model")
 local kViewModelName = PrecacheAsset("models/alien/gorge/gorge_view.model")
 local kGorgeAnimationGraph = PrecacheAsset("models/alien/gorge/gorge.animation_graph")
 
-Gorge.kSlideLoopSound = PrecacheAsset("sound/NS2.fev/alien/gorge/slide_loop")
-Gorge.kBuildSoundInterval = .5
-Gorge.kBuildSoundName = PrecacheAsset("sound/NS2.fev/alien/gorge/build")
+if Server then    
+    Script.Load("lua/Gorge_Server.lua")
+end
 
 Gorge.kXZExtents = 0.5
 Gorge.kYExtents = 0.475
@@ -56,11 +41,21 @@ local kMaxSlideSpeed = 13
 
 local kBellySlideCost = 25
 local kSlidingMoveInputScalar = 0.1
-local kBuildingModeMovementScalar = 0.001
 local kSlideCoolDown = 1.5
 
 local kGorgeBellyYaw = "belly_yaw"
 local kGorgeLeanSpeed = 2
+
+local networkVars =
+{
+    bellyYaw = "private float",
+    timeSlideEnd = "private time",
+    startedSliding = "private boolean",
+    sliding = "boolean"
+}
+
+AddMixinNetworkVars(CameraHolderMixin, networkVars)
+AddMixinNetworkVars(DissolveMixin, networkVars)
 
 function Gorge:OnCreate()
 
@@ -84,14 +79,8 @@ function Gorge:OnInitialized()
     Alien.OnInitialized(self)
     
     self:SetModel(Gorge.kModelName, kGorgeAnimationGraph)
-    
-    if Server then
-    
-        self.slideLoopSound = Server.CreateEntity(SoundEffect.kMapName)
-        self.slideLoopSound:SetAsset(Gorge.kSlideLoopSound)
-        self.slideLoopSound:SetParent(self)
         
-    elseif Client then
+    if Client then
     
         self:AddHelpWidget("GUIGorgeHealHelp", 2)
         self:AddHelpWidget("GUIGorgeBellySlideHelp", 2)
@@ -202,14 +191,7 @@ local function UpdateGorgeSliding(self, input)
     if slidingDesired and not self.sliding and self.timeSlideEnd + kSlideCoolDown < Shared.GetTime() and self:GetIsOnGround() and self:GetEnergy() >= kBellySlideCost then
     
         self.sliding = true
-        self.startedSliding = true
-        
-        if Server then
-            if not GetHasSilenceUpgrade(self) then
-                self.slideLoopSound:Start()
-            end
-        end
-        
+        self.startedSliding = true        
         self:DeductAbilityEnergy(kBellySlideCost)
         self:TriggerUncloak()
         self:PrimaryAttackEnd()
@@ -220,10 +202,6 @@ local function UpdateGorgeSliding(self, input)
     if not slidingDesired and self.sliding then
     
         self.sliding = false
-        
-        if Server then
-            self.slideLoopSound:Stop()
-        end
         
         self.timeSlideEnd = Shared.GetTime()
     
@@ -269,9 +247,9 @@ end
 
 function Gorge:GoldSrc_GetFriction()
     if self:GetIsBellySliding() then
-        return Player.kGoldSrcFriction * 0.2
+        return Player.GoldSrc_GetFriction(self) * 0.2
     else
-        return Player.kGoldSrcFriction
+        return Player.GoldSrc_GetFriction(self)
     end
 end
 

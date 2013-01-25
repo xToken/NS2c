@@ -72,7 +72,7 @@ local networkVars =
     commandStationId        = "entityid",
     // Set to a number after a hotgroup is selected, so we know to jump to it next time we try to select it
     positionBeforeJump      = "vector",
-    gotoHotKeyGroup         = string.format("integer (0 to %d)", Player.kMaxHotkeyGroups)
+    gotoHotKeyGroup         = string.format("integer (0 to %d)", kMaxHotkeyGroups)
 }
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
@@ -242,7 +242,7 @@ function Commander:CreateHotkeyGroup(number, entityIds)
         self:SendCreateHotKeyGroupMessage(number)
     elseif Server then
     
-        if number >= 1 and number <= Player.kMaxHotkeyGroups then
+        if number >= 1 and number <= kMaxHotkeyGroups then
         
             if entityIds ~= nil and #entityIds > 0 then
             

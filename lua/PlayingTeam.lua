@@ -67,7 +67,8 @@ function PlayingTeam:Initialize(teamName, teamNumber)
     
     self.entityTechIds = {}
     self.techIdCount = {}
-
+    self.droppedWeapons = {}
+    self.droppedWeaponsCache = {}
     self.eventListeners = {}
 
 end
@@ -598,6 +599,49 @@ function PlayingTeam:GetIsMarineTeam()
     return false    
 end
 
+function PlayingTeam:RegisterDroppedWeapon(weaponid)
+    if tonumber(weaponid) then
+        table.insert(self.droppedWeapons, weaponid)
+    end
+end
+
+function PlayingTeam:UpdateDroppedWeapons()
+    if self.lastweaponscan == nil or self.lastweaponscan + 1 < Shared.GetTime() then
+        for i = #self.droppedWeapons, 1, -1 do
+            if self.droppedWeapons[i] ~= nil then
+                local weapon = Shared.GetEntity(self.droppedWeapons[i])
+                if weapon then
+                    if weapon:GetWeaponWorldState() and (Shared.GetTime() - weapon.weaponWorldStateTime) >= kItemStayTime then
+                        DestroyEntity(weapon)
+                        self.droppedWeaponsCache[self.droppedWeapons[i]] = nil
+                        self.droppedWeapons[i] = nil
+                    elseif not weapon:GetWeaponWorldState() then
+                        self.droppedWeaponsCache[self.droppedWeapons[i]] = nil
+                        self.droppedWeapons[i] = nil
+                    end
+                else
+                    //Thinking theres some wierd instances of weapons picked back up and dropped that dont appear valid right away.
+                    if self.droppedWeaponsCache[self.droppedWeapons[i]] then
+                        self.droppedWeaponsCache[self.droppedWeapons[i]] = nil
+                        self.droppedWeapons[i] = nil
+                    else
+                        self.droppedWeaponsCache[self.droppedWeapons[i]] = true
+                    end
+                end
+            end
+         end
+         self.lastweaponscan = Shared.GetTime()
+         if self.lastdeepweaponscan == nil or self.lastdeepweaponscan + 60 < Shared.GetTime() then
+            for index, weapon in ientitylist(Shared.GetEntitiesWithClassname("Weapon")) do
+                if weapon and weapon:GetWeaponWorldState() and (Shared.GetTime() - weapon.weaponWorldStateTime) >= kItemStayTime then
+                    DestroyEntity(weapon)
+                end
+            end
+            self.lastdeepweaponscan = Shared.GetTime()
+         end
+     end
+end
+
 /**
  * Transform player to appropriate team respawn class and respawn them at an appropriate spot for the team.
  * Pass nil origin/angles to have spawn entity chosen.
@@ -738,6 +782,8 @@ function PlayingTeam:Update(timePassed)
     self:UpdateGameEffects(timePassed)
     
     self:UpdateVotes()
+    
+    self:UpdateDroppedWeapons()
     
     if GetGamerules():GetGameStarted() then
         self:UpdateResourceTowers()

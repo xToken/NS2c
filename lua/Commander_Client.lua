@@ -24,7 +24,7 @@ end
    
 Script.Load("lua/DynamicMeshUtility.lua")
 
-kCommanderLeftClickDelay = 0.4
+local kCommanderLeftClickDelay = 0.1
 
 function Commander:OnGetIsVisible(visibleTable)
     visibleTable.Visible = false

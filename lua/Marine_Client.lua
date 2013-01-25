@@ -1,8 +1,6 @@
 // lua\Marine_Client.lua
 //
 
-Marine.k2DHUDFlash = "ui/marine_hud_2d.swf"
-
 local kMarineHealthbarOffset = Vector(0, 1.2, 0)
 function Marine:GetHealthbarOffset()
     return kMarineHealthbarOffset

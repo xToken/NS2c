@@ -40,6 +40,9 @@
     <filename>AlienTeam.lua</filename>
   </file>
   <file>
+    <filename>AlienTeamInfo.lua</filename>
+  </file>
+  <file>
     <filename>AlienUpgrades_Client.lua</filename>
   </file>
   <file>
@@ -140,6 +143,9 @@
   </file>
   <file>
     <filename>ConsoleCommands_Client.lua</filename>
+  </file>
+  <file>
+    <filename>ConsoleCommands_Server.lua</filename>
   </file>
   <file>
     <filename>ConstructMixin.lua</filename>
@@ -265,6 +271,9 @@
     <filename>GUIGorgeBuildMenuHelp.lua</filename>
   </file>
   <file>
+    <filename>GUIHotkeyIcons.lua</filename>
+  </file>
+  <file>
     <filename>GUIInsight_OtherHealthbars.lua</filename>
   </file>
   <file>
@@ -332,9 +341,6 @@
   </file>
   <file>
     <filename>Gorge.lua</filename>
-  </file>
-  <file>
-    <filename>GorgeStructureMixin.lua</filename>
   </file>
   <file>
     <filename>Gorge_Server.lua</filename>
@@ -473,9 +479,6 @@
   </file>
   <file>
     <filename>Marine_Server.lua</filename>
-  </file>
-  <file>
-    <filename>MedPack.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\Metabolize.lua</filename>
@@ -637,6 +640,9 @@
     <filename>Weapons\Alien\Smash.lua</filename>
   </file>
   <file>
+    <filename>Spectator.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Alien\SpikesMixin.lua</filename>
   </file>
   <file>
@@ -706,9 +712,6 @@
     <filename>UpgradeStructureManager.lua</filename>
   </file>
   <file>
-    <filename>VoteManager.lua</filename>
-  </file>
-  <file>
     <filename>WallMovementMixin.lua</filename>
   </file>
   <file>
@@ -718,7 +721,7 @@
     <filename>WeaponUtility.lua</filename>
   </file>
   <file>
-    <filename>Weapons\Alien\Web.lua</filename>
+    <filename>Weapons\Weapon_Server.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\WebsAbility.lua</filename>

@@ -40,27 +40,11 @@ end
 Shared.PrecacheSurfaceShader("models/alien/alien.surface_shader")
 
 Alien.kNotEnoughResourcesSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/more")
-
-Alien.kChatSound = PrecacheAsset("sound/NS2.fev/alien/common/chat")
-Alien.kSpendResourcesSoundName = PrecacheAsset("sound/NS2.fev/alien/commander/spend_nanites")
 Alien.kTeleportSound = PrecacheAsset("sound/NS2.fev/alien/structures/generic_spawn_large")
 
-// Representative portrait of selected units in the middle of the build button cluster
-Alien.kPortraitIconsTexture = "ui/alien_portraiticons.dds"
-
-// Multiple selection icons at bottom middle of screen
-Alien.kFocusIconsTexture = "ui/alien_focusicons.dds"
-
-// Small mono-color icons representing 1-4 upgrades that the creature or structure has
-Alien.kUpgradeIconsTexture = "ui/alien_upgradeicons.dds"
-
-Alien.kAnimOverlayAttack = "attack"
-
-Alien.kEnergyRecuperationRate = 8
-
-// How long our "need healing" text gets displayed under our blip
-Alien.kCustomBlipDuration = 10
-Alien.kEnergyAdrenalineRecuperationRate = 16.0
+local kEnergyRecuperationRate = 8
+local kCustomBlipDuration = 10
+local kEnergyAdrenalineRecuperationRate = 16.0
 
 local networkVars = 
 {
@@ -253,6 +237,15 @@ function Alien:OnInitialized()
             InitMixin(self, MapBlipMixin)
         end
         
+        local function UpdateAlienSpecificVariables(self)
+            if self:GetTeam().GetActiveHiveCount then
+                self:UpdateActiveAbilities(self:GetTeam():GetActiveHiveCount())
+                self:ManuallyUpdateNumUpgradeStructures()
+            end
+        end
+        
+        self:AddTimedCallback(UpdateAlienSpecificVariables, 0.1)
+        
     elseif Client then
         InitMixin(self, HiveVisionMixin)
     end
@@ -403,9 +396,9 @@ function Alien:GetRecuperationRate()
     local scalar = 1
     local hasupg, level = GetHasAdrenalineUpgrade(self)
     if hasupg and level > 0 then
-        return scalar * (Alien.kEnergyAdrenalineRecuperationRate / 3) * level
+        return scalar * (kEnergyAdrenalineRecuperationRate / 3) * level
     else    
-        return scalar * Alien.kEnergyRecuperationRate
+        return scalar * kEnergyRecuperationRate
     end
     
 end
@@ -453,9 +446,8 @@ end
 function Alien:UpdateSharedMisc(input)
 
     self:UpdateSpeedModifiers(input)
-    
-    Player.UpdateSharedMisc(self, input)
     self:UpdateMoveNoise()
+    Player.UpdateSharedMisc(self, input)
     
 end
 
@@ -483,7 +475,7 @@ function Alien:GetIsCamouflaged()
 end
 
 function Alien:GetNotEnoughResourcesSound()
-    return Alien.kNotEnoughResourcesSound
+    return kNotEnoughResourcesSound
 end
 
 // Returns true when players are selecting new abilities. When true, draw small icons
@@ -508,10 +500,6 @@ end
 
 function Alien:GetCanBeHealedOverride()
     return self:GetIsAlive()
-end
-
-function Alien:GetChatSound()
-    return Alien.kChatSound
 end
 
 function Alien:GetDeathMapName()
@@ -582,16 +570,6 @@ end
 
 function Alien:GetIsPrimaled()
     return self.primalScreamBoost
-end
-
-function Alien:OnPrimaryAttack()
-    self.timeCelerityInterrupted = Shared.GetTime()
-end
-
-function Alien:OnDamageDone(doer, target)
-    if not doer or not doer:isa("Hydra") then
-        self.timeCelerityInterrupted = Shared.GetTime()
-    end
 end
 
 function Alien:OnHiveTeleport()

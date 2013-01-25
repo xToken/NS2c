@@ -107,7 +107,6 @@ function Alien:OnProcessMove(input)
     	self:CheckRedemption()
     	self.primalScreamBoost = self.timeWhenPrimalScreamExpires > Shared.GetTime()  
     	self:UpdateAutoHeal()
-    	self:UpdateNumUpgradeStructures()
 	end
     
 end
@@ -133,70 +132,90 @@ function Alien:UpdateAutoHeal()
 
 end
 
-local kAbilityData = { [kTechId.Skulk] = { kTechId.Parasite, kTechId.Leap, kTechId.Xenocide }, 
-                       [kTechId.Gorge] = { kTechId.Spray, kTechId.BileBomb, kTechId.Web },
-                       [kTechId.Lerk] = { kTechId.Spores, kTechId.Umbra, kTechId.PrimalScream }, 
-                       [kTechId.Fade] = { kTechId.Blink, kTechId.Metabolize, kTechId.AcidRocket },
-                       [kTechId.Onos] = { kTechId.Charge, kTechId.Stomp, kTechId.Smash } }
-
 function Alien:OnHiveConstructed(newHive, activeHiveCount)
-    local AbilityData = kAbilityData[self:GetTechId()]
-    if AbilityData ~= nil then
-        if AbilityData[activeHiveCount] ~= nil then
-            SendPlayersMessage({self}, kTeamMessageTypes.ResearchComplete, AbilityData[activeHiveCount])
-        end
+    local AbilityData
+    if activeHiveCount == 2 then
+        AbilityData = self:GetTierTwoTechId()
+    elseif activeHiveCount == 3 then
+        AbilityData = self:GetTierThreeTechId()
     end
+    if AbilityData ~= nil then
+        SendPlayersMessage({self}, kTeamMessageTypes.AbilityUnlocked, AbilityData)
+    end
+    self:UpdateActiveAbilities(activeHiveCount)
+    self.unassignedhives = math.min(self.unassignedhives + 1, 4)
+end
+
+function Alien:OnHiveUpgraded(newHive, techId)
+    self.unassignedhives = math.max(self.unassignedhives - 1, 0)
 end
 
 function Alien:OnHiveDestroyed(destroyedHive, activeHiveCount)
-    local AbilityData = kAbilityData[self:GetTechId()]
-    if AbilityData ~= nil then
-        if AbilityData[activeHiveCount + 1] ~= nil then
-            SendPlayersMessage({self}, kTeamMessageTypes.ResearchLost, AbilityData[activeHiveCount + 1])
-        end
+    local AbilityData
+    if activeHiveCount == 1 then
+        AbilityData = self:GetTierTwoTechId()
+    elseif activeHiveCount == 2 then
+        AbilityData = self:GetTierThreeTechId()
     end
+    if AbilityData ~= nil then
+        SendPlayersMessage({self}, kTeamMessageTypes.AbilityLost, AbilityData)
+    end
+    if destroyedHive:GetTechId() == kTechId.Hive then
+        self.unassignedhives = math.max(self.unassignedhives - 1, 0)
+    end
+    self:UpdateActiveAbilities(activeHiveCount)
 end
 
 function Alien:GetDamagedAlertId()
     return kTechId.AlienAlertLifeformUnderAttack
 end
 
-function Alien:UpdateNumUpgradeStructures()
-    local time = Shared.GetTime()
-    if self.timeOfLastNumUpgradesUpdate == nil or (time > self.timeOfLastNumUpgradesUpdate + 2) then
-        local team = self:GetTeam()
-        if team and team.GetIsAlienTeam and team:GetIsAlienTeam() and team.techIdCount then
-            for i = 1, #kAlienUpgradeChambers do
-                if team.techIdCount[kAlienUpgradeChambers[i]] and team.techIdCount[kAlienUpgradeChambers[i]] ~= nil then
-                    if kAlienUpgradeChambers[i] == kTechId.Crag then
-                        self.crags = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
-                    elseif kAlienUpgradeChambers[i] == kTechId.Shift then
-                        self.shifts = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
-                    elseif kAlienUpgradeChambers[i] == kTechId.Shade then
-                        self.shades = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
-					elseif kAlienUpgradeChambers[i] == kTechId.Whip then
-                        self.whips = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
-                    end
-                else
-                    if kAlienUpgradeChambers[i] == kTechId.Crag then
-                        self.crags = 0
-                    elseif kAlienUpgradeChambers[i] == kTechId.Shift then
-                        self.shifts = 0
-                    elseif kAlienUpgradeChambers[i] == kTechId.Shade then
-                        self.shades = 0
-					elseif kAlienUpgradeChambers[i] == kTechId.Whip then
-                        self.whips = 0
-                    end
+function Alien:UpdateNumUpgradeStructures(techId, count)
+    if techId == kTechId.Crag then
+        self.crags = Clamp(count, 0, 3)
+    elseif techId == kTechId.Shift then
+        self.shifts = Clamp(count, 0, 3)
+    elseif techId == kTechId.Shade then
+        self.shades = Clamp(count, 0, 3)
+    elseif techId == kTechId.Whip then
+        self.whips = Clamp(count, 0, 3)
+        elseif techId == kTechId.Whip then
+        self.whips = Clamp(count, 0, 3)
+    end
+end
+
+function Alien:ManuallyUpdateNumUpgradeStructures()
+    local team = self:GetTeam()
+    if team and team.GetIsAlienTeam and team:GetIsAlienTeam() and team.techIdCount then
+        for i = 1, #kAlienUpgradeChambers do
+            if team.techIdCount[kAlienUpgradeChambers[i]] and team.techIdCount[kAlienUpgradeChambers[i]] ~= nil then
+                if kAlienUpgradeChambers[i] == kTechId.Crag then
+                    self.crags = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
+                elseif kAlienUpgradeChambers[i] == kTechId.Shift then
+                    self.shifts = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
+                elseif kAlienUpgradeChambers[i] == kTechId.Shade then
+                    self.shades = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
+                elseif kAlienUpgradeChambers[i] == kTechId.Whip then
+                    self.whips = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
+                end
+            else
+                if kAlienUpgradeChambers[i] == kTechId.Crag then
+                    self.crags = 0
+                elseif kAlienUpgradeChambers[i] == kTechId.Shift then
+                    self.shifts = 0
+                elseif kAlienUpgradeChambers[i] == kTechId.Shade then
+                    self.shades = 0
+                elseif kAlienUpgradeChambers[i] == kTechId.Whip then
+                    self.whips = 0
                 end
             end
-            if team.techIdCount[kTechId.Hive] and team.techIdCount[kTechId.Hive] ~= nil then
-                self.unassignedhives = math.min(team.techIdCount[kTechId.Hive], 4)
-            else
-                self.unassignedhives = 0
-            end
         end
-        self.timeOfLastNumUpgradesUpdate = time
-     end
+        if team.techIdCount[kTechId.Hive] and team.techIdCount[kTechId.Hive] ~= nil then
+            self.unassignedhives = math.min(team.techIdCount[kTechId.Hive], 4)
+        else
+            self.unassignedhives = 0
+        end
+    end
 end
 
 /**
@@ -322,7 +341,7 @@ function Alien:GetHealthPerArmorOverride(damageType, healthPerArmor)
     local newHealthPerArmor = healthPerArmor
 
     local team = self:GetTeam()
-    local numHives = team:GetNumHives()
+    local numHives = team:GetActiveHiveCount()
     
     // make sure not to ignore damage types
     if numHives >= 3 then
@@ -394,7 +413,7 @@ local function LockAbility(forAlien, techId)
     
 end
 
-function Alien:UpdateNumHives(hives)
+function Alien:UpdateActiveAbilities(hives)
 
     if not self.oneHive and hives >= 1 then
         UnlockAbility(self, self:GetTierOneTechId())

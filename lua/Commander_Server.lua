@@ -532,7 +532,7 @@ function Commander:GetIsEntityHotgrouped(entity)
     local entityId = entity:GetId()
     
     // Loop through hotgroups, looking for entity
-    for i = 1, Player.kMaxHotkeyGroups do
+    for i = 1, kMaxHotkeyGroups do
     
         for j = 1, table.count(self.hotkeyGroups[i]) do
         
@@ -593,7 +593,7 @@ end
 // Deletes hotkey for number. Returns true if it exists and was deleted.
 function Commander:DeleteHotkeyGroup(number)
 
-    if (number >= 1 and number <= Player.kMaxHotkeyGroups) then
+    if (number >= 1 and number <= kMaxHotkeyGroups) then
     
         if (table.count(self.hotkeyGroups[number]) > 0) then
         
@@ -640,7 +640,7 @@ function Commander:UpdateHotkeyGroups()
     
         if (Shared.GetTime() > self.timeToSendHotkeyGroups) then
         
-            for i = 1, Player.kMaxHotkeyGroups do
+            for i = 1, kMaxHotkeyGroups do
     
                 self:SendHotkeyGroup(i)
                 

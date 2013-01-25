@@ -674,17 +674,25 @@ end
 
 function GetCheckSentryLimit(techId, origin, normal, commander)
 
-    local robos = GetEntitiesForTeamWithinRange("RoboticsFactory", commander:GetTeamNumber(), origin, kRoboticsFactoryAttachRange)
-    if #robos > 0 then
-
-        local roboPos = robos[1]:GetOrigin()
-
-        local sentries = GetEntitiesForTeamWithinRange("Sentry", commander:GetTeamNumber(), roboPos, kRoboticsFactoryAttachRange + 0.4)
-        return #sentries < kSentriesPerFactory
+    local location = GetLocationForPoint(origin)
+    local locationName = location and location:GetName() or nil
+    local sentries = 0
+    
+    if locationName then
+    
+        validRoom = true
+    
+        for index, sentry in ientitylist(Shared.GetEntitiesWithClassname("Sentry")) do
+            
+            if sentry:GetLocationName() == locationName then
+                sentries = sentries + 1
+            end
+            
+        end
     
     end
     
-    return false
+    return sentries < kSentriesPerFactory
     
 end
 

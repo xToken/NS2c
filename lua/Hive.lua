@@ -16,7 +16,7 @@ Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/HasUmbraMixin.lua")
-//Script.Load("lua/InfestationMixin.lua")
+Script.Load("lua/InfestationMixin.lua")
 
 class 'Hive' (CommandStructure)
 
@@ -126,7 +126,7 @@ function Hive:OnInitialized()
         
         InitMixin(self, UnitStatusMixin)
         InitMixin(self, HiveVisionMixin)
-        //InitMixin(self, InfestationMixin)
+        InitMixin(self, InfestationMixin)
 			
         self.glowIntensity = ConditionalValue(self:GetIsBuilt(), 1, 0)
         

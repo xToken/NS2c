@@ -885,7 +885,7 @@ if Server then
                 self:UpdateTechPoints()
                 
                 CheckForNoCommander(self, self.team1, "MarineCommander")
-                CheckForNoCommander(self, self.team2, "AlienCommander")
+                CheckForNoCommander(self, self.team2, "Gorge")
                 
             end
             

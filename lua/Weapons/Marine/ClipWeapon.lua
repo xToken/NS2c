@@ -230,8 +230,12 @@ function ClipWeapon:GiveAmmo(numClips, includeClip)
 end
 
 function ClipWeapon:GiveReserveAmmo(bullets)
-    local bulletsToAmmo = math.min(bullets, self:GetMaxAmmo() - self:GetAmmo())  
+    local bulletsToAmmo = math.min(bullets, self:GetMaxAmmo() - self:GetAmmo())
     self.ammo = self.ammo + bulletsToAmmo
+    local player = self:GetParent()
+    if player then
+        player:UpdateWeaponWeights()
+    end
 end
 
 function ClipWeapon:GetNeedsAmmo(includeClip)

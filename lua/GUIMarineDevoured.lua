@@ -1,6 +1,7 @@
 
 Script.Load("lua/GUIScript.lua")
 local kConsumptionTexture = "ui/digesting.dds"
+local kGUILayerDevouredHUDBackground = 14
 
 class 'GUIMarineDevoured' (GUIScript)
 
@@ -10,6 +11,7 @@ function GUIMarineDevoured:Initialize()
     self.consumption:SetSize(Vector(Client.GetScreenWidth(), Client.GetScreenHeight(), 0))
     self.consumption:SetTexture(kConsumptionTexture)
     self.consumption:SetIsVisible(false)
+    self.consumption:SetLayer(kGUILayerDevouredHUDBackground)
 
 end
 

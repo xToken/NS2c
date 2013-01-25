@@ -57,6 +57,10 @@ function Hive:OnResearchComplete(researchId)
         
             // Let gamerules know for stat tracking.
             GetGamerules():SetHiveTechIdChosen(self, newTechId)
+            local team = self:GetTeam()
+            if team and team.SetHiveTechIdChosen then
+                team:SetHiveTechIdChosen(self, newTechId)
+            end
             
         end
         
@@ -411,6 +415,18 @@ function Hive:OnUse(player, elapsedTime, useSuccessTable)
     end
     
     useSuccessTable.useSuccess = false
+    
+end
+
+function Hive:OnSpitHit()
+
+    if self:GetIsBuilt() then
+        local team = self:GetTeam()
+        if team then
+            team:TriggerAlert(EnemyApproachesAlerts[math.random(1,2)], self)
+        end
+    end
+    self.lastHiveFlinchEffectTime = Shared.GetTime()
     
 end
 

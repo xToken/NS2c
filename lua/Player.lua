@@ -36,13 +36,9 @@ if Client then
     Script.Load("lua/HelpMixin.lua")
 end
 
---@Abstract
 class 'Player' (ScriptActor)
 
-Player.kTooltipSound = PrecacheAsset("sound/NS2.fev/common/tooltip")
-Player.kToolTipInterval = 18
-Player.kHintInterval = 18
-Player.kPushDuration = 0.5
+Player.kMapName = "player"
 
 if Server then
     Script.Load("lua/Player_Server.lua")
@@ -54,22 +50,18 @@ if Client then
 end
 
 if Predict then
+    function Player:OnUpdatePlayer(deltaTime)    
+    end
 
-function Player:OnUpdatePlayer(deltaTime)    
-    // do nothing
+    function Player:UpdateMisc(input)
+    end
 end
 
-function Player:UpdateMisc(input)
-    // do nothing
-end
+Player.kNotEnoughResourcesSound     = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/more")
+Player.kGravity = -20
+Player.kXZExtents = 0.35
+Player.kYExtents = 0.95
 
-end
-
-------------
--- STATIC --
-------------
-
-// Private
 local kTapInterval = 0.27
 
 local TAP_NONE = 0
@@ -95,114 +87,57 @@ local tapString =
     TAP_BACKWARD = "TAP_BACKWARD"
 }
 
-// Public
-Player.kMapName = "player"
+local kTooltipSound = PrecacheAsset("sound/NS2.fev/common/tooltip")
+local kHintInterval = 18
+local kInvalidSound                = PrecacheAsset("sound/NS2.fev/common/invalid")
+local kChatSound                   = PrecacheAsset("sound/NS2.fev/common/chat")
 
-Player.kModelName                   = PrecacheAsset("models/marine/male/male.model")
-Player.kSpecialModelName            = PrecacheAsset("models/marine/male/male_special.model")
-Player.kClientConnectSoundName      = PrecacheAsset("sound/NS2.fev/common/connect")
-Player.kNotEnoughResourcesSound     = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/more")
-Player.kInvalidSound                = PrecacheAsset("sound/NS2.fev/common/invalid")
-Player.kChatSound                   = PrecacheAsset("sound/NS2.fev/common/chat")
-
-Player.kRunIdleSpeed = 1
-
-Player.kLoginBreakingDistance = 150
 local kDownwardUseRange = 2.2
-Player.kUseHolsterTime = 0.5
-Player.kDefaultBuildTime = .2
 local kUseBoxSize = Vector(0.5, 0.5, 0.5)
-
-Player.kCountDownLength = kCountDownLength
-    
-Player.kGravity = -20
-Player.kMass = 90.7 // ~200 pounds (incl. armor, weapons)
-Player.kWalkBackwardSpeedScalar = 1
-
-// Weapon weight scalars (from NS1)
-Player.kStowedWeaponWeightScalar = 0.7
-Player.kJumpHeight =  1.2
-Player.kOnGroundDistance = 0.1
-
-// The physics shapes used for player collision have a "skin" that makes them appear to float, this makes the shape
-// smaller so they don't appear to float anymore
-Player.kSkinCompensation = 0.9
-Player.kXZExtents = 0.35
-Player.kYExtents = 0.95
-// Eyes a bit below the top of the head. NS1 marine was 64" tall.
+local kWalkBackwardSpeedScalar = 1
+local kStowedWeaponWeightScalar = 1
+local kJumpHeight =  1.2
+local kOnGroundDistance = 0.1
 local kViewOffsetHeight = Player.kYExtents * 2 - 0.2
-
-// Slow down players when crouching
-Player.kCrouchSpeedScalar = 0.6
-// Percentage change in height when full crouched
+local kCrouchSpeedScalar = 0.6
 local kCrouchShrinkAmount = 0.6
 local kExtentsCrouchShrinkAmount = 0.5
-// How long does it take to crouch or uncrouch
 local kCrouchAnimationTime = 0.4
-
-Player.kJumpMode = kJumpMode // default jumpmode copied into here, allows for classes to specify other modes
-
-Player.kMinVelocityForGravity = .5
-Player.kThinkInterval = .2
-Player.kMinimumPlayerVelocity = .05    // Minimum player velocity for network performance and ease of debugging
+local kJumpMode = kJumpMode // default jumpmode copied into here, allows for classes to specify other modes
+local kThinkInterval = .2
 
 // Player speeds
-Player.kWalkMaxSpeed = 4             // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
-Player.kRunMaxSpeed = 8
-Player.kAcceleration = 45
-Player.kGoldSrcAcceleration = 6.5
-Player.kGoldSrcAirAcceleration = 50
-Player.kGoldSrcFriction = 4
-Player.kStopSpeed = 3.6 //NS1 appears to have used 100, roughly 1.8 @ 60.. Trying 3.6 for interim.
+local kMass = 90.7 // ~200 pounds (incl. armor, weapons)
+local kWalkMaxSpeed = 4             // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
+local kRunMaxSpeed = 8
+local kGoldSrcAcceleration = 6.5
+local kGoldSrcAirAcceleration = 50
+local kGoldSrcFriction = 4
+local kStopSpeed = 3.6 //NS1 appears to have used 100, roughly 1.8 @ 60.. Trying 3.6 for interim.
 
 //NS1 bhop skulk could get around 530-540 units with good bhop, 290 base makes for 1.84 - Trying 1.9 for now
-Player.kBunnyJumpMaxSpeedFactor = 1.9 
-Player.kMaxAirVeer = 1.2
-Player.kAirZMoveWeight = 2.5
-Player.kAirZStrafeWeight = 2.5
-Player.kAirStrafeWeight = 2
-
+local kBunnyJumpMaxSpeedFactor = 1.9 
+local kMaxAirVeer = 1.2
 local kLadderAcceleration = 16
-
-Player.kMaxWalkableNormal =  math.cos( math.rad(45) )
-Player.kDownSlopeFactor = math.tan( math.rad(60) ) // Stick to ground on down slopes up to 60 degrees
-
-Player.kTauntMovementScalar = .05           // Players can only move a little while taunting
-Player.kDamageIndicatorDrawTime = 1
-
-// The slowest scalar of our max speed we can go to because of jumping
-Player.kMinSlowSpeedScalar = .3
-
-// kMaxHotkeyGroups is defined at a global level so that NetworkMessages.lua can access the constant.
-Player.kMaxHotkeyGroups = kMaxHotkeyGroups
-
-Player.kUnstickDistance = .1
-Player.kUnstickOffsets =
-{
-    Vector(0, Player.kUnstickDistance, 0), 
-    Vector(Player.kUnstickDistance, 0, 0), 
-    Vector(-Player.kUnstickDistance, 0, 0), 
-    Vector(0, 0, Player.kUnstickDistance), 
-    Vector(0, 0, -Player.kUnstickDistance)
-}
-
-Player.stepTotalTime    = 0.1  // Total amount of time to interpolate up a step
-
-
-// This is how far the player can turn with their feet standing on the same ground before
-// they start to rotate in the direction they are looking.
-local kBodyYawTurnThreshold = Math.Radians(85)
-
-// The 3rd person model angle is lagged behind the first person view angle a bit.
-// This is how fast it turns to catch up. Radians per second.
+local kMaxWalkableNormal =  math.cos( math.rad(45) )
+local kDownSlopeFactor = math.tan( math.rad(60) ) // Stick to ground on down slopes up to 60 degrees
+local kTauntMovementScalar = .05           // Players can only move a little while taunting
+local kMinSlowSpeedScalar = .3
+local kStepTotalTime    = 0.1  // Total amount of time to interpolate up a step
+local kBodyYawTurnThreshold = Math.Radians(5)
 local kTurnDelaySpeed = 8
 local kTurnRunDelaySpeed = 2.5
-// Controls how fast the body_yaw pose parameter used for turning while standing
-// still blends back to default when the player starts moving.
 local kTurnMoveYawBlendToMovingSpeed = 5
-
-// Max amount of step allowed
-Player.kMaxStepAmount = 1
+local kMaxStepAmount = 1
+local kUnstickDistance = .1
+local kUnstickOffsets =
+{
+    Vector(0, kUnstickDistance, 0), 
+    Vector(kUnstickDistance, 0, 0), 
+    Vector(-kUnstickDistance, 0, 0), 
+    Vector(0, 0, kUnstickDistance), 
+    Vector(0, 0, -kUnstickDistance)
+}
 
 -------------
 -- NETWORK --
@@ -327,7 +262,7 @@ function Player:OnCreate()
     InitMixin(self, CustomGroundMoveMixin)
     InitMixin(self, ModelMixin)
     InitMixin(self, ControllerMixin)
-    InitMixin(self, WeaponOwnerMixin, { kStowedWeaponWeightScalar = Player.kStowedWeaponWeightScalar })
+    InitMixin(self, WeaponOwnerMixin, { kStowedWeaponWeightScalar = kStowedWeaponWeightScalar })
     InitMixin(self, DoorMixin)
     // TODO: move LiveMixin to child classes (some day)
     InitMixin(self, LiveMixin)
@@ -335,7 +270,7 @@ function Player:OnCreate()
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
-    InitMixin(self, HintMixin, { kHintSound = Player.kTooltipSound, kHintInterval = Player.kHintInterval })
+    InitMixin(self, HintMixin, { kHintSound = kTooltipSound, kHintInterval = kHintInterval })
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, BadgeMixin)
     
@@ -486,7 +421,7 @@ function Player:OnInitialized()
     
     if Server then
     
-        self:SetNextThink(Player.kThinkInterval)
+        self:SetNextThink(kThinkInterval)
         
         InitMixin(self, MobileTargetMixin)
         
@@ -524,7 +459,7 @@ function Player:InitializeHotkeyGroups()
 
     self.hotkeyGroups = {}
     
-    for i = 1, Player.kMaxHotkeyGroups do
+    for i = 1, kMaxHotkeyGroups do
         table.insert(self.hotkeyGroups, {})
     end
 
@@ -535,7 +470,7 @@ function Player:OnEntityChange(oldEntityId, newEntityId)
     if Server and self.hotkeyGroups then
 
         // Loop through hotgroups and update accordingly
-        for i = 1, Player.kMaxHotkeyGroups do
+        for i = 1, kMaxHotkeyGroups do
         
             for index, entityId in ipairs(self.hotkeyGroups[i]) do
             
@@ -641,8 +576,8 @@ function Player:GetSmoothedViewOffset()
 
     local deltaTime = Shared.GetTime() - self.stepStartTime
     
-    if deltaTime < Player.stepTotalTime then
-        return self.viewOffset + Vector( 0, -self.stepAmount * (1 - deltaTime / Player.stepTotalTime), 0 )
+    if deltaTime < kStepTotalTime then
+        return self.viewOffset + Vector( 0, -self.stepAmount * (1 - deltaTime / kStepTotalTime), 0 )
     end
     
     return self.viewOffset
@@ -690,7 +625,7 @@ end
 function Player:GetSlowSpeedModifier()
 
     // Never drop to 0 speed
-    return 1 - (1 - Player.kMinSlowSpeedScalar) * self.slowAmount
+    return 1 - (1 - kMinSlowSpeedScalar) * self.slowAmount
     
 end
 
@@ -1011,8 +946,12 @@ function Player:GetCanTakeDamageOverride()
     return HasTeamAssigned(self)
 end
 
+function Player:GetIsDevoured()
+    return false
+end
+
 function Player:GetCanDieOverride()
-    return HasTeamAssigned(self)
+    return HasTeamAssigned(self) and not self:GetIsDevoured()
 end
 
 // Individual resources
@@ -1022,7 +961,7 @@ end
 
 // Returns player mass in kg
 function Player:GetMass()
-    return Player.kMass
+    return kMass
 end
 
 function Player:AddResources(amount)
@@ -1078,9 +1017,13 @@ function Player:GetVerticleMove()
     return false
 end
 
+function Player:GetMaxAirVeer()
+    return kMaxAirVeer
+end
+
 function Player:GoldSrc_AirAccelerate(velocity, time, wishdir, wishspeed, acceleration)
-    if wishspeed > Player.kMaxAirVeer then
-        wishspeed = Player.kMaxAirVeer
+    if wishspeed > kMaxAirVeer then
+        wishspeed = kMaxAirVeer
     end
     
     return self:GoldSrc_Accelerate(velocity, time, wishdir, wishspeed, acceleration)
@@ -1173,7 +1116,7 @@ function Player:GetCanClimb()
 end
 
 function Player:GetStopSpeed()
-    return Player.kStopSpeed
+    return kStopSpeed
 end
 
 function Player:PerformsVerticalMove()
@@ -1181,7 +1124,7 @@ function Player:PerformsVerticalMove()
 end
 
 function Player:GoldSrc_GetFriction()
-    return Player.kGoldSrcFriction
+    return kGoldSrcFriction
 end
 
 function Player:GoldSrc_Friction(input, velocity)
@@ -1224,20 +1167,20 @@ end
 
 function Player:GoldSrc_GetMaxSpeed(possible)
     if possible then
-        return Player.kRunMaxSpeed
+        return kRunMaxSpeed
     end
     
-    local maxSpeed = Player.kRunMaxSpeed
+    local maxSpeed = kRunMaxSpeed
     
     if self.movementModiferState and self:GetIsOnSurface() then
-        maxSpeed = Player.kWalkMaxSpeed
+        maxSpeed = kWalkMaxSpeed
     end
       
     return maxSpeed
 end
 
 function Player:GoldSrc_GetAcceleration()
-    return ConditionalValue(self:GetIsOnGround(), Player.kGoldSrcAcceleration, Player.kGoldSrcAirAcceleration)
+    return ConditionalValue(self:GetIsOnGround(), kGoldSrcAcceleration, kGoldSrcAirAcceleration)
 end
 
 function Player:GetGravityAllowed()
@@ -1248,7 +1191,7 @@ function Player:GetGravityAllowed()
 end
 
 function Player:GetCrouchSpeedScalar()
-    return Player.kCrouchSpeedScalar
+    return kCrouchSpeedScalar
 end
 
 function Player:GetMoveDirection(moveVelocity)
@@ -1324,7 +1267,7 @@ function Player:AdjustMove(input)
     
         // Allow child classes to affect how much input is allowed at any time
         if self.mode == kPlayerMode.Taunt then
-            input.move:Scale(Player.kTauntMovementScalar)
+            input.move:Scale(kTauntMovementScalar)
         end
         
     end
@@ -1854,11 +1797,11 @@ function Player:UpdatePosition(velocity, time)
             self:PerformMovement(horizontalOffset, maxSlideMoves, velocity)
             
             local movePerformed = self:GetOrigin() - (steppedStart or start)
-            fractionOfOffset = movePerformed:DotProduct(horizontalOffset) / (horizontalOffsetLength*horizontalOffsetLength)
+            fractionOfOffset = movePerformed:DotProduct(horizontalOffset) / (horizontalOffsetLength * horizontalOffsetLength)
             
         end
 
-        local downStepAmount = offset.y - stepUpOffset - horizontalOffsetLength*Player.kDownSlopeFactor
+        local downStepAmount = offset.y - stepUpOffset - horizontalOffsetLength * kDownSlopeFactor
         
         if fractionOfOffset < 0.5 then
         
@@ -1902,12 +1845,12 @@ function Player:UpdatePosition(velocity, time)
             local deltaTime      = Shared.GetTime() - self.stepStartTime
             local prevStepAmount = 0
             
-            if deltaTime < Player.stepTotalTime then
-                prevStepAmount = self.stepAmount * (1 - deltaTime / Player.stepTotalTime)
+            if deltaTime < kStepTotalTime then
+                prevStepAmount = self.stepAmount * (1 - deltaTime / kStepTotalTime)
             end        
             
             self.stepStartTime = Shared.GetTime()
-            self.stepAmount    = Clamp(yDelta + prevStepAmount, -Player.kMaxStepAmount, Player.kMaxStepAmount)
+            self.stepAmount    = Clamp(yDelta + prevStepAmount, -kMaxStepAmount, kMaxStepAmount)
             
         end      
 
@@ -1968,7 +1911,7 @@ function Player:GetIsOnGround()
     
         self.onGround = false
         
-        self.onGround = self:GetIsCloseToGround(Player.kOnGroundDistance)
+        self.onGround = self:GetIsCloseToGround(kOnGroundDistance)
         
         if self.onGround then
             self.timeLastOnGround = Shared.GetTime()
@@ -2037,7 +1980,7 @@ function Player:GetIsCloseToGround(distanceToGround)
                                          self:GetOrigin() - Vector(0, 1, 0),
                                          CollisionRep.Move, EntityFilterOne(self))
 
-        if rayTrace.fraction == 1 or math.abs(rayTrace.normal.y) >= Player.kMaxWalkableNormal then
+        if rayTrace.fraction == 1 or math.abs(rayTrace.normal.y) >= kMaxWalkableNormal then
             result = true
         end
         
@@ -2048,7 +1991,7 @@ function Player:GetIsCloseToGround(distanceToGround)
 end
 
 function Player:GetPlayFootsteps()
-    return self:GetVelocityLength() > 4.5 and self:GetIsOnGround()
+    return self:GetVelocityLength() > kFootstepsThreshold and self:GetIsOnGround()
 end
 
 function Player:GetMovementModifierState()
@@ -2141,7 +2084,7 @@ end
 
 // Maximum speed a player can move backwards
 function Player:GetMaxBackwardSpeedScalar()
-    return Player.kWalkBackwardSpeedScalar
+    return kWalkBackwardSpeedScalar
 end
 
 function Player:GetAirMoveScalar()
@@ -2171,7 +2114,7 @@ function Player:GetCanJump()
 end
 
 function Player:GetJumpHeight()
-    return Player.kJumpHeight
+    return kJumpHeight
 end
 
 function Player:GetJumpVelocity(input, velocity)
@@ -2183,7 +2126,7 @@ function Player:GetPlayJumpSound()
 end
 
 function Player:PreventMegaBunnyJumping(velocity)
-    local maxscaledspeed = Player.kBunnyJumpMaxSpeedFactor * self:GoldSrc_GetMaxSpeed()
+    local maxscaledspeed = kBunnyJumpMaxSpeedFactor * self:GoldSrc_GetMaxSpeed()
     
     if maxscaledspeed > 0.0 then
        local spd = velocity:GetLength()
@@ -2241,7 +2184,7 @@ function Player:AddSlowScalar(scalar)
 
     self.slowAmount = Clamp(self.slowAmount + scalar, 0, 1)
     
-    self:SetVelocity(self:GetVelocity() * (1 - (scalar * (1 - Player.kMinSlowSpeedScalar))))
+    self:SetVelocity(self:GetVelocity() * (1 - (scalar * (1 - kMinSlowSpeedScalar))))
     
 end
 
@@ -2397,6 +2340,10 @@ function Player:GetSecondaryAttackLastFrame()
     return self.secondaryAttackLastFrame
 end
 
+function Player:GetJumpMode()
+    return kJumpMode
+end
+
 // Children can add or remove velocity according to special abilities, modes, etc.
 function Player:ModifyVelocity(input, velocity)   
     PROFILE("Player:ModifyVelocity")
@@ -2408,9 +2355,9 @@ function Player:ModifyVelocity(input, velocity)
             self:OnJump()
         end
         
-        if self.kJumpMode == 2 then
+        if self:GetJumpMode() == 2 then
             self.jumpHandled = false
-        elseif self.kJumpMode == 1 then
+        elseif self:GetJumpMode() == 1 then
             self.jumpHandled = jumped
         else
             self.jumpHandled = true
@@ -2818,7 +2765,7 @@ function Player:GetNumHotkeyGroups()
     
     local numGroups = 0
     
-    for i = 1, Player.kMaxHotkeyGroups do
+    for i = 1, kMaxHotkeyGroups do
     
         if (table.count(self.hotkeyGroups[i]) > 0) then
         
@@ -3019,7 +2966,7 @@ end
 function Player:TriggerInvalidSound()
 
     if not self.timeLastInvalidSound or self.timeLastInvalidSound + 1 < Shared.GetTime() then
-        StartSoundEffectForPlayer(Player.kInvalidSound, self)  
+        StartSoundEffectForPlayer(kInvalidSound, self)  
         self.timeLastInvalidSound = Shared.GetTime()
     end
     
@@ -3055,8 +3002,8 @@ end
 function Player:OnAdjustModelCoords(modelCoords)
     
     local deltaTime = Shared.GetTime() - self.stepStartTime
-    if deltaTime < Player.stepTotalTime then
-        modelCoords.origin = modelCoords.origin - self.stepAmount * (1 - deltaTime / Player.stepTotalTime) * self:GetCoords().yAxis
+    if deltaTime < kStepTotalTime then
+        modelCoords.origin = modelCoords.origin - self.stepAmount * (1 - deltaTime / kStepTotalTime) * self:GetCoords().yAxis
     end
       
     return modelCoords

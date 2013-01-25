@@ -7,6 +7,7 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 Script.Load("lua/Utility.lua")
 
+kWebEnabled = false
 // All the layouts are based around this screen height.
 kBaseScreenHeight = 1080
 
