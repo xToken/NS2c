@@ -76,6 +76,7 @@ kRoboticsFactoryAttachRange = 12
 kScanDuration = 10
 kScanRadius = 20
 kMotionTrackingDetectionRange = 30
+kMotionTrackingMinimumSpeed = 2
 kObservatoryInitialEnergy = 25  kObservatoryMaxEnergy = 100
 kDistressBeaconRange = 15
 kDistressBeaconTime = 3

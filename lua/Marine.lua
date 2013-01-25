@@ -224,6 +224,11 @@ function Marine:IsValidDetection(detectable)
         if hasupg and level > 0 then
             return math.random(1, 100) <= (level * kGhostMotionTrackingDodgePerLevel)
         end
+		
+		//Dont detect stationary/slow moving aliens.
+		if detectable:GetVelocity():GetLengthXZ() < kMotionTrackingMinimumSpeed then
+			return false
+		end
     end
     
     return true
