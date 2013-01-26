@@ -14,12 +14,18 @@ Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/InfestationMixin.lua")
 
 class 'Harvester' (ResourceTower)
 Harvester.kMapName = "harvester"
 
 Harvester.kModelName = PrecacheAsset("models/alien/harvester/harvester.model")
 local kAnimationGraph = PrecacheAsset("models/alien/harvester/harvester.animation_graph")
+
+local kHarvesterInfestationRadius = 8
+local kHarvesterInfestationBlobDensity = 3
+local kHarvesterInfestationGrowthRate = 0.1
+local kHarvesterMinInfestationRadius = 0.1
 
 local networkVars = 
 {
@@ -30,6 +36,7 @@ AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(HiveVisionMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
+AddMixinNetworkVars(InfestationMixin, networkVars)
 
 function Harvester:OnCreate()
 
@@ -51,6 +58,7 @@ function Harvester:OnInitialized()
     ResourceTower.OnInitialized(self)
     
     self:SetModel(Harvester.kModelName, kAnimationGraph)
+    InitMixin(self, InfestationMixin)
     
     if Server then
     
@@ -80,6 +88,22 @@ function Harvester:GetCanBeUsed(player, useSuccessTable)
     else
         useSuccessTable.useSuccess = true
     end  
+end
+
+function Harvester:GetMaxRadius()
+    return kHarvesterInfestationRadius
+end
+
+function Harvester:GetGrowthRate()
+    return kHarvesterInfestationGrowthRate
+end
+
+function Harvester:GetMinRadius()
+    return kHarvesterMinInfestationRadius
+end
+
+function Harvester:GetInfestationDensity()
+    return kHarvesterInfestationBlobDensity
 end
 
 if Client then

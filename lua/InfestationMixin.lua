@@ -12,23 +12,11 @@ Script.Load("lua/Infestation_Client_SparserBlobPatterns.lua")
 InfestationMixin = CreateMixin(InfestationMixin)
 InfestationMixin.type = "Infestation"
 
-// Whatever uses the InfestationMixin needs to implement the following callback functions.
-
-local kDecalVerticalSize = 1
-local kGrowthRateScalar = 1
-
-local kDefaultGrowthRate = 0.25
-local kMaxGrowthRate = 1
 local kInitialRadius = 0.5
-local kHiveInfestationRadius = 20
-local kInfestationBlobDensity = 7
-local kThinkTime = 3
-
-local kMaxRadius = 20
-
 local kMaxOutCrop = 0.45 // should be low enough so skulks can always comfortably see over it
 local kMinOutCrop = 0.1 // should be 
 local kMaxIterations = 16
+local kInfestationRecedeRate = 6
 
 local _quality = nil
 local _numBlobsGenerated = 0
@@ -41,9 +29,19 @@ InfestationMixin.expectedMixins =
     Live = "InfestationMixin makes only sense if this entity can take damage (has LiveMixin).",
 }
 
+InfestationMixin.expectedCallbacks =
+{
+    // Returns integer for infestation patch size
+    GetMaxRadius = "",
+    GetGrowthRate = "",
+    GetInfestationDensity = "",
+    GetMinRadius = ""
+}
+
 InfestationMixin.networkVars =
 {
-	timeCycleStarted = "time"
+	timeCycleStarted = "time",
+    timeCycleEnded = "time"
 }
 
 local function random(min, max)
@@ -56,251 +54,209 @@ local function GetDisplayBlobs(self)
         return false
     end
 
-    return true    
+    return true  
 
+end
+    
+function InfestationMixin:OnKill()
+    self.timeCycleEnded = Shared.GetTime()
 end
 
 function InfestationMixin:__initmixin()
-
-    self.growthRate = kDefaultGrowthRate
-	
-	if Server then
-		self.timeCycleStarted = Shared.GetTime() 
-	end
-	
-	self.minRadius = kInitialRadius
-	self.maxRadius = kMaxRadius
-	self.InfestationLocations = { }
-	self.InfestationLocations.top = nil
-	self.InfestationLocations.north = nil
-	self.InfestationLocations.south = nil
-	self.InfestationLocations.east = nil
-	self.InfestationLocations.west = nil
-	self.InfestationLocations.bottom = nil
-	self.lastframe = false
-	self.validpositions = 0
-	
-	self:SetUpdates(true)
     
-    self.infestationMaterial = Client.CreateRenderMaterial()
-    self.infestationMaterial:SetMaterial("materials/infestation/infestation_decal.material")
-
-    // always create blob coords even if we do not display them sometimes
-    --self:EnforceOutcropLimits()
-    --self:LimitBlobsAspectRatio()
-	self:SpawnInfestation()
-	self:ResetBlobPlacement()
-
-    self.hasClientGeometry = false
-    self.parentMissingTime = 0.0
-
-end
-
-function InfestationMixin:OnKill()
-	self:DestroyClientGeometry()
-end
-
-function InfestationMixin:ReturnPatchCoords(index)
-	if not PlayerUI_IsOverhead() then
-		if index == 1 and self.InfestationLocations.bottom ~= nil then
-			return self.InfestationLocations.bottom
-		elseif index == 2 and self.InfestationLocations.north ~= nil then
-			return self.InfestationLocations.north
-		elseif index == 3 and self.InfestationLocations.south ~= nil then
-			return self.InfestationLocations.south
-		elseif index == 4 and self.InfestationLocations.east ~= nil then
-			return self.InfestationLocations.east
-		elseif index == 5 and self.InfestationLocations.west ~= nil then
-			return self.InfestationLocations.west
-		elseif index == 6 and self.InfestationLocations.top ~= nil then
-			return self.InfestationLocations.top
-		end
-	end
-	return self.InfestationLocations.bottom
-end
-
-function InfestationMixin:GetRadius()
-
-    PROFILE("InfestationMixin:GetRadius")
+    self.timeCycleStarted = Shared.GetTime()
+    self.timeCycleEnded = 0
     
-    local radiusCached = self.radiusCached
-    
-    if radiusCached and self.maxRadius == radiusCached and self:GetIsAlive() then
-        return radiusCached
-    end 
-    
-    local radius = 0
-    
-    // Check if Infestation was manually grown.
-    if self.maxRadius == self.minRadius then
-        radius = self.maxRadius
-    else
-    
-        local cycleDuration = Shared.GetTime() - (self.timeCycleStarted or 0)
-        local growRadius = self.maxRadius - self.minRadius
-        local timeRequired = growRadius / self.growthRate
-        local fraction = 0
+    if Client then
+        self.minRadius = kInitialRadius
+        self.InfestationLocations = { }
+        self.InfestationLocations.top = nil
+        self.InfestationLocations.north = nil
+        self.InfestationLocations.south = nil
+        self.InfestationLocations.east = nil
+        self.InfestationLocations.west = nil
+        self.InfestationLocations.bottom = nil
+        self.lastframe = false
+        self.validpositions = 0
         
-        if self:GetIsAlive() then
-            fraction = Clamp(cycleDuration / timeRequired, 0, 1)
-        else
-            fraction = 1 - Clamp(cycleDuration / timeRequired, 0, 1)
-        end
+        self:SetUpdates(true)
         
-        radius = self.minRadius + growRadius * fraction
-        
+        self.infestationMaterial = Client.CreateRenderMaterial()
+        self.infestationMaterial:SetMaterial("materials/infestation/infestation_decal.material")
+
+        // always create blob coords even if we do not display them sometimes
+        --self:EnforceOutcropLimits()
+        --self:LimitBlobsAspectRatio()
+        self:SpawnInfestation()
+        self:ResetBlobPlacement()
+
+        self.hasClientGeometry = false
     end
     
-    if radius == self:GetMaxRadius() then
-        self.radiusCached = radius
-    end
-    
-    return radius
-    
-end
-
-function InfestationMixin:SetMinRadius(radius)
-    self.minRadius = radius
-end
-
-function InfestationMixin:GetInfestationDensity()
-    return kInfestationBlobDensity
-end    
-
-function InfestationMixin:SetMaxRadius(radius)
-
-    assert(radius <= kMaxRadius)
-    self.maxRadius = radius
-    
-end
-
-function InfestationMixin:SetGrowthRate(growthRate)
-
-    assert(growthRate <= kMaxGrowthRate)
-    self.growthRate = growthRate
-    
-end
-
-function InfestationMixin:GetMaxRadius()
-    return self.maxRadius
-end
-
-function InfestationMixin:SetRadiusPercent(percent)
-    self.radius = Clamp(percent, 0, 1) * self:GetMaxRadius()
-end
-
-function InfestationMixin:SetFullyGrown()
-    self.minRadius = self.maxRadius
-end
-
-function InfestationMixin:GetIsPointOnInfestation(point, verticalSize)
-
-    local onInfestation = false
-    
-    // Check radius
-    local radius = point:GetDistanceTo(self:GetOrigin())
-    if radius <= self:GetRadius() then
-    
-        // Check dot product
-        local toPoint = point - self:GetOrigin()
-        local verticalProjection = math.abs( self:ReturnPatchCoords(1).yAxis:DotProduct( toPoint ) )
-        
-        onInfestation = (verticalProjection < verticalSize)
-        
-    end
-    
-    return onInfestation
-   
-end
-
-local function GenerateInfestationCoords(origin, normal)
-
-    local coords = Coords.GetIdentity()
-    coords.origin = origin
-    coords.yAxis = normal
-    coords.zAxis = normal:GetPerpendicular()
-    coords.xAxis = coords.zAxis:CrossProduct(coords.yAxis)
-    
-    return coords
-    
-end
-
-function InfestationMixin:GetInfestationRadius()
-    return kHiveInfestationRadius
-end
-
-function InfestationMixin:SpawnInfestation()
-
-    local coords = self:GetCoords()
-    local attached = self:GetAttached()
-    if attached then
-        // Add a small offset, otherwise we are not able to track the infested state of the techpoint.
-        coords = attached:GetCoords()
-        coords.origin = coords.origin + Vector(0.1, 0, 0.1)
-    end
-    
-    self.InfestationLocations.bottom = coords
-    self.validpositions = 1
-	
-    // Ceiling.
-    local radius = self:GetInfestationRadius()
-    local trace = Shared.TraceRay(self:GetOrigin() + coords.yAxis * 0.1, self:GetOrigin() + coords.yAxis * radius,  CollisionRep.Default,  PhysicsMask.Bullets, EntityFilterAll())
-    local roomMiddlePoint = self:GetOrigin() + coords.yAxis * 0.1
-    if trace.fraction ~= 1 then
-        self.InfestationLocations.top = GenerateInfestationCoords(trace.endPoint, trace.normal)
-		self.validpositions = self.validpositions + 1
-    end
-    
-    // Front wall.
-    trace = Shared.TraceRay(roomMiddlePoint, roomMiddlePoint + coords.zAxis * radius, CollisionRep.Default,  PhysicsMask.Bullets, EntityFilterAll())
-    if trace.fraction ~= 1 then
-        self.InfestationLocations.north = GenerateInfestationCoords(trace.endPoint, trace.normal)
-		self.validpositions = self.validpositions + 1
-    end
-    
-    // Back wall.
-    trace = Shared.TraceRay(roomMiddlePoint, roomMiddlePoint - coords.zAxis * radius, CollisionRep.Default,  PhysicsMask.Bullets, EntityFilterAll())
-    if trace.fraction ~= 1 then
-        self.InfestationLocations.south = GenerateInfestationCoords(trace.endPoint, trace.normal)
-		self.validpositions = self.validpositions + 1
-    end
-    
-    // Left wall.
-    trace = Shared.TraceRay(roomMiddlePoint, roomMiddlePoint + coords.xAxis * radius, CollisionRep.Default,  PhysicsMask.Bullets, EntityFilterAll())
-    if trace.fraction ~= 1 then
-        self.InfestationLocations.east = GenerateInfestationCoords(trace.endPoint, trace.normal)
-		self.validpositions = self.validpositions + 1
-    end
-    
-    // Right wall.
-    trace = Shared.TraceRay(roomMiddlePoint, roomMiddlePoint - coords.xAxis * radius, CollisionRep.Default,  PhysicsMask.Bullets, EntityFilterAll())
-    if trace.fraction ~= 1 then
-        self.InfestationLocations.west = GenerateInfestationCoords(trace.endPoint, trace.normal)
-		self.validpositions = self.validpositions + 1
-    end
-    
-    if GetAndCheckBoolean(self.startsBuilt, "startsBuilt", false) then    
-        self:SetInfestationFullyGrown()    
-    end
-    
-end
-
-function InfestationMixin:SetInfestationFullyGrown()
-end
-
-function InfestationMixin:SetExcludeRelevancyMask(mask)
-end
-
-function InfestationMixin:OnSighted(sighted)
 end
 
 if Client then
 
-	local math_sin              = math.sin
-	local Shared_GetTime        = Shared.GetTime
-	local Shared_GetEntity      = Shared.GetEntity
-	local Entity_invalidId      = Entity.invalidId
 	local Client_GetLocalPlayer = Client.GetLocalPlayer
+        
+    function InfestationMixin:ReturnPatchCoords(index)
+        if not PlayerUI_IsOverhead() then
+            if index == 1 and self.InfestationLocations.bottom ~= nil then
+                return self.InfestationLocations.bottom
+            elseif index == 2 and self.InfestationLocations.north ~= nil then
+                return self.InfestationLocations.north
+            elseif index == 3 and self.InfestationLocations.south ~= nil then
+                return self.InfestationLocations.south
+            elseif index == 4 and self.InfestationLocations.east ~= nil then
+                return self.InfestationLocations.east
+            elseif index == 5 and self.InfestationLocations.west ~= nil then
+                return self.InfestationLocations.west
+            elseif index == 6 and self.InfestationLocations.top ~= nil then
+                return self.InfestationLocations.top
+            end
+        end
+        return self.InfestationLocations.bottom
+    end
+
+    function InfestationMixin:GetRadius()
+
+        PROFILE("InfestationMixin:GetRadius")
+
+        local radiusCached = self.radiusCached
+        local maxRadius = self:GetMaxRadius()
+        local minRadius = self:GetMinRadius()
+        
+        if radiusCached and maxRadius == radiusCached and self:GetIsAlive() then
+            return radiusCached
+        end 
+        
+        local radius = 0
+        
+        // Check if Infestation was manually grown.
+        if maxRadius == minRadius then
+            radius = maxRadius
+        else
+
+            local cycleDuration = Shared.GetTime() - self.timeCycleStarted
+            local growRadius = maxRadius - minRadius
+            local timeRequired = growRadius / self:GetGrowthRate()
+            local fraction = 0
+            
+            if self.timeCycleEnded == 0 then
+                fraction = Clamp(cycleDuration / timeRequired, 0, 1)
+                radius = minRadius + growRadius * fraction
+            else
+                oldfraction = Clamp(cycleDuration / timeRequired, 0, 1)
+                oldradius = minRadius + growRadius * oldfraction
+                fraction = 1 - Clamp((Shared.GetTime() - self.timeCycleEnded) / kInfestationRecedeRate, 0, 1)
+                radius = oldradius * fraction
+            end
+             
+        end
+        
+        if radius == maxRadius then
+            self.radiusCached = radius
+        end
+        
+        return radius
+        
+    end
+
+    function InfestationMixin:SetRadiusPercent(percent)
+        self.radius = Clamp(percent, 0, 1) * self:GetMaxRadius()
+    end
+
+    function InfestationMixin:SetFullyGrown()
+        self.radius = self:GetMaxRadius()
+    end
+
+    function InfestationMixin:GetIsPointOnInfestation(point, verticalSize)
+
+        local onInfestation = false
+        
+        // Check radius
+        local radius = point:GetDistanceTo(self:GetOrigin())
+        if radius <= self:GetRadius() then
+        
+            // Check dot product
+            local toPoint = point - self:GetOrigin()
+            local verticalProjection = math.abs( self:ReturnPatchCoords(1).yAxis:DotProduct( toPoint ) )
+            
+            onInfestation = (verticalProjection < verticalSize)
+            
+        end
+        
+        return onInfestation
+       
+    end
+
+    local function GenerateInfestationCoords(origin, normal)
+
+        local coords = Coords.GetIdentity()
+        coords.origin = origin
+        coords.yAxis = normal
+        coords.zAxis = normal:GetPerpendicular()
+        coords.xAxis = coords.zAxis:CrossProduct(coords.yAxis)
+        
+        return coords
+        
+    end
+
+    function InfestationMixin:SpawnInfestation()
+
+        local coords = self:GetCoords()
+        local attached = self:GetAttached()
+        if attached then
+            // Add a small offset, otherwise we are not able to track the infested state of the techpoint.
+            coords = attached:GetCoords()
+            coords.origin = coords.origin + Vector(0.1, 0, 0.1)
+        end
+        
+        self.InfestationLocations.bottom = coords
+        self.validpositions = 1
+        
+        // Ceiling.
+        local radius = self:GetMaxRadius()
+        local trace = Shared.TraceRay(self:GetOrigin() + coords.yAxis * 0.1, self:GetOrigin() + coords.yAxis * radius,  CollisionRep.Default,  PhysicsMask.Bullets, EntityFilterAll())
+        local roomMiddlePoint = self:GetOrigin() + coords.yAxis * 0.1
+        if trace.fraction ~= 1 then
+            self.InfestationLocations.top = GenerateInfestationCoords(trace.endPoint, trace.normal)
+            self.validpositions = self.validpositions + 1
+        end
+        
+        // Front wall.
+        trace = Shared.TraceRay(roomMiddlePoint, roomMiddlePoint + coords.zAxis * radius, CollisionRep.Default,  PhysicsMask.Bullets, EntityFilterAll())
+        if trace.fraction ~= 1 then
+            self.InfestationLocations.north = GenerateInfestationCoords(trace.endPoint, trace.normal)
+            self.validpositions = self.validpositions + 1
+        end
+        
+        // Back wall.
+        trace = Shared.TraceRay(roomMiddlePoint, roomMiddlePoint - coords.zAxis * radius, CollisionRep.Default,  PhysicsMask.Bullets, EntityFilterAll())
+        if trace.fraction ~= 1 then
+            self.InfestationLocations.south = GenerateInfestationCoords(trace.endPoint, trace.normal)
+            self.validpositions = self.validpositions + 1
+        end
+        
+        // Left wall.
+        trace = Shared.TraceRay(roomMiddlePoint, roomMiddlePoint + coords.xAxis * radius, CollisionRep.Default,  PhysicsMask.Bullets, EntityFilterAll())
+        if trace.fraction ~= 1 then
+            self.InfestationLocations.east = GenerateInfestationCoords(trace.endPoint, trace.normal)
+            self.validpositions = self.validpositions + 1
+        end
+        
+        // Right wall.
+        trace = Shared.TraceRay(roomMiddlePoint, roomMiddlePoint - coords.xAxis * radius, CollisionRep.Default,  PhysicsMask.Bullets, EntityFilterAll())
+        if trace.fraction ~= 1 then
+            self.InfestationLocations.west = GenerateInfestationCoords(trace.endPoint, trace.normal)
+            self.validpositions = self.validpositions + 1
+        end
+        
+        if GetAndCheckBoolean(self.startsBuilt, "startsBuilt", false) then    
+            self:SetInfestationFullyGrown()    
+        end
+        
+    end
 
 	local function TraceBlobRay(startPoint, endPoint)
 		// we only want to place blobs on static level geometry, so we select this rep and mask
@@ -632,7 +588,6 @@ if Client then
 
 	local function OnHostKilledClient(self)
 
-		self.maxRadius = self:GetRadius()
 		self.radiusCached = nil
 		
 	end
