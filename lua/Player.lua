@@ -2208,7 +2208,7 @@ function Player:GetMaterialBelowPlayer()
 end
 
 function Player:GetFootstepSpeedScalar()
-    return Clamp(self:GetVelocity():GetLength() / Player.kRunMaxSpeed, 0, 1)
+    return Clamp(self:GetVelocity():GetLength() / kRunMaxSpeed, 0, 1)
 end
 
 function Player:HandleAttacks(input)
@@ -2758,7 +2758,7 @@ function Player:SpaceClearForEntity(position, printResults)
 end
 
 function Player:GetChatSound()
-    return Player.kChatSound
+    return kChatSound
 end
 
 function Player:GetNumHotkeyGroups()

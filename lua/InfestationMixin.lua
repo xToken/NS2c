@@ -21,7 +21,7 @@ local kDefaultGrowthRate = 0.25
 local kMaxGrowthRate = 1
 local kInitialRadius = 0.5
 local kHiveInfestationRadius = 20
-local kInfestationBlobDensity = 5
+local kInfestationBlobDensity = 7
 local kThinkTime = 3
 
 local kMaxRadius = 20
@@ -618,7 +618,6 @@ if Client then
 		end    
 		
 		self.numBlobsToGenerate = numBlobGens
-		Print(string.format("%s blobs generated.", numBlobGens))
 		
 	end
 
