@@ -278,7 +278,7 @@ local function GetIsResearchRelevant(techId)
         relevantResearchIds[kTechId.Web] = 1
         relevantResearchIds[kTechId.PrimalScream] = 1
         relevantResearchIds[kTechId.AcidRocket] = 1
-        relevantResearchIds[kTechId.Smash] = 1
+        relevantResearchIds[kTechId.Devour] = 1
     
     end
     

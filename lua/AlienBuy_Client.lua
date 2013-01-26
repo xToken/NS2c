@@ -550,7 +550,7 @@ function GetAlienTierThreeFor(techId)
         gTierThreeTech[kTechId.Gorge] = kTechId.Web
         gTierThreeTech[kTechId.Lerk]  = kTechId.PrimalScream
         gTierThreeTech[kTechId.Fade]  = kTechId.AcidRocket
-        gTierThreeTech[kTechId.Onos]  = kTechId.Smash
+        gTierThreeTech[kTechId.Onos]  = kTechId.Devour
         
     end
     

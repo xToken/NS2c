@@ -318,7 +318,7 @@ function AlienTeam:InitTechTree()
     self.techTree:AddUpgradeNode(kTechId.PrimalScream,        kTechId.ThreeHives,              kTechId.None)
     --self.techTree:AddUpgradeNode(kTechId.WebStalk,          kTechId.ThreeHives,              kTechId.None)
     self.techTree:AddUpgradeNode(kTechId.AcidRocket,          kTechId.ThreeHives,              kTechId.None)
-    self.techTree:AddUpgradeNode(kTechId.Smash,               kTechId.ThreeHives,              kTechId.None)  
+    self.techTree:AddUpgradeNode(kTechId.Devour,              kTechId.ThreeHives,              kTechId.None)  
     self.techTree:AddUpgradeNode(kTechId.Charge,              kTechId.ThreeHives,              kTechId.None)      
     
     // Global alien upgrades. Make sure the first prerequisite is the main tech required for it, as this is 

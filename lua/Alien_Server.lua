@@ -372,7 +372,7 @@ local function UnlockAbility(forAlien, techId)
 
     local mapName = LookupTechData(techId, kTechDataMapName)
     if mapName and forAlien:GetIsAlive() then
-    
+
         local activeWeapon = forAlien:GetActiveWeapon()
 
         local tierWeapon = forAlien:GetWeapon(mapName)
@@ -415,7 +415,7 @@ end
 
 function Alien:UpdateActiveAbilities(hives)
 
-    if not self.oneHive and hives >= 1 then
+    if hives >= 1 then
         UnlockAbility(self, self:GetTierOneTechId())
         self.oneHive = true
     elseif self.oneHive and hives < 1 then
@@ -423,7 +423,7 @@ function Alien:UpdateActiveAbilities(hives)
         self.oneHive = false
     end
 
-    if not self.twoHives and hives >= 2 then
+    if hives >= 2 then
         UnlockAbility(self, self:GetTierTwoTechId())
         self.twoHives = true
     elseif self.twoHives and hives < 2 then
@@ -431,7 +431,7 @@ function Alien:UpdateActiveAbilities(hives)
         self.twoHives = false
     end
     
-    if not self.threeHives and hives >= 3 then
+    if hives >= 3 then
         UnlockAbility(self, self:GetTierThreeTechId())
         self.threeHives = true
     elseif self.threeHives and hives < 3 then

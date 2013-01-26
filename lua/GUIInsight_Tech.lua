@@ -76,7 +76,7 @@ local techIdGridPosition =
     [kTechId.Web] =                 Vector(1, 1, 0),
     [kTechId.PrimalScream] =        Vector(2, 1, 0),
     [kTechId.AcidRocket] =          Vector(3, 1, 0),
-    [kTechId.Smash] =               Vector(4, 1, 0),
+    [kTechId.Devour] =               Vector(4, 1, 0),
     
     [kTechId.CragHive] =            Vector(0, 2, 0),
     [kTechId.Crag] =                Vector(1, 2, 0),
@@ -690,7 +690,7 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
                         self.gUpgradeIcons["Metabolize"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, false)))
                     end
                 
-                elseif techIdString == "Smash" then
+                elseif techIdString == "Devour" then
                 
                     if (capturedTechPoints > 2) then
                         self.gUpgradeIcons["Stomp"]:SetColor(kIconColors[kTeam2Index])
@@ -797,7 +797,7 @@ function GUIInsight_Tech:UpdateTechDisplay(techId, teamInfo, isMarine)
                     
                     self.gUpgradeIcons["Metabolize"]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId, false)))
                 
-                elseif techIdString == "Smash" then -- Stomp is T3 right now, maybe Primal will be T2 or T4?
+                elseif techIdString == "Devour" then -- Stomp is T3 right now, maybe Primal will be T2 or T4?
                 
                     self.gUpgradeIcons["Stomp"]:SetColor(kIconColors[kTeam2Index])
                     

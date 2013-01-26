@@ -310,7 +310,7 @@ function JetpackMarine:GetCrouchSpeedScalar()
 end
 
 function JetpackMarine:GetInventorySpeedScalar()
-    return 1 - self:GetWeaponsWeight() - kJetpackWeightAssist
+    return 1 - self:GetWeaponsWeight() - kJetpackWeight
 end
 
 function JetpackMarine:GoldSrc_GetMaxSpeed(possible)

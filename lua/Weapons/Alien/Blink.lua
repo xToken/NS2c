@@ -23,12 +23,19 @@ local networkVars =
     lastblinktime = "time"
 }
 
+function Blink:OnCreate()
+
+    Ability.OnCreate(self)
+    self.lastblinktime = 0
+
+end
+
 function Blink:OnHolster(player)
 
     Ability.OnHolster(self, player)
     
     self:SetEthereal(player, false)
-    self.lastblinktime = 0
+    
 end
 
 function Blink:GetHasSecondary(player)
@@ -119,7 +126,7 @@ function Blink:ProcessMoveOnWeapon(player, input)
     end
     
     local time = Shared.GetTime()
-    local deltaTime = time - self.lastBlinkTime
+    local deltaTime = time - (self.lastBlinkTime or 0)
     // Check time and energy
     if deltaTime > kBlinkCooldown and player:GetEnergy() > kBlinkPulseEnergyCost then
         // Blink.

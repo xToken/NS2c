@@ -141,7 +141,7 @@ kResourceScalingMinPlayers = 4
 kResourceScalingMaxPlayers = 12
 kResourceScalingMaxDelta = 1.2
 kResourceScalingMinDelta = .75
-kResourceScaling = 20
+kResourceScaling = 20 //Controls the factoring per player.
 
 //End Resource/Build Timing Stuff
 
@@ -185,7 +185,7 @@ kShotgunDamageType = kDamageType.Normal
 kShotgunClipSize = 8
 kShotgunBulletsPerShot = 10
 kShotgunMaxRange = 18
-kShotgunMinSpread = 13
+kShotgunMinSpread = 10
 kShotgunMinSpreadBullets = 5
 kShotgunMaxSpread = 18
 //kShotgunDropOffStartRange = 4
@@ -225,7 +225,7 @@ kConfusedSentryBaseROF = 1.0
 kSentriesPerFactory = 3
 
 kARCDamage = 400
-kARCDamageType = kDamageType.StructuresOnly // splash damage hits friendly arcs as well
+kARCDamageType = kDamageType.StructuresOnly
 kARCRange = 25 //1100 NS1 - Bigger than NS1, dropping to 25
 
 kWeapons1DamageScalar = 1.1

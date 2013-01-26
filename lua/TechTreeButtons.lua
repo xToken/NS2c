@@ -147,6 +147,7 @@ function InitTechTreeMaterialOffsets()
     kTechIdToMaterialOffset[kTechId.AcidRocket] = 71
     kTechIdToMaterialOffset[kTechId.Stomp] = 72
     kTechIdToMaterialOffset[kTechId.Smash] = 72
+    kTechIdToMaterialOffset[kTechId.Devour] = 72
     kTechIdToMaterialOffset[kTechId.Charge] = 72
     kTechIdToMaterialOffset[kTechId.Stomp] = 72
     //kTechIdToMaterialOffset[kTechId.MACSpeedTech] = 73

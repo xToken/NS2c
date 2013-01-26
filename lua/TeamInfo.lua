@@ -81,7 +81,7 @@ TeamInfo.kRelevantTechIdsAlien =
     kTechId.WebStalk,
     kTechId.PrimalScream,
     kTechId.AcidRocket,
-    kTechId.Smash,
+    kTechId.Devour,
     
     kTechId.CragHive,
     

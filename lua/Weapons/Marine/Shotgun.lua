@@ -82,6 +82,16 @@ function Shotgun:GetSpread(bulletNum)
     
 end
 
+function Shotgun:GetMinSpread(bulletNum)
+
+    if bulletNum <= kShotgunMinSpreadBullets then
+        return Math.Radians((kShotgunMinSpread - 2))
+    else
+        return Math.Radians((kShotgunMaxSpread - 2))
+    end
+    
+end
+
 function Shotgun:GetRange()
     return kShotgunMaxRange
 end

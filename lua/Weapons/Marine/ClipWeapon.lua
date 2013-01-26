@@ -121,6 +121,10 @@ function ClipWeapon:GetSpread()
     return ClipWeapon.kCone0Degrees
 end
 
+function ClipWeapon:GetMinSpread()
+    return ClipWeapon.kCone0Degrees
+end
+
 function ClipWeapon:GetRange()
     return 8012
 end
@@ -398,8 +402,8 @@ local function FireBullets(self, player)
     
     for bullet = 1, numberBullets do
     
-        local spreadDirection = CalculateSpread(shootCoords, self:GetSpread(bullet) * self:GetInaccuracyScalar(player), NetworkRandom)
-        
+        local spreadDirection = CalculateSpread(shootCoords, self:GetSpread(bullet) * self:GetInaccuracyScalar(player), NetworkRandom, self:GetMinSpread(bullet))
+
         local endPoint = startPoint + spreadDirection * range
         
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
