@@ -223,14 +223,6 @@ if Server then
                         self:DoDamage(kSpitDamage, trace.entity, compensatedProjectile.origin, trace.endPoint - compensatedProjectile.origin, trace.surface)
                         self.spitted = false
                         
-                        if trace.entity:isa("Marine") then
-                        
-                            local direction = compensatedProjectile.origin - trace.entity:GetEyePos()
-                            direction:Normalize()
-                            trace.entity:OnSpitHit(direction)
-                            
-                        end
-                        
                     else
                         compensatedProjectile.origin = compensatedProjectile.origin + input.time * compensatedProjectile.velocity
                         table.insert(updateTable, compensatedProjectile)

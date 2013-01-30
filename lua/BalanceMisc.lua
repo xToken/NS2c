@@ -44,6 +44,7 @@ kKnockbackTime = 0.05
 
 kCeleritySpeedModifier = 0.2
 kFocusAttackSlowdown = 0.5
+kCloakingMaxSpeed = 3.0
 kFocusAttackDamageMultipler = 2
 kBombardAttackDamageMultipler = 1.3
 kRedemptionEHPThreshold = 0.40

@@ -31,7 +31,7 @@ end
 local kJetpackFuelReplenishDelay = .0
 local kJetpackMinimumFuelForLaunch = .03
 local kJumpMode = 0 // Default jumping allows for better jetpack control, while stopping jetpack-bunnyhopping
-local kVerticalThrustAccelerationMod = 2.25
+local kVerticalThrustAccelerationMod = 2.1
 local kVerticalThrustMaxSpeed = 12.0 // note: changing this impacts kVerticalThrustAccelerationMod
 local kJetpackAcceleration = 17.0 // Horizontal acceleration
 local kWalkMaxSpeed = 3.5                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
@@ -418,7 +418,7 @@ function JetpackMarine:GoldSrc_GetAcceleration()
 
     if self:GetIsJetpacking() then
 
-        acceleration = kJetpackAcceleration * 0.22
+        acceleration = kJetpackAcceleration * 0.17
         acceleration = acceleration * self:GetInventorySpeedScalar()
 
     else

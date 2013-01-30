@@ -55,7 +55,7 @@ function WebsAbility:GetIsPositionValid(displayOrigin, player, normal, lastClick
     
     end
 
-    return valid and (not entity or entity:isa("Tunnel") or entity:isa("Infestation")) and lastClickedPosition ~= mapOrigin
+    return valid and lastClickedPosition ~= mapOrigin
     
 end
 

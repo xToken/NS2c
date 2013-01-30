@@ -22,10 +22,10 @@ Harvester.kMapName = "harvester"
 Harvester.kModelName = PrecacheAsset("models/alien/harvester/harvester.model")
 local kAnimationGraph = PrecacheAsset("models/alien/harvester/harvester.animation_graph")
 
-local kHarvesterInfestationRadius = 8
-local kHarvesterInfestationBlobDensity = 3
+local kHarvesterInfestationRadius = 15
+local kHarvesterInfestationBlobDensity = 2
 local kHarvesterInfestationGrowthRate = 0.1
-local kHarvesterMinInfestationRadius = 0.1
+local kHarvesterMinInfestationRadius = 0.5
 
 local networkVars = 
 {

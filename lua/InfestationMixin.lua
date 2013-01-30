@@ -12,12 +12,13 @@ Script.Load("lua/Infestation_Client_SparserBlobPatterns.lua")
 InfestationMixin = CreateMixin(InfestationMixin)
 InfestationMixin.type = "Infestation"
 
-local kInitialRadius = 0.5
-local kMaxOutCrop = 0.45 // should be low enough so skulks can always comfortably see over it
-local kMinOutCrop = 0.1 // should be 
-local kMaxIterations = 16
+local kMaxOutCrop = 0.25 // should be low enough so skulks can always comfortably see over it
+local kMinOutCrop = 0.05 // should be 
+local kMaxIterations = 10
 local kInfestationRecedeRate = 6
-
+// local kBlobsPerFrame = 10 
+// Have a feeling this would cause only 10 blobs to be drawn ever - might not want that tbh.  Dont think the fps hit is from the number of blobs, moreso the animations of those blobs.
+// Sleeping those to random fps intervals might help reduce impact, but may introduce other wierd effects.
 local _quality = nil
 local _numBlobsGenerated = 0
 
@@ -44,49 +45,30 @@ InfestationMixin.networkVars =
     timeCycleEnded = "time"
 }
 
-local function random(min, max)
-    return math.random() * (max - min) + min
-end
-
-local function GetDisplayBlobs(self)
-
-    if PlayerUI_IsOverhead() and self:ReturnPatchCoords(1).yAxis:DotProduct(Vector(0, 1, 0)) < 0.2 then
-        return false
-    end
-
-    return true  
-
-end
-    
 function InfestationMixin:OnKill()
     self.timeCycleEnded = Shared.GetTime()
 end
 
+function InfestationMixin:OnConstructionComplete()
+	self.timeCycleStarted = Shared.GetTime()
+end
+
 function InfestationMixin:__initmixin()
     
-    self.timeCycleStarted = Shared.GetTime()
+ 
     self.timeCycleEnded = 0
-    
+    self.timeCycleStarted = 0
+	
     if Client then
-        self.minRadius = kInitialRadius
-        self.InfestationLocations = { }
-        self.InfestationLocations.top = nil
-        self.InfestationLocations.north = nil
-        self.InfestationLocations.south = nil
-        self.InfestationLocations.east = nil
-        self.InfestationLocations.west = nil
-        self.InfestationLocations.bottom = nil
-        self.lastframe = false
+        self.infestationlocations = { }
         self.validpositions = 0
-        
+        self.lastradiusupdate = 0
         self:SetUpdates(true)
         
         self.infestationMaterial = Client.CreateRenderMaterial()
         self.infestationMaterial:SetMaterial("materials/infestation/infestation_decal.material")
 
         // always create blob coords even if we do not display them sometimes
-        --self:EnforceOutcropLimits()
-        --self:LimitBlobsAspectRatio()
         self:SpawnInfestation()
         self:ResetBlobPlacement()
 
@@ -101,28 +83,16 @@ if Client then
         
     function InfestationMixin:ReturnPatchCoords(index)
         if not PlayerUI_IsOverhead() then
-            if index == 1 and self.InfestationLocations.bottom ~= nil then
-                return self.InfestationLocations.bottom
-            elseif index == 2 and self.InfestationLocations.north ~= nil then
-                return self.InfestationLocations.north
-            elseif index == 3 and self.InfestationLocations.south ~= nil then
-                return self.InfestationLocations.south
-            elseif index == 4 and self.InfestationLocations.east ~= nil then
-                return self.InfestationLocations.east
-            elseif index == 5 and self.InfestationLocations.west ~= nil then
-                return self.InfestationLocations.west
-            elseif index == 6 and self.InfestationLocations.top ~= nil then
-                return self.InfestationLocations.top
-            end
+			return self.infestationlocations[index]
         end
-        return self.InfestationLocations.bottom
+        return self.infestationlocations[1]
     end
 
     function InfestationMixin:GetRadius()
 
         PROFILE("InfestationMixin:GetRadius")
 
-        local radiusCached = self.radiusCached
+        local radiusCached = self.radiusCached or 0
         local maxRadius = self:GetMaxRadius()
         local minRadius = self:GetMinRadius()
         
@@ -131,6 +101,10 @@ if Client then
         end 
         
         local radius = 0
+		
+		if self.timeCycleStarted == 0 then
+			return radius
+		end
         
         // Check if Infestation was manually grown.
         if maxRadius == minRadius then
@@ -154,10 +128,8 @@ if Client then
              
         end
         
-        if radius == maxRadius then
-            self.radiusCached = radius
-        end
-        
+        self.radiusCached = radius
+		
         return radius
         
     end
@@ -212,7 +184,7 @@ if Client then
             coords.origin = coords.origin + Vector(0.1, 0, 0.1)
         end
         
-        self.InfestationLocations.bottom = coords
+        table.insert(self.infestationlocations, coords)
         self.validpositions = 1
         
         // Ceiling.
@@ -220,35 +192,35 @@ if Client then
         local trace = Shared.TraceRay(self:GetOrigin() + coords.yAxis * 0.1, self:GetOrigin() + coords.yAxis * radius,  CollisionRep.Default,  PhysicsMask.Bullets, EntityFilterAll())
         local roomMiddlePoint = self:GetOrigin() + coords.yAxis * 0.1
         if trace.fraction ~= 1 then
-            self.InfestationLocations.top = GenerateInfestationCoords(trace.endPoint, trace.normal)
+            table.insert(self.infestationlocations, GenerateInfestationCoords(trace.endPoint, trace.normal))
             self.validpositions = self.validpositions + 1
         end
         
         // Front wall.
         trace = Shared.TraceRay(roomMiddlePoint, roomMiddlePoint + coords.zAxis * radius, CollisionRep.Default,  PhysicsMask.Bullets, EntityFilterAll())
         if trace.fraction ~= 1 then
-            self.InfestationLocations.north = GenerateInfestationCoords(trace.endPoint, trace.normal)
+            table.insert(self.infestationlocations, GenerateInfestationCoords(trace.endPoint, trace.normal))
             self.validpositions = self.validpositions + 1
         end
         
         // Back wall.
         trace = Shared.TraceRay(roomMiddlePoint, roomMiddlePoint - coords.zAxis * radius, CollisionRep.Default,  PhysicsMask.Bullets, EntityFilterAll())
         if trace.fraction ~= 1 then
-            self.InfestationLocations.south = GenerateInfestationCoords(trace.endPoint, trace.normal)
+            table.insert(self.infestationlocations, GenerateInfestationCoords(trace.endPoint, trace.normal))
             self.validpositions = self.validpositions + 1
         end
         
         // Left wall.
         trace = Shared.TraceRay(roomMiddlePoint, roomMiddlePoint + coords.xAxis * radius, CollisionRep.Default,  PhysicsMask.Bullets, EntityFilterAll())
         if trace.fraction ~= 1 then
-            self.InfestationLocations.east = GenerateInfestationCoords(trace.endPoint, trace.normal)
+            table.insert(self.infestationlocations, GenerateInfestationCoords(trace.endPoint, trace.normal))
             self.validpositions = self.validpositions + 1
         end
         
         // Right wall.
         trace = Shared.TraceRay(roomMiddlePoint, roomMiddlePoint - coords.xAxis * radius, CollisionRep.Default,  PhysicsMask.Bullets, EntityFilterAll())
         if trace.fraction ~= 1 then
-            self.InfestationLocations.west = GenerateInfestationCoords(trace.endPoint, trace.normal)
+            table.insert(self.infestationlocations, GenerateInfestationCoords(trace.endPoint, trace.normal))
             self.validpositions = self.validpositions + 1
         end
         
@@ -306,6 +278,15 @@ if Client then
 		self.hasClientGeometry = false
 		
 	end
+	
+	
+	local function SetMaterialParameters(modelArray, radiusFraction, origin, maxRadius)
+
+		modelArray:SetMaterialParameter("amount", radiusFraction)
+		modelArray:SetMaterialParameter("origin", origin)
+		modelArray:SetMaterialParameter("maxRadius", maxRadius)
+
+	end
 
 	function InfestationMixin:UpdateClientGeometry()
 		
@@ -326,24 +307,12 @@ if Client then
 		
 		local origin = self:GetOrigin()
 		local amount = radiusFraction
-		
-		if self.growStartTime ~= nil then
-			local time = Shared.GetTime() - self.growStartTime
-			amount = math.min(time * 5, amount)
-		end
 
 		// apply cloaking effects
 		amount = amount * (1-cloakFraction)
 		
-		//Only update 1 per frame (may seem wierd)
-		if self.infestationModelArray then
-			if self.lastframe then
-				SetMaterialParameters(self.infestationModelArray, amount, origin, maxRadius)
-			else
-				SetMaterialParameters(self.infestationShellModelArray, amount, origin, maxRadius)
-			end
-			self.lastframe = not self.lastframe
-		end
+		SetMaterialParameters(self.infestationModelArray, amount, origin, maxRadius)
+		SetMaterialParameters(self.infestationShellModelArray, amount, origin, maxRadius)
 		
 	end
 
@@ -357,7 +326,7 @@ if Client then
 			c.yAxis:Scale( allowedOutcrop/yLen )
 		end
 
-		function TuckIn( amounts, amount )
+		local function TuckIn( amounts, amount )
 
 			if math.abs(amounts.x) > 0 then
 				local oldLen = c.xAxis:GetLength()
@@ -376,7 +345,7 @@ if Client then
 			end
 		end
 
-		function CheckAndTuck( bsDir )
+		local function CheckAndTuck( bsDir )
 
 			local startPt = c:TransformPoint(bsDir)
 			local trace = TraceBlobRay( startPt, c.origin )
@@ -444,6 +413,10 @@ if Client then
 		local endPoint   = startPoint - hostCoords.yAxis * checkDistance
 		return Shared.TraceRay(startPoint, endPoint, CollisionRep.Default, EntityFilterAll())
 	end
+	
+	local function random(min, max)
+		return math.random() * (max - min) + min
+	end
 
 	local function GetBlobPlacement(x, z, xRadius, hostCoords)
 
@@ -499,7 +472,7 @@ if Client then
 		local maxRadius = self:GetMaxRadius()
 
 		local numBlobs   = 0
-		local numBlobTries = numBlobGens * 5
+		local numBlobTries = numBlobGens * 2
 
 		for j = 1, numBlobTries do
 		
@@ -526,7 +499,7 @@ if Client then
 				x, z = 0, 0
 			end
 			
-			local hostcords = self:ReturnPatchCoords(math.random(1,6))
+			local hostcords = self:ReturnPatchCoords(math.random(1,#self.infestationlocations))
 			
 			local position, normal = GetBlobPlacement(x, z, xRadius, hostcords)
 			
@@ -568,10 +541,6 @@ if Client then
 		self.blobCoords = { }
 		
 		local numBlobGens = self:GetMaxRadius() * self.validpositions * self:GetInfestationDensity()
-		local parent = self:GetParent()
-		if parent and parent.GetInfestationNumBlobSplats then
-			numBlobGens = numBlobGens * parent:GetInfestationNumBlobSplats()
-		end    
 		
 		self.numBlobsToGenerate = numBlobGens
 		
@@ -587,9 +556,17 @@ if Client then
 	end
 
 	local function OnHostKilledClient(self)
-
 		self.radiusCached = nil
-		
+	end
+	
+	local function GetDisplayBlobs(self)
+
+		if PlayerUI_IsOverhead() and self:ReturnPatchCoords(1).yAxis:DotProduct(Vector(0, 1, 0)) < 0.2 then
+			return false
+		end
+
+		return true  
+
 	end
 
 	local gDebugDrawBlobs = false
@@ -660,7 +637,8 @@ if Client then
 			self.numBlobsToGenerate = self.numBlobsToGenerate - numBlobGens
 			_numBlobsToGenerate = _numBlobsToGenerate - numBlobGens
 			if _numBlobsToGenerate == 0 then
-				self.growStartTime = Shared.GetTime()
+				self:EnforceOutcropLimits()
+				self:LimitBlobsAspectRatio()
 			end
 		end
 		
@@ -668,14 +646,6 @@ if Client then
 			self:UpdateBlobAnimation()
 		end
 		
-	end
-
-	function SetMaterialParameters(modelArray, radiusFraction, origin, maxRadius)
-
-		modelArray:SetMaterialParameter("amount", radiusFraction)
-		modelArray:SetMaterialParameter("origin", origin)
-		modelArray:SetMaterialParameter("maxRadius", maxRadius)
-
 	end
 
 	function InfestationMixin:UpdateBlobAnimation()
@@ -714,6 +684,10 @@ if Client then
 				numModels = numModels + 1
 				coordsArray[numModels] = c
 				
+				//if numModels > kBlobsPerFrame then
+					//break
+				//end
+
 			end
 			
 			if numModels > 0 then
@@ -721,7 +695,6 @@ if Client then
 				modelArray = Client.CreateRenderModelArray(RenderScene.Zone_Default, numModels)
 				modelArray:SetCastsShadows(false)
 				modelArray:InstanceMaterials()
-
 				modelArray:SetModel(modelName)
 				modelArray:SetModels( coordsArray )
 
@@ -737,14 +710,10 @@ if Client then
 		
 		// Make blobs on the ground thinner to so that Skulks and buildings aren't
 		// obscured.
-		local scale = 1
-		local hostcoords = self:ReturnPatchCoords(1)
-		if hostcoords ~= nil and hostcoords.yAxis.y > 0.5 then
-			scale = 0.75
-		end
+		//Hmm this makes all blobs thinner - do i want that?
 
-		self.infestationModelArray      = CreateInfestationModelArray( "models/alien/infestation/infestation_blob.model", self.blobCoords, self.growthOrigin, radialOffset, growthFraction, self:GetMaxRadius(), 1, 1 * scale )
-		self.infestationShellModelArray = CreateInfestationModelArray( "models/alien/infestation/infestation_shell.model", self.blobCoords, self.growthOrigin, radialOffset, growthFraction, self:GetMaxRadius(), 1.75, 1.25 * scale )
+		self.infestationModelArray      = CreateInfestationModelArray( "models/alien/infestation/infestation_blob.model", self.blobCoords, self.growthOrigin, radialOffset, growthFraction, self:GetMaxRadius(), 1, 0.75 )
+		self.infestationShellModelArray = CreateInfestationModelArray( "models/alien/infestation/infestation_shell.model", self.blobCoords, self.growthOrigin, radialOffset, growthFraction, self:GetMaxRadius(), 2.5, 0.75 )
 		
 	end
 
@@ -782,7 +751,7 @@ if Client then
 	function Infestation_UpdateForPlayer()
 		
 		// Maximum number of blobs to generate in a frame
-		_numBlobsToGenerate = 20
+		_numBlobsToGenerate = 100
 
 		// Change the texture scale when we're viewing top down to reduce the
 		// tiling and make it look better.

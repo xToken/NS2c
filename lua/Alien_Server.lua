@@ -139,7 +139,7 @@ function Alien:OnHiveConstructed(newHive, activeHiveCount)
     elseif activeHiveCount == 3 then
         AbilityData = self:GetTierThreeTechId()
     end
-    if AbilityData ~= nil then
+    if AbilityData ~= nil and AbilityData ~= kTechId.None then
         SendPlayersMessage({self}, kTeamMessageTypes.AbilityUnlocked, AbilityData)
     end
     self:UpdateActiveAbilities(activeHiveCount)
@@ -157,7 +157,7 @@ function Alien:OnHiveDestroyed(destroyedHive, activeHiveCount)
     elseif activeHiveCount == 2 then
         AbilityData = self:GetTierThreeTechId()
     end
-    if AbilityData ~= nil then
+    if AbilityData ~= nil and AbilityData ~= kTechId.None then
         SendPlayersMessage({self}, kTeamMessageTypes.AbilityLost, AbilityData)
     end
     if destroyedHive:GetTechId() == kTechId.Hive then
