@@ -10,6 +10,25 @@
 Script.Load("lua/Table.lua")
 Script.Load("lua/Utility.lua")
 
+function SetAlwaysRelevantToCommander(unit, relevant)
+    
+    local includeMask = 0
+    
+    if relevant then
+    
+        if not HasMixin(unit, "Team") then
+            includeMask = bit.bor(kRelevantToTeam1Commander, kRelevantToTeam2Commander)
+        elseif unit:GetTeamNumber() == 1 then
+            includeMask = kRelevantToTeam1Commander
+        elseif unit:GetTeamNumber() == 2 then
+            includeMask = kRelevantToTeam2Commander
+        end
+    end
+    
+    unit:SetIncludeRelevancyMask( includeMask )
+    
+end    
+
 function PushPlayersInRange(origin, range, impulseStrength, team)
 
     local players = GetEntitiesForTeamWithinRange("Player", team, origin, range)

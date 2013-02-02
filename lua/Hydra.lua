@@ -118,7 +118,7 @@ end
 function Hydra:OnInitialized()
 
     if Server then
-   
+    
         ScriptActor.OnInitialized(self)
         
         self:SetModel(Hydra.kModelName, Hydra.kAnimationGraph)

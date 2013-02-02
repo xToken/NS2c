@@ -6,7 +6,7 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Fade.kFirstPersonMiniBlinkCinematic = "cinematics/alien/fade/miniblink1p.cinematic"
+local kFirstPersonMiniBlinkCinematic = "cinematics/alien/fade/miniblink1p.cinematic"
 
 local kFadeCameraYOffset = 0.6
 
@@ -20,7 +20,7 @@ end
 function Fade:TriggerFirstPersonMiniBlinkEffect(direction)
 
     local cinematic = Client.CreateCinematic(RenderScene.Zone_ViewModel)
-    cinematic:SetCinematic(Fade.kFirstPersonMiniBlinkCinematic)
+    cinematic:SetCinematic(kFirstPersonMiniBlinkCinematic)
     local coords = Coords.GetIdentity()
     coords.zAxis = direction
     coords.xAxis = coords.yAxis:CrossProduct(coords.zAxis)

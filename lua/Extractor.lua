@@ -122,4 +122,9 @@ if Server then
     
 end
 
+local kExtractorHealthbarOffset = Vector(0, 2.0, 0)
+function Extractor:GetHealthbarOffset()
+    return kExtractorHealthbarOffset
+end 
+
 Shared.LinkClassToMap("Extractor", Extractor.kMapName, networkVars)

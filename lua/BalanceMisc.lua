@@ -25,6 +25,8 @@ kPingOfDeathDamagePercent = 12
 kResearchMod = 1
 kAirMaxSpeedScalar = 1.8
 kOnLandDelay = 0.1
+kFootstepsThreshold = 3.5
+kLerkFlapEnergyCost = 3
 
 kGhostStructureModifier = .75
 kEnergyUpdateRate = 0.25
@@ -42,6 +44,7 @@ kKnockbackTime = 0.05
 
 kCeleritySpeedModifier = 0.2
 kFocusAttackSlowdown = 0.5
+kCloakingMaxSpeed = 3.0
 kFocusAttackDamageMultipler = 2
 kBombardAttackDamageMultipler = 1.3
 kRedemptionEHPThreshold = 0.40
@@ -74,6 +77,7 @@ kRoboticsFactoryAttachRange = 12
 kScanDuration = 10
 kScanRadius = 20
 kMotionTrackingDetectionRange = 30
+kMotionTrackingMinimumSpeed = 2
 kObservatoryInitialEnergy = 25  kObservatoryMaxEnergy = 100
 kDistressBeaconRange = 15
 kDistressBeaconTime = 3
@@ -91,13 +95,13 @@ kUpgradeGestationTime = 2
 // Jetpack
 // NS1: 6.5 seconds of fuel
 // NS1: 9 seconds for full refuel
-kJetpackUseFuelRate = 0.15
+kJetpackUseFuelRate = 0.18
 kJetpackUpgradeUseFuelRate = 0.15
 kJetpackReplenishFuelRate = 0.11
-kJetpackWeightAssist = 1.75
+kJetpackWeight = 0.08
 
 //HA
-kHeavyArmorWeightAssist = 2.5
+kHeavyArmorWeight = 0.10
 
 kAlienInnateRegenerationTime = 1
 kAlienRegenerationTime = 2
@@ -107,5 +111,7 @@ kAlienRegenerationPercentage = 0.09
 //Severe Flinch Effects
 kFlinchDamageInterval = 0.1
 kFlinchDamagePercent = 0.30
+
+kKillDelay = 3
 
 kAbilityMaxEnergy = 100

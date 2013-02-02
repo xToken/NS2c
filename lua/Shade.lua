@@ -84,7 +84,7 @@ AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
-
+AddMixinNetworkVars(SelectableMixin, networkVars)
 function Shade:OnCreate()
 
     ScriptActor.OnCreate(self)

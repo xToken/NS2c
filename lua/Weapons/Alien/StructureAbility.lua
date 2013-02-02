@@ -30,7 +30,7 @@ function StructureAbility:GetIsPositionValid(position)
 end
 
 function StructureAbility:GetDropRange()
-    return Gorge.kGorgeCreateDistance
+    return kGorgeCreateDistance
 end
 
 function StructureAbility:OnUpdateHelpModel(ability, abilityHelpModel, coords)
@@ -55,7 +55,7 @@ function StructureAbility:GetGhostModelName(ability)
     assert(false)
 end
 
-// Child should override ("hydra", "crap", etc.). 
+// Child should override ("hydra", "cyst", etc.). 
 function StructureAbility:GetSuffixName()
     assert(false)
 end
@@ -74,7 +74,8 @@ function StructureAbility:CreateStructure()
 	return false
 end
 
-function StructureAbility:IsAllowed(self, player)
+function StructureAbility:IsAllowed(player)
+
     local structures = GetEntitiesForTeamWithinRange(self:GetDropClassName(), player:GetTeamNumber(), player:GetEyePos(), kMaxAlienStructureRange)
     return #structures < kMaxAlienStructuresofType
 end

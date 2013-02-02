@@ -25,9 +25,6 @@ AlienTeam.kOrganicStructureHealRate = 0.02     // Health per second
 
 AlienTeam.kPingSound = PrecacheAsset("sound/NS2.fev/ambient/feild_walkthrough")
 
-// only update every second to not stress the server too much
-AlienTeam.kAlienSpectatorUpdateIntervall = 1
-
 AlienTeam.kSupportingStructureClassNames = {[kTechId.Hive] = {"Hive"} }
 AlienTeam.kUpgradeStructureClassNames = {[kTechId.Crag] = {"Crag"}, [kTechId.Shift] = {"Shift"}, [kTechId.Shade] = {"Shade"} }
 
@@ -83,132 +80,11 @@ function AlienTeam:GetTeamInfoMapName()
     return AlienTeamInfo.kMapName
 end
 
-local function RemoveGorgeStructureFromClient(self, techId, clientId)
-
-    local structureTypeTable = self.clientOwnedStructures[clientId]
-    
-    if structureTypeTable then
-    
-        if not structureTypeTable[techId] then
-        
-            structureTypeTable[techId] = { }
-            return
-            
-        end    
-        
-        local removeIndex = 0
-        local structure = nil
-        for index, id in ipairs(structureTypeTable[techId])  do
-        
-            if id then
-            
-                removeIndex = index
-                structure = Shared.GetEntity(id)
-                break
-                
-            end
-            
-        end
-        
-        if structure then
-        
-            table.remove(structureTypeTable[techId], removeIndex)
-            structure.consumed = true
-            structure:Kill()
-            
-        end
-        
-    end
-    
-end
-
-function AlienTeam:AddGorgeStructure(player, structure)
-
-    if player ~= nil and structure ~= nil then
-    
-        local clientId = Server.GetOwner(player):GetUserId()
-        local structureId = structure:GetId()
-        local techId = structure:GetTechId()
-        
-        if not self.clientOwnedStructures[clientId] then
-            self.clientOwnedStructures[clientId] = { }
-        end
-        
-        local structureTypeTable = self.clientOwnedStructures[clientId]
-        
-        if not structureTypeTable[techId] then
-            structureTypeTable[techId] = { }
-        end
-        
-        table.insertunique(structureTypeTable[techId], structureId)
-               
-    end
-    
-end
-
-function AlienTeam:GetDroppedGorgeStructures(player, techId)
-
-    local owner = Server.GetOwner(player)
-
-    if owner then
-    
-        local clientId = owner:GetUserId()
-        local structureTypeTable = self.clientOwnedStructures[clientId]
-        
-        if structureTypeTable then
-            return structureTypeTable[techId]
-        end
-    
-    end
-    
-end
-
-function AlienTeam:GetNumDroppedGorgeStructures(player, techId)
-
-    local structureTypeTable = self:GetDroppedGorgeStructures(player, techId)
-    return (not structureTypeTable and 0) or #structureTypeTable
-    
-end
-
-function AlienTeam:UpdateClientOwnedStructures(oldEntityId)
-
-    if oldEntityId then
-    
-        for clientId, structureTypeTable in pairs(self.clientOwnedStructures) do
-        
-            for techId, structureList in pairs(structureTypeTable) do
-            
-                for i, structureId in ipairs(structureList) do
-                
-                    if structureId == oldEntityId then
-                    
-                        if newEntityId then
-                            structureList[i] = newEntityId
-                        else
-                        
-                            table.remove(structureList, i)
-                            break
-                            
-                        end
-                        
-                    end
-                    
-                end
-                
-            end
-            
-        end
-        
-    end
-
-end
-
 function AlienTeam:OnEntityChange(oldEntityId, newEntityId)
 
     // Check if the oldEntityId matches any client's built structure and
     // handle the change.
     
-    self:UpdateClientOwnedStructures(oldEntityId)
     self:UpdateCloakablesChanged(oldEntityId, newEntityId)
     
 end
@@ -442,7 +318,7 @@ function AlienTeam:InitTechTree()
     self.techTree:AddUpgradeNode(kTechId.PrimalScream,        kTechId.ThreeHives,              kTechId.None)
     --self.techTree:AddUpgradeNode(kTechId.WebStalk,          kTechId.ThreeHives,              kTechId.None)
     self.techTree:AddUpgradeNode(kTechId.AcidRocket,          kTechId.ThreeHives,              kTechId.None)
-    self.techTree:AddUpgradeNode(kTechId.Smash,               kTechId.ThreeHives,              kTechId.None)  
+    self.techTree:AddUpgradeNode(kTechId.Devour,              kTechId.ThreeHives,              kTechId.None)  
     self.techTree:AddUpgradeNode(kTechId.Charge,              kTechId.ThreeHives,              kTechId.None)      
     
     // Global alien upgrades. Make sure the first prerequisite is the main tech required for it, as this is 
@@ -467,13 +343,6 @@ function AlienTeam:InitTechTree()
     self.techTree:AddPassive(kTechId.ShiftTeleport,               kTechId.Shift,         kTechId.None)
     
     self.techTree:SetComplete()
-    
-end
-
-function AlienTeam:GetNumHives()
-
-    local teamInfoEntity = Shared.GetEntity(self.teamInfoEntityId)
-    return teamInfoEntity:GetNumCapturedTechPoints()
     
 end
 
@@ -523,11 +392,19 @@ function AlienTeam:OnHiveDelayedConstructed(newHive)
     local activeHiveCount = self:GetActiveHiveCount()
     
     for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
-    
         if alien:GetIsAlive() and alien.OnHiveConstructed then
             alien:OnHiveConstructed(newHive, activeHiveCount)
         end
-        
+    end
+    
+end
+
+function AlienTeam:SetHiveTechIdChosen(hive, techId)
+
+    for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
+        if alien:GetIsAlive() and alien.OnHiveUpgraded then
+            alien:OnHiveUpgraded(hive, techId)
+        end
     end
     
 end
@@ -540,11 +417,9 @@ function AlienTeam:OnHiveDestroyed(destroyedHive)
     local activeHiveCount = self:GetActiveHiveCount()
     
     for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
-    
         if alien:GetIsAlive() and alien.OnHiveDestroyed then
             alien:OnHiveDestroyed(destroyedHive, activeHiveCount)
         end
-        
     end
     
 end
@@ -563,21 +438,22 @@ function AlienTeam:OnUpgradeChamberConstructed(upgradeChamber)
     local checkTech = checkForLostResearch[upgradeChamber:GetTechId()]
     if checkTech then
     
-        local anyRemain = false
+        local anyremain = 0
         for _, ent in ientitylist(Shared.GetEntitiesWithClassname(checkTech[1])) do
-        
-            // Don't count the upgradeChamber as it is being destroyed now.
-            if ent ~= upgradeChamber and ent:GetTechId() == upgradeChamber:GetTechId() then
-            
-                anyRemain = true
-                break
-                
+            if ent ~= upgradeChamber and ent:GetTechId() == upgradeChamber:GetTechId() and ent:GetIsBuilt() then
+                anyremain = anyremain + 1
             end
             
         end
         
-        if not anyRemain then
+        if anyremain == 0 then
             SendTeamMessage(self, kTeamMessageTypes.ResearchComplete, checkTech[2])
+        end
+        
+        for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
+            if alien:GetIsAlive() and alien.UpdateNumUpgradeStructures then
+                alien:UpdateNumUpgradeStructures(checkTech[2], (anyremain + 1))
+            end
         end
         
     end
@@ -592,22 +468,25 @@ function AlienTeam:OnUpgradeChamberDestroyed(upgradeChamber)
     
     local checkTech = checkForLostResearch[upgradeChamber:GetTechId()]
     if checkTech then
-    
-        local alreadyhas = 0
+
+        local anyremain = 0
         for _, ent in ientitylist(Shared.GetEntitiesWithClassname(checkTech[1])) do
-        
-            // Don't count the upgradeChamber as it is being constructed now.
             if ent ~= upgradeChamber and ent:GetTechId() == upgradeChamber:GetTechId() then
-            
-                alreadyhas = alreadyhas + 1
-                break
-                
+                anyremain = anyremain + 1
             end
             
         end
         
-        if alreadyhas < kChamberLostNotification then
+        if anyremain < kChamberLostNotification then
             SendTeamMessage(self, kTeamMessageTypes.ResearchLost, checkTech[2])
+        end
+        
+        for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
+    
+            if alien:GetIsAlive() and alien.UpdateNumUpgradeStructures then
+                alien:UpdateNumUpgradeStructures(checkTech[2], (anyremain))
+            end
+            
         end
         
     end

@@ -13,54 +13,44 @@ Script.Load("lua/tweener/Tweener.lua")
 Script.Load("lua/TechTreeConstants.lua")
 Script.Load("lua/GUICommunicationStatusIcons.lua")
 
-// These screen effects are only used on the local player so create them statically.
-Player.screenEffects = { }
-Player.screenEffects.darkVision = Client.CreateScreenEffect("shaders/DarkVision.screenfx")
-Player.screenEffects.darkVision:SetActive(false)
-Player.screenEffects.cloaked = Client.CreateScreenEffect("shaders/Cloaked.screenfx")
-Player.screenEffects.cloaked:SetActive(false)
+gPlayingDeadMontage = nil
+gHUDMapEnabled = true
 
 local kDefaultPingSound = PrecacheAsset("sound/NS2.fev/common/ping")
 local kMarinePingSound = PrecacheAsset("sound/NS2.fev/marine/commander/ping")
 local kAlienPingSound = PrecacheAsset("sound/NS2.fev/alien/commander/ping")
-
 local kDefaultFirstPersonEffectName = PrecacheAsset("cinematics/marine/hit_1p.cinematic")
+local kFirstPersonHealthCircle = PrecacheAsset("models/misc/marine-build/marine-build.model")
+local kFirstPersonMarineHealthCircle = PrecacheAsset("models/misc/marine-build/marine-build.model")
+local kFirstPersonAlienHealthCircle = PrecacheAsset("models/misc/marine-build/marine-build.model")
+local kFirstPersonDeathEffect = PrecacheAsset("cinematics/death_1p.cinematic")
+local kDeadSound = PrecacheAsset("sound/NS2.fev/common/dead")
 
+Client.PrecacheLocalSound(kDeadSound)
 Client.PrecacheLocalSound(kDefaultPingSound)
 Client.PrecacheLocalSound(kMarinePingSound)
 Client.PrecacheLocalSound(kAlienPingSound)
 
-Player.kMeleeHitCameraShakeAmount = 0.05
-Player.kMeleeHitCameraShakeSpeed = 5
-Player.kMeleeHitCameraShakeTime = 0.25
-
-Player.kRangeFinderDistance = 20
-Player.kShowGiveDamageTime = 1
-Player.kPhaseEffectActiveTime = 1
-
-gHUDMapEnabled = true
-
-Player.kFirstPersonHealthCircle = PrecacheAsset("models/misc/marine-build/marine-build.model")
-Player.kFirstPersonMarineHealthCircle = PrecacheAsset("models/misc/marine-build/marine-build.model")
-Player.kFirstPersonAlienHealthCircle = PrecacheAsset("models/misc/marine-build/marine-build.model")
-
-Player.kFirstPersonDeathEffect = PrecacheAsset("cinematics/death_1p.cinematic")
-
-local kDeadSound = PrecacheAsset("sound/NS2.fev/common/dead")
-Client.PrecacheLocalSound(kDeadSound)
-gPlayingDeadMontage = nil
-
 local kHealthCircleFadeOutTime = 1
+local kDamageIndicatorDrawTime = 1
+local kShowGiveDamageTime = 1
+local kRangeFinderDistance = 20
+local kCtDownLength = kCountDownLength
+
+// These screen effects are only used on the local player so create them statically.
+local screenEffects = { }
+    screenEffects.cloaked = Client.CreateScreenEffect("shaders/Cloaked.screenfx")
+    screenEffects.cloaked:SetActive(false)
 
 local function GetHealthCircleName(self)
 
     if self:GetTeamNumber() == kMarineTeamType then
-        return Player.kFirstPersonMarineHealthCircle
+        return kFirstPersonMarineHealthCircle
     elseif self:GetTeamNumber() == kAlienTeamType then
-        return Player.kFirstPersonAlienHealthCircle
+        return kFirstPersonAlienHealthCircle
     end
     
-    return Player.kFirstPersonHealthCircle
+    return kFirstPersonHealthCircle
 
 end
 
@@ -1388,7 +1378,7 @@ function Player:GetCrossHairTarget()
     local viewAngles = self:GetViewAngles()    
     local viewCoords = viewAngles:GetCoords()    
     local startPoint = self:GetEyePos()
-    local endPoint = startPoint + viewCoords.zAxis * Player.kRangeFinderDistance
+    local endPoint = startPoint + viewCoords.zAxis * kRangeFinderDistance
     
     local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.AllButPCsAndRagdolls, EntityFilterOne(self))
     return trace.entity
@@ -1727,7 +1717,7 @@ local function DisableScreenEffects(self)
 
     if self:GetIsLocalPlayer() then
     
-        for _, effect in pairs(Player.screenEffects) do
+        for _, effect in pairs(screenEffects) do
             effect:SetActive(false)
         end
         
@@ -1836,8 +1826,8 @@ end
 
 function Player:SetCloakShaderState(state)
 
-    if self:GetIsLocalPlayer() and Player.screenEffects.cloaked then
-        Player.screenEffects.cloaked:SetActive(state)
+    if self:GetIsLocalPlayer() and screenEffects.cloaked then
+        screenEffects.cloaked:SetActive(state)
     end
     
 end
@@ -2074,7 +2064,7 @@ function Player:GetCameraViewCoordsOverride(cameraCoords)
 
     local continue = true
 
-    if not self:GetIsAlive() and self:GetAnimateDeathCamera() then
+    if not self:GetIsAlive() and self:GetAnimateDeathCamera() and self:GetRenderModel() then
 
         local attachCoords = self:GetAttachPointCoords(self:GetHeadAttachpointName())
 
@@ -2211,17 +2201,17 @@ function Player:GetCountDownFraction()
         self.clientTimeCountDownStarted = Shared.GetTime()
     end
     
-    return Clamp((Shared.GetTime() - self.clientTimeCountDownStarted) / Player.kCountDownLength, 0, 1)
+    return Clamp((Shared.GetTime() - self.clientTimeCountDownStarted) / kCtDownLength, 0, 1)
 
 end
 
 function Player:GetCountDownTime()
 
     if self.clientTimeCountDownStarted then
-        return Player.kCountDownLength - (Shared.GetTime() - self.clientTimeCountDownStarted)
+        return kCtDownLength - (Shared.GetTime() - self.clientTimeCountDownStarted)
     end
     
-    return Player.kCountDownLength
+    return kCtDownLength
 
 end
 
@@ -3097,7 +3087,7 @@ function PlayerUI_GetDamageIndicators()
     
         for index, indicatorTriple in ipairs(player.damageIndicators) do
             
-            local alpha = Clamp(1 - ((Shared.GetTime() - indicatorTriple[3])/Player.kDamageIndicatorDrawTime), 0, 1)
+            local alpha = Clamp(1 - ((Shared.GetTime() - indicatorTriple[3]) / kDamageIndicatorDrawTime), 0, 1)
             table.insert(drawIndicators, alpha)
 
             local worldX = indicatorTriple[1]
@@ -3131,7 +3121,7 @@ function PlayerUI_GetShowGiveDamageIndicator()
     if player and player.GetDamageIndicatorTime and player:GetIsPlaying() then
     
         local timePassed = Shared.GetTime() - player:GetDamageIndicatorTime()
-        return timePassed <= Player.kShowGiveDamageTime, math.min(timePassed / Player.kShowGiveDamageTime, 1)
+        return timePassed <= kShowGiveDamageTime, math.min(timePassed / kShowGiveDamageTime, 1)
         
     end
     
@@ -3227,7 +3217,7 @@ function Player:UpdateDamageIndicators()
     // Expire old damage indicators
     for index, indicatorTriple in ipairs(self.damageIndicators) do
     
-        if Shared.GetTime() > (indicatorTriple[3] + Player.kDamageIndicatorDrawTime) then
+        if Shared.GetTime() > (indicatorTriple[3] + kDamageIndicatorDrawTime) then
         
             table.insert(indicesToRemove, index)
             
@@ -3271,10 +3261,7 @@ end
 // Set after hotgroup updated over the network
 function Player:SetHotgroup(number, entityList)
 
-    if(number >= 1 and number <= Player.kMaxHotkeyGroups) then
-        //table.copy(entityList, self.hotkeyGroups[number])
-        self.hotkeyGroups[number] = entityList
-    end
+    Print("Player:SetHotgroup")
     
 end
 
@@ -3539,7 +3526,7 @@ function Player:AddGlobalHint(localizableText, priority)
 end
 
 function Player:GetFirstPersonDeathEffect()
-    return Player.kFirstPersonDeathEffect
+    return kFirstPersonDeathEffect
 end
 
 function Player:TriggerFirstPersonDeathEffects()

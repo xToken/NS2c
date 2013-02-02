@@ -170,6 +170,10 @@ function HeavyMachineGun:OnUpdateAnimationInput(modelMixin)
         // Transfer bullets from our ammo pool to the weapon's clip
         self.clip = math.min(self.ammo, self:GetClipSize())
         self.ammo = self.ammo - self.clip
+        local player = self:GetParent()
+        if player then
+            player:UpdateWeaponWeights()
+        end
     end
     
 end
@@ -211,7 +215,7 @@ function HeavyMachineGun:GetBulletDamage(target, endPoint)
 end
 
 function HeavyMachineGun:GetWeight()
-    return kHeavyMachineGunWeight
+    return kHeavyMachineGunWeight + ((math.ceil(self.ammo / self:GetClipSize()) + math.ceil(self.clip / self:GetClipSize())) * kHeavyMachineGunClipWeight)
 end
 
 function HeavyMachineGun:GetSecondaryCanInterruptReload()

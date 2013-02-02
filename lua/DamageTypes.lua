@@ -97,7 +97,7 @@ function NS2Gamerules_GetUpgradedDamage(attacker, target, doer, damage, damageTy
 end
 
 function Gamerules_GetDamageMultiplier()
-    
+
     if Server and Shared.GetCheatsEnabled() then
         return GetGamerules():GetDamageMultiplier()
     end

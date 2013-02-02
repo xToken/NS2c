@@ -12,6 +12,7 @@ Script.Load("lua/GUIAnimatedScript.lua")
 Script.Load("lua/menu/MenuMixin.lua")
 Script.Load("lua/menu/Link.lua")
 Script.Load("lua/menu/SlideBar.lua")
+Script.Load("lua/menu/ProgressBar.lua")
 Script.Load("lua/menu/ContentBox.lua")
 Script.Load("lua/menu/Image.lua")
 Script.Load("lua/menu/Table.lua")
@@ -53,6 +54,8 @@ local kLocales =
         { name = "esES", label = "Spanish" },
         { name = "seSW", label = "Swedish" },
     }
+
+local gMainMenu
 
 function GUIMainMenu:Initialize()
 
@@ -106,7 +109,7 @@ function GUIMainMenu:Initialize()
         end,
         
         OnHide = function (self)
-        
+            
             if MainMenu_IsInGame() then
             
                 MainMenu_ReturnToGame()
@@ -276,6 +279,8 @@ function GUIMainMenu:Initialize()
         
     end
     
+    gMainMenu = self
+    
 end
 
 function GUIMainMenu:SetShowWindowName(name)
@@ -328,6 +333,7 @@ end
 
 function GUIMainMenu:Uninitialize()
 
+    gMainMenu = nil
     self:DestroyAllWindows()
     GUIAnimatedScript.Uninitialize(self)
     
@@ -427,7 +433,6 @@ local function AddFavoritesToServerList(serverList)
         serverEntry.name = FormatServerName(serverEntry.name, serverEntry.rookieFriendly)
         
         local function OnServerRefreshed(serverData)
-            local tt = serverEntry.address
             serverList:UpdateEntry(serverData)
         end
         Client.RefreshServer(serverEntry.address, OnServerRefreshed)
@@ -470,7 +475,7 @@ function GUIMainMenu:ProcessJoinServer()
 
     if MainMenu_GetSelectedServer() ~= nil then
     
-        if MainMenu_GetSelectedServer() >= 0 and MainMenu_GetSelectedRequiresPassword() then
+        if MainMenu_GetSelectedRequiresPassword() then
             self.passwordPromptWindow:SetIsVisible(true)
         else
             JoinServer(self)
@@ -991,6 +996,8 @@ GUIMainMenu.CreateOptionsForm = function(mainMenu, content, options)
                         end
                     }, SLIDE_HORIZONTAL)
             end
+        elseif option.type == "progress" then
+            input = form:CreateFormElement(Form.kElementType.ProgressBar, option.name, option.value)       
         else
             input = form:CreateFormElement(Form.kElementType.TextInput, option.name, option.value)
         end
@@ -1001,7 +1008,12 @@ GUIMainMenu.CreateOptionsForm = function(mainMenu, content, options)
         
         local y = rowHeight * (i - 1)
         
-        input:SetCSSClass("option_input")
+        local inputClass = "option_input"
+        if option.inputClass then
+            inputClass = option.inputClass
+        end
+        
+        input:SetCSSClass(inputClass)
         input:SetTopOffset(y)
         
         local label = CreateMenuElement(form, "Font", false)
@@ -1090,7 +1102,7 @@ function GUIMainMenu:CreateHostGameWindow()
     self.createGame:AddEventCallbacks({ OnHide = function() SaveServerSettings(self) end })
 
     local minPlayers            = 2
-    local maxPlayers            = 32
+    local maxPlayers            = 24
     local playerLimitOptions    = { }
     
     for i = minPlayers, maxPlayers do
@@ -1297,6 +1309,7 @@ local function InitOptions(optionElements)
     local infestation           = Client.GetOptionString("graphics/infestation", "rich")
     local fovAdjustment         = Client.GetOptionFloat("graphics/display/fov-adjustment", 0)
     local cameraAnimation       = Client.GetOptionBoolean("CameraAnimation", false) and "ON" or "OFF"
+    //local decalLifeTime         = Client.GetOptionFloat("graphics/decallifetime", 0.2)
     
     local minimapZoom = Client.GetOptionFloat( "minimap-zoom", 0.75 )
     local armorType = Client.GetOptionString( "armorType", "" )
@@ -1328,9 +1341,16 @@ local function InitOptions(optionElements)
     local anisotropicFiltering = OptionsDialogUI_GetAnisotropicFiltering()
     local antiAliasing = OptionsDialogUI_GetAntiAliasing()
     
+    local soundInputDeviceGuid = Client.GetOptionString(kSoundInputDeviceOptionsKey, "")
+    local soundOutputDeviceGuid = Client.GetOptionString(kSoundOutputDeviceOptionsKey, "")
+
+    local soundInputDevice =  math.max(Client.FindSoundDeviceByGuid(Client.SoundDeviceType_Input, soundInputDeviceGuid), 0) + 1
+    local soundOutputDevice = math.max(Client.FindSoundDeviceByGuid(Client.SoundDeviceType_Output, soundOutputDeviceGuid), 0) + 1
+    
     local soundVol = Client.GetOptionInteger("soundVolume", 90) / 100
     local musicVol = Client.GetOptionInteger("musicVolume", 90) / 100
     local voiceVol = Client.GetOptionInteger("voiceVolume", 90) / 100
+    local recordingGain = Client.GetOptionFloat("recordingGain", 0.5)
     
     for i = 1, #kLocales do
     
@@ -1368,12 +1388,18 @@ local function InitOptions(optionElements)
     optionElements.FOVAdjustment:SetValue(fovAdjustment)
     optionElements.MinimapZoom:SetValue(minimapZoom)
     optionElements.ArmorType:SetValue(armorType)
+    //optionElements.DecalLifeTime:SetValue(decalLifeTime)
     optionElements.CameraAnimation:SetValue(cameraAnimation)
     optionElements.ParticleQuality:SetOptionActive( table.find(kParticleQualityModes, particleQuality) ) 
     
+    
+    optionElements.SoundInputDevice:SetOptionActive(soundInputDevice)
+    optionElements.SoundOutputDevice:SetOptionActive(soundOutputDevice)
     optionElements.SoundVolume:SetValue(soundVol)
     optionElements.MusicVolume:SetValue(musicVol)
     optionElements.VoiceVolume:SetValue(voiceVol)
+    
+    optionElements.RecordingGain:SetValue(recordingGain)
     
 end
 
@@ -1433,6 +1459,12 @@ local function OnVoiceVolumeChanged(mainMenu)
     OptionsDialogUI_SetVoiceVolume( voiceVol )
 end
 
+local function OnRecordingGainChanged(mainMenu)
+    local recordingGain = mainMenu.optionElements.RecordingGain:GetValue()
+    Client.SetRecordingGain(recordingGain)
+    Client.SetOptionFloat("recordingGain", recordingGain)
+end
+
 local function OnFOVAdjustChanged(mainMenu)
     local value = mainMenu.optionElements.FOVAdjustment:GetValue()
     Client.SetOptionFloat("graphics/display/fov-adjustment", value)
@@ -1480,7 +1512,7 @@ local function SaveOptions(mainMenu)
     local armorType             = mainMenu.optionElements.ArmorType:GetValue()
     local cameraAnimation       = mainMenu.optionElements.CameraAnimation:GetActiveOptionIndex() > 1
     local advancedmovement      = mainMenu.optionElements.AdvancedMovement:GetActiveOptionIndex() > 1
-	local particleQuality       = mainMenu.optionElements.ParticleQuality:GetActiveOptionIndex()
+    local particleQuality       = mainMenu.optionElements.ParticleQuality:GetActiveOptionIndex()
     
     Client.SetOptionString( "locale", locale )
 
@@ -1542,6 +1574,78 @@ local function StoreAdvancedMovementOption(formElement)
     end
 end
 
+local function OnDecalLifeTimeChanged(mainMenu)
+    local value = mainMenu.optionElements.DecalLifeTime:GetValue()
+    Client.SetOptionFloat("graphics/decallifetime", value)
+end
+
+local function OnSoundDeviceChanged(window, formElement, deviceType)
+
+    if formElement.inSoundCallback then
+        return
+    end
+
+    local deviceId = formElement:GetActiveOptionIndex() - 1
+
+    // Get GUIDs of all audio devices
+    local numDevices = Client.GetSoundDeviceCount(deviceType)
+    local guids = {}
+    for id = 1, numDevices do
+        guids[id] = Client.GetSoundDeviceGuid(deviceType, id - 1)
+    end
+
+    local desiredGuid = guids[deviceId + 1]
+    Client.SetSoundDevice(deviceType, deviceId)
+
+    // Check if GUIDs are still the same, update the list in process
+    local newNumDevices = Client.GetSoundDeviceCount(deviceType)
+    local listChanged = numDevices ~= newNumDevices
+    numDevices = newNumDevices
+    
+    for id = 1, numDevices do
+        local guid = Client.GetSoundDeviceGuid(deviceType, id - 1)
+        if guids[id] ~= guid then
+            listChanged = true
+            guids[id] = guid
+        end
+    end
+    
+    if listChanged then
+        // Device list order changed        
+        // Avoid re-entering this callback
+        formElement.inSoundCallback = true
+        
+        local soundOutputDevices = OptionsDialogUI_GetSoundDeviceNames(deviceType)
+        formElement:SetOptions(soundOutputDevices)
+        
+        // Find the GUID we were trying to select again
+        deviceId = Client.FindSoundDeviceByGuid(deviceType, desiredGuid)
+        
+        if deviceId == -1 then
+            deviceId = 0
+        end
+        
+        formElement:SetOptionActive(deviceId + 1)
+        Client.SetSoundDevice(deviceType, deviceId)
+        
+        formElement.inSoundCallback = false
+    end
+    
+    window:UpdateRestartMessage()
+
+    guid = guids[deviceId + 1]
+    if guid == nil then
+        Print('Warning: device %d (type %d) has invalid GUID', deviceId, deviceType)
+        guid = ''
+    end
+    if deviceType == Client.SoundDeviceType_Input then
+        Client.SetOptionString(kSoundInputDeviceOptionsKey, guid)
+    elseif deviceType == Client.SoundDeviceType_Output then
+        Client.SetOptionString(kSoundOutputDeviceOptionsKey, guid)
+    end
+    
+end
+
 function GUIMainMenu:CreateOptionWindow()
 
     self.optionWindow = self:CreateWindow()
@@ -1570,9 +1674,17 @@ function GUIMainMenu:CreateOptionWindow()
     apply:AddEventCallbacks( { OnClick = function() SaveOptions(self) end } )
 
     self.fpsDisplay = CreateMenuElement( self.optionWindow, "MenuButton" )
-    self.fpsDisplay:SetCSSClass("fps")
+    self.fpsDisplay:SetCSSClass("fps") 
+    
+    self.warningLabel = CreateMenuElement(self.optionWindow, "MenuButton", false)
+    self.warningLabel:SetCSSClass("warning_label")
+    self.warningLabel:SetText("Engine restart required")
+    self.warningLabel:SetIgnoreEvents(true)
+    self.warningLabel:SetIsVisible(false)
     
     local screenResolutions = OptionsDialogUI_GetScreenResolutions()
+    local soundOutputDevices = OptionsDialogUI_GetSoundDeviceNames(Client.SoundDeviceType_Output)
+    local soundInputDevices = OptionsDialogUI_GetSoundDeviceNames(Client.SoundDeviceType_Input)
     
     local languages = { }
     for i = 1,#kLocales do
@@ -1694,6 +1806,20 @@ function GUIMainMenu:CreateOptionWindow()
 
     local soundOptions =
         {
+            {   
+                name   = "SoundOutputDevice",
+                label  = "OUTPUT DEVICE",
+                type   = "select",
+                values = soundOutputDevices,
+                callback = function(formElement) OnSoundDeviceChanged(self, formElement, Client.SoundDeviceType_Output) end,
+            },
+            {   
+                name   = "SoundInputDevice",
+                label  = "INPUT DEVICE",
+                type   = "select",
+                values = soundInputDevices,
+                callback = function(formElement) OnSoundDeviceChanged(self, formElement, Client.SoundDeviceType_Input) end,
+            },            
             { 
                 name    = "SoundVolume",
                 label   = "SOUND VOLUME",
@@ -1712,6 +1838,17 @@ function GUIMainMenu:CreateOptionWindow()
                 type    = "slider",
                 sliderCallback = OnVoiceVolumeChanged,
             },
+            {
+                name    = "RecordingGain",
+                label   = "MICROPHONE GAIN",
+                type    = "slider",
+                sliderCallback = OnRecordingGainChanged,
+            },
+            {
+                name    = "RecordingVolume",
+                label   = "MICROPHONE LEVEL",
+                type    = "progress",
+            }
         }        
         
     local autoApplyCallback = function(formElement) OnGraphicsOptionsChanged(self) end
@@ -1749,7 +1886,13 @@ function GUIMainMenu:CreateOptionWindow()
                 type    = "select",
                 values  = { "LOW", "HIGH" },
                 callback = autoApplyCallback
-            },    
+            },     /*       
+            {
+                name    = "DecalLifeTime",
+                label   = "DECAL LIFE TIME",
+                type    = "slider",
+                sliderCallback = OnDecalLifeTimeChanged,
+            },    */
             {
                 name    = "Infestation",
                 label   = "INFESTATION",
@@ -1822,11 +1965,14 @@ function GUIMainMenu:CreateOptionWindow()
     local graphicsForm    = GUIMainMenu.CreateOptionsForm(self, content, graphicsOptions)
     local soundForm       = GUIMainMenu.CreateOptionsForm(self, content, soundOptions)
     
+    soundForm:SetCSSClass("sound_options")    
+    self.soundForm = soundForm
+        
     local tabs = 
         {
             { label = "GENERAL",  form = generalForm, scroll=true  },
             { label = "BINDINGS", form = keyBindingsForm, scroll=true },
-            { label = "GRAPHICS", form = graphicsForm },
+            { label = "GRAPHICS", form = graphicsForm, scroll=true },
             { label = "SOUND",    form = soundForm },
         }
         
@@ -1938,7 +2084,14 @@ function GUIMainMenu:Update(deltaTime)
         
         // Update only when visible.
         GUIAnimatedScript.Update(self, deltaTime)
-        self.playerName:SetText(OptionsDialogUI_GetNickname())
+    
+        if self.soundForm:GetIsVisible() then
+            self.optionElements.RecordingVolume:SetValue(Client.GetRecordingVolume())
+        end
+    
+        if self.menuBackground:GetIsVisible() then
+            self.playerName:SetText(OptionsDialogUI_GetNickname())
+        end
         
         if self.modsWindow:GetIsVisible() then
             self:UpdateModsWindow(self)
@@ -1946,8 +2099,10 @@ function GUIMainMenu:Update(deltaTime)
         
         if self.playWindow:GetIsVisible() then
         
+            local listChanged = false
+        
             if not Client.GetServerListRefreshed() then
-            
+   
                 for s = 0, Client.GetNumServers() - 1 do
                 
                     if s + 1 > self.numServers then
@@ -1955,26 +2110,31 @@ function GUIMainMenu:Update(deltaTime)
                         local serverEntry = BuildServerEntry(s)
                         if self.serverList:GetEntryExists(serverEntry) then
                         
-                            self.serverList:UpdateEntry(serverEntry)
+                            self.serverList:UpdateEntry(serverEntry, true)
                             if GetServerIsFavorite(serverEntry.address) then
                                 UpdateFavoriteServerData(serverEntry)
                             end
                             
                         else
                         
-                            self.serverList:AddEntry(serverEntry)
+                            self.serverList:AddEntry(serverEntry, true)
                             self.numServers = self.numServers + 1
                             
                         end
                         
-                        
+                        listChanged = true
                         
                     end
                     
                 end
+
                 
             else
                 self.playWindow.updateButton:SetText("UPDATE")
+            end
+            
+            if listChanged then
+                self.serverList:RenderNow()
             end
             
             local countTxt = ToString(Client.GetNumServers()) .. (Client.GetServerListRefreshed() and "" or "...")
@@ -2207,3 +2367,40 @@ function GUIMainMenu:OnResolutionChanged(oldX, oldY, newX, newY)
     end    
     
 end
+
+function GUIMainMenu:UpdateRestartMessage()
+    
+    local needsRestart = not Client.GetIsSoundDeviceValid(Client.SoundDeviceType_Input) or
+                         not Client.GetIsSoundDeviceValid(Client.SoundDeviceType_Output)
+        
+    if needsRestart then
+        self.warningLabel:SetText("Game restart required")
+        self.warningLabel:SetIsVisible(true)        
+    else
+        self.warningLabel:SetIsVisible(false)        
+    end
+
+end
+
+
+function OnSoundDeviceListChanged()
+
+    if gMainMenu ~= nil then 
+    
+        local soundInputDevice = math.max(0, Client.GetSoundDevice(Client.SoundDeviceType_Input)) + 1
+        local soundOutputDevice = math.max(0, Client.GetSoundDevice(Client.SoundDeviceType_Output)) + 1
+
+        local soundOutputDevices = OptionsDialogUI_GetSoundDeviceNames(Client.SoundDeviceType_Output)
+        local soundInputDevices = OptionsDialogUI_GetSoundDeviceNames(Client.SoundDeviceType_Input)
+
+        gMainMenu.optionElements.SoundInputDevice:SetOptions(soundInputDevices)
+        gMainMenu.optionElements.SoundInputDevice:SetOptionActive(soundInputDevice)
+        
+        gMainMenu.optionElements.SoundOutputDevice:SetOptions(soundOutputDevices)
+        gMainMenu.optionElements.SoundOutputDevice:SetOptionActive(soundOutputDevice)
+
+    end
+
+end
+
+Event.Hook("SoundDeviceListChanged", OnSoundDeviceListChanged)

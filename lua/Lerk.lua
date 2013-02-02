@@ -23,17 +23,37 @@ class 'Lerk' (Alien)
 
 Lerk.kMapName = "lerk"
 
+Lerk.kModelName = PrecacheAsset("models/alien/lerk/lerk.model")
+local kViewModelName = PrecacheAsset("models/alien/lerk/lerk_view.model")
+local kLerkAnimationGraph = PrecacheAsset("models/alien/lerk/lerk.animation_graph")
+
+Shared.PrecacheSurfaceShader("models/alien/lerk/lerk.surface_shader")
+
 if Client then
     Script.Load("lua/Lerk_Client.lua")
 elseif Server then
     Script.Load("lua/Lerk_Server.lua")
 end
 
-Lerk.kModelName = PrecacheAsset("models/alien/lerk/lerk.model")
-local kViewModelName = PrecacheAsset("models/alien/lerk/lerk_view.model")
-local kLerkAnimationGraph = PrecacheAsset("models/alien/lerk/lerk.animation_graph")
+Lerk.XZExtents = 0.4
+Lerk.YExtents = 0.4
 
-Shared.PrecacheSurfaceShader("models/alien/lerk/lerk.surface_shader")
+local kJumpMode = 0 //Prevents all your flaps from being used at once yo
+local kWallGripSlideTime = 0.7
+local kWallGripRange = 0.05
+local kWallGripFeelerSize = 0.25
+local kViewOffsetHeight = 0.5
+local kJumpImpulse = 4
+local kFlapStraightUpImpulse = 4.7
+local kFlapThrustMoveScalar = 7.5
+local kMass = 54
+local kJumpHeight = 1.5
+local kSwoopGravityScalar = -25.0
+local kRegularGravityScalar = -7
+local kFlightGravityScalar = -4
+local kMaxWalkSpeed = 4.8
+local kMaxSpeed = 14
+local kDefaultAttackSpeed = 1.65
 
 local networkVars =
 {
@@ -56,38 +76,6 @@ local networkVars =
 }
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
-
-// if the user hits a wall and holds the use key and the resulting speed is < this, grip starts
-Lerk.kWallGripMaxSpeed = 4
-// once you press grip, you will slide for this long a time and then stop. This is also the time you
-// have to release your movement keys, after this window of time, pressing movement keys will release the grip.
-Lerk.kWallGripSlideTime = 0.7
-// after landing, the y-axis of the model will be adjusted to the wallGripNormal after this time.
-Lerk.kWallGripSmoothTime = 0.6
-
-// how to grab for stuff ... same as the skulk tight-in code
-Lerk.kWallGripRange = 0.2
-Lerk.kWallGripFeelerSize = 0.25
-Lerk.kJumpMode = 0
-
-local kViewOffsetHeight = 0.5
-Lerk.XZExtents = 0.4
-Lerk.YExtents = 0.4
-local kJumpImpulse = 4
-local kFlapStraightUpImpulse = 4.7
-local kFlapThrustMoveScalar = 7.5
-// ~120 pounds
-Lerk.kLerkFlapEnergyCost = 3
-local kMass = 54
-local kJumpHeight = 1.5
-local kSwoopGravityScalar = -25.0
-local kRegularGravityScalar = -7
-local kFlightGravityScalar = -4
-// Lerks walk slowly to encourage flight
-local kMaxWalkSpeed = 4.8
-local kMaxSpeed = 14
-local kAirAcceleration = 2.8
-local kDefaultAttackSpeed = 1.65
 
 function Lerk:OnCreate()
 
@@ -200,6 +188,10 @@ function Lerk:ReceivesFallDamage()
     return false
 end
 
+function Lerk:GetJumpMode()
+    return kJumpMode
+end
+
 // Gain speed gradually the longer we stay in the air
 function Lerk:GoldSrc_GetMaxSpeed(possible)
 
@@ -247,7 +239,7 @@ local function Flap(self, input, velocity)
     local flapDirection = self:GetViewCoords():TransformVector( input.move )
     flapDirection:Normalize()
     
-    if self:GetEnergy() > Lerk.kLerkFlapEnergyCost then
+    if self:GetEnergy() > kLerkFlapEnergyCost then
 
         // Thrust forward or backward, or laterally
 
@@ -285,7 +277,7 @@ local function Flap(self, input, velocity)
         
         self.lastTimeFlapped = Shared.GetTime()
         
-        self:DeductAbilityEnergy(Lerk.kLerkFlapEnergyCost)
+        self:DeductAbilityEnergy(kLerkFlapEnergyCost)
     
     end
 
@@ -343,7 +335,7 @@ function Lerk:HandleButtons(input)
                 if not self:GetIsOnGround() then
                 
                     // check if we can grab anything around us
-                    local wallNormal = self:GetAverageWallWalkingNormal(Lerk.kWallGripRange, Lerk.kWallGripFeelerSize)
+                    local wallNormal = self:GetAverageWallWalkingNormal(kWallGripRange, kWallGripFeelerSize)
                     
                     if wallNormal then
                     
@@ -370,7 +362,7 @@ function Lerk:HandleButtons(input)
         local breakWallGrip = bit.band(input.commands, Move.Jump) ~= 0 
         
         // after sliding to a stop, pressing movment or crouch will drop the grip
-        if not breakWallGrip and Shared.GetTime() - self.wallGripTime > Lerk.kWallGripSlideTime then
+        if not breakWallGrip and Shared.GetTime() - self.wallGripTime > kWallGripSlideTime then
             breakWallGrip = input.move:GetLength() > 0 or bit.band(input.commands, Move.Crouch) ~= 0 
         end
         
@@ -404,7 +396,7 @@ function Lerk:CalcWallGripSpeedFraction()
     if dt > Lerk.kWallGripSlideTime then
         return 0
     end
-    local k = Lerk.kWallGripSlideTime
+    local k = kWallGripSlideTime
     return (k - dt) / k
     
 end
@@ -503,7 +495,7 @@ function Lerk:PreUpdateMove(input, runningPrediction)
     // wallgrip, recheck wallwalknormal as soon as the slide has stopped
     if self:GetIsWallGripping() and not self.wallGripRecheckDone and self:CalcWallGripSpeedFraction() == 0 then
     
-        self.wallGripNormalGoal = self:GetAverageWallWalkingNormal(Lerk.kWallGripRange, Lerk.kWallGripFeelerSize)
+        self.wallGripNormalGoal = self:GetAverageWallWalkingNormal(kWallGripRange, kWallGripFeelerSize)
         self.wallGripRecheckDone = true
         
         if not self.wallGripNormalGoal then

@@ -69,15 +69,15 @@ function AlienBuy_GetClassStats(idx)
     local techId = IndexToAlienTechId(idx)
     
     if techId == kTechId.Fade then
-        return {"Fade", Fade.kHealth, Fade.kArmor, kFadeCost}
+        return {"Fade", kFadeHealth, kFadeArmor, kFadeCost}
     elseif techId == kTechId.Gorge then
         return {"Gorge", kGorgeHealth, kGorgeArmor, kGorgeCost}
     elseif techId == kTechId.Lerk then
         return {"Lerk", kLerkHealth, kLerkArmor, kLerkCost}
     elseif techId == kTechId.Onos then
-        return {"Onos", Onos.kHealth, Onos.kArmor, kOnosCost}
+        return {"Onos", kOnosHealth, kOnosArmor, kOnosCost}
     else
-        return {"Skulk", Skulk.kHealth, Skulk.kArmor, kSkulkCost}
+        return {"Skulk", kSkulkHealth, kSkulkArmor, kSkulkCost}
     end   
     
 end
@@ -529,9 +529,9 @@ function GetAlienTierTwoFor(techId)
         
         gTierTwoTech[kTechId.Skulk] = kTechId.Leap
         gTierTwoTech[kTechId.Gorge] = kTechId.BileBomb
-        gTierTwoTech[kTechId.Lerk] = kTechId.Umbra
-        gTierTwoTech[kTechId.Fade] = kTechId.Metabolize
-        gTierTwoTech[kTechId.Onos] = kTechId.Stomp
+        gTierTwoTech[kTechId.Lerk]  = kTechId.Umbra
+        gTierTwoTech[kTechId.Fade]  = kTechId.Metabolize
+        gTierTwoTech[kTechId.Onos]  = kTechId.Stomp
         
     end
     
@@ -548,9 +548,9 @@ function GetAlienTierThreeFor(techId)
         
         gTierThreeTech[kTechId.Skulk] = kTechId.Xenocide
         gTierThreeTech[kTechId.Gorge] = kTechId.Web
-        gTierThreeTech[kTechId.Lerk] = kTechId.PrimalScream
-        gTierThreeTech[kTechId.Fade] = kTechId.AcidRocket
-        gTierThreeTech[kTechId.Onos] = kTechId.Smash
+        gTierThreeTech[kTechId.Lerk]  = kTechId.PrimalScream
+        gTierThreeTech[kTechId.Fade]  = kTechId.AcidRocket
+        gTierThreeTech[kTechId.Onos]  = kTechId.Devour
         
     end
     

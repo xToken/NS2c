@@ -15,6 +15,7 @@ Tracer.kMapName             = "tracer"
 
 kDefaultTracerEffectName = PrecacheAsset("cinematics/marine/tracer.cinematic")
 kHeavyMachineGunTracerEffectName = PrecacheAsset("cinematics/marine/exo_tracer.cinematic")
+kRailgunTracerEffectName = PrecacheAsset("cinematics/marine/railgun/tracer.cinematic")
 kSpikeTracerEffectName = PrecacheAsset("cinematics/alien/tracer.cinematic")
 
 function Tracer:OnDestroy()

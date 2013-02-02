@@ -36,6 +36,13 @@ class 'InfantryPortal' (ScriptActor)
 
 local kSpinEffect = PrecacheAsset("cinematics/marine/infantryportal/spin.cinematic")
 local kAnimationGraph = PrecacheAsset("models/marine/infantry_portal/infantry_portal.animation_graph")
+local kHoloMarineModel = PrecacheAsset("models/marine/male/male_spawn.model")
+
+local kHoloMarineMaterialname = "cinematics/vfx_materials/marine_ip_spawn.material"
+
+if Client then
+    Shared.PrecacheSurfaceShader("cinematics/vfx_materials/marine_ip_spawn.surface_shader")
+end
 
 InfantryPortal.kMapName = "infantryportal"
 
@@ -79,6 +86,7 @@ AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(AlienDetectableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
+AddMixinNetworkVars(SelectableMixin, networkVars)
 
 local function CreateSpinEffect(self)
 
@@ -90,6 +98,32 @@ local function CreateSpinEffect(self)
         self.spinCinematic:SetRepeatStyle(Cinematic.Repeat_Endless)
     
     end
+    
+    if not self.fakeMarineModel and not self.fakeMarineMaterial then
+    
+        self.fakeMarineModel = Client.CreateRenderModel(RenderScene.Zone_Default)
+        self.fakeMarineModel:SetModel(Shared.GetModelIndex(kHoloMarineModel))
+        
+        local coords = self:GetCoords()
+        coords.origin = coords.origin + Vector(0, 0.5, 0)
+        
+        self.fakeMarineModel:SetCoords(coords)
+        self.fakeMarineModel:InstanceMaterials()
+        self.fakeMarineModel:SetMaterialParameter("hiddenAmount", 1.0)
+        
+        self.fakeMarineMaterial = AddMaterial(self.fakeMarineModel, kHoloMarineMaterialname)
+    
+    end
+    
+    if self.clientQueuedPlayerId ~= self.queuedPlayerId then
+        self.timeSpinStarted = Shared.GetTime()
+        self.clientQueuedPlayerId = self.queuedPlayerId
+    end
+    
+    local spawnProgress = Clamp((Shared.GetTime() - self.timeSpinStarted) / kMarineRespawnTime, 0, 1)
+    
+    self.fakeMarineModel:SetIsVisible(true)
+    self.fakeMarineMaterial:SetParameter("spawnProgress", spawnProgress+0.2)    // Add a little so it always fills up
 
 end
 
@@ -100,6 +134,10 @@ local function DestroySpinEffect(self)
         Client.DestroyCinematic(self.spinCinematic)    
         self.spinCinematic = nil
     
+    end
+    
+    if self.fakeMarineModel then    
+        self.fakeMarineModel:SetIsVisible(false)
     end
 
 end
@@ -178,20 +216,22 @@ function InfantryPortal:OnDestroy()
     if Server then
         self:RequeuePlayer()
     elseif Client then
-        DestroySpinEffect(self)        
+        DestroySpinEffect(self)
+        
+        if self.fakeMarineModel then
+        
+            Client.DestroyRenderModel(self.fakeMarineModel)
+            self.fakeMarineModel = nil
+            self.fakeMarineMaterial = nil
+        
+        end
+        
     end
 
 end
 
 function InfantryPortal:GetShowOrderLine()
     return true
-end
-
-function InfantryPortal:GetUseAttachPoint()
-    if self:GetIsBuilt() then
-        return InfantryPortal.kLoginAttachPoint
-    end
-    return ""
 end
 
 local function QueueWaitingPlayer(self)
@@ -491,12 +531,8 @@ function InfantryPortal:OnUpdateRender()
 end
 
 function InfantryPortal:GetTechButtons()
-
-    return {
-        kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
-        kTechId.None, kTechId.None, kTechId.None, kTechId.None,     
-    }
-    
+    return { kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
+             kTechId.None, kTechId.None, kTechId.None, kTechId.None,  }
 end
 
 local kInfantryPortalHealthbarOffset = Vector(0, 0.5, 0)

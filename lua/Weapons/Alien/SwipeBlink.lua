@@ -23,17 +23,6 @@ local networkVars =
 
 local kAnimationGraph = PrecacheAsset("models/alien/fade/fade_view.animation_graph")
 
-local function GetHasAttackDelay(self, player)
-
-    local attackDelay = ConditionalValue( player:GetIsPrimaled(), (kSwipeDelay / kPrimalScreamROFIncrease), kSwipeDelay)
-    local upg, level = GetHasFocusUpgrade(player)
-    if upg and level > 0 then
-        attackDelay = AdjustAttackDelayforFocus(attackDelay, level)
-    end
-    return self.lastPrimaryAttackTime + attackDelay > Shared.GetTime()
-    
-end
-
 function SwipeBlink:OnCreate()
 
     Blink.OnCreate(self)
@@ -83,9 +72,17 @@ function SwipeBlink:GetBlinkAllowed()
     return true
 end
 
+function SwipeBlink:GetAttackDelay()
+    return kSwipeDelay
+end
+
+function SwipeBlink:GetLastAttackTime()
+    return self.lastPrimaryAttackTime
+end
+
 function SwipeBlink:OnPrimaryAttack(player)
 
-    if player:GetEnergy() >= self:GetEnergyCost() and not GetHasAttackDelay(self, player) then
+    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(self, player) then
         //self:PerformPrimaryAttack(player)
         self.primaryAttacking = true
     else
@@ -109,7 +106,7 @@ function SwipeBlink:OnPrimaryAttackEnd()
     
 end
 
-function SwipeBlink:GetPrimaryAttackUsesFocus()
+function SwipeBlink:GetAbilityUsesFocus()
     return true
 end
 
@@ -128,7 +125,7 @@ function SwipeBlink:OnTag(tagName)
     if self.primaryAttacking and tagName == "start" then
     
         local player = self:GetParent()
-        if player and not GetHasAttackDelay(self, player) then
+        if player and not self:GetHasAttackDelay(self, player) then
         
             self.lastPrimaryAttackTime = Shared.GetTime()
             player:DeductAbilityEnergy(self:GetEnergyCost())

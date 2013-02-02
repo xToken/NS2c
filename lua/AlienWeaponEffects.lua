@@ -57,6 +57,7 @@ kAlienWeaponEffects =
             
             {sound = "sound/ns2c.fev/ns2c/alien/skulk/bite2", attach_point = "Bip01_Head", surface = "structure", done = true},
             {sound = "sound/ns2c.fev/ns2c/alien/skulk/bite2", attach_point = "Bip01_Head"},
+            //{sound = "sound/NS2.fev/alien/lerk/bite", attach_point = "Bip01_Head"},
         },
     },
     
@@ -166,6 +167,7 @@ kAlienWeaponEffects =
             
             {sound = "", silenceupgrade = true, done = true},
             {sound = "sound/ns2c.fev/ns2c/alien/fade/acidrocket_hit", done = true},
+            //{sound = "sound/NS2.fev/alien/gorge/bilebomb_hit", done = true},
         },
     },
     
@@ -205,6 +207,7 @@ kAlienWeaponEffects =
             //{viewmodel_cinematic = "cinematics/alien/lerk/spore_view_fire.cinematic", attach_point = "fxnode_hole_left"},
             //{viewmodel_cinematic = "cinematics/alien/lerk/spore_view_fire.cinematic", attach_point = "fxnode_hole_right"},
             {sound = "sound/ns2c.fev/ns2c/alien/lerk/spore_fire"},
+            //{sound = "sound/NS2.fev/alien/lerk/spores_shoot"},
         },
     },    
 
@@ -216,6 +219,7 @@ kAlienWeaponEffects =
             {viewmodel_cinematic = "cinematics/alien/lerk/umbra_view_fire.cinematic", attach_point = "fxnode_hole_left"},
             {viewmodel_cinematic = "cinematics/alien/lerk/umbra_view_fire.cinematic", attach_point = "fxnode_hole_right"},
             {sound = "sound/ns2c.fev/ns2c/alien/lerk/umbra_fire"},
+            //{sound = "sound/NS2.fev/alien/structures/crag/umbra"},
         },
     },
     

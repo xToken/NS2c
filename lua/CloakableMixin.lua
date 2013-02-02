@@ -95,6 +95,10 @@ function CloakableMixin:GetCanCloak()
         canCloak = false
     end
     
+    if canCloak and self.GetVelocityLength then
+		canCloak = self:GetVelocityLength() < kCloakingMaxSpeed
+    end
+    
     return canCloak and self:GetChargeTime() == 0
 
 end

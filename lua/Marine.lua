@@ -27,6 +27,7 @@ Script.Load("lua/AlienDetectableMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/RagdollMixin.lua")
+Script.Load("lua/WebableMixin.lua")
 
 if Client then
     Script.Load("lua/TeamMessageMixin.lua")
@@ -36,46 +37,27 @@ class 'Marine' (Player)
 
 Marine.kMapName = "marine"
 
-if Server then
-    Script.Load("lua/Marine_Server.lua")
-elseif Client then
-    Script.Load("lua/Marine_Client.lua")
-end
-
 Shared.PrecacheSurfaceShader("models/marine/marine.surface_shader")
 Shared.PrecacheSurfaceShader("models/marine/marine_noemissive.surface_shader")
 
 Marine.kModelName = PrecacheAsset("models/marine/male/male.model")
 Marine.kBlackArmorModelName = PrecacheAsset("models/marine/male/male_special.model")
 Marine.kSpecialEditionModelName = PrecacheAsset("models/marine/male/male_special_v1.model")
-
 Marine.kMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_graph")
 
-Marine.kDieSoundName = PrecacheAsset("sound/NS2.fev/marine/common/death")
-Marine.kFlashlightSoundName = PrecacheAsset("sound/NS2.fev/common/light")
-Marine.kGunPickupSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/pickup")
-Marine.kSpendResourcesSoundName = PrecacheAsset("sound/NS2.fev/marine/common/player_spend_nanites")
-Marine.kChatSound = PrecacheAsset("sound/NS2.fev/marine/common/chat")
-Marine.kSoldierLostAlertSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/soldier_lost")
+if Server then
+    Script.Load("lua/Marine_Server.lua")
+elseif Client then
+    Script.Load("lua/Marine_Client.lua")
+end
 
-Marine.kEffectNode = "fxnode_playereffect"
-Marine.kHealth = kMarineHealth
-Marine.kBaseArmor = kMarineArmor
-Marine.kArmorPerUpgradeLevel = kArmorPerUpgradeLevel
-// Player phase delay - players can only teleport this often
-Marine.kPlayerPhaseDelay = 2
-Marine.kStunDuration = 2
-Marine.kWalkMaxSpeed = 3.5                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
-Marine.kRunMaxSpeed = 6
-Marine.kDoubleJumpMinHeightChange = 0.4
-
-// How fast does our armor get repaired by welders
-Marine.kArmorWeldRate = 25
-Marine.kWeldedEffectsInterval = .5
-Marine.kWalkBackwardSpeedScalar = 0.4
-// tracked per techId
-Marine.kMarineAlertTimeout = 4
-Marine.kAirStrafeWeight = 2
+local kFlashlightSoundName = PrecacheAsset("sound/NS2.fev/common/light")
+local kGunPickupSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/pickup")
+local kWalkMaxSpeed = 3.5
+local kRunMaxSpeed = 6
+local kDoubleJumpMinHeightChange = 0.4
+local kArmorWeldRate = 25
+local kWalkBackwardSpeedScalar = 0.4
 
 local networkVars =
 {      
@@ -104,6 +86,7 @@ AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
 AddMixinNetworkVars(AlienDetectableMixin, networkVars)
+AddMixinNetworkVars(WebableMixin, networkVars)
 
 function Marine:OnCreate()
 
@@ -123,6 +106,7 @@ function Marine:OnCreate()
     InitMixin(self, ParasiteMixin)
     InitMixin(self, AlienDetectableMixin)
     InitMixin(self, RagdollMixin)   
+	InitMixin(self, WebableMixin)
     if Server then
 
 
@@ -240,6 +224,11 @@ function Marine:IsValidDetection(detectable)
         if hasupg and level > 0 then
             return math.random(1, 100) <= (level * kGhostMotionTrackingDodgePerLevel)
         end
+		
+		//Dont detect stationary/slow moving aliens.
+		if detectable:GetVelocity():GetLengthXZ() < kMotionTrackingMinimumSpeed then
+			return false
+		end
     end
     
     return true
@@ -311,7 +300,7 @@ end
 
 function Marine:GetSlowOnLand()
     local adjustedy = ConditionalValue(self.crouching, self:GetOrigin().y - 0.5, self:GetOrigin().y)
-    return ((adjustedy - self.lastjumpheight) <= Marine.kDoubleJumpMinHeightChange)
+    return ((adjustedy - self.lastjumpheight) <= kDoubleJumpMinHeightChange)
 end
 
 function Marine:GetArmorAmount()
@@ -326,7 +315,7 @@ function Marine:GetArmorAmount()
         armorLevels = 1
     end
     
-    return Marine.kBaseArmor + armorLevels*Marine.kArmorPerUpgradeLevel
+    return kMarineArmor + armorLevels * kArmorPerUpgradeLevel
     
 end
 
@@ -435,7 +424,7 @@ function Marine:HandleButtons(input)
         if not self.flashlightLastFrame and flashlightPressed then
         
             self:SetFlashlightOn(not self:GetFlashlightOn())
-            Shared.PlaySound(self, Marine.kFlashlightSoundName)
+            Shared.PlaySound(self, kFlashlightSoundName)
             
         end
         self.flashlightLastFrame = flashlightPressed
@@ -465,7 +454,7 @@ function Marine:HandleButtons(input)
                         
                         self:AddWeapon(nearbyDroppedWeapon, true)
 		                self:SetScoreboardChanged(true)
-		                Shared.PlayWorldSound(nil, Marine.kGunPickupSound, nil, self:GetOrigin())
+		                Shared.PlayWorldSound(nil, kGunPickupSound, nil, self:GetOrigin())
                         self.timeOfLastPickUpWeapon = Shared.GetTime()
                         
                     end
@@ -501,14 +490,10 @@ function Marine:GetInventorySpeedScalar()
     return 1 - self:GetWeaponsWeight()
 end
 
-function Marine:GetCrouchSpeedScalar()
-    return Player.kCrouchSpeedScalar
-end
-
 function Marine:GoldSrc_GetMaxSpeed(possible)
 
     if possible then
-        return Marine.kRunMaxSpeed
+        return kRunMaxSpeed
     end
     
     if self:GetIsDisrupted() then
@@ -516,10 +501,10 @@ function Marine:GoldSrc_GetMaxSpeed(possible)
     end
     
     //Walking
-    local maxSpeed = Marine.kRunMaxSpeed
+    local maxSpeed = kRunMaxSpeed
     
     if self.movementModiferState and self:GetIsOnSurface() then
-        maxSpeed = Marine.kWalkMaxSpeed
+        maxSpeed = kWalkMaxSpeed
     end
     
     // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
@@ -537,7 +522,7 @@ end
 
 // Maximum speed a player can move backwards
 function Marine:GetMaxBackwardSpeedScalar()
-    return Marine.kWalkBackwardSpeedScalar
+    return kWalkBackwardSpeedScalar
 end
 
 function Marine:OnClampSpeed(input, velocity)
@@ -562,20 +547,10 @@ end
 function Marine:GetWeaponDropTime()
     return self.weaponDropTime
 end
-
-local marineTechButtons = { kTechId.Attack, kTechId.Move, kTechId.Defend, kTechId.None, 
-                                  kTechId.None, kTechId.None, kTechId.None, kTechId.None }
-                                  
-function Marine:GetTechButtons(techId)
-
-    local techButtons = nil
-    
-    if techId == kTechId.WeaponsMenu then
-        techButtons = marineTechButtons
-    end
-    
-    return techButtons
- 
+                  
+function Marine:GetTechButtons(techId)    
+    return { kTechId.Attack, kTechId.Move, kTechId.Defend, kTechId.None, 
+            kTechId.None, kTechId.None, kTechId.None, kTechId.None }
 end
 
 function Marine:GetCatalystFireModifier()
@@ -591,10 +566,6 @@ end
 
 function Marine:GetCatalystMoveSpeedModifier()
     return ConditionalValue(self:GetHasCatpackBoost(), CatPack.kMoveSpeedScalar, 1)
-end
-
-function Marine:GetChatSound()
-    return Marine.kChatSound
 end
 
 function Marine:GetDeathMapName()
@@ -716,6 +687,10 @@ function Marine:OnDevoured(hungrycow)
     end
 end
 
+function Marine:GetCanBeHealedOverride()
+    return not self:GetIsDevoured()
+end
+
 function Marine:GetCanSkipPhysics()
     return self:GetIsDevoured()
 end
@@ -737,7 +712,7 @@ function Marine:OnWeldOverride(doer, elapsedTime)
 
     if self:GetArmor() < self:GetMaxArmor() then
     
-        local addArmor = Marine.kArmorWeldRate * elapsedTime
+        local addArmor = kArmorWeldRate * elapsedTime
         self:SetArmor(self:GetArmor() + addArmor)
         
     end
@@ -798,16 +773,19 @@ end
 function Marine:OnProcessMove(input)
 
     if Server then
+    
     	self.catpackboost = Shared.GetTime() - self.timeCatpackboost < CatPack.kDuration
         if self.unitStatusPercentage ~= 0 and self.timeLastUnitPercentageUpdate + 2 < Shared.GetTime() then
             self.unitStatusPercentage = 0
         end
+        
         if self:GetIsDevoured() then
             local onos = self.devourer and Shared.GetEntity(self.devourer)
             if onos and onos:isa("Onos") then
                 self:SetOrigin(onos:GetOrigin())
             end
         end
+        
 	end
 
 

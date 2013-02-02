@@ -63,6 +63,10 @@ function GrenadeLauncher:GetClipSize()
     return kGrenadeLauncherClipSize
 end
 
+function GrenadeLauncher:GetMaxAmmo()
+    return 7 * self:GetClipSize()
+end
+
 function GrenadeLauncher:GetHasSecondary(player)
     return false
 end
@@ -76,7 +80,7 @@ function GrenadeLauncher:GetSecondaryAttackRequiresPress()
 end    
 
 function GrenadeLauncher:GetWeight()
-    return kGrenadeLauncherWeight
+    return kGrenadeLauncherWeight + ((self.clip + self.ammo) * kGrenadeLauncherShellWeight)
 end
 
 function GrenadeLauncher:UpdateViewModelPoseParameters(viewModel)
@@ -91,7 +95,10 @@ local function LoadBullet(self)
     
         self.clip = self.clip + 1
         self.ammo = self.ammo - 1
-        
+        local player = self:GetParent()
+        if player then
+            player:UpdateWeaponWeights()
+        end
     end
     
 end

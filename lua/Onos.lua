@@ -22,44 +22,10 @@ class 'Onos' (Alien)
 
 Onos.kMapName = "onos"
 Onos.kModelName = PrecacheAsset("models/alien/onos/onos.model")
-Onos.kViewModelName = PrecacheAsset("models/alien/onos/onos_view.model")
-
+local kViewModelName = PrecacheAsset("models/alien/onos/onos_view.model")
 local kOnosAnimationGraph = PrecacheAsset("models/alien/onos/onos.animation_graph")
 
 local kChargeStart = PrecacheAsset("sound/NS2.fev/alien/onos/wound_serious")
-
-Onos.kJumpForce = 20
-Onos.kJumpVerticalVelocity = 8
-
-Onos.kJumpRepeatTime = .25
-Onos.kViewOffsetHeight = 2.5
-Onos.XExtents = .7
-Onos.YExtents = 1.0
-Onos.ZExtents = .4
-Onos.kMass = 453 // Half a ton
-Onos.kJumpHeight = 1.2
-
-// triggered when the momentum value has changed by this amount (negative because we trigger the effect when the onos stops, not accelerates)
-Onos.kMomentumEffectTriggerDiff = 3
-Onos.kMaxSpeed = 6.5
-Onos.kMaxChargeSpeed = 13
-Onos.kMaxCrouchSpeed = 3
-
-Onos.kHealth = kOnosHealth
-Onos.kArmor = kOnosArmor
-Onos.kChargeEnergyCost = 50
-Onos.kChargeAcceleration = 40
-Onos.kChargeUpDuration = 0.4
-Onos.kChargeDelay = 0.1
-Onos.kMinChargeDamage = kChargeMinDamage
-Onos.kMaxChargeDamage = kChargeMaxDamage
-Onos.kChargeKnockbackForce = 4
-Onos.kStoopingCheckInterval = 0.3
-Onos.kStoopingAnimationSpeed = 2
-Onos.kYHeadExtents = 0.0
-Onos.kYHeadExtentsLowered = 0.0
-
-local kAutoCrouchCheckInterval = 0.4
 
 if Server then
     Script.Load("lua/Onos_Server.lua")
@@ -67,10 +33,26 @@ elseif Client then
     Script.Load("lua/Onos_Client.lua")
 end
 
+Onos.XExtents = .7
+Onos.YExtents = 1.0
+Onos.ZExtents = .4
+
+local kMass = 453 // Half a ton
+local kJumpHeight = 1.2
+local kViewOffsetHeight = 2.5
+// triggered when the momentum value has changed by this amount (negative because we trigger the effect when the onos stops, not accelerates)
+local kMomentumEffectTriggerDiff = 3
+local kMaxSpeed = 6.5
+local kMaxChargeSpeed = 13
+
+local kChargeEnergyCost = 50
+local kChargeAcceleration = 40
+local kChargeUpDuration = 0.4
+local kChargeDelay = 0.1
+local kDefaultAttackSpeed = 1.1
+
 local networkVars =
 {
-    stooping = "boolean",
-    stoopIntensity = "compensated float",
     charging = "private boolean"
 }
 
@@ -86,9 +68,7 @@ function Onos:OnCreate()
     InitMixin(self, DissolveMixin)
     
     self.altAttack = false
-    self.stooping = false
     self.charging = true
-    self.stoopIntensity = 0
     self.timeLastCharge = 0
     self.timeLastChargeEnd = 0
     self.chargeSpeed = 0
@@ -103,7 +83,6 @@ function Onos:OnInitialized()
 
     Alien.OnInitialized(self)
     self:SetModel(Onos.kModelName, kOnosAnimationGraph)
-    self:AddTimedCallback(Onos.UpdateStooping, Onos.kStoopingCheckInterval)
 
 end
 
@@ -134,14 +113,14 @@ end
 function Onos:GoldSrc_GetAcceleration()
     local acceleration = Alien.GoldSrc_GetAcceleration(self)
     if self.charging then
-        acceleration = acceleration + Onos.kChargeAcceleration * self:GetChargeFraction()  * 0.11
+        acceleration = acceleration + kChargeAcceleration * self:GetChargeFraction()  * 0.11
     end
     
     return acceleration
 end
 
 function Onos:GetChargeFraction()
-    return ConditionalValue(self.charging, math.min(1, (Shared.GetTime() - self.timeLastCharge) / Onos.kChargeUpDuration ), 0)
+    return ConditionalValue(self.charging, math.min(1, (Shared.GetTime() - self.timeLastCharge) / kChargeUpDuration ), 0)
 end
 
 function Onos:EndCharge()
@@ -181,7 +160,7 @@ function Onos:PreUpdateMove(input, runningPrediction)
         input.move.x = input.move.x * math.max(0.3, manuverability)
         input.move.z = 1
         
-        self:DeductAbilityEnergy(Onos.kChargeEnergyCost * input.time)
+        self:DeductAbilityEnergy(kChargeEnergyCost * input.time)
     
         local xzViewDirection = self:GetViewCoords().zAxis
         xzViewDirection.y = 0
@@ -209,6 +188,14 @@ function Onos:GetAngleSmoothRate()
     return 3
 end
 
+function Onos:OnKill(attacker, doer, point, direction)
+    local devourWeapon = self:GetWeapon("devour")
+    if devourWeapon and devourWeapon:IsAlreadyEating() then
+        devourWeapon:OnForceUnDevour()
+    end
+    Alien.OnKill(self, attacker, doer, point, direction)
+end
+
 function Onos:PostUpdateMove(input, runningPrediction)
 
     if self.charging then
@@ -224,7 +211,7 @@ end
 
 function Onos:TriggerCharge(move)
     
-    if not self.charging and self.timeLastChargeEnd + Onos.kChargeDelay < Shared.GetTime() and self:GetIsOnGround() and not self:GetCrouching() and self:GetHasOneHive() then
+    if not self.charging and self.timeLastChargeEnd + kChargeDelay < Shared.GetTime() and self:GetIsOnGround() and not self:GetCrouching() and self:GetHasOneHive() then
 
         self.charging = true
         self.timeLastCharge = Shared.GetTime()
@@ -266,7 +253,7 @@ function Onos:GetMovePhysicsMask()
 end
 
 function Onos:GetBaseArmor()
-    return Onos.kArmor
+    return kOnosArmor
 end
 
 function Onos:GetArmorFullyUpgradedAmount()
@@ -274,23 +261,23 @@ function Onos:GetArmorFullyUpgradedAmount()
 end
 
 function Onos:GetViewModelName()
-    return Onos.kViewModelName
+    return kViewModelName
 end
 
 function Onos:GetMaxViewOffsetHeight()
-    return Onos.kViewOffsetHeight
+    return kViewOffsetHeight
 end
 
 function Onos:GoldSrc_GetMaxSpeed(possible)
 
     if possible then
-        return Onos.kMaxSpeed
+        return kMaxSpeed
     end
     
-    local maxSpeed = Onos.kMaxSpeed
+    local maxSpeed = kMaxSpeed
     
     if self.charging then
-        maxSpeed = Onos.kMaxChargeSpeed
+        maxSpeed = kMaxChargeSpeed
     end
 
     return maxSpeed * self:GetMovementSpeedModifier()
@@ -299,94 +286,11 @@ end
 
 // Half a ton
 function Onos:GetMass()
-    return Onos.kMass
+    return kMass
 end
 
 function Onos:GetJumpHeight()
-    return Onos.kJumpHeight
-end
-
-local kStoopPos = Vector(0, 2.6, 0)
-function Onos:UpdateStooping(deltaTime)
-
-    local topPos = self:GetOrigin() + kStoopPos
-    topPos.y = topPos.y + Onos.kYHeadExtents
-    
-    local xzDirection = self:GetViewCoords().zAxis
-    xzDirection.y = 0
-    xzDirection:Normalize()
-    
-    local trace = Shared.TraceRay(topPos, topPos + xzDirection * 4, CollisionRep.Move, PhysicsMask.Movement, EntityFilterOne(self))
-    
-    if not self.stooping and not self.crouching then
-
-        if trace.fraction ~= 1 then
-        
-            local stoopPos = self:GetEyePos()
-            stoopPos.y = stoopPos.y + Onos.kYHeadExtentsLowered
-            
-            local traceStoop = Shared.TraceRay(stoopPos, stoopPos + xzDirection * 4, CollisionRep.Move, PhysicsMask.Movement, EntityFilterOne(self))
-            if traceStoop.fraction == 1 then
-                self.stooping = true                
-            end
-            
-        end    
-
-    elseif self.stoopIntensity == 1 and trace.fraction == 1 then
-        self.stooping = false
-    end
-
-    
-    return true
-
-end
-
-function Onos:UpdateAutoCrouch(move)
- 
-    local moveDirection = self:GetCoords():TransformVector(move)
-    
-    local extents = GetExtents(kTechId.Onos)
-    local startPos1 = self:GetOrigin() + Vector(0, extents.y * self:GetCrouchShrinkAmount(), 0)
-    
-    local frontLeft = -self:GetCoords().xAxis * extents.x - self:GetCoords().zAxis * extents.z
-    local backRight = self:GetCoords().xAxis * extents.x - self:GetCoords().zAxis * extents.z
-    
-    local startPos2 = self:GetOrigin() + frontLeft + Vector(0, extents.y * (1 - self:GetCrouchShrinkAmount()), 0)
-    local startPos3 = self:GetOrigin() + backRight + Vector(0, extents.y * (1 - self:GetCrouchShrinkAmount()), 0)
-    
-    local trace1 = Shared.TraceRay(startPos1, startPos1 + moveDirection * 3, CollisionRep.Move, PhysicsMask.Movement, EntityFilterOne(self))
-    local trace2 = Shared.TraceRay(startPos2, startPos2 + moveDirection * 3, CollisionRep.Move, PhysicsMask.Movement, EntityFilterOne(self))
-    local trace3 = Shared.TraceRay(startPos3, startPos3 + moveDirection * 3, CollisionRep.Move, PhysicsMask.Movement, EntityFilterOne(self))
-    
-    if trace1.fraction == 1 and trace2.fraction == 1 and trace3.fraction == 1 then
-        self.crouching = true
-        self.autoCrouching = true
-    end
-
-end
-
-function Onos:OnProcessMove(input)
-
-    PROFILE("Onos:OnProcessMove")
-    
-    Alien.OnProcessMove(self, input)
-
-    if self.stooping then    
-        self.stoopIntensity = math.min(1, self.stoopIntensity + Onos.kStoopingAnimationSpeed * input.time)
-    else    
-        self.stoopIntensity = math.max(0, self.stoopIntensity - Onos.kStoopingAnimationSpeed * input.time)
-    end
-    
-end
-
-function Onos:OnUpdatePoseParameters(viewModel)
-
-    PROFILE("Onos:OnUpdatePoseParameters")
-    
-    Alien.OnUpdatePoseParameters(self, viewModel)
-    
-    self:SetPoseParam("stoop", self.stoopIntensity)
-    
+    return kJumpHeight
 end
 
 local kOnosHeadMoveAmount = 0.0
@@ -402,6 +306,15 @@ function Onos:OnUpdateCamera(deltaTime)
     
     self:SetCameraYOffset(camOffsetHeight)
 
+end
+
+function Onos:OnUpdateAnimationInput(modelMixin)
+
+    PROFILE("Onos:OnUpdateAnimationInput")
+    
+    Alien.OnUpdateAnimationInput(self, modelMixin)
+
+    modelMixin:SetAnimationInput("attack_speed", self:GetIsPrimaled() and (kDefaultAttackSpeed * kPrimalScreamROFIncrease) or kDefaultAttackSpeed)
 end
 
 local kOnosEngageOffset = Vector(0, 1.3, 0)

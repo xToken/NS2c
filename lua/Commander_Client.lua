@@ -24,7 +24,7 @@ end
    
 Script.Load("lua/DynamicMeshUtility.lua")
 
-kCommanderLeftClickDelay = 0.4
+local kCommanderLeftClickDelay = 0.1
 
 function Commander:OnGetIsVisible(visibleTable)
     visibleTable.Visible = false
@@ -235,7 +235,11 @@ function Commander:SendKeyEvent(key, down)
         self.ctrlDown = down
     end
     
-    if not down then
+    if key == InputKey.LeftShift or key == InputKey.RightShift then
+        self.shiftDown = down
+    end
+    
+    if down then
     
         local hotkeyGroup = 0
         if key == InputKey.Num1 then
@@ -248,20 +252,32 @@ function Commander:SendKeyEvent(key, down)
             hotkeyGroup = 4
         elseif key == InputKey.Num5 then
             hotkeyGroup = 5
+        elseif key == InputKey.Num6 then
+            hotkeyGroup = 6
+        elseif key == InputKey.Num7 then
+            hotkeyGroup = 7
+        elseif key == InputKey.Num8 then
+            hotkeyGroup = 8
+        elseif key == InputKey.Num9 then
+            hotkeyGroup = 9
         end
         
-        if hotkeyGroup ~= 0 then
+        if hotkeyGroup ~= 0 and self.lastHotkeyGroupPressed ~= hotkeyGroup then
         
             success = true
             
             if not self.ctrlDown then
                 self:SelectHotkeyGroup(hotkeyGroup)
             else
-                self:CreateHotkeyGroup(hotkeyGroup, self:GetSelection())
+                self:CreateHotkeyGroup(hotkeyGroup)
             end
+            
+            self.lastHotkeyGroupPressed = hotkeyGroup
             
         end
         
+    else
+        self.lastHotkeyGroupPressed = nil
     end
     
     if not success then
@@ -299,7 +315,6 @@ function Commander:OnDestroy()
         
         GetGUIManager():DestroyGUIScriptSingle("GUICommanderTooltip")
         
-        self:DestroySelectionCircles()
         self:DestroyGhostGuides()
         
         Client.DestroyRenderModel(self.unitUnderCursorRenderModel)
@@ -316,33 +331,6 @@ function Commander:OnDestroy()
         
     end
     
-end
-
-function Commander:DestroySelectionCircles()
-    
-    // Delete old circles, if any
-    if self.selectionCircles ~= nil then
-    
-        for index, circlePair in ipairs(self.selectionCircles) do
-            Client.DestroyRenderModel(circlePair[2])
-        end
-        
-    end
-    
-    self.selectionCircles = {}
-    
-    // Delete old circles, if any
-    if self.sentryArcs ~= nil then
-    
-        for index, sentryPair in ipairs(self.sentryArcs) do
-            Client.DestroyRenderModel(sentryPair[2])
-            Client.DestroyRenderModel(sentryPair[3])
-        end
-        
-    end
-    
-    self.sentryArcs = {}
-
 end
 
 function Commander:AddGhostGuide(origin, radius)
@@ -376,6 +364,7 @@ end
 function Commander:UpdateGhostGuides()
 
     self:DestroyGhostGuides(true)
+    self.selectedEntities = self:GetSelection()
 
     local techId = self.currentTechId
     if techId ~= nil and techId ~= kTechId.None then
@@ -428,25 +417,20 @@ function Commander:UpdateGhostGuides()
     end
     
     // Now draw visual ranges for selected units
-    for index, entityEntry in pairs(self.selectedEntities) do    
+    for index, entity in pairs(self.selectedEntities) do    
     
         // Draw visual range on structures that specify it (no building effects)
-        local entity = Shared.GetEntity(entityEntry[1])
-        if entity ~= nil then
+        // if GetVisualRadius() returns an array of radiuses, draw them all
+        local visualRadius = entity:GetVisualRadius()
         
-            // if GetVisualRadius() returns an array of radiuses, draw them all
-            local visualRadius = entity:GetVisualRadius()
-            
-            if visualRadius ~= nil then
-                if type(visualRadius) == "table" then
-                    for i,r in ipairs(visualRadius) do
-                        self:AddGhostGuide(Vector(entity:GetOrigin()), r)
-                    end
-                else
-                    self:AddGhostGuide(Vector(entity:GetOrigin()), visualRadius)
+        if visualRadius ~= nil then
+            if type(visualRadius) == "table" then
+                for i,r in ipairs(visualRadius) do
+                    self:AddGhostGuide(Vector(entity:GetOrigin()), r)
                 end
+            else
+                self:AddGhostGuide(Vector(entity:GetOrigin()), visualRadius)
             end
-            
         end
         
     end
@@ -771,90 +755,41 @@ function Commander:Logout()
     Shared.ConsoleCommand("logout")
 end
 
-function Commander:ClickSelect(x, y, controlSelect)
-
-    local success = false
-    local hitEntity = false
-    
-    if Client and self.timeLastTargetedAction and self.timeLastTargetedAction + kCommanderLeftClickDelay > Shared.GetTime() then
-        return false
-    end
-    
-    local pickVec = CreatePickRay( self, x, y)
-    
-    if controlSelect then
-    
-        local screenStartVec = CreatePickRay( self, 0, 0)
-        
-        local minDot = self:GetViewCoords().zAxis:DotProduct(screenStartVec)
-        
-        self:ControlClickSelectEntities(pickVec, minDot)        
-        self:SendControlClickSelectCommand(pickVec, minDot)
-        success = false
-        
-    else
-        success, hitEntity = self:ClickSelectEntities(pickVec)        
-    end
-    
-    return success, hitEntity
-    
-end
-
 local function GetSendsCommanderMessages(self)
     return Client.GetLocalPlayer() == self and not Shared.GetIsRunningPrediction()
 end
 
-function Commander:SendClickSelectCommand(pickVec)
-
-    if GetSendsCommanderMessages(self) then
-    
-        local message = BuildClickSelectCommand(pickVec)
-        Client.SendNetworkMessage("ClickSelect", message, true)
-        
-    end
-    
-end
-
-function Commander:SendSelectIdCommand(entityId)
-
-    if GetSendsCommanderMessages(self) then
-    
-        local message = BuildSelectIdMessage(entityId)
-        Client.SendNetworkMessage("SelectId", message, true)
-        
-    end
-    
-end
-
 function Commander:SendCreateHotKeyGroupMessage(number)
 
-    if GetSendsCommanderMessages(self) then
+    // disabled since another check is in place and to increase responsiveness
+    //if GetSendsCommanderMessages(self) then
     
         local message = BuildCreateHotkeyGroupMessage(number)
         Client.SendNetworkMessage("CreateHotKeyGroup", message, true)
         
-    end
-    
-end
-
-function Commander:SendControlClickSelectCommand(pickVec, minDot)
-
-    if GetSendsCommanderMessages(self) then
-    
-        local message = BuildControlClickSelectCommand(pickVec, minDot)
-        Client.SendNetworkMessage("ControlClickSelect", message, true)
-        
-    end
+    //end
     
 end
 
 function Commander:SendSelectHotkeyGroupMessage(groupNumber)
 
-    if GetSendsCommanderMessages(self) then
+    //if GetSendsCommanderMessages(self) then
     
         local message = BuildSelectHotkeyGroupMessage(groupNumber)
         Client.SendNetworkMessage("SelectHotkeyGroup", message, true)
         
+    //end
+    
+end
+
+function Commander:OnAbilityResultMessage(techId, success, castTime)
+
+    // If the ability succeded, show and enforce the cooldown
+    if success then
+        local cooldown = LookupTechData(techId, kTechDataCooldown, 0) 
+        if cooldown ~= 0 then
+            self:SetTechCooldown(techId, cooldown, castTime)
+        end
     end
     
 end
@@ -993,22 +928,14 @@ function Commander:UpdateSelectionCircles()
     // Check self.selectionCircles because this function may be called before it is valid.
     if not Shared.GetIsRunningPrediction() and self.selectionCircles ~= nil then
         
+        /*
         // Selection changed, so deleted old circles and create new ones
         if self.createSelectionCircles then
-            
-            self:DestroySelectionCircles()
         
             // Create new ones
-            for index, entityEntry in pairs(self.selectedEntities) do
-                
-                local renderModelCircle = Client.CreateRenderModel(RenderScene.Zone_Default)
-                renderModelCircle:SetModel(Commander.kSelectionCircleModelName)
-                
-                // Insert pair into selectionCircles: {entityId, render model}
-                table.insert(self.selectionCircles, {entityEntry[1], renderModelCircle})
+            for index, entity in pairs(self:GetSelection()) do
                 
                 // Now create sentry arcs for any selected sentries
-                local entity = Shared.GetEntity(entityEntry[1])
                 if entity and entity:isa("Sentry") then
                 
                     local sentryArcCircle = Client.CreateRenderModel(RenderScene.Zone_Default)
@@ -1018,7 +945,7 @@ function Commander:UpdateSelectionCircles()
                     sentryRange:SetModel(Commander.kSentryRangeModelName)
                 
                     // Insert pair into sentryArcs: {entityId, sentry arc render model, sentry range render model}
-                    table.insert(self.sentryArcs, {entityEntry[1], sentryArcCircle, sentryRange})
+                    table.insert(self.sentryArcs, {entity, sentryArcCircle, sentryRange})
                     
                 end
  
@@ -1027,6 +954,8 @@ function Commander:UpdateSelectionCircles()
             self.createSelectionCircles = nil
             
         end
+        
+        */
         
         // Update positions and scale for each
         local poseParams = PoseParams()
@@ -1239,6 +1168,8 @@ function Commander:SetCurrentTech(techId)
     local isMenu = false
     local requiresTarget = false
     
+    //DebugPrint("SetCurrentTech:\n%s", debug.traceback()) 
+    
     if techNode ~= nil then
     
         if techNode:GetIsMenu() then
@@ -1331,4 +1262,11 @@ end
 
 function Commander:GetShowAtmosphericLight()
     return false
+end
+
+/**
+ * The Commander ignores the countdown camera animation.
+ */
+function Commander:GetCameraViewCoordsCountdown(cameraCoords)
+    return cameraCoords
 end

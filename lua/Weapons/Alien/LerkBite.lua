@@ -37,17 +37,6 @@ local networkVars =
 
 AddMixinNetworkVars(SporesMixin, networkVars)
 
-local function GetHasAttackDelay(self, player)
-
-    local attackDelay = ConditionalValue( player:GetIsPrimaled(), (kLerkBiteDelay / kPrimalScreamROFIncrease), kLerkBiteDelay)
-    local upg, level = GetHasFocusUpgrade(player)
-    if upg and level > 0 then
-        attackDelay = AdjustAttackDelayforFocus(attackDelay, level)
-    end
-    return self.lastPrimaryAttackTime + attackDelay > Shared.GetTime()
-    
-end
-
 function LerkBite:OnCreate()
 
     Ability.OnCreate(self)
@@ -86,6 +75,14 @@ function LerkBite:GetRange()
     return kLerkBiteRange
 end
 
+function LerkBite:GetAttackDelay()
+    return kLerkBiteDelay
+end
+
+function LerkBite:GetLastAttackTime()
+    return self.lastPrimaryAttackTime
+end
+
 function LerkBite:GetDeathIconIndex()
 
     if self.primaryAttacking then
@@ -98,7 +95,7 @@ end
 
 function LerkBite:OnPrimaryAttack(player)
 
-    if player:GetEnergy() >= self:GetEnergyCost()  and not GetHasAttackDelay(self, player) then
+    if player:GetEnergy() >= self:GetEnergyCost()  and not self:GetHasAttackDelay(self, player) then
         self.primaryAttacking = true
     else
         self.primaryAttacking = false
@@ -114,7 +111,7 @@ function LerkBite:OnPrimaryAttackEnd()
     
 end
 
-function LerkBite:GetPrimaryAttackUsesFocus()
+function LerkBite:GetAbilityUsesFocus()
     return true
 end
 
@@ -134,7 +131,7 @@ function LerkBite:OnTag(tagName)
     
         local player = self:GetParent()
         
-        if player and not GetHasAttackDelay(self, player) then  
+        if player and not self:GetHasAttackDelay(self, player) then  
             
             player:DeductAbilityEnergy(self:GetEnergyCost())            
             self:TriggerEffects("lerkbite_attack")

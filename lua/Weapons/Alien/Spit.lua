@@ -52,7 +52,7 @@ function Spit:TimeUp()
     
 end
 
-function Spit:GetPrimaryAttackUsesFocus()
+function Spit:GetAbilityUsesFocus()
     return true
 end
 
@@ -151,6 +151,10 @@ function Spit:ProcessHit(targetHit, surface, normal)
         self:TriggerEffects("spit_hit", { effecthostcoords = Coords.GetTranslation(self:GetOrigin()) } )
     
         self:DoDamage(Spit.kDamage, targetHit, self:GetOrigin(), nil, surface)
+        
+        if targetHit.OnSpitHit then
+            targetHit:OnSpitHit()
+        end
         
         DestroyEntity(self)
         

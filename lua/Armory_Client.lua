@@ -82,7 +82,7 @@ function Armory:GetWarmupCompleted()
     return not self.timeConstructionCompleted or (self.timeConstructionCompleted + 0.7 < Shared.GetTime())
 end
 
-function Armory:OnUse(player, elapsedTime, useAttachPoint, usePoint, useSuccessTable)
+function Armory:OnUse(player, elapsedTime, useSuccessTable)
 
     self:UpdateArmoryWarmUp()
     

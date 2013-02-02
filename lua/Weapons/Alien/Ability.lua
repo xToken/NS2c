@@ -34,6 +34,27 @@ function Ability:GetResetViewModelOnDraw()
     return false
 end
 
+function Ability:GetAttackDelay()
+    return 0
+end
+
+function Ability:GetLastAttackTime()
+    return 0
+end
+
+function Ability:GetHasAttackDelay(self, player)
+
+    local attackDelay = ConditionalValue( player:GetIsPrimaled(), (self:GetAttackDelay() / kPrimalScreamROFIncrease), self:GetAttackDelay())
+    if self:GetAbilityUsesFocus() then
+        local upg, level = GetHasFocusUpgrade(player)
+        if upg and level > 0 then
+            attackDelay = attackDelay + (attackDelay * (kFocusAttackSlowdown * level))
+        end
+    end
+    return self:GetLastAttackTime() + attackDelay > Shared.GetTime()
+    
+end
+
 // return array of player energy (0-1), ability energy cost (0-1), techId, visibility and hud slot
 function Ability:GetInterfaceData(secondary, inactive)
 
@@ -99,7 +120,7 @@ function Ability:PerformSecondaryAttack(player)
     return false
 end
 
-function Ability:GetPrimaryAttackUsesFocus()
+function Ability:GetAbilityUsesFocus()
     return false
 end
 
@@ -159,11 +180,12 @@ function Ability:GetEffectParams(tableParams)
     
     local player = self:GetParent()
     if player then
+		//Silence Controls volume levels, dont think this actually works tho.
         local upg, level = GetHasSilenceUpgrade(player)
         if level == 3 then
             tableParams[kEffectFilterSilenceUpgrade] = upg
         end
-        tableParams[kEffectParamVolume] = (1 - (.33 * level))
+        //tableParams[kEffectParamVolume] = (1 - (.33 * level))
     end
     
 end
