@@ -28,7 +28,6 @@ Script.Load("lua/Commander_Hotkeys.lua")
 Commander.kSpendTeamResourcesSoundName = PrecacheAsset("sound/NS2.fev/marine/common/comm_spend_metal")
 Commander.kSpendResourcesSoundName = PrecacheAsset("sound/NS2.fev/marine/common/player_spend_nanites")
 
-Commander.kSelectionCircleModelName = PrecacheAsset("models/misc/marine-build/marine-build.model")
 Commander.kSentryOrientationModelName = PrecacheAsset("models/misc/sentry_arc/sentry_arc.model")
 Commander.kSentryRangeModelName = PrecacheAsset("models/misc/sentry_arc/sentry_line.model")
 Commander.kMarineCircleModelName = PrecacheAsset("models/misc/circle/circle.model")
@@ -55,7 +54,7 @@ Script.Load("lua/Commander_Selection.lua")
 
 if (Server) then
     Script.Load("lua/Commander_Server.lua")
-elseif Client then
+else
     Script.Load("lua/Commander_Client.lua")
 end
 
@@ -72,7 +71,6 @@ local networkVars =
     commandStationId        = "entityid",
     // Set to a number after a hotgroup is selected, so we know to jump to it next time we try to select it
     positionBeforeJump      = "vector",
-    gotoHotKeyGroup         = string.format("integer (0 to %d)", kMaxHotkeyGroups)
 }
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
@@ -99,8 +97,6 @@ function Commander:OnInitialized()
     InitMixin(self, BuildingMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
-    
-    self.selectedEntities = { }
     
     Player.OnInitialized(self)
     
@@ -234,66 +230,32 @@ function Commander:ProcessNumberKeysMove(input, newPosition)
     return setPosition
 end
 
-// Creates hotkey for number out of current selection. Returns true on success.
-// Replaces existing hotkey on this number if it exists.
-function Commander:CreateHotkeyGroup(number, entityIds)
+local function DeleteHotkeyGroup(self, number)
 
-    if Client then
-        self:SendCreateHotKeyGroupMessage(number)
-    elseif Server then
-    
-        if number >= 1 and number <= kMaxHotkeyGroups then
+    for _, entity in ipairs(GetEntitiesWithMixinForTeam("Selectable", self:GetTeamNumber())) do
         
-            if entityIds ~= nil and #entityIds > 0 then
-            
-                // Don't update hotkeys if they are the same (also happens when key is held down)
-                if not table.getIsEquivalent(entityIds, self.hotkeyGroups[number]) then
-                
-                    self:SetEntitiesHotkeyState(self.hotkeyGroups[number], false)
-                    table.copy(entityIds, self.hotkeyGroups[number])
-                    self:SetEntitiesHotkeyState(self.hotkeyGroups[number], true)
-                    
-                    self:SendHotkeyGroup(number)
-                    
-                    return true
-                    
-                end
-                
-            end
-            
+        if entity:GetHotGroupNumber() == number then
+            entity:SetHotGroupNumber(0)
         end
-        
+    
     end
-    
-    return false
-    
+
 end
 
-// Assumes number non-zero
-function Commander:ProcessHotkeyGroup(number, newPosition)
+// Creates hotkey for number out of current selection. Returns true on success.
+// Replaces existing hotkey on this number if it exists.
+function Commander:CreateHotkeyGroup(number)
 
-    local setPosition = false
-    
-    if (self.gotoHotKeyGroup == 0) or (number ~= self.gotoHotKeyGroup) then
-    
-        // Select hotgroup        
-        self:SelectHotkeyGroup(number)        
-        self.positionBeforeJump = Vector(self:GetOrigin())
-        self.gotoHotKeyGroup = number
-        
-    else
-    
-        // Jump to hotgroup if we're selecting same one and not nearby
-        if self.gotoHotKeyGroup == number then
-        
-            // TODO: re-enabled once we have "jump back" functionality
-            // setPosition = self:GotoHotkeyGroup(number, newPosition)
-            
-        end
-        
+    DeleteHotkeyGroup(self, number)
+    for _, unit in ipairs(self:GetSelection()) do
+        unit:SetHotGroupNumber(number)
     end
 
-    return setPosition
+    if Client then
+        self:SendCreateHotKeyGroupMessage(number) 
+    end
+    
+    return true
     
 end
 
@@ -362,6 +324,10 @@ function Commander:GetMenuTechIdFor(techId)
 
 end
 
+function Commander:GetMenuTechId()
+    return self.menuTechId
+end
+
 function Commander:GetCurrentTechButtons(techId, entity)
 
     local techButtons = self:GetQuickMenuTechButtons(techId)
@@ -369,82 +335,46 @@ function Commander:GetCurrentTechButtons(techId, entity)
     if not self:GetIsInQuickMenu(techId) and entity then
     
         // Allow selected entities to add/override buttons in the menu (but not top row)
-        local selectedTechButtons = entity:GetTechButtons(techId, self:GetTeamType())
-        if selectedTechButtons then
+        // only show buttons of friendly units
+        if entity:GetTeamNumber() == self:GetTeamNumber() then
         
-            for index, id in pairs(selectedTechButtons) do
-               techButtons[4 + index] = id 
-            end
+            local selectedTechButtons = entity:GetTechButtons(techId, self:GetTeamType())
+            if selectedTechButtons then
             
-        end
-        
-        if (HasMixin(entity, "Research") and entity:GetIsResearching()) or (HasMixin(entity, "GhostStructure") and entity:GetIsGhostStructure()) then
-        
-            local foundCancel = false
-            for b = 1, #techButtons do
-            
-                if techButtons[b] == kTechId.Cancel then
-                
-                    foundCancel = true
-                    break
-                    
+                for index, id in pairs(selectedTechButtons) do
+                   techButtons[4 + index] = id 
                 end
                 
             end
             
-            if not foundCancel then
-                techButtons[kRecycleCancelButtonIndex] = kTechId.Cancel
+            if (HasMixin(entity, "Research") and entity:GetIsResearching()) or (HasMixin(entity, "GhostStructure") and entity:GetIsGhostStructure()) then
+            
+                local foundCancel = false
+                for b = 1, #techButtons do
+                
+                    if techButtons[b] == kTechId.Cancel then
+                    
+                        foundCancel = true
+                        break
+                        
+                    end
+                    
+                end
+                
+                if not foundCancel then
+                    techButtons[kRecycleCancelButtonIndex] = kTechId.Cancel
+                end
+            
+            // add recycle button if not researching / ghost structure mode
+            elseif HasMixin(entity, "Recycle") and not entity:GetIsResearching() and entity:GetCanRecycle() and not entity:GetIsRecycled() then
+                techButtons[kRecycleCancelButtonIndex] = kTechId.Recycle
             end
         
-        // add recycle button if not researching / ghost structure mode
-        elseif HasMixin(entity, "Recycle") and not entity:GetIsResearching() and entity:GetCanRecycle() and not entity:GetIsRecycled() then
-            techButtons[kRecycleCancelButtonIndex] = kTechId.Recycle
         end
         
     end
     
     return techButtons
-    
-end
-
-// Updates hotkeys to account for entity changes. Pass both parameters to indicate
-// that an entity has changed (ie, a player has changed class), or pass nil
-// for newEntityId to indicate an entity has been destroyed.
-function Commander:OnEntityChange(oldEntityId, newEntityId)
-
-    // It is possible this function will be called before the Commander has
-    // been fully initialized.
-    if self.selectedEntities then
-    
-        // Replace old object with new one if selected
-        local newSelection = {}
-        table.copy(self.selectedEntities, newSelection)
-        
-        local selectionChanged = false
-        for index, pair in ipairs(newSelection) do
-        
-            if pair[1] == oldEntityId then
-            
-                if newEntityId then
-                    pair[1] = newEntityId
-                else
-                    table.remove(newSelection, index)
-                end
-                
-                selectionChanged = true
-                
-            end
-            
-        end
-        
-        if selectionChanged then
-            self:InternalSetSelection(newSelection)
-        end
-        
-    end
-    
-    // Hotkey groups are handled in player.
-    Player.OnEntityChange(self, oldEntityId, newEntityId)
     
 end
 
@@ -521,8 +451,6 @@ function Commander:OnProcessMove(input)
     self:UpdateSelection(input.time)
     
     if Server then
-    
-        self:UpdateHotkeyGroups()
         
         if not self.timeLastEnergyCheck then
         
@@ -544,25 +472,6 @@ function Commander:OnProcessMove(input)
         self.setScrollPosition = false
         
     end
-    
-end
-
-// Draw waypoint of selected unit as our own as quick ability for commander to see results of orders
-function Commander:GetVisibleWaypoint()
-
-    if self.selectedEntities and table.count(self.selectedEntities) > 0 then
-    
-        local ent = Shared.GetEntity(self.selectedEntities[1][1])
-        
-        if ent and ent:isa("Player") then
-        
-            return ent:GetVisibleWaypoint()
-            
-        end
-        
-    end
-    
-    return Player.GetVisibleWaypoint(self)
     
 end
 

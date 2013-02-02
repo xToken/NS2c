@@ -116,6 +116,7 @@ AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
+AddMixinNetworkVars(SelectableMixin, networkVars)
 
 function Sentry:OnCreate()
 
@@ -326,20 +327,6 @@ end
 // used to prevent showing the hit indicator for the commander
 function Sentry:GetShowHitIndicator()
     return false
-end
-
-function Sentry:GetTechButtons(techId)
-
-    if(techId == kTechId.WeaponsMenu) then
-    
-        local techButtons = {   kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
-                   kTechId.None, kTechId.None, kTechId.None, kTechId.None }
-        
-        return techButtons        
-    end
-    
-    return nil
-    
 end
 
 local kSentryHealthbarOffset = Vector(0, 0.4, 0)

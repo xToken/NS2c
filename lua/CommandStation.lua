@@ -107,11 +107,6 @@ function CommandStation:GetTechAllowed(techId, techNode, player)
     
 end
 
-function CommandStation:GetTechButtons(techId)
-    return { kTechId.None, kTechId.None, kTechId.None, kTechId.None,
-             kTechId.None, kTechId.None, kTechId.None, kTechId.None }
-end
-
 local kCommandStationState = enum( { "Normal", "Locked", "Welcome" } )
 function CommandStation:OnUpdateRender()
 

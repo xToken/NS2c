@@ -17,25 +17,17 @@ function Commander:GetEntitiesBetweenVecs(potentialEntities, pickStartVec, pickE
     local maxZ = math.max(pickStartVec.z, pickEndVec.z)
 
     for index, entity in pairs(potentialEntities) do
-    
-        // Filter selection
-        if( self:GetIsEntityValidForSelection(entity) ) then
 
-            // Get normalized vector to entity
-            local toEntity = entity:GetOrigin() - self:GetOrigin()
-            toEntity:Normalize()
-                       
-            // It should be selected if this vector lies between the pick vectors
-            if( ( minX < toEntity.x and minZ < toEntity.z ) and
-                ( maxX > toEntity.x and maxZ > toEntity.z ) ) then
-        
-                // Insert entity along with current time for fading
-                table.insertunique(entityList, {entity:GetId(), Shared.GetTime()} )
-                //DebugLine(self:GetOrigin(), entity:GetOrigin(), 10, 0, 1, 0, 1)
-            else
-                //DebugLine(self:GetOrigin(), entity:GetOrigin(), 10, 1, 0, 0, 1)                
-            end
-            
+        // Get normalized vector to entity
+        local toEntity = entity:GetOrigin() - self:GetOrigin()
+        toEntity:Normalize()
+                   
+        // It should be selected if this vector lies between the pick vectors
+        if( ( minX < toEntity.x and minZ < toEntity.z ) and
+            ( maxX > toEntity.x and maxZ > toEntity.z ) ) then
+    
+            // Insert entity along with current time for fading
+            table.insertunique(entityList, entity )            
         end
     
     end
@@ -52,15 +44,13 @@ local function FilterOutMarqueeSelection(selection)
     local foundNonStructure = false
     local toRemove = { }
     
-    for index, entityPair in ipairs(selection) do
-    
-        local entity = Shared.GetEntity(entityPair[1])
+    for index, entity in ipairs(selection) do
         
         if entity:isa("Commander") then
             table.insertunique(toRemove, entityPair)
         else
         
-            if GetReceivesStructuralDamage(entity) then
+            if HasMixin(entity, "Construct") then
                 foundStructure = true
             else
                 foundNonStructure = true
@@ -72,21 +62,19 @@ local function FilterOutMarqueeSelection(selection)
     
     if foundStructure and foundNonStructure then
     
-        for index, entityPair in ipairs(selection) do
-        
-            local entity = Shared.GetEntity(entityPair[1])
-            
-            if GetReceivesStructuralDamage(entity) then
-                table.insertunique(toRemove, entityPair)
+        for index, entity in ipairs(selection) do
+
+            if HasMixin(entity, "Construct") then
+                table.insertunique(toRemove, entity)
             end
             
         end
         
     end
     
-    for index, entityPair in ipairs(toRemove) do
+    for index, entity in ipairs(toRemove) do
     
-        if not table.removevalue(selection, entityPair) then
+        if not table.removevalue(selection, entity) then
             Print("FilterOutMarqueeSelection(): Unable to remove entityPair (%s)", entity:GetClassName())
         end
         
@@ -94,60 +82,32 @@ local function FilterOutMarqueeSelection(selection)
     
 end
 
-local function SortCommanderSelection(entPair1, entPair2)
-
-    // Sort by tech id
-    local ent1 = Shared.GetEntity(entPair1[1])
-    local ent2 = Shared.GetEntity(entPair2[1])
-    
-    if ent1 and ent2 then
-    
-        if ent1:GetTechId() ~= ent2:GetTechId() then
-            return ent1:GetTechId() < ent2:GetTechId()
-        else
-        
-            // Then sort by health
-            if HasMixin(ent1, "Live") and HasMixin(ent2, "Live") then
-                return ent1:GetHealth() > ent2:GetHealth()
-            end
-            
-        end
-        
-        // Use entity Id as a last resort.
-        return ent1:GetId() < ent2:GetId()
-        
-    end
-    
-end
-
-function Commander:SortSelection(newSelection)
-    table.sort(newSelection, SortCommanderSelection)
-end
-
 // Input vectors are normalized world vectors emanating from player, representing a selection region where the marquee 
-// existed (or they were created around the vector where the mouse was clicked for a single selction). 
-// Pass 1 as selectone to select only one entity (click select)
-function Commander:MarqueeSelectEntities(pickStartVec, pickEndVec)
+// existed (or they were created around the vector where the mouse was clicked for a single selection). 
+function Commander:MarqueeSelectEntities(pickStartVec, pickEndVec, shiftSelect)
 
     local newSelection = {}
 
-    local potentials = GetEntitiesWithMixin("Selectable")
-    
+    // allow marquee select only on friends    
+    local potentials = GetEntitiesWithMixinForTeam("Selectable", self:GetTeamNumber())    
     self:GetEntitiesBetweenVecs(potentials, pickStartVec, pickEndVec, newSelection)
+    FilterOutMarqueeSelection(newSelection)
+    
+    if not shiftSelect then
+        DeselectAllUnits(self:GetTeamNumber())
+    end
+    
+    for _, entity in ipairs(newSelection) do
+    
+        local setSelected = true
+        if shiftSelect then
+            setSelected = not entity:GetIsSelected(self:GetTeamNumber())
+        end
+    
+        entity:SetSelected(self:GetTeamNumber(), setSelected)    
+        
+    end
 
-    if(table.maxn(newSelection) > 1) then
-    
-        FilterOutMarqueeSelection(newSelection)
-        self:SortSelection(newSelection)
-        
-    end
-    
-    if table.count(newSelection) > 0 then
-        return self:InternalSetSelection(newSelection)
-    else
-        return false
-    end
-        
 end
 
 function Commander:GetUnitUnderCursor(pickVec)
@@ -166,55 +126,6 @@ function Commander:GetUnitUnderCursor(pickVec)
     
 end
 
-function Commander:InternalClickSelectEntities(pickVec)
-
-    // Trace to the first entity we can select
-    local entity = self:GetUnitUnderCursor(pickVec)    
-    
-    if entity and self:GetIsEntityValidForSelection(entity) then
-    
-        return {entity}
-        
-    elseif #self:GetSelection() > 0 then    
-        
-        //self:ClearSelection()
-    
-    end
-    
-    return nil
-
-end
-
-// Compares entities in each list and sees if they look the same to the user. Doesn't check selection times, only entity indices
-function Commander:SelectionEntitiesEquivalent(entityList1, entityList2)
-
-    local equivalent = false
-    
-    if (entityList1 == nil or entityList2 == nil) then
-        return (entityList1 == entityList2)
-    end
-    
-    if(table.maxn(entityList1) == table.maxn(entityList2)) then
-    
-        equivalent = true
-    
-        for index, entityPair in ipairs(entityList1) do
-        
-            if(entityPair[1] ~= entityList2[index][1]) then
-            
-                equivalent = false
-                break
-                
-            end
-        
-        end
-    
-    end
-
-    return equivalent
-    
-end
-
 function Commander:GetUnitIdUnderCursor(pickVec)
 
     local entity = self:GetUnitUnderCursor(pickVec)
@@ -227,135 +138,12 @@ function Commander:GetUnitIdUnderCursor(pickVec)
 
 end
 
-function Commander:SelectEntityId(entitId)
-    return self:InternalSetSelection({ {entitId, Shared.GetTime()} } )
-end
-
-// TODO: call when selection should be added to current selection
-function Commander:AddSelectEntityId(entitId)
-    return self:InternalSetSelection({ {entitId, Shared.GetTime()} } )
-end
-
-function Commander:ClickSelectEntities(pickVec)
-
-    local newSelection = {}
-    local hitEntity = false
-    local clickEntities = self:InternalClickSelectEntities(pickVec)
-    
-    if(clickEntities ~= nil) then
-    
-        hitEntity = true
-        
-        for index, entity in ipairs(clickEntities) do  
-        
-            table.insertunique(newSelection, {entity:GetId(), Shared.GetTime()} )
-            
-            if Client then
-                self:SendSelectIdCommand(entity:GetId())
-            end
-            
-        end
-        
-    end
-        
-    if table.count(newSelection) > 0 then
-        return self:InternalSetSelection(newSelection), hitEntity
-    else
-        return false, hitEntity
-    end
-    
-end
-
-// If control/crouch is pressed, select all units of this type on the screen
-function Commander:ControlClickSelectEntities(pickVec, minDot)
-    
-    local newSelection = {}
-
-    local clickEntities = self:InternalClickSelectEntities(pickVec)
-    if(clickEntities ~= nil and table.count(clickEntities) > 0) then
-    
-        local clickEntity = clickEntities[1]
-        
-        if(clickEntity ~= nil) then
-
-            // Select all units of this type on screen (represented by startVec and endVec).
-            local classname = clickEntity:GetClassName()
-            if(classname ~= nil) then
-            
-                local potentials = EntityListToTable(Shared.GetEntitiesWithClassname(classname))
-                
-                local eyePos = self:GetEyePos()
-                local toEntity = nil
-                local time = Shared.GetTime()
-                
-                for _, potential in ipairs(potentials) do
-                
-                    toEntity = GetNormalizedVector(potential:GetOrigin() - eyePos)
-                    if self:GetViewCoords().zAxis:DotProduct(toEntity) >= minDot then
-                        table.insertunique(newSelection, {potential:GetId(), time} )
-                    end
-                
-                end
-
-            end
-            
-        end
-        
-    end
-    
-    if table.count(newSelection) > 0 then
-        return self:InternalSetSelection(newSelection)
-    else
-        return false
-    end
-    
-end
-
 function Commander:SelectAllPlayers()
 
-    local selectionIds = {}
-    
-    local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
-    
-    for index, player in ipairs(players) do
-    
-        if player:GetIsAlive() and not player:isa("Commander") then
-        
-            table.insert(selectionIds, player:GetId())
-            
-        end
-        
+    DeselectAllUnits(self:GetTeamNumber(), true)    
+    for _, unit in ipairs(GetEntitiesWithMixinForTeam("Selectable", self:GetTeamNumber())) do
+        unit:SetSelected(self:GetTeamNumber(), unit:isa("Player"))
     end
-    
-    if table.count(selectionIds) > 0 then
-        self:SetSelection(selectionIds)
-    end
-    
-end
-
-// Convenience function that takes list of entity ids and converts to {entityId, timeSelected} pairs. 
-// Tests and external code will want to use this instead of InternalSetSelection(). Can also take
-// an entityId by itself.
-function Commander:SetSelection(entsOrId)
-
-    local time = Shared.GetTime()
-    local pairTable = {}
-    
-    if (type(entsOrId) == "number") then
-
-        table.insert( pairTable, {entsOrId, time} )
-        
-    elseif (type(entsOrId) == "table") then
-    
-        for index, entId in ipairs(entsOrId) do        
-            table.insert( pairTable, {entId, time} )
-        end
-        
-    else
-        return false
-    end
-
-    return self:InternalSetSelection( pairTable )    
     
 end
 
@@ -373,7 +161,6 @@ function LeaveSelectionMenu(self)
     if Client and self == Client.GetLocalPlayer() and self:GetSelectedTabIndex() == 4 then
     
         self:SetCurrentTech(kTechId.BuildMenu)
-        self:DestroySelectionCircles()
         
     elseif Server then
         // don't switch the menu if in a tap. client pressed the tap button instead of clearing selection / seleciton became invalid
@@ -399,176 +186,23 @@ local function GoToRootMenu(self)
     
 end
 
-// Takes table of {entityId, timeSelected} pairs. Calls OnSelectionChanged() if it does. Doesn't allow setting
-// selection to empty unless allowEmpty is passed. Returns true if selection is different after calling.
-function Commander:InternalSetSelection(newSelection, preventMenuChange)
-
-    // Reset sub group
-    self.focusGroupIndex = 1
-    
-    // Clear last hotkey group when we change selection so next time
-    // we press the hotkey, we select instead of go to it    
-    self.gotoHotKeyGroup = 0
-    
-    local selectionChanged = false
-    if not self:SelectionEntitiesEquivalent(newSelection, self.selectedEntities) then
-    
-        self:SetEntitiesSelectionState(false)
-        self.selectedEntities = newSelection
-        self:SetEntitiesSelectionState(true)
-
-        if #newSelection > 0 then
-            PlaySelectionChangedSound(self)
-        end
-        
-        selectionChanged = true
-        
-    end
-    
-    // Always go back to root menu when selecting something, even if the same thing
-    if not preventMenuChange then
-    
-        if #newSelection ~= 0 then
-            GoToRootMenu(self)
-        end
-        
-    end
-    
-    if #newSelection == 0 then
-        LeaveSelectionMenu(self)
-    end
-    
-    return selectionChanged
-    
-end
-
-function Commander:SetEntitiesSelectionState(state)
-
-    if Server then
-    
-        for index, entityPair in ipairs(self.selectedEntities) do
-        
-            local entityIndex = entityPair[1]
-            local entity = Shared.GetEntity(entityIndex)
-            
-            if entity ~= nil then
-                entity:SetIsSelected(state)
-            end
-            
-        end
-        
-    end 
-    
-end
-
 // Returns table of sorted selected entities 
 function Commander:GetSelection()
 
     local selected = {}
     
-    if (self.selectedEntities ~= nil) then
-    
-        for index, pair in ipairs(self.selectedEntities) do
-            table.insert(selected, pair[1])
+    for _, entity in ipairs(GetEntitiesWithMixin("Selectable")) do
+        if entity:GetIsSelected(self:GetTeamNumber()) then
+            table.insert(selected, entity)    
         end
-        
     end
     
     return selected
     
 end
 
-function Commander:GetIsSelected(entityId, debug)
-
-    for index, pair in ipairs(self.selectedEntities) do
-    
-        if(pair[1] == entityId) then
-        
-            return true
-            
-        end
-        
-    end
-    
-    return false
-    
-end
-
-function Commander:ClearSelection()
-
-    self:InternalSetSelection({ }, true)
-    
-    if Client then
-    
-        self.createSelectionCircles = true
-        self:UpdateSelectionCircles()
-    
-        local message = BuildClearSelectionMessage(true, Entity.invalidId, false)
-        Client.SendNetworkMessage("ClearSelection", message, true)
-        
-    end
-    
-end
-
-function Commander:GetIsEntityValidForSelection(entity)
-    return entity and HasMixin(entity, "Selectable") and entity:GetIsSelectable(self) and HasMixin(entity, "Tech") 
-end
-
 function Commander:UpdateSelection(deltaTime)
-
-    local numSelectedBeforeDelete = #self.selectedEntities
     
-    local entPairsToDelete = { }
-    
-    for tableIndex, entityPair in ipairs(self.selectedEntities) do
-    
-        local entityIndex = entityPair[1]
-        local entity = Shared.GetEntity(entityIndex)
-        
-        if not self:GetIsEntityValidForSelection(entity) then
-            table.insert(entPairsToDelete, entityPair)
-        end        
-    
-    end
-    
-    for index, entityPair in ipairs(entPairsToDelete) do
-        
-        table.removevalue(self.selectedEntities, entityPair)
-        
-        if Server then
-        
-            local entityIndex = entityPair[1]
-            local entity = Shared.GetEntity(entityIndex)        
-        
-            if entity ~= nil then
-                entity:SetIsSelected(false)
-            end
-            
-        end
-        
-    end
-    
-    if #self.selectedEntities == 0 and numSelectedBeforeDelete > 0 then
-        self:InternalSetSelection({ })
-    end
-    
-end
-
-function Commander:GetIsEntitySelected(entity)
-
-    for index, entityPair in pairs(self.selectedEntities) do
-
-        local selectedEntity = Shared.GetEntity(entityPair[1])
-        if(selectedEntity ~= nil and entity:GetId() == selectedEntity:GetId()) then
-        
-            return true
-            
-        end
-        
-    end
-    
-    return false
-
 end
 
 // Returns true if hotkey exists and was selected
@@ -576,25 +210,23 @@ function Commander:SelectHotkeyGroup(number)
 
     if Client then
         self:SendSelectHotkeyGroupMessage(number)
-    end    
-
-    if number >= 1 and number <= kMaxHotkeyGroups then
+    end
     
-        if table.count(self.hotkeyGroups[number]) > 0 then
+    local selection = false
+
+    // select entities which match hotgroup, unselect all others
+    for _, entity in ipairs(GetEntitiesWithMixinForTeam("Selectable", self:GetTeamNumber())) do
         
-            local selection = {}
-            
-            for i = 1, table.count(self.hotkeyGroups[number]) do            
-                table.insert(selection, self.hotkeyGroups[number][i])                
-            end
-            
-            return self:SetSelection(selection)
-            
+        if entity:GetHotGroupNumber() == number then
+            entity:SetSelected(self:GetTeamNumber(), true, true, false)
+            selection = true
+        else
+            entity:SetSelected(self:GetTeamNumber(), false, true, false)
         end
         
-    end  
+    end
     
-    return false
+    UpdateMenuTechId(self:GetTeamNumber(), selection)
     
 end
 

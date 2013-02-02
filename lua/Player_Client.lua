@@ -2064,7 +2064,7 @@ function Player:GetCameraViewCoordsOverride(cameraCoords)
 
     local continue = true
 
-    if not self:GetIsAlive() and self:GetAnimateDeathCamera() then
+    if not self:GetIsAlive() and self:GetAnimateDeathCamera() and self:GetRenderModel() then
 
         local attachCoords = self:GetAttachPointCoords(self:GetHeadAttachpointName())
 
@@ -3261,10 +3261,7 @@ end
 // Set after hotgroup updated over the network
 function Player:SetHotgroup(number, entityList)
 
-    if(number >= 1 and number <= kMaxHotkeyGroups) then
-        //table.copy(entityList, self.hotkeyGroups[number])
-        self.hotkeyGroups[number] = entityList
-    end
+    Print("Player:SetHotgroup")
     
 end
 

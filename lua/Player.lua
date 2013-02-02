@@ -426,13 +426,7 @@ function Player:OnInitialized()
         InitMixin(self, MobileTargetMixin)
         
     end
-    
-    // Initialize hotkey groups. This is in player because
-    // it needs to be preserved across player replacements.
-    
-    // Table of table of ids, in order of hotkey groups
-    self:InitializeHotkeyGroups()
-        
+
     // Make sure to call OnInitialized() for client entities that have been propagated by the server
     if Client then
         
@@ -455,48 +449,7 @@ function Player:AddKill()
     
 end
 
-function Player:InitializeHotkeyGroups()
-
-    self.hotkeyGroups = {}
-    
-    for i = 1, kMaxHotkeyGroups do
-        table.insert(self.hotkeyGroups, {})
-    end
-
-end
-
 function Player:OnEntityChange(oldEntityId, newEntityId)
-
-    if Server and self.hotkeyGroups then
-
-        // Loop through hotgroups and update accordingly
-        for i = 1, kMaxHotkeyGroups do
-        
-            for index, entityId in ipairs(self.hotkeyGroups[i]) do
-            
-                if(entityId == oldEntityId) then
-                
-                    if(newEntityId ~= nil) then
-                    
-                        self.hotkeyGroups[i][index] = newEntityId
-                        
-                    else
-                    
-                        table.remove(self.hotkeyGroups[i], index)
-                        
-                    end
-                    
-                    if self.SendHotkeyGroup ~= nil then
-                        self:SendHotkeyGroup(i)
-                    end
-                    
-                end
-                
-            end
-            
-        end
-
-    end
 
     if Client then
 
@@ -826,7 +779,7 @@ function Player:PerformUseTrace()
     
 end
 
-function Player:UseTarget(entity, timePassed)
+function Player:UseTarget(entity, attachPoint, timePassed)
 
     assert(entity)
     
@@ -858,8 +811,8 @@ local function AttemptToUse(self, timePassed)
         return false
     end
     
-    // Cannot use anything unless playing the game (game started and a non-spectating player).
-    if not self:GetIsPlaying() then
+    // Cannot use anything unless playing the game (a non-spectating player).
+    if not self:GetIsOnPlayingTeam() then
         return false
     end
     
@@ -869,7 +822,14 @@ local function AttemptToUse(self, timePassed)
     // Use it.
     if entity then
     
-        if self:UseTarget(entity, kUseInterval) then
+        // if the game isn't started yet, check if the entity is usuable in non-started game
+        // (allows players to select commanders before the game has started)
+        if not self:GetGameStarted() and not (entity.GetUseAllowedBeforeGameStart and entity:GetUseAllowedBeforeGameStart()) then
+            return false
+        end
+        
+        // Use it.
+        if self:UseTarget(entity, attachPoint, kUseInterval) then
         
             self:SetIsUsing(true)
             self.timeOfLastUse = Shared.GetTime()
@@ -932,7 +892,11 @@ end
  * Returns true if the player is currently on a team and the game has started.
  */
 function Player:GetIsPlaying()
-    return self.gameStarted and (self:GetTeamNumber() == kTeam1Index or self:GetTeamNumber() == kTeam2Index)
+    return self.gameStarted and self:GetIsOnPlayingTeam()
+end
+
+function Player:GetIsOnPlayingTeam()
+    return self:GetTeamNumber() == kTeam1Index or self:GetTeamNumber() == kTeam2Index
 end
 
 local function HasTeamAssigned(self)
@@ -2761,26 +2725,27 @@ function Player:GetChatSound()
     return kChatSound
 end
 
-function Player:GetNumHotkeyGroups()
-    
-    local numGroups = 0
-    
-    for i = 1, kMaxHotkeyGroups do
-    
-        if (table.count(self.hotkeyGroups[i]) > 0) then
-        
-            numGroups = numGroups + 1
-            
-        end
-        
-    end
-    
-    return numGroups
-
-end
-
 function Player:GetHotkeyGroups()
-    return self.hotkeyGroups
+
+    local hotKeyGroups = {}
+
+    for _, entity in ipairs(GetEntitiesWithMixinForTeam("Selectable", self:GetTeamNumber())) do
+    
+        local group = entity:GetHotGroupNumber()
+        if group ~= 0 then
+        
+            if not hotKeyGroups[group] then
+                hotKeyGroups[group] = {}
+            end
+            
+            table.insert(hotKeyGroups[group], entity)
+        
+        end
+    
+    end
+
+    return hotKeyGroups
+    
 end
 
 function Player:GetVisibleWaypoint()

@@ -131,7 +131,7 @@ if Client then
 
 end
 
-local kHarvesterHealthbarOffset = Vector(0, .9, 0)
+local kHarvesterHealthbarOffset = Vector(0, 2.2, 0)
 function Harvester:GetHealthbarOffset()
     return kHarvesterHealthbarOffset
 end 

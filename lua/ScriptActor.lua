@@ -130,7 +130,7 @@ end
 // a ARC can siege, or when a unit has enough energy to perform an action, etc.)
 // Return list of 8 tech ids, represnting the 2nd and 3rd row of the 4x3 build icons.
 function ScriptActor:GetTechButtons(techId)
-    return nil
+    return  { kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None }
 end
 
 function ScriptActor:GetCost()

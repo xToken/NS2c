@@ -254,11 +254,7 @@ if Server then
                     if team:AddPlayer(entity) then
 
                         // Tell team to send entire tech tree on team change
-                        entity.sendTechTreeBase = true
-
-                        // Clear all hotkey groups on team change since old
-                        // hotkey groups will be invalid.
-                        entity:InitializeHotkeyGroups()                
+                        entity.sendTechTreeBase = true           
                         
                     end
                    
@@ -819,6 +815,16 @@ if Server then
         
     end
     
+    // Network variable type time has a maximum value it can contain, so reload the map if
+    // the age exceeds the limit and no game is going on.
+    local kMaxServerAgeBeforeMapChange = 36000
+    local function ServerAgeCheck(self)
+    
+        if self.gameState ~= kGameState.Started and Shared.GetTime() > kMaxServerAgeBeforeMapChange then
+            MapCycle_ChangeMap(Shared.GetMapName())
+        end
+        
+    end
     local function CheckForNoCommander(self, onTeam, commanderType)
 
         self.noCommanderStartTime = self.noCommanderStartTime or { }
@@ -870,6 +876,7 @@ if Server then
                 self:UpdatePregame(timePassed)
                 self:UpdateToReadyRoom()
                 self:UpdateMapCycle()
+				ServerAgeCheck(self)
                 
                 self.timeSinceGameStateChanged = self.timeSinceGameStateChanged + timePassed
                 

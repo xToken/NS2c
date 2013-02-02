@@ -215,10 +215,6 @@ local function GetLifeFormButtons(self)
     return nil
 end
 
-function Hive:GetTechButtons(techId)    
-    return nil
-end
-
 function Hive:OnManufactured(createdEntity)
 end
 

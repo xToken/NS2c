@@ -547,20 +547,10 @@ end
 function Marine:GetWeaponDropTime()
     return self.weaponDropTime
 end
-
-local marineTechButtons = { kTechId.Attack, kTechId.Move, kTechId.Defend, kTechId.None, 
-                                  kTechId.None, kTechId.None, kTechId.None, kTechId.None }
-                                  
-function Marine:GetTechButtons(techId)
-
-    local techButtons = nil
-    
-    if techId == kTechId.WeaponsMenu then
-        techButtons = marineTechButtons
-    end
-    
-    return techButtons
- 
+                  
+function Marine:GetTechButtons(techId)    
+    return { kTechId.Attack, kTechId.Move, kTechId.Defend, kTechId.None, 
+            kTechId.None, kTechId.None, kTechId.None, kTechId.None }
 end
 
 function Marine:GetCatalystFireModifier()

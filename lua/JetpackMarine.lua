@@ -164,7 +164,15 @@ function JetpackMarine:GetFuel()
 end
 
 function JetpackMarine:GetJetpack()
+
+    if Server then
+        if self.equipmentId == Entity.invalidId then
+            InitEquipment(self)
+        end
+    end
+
     return Shared.GetEntity(self.equipmentId)
+    
 end
 
 function JetpackMarine:OnEntityChange(oldId, newId)
@@ -211,7 +219,11 @@ function JetpackMarine:HandleJetpackStart()
     
     self.startedFromGround = self:GetIsOnGround() or self.timeOfLastJump == Shared.GetTime()
     
-    self:GetJetpack():SetIsFlying(true)
+    local jetpack = self:GetJetpack()    
+    if jetpack then
+        self:GetJetpack():SetIsFlying(true)
+    end
+    
     
 end
 
@@ -229,7 +241,10 @@ function JetpackMarine:HandleJetPackEnd()
     
     local animName = self:GetWeaponName() .. kAnimLandSuffix
     
-    self:GetJetpack():SetIsFlying(false)
+    local jetpack = self:GetJetpack()
+    if jetpack then
+        self:GetJetpack():SetIsFlying(false)
+    end
     
 end
 

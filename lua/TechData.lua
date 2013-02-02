@@ -16,6 +16,8 @@
 kTechDataId                             = "id"
 // Localizable string describing tech node
 kTechDataDisplayName                    = "displayname"
+// For alien traits and marine upgrades, these distinct character codes will be stored in sponitor's database
+kTechDataSponitorCode                   = "sponitorchar"
 // Include and set to false if not meant to display on commander UI "enables: "
 kTechIDShowEnables                      = "showenables"
 kTechDataMapName                        = "mapname"
@@ -131,6 +133,7 @@ kTechDataCategory = "techcategory"
 kTechDataKeyStructure = "keystructure"
 // custom message displayed for the commander when build method failed
 kTechDataBuildMethodFailedMessage = "commanderbuildmethodfailed"
+kTechDataAbilityType = "abilitytype"
 
 function BuildTechData()
     
@@ -261,7 +264,7 @@ function BuildTechData()
 
         // tier 3 abilities
         { [kTechDataId] = kTechId.Xenocide,               [kTechDataMapName] = XenocideLeap.kMapName,    [kTechDataDamageType] = kXenocideDamageType,   [kTechDataDisplayName] = "XENOCIDE", [kTechDataCostKey] = kXenocideResearchCost, [kTechDataResearchTimeKey] = kXenocideResearchTime, [kTechDataTooltipInfo] = "XENOCIDE_TOOLTIP"},
-        { [kTechDataId] = kTechId.Web,         			  [kTechDataMapName] = Web.kMapName,             [kTechDataHint] = kNS2cLocalizedStrings.WEB_HINT, [kTechDataDisplayName] = kNS2cLocalizedStrings.WEB, [kTechDataEngagementDistance] = kWebEngagementRange, [kTechDataMaxHealth] = kWebHealth, [kTechDataMaxArmor] = kWebArmor, [kTechDataModel] = Web.kModelName, [kTechDataPointValue] = kWebPointValue, [kTechDataSpecifyOrientation] = true,},
+        { [kTechDataId] = kTechId.Web,         			  [kTechDataHint] = kNS2cLocalizedStrings.WEB_HINT, [kTechDataDisplayName] = kNS2cLocalizedStrings.WEB, [kTechDataEngagementDistance] = kWebEngagementRange, [kTechDataMaxHealth] = kWebHealth, [kTechDataMaxArmor] = kWebArmor, [kTechDataModel] = Web.kModelName, [kTechDataPointValue] = kWebPointValue, [kTechDataSpecifyOrientation] = true,},
         { [kTechDataId] = kTechId.PrimalScream,           [kTechDataMapName] = LerkBitePrimal.kMapName,         [kTechDataDisplayName] = kNS2cLocalizedStrings.PRIMAL_SCREAM, [kTechDataCostKey] = kPrimalScreamResearchCost, [kTechDataResearchTimeKey] = kPrimalScreamResearchTime, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.PRIMAL_SCREAM_TOOLTIP},
         { [kTechDataId] = kTechId.AcidRocket,             [kTechDataMapName] = AcidRocket.kMapName,   [kTechDataDisplayName] = kNS2cLocalizedStrings.ACID_ROCKET, [kTechDataCostKey] = kAcidRocketResearchCost, [kTechDataResearchTimeKey] = kAcidRocketResearchTime, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.ACID_ROCKET_TOOLTIP},
         { [kTechDataId] = kTechId.Devour,                 [kTechDataMapName] = Devour.kMapName,            [kTechDataDamageType] = kDevourDamageType,        [kTechDataDisplayName] = kNS2cLocalizedStrings.DEVOUR},

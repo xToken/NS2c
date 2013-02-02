@@ -46,7 +46,7 @@ Egg.kSkinOffset = Vector(0, 0.12, 0)
 local networkVars =
 {
     // if player is inside it
-    empty = "boolean"
+    empty = "boolean",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -85,6 +85,7 @@ function Egg:OnCreate()
     end
     
     self.empty = true
+    
     self:SetLagCompensated(false)
     
 end
@@ -128,13 +129,6 @@ end
 
 function Egg:GetArmorFullyUpgradedAmount()
     return 0
-end
-
-function Egg:GetTechButtons(techId)
-
-    local techButtons = nil
-    return techButtons
-    
 end
 
 function Egg:GetTechAllowed(techId, techNode, player)

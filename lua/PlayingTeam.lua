@@ -157,7 +157,7 @@ function PlayingTeam:ResetTeam()
 
     local initialTechPoint = self:GetInitialTechPoint()
     
-    self:SpawnInitialStructures(initialTechPoint)
+    local tower, commandStructure = self:SpawnInitialStructures(initialTechPoint)
     
     self.overflowres = 0
     self.conceded = false
@@ -175,6 +175,8 @@ function PlayingTeam:ResetTeam()
     end
     
     self.techTree:SetTechChanged()
+
+	return commandStructure
 end
 
 function PlayingTeam:OnResetComplete()

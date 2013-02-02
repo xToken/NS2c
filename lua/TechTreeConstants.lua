@@ -9,6 +9,7 @@
 kTechId = enum({
     
     'None', 
+	'VoteConcedeRound',
     
     'SpawnMarine', 'SpawnAlien', 'CollectResources',
     

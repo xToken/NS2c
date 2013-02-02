@@ -73,6 +73,7 @@ AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(TurretFactoryMixin, networkVars)
 AddMixinNetworkVars(AlienDetectableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
+AddMixinNetworkVars(SelectableMixin, networkVars)
 
 function RoboticsFactory:OnCreate()
 
@@ -162,19 +163,14 @@ end
 
 function RoboticsFactory:GetTechButtons(techId)
 
-    if(techId == kTechId.WeaponsMenu) then
-    
-        local techButtons = {   kTechId.UpgradeRoboticsFactory, kTechId.None, kTechId.None, kTechId.None, 
-                   kTechId.None, kTechId.None, kTechId.None, kTechId.None }
-                   
-        if self:GetTechId() == kTechId.ARCRoboticsFactory then
-            techButtons[1] = kTechId.None
-        end
-        
-        return techButtons        
+    local techButtons = {   kTechId.UpgradeRoboticsFactory, kTechId.None, kTechId.None, kTechId.None, 
+               kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+               
+    if self:GetTechId() == kTechId.ARCRoboticsFactory then
+        techButtons[1] = kTechId.None
     end
-    
-    return nil
+
+    return techButtons
     
 end
 

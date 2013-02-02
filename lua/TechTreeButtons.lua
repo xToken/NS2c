@@ -254,7 +254,6 @@ function GetMaterialXYOffset(techId)
     index = kTechIdToMaterialOffset[techId]
     
     if index == nil then
-        assert(techId ~= nil)
         Print("Warning: %s did not define kTechIdToMaterialOffset ", EnumToString(kTechId, techId) )
     end
 
@@ -270,18 +269,14 @@ function GetMaterialXYOffset(techId)
     
 end
 
-function GetPixelCoordsForIcon(entityId, forMarine)
-
-    local ent = Shared.GetEntity(entityId)
+function GetPixelCoordsForIcon(ent, forMarine)
     
-    if (ent ~= nil and ent:isa("ScriptActor")) then
+    if ent and HasMixin(ent, "Tech") then
     
-        local techId = ent:GetTechId()
-        
-        if (techId ~= kTechId.None) then
+        local techId = ent:GetTechId()        
+        if techId ~= kTechId.None then
             
             local xOffset, yOffset = GetMaterialXYOffset(techId, forMarine)
-            
             return {xOffset, yOffset}
             
         end

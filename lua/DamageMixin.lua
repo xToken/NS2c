@@ -163,7 +163,7 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
             
                 if GetShouldSendHitEffect() then
                     
-                    local message = BuildHitEffectMessage(point, doer, surface, target, showtracer, altMode, flinch_severe)
+                    local message = BuildHitEffectMessage(point, doer, surface, target, showtracer, altMode, flinch_severe, damage, directionVectorIndex)
                     
                     local toPlayers = GetEntitiesWithinRange("Player", point, kHitEffectRelevancyDistance)
                     //table.removevalue(toPlayers, attacker)

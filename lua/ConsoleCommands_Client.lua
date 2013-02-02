@@ -34,19 +34,6 @@ function OnCommandSoundGeometry(enabled)
     
 end
 
-function OnCommandReloadSoundGeometry(soundOcclusionFactor, reverbOcclusionFactor)
-
-    if soundOcclusionFactor == nil or reverbOcclusionFactor == nil then
-    
-        Shared.Message("A sound occlusion factor and reverb occlusion factor (between 0-1) must be passed in.")
-        return
-        
-    end
-    
-    Client.LoadSoundGeometry(tonumber(soundOcclusionFactor), tonumber(reverbOcclusionFactor))
-
-end
-
 function OnCommandAnimDebug(className)
 
     // Messages printed by server
@@ -259,7 +246,6 @@ Event.Hook("Console_deathmsg", OnCommandDeathMsg)
 Event.Hook("Console_clientdisconnect", OnCommandOnClientDisconnect)
 Event.Hook("Console_points", OnCommandPoints)
 Event.Hook("Console_soundgeometry", OnCommandSoundGeometry)
-Event.Hook("Console_reloadsoundgeometry", OnCommandReloadSoundGeometry)
 Event.Hook("Console_onanimdebug", OnCommandAnimDebug)
 Event.Hook("Console_oneffectdebug", OnCommandEffectDebug)
 Event.Hook("Console_debugtext", OnCommandDebugText)

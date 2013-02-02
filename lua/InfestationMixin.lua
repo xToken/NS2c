@@ -22,6 +22,9 @@ local kInfestationRecedeRate = 6
 local _quality = nil
 local _numBlobsGenerated = 0
 
+local kSlowUpdateInterval = 1 // when the infestation has been stable for a while, run full updates this many times/sec
+local kSlowUpdateCountLimit = 5 // how many stable updates need to pass before going into slow update mode
+
 // Purely for debugging/recording. This only affects the visual blobs, NOT the actual infestation radius
 local kDebugVisualGrowthScale = 1.0
 
@@ -65,13 +68,17 @@ function InfestationMixin:__initmixin()
         self.lastradiusupdate = 0
         self:SetUpdates(true)
         
+        self.slowUpdateCount  = 0
+        self.updateInterval = 0
+        self.lastUpdateTime = 0
+        
         self.infestationMaterial = Client.CreateRenderMaterial()
         self.infestationMaterial:SetMaterial("materials/infestation/infestation_decal.material")
 
         // always create blob coords even if we do not display them sometimes
         self:SpawnInfestation()
         self:ResetBlobPlacement()
-
+        self.clientisalive = true
         self.hasClientGeometry = false
     end
     
@@ -86,6 +93,17 @@ if Client then
 			return self.infestationlocations[index]
         end
         return self.infestationlocations[1]
+    end
+        
+    function InfestationMixin:RunUpdatesAtFullSpeed()
+
+        self.slowUpdateCount = 0
+        self.updateInterval = 0
+
+    end
+    
+    function InfestationMixin:OnKillClient()
+        self.clientisalive = false
     end
 
     function InfestationMixin:GetRadius()
@@ -291,14 +309,11 @@ if Client then
 	function InfestationMixin:UpdateClientGeometry()
 		
 		local cloakFraction = 0
-		local parent = self:GetParent()
-
-		if parent ~= nil then
-			if GetAreEnemies( parent, Client_GetLocalPlayer()) then
-				if HasMixin(parent, "Cloakable") then
-					cloakFraction = parent:GetCloakedFraction()
-				end
-			end
+		
+		if GetAreEnemies( self, Client_GetLocalPlayer()) then
+            if HasMixin(self, "Cloakable") then
+                cloakFraction = self:GetCloakedFraction()
+            end
 		end
 		
 		local radius = self:GetRadius()
@@ -616,6 +631,10 @@ if Client then
         if _quality ~= "rich" then
             return
         end
+        
+         if self.lastUpdateTime + self.updateInterval > Shared.GetTime() then
+            return
+        end
 		
 		ScriptActor.OnUpdate(self, deltaTime)
 
@@ -646,7 +665,43 @@ if Client then
 			self:UpdateBlobAnimation()
 		end
 		
-	end
+        // if we are not doing anything, we can slow down our update rate
+        if self:IsStable() then
+        
+            if self.updateInterval == 0 then
+                
+                self.slowUpdateCount = self.slowUpdateCount + 1
+                if self.slowUpdateCount >  kSlowUpdateCountLimit then
+                    self.updateInterval = kSlowUpdateInterval
+                end
+
+            end
+
+        else
+
+            self:RunUpdatesAtFullSpeed()
+           
+        end
+        
+        self.lastUpdateTime = Shared.GetTime()
+         
+    end
+
+    // Return true if the infestation is stable, ie not changing anything
+    // Once the infestation has been stable for a while, the infestations slows
+    // down its update rate to save on CPU
+    function InfestationMixin:IsStable()
+    
+        local cloakFraction = 0
+        if GetAreEnemies( self, Client_GetLocalPlayer() ) then
+            // we may be invisible to enemies
+            cloakFraction = self:GetCloakedFraction()
+        end
+
+        //Log("%s: %s, %s, %s, %s, %s", self, self.clientisalive, self.numBlobsToGenerate, cloakFraction, self:GetRadius(), self:GetMaxRadius()) 
+        return self.clientisalive and self.numBlobsToGenerate == 0 and (cloakFraction == 0 or cloakFraction == 1) and self:GetRadius() == self:GetMaxRadius() 
+        
+    end
 
 	function InfestationMixin:UpdateBlobAnimation()
 
@@ -744,6 +799,7 @@ if Client then
 		local ents = GetEntitiesWithMixin("Infestation")
 		for id,ent in ipairs(ents) do
 			ent:DestroyClientGeometry()
+			ent:RunUpdatesAtFullSpeed()
 		end
 		
 	end

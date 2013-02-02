@@ -18,39 +18,6 @@ function OnCommandCommMarqueeSelect(client, message)
     
 end
 
-function OnCommandClearSelection(client, message)
-
-    local player = client:GetControllingPlayer()
-    local removeAll, removeId, ctrlPressed = ParseClearSelectionMessage(message)
-    
-    if player:GetIsCommander() then
-        if removeAll then
-            player:ClearSelection()
-        else
-            // TODO: remove entityId, if ctrl pressed remove all entities with same class name as well from selection
-        end
-    end
-    
-end
-
-function OnCommandCommSelectId(client, message)
-
-    local player = client:GetControllingPlayer()
-    if player:GetIsCommander() then
-        player:SelectEntityId(ParseSelectIdMessage(message))
-    end
-
-end
-
-function OnCommandCommControlClickSelect(client, message)
-
-    local player = client:GetControllingPlayer()
-    if player:GetIsCommander() then
-        player:ControlClickSelectEntities(ParseControlClickSelectMessage(message))
-    end
-
-end
-
 function OnCommandParseSelectHotkeyGroup(client, message)
 
     local player = client:GetControllingPlayer()
@@ -64,7 +31,7 @@ function OnCommandParseCreateHotkeyGroup(client, message)
 
     local player = client:GetControllingPlayer()
     if player:GetIsCommander() then
-        player:CreateHotkeyGroup(message.groupNumber, player:GetSelection())
+        player:CreateHotkeyGroup(message.groupNumber)
     end
     
 end
@@ -149,6 +116,25 @@ function OnCommandCommClickSelect(client, message)
         player:ClickSelectEntities(ParseCommClickSelectMessage(message))
     end
     
+end
+
+function OnCommandSelectUnit(client, message)
+
+    local player = client:GetControllingPlayer()
+    if player:isa("Commander") then
+    
+        local teamNumber, unit, selected, keepSelection = ParseSelectUnitMessage(message)
+        
+        if not keepSelection then
+            DeselectAllUnits(player:GetTeamNumber())
+        end
+        
+        if unit then
+            unit:SetSelected(teamNumber, selected)
+        end
+    
+    end
+
 end
 
 local kChatsPerSecondAdded = 1
@@ -353,10 +339,7 @@ local function OnMovementChanged(client, movement)
 
 end
 
-Server.HookNetworkMessage("MarqueeSelect", OnCommandCommMarqueeSelect)
-Server.HookNetworkMessage("ClickSelect", OnCommandCommClickSelect)
-Server.HookNetworkMessage("ClearSelection", OnCommandClearSelection)
-Server.HookNetworkMessage("ControlClickSelect", OnCommandCommControlClickSelect)
+Server.HookNetworkMessage("SelectUnit", OnCommandSelectUnit)
 Server.HookNetworkMessage("SelectHotkeyGroup", OnCommandParseSelectHotkeyGroup)
 Server.HookNetworkMessage("CreateHotKeyGroup", OnCommandParseCreateHotkeyGroup)
 Server.HookNetworkMessage("CommAction", OnCommandCommAction)
@@ -365,7 +348,6 @@ Server.HookNetworkMessage("CommTargetedActionWorld", OnCommandCommTargetedAction
 Server.HookNetworkMessage("GorgeBuildStructure", OnCommandGorgeBuildStructure)
 Server.HookNetworkMessage("GorgeBuildStructure2", OnCommandGorgeBuildStructure2)
 Server.HookNetworkMessage("MutePlayer", OnCommandMutePlayer)
-Server.HookNetworkMessage("SelectId", OnCommandCommSelectId)
 Server.HookNetworkMessage("ChatClient", OnChatReceived)
 Server.HookNetworkMessage("CommanderPing", OnCommandCommPing)
 Server.HookNetworkMessage("SetRookieMode", OnCommandSetRookieMode)

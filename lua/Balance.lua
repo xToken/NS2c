@@ -290,6 +290,8 @@ kWebSpinnerROF = 0.5
 kWebSpinnerEnergyCost = 18
 kWebImobilizeTime = 3
 kWebEngagementRange = 2
+kMinWebLength = 2
+kMaxWebLength = 20
 
 kLerkBiteDamage = 60
 kLerkBiteEnergyCost = 5

@@ -463,7 +463,7 @@ local function GetItemTechId(researchTechId)
     end
     
     return gResearchToWeaponIds[researchTechId]
-
+    
 end
 
 function GUIMarineBuyMenu:_UpdateItemButtons(deltaTime)

@@ -8,6 +8,8 @@
 Script.Load("lua/Utility.lua")
 
 kWebEnabled = false
+kDecalMaxLifetime = 60
+
 // All the layouts are based around this screen height.
 kBaseScreenHeight = 1080
 
@@ -32,6 +34,8 @@ kNeutralFontColor = Color(0.7, 0.7, 0.7, 1)
 
 // Move hit effect slightly off surface we hit so particles don't penetrate. In meters.
 kHitEffectOffset = 0.13
+// max distance of blood from impact point to nearby geometry
+kBloodDistance = 3.5
 
 kCommanderPingDuration = 12
 
@@ -103,7 +107,7 @@ kMaxPing = 999
 
 kMaxChatLength = 80
 kMaxHiveNameLength = 30
-kMaxHotkeyGroups = 5
+kMaxHotkeyGroups = 9
 
 // Surface list. Add more materials here to precache ricochets, bashes, footsteps, etc
 // Used with PrecacheMultipleAssets
@@ -262,6 +266,8 @@ kInventoryIconTextureHeight = 64
 // Options keys
 kNicknameOptionsKey = "nickname"
 kVisualDetailOptionsKey = "visualDetail"
+kSoundInputDeviceOptionsKey = "sound/input-device"
+kSoundOutputDeviceOptionsKey = "sound/output-device"
 kSoundVolumeOptionsKey = "soundVolume"
 kMusicVolumeOptionsKey = "musicVolume"
 kVoiceVolumeOptionsKey = "voiceVolume"
@@ -287,6 +293,10 @@ kMouseSensitivityScalar         = 50
 kPlayerUseRange = 2
 kMaxPitch = (math.pi / 2) - math.rad(3)
 
+// Pathing flags
+kPathingFlags = enum ({'UnBuildable', 'UnPathable', 'Blockable'})
+
+// How far from the order location must units be to complete it.
 kAIMoveOrderCompleteDistance = 0.01
 kPlayerMoveOrderCompleteDistance = 1.5
 

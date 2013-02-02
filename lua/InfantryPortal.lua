@@ -86,6 +86,7 @@ AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(AlienDetectableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
+AddMixinNetworkVars(SelectableMixin, networkVars)
 
 local function CreateSpinEffect(self)
 
@@ -530,12 +531,8 @@ function InfantryPortal:OnUpdateRender()
 end
 
 function InfantryPortal:GetTechButtons()
-
-    return {
-        kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
-        kTechId.None, kTechId.None, kTechId.None, kTechId.None,     
-    }
-    
+    return { kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
+             kTechId.None, kTechId.None, kTechId.None, kTechId.None,  }
 end
 
 local kInfantryPortalHealthbarOffset = Vector(0, 0.5, 0)
