@@ -23,5 +23,5 @@ function Onos:GetTierTwoTechId()
 end
 
 function Onos:GetTierThreeTechId()
-    return kTechId.Smash
+    return kTechId.Devour
 end

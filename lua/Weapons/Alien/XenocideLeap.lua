@@ -74,15 +74,6 @@ function XenocideLeap:GetHUDSlot()
     return 3
 end
 
-function XenocideLeap:GetIconOffsetY(secondary)
-    if not self.xenociding then
-        return kAbilityOffset.Xenocide
-    else
-        return kAbilityOffset.Bite
-    end
-    
-end
-
 function XenocideLeap:OnPrimaryAttack(player)
 
     if player:GetEnergy() >= self:GetEnergyCost() then

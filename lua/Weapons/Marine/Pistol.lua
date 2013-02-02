@@ -198,7 +198,7 @@ function Pistol:GetHUDSlot()
 end
 
 function Pistol:GetPrimaryAttackRequiresPress()
-    return false
+    return true
 end
 
 function Pistol:GetNumStartClips()
@@ -206,7 +206,7 @@ function Pistol:GetNumStartClips()
 end
 
 function Pistol:GetWeight()
-    return kPistolWeight
+    return kPistolWeight + ((math.ceil(self.ammo / self:GetClipSize()) + math.ceil(self.clip / self:GetClipSize())) * kPistolClipWeight)
 end
 
 function Pistol:GetClipSize()

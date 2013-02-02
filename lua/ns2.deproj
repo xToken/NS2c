@@ -40,6 +40,9 @@
     <filename>AlienTeam.lua</filename>
   </file>
   <file>
+    <filename>AlienTeamInfo.lua</filename>
+  </file>
+  <file>
     <filename>AlienUpgrades_Client.lua</filename>
   </file>
   <file>
@@ -133,6 +136,9 @@
     <filename>Commander_Client.lua</filename>
   </file>
   <file>
+    <filename>Commander_MouseActions.lua</filename>
+  </file>
+  <file>
     <filename>Commander_PlayerAlertPanel.lua</filename>
   </file>
   <file>
@@ -140,6 +146,9 @@
   </file>
   <file>
     <filename>ConsoleCommands_Client.lua</filename>
+  </file>
+  <file>
+    <filename>ConsoleCommands_Server.lua</filename>
   </file>
   <file>
     <filename>ConstructMixin.lua</filename>
@@ -152,6 +161,9 @@
   </file>
   <file>
     <filename>Mixins\CustomGroundMoveMixin.lua</filename>
+  </file>
+  <file>
+    <filename>DSPEffects.lua</filename>
   </file>
   <file>
     <filename>DamageEffects.lua</filename>
@@ -331,9 +343,6 @@
     <filename>Gorge.lua</filename>
   </file>
   <file>
-    <filename>GorgeStructureMixin.lua</filename>
-  </file>
-  <file>
     <filename>Gorge_Server.lua</filename>
   </file>
   <file>
@@ -395,6 +404,9 @@
   </file>
   <file>
     <filename>InfantryPortal.lua</filename>
+  </file>
+  <file>
+    <filename>InfestationMixin.lua</filename>
   </file>
   <file>
     <filename>Jetpack.lua</filename>
@@ -467,9 +479,6 @@
   </file>
   <file>
     <filename>Marine_Server.lua</filename>
-  </file>
-  <file>
-    <filename>MedPack.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\Metabolize.lua</filename>
@@ -598,9 +607,6 @@
     <filename>Sentry.lua</filename>
   </file>
   <file>
-    <filename>Sentry_Server.lua</filename>
-  </file>
-  <file>
     <filename>Server.lua</filename>
   </file>
   <file>
@@ -632,6 +638,9 @@
   </file>
   <file>
     <filename>Weapons\Alien\Smash.lua</filename>
+  </file>
+  <file>
+    <filename>Spectator.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\SpikesMixin.lua</filename>
@@ -703,19 +712,19 @@
     <filename>UpgradeStructureManager.lua</filename>
   </file>
   <file>
-    <filename>VoteManager.lua</filename>
+    <filename>WallMovementMixin.lua</filename>
   </file>
   <file>
-    <filename>WallMovementMixin.lua</filename>
+    <filename>WeaponOwnerMixin.lua</filename>
   </file>
   <file>
     <filename>WeaponUtility.lua</filename>
   </file>
   <file>
-    <filename>Weapons\Alien\Web.lua</filename>
+    <filename>Weapons\Weapon_Server.lua</filename>
   </file>
   <file>
-    <filename>Weapons\Alien\WebAbility.lua</filename>
+    <filename>Weapons\Alien\WebsAbility.lua</filename>
   </file>
   <file>
     <filename>WeldableMixin.lua</filename>

@@ -37,6 +37,7 @@ ClipWeapon.kCone0Degrees  = Math.Radians(0)
 ClipWeapon.kCone1Degrees  = Math.Radians(1)
 ClipWeapon.kCone2Degrees  = Math.Radians(2)
 ClipWeapon.kCone3Degrees  = Math.Radians(3)
+ClipWeapon.kCone3v5Degrees  = Math.Radians(3.5)
 ClipWeapon.kCone4Degrees  = Math.Radians(4)
 ClipWeapon.kCone5Degrees  = Math.Radians(5)
 ClipWeapon.kCone6Degrees  = Math.Radians(6)
@@ -70,7 +71,10 @@ local function FillClip(self)
     // Transfer bullets from our ammo pool to the weapon's clip
     self.clip = math.min(self.ammo, self:GetClipSize())
     self.ammo = self.ammo - self.clip
-    
+    local player = self:GetParent()
+    if player then
+        player:UpdateWeaponWeights()
+    end
 end
 
 function ClipWeapon:OnInitialized()
@@ -114,6 +118,10 @@ end
 
 // Return one of the ClipWeapon.kCone constants above
 function ClipWeapon:GetSpread()
+    return ClipWeapon.kCone0Degrees
+end
+
+function ClipWeapon:GetMinSpread()
     return ClipWeapon.kCone0Degrees
 end
 
@@ -217,14 +225,21 @@ function ClipWeapon:GiveAmmo(numClips, includeClip)
         success = true        
         
     end
-
+    local player = self:GetParent()
+    if player then
+        player:UpdateWeaponWeights()
+    end
     return success
     
 end
 
 function ClipWeapon:GiveReserveAmmo(bullets)
-    local bulletsToAmmo = math.min(bullets, self:GetMaxAmmo() - self:GetAmmo())  
+    local bulletsToAmmo = math.min(bullets, self:GetMaxAmmo() - self:GetAmmo())
     self.ammo = self.ammo + bulletsToAmmo
+    local player = self:GetParent()
+    if player then
+        player:UpdateWeaponWeights()
+    end
 end
 
 function ClipWeapon:GetNeedsAmmo(includeClip)
@@ -387,8 +402,8 @@ local function FireBullets(self, player)
     
     for bullet = 1, numberBullets do
     
-        local spreadDirection = CalculateSpread(shootCoords, self:GetSpread(bullet) * self:GetInaccuracyScalar(player), NetworkRandom)
-        
+        local spreadDirection = CalculateSpread(shootCoords, self:GetSpread(bullet) * self:GetInaccuracyScalar(player), NetworkRandom, self:GetMinSpread(bullet))
+
         local endPoint = startPoint + spreadDirection * range
         
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)

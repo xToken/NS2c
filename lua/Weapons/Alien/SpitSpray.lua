@@ -18,6 +18,7 @@ class 'SpitSpray' (Ability)
 SpitSpray.kMapName = "spitspray"
 
 local kSpitSpeed = 55
+local kSpitRange = 40
 
 local kAnimationGraph = PrecacheAsset("models/alien/gorge/gorge_view.animation_graph")
 
@@ -38,17 +39,6 @@ local networkVars =
 }
 
 AddMixinNetworkVars(HealSprayMixin, networkVars)
-
-local function GetHasAttackDelay(self, player)
-
-    local attackDelay = ConditionalValue( player:GetIsPrimaled(), (kSpitDelay / kPrimalScreamROFIncrease), kSpitDelay)
-    local upg, level = GetHasFocusUpgrade(player)
-    if upg and level > 0 then
-        attackDelay = AdjustAttackDelayforFocus(attackDelay, level)
-    end
-    return self.lastPrimaryAttackTime + attackDelay > Shared.GetTime()
-    
-end
 
 function SpitSpray:OnCreate()
 
@@ -80,6 +70,14 @@ function SpitSpray:GetPrimaryEnergyCost()
     return kSpitEnergyCost
 end
 
+function SpitSpray:GetAttackDelay()
+    return kSpitDelay
+end
+
+function SpitSpray:GetLastAttackTime()
+    return self.lastPrimaryAttackTime
+end
+
 local function CreateSpitProjectile(self, player)   
 
     if Server then
@@ -101,15 +99,28 @@ end
 
 local function CreatePredictedProjectile(self, player)
 
+    local viewAngles = player:GetViewAngles()
+    local viewCoords = viewAngles:GetCoords()
+    local startPoint = player:GetEyePos() - viewCoords.yAxis * 0.2
+    local trace = Shared.TraceRay(startPoint, player:GetEyePos() + viewCoords.zAxis * kSpitRange, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterAll())
+    local endPoint = trace.endPoint
+    local tracerVelocity = viewCoords.zAxis * kSpitSpeed
+
     if Client then
-
-        local viewAngles = player:GetViewAngles()
-        local viewCoords = viewAngles:GetCoords()
-        local tracerStart = player:GetEyePos() - viewCoords.yAxis * 0.2
-        local trace = Shared.TraceRay(tracerStart, player:GetEyePos() + viewCoords.zAxis * 20, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterAll())
-
-        local tracerVelocity = viewCoords.zAxis * kSpitSpeed * 0.7
-        CreateTracer(tracerStart, trace.endPoint, tracerVelocity, self, kSpitProjectileEffect)
+        CreateTracer(startPoint, endPoint, tracerVelocity, self, kSpitProjectileEffect)
+    elseif Server then
+    
+        if not self.compensatedProjectiles then
+            self.compensatedProjectiles = {}
+        end    
+    
+        local compensatedProjectile = {}
+        compensatedProjectile.velocity = Vector(tracerVelocity)
+        compensatedProjectile.origin = Vector(startPoint)
+        compensatedProjectile.endPoint = Vector(endPoint)
+        compensatedProjectile.endTime = ((startPoint - endPoint):GetLength() / kSpitSpeed) + Shared.GetTime()
+        
+        table.insert(self.compensatedProjectiles, compensatedProjectile)
     
     end
 
@@ -117,7 +128,7 @@ end
 
 function SpitSpray:OnPrimaryAttack(player)
 
-    if player:GetEnergy() >= self:GetEnergyCost() and not GetHasAttackDelay(self, player) then
+    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(self, player) then
         self.primaryAttacking = true
     else
         self.primaryAttacking = false
@@ -141,7 +152,7 @@ function SpitSpray:OnTag(tagName)
     
         local player = self:GetParent()
         
-        if player and not GetHasAttackDelay(self, player) then
+        if player and not self:GetHasAttackDelay(self, player) then
         
             self.lastPrimaryAttackTime = Shared.GetTime()
             CreateSpitProjectile(self, player)
@@ -182,6 +193,51 @@ function SpitSpray:OnUpdateAnimationInput(modelMixin)
     end
     modelMixin:SetAnimationInput("activity", activityString)
     
+end
+
+function SpitSpray:GetDeathIconIndex()
+    return ConditionalValue(self.spitted, kDeathMessageIcon.Spit, kDeathMessageIcon.Spray)
+end
+
+function SpitSpray:GetDamageType()
+    return ConditionalValue(self.spitted, kSpitDamageType, kHealsprayDamageType)
+end
+
+if Server then
+
+    function SpitSpray:OnProcessMove(input)
+
+        local player = self:GetParent()
+        if self.compensatedProjectiles and player then
+        
+            local updateTable = {}
+        
+            for _, compensatedProjectile in ipairs(self.compensatedProjectiles) do
+            
+                if compensatedProjectile.endTime > Shared.GetTime() then
+                
+                    local trace = Shared.TraceRay(compensatedProjectile.origin, compensatedProjectile.origin + 3 * compensatedProjectile.velocity * input.time, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterTwo(self, player))
+                    if trace.entity then
+                    
+                        self.spitted = true
+                        self:DoDamage(kSpitDamage, trace.entity, compensatedProjectile.origin, trace.endPoint - compensatedProjectile.origin, trace.surface)
+                        self.spitted = false
+                        
+                    else
+                        compensatedProjectile.origin = compensatedProjectile.origin + input.time * compensatedProjectile.velocity
+                        table.insert(updateTable, compensatedProjectile)
+                    end
+                
+                end
+            
+            end
+            
+            self.compensatedProjectiles = updateTable
+        
+        end
+
+    end
+
 end
 
 Shared.LinkClassToMap("SpitSpray", SpitSpray.kMapName, networkVars)

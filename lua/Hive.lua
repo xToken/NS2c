@@ -16,6 +16,7 @@ Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/InfestationMixin.lua")
 
 class 'Hive' (CommandStructure)
 
@@ -28,6 +29,7 @@ AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(HiveVisionMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
+AddMixinNetworkVars(InfestationMixin, networkVars)
 
 kResearchToHiveType =
 {
@@ -69,6 +71,11 @@ Hive.kHealRadius = 12.7     // From NS1
 Hive.kHealthPercentage = .15
 Hive.kHealthUpdateTime = 2
 
+local kHiveInfestationRadius = 30
+local kHiveInfestationBlobDensity = 3
+local kHiveInfestationGrowthRate = 0.1
+local kHiveMinInfestationRadius = 5
+
 if Server then
     Script.Load("lua/Hive_Server.lua")
 elseif Client then
@@ -83,7 +90,7 @@ function Hive:OnCreate()
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
     InitMixin(self, HasUmbraMixin)
-    
+        
     if Server then
         
         self.upgradeTechId = kTechId.None
@@ -93,6 +100,7 @@ function Hive:OnCreate()
         self.timeOfLastEgg = Shared.GetTime()
         self.queuedplayer = nil
         self.timeWaveEnds = 0
+        
     end
 
 end
@@ -102,6 +110,7 @@ function Hive:OnInitialized()
     CommandStructure.OnInitialized(self)
     
     self:SetModel(Hive.kModelName, kAnimationGraph)
+    InitMixin(self, InfestationMixin)
     
     // Pre-compute list of egg spawn points.
     if Server then
@@ -152,7 +161,7 @@ function Hive:OnCollision(entity)
     /*if entity:isa("Player") and GetEnemyTeamNumber(self:GetTeamNumber()) == entity:GetTeamNumber() then    
         self.lastTimeEnemyTouchedHive = Shared.GetTime()
     end*/
-        
+    
 end
 
 function GetIsHiveTypeResearch(techId)
@@ -170,6 +179,26 @@ function Hive:GetMainMenuButtons()
     return nil
 end
 
+function Hive:GetGrowthRate()
+    return kHiveInfestationRadius
+end
+
+function Hive:GetMaxRadius()
+    return kHiveInfestationRadius
+end
+
+function Hive:GetMinRadius()
+    return kHiveMinInfestationRadius
+end
+
+function Hive:GetGrowthRate()
+    return kHiveInfestationGrowthRate
+end
+
+function Hive:GetInfestationDensity()
+    return kHiveInfestationBlobDensity
+end
+
 function Hive:GetCanResearchOverride(techId)
 
     local allowed = true
@@ -183,10 +212,6 @@ function Hive:GetCanResearchOverride(techId)
 end
 
 local function GetLifeFormButtons(self)
-    return nil
-end
-
-function Hive:GetTechButtons(techId)    
     return nil
 end
 

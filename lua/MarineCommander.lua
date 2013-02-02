@@ -46,7 +46,6 @@ MarineCommander.kCommandStationCompletedSoundName = PrecacheAsset("sound/NS2.fev
 
 MarineCommander.kOrderClickedEffect = PrecacheAsset("cinematics/marine/order.cinematic")
 MarineCommander.kSelectSound = PrecacheAsset("sound/NS2.fev/marine/commander/select")
-MarineCommander.kChatSound = PrecacheAsset("sound/NS2.fev/marine/common/chat")
 
 local kHoverSound = PrecacheAsset("sound/NS2.fev/marine/commander/hover")
 
@@ -133,10 +132,6 @@ function MarineCommander:GetQuickMenuTechButtons(techId)
     // Return buttons and true/false if we are in a quick-access menu
     return marineTechButtons
     
-end
-
-function MarineCommander:GetChatSound()
-    return MarineCommander.kChatSound
 end
 
 function MarineCommander:GetPlayerStatusDesc()

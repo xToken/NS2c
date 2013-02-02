@@ -8,14 +8,16 @@
 
 Script.Load("lua/MaterialUtility.lua")
 
-Alien.kFirstPersonDeathEffect = PrecacheAsset("cinematics/alien/death_1p_alien.cinematic")
-
+local kFirstPersonDeathEffect = PrecacheAsset("cinematics/alien/death_1p_alien.cinematic")
 local kAlienFirstPersonHitEffectName = PrecacheAsset("cinematics/alien/hit_1p.cinematic")
+local screenEffects = { }
+screenEffects.darkVision = Client.CreateScreenEffect("shaders/DarkVision.screenfx")
+screenEffects.darkVision:SetActive(false)
 
-function PlayerUI_GetNumHives()
+function PlayerUI_GetActiveHiveCount()
 
     for _, ent in ientitylist(Shared.GetEntitiesWithClassname("AlienTeamInfo")) do
-        return ent:GetNumHives()
+        return ent:GetActiveHiveCount()
     end
     
     return 0
@@ -450,13 +452,13 @@ function Alien:UpdateClientEffects(deltaTime, isLocal)
             darkVisionFadeAmount = math.max(1 - (Shared.GetTime() - self.darkVisionEndTime) / darkVisionFadeTime, 0)
         end
         
-        if Player.screenEffects.darkVision then
+        if screenEffects.darkVision then
         
-            Player.screenEffects.darkVision:SetActive(self.darkVisionOn or darkVisionFadeAmount > 0)
+            screenEffects.darkVision:SetActive(self.darkVisionOn or darkVisionFadeAmount > 0)
             
-            Player.screenEffects.darkVision:SetParameter("startTime", self.darkVisionTime)
-            Player.screenEffects.darkVision:SetParameter("time", Shared.GetTime())
-            Player.screenEffects.darkVision:SetParameter("amount", darkVisionFadeAmount)
+            screenEffects.darkVision:SetParameter("startTime", self.darkVisionTime)
+            screenEffects.darkVision:SetParameter("time", Shared.GetTime())
+            screenEffects.darkVision:SetParameter("amount", darkVisionFadeAmount)
             
         end
         
@@ -465,7 +467,7 @@ function Alien:UpdateClientEffects(deltaTime, isLocal)
 end
 
 function Alien:GetFirstPersonDeathEffect()
-    return Alien.kFirstPersonDeathEffect
+    return kFirstPersonDeathEffect
 end
 
 

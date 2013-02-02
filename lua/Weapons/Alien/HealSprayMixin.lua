@@ -17,8 +17,7 @@ local kHealCylinderWidth = 2
 HealSprayMixin.overrideFunctions =
 {
     "GetHasSecondary",
-    "GetSecondaryEnergyCost",
-    "GetDeathIconIndex"
+    "GetSecondaryEnergyCost"
 }
 
 HealSprayMixin.networkVars =
@@ -152,7 +151,7 @@ local function HealEntity(self, player, targetEntity)
     if Server and amountHealed > 0 then
         targetEntity:TriggerEffects("sprayed")
     end
-        
+    
 end
 
 local kConeWidth = 0.6
@@ -177,7 +176,7 @@ local function GetEntitiesWithCapsule(self, player)
         end
         
         local trace = TraceMeleeBox(self, startPoint, fireDirection, extents, remainingRange, PhysicsMask.Melee, EntityFilterOne(player))
-
+        
         if trace.fraction ~= 1 then
         
             if trace.entity then
@@ -190,7 +189,7 @@ local function GetEntitiesWithCapsule(self, player)
             
                 // Make another trace to see if the shot should get deflected.
                 local lineTrace = Shared.TraceRay(startPoint, startPoint + remainingRange * fireDirection, CollisionRep.LOS, PhysicsMask.Melee, EntityFilterOne(player))
-
+                
                 if lineTrace.fraction < 0.8 then
                 
                     local dotProduct = trace.normal:DotProduct(fireDirection) * -1
@@ -259,28 +258,24 @@ local function GetEntitiesInCone(self, player)
     
     local startPoint = viewCoords.origin + viewCoords.yAxis * kHealCylinderWidth * 0.2
     local lineTrace1 = Shared.TraceRay(startPoint, startPoint + kRange * fireDirection, CollisionRep.LOS, PhysicsMask.Melee, EntityFilterAll())
-  
     if (lineTrace1.endPoint - startPoint):GetLength() > range then
         range = (lineTrace1.endPoint - startPoint):GetLength()
     end
 
     startPoint = viewCoords.origin - viewCoords.yAxis * kHealCylinderWidth * 0.2
     local lineTrace2 = Shared.TraceRay(startPoint, startPoint + kRange * fireDirection, CollisionRep.LOS, PhysicsMask.Melee, EntityFilterAll())    
-
     if (lineTrace2.endPoint - startPoint):GetLength() > range then
         range = (lineTrace2.endPoint - startPoint):GetLength()
     end
     
     startPoint = viewCoords.origin - viewCoords.xAxis * kHealCylinderWidth * 0.2
     local lineTrace3 = Shared.TraceRay(startPoint, startPoint + kRange * fireDirection, CollisionRep.LOS, PhysicsMask.Melee, EntityFilterAll())    
-
     if (lineTrace3.endPoint - startPoint):GetLength() > range then
         range = (lineTrace3.endPoint - startPoint):GetLength()
     end
     
     startPoint = viewCoords.origin + viewCoords.xAxis * kHealCylinderWidth * 0.2
     local lineTrace4 = Shared.TraceRay(startPoint, startPoint + kRange * fireDirection, CollisionRep.LOS, PhysicsMask.Melee, EntityFilterAll())
-
     if (lineTrace4.endPoint - startPoint):GetLength() > range then
         range = (lineTrace4.endPoint - startPoint):GetLength()
     end
@@ -290,7 +285,7 @@ local function GetEntitiesInCone(self, player)
 end
 
 local function PerformHealSpray(self, player)
- 
+
     for _, entity in ipairs(GetEntitiesInCone(self, player)) do
     
         if HasMixin(entity, "Team") then
@@ -300,11 +295,11 @@ local function PerformHealSpray(self, player)
             elseif GetAreEnemies(entity, player) then
                 DamageEntity(self, player, entity)
             end
-
+            
         end
-                
+        
     end
-
+    
 end
 
 function HealSprayMixin:OnTag(tagName)

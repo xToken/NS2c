@@ -65,6 +65,7 @@ AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
+AddMixinNetworkVars(SelectableMixin, networkVars)
 
 local kDoorLockTimeout = 6
 local kDoorLockDuration = 4
@@ -151,7 +152,6 @@ function Door:OnCreate()
         
     end
     
-    self:SetPathingFlags(Pathing.PolyFlag_NoBuild)
     self.state = Door.kState.Open
 end
 
@@ -289,24 +289,6 @@ function Door:GetTechAllowed(techId, techNode, player)
 
 end
 
-function Door:GetTechButtons(techId, teamType)
-
-    if(techId == kTechId.WeaponsMenu) then   
-        // $AS - Aliens do not get tech on doors they can just select them
-        if not (teamType == kAlienTeamType) then
-            return  {kTechId.None, kTechId.None, kTechId.None, kTechId.None, // add kTechId.DoorClose to enable closing for commanders
-                     kTechId.None, kTechId.None, kTechId.None, kTechId.None }
-        else            
-            return  {kTechId.None, kTechId.None, kTechId.None, kTechId.None,
-                     kTechId.None, kTechId.None, kTechId.None, kTechId.None }
-        end
-        
-    end
-    
-    return nil
-    
-end
-
 function Door:SetState(state, commander)
 
     if self.state ~= state then
@@ -356,12 +338,8 @@ function Door:TriggerDoorLock()
 end
 
 /*
-function Door:GetUseAttachPoint()
-    return "keypad_front"
-end
-
-function Door:GetUseAttachPoint2()
-    return "keypad_back"
+function Door:GetUsablePoints()
+    return { self:GetAttachPointOrigin("keypad_front"), self:GetAttachPointOrigin("keypad_back") }
 end
 */
 
@@ -369,7 +347,7 @@ function Door:GetHasLockTimeout()
     return self.lockTimeOut > Shared.GetTime()
 end
 
-function Door:OnUse(player, elapsedTime, useAttachPoint, usePoint)
+function Door:OnUse(player, elapsedTime)
 
     local state = self:GetState()
     if state ~= Door.kState.DestroyedFront and state ~= Door.kState.DestroyedBack and not self:GetIsWeldedShut() and player:isa("Marine") then

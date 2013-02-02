@@ -384,11 +384,6 @@ function Player:CopyPlayerDataFrom(player)
     self.clientIndex = player.clientIndex
     self.client = player.client
     
-    // Preserve hotkeys when logging in/out of command structures
-    if player:GetTeamType() == kMarineTeamType or player:GetTeamType() == kAlienTeamType then
-        table.copy(player.hotkeyGroups, self.hotkeyGroups)
-    end
-    
     // Copy network data over because it won't be necessarily be resent
     self.resources = player.resources
     self.teamResources = player.teamResources

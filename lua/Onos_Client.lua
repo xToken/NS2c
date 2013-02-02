@@ -6,8 +6,6 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Onos.kYStoopCameraOffset = 0.3
-
 // Play footstep effects when moving
 function Onos:UpdateClientEffects(deltaTime, isLocal)
 
@@ -28,10 +26,6 @@ function Onos:UpdateClientEffects(deltaTime, isLocal)
         
     end 
     
-end
-
-function Onos:GetIdleSoundName()
-    return Onos.kLocalIdleSound
 end
 
 function Onos:PlayFootstepEffects(scalar)

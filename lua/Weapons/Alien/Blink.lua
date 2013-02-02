@@ -20,7 +20,15 @@ Blink.kMinTimeBetweenEffects = 0.2
 
 local networkVars =
 {
+    lastblinktime = "time"
 }
+
+function Blink:OnCreate()
+
+    Ability.OnCreate(self)
+    self.lastblinktime = 0
+
+end
 
 function Blink:OnHolster(player)
 
@@ -71,6 +79,7 @@ function Blink:OnSecondaryAttack(player)
 
     if self:GetBlinkAllowed() then
         self:SetEthereal(player, true)
+        self.lastblinktime = Shared.GetTime()
     end
     
     Ability.OnSecondaryAttack(self, player)
@@ -117,7 +126,7 @@ function Blink:ProcessMoveOnWeapon(player, input)
     end
     
     local time = Shared.GetTime()
-    local deltaTime = time - player.lastBlinkTime
+    local deltaTime = time - (self.lastBlinkTime or 0)
     // Check time and energy
     if deltaTime > kBlinkCooldown and player:GetEnergy() > kBlinkPulseEnergyCost then
         // Blink.

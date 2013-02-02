@@ -36,17 +36,6 @@ local networkVars =
     lastPrimaryAttackTime = "time"
 }
 
-local function GetHasAttackDelay(self, player)
-
-    local attackDelay = ConditionalValue( player:GetIsPrimaled(), (kBiteDelay / kPrimalScreamROFIncrease), kBiteDelay)
-    local upg, level = GetHasFocusUpgrade(player)
-    if upg and level > 0 then
-        attackDelay = AdjustAttackDelayforFocus(attackDelay, level)
-    end
-    return self.lastPrimaryAttackTime + attackDelay > Shared.GetTime()
-    
-end
-
 function BiteLeap:OnCreate()
 
     Ability.OnCreate(self)
@@ -70,6 +59,14 @@ function BiteLeap:GetHUDSlot()
     return 1
 end
 
+function BiteLeap:GetAttackDelay()
+    return kBiteDelay
+end
+
+function BiteLeap:GetLastAttackTime()
+    return self.lastPrimaryAttackTime
+end
+
 function BiteLeap:GetSecondaryTechId()
     return kTechId.Leap
 end
@@ -84,7 +81,7 @@ end
 
 function BiteLeap:OnPrimaryAttack(player)
 
-    if player:GetEnergy() >= self:GetEnergyCost()  and not GetHasAttackDelay(self, player) then
+    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(self, player) then
         self.primaryAttacking = true
     else
         self.primaryAttacking = false
@@ -100,7 +97,7 @@ function BiteLeap:OnPrimaryAttackEnd()
     
 end
 
-function BiteLeap:GetPrimaryAttackUsesFocus()
+function BiteLeap:GetAbilityUsesFocus()
     return true
 end
 
@@ -121,7 +118,7 @@ function BiteLeap:OnTag(tagName)
     
         local player = self:GetParent()
         
-        if player and not GetHasAttackDelay(self, player) then  
+        if player and not self:GetHasAttackDelay(self, player) then  
         
             local didHit, target, endPoint = AttackMeleeCapsule(self, player, kBiteDamage, self:GetRange(), nil, false)
             self.lastPrimaryAttackTime = Shared.GetTime()

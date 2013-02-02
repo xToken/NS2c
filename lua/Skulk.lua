@@ -30,6 +30,41 @@ elseif Client then
     Script.Load("lua/Skulk_Client.lua", true)
 end
 
+// Balance, movement, animation
+Skulk.kViewOffsetHeight = .55
+Skulk.kXExtents = .45
+Skulk.kYExtents = .45
+Skulk.kZExtents = .45
+
+local kLeapTime = 0.2
+local kLeapVerticalVelocity = 8
+local kLeapForce = 15
+local kMaxSpeed = 8
+local kMaxWalkSpeed = 4
+local kJumpHeight = 1.3
+local kWallJumpForce = 7
+local kWallJumpYBoost = 2
+local kJumpDelay = 0.25
+
+local kMass = 45 // ~100 pounds
+local kWallWalkCheckInterval = .1
+local kWallWalkNormalSmoothRate = 4
+local kNormalWallWalkFeelerSize = 0.15
+local kStickyWallWalkFeelerSize = 0.35
+local kNormalWallWalkRange = 0.01
+local kStickyWallWalkRange = 0.15
+
+// jump is valid when you are close to a wall but not attached yet at this range
+local kJumpWallRange = 0.2
+local kJumpWallFeelerSize = 0.1
+local kWallStickFactor = 0.97
+
+// kStickForce depends on wall walk normal, strongest when walking on ceilings
+local kStickForce = 1
+local kStickForceWhileSneaking = 3
+local kStickWallRangeBoostWhileSneaking = 1.2
+local kDefaultAttackSpeed = 1.08
+
 local networkVars =
 {
     wallWalking = "compensated boolean",
@@ -49,44 +84,6 @@ local networkVars =
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
-
-// Balance, movement, animation
-Skulk.kJumpRepeatTime = 0.1
-Skulk.kViewOffsetHeight = .55
-Skulk.kHealth = kSkulkHealth
-Skulk.kArmor = kSkulkArmor
-Skulk.kLeapTime = 0.2
-Skulk.kLeapVerticalVelocity = 8
-Skulk.kLeapForce = 15
-Skulk.kMaxSpeed = 8
-Skulk.kMaxWalkSpeed = 4
-Skulk.kJumpHeight = 1.3
-Skulk.kWallJumpForce = 7
-Skulk.kWallJumpYBoost = 2
-Skulk.kJumpDelay = 0.25
-
-Skulk.kMass = 45 // ~100 pounds
-Skulk.kWallWalkCheckInterval = .1
-Skulk.kWallWalkNormalSmoothRate = 4
-Skulk.kNormalWallWalkFeelerSize = 0.25
-Skulk.kStickyWallWalkFeelerSize = 0.35
-Skulk.kNormalWallWalkRange = 0.05
-Skulk.kStickyWallWalkRange = 0.15
-
-// jump is valid when you are close to a wall but not attached yet at this range
-Skulk.kJumpWallRange = 0.4
-Skulk.kJumpWallFeelerSize = 0.1
-Skulk.kWallStickFactor = 0.97
-
-// kStickForce depends on wall walk normal, strongest when walking on ceilings
-local kStickForce = 1
-local kStickForceWhileSneaking = 3
-local kStickWallRangeBoostWhileSneaking = 1.2
-local kDefaultAttackSpeed = 1.08
-
-Skulk.kXExtents = .45
-Skulk.kYExtents = .45
-Skulk.kZExtents = .45
 
 function Skulk:OnCreate()
 
@@ -134,7 +131,7 @@ function Skulk:OnDestroy()
 end
 
 function Skulk:GetBaseArmor()
-    return Skulk.kArmor
+    return kSkulkArmor
 end
 
 function Skulk:GetArmorFullyUpgradedAmount()
@@ -171,13 +168,13 @@ end
 function Skulk:OnLeap()
 
     local velocity = self:GetVelocity()
-    //local minSpeed = math.max(0, Skulk.kMinLeapVelocity - velocity:GetLengthXZ() - Skulk.kLeapVerticalForce) * self:GetMovementSpeedModifier()
+    //local minSpeed = math.max(0, kMinLeapVelocity - velocity:GetLengthXZ() - kLeapVerticalForce) * self:GetMovementSpeedModifier()
 
     local forwardVec = self:GetViewAngles():GetCoords().zAxis
-    local newVelocity = velocity + (GetNormalizedVector(forwardVec) * (Skulk.kLeapForce * self:GetMovementSpeedModifier()))
+    local newVelocity = velocity + (GetNormalizedVector(forwardVec) * (kLeapForce * self:GetMovementSpeedModifier()))
     
     if newVelocity.y < 1 then
-        newVelocity.y = Skulk.kLeapVerticalVelocity * self:GetMovementSpeedModifier()
+        newVelocity.y = kLeapVerticalVelocity * self:GetMovementSpeedModifier()
     end
     
     self:SetVelocity(newVelocity)
@@ -198,7 +195,7 @@ function Skulk:GetCanCrouch()
 end
 
 function Skulk:GetCanWallJump()
-    return self:GetIsWallWalking() or (not self:GetIsOnGround() and self:GetAverageWallWalkingNormal(Skulk.kJumpWallRange, Skulk.kJumpWallFeelerSize) ~= nil) and self.lastwalljump + Skulk.kJumpDelay < Shared.GetTime() and not self.crouching 
+    return self:GetIsWallWalking() or (not self:GetIsOnGround() and self:GetAverageWallWalkingNormal(kJumpWallRange, kJumpWallFeelerSize) ~= nil) and self.lastwalljump + kJumpDelay < Shared.GetTime() and not self.crouching 
 end
 
 function Skulk:GetViewModelName()
@@ -230,10 +227,6 @@ function Skulk:GetIsWallWalkingPossible()
     return not self.crouching
 end
 
-function Skulk:GetRecentlyJumped()
-    return not (self.timeOfLastJump == nil or (Shared.GetTime() > (self.timeOfLastJump + Skulk.kJumpRepeatTime)))
-end
-
 // Update wall-walking from current origin
 function Skulk:PreUpdateMove(input, runningPrediction)
 
@@ -248,11 +241,11 @@ function Skulk:PreUpdateMove(input, runningPrediction)
     else
 
         // Don't check wall walking every frame for performance    
-        if (Shared.GetTime() > (self.timeLastWallWalkCheck + Skulk.kWallWalkCheckInterval)) then
+        if (Shared.GetTime() > (self.timeLastWallWalkCheck + kWallWalkCheckInterval)) then
 
             // Most of the time, it returns a fraction of 0, which means
             // trace started outside the world (and no normal is returned)           
-            local goal = self:GetAverageWallWalkingNormal(Skulk.kNormalWallWalkRange, Skulk.kNormalWallWalkFeelerSize)
+            local goal = self:GetAverageWallWalkingNormal(kNormalWallWalkRange, kNormalWallWalkFeelerSize)
             
             if goal ~= nil then
             
@@ -271,7 +264,7 @@ function Skulk:PreUpdateMove(input, runningPrediction)
                 if self.movementModiferState then
                     boostRange = kStickWallRangeBoostWhileSneaking
                 end
-                local stickDirectionGoal = self:GetAverageWallWalkingNormal(Skulk.kStickyWallWalkRange * boostRange, Skulk.kStickyWallWalkFeelerSize * boostRange)
+                local stickDirectionGoal = self:GetAverageWallWalkingNormal(kStickyWallWalkRange * boostRange, kStickyWallWalkFeelerSize * boostRange)
                 
                 
                 if stickDirectionGoal then
@@ -303,11 +296,11 @@ function Skulk:PreUpdateMove(input, runningPrediction)
         end
     end
 
-    if self.leaping and (self.onGround or self.wallWalking) and (Shared.GetTime() > self.timeOfLeap + Skulk.kLeapTime) then
+    if self.leaping and (self.onGround or self.wallWalking) and (Shared.GetTime() > self.timeOfLeap + kLeapTime) then
         self.leaping = false
     end
     
-    local fraction = input.time * Skulk.kWallWalkNormalSmoothRate
+    local fraction = input.time * kWallWalkNormalSmoothRate
     self.wallWalkingNormalCurrent = self:SmoothWallNormal(self.wallWalkingNormalCurrent, self.wallWalkingNormalGoal, fraction)
     
 end
@@ -345,7 +338,7 @@ function Skulk:GetSmoothAngles()
 end  
 
 function Skulk:GoldSrc_GetFriction()
-    return ConditionalValue(self:GetIsWallWalking(), Player.kGoldSrcFriction + 3.0, Player.kGoldSrcFriction)
+    return ConditionalValue(self:GetIsWallWalking(), Player.GoldSrc_GetFriction(self) + 3.0, Player.GoldSrc_GetFriction(self))
 end
 
 function Skulk:UpdatePosition(velocity, time)
@@ -371,7 +364,7 @@ function Skulk:UpdatePosition(velocity, time)
         else
             // we enable wallwalk if our new velocity is significantly smaller than the requested velocity
             local newSpeed = velocity:GetLengthXZ()
-            if newSpeed < oldSpeed * Skulk.kWallStickFactor then
+            if newSpeed < oldSpeed * kWallStickFactor then
                 self.wallWalkingEnabled = self:GetIsWallWalkingPossible()
             end
         end
@@ -459,13 +452,13 @@ end
 function Skulk:GoldSrc_GetMaxSpeed(possible)
 
     if possible then
-        return Skulk.kMaxSpeed
+        return kMaxSpeed
     end
     
-    local maxSpeed = Skulk.kMaxSpeed
+    local maxSpeed = kMaxSpeed
     
     if self.movementModiferState and self:GetIsOnSurface() then
-        maxSpeed = Skulk.kMaxWalkSpeed
+        maxSpeed = kMaxWalkSpeed
     end
 
     return maxSpeed * self:GetMovementSpeedModifier()
@@ -474,6 +467,10 @@ end
 
 function Skulk:GetGravityAllowed()
     return not self:GetIsWallWalking()
+end
+
+function Skulk:GetMass()
+    return kMass
 end
 
 function Skulk:GetIsOnSurface()
@@ -523,7 +520,7 @@ function Skulk:GetIsKnockbackAllowed()
 end
 
 function Skulk:GetJumpHeight()
-    return Skulk.kJumpHeight
+    return kJumpHeight
 end
 
 function Skulk:PerformsVerticalMove()
@@ -533,7 +530,7 @@ end
 function Skulk:GetJumpVelocity(input, velocity)
 
     if self:GetCanWallJump() then
-        if velocity:GetLengthXZ() < Skulk.kMaxSpeed then
+        if velocity:GetLengthXZ() < kMaxSpeed then
             // From testing in NS1:
             // Only viewangle seem to be used for determining force direction
             // Only wall-jump if facing away from the surface that we're currently sticking to
@@ -544,8 +541,8 @@ function Skulk:GetJumpVelocity(input, velocity)
             local direction = self:GetViewAngles():GetCoords().zAxis
             
             if self.wallWalkingStickGoal:DotProduct(direction) >= 0.0 then
-                direction:Scale(Skulk.kWallJumpForce * self:GetMovementSpeedModifier())
-                direction.y = direction.y + Skulk.kWallJumpYBoost * self:GetMovementSpeedModifier()
+                direction:Scale(kWallJumpForce * self:GetMovementSpeedModifier())
+                direction.y = direction.y + kWallJumpYBoost * self:GetMovementSpeedModifier()
                 
                 VectorCopy(direction, velocity)
                 self.lastwalljump = Shared.GetTime()

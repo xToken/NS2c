@@ -73,6 +73,7 @@ AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(TurretFactoryMixin, networkVars)
 AddMixinNetworkVars(AlienDetectableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
+AddMixinNetworkVars(SelectableMixin, networkVars)
 
 function RoboticsFactory:OnCreate()
 
@@ -162,19 +163,14 @@ end
 
 function RoboticsFactory:GetTechButtons(techId)
 
-    if(techId == kTechId.WeaponsMenu) then
-    
-        local techButtons = {   kTechId.UpgradeRoboticsFactory, kTechId.None, kTechId.None, kTechId.None, 
-                   kTechId.None, kTechId.None, kTechId.None, kTechId.None }
-                   
-        if self:GetTechId() == kTechId.ARCRoboticsFactory then
-            techButtons[1] = kTechId.None
-        end
-        
-        return techButtons        
+    local techButtons = {   kTechId.UpgradeRoboticsFactory, kTechId.None, kTechId.None, kTechId.None, 
+               kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+               
+    if self:GetTechId() == kTechId.ARCRoboticsFactory then
+        techButtons[1] = kTechId.None
     end
-    
-    return nil
+
+    return techButtons
     
 end
 
@@ -240,6 +236,31 @@ function RoboticsFactory:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("RoboticsFactory:OnUpdateAnimationInput")
     modelMixin:SetAnimationInput("open", self.open)
+
+end
+
+function GetRoomHasNoRoboticsFactory(techId, origin, normal, commander)
+
+    local location = GetLocationForPoint(origin)
+    local locationName = location and location:GetName() or nil
+    local validRoom = false
+    
+    if locationName then
+    
+        validRoom = true
+    
+        for index, sentryBattery in ientitylist(Shared.GetEntitiesWithClassname("RoboticsFactory")) do
+            
+            if sentryBattery:GetLocationName() == locationName then
+                validRoom = false
+                break
+            end
+            
+        end
+    
+    end
+    
+    return validRoom
 
 end
 

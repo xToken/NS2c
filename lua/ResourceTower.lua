@@ -40,6 +40,7 @@ AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
+AddMixinNetworkVars(SelectableMixin, networkVars)
 
 if Server then
     Script.Load("lua/ResourceTower_Server.lua")

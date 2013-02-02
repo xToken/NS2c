@@ -11,7 +11,7 @@ Script.Load("lua/BalanceHealth.lua")
 Script.Load("lua/BalanceMisc.lua")
 
 // used as fallback
-kDefaultBuildTime = 8
+kDefaultBuildTime = 60
 // 2 = Hold Space, 1 = Queued Jumping like Quake, 0 = Default NS2
 kJumpMode = 2
 
@@ -29,7 +29,6 @@ kRifleDropCost = 1
 kWelderDropCost = 5
 kMinesDropCost = 10
 kShotgunDropCost = 10
-kHeavyMachineGunCost = 15
 kHeavyMachineGunCost = 15
 kGrenadeLauncherDropCost = 15
 kJetpackDropCost = 12
@@ -142,7 +141,7 @@ kResourceScalingMinPlayers = 4
 kResourceScalingMaxPlayers = 12
 kResourceScalingMaxDelta = 1.2
 kResourceScalingMinDelta = .75
-kResourceScaling = 20
+kResourceScaling = 20 //Controls the factoring per player.
 
 //End Resource/Build Timing Stuff
 
@@ -150,13 +149,15 @@ kResourceScaling = 20
 kRifleDamage = 10
 kRifleDamageType = kDamageType.Normal
 kRifleClipSize = 50
-kRifleWeight = 0.08
+kRifleWeight = 0.03
+kRifleClipWeight = 0.01
 
 kPistolDamage = 20
 kPistolDamageType = kDamageType.Normal
 kPistolClipSize = 10
-kPistolWeight = 0.03
+kPistolWeight = 0.01
 kPistolFireDelay = 0.1
+kPistolClipWeight = 0.01
 
 kWelderDamage = 4
 kWelderDamageType = kDamageType.Normal
@@ -176,25 +177,28 @@ kGrenadeLauncherGrenadeDamageType = kDamageType.Structural
 kGrenadeLauncherClipSize = 4
 kGrenadeLauncherGrenadeDamageRadius = 5
 kGrenadeLifetime = 2.0
-kGrenadeLauncherWeight = 0.22
+kGrenadeLauncherWeight = 0.10
+kGrenadeLauncherShellWeight = 0.0045
 
 kShotgunDamage = 17
 kShotgunDamageType = kDamageType.Normal
 kShotgunClipSize = 8
 kShotgunBulletsPerShot = 10
 kShotgunMaxRange = 18
-kShotgunMinSpread = 13
+kShotgunMinSpread = 10
 kShotgunMinSpreadBullets = 5
 kShotgunMaxSpread = 18
 //kShotgunDropOffStartRange = 4
-kShotgunWeight = 0.15
+kShotgunWeight = 0.07
+kShotgunShellWeight = 0.0025
 
 kHeavyMachineGunDamage = 20
 kHeavyMachineGunDamageType = kDamageType.HalfStructure
 kHeavyMachineGunClipSize = 125
-kHeavyMachineGunWeight = 0.20
+kHeavyMachineGunWeight = 0.12
 kHeavyMachineGunROF = 0.05
 kHeavyMachineGunReloadTime = 6.3
+kHeavyMachineGunClipWeight = 0.033
 
 kMineDamage = 125
 kMineDamageType = kDamageType.Normal
@@ -214,18 +218,14 @@ kHandGrenadesWeight = 0.025
 
 kSentryAttackDamage = 10
 kSentryAttackDamageType = kDamageType.Normal
-kSentryAttackBaseROF = 0.12
-kSentryAttackRandROF = 0.16
+kSentryAttackBaseROF = 0.15
+kSentryAttackRandROF = 0.0
 kSentryAttackBulletsPerSalvo = 1
 kConfusedSentryBaseROF = 1.0
-
-// sentry increases damage when shooting at the same target (resets when switching targets)
-kSentryMinAttackDamage = 5
-kSentryMaxAttackDamage = 20
-kSentryDamageRampUpDuration = 5
+kSentriesPerFactory = 3
 
 kARCDamage = 400
-kARCDamageType = kDamageType.StructuresOnly // splash damage hits friendly arcs as well
+kARCDamageType = kDamageType.StructuresOnly
 kARCRange = 25 //1100 NS1 - Bigger than NS1, dropping to 25
 
 kWeapons1DamageScalar = 1.1
@@ -251,7 +251,7 @@ kBiteEnergyCost = 5.0
 kBiteDelay = 0.4
 kBiteRange = 1
 kBiteMeleeBaseWidth = 0.7
-kBiteMeleeBaseHeight = 0.9
+kBiteMeleeBaseHeight = 0.8
 
 kLeapEnergyCost = 45
 
@@ -278,6 +278,9 @@ kHealsprayFireDelay = 0.8
 kHealsprayEnergyCost = 15
 kHealsprayRadius = 3.5
 
+kDropStructureEnergyCost = 5
+kGorgeCreateDistance = 3
+
 kBileBombDamage = 200
 kBileBombDamageType = kDamageType.StructuresOnly
 kBileBombEnergyCost = 22
@@ -287,6 +290,8 @@ kWebSpinnerROF = 0.5
 kWebSpinnerEnergyCost = 18
 kWebImobilizeTime = 3
 kWebEngagementRange = 2
+kMinWebLength = 2
+kMaxWebLength = 20
 
 kLerkBiteDamage = 60
 kLerkBiteEnergyCost = 5
@@ -358,8 +363,8 @@ kGoreDamageType = kDamageType.Normal
 kGoreEnergyCost = 7
 kGoreDelay = 0.45
 kGoreRange = 1.7
-kGoreMeleeBaseWidth = 1
-kGoreMeleeBaseHeight = 1.4
+kGoreMeleeBaseWidth = 1.1
+kGoreMeleeBaseHeight = 1.2
 
 kDevourInitialDamage = 10
 kDevourDamage = 10
@@ -370,7 +375,7 @@ kDevourHealthPerSecond = 20
 kDevourDamageType = kDamageType.Falling
 kDevourRange = 1.2
 kDevourMeleeBaseWidth = 0.8
-kDevourMeleeBaseHeight = 0.9
+kDevourMeleeBaseHeight = 0.7
 
 kStompEnergyCost = 30
 kStompRange = 12

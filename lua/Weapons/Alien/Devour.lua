@@ -22,13 +22,6 @@ local networkVars =
 
 AddMixinNetworkVars(StompMixin, networkVars)
 
-local function GetHasAttackDelay(self, player)
-
-    local attackDelay = ConditionalValue( player:GetIsPrimaled(), (kDevourAttackDelay / kPrimalScreamROFIncrease), kDevourAttackDelay)
-    return self.lastPrimaryAttackTime + attackDelay > Shared.GetTime()
-    
-end
-    
 // required here to deals different damage depending on if we are goring
 function Devour:GetDamageType()
     return kDevourDamageType
@@ -67,7 +60,7 @@ function Devour:GetEnergyCost(player)
 end
 
 function Devour:GetHUDSlot()
-    return 3
+    return 2
 end
 
 function Devour:OnHolster(player)
@@ -94,7 +87,7 @@ function Devour:OnTag(tagName)
     if tagName == "hit" then
     
         local player = self:GetParent()
-        if player and not GetHasAttackDelay(self, player) then
+        if player and not self:GetHasAttackDelay(self, player) then
         
             self.lastPrimaryAttackTime = Shared.GetTime()
             local didHit, target, endPoint = AttackMeleeCapsule(self, player, kDevourInitialDamage, self:GetRange())
@@ -131,8 +124,16 @@ function Devour:IsAlreadyEating()
     return self.devouring ~= 0
 end
 
+function Devour:GetAttackDelay()
+    return kDevourAttackDelay
+end
+
+function Devour:GetLastAttackTime()
+    return self.lastPrimaryAttackTime
+end
+
 function Devour:OnPrimaryAttack(player)
-    if player:GetEnergy() >= self:GetEnergyCost() and not GetHasAttackDelay(self, player) and not self:IsAlreadyEating() then
+    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(self, player) and not self:IsAlreadyEating() then
         self.primaryAttacking = true
     else
         self:OnAttackEnd()

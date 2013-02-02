@@ -48,9 +48,6 @@ local kDistressBeaconSoundDistance = 100
 local kDistressBeaconSoundMarine = PrecacheAsset("sound/NS2.fev/marine/common/distress_beacon_marine")
 local kDistressBeaconSoundAlien = PrecacheAsset("sound/NS2.fev/marine/common/distress_beacon_alien")
 
-local kObservatoryTechButtons = { kTechId.Scan, kTechId.PhaseTech, kTechId.None, kTechId.None, 
-                                  kTechId.DistressBeacon, kTechId.MotionTracking, kTechId.None, kTechId.None }
-
 Observatory.kDistressBeaconTime = kDistressBeaconTime
 Observatory.kDistressBeaconRange = kDistressBeaconRange
 Observatory.kDetectionRange = 22 // From NS1 
@@ -76,6 +73,7 @@ AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(AlienDetectableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
+AddMixinNetworkVars(SelectableMixin, networkVars)
 
 function Observatory:OnCreate()
 
@@ -170,13 +168,8 @@ function Observatory:OnDestroy()
 end
 
 function Observatory:GetTechButtons(techId)
-
-    if techId == kTechId.WeaponsMenu then
-        return kObservatoryTechButtons
-    end
-    
-    return nil
-    
+    return { kTechId.Scan, kTechId.PhaseTech, kTechId.None, kTechId.None, 
+            kTechId.DistressBeacon, kTechId.MotionTracking, kTechId.None, kTechId.None }
 end
 
 function Observatory:GetDetectionRange()

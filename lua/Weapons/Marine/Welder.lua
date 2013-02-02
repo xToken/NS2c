@@ -99,22 +99,7 @@ function Welder:OnHolster(player)
     player:SetPoseParam("welder", 0)
     
 end
-/*
-function Welder:OnTouch(recipient)
-    recipient:AddWeapon(self, false)
-    Shared.PlayWorldSound(nil, Marine.kGunPickupSound, nil, recipient:GetOrigin())
-end
 
-function Welder:GetIsValidRecipient(player)
-    if player then
-        local hasWeapon = player:GetWeaponInHUDSlot(self:GetHUDSlot())
-        if (not hasWeapon) and self.droppedtime + kPickupWeaponTimeLimit < Shared.GetTime() then
-            return true
-        end
-    end
-    return false
-end
-*/
 function Welder:OnDraw(player, previousWeaponMapName)
 
     Weapon.OnDraw(self, player, previousWeaponMapName)

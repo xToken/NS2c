@@ -10,7 +10,7 @@ Shared.PrecacheSurfaceShader("cinematics/vfx_materials/electrified_view.surface_
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/electrified_1.surface_shader")
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/electrified_view_1.surface_shader")
 
-local kElectrifiedSounds = {"sound/ns2c.fev/ns2c/marine/weapon/elec_hit1", "sound/ns2c.fev/ns2c/marine/weapon/elec_hit2", "sound/ns2c.fev/ns2c/marine/weapon/elec_hit3"}
+local kElectrifiedSounds = {"sound/ns2c.fev/ns2c/marine/weapon/elec_hit1", "sound/ns2c.fev/ns2c/marine/weapon/elec_hit2"}
 
 for k, s in ipairs(kElectrifiedSounds) do PrecacheAsset(s) end
 
@@ -135,7 +135,7 @@ function ElectrifyMixin:Update()
         end
         if damagedentities > 0 then
             self.lastElectrifiedTime = Shared.GetTime()
-            Shared.PlayWorldSound(nil, kElectrifiedSounds[math.random(1,3)], nil, self:GetOrigin())
+            Shared.PlayWorldSound(nil, kElectrifiedSounds[math.random(1,2)], nil, self:GetOrigin())
             self.lastDamagetick = Shared.GetTime()
         end
     end

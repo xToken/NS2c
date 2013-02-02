@@ -50,7 +50,7 @@ end
 function Commander:OnDestroy()
     
     Player.OnDestroy(self)
-    self:SetEntitiesSelectionState(false)
+    DeselectAllUnits(self:GetTeamNumber())
     
 end
 
@@ -117,7 +117,7 @@ function Commander:AttemptToResearchOrUpgrade(techNode, entity)
         local selection = self:GetSelection()
     
         if #selection == 1 then
-            entity = Shared.GetEntity( selection[1] )
+            entity = selection[1]
         else
             return false
         end
@@ -318,20 +318,7 @@ function Commander:OrderEntities(orderTechId, trace, orientation)
     if (trace.fraction < 1) then
 
         // Give order to selection
-        local orderEntities = {}
-        for tableIndex, entityPair in ipairs(self.selectedEntities) do
-    
-            local entityIndex = entityPair[1]
-            local entity = Shared.GetEntity(entityIndex)
-            table.insert(orderEntities, entity)
-            
-        end
-        
-        // Give order to ourselves for testing
-        if GetGamerules():GetOrderSelf() then
-            table.insert(orderEntities, self)
-        end
-        
+        local orderEntities = self:GetSelection()        
         local orderTechIdGiven = orderTechId
         
         for tableIndex, entity in ipairs(orderEntities) do
@@ -396,11 +383,27 @@ function Commander:OnOrderEntities(orderTechId, orderEntities)
     
 end
 
+local function HasEnemiesSelected(self)
+
+    for _, unit in ipairs(self:GetSelection()) do
+        if unit:GetTeamNumber() ~= self:GetTeamNumber() then
+            return true
+        end
+    end
+    
+    return false
+
+end
+
 // Takes a techId as the action type and normalized screen coords for the position. normPickVec will be nil
 // for non-targeted actions. 
 function Commander:ProcessTechTreeAction(techId, pickVec, orientation, worldCoordsSpecified)
 
     local success = false
+    
+    if HasEnemiesSelected(self) then
+        return false
+    end
     
     local techNode = self:GetTechTree():GetTechNode(techId)
     
@@ -489,8 +492,8 @@ function Commander:ProcessTechTreeAction(techId, pickVec, orientation, worldCoor
             // the order first and in some cases this will be the only entity to be
             // given the order.
             local sortedList = { }
-            for index, selectedEntityId in ipairs(self:GetSelection()) do
-                table.insert(sortedList, Shared.GetEntity(selectedEntityId))
+            for index, entity in ipairs(self:GetSelection()) do
+                table.insert(sortedList, entity)
             end
             Shared.SortEntitiesByDistance(targetPosition, sortedList)
             
@@ -527,35 +530,9 @@ function Commander:ProcessTechTreeAction(techId, pickVec, orientation, worldCoor
     
 end
 
-function Commander:GetIsEntityHotgrouped(entity)
-
-    local entityId = entity:GetId()
-    
-    // Loop through hotgroups, looking for entity
-    for i = 1, Player.kMaxHotkeyGroups do
-    
-        for j = 1, table.count(self.hotkeyGroups[i]) do
-        
-            if(self.hotkeyGroups[i][j] == entityId) then
-            
-                return true
-                
-            end
-            
-        end
-        
-    end
-    
-    return false
-    
-end
-
 function Commander:GetSelectionHasOrder(orderEntity)
 
-    for tableIndex, entityPair in ipairs(self.selectedEntities) do
-    
-        local entityIndex = entityPair[1]
-        local entity = Shared.GetEntity(entityIndex)
+    for _, entity in ipairs(self:GetSelection()) do
         
         if entity and entity.GetHasSpecifiedOrder and entity:GetHasSpecifiedOrder(orderEntity) then
             return true
@@ -576,10 +553,8 @@ function Commander:SetEntitiesHotkeyState(group, state)
         
     if Server then
         
-        for index, entityIndex in ipairs(group) do
-            
-            local entity = Shared.GetEntity(entityIndex)        
-            
+        for index, entity in ipairs(group) do
+    
             if entity ~= nil then
                 entity:SetIsHotgrouped(state)
             end
@@ -587,28 +562,6 @@ function Commander:SetEntitiesHotkeyState(group, state)
         end
     
     end 
-    
-end
-
-// Deletes hotkey for number. Returns true if it exists and was deleted.
-function Commander:DeleteHotkeyGroup(number)
-
-    if (number >= 1 and number <= Player.kMaxHotkeyGroups) then
-    
-        if (table.count(self.hotkeyGroups[number]) > 0) then
-        
-            self:SetEntitiesHotkeyState(self.hotkeyGroups[number], false)
-            self.hotkeyGroups[number] = {}
-            
-            self:SendHotkeyGroup(number)
-            
-            return true
-            
-        end
-        
-    end
-    
-    return false
     
 end
 
@@ -627,30 +580,6 @@ function Commander:SendHotkeyGroup(number)
     Server.SendCommand(self, hotgroupCommand)
     
     return hotgroupCommand
-    
-end
-
-// After logging in to the command station, send all hotkey groups. After that, only
-// send them when they change. We must wait a short time after after logging in before
-// sending them, to be sure the client version of the player is a Commander (and not
-// a marine or alien).
-function Commander:UpdateHotkeyGroups()
-
-    if (self.timeToSendHotkeyGroups ~= nil) then
-    
-        if (Shared.GetTime() > self.timeToSendHotkeyGroups) then
-        
-            for i = 1, Player.kMaxHotkeyGroups do
-    
-                self:SendHotkeyGroup(i)
-                
-            end
-            
-            self.timeToSendHotkeyGroups = nil
-            
-        end
-        
-    end
     
 end
 
@@ -675,8 +604,8 @@ function Commander:GotoPlayerAlert()
             
                 table.remove(self.alerts, index)
                 
-                self:SetSelection( { playerAlertId } )
-                
+                DeselectAllUnits(self:GetTeamNumber())
+                player:SetSelected(self:GetTeamNumber(), true, true)
                 Server.SendNetworkMessage(self, "SelectAndGoto", BuildSelectAndGotoMessage(playerAlertId), true)
                 
                 return true

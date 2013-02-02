@@ -49,6 +49,7 @@ AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
+AddMixinNetworkVars(SelectableMixin, networkVars)
 
 function CommandStructure:OnCreate()
 

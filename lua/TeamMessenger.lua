@@ -7,7 +7,7 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 kTeamMessageTypes = enum({ 'GameStarted', 'PowerLost', 'PowerRestored', 'Eject', 'CannotSpawn',
-                           'SpawningWait', 'Spawning', 'ResearchComplete', 'ResearchLost',
+                           'SpawningWait', 'Spawning', 'ResearchComplete', 'ResearchLost', 'AbilityUnlocked', 'AbilityLost',
                            'HiveConstructed', 'HiveLowHealth', 'HiveKilled',
                            'CommandStationUnderAttack', 'IPUnderAttack', 'HiveUnderAttack', 'HiveInDanger',
                            'PowerPointUnderAttack', 'Beacon', 'NoCommander', 'TeamsUnbalanced',
@@ -35,6 +35,10 @@ kTeamMessages[kTeamMessageTypes.ResearchComplete] = { text = { [kAlienTeamType] 
 
 kTeamMessages[kTeamMessageTypes.ResearchLost] = { text = { [kAlienTeamType] = function(data) return researchStringGen(data, "EVOLUTION_LOST") end } }
 
+kTeamMessages[kTeamMessageTypes.AbilityUnlocked] = { text = { [kAlienTeamType] = function(data) return researchStringGen(data, kNS2cLocalizedStrings.ABILITY_AVAILABLE) end } }
+
+kTeamMessages[kTeamMessageTypes.AbilityLost] = { text = { [kAlienTeamType] = function(data) return researchStringGen(data, kNS2cLocalizedStrings.ABILITY_LOST) end } }
+
 kTeamMessages[kTeamMessageTypes.HiveConstructed] = { text = { [kAlienTeamType] = function(data) return locationStringGen(data, "HIVE_CONSTRUCTED") end } }
 
 kTeamMessages[kTeamMessageTypes.HiveLowHealth] = { text = { [kAlienTeamType] = function(data) return locationStringGen(data, "HIVE_LOW_HEALTH") end } }
@@ -47,11 +51,11 @@ kTeamMessages[kTeamMessageTypes.IPUnderAttack] = { text = { [kMarineTeamType] = 
 
 kTeamMessages[kTeamMessageTypes.HiveUnderAttack] = { text = { [kAlienTeamType] = function(data) return locationStringGen(data, "HIVE_UNDER_ATTACK") end } }
 
-kTeamMessages[kTeamMessageTypes.HiveInDanger] = { text = { [kAlienTeamType] = function(data) return locationStringGen(data, "HIVE_IN_DANGER") end } }
+kTeamMessages[kTeamMessageTypes.HiveInDanger] = { text = { [kAlienTeamType] = function(data) return locationStringGen(data, kNS2cLocalizedStrings.HIVE_IN_DANGER) end } }
 
 kTeamMessages[kTeamMessageTypes.Beacon] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "BEACON_TO") end } }
 
-kTeamMessages[kTeamMessageTypes.NoCommander] = { text = { [kMarineTeamType] = "NO_COMM", [kAlienTeamType] = "NO_COMM" } }
+kTeamMessages[kTeamMessageTypes.NoCommander] = { text = { [kMarineTeamType] = "NO_COMM", [kAlienTeamType] = kNS2cLocalizedStrings.NO_GORGE } }
 
 kTeamMessages[kTeamMessageTypes.TeamsUnbalanced] = { text = { [kMarineTeamType] = "TEAMS_UNBALANCED", [kAlienTeamType] = "TEAMS_UNBALANCED" } }
 

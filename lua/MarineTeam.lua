@@ -21,9 +21,11 @@ local kCannotSpawnSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/command
 
 function MarineTeam:ResetTeam()
 
-    PlayingTeam.ResetTeam(self)
+    local commandStructure = PlayingTeam.ResetTeam(self)
     
     self.updateMarineArmor = false
+    
+    return commandStructure
 
 end
 

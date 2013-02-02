@@ -44,6 +44,8 @@ function AlienSpectator:OnCreate()
         InitMixin(self, TeamMessageMixin, { kGUIScriptName = "GUIAlienTeamMessage" })
     end
     
+    self.timeWaveSpawnEnd = 0
+    
 end
 
 function AlienSpectator:OnInitialized()
@@ -55,7 +57,6 @@ function AlienSpectator:OnInitialized()
     self.eggId = Entity.invalidId
     self.queuePosition = 0
     self.movedToEgg = false
-    self.timeWaveSpawnEnd = 0
     
     if Server then
     
@@ -141,7 +142,7 @@ function AlienSpectator:GetEggId()
 end
 
 function AlienSpectator:GetQueuePosition()
-    return self.queuePosition + 1
+    return self.queuePosition
 end
 
 function AlienSpectator:GetAutoSpawnTime()

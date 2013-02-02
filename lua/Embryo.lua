@@ -230,6 +230,9 @@ function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorSca
     self.healthScalar = healthScalar
     self.armorScalar = armorScalar
     
+    // we reset the upgrades entirely and set them again, simplifies the code
+    self:ClearUpgrades()
+    
 end
 
 function Embryo:GetEvolutionTime()
@@ -307,13 +310,9 @@ if Server then
                 
                 self:TriggerEffects("player_end_gestate")
                 
-                // we reset the upgrades entirely and set them again, simplifies the code
-                newPlayer:ClearUpgrades()
-                
                 // Now give new player all the upgrades they purchased
                 local upgradesGiven = 0
                 
-                local team = self:GetTeam()
                 for index, upgradeId in ipairs(self.evolvingUpgrades) do
 
                     if newPlayer:GiveUpgrade(upgradeId) then
@@ -328,6 +327,24 @@ if Server then
                 
                 if self.resOnGestationComplete then
                     newPlayer:AddResources(self.resOnGestationComplete)
+                end
+
+                // Notify team
+
+                local team = self:GetTeam()
+
+                if team and team.OnEvolved then
+
+                    team:OnEvolved(newPlayer:GetTechId())
+
+                    for _, upgradeId in ipairs(self.evolvingUpgrades) do
+
+                        if team.OnEvolved then
+                            team:OnEvolved(upgradeId)
+                        end
+                        
+                    end
+
                 end
                 
                 // Return false so that we don't get called again if the server time step

@@ -117,9 +117,9 @@ function Armory:ResupplyPlayer(player)
         
         resuppliedPlayer = true
         
-        if HasMixin(player, "ParasiteAble") then
-            player:RemoveParasite()
-        end
+        //if HasMixin(player, "ParasiteAble") then
+            //player:RemoveParasite()
+        //end
         
     end
 

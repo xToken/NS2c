@@ -15,12 +15,19 @@ Script.Load("lua/FunctionContracts.lua")
  * direction vector is returned. Pass in a function that returns a random
  * number between and including 0 and 1.
  */
-function CalculateSpread(directionCoords, spreadAmount, randomizer)
+function CalculateSpread(directionCoords, spreadAmount, randomizer, minSpread)
 
     local spreadAngle = spreadAmount / 2
+    if minSpread then
+        spreadAngle = (spreadAmount - minSpread) / 2
+    end
     
     local randomAngle = randomizer() * math.pi * 2
     local randomRadius = randomizer() * math.tan(spreadAngle)
+    
+    if minSpread then
+        randomRadius = randomRadius + math.tan(minSpread / 2)
+    end
     
     local spreadDirection = directionCoords.zAxis +
                             (directionCoords.xAxis * math.cos(randomAngle) +

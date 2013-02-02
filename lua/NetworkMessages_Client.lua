@@ -20,42 +20,8 @@ end
 
 function OnCommandHitEffect(hitEffectTable)
 
-    local position, doer, surface, target, showtracer, altMode, flinchsevere = ParseHitEffectMessage(hitEffectTable)
-
-    local tableParams = {}
-    
-    tableParams[kEffectFilterFlinchSevere] = flinchsevere
-    tableParams[kEffectHostCoords] = Coords.GetTranslation(position)
-    tableParams[kEffectSurface] = surface
-    tableParams[kEffectFilterInAltMode] = altMode
-    if doer then
-        tableParams[kEffectFilterDoerName] = doer:GetClassName()
-    end
-    if target then
-        tableParams[kEffectFilterClassName] = target:GetClassName()
-    end
-    
-    // don't play the hit cinematic, those are made for third person
-    if target ~= Client.GetLocalPlayer() then
-        GetEffectManager():TriggerEffects("damage", tableParams)
-    end
-    
-    // always play sound effect
-    GetEffectManager():TriggerEffects("damage_sound", tableParams, target)
-    
-    if showtracer == true and doer then
-        
-        local tracerStart = (doer.GetBarrelPoint and doer:GetBarrelPoint()) or (doer.GetEyePos and doer:GetEyePos()) or doer:GetOrigin()
-    
-        local tracerVelocity = GetNormalizedVector(position - tracerStart) * kTracerSpeed
-        CreateTracer(tracerStart, position, tracerVelocity, doer)
-    
-    end
-    
-    if target and target.OnTakeDamageClient then
-        // Damage not available here
-        target:OnTakeDamageClient(nil, doer, position)
-    end
+    local position, doer, surface, target, showtracer, altMode, flinchsevere, damage, direction = ParseHitEffectMessage(hitEffectTable)
+    HandleHitEffect(position, doer, surface, target, showtracer, altMode, flinchsevere, damage, direction)
 
 end
 
@@ -199,6 +165,19 @@ function OnCommandJoinError(message)
     ChatUI_AddSystemMessage( Locale.ResolveString("JOIN_ERROR_TOO_MANY") )
 end
 
+function OnCommandCreateDecal(message)
+    
+    local normal, position, materialName, scale = ParseCreateDecalMessage(message)
+    
+    local coords = Coords.GetTranslation(position)
+    coords.yAxis = normal
+    coords.zAxis = coords.yAxis:GetPerpendicular()
+    coords.xAxis = coords.yAxis:CrossProduct(coords.zAxis)
+    
+    Shared.CreateRenderDecal(materialName, coords, scale)
+
+end
+
 Client.HookNetworkMessage("Ping", OnCommandPing)
 Client.HookNetworkMessage("HitEffect", OnCommandHitEffect)
 Client.HookNetworkMessage("Damage", OnCommandDamage)
@@ -221,3 +200,4 @@ Client.HookNetworkMessage("DebugCapsule", OnCommandDebugCapsule)
 Client.HookNetworkMessage("WorldText", OnCommandWorldText)
 Client.HookNetworkMessage("HiveInfo", OnCommandRecieveHiveInfo)
 Client.HookNetworkMessage("CommanderError", OnCommandCommanderError)
+Client.HookNetworkMessage("CreateDecal", OnCommandCreateDecal)

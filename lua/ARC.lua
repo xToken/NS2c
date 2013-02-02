@@ -100,6 +100,7 @@ AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
+AddMixinNetworkVars(SelectableMixin, networkVars)
 
 function ARC:OnCreate()
 

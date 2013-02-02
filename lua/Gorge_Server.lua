@@ -22,26 +22,10 @@ function Gorge:GetTierTwoTechId()
     return kTechId.BileBomb
 end
 
-/*
 function Gorge:GetTierThreeTechId()
-    return kTechId.WebStalk
-end
-*/
-
-function Gorge:OnCommanderStructureLogin(hive)
-
-    DestroyEntity(self.slideLoopSound)
-    self.slideLoopSound = nil
-
+    return kTechId.Web
 end
 
-function Gorge:OnCommanderStructureLogout(hive)
-
-    self.slideLoopSound = Server.CreateEntity(SoundEffect.kMapName)
-    self.slideLoopSound:SetAsset(Gorge.kSlideLoopSound)
-    self.slideLoopSound:SetParent(self)
-
-end
 
 function Gorge:OnOverrideOrder(order)
     

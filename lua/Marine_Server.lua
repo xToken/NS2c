@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+local kDieSoundName = PrecacheAsset("sound/NS2.fev/marine/common/death")
+local kPlayerPhaseDelay = 2
+
 local function UpdateUnitStatusPercentage(self, target)
 
     if HasMixin(target, "Construct") and not target:GetIsBuilt() then
@@ -234,7 +237,7 @@ function Marine:OnKill(attacker, doer, point, direction)
     self:DestroyWeapons()
     
     Player.OnKill(self, attacker, doer, point, direction)
-    self:PlaySound(Marine.kDieSoundName)
+    self:PlaySound(kDieSoundName)
     
     // Don't play alert if we suicide
     if attacker ~= self then
@@ -256,7 +259,7 @@ function Marine:OnKill(attacker, doer, point, direction)
 end
 
 function Marine:GetCanPhase()
-    return self:GetIsAlive() and (not self.timeOfLastPhase or (Shared.GetTime() > (self.timeOfLastPhase + Marine.kPlayerPhaseDelay)))
+    return self:GetIsAlive() and (not self.timeOfLastPhase or (Shared.GetTime() > (self.timeOfLastPhase + kPlayerPhaseDelay)))
 end
 
 function Marine:SetTimeOfLastPhase(time)

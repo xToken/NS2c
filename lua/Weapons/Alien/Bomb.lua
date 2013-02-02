@@ -12,6 +12,7 @@
 Script.Load("lua/Weapons/Projectile.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/DamageMixin.lua")
+Shared.PrecacheSurfaceShader("cinematics/vfx_materials/decals/bilebomb_decal.surface_shader")
 
 class 'Bomb' (Projectile)
 
@@ -77,6 +78,8 @@ if Server then
             self:TriggerEffects("bilebomb_hit")
             
             DestroyEntity(self)
+            
+            CreateExplosionDecals(self, "bilebomb_decal")
 
         end
 

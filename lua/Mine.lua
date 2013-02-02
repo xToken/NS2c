@@ -239,18 +239,8 @@ function Mine:GetCanBeUsed(player, useSuccessTable)
 end
 
 function Mine:GetTechButtons(techId)
-
-    local techButtons = nil
-    
-    if techId == kTechId.WeaponsMenu then
-    
-        techButtons = { kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
-                        kTechId.None, kTechId.None, kTechId.None, kTechId.None }
-        
-    end
-    
-    return techButtons
-    
+    return { kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
+               kTechId.None, kTechId.None, kTechId.None, kTechId.None }
 end
 
 function Mine:GetAttachPointOriginHardcoded(attachPointName)

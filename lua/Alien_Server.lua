@@ -7,6 +7,8 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+Script.Load("lua/AlienUpgradeManager.lua")
+
 function Alien:TeleportToHive(usedhive)
     local HivesInfo = { }
     local hives = GetEntitiesForTeam("Hive", self:GetTeamNumber())
@@ -104,13 +106,9 @@ function Alien:OnProcessMove(input)
     Player.OnProcessMove(self, input)
     
 	if not self:GetIsDestroyed() then
-    // Calculate two and three hives so abilities for abilities        
-    	self:UpdateNumHives()
-    	//UpdateAbilityAvailability(self, self:GetTierOneTechId(), self:GetTierTwoTechId(), self:GetTierThreeTechId())
     	self:CheckRedemption()
     	self.primalScreamBoost = self.timeWhenPrimalScreamExpires > Shared.GetTime()  
     	self:UpdateAutoHeal()
-    	self:UpdateNumUpgradeStructures()
 	end
     
 end
@@ -136,71 +134,90 @@ function Alien:UpdateAutoHeal()
 
 end
 
-local kAbilityData = { [kTechId.Skulk] = { kTechId.Parasite, kTechId.Leap, kTechId.Xenocide }, 
-                       [kTechId.Gorge] = { kTechId.Spray, kTechId.BileBomb, kTechId.Web },
-                       [kTechId.Lerk] = { kTechId.Spores, kTechId.Umbra, kTechId.PrimalScream }, 
-                       [kTechId.Fade] = { kTechId.Blink, kTechId.Metabolize, kTechId.AcidRocket },
-                       [kTechId.Onos] = { kTechId.Charge, kTechId.Stomp, kTechId.Smash } }
-
 function Alien:OnHiveConstructed(newHive, activeHiveCount)
-    
-    local AbilityData = kAbilityData[self:GetTechId()]
-    if AbilityData ~= nil then
-        if AbilityData[activeHiveCount] ~= nil then
-            SendPlayersMessage({self}, kTeamMessageTypes.ResearchComplete, AbilityData[activeHiveCount])
-        end
+    local AbilityData
+    if activeHiveCount == 2 then
+        AbilityData = self:GetTierTwoTechId()
+    elseif activeHiveCount == 3 then
+        AbilityData = self:GetTierThreeTechId()
     end
+    if AbilityData ~= nil and AbilityData ~= kTechId.None then
+        SendPlayersMessage({self}, kTeamMessageTypes.AbilityUnlocked, AbilityData)
+    end
+    self:UpdateActiveAbilities(activeHiveCount)
+    self.unassignedhives = math.min(self.unassignedhives + 1, 4)
+end
+
+function Alien:OnHiveUpgraded(newHive, techId)
+    self.unassignedhives = math.max(self.unassignedhives - 1, 0)
 end
 
 function Alien:OnHiveDestroyed(destroyedHive, activeHiveCount)
-    local AbilityData = kAbilityData[self:GetTechId()]
-    if AbilityData ~= nil then
-        if AbilityData[activeHiveCount + 1] ~= nil then
-            SendPlayersMessage({self}, kTeamMessageTypes.ResearchLost, AbilityData[activeHiveCount + 1])
-        end
+    local AbilityData
+    if activeHiveCount == 1 then
+        AbilityData = self:GetTierTwoTechId()
+    elseif activeHiveCount == 2 then
+        AbilityData = self:GetTierThreeTechId()
     end
+    if AbilityData ~= nil and AbilityData ~= kTechId.None then
+        SendPlayersMessage({self}, kTeamMessageTypes.AbilityLost, AbilityData)
+    end
+    if destroyedHive:GetTechId() == kTechId.Hive then
+        self.unassignedhives = math.max(self.unassignedhives - 1, 0)
+    end
+    self:UpdateActiveAbilities(activeHiveCount)
 end
 
 function Alien:GetDamagedAlertId()
     return kTechId.AlienAlertLifeformUnderAttack
 end
 
-function Alien:UpdateNumUpgradeStructures()
-    local time = Shared.GetTime()
-    if self.timeOfLastNumUpgradesUpdate == nil or (time > self.timeOfLastNumUpgradesUpdate + 2) then
-        local team = self:GetTeam()
-        if team and team.GetIsAlienTeam and team:GetIsAlienTeam() and team.techIdCount then
-            for i = 1, #kAlienUpgradeChambers do
-                if team.techIdCount[kAlienUpgradeChambers[i]] and team.techIdCount[kAlienUpgradeChambers[i]] ~= nil then
-                    if kAlienUpgradeChambers[i] == kTechId.Crag then
-                        self.crags = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
-                    elseif kAlienUpgradeChambers[i] == kTechId.Shift then
-                        self.shifts = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
-                    elseif kAlienUpgradeChambers[i] == kTechId.Shade then
-                        self.shades = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
-					elseif kAlienUpgradeChambers[i] == kTechId.Whip then
-                        self.whips = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
-                    end
-                else
-                    if kAlienUpgradeChambers[i] == kTechId.Crag then
-                        self.crags = 0
-                    elseif kAlienUpgradeChambers[i] == kTechId.Shift then
-                        self.shifts = 0
-                    elseif kAlienUpgradeChambers[i] == kTechId.Shade then
-                        self.shades = 0
-					elseif kAlienUpgradeChambers[i] == kTechId.Whip then
-                        self.whips = 0
-                    end
+function Alien:UpdateNumUpgradeStructures(techId, count)
+    if techId == kTechId.Crag then
+        self.crags = Clamp(count, 0, 3)
+    elseif techId == kTechId.Shift then
+        self.shifts = Clamp(count, 0, 3)
+    elseif techId == kTechId.Shade then
+        self.shades = Clamp(count, 0, 3)
+    elseif techId == kTechId.Whip then
+        self.whips = Clamp(count, 0, 3)
+        elseif techId == kTechId.Whip then
+        self.whips = Clamp(count, 0, 3)
+    end
+end
+
+function Alien:ManuallyUpdateNumUpgradeStructures()
+    local team = self:GetTeam()
+    if team and team.GetIsAlienTeam and team:GetIsAlienTeam() and team.techIdCount then
+        for i = 1, #kAlienUpgradeChambers do
+            if team.techIdCount[kAlienUpgradeChambers[i]] and team.techIdCount[kAlienUpgradeChambers[i]] ~= nil then
+                if kAlienUpgradeChambers[i] == kTechId.Crag then
+                    self.crags = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
+                elseif kAlienUpgradeChambers[i] == kTechId.Shift then
+                    self.shifts = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
+                elseif kAlienUpgradeChambers[i] == kTechId.Shade then
+                    self.shades = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
+                elseif kAlienUpgradeChambers[i] == kTechId.Whip then
+                    self.whips = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
+                end
+            else
+                if kAlienUpgradeChambers[i] == kTechId.Crag then
+                    self.crags = 0
+                elseif kAlienUpgradeChambers[i] == kTechId.Shift then
+                    self.shifts = 0
+                elseif kAlienUpgradeChambers[i] == kTechId.Shade then
+                    self.shades = 0
+                elseif kAlienUpgradeChambers[i] == kTechId.Whip then
+                    self.whips = 0
                 end
             end
-            if team.techIdCount[kTechId.Hive] and team.techIdCount[kTechId.Hive] ~= nil then
-                self.unassignedhives = math.min(team.techIdCount[kTechId.Hive], 4)
-            else
-                self.unassignedhives = 0
-            end
         end
-        self.timeOfLastNumUpgradesUpdate = time
-     end
+        if team.techIdCount[kTechId.Hive] and team.techIdCount[kTechId.Hive] ~= nil then
+            self.unassignedhives = math.min(team.techIdCount[kTechId.Hive], 4)
+        else
+            self.unassignedhives = 0
+        end
+    end
 end
 
 /**
@@ -217,83 +234,79 @@ function Alien:ProcessBuyAction(techIds)
     local armorScalar = self:GetMaxArmor() == 0 and 1 or self:GetArmor() / self:GetMaxArmor()
     local totalCosts = 0
     
-    // Check for room
-    local eggExtents = LookupTechData(kTechId.Embryo, kTechDataMaxExtents)
-    local newAlienExtents = nil
-    // Aliens will have a kTechDataMaxExtents defined, find it.
-    for i, techId in ipairs(techIds) do
-        newAlienExtents = LookupTechData(techId, kTechDataMaxExtents)
-        if newAlienExtents then break end
-    end
-    
-    // In case we aren't evolving to a new alien, using the current's extents.
-    if not newAlienExtents then
-    
-        newAlienExtents = LookupTechData(self:GetTechId(), kTechDataMaxExtents)
-        // Preserve existing health/armor when we're not changing lifeform
-        healthScalar = self:GetHealth() / self:GetMaxHealth()
-        armorScalar = self:GetArmor() / self:GetMaxArmor()
+    local upgradeIds = {}
+    local lifeFormTechId = nil
+    for _, techId in ipairs(techIds) do
         
-    end
-    
-    local physicsMask = PhysicsMask.AllButPCsAndRagdolls
-    local position = self:GetOrigin()
-    local newLifeFormTechId = kTechId.None
-    
-    local evolveAllowed = true
-    evolveAllowed = evolveAllowed and GetHasRoomForCapsule(eggExtents, position + Vector(0, eggExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
-    evolveAllowed = evolveAllowed and GetHasRoomForCapsule(newAlienExtents, position + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
-    if self:GetTechId() == kTechId.Onos then
-        local devourWeapon = self:GetWeapon("devour")
-        if devourWeapon and devourWeapon:IsAlreadyEating() then
-            evolveAllowed = false
+        if LookupTechData(techId, kTechDataGestationName) then
+            lifeFormTechId = techId
+        else
+            table.insertunique(upgradeIds, techId)
         end
-    end
-    if evolveAllowed then
-    
-        // Deduct cost here as player is immediately replaced and copied.
-        for i, techId in ipairs(techIds) do
         
-            local bought = true
+    end
+    
+    local upgradesAllowed = true
+    local upgradeManager = AlienUpgradeManager()
+    upgradeManager:Populate(self)
+    // add this first because it will allow switching existing upgrades
+    if lifeFormTechId then
+        upgradeManager:AddUpgrade(lifeFormTechId)
+    end
+    for _, newUpgradeId in ipairs(techIds) do
+
+        if newUpgradeId ~= kTechId.None and not upgradeManager:AddUpgrade(newUpgradeId) then
+            upgradesAllowed = false 
+            break
+        end
+        
+    end
+    
+    if upgradesAllowed then
+    
+        // Check for room
+        local eggExtents = LookupTechData(kTechId.Embryo, kTechDataMaxExtents)
+        local newLifeFormTechId = upgradeManager:GetLifeFormTechId()
+        local newAlienExtents = LookupTechData(newLifeFormTechId, kTechDataMaxExtents)
+        local physicsMask = PhysicsMask.AllButPCsAndRagdolls
+        local position = self:GetOrigin()
+        
+        local evolveAllowed = self:GetIsOnGround()
+        evolveAllowed = evolveAllowed and GetHasRoomForCapsule(eggExtents, position + Vector(0, eggExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
+        evolveAllowed = evolveAllowed and GetHasRoomForCapsule(newAlienExtents, position + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
+        
+        if self:GetTechId() == kTechId.Onos then
+            local devourWeapon = self:GetWeapon("devour")
+            if devourWeapon and devourWeapon:IsAlreadyEating() then
+                evolveAllowed = false
+            end
+        end
+        
+        // If not on the ground for the buy action, attempt to automatically
+        // put the player on the ground in an area with enough room for the new Alien.
+        if not evolveAllowed then
+        
+            for index = 1, 100 do
             
-            // Try to buy upgrades (upgrades don't have a gestate name, only aliens do).
-            if not LookupTechData(techId, kTechDataGestateName) then
-            
-                // If we don't already have this upgrade, buy it.
-                if not self:GetHasUpgrade(techId) then
-                    bought = true
-                else
-                    bought = false
+                local spawnPoint = GetRandomSpawnForCapsule(newAlienExtents.y, math.max(newAlienExtents.x, newAlienExtents.z), self:GetModelOrigin(), 0.5, 5, EntityFilterOne(self))
+                if spawnPoint then
+                
+                    self:SetOrigin(spawnPoint)
+                    position = spawnPoint
+                    evolveAllowed = true
+                    break
+                    
                 end
                 
-            else
-                newLifeFormTechId = techId          
-            end
-            
-            if bought then
-                totalCosts = totalCosts + LookupTechData(techId, kTechDataCostKey)
             end
             
         end
 
-        if newLifeFormTechId ~= kTechId.None then
-            self.twoHives = false
-            self.threeHives = false
-        end
-
-        if totalCosts > self:GetResources() then
-            success = false
-        else    
-
-            self:AddResources(math.min(0, -totalCosts))
+        if evolveAllowed then
 
             local newPlayer = self:Replace(Embryo.kMapName)
             position.y = position.y + Embryo.kEvolveSpawnOffset
             newPlayer:SetOrigin(position)
-            
-            if totalCosts < 0 then
-                newPlayer.resOnGestationComplete = -totalCosts
-            end
             
             // Clear angles, in case we were wall-walking or doing some crazy alien thing
             local angles = Angles(self:GetViewAngles())
@@ -302,19 +315,21 @@ function Alien:ProcessBuyAction(techIds)
             newPlayer:SetOriginalAngles(angles)
             
             // Eliminate velocity so that we don't slide or jump as an egg
-            newPlayer:SetVelocity(Vector(0, 0, 0))
-            
+            newPlayer:SetVelocity(Vector(0, 0, 0))                
             newPlayer:DropToFloor()
             
-            newPlayer:SetGestationData(techIds, self:GetTechId(), healthScalar, armorScalar)
+            newPlayer:SetResources(upgradeManager:GetAvailableResources())
+            newPlayer:SetGestationData(upgradeManager:GetUpgrades(), self:GetTechId(), healthScalar, armorScalar)
             
             success = true
+            
+        end    
         
-        end
-        
-    else
-        self:TriggerInvalidSound()
     end
+    
+    if not success then
+        self:TriggerInvalidSound()
+    end    
     
     return success
     
@@ -326,7 +341,7 @@ function Alien:GetHealthPerArmorOverride(damageType, healthPerArmor)
     local newHealthPerArmor = healthPerArmor
 
     local team = self:GetTeam()
-    local numHives = team:GetNumHives()
+    local numHives = team:GetActiveHiveCount()
     
     // make sure not to ignore damage types
     if numHives >= 3 then
@@ -353,220 +368,84 @@ function Alien:GetTierThreeTechId()
     return kTechId.None
 end
 
-function Alien:GetTierOneWeaponMapName()
-    return LookupTechData(self:GetTierOneTechId(), kTechDataMapName)
-end
+local function UnlockAbility(forAlien, techId)
 
-function Alien:GetTierThreeWeaponMapName()
-    return LookupTechData(self:GetTierThreeTechId(), kTechDataMapName)
-end
+    local mapName = LookupTechData(techId, kTechDataMapName)
+    if mapName and forAlien:GetIsAlive() then
 
-function Alien:GetTierTwoWeaponMapName()
-    return LookupTechData(self:GetTierTwoTechId(), kTechDataMapName)
-end
+        local activeWeapon = forAlien:GetActiveWeapon()
 
-function Alien:UnlockTierOne()
-
-    local tierOneMapName = self:GetTierOneWeaponMapName()
-    
-    if tierOneMapName and self:GetIsAlive() then
-    
-        local activeWeapon = self:GetActiveWeapon()
-        
-        if tierOneMapName then
-        
-            local tierOneWeapon = self:GetWeapon(tierOneMapName)
-            if not tierOneWeapon then
-                self:GiveItem(tierOneWeapon)
-            end
-        
+        local tierWeapon = forAlien:GetWeapon(mapName)
+        if not tierWeapon then
+            forAlien:GiveItem(mapName)
         end
         
         if activeWeapon then
-            self:SetActiveWeapon(activeWeapon:GetMapName())
+            forAlien:SetActiveWeapon(activeWeapon:GetMapName())
         end
     
     end
-    
+
 end
 
-function Alien:LockTierOne()
+local function LockAbility(forAlien, techId)
 
-    local tierOneMapName = self:GetTierOneWeaponMapName()
+    local mapName = LookupTechData(techId, kTechDataMapName)    
+    if mapName and forAlien:GetIsAlive() then
     
-    if tierOneMapName and self:GetIsAlive() then
-    
-        local tierOneWeapon = self:GetWeapon(tierOneMapName)
-        local activeWeapon = self:GetActiveWeapon()
+        local tierWeapon = forAlien:GetWeapon(mapName)
+        local activeWeapon = forAlien:GetActiveWeapon()
         local activeWeaponMapName = nil
         
         if activeWeapon ~= nil then
             activeWeaponMapName = activeWeapon:GetMapName()
         end
         
-        if tierOneWeapon then
-            self:RemoveWeapon(tierOneWeapon)
+        if tierWeapon then
+            forAlien:RemoveWeapon(tierWeapon)
         end
         
-        if activeWeaponMapName == tierOneMapName then
-            self:SwitchWeapon(1)
+        if activeWeaponMapName == mapName then
+            forAlien:SwitchWeapon(1)
         end
         
     end    
     
 end
 
-function Alien:UnlockTierTwo()
+function Alien:UpdateActiveAbilities(hives)
 
-    local tierTwoMapName = self:GetTierTwoWeaponMapName()
-    
-    if tierTwoMapName and self:GetIsAlive() then
-    
-        local activeWeapon = self:GetActiveWeapon()
-        
-        if tierTwoMapName then
-        
-            local tierTwoWeapon = self:GetWeapon(tierTwoMapName)
-            if not tierTwoWeapon then
-                self:GiveItem(tierTwoMapName)
-            end
-        
-        end
-        
-        if activeWeapon then
-            self:SetActiveWeapon(activeWeapon:GetMapName())
-        end
-    
+    if hives >= 1 then
+        UnlockAbility(self, self:GetTierOneTechId())
+        self.oneHive = true
+    elseif self.oneHive and hives < 1 then
+        LockAbility(self, self:GetTierOneTechId())
+        self.oneHive = false
+    end
+
+    if hives >= 2 then
+        UnlockAbility(self, self:GetTierTwoTechId())
+        self.twoHives = true
+    elseif self.twoHives and hives < 2 then
+        LockAbility(self, self:GetTierTwoTechId())
+        self.twoHives = false
     end
     
-end
-
-function Alien:LockTierTwo()
-
-    local tierTwoMapName = self:GetTierTwoWeaponMapName()
-    
-    if tierTwoMapName and self:GetIsAlive() then
-    
-        local tierTwoWeapon = self:GetWeapon(tierTwoMapName)
-        local activeWeapon = self:GetActiveWeapon()
-        local activeWeaponMapName = nil
-        
-        if activeWeapon ~= nil then
-            activeWeaponMapName = activeWeapon:GetMapName()
-        end
-        
-        if tierTwoWeapon then
-            self:RemoveWeapon(tierTwoWeapon)
-        end
-        
-        if activeWeaponMapName == tierTwoMapName then
-            self:SwitchWeapon(1)
-        end
-        
-    end    
-    
-end
-
-function Alien:UnlockTierThree()
-
-    local tierThreeMapName = self:GetTierThreeWeaponMapName()
-    
-    if tierThreeMapName and self:GetIsAlive() then
-    
-        local activeWeapon = self:GetActiveWeapon()
-    
-        local tierThreeWeapon = self:GetWeapon(tierThreeMapName)
-        if not tierThreeWeapon then
-            self:GiveItem(tierThreeMapName)
-        end
-        
-        if activeWeapon then
-            self:SetActiveWeapon(activeWeapon:GetMapName())
-        end
-    
-    end
-    
-end
-
-function Alien:LockTierThree()
-
-    local tierThreeMapName = self:GetTierThreeWeaponMapName()
-    
-    if tierThreeMapName and self:GetIsAlive() then
-    
-        local tierThreeWeapon = self:GetWeapon(tierThreeMapName)
-        local activeWeapon = self:GetActiveWeapon()
-        local activeWeaponMapName = nil
-        
-        if activeWeapon ~= nil then
-            activeWeaponMapName = activeWeapon:GetMapName()
-        end
-        
-        if tierThreeWeapon then
-            self:RemoveWeapon(tierThreeWeapon)
-        end
-        
-        if activeWeaponMapName == tierThreeMapName then
-            self:SwitchWeapon(1)
-        end
-        
+    if hives >= 3 then
+        UnlockAbility(self, self:GetTierThreeTechId())
+        self.threeHives = true
+    elseif self.threeHives and hives < 3 then
+        LockAbility(self, self:GetTierThreeTechId())
+        self.threeHives = false
     end
     
 end
 
 function Alien:OnKill(attacker, doer, point, direction)
-    if self:GetTechId() == kTechId.Onos then
-        local devourWeapon = self:GetWeapon("devour")
-        if devourWeapon and devourWeapon:IsAlreadyEating() then
-            devourWeapon:OnForceUnDevour()
-        end
-    end
     Player.OnKill(self, attacker, doer, point, direction)
     self.oneHive = false
     self.twoHives = false
-    self.threeHives = false
-    
-end
-
-function Alien:UpdateNumHives()
-
-    local time = Shared.GetTime()
-    if self.timeOfLastNumHivesUpdate == nil or (time > self.timeOfLastNumHivesUpdate + 0.5) then
-    
-        local team = self:GetTeam()
-        if team and team.GetTechTree then
-
-            local hives = team:GetActiveHiveCount()
-            if not self.oneHive and hives >= 1 or GetGamerules():GetAllTech() then
-                self:UnlockTierOne()
-                self.oneHive = true
-            elseif self.oneHive and hives < 1 then
-                self:LockTierOne()
-                self.oneHive = false
-            end
-
-            if not self.twoHives and hives >= 2 or GetGamerules():GetAllTech() then
-                self:UnlockTierTwo()
-                self.twoHives = true
-            elseif self.twoHives and hives < 2 then
-                self:LockTierTwo()
-                self.twoHives = false
-            end
-            
-            if not self.threeHives and hives >= 3 or GetGamerules():GetAllTech() then
-                self:UnlockTierThree()
-                self.threeHives = true
-            elseif self.threeHives and hives < 3 then
-                self:LockTierThree()
-                self.threeHives = false
-            end
-            
-        end
-        
-        self.timeOfLastNumHivesUpdate = time
-        
-    end
-    
+    self.threeHives = false    
 end
 
 function Alien:CopyPlayerDataFrom(player)

@@ -1,8 +1,6 @@
 // lua\Marine_Client.lua
 //
 
-Marine.k2DHUDFlash = "ui/marine_hud_2d.swf"
-
 local kMarineHealthbarOffset = Vector(0, 1.2, 0)
 function Marine:GetHealthbarOffset()
     return kMarineHealthbarOffset
@@ -206,7 +204,7 @@ function Marine:OnUpdateRender()
         self.flashlight:SetCoords(coords)
         
         // Only display atmospherics for third person players.
-        local density = 0.4
+        local density = 0.2
         if isLocal and not self:GetIsThirdPerson() then
             density = 0
         end

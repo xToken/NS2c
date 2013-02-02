@@ -186,7 +186,7 @@ function Shift:ConstructOverride(deltaTime)
     return deltaTime / 2
 end
 
-function Shift:OnUse(player, elapsedTime, useAttachPoint, usePoint, useSuccessTable)
+function Shift:OnUse(player, elapsedTime, useSuccessTable)
     local hasupg, level = GetHasRedeploymentUpgrade(player)
     if hasupg and level > 0 and self:GetIsBuilt() and self:GetTeamNumber() == player:GetTeamNumber() then
         self:TeleportPlayer(player, level)

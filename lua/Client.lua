@@ -21,6 +21,7 @@ Script.Load("lua/DSPEffects.lua")
 Script.Load("lua/Notifications.lua")
 Script.Load("lua/Scoreboard.lua")
 Script.Load("lua/ScoreDisplay.lua")
+Script.Load("lua/GUITipVideo.lua")
 Script.Load("lua/AlienBuy_Client.lua")
 Script.Load("lua/MarineBuy_Client.lua")
 Script.Load("lua/Tracer_Client.lua")
@@ -44,6 +45,8 @@ Shared.PrecacheSurfaceShader("shaders/Model.surface_shader")
 Shared.PrecacheSurfaceShader("shaders/Emissive.surface_shader")
 Shared.PrecacheSurfaceShader("shaders/Model_emissive.surface_shader")
 Shared.PrecacheSurfaceShader("shaders/Model_alpha.surface_shader")
+Shared.PrecacheSurfaceShader("shaders/Decal.surface_shader")
+Shared.PrecacheSurfaceShader("shaders/Decal_emissive.surface_shader")
 
 Client.propList = { }
 Client.lightList = { }
@@ -57,6 +60,7 @@ Client.trailCinematics = { }
 // cinematics which are queued for destruction next frame
 Client.destroyTrailCinematics = { }
 Client.worldMessages = { }
+Client.timeLimitedDecals = { }
 
 // For logging total time played for rookie mode, even with map switch
 local timePlayed = nil
@@ -381,6 +385,26 @@ local function UpdateWaitingToSpawnUI(player)
     
 end
 
+local function UpdateDecals(deltaTime)
+
+    local reUseDecals = { }
+
+    for i = 1, #Client.timeLimitedDecals do
+    
+        local decalEntry = Client.timeLimitedDecals[i]
+        if decalEntry[2] > Shared.GetTime() then
+            table.insert(reUseDecals, decalEntry)
+        else
+            Client.DestroyRenderDecal(decalEntry[1])
+        end
+    
+    end
+    
+    Client.timeLimitedDecals = reUseDecals
+
+
+end
+
 local optionsSent = false
 
 function OnUpdateClient(deltaTime)
@@ -388,6 +412,7 @@ function OnUpdateClient(deltaTime)
     PROFILE("Client:OnUpdateClient")
     
     UpdateTrailCinematics(deltaTime)
+    UpdateDecals(deltaTime)
     UpdateWorldMessages()
     
     local player = Client.GetLocalPlayer()
@@ -672,7 +697,7 @@ function OnUpdateRender()
 
     local player = Client.GetLocalPlayer()
     
-    //Infestation_UpdateForPlayer()
+    Infestation_UpdateForPlayer()
     
     local camera = Camera()
     local cullingMode = RenderCamera.CullingMode_Occlusion
@@ -921,7 +946,38 @@ local function OnLoadComplete()
     HiveVision_Initialize()
     EquipmentOutline_Initialize()
     LoadGUIScripts()
+
+    Client.gTipVideo = GetGUIManager():CreateGUIScript("GUITipVideo")
     
+end
+
+
+function Client.CreateTimeLimitedDecal(materialName, coords, scale, lifeTime)
+/*
+    if not lifeTime then
+        lifeTime = Client.GetOptionFloat("graphics/decallifetime", 0.2) * kDecalMaxLifetime
+    end
+        
+    if lifeTime ~= 0 then
+
+        // Create new decal
+        local decal = Client.CreateRenderDecal()
+        local material = Client.CreateRenderMaterial()
+        material:SetMaterial(materialName)            
+        decal:SetMaterial(material)
+
+        decal:SetCoords(coords)
+        
+        // Set uniform scale from parameter
+        decal:SetExtents( Vector(scale, scale, scale) )
+        material:SetParameter("scale", scale)
+        
+        local endTime = Shared.GetTime() + lifeTime
+        material:SetParameter("endTime", endTime)
+        table.insert(Client.timeLimitedDecals, {decal, endTime})
+
+    end
+*/
 end
 
 Event.Hook("ClientDisconnected", OnClientDisconnected)

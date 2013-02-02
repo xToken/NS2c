@@ -26,22 +26,6 @@ local networkVars =
 
 AddMixinNetworkVars(StompMixin, networkVars)
 
-local function GetHasAttackDelay(self, player)
-
-    local attackDelay = ConditionalValue( player:GetIsPrimaled(), (kGoreDelay / kPrimalScreamROFIncrease), kGoreDelay)
-    local upg, level = GetHasFocusUpgrade(player)
-    if upg and level > 0 then
-        attackDelay = AdjustAttackDelayforFocus(attackDelay, level)
-    end
-    return self.lastPrimaryAttackTime + attackDelay > Shared.GetTime()
-    
-end
-
-// required here to deals different damage depending on if we are goring
-function Gore:GetDamageType()
-    return kGoreDamageType
-end    
-
 function Gore:OnCreate()
 
     Ability.OnCreate(self)
@@ -49,6 +33,11 @@ function Gore:OnCreate()
     InitMixin(self, StompMixin)
     self.lastPrimaryAttackTime = 0
     
+end
+
+// required here to deals different damage depending on if we are goring
+function Gore:GetDamageType()
+    return kGoreDamageType
 end
 
 function Gore:GetDeathIconIndex()
@@ -94,7 +83,7 @@ function Gore:OnTag(tagName)
     if tagName == "hit" then
     
         local player = self:GetParent()
-        if player and not GetHasAttackDelay(self, player) then
+        if player and not self:GetHasAttackDelay(self, player) then
         
             self.lastPrimaryAttackTime = Shared.GetTime()
             //local didHit, impactPoint, target = self:Attack(player)
@@ -112,12 +101,20 @@ end
 
 function Gore:OnPrimaryAttack(player)
 
-    if player:GetEnergy() >= self:GetEnergyCost() and not GetHasAttackDelay(self, player) then
+    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(self, player) then
         self.primaryAttacking = true
     else
         self:OnAttackEnd()
     end 
 
+end
+
+function Gore:GetAttackDelay()
+    return kGoreDelay
+end
+
+function Gore:GetLastAttackTime()
+    return self.lastPrimaryAttackTime
 end
 
 function Gore:OnPrimaryAttackEnd(player)
@@ -127,7 +124,7 @@ function Gore:OnPrimaryAttackEnd(player)
     
 end
 
-function Gore:GetPrimaryAttackUsesFocus()
+function Gore:GetAbilityUsesFocus()
     return true
 end
 

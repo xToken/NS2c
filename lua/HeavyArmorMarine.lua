@@ -33,38 +33,11 @@ Shared.PrecacheSurfaceShader("models/marine/marine.surface_shader")
 Shared.PrecacheSurfaceShader("models/marine/marine_noemissive.surface_shader")
 
 HeavyArmorMarine.kModelName = PrecacheAsset("models/marine/heavyarmor/heavyarmor.model")
+local kHeavyArmorMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_graph")
 
-HeavyArmorMarine.kMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_graph")
-
-HeavyArmorMarine.kDieSoundName = PrecacheAsset("sound/NS2.fev/marine/common/death")
-HeavyArmorMarine.kFlashlightSoundName = PrecacheAsset("sound/NS2.fev/common/light")
-HeavyArmorMarine.kGunPickupSound = PrecacheAsset("sound/NS2.fev/marine/common/pickup_gun")
-HeavyArmorMarine.kSpendResourcesSoundName = PrecacheAsset("sound/NS2.fev/marine/common/player_spend_nanites")
-HeavyArmorMarine.kChatSound = PrecacheAsset("sound/NS2.fev/marine/common/chat")
-HeavyArmorMarine.kSoldierLostAlertSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/soldier_lost")
-
-HeavyArmorMarine.kEffectNode = "fxnode_playereffect"
-HeavyArmorMarine.kHealth = kHeavyArmorHealth
-HeavyArmorMarine.kBaseArmor = kHeavyArmorArmor
-HeavyArmorMarine.kArmorPerUpgradeLevel = kHeavyArmorPerUpgradeLevel
-// Player phase delay - players can only teleport this often
-HeavyArmorMarine.kPlayerPhaseDelay = 2
-HeavyArmorMarine.kStunDuration = 2
-HeavyArmorMarine.kMass = 200
-HeavyArmorMarine.kAcceleration = 45
-HeavyArmorMarine.kAirAcceleration = 17
-HeavyArmorMarine.kAirStrafeWeight = 4
-HeavyArmorMarine.kWalkMaxSpeed = 3.0
-HeavyArmorMarine.kRunMaxSpeed = 5.5
-// How fast does our armor get repaired by welders
-HeavyArmorMarine.kArmorWeldRate = 25
-HeavyArmorMarine.kWeldedEffectsInterval = .5
-
-// tracked per techId
-HeavyArmorMarine.kMarineAlertTimeout = 4
-
-local kDropWeaponTimeLimit = 1
-local kPickupWeaponTimeLimit = 1
+local kMass = 200
+local kWalkMaxSpeed = 3.0
+local kRunMaxSpeed = 5.5
 
 function HeavyArmorMarine:OnCreate()
 
@@ -75,20 +48,16 @@ end
 function HeavyArmorMarine:OnInitialized()
 
     Marine.OnInitialized(self)
-    self:SetModel(HeavyArmorMarine.kModelName, HeavyArmorMarine.kMarineAnimationGraph)   
+    self:SetModel(HeavyArmorMarine.kModelName, kHeavyArmorMarineAnimationGraph)   
     
 end
 
 function HeavyArmorMarine:MakeSpecialEdition()
-    self:SetModel(HeavyArmorMarine.kModelName, HeavyArmorMarine.kMarineAnimationGraph)
+    self:SetModel(HeavyArmorMarine.kModelName, kHeavyArmorMarineAnimationGraph)
 end
 
 function HeavyArmorMarine:MakeDeluxeEdition()
-    self:SetModel(HeavyArmorMarine.kModelName, HeavyArmorMarine.kMarineAnimationGraph)
-end
-
-function HeavyArmorMarine:GetCanRepairOverride(target)
-    return self:GetWeapon(Welder.kMapName) and HasMixin(target, "Weldable") and ( (target:isa("Marine") and target:GetArmor() < target:GetMaxArmor()) or (not target:isa("Marine") and target:GetHealthScalar() < 0.9) )
+    self:SetModel(HeavyArmorMarine.kModelName, kHeavyArmorMarineAnimationGraph)
 end
 
 function HeavyArmorMarine:GetArmorAmount()
@@ -103,32 +72,28 @@ function HeavyArmorMarine:GetArmorAmount()
         armorLevels = 1
     end
     
-    return HeavyArmorMarine.kBaseArmor + armorLevels * HeavyArmorMarine.kArmorPerUpgradeLevel
+    return kHeavyArmorArmor + armorLevels * kHeavyArmorPerUpgradeLevel
     
 end
 
 function HeavyArmorMarine:GetInventorySpeedScalar()
-    return 1 - (self:GetWeaponsWeight() / kHeavyArmorWeightAssist)
-end
-
-function HeavyArmorMarine:GetCrouchSpeedScalar()
-    return Marine.GetCrouchSpeedScalar(self)
+    return 1 - self:GetWeaponsWeight() - kHeavyArmorWeight
 end
 
 function HeavyArmorMarine:GoldSrc_GetMaxSpeed(possible)
 
     if possible then
-        return HeavyArmorMarine.kRunMaxSpeed
+        return kRunMaxSpeed
     end
     
     if self:GetIsDisrupted() then
         return 0
     end
     
-    local maxSpeed = HeavyArmorMarine.kRunMaxSpeed
+    local maxSpeed = kRunMaxSpeed
     
     if self.movementModiferState and self:GetIsOnSurface() then
-        maxSpeed = HeavyArmorMarine.kWalkMaxSpeed
+        maxSpeed = kWalkMaxSpeed
     end
     
     // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
@@ -152,32 +117,8 @@ function HeavyArmorMarine:GetWeldPercentageOverride()
     return self:GetArmor() / self:GetMaxArmor()
 end
 
-function HeavyArmorMarine:OnWeldOverride(doer, elapsedTime)
-
-    if self:GetArmor() < self:GetMaxArmor() then
-        local addArmor = HeavyArmorMarine.kArmorWeldRate * elapsedTime
-        self:SetArmor(self:GetArmor() + addArmor)
-    end
-    
-end
-
-function HeavyArmorMarine:GetCanChangeViewAngles()
-    return true
-end    
-
 function HeavyArmorMarine:GetMass()
-    return HeavyArmorMarine.kMass
-end
-
-function HeavyArmorMarine:OnUpdateAnimationInput(modelMixin)
-
-    PROFILE("HeavyArmorMarine:OnUpdateAnimationInput")
-    Marine.OnUpdateAnimationInput(self, modelMixin)
-    
-end
-
-function HeavyArmorMarine:GetHasCatpackBoost()
-    return self.catpackboost
+    return kMass
 end
 
 Shared.LinkClassToMap("HeavyArmorMarine", HeavyArmorMarine.kMapName, { })

@@ -19,7 +19,7 @@ function CommandStation:GetIsPlayerValidForCommander(player)
 end
 
 // Put player into Commander mode
-function CommandStation:OnUse(player, elapsedTime, useAttachPoint, usePoint, useSuccessTable)
+function CommandStation:OnUse(player, elapsedTime, useSuccessTable)
 
     local csUseSuccess = false
 

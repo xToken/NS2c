@@ -223,13 +223,13 @@ end
 
 function WallMovementMixin:OnAdjustModelCoords(modelCoords)
 
-    local offset = self:GetExtents().y
+    //local offset = self:GetExtents().y
 
     // Make the model rotate around the center point rather than the feet
     // when we're walking on walls.
 
-    modelCoords.origin = modelCoords.origin - modelCoords.yAxis * offset
-    modelCoords.origin.y = modelCoords.origin.y + offset
+    //modelCoords.origin = modelCoords.origin - modelCoords.yAxis * offset
+    //modelCoords.origin.y = modelCoords.origin.y + offset
             
     return modelCoords
     
