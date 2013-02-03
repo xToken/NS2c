@@ -85,15 +85,16 @@ kPlayerEffectData =
             // Skulk
             {sound = "sound/NS2.fev/materials/metal/skulk_step_for_enemy", classname = "Skulk", surface = "metal", enemy = true, done = true},
             {sound = "sound/NS2.fev/materials/metal/skulk_step", classname = "Skulk", surface = "metal", done = true},
-            
+            //{sound = "sound/ns2c.fev/ns2c/alien/skulk/step1", classname = "Skulk", surface = "metal", done = true},
             {sound = "sound/NS2.fev/materials/thin_metal/skulk_step_for_enemy", classname = "Skulk", surface = "thin_metal", enemy = true, done = true},
             {sound = "sound/NS2.fev/materials/thin_metal/skulk_step", classname = "Skulk", surface = "thin_metal", done = true},
-            
+            //{sound = "sound/ns2c.fev/ns2c/alien/skulk/step2", classname = "Skulk", surface = "thin_metal", done = true},
             {sound = "sound/NS2.fev/materials/organic/skulk_step_for_enemy", classname = "Skulk", surface = "organic", enemy = true, done = true},
             {sound = "sound/NS2.fev/materials/organic/skulk_step", classname = "Skulk", surface = "organic", done = true},
-            
+            //{sound = "sound/ns2c.fev/ns2c/alien/skulk/step3", classname = "Skulk", surface = "organic", done = true},
             {sound = "sound/NS2.fev/materials/rock/skulk_step_for_enemy", classname = "Skulk", surface = "rock", enemy = true, done = true},
             {sound = "sound/NS2.fev/materials/rock/skulk_step", classname = "Skulk", surface = "rock", done = true},
+            //{sound = "sound/ns2c.fev/ns2c/alien/skulk/step4", classname = "Skulk", surface = "rock", done = true},
             
             // Gorge
             {sound = "sound/NS2.fev/materials/metal/gorge_step_for_enemy", classname = "Gorge", surface = "metal", enemy = true, done = true},
@@ -228,7 +229,8 @@ kPlayerEffectData =
         {
             {sound = "", silenceupgrade = true, done = true},  
         
-            {sound = "sound/NS2.fev/alien/skulk/land", classname = "Skulk", done = true},
+            //{sound = "sound/NS2.fev/alien/skulk/land", classname = "Skulk", done = true},
+            {sound = "sound/ns2c.fev/ns2c/alien/skulk/step1", classname = "Skulk", done = true},
             {sound = "sound/NS2.fev/alien/lerk/land", classname = "Lerk", done = true},
             {sound = "sound/NS2.fev/alien/gorge/land", classname = "Gorge", done = true},
             {sound = "sound/NS2.fev/alien/fade/land", classname = "Fade", done = true},
