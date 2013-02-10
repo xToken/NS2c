@@ -7,6 +7,15 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 // Set the name of the VM for debugging
+local matchingFiles = { }
+Shared.GetMatchingFileNames("lua/eem_Shared.lua", false, matchingFiles)
+for _, mapFile in pairs(matchingFiles) do
+    Script.Load("lua/PathUtil.lua")
+    Script.Load("lua/fsfod_scripts.lua")
+    Script.Load("lua/eem_Shared.lua")
+    break
+end
+
 decoda_name = "Server"
 
 Script.Load("lua/Shared.lua")

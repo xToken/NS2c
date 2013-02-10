@@ -895,6 +895,9 @@ function Player:GetIsPlaying()
     return self.gameStarted and self:GetIsOnPlayingTeam()
 end
 
+function Player:OnClampSpeed(input, velocity)
+end
+
 function Player:GetIsOnPlayingTeam()
     return self:GetTeamNumber() == kTeam1Index or self:GetTeamNumber() == kTeam2Index
 end

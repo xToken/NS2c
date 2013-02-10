@@ -469,6 +469,9 @@ function Skulk:GetGravityAllowed()
     return not self:GetIsWallWalking()
 end
 
+function Skulk:ConstrainMoveVelocity(moveVelocity)
+end
+
 function Skulk:GetMass()
     return kMass
 end
