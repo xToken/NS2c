@@ -1372,8 +1372,9 @@ function Player:OnJumpLand(landIntensity, slowDown)
 
     self.landtime = Shared.GetTime()
     
-    local landSurface = GetSurfaceAndNormalUnderEntity(self)
-    self:TriggerEffects("land", {surface = self:GetMaterialBelowPlayer()})
+    if Client and self:GetIsLocalPlayer() then
+        self:OnJumpLandLocalClient()
+    end
     
 end
 
@@ -1585,7 +1586,7 @@ function Player:OnProcessMove(input)
         local previousVelocity = self:GetVelocity()
         
         UpdateOnGroundState(self)
-        
+                
         // Update origin and velocity from input move (main physics behavior).
         self:UpdateMove(input)
         
@@ -1912,6 +1913,21 @@ end
 // onGround if we've updated our position since we've last called this.
 function Player:GetIsOnGround()
     
+    // Re-calculate every time SetOrigin is called
+    if self.onGroundNeedsUpdate then
+    
+        self.onGround = false
+        
+        self.onGround = self:GetIsCloseToGround(kOnGroundDistance)
+        
+        if self.onGround then
+            self.timeLastOnGround = Shared.GetTime()
+        end
+        
+        self.onGroundNeedsUpdate = false        
+        
+    end
+    
     if self:GetIsOnLadder() then
         return false
     end
@@ -1919,6 +1935,18 @@ function Player:GetIsOnGround()
     return self.onGround
     
 end
+
+// Returns true if the player is currently standing on top of something solid. Recalculates
+// onGround if we've updated our position since we've last called this.
+/*function Player:GetIsOnGround()
+    
+    if self:GetIsOnLadder() then
+        return false
+    end
+    
+    return self.onGround
+    
+end*/
 
 function Player:SetIsOnLadder(onLadder, ladderEntity)
     self.onLadder = onLadder
@@ -2127,8 +2155,12 @@ function Player:HandleJump(input, velocity)
         // height under the force of gravity.
         self:GetJumpVelocity(input, velocity)
         
-        if self:GetPlayJumpSound() and Shared.GetTime() - self.timeOfLastJump > 0.05 then
-            self:TriggerEffects("jump", {surface = self:GetMaterialBelowPlayer()})
+        if self:GetPlayJumpSound() then
+        
+            if not Shared.GetIsRunningPrediction() then
+                self:TriggerEffects("jump", {surface = self:GetMaterialBelowPlayer()})
+            end
+            
         end
 
         // TODO: Set this somehow (set on sounds for entity, not by sound name?)
@@ -2334,12 +2366,21 @@ function Player:ModifyVelocity(input, velocity)
         else
             self.jumpHandled = true
         end
-        
+
+    elseif self:GetIsOnGround() then
+        self:HandleOnGround(input, velocity)
+		//velocity.y = 0
     end
 end
 
 function Player:GetSpeedDebugSpecial()
     return 0
+end
+
+function Player:HandleOnGround(input, velocity)
+    if Sign(velocity.y) == -1 then
+        velocity.y = 0
+    end
 end
 
 function Player:GetIsAbleToUse()

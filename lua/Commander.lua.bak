@@ -208,7 +208,13 @@ function Commander:GetNumPlayerAlerts()
 end
 
 function Commander:UpdateMisc(input)
-    PROFILE("Commander:UpdateMisc")    
+
+    PROFILE("Commander:UpdateMisc")
+   
+    if Client then
+        self:UpdateChat(input)
+    end
+    
 end
 
 // Returns true if it set our position

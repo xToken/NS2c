@@ -15,10 +15,10 @@ CloakableMixin = CreateMixin( CloakableMixin )
 CloakableMixin.type = "Cloakable"
 
 // Uncloak faster than cloaking
-CloakableMixin.kCloakRate = 3
+CloakableMixin.kCloakRate = 2
 CloakableMixin.kUncloakRate = 12
 CloakableMixin.kTriggerCloakDuration = .6
-CloakableMixin.kTriggerUncloakDuration = 4
+CloakableMixin.kTriggerUncloakDuration = 2.5
 
 local kEnemyUncloakDistanceSquared = 1.5 ^ 2
 
@@ -32,6 +32,7 @@ end
 
 CloakableMixin.expectedMixins =
 {
+    EntityChange = "Required to update lastTouchedEntityId."
 }
 
 CloakableMixin.optionalCallbacks =
@@ -186,7 +187,17 @@ function CloakableMixin:OnProcessSpectate(deltaTime)
     UpdateCloakState(self, deltaTime)
 end    
 
-if Client then
+if Server then
+
+    function CloakableMixin:OnEntityChange(oldId)
+    
+        if oldId == self.lastTouchedEntityId then
+            self.lastTouchedEntityId = nil
+        end
+
+    end
+    
+elseif Client then
 
     function CloakableMixin:OnUpdateRender()
 
@@ -317,10 +328,6 @@ function CloakableMixin:PrimaryAttack()
     
 end
 
-function CloakableMixin:OnGetIsSelectable(result, byTeamNumber)
-    result.selectable = result.selectable and (byTeamNumber == self:GetTeamNumber() or not self:GetIsCloaked())
-end
-
 function CloakableMixin:SecondaryAttack()
 
     local weapon = self:GetActiveWeapon()
@@ -355,7 +362,6 @@ function CloakableMixin:OnCapsuleTraceHit(entity)
         end
         
         self:TriggerUncloak()
-        self.lastTouchedEntityId = entity:GetId()
         
     end
     

@@ -52,7 +52,7 @@ end
 function GUICommanderManager:Uninitialize()
 
     self.childScripts = { }
-    
+
     if self.selector then
     
         GUI.DestroyItem(self.selector)

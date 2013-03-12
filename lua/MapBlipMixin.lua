@@ -125,11 +125,6 @@ function MapBlipMixin:GetMapBlipInfo()
         isAttacked = self:GetIsInCombat()
     end
     
-    // Only consider ScriptActors.
-    if not self:isa("ScriptActor") then
-        return success, blipType, blipTeam
-    end
-    
     // World entities
     if self:isa("Door") then
         blipType = kMinimapBlipType.Door

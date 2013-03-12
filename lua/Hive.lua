@@ -71,10 +71,10 @@ Hive.kHealRadius = 12.7     // From NS1
 Hive.kHealthPercentage = .15
 Hive.kHealthUpdateTime = 2
 
-local kHiveInfestationRadius = 30
-local kHiveInfestationBlobDensity = 3
-local kHiveInfestationGrowthRate = 0.1
-local kHiveMinInfestationRadius = 5
+local kInfestationRadius = 35
+local kInfestationBlobDensity = 3
+local kInfestationGrowthRate = 0.1
+local kMinInfestationRadius = 5
 
 if Server then
     Script.Load("lua/Hive_Server.lua")
@@ -179,24 +179,20 @@ function Hive:GetMainMenuButtons()
     return nil
 end
 
-function Hive:GetGrowthRate()
-    return kHiveInfestationRadius
-end
-
 function Hive:GetMaxRadius()
-    return kHiveInfestationRadius
+    return kInfestationRadius
 end
 
 function Hive:GetMinRadius()
-    return kHiveMinInfestationRadius
+    return kMinInfestationRadius
 end
 
 function Hive:GetGrowthRate()
-    return kHiveInfestationGrowthRate
+    return kInfestationGrowthRate
 end
 
 function Hive:GetInfestationDensity()
-    return kHiveInfestationBlobDensity
+    return kInfestationBlobDensity
 end
 
 function Hive:GetCanResearchOverride(techId)

@@ -152,14 +152,8 @@ function Lerk:GetDesiredAngles()
 
 end
 
-function Lerk:GetAngleSmoothingMode()
-
-    if self:GetIsWallGripping() then
-        return "quatlerp"
-    else
-        return "euler"
-    end
-
+function Lerk:GetSmoothAngles()
+    return not self:GetIsWallGripping()
 end
 
 function Lerk:GetBaseArmor()
@@ -399,7 +393,7 @@ end
 function Lerk:CalcWallGripSpeedFraction()
 
     local dt = (Shared.GetTime() - self.wallGripTime)
-    if dt > kWallGripSlideTime then
+    if dt > Lerk.kWallGripSlideTime then
         return 0
     end
     local k = kWallGripSlideTime

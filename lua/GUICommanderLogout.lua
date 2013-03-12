@@ -108,20 +108,18 @@ end
 function GUICommanderLogout:SendKeyEvent(key, down)
 
     if key == InputKey.MouseButton0 and self.mousePressed ~= down then
+
+        local mouseX, mouseY = Client.GetCursorPosScreen()
+        local containsPoint, withinX, withinY = GUIItemContainsPoint(self.background, mouseX, mouseY)
     
         self.mousePressed = down
-        // Check if the button was pressed.
-        if not self.mousePressed then
         
-            local mouseX, mouseY = Client.GetCursorPosScreen()
-            local containsPoint, withinX, withinY = GUIItemContainsPoint(self.background, mouseX, mouseY)
-            if containsPoint then
-            
+        if containsPoint then
+            // Check if the button was pressed.
+            if not self.mousePressed then
                 CommanderUI_Logout()
-                return true
-                
             end
-            
+            return true
         end
         
     end

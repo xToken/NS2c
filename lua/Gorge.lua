@@ -98,13 +98,21 @@ if Client then
     end  
 
     function Gorge:OverrideInput(input)
-    
-        local activeWeapon = self:GetActiveWeapon()
-        if activeWeapon and (activeWeapon.kMapName == "drop_structure_ability" or activeWeapon.kMapName == "drop_structure_ability2") then
-            input = activeWeapon:OverrideInput(input)
+
+        // Always let the DropStructureAbility override input, since it handles client-side-only build menu
+
+        local buildAbility = self:GetWeapon(DropStructureAbility.kMapName)
+        local buildAbility2 = self:GetWeapon(DropStructureAbility2.kMapName)
+
+        if buildAbility then
+            input = buildAbility:OverrideInput(input)
         end
         
-        Player.OverrideInput(self, input)
+        if buildAbility2 then
+            input = buildAbility2:OverrideInput(input)
+        end        
+        
+        return Player.OverrideInput(self, input)
         
     end
     
@@ -409,7 +417,7 @@ if Client then
     function Gorge:GetLastClickedPosition()
     
         local weapon = self:GetActiveWeapon()
-        if weapon and weapon:isa("DropStructureAbility") then
+        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
             return weapon.lastClickedPosition
         end
         

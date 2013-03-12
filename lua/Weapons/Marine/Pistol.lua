@@ -18,7 +18,6 @@ Pistol.kModelName = PrecacheAsset("models/marine/pistol/pistol.model")
 local kViewModelName = PrecacheAsset("models/marine/pistol/pistol_view.model")
 local kAnimationGraph = PrecacheAsset("models/marine/pistol/pistol_view.animation_graph")
 
-local kClipSize = 10
 local kSpread = ClipWeapon.kCone0Degrees
 local kAltSpread = ClipWeapon.kCone0Degrees
 
@@ -210,7 +209,7 @@ function Pistol:GetWeight()
 end
 
 function Pistol:GetClipSize()
-    return kClipSize
+    return kPistolClipSize
 end
 
 function Pistol:GetSpread()

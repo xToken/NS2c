@@ -50,6 +50,7 @@ function PlayingTeam:Initialize(teamName, teamNumber)
     
     self.concedeVoteManager = VoteManager()
     self.concedeVoteManager:Initialize()
+    self.concedeVoteManager:SetTeamPercentNeeded(kPercentNeededForVoteConcede)
 
     // child classes can specify a custom team info class
     local teamInfoMapName = TeamInfo.kMapName
@@ -367,7 +368,7 @@ end
 // Play audio alert for all players, but don't trigger them too often. 
 // This also allows neat tactics where players can time strikes to prevent the other team from instant notification of an alert, ala RTS.
 // Returns true if the alert was played.
-function PlayingTeam:TriggerAlert(techId, entity)
+function PlayingTeam:TriggerAlert(techId, entity, force)
 
     local triggeredAlert = false
     
@@ -402,7 +403,7 @@ function PlayingTeam:TriggerAlert(techId, entity)
 
             // If time elapsed > kBaseAlertInterval and not a repeat, play it OR
             // If time elapsed > kRepeatAlertInterval then play it no matter what
-            if ignoreInterval or (timeElapsed >= PlayingTeam.kBaseAlertInterval and not isRepeat) or timeElapsed >= PlayingTeam.kRepeatAlertInterval or newAlertPriority  > self.lastAlertPriority then
+            if force or ignoreInterval or (timeElapsed >= PlayingTeam.kBaseAlertInterval and not isRepeat) or timeElapsed >= PlayingTeam.kRepeatAlertInterval or newAlertPriority  > self.lastAlertPriority then
             
                 // Play for commanders only or for the whole team
                 local commandersOnly = not LookupTechData(techId, kTechDataAlertTeam, false)
@@ -471,8 +472,14 @@ function PlayingTeam:GetTeamResources()
     
 end
 
-function PlayingTeam:AddTeamResources(amount)
+function PlayingTeam:AddTeamResources(amount, countTowardsTotal)
 
+    if countTowardsTotal then
+    
+        // Save towards victory condition
+        self.totalTeamResourcesCollected = self.totalTeamResourcesCollected + amount
+        
+    end
     self:SetTeamResources(self.teamResources + amount)
     
 end
@@ -825,7 +832,7 @@ function PlayingTeam:UpdateResourceTowers()
         // update resources
         local ResGained = numRTs * kResourcePerTick
         if self:GetTeamType() == kMarineTeamType then
-            self:AddTeamResources(ResGained)
+            self:AddTeamResources(ResGained, true)
         else
             self:SplitPres(ResGained, false)
         end 
@@ -903,6 +910,24 @@ function PlayingTeam:VoteToGiveUp(votingPlayer)
 
     if self.concedeVoteManager:PlayerVotes(votingPlayerSteamId, Shared.GetTime()) then
         PrintToLog("%s cast vote to give up.", votingPlayer:GetName())
+        
+        // notify all players on this team
+        if Server then
+
+            local vote = self.concedeVoteManager    
+
+            local netmsg = {
+                voterName = votingPlayer:GetName(),
+                votesMoreNeeded = vote:GetNumVotesNeeded()-vote:GetNumVotesCast()
+            }
+
+            local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
+
+            for index, player in ipairs(players) do
+                Server.SendNetworkMessage(player, "VoteConcedeCast", netmsg, false)
+            end
+
+        end
     end
 
 end
@@ -914,6 +939,24 @@ function PlayingTeam:VoteToEjectCommander(votingPlayer, targetCommander)
     
     if self.ejectCommVoteManager:PlayerVotesFor(votingPlayerSteamId, targetSteamId, Shared.GetTime()) then
         PrintToLog("%s cast vote to eject commander %s", votingPlayer:GetName(), targetCommander:GetName())
+
+        // notify all players on this team
+        if Server then
+
+            local vote = self.ejectCommVoteManager    
+
+            local netmsg = {
+                voterName = votingPlayer:GetName(),
+                votesMoreNeeded = vote:GetNumVotesNeeded()-vote:GetNumVotesCast()
+            }
+
+            local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
+
+            for index, player in ipairs(players) do
+                Server.SendNetworkMessage(player, "VoteEjectCast", netmsg, false)
+            end
+
+        end
     end
     
 end
@@ -948,6 +991,9 @@ function PlayingTeam:UpdateVotes()
     
         self.concedeVoteManager:Reset()
         self.conceded = true
+
+        // Notify all players
+        Server.SendNetworkMessage( "TeamConceded", {teamNumber=self:GetTeamNumber()} )
         
     elseif self.concedeVoteManager:GetVoteElapsed(Shared.GetTime()) then
     

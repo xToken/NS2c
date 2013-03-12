@@ -64,7 +64,8 @@ kPlayerEffectData =
             {sound = "", silenceupgrade = true, done = true},        
             // Use private_sounds (ie, don't send network message) because this is generated on the client 
             // when animation plays and conserves bandwidth
-            {sound = "sound/NS2.fev/alien/skulk/jump", classname = "Skulk", done = true},
+            {sound = "sound/ns2c.fev/ns2c/alien/skulk/step1", classname = "Skulk", done = true},
+            //{sound = "sound/NS2.fev/alien/skulk/jump", classname = "Skulk", done = true},
             {sound = "sound/NS2.fev/alien/gorge/jump", classname = "Gorge", done = true},
             {sound = "sound/NS2.fev/alien/fade/jump", classname = "Fade", done = true},
             {sound = "sound/NS2.fev/alien/onos/jump", classname = "Onos", done = true},

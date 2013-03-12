@@ -257,7 +257,7 @@ local function QueueWaitingPlayer(self)
             if Server then
                 
                 if playerToSpawn.SetSpectatorMode then
-                    playerToSpawn:SetSpectatorMode(Spectator.kSpectatorMode.Following)
+                    playerToSpawn:SetSpectatorMode(kSpectatorMode.Following)
                 end
                 
                 playerToSpawn:SetFollowTarget(self)
@@ -358,7 +358,7 @@ function InfantryPortal:RequeuePlayer()
             team:PutPlayerInRespawnQueue(Shared.GetEntity(self.queuedPlayerId))
         end
         player:SetIsRespawning(false, Entity.invalidId)
-        player:SetSpectatorMode(Spectator.kSpectatorMode.Following)
+        player:SetSpectatorMode(kSpectatorMode.Following)
         
     end
     

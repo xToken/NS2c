@@ -37,6 +37,7 @@ Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/HasUmbraMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/InfestationMixin.lua")
 
 class 'Shift' (ScriptActor)
 
@@ -55,6 +56,11 @@ Shift.kEnergizeEffect = PrecacheAsset("cinematics/alien/shift/energize.cinematic
 Shift.kEnergizeSmallTargetEffect = PrecacheAsset("cinematics/alien/shift/energize_small.cinematic")
 Shift.kEnergizeLargeTargetEffect = PrecacheAsset("cinematics/alien/shift/energize_large.cinematic")
 Shift.kEnergizeThinkTime = 2
+
+local kInfestationRadius = 10
+local kInfestationGrowthRate = 0.25
+local kMinInfestationRadius = 0.1
+local kInfestationBlobDensity = 0.5
 
 local networkVars =
 {
@@ -77,6 +83,7 @@ AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
+AddMixinNetworkVars(InfestationMixin, networkVars)
 
 function Shift:OnCreate()
 
@@ -118,7 +125,8 @@ function Shift:OnInitialized()
     ScriptActor.OnInitialized(self)
     
     self:SetModel(Shift.kModelName, kAnimationGraph)
-    
+    InitMixin(self, InfestationMixin)
+	
     if Server then
     
         InitMixin(self, StaticTargetMixin)
@@ -168,6 +176,22 @@ function Shift:EnergizeInRange()
     
     return self:GetIsAlive()
     
+end
+
+function Shift:GetMaxRadius()
+    return kInfestationRadius
+end
+
+function Shift:GetGrowthRate()
+    return kInfestationGrowthRate
+end
+
+function Shift:GetMinRadius()
+    return kMinInfestationRadius
+end
+
+function Shift:GetInfestationDensity()
+    return kInfestationBlobDensity
 end
 
 function Shift:GetDamagedAlertId()

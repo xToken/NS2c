@@ -20,7 +20,7 @@ Scan.kScanSound = PrecacheAsset("sound/NS2.fev/marine/commander/scan")
 
 Scan.kType = CommanderAbility.kType.Repeat
 Scan.kScanDuration = kScanDuration
-Scan.kScanIntervall = 0.2
+Scan.kScanInterval = 0.2
 Scan.kScanDistance = kScanRadius
 
 local networkVars = { }
@@ -58,7 +58,7 @@ function Scan:GetLifeSpan()
 end
 
 function Scan:GetThinkTime()
-    return Scan.kScanIntervall
+    return Scan.kScanInterval
 end
 
 if Server then

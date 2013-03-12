@@ -49,10 +49,10 @@ local kJumpDelay = 0.25
 local kMass = 45 // ~100 pounds
 local kWallWalkCheckInterval = .1
 local kWallWalkNormalSmoothRate = 4
-local kNormalWallWalkFeelerSize = 0.2
+local kNormalWallWalkFeelerSize = 0.15
 local kStickyWallWalkFeelerSize = 0.35
-local kNormalWallWalkRange = 0.15
-local kStickyWallWalkRange = 0.3
+local kNormalWallWalkRange = 0.01
+local kStickyWallWalkRange = 0.15
 
 // jump is valid when you are close to a wall but not attached yet at this range
 local kJumpWallRange = 0.2
@@ -292,7 +292,7 @@ function Skulk:PreUpdateMove(input, runningPrediction)
         
     end
 
-    if self.leaping and (Alien.GetIsOnGround(self) or self.wallWalking) and (Shared.GetTime() > self.timeOfLeap + kLeapTime) then
+    if self.leaping and (self.onGround or self.wallWalking) and (Shared.GetTime() > self.timeOfLeap + kLeapTime) then
         self.leaping = false
     end
     
@@ -467,7 +467,9 @@ function Skulk:GetPlayFootsteps()
 end
 
 function Skulk:GetIsOnGround()
+
     return Alien.GetIsOnGround(self) and not self:GetIsWallWalking()
+    
 end
 
 /**
@@ -512,7 +514,7 @@ end
 
 // skulk handles jump sounds itself
 function Skulk:GetPlayJumpSound()
-    return true
+    return false
 end
 
 function Skulk:HandleJump(input, velocity)

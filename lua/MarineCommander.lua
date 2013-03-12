@@ -49,31 +49,6 @@ MarineCommander.kSelectSound = PrecacheAsset("sound/NS2.fev/marine/commander/sel
 
 local kHoverSound = PrecacheAsset("sound/NS2.fev/marine/commander/hover")
 
-function MarineCommander:OnDestroy()
-
-    Commander.OnDestroy(self)
-    
-    if Client then
-        
-        if self.guiDistressBeacon then
-            GetGUIManager():DestroyGUIScript(self.guiDistressBeacon)
-            self.guiDistressBeacon = nil
-        end
-        
-        if self.sensorBlips then
-            GetGUIManager():DestroyGUIScript(self.sensorBlips)
-            self.sensorBlips = nil
-        end
-        
-        if self.waypoints then
-            GetGUIManager():DestroyGUIScript(self.waypoints)
-            self.waypoints = nil
-        end
-        
-    end
-
-end
-
 function MarineCommander:GetSelectionSound()
     return MarineCommander.kSelectSound
 end

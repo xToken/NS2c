@@ -178,6 +178,7 @@ function OnCommandSetName(nickname)
     end
     
     Client.SetOptionString(kNicknameOptionsKey, nickname)
+    Client.SendNetworkMessage("SetName", { name = nickname }, true)
     
 end
 

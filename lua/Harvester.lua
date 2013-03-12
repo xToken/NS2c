@@ -22,10 +22,10 @@ Harvester.kMapName = "harvester"
 Harvester.kModelName = PrecacheAsset("models/alien/harvester/harvester.model")
 local kAnimationGraph = PrecacheAsset("models/alien/harvester/harvester.animation_graph")
 
-local kHarvesterInfestationRadius = 15
-local kHarvesterInfestationBlobDensity = 2
-local kHarvesterInfestationGrowthRate = 0.1
-local kHarvesterMinInfestationRadius = 0.5
+local kInfestationRadius = 20
+local kInfestationGrowthRate = 1
+local kMinInfestationRadius = 0.1
+local kInfestationBlobDensity = 0.5
 
 local networkVars = 
 {
@@ -91,19 +91,19 @@ function Harvester:GetCanBeUsed(player, useSuccessTable)
 end
 
 function Harvester:GetMaxRadius()
-    return kHarvesterInfestationRadius
+    return kInfestationRadius
 end
 
 function Harvester:GetGrowthRate()
-    return kHarvesterInfestationGrowthRate
+    return kInfestationGrowthRate
 end
 
 function Harvester:GetMinRadius()
-    return kHarvesterMinInfestationRadius
+    return kMinInfestationRadius
 end
 
 function Harvester:GetInfestationDensity()
-    return kHarvesterInfestationBlobDensity
+    return kInfestationBlobDensity
 end
 
 if Client then

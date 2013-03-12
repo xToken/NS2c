@@ -335,35 +335,29 @@ local function PurchaseTechs(purchaseIds)
     
     local player = Client.GetLocalPlayer()
     
-    local buyAllowed = true
     local validPurchaseIds = { }
     
-    for i, purchaseId in ipairs(purchaseIds) do
+    for i = 1, #purchaseIds do
     
+        local purchaseId = purchaseIds[i]
         local techNode = GetTechTree():GetTechNode(purchaseId)
         
         if techNode ~= nil then
         
             if techNode:GetAvailable() then
                 table.insert(validPurchaseIds, purchaseId)
-            else
-            
-                buyAllowed = false
-                break
-                
             end
             
         else
         
-            Print("PurchaseTechs(): Couldn't find tech node %d", purchaseId)
-            buyAllowed = false
-            break
+            Shared.Message("PurchaseTechs(): Couldn't find tech node " .. purchaseId)
+            return
             
         end
         
     end
     
-    if buyAllowed then
+    if #validPurchaseIds > 0 then
         Client.SendNetworkMessage("Buy", BuildBuyMessage(validPurchaseIds), true)
     end
     

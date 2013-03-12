@@ -11,6 +11,31 @@ Script.Load("lua/Table.lua")
 Script.Load("lua/Utility.lua")
 Script.Load("lua/FunctionContracts.lua")
 
+if Client then
+
+    function CreateSimpleInfestationDecal(size, coords)
+    
+        if not size then
+            size = 1.5
+        end
+    
+        local decal = Client.CreateRenderDecal()
+        local infestationMaterial = Client.CreateRenderMaterial()
+        infestationMaterial:SetMaterial("materials/infestation/infestation_decal_simple.material")
+        infestationMaterial:SetParameter("scale", size)
+        decal:SetMaterial(infestationMaterial)        
+        decal:SetExtents(Vector(size, size, size))
+        
+        if coords then
+            decal:SetCoords(coords)
+        end
+        
+        return decal
+        
+    end
+
+end
+
 function GetIsTechUseable(techId, teamNum)
 
     local useAble = false
@@ -1161,72 +1186,11 @@ function GetLocationEntitiesNamed(name)
     
 end
 
-// for performance, cache the lights for each locationName
-local lightLocationCache = {}
-
-function GetLightsForLocation(locationName)
-
-    if locationName == nil or locationName == "" then
-        return {}
-    end
- 
-    if lightLocationCache[locationName] then
-        return lightLocationCache[locationName]   
-    end
-
-    local lightList = {}
-   
-    local locations = GetLocationEntitiesNamed(locationName)
-   
-    if table.count(locations) > 0 then
-   
-        for index, location in ipairs(locations) do
-           
-            for index, renderLight in ipairs(Client.lightList) do
-
-                if renderLight then
-               
-                    local lightOrigin = renderLight:GetCoords().origin
-                   
-                    if location:GetIsPointInside(lightOrigin) then
-                   
-                        table.insert(lightList, renderLight)
-           
-                    end
-                   
-                end
-               
-            end
-           
-        end
-       
-    end
-
-    // Log("Total lights %s, lights in %s = %s", #Client.lightList, locationName, #lightList)
-    lightLocationCache[locationName] = lightList
-  
-    return lightList
-   
-end
-
-if Client then
-
-    function ResetLights()
-    
-        for index, renderLight in ipairs(Client.lightList) do
-        
-            renderLight:SetColor(renderLight.originalColor)
-            renderLight:SetIntensity(renderLight.originalIntensity)
-            
-        end                    
-        
-    end
-    
-end
-
-
 local kUpVector = Vector(0, 1, 0)
-function SetPlayerPoseParameters(player, viewModel)
+
+function SetPlayerPoseParameters(player, viewModel, headAngles)
+
+    //DebugDrawAngles( headAngles, player:GetOrigin(), 5.0, 0.5, 0.0 )
 
     if not player or not player:isa("Player") then
         Log("SetPlayerPoseParameters: player %s is not a player", player)
@@ -1238,26 +1202,23 @@ function SetPlayerPoseParameters(player, viewModel)
     end
     ASSERT(not viewmodel or viewmodel:isa("Viewmodel"))
     
-    local viewAngles = player:GetViewAngles()
     local coords = player:GetCoords()
-    local orientation = coords.yAxis.y + coords.xAxis.y
     
-    local pitch = -Math.Wrap(Math.Degrees(viewAngles.pitch * orientation), -180, 180)
+    local pitch = -Math.Wrap(Math.Degrees(headAngles.pitch), -180, 180)
     
     local landIntensity = player.landIntensity or 0
     
     local bodyYaw = 0
     if player.bodyYaw then
-        bodyYaw = Math.Wrap(Math.Degrees(player.bodyYaw * orientation), -180, 180)
+        bodyYaw = Math.Wrap(Math.Degrees(player.bodyYaw), -180, 180)
     end
     
     local bodyYawRun = 0
     if player.bodyYawRun then
-        bodyYawRun = Math.Wrap(Math.Degrees(player.bodyYawRun * orientation), -180, 180)
+        bodyYawRun = Math.Wrap(Math.Degrees(player.bodyYawRun), -180, 180)
     end
     
-    local viewAngles = player:GetViewAngles()
-    local viewCoords = viewAngles:GetCoords()
+    local headCoords = headAngles:GetCoords()
     
     local velocity = player:GetVelocityFromPolar()
     // Not all players will contrain their movement to the X/Z plane only.
@@ -1265,10 +1226,10 @@ function SetPlayerPoseParameters(player, viewModel)
         velocity.y = 0
     end
     
-    local x = Math.DotProduct(viewCoords.xAxis, velocity)
-    local z = Math.DotProduct(viewCoords.zAxis, velocity)
+    local x = Math.DotProduct(headCoords.xAxis, velocity)
+    local z = Math.DotProduct(headCoords.zAxis, velocity)
     
-    local moveYaw = Math.Wrap(Math.Degrees( math.atan2(z,x) * orientation ), -180, 180)
+    local moveYaw = Math.Wrap(Math.Degrees( math.atan2(z,x) ), -180, 180)
     local speedScalar = velocity:GetLength() / player:GoldSrc_GetMaxSpeed(true)
     
     player:SetPoseParam("move_yaw", moveYaw)
@@ -1276,6 +1237,19 @@ function SetPlayerPoseParameters(player, viewModel)
     player:SetPoseParam("body_pitch", pitch)
     player:SetPoseParam("body_yaw", bodyYaw)
     player:SetPoseParam("body_yaw_run", bodyYawRun)
+
+    // Some code for debugging help
+    //if Client and not Shared.GetIsRunningPrediction() and self:isa("Skulk") then
+        //Print('speedScalar,%f,%f', Shared.GetSystemTime(), speedScalar)
+    //end
+
+    //player:SetPoseParam("move_yaw", 0)
+    //player:SetPoseParam("move_speed", 0)
+    //player:SetPoseParam("body_pitch", 0)
+    //player:SetPoseParam("body_yaw", 0)
+    //player:SetPoseParam("body_yaw_run", 0)
+
+    //Print("body yaw = %f, move_yaw = %f", bodyYaw, moveYaw);
     
     player:SetPoseParam("crouch", player:GetCrouchAmount())
     player:SetPoseParam("land_intensity", 0)
@@ -2192,13 +2166,17 @@ end
 // ie, "Press the BIND_Buy key to evolve to a new lifeform or to gain new upgrades." => "Press the B key to evolve to a new lifeform or to gain new upgrades."
 function SubstituteBindStrings(tipString)
 
-    local substitutions = {}
+    local substitutions = { }
     for word in string.gmatch(tipString, "BIND_(%a+)") do
     
         local bind = GetPrettyInputName(word)
-        //local bind = BindingsUI_GetInputValue(word)
-        assert(type(bind) == "string", tipString)
-        tipString = string.gsub(tipString, "BIND_" .. word, bind)
+        if type(bind) == "string" then
+            tipString = string.gsub(tipString, "BIND_" .. word, bind)
+        // If the input name is not found, replace the BIND_InputName with just InputName as a fallback.
+        else
+            tipString = string.gsub(tipString, "BIND_" .. word, word)
+        end
+        
     end
     
     return tipString
@@ -2268,4 +2246,18 @@ function GetTexCoordsForTechId(techId)
     
     return x1, y1, x2, y2
 
+end
+
+// Ex: input.commands = RemoveMoveCommand( input.commands, Move.PrimaryAttack )
+function RemoveMoveCommand( commands, moveMask )
+    local negMask = bit.bxor(0xFFFFFFFF, moveMask)
+    return bit.band(commands, negMask)
+end
+
+function HasMoveCommand( commands, moveMask )
+    return bit.band( commands, moveMask ) ~= 0
+end
+
+function AddMoveCommand( commands, moveMask )
+    return bit.bor(commands, moveMask)
 end

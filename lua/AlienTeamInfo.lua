@@ -39,7 +39,7 @@ if Server then
         
         local team = self:GetTeam()
         if team then
-            self.numHives = team:GetActiveHiveCount()
+            self.numHives = team:GetNumHives()
             self.eggCount = team:GetActiveEggCount()
         end
         
@@ -47,7 +47,7 @@ if Server then
 
 end
 
-function AlienTeamInfo:GetActiveHiveCount()
+function AlienTeamInfo:GetNumHives()
     return self.numHives
 end
 

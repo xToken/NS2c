@@ -16,6 +16,11 @@ end
 // pass surface "none" for not hit/flinch effect
 function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode, showtracer)
 
+    // No prediction if the Client is spectating another player.
+    if Client and not Client.GetIsControllingPlayer() then
+        return false
+    end
+    
     local killedFromDamage = false
     local flinch_severe = false
     local doer = self
@@ -165,8 +170,14 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                     
                     local message = BuildHitEffectMessage(point, doer, surface, target, showtracer, altMode, flinch_severe, damage, directionVectorIndex)
                     
-                    local toPlayers = GetEntitiesWithinRange("Player", point, kHitEffectRelevancyDistance)
-                    //table.removevalue(toPlayers, attacker)
+                    local toPlayers = GetEntitiesWithinRange("Player", point, kHitEffectRelevancyDistance)                    
+                    for _, spectator in ientitylist(Shared.GetEntitiesWithClassname("Spectator")) do
+                    
+                        if table.contains(toPlayers, Server.GetOwner(spectator):GetSpectatingPlayer()) then
+                            table.insertunique(toPlayers, spectator)
+                        end
+                        
+                    end
                     
                     for _, player in ipairs(toPlayers) do
                         Server.SendNetworkMessage(player, "HitEffect", message, false) 

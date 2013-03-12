@@ -14,20 +14,45 @@ Script.Load("lua/Commander_PlayerAlertPanel.lua")
 Script.Load("lua/Commander_ResourcePanel.lua")
 Script.Load("lua/Commander_SelectionPanel.lua")
 
-// These are not predicted
+// These are not predicted.
 if Client then
+
     Script.Load("lua/Commander_MarqueeSelection.lua")
     Script.Load("lua/Commander_Ping.lua")
     Script.Load("lua/Commander_GhostStructure.lua")
     Script.Load("lua/Commander_MouseActions.lua")
+    
+    Script.Load("lua/DynamicMeshUtility.lua")
+    
+    local function CreateCommanderModel(modelName)
+    
+        return function()
+        
+            local commModel = Client.CreateRenderModel(RenderScene.Zone_Default)
+            commModel:SetModel(modelName)
+            commModel:SetIsVisible(false)
+            return commModel
+            
+        end
+        
+    end
+    
+    ClientResources.AddResource("CommAlienUnitUnderCursor", "AlienCommander", CreateCommanderModel(Commander.kAlienCircleModelName), Client.DestroyRenderModel)
+    ClientResources.AddResource("CommMarineUnitUnderCursor", "MarineCommander", CreateCommanderModel(Commander.kMarineCircleModelName), Client.DestroyRenderModel)
+    ClientResources.AddResource("CommSentryOrientation", "Commander", CreateCommanderModel(Commander.kSentryOrientationModelName), Client.DestroyRenderModel)
+    ClientResources.AddResource("CommSentryRange", "Commander", CreateCommanderModel(Commander.kSentryRangeModelName), Client.DestroyRenderModel)
+    
 end
-   
-Script.Load("lua/DynamicMeshUtility.lua")
-
-local kCommanderLeftClickDelay = 0.1
 
 function Commander:OnGetIsVisible(visibleTable)
     visibleTable.Visible = false
+end
+
+function Commander:OnShowMap(show)
+
+    self.minimapVisible = show
+    self:ShowMap(true, show)
+    
 end
 
 function Commander:GetCrossHairTarget()
@@ -290,8 +315,8 @@ end
 
 function Commander:OnDestroy()
 
-    Player.OnDestroy(self) 
-
+    Player.OnDestroy(self)
+    
     if self.hudSetup == true then
     
         GetGUIManager():DestroyGUIScriptSingle("GUICommanderAlerts")
@@ -304,12 +329,11 @@ function Commander:OnDestroy()
         GetGUIManager():DestroyGUIScriptSingle("GUIHotkeyIcons")
         GetGUIManager():DestroyGUIScriptSingle("GUICommanderLogout")
         GetGUIManager():DestroyGUIScriptSingle("GUIResourceDisplay")
+        GetGUIManager():DestroyGUIScript(self.production)
+        self.production = nil
         
         GetGUIManager():DestroyGUIScript(self.managerScript)
         self.managerScript = nil
-        
-        GetGUIManager():DestroyGUIScriptSingle("GUIOrders")
-        self.guiOrders = nil
         
         GetGUIManager():DestroyGUIScriptSingle("GUICommanderHelpWidget")
         
@@ -317,17 +341,9 @@ function Commander:OnDestroy()
         
         self:DestroyGhostGuides()
         
-        Client.DestroyRenderModel(self.unitUnderCursorRenderModel)
-        
-        Client.DestroyRenderModel(self.orientationRenderModel)
-        
-        Client.DestroyRenderModel(self.sentryRangeRenderModel)
-        
-        DynamicMesh_Destroy(self.sentryBatteryLineHelp)
-        
         self.hudSetup = false
         
-         MouseTracker_SetIsVisible(false)
+        MouseTracker_SetIsVisible(false)
         
     end
     
@@ -556,16 +572,92 @@ function Commander:GetAndClearAlertMessages()
 
 end
 
+local function SetupHud(self)
+
+    MouseTracker_SetIsVisible(true, nil, true)
+    
+    self:InitializeMenuTechButtons()
+    
+    self.entityIdUnderCursor = Entity.invalidId
+    
+    local alertsScript = GetGUIManager():CreateGUIScriptSingle("GUICommanderAlerts")
+    // Every Player already has a GUIMinimap.
+    local minimapScript = ClientUI.GetScript("GUIMinimapFrame")
+    
+    local selectionPanelScript = GetGUIManager():CreateGUIScriptSingle("GUISelectionPanel")
+    
+    local buttonsScriptName = ConditionalValue(self:GetTeamType() == kAlienTeamType, "GUICommanderButtonsAliens", "GUICommanderButtonsMarines")
+    self.buttonsScript = GetGUIManager():CreateGUIScript(buttonsScriptName)
+    self.buttonsScript:GetBackground():AddChild(selectionPanelScript:GetBackground())
+    minimapScript:SetButtonsScript(self.buttonsScript)
+    
+    local hotkeyIconScript = GetGUIManager():CreateGUIScriptSingle("GUIHotkeyIcons")
+    local logoutScript = GetGUIManager():CreateGUIScriptSingle("GUICommanderLogout")
+    GetGUIManager():CreateGUIScriptSingle("GUIResourceDisplay")
+    
+    local minimapButtons = GetGUIManager():CreateGUIScriptSingle("GUIMinimapButtons")
+    minimapScript:GetBackground():AddChild(minimapButtons:GetBackground())
+    
+    minimapScript:GetBackground():AddChild(hotkeyIconScript:GetBackground())
+    self.managerScript = GetGUIManager():CreateGUIScript("GUICommanderManager")
+    
+    local worldbuttons = GetGUIManager():CreateGUIScriptSingle("GUICommanderHelpWidget")
+    
+    self.production = GetGUIManager():CreateGUIScript("GUIProduction")
+    self.production:SetTeam(self:GetTeamType())
+    minimapScript:GetBackground():AddChild(self.production:GetBackground())
+    
+    // The manager needs to know about other commander UI scripts for things like
+    // making sure mouse clicks don't click through UI elements.
+    self.managerScript:AddChildScript(alertsScript)
+    self.managerScript:AddChildScript(minimapScript)
+    self.managerScript:AddChildScript(selectionPanelScript)
+    self.managerScript:AddChildScript(self.buttonsScript)
+    self.managerScript:AddChildScript(hotkeyIconScript)
+    self.managerScript:AddChildScript(logoutScript)
+    self.managerScript:AddChildScript(minimapButtons)
+    self.managerScript:AddChildScript(worldbuttons)
+    
+    self.commanderTooltip = GetGUIManager():CreateGUIScriptSingle("GUICommanderTooltip")
+    
+    self.commanderTooltip:Register(self.buttonsScript)
+    self.commanderTooltip:Register(worldbuttons)
+    
+    self.buttonsScript.background:AddChild(self.commanderTooltip:GetBackground())
+    
+    // Calling SetBackgroundMode() will sometimes access self.managerScript through
+    // CommanderUI_GetUIClickable() so call after self.managerScript is created above.
+    minimapScript:SetBackgroundMode(GUIMinimapFrame.kModeMini)
+    
+    self.hudSetup = true
+    
+end
+
+local function SetStartPosition(self)
+
+    local entId = FindNearestEntityId("CommandStructure", self:GetOrigin())
+    local commandStructure = Shared.GetEntity(entId)
+    if commandStructure ~= nil then
+    
+        local origin = commandStructure:GetOrigin()
+        self:SetWorldScrollPosition(origin.x, origin.z)
+        
+    else
+        Print("%s:SetStartPosition(): Couldn't find command structure to center view upon.", self:GetClassName())
+    end
+    
+end
+
 function Commander:OnInitLocalClient()
 
     Player.OnInitLocalClient(self)
     
     self.selectionCircles = { }
     self.sentryArcs = { }
-    self.ghostGuides = {}
-    self.reuseGhostGuides = {}
+    self.ghostGuides = { }
+    self.reuseGhostGuides = { }
     
-    self:SetupHud()
+    SetupHud(self)
     
     // Turn off skybox rendering when commanding.
     SetSkyboxDrawState(false)
@@ -580,28 +672,9 @@ function Commander:OnInitLocalClient()
     Client.SetGroupIsVisible(kCommanderInvisibleGroupName, false)
     
     // Set our location so we are viewing the command structure we're in.
-    self:SetStartPosition()
-    
-    if self.guiOrders == nil then
-        self.guiOrders = GetGUIManager():CreateGUIScriptSingle("GUIOrders")
-    end
+    SetStartPosition(self)
     
     self.lastHotkeyIndex = nil
-    
-end
-
-function Commander:SetStartPosition()
-
-    local entId = FindNearestEntityId("CommandStructure", self:GetOrigin())
-    local commandStructure = Shared.GetEntity(entId)
-    if commandStructure ~= nil then
-    
-        local origin = commandStructure:GetOrigin()
-        self:SetWorldScrollPosition(origin.x, origin.z)
-        
-    else
-        Print("%s:SetStartPosition(): Couldn't find command structure to center view upon.", self:GetClassName())
-    end
     
 end
 
@@ -677,78 +750,6 @@ end
 
 function Commander:HotkeyGroupButtonPressed(index)
     self.hotkeyGroupButtonPressed = index
-end
-
-function Commander:SetupHud()
-
-    MouseTracker_SetIsVisible(true, nil, true)
-    
-    self:InitializeMenuTechButtons()
-    
-    // Create circle for display under cursor
-    self.unitUnderCursorRenderModel = Client.CreateRenderModel(RenderScene.Zone_Default)
-    local modelName = ConditionalValue(self:GetTeamType() == kAlienTeamType, Commander.kAlienCircleModelName, Commander.kMarineCircleModelName)
-    self.unitUnderCursorRenderModel:SetModel(modelName)
-    self.unitUnderCursorRenderModel:SetIsVisible(false)
-    
-    self.entityIdUnderCursor = Entity.invalidId
-    
-    // Create sentry orientation indicator
-    self.orientationRenderModel = Client.CreateRenderModel(RenderScene.Zone_Default)
-    self.orientationRenderModel:SetModel(Commander.kSentryOrientationModelName)
-    self.orientationRenderModel:SetIsVisible(false)
-
-    self.sentryRangeRenderModel = Client.CreateRenderModel(RenderScene.Zone_Default)
-    self.sentryRangeRenderModel:SetModel(Commander.kSentryRangeModelName)
-    self.sentryRangeRenderModel:SetIsVisible(false)
-    
-    local alertsScript = GetGUIManager():CreateGUIScriptSingle("GUICommanderAlerts")
-    // Every Player already has a GUIMinimap.
-    local minimapScript = GetGUIManager():GetGUIScriptSingle("GUIMinimapFrame")
-    
-    local selectionPanelScript = GetGUIManager():CreateGUIScriptSingle("GUISelectionPanel")
-    
-    local buttonsScriptName = "GUICommanderButtonsMarines"
-    self.buttonsScript = GetGUIManager():CreateGUIScript(buttonsScriptName)
-    self.buttonsScript:GetBackground():AddChild(selectionPanelScript:GetBackground())
-    minimapScript:SetButtonsScript(self.buttonsScript)
-    
-    local hotkeyIconScript = GetGUIManager():CreateGUIScriptSingle("GUIHotkeyIcons")
-    local logoutScript = GetGUIManager():CreateGUIScriptSingle("GUICommanderLogout")
-    GetGUIManager():CreateGUIScriptSingle("GUIResourceDisplay")
-    
-    local minimapButtons = GetGUIManager():CreateGUIScriptSingle("GUIMinimapButtons")
-    minimapScript:GetBackground():AddChild(minimapButtons:GetBackground())
-    
-    minimapScript:GetBackground():AddChild(hotkeyIconScript:GetBackground())
-    self.managerScript = GetGUIManager():CreateGUIScript("GUICommanderManager")
-    
-    local worldbuttons = GetGUIManager():CreateGUIScriptSingle("GUICommanderHelpWidget")
-    
-    // The manager needs to know about other commander UI scripts for things like
-    // making sure mouse clicks don't click through UI elements.
-    self.managerScript:AddChildScript(alertsScript)
-    self.managerScript:AddChildScript(minimapScript)
-    self.managerScript:AddChildScript(selectionPanelScript)
-    //self.managerScript:AddChildScript(self.buttonsScript)
-    self.managerScript:AddChildScript(hotkeyIconScript)
-    self.managerScript:AddChildScript(logoutScript)
-    self.managerScript:AddChildScript(minimapButtons)
-    self.managerScript:AddChildScript(worldbuttons)
-    
-    self.commanderTooltip = GetGUIManager():CreateGUIScriptSingle("GUICommanderTooltip")
-    
-    self.commanderTooltip:Register(self.buttonsScript)
-    self.commanderTooltip:Register(worldbuttons)
-    
-    self.buttonsScript.background:AddChild(self.commanderTooltip:GetBackground())
-    
-    // Calling SetBackgroundMode() will sometimes access self.managerScript through
-    // CommanderUI_GetUIClickable() so call after self.managerScript is created above.
-    minimapScript:SetBackgroundMode(GUIMinimapFrame.kModeMini)
-    
-    self.hudSetup = true
-    
 end
 
 function Commander:Logout()
@@ -840,25 +841,54 @@ local function UpdateGhostStructureVisuals(self)
 
     local commSpecifyingOrientation = GetCommanderGhostStructureSpecifyingOrientation()
     
-    self.sentryRangeRenderModel:SetIsVisible(self.currentTechId == kTechId.Sentry and commSpecifyingOrientation)
+    local sentryRangeModel = ClientResources.GetResource("CommSentryRange")
+    sentryRangeModel:SetIsVisible(self.currentTechId == kTechId.Sentry and commSpecifyingOrientation)
     
     local coords = GetCommanderGhostStructureCoords()
     
     local displayOrientation = GetCommanderGhostStructureValid() and commSpecifyingOrientation
-    self.orientationRenderModel:SetIsVisible(displayOrientation)
+    local orientationModel = ClientResources.GetResource("CommSentryOrientation")
+    orientationModel:SetIsVisible(displayOrientation)
     if displayOrientation then
     
         coords:Scale(Commander.kSentryArcScale)
         coords.zAxis = -coords.zAxis
-        self.orientationRenderModel:SetCoords(coords)
+        orientationModel:SetCoords(coords)
         
     end
     
     if self.currentTechId == kTechId.Sentry then
     
         coords.zAxis = coords.zAxis * Sentry.kRange
-        self.sentryRangeRenderModel:SetCoords(coords)
+        sentryRangeModel:SetCoords(coords)
     end
+    
+end
+
+local function UpdateCircleUnderCursor(self)
+
+    local unitUnderCursorModel = ClientResources.GetResource(self:isa("AlienCommander") and "CommAlienUnitUnderCursor" or "CommMarineUnitUnderCursor")
+    
+    local visibility = false
+    
+    if self.entityIdUnderCursor ~= Entity.invalidId then
+    
+        local entity = Shared.GetEntity(self.entityIdUnderCursor)
+        if entity ~= nil then
+        
+            local scale = GetCircleSizeForEntity(entity)
+            
+            local coords = Coords.GetLookIn(entity:GetOrigin(), Vector.xAxis)
+            coords:Scale(scale)
+            unitUnderCursorModel:SetCoords(coords)
+            
+            visibility = true
+            
+        end
+        
+    end
+    
+    unitUnderCursorModel:SetIsVisible(visibility)
     
 end
 
@@ -867,11 +897,11 @@ function Commander:UpdateClientEffects(deltaTime, isLocal)
 
     Player.UpdateClientEffects(self, deltaTime, isLocal)
     
-    if isLocal and not Shared.GetIsRunningPrediction() then
-        
+    if isLocal then
+    
         self:UpdateMenu()
-
-        // Update highlighted unit under cursor
+        
+        // Update highlighted unit under cursor.
         local xScalar, yScalar = Client.GetCursorPos()
         local x = xScalar * Client.GetScreenWidth()
         local y = yScalar * Client.GetScreenHeight()
@@ -895,7 +925,7 @@ function Commander:UpdateClientEffects(deltaTime, isLocal)
         
         self:UpdateGhostGuides()
         
-        self:UpdateCircleUnderCursor()
+        UpdateCircleUnderCursor(self)
         
         self:UpdateCursor()
 
@@ -1023,32 +1053,6 @@ function Commander:UpdateSelectionCircles()
         
     end
     
-end
-
-function Commander:UpdateCircleUnderCursor()
-    
-    local visibility = false
-    
-    if self.entityIdUnderCursor ~= Entity.invalidId then
-    
-        local entity = Shared.GetEntity(self.entityIdUnderCursor)
-        if entity ~= nil then
-            
-            local scale = GetCircleSizeForEntity(entity)
-            
-            // Set position, orientation, scale
-            local coords = Coords.GetLookIn( entity:GetOrigin(), Vector.xAxis )
-            coords:Scale(scale)
-            self.unitUnderCursorRenderModel:SetCoords( coords )
-            
-            visibility = true
-            
-        end        
-        
-    end
-    
-    self.unitUnderCursorRenderModel:SetIsVisible( visibility )
-
 end
 
 // Set the context-sensitive mouse cursor 

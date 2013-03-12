@@ -346,6 +346,13 @@ function AlienTeam:InitTechTree()
     
 end
 
+function AlienTeam:GetNumHives()
+
+    local teamInfoEntity = Shared.GetEntity(self.teamInfoEntityId)
+    return teamInfoEntity:GetNumCapturedTechPoints()
+    
+end
+
 function AlienTeam:GetActiveHiveCount()
 
     local activeHiveCount = 0
@@ -417,9 +424,11 @@ function AlienTeam:OnHiveDestroyed(destroyedHive)
     local activeHiveCount = self:GetActiveHiveCount()
     
     for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
+    
         if alien:GetIsAlive() and alien.OnHiveDestroyed then
             alien:OnHiveDestroyed(destroyedHive, activeHiveCount)
         end
+        
     end
     
 end

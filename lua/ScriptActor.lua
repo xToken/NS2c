@@ -34,7 +34,6 @@ local networkVars =
     // not certain about the maximum number of cached strings
     locationId = "resource",
     
-    locationEntId = "entityid"
 }
 
 AddMixinNetworkVars(TechMixin, networkVars)
@@ -54,10 +53,10 @@ function ScriptActor:OnCreate()
     self.locationId = 0
     
     self.pathingFlags = 0
-    
-    self.locationEntId = Entity.invalidId
-    
+
     if Server then
+        
+        self.locationEntId = Entity.invalidId
         
         // Ownership only exists on the Server.
         InitMixin(self, OwnerMixin)
@@ -88,12 +87,16 @@ function ScriptActor:OnInitialized()
     
 end
 
-function ScriptActor:SetLocationEntity(location)
-    self.locationEntId = location and location:GetId() or Entity.invalidId
-end
+if Server then
 
-function ScriptActor:GetLocationEntity()
-    return Shared.GetEntity(self.locationEntId)
+    function ScriptActor:SetLocationEntity(location)
+        self.locationEntId = location and location:GetId() or Entity.invalidId
+    end
+
+    function ScriptActor:GetLocationEntity()
+        return Shared.GetEntity(self.locationEntId)
+    end
+
 end
 
 function ScriptActor:ComputeLocation()

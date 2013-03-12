@@ -779,6 +779,12 @@ function BuildCommanderNotificationMessage(locationId, techId)
 
 end
 
+local kSetNameMessage =
+{
+    name = "string (" .. kMaxNameLength .. ")"
+}
+Shared.RegisterNetworkMessage("SetName", kSetNameMessage)
+
 local kChatClientMessage =
 {
     teamOnly = "boolean",
@@ -813,6 +819,23 @@ function BuildChatMessage(teamOnly, playerName, playerLocationId, playerTeamNumb
     return message
     
 end
+
+local kVoteConcedeCastMessage =
+{
+    voterName = "string (" .. kMaxNameLength .. ")",
+    votesMoreNeeded = "integer (0 to 64)"
+}
+
+local kTeamConcededMessage =
+{
+    teamNumber = string.format("integer (-1 to %d)", kRandomTeamType)
+}
+
+local kVoteEjectCastMessage =
+{
+    voterName = "string (" .. kMaxNameLength .. ")",
+    votesMoreNeeded = "integer (0 to 64)"
+}
 
 function BuildRookieMessage(isRookie)
 
@@ -851,7 +874,6 @@ local kHiveInfoMessage =
 Shared.RegisterNetworkMessage("GameEnd", kGameEndMessage)
 
 Shared.RegisterNetworkMessage("EntityChanged", kEntityChangedMessage)
-Shared.RegisterNetworkMessage("ResetMouse", {} )
 Shared.RegisterNetworkMessage("ResetGame", {} )
 
 // Selection
@@ -867,6 +889,9 @@ Shared.RegisterNetworkMessage("CreateHotKeyGroup", kCreateHotkeyGroupMessage)
 // Notifications
 Shared.RegisterNetworkMessage("MinimapAlert", kMinimapAlertMessage)
 Shared.RegisterNetworkMessage("CommanderNotification", kCommanderNotificationMessage)
+Shared.RegisterNetworkMessage("VoteConcedeCast", kVoteConcedeCastMessage)
+Shared.RegisterNetworkMessage("VoteEjectCast", kVoteEjectCastMessage)
+Shared.RegisterNetworkMessage("TeamConceded", kTeamConcededMessage)
 
 // Player actions
 Shared.RegisterNetworkMessage("MutePlayer", kMutePlayerMessage)
@@ -969,3 +994,11 @@ function ParseBuyMessage(buyMessage)
 end
 
 Shared.RegisterNetworkMessage("Buy", kBuyMessage)
+
+Shared.RegisterNetworkMessage("SpectatePlayer", { entityId = "entityid"})
+Shared.RegisterNetworkMessage("SwitchFromFirstPersonSpectate", { mode = "enum kSpectatorMode" })
+Shared.RegisterNetworkMessage("SwitchFirstPersonSpectatePlayer", { forward = "boolean" })
+Shared.RegisterNetworkMessage("SetClientIndex", { clientIndex = "integer" })
+Shared.RegisterNetworkMessage("SetClientTeamNumber", { teamNumber = string.format("integer (-1 to %d)", kRandomTeamType) })
+Shared.RegisterNetworkMessage("WaitingForAutoTeamBalance", { waiting = "boolean" })
+Shared.RegisterNetworkMessage("SetTimeWaveSpawnEnds", { time = "time" })

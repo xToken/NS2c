@@ -12,6 +12,8 @@ class 'GUIInsight_PlayerFrames' (GUIScript)
 
 local isVisible
 
+local kNameFontName = "fonts/insight.fnt"
+local kInfoFontName = "fonts/insight.fnt"
 local kMarineTexture = "ui/marine_sheet.dds"
 local kAlienTexture = "ui/alien_sheet.dds"
 local kBackgroundTexture = "ui/player.dds"
@@ -21,10 +23,10 @@ local kHealthbarTexture = "ui/player_healthbar.dds"
 -- Also change in OnResolutionChanged!
 local scale = 0.55
 local kHealthBarSize = GUIScale(Vector(14, 30, 0))
-local kFrameYOffset = GUIScale(-240)
+local kFrameYOffset = GUIScale(180)
 local kFrameYSpacing = GUIScale(20)
-local kTeamNameFontSize = GUIScale(18)
-local kTeamInfoFontSize = GUIScale(16)
+local kNameFontScale = GUIScale( Vector(1, 1, 1) ) * 0.8
+local kInfoFontScale = GUIScale( Vector(1, 1, 1) ) * 0.7
 local kPlayersPanelSize = GUIScale(Vector(95, 32, 0))
 local kTopFrameSize = GUIScale(Vector(scale*256, scale*64, 0))
 local kBottomFrameSize = GUIScale(Vector(scale*256, scale*128, 0))
@@ -73,7 +75,7 @@ local kIconCoords = {
 function GUIInsight_PlayerFrames:Initialize()
 
     isVisible = true
-
+    self.timeLastMouseOne = 0
     -- Teams table format: Team GUIItems, color, player GUIItem list, get scores function.
     self.teams = {
         -- Blue team.
@@ -109,7 +111,7 @@ function GUIInsight_PlayerFrames:OnResolutionChanged(oldX, oldY, newX, newY)
 
     self:Uninitialize()
     kHealthBarSize = GUIScale(Vector(14, 30, 0))
-    kFrameYOffset = GUIScale(-240)
+    kFrameYOffset = GUIScale(180)
     kFrameYSpacing = GUIScale(20)
     kTeamNameFontSize = GUIScale(18)
     kTeamInfoFontSize = GUIScale(16)
@@ -130,7 +132,7 @@ function GUIInsight_PlayerFrames:CreateBackground(teamNumber)
     local bottom = GUIManager:CreateGraphicItem()
     
     if teamNumber == kTeam1Index then
-        playersBackground:SetAnchor(GUIItem.Left, GUIItem.Middle)
+        playersBackground:SetAnchor(GUIItem.Left, GUIItem.Top)
         playersBackground:SetPosition(Vector(0, kFrameYOffset, 0))
         playersBackground:SetColor(kBlueColor)
         
@@ -143,7 +145,7 @@ function GUIInsight_PlayerFrames:CreateBackground(teamNumber)
         
         playersBackground:SetTexturePixelCoordinates(unpack(leftGradientCoords))
     elseif teamNumber == kTeam2Index then
-        playersBackground:SetAnchor(GUIItem.Right, GUIItem.Middle)
+        playersBackground:SetAnchor(GUIItem.Right, GUIItem.Top)
         playersBackground:SetPosition(Vector(-kPlayersPanelSize.x, kFrameYOffset, 0))
         playersBackground:SetColor(kRedColor)
         
@@ -185,18 +187,6 @@ function GUIInsight_PlayerFrames:SetIsVisible(bool)
 
 end
 
-local function follow(entity)
-
-    if entity then
-    
-        local origin = entity:GetOrigin()
-        local player = Client.GetLocalPlayer()
-        player:SetWorldScrollPosition(origin.x-5, origin.z)
-        
-    end
-
-end
-
 function GUIInsight_PlayerFrames:Update(deltaTime)
 
     if isVisible then
@@ -209,13 +199,6 @@ function GUIInsight_PlayerFrames:Update(deltaTime)
 
             maxplayers = math.max( maxplayers, table.maxn(team.PlayerList) )
 
-        end
-
-        if self.FollowEntityId then
-        
-            local entity = Shared.GetEntity(self.FollowEntityId)
-            follow(entity)
-            
         end
 
     end
@@ -302,10 +285,16 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
     
     player.EntityId = playerRecord.EntityId
     
+    if player.EntityId == Client.GetLocalPlayer().selectedId then
+        player.Frame:SetColor(Color(1,1,0,1))
+    else
+        player.Frame:SetColor(Color(1,1,1,1))    
+    end
+    
     local resourcesStr = string.format("%d Res", playerRecord.Resources)
     local KDRStr = string.format("%s / %s", playerRecord.Kills, playerRecord.Deaths)
     local currentPosition = Vector(player["Background"]:GetPosition())
-    local playerStatus = playerRecord.Status
+    local newStatus = playerRecord.Status
     local teamNumber = team["TeamNumber"]
     local teamColor = team["Color"]
 
@@ -321,7 +310,7 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
     -- Health bar
     local healthBar = player["HealthBar"]
     local barSize = 0
-    if playerStatus == "Dead" then
+    if newStatus == "Dead" then
 
         player["Background"]:SetColor(kDeadColor)
         healthBar:SetIsVisible(false)
@@ -358,51 +347,83 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
 
     end
 
-    local coords = kIconCoords[playerStatus]
-    if coords then
-        player["Type"]:SetIsVisible(true)
-        player["Type"]:SetTexturePixelCoordinates(unpack(coords))
-    else
-        player["Type"]:SetIsVisible(false)
+    if newStatus ~= player.status then
+    
+        local oldStatus = player.status
+        -- Alerts for Fade, Onos, Exo deaths
+        if newStatus == Locale.ResolveString("STATUS_DEAD") then
+        
+            if player.Name:GetText() == playerName then
+
+                local texture = nil
+                local textureCoordinates = nil
+                if oldStatus == Locale.ResolveString("STATUS_FADE") then
+                    texture = "ui/Fade.dds"
+                    textureCoordinates = {0, 0, 188, 220}
+                elseif oldStatus == Locale.ResolveString("STATUS_ONOS") then
+                    texture = "ui/Onos.dds"
+                    textureCoordinates = {0, 0, 304, 326}
+                elseif oldStatus == Locale.ResolveString("STATUS_EXO") then
+                    texture = "ui/marine_buy_bigIcons.dds"
+                    textureCoordinates = {47, 2093, 47+316, 2093+316}
+                end
+                
+                if texture ~= nil then
+                
+                    local position = player["Background"]:GetScreenPosition(Client.GetScreenWidth(), Client.GetScreenHeight())
+                    local text = string.format("%s %s Has Died", oldStatus, playerName)
+                    local icon = {Texture = texture, TextureCoordinates = textureCoordinates, Color = Color(1,1,1,0.25), Size = Vector(0,0,0)}
+                    local info = {Text = text, Scale = Vector(0.2,0.2,0.2), Color = Color(0.5,0.5,0.5,0.5), ShadowColor = Color(0,0,0,0.5)}
+                    local alert = GUIInsight_AlertQueue:CreateAlert(position, icon, info, teamNumber)
+                    GUIInsight_AlertQueue:AddAlert(alert, Color(1,1,1,1), Color(1,1,1,1))
+                    
+                end
+            
+            end
+        
+        end
+        
+        local coords = kIconCoords[newStatus]
+        if coords then
+            player["Type"]:SetIsVisible(true)
+            player["Type"]:SetTexturePixelCoordinates(unpack(coords))
+        else
+            player["Type"]:SetIsVisible(false)
+        end
+        player.status = newStatus
+        
     end
     
 end
 
 function GUIInsight_PlayerFrames:SendKeyEvent( key, down )
 
-    if isVisible and key == InputKey.MouseButton0 and down then
-
+    if isVisible and key == InputKey.MouseButton0 then
+            
         local cursor = MouseTracker_GetCursorPos()
         
         for index, team in ipairs(self.teams) do
 
             local inside, posX, posY = GUIItemContainsPoint( team.Background, cursor.x, cursor.y )
             if inside then
-
+                local player = Client.GetLocalPlayer()
                 local index = math.floor( posY / (kPlayersPanelSize.y + kFrameYSpacing) ) + 1
                 local entityId = team.PlayerList[index].EntityId
-                -- Teleport to the mapblip with the same entityId
-                for _, blip in ientitylist(Shared.GetEntitiesWithClassname("MapBlip")) do
-
-                    if blip.ownerEntityId == entityId then
-                    
-                        local player = Client.GetLocalPlayer()
-                        local blipOrig = blip:GetOrigin()
-                        player:SetWorldScrollPosition(blipOrig.x-5, blipOrig.z)
-                        
-                    end
-                    
+        
+                local time = Shared.GetTime()
+                local timeSinceLastPress = time - self.timeLastMouseOne
+                // TODO this should make you follow player in overhead
+                if timeSinceLastPress < 0.3 then
+                    return true
                 end
-                self.FollowEntityId = entityId
-                return true
                 
+                if down and player.selectedId ~= entityId then
+                    Client.SendNetworkMessage("SpectatePlayer", {entityId = entityId}, true)
+                end
+                self.timeLastMouseOne = time
             end
-        
         end
-        
     end
-
-    self.FollowEntityId = nil
     return false
 
 end
@@ -431,8 +452,8 @@ function GUIInsight_PlayerFrames:CreateMarineBackground()
 
     -- Name text item. (Player Name / Structure Location)
     local nameItem = GUIManager:CreateTextItem()
-    nameItem:SetFontIsBold(true)
-    nameItem:SetFontSize(kTeamNameFontSize)
+    nameItem:SetFontName(kNameFontName)
+    nameItem:SetScale(kNameFontScale)
     nameItem:SetAnchor(GUIItem.Left, GUIItem.Top)
     nameItem:SetTextAlignmentX(GUIItem.Align_Min)
     nameItem:SetTextAlignmentY(GUIItem.Align_Max)
@@ -441,8 +462,8 @@ function GUIInsight_PlayerFrames:CreateMarineBackground()
 
     -- KDR text item.
     local KDRitem = GUIManager:CreateTextItem()
-    KDRitem:SetFontIsBold(true)
-    KDRitem:SetFontSize(kTeamInfoFontSize)
+    KDRitem:SetFontName(kInfoFontName)
+    KDRitem:SetScale(kInfoFontScale)
     KDRitem:SetAnchor(GUIItem.Left, GUIItem.Top)
     KDRitem:SetTextAlignmentX(GUIItem.Align_Max)
     KDRitem:SetTextAlignmentY(GUIItem.Align_Min)
@@ -452,8 +473,8 @@ function GUIInsight_PlayerFrames:CreateMarineBackground()
     
     -- Res text item.
     local detailItem = GUIManager:CreateTextItem()
-    detailItem:SetFontIsBold(true)
-    detailItem:SetFontSize(kTeamInfoFontSize)
+    detailItem:SetFontName(kInfoFontName)
+    detailItem:SetScale(kInfoFontScale)
     detailItem:SetAnchor(GUIItem.Left, GUIItem.Middle)
     detailItem:SetTextAlignmentX(GUIItem.Align_Max)
     detailItem:SetTextAlignmentY(GUIItem.Align_Min)
@@ -501,8 +522,8 @@ function GUIInsight_PlayerFrames:CreateAlienBackground()
 
     -- Name text item. (Player Name / Structure Location)
     local nameItem = GUIManager:CreateTextItem()
-    nameItem:SetFontIsBold(true)
-    nameItem:SetFontSize(kTeamNameFontSize)
+    nameItem:SetFontName(kNameFontName)
+    nameItem:SetScale(kNameFontScale)
     nameItem:SetAnchor(GUIItem.Right, GUIItem.Top)
     nameItem:SetTextAlignmentX(GUIItem.Align_Max)
     nameItem:SetTextAlignmentY(GUIItem.Align_Max)
@@ -511,8 +532,8 @@ function GUIInsight_PlayerFrames:CreateAlienBackground()
 
     -- KDR text item.
     local KDRitem = GUIManager:CreateTextItem()
-    KDRitem:SetFontIsBold(true)
-    KDRitem:SetFontSize(kTeamInfoFontSize)
+    KDRitem:SetFontName(kInfoFontName)
+    KDRitem:SetScale(kInfoFontScale)
     KDRitem:SetAnchor(GUIItem.Left, GUIItem.Top)
     KDRitem:SetPosition(Vector(GUIScale(2), 0, 0))
     KDRitem:SetTextAlignmentX(GUIItem.Align_Min)
@@ -522,8 +543,8 @@ function GUIInsight_PlayerFrames:CreateAlienBackground()
     
     -- Res text item.
     local detailItem = GUIManager:CreateTextItem()
-    detailItem:SetFontIsBold(true)
-    detailItem:SetFontSize(kTeamInfoFontSize)
+    detailItem:SetFontName(kInfoFontName)
+    detailItem:SetScale(kInfoFontScale)
     detailItem:SetAnchor(GUIItem.Left, GUIItem.Middle)
     detailItem:SetPosition(Vector(GUIScale(2), 0, 0))
     detailItem:SetTextAlignmentX(GUIItem.Align_Min)

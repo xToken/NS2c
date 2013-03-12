@@ -82,17 +82,6 @@ function CustomGroundMoveMixin:UpdateMove(input)
     // Note: Using self:GetVelocity() anywhere else in the movement code may lead to buggy behavior.
     local velocity = self:GetVelocity()
     
-    // If we were on ground at the end of last frame, zero out vertical velocity while
-    // calling GetIsOnGround, as to not trip it into thinking you're in the air when moving
-    // on curved surfaces
-    local oldOnGround = self.onGround
-    if oldOnGround then
-        local oldvelocity = velocity.y
-        velocity.y = 0
-        self:GetIsOnSurface()
-        velocity.y = oldvelocity
-    end
-    
     local wishdir = self:GoldSrc_GetWishVelocity(input)
     local wishspeed = wishdir:Normalize()
     
@@ -125,7 +114,11 @@ function CustomGroundMoveMixin:UpdateMove(input)
     if self.OnClampSpeed then
         self:OnClampSpeed(input, velocity)
     end
-
+    
+    if self:GetIsOnGround() then
+		velocity.y = 0
+    end
+    
     // Store new velocity
     self:SetVelocity(velocity)
     

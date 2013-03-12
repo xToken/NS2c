@@ -9,32 +9,6 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =======================
 
-function OnCommandSetName(client, name)
-
-    if client ~= nil and name ~= nil then
-
-        local player = client:GetControllingPlayer()
-
-        name = TrimName(name)
-        
-        // Treat "NsPlayer" as special
-        if name ~= player:GetName() and name ~= kDefaultPlayerName and string.len(name) > 0 then
-        
-            local prevName = player:GetName()
-            player:SetName(name)
-            
-            if prevName == kDefaultPlayerName then
-                Server.Broadcast(nil, string.format("%s connected.", player:GetName()))
-            elseif prevName ~= player:GetName() then
-                Server.Broadcast(nil, string.format("%s is now known as %s.", prevName, player:GetName()))
-            end
-            
-        end
-    
-    end
-    
-end
-
 function OnCommandSay(client, ...)
 
     if client == nil then
@@ -349,7 +323,6 @@ local function OnCommandBang(client, ...)
 end
 
 // Generic console commands
-Event.Hook("Console_name", OnCommandSetName)
 Event.Hook("Console_say", OnCommandSay)
 Event.Hook("Console_kill", OnCommandKill)
 Event.Hook("Console_killall", OnCommandKillAll)

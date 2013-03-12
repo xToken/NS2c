@@ -53,6 +53,20 @@ if Client then
 
 end
 
+function Embryo:OnCreate()
+
+    Alien.OnCreate(self)
+        
+    self.evolvePercentage = 0
+    
+    self.evolveTime = 0
+    
+    self.gestationTime = 0
+    
+    self.gestationTypeTechId = kTechId.None
+
+end
+
 function Embryo:OnInitialized()
 
     InitMixin(self, CameraHolderMixin, { kFov = kEmbryoFov })
@@ -66,14 +80,6 @@ function Embryo:OnInitialized()
     end
     
     self.originalAngles = Angles(self:GetAngles())
-    
-    self.evolvePercentage = 0
-    
-    self.evolveTime = 0
-    
-    self.gestationTime = 0
-    
-    self.gestationTypeTechId = kTechId.None
 
     if Client and Client.GetLocalPlayer() == self then
     
@@ -160,12 +166,6 @@ function Embryo:GetArmorFullyUpgradedAmount()
     return 0
 end
 
-function Embryo:OnInitLocalClient()
-
-    Alien.OnInitLocalClient(self)
-    
-end
-
 function Embryo:GetCanCatalystOverride()
     return self:GetIsAlive()
 end
@@ -239,11 +239,9 @@ function Embryo:GetEvolutionTime()
     return self.evolveTime
 end
 
-// Allow players to rotate view, chat, scoreboard, etc. but not move
+// Allow players to rotate view, chat, etc. but not move
 function Embryo:OverrideInput(input)
 
-    AdjustInputForInversion(input)
-    
     ClampInputPitch(input)
     
     // Completely override movement and commands
@@ -251,10 +249,19 @@ function Embryo:OverrideInput(input)
     input.move.y = 0
     input.move.z = 0
     
-    // Only allow some actions like going to menu, chatting and Scoreboard (not jump, use, etc.)
-    input.commands = bit.band(input.commands, Move.Exit) + bit.band(input.commands, Move.TeamChat) + bit.band(input.commands, Move.TextChat) + bit.band(input.commands, Move.Scoreboard) + bit.band(input.commands, Move.ShowMap)
+    // Only allow some actions like going to menu (not jump, use, etc.)
+    input.commands = bit.band(input.commands, Move.Exit)
     
     return input
+    
+end
+
+function Embryo:ConstrainMoveVelocity(moveVelocity)
+
+    // Embryos can't move    
+    moveVelocity.x = 0
+    moveVelocity.y = 0
+    moveVelocity.z = 0
     
 end
 

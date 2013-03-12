@@ -55,6 +55,11 @@ Hydra.kFov = 360
 
 kHydraDiggestDuration = 1
 
+local kInfestationRadius = 10
+local kInfestationGrowthRate = 0.25
+local kMinInfestationRadius = 0.1
+local kInfestationBlobDensity = 0.5
+
 if Server then
     Script.Load("lua/Hydra_Server.lua")
 end
@@ -80,6 +85,7 @@ AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
+AddMixinNetworkVars(InfestationMixin, networkVars)
 
 function Hydra:OnCreate()
 
@@ -116,6 +122,8 @@ function Hydra:OnCreate()
 end
 
 function Hydra:OnInitialized()
+
+	InitMixin(self, InfestationMixin)
 
     if Server then
     
@@ -185,6 +193,22 @@ end
 
 function Hydra:GetShowHitIndicator()
     return false
+end
+
+function Hydra:GetMaxRadius()
+    return kInfestationRadius
+end
+
+function Hydra:GetGrowthRate()
+    return kInfestationGrowthRate
+end
+
+function Hydra:GetMinRadius()
+    return kMinInfestationRadius
+end
+
+function Hydra:GetInfestationDensity()
+    return kInfestationBlobDensity
 end
 
 function Hydra:GetTracerEffectName()

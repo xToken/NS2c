@@ -20,7 +20,8 @@ kAlienTeamType = 2
 kRandomTeamType = 3
 
 // after 5 minutes players are allowed to give up a round
-kTimeGiveupPossible = 5 * 60
+kMinTimeBeforeConcede = 10 * 60
+kPercentNeededForVoteConcede = 0.75
 
 // Team colors
 kMarineFontName = "fonts/AgencyFB_large.fnt"
@@ -124,6 +125,7 @@ kMainMenuFlash = "ui/main_menu.swf"
 
 kPlayerStatus = enum( { "Hidden", "Dead", "Evolving", "Embryo", "Commander", "GrenadeLauncher", "Rifle", "Shotgun", "HeavyMachineGun", "Void", "Spectator", "Skulk", "Gorge", "Fade", "Lerk", "Onos" } )
 kPlayerCommunicationStatus = enum( {'None', 'Voice', 'Typing', 'Menu'} )
+kSpectatorMode = enum( { 'FreeLook', 'Overhead', 'Following', 'FirstPerson' } )
 
 kMaxAlienAbilities = 3
 

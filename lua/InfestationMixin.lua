@@ -86,6 +86,34 @@ end
 
 if Client then
 
+	local blobCache = { }
+
+	local function GetCachedBlobCoords(entity)
+
+		local id = entity:GetId()
+		local data = blobCache[id]
+		
+		if data and data.origin ~= entity:GetOrigin() then
+		
+			// Another cyst in another location has it.
+			blobCache[id] = nil
+			data = nil
+			
+		end
+		
+		return data and data.blobCoords or nil
+		
+	end
+
+	local function StoreCachedBlobCoords(entity, blobCoords)
+
+		local data = { }
+		data.blobCoords = blobCoords
+		data.origin = entity:GetOrigin()
+		blobCache[entity:GetId()] = data
+		
+	end
+
 	local Client_GetLocalPlayer = Client.GetLocalPlayer
         
     function InfestationMixin:ReturnPatchCoords(index)
@@ -312,7 +340,7 @@ if Client then
 		
 		if GetAreEnemies( self, Client_GetLocalPlayer()) then
             if HasMixin(self, "Cloakable") then
-                cloakFraction = self:GetCloakedFraction()
+                cloakFraction = self:GetCloakFraction()
             end
 		end
 		
@@ -651,14 +679,30 @@ if Client then
 		end
 
 		if self.numBlobsToGenerate > 0 then
-			numBlobGens = math.min(_numBlobsToGenerate, self.numBlobsToGenerate)
-			numBlobGens = self:PlaceBlobs(numBlobGens)
-			self.numBlobsToGenerate = self.numBlobsToGenerate - numBlobGens
-			_numBlobsToGenerate = _numBlobsToGenerate - numBlobGens
-			if _numBlobsToGenerate == 0 then
-				self:EnforceOutcropLimits()
-				self:LimitBlobsAspectRatio()
+		
+			local cachedBlobCoords = GetCachedBlobCoords(self)
+			
+			if cachedBlobCoords then
+			
+				self.blobCoords = cachedBlobCoords
+				self.growStartTime = Shared.GetTime()
+				self.numBlobsToGenerate = 0
+				
+			else
+			
+				numBlobGens = math.min(_numBlobsToGenerate, self.numBlobsToGenerate)
+				numBlobGens = self:PlaceBlobs(numBlobGens)
+				self.numBlobsToGenerate = self.numBlobsToGenerate - numBlobGens
+				_numBlobsToGenerate = _numBlobsToGenerate - numBlobGens
+				
+				if _numBlobsToGenerate == 0 then
+					self:EnforceOutcropLimits()
+					self:LimitBlobsAspectRatio()
+					StoreCachedBlobCoords(self, self.blobCoords)
+				end
+				
 			end
+			
 		end
 		
 		if self.numBlobsToGenerate == 0 then
@@ -695,7 +739,7 @@ if Client then
         local cloakFraction = 0
         if GetAreEnemies( self, Client_GetLocalPlayer() ) then
             // we may be invisible to enemies
-            cloakFraction = self:GetCloakedFraction()
+            cloakFraction = self:GetCloakFraction()
         end
 
         //Log("%s: %s, %s, %s, %s, %s", self, self.clientisalive, self.numBlobsToGenerate, cloakFraction, self:GetRadius(), self:GetMaxRadius()) 

@@ -6,8 +6,6 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
-local kIconUpdateRate = 0.5
-
 AlienActionFinderMixin = CreateMixin( AlienActionFinderMixin )
 AlienActionFinderMixin.type = "AlienActionFinder"
 
@@ -23,7 +21,7 @@ function AlienActionFinderMixin:__initmixin()
     if Client and Client.GetLocalPlayer() == self then
     
         self.actionIconGUI = GetGUIManager():CreateGUIScript("GUIActionIcon")
-        self.lastAlienActionFindTime = 0
+        self.actionIconGUI:SetColor(kAlienFontColor)
         
     end
 
@@ -46,52 +44,28 @@ if Client then
     
         PROFILE("AlienActionFinderMixin:OnProcessMove")
         
-        local gameStarted = self:GetGameStarted()
-        local prediction = Shared.GetIsRunningPrediction()
-        local now = Shared.GetTime()
-        local enoughTimePassed = (now - self.lastAlienActionFindTime) >= kIconUpdateRate
-        if gameStarted and not prediction and enoughTimePassed then
+        local ent = self:PerformUseTrace()
+        if ent and self:GetGameStarted() then
         
-            self.lastAlienActionFindTime = now
-            
-            local success = false
-            
-            if Client.GetOptionBoolean("showHints", true) and self:GetIsAlive() then
-            
-                local ent = self:PerformUseTrace()
-                if ent then
-                
-                    if GetPlayerCanUseEntity(self, ent) and not self:GetIsUsing() then
-                    
-                        // Don't show hint for an empty hive if you have a comm
-                        if not ent:isa("Hive") or not ScoreboardUI_GetTeamHasCommander(self:GetTeamNumber()) then
-                        
-                  			local hintText = nil
-                            if ent:isa("Hive") and ent:GetIsBuilt() then
-                                hintText = kNS2cLocalizedStrings.TELEPORT_HIVE
-                            elseif ent:isa("Hive") and not ent:GetIsBuilt() then
-                                hintText = kNS2cLocalizedStrings.ALERT_DANGER
-							elseif ent:isa("Shift") and ent:GetIsBuilt() then
-							    hintText = kNS2cLocalizedStrings.REDEPLOYMENT_UPGRADE
-							else
-								hintText = kNS2cLocalizedStrings.ALIEN_CONSTRUCT
-                            end
-                            
-                            self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Use"), nil, hintText)
-                            success = true
-                            
-                        end
-                        
+            if GetPlayerCanUseEntity(self, ent) and not self:GetIsUsing() then
+                if ent:isa("Hive") then
+					if ent:GetIsBuilt() then
+						self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Use"), nil, kNS2cLocalizedStrings.TELEPORT_HIVE, nil)
+                    else
+						self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Use"), nil, kNS2cLocalizedStrings.ALERT_DANGER, nil)
                     end
-                    
+                elseif ent:isa("Shift") and ent:GetIsBuilt() then
+                    self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Use"), nil, kNS2cLocalizedStrings.REDEPLOYMENT_UPGRADE, nil)
+				else
+                    self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Use"), nil, kNS2cLocalizedStrings.ALIEN_CONSTRUCT, nil)
                 end
                 
-            end
-            
-            if not success then
+            else
                 self.actionIconGUI:Hide()
             end
             
+        else
+            self.actionIconGUI:Hide()
         end
         
     end

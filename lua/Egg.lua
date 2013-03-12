@@ -60,6 +60,18 @@ AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
+if Server then
+    
+    local function SortByTechId(entId1, entId2)
+        
+        local ent1 = Shared.GetEntity(entId1)
+        local ent2 = Shared.GetEntity(entId2)
+    
+        return ent1 and ent2 and ent1:GetTechId() > ent2:GetTechId()
+        
+    end
+
+end
 
 function Egg:OnCreate()
 
@@ -371,7 +383,7 @@ function Egg:SetQueuedPlayerId(playerId, spawntime)
     if Server then
                 
         if playerToSpawn.SetSpectatorMode then
-            playerToSpawn:SetSpectatorMode(Spectator.kSpectatorMode.Following)
+            playerToSpawn:SetSpectatorMode(kSpectatorMode.Following)
         end
         
         playerToSpawn:SetFollowTarget(self)

@@ -238,13 +238,15 @@ function Alien:ProcessBuyAction(techIds)
     local lifeFormTechId = nil
     for _, techId in ipairs(techIds) do
         
-        if LookupTechData(techId, kTechDataGestationName) then
+        if LookupTechData(techId, kTechDataGestateName) then
             lifeFormTechId = techId
         else
             table.insertunique(upgradeIds, techId)
         end
         
     end
+
+    local oldLifeFormTechId = self:GetTechId()
     
     local upgradesAllowed = true
     local upgradeManager = AlienUpgradeManager()
@@ -341,7 +343,10 @@ function Alien:GetHealthPerArmorOverride(damageType, healthPerArmor)
     local newHealthPerArmor = healthPerArmor
 
     local team = self:GetTeam()
-    local numHives = team:GetActiveHiveCount()
+    local numHives = 1
+    if team.GetActiveHiveCount then
+        numHives = team:GetActiveHiveCount()
+    end
     
     // make sure not to ignore damage types
     if numHives >= 3 then

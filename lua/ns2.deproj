@@ -232,9 +232,6 @@
     <filename>GUIAlienHUD.lua</filename>
   </file>
   <file>
-    <filename>GUIAlienSpectatorHUD.lua</filename>
-  </file>
-  <file>
     <filename>GUICommanderAlerts.lua</filename>
   </file>
   <file>
@@ -448,6 +445,9 @@
     <filename>MapBlipMixin.lua</filename>
   </file>
   <file>
+    <filename>MapEntityLoader.lua</filename>
+  </file>
+  <file>
     <filename>Marine.lua</filename>
   </file>
   <file>
@@ -562,9 +562,6 @@
     <filename>Weapons\Alien\PrimalScreamMixin.lua</filename>
   </file>
   <file>
-    <filename>PropDynamic.lua</filename>
-  </file>
-  <file>
     <filename>PrototypeLab.lua</filename>
   </file>
   <file>
@@ -640,9 +637,6 @@
     <filename>Weapons\Alien\Smash.lua</filename>
   </file>
   <file>
-    <filename>Spectator.lua</filename>
-  </file>
-  <file>
     <filename>Weapons\Alien\SpikesMixin.lua</filename>
   </file>
   <file>
@@ -710,9 +704,6 @@
   </file>
   <file>
     <filename>UpgradeStructureManager.lua</filename>
-  </file>
-  <file>
-    <filename>WallMovementMixin.lua</filename>
   </file>
   <file>
     <filename>WeaponOwnerMixin.lua</filename>

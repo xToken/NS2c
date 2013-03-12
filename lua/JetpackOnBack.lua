@@ -308,7 +308,7 @@ function JetpackOnBack:OnUpdateAnimationInput(modelMixin)
     
     local player = self:GetParent()
     if player then
-        SetPlayerPoseParameters(self:GetParent(), self)
+        SetPlayerPoseParameters( player, self, player:GetHeadAngles() )
     end
     
     modelMixin:SetAnimationInput("flying", self.thrustersOpen)

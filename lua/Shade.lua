@@ -63,6 +63,11 @@ Shade.kCloakRadius = 20
 Shade.kCloakUpdateRate = 0.5
 Shade.kHiveSightRange = 25
 
+local kInfestationRadius = 10
+local kInfestationGrowthRate = 0.25
+local kMinInfestationRadius = 0.1
+local kInfestationBlobDensity = 0.5
+
 local networkVars = 
 { 
 }
@@ -85,6 +90,8 @@ AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
+AddMixinNetworkVars(InfestationMixin, networkVars)
+
 function Shade:OnCreate()
 
     ScriptActor.OnCreate(self)
@@ -129,7 +136,8 @@ function Shade:OnInitialized()
     ScriptActor.OnInitialized(self)
     
     self:SetModel(Shade.kModelName, Shade.kAnimationGraph)
-    
+    InitMixin(self, InfestationMixin)
+	
     if Server then
     
         InitMixin(self, StaticTargetMixin)
@@ -155,6 +163,22 @@ function Shade:GetDetectionRange()
         return Shade.kHiveSightRange
     end    
     return 0
+end
+
+function Shade:GetMaxRadius()
+    return kInfestationRadius
+end
+
+function Shade:GetGrowthRate()
+    return kInfestationGrowthRate
+end
+
+function Shade:GetMinRadius()
+    return kMinInfestationRadius
+end
+
+function Shade:GetInfestationDensity()
+    return kInfestationBlobDensity
 end
 
 function Shade:GetShowOrderLine()
@@ -276,9 +300,7 @@ if Server then
     function Shade:UpdateCloaking()
     
         for _, cloakable in ipairs( GetEntitiesWithMixinForTeamWithinRange("Cloakable", self:GetTeamNumber(), self:GetOrigin(), Shade.kCloakRadius) ) do
-        
-            cloakable:SetIsCloaked(true, 1, false)
-        
+            cloakable:TriggerCloak()
         end
         
         return self:GetIsAlive()
