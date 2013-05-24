@@ -27,7 +27,7 @@ GUIMarineBuyMenu.kArrowTexture = "ui/menu/arrow_horiz.dds"
 GUIMarineBuyMenu.kFont = "fonts/AgencyFB_small.fnt"
 GUIMarineBuyMenu.kFont2 = "fonts/AgencyFB_small.fnt"
 
-GUIMarineBuyMenu.kDescriptionFontName = "MicrogrammaDBolExt"
+GUIMarineBuyMenu.kDescriptionFontName = "fonts/MicrogrammaDMedExt_medium.fnt"
 GUIMarineBuyMenu.kDescriptionFontSize = GUIScale(20)
 
 GUIMarineBuyMenu.kScanLineHeight = GUIScale(256)
@@ -40,6 +40,9 @@ GUIMarineBuyMenu.kArrowTexCoords = { 1, 1, 0, 0 }
 // Big Item Icons
 GUIMarineBuyMenu.kBigIconSize = GUIScale( Vector(320, 256, 0) )
 GUIMarineBuyMenu.kBigIconOffset = GUIScale(20)
+
+local kEquippedMouseoverColor = Color(1, 1, 1, 1)
+local kEquippedColor = Color(0.5, 0.5, 0.5, 0.5)
 
 local gBigIconIndex = nil
 local bigIconWidth = 400
@@ -132,8 +135,6 @@ GUIMarineBuyMenu.kPadding = GUIScale(8)
 
 GUIMarineBuyMenu.kEquippedWidth = GUIScale(128)
 
-GUIMarineBuyMenu.kEquippedColor = Color(0.6, 0.6, 0.6, 0.6)
-
 GUIMarineBuyMenu.kBackgroundWidth = GUIScale(600)
 GUIMarineBuyMenu.kBackgroundHeight = GUIScale(520)
 // We want the background graphic to look centered around the circle even though there is the part coming off to the right.
@@ -209,12 +210,44 @@ function GUIMarineBuyMenu:Initialize()
     
 end
 
+/**
+ * Checks if the mouse is over the passed in GUIItem and plays a sound if it has just moved over.
+ */
+local function GetIsMouseOver(self, overItem)
+
+    local mouseOver = GUIItemContainsPoint(overItem, Client.GetCursorPosScreen())
+    if mouseOver and not self.mouseOverStates[overItem] then
+        MarineBuy_OnMouseOver()
+    end
+    self.mouseOverStates[overItem] = mouseOver
+    return mouseOver
+    
+end
+
+local function UpdateEquipped(self, deltaTime)
+
+    self.hoverItem = nil
+    for i = 1, #self.equipped do
+    
+        local equipped = self.equipped[i]
+        if GetIsMouseOver(self, equipped.Graphic) then
+        
+            self.hoverItem = equipped.TechId
+            equipped.Graphic:SetColor(kEquippedMouseoverColor)
+            
+        else
+            equipped.Graphic:SetColor(kEquippedColor)
+        end
+        
+    end
+    
+end
+
 function GUIMarineBuyMenu:Update(deltaTime)
 
     GUIAnimatedScript.Update(self, deltaTime)
 
-    self:_UpdateBackground(deltaTime)
-    self:_UpdateEquipped(deltaTime)
+    UpdateEquipped(self, deltaTime)
     self:_UpdateItemButtons(deltaTime)
     self:_UpdateContent(deltaTime)
     self:_UpdateResourceDisplay(deltaTime)
@@ -276,19 +309,13 @@ function GUIMarineBuyMenu:_InitializeBackground()
 
 end
 
-function GUIMarineBuyMenu:_UpdateBackground(deltaTime)
-
-    // TODO: create some fancy effect (screen of structure is projecting rays in our direction?)
-
-end
-
 function GUIMarineBuyMenu:_UninitializeBackground()
-    
+
     GUI.DestroyItem(self.background)
     self.background = nil
     
     self.content = nil
-
+    
 end
 
 function GUIMarineBuyMenu:_InitializeEquipped()
@@ -306,11 +333,10 @@ function GUIMarineBuyMenu:_InitializeEquipped()
     self.equippedTitle:SetAnchor(GUIItem.Middle, GUIItem.Top)
     self.equippedTitle:SetTextAlignmentX(GUIItem.Align_Center)
     self.equippedTitle:SetTextAlignmentY(GUIItem.Align_Center)
-    self.equippedTitle:SetColor(GUIMarineBuyMenu.kEquippedColor)
+    self.equippedTitle:SetColor(kEquippedColor)
     self.equippedTitle:SetPosition(Vector(0, GUIMarineBuyMenu.kResourceDisplayHeight / 2, 0))
     self.equippedTitle:SetText(Locale.ResolveString("EQUIPPED"))
     self.equippedBg:AddChild(self.equippedTitle)
-    
     
     self.equipped = { }
     
@@ -358,7 +384,6 @@ function GUIMarineBuyMenu:_InitializeItemButtons()
     self.menuHeaderTitle:SetColor(GUIMarineBuyMenu.kTextColor)
     self.menuHeaderTitle:SetText(Locale.ResolveString("BUY"))
     self.menuHeader:AddChild(self.menuHeaderTitle)
-    
     
     self.itemButtons = { }
     
@@ -428,31 +453,12 @@ function GUIMarineBuyMenu:_InitializeItemButtons()
 
 end
 
-GUIMarineBuyMenu.kEquippedMouseoverColor = Color(1,1,1,1)
-GUIMarineBuyMenu.kEquippedColor = Color(0.5, 0.5, 0.5, 0.5)
-
-function GUIMarineBuyMenu:_UpdateEquipped(deltaTime)
-
-    self.hoverItem = nil
-    for i, equipped in ipairs(self.equipped) do
-    
-        if self:_GetIsMouseOver(equipped.Graphic) then
-            self.hoverItem = equipped.TechId
-            equipped.Graphic:SetColor(GUIMarineBuyMenu.kEquippedMouseoverColor)
-        else
-            equipped.Graphic:SetColor(GUIMarineBuyMenu.kEquippedColor)
-        end    
-    
-    end
-    
-end
-
 local gResearchToWeaponIds = nil
 local function GetItemTechId(researchTechId)
 
     if not gResearchToWeaponIds then
     
-        gResearchToWeaponIds = {}
+        gResearchToWeaponIds = { }
         gResearchToWeaponIds[kTechId.ShotgunTech] = kTechId.Shotgun
         gResearchToWeaponIds[kTechId.GrenadeLauncherTech] = kTechId.GrenadeLauncher
         gResearchToWeaponIds[kTechId.WelderTech] = kTechId.Welder
@@ -470,25 +476,23 @@ function GUIMarineBuyMenu:_UpdateItemButtons(deltaTime)
 
     for i, item in ipairs(self.itemButtons) do
     
-        if self:_GetIsMouseOver(item.Button) then        
+        if GetIsMouseOver(self, item.Button) then
+        
             item.Highlight:SetIsVisible(true)
             self.hoverItem = item.TechId
-        else 
-           item.Highlight:SetIsVisible(false)
-       end
-       
-       local useColor = Color(1,1,1,1)
-
+            
+        else
+            item.Highlight:SetIsVisible(false)
+        end
+        
+        local useColor = Color(1, 1, 1, 1)
+        
         // set grey if not researched
         if not MarineBuy_IsResearched(item.TechId) then
-        
-            useColor = Color(0.5, 0.5, 0.5, .4) 
-   
+            useColor = Color(0.5, 0.5, 0.5, 0.4)
         // set red if can't afford
         elseif PlayerUI_GetPlayerResources() < MarineBuy_GetCosts(item.TechId) then
-        
            useColor = Color(1, 0, 0, 1)
-        
         // set normal visible
         else
 
@@ -694,12 +698,12 @@ end
 
 function GUIMarineBuyMenu:_UpdateCloseButton(deltaTime)
 
-    if self:_GetIsMouseOver(self.closeButton) then
+    if GetIsMouseOver(self, self.closeButton) then
         self.closeButton:SetColor(Color(1, 1, 1, 1))
     else
         self.closeButton:SetColor(Color(0.5, 0.5, 0.5, 1))
     end
-
+    
 end
 
 function GUIMarineBuyMenu:_UninitializeCloseButton()
@@ -726,74 +730,12 @@ function GUIMarineBuyMenu:_GetResearchInfo(techId)
     return researched, researchProgress, researching
 end
 
-/**
- * Checks if the mouse is over the passed in GUIItem and plays a sound if it has just moved over.
- */
-function GUIMarineBuyMenu:_GetIsMouseOver(overItem)
+local function HandleItemClicked(self, mouseX, mouseY)
 
-    local mouseOver = GUIItemContainsPoint(overItem, Client.GetCursorPosScreen())
-    if mouseOver and not self.mouseOverStates[overItem] then
-        MarineBuy_OnMouseOver()
-    end
-    self.mouseOverStates[overItem] = mouseOver
-    return mouseOver
+    for i = 1, #self.itemButtons do
     
-end
-
-function GUIMarineBuyMenu:SendKeyEvent(key, down)
-
-    local closeMenu = false
-    local inputHandled = false
-    
-    if key == InputKey.MouseButton0 and self.mousePressed ~= down then
-
-        self.mousePressed = down
-        
-        local mouseX, mouseY = Client.GetCursorPosScreen()
-        if down then
-                    
-            inputHandled, closeMenu = self:_HandleItemClicked(mouseX, mouseY) or inputHandled
-            
-            if not inputHandled then
-            
-                // Check if the close button was pressed.
-                if self:_GetIsMouseOver(self.closeButton) then
-                    closeMenu = true
-                    inputHandled = true
-                    MarineBuy_OnClose()
-                end
-            end
-        end
-        
-    end
-    
-    if InputKey.Escape == key and not down then
-        closeMenu = true
-        inputHandled = true
-        MarineBuy_OnClose()
-    end
-
-    if closeMenu then
-        self.closingMenu = true
-        MarineBuy_Close()
-    end
-    
-    return inputHandled
-    
-end
-
-function GUIMarineBuyMenu:_SetSelectedItem(techId)
-
-    self.selectedItem = techId
-    MarineBuy_OnItemSelect(techId)
-
-end
-
-function GUIMarineBuyMenu:_HandleItemClicked(mouseX, mouseY)
-
-    for i, item in ipairs(self.itemButtons) do
-    
-        if self:_GetIsMouseOver(item.Button) then
+        local item = self.itemButtons[i]
+        if GetIsMouseOver(self, item.Button) then
         
             local researched, researchProgress, researching = self:_GetResearchInfo(item.TechId)
             local itemCost = MarineBuy_GetCosts(item.TechId)
@@ -809,10 +751,60 @@ function GUIMarineBuyMenu:_HandleItemClicked(mouseX, mouseY)
                 
             end
             
-        end 
+        end
         
     end
     
     return false, false
+    
+end
+
+function GUIMarineBuyMenu:SendKeyEvent(key, down)
+
+    local closeMenu = false
+    local inputHandled = false
+    
+    if key == InputKey.MouseButton0 and self.mousePressed ~= down then
+    
+        self.mousePressed = down
+        
+        local mouseX, mouseY = Client.GetCursorPosScreen()
+        if down then
+        
+            inputHandled, closeMenu = HandleItemClicked(self, mouseX, mouseY) or inputHandled
+            
+            if not inputHandled then
+            
+                // Check if the close button was pressed.
+                if GetIsMouseOver(self, self.closeButton) then
+                
+                    closeMenu = true
+                    inputHandled = true
+                    MarineBuy_OnClose()
+                    
+                end
+                
+            end
+            
+        end
+        
+    end
+    
+    if InputKey.Escape == key and not down then
+    
+        closeMenu = true
+        inputHandled = true
+        MarineBuy_OnClose()
+        
+    end
+    
+    if closeMenu then
+    
+        self.closingMenu = true
+        MarineBuy_Close()
+        
+    end
+    
+    return inputHandled
     
 end

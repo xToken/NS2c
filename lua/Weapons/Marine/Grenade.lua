@@ -27,6 +27,27 @@ local networkVars = { }
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
+-- Blow up after a time.
+local function UpdateLifetime(self)
+
+    // Grenades are created in predict movement, so in order to get the correct
+    // lifetime, we start counting our lifetime from the first UpdateLifetime rather than when
+    // we were created
+    if not self.endOfLife then
+        self.endOfLife = Shared.GetTime() + kGrenadeLifetime
+    end
+    
+    local fuse = self.endOfLife - Shared.GetTime()
+    if fuse <= 0 then
+    
+        self:Detonate(nil)
+        return false
+        
+    end
+    
+    return true
+    
+end
 
 function Grenade:OnCreate()
 
@@ -36,16 +57,21 @@ function Grenade:OnCreate()
     InitMixin(self, ModelMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
+	
+
+	if Server then
     
-    // don't start our lifetime from here, start it from the first actual tick the grenade exists.
-    self:SetNextThink(0.01)
-    self.endOfLife = nil
+        self:AddTimedCallback(UpdateLifetime, 0.1)
+        self.endOfLife = nil
+        
+    end
     
 end
 
 function Grenade:GetProjectileModel()
     return Grenade.kModelName
-end 
+end
+
 function Grenade:GetDeathIconIndex()
     return kDeathMessageIcon.Grenade
 end
@@ -57,31 +83,11 @@ end
 if Server then
 
     function Grenade:ProcessHit(targetHit, surface)
+    
         if targetHit and (HasMixin(targetHit, "Live") and GetGamerules():CanEntityDoDamageTo(self, targetHit)) and self:GetOwner() ~= targetHit then
-            self:Detonate(targetHit)            
-        else
-            if self:GetVelocity():GetLength() > 2 then
-                self:TriggerEffects("grenade_bounce")
-            end
-        end
-        
-    end
-
-    // Blow up after a time
-    function Grenade:OnThink()
-    
-        // Grenades are created in predict movement, so in order to get the correct
-        // lifetime, we start counting our lifetime from the first OnThink rather than when
-        // we were created
-        if not self.endOfLife then
-            self.endOfLife = Shared.GetTime() + kGrenadeLifetime
-        end
-    
-        local delta = self.endOfLife - Shared.GetTime()
-        if delta > 0 then
-            self:SetNextThink(delta)
-         else
-            self:Detonate(nil)
+            self:Detonate(targetHit)
+        elseif self:GetVelocity():GetLength() > 2 then
+            self:TriggerEffects("grenade_bounce")
         end
         
     end
@@ -115,12 +121,9 @@ if Server then
         
         // TODO: use what is defined in the material file
         local surface = GetSurfaceFromEntity(targetHit)
-        
-        local params = {surface = surface}
-        if not targetHit then
-            params[kEffectHostCoords] = Coords.GetLookIn( self:GetOrigin(), self:GetCoords().zAxis )
-        end
-        
+                
+        local params = { surface = surface }
+        params[kEffectHostCoords] = Coords.GetLookIn( self:GetOrigin(), self:GetCoords().zAxis)        
         self:TriggerEffects("grenade_explode", params)
         
         CreateExplosionDecals(self)
@@ -138,11 +141,8 @@ if Server then
             self.endOfLife = 0
         end
         
-        // Prolong thinktime a bit to give it time to get out of range
-        // when we prep it, there is half a second left until it gets hit, 
-        // and we need it to travel at least one second after that to get out
-        // of range properly
-        self.endOfLife = math.max(self.endOfLife, Shared.GetTime() + 1.5)
+        // Prolong lifetime a bit to give it time to get out of range.
+        self.endOfLife = math.max(self.endOfLife, Shared.GetTime() + 2)
         self.prepTime = Shared.GetTime()
         
     end

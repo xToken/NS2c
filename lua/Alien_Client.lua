@@ -24,11 +24,67 @@ function PlayerUI_GetActiveHiveCount()
 
 end
 
+local kEggDisplayRange = 30
+local kEggDisplayOffset = Vector(0, 0.8, 0)
+function PlayerUI_GetEggDisplayInfo()
+
+    local eggDisplay = {}
+    
+    local player = Client.GetLocalPlayer()
+    local animOffset = kEggDisplayOffset + kEggDisplayOffset * math.sin(Shared.GetTime() * 3) * 0.2
+    
+    if player then
+    
+        local eyePos = player:GetEyePos()         
+        for index, egg in ipairs(GetEntitiesForTeamWithinRange("Egg", player:GetTeamNumber(), player:GetEyePos(), kEggDisplayRange)) do
+        
+            local techId = egg:GetGestateTechId()
+            
+            if techId and (techId == kTechId.Gorge or techId == kTechId.Lerk or techId == kTechId.Fade or techId == kTechId.Onos) then
+            
+                local normToEntityVec = GetNormalizedVector(egg:GetOrigin() - eyePos)
+                local normViewVec = player:GetViewAngles():GetCoords().zAxis
+               
+                local dotProduct = normToEntityVec:DotProduct(normViewVec)
+                
+                if dotProduct > 0 then                
+                    table.insert(eggDisplay, { Position = Client.WorldToScreen(egg:GetOrigin() + animOffset), TechId = techId } )                
+                end
+            
+            end
+        
+        end
+        
+        if player:isa("Commander") then
+        
+            for index, egg in ipairs(GetEntitiesForTeamWithinRange("Embryo", player:GetTeamNumber(), player:GetEyePos(), kEggDisplayRange)) do
+            
+                local techId = egg:GetGestationTechId()
+
+                local normToEntityVec = GetNormalizedVector(egg:GetOrigin() - eyePos)
+                local normViewVec = player:GetViewAngles():GetCoords().zAxis
+               
+                local dotProduct = normToEntityVec:DotProduct(normViewVec)
+                
+                if dotProduct > 0 then                
+                    table.insert(eggDisplay, { Position = Client.WorldToScreen(egg:GetOrigin() + animOffset), TechId = techId } )                
+                end
+            
+            end
+        
+        end
+        
+    end
+    
+    return eggDisplay
+
+end
+
 function PlayerUI_GetHiveInformation()
     
     local player = Client.GetLocalPlayer()
     
-    if player.hivesinfo ~= { } then
+    if player and player.hivesinfo ~= nil and player.hivesinfo ~= { } then
         for i = 1, #player.hivesinfo do
             local hiveinfo = player.hivesinfo[i]
             if hiveinfo ~= nil then
@@ -36,9 +92,7 @@ function PlayerUI_GetHiveInformation()
                     table.removevalue(player.hivesinfo, hiveinfo)
                 end
             end
-        end      
-    end
-    if player then
+        end
         return player.hivesinfo
     end
     
@@ -79,6 +133,20 @@ function AlienUI_GetChamberCount(techId)
         end
      end
      return 0
+end
+
+function PlayerUI_GetCanSpawn()
+
+    local player = Client.GetLocalPlayer()
+    
+    if player and player:isa("AlienSpectator") then
+    
+        return player:GetIsValidToSpawn()
+        
+    end
+
+    return true
+    
 end
 
 // array of totalPower, minPower, xoff, yoff, visibility (boolean), hud slot
@@ -325,10 +393,37 @@ function PlayerUI_GetPlayerMaxEnergy()
 end
 
 function Alien:OnKillClient()
-
     Player.OnKillClient(self)
-    
     self:DestroyGUI()
+end
+
+function Alien:OnInitLocalClient()
+
+    Player.OnInitLocalClient(self)
+    
+    if self:GetTeamNumber() ~= kTeamReadyRoom then
+    
+        if self.alienHUD == nil then
+            self.alienHUD = GetGUIManager():CreateGUIScript("GUIAlienHUD")
+        end
+
+        if self.sensorBlips == nil then
+            self.sensorBlips = GetGUIManager():CreateGUIScript("GUISensorBlips")
+        end 
+        
+        if self.objectiveDisplay == nil then
+            self.objectiveDisplay = GetGUIManager():CreateGUIScript("GUIObjectiveDisplay")
+        end
+        
+        if self.progressDisplay == nil then
+            self.progressDisplay = GetGUIManager():CreateGUIScript("GUIProgressBar")
+        end
+        
+        if self.requestMenu == nil then
+            self.requestMenu = GetGUIManager():CreateGUIScript("GUIRequestMenu")
+        end
+        
+    end
     
 end
 
@@ -400,7 +495,7 @@ function Alien:CloseMenu()
         
         MouseTracker_SetIsVisible(false)
         
-        // Quick work-around to not fire weapon when closing menu.
+        // Quick work-around to not fire weapon when closing menu
         self.timeClosedMenu = Shared.GetTime()
         
         return true
@@ -456,16 +551,20 @@ function Alien:OnCountDown()
 
     Player.OnCountDown(self)
     
-    ClientUI.GetScript("GUIAlienHUD"):SetIsVisible(false)
-    
+    if self.alienHUD then
+        self.alienHUD:SetIsVisible(false)
+    end
+
 end
 
 function Alien:OnCountDownEnd()
 
     Player.OnCountDownEnd(self)
     
-    ClientUI.GetScript("GUIAlienHUD"):SetIsVisible(true)
-    
+    if self.alienHUD then
+        self.alienHUD:SetIsVisible(true)
+    end
+
 end
 
 function Alien:GetPlayFootsteps()

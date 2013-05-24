@@ -11,6 +11,10 @@ Script.Load("lua/Weapons/Alien/CragAbility.lua")
 Script.Load("lua/Weapons/Alien/ShiftAbility.lua")
 Script.Load("lua/Weapons/Alien/ShadeAbility.lua")
 Script.Load("lua/Weapons/Alien/WhipAbility.lua")
+Script.Load("lua/Weapons/Alien/HydraAbility.lua")
+Script.Load("lua/Weapons/Alien/WebsAbility.lua")
+Script.Load("lua/Weapons/Alien/HarvesterAbility.lua")
+Script.Load("lua/Weapons/Alien/HiveAbility.lua")
 
 class 'DropStructureAbility' (Ability)
 
@@ -19,12 +23,10 @@ DropStructureAbility.kMapName = "drop_structure_ability"
 local kCreateFailSound = PrecacheAsset("sound/NS2.fev/alien/gorge/create_fail")
 local kAnimationGraph = PrecacheAsset("models/alien/gorge/gorge_view.animation_graph")
 
-DropStructureAbility.kSupportedStructures = { CragStructureAbility, ShiftStructureAbility, ShadeStructureAbility, WhipStructureAbility }
+DropStructureAbility.kSupportedStructures = { CragStructureAbility, ShiftStructureAbility, ShadeStructureAbility, WhipStructureAbility, HarvesterStructureAbility, HiveStructureAbility, HydraStructureAbility, WebsAbility }
 
 local networkVars =
 {
-    lastSecondaryAttackTime = "float",
-    lastCreatedId = "entityid"
 }
 
 function DropStructureAbility:GetAnimationGraphName()
@@ -32,7 +34,13 @@ function DropStructureAbility:GetAnimationGraphName()
 end
 
 function DropStructureAbility:GetActiveStructure()
-    return DropStructureAbility.kSupportedStructures[self.activeStructure]
+
+    if self.activeStructure == nil then
+        return nil
+    else
+        return DropStructureAbility.kSupportedStructures[self.activeStructure]
+    end
+
 end
 
 function DropStructureAbility:OnCreate()
@@ -41,11 +49,12 @@ function DropStructureAbility:OnCreate()
     
     self.dropping = false
     self.mouseDown = false
-    self.showGhost = false
-    self.droppedStructure = false
-    self.activeStructure = 1
-    self.lastSecondaryAttackTime = 0
-    self.lastCreatedId = Entity.invalidId
+    self.activeStructure = nil
+	self.lastClickedPosition = nil
+    if Server then
+        self.lastCreatedId = Entity.invalidId
+    end
+
     
 end
 
@@ -54,11 +63,7 @@ function DropStructureAbility:GetDeathIconIndex()
 end
 
 function DropStructureAbility:SetActiveStructure(structureNum)
-
     self.activeStructure = structureNum
-    self.showGhost = true
-    self.droppedStructure = false
-    
 end
 
 function DropStructureAbility:GetSecondaryTechId()
@@ -73,14 +78,15 @@ function DropStructureAbility:OnPrimaryAttack(player)
 
     if Client then
 
-        if not self.dropping and not self.mouseDown then
+        if self.activeStructure ~= nil
+        and not self.dropping
+        and not self.mouseDown then
         
             self.mouseDown = true
         
             if player:GetEnergy() >= kDropStructureEnergyCost then
             
                 if self:PerformPrimaryAttack(player) then
-                    self.showGhost = false
                     self.dropping = true
                 end
 
@@ -98,12 +104,8 @@ function DropStructureAbility:OnPrimaryAttackEnd(player)
 
     if not Shared.GetIsRunningPrediction() then
     
-        //if Client and self.dropping then
-            //self:OnSetActive()
-        //end
-        
-        if player and player:GetWeapon("spitspray") then
-            player:SetActiveWeapon("spitspray")
+        if Client and self.dropping then
+            self:OnSetActive()
         end
 
         self.dropping = false
@@ -126,7 +128,7 @@ function DropStructureAbility:GetDamageType()
 end
 
 function DropStructureAbility:GetHUDSlot()
-    return 3
+    return 2
 end
 
 function DropStructureAbility:GetHasSecondary(player)
@@ -135,14 +137,8 @@ end
 
 function DropStructureAbility:OnSecondaryAttack(player)
 
-    self.droppedStructure = true
-        
-    //if player and self.previousWeaponMapName and player:GetWeapon(self.previousWeaponMapName) then
-        //player:SetActiveWeapon(self.previousWeaponMapName)
-    //end
-            
-    if player and player:GetWeapon("spitspray") then
-        player:SetActiveWeapon("spitspray")
+    if player and self.previousWeaponMapName and player:GetWeapon(self.previousWeaponMapName) then
+        player:SetActiveWeapon(self.previousWeaponMapName)
     end
     
 end
@@ -152,6 +148,10 @@ function DropStructureAbility:GetSecondaryEnergyCost(player)
 end
 
 function DropStructureAbility:PerformPrimaryAttack(player)
+
+    if self.activeStructure == nil then
+        return false
+    end 
 
     local success = false
 
@@ -173,6 +173,7 @@ function DropStructureAbility:PerformPrimaryAttack(player)
 
                 local message = BuildGorgeDropStructureMessage(player:GetEyePos(), player:GetViewCoords().zAxis, self.activeStructure, self.lastClickedPosition)
                 Client.SendNetworkMessage("GorgeBuildStructure", message, true)
+                self.timeLastDrop = Shared.GetTime()
                 success = true
 
             end
@@ -200,14 +201,22 @@ local function DropStructure(self, player, origin, direction, structureAbility, 
     
         local coords, valid, onEntity = self:GetPositionForStructure(origin, direction, structureAbility, lastClickedPosition)
         local techId = structureAbility:GetDropStructureId()
+        
+        local maxStructures = -1
+        
+        if not LookupTechData(techId, kTechDataAllowConsumeDrop, false) then
+            maxStructures = LookupTechData(techId, kTechDataMaxAmount, 0) 
+        end
+        
+        valid = valid and self:GetNumStructuresBuilt(techId) ~= maxStructures // -1 is unlimited
+        
         local cost = LookupTechData(structureAbility:GetDropStructureId(), kTechDataCostKey, 0)
         local enoughRes = player:GetResources() >= cost
         local enoughEnergy = player:GetEnergy() >= kDropStructureEnergyCost
         
-        if valid and enoughRes and structureAbility:IsAllowed(player) and UpgradeBaseHivetoChamberSpecific(player, techId) and enoughEnergy then
+        if valid and enoughRes and structureAbility:IsAllowed(player) and enoughEnergy then
         
             // Create structure
-            // Check for override of Technode availablitiy
             local structure = self:CreateStructure(coords, player, structureAbility)
             if structure then
             
@@ -226,7 +235,7 @@ local function DropStructure(self, player, origin, direction, structureAbility, 
                     
                     player:AddResources(-cost)
                     
-                    if self:GetActiveStructure():GetStoreBuildId() then
+                    if structureAbility:GetStoreBuildId() then
                         self.lastCreatedId = structure:GetId()
                     end
                     
@@ -236,6 +245,8 @@ local function DropStructure(self, player, origin, direction, structureAbility, 
                     if structureAbility.OnStructureCreated then
                         structureAbility:OnStructureCreated(structure, lastClickedPosition)
                     end
+                    
+                    self.timeLastDrop = Shared.GetTime()
                     
                     return true
                     
@@ -301,6 +312,7 @@ function DropStructureAbility:GetPositionForStructure(startPosition, direction, 
     local range = structureAbility.GetDropRange()
     local origin = startPosition + direction * range
     local player = self:GetParent()
+    local adjustedcoords
 
     // Trace short distance in front
     local trace = Shared.TraceRay(player:GetEyePos(), origin, CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls, EntityFilterTwo(player, self))
@@ -330,10 +342,8 @@ function DropStructureAbility:GetPositionForStructure(startPosition, direction, 
         validPosition = false
     end
     
-    if not structureAbility:GetIsPositionValid(displayOrigin, player, trace.normal, lastClickedPosition, trace.entity) then
-        validPosition = false
-    end    
-    
+    validPosition, adjustedcoords = structureAbility:GetIsPositionValid(displayOrigin, player, trace.normal, lastClickedPosition, trace.entity)
+     
     // Don't allow placing above or below us and don't draw either
     local structureFacing = Vector(direction)
     
@@ -349,6 +359,10 @@ function DropStructureAbility:GetPositionForStructure(startPosition, direction, 
     
     local coords = Coords.GetLookIn( displayOrigin, structureFacing, trace.normal )
     
+    if validPosition and adjustedcoords then
+        coords = adjustedcoords
+    end    
+    
     if structureAbility.ModifyCoords then
         structureAbility:ModifyCoords(coords, lastClickedPosition)
     end
@@ -363,6 +377,7 @@ function DropStructureAbility:OnDraw(player, previousWeaponMapName)
 
     self.previousWeaponMapName = previousWeaponMapName
     self.dropping = false
+    self.activeStructure = nil
 
 end
 
@@ -381,12 +396,8 @@ function DropStructureAbility:OnUpdateAnimationInput(modelMixin)
     
 end
 
-function DropStructureAbility:GetUnassignedHives()
-    return self.unassignedhives
-end
-
 function DropStructureAbility:GetShowGhostModel()
-    return self.showGhost
+    return self.activeStructure ~= nil
 end
 
 function DropStructureAbility:GetGhostModelCoords()
@@ -398,7 +409,13 @@ function DropStructureAbility:GetIsPlacementValid()
 end
 
 function DropStructureAbility:GetGhostModelTechId()
-    return self:GetActiveStructure():GetDropStructureId()
+
+    if self.activeStructure == nil then
+        return nil
+    else
+        return self:GetActiveStructure():GetDropStructureId()
+    end
+
 end
 
 if Client then
@@ -408,7 +425,7 @@ if Client then
         local player = self:GetParent()
         local viewDirection = player:GetViewCoords().zAxis
 
-        if player then
+        if player and self.activeStructure then
 
             self.ghostCoords, self.placementValid = self:GetPositionForStructure(player:GetEyePos(), viewDirection, self:GetActiveStructure(), self.lastClickedPosition)
             
@@ -422,18 +439,10 @@ if Client then
     
     function DropStructureAbility:CreateBuildMenu()
     
-        if not self.buildMenu then
-        
-            self.buildMenu = GetGUIManager():CreateGUIScript("GUIGorgeBuildMenu")
-            self.droppedStructure = false
-            self.showGhost = false
-            
+        if not self.buildMenu then        
+            self.buildMenu = GetGUIManager():CreateGUIScript("GUIGorgeBuildMenu")            
         end
         
-    end
-
-    function DropStructureAbility:OnSetActive()    
-        self:CreateBuildMenu()    
     end
     
     function DropStructureAbility:DestroyBuildMenu()
@@ -454,34 +463,78 @@ if Client then
         
     end
     
+    function DropStructureAbility:OnKillClient()
+        self.menuActive = false
+    end
+    
     function DropStructureAbility:OnDrawClient()
     
         Ability.OnDrawClient(self)
         
-        if self:GetParent() == Client.GetLocalPlayer() then
-            self:CreateBuildMenu()
+        // We need this here in case we switch to it via Prev/NextWeapon keys
+        
+        // Do not show menu for other players or local spectators.
+        local player = self:GetParent()
+        if player:GetIsLocalPlayer() and self:GetActiveStructure() == nil and Client.GetIsControllingPlayer() then
+            self.menuActive = true
         end
         
     end
     
+    local function UpdateGUI(self, player)
+
+        local localPlayer = Client.GetLocalPlayer()
+        if localPlayer == player then
+            self:CreateBuildMenu()
+        end
+ 
+        if self.buildMenu then
+            self.buildMenu:SetIsVisible(player and localPlayer == player and player:isa("Gorge") and self.menuActive)
+        end
+    
+    end
+
     function DropStructureAbility:OnHolsterClient()
     
+        self.menuActive = false
         Ability.OnHolsterClient(self)
         
-        if self:GetParent() == Client.GetLocalPlayer() then
-            self:DestroyBuildMenu()
-        end
-        
+    end
+    
+    function DropStructureAbility:OnSetActive()
     end
     
     function DropStructureAbility:OverrideInput(input)
     
         if self.buildMenu then
-            input = self.buildMenu:OverrideInput(input)
-        end
+
+            // Build menu is up, let it handle input
+            if self.buildMenu:GetIsVisible() then
+            
+                local selected = false
+                input, selected = self.buildMenu:OverrideInput(input)
+                self.menuActive = not selected
+                
+            else
+
+                // If player wants to switch to this, open build menu immediately
+                local weaponSwitchCommands = { Move.Weapon1, Move.Weapon2, Move.Weapon3, Move.Weapon4, Move.Weapon5 }
+                local thisCommand = weaponSwitchCommands[ self:GetHUDSlot() ]
+
+                if bit.band( input.commands, thisCommand ) ~= 0 then
+                    self.menuActive = true
+                end
+
+            end
+            
+        end    
         
         return input
         
+    end
+    
+    function DropStructureAbility:OnUpdateRender()
+        UpdateGUI(self, self:GetParent())    
     end
     
 end

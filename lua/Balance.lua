@@ -12,8 +12,6 @@ Script.Load("lua/BalanceMisc.lua")
 
 // used as fallback
 kDefaultBuildTime = 60
-// 2 = Hold Space, 1 = Queued Jumping like Quake, 0 = Default NS2
-kJumpMode = 2
 
 // Resource Costs/Build/Research Times
 kCommandStationCost = 20
@@ -21,10 +19,12 @@ kExtractorCost = 15
 kInfantryPortalCost = 20
 kArmoryCost = 10
 kArmsLabCost = 20
-kAdvancedArmoryUpgradeCost = 30
 kPrototypeLabCost = 40
 kSentryCost = 10
-kCatPackCost = 3
+kARCCost = 15
+kPhaseGateCost = 15
+kObservatoryCost = 15
+
 kRifleDropCost = 1
 kWelderDropCost = 5
 kMinesDropCost = 10
@@ -34,56 +34,72 @@ kGrenadeLauncherDropCost = 15
 kJetpackDropCost = 12
 kHeavyArmorDropCost = 15
 kRoboticsFactoryCost = 10
-kARCCost = 15
-kPhaseGateCost = 15
 kAmmoPackCost = 1
 kMedPackCost = 2
+kCatPackCost = 3
 kObservatoryScanCost = 20
 kObservatoryDistressBeaconCost = 15
 
 kJetpackTechResearchCost = 45
+kJetpackTechResearchTime = 75
+
 kHeavyArmorTechResearchCost = 40
+kHeavyArmorTechResearchTime = 110
+
 kWeapons1ResearchCost = 20
+kWeapons1ResearchTime = 60
 kWeapons2ResearchCost = 30
+kWeapons2ResearchTime = 90
 kWeapons3ResearchCost = 40
+kWeapons3ResearchTime = 120
+
 kArmor1ResearchCost = 20
+kArmor1ResearchTime = 60
 kArmor2ResearchCost = 30
+kArmor2ResearchTime = 90
 kArmor3ResearchCost = 40
+kArmor3ResearchTime = 120
+
+kAdvancedArmoryUpgradeCost = 30
+kAdvancedArmoryResearchTime = 180
+
 kCatPackTechResearchCost = 10
-kObservatoryCost = 15
+kCatPackTechResearchTime = 15
+
 kPhaseTechResearchCost = 15
+kPhaseTechResearchTime = 45
+
 kUpgradeRoboticsFactoryCost = 15
+kUpgradeRoboticsFactoryTime = 30
+
 kMotionTrackingResearchCost = 35
+kMotionTrackingResearchTime = 100
+
 kHandGrenadesTechResearchCost = 10
+kHandGrenadesTechResearchTime = 45
+
 kRecycleTime = 20
 
-kUpgradeRoboticsFactoryTime = 30
 kArmoryBuildTime = 15
-kAdvancedArmoryResearchTime = 180
-kWeaponsModuleAddonTime = 40
 kPrototypeLabBuildTime = 20
 kArmsLabBuildTime = 19
 kExtractorBuildTime = 15
 kInfantryPortalBuildTime = 10
 kCommandStationBuildTime = 15
 kRoboticsFactoryBuildTime = 15
-kARCBuildTime = 10
 kSentryBuildTime = 7
 kArcBuildTime  = 10
-kJetpackTechResearchTime = 75
-kHeavyArmorTechResearchTime = 110
-kCatPackTechResearchTime = 15
 kObservatoryBuildTime = 15
-kPhaseTechResearchTime = 45
-kMotionTrackingResearchTime = 100
 kPhaseGateBuildTime = 12
-kWeapons1ResearchTime = 60
-kWeapons2ResearchTime = 90
-kWeapons3ResearchTime = 120
-kArmor1ResearchTime = 60
-kArmor2ResearchTime = 90
-kArmor3ResearchTime = 120
-kHandGrenadesTechResearchTime = 45
+
+
+
+
+
+
+
+
+
 
 kHiveCost = 40
 kHarvesterCost = 15
@@ -156,7 +172,7 @@ kPistolDamage = 20
 kPistolDamageType = kDamageType.Normal
 kPistolClipSize = 10
 kPistolWeight = 0.01
-kPistolFireDelay = 0.08
+kPistolFireDelay = 0.1
 kPistolClipWeight = 0.01
 
 kWelderDamage = 4
@@ -185,9 +201,9 @@ kShotgunDamageType = kDamageType.Normal
 kShotgunClipSize = 8
 kShotgunBulletsPerShot = 10
 kShotgunMaxRange = 18
-kShotgunMinSpread = 3
+kShotgunMinSpread = 10
 kShotgunMinSpreadBullets = 5
-kShotgunMaxSpread = 6
+kShotgunMaxSpread = 18
 //kShotgunDropOffStartRange = 4
 kShotgunWeight = 0.07
 kShotgunShellWeight = 0.0025
@@ -227,6 +243,7 @@ kSentriesPerFactory = 3
 kARCDamage = 400
 kARCDamageType = kDamageType.StructuresOnly
 kARCRange = 25 //1100 NS1 - Bigger than NS1, dropping to 25
+kArcsPerFactory = 3
 
 kWeapons1DamageScalar = 1.1
 kWeapons2DamageScalar = 1.2
@@ -292,6 +309,8 @@ kWebImobilizeTime = 3
 kWebEngagementRange = 2
 kMinWebLength = 2
 kMaxWebLength = 20
+
+kLerkFlapEnergyCost = 3
 
 kLerkBiteDamage = 60
 kLerkBiteEnergyCost = 5
@@ -379,7 +398,7 @@ kDevourMeleeBaseHeight = 0.7
 
 kStompEnergyCost = 30
 kStompRange = 12
-kDisruptMarineTime = 2
+kStunMarineTime = 2
 
 kSmashDamage = 125
 kSmashDamageType = kDamageType.Structural

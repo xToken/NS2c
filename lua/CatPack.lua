@@ -47,14 +47,4 @@ function CatPack:GetIsValidRecipient(recipient)
     return (recipient.GetHasCatpackBoost and not recipient:GetHasCatpackBoost())    
 end
 
-function GetAttachToMarineNotCatalysted(entity)
-
-    local valid = false
-    
-    if entity:isa("Marine") then
-        valid = not entity:GetHasCatpackBoost()
-    end
-
-end
-
 Shared.LinkClassToMap("CatPack", CatPack.kMapName)

@@ -8,13 +8,17 @@
 
 assert(Client)
 
+local function GetSelectionAllowed(commander)
+    return true
+end
+
 local function ClickSelect(commander, x, y, controlSelect, shiftSelect)
 
     local success = false
     local hitEntity = false
     shiftSelect = shiftSelect == true
     
-    if Client and commander.timeLastTargetedAction and commander.timeLastTargetedAction + 0.1 > Shared.GetTime() then
+    if not GetSelectionAllowed(commander) then
         return false
     end
     
@@ -27,18 +31,13 @@ local function ClickSelect(commander, x, y, controlSelect, shiftSelect)
         local entity = commander:GetUnitUnderCursor(pickVec) 
         if entity and HasMixin(entity, "Selectable") then
         
-            local pickStartVec = CreatePickRay(commander, 0, 0)
-            local pickEndVec = CreatePickRay(commander, Client.GetScreenWidth(), Client.GetScreenHeight())   
-            local newSelection = {}
-            // select entities of the same kind
-            local potentials = GetEntitiesForTeam(entity:GetClassName(), commander:GetTeamNumber())    
-            commander:GetEntitiesBetweenVecs(potentials, pickStartVec, pickEndVec, newSelection)
+            local selectables = GetSelectablesOnScreen(commander, entity:GetClassName())
             
             if not shiftSelect then
                 DeselectAllUnits(commander:GetTeamNumber())
             end
             
-            for _, entity in ipairs(newSelection) do
+            for _, entity in ipairs(selectables) do
             
                 local setSelected = true
                 if shiftSelect then
@@ -151,7 +150,8 @@ kMouseActions.Move = function(player, mouseX, mouseY)
         local downY = mouseButtonDownAtPoint[InputKey.MouseButton0].y
         local diffX = math.abs(downX - mouseX)
         local diffY = math.abs(downY - mouseY)
-        if diffX > kEnableSelectorMoveAmount or diffY > kEnableSelectorMoveAmount then
+        
+        if GetSelectionAllowed(player) and ( diffX > kEnableSelectorMoveAmount or diffY > kEnableSelectorMoveAmount ) then
             SetCommanderMarqueeeSelectorDown(downX, downY)
         end
         
@@ -182,6 +182,11 @@ local function OnMouseDown(_, button, doubleClick)
     mousePressed[button] = true
     mouseButtonDownAtPoint[button] = Vector(mousePos.x, mousePos.y, 0)
     
+    local evalButtonDown = kMouseActions.ButtonDown[button]
+    if evalButtonDown then
+        evalButtonDown(player, mousePos.x, mousePos.y)
+    end
+    
     // Evaluate if there are any world actions right now for this mouse input.
     if doubleClick then
     
@@ -190,15 +195,9 @@ local function OnMouseDown(_, button, doubleClick)
             evalDoubleClick(player, mousePos.x, mousePos.y)
         end
         
-    else
-    
-        local evalButtonDown = kMouseActions.ButtonDown[button]
-        if evalButtonDown then
-            evalButtonDown(player, mousePos.x, mousePos.y)
-        end
-        
     end
     
+
     // If there are no world actions, forward along to the Commander UI code.
     
 end

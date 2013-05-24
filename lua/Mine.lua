@@ -8,7 +8,6 @@
 
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/TriggerMixin.lua")
-Script.Load("lua/DisruptMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/TeamMixin.lua")
@@ -35,7 +34,6 @@ local networkVars = { }
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
-AddMixinNetworkVars(DisruptMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 
 function Mine:OnCreate()
@@ -46,14 +44,11 @@ function Mine:OnCreate()
     InitMixin(self, ModelMixin)
     InitMixin(self, LiveMixin)
     InitMixin(self, GameEffectsMixin)
-    InitMixin(self, DisruptMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
 
     if Server then
     
-        InitMixin(self, OwnerMixin)
-        // init after OwnerMixin since 'OnEntityChange' is expected callback
         InitMixin(self, EntityChangeMixin)
         InitMixin(self, SleeperMixin)
         
@@ -92,6 +87,8 @@ local function Detonate(self, armFunc)
     self:TriggerEffects("mine_explode", params)
     
     DestroyEntity(self)
+    
+    CreateExplosionDecals(self)
     
     TEST_EVENT("Mine detonated")
     
@@ -187,7 +184,7 @@ end
 
 if Server then
    
-    function Mine:OnDisrupt()
+    function Mine:OnStun()
         Arm(self)
     end
 

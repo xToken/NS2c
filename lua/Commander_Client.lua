@@ -63,6 +63,21 @@ function Commander:GetCanRepairOverride(target)
     return false
 end
 
+function CommanderUI_GetNumWorkers()
+
+    local player = Client.GetLocalPlayer()
+    if player then
+    
+        local teamInfo = GetTeamInfoEntity(player:GetTeamNumber())
+        if teamInfo then
+            return teamInfo:GetNumWorkers()
+        end
+    end
+
+    return 0    
+
+end
+
 function CommanderUI_GetNumCapturedTechpoint()
 
     local player = Client.GetLocalPlayer()
@@ -139,6 +154,10 @@ function CommanderUI_IsLocalPlayerCommander()
     
     return false
 
+end
+
+function CommanderUI_IsAlienCommander()
+    return false
 end
 
 function CommanderUI_TriggerPingInWorld(x, y)
@@ -286,8 +305,15 @@ function Commander:SendKeyEvent(key, down)
         elseif key == InputKey.Num9 then
             hotkeyGroup = 9
         end
+
+        local selected, hotgroup = self:GetHotGroupSelected(hotkeyGroup)        
+        if selected and hotkeyGroup ~= 0 and not self.ctrlDown then
         
-        if hotkeyGroup ~= 0 and self.lastHotkeyGroupPressed ~= hotkeyGroup then
+            local position = hotgroup[1]:GetOrigin()
+            self:SetWorldScrollPosition(position.x, position.z)
+            success = true
+            
+        elseif hotkeyGroup ~= 0 and self.lastHotkeyGroupPressed ~= hotkeyGroup then
         
             success = true
             
@@ -669,7 +695,7 @@ function Commander:OnInitLocalClient()
     Client.SetSoundGeometryEnabled(false)
     
     // Set commander geometry invisible.
-    Client.SetGroupIsVisible(kCommanderInvisibleGroupName, false)
+    SetLocalPlayerIsOverhead(true)
     
     // Set our location so we are viewing the command structure we're in.
     SetStartPosition(self)
@@ -711,35 +737,6 @@ function Commander:OverrideInput(input)
         
     end
     
-    if self.hotkeyGroupButtonPressed then
-    
-        if self.hotkeyGroupButtonPressed == 1 then
-            input.commands = bit.bor(input.commands, Move.Weapon1)
-        end
-        
-        self.hotkeyGroupButtonPressed = nil
-        
-    end
-    
-    if self.selectHotkeyGroup ~= 0 then
-    
-        // Process hotkey select and send up to server
-        if self.selectHotkeyGroup == 1 then
-            input.commands = bit.bor(input.commands, Move.Weapon1)
-        elseif self.selectHotkeyGroup == 2 then
-            input.commands = bit.bor(input.commands, Move.Weapon2)
-        elseif self.selectHotkeyGroup == 3 then
-            input.commands = bit.bor(input.commands, Move.Weapon3)
-        elseif self.selectHotkeyGroup == 4 then
-            input.commands = bit.bor(input.commands, Move.Weapon4)
-        elseif self.selectHotkeyGroup == 5 then
-            input.commands = bit.bor(input.commands, Move.Weapon5)
-        end
-        
-        self.selectHotkeyGroup = 0
-        
-    end
-    
     if self.OverrideMove then
         input = self:OverrideMove(input)
     end
@@ -756,30 +753,17 @@ function Commander:Logout()
     Shared.ConsoleCommand("logout")
 end
 
-local function GetSendsCommanderMessages(self)
-    return Client.GetLocalPlayer() == self and not Shared.GetIsRunningPrediction()
-end
-
 function Commander:SendCreateHotKeyGroupMessage(number)
 
-    // disabled since another check is in place and to increase responsiveness
-    //if GetSendsCommanderMessages(self) then
-    
-        local message = BuildCreateHotkeyGroupMessage(number)
-        Client.SendNetworkMessage("CreateHotKeyGroup", message, true)
-        
-    //end
+    local message = BuildCreateHotkeyGroupMessage(number)
+    Client.SendNetworkMessage("CreateHotKeyGroup", message, true)
     
 end
 
 function Commander:SendSelectHotkeyGroupMessage(groupNumber)
 
-    //if GetSendsCommanderMessages(self) then
-    
-        local message = BuildSelectHotkeyGroupMessage(groupNumber)
-        Client.SendNetworkMessage("SelectHotkeyGroup", message, true)
-        
-    //end
+    local message = BuildSelectHotkeyGroupMessage(groupNumber)
+    Client.SendNetworkMessage("SelectHotkeyGroup", message, true)
     
 end
 
@@ -797,26 +781,23 @@ end
 
 function Commander:SendAction(techId)
 
-    if GetSendsCommanderMessages(self) then
+    //Print("Commander:SendAction(%s)", EnumToString(kTechId, techId))
     
-        local message = BuildCommActionMessage(techId)
-        Client.SendNetworkMessage("CommAction", message, true)
-        
-    end
+    local message = BuildCommActionMessage(techId)
+    Client.SendNetworkMessage("CommAction", message, true)
     
 end
 
-function Commander:SendTargetedAction(techId, normalizedPickRay, orientation)
+function Commander:SendTargetedAction(techId, normalizedPickRay, orientation, entity)
 
-    if GetSendsCommanderMessages(self) then
-    
-        local orientation = ConditionalValue(orientation, orientation, math.random() * 2 * math.pi)
-        local message = BuildCommTargetedActionMessage(techId, normalizedPickRay.x, normalizedPickRay.y, normalizedPickRay.z, orientation)
-        Client.SendNetworkMessage("CommTargetedAction", message, true)
-        self.timeLastTargetedAction = Shared.GetTime()
-        self:SetCurrentTech(kTechId.None)
-        
-    end
+    //Print("Commander:SendTargetedAction(%s)", EnumToString(kTechId, techId))
+
+    local entityId = entity and entity:GetId() or Entity.invalidId
+    local orientation = ConditionalValue(orientation, orientation, math.random() * 2 * math.pi)
+    local message = BuildCommTargetedActionMessage(techId, normalizedPickRay.x, normalizedPickRay.y, normalizedPickRay.z, orientation, entityId)
+    Client.SendNetworkMessage("CommTargetedAction", message, true)
+    self.timeLastTargetedAction = Shared.GetTime()
+    self:SetCurrentTech(kTechId.None)
     
 end
 
@@ -824,15 +805,46 @@ function Commander:GetTimeLastTargetedAction()
     return self.timeLastTargetedAction or 0
 end
 
-function Commander:SendTargetedActionWorld(techId, worldCoords, orientation)
+function Commander:SendTargetedActionWorld(techId, worldCoords, orientation, entity)
 
-    if GetSendsCommanderMessages(self) then
+    //Print("Commander:SendTargetedActionWorld(%s)", EnumToString(kTechId, techId))
     
-        local message = BuildCommTargetedActionMessage(techId, worldCoords.x, worldCoords.y, worldCoords.z, ConditionalValue(orientation, orientation, 0))
-        Client.SendNetworkMessage("CommTargetedActionWorld", message, true)
-        self:SetCurrentTech(kTechId.None)
-        self.timeLastTargetedAction = Shared.GetTime()
+    local entityId = entity and entity:GetId() or Entity.invalidId
+    local message = BuildCommTargetedActionMessage(techId, worldCoords.x, worldCoords.y, worldCoords.z, ConditionalValue(orientation, orientation, 0), entityId)
+    Client.SendNetworkMessage("CommTargetedActionWorld", message, true)
+    self:SetCurrentTech(kTechId.None)
+    self.timeLastTargetedAction = Shared.GetTime()
+    
+end
+
+local function UpdateSentryBatteryLine(self, fromPoint)
+
+    local sentriesNearby = GetEntitiesForTeamWithinRange("Sentry", self:GetTeamNumber(), fromPoint, SentryBattery.kRange)
+    Shared.SortEntitiesByDistance(fromPoint, sentriesNearby)
+    
+    local closestSentry = sentriesNearby[1]
+    
+    local inRange = false
+    
+    if closestSentry then
+    
+        local distance = GetPathDistance(fromPoint, closestSentry:GetOrigin())
+        if distance and distance <= SentryBattery.kRange then
+            inRange = true
+        end
         
+    end
+    
+    if inRange then
+    
+        local startPoint = fromPoint + Vector(0, kZFightingConstant, 0)
+        local endPoint = closestSentry:GetOrigin() + Vector(0, kZFightingConstant, 0)
+        local direction = GetNormalizedVector(endPoint - startPoint)
+        
+        UpdateOrderLine(startPoint, endPoint, ClientResources.GetResource("CommSentryBatteryLine"))
+        
+    else
+        ClientResources.GetResource("CommSentryBatteryLine"):SetIsVisible(false)
     end
     
 end
@@ -919,9 +931,7 @@ function Commander:UpdateClientEffects(deltaTime, isLocal)
             self.entityIdUnderCursor = Entity.invalidId
         end
         
-        UpdateGhostStructureVisuals(self)        
-        
-        self:UpdateSelectionCircles()
+        UpdateGhostStructureVisuals(self)
         
         self:UpdateGhostGuides()
         
@@ -946,108 +956,6 @@ function Commander:DrawDebugTrace()
         if(trace ~= nil and trace.endPoint ~= nil) then
         
             Shared.CreateEffect(self, "cinematics/debug.cinematic", nil, Coords.GetTranslation(trace.endPoint))
-            
-        end
-        
-    end
-    
-end
-
-function Commander:UpdateSelectionCircles()
-
-    // Check self.selectionCircles because this function may be called before it is valid.
-    if not Shared.GetIsRunningPrediction() and self.selectionCircles ~= nil then
-        
-        /*
-        // Selection changed, so deleted old circles and create new ones
-        if self.createSelectionCircles then
-        
-            // Create new ones
-            for index, entity in pairs(self:GetSelection()) do
-                
-                // Now create sentry arcs for any selected sentries
-                if entity and entity:isa("Sentry") then
-                
-                    local sentryArcCircle = Client.CreateRenderModel(RenderScene.Zone_Default)
-                    sentryArcCircle:SetModel(Commander.kSentryOrientationModelName)
-
-                    local sentryRange = Client.CreateRenderModel(RenderScene.Zone_Default)
-                    sentryRange:SetModel(Commander.kSentryRangeModelName)
-                
-                    // Insert pair into sentryArcs: {entityId, sentry arc render model, sentry range render model}
-                    table.insert(self.sentryArcs, {entity, sentryArcCircle, sentryRange})
-                    
-                end
- 
-            end
-            
-            self.createSelectionCircles = nil
-            
-        end
-        
-        */
-        
-        // Update positions and scale for each
-        local poseParams = PoseParams()
-        
-        for index, circlePair in ipairs(self.selectionCircles) do
-        
-            local entity = Shared.GetEntity(circlePair[1])
-            if entity ~= nil then
-            
-                local scale = GetCircleSizeForEntity(entity)
-                local renderModelCircle = circlePair[2]
-                
-                // Set position, orientation, scale (add in a littler vertical to avoid z-fighting)
-                local coords = Coords.GetLookIn(entity:GetOrigin() + Vector(0, kZFightingConstant, 0), Vector.xAxis)
-                coords:Scale(scale)
-                renderModelCircle:SetCoords( coords )
-                
-                local materialHealth = 100 
-                local armorPercentage = 0
-                
-                if HasMixin(entity, "Live") then
-                
-                    materialHealth = (entity:GetHealth() / entity:GetMaxHealth()) * 100  
-                    armorPercentage = ConditionalValue( entity:GetMaxArmor() == 0, 0, (entity:GetArmor() / entity:GetMaxArmor()) * 100 )
-              
-                end
-                
-                local buildPercentage = 100
-                if HasMixin(entity, "Construct") then
-                    buildPercentage = entity:GetBuiltFraction() * 100
-                end
-                
-                renderModelCircle:SetMaterialParameter("armorPercentage", armorPercentage)
-                renderModelCircle:SetMaterialParameter("buildPercentage", buildPercentage)
-                renderModelCircle:SetMaterialParameter("healthPercentage", materialHealth)
-                    
-                local useAlienStyle = ConditionalValue(self:GetTeamNumber() == kAlienTeamType, 1, 0)        
-                renderModelCircle:SetMaterialParameter("useAlienStyle", useAlienStyle)
-                
-            end
-            
-        end
-        
-        // Set size and orientation of visible sentry arcs
-        for index, sentryPair in ipairs(self.sentryArcs) do
-        
-            local sentry = Shared.GetEntity(sentryPair[1])
-            if sentry ~= nil then
-            
-                // Draw sentry arc at scale 1 around sentry to show cone
-                local sentryArcCircle = sentryPair[2]                
-                local coords = Coords.GetLookIn(sentry:GetOrigin() + Vector(0, .05, 0), -sentry:GetCoords().zAxis)
-                coords:Scale(Commander.kSentryArcScale)
-                sentryArcCircle:SetCoords(coords)
-
-                // Draw line model scaled up so we can see sentry range
-                local sentryLine = sentryPair[3]                
-                coords = Coords.GetLookIn(sentry:GetOrigin() + Vector(0, .05, 0), -sentry:GetCoords().zAxis)
-                coords.zAxis = coords.zAxis * Sentry.kRange
-                sentryLine:SetCoords(coords)
-  
-            end
             
         end
         
@@ -1146,8 +1054,11 @@ function Commander:ClientOnMouseRelease(mouseButton, x, y)
        if self.currentTechId ~= kTechId.None then
             self:SetCurrentTech(kTechId.None)
         else
-            self:SendTargetedAction(kTechId.Default, normalizedPickRay)
+        
+            local trace = GetCommanderPickTarget(self, normalizedPickRay, false, false)        
+            self:SendTargetedAction(kTechId.Default, normalizedPickRay, nil, trace.entity)
             displayConfirmationEffect = true
+            
         end
 
     end
@@ -1213,6 +1124,7 @@ function Commander:SetCurrentTech(techId)
     end
     
     CommanderGhostStructureSetTech(self.currentTechId)
+    CancelCommanderMarqueeSelect()
     
 end
 

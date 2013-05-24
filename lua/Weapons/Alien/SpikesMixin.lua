@@ -98,17 +98,6 @@ function SpikesMixin:GetTracerEffectName()
     return kSpikeTracerEffectName
 end
 
-function SpikesMixin:GetTracerResidueEffectName()
-
-    local parent = self:GetParent()
-    if parent and parent:GetIsLocalPlayer() then
-        return kSpikeTracerFirstPersonResidueEffectName
-    else
-        return kSpikeTracerResidueEffectName
-    end 
-    
-end
-
 function SpikesMixin:OnSecondaryAttack(player)
 
     if player:GetEnergy() >= self:GetSecondaryEnergyCost(player) and not self.primaryAttacking then

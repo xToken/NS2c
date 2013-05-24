@@ -7,9 +7,30 @@
 // NS2-specific utility functions.
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+
 Script.Load("lua/Table.lua")
 Script.Load("lua/Utility.lua")
-Script.Load("lua/FunctionContracts.lua")
+
+/**
+ * Return an extents vector for tracing a bullet with the given caliber (diameter) along direction. 
+ *
+ * As the trace box is world-axis aligned, it must be shrunk when tracing a diagonal.
+ */
+function GetDirectedExtentsForDiameter(direction, diameter)
+    
+    // normalize and scale the vector, then extract the extents from it
+    local v = GetNormalizedVector(direction)
+    v:Scale(diameter)
+    
+    local x = math.sqrt(v.y * v.y + v.z * v.z)
+    local y = math.sqrt(v.x * v.x + v.z * v.z)
+    local z = math.sqrt(v.y * v.y + v.x * v.x)
+ 
+    local result = Vector(x,y,z)
+    // Log("extents for %s/%s -> %s", direction, v, result)
+    return result
+    
+end
 
 if Client then
 
@@ -148,7 +169,7 @@ function HandleHitEffect(position, doer, surface, target, showtracer, altMode, f
     if damage > 0 and target and target.OnTakeDamageClient then
         target:OnTakeDamageClient(damage, doer, position)
     end
-    
+
     HandleImpactDecal(position, doer, surface, target, showtracer, altMode, damage, direction, tableParams)
 
 end
@@ -876,16 +897,6 @@ function GetNearestFreeAttachEntity(techId, origin, range)
     
 end
 
-// Returns if it's legal for player to build structure or drop item, along with the position
-// Assumes you're passing in build or buy tech.
-function GetIsBuildPickVecLegal(techId, player, pickVec, snapRadius, direction)
-    local trace = GetCommanderPickTarget(player, pickVec, false, true)
-    local checkBypass = { }
-	checkBypass["ValidExit"] = true
-    local legalBuild, legalPosition, attachEntity, errorString = GetIsBuildLegal(techId, trace.endPoint, direction, snapRadius, player, false, checkBypass)
-    return legalBuild
-end
-
 // Trace until we hit the "inside" of the level or hit nothing. Returns nil if we hit nothing,
 // returns the world point of the surface we hit otherwise. Only hit surfaces that are facing 
 // towards us.
@@ -1185,6 +1196,121 @@ function GetLocationEntitiesNamed(name)
     return locationEntities
     
 end
+
+// for performance, cache the lights for each locationName
+local lightLocationCache = {}
+
+function GetLightsForLocation(locationName)
+
+    if locationName == nil or locationName == "" then
+        return {}
+    end
+ 
+    if lightLocationCache[locationName] then
+        return lightLocationCache[locationName]   
+    end
+
+    local lightList = {}
+   
+    local locations = GetLocationEntitiesNamed(locationName)
+   
+    if table.count(locations) > 0 then
+   
+        for index, location in ipairs(locations) do
+           
+            for index, renderLight in ipairs(Client.lightList) do
+
+                if renderLight then
+               
+                    local lightOrigin = renderLight:GetCoords().origin
+                   
+                    if location:GetIsPointInside(lightOrigin) then
+                   
+                        table.insert(lightList, renderLight)
+           
+                    end
+                   
+                end
+               
+            end
+           
+        end
+       
+    end
+
+    // Log("Total lights %s, lights in %s = %s", #Client.lightList, locationName, #lightList)
+    lightLocationCache[locationName] = lightList
+  
+    return lightList
+   
+end
+
+// for performance, cache the probes for each locationName
+local probeLocationCache = {}
+
+function GetReflectionProbesForLocation(locationName)
+
+    if locationName == nil or locationName == "" then
+        return {}
+    end
+ 
+    if probeLocationCache[locationName] then
+        return probeLocationCache[locationName]   
+    end
+
+    local probeList = {}
+   
+    local locations = GetLocationEntitiesNamed(locationName)
+   
+    if table.count(locations) > 0 then
+   
+        for index, location in ipairs(locations) do
+           
+        // TEMP FIX FOR SCRIPT ERRORS
+            if Client.reflectionProbeList then
+            for index, probe in ipairs(Client.reflectionProbeList) do
+
+                if probe then
+               
+                    local probeOrigin = probe:GetOrigin()
+                   
+                    if location:GetIsPointInside(probeOrigin) then
+                   
+                        table.insert(probeList, probe)
+           
+                    end
+                   
+                end
+               
+            end
+            end
+           
+        end
+       
+    end
+
+    // Log("Total lights %s, lights in %s = %s", #Client.lightList, locationName, #lightList)
+    probeLocationCache[locationName] = probeList
+  
+    return probeList
+   
+end
+
+if Client then
+
+    function ResetLights()
+    
+        for index, renderLight in ipairs(Client.lightList) do
+        
+            renderLight:SetColor(renderLight.originalColor)
+            renderLight:SetIntensity(renderLight.originalIntensity)
+            
+        end                    
+        
+    end
+    
+end
+
 
 local kUpVector = Vector(0, 1, 0)
 
@@ -1549,43 +1675,43 @@ function CanEntityDoDamageTo(attacker, target, cheats, devMode, friendlyFire, da
         return false
     end
     
-    if (target == nil or target == {} or (target.GetDarwinMode and target:GetDarwinMode())) then
+    if target == nil or (target.GetDarwinMode and target:GetDarwinMode()) then
         return false
-    elseif(cheats or devMode) then
+    elseif cheats or devMode then
         return true
     elseif attacker == nil then
         return true
     end
-
-    // You can always do damage to yourself
-    if (attacker == target) then
+    
+    // You can always do damage to yourself.
+    if attacker == target then
         return true
     end
     
-    // Command stations can kill even friendlies trapped inside
+    // Command stations can kill even friendlies trapped inside.
     if attacker ~= nil and attacker:isa("CommandStation") then
         return true
     end
     
-    // Your own grenades can hurt you
+    // Your own grenades can hurt you.
     if attacker:isa("Grenade") then
-        local owner = attacker:GetOwner()        
+    
+        local owner = attacker:GetOwner()
         if owner and owner:GetId() == target:GetId() then
             return true
         end
-    end
-    
-    // Same teams not allowed to hurt each other unless friendly fire enabled
-    local teamsOK = true
-    if attacker ~= nil then
-
-        teamsOK = GetAreEnemies(attacker, target) or friendlyFire
         
     end
     
-    // Allow damage of own stuff when testing
+    // Same teams not allowed to hurt each other unless friendly fire enabled.
+    local teamsOK = true
+    if attacker ~= nil then
+        teamsOK = GetAreEnemies(attacker, target) or friendlyFire
+    end
+    
+    // Allow damage of own stuff when testing.
     return teamsOK
-
+    
 end
 
 function TraceMeleeBox(weapon, eyePoint, axis, extents, range, mask, filter)
@@ -1677,7 +1803,7 @@ local kTraceOrder = { 4, 1, 3, 5, 7, 0, 2, 6, 8 }
   * Then we split the space into 9 parts and trace/select all of them, choose the "best" target. If no good target is found,
   * we use the middle trace for effects.
   */
-function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceRealAttack, scale, priorityFunc)
+function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceRealAttack, scale, priorityFunc, filter)
 
     scale = scale or 1
 
@@ -1699,16 +1825,13 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
     local width, height = weapon:GetMeleeBase()
     width = scale * width
     height = scale * height
-    
-    /*
-    if Client then
-        Client.DebugCapsule(eyePoint, eyePoint + axis * range, width, 0, 3)
-    end
-    */
-    
+        
     // extents defines a world-axis aligned box, so x and z must be the same. 
     local extents = Vector(width / 6, height / 6, width / 6)
-    local filter = EntityFilterOne(player)
+    if not filter then
+        filter = EntityFilterOne(player)
+    end
+        
     local middleTrace,middleStart
     local target,endPoint,surface,startPoint
     
@@ -1750,7 +1873,7 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
 end
 
 local kNumMeleeZones = 3
-function PerformGradualMeleeAttack(weapon, player, damage, range, optionalCoords, altMode)
+function PerformGradualMeleeAttack(weapon, player, damage, range, optionalCoords, altMode, filter)
 
     local didHit, target, endPoint, direction, surface
     local didHitNow
@@ -1759,7 +1882,7 @@ function PerformGradualMeleeAttack(weapon, player, damage, range, optionalCoords
     
     for i = 1, kNumMeleeZones do
     
-        didHitNow, target, endPoint, direction, surface = CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, true, i * stepSize)
+        didHitNow, target, endPoint, direction, surface = CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, true, i * stepSize, nil, filter)
         didHit = didHit or didHitNow
         if target and didHitNow then
             
@@ -1786,10 +1909,10 @@ end
 /**
  * Does an attack with a melee capsule.
  */
-function AttackMeleeCapsule(weapon, player, damage, range, optionalCoords, altMode)
+function AttackMeleeCapsule(weapon, player, damage, range, optionalCoords, altMode, filter)
 
     // Enable tracing on this capsule check, last argument.
-    local didHit, target, endPoint, direction, surface = CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, true, 1)
+    local didHit, target, endPoint, direction, surface = CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, true, 1, nil, filter)
     
     if didHit then
         weapon:DoDamage(damage, target, endPoint, direction, surface, altMode)
@@ -1833,42 +1956,6 @@ function CreateExplosionDecals(triggeringEntity, effectName)
     
     end
 
-end
-
-// Get the effective height that we trace down for this entity to see if it is "on" infestation
-// Should be tall enough for hives and drifters to be on infestation most of the time
-function GetInfestationVerticalSize(entity)
-
-    //ASSERT(entity ~= nil)
-
-    local infestationVerticalSize = 1
-    
-    if (entity == nil) then
-      return infestationVerticalSize
-    end
-    
-    if entity.GetTechId then
-    
-        local spawnHeight = LookupTechData(entity:GetTechId(), kTechDataSpawnHeightOffset, 0)
-        
-        if spawnHeight ~= nil and spawnHeight > infestationVerticalSize then
-            infestationVerticalSize = spawnHeight
-        end
-        
-    end
-    
-    if entity.GetHoverHeight then
-    
-        local hoverHeight = entity:GetHoverHeight()
-        
-        if hoverHeight ~= nil and hoverHeight > infestationVerticalSize then
-            infestationVerticalSize = hoverHeight
-        end
-        
-    end
-    
-    return infestationVerticalSize
-    
 end
 
 function BuildClassToGrid()
@@ -1939,7 +2026,6 @@ function BuildClassToGrid()
     ClassToGrid["AttackOrder"] = { 2, 8 }
     
     ClassToGrid["SensorBlip"] = { 5, 8 }
-    ClassToGrid["AlienSensorBlip"] = { 5, 8 }
     
     ClassToGrid["Player"] = { 7, 8 }
     
@@ -1960,7 +2046,6 @@ function GetSpriteGridByClass(class, classToGrid)
     return unpack(classToGrid[class])
     
 end
-AddFunctionContract(GetSpriteGridByClass, { Arguments = { "string", "array" }, Returns = { "number", "number" } })
 
 /*
  * Non-linear egg spawning. Eggs spawn slower the more of them you have, but speed up with more players. 
@@ -2034,18 +2119,16 @@ function GetEventTimingString(seconds)
     
 end
 
+function GetIsVortexed(entity)
+    return false
+end
+
+function GetIsNanoShielded(entity)
+    return false
+end
+
 if Client then
 
-    function AdjustInputForInversion(input)
-    
-        // Invert mouse if specified in options.
-        local invertMouse = Client.GetOptionBoolean(kInvertedMouseOptionsKey, false)
-        if invertMouse then
-            input.pitch = -input.pitch
-        end
-        
-    end
-    
     local kMaxPitch = Math.Radians(89.9)
     function ClampInputPitch(input)
         input.pitch = Math.Clamp(input.pitch, -kMaxPitch, kMaxPitch)
@@ -2216,7 +2299,6 @@ function GetTexCoordsForTechId(techId)
         
         gTechIdPosition[kTechId.Spit] = kDeathMessageIcon.Spit
         gTechIdPosition[kTechId.BuildAbility] = kDeathMessageIcon.BuildAbility
-        gTechIdPosition[kTechId.BuildAbility2] = kDeathMessageIcon.BuildAbility
         gTechIdPosition[kTechId.Spray] = kDeathMessageIcon.Spray
         gTechIdPosition[kTechId.BileBomb] = kDeathMessageIcon.BileBomb
         gTechIdPosition[kTechId.Web] = kDeathMessageIcon.BileBomb
@@ -2260,4 +2342,68 @@ end
 
 function AddMoveCommand( commands, moveMask )
     return bit.bor(commands, moveMask)
+end
+
+function GetSelectablesOnScreen(commander, className, minPos, maxPos)
+
+    assert(Client)
+
+    if not className then
+        className = "Entity"
+    end
+    
+    local selectables = {}
+
+    if not minPos then
+        minPos = Vector(0,0,0)
+    end
+    
+    if not maxPos then
+        maxPos = Vector(Client.GetScreenWidth(), Client.GetScreenHeight(), 0)
+    end
+
+    for _, selectable in ipairs(GetEntitiesWithMixinForTeam("Selectable", commander:GetTeamNumber())) do
+
+        if selectable:isa(className) then
+
+            local screenPos = Client.WorldToScreen(selectable:GetOrigin())
+            if screenPos.x >= minPos.x and screenPos.x <= maxPos.x and
+               screenPos.y >= minPos.y and screenPos.y <= maxPos.y then
+        
+                table.insert(selectables, selectable)
+        
+            end
+        
+        end
+
+    end
+    
+    return selectables
+
+end
+
+function GetInstalledMapList()
+
+    local matchingFiles = { }
+    Shared.GetMatchingFileNames("maps/*.level", false, matchingFiles)
+    
+    local mapNames = { }
+    local mapFiles = { }
+    
+    for _, mapFile in pairs(matchingFiles) do
+    
+        local _, _, filename = string.find(mapFile, "maps/(.*).level")
+        local mapname = string.gsub(filename, 'ns2_', '', 1):gsub("^%l", string.upper)
+        local tagged,_ = string.match(filename, "ns2_", 1)
+        if tagged ~= nil then
+        
+            table.insert(mapNames, mapname)
+            table.insert(mapFiles, {["name"] = mapname, ["fileName"] = filename})
+            
+        end
+        
+    end
+    
+    return mapNames, mapFiles
+    
 end

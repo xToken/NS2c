@@ -511,18 +511,19 @@ end
 
 local kCommTargetedAction = 
 {
-    techId              = "enum kTechId",
+    techId = "enum kTechId",
     
     // normalized pick coords for CommTargetedAction
     // or world coords for kCommTargetedAction
-    x                   = "float",
-    y                   = "float",
-    z                   = "float",
+    x = "float",
+    y = "float",
+    z = "float",
     
-    orientationRadians  = "angle (11 bits)"
+    orientationRadians  = "angle (11 bits)",
+    targetId = "entityid"
 }
 
-function BuildCommTargetedActionMessage(techId, x, y, z, orientationRadians)
+function BuildCommTargetedActionMessage(techId, x, y, z, orientationRadians, targetId)
 
     local t = {}
     
@@ -531,20 +532,21 @@ function BuildCommTargetedActionMessage(techId, x, y, z, orientationRadians)
     t.y = y
     t.z = z
     t.orientationRadians = orientationRadians
+    t.targetId = targetId
     
     return t
     
 end
 
 function ParseCommTargetedActionMessage(t)
-    return t.techId, Vector(t.x, t.y, t.z), t.orientationRadians
+    return t.techId, Vector(t.x, t.y, t.z), t.orientationRadians, t.targetId
 end
 
 local kGorgeBuildStructureMessage = 
 {
     origin = "vector",
     direction = "vector",
-    structureIndex = "integer (1 to 5)",
+    structureIndex = "integer (1 to 10)",
     lastClickedPosition = "vector"
 }
 
@@ -785,16 +787,18 @@ local kSetNameMessage =
 }
 Shared.RegisterNetworkMessage("SetName", kSetNameMessage)
 
+-- Adding 1 to kMaxChatLength here to account for the zero terminated string.
 local kChatClientMessage =
 {
     teamOnly = "boolean",
-    message = string.format("string (%d)", kMaxChatLength)
+    message = string.format("string (%d)", kMaxChatLength + 1)
 }
 
 function BuildChatClientMessage(teamOnly, chatMessage)
     return { teamOnly = teamOnly, message = chatMessage }
 end
 
+-- Adding 1 to kMaxChatLength here to account for the zero terminated string.
 local kChatMessage =
 {
     teamOnly = "boolean",
@@ -802,7 +806,7 @@ local kChatMessage =
     locationId = "integer (-1 to 1000)",
     teamNumber = "integer (" .. kTeamInvalid .. " to " .. kSpectatorIndex .. ")",
     teamType = "integer (" .. kNeutralTeamType .. " to " .. kAlienTeamType .. ")",
-    message = string.format("string (%d)", kMaxChatLength)
+    message = string.format("string (%d)", kMaxChatLength + 1)
 }
 
 function BuildChatMessage(teamOnly, playerName, playerLocationId, playerTeamNumber, playerTeamType, chatMessage)
@@ -898,7 +902,6 @@ Shared.RegisterNetworkMessage("MutePlayer", kMutePlayerMessage)
 
 // Gorge select structure message
 Shared.RegisterNetworkMessage("GorgeBuildStructure", kGorgeBuildStructureMessage)
-Shared.RegisterNetworkMessage("GorgeBuildStructure2", kGorgeBuildStructureMessage)
 
 // Chat
 Shared.RegisterNetworkMessage("ChatClient", kChatClientMessage)
@@ -995,6 +998,13 @@ end
 
 Shared.RegisterNetworkMessage("Buy", kBuyMessage)
 
+local kAutoConcedeWarning =
+{
+    time = "time",
+    team1Conceding = "boolean"
+}
+Shared.RegisterNetworkMessage("AutoConcedeWarning", kAutoConcedeWarning)
+
 Shared.RegisterNetworkMessage("SpectatePlayer", { entityId = "entityid"})
 Shared.RegisterNetworkMessage("SwitchFromFirstPersonSpectate", { mode = "enum kSpectatorMode" })
 Shared.RegisterNetworkMessage("SwitchFirstPersonSpectatePlayer", { forward = "boolean" })
@@ -1002,3 +1012,6 @@ Shared.RegisterNetworkMessage("SetClientIndex", { clientIndex = "integer" })
 Shared.RegisterNetworkMessage("SetClientTeamNumber", { teamNumber = string.format("integer (-1 to %d)", kRandomTeamType) })
 Shared.RegisterNetworkMessage("WaitingForAutoTeamBalance", { waiting = "boolean" })
 Shared.RegisterNetworkMessage("SetTimeWaveSpawnEnds", { time = "time" })
+
+local kTeamNumDef = "integer (" .. kTeamInvalid .. " to " .. kSpectatorIndex .. ")"
+Shared.RegisterNetworkMessage("DeathMessage", { killerIsPlayer = "boolean", killerId = "integer", killerTeamNumber = kTeamNumDef, iconIndex = "enum kDeathMessageIcon", targetIsPlayer = "boolean", targetId = "integer", targetTeamNumber = kTeamNumDef })

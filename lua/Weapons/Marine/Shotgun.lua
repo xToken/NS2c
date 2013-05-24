@@ -21,22 +21,34 @@ local networkVars =
 }
 
 // higher numbers reduces the spread
-local kSpreadDistance = 50
+local kSpreadDistance = 11.3
 local kStartOffset = 0
-local kSpreadVectors = { }
-
-for i = 1, kShotgunBulletsPerShot / 2 do
-    local X = kShotgunMinSpread * math.cos(math.rad(i * (360 / (kShotgunBulletsPerShot / 2))))
-    local Y = kShotgunMinSpread * math.sin(math.rad(i * (360 / (kShotgunBulletsPerShot / 2))))
-    table.insert(kSpreadVectors, GetNormalizedVector(Vector(X, Y, kSpreadDistance)))
-end
-
-for i = 1, kShotgunBulletsPerShot / 2 do
-    local Y = kShotgunMaxSpread * math.cos(math.rad(i * (360 / (kShotgunBulletsPerShot / 2))))
-    local X = kShotgunMaxSpread * math.sin(math.rad(i * (360 / (kShotgunBulletsPerShot / 2))))
-    table.insert(kSpreadVectors, GetNormalizedVector(Vector(X, Y, kSpreadDistance)))
-end
+local kSpreadVectors =
+{
+    GetNormalizedVector(Vector(-0.01, 0.01, kSpreadDistance)),
     
+    GetNormalizedVector(Vector(-0.45, 0.45, kSpreadDistance)),
+    GetNormalizedVector(Vector(0.45, 0.45, kSpreadDistance)),
+    GetNormalizedVector(Vector(0.45, -0.45, kSpreadDistance)),
+    GetNormalizedVector(Vector(-0.45, -0.45, kSpreadDistance)),
+    
+    GetNormalizedVector(Vector(-1, 0, kSpreadDistance)),
+    GetNormalizedVector(Vector(1, 0, kSpreadDistance)),
+    GetNormalizedVector(Vector(0, -1, kSpreadDistance)),
+    GetNormalizedVector(Vector(0, 1, kSpreadDistance)),
+    
+    GetNormalizedVector(Vector(-0.35, 0, kSpreadDistance)),
+    GetNormalizedVector(Vector(0.35, 0, kSpreadDistance)),
+    GetNormalizedVector(Vector(0, -0.35, kSpreadDistance)),
+    GetNormalizedVector(Vector(0, 0.35, kSpreadDistance)),
+    
+    GetNormalizedVector(Vector(-0.8, -0.8, kSpreadDistance)),
+    GetNormalizedVector(Vector(-0.8, 0.8, kSpreadDistance)),
+    GetNormalizedVector(Vector(0.8, 0.8, kSpreadDistance)),
+    GetNormalizedVector(Vector(0.8, -0.8, kSpreadDistance)),
+    
+}
+
 Shotgun.kModelName = PrecacheAsset("models/marine/shotgun/shotgun.model")
 local kViewModelName = PrecacheAsset("models/marine/shotgun/shotgun_view.model")
 local kAnimationGraph = PrecacheAsset("models/marine/shotgun/shotgun_view.animation_graph")
@@ -91,30 +103,16 @@ end
 function Shotgun:GetSpread(bulletNum)
 
     // NS1 was 20 degrees for half the shots and 20 degrees plus 7 degrees for half the shots
-    if bulletNum <= kShotgunMinSpreadBullets then
-        return Math.Radians(kShotgunMinSpread)
+    if bulletNum < (kShotgunBulletsPerShot / 2) then
+        return Math.Radians(10)
     else
-        return Math.Radians(kShotgunMaxSpread)
-    end
-    
-end
-
-function Shotgun:GetMinSpread(bulletNum)
-
-    if bulletNum <= kShotgunMinSpreadBullets then
-        return Math.Radians((kShotgunMinSpread - 2))
-    else
-        return Math.Radians((kShotgunMaxSpread - 2))
+        return Math.Radians(20)
     end
     
 end
 
 function Shotgun:GetRange()
     return kShotgunMaxRange
-end
-
-function Shotgun:GetNumStartClips()
-    return 2
 end
 
 // Only play weapon effects every other bullet to avoid sonic overload
@@ -216,9 +214,14 @@ function Shotgun:FirePrimary(player)
     
     local shootCoords = viewAngles:GetCoords()
     
+    
     // Filter ourself out of the trace so that we don't hit ourselves.
     local filter = EntityFilterTwo(player, self)
     local range = self:GetRange()
+    
+    if GetIsVortexed(player) then
+        range = 5
+    end
     
     local numberBullets = self:GetBulletsPerShot()
     local startPoint = player:GetEyePos()
@@ -249,7 +252,7 @@ function Shotgun:FirePrimary(player)
         */
             
         // don't damage 'air'..
-        if trace.fraction < 1 then
+        if trace.fraction < 1 or GetIsVortexed(player) then
         
             local direction = (trace.endPoint - startPoint):GetUnit()
             local impactPoint = trace.endPoint - direction * kHitEffectOffset
@@ -303,6 +306,10 @@ if Client then
         
         return self:GetOrigin()
         
+    end
+    
+    function Shotgun:GetUIDisplaySettings()
+        return { xSize = 256, ySize = 128, script = "lua/GUIShotgunDisplay.lua" }
     end
 
 end

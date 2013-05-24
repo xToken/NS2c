@@ -6,11 +6,9 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
-Script.Load("lua/FunctionContracts.lua")
-
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/build.surface_shader")
 
-ConstructMixin = CreateMixin( ConstructMixin )
+ConstructMixin = CreateMixin(ConstructMixin)
 ConstructMixin.type = "Construct"
 
 local kBuildEffectsInterval = 1
@@ -140,12 +138,10 @@ end
 function ConstructMixin:OnUpdate(deltaTime)
     SharedUpdate(self, deltaTime)
 end
-AddFunctionContract(ConstructMixin.OnUpdate, { Arguments = { "Entity", "number" }, Returns = { } })
 
 function ConstructMixin:OnProcessMove(input)
     SharedUpdate(self, input.time)
 end
-AddFunctionContract(ConstructMixin.OnProcessMove, { Arguments = { "Entity", "Move" }, Returns = { } })
 
 function ConstructMixin:OnUpdateAnimationInput(modelMixin)
 

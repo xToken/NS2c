@@ -15,7 +15,6 @@ function Player:OnClientConnect(client)
     self:SetRequestsScores(true)   
     self.clientIndex = client:GetId()
     self.client = client
-    Shared.ConsoleCommand("mr 50")
     
 end
 
@@ -27,13 +26,16 @@ function Player:Reset()
 
     ScriptActor.Reset(self)
     
-    self.kills = 0
-    self.deaths = 0
-    
-    self:SetScoreboardChanged(true)
-    
     self:SetCameraDistance(0)
     
+end
+
+function Player:ResetScores()
+
+    self.kills = 0
+    self.deaths = 0    
+    self:SetScoreboardChanged(true)
+
 end
 
 function Player:ClearEffects()
@@ -86,7 +88,6 @@ function Player:SetClientMuted(muteClientIndex, setMuted)
     self.mutedClients[muteClientIndex] = setMuted
     
 end
-AddFunctionContract(Player.SetClientMuted, { Arguments = { "Player", "number", "boolean" }, Returns = { } })
 
 /**
  * Returns true if the passed in client is muted by this Player.
@@ -97,7 +98,6 @@ function Player:GetClientMuted(checkClientIndex)
     return self.mutedClients[checkClientIndex] == true
     
 end
-AddFunctionContract(Player.GetClientMuted, { Arguments = { "Player", "number" }, Returns = { "boolean" } })
 
 // Changes the visual appearance of the player to the special edition version.
 function Player:MakeSpecialEdition()
@@ -194,14 +194,11 @@ function Player:OnKill(killer, doer, point, direction)
     
     self:AddDeaths()
     
-    // Fade out screen
+    // Fade out screen.
     self.timeOfDeath = Shared.GetTime()
     
     DestroyViewModel(self)
     
-    // Set next think to 0 to disable
-    self:SetNextThink(0)
-        
 end
 
 function Player:SetControllerClient(client)
@@ -394,6 +391,8 @@ function Player:CopyPlayerDataFrom(player)
     self.timeOfDeath = player.timeOfDeath
     self.timeOfLastUse = player.timeOfLastUse
     self.crouching = player.crouching
+    self.crouched = player.crouched
+    self.crouchfraction = crouchfraction
     self.timeOfCrouchChange = player.timeOfCrouchChange   
     self.timeOfLastPoseUpdate = player.timeOfLastPoseUpdate
 
@@ -551,7 +550,8 @@ function Player:Replace(mapName, newTeamNumber, preserveWeapons, atOrigin, extra
     
     // There are some cases where the spectating player isn't set to nil.
     // Handle any edge cases here (like being dead when the game is reset).
-    if not player:isa("Spectator") then
+    // In some cases, client will be nil (when the map is changing for example).
+    if client and not player:isa("Spectator") then
         client:SetSpectatingPlayer(nil)
     end
     
@@ -637,12 +637,7 @@ function Player:GiveItem(itemMapName, setActive)
         if newItem then
 
             if newItem:isa("Weapon") then
-                local removedWeapon = self:AddWeapon(newItem, setActive)
-                
-                if removedWeapon and HasMixin(removedWeapon, "Tech") and LookupTechData(removedWeapon:GetTechId(), kTechDataCostKey, 0) == 0 then
-                    DestroyEntity(removedWeapon)
-                end
-                
+                self:AddWeapon(newItem, setActive)
             else
 
                 if newItem.OnCollision then
@@ -694,6 +689,9 @@ function Player:AttemptToBuy(techIds)
 end
 
 function Player:UpdateMisc(input)
+
+    // Set near death mask so we can add sound/visual effects.
+    //self:SetGameEffectMask(kGameEffect.NearDeath, self:GetHealth() < 0.2 * self:GetMaxHealth())
     
     if self:GetTeamType() == kMarineTeamType then
     

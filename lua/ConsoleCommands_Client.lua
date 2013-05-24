@@ -7,12 +7,6 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Script.Load("lua/FunctionContracts.lua")
-
-function OnCommandDeathMsg(killerIsPlayer, killerId, killerTeamNumber, iconIndex, targetIsPlayer, targetId, targetTeamNumber)
-    AddDeathMessage(tonumber(killerIsPlayer), tonumber(killerId), tonumber(killerTeamNumber), tonumber(iconIndex), tonumber(targetIsPlayer), tonumber(targetId), tonumber(targetTeamNumber))
-end
-
 function OnCommandOnClientDisconnect(clientIndexString)
     Scoreboard_OnClientDisconnect(tonumber(clientIndexString))
 end
@@ -31,21 +25,6 @@ function OnCommandSoundGeometry(enabled)
     enabled = enabled ~= "false"
     Shared.Message("Sound geometry occlusion enabled: " .. tostring(enabled))
     Client.SetSoundGeometryEnabled(enabled)
-    
-end
-
-function OnCommandAnimDebug(className)
-
-    // Messages printed by server
-    if Shared.GetDevMode() then
-    
-        if className then
-            gActorAnimDebugClass = className
-        elseif gActorAnimDebugClass ~= "" then
-            gActorAnimDebugClass = ""
-        end
-        
-    end
     
 end
 
@@ -125,6 +104,11 @@ local function OnCommandAnimInputs(entId)
     
 end
 
+local displayFPS = false
+local function OnCommandDisplayFPS()
+    displayFPS = not displayFPS
+end
+
 local function OnCommandSetSoundVolume(volume)
 
     if volume == nil then
@@ -180,10 +164,6 @@ function OnCommandSetName(nickname)
     Client.SetOptionString(kNicknameOptionsKey, nickname)
     Client.SendNetworkMessage("SetName", { name = nickname }, true)
     
-end
-
-local function OnCommandFunctionContractsEnabled(enabled)
-    SetFunctionContractsEnabled(enabled == "true")
 end
 
 local function OnCommandClearDebugLines()
@@ -243,18 +223,16 @@ local function OnCommandDebugNotifications()
     
 end
 
-Event.Hook("Console_deathmsg", OnCommandDeathMsg)
 Event.Hook("Console_clientdisconnect", OnCommandOnClientDisconnect)
 Event.Hook("Console_points", OnCommandPoints)
 Event.Hook("Console_soundgeometry", OnCommandSoundGeometry)
-Event.Hook("Console_onanimdebug", OnCommandAnimDebug)
 Event.Hook("Console_oneffectdebug", OnCommandEffectDebug)
 Event.Hook("Console_debugtext", OnCommandDebugText)
 Event.Hook("Console_locate", OnCommandLocate)
 Event.Hook("Console_distance", OnCommandDistance)
 Event.Hook("Console_animinputs", OnCommandAnimInputs)
+Event.Hook("Console_fps", OnCommandDisplayFPS)
 Event.Hook("Console_name", OnCommandSetName)
-Event.Hook("Console_functioncontractsenabled", OnCommandFunctionContractsEnabled)
 Event.Hook("Console_cleardebuglines", OnCommandClearDebugLines)
 Event.Hook("Console_guiinfo", OnCommandGUIInfo)
 
@@ -275,6 +253,10 @@ Event.Hook("Console_debugnotifications", OnCommandDebugNotifications)
 
 local function OnUpdateClient()
 
+    if displayFPS then
+        Client.ScreenMessage(string.format("FPS: %.0f", Client.GetFrameRate()))
+    end
+    
     local player = Client.GetLocalPlayer()
     if locationDisplayedOnScreen == true then
     

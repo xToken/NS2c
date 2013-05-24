@@ -35,6 +35,7 @@ if Client then
     Script.Load("lua/HelpMixin.lua")
 end
 
+--@Abstract
 class 'Player' (ScriptActor)
 
 Player.kMapName = "player"
@@ -49,11 +50,15 @@ if Client then
 end
 
 if Predict then
-    function Player:OnUpdatePlayer(deltaTime)    
-    end
 
-    function Player:UpdateMisc(input)
-    end
+function Player:OnUpdatePlayer(deltaTime)    
+    // do nothing
+end
+
+function Player:UpdateMisc(input)
+    // do nothing
+end
+
 end
 
 Player.kNotEnoughResourcesSound     = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/more")
@@ -103,7 +108,6 @@ local kCrouchSpeedScalar = 0.6
 local kCrouchShrinkAmount = 0.6
 local kExtentsCrouchShrinkAmount = 0.5
 local kCrouchAnimationTime = 0.4
-local kJumpMode = kJumpMode // default jumpmode copied into here, allows for classes to specify other modes
 local kThinkInterval = .2
 
 // Player speeds
@@ -128,7 +132,7 @@ local kBodyYawTurnThreshold = Math.Radians(5)
 local kTurnDelaySpeed = 8
 local kTurnRunDelaySpeed = 2.5
 local kTurnMoveYawBlendToMovingSpeed = 5
-local kMaxStepAmount = 1
+local kMaxStepAmount = 1.5
 local kUnstickDistance = .1
 local kUnstickOffsets =
 {
@@ -303,8 +307,6 @@ function Player:OnCreate()
     self.movementModiferState = false
 	self.crouched = false
 	self.landtime = 0
-
-    self.showScoreboard = false
     
     self.timeLastMenu = 0
     self.darwinMode = false
@@ -391,8 +393,6 @@ function Player:OnInitialized()
         
         self:SetName(kDefaultPlayerName)
         
-        self:SetNextThink(kThinkInterval)
-        
         InitMixin(self, MobileTargetMixin)
         
     end
@@ -423,6 +423,15 @@ function Player:OnInitialized()
     end
     
     self.communicationStatus = kPlayerCommunicationStatus.None
+    
+end
+
+function DisablePlayerDanger(player)
+
+    // Stop looping music.
+    if player:GetIsLocalPlayer() then
+        Client.StopMusic("sound/NS2.fev/danger")
+    end
     
 end
 
@@ -464,6 +473,8 @@ function Player:OnDestroy()
             self.unitStatusDisplay = nil
             
         end
+        
+        DisablePlayerDanger(self)
         
     elseif Server then
         self:RemoveSpectators(nil)
@@ -1091,7 +1102,7 @@ function Player:GetIsAffectedByAirFriction()
 end
 
 function Player:GetGroundFrictionForce()
-    return ConditionalValue(self.crouching or self.isUsing, 10, 4)
+    return ConditionalValue(self.crouching, 10, 4)
 end   
 
 function Player:GetAirFrictionForce()
@@ -1372,8 +1383,9 @@ function Player:OnJumpLand(landIntensity, slowDown)
 
     self.landtime = Shared.GetTime()
     
-    local landSurface = GetSurfaceAndNormalUnderEntity(self)
-    self:TriggerEffects("land", {surface = self:GetMaterialBelowPlayer()})
+    if Client and self:GetIsLocalPlayer() then
+        self:OnJumpLandLocalClient()
+    end
     
 end
 
@@ -1523,7 +1535,7 @@ end
 local function UpdateOnGroundState(self)
 
     self.onGround = false        
-    self.onGround = self:GetIsCloseToGround(kOnGroundDistance)
+    self.onGround = self:GetIsCloseToGround(Player.kOnGroundDistance)
     
     if self.onGround then
         self.timeLastOnGround = Shared.GetTime()
@@ -1584,8 +1596,8 @@ function Player:OnProcessMove(input)
         local wasOnGround = self.onGround
         local previousVelocity = self:GetVelocity()
         
-        UpdateOnGroundState(self)
-        
+        //UpdateOnGroundState(self)
+                
         // Update origin and velocity from input move (main physics behavior).
         self:UpdateMove(input)
         
@@ -1803,7 +1815,7 @@ function Player:UpdatePosition(velocity, time)
             self:PerformMovement(horizontalOffset, maxSlideMoves, velocity)
             
             local movePerformed = self:GetOrigin() - (steppedStart or start)
-            fractionOfOffset = movePerformed:DotProduct(horizontalOffset) / (horizontalOffsetLength * horizontalOffsetLength)
+            fractionOfOffset = movePerformed:DotProduct(horizontalOffset) / (horizontalOffsetLength*horizontalOffsetLength)
             
         end
 
@@ -1912,6 +1924,21 @@ end
 // onGround if we've updated our position since we've last called this.
 function Player:GetIsOnGround()
     
+    // Re-calculate every time SetOrigin is called
+    if self.onGroundNeedsUpdate then
+    
+        self.onGround = false
+        
+        self.onGround = self:GetIsCloseToGround(kOnGroundDistance)
+        
+        if self.onGround then
+            self.timeLastOnGround = Shared.GetTime()
+        end
+        
+        self.onGroundNeedsUpdate = false        
+        
+    end
+    
     if self:GetIsOnLadder() then
         return false
     end
@@ -1949,7 +1976,7 @@ function Player:GetIsCloseToGround(distanceToGround)
         return false
     end
 
-    if (self:GetVelocityPitch() > 0 and self.timeOfLastJump ~= nil and (Shared.GetTime() - self.timeOfLastJump < .2)) then
+    if (self:GetVelocity().y > 0 and self.timeOfLastJump ~= nil and (Shared.GetTime() - self.timeOfLastJump < .2)) then
     
         // If we are moving away from the ground, don't treat
         // us as standing on it.
@@ -1981,8 +2008,9 @@ function Player:GetIsCloseToGround(distanceToGround)
     
 end
 
+
 function Player:GetPlayFootsteps()
-    return self:GetVelocityLength() > kFootstepsThreshold and self:GetIsOnGround()
+    return self:GetVelocityLength() > kFootstepsThreshold and self:GetIsOnGround() and self:GetIsAlive()    
 end
 
 function Player:GetMovementModifierState()
@@ -2058,6 +2086,11 @@ function Player:ProcessEndMode()
     return false
 end
 
+// for marquee selection
+function Player:GetIsMoveable()
+    return true
+end
+
 // Maximum speed a player can move backwards
 function Player:GetMaxBackwardSpeedScalar()
     return kWalkBackwardSpeedScalar
@@ -2127,8 +2160,12 @@ function Player:HandleJump(input, velocity)
         // height under the force of gravity.
         self:GetJumpVelocity(input, velocity)
         
-        if self:GetPlayJumpSound() and Shared.GetTime() - self.timeOfLastJump > 0.05 then
-            self:TriggerEffects("jump", {surface = self:GetMaterialBelowPlayer()})
+        if self:GetPlayJumpSound() then
+        
+            if not Shared.GetIsRunningPrediction() then
+                self:TriggerEffects("jump", {surface = self:GetMaterialBelowPlayer()})
+            end
+            
         end
 
         // TODO: Set this somehow (set on sounds for entity, not by sound name?)
@@ -2313,7 +2350,7 @@ function Player:GetSecondaryAttackLastFrame()
 end
 
 function Player:GetJumpMode()
-    return kJumpMode
+    return kJumpMode.Repeating
 end
 
 // Children can add or remove velocity according to special abilities, modes, etc.
@@ -2327,19 +2364,28 @@ function Player:ModifyVelocity(input, velocity)
             self:OnJump()
         end
         
-        if self:GetJumpMode() == 2 then
+        if self:GetJumpMode() == kJumpMode.Repeating then
             self.jumpHandled = false
-        elseif self:GetJumpMode() == 1 then
+        elseif self:GetJumpMode() == kJumpMode.Queued then
             self.jumpHandled = jumped
         else
             self.jumpHandled = true
         end
-        
+
+    elseif self:GetIsOnGround() then
+        self:HandleOnGround(input, velocity)
     end
 end
 
 function Player:GetSpeedDebugSpecial()
     return 0
+end
+
+function Player:HandleOnGround(input, velocity)
+    if Sign(velocity.y) == -1 then
+        velocity.y = 0
+    end
+    
 end
 
 function Player:GetIsAbleToUse()
@@ -2355,7 +2401,7 @@ function Player:HandleButtons(input)
         // The following inputs are disabled when the player cannot control themself.
         input.commands = bit.band(input.commands, bit.bnot(bit.bor(Move.Use, Move.Buy, Move.Jump,
                                                                    Move.PrimaryAttack, Move.SecondaryAttack,
-                                                                   Move.NextWeapon, Move.PrevWeapon, Move.Reload,
+                                                                   Move.NextWeapon, Move.PrevWeapon, Move.Reload, Move.QuickSwitch,
                                                                    Move.Taunt, Move.Weapon1, Move.Weapon2,
                                                                    Move.Weapon3, Move.Weapon4, Move.Weapon5, Move.Crouch)))
                                                                    
@@ -2366,6 +2412,12 @@ function Player:HandleButtons(input)
         return
         
     end
+    
+    if self.HandleButtonsMixin then
+        self:HandleButtonsMixin(input)
+    end
+    
+    self.moveButtonPressed = input.move:GetLength() ~= 0
     
     // Update movement ability
     local newMovementState = bit.band(input.commands, Move.MovementModifier) ~= 0
@@ -2380,7 +2432,6 @@ function Player:HandleButtons(input)
     
     self.movementModiferState = newMovementState
     self.latestinput = input
-    self.moveButtonPressed = input.move:GetLength() ~= 0
     
     local ableToUse = self:GetIsAbleToUse()
     if ableToUse and bit.band(input.commands, Move.Use) ~= 0 and not self.primaryAttackLastFrame and not self.secondaryAttackLastFrame then
@@ -2411,21 +2462,21 @@ function Player:HandleButtons(input)
     self:HandleAttacks(input)
     
     // self:HandleDoubleTap(input)
-    
-    if bit.band(input.commands, Move.NextWeapon) ~= 0 then
-        self:SelectNextWeapon()
-    end
-    
-    if bit.band(input.commands, Move.PrevWeapon) ~= 0 then
-        self:SelectPrevWeapon()
-    end
-    
+
     if bit.band(input.commands, Move.Reload) ~= 0 then
         self:Reload()
     end
     
     // Weapon switch
     if not self:GetIsCommander() and not self:GetIsUsing() then
+    
+        if bit.band(input.commands, Move.NextWeapon) ~= 0 then
+            self:SelectNextWeapon()
+        end
+        
+        if bit.band(input.commands, Move.PrevWeapon) ~= 0 then
+            self:SelectPrevWeapon()
+        end
     
         if bit.band(input.commands, Move.Weapon1) ~= 0 then
             self:SwitchWeapon(1)
@@ -2447,9 +2498,13 @@ function Player:HandleButtons(input)
             self:SwitchWeapon(5)
         end
         
+        if bit.band(input.commands, Move.QuickSwitch) ~= 0 then
+            self:QuickSwitchWeapon()
+        end
+        
     end
     
-    self:SetCrouchState(bit.band(input.commands, Move.Crouch) ~= 0, lastcrouch)    
+    self:SetCrouchState(bit.band(input.commands, Move.Crouch) ~= 0, lastcrouch)
     
 end
 
@@ -2609,6 +2664,15 @@ function Player:SetCrouchState(crouching, lastcrouching)
         end
         
     elseif self:GetCanCrouch() then
+    
+        if not self:GetIsOnGround() then
+            // Player is crouching while in the air, move legs up instead of moving upper body down
+            local org = self:GetOrigin()
+            org.y = org.y + self:GetCrouchShrinkAmount()
+            self:SetOrigin(org)
+        end
+        
+    
         self.crouching = crouching
         self.timeOfCrouchChange = Shared.GetTime()
         self:UpdateControllerFromEntity()
@@ -2921,6 +2985,9 @@ function Player:TriggerInvalidSound()
         self.timeLastInvalidSound = Shared.GetTime()
     end
     
+end
+
+function Player:SetEthereal(ethereal)
 end
 
 function Player:GetIsWallWalkingAllowed(entity)

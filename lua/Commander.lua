@@ -14,10 +14,20 @@ Script.Load("lua/BuildingMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/Mixins/OverheadMoveMixin.lua")
-Script.Load("lua/Mixins/BaseMoveMixin.lua")
 Script.Load("lua/MinimapMoveMixin.lua")
 Script.Load("lua/HotkeyMoveMixin.lua")
 Script.Load("lua/ScoringMixin.lua")
+
+local gTechIdCooldowns = {}
+local function GetTechIdCooldowns(teamNumber)
+
+    if not gTechIdCooldowns[teamNumber] then        
+        gTechIdCooldowns[teamNumber] = {}        
+    end
+    
+    return gTechIdCooldowns[teamNumber]
+
+end
 
 class 'Commander' (Player)
 
@@ -74,7 +84,6 @@ local networkVars =
 }
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
-AddMixinNetworkVars(BaseMoveMixin, networkVars)
 AddMixinNetworkVars(OverheadMoveMixin, networkVars)
 AddMixinNetworkVars(MinimapMoveMixin, networkVars)
 AddMixinNetworkVars(HotkeyMoveMixin, networkVars)
@@ -84,7 +93,6 @@ function Commander:OnCreate()
     Player.OnCreate(self)
     
     InitMixin(self, CameraHolderMixin, { kFov = Commander.kFov })
-    InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
     
 end
 
@@ -95,13 +103,12 @@ function Commander:OnInitialized()
     InitMixin(self, HotkeyMoveMixin)
     
     InitMixin(self, BuildingMixin)
-    InitMixin(self, EntityChangeMixin)
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
     
     Player.OnInitialized(self)
     
     self:SetIsVisible(false)
-
+    
     if Client then
     
         self.drawResearch = false
@@ -208,7 +215,9 @@ function Commander:GetNumPlayerAlerts()
 end
 
 function Commander:UpdateMisc(input)
-    PROFILE("Commander:UpdateMisc")    
+
+    PROFILE("Commander:UpdateMisc")
+    
 end
 
 // Returns true if it set our position
@@ -433,9 +442,6 @@ function Commander:OnProcessMove(input)
 
     Player.OnProcessMove(self, input)
     
-    // Remove selected units that are no longer valid for selection.
-    self:UpdateSelection(input.time)
-    
     if Server then
         
         if not self.timeLastEnergyCheck then
@@ -453,8 +459,8 @@ function Commander:OnProcessMove(input)
         end
         
     elseif Client then
-    
-		// This flag must be cleared inside OnProcessMove. See explaination in Commander:OverrideInput().
+        
+        // This flag must be cleared inside OnProcessMove. See explaination in Commander:OverrideInput().
         self.setScrollPosition = false
         
     end

@@ -19,6 +19,7 @@ AlienTeamInfo.kMapName = "AlienTeamInfo"
 local networkVars =
 {
     numHives = "integer (0 to 10)",
+    numUnassignedHives = "integer (0 to 10)",
     eggCount = "integer (0 to 127)"
 }
 
@@ -28,7 +29,8 @@ function AlienTeamInfo:OnCreate()
     
     self.numHives = 0
     self.eggCount = 0
-
+    self.numUnassignedHives = 0
+    
 end
 
 if Server then
@@ -39,16 +41,21 @@ if Server then
         
         local team = self:GetTeam()
         if team then
-            self.numHives = team:GetNumHives()
+            self.numHives = team:GetActiveHiveCount()
             self.eggCount = team:GetActiveEggCount()
+            self.numUnassignedHives = team:GetActiveUnassignedHiveCount()
         end
         
     end
 
 end
 
-function AlienTeamInfo:GetNumHives()
+function AlienTeamInfo:GetActiveHiveCount()
     return self.numHives
+end
+
+function AlienTeamInfo:GetActiveUnassignedHiveCount()
+    return self.numUnassignedHives
 end
 
 function AlienTeamInfo:GetEggCount()

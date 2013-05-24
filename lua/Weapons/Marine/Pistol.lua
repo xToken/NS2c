@@ -18,6 +18,7 @@ Pistol.kModelName = PrecacheAsset("models/marine/pistol/pistol.model")
 local kViewModelName = PrecacheAsset("models/marine/pistol/pistol_view.model")
 local kAnimationGraph = PrecacheAsset("models/marine/pistol/pistol_view.animation_graph")
 
+local kClipSize = 10
 local kSpread = ClipWeapon.kCone0Degrees
 local kAltSpread = ClipWeapon.kCone0Degrees
 
@@ -159,6 +160,10 @@ if Client then
         return self:GetAttachPointCoords(kLaserAttachPoint)
         
     end
+    
+    function Pistol:GetUIDisplaySettings()
+        return { xSize = 256, ySize = 256, script = "lua/GUIPistolDisplay.lua" }
+    end
 
 end
 
@@ -209,7 +214,7 @@ function Pistol:GetWeight()
 end
 
 function Pistol:GetClipSize()
-    return kPistolClipSize
+    return kClipSize
 end
 
 function Pistol:GetSpread()

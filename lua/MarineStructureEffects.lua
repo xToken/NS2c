@@ -18,21 +18,6 @@ kMarineStructureEffects =
         }
     },
 
-    disrupt_start =
-    {
-        disruptStartEffects =
-        {
-            {cinematic = "cinematics/alien/onos/stomp_hit.cinematic", classname = "Structure", done = true},
-            {cinematic = "cinematics/alien/onos/stomp_hit.cinematic", classname = "ARC", done = true},
-        },
-        
-        disruptStartSounds =
-        {
-            {sound = "sound/NS2.fev/marine/structures/power_down", classname = "Structure", done = true},
-            {sound = "sound/NS2.fev/marine/structures/power_down", classname = "ARC", done = true},
-        }        
-    },
-
     ghoststructure_destroy =
     {
         ghostStructureDestroyEffects =

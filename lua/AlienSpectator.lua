@@ -29,10 +29,6 @@ local networkVars =
 
 local function UpdateQueuePosition(self)
 
-    if self:GetIsDestroyed() then
-        return false
-    end
-    
     self.queuePosition = self:GetTeam():GetPlayerPositionInRespawnQueue(self)
     return true
     
@@ -70,15 +66,50 @@ function AlienSpectator:OnInitialized()
         
     end
     
-end
-
-if Server then
-
-    function AlienSpectator:GetWaveSpawnEndTime()
-        return self.timeWaveSpawnEnd
+    if Client and Client.GetLocalPlayer() == self then
+        self.spawnHUD = GetGUIManager():CreateGUIScript("GUIAlienSpectatorHUD")
     end
     
 end
+
+function AlienSpectator:OnDestroy()
+
+    TeamSpectator.OnDestroy(self)
+    
+    if Client  then
+    
+        if self.spawnHUD then
+        
+            GetGUIManager():DestroyGUIScript(self.spawnHUD)
+            self.spawnHUD = nil
+            
+        end
+        
+        if self.requestMenu then
+        
+            GetGUIManager():DestroyGUIScript(self.requestMenu)
+            self.requestMenu = nil
+            
+        end  
+        
+    end
+    
+end
+
+if Client then
+
+    function AlienSpectator:OnInitLocalClient()
+    
+        TeamSpectator.OnInitLocalClient(self)
+        
+        if self.requestMenu == nil then
+            self.requestMenu = GetGUIManager():CreateGUIScript("GUIRequestMenu")
+        end
+        
+    end
+    
+end
+
 function AlienSpectator:GetIsValidToSpawn()
     return true
 end

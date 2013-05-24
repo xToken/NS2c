@@ -9,7 +9,7 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
@@ -55,11 +55,6 @@ Hydra.kFov = 360
 
 kHydraDiggestDuration = 1
 
-local kInfestationRadius = 10
-local kInfestationGrowthRate = 0.25
-local kMinInfestationRadius = 0.1
-local kInfestationBlobDensity = 0.5
-
 if Server then
     Script.Load("lua/Hydra_Server.lua")
 end
@@ -85,7 +80,6 @@ AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
-AddMixinNetworkVars(InfestationMixin, networkVars)
 
 function Hydra:OnCreate()
 
@@ -99,8 +93,8 @@ function Hydra:OnCreate()
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
     InitMixin(self, SelectableMixin)
-    InitMixin(self, CloakableMixin)
     InitMixin(self, EntityChangeMixin)
+    InitMixin(self, CloakableMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, DetectableMixin)
     InitMixin(self, ConstructMixin)
@@ -116,14 +110,9 @@ function Hydra:OnCreate()
     self.umbratime = 0
     self.hydraParentId = Entity.invalidId
     
-    self:SetLagCompensated(false)
-    self:SetPhysicsType(PhysicsType.Kinematic)
-    self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
 end
 
 function Hydra:OnInitialized()
-
-	InitMixin(self, InfestationMixin)
 
     if Server then
     
@@ -159,9 +148,6 @@ function Hydra:OnInitialized()
         InitMixin(self, UnitStatusMixin)
         InitMixin(self, HiveVisionMixin)
         
-        self.decal = Client.CreateRenderDecal()
-        //self.decal:SetMaterial("materials/infestation/infestation_decal.material")     
-        
     end
     
 end
@@ -195,26 +181,13 @@ function Hydra:GetShowHitIndicator()
     return false
 end
 
-function Hydra:GetMaxRadius()
-    return kInfestationRadius
-end
-
-function Hydra:GetGrowthRate()
-    return kInfestationGrowthRate
-end
-
-function Hydra:GetMinRadius()
-    return kMinInfestationRadius
-end
-
-function Hydra:GetInfestationDensity()
-    return kInfestationBlobDensity
-end
-
 function Hydra:GetTracerEffectName()
     return kSpikeTracerEffectName
 end
 
+function Hydra:GetTracerResidueEffectName()
+    return kSpikeTracerResidueEffectName
+end
 function Hydra:GetReceivesStructuralDamage()
     return true
 end
@@ -262,10 +235,6 @@ function Hydra:GetViewOffset()
     return self:GetCoords().yAxis * 1
 end
 
-function Hydra:GetIconOffsetY(secondary)
-    return kAbilityOffset.Hydra
-end
-
 function Hydra:GetCanGiveDamageOverride()
     return true
 end
@@ -279,28 +248,21 @@ function Hydra:OnUpdateAnimationInput(modelMixin)
     
 end
 
-if Client then
-
-    function Hydra:OnUpdateRender()
-    
-        PROFILE("Hydra:OnUpdateRender")
-
-        if self.decal then
-        
-            self.decal:SetCoords(self:GetCoords())
-            local radiusMod = math.sin(Shared.GetTime() + (self:GetId() % 10)) * 0.04
-
-            local clientRadius = 0.95 + radiusMod
-            self.decal:SetExtents(Vector(clientRadius, 0.7, clientRadius))
-            
-        end
-        
-    end
-
-end
-
 function Hydra:GetEngagementPointOverride()
     return self:GetOrigin() + Vector(0, 0.4, 0)
+end
+
+function Hydra:OnUpdateRender()
+
+    local showDecal = self:GetIsVisible() and not self:GetIsCloaked()
+
+    if not self.decal and showDecal then
+        self.decal = CreateSimpleInfestationDecal(0.9, self:GetCoords())
+    elseif self.decal and not showDecal then
+        Client.DestroyRenderDecal(self.decal)
+        self.decal = nil
+    end
+
 end
 
 Shared.LinkClassToMap("Hydra", Hydra.kMapName, networkVars)

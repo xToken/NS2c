@@ -1,5 +1,6 @@
 // lua\Marine_Client.lua
 //
+local kSensorBlipSize = 25
 
 local kMarineHealthbarOffset = Vector(0, 1.2, 0)
 function Marine:GetHealthbarOffset()
@@ -22,12 +23,12 @@ function MarineUI_GetHasArmsLab()
 
     local player = Client.GetLocalPlayer()
     
-    if player then    
-        return GetHasTech(player, kTechId.ArmsLab)  
+    if player then
+        return GetHasTech(player, kTechId.ArmsLab)
     end
     
     return false
-
+    
 end
 
 local function GetIsCloseToMenuStructure(self)
@@ -42,24 +43,29 @@ end
 function Marine:UnitStatusPercentage()
     return self.unitStatusPercentage
 end
+
+local function TriggerSpitHitEffect(coords)
+end
+
+local function UpdatePoisonedEffect(self)
+end
+
 function Marine:UpdateClientEffects(deltaTime, isLocal)
     
     Player.UpdateClientEffects(self, deltaTime, isLocal)
     
     if isLocal then
     
-        Client.SetMouseSensitivityScalar(ConditionalValue(not self:GetCanControl(), 0, 1))
+        Client.SetMouseSensitivityScalar(ConditionalValue(self:GetIsStunned(), 0, 1))
         
         self:UpdateGhostModel()
-        
+
         local marineHUD = ClientUI.GetScript("Hud/Marine/GUIMarineHUD")
         if marineHUD then
             marineHUD:SetIsVisible(self:GetIsAlive())
         end
         
-   end
-    
-    
+    end
 end
 
 function Marine:OnUpdateRender()
@@ -92,22 +98,7 @@ function Marine:OnUpdateRender()
 end
 
 function Marine:CloseMenu()
-
-    if self.buyMenu then
-    
-        GetGUIManager():DestroyGUIScript(self.buyMenu)
-        self.buyMenu = nil
-        MouseTracker_SetIsVisible(false)
-        
-        // Quick work-around to not fire weapon when closing menu.
-        self.timeClosedMenu = Shared.GetTime()
-        
-        return true
-        
-    end
-   
     return false
-    
 end
 
 function Marine:AddNotification(locationId, techId)
@@ -135,19 +126,6 @@ function Marine:GetAndClearNotification()
     end
     
     return notification
-
-end
-
-function Marine:TriggerFootstep()
-
-    Player.TriggerFootstep(self)
-    
-    if self == Client.GetLocalPlayer() and not self:GetIsThirdPerson() then
-    
-        local cinematic = Client.CreateCinematic(RenderScene.Zone_ViewModel)
-        cinematic:SetRepeatStyle(Cinematic.Repeat_None)
-        
-    end
 
 end
 
@@ -193,11 +171,20 @@ function Marine:UpdateMisc(input)
     
 end
 
+// Give dynamic camera motion to the player
+/*
+function Marine:PlayerCameraCoordsAdjustment(cameraCoords) 
+    return cameraCoords
+end*/
+
 function Marine:OnCountDown()
 
     Player.OnCountDown(self)
     
-    ClientUI.GetScript("Hud/Marine/GUIMarineHUD"):SetIsVisible(false)
+    local script = ClientUI.GetScript("Hud/Marine/GUIMarineHUD")
+    if script then
+        script:SetIsVisible(false)
+    end
     
 end
 
@@ -205,8 +192,13 @@ function Marine:OnCountDownEnd()
 
     Player.OnCountDownEnd(self)
     
-    ClientUI.GetScript("Hud/Marine/GUIMarineHUD"):SetIsVisible(true)
-    ClientUI.GetScript("Hud/Marine/GUIMarineHUD"):TriggerInitAnimations()
+    local script = ClientUI.GetScript("Hud/Marine/GUIMarineHUD")
+    if script then
+    
+        script:SetIsVisible(true)
+        script:TriggerInitAnimations()
+        
+    end
     
 end
 
@@ -216,9 +208,6 @@ function Marine:OnOrderSelfComplete(orderType)
 
 end
 
-function Marine:GetSpeedDebugSpecial()
-    return 0
-end
 function Marine:UpdateGhostModel()
 
     self.currentTechId = nil

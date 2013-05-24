@@ -32,7 +32,7 @@ Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
-Script.Load("lua/AlienDetectableMixin.lua")
+Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 
 class 'Observatory' (ScriptActor)
@@ -71,7 +71,7 @@ AddMixinNetworkVars(EnergyMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
-AddMixinNetworkVars(AlienDetectableMixin, networkVars)
+AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 
@@ -83,13 +83,14 @@ function Observatory:OnCreate()
     
         self.distressBeaconSoundMarine = Server.CreateEntity(SoundEffect.kMapName)
         self.distressBeaconSoundMarine:SetAsset(kDistressBeaconSoundMarine)
-        self.distressBeaconSoundMarine:SetRelevancyDistance(kDistressBeaconSoundDistance)
+        self.distressBeaconSoundMarine:SetRelevancyDistance(Math.infinity)
         self.distressBeaconSoundMarine:SetExcludeRelevancyMask(kRelevantToTeam1)
 
         self.distressBeaconSoundAlien = Server.CreateEntity(SoundEffect.kMapName)
         self.distressBeaconSoundAlien:SetAsset(kDistressBeaconSoundAlien)
-        self.distressBeaconSoundAlien:SetRelevancyDistance(kDistressBeaconSoundDistance)
+        self.distressBeaconSoundAlien:SetRelevancyDistance(Math.infinity)
         self.distressBeaconSoundAlien:SetExcludeRelevancyMask(kRelevantToTeam2)
+        
     end
     
     InitMixin(self, BaseModelMixin)
@@ -112,7 +113,7 @@ function Observatory:OnCreate()
     InitMixin(self, ObstacleMixin)
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
-    InitMixin(self, AlienDetectableMixin)
+    InitMixin(self, DetectableMixin)
     InitMixin(self, ParasiteMixin)
     
     if Client then
@@ -214,7 +215,7 @@ end
 function Observatory:GetDistressOrigin()
 
     // Respawn at nearest occupied command station
-    local origin = self:GetModelOrigin()
+    local origin = self:GetOrigin()
     
     local nearest = GetNearest(origin, "CommandStation", self:GetTeamNumber(), function(ent) return ent:GetIsBuilt() and ent:GetIsOccupied() end)
     if nearest then

@@ -67,6 +67,97 @@ function Embryo:OnCreate()
 
 end
 
+local function UpdateGestation(self)
+
+    // Cannot spawn unless alive.
+    if self:GetIsAlive() and self.gestationClass ~= nil then
+    
+        if not self.gestateEffectsTriggered then
+        
+            self:TriggerEffects("player_start_gestate")
+            self.gestateEffectsTriggered = true
+            
+        end
+        
+        self.evolveTime = self.evolveTime + kUpdateGestationTime
+        
+        self.evolvePercentage = Clamp((self.evolveTime / self.gestationTime) * 100, 0, 100)
+        
+        if self.evolveTime >= self.gestationTime then
+        
+            // Replace player with new player
+            local newPlayer = self:Replace(self.gestationClass)
+            newPlayer:SetCameraDistance(0)
+            
+            local capsuleHeight, capsuleRadius = self:GetTraceCapsule()
+            local newAlienExtents = LookupTechData(newPlayer:GetTechId(), kTechDataMaxExtents)
+            
+            if not GetHasRoomForCapsule(newAlienExtents, self:GetOrigin() + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls, nil, EntityFilterTwo(self, newPlayer)) then
+            
+                local spawnPoint = GetRandomSpawnForCapsule(newAlienExtents.y, capsuleRadius, self:GetModelOrigin(), 0.5, 5, EntityFilterOne(self))
+
+                if spawnPoint then
+                    newPlayer:SetOrigin(spawnPoint)
+                end
+                
+            end
+
+            newPlayer:DropToFloor()
+            
+            self:TriggerEffects("player_end_gestate")
+            
+            // Now give new player all the upgrades they purchased
+            local upgradesGiven = 0
+            
+            for index, upgradeId in ipairs(self.evolvingUpgrades) do
+
+                if newPlayer:GiveUpgrade(upgradeId) then
+                    upgradesGiven = upgradesGiven + 1
+                end
+                
+            end
+            
+            local healthScalar = self:GetHealth() / self:GetMaxHealth()
+            local armorScalar = self:GetMaxArmor() == 0 and 1 or self:GetArmor() / self:GetMaxArmor()
+
+            newPlayer:SetHealth(healthScalar * LookupTechData(self.gestationTypeTechId, kTechDataMaxHealth))
+            newPlayer:SetArmor(armorScalar * LookupTechData(self.gestationTypeTechId, kTechDataMaxArmor))
+            newPlayer:UpdateArmorAmount()
+            
+            if self.resOnGestationComplete then
+                newPlayer:AddResources(self.resOnGestationComplete)
+            end
+
+            // Notify team
+
+            local team = self:GetTeam()
+
+            if team and team.OnEvolved then
+
+                team:OnEvolved(newPlayer:GetTechId())
+
+                for _, upgradeId in ipairs(self.evolvingUpgrades) do
+
+                    if team.OnEvolved then
+                        team:OnEvolved(upgradeId)
+                    end
+                    
+                end
+
+            end
+            
+            // Return false so that we don't get called again if the server time step
+            // was larger than the callback interval
+            return false
+            
+        end
+        
+    end
+    
+    return true
+    
+end
+
 function Embryo:OnInitialized()
 
     InitMixin(self, CameraHolderMixin, { kFov = kEmbryoFov })
@@ -76,7 +167,7 @@ function Embryo:OnInitialized()
     self:SetModel(Embryo.kModelName, Embryo.kAnimationGraph)
     
     if Server then
-        self:AddTimedCallback(Embryo.UpdateGestation, kUpdateGestationTime)
+        self:AddTimedCallback(UpdateGestation, kUpdateGestationTime)
     end
     
     self.originalAngles = Angles(self:GetAngles())
@@ -164,10 +255,6 @@ end
 
 function Embryo:GetArmorFullyUpgradedAmount()
     return 0
-end
-
-function Embryo:GetCanCatalystOverride()
-    return self:GetIsAlive()
 end
 
 function Embryo:GetMaxViewOffsetHeight()
@@ -278,94 +365,6 @@ end
 
 if Server then
 
-    function Embryo:UpdateGestation(deltaTime)
-    
-        // Cannot spawn unless alive.
-        if self:GetIsAlive() and self.gestationClass ~= nil then
-        
-            if not self.gestateEffectsTriggered then
-            
-                self:TriggerEffects("player_start_gestate")
-                self.gestateEffectsTriggered = true
-                
-            end
-            
-            self.evolveTime = self.evolveTime + deltaTime
-            
-            self.evolvePercentage = Clamp((self.evolveTime / self.gestationTime) * 100, 0, 100)
-            
-            if self.evolveTime >= self.gestationTime then
-            
-                // Replace player with new player
-                local newPlayer = self:Replace(self.gestationClass)
-                newPlayer:SetCameraDistance(0)
-                
-                local capsuleHeight, capsuleRadius = self:GetTraceCapsule()
-                local newAlienExtents = LookupTechData(newPlayer:GetTechId(), kTechDataMaxExtents)
-                
-                if not GetHasRoomForCapsule(newAlienExtents, self:GetOrigin() + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls, nil, EntityFilterTwo(self, newPlayer)) then
-                
-                    local spawnPoint = GetRandomSpawnForCapsule(newAlienExtents.y, capsuleRadius, self:GetModelOrigin(), 0.5, 5, EntityFilterOne(self))
-
-                    if spawnPoint then
-                        newPlayer:SetOrigin(spawnPoint)
-                    end
-                    
-                end
-
-                newPlayer:DropToFloor()
-                
-                self:TriggerEffects("player_end_gestate")
-                
-                // Now give new player all the upgrades they purchased
-                local upgradesGiven = 0
-                
-                for index, upgradeId in ipairs(self.evolvingUpgrades) do
-
-                    if newPlayer:GiveUpgrade(upgradeId) then
-                        upgradesGiven = upgradesGiven + 1
-                    end
-                    
-                end
-                
-                newPlayer:SetHealth( self.healthScalar * LookupTechData(self.gestationTypeTechId, kTechDataMaxHealth) )
-                newPlayer:SetArmor( self.armorScalar * LookupTechData(self.gestationTypeTechId, kTechDataMaxArmor) )
-                newPlayer:UpdateArmorAmount()
-                
-                if self.resOnGestationComplete then
-                    newPlayer:AddResources(self.resOnGestationComplete)
-                end
-
-                // Notify team
-
-                local team = self:GetTeam()
-
-                if team and team.OnEvolved then
-
-                    team:OnEvolved(newPlayer:GetTechId())
-
-                    for _, upgradeId in ipairs(self.evolvingUpgrades) do
-
-                        if team.OnEvolved then
-                            team:OnEvolved(upgradeId)
-                        end
-                        
-                    end
-
-                end
-                
-                // Return false so that we don't get called again if the server time step
-                // was larger than the callback interval
-                return false
-                
-            end
-            
-        end
-        
-        return true
-        
-    end
-    
     function Embryo:OnKill(attacker, doer, point, direction)
     
         Alien.OnKill(self, attacker, doer, point, direction)

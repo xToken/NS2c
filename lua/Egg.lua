@@ -22,6 +22,7 @@ Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
+
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HasUmbraMixin.lua")
@@ -60,18 +61,6 @@ AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
-if Server then
-    
-    local function SortByTechId(entId1, entId2)
-        
-        local ent1 = Shared.GetEntity(entId1)
-        local ent2 = Shared.GetEntity(entId2)
-    
-        return ent1 and ent2 and ent1:GetTechId() > ent2:GetTechId()
-        
-    end
-
-end
 
 function Egg:OnCreate()
 
@@ -85,8 +74,8 @@ function Egg:OnCreate()
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
     InitMixin(self, SelectableMixin)
-    InitMixin(self, CloakableMixin)
     InitMixin(self, EntityChangeMixin)
+    InitMixin(self, CloakableMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, DetectableMixin)
     InitMixin(self, ResearchMixin)
@@ -171,7 +160,6 @@ function Egg:OnResearchComplete(techId)
 
     if techId == kTechId.GorgeEgg or techId == kTechId.LerkEgg  or techId == kTechId.FadeEgg  or techId == kTechId.OnosEgg then
         self:UpgradeToTechId(techId)
-        RegisterLifeFormEgg(self)
     end
     
     return success
@@ -333,11 +321,14 @@ function Egg:SpawnPlayer(overrideplayer)
         // Spawn player on top of egg
         local spawnOrigin = Vector(self:GetOrigin())
         // Move down to the ground.
-        
         spawnOrigin.y = spawnOrigin.y - (self:GetExtents().y / 2)
 
         local gestationClass = self:GetClassToGestate()
-
+        
+        // We must clear out queuedPlayerId BEFORE calling ReplaceRespawnPlayer
+        // as this will trigger OnEntityChange() which would requeue this player.
+        self.queuedPlayerId = nil
+        
         local team = queuedPlayer:GetTeam()
         local success, player = team:ReplaceRespawnPlayer(queuedPlayer, spawnOrigin, queuedPlayer:GetAngles(), gestationClass)                
         player:SetCameraDistance(0)
@@ -346,8 +337,6 @@ function Egg:SpawnPlayer(overrideplayer)
         
         if success then
         
-            self.queuedPlayerId = nil
-            
             if self:GetIsResearching() then
                 GestatePlayer(self, player, kTechId.Skulk)
             else            
@@ -378,7 +367,8 @@ function Egg:SetQueuedPlayerId(playerId, spawntime)
     local playerToSpawn = Shared.GetEntity(playerId)
     assert(playerToSpawn:isa("AlienSpectator"))
     
-    playerToSpawn:SetEggId(self:GetId(), spawntime)
+    playerToSpawn:SetEggId(self:GetId())
+    playerToSpawn:SetIsRespawning(true)
     
     if Server then
                 
@@ -440,7 +430,7 @@ if Server then
         ScriptActor.OnDestroy(self)
         
     end
-
+    
     function Egg:OnUse(player, elapsedTime, useSuccessTable)
     
         local useSuccess = false

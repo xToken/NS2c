@@ -467,25 +467,25 @@ end
 
 function AlienBuy_OnMouseOver()
 
-    Shared.PlaySound(nil, kAlienBuyMenuSounds.Hover)
+    StartSoundEffect(kAlienBuyMenuSounds.Hover)
 
 end
 
 function AlienBuy_OnOpen()
 
-    Shared.PlaySound(nil, kAlienBuyMenuSounds.Open)
+    StartSoundEffect(kAlienBuyMenuSounds.Open)
 
 end
 
 function AlienBuy_OnClose()
 
-    Shared.PlaySound(nil, kAlienBuyMenuSounds.Close)
+    StartSoundEffect(kAlienBuyMenuSounds.Close)
 
 end
 
 function AlienBuy_OnPurchase()
 
-    Shared.PlaySound(nil, kAlienBuyMenuSounds.Evolve)
+    StartSoundEffect(kAlienBuyMenuSounds.Evolve)
 
 end
 
@@ -503,14 +503,12 @@ function AlienBuy_OnSelectAlien(type)
     elseif type == "Fade" then
         assetName = kAlienBuyMenuSounds.SelectFade
     end
-    Shared.PlaySound(nil, assetName)
+    StartSoundEffect(assetName)
 
 end
 
 function AlienBuy_OnUpgradeSelected()
-
-    Shared.PlaySound(nil, kAlienBuyMenuSounds.BuyUpgrade)
-    
+    StartSoundEffect(kAlienBuyMenuSounds.BuyUpgrade)    
 end
 
 // use those function also in Alien.lua
@@ -571,9 +569,7 @@ function AlienBuy_GetAbilitiesFor(lifeFormTechId)
 end
 
 function AlienBuy_OnUpgradeDeselected()
-
-    Shared.PlaySound(nil, kAlienBuyMenuSounds.SellUpgrade)
-    
+    StartSoundEffect(kAlienBuyMenuSounds.SellUpgrade)    
 end
 
 /**

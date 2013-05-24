@@ -37,7 +37,6 @@ local networkVars =
     techActiveMask = "integer",
     techOwnedMask = "integer",
     playerCount = "integer (0 to " .. kMaxPlayers - 1 .. ")",
-    workerCount = "integer (0 to 18)",
     kills = "integer (0 to 9999)"
 }
 
@@ -56,7 +55,6 @@ TeamInfo.kRelevantTechIdsMarine =
     kTechId.Armor2,
     kTechId.Armor3,
 
-    kTechId.PrototypeLab,
     kTechId.JetpackTech,
     kTechId.HeavyArmorTech,
     kTechId.MotionTracking,
@@ -145,7 +143,6 @@ function TeamInfo:OnCreate()
         self.techActiveMask = 0
         self.techOwnedMask = 0
         self.playerCount = 0
-        self.workerCount = 0
         self.kills = 0
         
     end
@@ -175,16 +172,6 @@ if Server then
     
     end
 
-
-end
-
-local function GetWorkerClassName(self)
-
-    if self:GetTeamType() == kMarineTeamType then
-        return "MAC"
-    else
-        return "Drifter"
-    end    
 
 end
 
@@ -243,9 +230,7 @@ local function UpdateInfo(self)
             
             self.lastCommPingTime = team:GetCommanderPingTime()
             self.lastCommPingPosition = team:GetCommanderPingPosition()
-            
-            self.workerCount = #GetEntitiesForTeam(GetWorkerClassName(self), self:GetTeamNumber())
-            
+                       
         end
         
     end
@@ -261,7 +246,7 @@ function TeamInfo:GetRelevantTech()
 end
 
 function TeamInfo:GetNumWorkers()
-    return self.workerCount
+    return 0
 end
 
 function TeamInfo:GetPingTime()

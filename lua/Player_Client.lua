@@ -19,6 +19,7 @@ gHUDMapEnabled = true
 local kDefaultPingSound = PrecacheAsset("sound/NS2.fev/common/ping")
 local kMarinePingSound = PrecacheAsset("sound/NS2.fev/marine/commander/ping")
 local kAlienPingSound = PrecacheAsset("sound/NS2.fev/alien/commander/ping")
+
 local kDefaultFirstPersonEffectName = PrecacheAsset("cinematics/marine/hit_1p.cinematic")
 local kFirstPersonHealthCircle = PrecacheAsset("models/misc/marine-build/marine-build.model")
 local kFirstPersonMarineHealthCircle = PrecacheAsset("models/misc/marine-build/marine-build.model")
@@ -26,7 +27,6 @@ local kFirstPersonAlienHealthCircle = PrecacheAsset("models/misc/marine-build/ma
 local kFirstPersonDeathEffect = PrecacheAsset("cinematics/death_1p.cinematic")
 local kDeadSound = PrecacheAsset("sound/NS2.fev/common/dead")
 
-Client.PrecacheLocalSound(kDeadSound)
 Client.PrecacheLocalSound(kDefaultPingSound)
 Client.PrecacheLocalSound(kMarinePingSound)
 Client.PrecacheLocalSound(kAlienPingSound)
@@ -36,11 +36,31 @@ local kDamageIndicatorDrawTime = 1
 local kShowGiveDamageTime = 1
 local kRangeFinderDistance = 20
 local kCtDownLength = kCountDownLength
+local kLowHealthWarning = 0.35
+local kLowHealthPulseSpeed = 10
 
 // These screen effects are only used on the local player so create them statically.
 local screenEffects = { }
-    screenEffects.cloaked = Client.CreateScreenEffect("shaders/Cloaked.screenfx")
-    screenEffects.cloaked:SetActive(false)
+screenEffects.fadeBlink = Client.CreateScreenEffect("shaders/FadeBlink.screenfx")
+screenEffects.fadeBlink:SetActive(false)
+screenEffects.lowHealth = Client.CreateScreenEffect("shaders/LowHealth.screenfx")
+screenEffects.lowHealth:SetActive(false)
+screenEffects.darkVision = Client.CreateScreenEffect("shaders/DarkVision.screenfx")
+screenEffects.darkVision:SetActive(false)
+screenEffects.blur = Client.CreateScreenEffect("shaders/Blur.screenfx")
+screenEffects.blur:SetActive(false)
+screenEffects.phase = Client.CreateScreenEffect("shaders/Phase.screenfx")
+screenEffects.phase:SetActive(false)
+screenEffects.gorgetunnel = Client.CreateScreenEffect("shaders/GorgeTunnel.screenfx")
+screenEffects.gorgetunnel:SetActive(false)
+screenEffects.cloaked = Client.CreateScreenEffect("shaders/Cloaked.screenfx")
+screenEffects.cloaked:SetActive(false)
+screenEffects.disorient = Client.CreateScreenEffect("shaders/Disorient.screenfx")
+screenEffects.disorient:SetActive(false)
+screenEffects.celerityFX = Client.CreateScreenEffect("shaders/Celerity.screenfx")
+screenEffects.celerityFX:SetActive(false)
+screenEffects.spectatorTint = Client.CreateScreenEffect("shaders/SpectatorTint.screenfx")
+screenEffects.spectatorTint:SetActive(false)
 
 local function GetHealthCircleName(self)
 
@@ -516,6 +536,7 @@ function PlayerUI_GetWaypointType()
 
 end
 
+local kAnimateFields = { x = true, y = true, scale = true, dist = true }
 /**
  * Gives the UI the screen space coordinates of where to display
  * the final waypoint for when players have an order location.
@@ -592,7 +613,6 @@ function PlayerUI_GetFinalWaypointInScreenspace()
     local nextWPDist = nextWPDir:GetLength()
     local nextWPMaxDist = 25
     local nextWPScale = isCommander and 0.3 or math.max(0.5, 1 - (nextWPDist / nextWPMaxDist))
-    local entriesPerWaypoint = 7
     
     if isCommander then
         nextWPDist = 0
@@ -602,11 +622,7 @@ function PlayerUI_GetFinalWaypointInScreenspace()
     
         player.nextWPInScreenSpace = true
         player.nextWPDoingTrans = false
-        player.nextWPLastVal = { }
-        
-        for i = 1, entriesPerWaypoint do
-            player.nextWPLastVal[i] = 0
-        end
+        player.nextWPLastVal = { x = 0, y = 0, scale = 0, dist = 0, id = 0 }
         
         player.nextWPCurrWP = Vector(orderWayPoint)
         
@@ -652,7 +668,7 @@ function PlayerUI_GetFinalWaypointInScreenspace()
         finalScreenPos.x = Clamp(finalScreenPos.x, minWidthBuff, maxWidthBuff)
         finalScreenPos.y = Clamp(finalScreenPos.y, minHeightBuff, maxHeightBuff)
         
-        returnTable = { finalScreenPos.x, finalScreenPos.y, nextWPScale, orderTypeName, nextWPDist, orderType, orderId, showArrow }
+        returnTable = { x = finalScreenPos.x, y = finalScreenPos.y, scale = nextWPScale, name = orderTypeName, dist = nextWPDist, type = orderType, id = orderId, showArrow = showArrow }
         
     else
     
@@ -665,7 +681,7 @@ function PlayerUI_GetFinalWaypointInScreenspace()
         
         local bounceY = screenPos.y + (math.sin(Shared.GetTime() * 3) * (10 * nextWPScale))
         
-        returnTable = { screenPos.x, bounceY, nextWPScale, orderTypeName, nextWPDist, orderType, orderId }
+        returnTable = { x = screenPos.x, y = bounceY, scale = nextWPScale, name = orderTypeName, dist = nextWPDist, type = orderType, id = orderId }
         
     end
     
@@ -673,15 +689,15 @@ function PlayerUI_GetFinalWaypointInScreenspace()
     
         local replaceTable = { }
         local allEqual = true
-        for i = 1, entriesPerWaypoint do
+        for name, field in pairs(returnTable) do
         
-            if type(returnTable[i]) == "number" then
+            if kAnimateFields[name] then
             
-                replaceTable[i] = Slerp(player.nextWPLastVal[i], returnTable[i], 50)
-                allEqual = allEqual and replaceTable[i] == returnTable[i]
+                replaceTable[name] = Slerp(player.nextWPLastVal[name], returnTable[name], 50)
+                allEqual = allEqual and replaceTable[name] == returnTable[name]
                 
             else
-                replaceTable[i] = returnTable[i]
+                replaceTable[name] = returnTable[name]
             end
             
         end
@@ -694,8 +710,8 @@ function PlayerUI_GetFinalWaypointInScreenspace()
         
     end
     
-    for i = 1, entriesPerWaypoint do
-        player.nextWPLastVal[i] = returnTable[i]
+    for name, field in pairs(returnTable) do
+        player.nextWPLastVal[name] = field
     end
     
     // Save current for next update.
@@ -813,6 +829,35 @@ function PlayerUI_GetObjectiveInfo()
         
             player.showingObjective = true
             return player.crossHairHealth / 100, player.crossHairText .. " " .. ToString(player.crossHairHealth) .. "%", player.crossHairTeamType
+            
+        end
+        
+        // check command structures in range (enemy or friend) and return health % and name
+        local objectiveInfoEnts = EntityListToTable( Shared.GetEntitiesWithClassname("ObjectiveInfo") )
+        local playersTeam = player:GetTeamNumber()
+        
+        local function SortByHealthAndTeam(ent1, ent2)
+            return ent1:GetHealthScalar() < ent2:GetHealthScalar() and ent1.teamNumber == playersTeam
+        end
+        
+        table.sort(objectiveInfoEnts, SortByHealthAndTeam)
+        
+        for _, objectiveInfoEnt in ipairs(objectiveInfoEnts) do
+        
+            if objectiveInfoEnt:GetIsInCombat() and ( playersTeam == objectiveInfoEnt:GetTeamNumber() or (player:GetOrigin() - objectiveInfoEnt:GetOrigin()):GetLength() < kEnemyObjectiveRange ) then
+
+                local healthFraction = math.max(0.01, objectiveInfoEnt:GetHealthScalar())
+
+                player.showingObjective = true
+                
+                local text = StringReformat(Locale.ResolveString("OBJECTIVE_PROGRESS"),
+                                            { location = objectiveInfoEnt:GetLocationName(),
+                                              name = GetDisplayNameForTechId(objectiveInfoEnt:GetTechId()),
+                                              health = math.ceil(healthFraction * 100) })
+                
+                return healthFraction, text, objectiveInfoEnt:GetTeamType()
+                
+            end
             
         end
         
@@ -1586,11 +1631,6 @@ end
 
 // optionally return far plane distance, default value is 400
 function Player:GetCameraFarPlane()
-
-    //if GetIsPointInGorgeTunnel(self:GetEyePos()) then
-        //return 35
-    //end
-
 end
 
 // For debugging. Cheats only.
@@ -1615,15 +1655,26 @@ end
 function Player:SetBlurEnabled(blurEnabled)
 end
 
+local function CreatePhaseTweener()
+end
 
 function Player:UpdateScreenEffects(deltaTime)
 
+    // Show low health warning if below the threshold and not a spectator and not a commander.
+    local isSpectator = self:isa("Spectator") or self:isa("FilmSpectator")
+    local isCommander = self:isa("Commander")
+    local isEmbryo = self:isa("Embryo")
+    local isExo = self:isa("Exo")
+
+    screenEffects.spectatorTint:SetActive(not Client.GetIsControllingPlayer())
     
     // If we're cloaked, change screen effect
     local cloakScreenEffectState = HasMixin(self, "Cloakable") and self:GetIsCloaked()    
     self:SetCloakShaderState(cloakScreenEffectState)    
     self:UpdateCloakSoundLoop(cloakScreenEffectState)
     
+    // Play disorient screen effect to show we're near a shade
+    self:UpdateDisorientFX()
     
 end
 
@@ -1631,7 +1682,66 @@ function Player:GetDrawWorld(isLocal)
     return not self:GetIsLocalPlayer() or self:GetIsThirdPerson() or ((self.countingDown and not Shared.GetCheatsEnabled()) and self:GetTeamNumber() ~= kNeutralTeamType)
 end
 
-local function UpdateDangerEffects(self)    
+local kDangerCheckEndDistance = 25
+local kDangerCheckStartDistance = 15
+assert(kDangerCheckEndDistance > kDangerCheckStartDistance)
+local kDangerHealthEndAmount = 0.6
+local kDangerHealthStartAmount = 0.5
+assert(kDangerHealthEndAmount > kDangerHealthStartAmount)
+local function UpdateDangerEffects(self)
+
+    if self:GetGameStarted() then
+    
+        local now = Shared.GetTime()
+        self.lastDangerCheckTime = self.lastDangerCheckTime or now
+        if now - self.lastDangerCheckTime > 1 then
+        
+            local playerOrigin = self:GetOrigin()
+            // Check to see if there are any nearby Command Structures that are close to death.
+            local commandStructures = GetEntitiesWithinRange("CommandStructure", playerOrigin, kDangerCheckEndDistance)
+            Shared.SortEntitiesByDistance(playerOrigin, commandStructures)
+            
+            // Check if danger needs to be enabled or disabled
+            if not self.dangerEnabled then
+            
+                if #commandStructures > 0 then
+                
+                    local commandStructure = commandStructures[1]
+                    if commandStructure:GetIsBuilt() and commandStructure:GetIsAlive() and
+                       commandStructure:GetIsInCombat() and
+                       commandStructure:GetHealthScalar() <= kDangerHealthStartAmount and
+                       commandStructure:GetDistance(playerOrigin) <= kDangerCheckStartDistance then
+                    
+                        self.dangerEnabled = true
+                        self.dangerOrigin = commandStructure:GetOrigin()
+                        Client.PlayMusic("sound/NS2.fev/danger")
+                        
+                    end
+                    
+                end
+                
+            else
+            
+                local commandStructure = commandStructures[1]
+                if not commandStructure or not commandStructure:GetIsAlive() or
+                   commandStructure:GetHealthScalar() >= kDangerHealthEndAmount or
+                   not commandStructure:GetIsInCombat() or
+                   self.dangerOrigin:GetDistanceTo(playerOrigin) > kDangerCheckEndDistance then
+                
+                    Client.PlayMusic("sound/NS2.fev/no_danger")
+                    self.dangerEnabled = false
+                    self.dangerOrigin = nil
+                    
+                end
+                
+            end
+            
+            self.lastDangerCheckTime = now
+            
+        end
+        
+    end
+    
 end
 
 local function UpdateIdleSound(self, isLocal)
@@ -1687,7 +1797,7 @@ function Player:UpdateCommanderPingSound()
                 pingSound = kAlienPingSound
             end    
          
-            Shared.PlaySound(nil, pingSound)
+            StartSoundEffect(pingSound)
             
         end
         
@@ -1837,7 +1947,7 @@ function Player:OnInitLocalClient()
     self.damageIndicators = { }
     
     // Set commander geometry visible
-    Client.SetGroupIsVisible(kCommanderInvisibleGroupName, true)
+    SetLocalPlayerIsOverhead(false)
     
     local loopingIdleSound = self:GetIdleSoundName()
     if loopingIdleSound then
@@ -1860,15 +1970,21 @@ function Player:OnInitLocalClient()
     // reset mouse sens in case it hase been forgotten somewhere else
     Client.SetMouseSensitivityScalar(1)
     
+    // Just in case the danger music wasn't stopped already for some reason.
+    DisablePlayerDanger(self)
+    
 end
 
-function Player:SetEthereal(ethereal)
+function Player:OnVortexClient()
+end
+
+function Player:OnVortexEndClient()
 end
 
 function Player:SetCloakShaderState(state)
 /*
-    if self:GetIsLocalPlayer() and Player.screenEffects.cloaked then
-        Player.screenEffects.cloaked:SetActive(state)
+    if self:GetIsLocalPlayer() and screenEffects.cloaked then
+        screenEffects.cloaked:SetActive(state)
     end
 */ 
 end
@@ -1888,7 +2004,26 @@ function Player:UpdateCloakSoundLoop(state)
     
 end
 
-function Player:UpdateDisorientFX()    
+function Player:UpdateDisorientFX()
+
+    if screenEffects.disorient then
+    
+        local amount = 0
+        if HasMixin(self, "Disorientable") then
+            amount = self:GetDisorientedAmount()
+        end
+        
+        local state = (amount > 0)
+        if not self:GetIsThirdPerson() or not state then
+            screenEffects.disorient:SetActive(state)
+        end
+        
+        screenEffects.disorient:SetParameter("amount", amount)
+        
+    end
+    
+    self:UpdateDisorientSoundLoop(state)
+    
 end
 
 /**
@@ -1899,6 +2034,7 @@ end
 function Player:OnKillClient()
 
     DisableScreenEffects(self)
+    DisablePlayerDanger(self)
     
     if self.unitStatusDisplay then
     
@@ -2275,7 +2411,7 @@ function Player:OnCountDownEnd()
         
     end
     
-    //Client.PlayMusic("round_start")
+    Client.PlayMusic("sound/NS2.fev/round_start")
     
 end
 
@@ -2557,6 +2693,7 @@ function PlayerUI_GetHiveTech()
     end
     return crag, shift, shade
 end           
+
 // Draw the current location on the HUD ("Marine Start", "Processing", etc.)
 function PlayerUI_GetLocationName()
 
@@ -2862,73 +2999,65 @@ function PlayerUI_GetSensorBlipInfo()
     if player then
     
         local eyePos = player:GetEyePos()
-        local list
-        if teamnum == kMarineTeamType then
-            list = Shared.GetEntitiesWithClassname("SensorBlip")
-        else
-            list = Shared.GetEntitiesWithClassname("AlienSensorBlip")
-        end
-        if list then
-            for index, blip in ientitylist(list) do
+        for index, blip in ientitylist(Shared.GetEntitiesWithClassname("SensorBlip")) do
+        
+            local blipOrigin = blip:GetOrigin()
+            local blipEntId = blip.entId
+            local blipName = ""
             
-                local blipOrigin = blip:GetOrigin()
-                local blipEntId = blip.entId
-                local blipName = ""
+            // Lookup more recent position of blip
+            local blipEntity = Shared.GetEntity(blipEntId)
+
+            // Do not display a blip for the local player.
+            if blipEntity ~= player then
+
+                if blipEntity then
                 
-                // Lookup more recent position of blip
-                local blipEntity = Shared.GetEntity(blipEntId)
-
-                // Do not display a blip for the local player.
-                if blipEntity ~= player then
-
-                    if blipEntity then
-                    
-                        if blipEntity:isa("Player") then
-                            blipName = Scoreboard_GetPlayerData(blipEntity:GetClientIndex(), kScoreboardDataIndexName)
-                        elseif blipEntity.GetTechId then
-                            blipName = GetDisplayNameForTechId(blipEntity:GetTechId())
-                        end
-                        
-                    end
-                    
-                    if not blipName then
-                        blipName = ""
-                    end
-                    
-                    // Get direction to blip. If off-screen, don't render. Bad values are generated if 
-                    // Client.WorldToScreen is called on a point behind the camera.
-                    local normToEntityVec = GetNormalizedVector(blipOrigin - eyePos)
-                    local normViewVec = player:GetViewAngles():GetCoords().zAxis
-                   
-                    local dotProduct = normToEntityVec:DotProduct(normViewVec)
-                    if dotProduct > 0 then
-                    
-                        // Get distance to blip and determine radius
-                        local distance = (eyePos - blipOrigin):GetLength()
-                        local drawRadius = kSensorBlipSize/distance
-                        
-                        // Compute screen xy to draw blip
-                        local screenPos = Client.WorldToScreen(blipOrigin)
-
-                        local trace = Shared.TraceRay(eyePos, blipOrigin, CollisionRep.LOS, PhysicsMask.Bullets, EntityFilterTwo(player, entity))                               
-                        local obstructed = ((trace.fraction ~= 1) and ((trace.entity == nil) or trace.entity:isa("Door"))) 
-                        
-                        if not obstructed and entity and not entity:GetIsVisible() then
-                            obstructed = true
-                        end
-                        
-                        // Add to array (update numElementsPerBlip in GUISensorBlips:UpdateBlipList)
-                        table.insert(blips, screenPos.x)
-                        table.insert(blips, screenPos.y)
-                        table.insert(blips, drawRadius)
-                        table.insert(blips, obstructed)
-                        table.insert(blips, blipName)
-
+                    if blipEntity:isa("Player") then
+                        blipName = Scoreboard_GetPlayerData(blipEntity:GetClientIndex(), kScoreboardDataIndexName)
+                    elseif blipEntity.GetTechId then
+                        blipName = GetDisplayNameForTechId(blipEntity:GetTechId())
                     end
                     
                 end
                 
+                if not blipName then
+                    blipName = ""
+                end
+                
+                // Get direction to blip. If off-screen, don't render. Bad values are generated if 
+                // Client.WorldToScreen is called on a point behind the camera.
+                local normToEntityVec = GetNormalizedVector(blipOrigin - eyePos)
+                local normViewVec = player:GetViewAngles():GetCoords().zAxis
+               
+                local dotProduct = normToEntityVec:DotProduct(normViewVec)
+                if dotProduct > 0 then
+                
+                    // Get distance to blip and determine radius
+                    local distance = (eyePos - blipOrigin):GetLength()
+                    local drawRadius = kSensorBlipSize/distance
+                    
+                    // Compute screen xy to draw blip
+                    local screenPos = Client.WorldToScreen(blipOrigin)
+
+                    local trace = Shared.TraceRay(eyePos, blipOrigin, CollisionRep.LOS, PhysicsMask.Bullets, EntityFilterTwo(player, entity))                               
+                    local obstructed = ((trace.fraction ~= 1) and ((trace.entity == nil) or trace.entity:isa("Door"))) 
+                    
+                    if not obstructed and entity and not entity:GetIsVisible() then
+                        obstructed = true
+                    end
+                    
+                    // Add to array (update numElementsPerBlip in GUISensorBlips:UpdateBlipList)
+                    table.insert(blips, screenPos.x)
+                    table.insert(blips, screenPos.y)
+                    table.insert(blips, drawRadius)
+                    table.insert(blips, obstructed)
+                    table.insert(blips, blipName)
+
+                end
+                
             end
+            
         end
     end
     
@@ -2940,99 +3069,90 @@ end
  * Returns a linear array of static blip data
  * X position, Y position, rotation, X texture offset, Y texture offset, kMinimapBlipType, kMinimapBlipTeam
  *
- * Eg {0.5, 0.5, 1.32, 0, 0, 3, 1}
+ * Eg { 0.5, 0.5, 1.32, 0, 0, 3, 1 }
  */
+local kMinimapBlipTeamAlien = kMinimapBlipTeam.Alien
+local kMinimapBlipTeamMarine = kMinimapBlipTeam.Marine
+local kMinimapBlipTeamFriendly = kMinimapBlipTeam.Friendly
+local kMinimapBlipTeamEnemy = kMinimapBlipTeam.Enemy
+local kMinimapBlipTeamNeutral = kMinimapBlipTeam.Neutral
 function PlayerUI_GetStaticMapBlips()
 
     PROFILE("PlayerUI_GetStaticMapBlips")
-
-    local player = Client.GetLocalPlayer()
-    local blipsData = {}
-    local numBlips = 0
     
-    local minimapBlipTeamAlien    = kMinimapBlipTeam.Alien
-    local minimapBlipTeamMarine   = kMinimapBlipTeam.Marine
-    local minimapBlipTeamFriendly = kMinimapBlipTeam.Friendly
-    local minimapBlipTeamEnemy    = kMinimapBlipTeam.Enemy
-    local minimapBlipTeamNeutral  = kMinimapBlipTeam.Neutral
+    local player = Client.GetLocalPlayer()
+    local blipsData = { }
+    local numBlips = 0
     
     if player then
     
-        local playerTeam      = player:GetTeamNumber()
-        local playerNoTeam    = playerTeam == kRandomTeamType or playerTeam == kNeutralTeamType
+        local playerTeam = player:GetTeamNumber()
+        local playerNoTeam = playerTeam == kRandomTeamType or playerTeam == kNeutralTeamType
         local playerEnemyTeam = GetEnemyTeamNumber(playerTeam)
-        local playerId        = player:GetId()
-      
+        local playerId = player:GetId()
+        
         local mapBlipList = Shared.GetEntitiesWithClassname("MapBlip")
         local GetEntityAtIndex = mapBlipList.GetEntityAtIndex
+        local GetMapBlipTeamNumber = MapBlip.GetTeamNumber
+        local GetMapBlipOrigin = MapBlip.GetOrigin
+        local GetMapBlipRotation = MapBlip.GetRotation
+        local GetMapBlipType = MapBlip.GetType
+        local GetMapBlipIsInCombat = MapBlip.GetIsInCombat
         
         for index = 0, mapBlipList:GetSize() - 1 do
         
             local blip = GetEntityAtIndex(mapBlipList, index)
             if blip ~= nil and blip.ownerEntityId ~= playerId then
             
-                local blipTeam = minimapBlipTeamNeutral
-                local blipTeamNumber = blip:GetTeamNumber()        
-            
-                if playerNoTeam then
-                    if blipTeamNumber == kMarineTeamType then
-                        blipTeam = minimapBlipTeamMarine
-                    elseif blipTeamNumber== kAlienTeamType then
-                        blipTeam = minimapBlipTeamAlien
-                    end
-                else
-                    if blipTeamNumber == playerTeam then
-                        blipTeam = minimapBlipTeamFriendly
-                    elseif blipTeamNumber == playerEnemyTeam then
-                        blipTeam = minimapBlipTeamEnemy
-                    end
-                end    
-              
+                local blipTeam = kMinimapBlipTeamNeutral
+                local blipTeamNumber = GetMapBlipTeamNumber(blip)
+                
+                if blipTeamNumber == kMarineTeamType then
+                    blipTeam = kMinimapBlipTeamMarine
+                elseif blipTeamNumber== kAlienTeamType then
+                    blipTeam = kMinimapBlipTeamAlien
+                end
+                
                 local i = numBlips * 8
-                local blipOrig = blip:GetOrigin()
+                local blipOrig = GetMapBlipOrigin(blip)
                 blipsData[i + 1] = blipOrig.x
                 blipsData[i + 2] = blipOrig.z
-                blipsData[i + 3] = blip:GetRotation()
+                blipsData[i + 3] = GetMapBlipRotation(blip)
                 blipsData[i + 4] = 0
                 blipsData[i + 5] = 0
-                blipsData[i + 6] = blip:GetType()
+                blipsData[i + 6] = GetMapBlipType(blip)
                 blipsData[i + 7] = blipTeam
-                blipsData[i + 8] = blip:GetIsInCombat() // change to "GetIsAttacked" maybe
+                blipsData[i + 8] = GetMapBlipIsInCombat(blip)
                 
                 numBlips = numBlips + 1
                 
-            end            
+            end
             
         end
-
-        local list
-        if playerTeam == kMarineTeamType then
-            list = Shared.GetEntitiesWithClassname("SensorBlip")
-        else
-            list = Shared.GetEntitiesWithClassname("AlienSensorBlip")
-        end
         
-        for index, blip in ientitylist(list) do
+        for index, blip in ientitylist(Shared.GetEntitiesWithClassname("SensorBlip")) do
         
             local blipOrigin = blip:GetOrigin()
-         
+            
             local i = numBlips * 8
-         
+            
             blipsData[i + 1] = blipOrigin.x
             blipsData[i + 2] = blipOrigin.z
             blipsData[i + 3] = 0
             blipsData[i + 4] = 0
             blipsData[i + 5] = 0
             blipsData[i + 6] = kMinimapBlipType.SensorBlip
-            blipsData[i + 7] = kMinimapBlipTeam.Enemy
+            blipsData[i + 7] = kMinimapBlipTeamEnemy
             blipsData[i + 8] = false
             
             numBlips = numBlips + 1
             
         end
         
-        for index, order in ipairs(GetRelevantOrdersForPlayer(player)) do
-         
+        local orders = GetRelevantOrdersForPlayer(player)
+        for o = 1, #orders do
+        
+            local order = orders[o]
             local blipOrigin = order:GetLocation()
             
             local blipType = kMinimapBlipType.MoveOrder
@@ -3042,21 +3162,21 @@ function PlayerUI_GetStaticMapBlips()
             elseif orderType == kTechId.Attack then
                 blipType = kMinimapBlipType.AttackOrder
             end
-        
+            
             local i = numBlips * 8
-              
+            
             blipsData[i + 1] = blipOrigin.x
             blipsData[i + 2] = blipOrigin.z
             blipsData[i + 3] = 0
             blipsData[i + 4] = 0
             blipsData[i + 5] = 0
             blipsData[i + 6] = blipType
-            blipsData[i + 7] = kMinimapBlipTeam.Friendly
+            blipsData[i + 7] = kMinimapBlipTeamFriendly
             blipsData[i + 8] = false
             
             numBlips = numBlips + 1
             
-        end     
+        end
         
     end
     
@@ -3124,11 +3244,6 @@ function PlayerUI_GetShowGiveDamageIndicator()
     
     return false, 0
     
-end
-
-function PlayerUI_GetEggDisplayInfo()
-    local eggDisplay = {}    
-    return eggDisplay
 end
 
 local function GetDamageEffectType(self)
@@ -3272,11 +3387,36 @@ function Player:SetHotgroup(number, entityList)
     
 end
 
+local function OnJumpLandClient(self)
+
+    if not Shared.GetIsRunningPrediction() then
+    
+        local landSurface = GetSurfaceAndNormalUnderEntity(self)
+        self:TriggerEffects("land", { surface = landSurface, enemy = GetAreEnemies(self, Client.GetLocalPlayer()) })
+        
+    end
+    
+end
+
+function Player:OnJumpLandLocalClient()
+    OnJumpLandClient(self)
+end
+
+function Player:OnJumpLandNonLocalClient()
+    OnJumpLandClient(self)
+end
+
 // Call OnJumpLandNonLocalClient for other players to avoid network traffic
 function Player:CheckClientJumpLandOnSynch()
 
-    if not self:GetIsLocalPlayer() then        
+    if not self:GetIsLocalPlayer() then
+    
+        if self.clientOnSurface == false and self:GetIsOnSurface() then
+            self:OnJumpLandNonLocalClient()
+        end
+        
         self.clientOnSurface = self:GetIsOnSurface()
+        
     end
     
 end
@@ -3393,7 +3533,7 @@ function Player:OnUpdateRender()
     
     if self:GetIsLocalPlayer() then
     
-        local blurEnabled = self:GetIsMinimapVisible()
+        local blurEnabled = false
         self:SetBlurEnabled(blurEnabled)
         
         self.lastOnUpdateRenderTime = self.lastOnUpdateRenderTime or Shared.GetTime()
@@ -3406,11 +3546,17 @@ function Player:OnUpdateRender()
 end
 
 function Player:GetCustomSelectionText()
+
     local playerRecord = Scoreboard_GetPlayerRecord(self:GetClientIndex())
-    return string.format("%s kills\n%s deaths\n%s score",
-            ToString(playerRecord.Kills),
-            ToString(playerRecord.Deaths),
-            ToString(playerRecord.Score))
+    if playerRecord then  
+  
+        return string.format("%s kills\n%s deaths\n%s score",
+                ToString(playerRecord.Kills),
+                ToString(playerRecord.Deaths),
+                ToString(playerRecord.Score))
+
+    end
+            
 end
 
 function Player:GetIdleSoundName()

@@ -8,9 +8,7 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
-Script.Load("lua/FunctionContracts.lua")
-
-RecycleMixin = CreateMixin( RecycleMixin )
+RecycleMixin = CreateMixin(RecycleMixin)
 RecycleMixin.type = "Recycle"
 
 local kRecycleEffectDuration = 2
@@ -86,7 +84,8 @@ function RecycleMixin:OnResearchComplete(researchId)
         Server.SendNetworkMessage( "Recycle", BuildRecycleMessage(amount - finalRecycleAmount, self:GetTechId(), finalRecycleAmount), true )
         
         local team = self:GetTeam()
-        team:SendCommand(team:GetDeathMessage(self, kDeathMessageIcon.Consumed, self))
+        local deathMessageTable = team:GetDeathMessage(self, kDeathMessageIcon.Recycled, self)
+        team:ForEachPlayer(function(player) if player:GetClient() then Server.SendNetworkMessage(player:GetClient(), "DeathMessage", deathMessageTable, true) end end)
         
         self.recycled = true
         self.timeRecycled = Shared.GetTime()
@@ -172,9 +171,7 @@ end
 function RecycleMixin:OnUpdate(deltaTime)
     SharedUpdate(self, deltaTime)
 end
-AddFunctionContract(RecycleMixin.OnUpdate, { Arguments = { "Entity", "number" }, Returns = { } })
 
 function RecycleMixin:OnProcessMove(input)
     SharedUpdate(self, input.time)
 end
-AddFunctionContract(RecycleMixin.OnProcessMove, { Arguments = { "Entity", "Move" }, Returns = { } })

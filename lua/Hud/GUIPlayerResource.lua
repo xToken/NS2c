@@ -26,7 +26,7 @@ GUIPlayerResource.kResGainedTextPos = Vector(-70, 10, 0)
 GUIPlayerResource.kRTCountSize = Vector(20, 40, 0)
 GUIPlayerResource.kPixelWidth = 16
 GUIPlayerResource.kPixelHeight = 32
-local kRTCountTexture = "ui/%s_HUD_rtcount.dds"
+local kRTCountTextures = { alien = PrecacheAsset("ui/alien_HUD_rtcount.dds"), marine = PrecacheAsset("ui/marine_HUD_rtcount.dds") }
 GUIPlayerResource.kRTCountYOffset = -16
 
 GUIPlayerResource.kTeamTextPos = Vector(20, 360, 0)
@@ -42,14 +42,14 @@ GUIPlayerResource.kFontSizePresDescription = 18
 GUIPlayerResource.kFontSizeResGained = 25
 GUIPlayerResource.kFontSizeTeam = 18
 GUIPlayerResource.kTextFontName = "fonts/AgencyFB_small.fnt"
-GUIPlayerResource.kTresTextFontName = "fonts/AgencyFB_tiny.fnt"
-GUIPlayerResource.kResGainedFontName = "fonts/AgencyFB_tiny.fnt"
+GUIPlayerResource.kTresTextFontName = "fonts/AgencyFB_small.fnt"
+GUIPlayerResource.kResGainedFontName = "fonts/AgencyFB_small.fnt"
 
-local kBackgroundTexture = "ui/%s_HUD_presbg.dds"
+local kBackgroundTextures = { alien = PrecacheAsset("ui/alien_HUD_presbg.dds"), marine = PrecacheAsset("ui/marine_HUD_presbg.dds") }
 
 GUIPlayerResource.kRTCountTextOffset = Vector(460, 90, 0)
 
-local kPresIcon = "ui/%s_HUD_presicon.dds"
+local kPresIcons = { alien = PrecacheAsset("ui/alien_HUD_presicon.dds"), marine = PrecacheAsset("ui/marine_HUD_presicon.dds") }
 
 GUIPlayerResource.kBackgroundSize = Vector(280, 58, 0)
 GUIPlayerResource.kBackgroundPos = Vector(0, -100, 0)
@@ -77,19 +77,19 @@ function GUIPlayerResource:Initialize(style)
     // Background.
     self.background = self.script:CreateAnimatedGraphicItem()
     self.background:SetAnchor(GUIItem.Right, GUIItem.Bottom)
-    self.background:SetTexture(string.format(kBackgroundTexture, style.textureSet))
+    self.background:SetTexture(kBackgroundTextures[style.textureSet])
     self.background:AddAsChildTo(self.frame)
     
     self.rtCount = GetGUIManager():CreateGraphicItem()
     self.rtCount:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
     self.rtCount:SetLayer(self.hudLayer + 2)
-    self.rtCount:SetTexture(string.format(kRTCountTexture, style.textureSet))
+    self.rtCount:SetTexture(kRTCountTextures[style.textureSet])
     self.background:AddChild(self.rtCount)
     
     // Personal display.
     self.personalIcon = self.script:CreateAnimatedGraphicItem()
     self.personalIcon:SetAnchor(GUIItem.Left, GUIItem.Top)
-    self.personalIcon:SetTexture(string.format(kPresIcon, style.textureSet))
+    self.personalIcon:SetTexture(kPresIcons[style.textureSet])
     self.background:AddChild(self.personalIcon)
     
     self.personalText = self.script:CreateAnimatedTextItem()

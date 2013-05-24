@@ -5,7 +5,7 @@
 //    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
 //                  Max McGuire (max@unknownworlds.com)
 //
-// Gore attack should send players flying (doesn't have to be ragdoll). Stomp will disrupt
+// Gore attack should send players flying (doesn't have to be ragdoll). Stomp will stun
 // structures in range. 
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================

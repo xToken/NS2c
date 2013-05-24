@@ -6,9 +6,7 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
-Script.Load("lua/FunctionContracts.lua")
-
-LOSMixin = CreateMixin( LOSMixin )
+LOSMixin = CreateMixin(LOSMixin)
 
 LOSMixin.type = "LOS"
 
@@ -76,6 +74,7 @@ if Server then
     
     local function GetCanSee(viewer, entity)
     
+        // SA: We now allow marines to build ghosts anywhere - so make sure they're blind. Otherwise they can sorta scout.
         if HasMixin(viewer, "GhostStructure") then
             return false
         end
@@ -88,6 +87,11 @@ if Server then
         // We don't care to sight dead things.
         local dead = HasMixin(entity, "Live") and not entity:GetIsAlive()
         if dead then
+            return false
+        end
+        
+        local viewerDead = HasMixin(viewer, "Live") and not viewer:GetIsAlive()
+        if viewerDead then
             return false
         end
         
@@ -199,15 +203,8 @@ if Server then
         if self.sighted then
             mask = bit.bor(mask, kRelevantToTeam1Commander, kRelevantToTeam2Commander)
         elseif self:GetTeamNumber() == 1 then
-        
-            local location = self.GetLocationEntity and self:GetLocationEntity()
-            
-            if not location or location:GetWasVisitedByTeam(GetEnemyTeamNumber(self:GetTeamNumber())) then
-                mask = bit.bor(mask, kRelevantToTeam1Commander, kRelevantToTeam2Commander)
-            else
-                mask = bit.bor(mask, kRelevantToTeam1Commander)
-            end
-            
+            mask = bit.bor(mask, kRelevantToTeam1Commander)
+
         elseif self:GetTeamNumber() == 2 then
             mask = bit.bor(mask, kRelevantToTeam2Commander)
         end
@@ -297,6 +294,7 @@ if Server then
         SharedUpdate(self, input.time)
     end
     
+    // this causes an issue: when the distance is too big (going to ready room, moving through phase gate) MarkNearbyDirty(self) will miss previous revealed entities. 
     function LOSMixin:SetOrigin(origin)
     
         // matso: optimization; SetOrigin is called A LOT, so we just add us to an update-los queue when we move enough
@@ -353,6 +351,10 @@ if Server then
             self.updateLOS = true
         end
         
+    end
+    
+    function LOSMixin:OnKill()
+        MarkNearbyDirty(self)
     end
     
     function LOSMixin:OnDestroy()

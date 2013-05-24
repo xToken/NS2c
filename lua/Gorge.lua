@@ -10,7 +10,6 @@ Script.Load("lua/Utility.lua")
 Script.Load("lua/Alien.lua")
 Script.Load("lua/Weapons/Alien/SpitSpray.lua")
 Script.Load("lua/Weapons/Alien/DropStructureAbility.lua")
-Script.Load("lua/Weapons/Alien/DropStructureAbility2.lua")
 Script.Load("lua/Weapons/Alien/Web.lua")
 Script.Load("lua/Weapons/Alien/BileBomb.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
@@ -102,15 +101,10 @@ if Client then
         // Always let the DropStructureAbility override input, since it handles client-side-only build menu
 
         local buildAbility = self:GetWeapon(DropStructureAbility.kMapName)
-        local buildAbility2 = self:GetWeapon(DropStructureAbility2.kMapName)
 
         if buildAbility then
             input = buildAbility:OverrideInput(input)
         end
-        
-        if buildAbility2 then
-            input = buildAbility2:OverrideInput(input)
-        end        
         
         return Player.OverrideInput(self, input)
         
@@ -388,7 +382,7 @@ if Client then
     function Gorge:GetShowGhostModel()
     
         local weapon = self:GetActiveWeapon()
-        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
+        if weapon and weapon:isa("DropStructureAbility") then
             return weapon:GetShowGhostModel()
         end
         
@@ -399,7 +393,7 @@ if Client then
     function Gorge:GetGhostModelTechId()
     
         local weapon = self:GetActiveWeapon()
-        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
+        if weapon and weapon:isa("DropStructureAbility") then
             return weapon:GetGhostModelTechId()
         end
         
@@ -408,7 +402,7 @@ if Client then
     function Gorge:GetGhostModelCoords()
     
         local weapon = self:GetActiveWeapon()
-        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
+        if weapon and weapon:isa("DropStructureAbility") then
             return weapon:GetGhostModelCoords()
         end
 
@@ -417,7 +411,7 @@ if Client then
     function Gorge:GetLastClickedPosition()
     
         local weapon = self:GetActiveWeapon()
-        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
+        if weapon and weapon:isa("DropStructureAbility") then
             return weapon.lastClickedPosition
         end
         
@@ -426,7 +420,7 @@ if Client then
     function Gorge:GetIsPlacementValid()
     
         local weapon = self:GetActiveWeapon()
-        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
+        if weapon and weapon:isa("DropStructureAbility") then
             return weapon:GetIsPlacementValid()
         end
     

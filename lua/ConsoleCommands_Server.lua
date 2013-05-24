@@ -33,13 +33,14 @@ function OnCommandKill(client)
     
         local player = client:GetControllingPlayer()
         
-        if player ~= nil then
+        if player ~= nil and (not client.timeLastKillCommand or client.timeLastKillCommand + kKillDelay < Shared.GetTime()) then
         
             local function OnKillPlayer(self)
                 if HasMixin(self, "Live") and self:GetCanDie() then
                     self:Kill(nil, nil, self:GetOrigin())
                 end
             end
+			client.timeLastKillCommand = Shared.GetTime()
             player:AddTimedCallback(OnKillPlayer, kKillDelay)
             
         end
@@ -111,34 +112,6 @@ function OnCommandRoundReset(client)
 
     if client == nil or Shared.GetCheatsEnabled() then
         GetGamerules():ResetGame()
-    end
-    
-end
-
-function OnCommandAnimDebug(client, className)
-
-    if Shared.GetDevMode() then
-    
-        local player = client:GetControllingPlayer()
-        
-        if className then
-        
-            gActorAnimDebugClass = className
-            Server.SendCommand(player, string.format("onanimdebug %s", className))
-            Print("anim_debug enabled for \"%s\" objects.", className)
-            
-        elseif gActorAnimDebugClass ~= "" then
-        
-            gActorAnimDebugClass = ""
-            Server.SendCommand(player, "onanimdebug")
-            Print("anim_debug disabled.")
-            
-        else
-            Print("anim_debug <class name>")
-        end
-
-    else
-        Print("anim_debug <class name> (dev mode must be enabled)")
     end
     
 end
@@ -320,6 +293,7 @@ local function OnCommandBang(client, ...)
             Shared.Message(error)
         end    
     end
+
 end
 
 // Generic console commands
@@ -330,9 +304,9 @@ Event.Hook("Console_killnearby", OnCommandKillNearby)
 Event.Hook("Console_clearorders", OnCommandClearOrders)
 Event.Hook("Console_darwinmode", OnCommandDarwinMode)
 Event.Hook("Console_reset", OnCommandRoundReset)
-Event.Hook("Console_anim_debug", OnCommandAnimDebug)
 Event.Hook("Console_effect_debug", OnCommandEffectDebug)
 Event.Hook("Console_warp", OnCommandWarp)
+Event.Hook("Console_gotolocation", OnCommandWarp)
 Event.Hook("Console_sfindref", OnCommandFindRef)
 Event.Hook("Console_debugpath", OnCommandDebugPathing)
 Event.Hook("Console_list_players", OnCommandListPlayers)

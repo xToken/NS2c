@@ -7,17 +7,9 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 // Set the name of the VM for debugging
-//Terribu Hack below :X
-local matchingFiles = { }
-Shared.GetMatchingFileNames("lua/eem_Shared.lua", false, matchingFiles)
-for _, mapFile in pairs(matchingFiles) do
-    Script.Load("lua/PathUtil.lua")
-    Script.Load("lua/fsfod_scripts.lua")
-    Script.Load("lua/eem_Shared.lua")
-    break
-end
-
 decoda_name = "Client"
+
+Script.Load("lua/PreLoadMod.lua")
 
 Script.Load("lua/ClientResources.lua")
 Script.Load("lua/Shared.lua")
@@ -44,6 +36,11 @@ Script.Load("lua/MainMenu.lua")
 Script.Load("lua/ConsoleBindings.lua")
 Script.Load("lua/ServerAdmin.lua")
 Script.Load("lua/ClientUI.lua")
+Script.Load("lua/Voting.lua")
+Script.Load("lua/VotingKickPlayer.lua")
+Script.Load("lua/VotingChangeMap.lua")
+Script.Load("lua/VotingResetGame.lua")
+Script.Load("lua/VotingRandomizeRR.lua")
 
 Script.Load("lua/ConsoleCommands_Client.lua")
 Script.Load("lua/NetworkMessages_Client.lua")
@@ -112,6 +109,21 @@ end
 
 function ClearTechTree()
     gTechTree:Initialize()    
+end
+
+function SetLocalPlayerIsOverhead(isOverhead)
+
+    Client.SetGroupIsVisible(kCommanderInvisibleGroupName, not isOverhead)
+    Client.SetGroupIsVisible(kCommanderInvisibleVentsGroupName, not isOverhead)
+    for c = 1, #Client.cinematics do
+    
+        local cinematic = Client.cinematics[c]
+        if cinematic.commanderInvisible then
+            cinematic:SetIsVisible(not isOverhead)
+        end
+        
+    end
+    
 end
 
 /**
@@ -289,6 +301,9 @@ function OnMapLoadEntity(className, groupName, values)
         end
         
         cinematic:SetRepeatStyle(repeatStyle)
+        
+        cinematic.commanderInvisible = values.commanderInvisible
+        
         table.insert(Client.cinematics, cinematic)
         
     elseif className == "ambient_sound" then
@@ -311,8 +326,10 @@ function OnMapLoadEntity(className, groupName, values)
         // $AS FIXME: We are special caasing techPoints for pathing right now :/ 
         if (className == "tech_point") then
             local coords = values.angles:GetCoords(values.origin)
-            Pathing.CreatePathingObject(TechPoint.kModelName, coords)
-            Pathing.AddFillPoint(values.origin)
+            if not Pathing.GetLevelHasPathingMesh() then
+                Pathing.CreatePathingObject(TechPoint.kModelName, coords, true)
+                Pathing.AddFillPoint(values.origin)
+            end    
         end
         // Allow the MapEntityLoader to load it if all else fails.
         LoadMapEntity(className, groupName, values)
@@ -618,10 +635,15 @@ function OnMapPreLoad()
     
     // Any geometry in kCommanderInvisibleGroupName or kCommanderNoBuildGroupName shouldn't interfere with selection or other commander actions
     Shared.PreLoadSetGroupPhysicsId(kCommanderInvisibleGroupName, PhysicsGroup.CommanderPropsGroup)
+    Shared.PreLoadSetGroupPhysicsId(kCommanderInvisibleVentsGroupName, PhysicsGroup.CommanderPropsGroup)
     Shared.PreLoadSetGroupPhysicsId(kCommanderNoBuildGroupName, PhysicsGroup.CommanderPropsGroup)
     
     // Don't have bullets collide with collision geometry
-    Shared.PreLoadSetGroupPhysicsId(kCollisionGeometryGroupName, PhysicsGroup.CollisionGeometryGroup)   
+    Shared.PreLoadSetGroupPhysicsId(kCollisionGeometryGroupName, PhysicsGroup.CollisionGeometryGroup)
+    
+    // Pathing mesh
+    Shared.PreLoadSetGroupNeverVisible(kPathingLayerName)
+    Shared.PreLoadSetGroupPhysicsId(kPathingLayerName, PhysicsGroup.PathingGroup)
     
 end
 
@@ -826,7 +848,7 @@ function Client.AddWorldMessage(messageType, message, position, entityId)
                     currentWorldMessage.creationTime = time
                     currentWorldMessage.position = position
                     currentWorldMessage.previousNumber = tonumber(currentWorldMessage.message)
-                    currentWorldMessage.message = tostring(tonumber(currentWorldMessage.message) + tonumber(message))
+                    currentWorldMessage.message = currentWorldMessage.message + message
                     currentWorldMessage.minimumAnimationFraction = kWorldDamageRepeatAnimationScalar
                     
                     updatedExisting = true
@@ -923,6 +945,40 @@ local function OnClientDisconnected(reason)
     
 end
 
+local function SendAddBotCommands()
+
+    //----------------------------------------
+    //  If bots were requested via the main menu, add them now
+    //----------------------------------------
+    if Client.GetOptionBoolean("sendBotsCommands", false) then
+        Client.SetOptionBoolean("sendBotsCommands", false)
+
+        local numMarineBots = Client.GetOptionInteger("botsSettings_numMarineBots", 0)
+        local numAlienBots = Client.GetOptionInteger("botsSettings_numAlienBots", 0)
+        local addMarineCom = Client.GetOptionBoolean("botsSettings_marineCom", false)
+        local addAlienCom = Client.GetOptionBoolean("botsSettings_alienCom", false)
+
+        if numMarineBots > 0 then
+            Shared.ConsoleCommand( string.format("addbot %d 1", numMarineBots) )
+        end
+
+        if numAlienBots > 0 then
+            Shared.ConsoleCommand( string.format("addbot %d 2", numAlienBots) )
+        end
+
+        if addMarineCom then
+            Shared.ConsoleCommand("addbot 1 1 com")
+        end
+
+        if addAlienCom then
+            Shared.ConsoleCommand("addbot 1 2 com")
+        end
+
+    end
+
+end
+
+
 local function OnLoadComplete()
 
     gRenderCamera = Client.CreateRenderCamera()
@@ -938,6 +994,8 @@ local function OnLoadComplete()
     // Set default player name to one set in Steam, or one we've used and saved previously
     local playerName = Client.GetOptionString(kNicknameOptionsKey, Client.GetUserName())
     Client.SendNetworkMessage("SetName", { name = playerName }, true)
+
+    SendAddBotCommands()
     
 end
 
@@ -1034,3 +1092,5 @@ function()
         DebugPrint("active weapon id = %d", player.activeWeaponId )
     end
 end)
+
+Script.Load("lua/PostLoadMod.lua")

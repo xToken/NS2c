@@ -55,8 +55,6 @@ function AlienTeam:Initialize(teamName, teamNumber)
     self.timeLastSpawnCheck = 0
     self.overflowres = 0
     self.lastOverflowCheck = 0
-    self.cloakables = {}
-    self.cloakableCloakCount = {}
     
 end
 
@@ -71,22 +69,11 @@ function AlienTeam:OnInitialized()
     self.overflowres = 0
     self.clientOwnedStructures = { }
     self.lastOverflowCheck = 0
-    self.cloakables = {}
-    self.cloakableCloakCount = {}
 
 end
 
 function AlienTeam:GetTeamInfoMapName()
     return AlienTeamInfo.kMapName
-end
-
-function AlienTeam:OnEntityChange(oldEntityId, newEntityId)
-
-    // Check if the oldEntityId matches any client's built structure and
-    // handle the change.
-    
-    self:UpdateCloakablesChanged(oldEntityId, newEntityId)
-    
 end
 
 function AlienTeam:SpawnInitialStructures(techPoint)
@@ -143,7 +130,6 @@ function AlienTeam:Update(timePassed)
     PlayingTeam.Update(self, timePassed)
     
     self:UpdateTeamAutoHeal(timePassed)
-    self:UpdateCloakables()
     self:UpdateRespawn()
     self:UpdatePingOfDeath()
     self:UpdateOverflowResources()
@@ -156,7 +142,7 @@ function AlienTeam:UpdateOverflowResources()
         if self:GetOverflowResources() > 0 then
             local overflowres = math.min(self:GetOverflowResources(), self:GetPresRecipientCount() * 100)
             self:DeductOverflowResources(overflowres)
-            self:SplitPres(overflowres, true)
+            self:SplitPres(overflowres)
         end
     end
 end
@@ -176,6 +162,11 @@ function AlienTeam:UpdateHiveInformation()
                                  }
                  for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
                     Server.SendNetworkMessage(alien, "HiveInfo", hiveinfo, false)
+                    for _, spectator in ientitylist(Shared.GetEntitiesWithClassname("Spectator")) do
+                        if alien == Server.GetOwner(spectator):GetSpectatingPlayer() then
+                            Server.SendNetworkMessage(spectator, "HiveInfo", hiveinfo, false)
+                        end
+                    end
                  end
             end
         end
@@ -346,13 +337,6 @@ function AlienTeam:InitTechTree()
     
 end
 
-function AlienTeam:GetNumHives()
-
-    local teamInfoEntity = Shared.GetEntity(self.teamInfoEntityId)
-    return teamInfoEntity:GetNumCapturedTechPoints()
-    
-end
-
 function AlienTeam:GetActiveHiveCount()
 
     local activeHiveCount = 0
@@ -360,6 +344,22 @@ function AlienTeam:GetActiveHiveCount()
     for index, hive in ipairs(GetEntitiesForTeam("Hive", self:GetTeamNumber())) do
     
         if hive:GetIsAlive() and hive:GetIsBuilt() then
+            activeHiveCount = activeHiveCount + 1
+        end
+    
+    end
+
+    return activeHiveCount
+
+end
+
+function AlienTeam:GetActiveUnassignedHiveCount()
+
+    local activeHiveCount = 0
+    
+    for index, hive in ipairs(GetEntitiesForTeam("Hive", self:GetTeamNumber())) do
+    
+        if hive:GetIsAlive() and hive:GetIsBuilt() and hive:GetTechId() == kTechId.Hive then
             activeHiveCount = activeHiveCount + 1
         end
     
@@ -424,11 +424,9 @@ function AlienTeam:OnHiveDestroyed(destroyedHive)
     local activeHiveCount = self:GetActiveHiveCount()
     
     for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
-    
         if alien:GetIsAlive() and alien.OnHiveDestroyed then
             alien:OnHiveDestroyed(destroyedHive, activeHiveCount)
         end
-        
     end
     
 end
@@ -486,7 +484,7 @@ function AlienTeam:OnUpgradeChamberDestroyed(upgradeChamber)
             
         end
         
-        if anyremain < kChamberLostNotification then
+        if anyremain <= kChamberLostNotification then
             SendTeamMessage(self, kTeamMessageTypes.ResearchLost, checkTech[2])
         end
         
@@ -520,66 +518,6 @@ function AlienTeam:OnResearchComplete(structure, researchId)
     
 end
 
-function AlienTeam:UpdateCloakables()
-
-    for index, cloakableId in ipairs(self.cloakables) do
-        local cloakable = Shared.GetEntity(cloakableId)
-        cloakable:SetIsCloaked(true, 1, false)
-    end
- 
-end
-
-function AlienTeam:RegisterCloakable(cloakable)
-
-    //Print("AlienTeam:RegisterCloakable(%s)", ToString(cloakable))
-
-    local entityId = cloakable:GetId()
-
-    if self.cloakableCloakCount[entityId] == nil then
-        self.cloakableCloakCount[entityId] = 0
-    end
-    
-    table.insertunique(self.cloakables, entityId)
-    self.cloakableCloakCount[entityId] = self.cloakableCloakCount[entityId] + 1
-    
-    //Print("num shades: %s", ToString(self.cloakableCloakCount[entityId]))
-
-end
-
-function AlienTeam:DeregisterCloakable(cloakable)
-
-    //Print("AlienTeam:DeregisterCloakable(%s)", ToString(cloakable))
-
-    local entityId = cloakable:GetId()
-
-    if self.cloakableCloakCount[entityId] == nil then
-        self.cloakableCloakCount[entityId] = 0
-    end
-    
-    self.cloakableCloakCount[entityId] = math.max(self.cloakableCloakCount[entityId] - 1, 0)
-    if self.cloakableCloakCount[entityId] == 0 then
-        table.removevalue(self.cloakables, entityId)
-    end
-    
-    //Print("num shades: %s", ToString(self.cloakableCloakCount[entityId]))
-
-end
-
-function AlienTeam:UpdateCloakablesChanged(oldEntityId, newEntityId)
-
-    // can happen at server/round startup
-    if self.cloakables == nil then
-        return
-    end
-
-    // simply remove from list, new entity will be added automatically by the trigger
-    if oldEntityId then
-        table.removevalue(self.cloakables, oldEntityId)    
-        self.cloakableCloakCount[oldEntityId] = nil
-    end
-
-end
-
 function AlienTeam:GetSpectatorMapName()
     return AlienSpectator.kMapName
 end
@@ -590,7 +528,7 @@ function AlienTeam:AwardResources(min, max, pointOwner)
     resAwarded = resAwarded - pointOwner:AwardResForKill(resAwarded)
     
     if resAwarded > 0 then
-        self:SplitPres(resAwarded, true)
+        self:SplitPres(resAwarded)
     end
 
 end

@@ -10,24 +10,23 @@
 Script.Load("lua/Player.lua")
 Script.Load("lua/OrderSelfMixin.lua")
 Script.Load("lua/MarineActionFinderMixin.lua")
+Script.Load("lua/StunMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/ScoringMixin.lua")
-Script.Load("lua/DisruptMixin.lua")
 Script.Load("lua/Weapons/Marine/Builder.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
-Script.Load("lua/DisorientableMixin.lua")
 Script.Load("lua/LOSMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/DetectorMixin.lua")
-Script.Load("lua/AlienDetectableMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/WebableMixin.lua")
+Script.Load("lua/DevouredMixin.lua")
 
 if Client then
     Script.Load("lua/TeamMessageMixin.lua")
@@ -37,6 +36,12 @@ class 'Marine' (Player)
 
 Marine.kMapName = "marine"
 
+if Server then
+    Script.Load("lua/Marine_Server.lua")
+elseif Client then
+    Script.Load("lua/Marine_Client.lua")
+end
+
 Shared.PrecacheSurfaceShader("models/marine/marine.surface_shader")
 Shared.PrecacheSurfaceShader("models/marine/marine_noemissive.surface_shader")
 
@@ -45,11 +50,6 @@ Marine.kBlackArmorModelName = PrecacheAsset("models/marine/male/male_special.mod
 Marine.kSpecialEditionModelName = PrecacheAsset("models/marine/male/male_special_v1.model")
 Marine.kMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_graph")
 
-if Server then
-    Script.Load("lua/Marine_Server.lua")
-elseif Client then
-    Script.Load("lua/Marine_Client.lua")
-end
 
 local kFlashlightSoundName = PrecacheAsset("sound/NS2.fev/common/light")
 local kGunPickupSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/pickup")
@@ -68,7 +68,6 @@ local networkVars =
     timeOfLastPickUpWeapon = "private time",
     
     flashlightLastFrame = "private boolean",
-    devoured = "private boolean",
     lastjumpheight = "private float",
     catpackboost = "private boolean",
     weaponUpgradeLevel = "integer (0 to 3)",
@@ -79,21 +78,21 @@ local networkVars =
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
-AddMixinNetworkVars(DisruptMixin, networkVars)
+AddMixinNetworkVars(StunMixin, networkVars)
 AddMixinNetworkVars(OrderSelfMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
-AddMixinNetworkVars(AlienDetectableMixin, networkVars)
+AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(WebableMixin, networkVars)
+AddMixinNetworkVars(DevouredMixin, networkVars)
 
 function Marine:OnCreate()
 
     InitMixin(self, CameraHolderMixin, { kFov = kDefaultFov })
     InitMixin(self, MarineActionFinderMixin)
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
-    InitMixin(self, DisruptMixin)
     InitMixin(self, CombatMixin)
     InitMixin(self, SelectableMixin)
     
@@ -101,12 +100,12 @@ function Marine:OnCreate()
     
     InitMixin(self, DetectorMixin)
     InitMixin(self, DissolveMixin)
-    InitMixin(self, EntityChangeMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, ParasiteMixin)
-    InitMixin(self, AlienDetectableMixin)
+    InitMixin(self, DetectableMixin)
     InitMixin(self, RagdollMixin)   
 	InitMixin(self, WebableMixin)
+    InitMixin(self, DevouredMixin)
     if Server then
 
 
@@ -129,9 +128,7 @@ function Marine:OnCreate()
         self.flashlight:SetIsVisible(false)
         
         InitMixin(self, TeamMessageMixin, { kGUIScriptName = "GUIMarineTeamMessage" })
-
-        InitMixin(self, DisorientableMixin)
-        
+    
     end
 
 end
@@ -143,6 +140,7 @@ function Marine:OnInitialized()
     // Yay for convoluted class hierarchies!!!
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kPlayerMoveOrderCompleteDistance })
     InitMixin(self, OrderSelfMixin, { kPriorityAttackTargets = { "Harvester" } })
+	InitMixin(self, StunMixin)
     InitMixin(self, WeldableMixin)
     
     // SetModel must be called before Player.OnInitialized is called so the attach points in
@@ -174,6 +172,8 @@ function Marine:OnInitialized()
         self:AddHelpWidget("GUIMarineWeldHelp", 2)
         self:AddHelpWidget("GUIMapHelp", 1)
         
+        self.notifications = { }
+        
     end
     
     self.weaponDropTime = 0
@@ -193,7 +193,7 @@ function Marine:OnInitialized()
     self.timeCatpackboost = 0
     
     self.flashlightLastFrame = false
-        
+    
 end
 
 local blockBlackArmor = false
@@ -284,9 +284,7 @@ function Marine:GetWeaponLevel()
 
 end
 
-// Currently there are some issues with a jumping Marine getting disrupted (weapons becoming locked).
-// not using now toss, only stun. maybe that already fixed it
-function Marine:GetCanBeDisrupted()
+function Marine:GetIsStunAllowed()
     return not self:GetIsJumping()
 end
 
@@ -324,9 +322,24 @@ function Marine:OnDestroy()
     Player.OnDestroy(self)
     
     if Client then
+    
+        if self.ruptureMaterial then
+        
+            Client.DestroyRenderMaterial(self.ruptureMaterial)
+            self.ruptureMaterial = nil
+            
+        end
         
         if self.flashlight ~= nil then
             Client.DestroyRenderLight(self.flashlight)
+        end
+        
+        if self.buyMenu then
+        
+            GetGUIManager():DestroyGUIScript(self.buyMenu)
+            self.buyMenu = nil
+            MouseTracker_SetIsVisible(false)
+            
         end
         
     end
@@ -334,7 +347,7 @@ function Marine:OnDestroy()
 end
 
 function Marine:GetCanControl()
-    return (not self.isMoveBlocked) and self:GetIsAlive() and ( not self.GetIsDevoured or not self:GetIsDevoured() ) and not self.countingDown
+    return (not self.isMoveBlocked) and self:GetIsAlive() and not self:GetIsDevoured() and not self.countingDown
 end
 
 function Marine:HandleButtons(input)
@@ -349,7 +362,7 @@ function Marine:HandleButtons(input)
         if not self.flashlightLastFrame and flashlightPressed then
         
             self:SetFlashlightOn(not self:GetFlashlightOn())
-            Shared.PlaySound(self, kFlashlightSoundName)
+            StartSoundEffectOnEntity(kFlashlightSoundName, self, 1, self)
             
         end
         self.flashlightLastFrame = flashlightPressed
@@ -379,7 +392,7 @@ function Marine:HandleButtons(input)
                         
                         self:AddWeapon(nearbyDroppedWeapon, true)
 		                self:SetScoreboardChanged(true)
-		                Shared.PlayWorldSound(nil, kGunPickupSound, nil, self:GetOrigin())
+		                StartSoundEffectAtOrigin(kGunPickupSound, self:GetOrigin())
                         self.timeOfLastPickUpWeapon = Shared.GetTime()
                         
                     end
@@ -421,7 +434,7 @@ function Marine:GoldSrc_GetMaxSpeed(possible)
         return kRunMaxSpeed
     end
     
-    if self:GetIsDisrupted() then
+    if self:GetIsStunned() then
         return 0
     end
     
@@ -431,18 +444,18 @@ function Marine:GoldSrc_GetMaxSpeed(possible)
     if self.movementModiferState and self:GetIsOnSurface() then
         maxSpeed = kWalkMaxSpeed
     end
-    
+
     // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
     local inventorySpeedScalar = self:GetInventorySpeedScalar()
-
-    local adjustedMaxSpeed = maxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier() * inventorySpeedScalar 
+    local useModifier = self.isUsing and 0.5 or 1
+    local adjustedMaxSpeed = maxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier() * inventorySpeedScalar * useModifier
     //Print("Adjusted max speed => %.2f (without inventory: %.2f)", adjustedMaxSpeed, adjustedMaxSpeed / inventorySpeedScalar )
     
     return adjustedMaxSpeed
 end
 
 function Marine:GetFootstepSpeedScalar()
-    return Clamp(self:GetVelocityLength() / (self:GoldSrc_GetMaxSpeed() * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier()), 0, 1)
+    return Clamp(self:GetVelocityLength() / (kRunMaxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier()), 0, 1)
 end
 
 // Maximum speed a player can move backwards
@@ -593,40 +606,12 @@ function Marine:Drop(weapon, ignoreDropTimeLimit, ignoreReplacementWeapon)
 
 end
 
-function Marine:GetIsDevoured()
-    return self.devoured
-end
-
-function Marine:OnDevoured(hungrycow)
-    self.devourer = hungrycow:GetId()
-    self.prevModelName = self:GetModelName()
-    self.prevAnimGraph = self:GetGraphName()
-    self.devoured = true
-    self:SetModel(nil)
-    //self:SetIsThirdPerson(4)
-
-    local activeWeapon = self:GetActiveWeapon()
-    if activeWeapon then
-        activeWeapon:OnPrimaryAttackEnd(self)
-        activeWeapon:OnSecondaryAttackEnd(self)
-    end
-end
-
 function Marine:GetCanBeHealedOverride()
     return not self:GetIsDevoured()
 end
 
 function Marine:GetCanSkipPhysics()
     return self:GetIsDevoured()
-end
-
-function Marine:OnDevouredEnd()    
-    if self:GetIsAlive() then
-        self.devoured = false
-        self.devourer = nil
-        self:SetModel(self.prevModelName, self.prevAnimGraph)
-        //self:SetDesiredCamera(0.3, { move = true })
-    end
 end
 
 function Marine:GetWeldPercentageOverride()
@@ -645,10 +630,10 @@ function Marine:OnWeldOverride(doer, elapsedTime)
 end
 
 function Marine:GetCanChangeViewAngles()
-    return true
+    return not self:GetIsStunned()
 end
 
-function Marine:OnDisrupt()
+function Marine:OnStun()
 end
 
 function Marine:OnUseTarget(target)
@@ -684,7 +669,6 @@ function Marine:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Marine:OnUpdateAnimationInput")
     
-    
     Player.OnUpdateAnimationInput(self, modelMixin)
     
     modelMixin:SetAnimationInput("attack_speed", self:GetCatalystFireModifier())
@@ -704,13 +688,6 @@ function Marine:OnProcessMove(input)
             self.unitStatusPercentage = 0
         end
         
-        if self:GetIsDevoured() then
-            local onos = self.devourer and Shared.GetEntity(self.devourer)
-            if onos and onos:isa("Onos") then
-                self:SetOrigin(onos:GetOrigin())
-            end
-        end
-        
 	end
 
 
@@ -720,7 +697,7 @@ end
 
 function Marine:OnUpdateCamera(deltaTime)
 
-    if self:GetIsDisrupted() then
+    if self:GetIsStunned() then
         self:SetDesiredCameraYOffset(-0.25)
     else
         Player.OnUpdateCamera(self, deltaTime)

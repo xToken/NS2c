@@ -26,7 +26,7 @@ Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/ConstructMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-Script.Load("lua/InfestationMixin.lua")
+
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/SleeperMixin.lua")
@@ -55,11 +55,6 @@ Crag.kPercentHeal = 0.03
 Crag.kMaxTargets = 3
 Crag.kHealInterval = 2.0
 
-local kInfestationRadius = 10
-local kInfestationGrowthRate = 0.25
-local kMinInfestationRadius = 0.1
-local kInfestationBlobDensity = 0.5
-
 local networkVars =
 {
     // For client animations
@@ -82,7 +77,6 @@ AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
-AddMixinNetworkVars(InfestationMixin, networkVars)
 
 function Crag:OnCreate()
 
@@ -97,8 +91,8 @@ function Crag:OnCreate()
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
     InitMixin(self, SelectableMixin)
-    InitMixin(self, CloakableMixin)
     InitMixin(self, EntityChangeMixin)
+    InitMixin(self, CloakableMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, DetectableMixin)
     InitMixin(self, ConstructMixin)
@@ -128,8 +122,7 @@ function Crag:OnInitialized()
     ScriptActor.OnInitialized(self)
     
     self:SetModel(Crag.kModelName, Crag.kAnimationGraph)
-    InitMixin(self, InfestationMixin)
-	
+    
     if Server then
     
         InitMixin(self, StaticTargetMixin)
@@ -146,22 +139,6 @@ function Crag:OnInitialized()
         
     end
     
-end
-
-function Crag:GetMaxRadius()
-    return kInfestationRadius
-end
-
-function Crag:GetGrowthRate()
-    return kInfestationGrowthRate
-end
-
-function Crag:GetMinRadius()
-    return kMinInfestationRadius
-end
-
-function Crag:GetInfestationDensity()
-    return kInfestationBlobDensity
 end
 
 function Crag:GetDamagedAlertId()

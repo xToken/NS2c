@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
-  <command_arguments></command_arguments>
+  <command_arguments>-game C:\Users\Owner\Documents\GitHub\NS2c</command_arguments>
   <scc>
     <provider></provider>
     <user></user>

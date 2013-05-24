@@ -48,9 +48,8 @@ local kMaxSpeed = 6.5
 local kMaxBlinkSpeed = 20 // ns1 fade blink is (3x maxSpeed) + celerity
 local kWalkSpeed = 4
 //local kBlinkAcceleration = 50
-local kBlinkAccelerationDuration = 1
-local kFadeBunnyJumpMaxSpeedFactor = 2.5
-local kBlinkImpulseForce = 5.2
+local kBlinkAccelerationDuration = 2
+local kBlinkImpulseForce = 6.2
 
 local networkVars =
 {    
@@ -134,24 +133,6 @@ end
 
 function Fade:ReceivesFallDamage()
     return false
-end
-
-function Fade:PreventMegaBunnyJumping(velocity)
-
-    if self:GetRecentlyBlinked() then
-        local maxscaledspeed = kFadeBunnyJumpMaxSpeedFactor * self:GoldSrc_GetMaxSpeed()
-        
-        if maxscaledspeed > 0.0 then
-           local spd = velocity:GetLength()
-            
-            if spd > maxscaledspeed then
-                local fraction = (maxscaledspeed / spd)
-                velocity:Scale(fraction)
-            end
-        end
-    else
-       Alien.PreventMegaBunnyJumping(self, velocity)
-    end
 end
 
 function Fade:HandleJump(input, velocity)

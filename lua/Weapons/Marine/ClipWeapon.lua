@@ -58,7 +58,27 @@ function ClipWeapon:OnCreate()
     self.blockingSecondary = false
     self.timeAttackStarted = 0
     self.deployed = false
-	InitMixin(self, BulletsMixin)
+
+    InitMixin(self, BulletsMixin)
+    
+end
+
+local function CancelReload(self)
+
+    if self:GetIsReloading() then
+    
+        self.reloading = false
+        self:TriggerEffects("reload_cancel")
+        
+    end
+    
+end
+
+function ClipWeapon:OnDestroy()
+
+    Weapon.OnDestroy(self)
+    
+    CancelReload(self)
     
 end
 
@@ -118,10 +138,6 @@ end
 
 // Return one of the ClipWeapon.kCone constants above
 function ClipWeapon:GetSpread()
-    return ClipWeapon.kCone0Degrees
-end
-
-function ClipWeapon:GetMinSpread()
     return ClipWeapon.kCone0Degrees
 end
 
@@ -194,13 +210,6 @@ function ClipWeapon:GetSecondaryCanInterruptReload()
     return false
 end
 
-local function CancelReload(self)
-
-    self.reloading = false
-    self:TriggerEffects("reload_cancel")
-    
-end
-
 function ClipWeapon:GiveAmmo(numClips, includeClip)
 
     // Fill reserves, then clip. NS1 just filled reserves but I like the implications of filling the clip too.
@@ -269,7 +278,7 @@ function ClipWeapon:GetIsPrimaryAttackAllowed(player)
     attackAllowed = attackAllowed and not self.blockingSecondary
     attackAllowed = attackAllowed and (not self:GetPrimaryIsBlocking() or not self.blockingPrimary)
     
-    return self:GetIsDeployed() and attackAllowed and not player:GetIsDisrupted() and (not player.GetIsDevoured or not player:GetIsDevoured())
+    return self:GetIsDeployed() and attackAllowed and not player:GetIsStunned() and (not player.GetIsDevoured or not player:GetIsDevoured())
 
 end
 
@@ -282,9 +291,7 @@ function ClipWeapon:OnPrimaryAttack(player)
             local warmingUp = Shared.GetTime() < (self.timeAttackStarted + self:GetWarmupTime())
             if not warmingUp then
             
-                if self:GetIsReloading() then
-                    CancelReload(self)
-                end
+                CancelReload(self)
                 
                 self.primaryAttacking = true
                 self.timeAttackStarted = Shared.GetTime()
@@ -344,9 +351,7 @@ function ClipWeapon:OnSecondaryAttack(player)
     
         self.secondaryAttacking = true
         
-        if self:GetIsReloading() then
-            CancelReload(self)
-        end
+        CancelReload(self)
         
         Weapon.OnSecondaryAttack(self, player)
         
@@ -402,8 +407,8 @@ local function FireBullets(self, player)
     
     for bullet = 1, numberBullets do
     
-        local spreadDirection = CalculateSpread(shootCoords, self:GetSpread(bullet) * self:GetInaccuracyScalar(player), NetworkRandom, self:GetMinSpread(bullet))
-
+        local spreadDirection = CalculateSpread(shootCoords, self:GetSpread(bullet) * self:GetInaccuracyScalar(player), NetworkRandom)
+        
         local endPoint = startPoint + spreadDirection * range
         
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
@@ -497,9 +502,9 @@ end
 function ClipWeapon:OnHolster(player)
 
     Weapon.OnHolster(self, player)
-    if self:GetIsReloading() then
-        CancelReload(self)
-    end
+    
+    CancelReload(self)
+    
     self.deployed = false
     self.blockingPrimary = false
     self.blockingSecondary = false
@@ -508,11 +513,7 @@ function ClipWeapon:OnHolster(player)
 end
 
 function ClipWeapon:GetEffectParams(tableParams)
-
-    Weapon.GetEffectParams(self, tableParams)
-    
-    tableParams[kEffectFilterEmpty] = (self.clip == 0)
-    
+    tableParams[kEffectFilterEmpty] = self.clip == 0
 end
 
 function ClipWeapon:OnTag(tagName)
@@ -585,8 +586,10 @@ end
 if Server then
 
     function ClipWeapon:Dropped(prevOwner)
-        
+    
         Weapon.Dropped(self, prevOwner)
+        
+        CancelReload(self)
         
         local ammopackMapName = self:GetAmmoPackMapName()
         
@@ -595,11 +598,11 @@ if Server then
             local ammoPack = CreateEntity(ammopackMapName, self:GetOrigin(), self:GetTeamNumber())
             ammoPack:SetAmmoPackSize(self.ammo)
             self.ammo = 0
-        
+            
         end
         
     end
-
+    
 elseif Client then
 
     function ClipWeapon:GetTriggerPrimaryEffects()

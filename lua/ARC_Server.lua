@@ -164,7 +164,3 @@ function ARC:ForceDeployed()
         self.deployMode = ARC.kDeployMode.Undeploying
     end
 end
-
-function ARC:OnConstructionComplete()
-    self:SetRequiresAdvanced()
-end

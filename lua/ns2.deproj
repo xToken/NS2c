@@ -22,15 +22,6 @@
     <filename>AlienBuy_Client.lua</filename>
   </file>
   <file>
-    <filename>AlienDetectableMixin.lua</filename>
-  </file>
-  <file>
-    <filename>AlienDetectorMixin.lua</filename>
-  </file>
-  <file>
-    <filename>AlienSensorBlip.lua</filename>
-  </file>
-  <file>
     <filename>AlienSpectator.lua</filename>
   </file>
   <file>
@@ -100,19 +91,22 @@
     <filename>BuildUtility.lua</filename>
   </file>
   <file>
+    <filename>BuildingMixin.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\BulletsMixin.lua</filename>
   </file>
   <file>
     <filename>CatPack.lua</filename>
   </file>
   <file>
+    <filename>Class.lua</filename>
+  </file>
+  <file>
     <filename>Client.lua</filename>
   </file>
   <file>
     <filename>Weapons\Marine\ClipWeapon.lua</filename>
-  </file>
-  <file>
-    <filename>CloakableMixin.lua</filename>
   </file>
   <file>
     <filename>CommandStation.lua</filename>
@@ -187,16 +181,13 @@
     <filename>Weapons\Alien\Devour.lua</filename>
   </file>
   <file>
-    <filename>DisruptMixin.lua</filename>
+    <filename>DevouredMixin.lua</filename>
   </file>
   <file>
     <filename>Door.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\DropStructureAbility.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\DropStructureAbility2.lua</filename>
   </file>
   <file>
     <filename>Egg.lua</filename>
@@ -232,19 +223,7 @@
     <filename>GUIAlienHUD.lua</filename>
   </file>
   <file>
-    <filename>GUICommanderAlerts.lua</filename>
-  </file>
-  <file>
     <filename>GUICommanderButtons.lua</filename>
-  </file>
-  <file>
-    <filename>GUICommanderLogout.lua</filename>
-  </file>
-  <file>
-    <filename>GUICommanderManager.lua</filename>
-  </file>
-  <file>
-    <filename>GUICommanderTooltip.lua</filename>
   </file>
   <file>
     <filename>GUICrosshair.lua</filename>
@@ -263,9 +242,6 @@
   </file>
   <file>
     <filename>GUIGorgeBuildMenu.lua</filename>
-  </file>
-  <file>
-    <filename>GUIGorgeBuildMenu2.lua</filename>
   </file>
   <file>
     <filename>GUIGorgeBuildMenuHelp.lua</filename>
@@ -322,10 +298,7 @@
     <filename>GUISpeedDebug.lua</filename>
   </file>
   <file>
-    <filename>GUIUnitStatus.lua</filename>
-  </file>
-  <file>
-    <filename>GeneralEffects.lua</filename>
+    <filename>GUIUtility.lua</filename>
   </file>
   <file>
     <filename>GhostStructureMixin.lua</filename>
@@ -373,9 +346,6 @@
     <filename>HeavyArmorMarine.lua</filename>
   </file>
   <file>
-    <filename>HeavyArmorMarine_Client.lua</filename>
-  </file>
-  <file>
     <filename>HeavyArmorMarine_Server.lua</filename>
   </file>
   <file>
@@ -400,10 +370,19 @@
     <filename>Weapons\Alien\HydraAbility.lua</filename>
   </file>
   <file>
+    <filename>Hydra_Server.lua</filename>
+  </file>
+  <file>
     <filename>InfantryPortal.lua</filename>
   </file>
   <file>
     <filename>InfestationMixin.lua</filename>
+  </file>
+  <file>
+    <filename>InsightNetworkMessages.lua</filename>
+  </file>
+  <file>
+    <filename>InsightNetworkMessages_Client.lua</filename>
   </file>
   <file>
     <filename>Jetpack.lua</filename>
@@ -413,9 +392,6 @@
   </file>
   <file>
     <filename>JetpackMarine_Server.lua</filename>
-  </file>
-  <file>
-    <filename>JetpackOnBack.lua</filename>
   </file>
   <file>
     <filename>LOSMixin.lua</filename>
@@ -436,16 +412,22 @@
     <filename>Weapons\Alien\LerkBiteUmbra.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Alien\LerkSpores.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\LerkUmbra.lua</filename>
+  </file>
+  <file>
     <filename>Lerk_Server.lua</filename>
+  </file>
+  <file>
+    <filename>Loading.lua</filename>
   </file>
   <file>
     <filename>Location.lua</filename>
   </file>
   <file>
     <filename>MapBlipMixin.lua</filename>
-  </file>
-  <file>
-    <filename>MapEntityLoader.lua</filename>
   </file>
   <file>
     <filename>Marine.lua</filename>
@@ -479,6 +461,9 @@
   </file>
   <file>
     <filename>Marine_Server.lua</filename>
+  </file>
+  <file>
+    <filename>MedPack.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\Metabolize.lua</filename>
@@ -535,9 +520,6 @@
     <filename>PhaseGate.lua</filename>
   </file>
   <file>
-    <filename>PickupableWeaponMixin.lua</filename>
-  </file>
-  <file>
     <filename>Weapons\Marine\Pistol.lua</filename>
   </file>
   <file>
@@ -560,6 +542,9 @@
   </file>
   <file>
     <filename>Weapons\Alien\PrimalScreamMixin.lua</filename>
+  </file>
+  <file>
+    <filename>PropDynamic.lua</filename>
   </file>
   <file>
     <filename>PrototypeLab.lua</filename>
@@ -601,6 +586,9 @@
     <filename>ScriptActor.lua</filename>
   </file>
   <file>
+    <filename>SensorBlip.lua</filename>
+  </file>
+  <file>
     <filename>Sentry.lua</filename>
   </file>
   <file>
@@ -628,13 +616,19 @@
     <filename>Skulk.lua</filename>
   </file>
   <file>
-    <filename>Skulk_Client.lua</filename>
-  </file>
-  <file>
     <filename>Skulk_Server.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\Smash.lua</filename>
+  </file>
+  <file>
+    <filename>..\..\..\..\..\..\Games\Steam\steamapps\common\natural selection 2\ns2\lua\Weapons\SnowBall.lua</filename>
+  </file>
+  <file>
+    <filename>..\..\..\..\..\..\Games\Steam\steamapps\common\natural selection 2\ns2\lua\Weapons\SnowBallThrower.lua</filename>
+  </file>
+  <file>
+    <filename>Spectator.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\SpikesMixin.lua</filename>
@@ -703,7 +697,7 @@
     <filename>UnitStatusMixin.lua</filename>
   </file>
   <file>
-    <filename>UpgradeStructureManager.lua</filename>
+    <filename>Weapons\Weapon.lua</filename>
   </file>
   <file>
     <filename>WeaponOwnerMixin.lua</filename>

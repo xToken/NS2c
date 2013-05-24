@@ -55,12 +55,8 @@ Whip.kTargetCheckTime = .3
 Whip.kRange = 6
 Whip.kAreaEffectRadius = 3
 Whip.kDamage = 50
-Whip.kWhipBallParam = "ball"
 
-local kInfestationRadius = 10
-local kInfestationGrowthRate = 0.25
-local kMinInfestationRadius = 0.1
-local kInfestationBlobDensity = 0.5
+Whip.kWhipBallParam = "ball"
 
 local networkVars =
 {
@@ -85,7 +81,6 @@ AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
-AddMixinNetworkVars(InfestationMixin, networkVars)
 
 if Server then
 
@@ -109,8 +104,8 @@ function Whip:OnCreate()
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
     InitMixin(self, SelectableMixin)
-    InitMixin(self, CloakableMixin)
     InitMixin(self, EntityChangeMixin)
+    InitMixin(self, CloakableMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, DetectableMixin)
     InitMixin(self, ConstructMixin)
@@ -143,7 +138,7 @@ function Whip:OnInitialized()
     InitMixin(self, DoorMixin)
 
     self:SetModel(Whip.kModelName, Whip.kAnimationGraph)
-    InitMixin(self, InfestationMixin)
+    
     self:SetUpdates(true)
     
     if Server then
@@ -179,22 +174,6 @@ end
 
 function Whip:GetDamagedAlertId()
     return kTechId.AlienAlertStructureUnderAttack
-end
-
-function Whip:GetMaxRadius()
-    return kInfestationRadius
-end
-
-function Whip:GetGrowthRate()
-    return kInfestationGrowthRate
-end
-
-function Whip:GetMinRadius()
-    return kMinInfestationRadius
-end
-
-function Whip:GetInfestationDensity()
-    return kInfestationBlobDensity
 end
 
 function Whip:GetCanSleep()

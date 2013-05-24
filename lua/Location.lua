@@ -19,8 +19,6 @@ Location.kMapName = "location"
 local networkVars =
 {
     showOnMinimap = "boolean",
-    visitedByTeamOne = "boolean",
-    visitedByTeamTwo = "boolean"
 }
 
 Shared.PrecacheString("")
@@ -44,8 +42,7 @@ function Location:OnInitialized()
 end
 
 function Location:Reset()
-    self.visitedByTeamOne = false
-    self.visitedByTeamTwo = false
+
 end    
 
 function Location:OnDestroy()
@@ -56,12 +53,6 @@ end
 
 function Location:GetShowOnMinimap()
     return self.showOnMinimap
-end
-
-function Location:GetWasVisitedByTeam(teamNum)
-
-    return (teamNum == kMarineTeamType and self.visitedByTeamOne) or (teamNum == kAlienTeamType and self.visitedByTeamTwo)
-
 end
 
 if Server then
@@ -75,16 +66,6 @@ if Server then
             if not entity:GetLocationEntity() then
                 entity:SetLocationName(triggerEnt:GetName())
                 entity:SetLocationEntity(self)
-            end
-        end
-
-        if GetGamerules():GetGameStarted() then
-            if not entity:isa("Commander") and HasMixin(entity, "Team") then
-                if entity:GetTeamNumber() == kMarineTeamType then
-                    self.visitedByTeamOne = true
-                elseif entity:GetTeamNumber() == kAlienTeamType then
-                    self.visitedByTeamTwo = true
-                end    
             end
         end
             

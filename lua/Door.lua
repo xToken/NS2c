@@ -347,8 +347,21 @@ function Door:GetHasLockTimeout()
     return self.lockTimeOut > Shared.GetTime()
 end
 
-function Door:GetCanBeUsed(player, useSuccessTable)
-    useSuccessTable.useSuccess = false    
+function Door:OnUse(player, elapsedTime)
+
+    local state = self:GetState()
+    if state ~= Door.kState.DestroyedFront and state ~= Door.kState.DestroyedBack and not self:GetIsWeldedShut() and player:isa("Marine") then
+    
+        if Server then
+        
+            if state ~= Door.kState.Locked and not self:GetHasLockTimeout() then
+                self:TriggerDoorLock()
+            end
+            
+        end
+        
+    end
+    
 end
 
 function Door:OnKill(attacker, doer, point, direction)

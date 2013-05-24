@@ -21,7 +21,7 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Script.Load("lua/Mixins/ClientModelMixin.lua")
+Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -46,7 +46,7 @@ Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/TriggerMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-Script.Load("lua/AlienDetectorMixin.lua")
+Script.Load("lua/DetectorMixin.lua")
 Script.Load("lua/HasUmbraMixin.lua")
 
 class 'Shade' (ScriptActor)
@@ -62,11 +62,6 @@ local kCloakTriggered2D = PrecacheAsset("sound/NS2.fev/alien/structures/shade/cl
 Shade.kCloakRadius = 20
 Shade.kCloakUpdateRate = 0.5
 Shade.kHiveSightRange = 25
-
-local kInfestationRadius = 10
-local kInfestationGrowthRate = 0.25
-local kMinInfestationRadius = 0.1
-local kInfestationBlobDensity = 0.5
 
 local networkVars = 
 { 
@@ -90,8 +85,6 @@ AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
-AddMixinNetworkVars(InfestationMixin, networkVars)
-
 function Shade:OnCreate()
 
     ScriptActor.OnCreate(self)
@@ -104,8 +97,8 @@ function Shade:OnCreate()
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
     InitMixin(self, SelectableMixin)
-    InitMixin(self, CloakableMixin)
     InitMixin(self, EntityChangeMixin)
+    InitMixin(self, CloakableMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, DetectableMixin)
     InitMixin(self, ConstructMixin)
@@ -115,7 +108,7 @@ function Shade:OnCreate()
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
     InitMixin(self, CombatMixin)
-    InitMixin(self, AlienDetectorMixin)
+    InitMixin(self, DetectorMixin)
     InitMixin(self, HasUmbraMixin)
     
     if Server then
@@ -136,8 +129,7 @@ function Shade:OnInitialized()
     ScriptActor.OnInitialized(self)
     
     self:SetModel(Shade.kModelName, Shade.kAnimationGraph)
-    InitMixin(self, InfestationMixin)
-	
+    
     if Server then
     
         InitMixin(self, StaticTargetMixin)
@@ -165,22 +157,6 @@ function Shade:GetDetectionRange()
     return 0
 end
 
-function Shade:GetMaxRadius()
-    return kInfestationRadius
-end
-
-function Shade:GetGrowthRate()
-    return kInfestationGrowthRate
-end
-
-function Shade:GetMinRadius()
-    return kMinInfestationRadius
-end
-
-function Shade:GetInfestationDensity()
-    return kInfestationBlobDensity
-end
-
 function Shade:GetShowOrderLine()
     return true
 end    
@@ -197,15 +173,15 @@ function Shade:GetReceivesStructuralDamage()
     return true
 end
 
-function Shade:IsValidAlienDetection(detectable)
+function Shade:IsValidDetection(detectable)
     return true
 end
 
-function Shade:GetAlienDetectionRange()
+function Shade:GetDetectionRange()
     return Shade.kHiveSightRange
 end
 
-function Shade:OnCheckAlienDetectorActive()
+function Shade:OnCheckDetectorActive()
     return self:GetIsBuilt() and self:GetIsAlive()
 end
 

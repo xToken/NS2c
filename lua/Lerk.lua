@@ -38,7 +38,6 @@ end
 Lerk.XZExtents = 0.4
 Lerk.YExtents = 0.4
 
-local kJumpMode = 0 //Prevents all your flaps from being used at once yo
 local kWallGripSlideTime = 0.7
 local kWallGripRange = 0.05
 local kWallGripFeelerSize = 0.25
@@ -111,6 +110,7 @@ function Lerk:OnInitialized()
         self.previousYaw = 0
         
         self:AddHelpWidget("GUILerkFlapHelp", 2)
+        self:AddHelpWidget("GUILerkSporesHelp", 2)
         
     end
     
@@ -135,7 +135,7 @@ local kMaxGlideRoll = math.rad(60)
 function Lerk:GetDesiredAngles()
 
     if self:GetIsWallGripping() then
-        return self:GetAnglesFromWallNormal(self.wallGripNormalGoal, 1)
+        return self:GetAnglesFromWallNormal( self.wallGripNormalGoal )
     end
 
     local desiredAngles = Alien.GetDesiredAngles(self)
@@ -195,7 +195,7 @@ function Lerk:ReceivesFallDamage()
 end
 
 function Lerk:GetJumpMode()
-    return kJumpMode
+    return kJumpMode.Default
 end
 
 // Gain speed gradually the longer we stay in the air
@@ -399,7 +399,7 @@ end
 function Lerk:CalcWallGripSpeedFraction()
 
     local dt = (Shared.GetTime() - self.wallGripTime)
-    if dt > kWallGripSlideTime then
+    if dt > Lerk.kWallGripSlideTime then
         return 0
     end
     local k = kWallGripSlideTime
@@ -522,7 +522,7 @@ function Lerk:HandleAttacks(input)
     local holdingJump = bit.band(input.commands, Move.Jump) ~= 0
     
     // If we're holding down jump, glide
-    self.gliding = input.move.z > 0 and self:GetVelocityLength() > kMaxSpeed *.5 and not self:GetIsOnSurface() and not turnedSharp and holdingJump
+    self.gliding = input.move.z > 0 and self:GetVelocity():GetLength() > kMaxSpeed *.5 and not self:GetIsOnSurface() and not turnedSharp and holdingJump
     
 end
 

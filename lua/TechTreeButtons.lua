@@ -36,9 +36,6 @@ end
 // Init icon offsets.
 local kTechIdToMaterialOffset = {}
 
-// Init icon offsets
-kTechIdToMaterialOffset = {}
-
 kTechIdToMaterialOffset[kTechId.CommandStation] = 0
 kTechIdToMaterialOffset[kTechId.Armory] = 1
 kTechIdToMaterialOffset[kTechId.AdvancedArmory] = 1
@@ -251,6 +248,7 @@ function GetMaterialXYOffset(techId)
     index = kTechIdToMaterialOffset[techId]
     
     if index == nil then
+        assert(techId ~= nil)
         Print("Warning: %s did not define kTechIdToMaterialOffset ", EnumToString(kTechId, techId) )
     end
 

@@ -51,6 +51,11 @@ function StructureAbility:GetDropStructureId()
     assert(false)
 end
 
+// Child should override
+function StructureAbility:GetRequiredTechId()
+    assert(false)
+end
+
 function StructureAbility:GetGhostModelName(ability)
     assert(false)
 end

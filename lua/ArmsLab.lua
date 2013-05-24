@@ -19,7 +19,7 @@ Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/RecycleMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-Script.Load("lua/AlienDetectableMixin.lua")
+Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
@@ -67,7 +67,7 @@ AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(RecycleMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
-AddMixinNetworkVars(AlienDetectableMixin, networkVars)
+AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
@@ -96,7 +96,7 @@ function ArmsLab:OnCreate()
     InitMixin(self, ObstacleMixin)
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
-    InitMixin(self, AlienDetectableMixin)
+    InitMixin(self, DetectableMixin)
     InitMixin(self, ParasiteMixin)
     
     if Client then
@@ -159,22 +159,24 @@ function ArmsLab:OnConstructionComplete()
 end
 
 if Server then
-    
-    function ArmsLab:OnResearchComplete(researchId)
 
+    function ArmsLab:OnResearchComplete(researchId)
+    
         if researchId == kTechId.Armor1 or researchId == kTechId.Armor2 or researchId == kTechId.Armor3 then
-            SendArmorUpdateNotification(self)       
-        end 
+            SendArmorUpdateNotification(self)
+        end
         
     end
     
     function ArmsLab:UpdateTechAvailability()
         SendArmorUpdateNotification(self) 
     end
+    
+end
 
 
 
-elseif Client then
+if Client then
 
     function ArmsLab:OnTag(tagName)
     

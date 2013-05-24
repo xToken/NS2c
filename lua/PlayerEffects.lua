@@ -35,7 +35,7 @@ kPlayerEffectData =
         flapSoundEffects =
         {
             {sound = "", silenceupgrade = true, done = true}, 
-            {sound = "sound/NS2.fev/alien/lerk/flap", classname = "Lerk", done = true} 
+            {player_sound = "sound/NS2.fev/alien/lerk/flap", classname = "Lerk", done = true} 
         }
     },
     
@@ -44,7 +44,7 @@ kPlayerEffectData =
         jumpBestSoundEffects =
         {
             {sound = "", silenceupgrade = true, done = true},
-            {sound = "sound/NS2.fev/alien/skulk/jump_best", classname = "Skulk", done = true},
+            {player_sound = "sound/NS2.fev/alien/skulk/jump_best", classname = "Skulk", done = true},
         }
     },   
     
@@ -53,7 +53,7 @@ kPlayerEffectData =
         jumpGoodSoundEffects =
         {
             {sound = "", silenceupgrade = true, done = true},
-            {sound = "sound/NS2.fev/alien/skulk/jump_good", classname = "Skulk", done = true},
+            {player_sound = "sound/NS2.fev/alien/skulk/jump_good", classname = "Skulk", done = true},
         }
     },
         
@@ -64,13 +64,12 @@ kPlayerEffectData =
             {sound = "", silenceupgrade = true, done = true},        
             // Use private_sounds (ie, don't send network message) because this is generated on the client 
             // when animation plays and conserves bandwidth
-            {sound = "sound/ns2c.fev/ns2c/alien/skulk/step1", classname = "Skulk", done = true},
-            //{sound = "sound/NS2.fev/alien/skulk/jump", classname = "Skulk", done = true},
-            {sound = "sound/NS2.fev/alien/gorge/jump", classname = "Gorge", done = true},
-            {sound = "sound/NS2.fev/alien/fade/jump", classname = "Fade", done = true},
-            {sound = "sound/NS2.fev/alien/onos/jump", classname = "Onos", done = true},
-            //{sound = "sound/NS2.fev/marine/heavy/jump", classname = "HeavyArmorMarine", done = true},
-            {sound = "sound/NS2.fev/marine/common/jump", classname = "Marine", done = true},
+            {player_sound = "sound/NS2.fev/alien/skulk/jump", classname = "Skulk", done = true},
+            {player_sound = "sound/NS2.fev/alien/gorge/jump", classname = "Gorge", done = true},
+            {player_sound = "sound/NS2.fev/alien/fade/jump", classname = "Fade", done = true},
+            {player_sound = "sound/NS2.fev/alien/onos/jump", classname = "Onos", done = true},
+            //{player_sound = "sound/NS2.fev/marine/heavy/jump", classname = "HeavyArmorMarine", done = true},
+            {player_sound = "sound/NS2.fev/marine/common/jump", classname = "Marine", done = true},
         },
     },
     
@@ -86,16 +85,15 @@ kPlayerEffectData =
             // Skulk
             {sound = "sound/NS2.fev/materials/metal/skulk_step_for_enemy", classname = "Skulk", surface = "metal", enemy = true, done = true},
             {sound = "sound/NS2.fev/materials/metal/skulk_step", classname = "Skulk", surface = "metal", done = true},
-            //{sound = "sound/ns2c.fev/ns2c/alien/skulk/step1", classname = "Skulk", surface = "metal", done = true},
+            
             {sound = "sound/NS2.fev/materials/thin_metal/skulk_step_for_enemy", classname = "Skulk", surface = "thin_metal", enemy = true, done = true},
             {sound = "sound/NS2.fev/materials/thin_metal/skulk_step", classname = "Skulk", surface = "thin_metal", done = true},
-            //{sound = "sound/ns2c.fev/ns2c/alien/skulk/step2", classname = "Skulk", surface = "thin_metal", done = true},
+            
             {sound = "sound/NS2.fev/materials/organic/skulk_step_for_enemy", classname = "Skulk", surface = "organic", enemy = true, done = true},
             {sound = "sound/NS2.fev/materials/organic/skulk_step", classname = "Skulk", surface = "organic", done = true},
-            //{sound = "sound/ns2c.fev/ns2c/alien/skulk/step3", classname = "Skulk", surface = "organic", done = true},
+            
             {sound = "sound/NS2.fev/materials/rock/skulk_step_for_enemy", classname = "Skulk", surface = "rock", enemy = true, done = true},
             {sound = "sound/NS2.fev/materials/rock/skulk_step", classname = "Skulk", surface = "rock", done = true},
-            //{sound = "sound/ns2c.fev/ns2c/alien/skulk/step4", classname = "Skulk", surface = "rock", done = true},
             
             // Gorge
             {sound = "sound/NS2.fev/materials/metal/gorge_step_for_enemy", classname = "Gorge", surface = "metal", enemy = true, done = true},
@@ -230,8 +228,7 @@ kPlayerEffectData =
         {
             {sound = "", silenceupgrade = true, done = true},  
         
-            //{sound = "sound/NS2.fev/alien/skulk/land", classname = "Skulk", done = true},
-            {sound = "sound/ns2c.fev/ns2c/alien/skulk/step1", classname = "Skulk", done = true},
+            {sound = "sound/NS2.fev/alien/skulk/land", classname = "Skulk", done = true},
             {sound = "sound/NS2.fev/alien/lerk/land", classname = "Lerk", done = true},
             {sound = "sound/NS2.fev/alien/gorge/land", classname = "Gorge", done = true},
             {sound = "sound/NS2.fev/alien/fade/land", classname = "Fade", done = true},
@@ -265,15 +262,6 @@ kPlayerEffectData =
             {cinematic = "cinematics/materials/organic/onos_momentum_change.cinematic",  doer = "Onos", surface = "organic", done = true},
             {cinematic = "cinematics/materials/rock/onos_momentum_change.cinematic",  doer = "Onos", surface = "rock", done = true},
         }
-    },
-    
-    cloak_loop =
-    {
-        cloakFX =
-        {
-            {looping_sound = "sound/NS2.fev/alien/structures/shade/cloak_loop", active = true, done = true},
-            {stop_sound = "sound/NS2.fev/alien/structures/shade/cloak_loop", active = false, done = true},
-        },
     },
     
     taunt = 

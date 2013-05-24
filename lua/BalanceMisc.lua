@@ -19,14 +19,13 @@ kHiveUnderAttackTime = 15
 kMaxAlienStructureRange = 25
 kMaxAlienStructuresofType = 8
 kMaxBuildingHives = 1
-kChamberLostNotification = 1
+kChamberLostNotification = 0    // Amount of Upgrade Chambers remaining for alerts to be sent
 kPingOfDeathDelay = 2
 kPingOfDeathDamagePercent = 12
 kResearchMod = 1
 kAirMaxSpeedScalar = 1.8
 kOnLandDelay = 0.1
-kFootstepsThreshold = 3.5
-kLerkFlapEnergyCost = 3
+kFootstepsThreshold = 1
 
 kGhostStructureModifier = .75
 kEnergyUpdateRate = 0.25
@@ -62,6 +61,7 @@ kGhostMinimapDodgePerLevel = 33
 kGhostScanDodgePerLevel = 33
 kAlienBaseMoveNoise = 4
 kAlienRandMoveNoise = 8
+kAlienMoveNoises = 2
 
 // per second
 kAlienVisionCost = 0

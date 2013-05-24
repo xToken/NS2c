@@ -6,7 +6,6 @@ Script.Load("lua/FunctionContracts.lua")
 TurretFactoryMixin = CreateMixin( TurretFactoryMixin )
 TurretFactoryMixin.type = "TurretFactory"
 
-// This is needed so alien structures can be cloaked, but not marine structures
 TurretFactoryMixin.expectedCallbacks =
 {
 }

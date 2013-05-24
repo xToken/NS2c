@@ -7,16 +7,9 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 // Set the name of the VM for debugging
-local matchingFiles = { }
-Shared.GetMatchingFileNames("lua/eem_Shared.lua", false, matchingFiles)
-for _, mapFile in pairs(matchingFiles) do
-    Script.Load("lua/PathUtil.lua")
-    Script.Load("lua/fsfod_scripts.lua")
-    Script.Load("lua/eem_Shared.lua")
-    break
-end
-
 decoda_name = "Server"
+
+Script.Load("lua/PreLoadMod.lua")
 
 Script.Load("lua/Shared.lua")
 Script.Load("lua/MapEntityLoader.lua")
@@ -26,8 +19,13 @@ Script.Load("lua/TargetCache.lua")
 Script.Load("lua/MarineTeam.lua")
 Script.Load("lua/AlienTeam.lua")
 
-Script.Load("lua/Bot.lua")
+Script.Load("lua/bots/Bot.lua")
 Script.Load("lua/VoteManager.lua")
+Script.Load("lua/Voting.lua")
+Script.Load("lua/VotingKickPlayer.lua")
+Script.Load("lua/VotingChangeMap.lua")
+Script.Load("lua/VotingResetGame.lua")
+Script.Load("lua/VotingRandomizeRR.lua")
 
 Script.Load("lua/ServerConfig.lua")
 Script.Load("lua/ServerAdmin.lua")
@@ -110,6 +108,7 @@ function GetCreateEntityOnStart(mapName, groupName, values)
        and mapName ~= CommandStation.kMapName
        //and mapName ~= Cyst.kMapName
        and mapName ~= InfantryPortal.kMapName
+       and mapName ~= "spawn_selection_override"
     
 end
 
@@ -154,6 +153,12 @@ function GetLoadSpecial(mapName, groupName, values)
             end
             
         end
+        
+    elseif mapName == "spawn_selection_override" then
+    
+        Server.spawnSelectionOverrides = Server.spawnSelectionOverrides or { }
+        table.insert(Server.spawnSelectionOverrides, { alienSpawn = string.lower(values.alienSpawn), marineSpawn = string.lower(values.marineSpawn) })
+        success = true
         
     end
     
@@ -207,12 +212,16 @@ local function LoadServerMapEntity(mapName, groupName, values)
             if (mapName == "tech_point") or values.pathInclude == true then
             
                 local coords = values.angles:GetCoords(values.origin)
-                Pathing.CreatePathingObject(entity:GetModelName(), coords)
+                if not Pathing.GetLevelHasPathingMesh() then
+                    Pathing.CreatePathingObject(entity:GetModelName(), coords, true)
+                    Pathing.AddFillPoint(values.origin)
+                end    
                 
             end
             
             local renderModelCommAlpha = GetAndCheckValue(values.commAlpha, 0, 1, "commAlpha", 1, true)
             local blocksPlacement = groupName == kCommanderInvisibleGroupName or
+                                    groupName == kCommanderInvisibleVentsGroupName or
                                     groupName == kCommanderNoBuildGroupName
             
             if HasMixin(entity, "Model") and (renderModelCommAlpha < 1 or blocksPlacement) then
@@ -262,10 +271,15 @@ function OnMapPreLoad()
     
     // Any geometry in kCommanderInvisibleGroupName or kCommanderNoBuildGroupName shouldn't interfere with selection or other commander actions
     Shared.PreLoadSetGroupPhysicsId(kCommanderInvisibleGroupName, PhysicsGroup.CommanderPropsGroup)
+    Shared.PreLoadSetGroupPhysicsId(kCommanderInvisibleVentsGroupName, PhysicsGroup.CommanderPropsGroup)
     Shared.PreLoadSetGroupPhysicsId(kCommanderNoBuildGroupName, PhysicsGroup.CommanderPropsGroup)
     
     // Don't have bullets collide with collision geometry
     Shared.PreLoadSetGroupPhysicsId(kCollisionGeometryGroupName, PhysicsGroup.CollisionGeometryGroup)
+    
+    // Pathing mesh
+    Shared.PreLoadSetGroupNeverVisible(kPathingLayerName)
+    Shared.PreLoadSetGroupPhysicsId(kPathingLayerName, PhysicsGroup.PathingGroup)    
     
     // Clear spawn points
     Server.readyRoomSpawnList = {}
@@ -387,3 +401,5 @@ Event.Hook("MapPreLoad", OnMapPreLoad)
 Event.Hook("MapPostLoad", OnMapPostLoad)
 Event.Hook("MapLoadEntity", OnMapLoadEntity)
 Event.Hook("CanPlayerHearPlayer", OnCanPlayerHearPlayer)
+
+Script.Load("lua/PostLoadMod.lua")

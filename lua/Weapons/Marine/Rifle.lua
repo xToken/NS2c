@@ -23,11 +23,41 @@ local kAnimationGraph = PrecacheAsset("models/marine/rifle/rifle_view.animation_
 // 4 degrees in NS1
 local kSpread = ClipWeapon.kCone3v5Degrees
 
-local kSingleShotSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/lmg_fire")
-local kEndSound = PrecacheAsset("sound/NS2.fev/marine/rifle/end")
+//local kSingleShotSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/lmg_fire")
+//local kEndSound = PrecacheAsset("sound/NS2.fev/marine/rifle/end")
+
+local kSingleShotSound = PrecacheAsset("sound/NS2.fev/marine/rifle/fire_single_3")
+local kLoopingSound = PrecacheAsset("sound/NS2.fev/marine/rifle/fire_loop_1_upgrade_3")
+local kEndSound = PrecacheAsset("sound/NS2.fev/marine/rifle/end_upgrade_3")
 
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/rifle/muzzle_flash.cinematic")
 local kMuzzleAttachPoint = "fxnode_riflemuzzle"
+
+local function DestroyMuzzleEffect(self)
+
+    if self.muzzleCinematic then
+        Client.DestroyCinematic(self.muzzleCinematic)            
+    end
+    
+    self.muzzleCinematic = nil
+    self.activeCinematicName = nil
+
+end
+
+local function CreateMuzzleEffect(self)
+
+    local player = self:GetParent()
+
+    if player then
+
+        local cinematicName = kMuzzleEffect
+        self.activeCinematicName = cinematicName
+        self.muzzleCinematic = CreateMuzzleCinematic(self, cinematicName, cinematicName, kMuzzleAttachPoint, nil, Cinematic.Repeat_Endless)
+        self.firstPersonLoaded = player:GetIsLocalPlayer() and player:GetIsFirstPerson()
+    
+    end
+
+end
 
 function Rifle:OnCreate()
 
@@ -42,24 +72,11 @@ function Rifle:OnCreate()
     
 end
 
-function Rifle:OnInitialized()
-
-    ClipWeapon.OnInitialized(self)
-    
-    if Client then
-    
-        self:SetFirstPersonAttackingEffect(kMuzzleEffect)
-        self:SetThirdPersonAttackingEffect(kMuzzleEffect)
-        self:SetMuzzleAttachPoint(kMuzzleAttachPoint)
-        self:SetUpdates(true)
-        
-    end
-    
-end
-
 function Rifle:OnDestroy()
 
     ClipWeapon.OnDestroy(self)
+    
+    DestroyMuzzleEffect(self)
     
 end
 
@@ -76,6 +93,19 @@ end
 function Rifle:GetNumStartClips()
     return 3
 end
+
+function Rifle:OnHolster(player)
+
+    DestroyMuzzleEffect(self)    
+    ClipWeapon.OnHolster(self, player)
+    
+end
+
+function Rifle:OnHolsterClient()
+    DestroyMuzzleEffect(self)
+    ClipWeapon.OnHolsterClient(self)
+end
+
 
 function Rifle:GetAnimationGraphName()
     return kAnimationGraph
@@ -184,19 +214,59 @@ end
 if Client then
 
     function Rifle:OnClientPrimaryAttackStart()
-        Shared.StopSound(self, kSingleShotSound)
-        Shared.PlaySound(self, kSingleShotSound)        
+        //Shared.StopSound(self, kSingleShotSound)
+        //Shared.PlaySound(self, kSingleShotSound)        
+		Shared.PlaySound(self, kLoopingSound)
+        
+        local player = self:GetParent()
+        
+        if not self.muzzleCinematic then            
+            CreateMuzzleEffect(self)                
+        elseif player then
+        
+            local cinematicName = kMuzzleEffect
+            local useFirstPerson = player:GetIsLocalPlayer() and player:GetIsFirstPerson()
+            
+            if cinematicName ~= self.activeCinematicName or self.firstPersonLoaded ~= useFirstPerson then
+            
+                DestroyMuzzleEffect(self)
+                CreateMuzzleEffect(self)
+                
+            end
+            
+        end
+            
+        // CreateMuzzleCinematic() can return nil in case there is no parent or the parent is invisible (for alien commander for example)
+        if self.muzzleCinematic then
+            self.muzzleCinematic:SetIsVisible(true)
+        end
+        
     end
     
-    function Rifle:OnClientPrimaryAttacking()
+    /*function Rifle:OnClientPrimaryAttacking()
         Shared.StopSound(self, kSingleShotSound)
         Shared.PlaySound(self, kSingleShotSound)
+    end*/
+
+	// needed for first person muzzle effect since it is attached to the view model entity: view model entity gets cleaned up when the player changes (for example becoming a commander and logging out again) 
+    // this results in viewmodel getting destroyed / recreated -> cinematic object gets destroyed which would result in an invalid handle.
+    function Rifle:OnParentChanged(oldParent, newParent)
+        
+        ClipWeapon.OnParentChanged(self, oldParent, newParent)
+        DestroyMuzzleEffect(self)
+        
     end
     
     function Rifle:OnClientPrimaryAttackEnd()
+    
         // Just assume the looping sound is playing.
-        Shared.StopSound(self, kSingleShotSound)
+        //Shared.StopSound(self, kSingleShotSound)
+		Shared.StopSound(self, kLoopingSound)
         Shared.PlaySound(self, kEndSound)
+		if self.muzzleCinematic then
+            self.muzzleCinematic:SetIsVisible(false)
+        end
+        
     end
     
     function Rifle:GetPrimaryEffectRate()
@@ -219,6 +289,9 @@ if Client then
         
     end
     
+    function Rifle:GetUIDisplaySettings()
+        return { xSize = 256, ySize = 417, script = "lua/GUIRifleDisplay.lua" }
+    end
 end
 
 Shared.LinkClassToMap("Rifle", Rifle.kMapName, { })
