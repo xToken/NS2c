@@ -42,8 +42,8 @@ local kJumpHeight = 1.2
 local kViewOffsetHeight = 2.5
 // triggered when the momentum value has changed by this amount (negative because we trigger the effect when the onos stops, not accelerates)
 local kMomentumEffectTriggerDiff = 3
-local kMaxSpeed = 6.5
-local kMaxChargeSpeed = 13
+local kMaxSpeed = 6.0
+local kMaxChargeSpeed = 12
 
 local kChargeEnergyCost = 50
 local kChargeAcceleration = 40

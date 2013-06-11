@@ -51,7 +51,7 @@ local kSwoopGravityScalar = -25.0
 local kRegularGravityScalar = -7
 local kFlightGravityScalar = -4
 local kMaxWalkSpeed = 4.8
-local kMaxSpeed = 14
+local kMaxSpeed = 13
 local kDefaultAttackSpeed = 1.65
 
 local networkVars =
@@ -312,8 +312,6 @@ function Lerk:HandleJump(input, velocity)
         
         self.timeOfLastJump = Shared.GetTime()
         
-        // Velocity may not have been set yet, so force onGround to false this frame
-        self.onGroundNeedsUpdate = false
         self.onGround = false
         
         self.lastTimeFlapped = Shared.GetTime()
@@ -399,7 +397,7 @@ end
 function Lerk:CalcWallGripSpeedFraction()
 
     local dt = (Shared.GetTime() - self.wallGripTime)
-    if dt > Lerk.kWallGripSlideTime then
+    if dt > kWallGripSlideTime then
         return 0
     end
     local k = kWallGripSlideTime

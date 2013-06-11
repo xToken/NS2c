@@ -44,8 +44,8 @@ Fade.YExtents = .85
 local kViewOffsetHeight = 1.7
 local kMass = 76 // 50 // ~350 pounds // FADE WEIGHS LESS THAN LERK??? WTFFFFF TANK BIRD
 local kJumpHeight = 1.1
-local kMaxSpeed = 6.5
-local kMaxBlinkSpeed = 20 // ns1 fade blink is (3x maxSpeed) + celerity
+local kMaxSpeed = 6.0
+local kMaxBlinkSpeed = 18 // ns1 fade blink is (3x maxSpeed) + celerity
 local kWalkSpeed = 4
 //local kBlinkAcceleration = 50
 local kBlinkAccelerationDuration = 2
@@ -160,7 +160,6 @@ function Fade:HandleJump(input, velocity)
         self.timeOfLastJump = Shared.GetTime()
         
         // Velocity may not have been set yet, so force onGround to false this frame
-        self.onGroundNeedsUpdate = false
         self.onGround = false
         
         self.jumping = true
@@ -170,10 +169,6 @@ function Fade:HandleJump(input, velocity)
     
     return success
     
-end
-
-function Fade:GetIsOnGround()    
-    return Alien.GetIsOnGround(self)
 end
 
 function Fade:GoldSrc_GetMaxSpeed(possible)
@@ -206,26 +201,11 @@ function Fade:GetRecentlyBlinked()
     return Shared.GetTime() - self.etherealEndTime < kBlinkAccelerationDuration
 end
 
-function Fade:OnProcessMove(input)
-    Alien.OnProcessMove(self, input)
-end
-
-// for update position
-function Fade:GetCanStep()
-    //return self:GetIsBlinking() or Alien.GetCanStep(self)
-    return false
-end
-
-function Fade:GetStepHeight()
-    return Player.GetStepHeight() 
-end
-
 function Fade:GetGravityAllowed()
     return true
 end
 
 function Fade:OnBlink()
-    self.onGroundNeedsUpdate = false
     self.onGround = false
     self.jumping = true
 end
@@ -258,25 +238,6 @@ function Fade:OnBlinking(input)
     // Finish
     self:SetVelocity(velocity)
     self.jumping = true // Animation
-    self.onGroundNeedsUpdate = true
-    
-    /*
-    self.onGroundNeedsUpdate = true 
-    local newVelocity = self:GetViewCoords().zAxis * kBlinkAcceleration * input.time
-    local velocity = self:GetVelocity()
-    
-    if self:GetIsOnGround() and velocity.y < 4 then
-        newVelocity.y = newVelocity.y + math.sqrt(math.abs(2 * self:GetJumpHeight() * self:GetGravityForce(input)))
-    end
-    
-    local upangle = self:GetViewCoords().zAxis.y
-    if upangle > 0.5 then
-        if newVelocity.y < 0 then newVelocity.y = 0 end
-        newVelocity.y = self:GetViewCoords().zAxis.y * (kBlinkAcceleration * 2) * input.time
-    end
-
-    self:SetVelocity(velocity + newVelocity)
-    */
 
 end
 
@@ -289,7 +250,6 @@ function Fade:OverrideInput(input)
 end
 
 function Fade:OnBlinkEnd()
-    self.onGroundNeedsUpdate = true
     if self:GetIsOnGround() then
         self.jumping = false
     end

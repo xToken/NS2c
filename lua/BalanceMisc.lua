@@ -59,8 +59,8 @@ kGhostMotionTrackingDodgePerLevel = 33
 kGhostObservatoryDodgePerLevel = 33
 kGhostMinimapDodgePerLevel = 33
 kGhostScanDodgePerLevel = 33
-kAlienBaseMoveNoise = 4
-kAlienRandMoveNoise = 8
+kAlienBaseMoveNoise = 6
+kAlienRandMoveNoise = 12
 kAlienMoveNoises = 2
 
 // per second

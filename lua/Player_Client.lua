@@ -3387,46 +3387,9 @@ function Player:SetHotgroup(number, entityList)
     
 end
 
-local function OnJumpLandClient(self)
-
-    if not Shared.GetIsRunningPrediction() then
-    
-        local landSurface = GetSurfaceAndNormalUnderEntity(self)
-        self:TriggerEffects("land", { surface = landSurface, enemy = GetAreEnemies(self, Client.GetLocalPlayer()) })
-        
-    end
-    
-end
-
-function Player:OnJumpLandLocalClient()
-    OnJumpLandClient(self)
-end
-
-function Player:OnJumpLandNonLocalClient()
-    OnJumpLandClient(self)
-end
-
-// Call OnJumpLandNonLocalClient for other players to avoid network traffic
-function Player:CheckClientJumpLandOnSynch()
-
-    if not self:GetIsLocalPlayer() then
-    
-        if self.clientOnSurface == false and self:GetIsOnSurface() then
-            self:OnJumpLandNonLocalClient()
-        end
-        
-        self.clientOnSurface = self:GetIsOnSurface()
-        
-    end
-    
-end
-
-
 function Player:OnPreUpdate()
 
     PROFILE("Player:OnPreUpdate")
-
-    self:CheckClientJumpLandOnSynch()
     
     if self.locationId ~= self.lastLocationId then
     

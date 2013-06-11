@@ -34,12 +34,10 @@ local kHeavyArmorMarineAnimationGraph = PrecacheAsset("models/marine/male/male.a
 
 local kMass = 200
 local kWalkMaxSpeed = 3.0
-local kRunMaxSpeed = 5.5
+local kRunMaxSpeed = 5.0
 
 function HeavyArmorMarine:OnCreate()
-
     Marine.OnCreate(self)
-    
 end
 
 function HeavyArmorMarine:OnInitialized()

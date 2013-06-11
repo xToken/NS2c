@@ -212,7 +212,7 @@ function Shotgun:FirePrimary(player)
     local viewAngles = player:GetViewAngles()
     viewAngles.roll = NetworkRandom() * math.pi * 2
     
-    local shootCoords = viewAngles:GetCoords()
+    local viewCoords = viewAngles:GetCoords()
     
     
     // Filter ourself out of the trace so that we don't hit ourselves.
@@ -234,12 +234,16 @@ function Shotgun:FirePrimary(player)
             break
         end    
     
-        local spreadDirection = shootCoords:TransformVector(kSpreadVectors[bullet])
+        local spreadDirection = viewCoords:TransformVector(kSpreadVectors[bullet])
 
         local endPoint = startPoint + spreadDirection * range
-        startPoint = player:GetEyePos() + shootCoords.xAxis * kSpreadVectors[bullet].x * kStartOffset + shootCoords.yAxis * kSpreadVectors[bullet].y * kStartOffset
+        startPoint = player:GetEyePos() + viewCoords.xAxis * kSpreadVectors[bullet].x * kStartOffset + viewCoords.yAxis * kSpreadVectors[bullet].y * kStartOffset
         
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+        if not trace.entity then
+            local extents = GetDirectedExtentsForDiameter(viewCoords.zAxis, self:GetBulletSize())
+            trace = Shared.TraceBox(extents, startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+        end        
         
         local damage = 0
 

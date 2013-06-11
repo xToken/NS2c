@@ -33,9 +33,9 @@ local kJetpackMinimumFuelForLaunch = .03
 local kVerticalThrustAccelerationMod = 2.1
 local kVerticalThrustMaxSpeed = 12.0 // note: changing this impacts kVerticalThrustAccelerationMod
 local kJetpackAcceleration = 17.0 // Horizontal acceleration
-local kWalkMaxSpeed = 3.5                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
-local kRunMaxSpeed = 6.0
-local kFlyMaxSpeed = 13.0 // NS1 jetpack is 2.9x running speed (walk: 192, jetpack: 576)
+local kWalkMaxSpeed = 3.0                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
+local kRunMaxSpeed = 5.25
+local kFlyMaxSpeed = 12.0 // NS1 jetpack is 2.9x running speed (walk: 192, jetpack: 576)
 local kJetpackTakeOffTime = .01
 
 local networkVars =
@@ -380,7 +380,7 @@ function JetpackMarine:GoldSrc_Accelerate(velocity, time, wishdir, wishspeed, ac
         Marine.GoldSrc_Accelerate(self, velocity, time, Vector(0,1,0), kVerticalThrustMaxSpeed, kVerticalThrustAccelerationMod)
         // Since the upwards velocity may be very small, manually set onGround to false
         // to avoid having code from sticking the player to the ground
-        self.onGround = false
+        //self.onGround = false
     end
 end
 

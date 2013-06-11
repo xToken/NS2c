@@ -33,7 +33,15 @@ CustomGroundMoveMixin.optionalCallbacks =
     PostUpdateMove = "Allows children to update state after the update happens.",
 }
 
+CustomGroundMoveMixin.networkVars =
+{
+    onGround = "compensated boolean",
+    timeLastOnGround = "private time"
+}
+
 function CustomGroundMoveMixin:__initmixin()
+    self.onGround = true
+    self.timeLastOnGround = 0
 end
 /*
 // round the new value to network precision, rounding towards the old value
@@ -50,6 +58,45 @@ local function RoundToNetworkVec(vec)
 end
 */
 local kNetPrecision = 1/128 // should import from server
+local kOnGroundDistance = 0.1
+
+// Returns boolean indicating if we're at least the passed in distance from the ground.
+local function GetIsCloseToGround(self, distance)
+
+    PROFILE("CustomGroundMoveMixin:GetIsCloseToGround")
+        
+    local onGround = false
+    local normal = Vector()
+    local completedMove, hitEntities = nil
+
+    if self.controller ~= nil then
+        // Try to move the controller downward a small amount to determine if
+        // we're on the ground.
+        local offset = Vector(0, -distance, 0)
+        // need to do multiple slides here to not get traped in V shaped spaces
+        completedMove, hitEntities, normal = self:PerformMovement(offset, 3, nil, false)
+        
+        if normal and normal.y >= 0.5 then
+            return true
+        end
+    end
+
+    return false
+    
+end
+
+function CustomGroundMoveMixin:UpdateOnGroundState()
+    
+    local onGround = false
+    onGround = GetIsCloseToGround(self, self.GetDistanceToGround and self:GetDistanceToGround() or kOnGroundDistance)
+    if onGround then
+        self.timeLastOnGround = Shared.GetTime()
+    end
+    if onGround ~= self.onGround then
+        self.onGround = onGround
+    end
+    
+end
 
 function CustomGroundMoveMixin:ApplyHalfGravity(input, velocity)
     if self.gravityEnabled and self:GetGravityAllowed() then
@@ -84,12 +131,8 @@ function CustomGroundMoveMixin:UpdateMove(input)
     // If we were on ground at the end of last frame, zero out vertical velocity while
     // calling GetIsOnGround, as to not trip it into thinking you're in the air when moving
     // on curved surfaces
-    local oldOnGround = self.onGround
-    if oldOnGround then
-        local oldvelocity = velocity.y
+    if self.onGround then
         velocity.y = 0
-        self:GetIsOnSurface()
-        velocity.y = oldvelocity
     end
     
     local wishdir = self:GoldSrc_GetWishVelocity(input)
@@ -116,7 +159,7 @@ function CustomGroundMoveMixin:UpdateMove(input)
         self:GoldSrc_AirAccelerate(velocity, input.time, wishdir, wishspeed, self:GoldSrc_GetAcceleration())
     end
     
-    // Apply first half of the gravity
+    // Apply second half of the gravity
     self:ApplyHalfGravity(input, velocity)
     
     velocity = self:UpdatePosition(velocity, input.time, input.move)

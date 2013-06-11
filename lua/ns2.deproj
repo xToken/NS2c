@@ -301,6 +301,9 @@
     <filename>GUIUtility.lua</filename>
   </file>
   <file>
+    <filename>GeneralEffects.lua</filename>
+  </file>
+  <file>
     <filename>GhostStructureMixin.lua</filename>
   </file>
   <file>
@@ -695,6 +698,9 @@
   </file>
   <file>
     <filename>UnitStatusMixin.lua</filename>
+  </file>
+  <file>
+    <filename>WallMovementMixin.lua</filename>
   </file>
   <file>
     <filename>Weapons\Weapon.lua</filename>

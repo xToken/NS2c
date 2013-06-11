@@ -26,7 +26,7 @@ kAlienWeaponEffects =
         biteKillSound =
         {
             {sound = "", silenceupgrade = true, done = true},
-            {sound = "sound/NS2.fev/alien/skulk/bite_kill", attach_point = "Bip01_Head", done = true},
+            {player_sound = "sound/NS2.fev/alien/skulk/bite_kill", attach_point = "Bip01_Head", done = true},
         }
     },
     
@@ -34,7 +34,7 @@ kAlienWeaponEffects =
     {
         biteHitSound =
         {
-            {sound = "sound/NS2.fev/alien/skulk/bite_hit_structure", world_space = true, isalien = false, done = true},
+            {player_sound = "sound/NS2.fev/alien/skulk/bite_hit_structure", world_space = true, isalien = false, done = true},
         },
     },
     

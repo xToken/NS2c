@@ -21,7 +21,7 @@ local kViewModelName = PrecacheAsset("models/marine/rifle/rifle_view.model")
 local kAnimationGraph = PrecacheAsset("models/marine/rifle/rifle_view.animation_graph")
 
 // 4 degrees in NS1
-local kSpread = ClipWeapon.kCone3v5Degrees
+local kSpread = ClipWeapon.kCone3Degrees
 
 //local kSingleShotSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/lmg_fire")
 //local kEndSound = PrecacheAsset("sound/NS2.fev/marine/rifle/end")

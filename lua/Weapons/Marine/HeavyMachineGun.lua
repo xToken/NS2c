@@ -14,7 +14,7 @@ HeavyMachineGun.kModelName = PrecacheAsset("models/marine/heavymachinegun/heavym
 local kViewModelName = PrecacheAsset("models/marine/heavymachinegun/heavymachinegun_view.model")
 local kAnimationGraph = PrecacheAsset("models/marine/heavymachinegun/heavymachinegun_view.animation_graph")
 
-local kSpread = ClipWeapon.kCone6Degrees
+local kSpread = ClipWeapon.kCone5Degrees
 local kLoopingSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/hmg_fire")
 local kHeavyMachineGunEndSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin_down")
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/heavymachinegun/muzzle_flash.cinematic")

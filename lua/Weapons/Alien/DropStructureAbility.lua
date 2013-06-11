@@ -359,7 +359,7 @@ function DropStructureAbility:GetPositionForStructure(startPosition, direction, 
     
     local coords = Coords.GetLookIn( displayOrigin, structureFacing, trace.normal )
     
-    if validPosition and adjustedcoords then
+    if validPosition and adjustedcoords ~= nil then
         coords = adjustedcoords
     end    
     

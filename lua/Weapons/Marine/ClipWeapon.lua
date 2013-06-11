@@ -37,7 +37,6 @@ ClipWeapon.kCone0Degrees  = Math.Radians(0)
 ClipWeapon.kCone1Degrees  = Math.Radians(1)
 ClipWeapon.kCone2Degrees  = Math.Radians(2)
 ClipWeapon.kCone3Degrees  = Math.Radians(3)
-ClipWeapon.kCone3v5Degrees  = Math.Radians(3.5)
 ClipWeapon.kCone4Degrees  = Math.Radians(4)
 ClipWeapon.kCone5Degrees  = Math.Radians(5)
 ClipWeapon.kCone6Degrees  = Math.Radians(6)
@@ -388,6 +387,10 @@ function ClipWeapon:GetPrimaryIsBlocking()
     return false
 end
 
+function ClipWeapon:GetBulletSize()
+    return 0.010
+end
+
 /**
  * Fires the specified number of bullets in a cone from the player's current view.
  */
@@ -396,8 +399,7 @@ local function FireBullets(self, player)
     PROFILE("FireBullets")
 
     local viewAngles = player:GetViewAngles()
-    local shootCoords = viewAngles:GetCoords()
-    
+    local viewCoords = viewAngles:GetCoords()
     // Filter ourself out of the trace so that we don't hit ourselves.
     local filter = EntityFilterTwo(player, self)
     local range = self:GetRange()
@@ -407,11 +409,15 @@ local function FireBullets(self, player)
     
     for bullet = 1, numberBullets do
     
-        local spreadDirection = CalculateSpread(shootCoords, self:GetSpread(bullet) * self:GetInaccuracyScalar(player), NetworkRandom)
+        local spreadDirection = CalculateSpread(viewCoords, self:GetSpread(bullet) * self:GetInaccuracyScalar(player), NetworkRandom)
         
         local endPoint = startPoint + spreadDirection * range
-        
+
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+        if not trace.entity then
+            local extents = GetDirectedExtentsForDiameter(viewCoords.zAxis, self:GetBulletSize())
+            trace = Shared.TraceBox(extents, startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+        end   
         
         local damage = 0
 

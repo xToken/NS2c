@@ -310,10 +310,6 @@ function Alien:GetCarapaceMovementScalar()
 
 end
 
-function Alien:GetSlowSpeedModifier()
-    return Player.GetSlowSpeedModifier(self)
-end
-
 function Alien:GetHasOneHive()
     return self.oneHive
 end
@@ -548,7 +544,7 @@ function Alien:GetCelerityScalar()
 end
 
 function Alien:GetMovementSpeedModifier()
-    return self:GetCelerityScalar() * self:GetSlowSpeedModifier()
+    return self:GetCelerityScalar()
 end
 function Alien:GetEffectParams(tableParams)
 

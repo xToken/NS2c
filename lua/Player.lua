@@ -66,6 +66,7 @@ Player.kGravity = -20
 Player.kXZExtents = 0.35
 Player.kYExtents = 0.95
 Player.kWalkMaxSpeed = 4
+Player.kOnGroundDistance = 0.1
 
 local kTapInterval = 0.27
 
@@ -96,13 +97,12 @@ local kTooltipSound = PrecacheAsset("sound/NS2.fev/common/tooltip")
 local kHintInterval = 18
 local kInvalidSound                = PrecacheAsset("sound/NS2.fev/common/invalid")
 local kChatSound                   = PrecacheAsset("sound/NS2.fev/common/chat")
-
 local kDownwardUseRange = 2.2
 local kUseBoxSize = Vector(0.5, 0.5, 0.5)
 local kWalkBackwardSpeedScalar = 1
 local kStowedWeaponWeightScalar = 1
 local kJumpHeight =  1.2
-local kOnGroundDistance = 0.1
+
 local kViewOffsetHeight = Player.kYExtents * 2 - 0.2
 local kCrouchSpeedScalar = 0.6
 local kCrouchShrinkAmount = 0.6
@@ -120,7 +120,7 @@ local kGoldSrcFriction = 4
 local kStopSpeed = 3.6 //NS1 appears to have used 100, roughly 1.8 @ 60.. Trying 3.6 for interim.
 
 //NS1 bhop skulk could get around 530-540 units with good bhop, 290 base makes for 1.84 - Trying 1.9 for now
-local kBunnyJumpMaxSpeedFactor = 1.9 
+local kBunnyJumpMaxSpeedFactor = 1.7 
 local kMaxAirVeer = 1.2
 local kLadderAcceleration = 16
 local kMaxWalkableNormal =  math.cos( math.rad(45) )
@@ -190,8 +190,6 @@ local networkVars =
     jumpHandled = "private compensated boolean",
     timeOfLastJump = "private time",
     jumping = "compensated boolean",
-    onGround = "compensated boolean",
-    onGroundNeedsUpdate = "private compensated boolean",
     
     moveButtonPressed = "compensated boolean",
     
@@ -330,12 +328,8 @@ function Player:OnCreate()
     self.timeOfDeath = nil
     self.crouching = false
     self.timeOfCrouchChange = 0
-    self.onGroundNeedsUpdate = true
-    self.onGround = false
     
     self.onLadder = false
-    
-    self.timeLastOnGround = 0
     
     self.resources = 0
     
@@ -933,6 +927,10 @@ function Player:GetIsPlaying()
     return self.gameStarted and self:GetIsOnPlayingTeam()
 end
 
+function Player:GetIsOnGround()
+    return self.onGround
+end
+
 function Player:GetIsOnPlayingTeam()
     return self:GetTeamNumber() == kTeam1Index or self:GetTeamNumber() == kTeam2Index
 end
@@ -1182,7 +1180,7 @@ function Player:GoldSrc_GetMaxSpeed(possible)
 end
 
 function Player:GoldSrc_GetAcceleration()
-    return ConditionalValue(self:GetIsOnGround(), kGoldSrcAcceleration, kGoldSrcAirAcceleration)
+    return ConditionalValue(self:GetIsOnSurface(), kGoldSrcAcceleration, kGoldSrcAirAcceleration)
 end
 
 function Player:GetGravityAllowed()
@@ -1194,21 +1192,6 @@ end
 
 function Player:GetCrouchSpeedScalar()
     return kCrouchSpeedScalar
-end
-
-function Player:GetMoveDirection(moveVelocity)
-
-    if self:GetIsOnLadder() then
-        return GetNormalizedVector(moveVelocity)
-    end
-    
-    local up = Vector(0, 1, 0)
-    local right = GetNormalizedVector(moveVelocity):CrossProduct(up)
-    local moveDirection = up:CrossProduct(right)
-    moveDirection:Normalize()
-    
-    return moveDirection
-    
 end
 
 function Player:OnUseTarget(target)
@@ -1379,12 +1362,17 @@ function Player:UpdateViewAngles(input)
     
 end
 
+function Player:TriggerLandEffects()
+    if not Shared.GetIsRunningPrediction() then
+        self:TriggerEffects("land", {surface = self:GetMaterialBelowPlayer()})
+    end
+end
+
 function Player:OnJumpLand(landIntensity, slowDown)
 
     self.landtime = Shared.GetTime()
-    
-    if Client and self:GetIsLocalPlayer() then
-        self:OnJumpLandLocalClient()
+    if self:GetPlayLandSound(landIntensity) then
+        self:TriggerLandEffects()
     end
     
 end
@@ -1531,18 +1519,6 @@ function Player:OnProcessIntermediate(input)
     
 end
 
-// done once per process move before handling player movement
-local function UpdateOnGroundState(self)
-
-    self.onGround = false        
-    self.onGround = self:GetIsCloseToGround(Player.kOnGroundDistance)
-    
-    if self.onGround then
-        self.timeLastOnGround = Shared.GetTime()
-    end
-
-end
-
 // You can't modify a compensated field for another (relevant) entity during OnProcessMove(). The
 // "local" player doesn't undergo lag compensation it's only all of the other players and entities.
 // For example, if health was compensated, you can't modify it when a player was shot -
@@ -1590,21 +1566,20 @@ function Player:OnProcessMove(input)
     
         ASSERT(self.controller ~= nil)
         
-        // Force an update to whether or not we're on the ground in case something
-        // has moved out from underneath us.
-        self.onGroundNeedsUpdate = true      
-        local wasOnGround = self.onGround
+        //local wasOnGround = self.onGround
         local previousVelocity = self:GetVelocity()
+        local wasOnGround = self.onGround
         
-        //UpdateOnGroundState(self)
-                
+        self:UpdateOnGroundState()
+
         // Update origin and velocity from input move (main physics behavior).
+        UpdateJumpLand(self, wasOnGround, previousVelocity)
+        
         self:UpdateMove(input)
         
         self:UpdateMaxMoveSpeed(input.time) 
         
         UpdateFallDamage(self, wasOnGround, previousVelocity)
-        UpdateJumpLand(self, wasOnGround, previousVelocity)
         
         // Restore the buttons so that things like the scoreboard, etc. work.
         input.commands = commands
@@ -1741,6 +1716,10 @@ end
 function Player:GetCanStepOver(entity)
     return false
 end
+
+//function Player:GetCanStepOver(entity)
+    //return not entity:isa("Player") or entity:GetTeamNumber() == self:GetTeamNumber()
+//end
 
 local function CheckCanStepOver(self, hitEntities)
 
@@ -1920,33 +1899,6 @@ function Player:GetExtentsCrouchShrinkAmount()
     return kExtentsCrouchShrinkAmount
 end
 
-// Returns true if the player is currently standing on top of something solid. Recalculates
-// onGround if we've updated our position since we've last called this.
-function Player:GetIsOnGround()
-    
-    // Re-calculate every time SetOrigin is called
-    if self.onGroundNeedsUpdate then
-    
-        self.onGround = false
-        
-        self.onGround = self:GetIsCloseToGround(kOnGroundDistance)
-        
-        if self.onGround then
-            self.timeLastOnGround = Shared.GetTime()
-        end
-        
-        self.onGroundNeedsUpdate = false        
-        
-    end
-    
-    if self:GetIsOnLadder() then
-        return false
-    end
-    
-    return self.onGround
-    
-end
-
 function Player:SetIsOnLadder(onLadder, ladderEntity)
     self.onLadder = onLadder
 end
@@ -1963,51 +1915,7 @@ function Player:SetOrigin(origin)
     
     self:UpdateControllerFromEntity()
     
-    self.onGroundNeedsUpdate = true
-    
 end
-
-// Returns boolean indicating if we're at least the passed in distance from the ground.
-function Player:GetIsCloseToGround(distanceToGround)
-
-    PROFILE("Player:GetIsCloseToGround")
-
-    if self.controller == nil then
-        return false
-    end
-
-    if (self:GetVelocity().y > 0 and self.timeOfLastJump ~= nil and (Shared.GetTime() - self.timeOfLastJump < .2)) then
-    
-        // If we are moving away from the ground, don't treat
-        // us as standing on it.
-        return false
-        
-    end
-        
-    // Try to move the controller downward a small amount to determine if
-    // we're on the ground.
-    local offset = Vector(0, -distanceToGround, 0)
-    local trace = self.controller:Trace(offset, CollisionRep.Move, CollisionRep.Move, self:GetMovePhysicsMask())
-
-    local result = false
-    
-    if trace.fraction < 1 then
-    
-        // Trace ray down to get normal of ground
-        local rayTrace = Shared.TraceRay(self:GetOrigin() + Vector(0, 0.1, 0),
-                                         self:GetOrigin() - Vector(0, 1, 0),
-                                         CollisionRep.Move, EntityFilterOne(self))
-
-        if rayTrace.fraction == 1 or math.abs(rayTrace.normal.y) >= kMaxWalkableNormal then
-            result = true
-        end
-        
-    end
-
-    return result
-    
-end
-
 
 function Player:GetPlayFootsteps()
     return self:GetVelocityLength() > kFootstepsThreshold and self:GetIsOnGround() and self:GetIsAlive()    
@@ -2130,6 +2038,10 @@ function Player:GetJumpVelocity(input, velocity)
     velocity.y = math.sqrt(math.abs(2 * self:GetJumpHeight() * self:GetGravityForce(input)))
 end
 
+function Player:GetPlayLandSound(landIntesity)
+    return landIntesity > 0.5
+end
+
 function Player:GetPlayJumpSound()
     return true
 end
@@ -2147,6 +2059,12 @@ function Player:PreventMegaBunnyJumping(velocity)
     end
 end
 
+function Player:TriggerJumpEffects()
+    if not Shared.GetIsRunningPrediction() then
+        self:TriggerEffects("jump", {surface = self:GetMaterialBelowPlayer()})
+    end
+end
+
 // If we jump, make sure to set self.timeOfLastJump to the current time
 function Player:HandleJump(input, velocity)
 
@@ -2161,11 +2079,7 @@ function Player:HandleJump(input, velocity)
         self:GetJumpVelocity(input, velocity)
         
         if self:GetPlayJumpSound() then
-        
-            if not Shared.GetIsRunningPrediction() then
-                self:TriggerEffects("jump", {surface = self:GetMaterialBelowPlayer()})
-            end
-            
+            self:TriggerJumpEffects()
         end
 
         // TODO: Set this somehow (set on sounds for entity, not by sound name?)
@@ -2174,7 +2088,6 @@ function Player:HandleJump(input, velocity)
         self.timeOfLastJump = Shared.GetTime()
         
         // Velocity may not have been set yet, so force onGround to false this frame
-        self.onGroundNeedsUpdate = false
         self.onGround = false
         
         self.jumping = true
@@ -2371,21 +2284,16 @@ function Player:ModifyVelocity(input, velocity)
         else
             self.jumpHandled = true
         end
-
-    elseif self:GetIsOnGround() then
-        self:HandleOnGround(input, velocity)
+        
     end
 end
 
 function Player:GetSpeedDebugSpecial()
-    return 0
+    return self.crouchfraction
 end
 
-function Player:HandleOnGround(input, velocity)
-    if Sign(velocity.y) == -1 then
-        velocity.y = 0
-    end
-    
+function Player:GetLastInput()
+    return self.latestinput
 end
 
 function Player:GetIsAbleToUse()
@@ -2637,7 +2545,6 @@ function Player:GoldSrc_FinishUnduck()
     self:UpdateControllerFromEntity()
     self.timeOfCrouchChange = 0.0
     self.crouchfraction = 0.0
-    self.onGroundNeedsUpdate = true
 end
 
 function Player:SetCrouchState(crouching, lastcrouching)
@@ -2879,20 +2786,14 @@ function Player:GetArmorAmount()
     return self:GetMaxArmor()
 end
 
-if Client then
-
-    function Player:TriggerFootstep()
+function Player:TriggerFootstep()
     
-        self.leftFoot = not self.leftFoot
-		//local sprinting = not self.movementModiferState
-        local viewVec = self:GetViewAngles():GetCoords().zAxis
-        local forward = self:GetVelocity():DotProduct(viewVec) > -0.1
-        local crouch = self:GetCrouched()
-        local localPlayer = Client.GetLocalPlayer()
-        local enemy = localPlayer and GetAreEnemies(self, localPlayer)
-        self:TriggerEffects("footstep", {surface = self:GetMaterialBelowPlayer(), left = self.leftFoot, sprinting = true, forward = forward, crouch = crouch, enemy = enemy})
-        
-    end
+    self.leftFoot = not self.leftFoot
+    //local sprinting = not self.movementModiferState
+    local viewVec = self:GetViewAngles():GetCoords().zAxis
+    local forward = self:GetVelocity():DotProduct(viewVec) > -0.1
+    local crouch = self:GetCrouched()
+    self:TriggerEffects("footstep", {surface = self:GetMaterialBelowPlayer(), left = self.leftFoot, sprinting = true, forward = forward, crouch = crouch})
     
 end
 
@@ -2901,6 +2802,7 @@ kStepTagNames["step"] = true
 kStepTagNames["step_run"] = true
 kStepTagNames["step_sprint"] = true
 kStepTagNames["step_crouch"] = true
+
 function Player:OnTag(tagName)
 
     PROFILE("Player:OnTag")
@@ -2910,8 +2812,8 @@ function Player:OnTag(tagName)
         return
     end
     
-    // Play footstep when foot hits the ground. Client side only.
-    if Client and self:GetPlayFootsteps() and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] then
+    // Play footstep when foot hits the ground.
+    if self:GetPlayFootsteps() and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] then
         self:TriggerFootstep()
     end
     

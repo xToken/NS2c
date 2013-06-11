@@ -53,8 +53,8 @@ Marine.kMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_
 
 local kFlashlightSoundName = PrecacheAsset("sound/NS2.fev/common/light")
 local kGunPickupSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/pickup")
-local kWalkMaxSpeed = 3.5
-local kRunMaxSpeed = 6
+local kWalkMaxSpeed = 3.0
+local kRunMaxSpeed = 5.5
 local kDoubleJumpMinHeightChange = 0.4
 local kArmorWeldRate = 25
 local kWalkBackwardSpeedScalar = 0.4

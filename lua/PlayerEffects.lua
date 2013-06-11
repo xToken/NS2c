@@ -83,141 +83,141 @@ kPlayerEffectData =
             // TODO: Add looping metal layer ("sound/NS2.fev/materials/metal/skulk_layer")
             
             // Skulk
-            {sound = "sound/NS2.fev/materials/metal/skulk_step_for_enemy", classname = "Skulk", surface = "metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/metal/skulk_step", classname = "Skulk", surface = "metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/metal/skulk_step_for_enemy", classname = "Skulk", surface = "metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/metal/skulk_step", classname = "Skulk", surface = "metal", done = true},
             
-            {sound = "sound/NS2.fev/materials/thin_metal/skulk_step_for_enemy", classname = "Skulk", surface = "thin_metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/thin_metal/skulk_step", classname = "Skulk", surface = "thin_metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/thin_metal/skulk_step_for_enemy", classname = "Skulk", surface = "thin_metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/thin_metal/skulk_step", classname = "Skulk", surface = "thin_metal", done = true},
             
-            {sound = "sound/NS2.fev/materials/organic/skulk_step_for_enemy", classname = "Skulk", surface = "organic", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/organic/skulk_step", classname = "Skulk", surface = "organic", done = true},
+            //{player_sound = "sound/NS2.fev/materials/organic/skulk_step_for_enemy", classname = "Skulk", surface = "organic", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/organic/skulk_step", classname = "Skulk", surface = "organic", done = true},
             
-            {sound = "sound/NS2.fev/materials/rock/skulk_step_for_enemy", classname = "Skulk", surface = "rock", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/rock/skulk_step", classname = "Skulk", surface = "rock", done = true},
+            //{player_sound = "sound/NS2.fev/materials/rock/skulk_step_for_enemy", classname = "Skulk", surface = "rock", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/rock/skulk_step", classname = "Skulk", surface = "rock", done = true},
             
             // Gorge
-            {sound = "sound/NS2.fev/materials/metal/gorge_step_for_enemy", classname = "Gorge", surface = "metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/metal/gorge_step", classname = "Gorge", surface = "metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/metal/gorge_step_for_enemy", classname = "Gorge", surface = "metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/metal/gorge_step", classname = "Gorge", surface = "metal", done = true},
             
-            {sound = "sound/NS2.fev/materials/thin_metal/gorge_step_for_enemy", classname = "Gorge", surface = "thin_metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/thin_metal/gorge_step", classname = "Gorge", surface = "thin_metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/thin_metal/gorge_step_for_enemy", classname = "Gorge", surface = "thin_metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/thin_metal/gorge_step", classname = "Gorge", surface = "thin_metal", done = true},
             
-            {sound = "sound/NS2.fev/materials/organic/gorge_step_for_enemy", classname = "Gorge", surface = "organic", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/organic/gorge_step", classname = "Gorge", surface = "organic", done = true},
+            //{player_sound = "sound/NS2.fev/materials/organic/gorge_step_for_enemy", classname = "Gorge", surface = "organic", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/organic/gorge_step", classname = "Gorge", surface = "organic", done = true},
             
-            {sound = "sound/NS2.fev/materials/rock/gorge_step_for_enemy", classname = "Gorge", surface = "rock", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/rock/gorge_step", classname = "Gorge", surface = "rock", done = true},
+            //{player_sound = "sound/NS2.fev/materials/rock/gorge_step_for_enemy", classname = "Gorge", surface = "rock", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/rock/gorge_step", classname = "Gorge", surface = "rock", done = true},
             
             // Lerk
-            {sound = "sound/NS2.fev/materials/metal/lerk_step_for_enemy", classname = "Lerk", surface = "metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/metal/lerk_step", classname = "Lerk", surface = "metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/metal/lerk_step_for_enemy", classname = "Lerk", surface = "metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/metal/lerk_step", classname = "Lerk", surface = "metal", done = true},
             
-            {sound = "sound/NS2.fev/materials/thin_metal/lerk_step_for_enemy", classname = "Lerk", surface = "thin_metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/thin_metal/lerk_step", classname = "Lerk", surface = "thin_metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/thin_metal/lerk_step_for_enemy", classname = "Lerk", surface = "thin_metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/thin_metal/lerk_step", classname = "Lerk", surface = "thin_metal", done = true},
             
-            {sound = "sound/NS2.fev/materials/organic/lerk_step_for_enemy", classname = "Lerk", surface = "organic", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/organic/lerk_step", classname = "Lerk", surface = "organic", done = true},
+            //{player_sound = "sound/NS2.fev/materials/organic/lerk_step_for_enemy", classname = "Lerk", surface = "organic", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/organic/lerk_step", classname = "Lerk", surface = "organic", done = true},
             
-            {sound = "sound/NS2.fev/materials/rock/lerk_step_for_enemy", classname = "Lerk", surface = "rock", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/rock/lerk_step", classname = "Lerk", surface = "rock", done = true},
+            //{player_sound = "sound/NS2.fev/materials/rock/lerk_step_for_enemy", classname = "Lerk", surface = "rock", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/rock/lerk_step", classname = "Lerk", surface = "rock", done = true},
             
             // Fade
-            {sound = "sound/NS2.fev/materials/metal/fade_step_for_enemy", classname = "Fade", surface = "metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/metal/fade_step", classname = "Fade", surface = "metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/metal/fade_step_for_enemy", classname = "Fade", surface = "metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/metal/fade_step", classname = "Fade", surface = "metal", done = true},
             
-            {sound = "sound/NS2.fev/materials/thin_metal/fade_step_for_enemy", classname = "Fade", surface = "thin_metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/thin_metal/fade_step", classname = "Fade", surface = "thin_metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/thin_metal/fade_step_for_enemy", classname = "Fade", surface = "thin_metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/thin_metal/fade_step", classname = "Fade", surface = "thin_metal", done = true},
             
-            {sound = "sound/NS2.fev/materials/organic/fade_step_for_enemy", classname = "Fade", surface = "organic", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/organic/fade_step", classname = "Fade", surface = "organic", done = true},
+            //{player_sound = "sound/NS2.fev/materials/organic/fade_step_for_enemy", classname = "Fade", surface = "organic", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/organic/fade_step", classname = "Fade", surface = "organic", done = true},
             
-            {sound = "sound/NS2.fev/materials/rock/fade_step_for_enemy", classname = "Fade", surface = "rock", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/rock/fade_step", classname = "Fade", surface = "rock", done = true},
+            //{player_sound = "sound/NS2.fev/materials/rock/fade_step_for_enemy", classname = "Fade", surface = "rock", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/rock/fade_step", classname = "Fade", surface = "rock", done = true},
             
             // Onos
-            //{sound = "sound/NS2.fev/materials/metal/onos_step_for_enemy", classname = "Onos", surface = "metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/metal/onos_step", classname = "Onos", surface = "metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/metal/onos_step_for_enemy", classname = "Onos", surface = "metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/metal/onos_step", classname = "Onos", surface = "metal", done = true},
             
-            //{sound = "sound/NS2.fev/materials/thin_metal/onos_step_for_enemy", classname = "Onos", surface = "thin_metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/thin_metal/onos_step", classname = "Onos", surface = "thin_metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/thin_metal/onos_step_for_enemy", classname = "Onos", surface = "thin_metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/thin_metal/onos_step", classname = "Onos", surface = "thin_metal", done = true},
             
-            //{sound = "sound/NS2.fev/materials/organic/onos_step_for_enemy", classname = "Onos", surface = "organic", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/organic/onos_step", classname = "Onos", surface = "organic", done = true},
+            //{player_sound = "sound/NS2.fev/materials/organic/onos_step_for_enemy", classname = "Onos", surface = "organic", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/organic/onos_step", classname = "Onos", surface = "organic", done = true},
             
-            //{sound = "sound/NS2.fev/materials/rock/onos_step_for_enemy", classname = "Onos", surface = "rock", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/rock/onos_step", classname = "Onos", surface = "rock", done = true},
+            //{player_sound = "sound/NS2.fev/materials/rock/onos_step_for_enemy", classname = "Onos", surface = "rock", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/rock/onos_step", classname = "Onos", surface = "rock", done = true},
             
-            {sound = "sound/NS2.fev/alien/onos/onos_step", classname = "Onos", done = true},
+            {player_sound = "sound/NS2.fev/alien/onos/onos_step", classname = "Onos", done = true},
             
             // HA
             
-            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step1", left = true, classname = "HeavyArmorMarine", done = true},
-            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step2", left = false, classname = "HeavyArmorMarine", done = true},
-            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step3", classname = "HeavyArmorMarine", done = true},
+            {player_sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step1", left = true, classname = "HeavyArmorMarine", done = true},
+            {player_sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step2", left = false, classname = "HeavyArmorMarine", done = true},
+            {player_sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step3", classname = "HeavyArmorMarine", done = true},
             
             // Marine
             
             // Sprint
-            //{sound = "sound/NS2.fev/materials/metal/sprint_left_for_enemy", left = true, sprinting = true, surface = "metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/metal/sprint_left", left = true, sprinting = true, surface = "metal", done = true},
-            //{sound = "sound/NS2.fev/materials/metal/sprint_right_for_enemy", left = false, sprinting = true, surface = "metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/metal/sprint_right", left = false, sprinting = true, surface = "metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/metal/sprint_left_for_enemy", left = true, sprinting = true, surface = "metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/metal/sprint_left", left = true, sprinting = true, surface = "metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/metal/sprint_right_for_enemy", left = false, sprinting = true, surface = "metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/metal/sprint_right", left = false, sprinting = true, surface = "metal", done = true},
             
-            //{sound = "sound/NS2.fev/materials/thin_metal/sprint_left_for_enemy", left = true, sprinting = true, surface = "thin_metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/thin_metal/sprint_left", left = true, sprinting = true, surface = "thin_metal", done = true},
-            //{sound = "sound/NS2.fev/materials/thin_metal/sprint_right_for_enemy", left = false, sprinting = true, surface = "thin_metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/thin_metal/sprint_right", left = false, sprinting = true, surface = "thin_metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/thin_metal/sprint_left_for_enemy", left = true, sprinting = true, surface = "thin_metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/thin_metal/sprint_left", left = true, sprinting = true, surface = "thin_metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/thin_metal/sprint_right_for_enemy", left = false, sprinting = true, surface = "thin_metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/thin_metal/sprint_right", left = false, sprinting = true, surface = "thin_metal", done = true},
             
-            //{sound = "sound/NS2.fev/materials/organic/sprint_left_for_enemy", left = true, sprinting = true, surface = "organic", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/organic/sprint_left", left = true, sprinting = true, surface = "organic", done = true},
-            //{sound = "sound/NS2.fev/materials/organic/sprint_right_for_enemy", left = false, sprinting = true, surface = "organic", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/organic/sprint_right", left = false, sprinting = true, surface = "organic", done = true},
+            //{player_sound = "sound/NS2.fev/materials/organic/sprint_left_for_enemy", left = true, sprinting = true, surface = "organic", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/organic/sprint_left", left = true, sprinting = true, surface = "organic", done = true},
+            //{player_sound = "sound/NS2.fev/materials/organic/sprint_right_for_enemy", left = false, sprinting = true, surface = "organic", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/organic/sprint_right", left = false, sprinting = true, surface = "organic", done = true},
             
-            //{sound = "sound/NS2.fev/materials/rock/sprint_left_for_enemy", left = true, sprinting = true, surface = "rock", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/rock/sprint_left", left = true, sprinting = true, surface = "rock", done = true},
-            //{sound = "sound/NS2.fev/materials/rock/sprint_right_for_enemy", left = false, sprinting = true, surface = "rock", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/rock/sprint_right", left = false, sprinting = true, surface = "rock", done = true},
+            //{player_sound = "sound/NS2.fev/materials/rock/sprint_left_for_enemy", left = true, sprinting = true, surface = "rock", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/rock/sprint_left", left = true, sprinting = true, surface = "rock", done = true},
+            //{player_sound = "sound/NS2.fev/materials/rock/sprint_right_for_enemy", left = false, sprinting = true, surface = "rock", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/rock/sprint_right", left = false, sprinting = true, surface = "rock", done = true},
             
             // Backpedal
-            {sound = "sound/NS2.fev/materials/metal/backpedal_left", left = true, forward = false, surface = "metal", done = true},
-            {sound = "sound/NS2.fev/materials/metal/backpedal_right", left = false, forward = false, surface = "metal", done = true},
-            {sound = "sound/NS2.fev/materials/thin_metal/backpedal_left", left = true, forward = false, surface = "thin_metal", done = true},
-            {sound = "sound/NS2.fev/materials/thin_metal/backpedal_right", left = false, forward = false, surface = "thin_metal", done = true},
-            {sound = "sound/NS2.fev/materials/organic/backpedal_left", left = true, forward = false, surface = "organic", done = true},
-            {sound = "sound/NS2.fev/materials/organic/backpedal_right", left = false, forward = false, surface = "organic", done = true},
-            {sound = "sound/NS2.fev/materials/rock/backpedal_left", left = true, forward = false, surface = "rock", done = true},
-            {sound = "sound/NS2.fev/materials/rock/backpedal_right", left = false, forward = false, surface = "rock", done = true},
+            {player_sound = "sound/NS2.fev/materials/metal/backpedal_left", left = true, forward = false, surface = "metal", done = true},
+            {player_sound = "sound/NS2.fev/materials/metal/backpedal_right", left = false, forward = false, surface = "metal", done = true},
+            {player_sound = "sound/NS2.fev/materials/thin_metal/backpedal_left", left = true, forward = false, surface = "thin_metal", done = true},
+            {player_sound = "sound/NS2.fev/materials/thin_metal/backpedal_right", left = false, forward = false, surface = "thin_metal", done = true},
+            {player_sound = "sound/NS2.fev/materials/organic/backpedal_left", left = true, forward = false, surface = "organic", done = true},
+            {player_sound = "sound/NS2.fev/materials/organic/backpedal_right", left = false, forward = false, surface = "organic", done = true},
+            {player_sound = "sound/NS2.fev/materials/rock/backpedal_left", left = true, forward = false, surface = "rock", done = true},
+            {player_sound = "sound/NS2.fev/materials/rock/backpedal_right", left = false, forward = false, surface = "rock", done = true},
 
             // Crouch
-            {sound = "sound/NS2.fev/materials/metal/crouch_left", left = true, crouch = true, surface = "metal", done = true},
-            {sound = "sound/NS2.fev/materials/metal/crouch_right", left = false, crouch = true, surface = "metal", done = true},
-            {sound = "sound/NS2.fev/materials/thin_metal/crouch_left", left = true, crouch = true, surface = "thin_metal", done = true},
-            {sound = "sound/NS2.fev/materials/thin_metal/crouch_right", left = false, crouch = true, surface = "thin_metal", done = true},
-            {sound = "sound/NS2.fev/materials/organic/crouch_left", left = true, crouch = true, surface = "organic", done = true},
-            {sound = "sound/NS2.fev/materials/organic/crouch_right", left = false, crouch = true, surface = "organic", done = true},
-            {sound = "sound/NS2.fev/materials/rock/crouch_left", left = true, crouch = true, surface = "rock", done = true},
-            {sound = "sound/NS2.fev/materials/rock/crouch_right", left = false, crouch = true, surface = "rock", done = true},
+            {player_sound = "sound/NS2.fev/materials/metal/crouch_left", left = true, crouch = true, surface = "metal", done = true},
+            {player_sound = "sound/NS2.fev/materials/metal/crouch_right", left = false, crouch = true, surface = "metal", done = true},
+            {player_sound = "sound/NS2.fev/materials/thin_metal/crouch_left", left = true, crouch = true, surface = "thin_metal", done = true},
+            {player_sound = "sound/NS2.fev/materials/thin_metal/crouch_right", left = false, crouch = true, surface = "thin_metal", done = true},
+            {player_sound = "sound/NS2.fev/materials/organic/crouch_left", left = true, crouch = true, surface = "organic", done = true},
+            {player_sound = "sound/NS2.fev/materials/organic/crouch_right", left = false, crouch = true, surface = "organic", done = true},
+            {player_sound = "sound/NS2.fev/materials/rock/crouch_left", left = true, crouch = true, surface = "rock", done = true},
+            {player_sound = "sound/NS2.fev/materials/rock/crouch_right", left = false, crouch = true, surface = "rock", done = true},
             
             // Normal walk
-            {sound = "sound/NS2.fev/materials/metal/footstep_left_for_enemy", left = true, surface = "metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/metal/footstep_left", left = true, surface = "metal", done = true},
-            {sound = "sound/NS2.fev/materials/metal/footstep_right_for_enemy", left = true, surface = "metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/metal/footstep_right", left = false, surface = "metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/metal/footstep_left_for_enemy", left = true, surface = "metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/metal/footstep_left", left = true, surface = "metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/metal/footstep_right_for_enemy", left = true, surface = "metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/metal/footstep_right", left = false, surface = "metal", done = true},
             
-            {sound = "sound/NS2.fev/materials/thin_metal/footstep_left_for_enemy", left = true, surface = "thin_metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/thin_metal/footstep_left", left = true, surface = "thin_metal", done = true},
-            {sound = "sound/NS2.fev/materials/thin_metal/footstep_right_for_enemy", left = false, surface = "thin_metal", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/thin_metal/footstep_right", left = false, surface = "thin_metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/thin_metal/footstep_left_for_enemy", left = true, surface = "thin_metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/thin_metal/footstep_left", left = true, surface = "thin_metal", done = true},
+            //{player_sound = "sound/NS2.fev/materials/thin_metal/footstep_right_for_enemy", left = false, surface = "thin_metal", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/thin_metal/footstep_right", left = false, surface = "thin_metal", done = true},
             
-            {sound = "sound/NS2.fev/materials/organic/footstep_left_for_enemy", left = true, surface = "organic", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/organic/footstep_left", left = true, surface = "organic", done = true},
-            {sound = "sound/NS2.fev/materials/organic/footstep_right_for_enemy", left = false, surface = "organic", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/organic/footstep_right", left = false, surface = "organic", done = true},
+            //{player_sound = "sound/NS2.fev/materials/organic/footstep_left_for_enemy", left = true, surface = "organic", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/organic/footstep_left", left = true, surface = "organic", done = true},
+            //{player_sound = "sound/NS2.fev/materials/organic/footstep_right_for_enemy", left = false, surface = "organic", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/organic/footstep_right", left = false, surface = "organic", done = true},
             
-            {sound = "sound/NS2.fev/materials/rock/footstep_left_for_enemy", left = true, surface = "rock", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/rock/footstep_left", left = true, surface = "rock", done = true},
-            {sound = "sound/NS2.fev/materials/rock/footstep_right_for_enemy", left = false, surface = "rock", enemy = true, done = true},
-            {sound = "sound/NS2.fev/materials/rock/footstep_right", left = false, surface = "rock", done = true},
+            //{player_sound = "sound/NS2.fev/materials/rock/footstep_left_for_enemy", left = true, surface = "rock", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/rock/footstep_left", left = true, surface = "rock", done = true},
+            //{player_sound = "sound/NS2.fev/materials/rock/footstep_right_for_enemy", left = false, surface = "rock", enemy = true, done = true},
+            {player_sound = "sound/NS2.fev/materials/rock/footstep_right", left = false, surface = "rock", done = true},
             
         },
     },
@@ -228,22 +228,22 @@ kPlayerEffectData =
         {
             {sound = "", silenceupgrade = true, done = true},  
         
-            {sound = "sound/NS2.fev/alien/skulk/land", classname = "Skulk", done = true},
-            {sound = "sound/NS2.fev/alien/lerk/land", classname = "Lerk", done = true},
-            {sound = "sound/NS2.fev/alien/gorge/land", classname = "Gorge", done = true},
-            {sound = "sound/NS2.fev/alien/fade/land", classname = "Fade", done = true},
-            {sound = "sound/NS2.fev/alien/onos/land", classname = "Onos", done = true},
-            {sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step4", classname = "HeavyArmorMarine", done = true},
+            {player_sound = "sound/NS2.fev/alien/skulk/land", classname = "Skulk", done = true},
+            {player_sound = "sound/NS2.fev/alien/lerk/land", classname = "Lerk", done = true},
+            {player_sound = "sound/NS2.fev/alien/gorge/land", classname = "Gorge", done = true},
+            {player_sound = "sound/NS2.fev/alien/fade/land", classname = "Fade", done = true},
+            {player_sound = "sound/NS2.fev/alien/onos/land", classname = "Onos", done = true},
+            {player_sound = "sound/ns2c.fev/ns2c/marine/heavyarmor/run_step4", classname = "HeavyArmorMarine", done = true},
 
-            {sound = "sound/NS2.fev/materials/organic/fall", surface = "organic", classname = "Marine", done = true},
-            {sound = "sound/NS2.fev/materials/thin_metal/fall", surface = "thin_metal", classname = "Marine", done = true},
-            {sound = "sound/NS2.fev/materials/rock/fall", surface = "rock", classname = "Marine", done = true},
-            {sound = "sound/NS2.fev/materials/metal/fall", classname = "Marine", done = true},            
+            {player_sound = "sound/NS2.fev/materials/organic/fall", surface = "organic", classname = "Marine", done = true},
+            {player_sound = "sound/NS2.fev/materials/thin_metal/fall", surface = "thin_metal", classname = "Marine", done = true},
+            {player_sound = "sound/NS2.fev/materials/rock/fall", surface = "rock", classname = "Marine", done = true},
+            {player_sound = "sound/NS2.fev/materials/metal/fall", classname = "Marine", done = true},            
             
-            {sound = "sound/NS2.fev/materials/organic/fall", surface = "organic", classname = "ReadyRoomPlayer", done = true},
-            {sound = "sound/NS2.fev/materials/thin_metal/fall", surface = "thin_metal", classname = "ReadyRoomPlayer", done = true},
-            {sound = "sound/NS2.fev/materials/rock/fall", surface = "rock", classname = "ReadyRoomPlayer", done = true},
-            {sound = "sound/NS2.fev/materials/metal/fall", classname = "ReadyRoomPlayer", done = true},   
+            {player_sound = "sound/NS2.fev/materials/organic/fall", surface = "organic", classname = "ReadyRoomPlayer", done = true},
+            {player_sound = "sound/NS2.fev/materials/thin_metal/fall", surface = "thin_metal", classname = "ReadyRoomPlayer", done = true},
+            {player_sound = "sound/NS2.fev/materials/rock/fall", surface = "rock", classname = "ReadyRoomPlayer", done = true},
+            {player_sound = "sound/NS2.fev/materials/metal/fall", classname = "ReadyRoomPlayer", done = true},   
             
         },
         
