@@ -25,6 +25,10 @@ function WhipStructureAbility:GetDropStructureId()
     return kTechId.Whip
 end
 
+function WhipStructureAbility:GetRequiredTechId()
+    return kTechId.WhipHive
+end
+
 function WhipStructureAbility:GetSuffixName()
     return "whip"
 end
@@ -39,11 +43,11 @@ end
 
 function WhipStructureAbility:IsAllowed(player)
     local structures = GetEntitiesForTeamWithinRange(self:GetDropClassName(), player:GetTeamNumber(), player:GetEyePos(), kMaxAlienStructureRange)
-    local teamnum = player:GetTeamNumber()
-    local techTree = GetTechTree(teamnum)
-    local techNode = techTree:GetTechNode(kTechId.Whip)
-    if techNode == nil then
-        return false
+    if Server then
+        return UpgradeBaseHivetoChamberSpecific(player, self:GetDropStructureId()) and #structures < kMaxAlienStructuresofType
+    else
+        local teamInfo = GetTeamInfoEntity(Client.GetLocalPlayer():GetTeamNumber())
+        return (((teamInfo and teamInfo.GetActiveUnassignedHiveCount) and teamInfo:GetActiveUnassignedHiveCount() or 0) > 0 
+            or GetHasTech(Client.GetLocalPlayer(), self:GetRequiredTechId())) and #structures < kMaxAlienStructuresofType
     end
-    return (techNode:GetAvailable() or player:GetUnassignedHives() > 0) and #structures < kMaxAlienStructuresofType
 end

@@ -93,11 +93,6 @@ function GUIReadyRoomOrders:Initialize()
     self.welcomeTextStartTime = Shared.GetTime()
     self.welcometextCount = 0
     
-    local localPlayer = Client.GetLocalPlayer()
-    if localPlayer then
-        localPlayer:TriggerEffects("ayumi")
-    end
-    
 end
 
 function GUIReadyRoomOrders:Uninitialize()
@@ -111,11 +106,6 @@ function GUIReadyRoomOrders:Uninitialize()
         GUI.DestroyItem(self.welcomeText)
     end
     self.welcomeText = nil
-    
-    local localPlayer = Client.GetLocalPlayer()
-    if localPlayer then
-        localPlayer:TriggerEffects("end_ayumi")
-    end
     
 end
 
@@ -153,7 +143,7 @@ end
 function GUIReadyRoomOrders:Update(deltaTime)
 
     PROFILE("GUIReadyRoomOrders:Update")
-    
+
     local unitVisions = PlayerUI_GetReadyRoomOrders()
     
     local numActiveVisions = #self.activeVisions

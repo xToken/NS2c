@@ -17,7 +17,7 @@ class 'TechPoint' (ScriptActor)
 
 TechPoint.kMapName = "tech_point"
 
-// Note that these need to be changed in editor_setup.xml as well
+// Note that these need to be changed in editor_setup.xml as well.
 TechPoint.kModelName = PrecacheAsset("models/misc/tech_point/tech_point.model")
 local kGraphName = PrecacheAsset("models/misc/tech_point/tech_point.animation_graph")
 

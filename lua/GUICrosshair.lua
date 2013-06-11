@@ -55,6 +55,7 @@ function GUICrosshair:Initialize()
     self.crosshairs:SetPosition(GUICrosshair.kCrosshairPos)
     self.crosshairs:SetTexture("ui/crosshairs.dds")
     self.crosshairs:SetIsVisible(false)
+    self.crosshairs:SetLayer(kGUILayerPlayerHUD)
     
     self.damageIndicator = GUIManager:CreateGraphicItem()
     self.damageIndicator:SetSize(Vector(GUICrosshair.kCrosshairSize, GUICrosshair.kCrosshairSize, 0))
@@ -66,15 +67,6 @@ function GUICrosshair:Initialize()
                                                     64, yCoord + 64)
     self.damageIndicator:SetIsVisible(false)
     self.crosshairs:AddChild(self.damageIndicator)
-    
-    self.crosshairInfoBackground = self:CreateAnimatedGraphicItem()  
-    self.crosshairInfoBackground:SetAnchor(GUIItem.Middle, GUIItem.Center) 
-    self.crosshairInfoBackground:SetPosition(Vector(0, GUICrosshair.kTextYOffset, 0)) 
-    self.crosshairInfoBackground:SetTexture(GUICrosshair.kTexture)
-    self.crosshairInfoBackground:SetTexturePixelCoordinates(0, 0, 1, 1) // invisible
-    self.crosshairInfoBackground:SetColor(Color(1, 1, 1, 0))
-    
-    //self:InitializeProgressBar()
 
 end
 
@@ -126,60 +118,5 @@ function GUICrosshair:Update(deltaTime)
 
     crosshairPos = Vector(0, PlayerUI_GetCrossHairVerticalOffset(), 0) + GUICrosshair.kCrosshairPos
     self.crosshairs:SetPosition(crosshairPos)
-    
-    //self:UpdateProgressBar(deltaTime)
-
-end
-
-function GUICrosshair:InitializeProgressBar()
-
-    self.progressBarBg = GetGUIManager():CreateGraphicItem()
-    self.progressBarBg:SetSize(kBarBgSize)
-    self.progressBarBg:SetPosition(Vector(kBarBgSize.x * -.5, kBarYOffset, 0))
-    self.progressBarBg:SetAnchor(GUIItem.Middle, GUIItem.Center)
-    self.progressBarBg:SetClearsStencilBuffer(true)
-    self.progressBarBg:SetColor(Color(0,0,0,0))
-    
-    self.progressBarStencil = GetGUIManager():CreateGraphicItem()
-    self.progressBarStencil:SetSize(kBarSize)
-    self.progressBarStencil:SetIsStencil(true)
-    self.progressBarStencil:SetPosition(kBarPos)
-    self.progressBarStencil:SetSize(kBarSize)
-    self.progressBarBg:AddChild(self.progressBarStencil)   
-    
-    self.progressAnim = GetGUIManager():CreateGraphicItem()
-    self.progressAnim:SetTexture(kBarTexture)
-    self.progressAnim:SetStencilFunc(GUIItem.NotEqual)
-    self.progressAnim:SetSize(kBarSize)
-    self.progressAnim:SetColor(Color(0,0,0,0))
-    self.progressBarStencil:AddChild(self.progressAnim)
-
-end
-
-function GUICrosshair:UpdateProgressBar(deltaTime)
-
-    local animFraction = (Shared.GetTime() % kAnimDuration) / kAnimDuration
-    self.progressAnim:SetTextureCoordinates(-animFraction, 0, 1 - animFraction, 1)
-    
-    local progressFraction = PlayerUI_GetProgressFraction()
-    
-    local hideBar = not progressFraction or progressFraction == 0 or progressFraction == 1 or (not PlayerUI_GetIsConstructing() and not PlayerUI_GetIsRepairing())
-    
-    if progressFraction then    
-        self.progressBarStencil:SetSize(Vector(kBarSize.x * progressFraction, kBarSize.y, 0))        
-    end
-
-    if hideBar then
-    
-        local currentAlpha = math.max(0, self.progressBarBg:GetColor().a - deltaTime)
-        self.progressBarBg:SetColor(Color(kBarBgColor.r, kBarBgColor.g, kBarBgColor.b, currentAlpha))
-        self.progressAnim:SetColor(Color(kBarColor.r, kBarColor.g, kBarColor.b, currentAlpha))
-
-    else
-        
-        self.progressBarBg:SetColor(kBarBgColor)
-        self.progressAnim:SetColor(kBarColor)
-        
-    end
 
 end

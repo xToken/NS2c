@@ -4,9 +4,6 @@
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/StompMixin.lua")
-Script.Load("lua/TeamMixin.lua")
-Script.Load("lua/OwnerMixin.lua")
-Script.Load("lua/DamageMixin.lua")
 
 class 'Devour' (Ability)
 
@@ -31,12 +28,6 @@ function Devour:OnCreate()
 
     Ability.OnCreate(self)
     
-    InitMixin(self, TeamMixin)
-    InitMixin(self, DamageMixin)
-    
-    if Server then
-        InitMixin(self, OwnerMixin)
-    end
     self.timeSinceLastDevourUpdate = 0
     self.lastPrimaryAttackTime = 0
     self.devouring = 0

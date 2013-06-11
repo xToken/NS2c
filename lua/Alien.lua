@@ -19,9 +19,11 @@ Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/LOSMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/AlienActionFinderMixin.lua")
-Script.Load("lua/AlienDetectorMixin.lua")
+Script.Load("lua/DetectorMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/RagdollMixin.lua")
+
+Shared.PrecacheSurfaceShader("cinematics/vfx_materials/decals/alien_blood.surface_shader")
 
 if Client then
     Script.Load("lua/TeamMessageMixin.lua")
@@ -64,8 +66,7 @@ local networkVars =
     movenoise = "private time",
     
     primalScreamBoost = "compensated boolean",
-    unassignedhives = string.format("integer (0 to 4"),
-    nextredeploy = "private time",
+    nextredeploy = "private time"
 }
 
 AddMixinNetworkVars(CloakableMixin, networkVars)
@@ -79,11 +80,10 @@ AddMixinNetworkVars(HasUmbraMixin, networkVars)
 function Alien:OnCreate()
 
     Player.OnCreate(self)
-    InitMixin(self, AlienDetectorMixin)
+    InitMixin(self, DetectorMixin)
     InitMixin(self, AlienActionFinderMixin)
     InitMixin(self, EnergizeMixin)
     InitMixin(self, CombatMixin)
-    InitMixin(self, EntityChangeMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, SelectableMixin)
     InitMixin(self, DetectableMixin)
@@ -97,7 +97,6 @@ function Alien:OnCreate()
     self.timeAbilityEnergyChange = Shared.GetTime()
     self.abilityEnergyOnChange = self:GetMaxEnergy()
     self.lastEnergyRate = self:GetRecuperationRate()
-    self.movenoise = Shared.GetTime() + math.random(kAlienBaseMoveNoise, kAlienRandMoveNoise)
     
     // Only used on the local client.
     self.darkVisionOn = false
@@ -242,10 +241,11 @@ function Alien:OnInitialized()
                 self:UpdateActiveAbilities(self:GetTeam():GetActiveHiveCount())
                 self:ManuallyUpdateNumUpgradeStructures()
             end
+            return false
         end
         
         self:AddTimedCallback(UpdateAlienSpecificVariables, 0.1)
-        
+        self:AddTimedCallback(Alien.UpdateMoveNoise, math.random(self:GetLowerMoveNoiseTime(), self:GetUpperMoveNoiseTime()))    
     elseif Client then
         InitMixin(self, HiveVisionMixin)
     end
@@ -259,7 +259,7 @@ function Alien:OnInitialized()
 
 end
 
-function Alien:GetAlienDetectionRange()
+function Alien:GetDetectionRange()
     local hasupg, level = GetHasAuraUpgrade(self)
     if hasupg then
         return (((1 / 3) * level) * kAuraDetectionRange)
@@ -267,12 +267,12 @@ function Alien:GetAlienDetectionRange()
     return 0
 end
 
-function Alien:OnCheckAlienDetectorActive()
+function Alien:OnCheckDetectorActive()
     local hasupg, level = GetHasAuraUpgrade(self)
     return hasupg and level > 0
 end
 
-function Alien:IsValidAlienDetection(detectable)
+function Alien:IsValidDetection(detectable)
     return true
 end
 
@@ -289,10 +289,6 @@ function Alien:GetArmorAmount()
 
     return self:GetBaseArmor()
    
-end
-
-function Alien:GetCanCatalystOverride()
-    return false
 end
 
 function Alien:GetCarapaceFraction()
@@ -312,10 +308,6 @@ function Alien:GetCarapaceMovementScalar()
 
     return 1
 
-end
-
-function Alien:GetSlowSpeedModifier()
-    return Player.GetSlowSpeedModifier(self)
 end
 
 function Alien:GetHasOneHive()
@@ -407,9 +399,6 @@ function Alien:GetMaxEnergy()
     return kAbilityMaxEnergy
 end
 
-function Alien:UpdateSpeedModifiers(input)
-end
-
 function Alien:SetDarkVision(state)
 
     if state ~= self.darkVisionOn then
@@ -432,23 +421,24 @@ function Alien:SetDarkVision(state)
 
 end
 
-function Alien:UpdateMoveNoise()
-    if self.movenoise < Shared.GetTime() then
-        if math.random(1, 2) == 1 then
-            self:TriggerEffects("alien_move1")
-        else
-            self:TriggerEffects("alien_move2")
-        end
-        self.movenoise = Shared.GetTime() + math.random(kAlienBaseMoveNoise, kAlienRandMoveNoise)
-    end
+function Alien:GetLowerMoveNoiseTime()
+    return kAlienBaseMoveNoise
 end
 
-function Alien:UpdateSharedMisc(input)
+function Alien:GetUpperMoveNoiseTime()
+    return kAlienRandMoveNoise
+end
 
-    self:UpdateSpeedModifiers(input)
-    self:UpdateMoveNoise()
-    Player.UpdateSharedMisc(self, input)
-    
+function Alien:ShouldMakeMoveNoises()
+    return self:GetIsAlive()
+end
+
+function Alien:UpdateMoveNoise()
+    if self:ShouldMakeMoveNoises() then
+        self:TriggerEffects("alien_move", { randsound = math.random(1, kAlienMoveNoises) })
+        self:AddTimedCallback(Alien.UpdateMoveNoise, math.random(self:GetLowerMoveNoiseTime(), self:GetUpperMoveNoiseTime()))
+    end
+    return false  
 end
 
 function Alien:HandleButtons(input)
@@ -554,11 +544,10 @@ function Alien:GetCelerityScalar()
 end
 
 function Alien:GetMovementSpeedModifier()
-    return self:GetCelerityScalar() * self:GetSlowSpeedModifier()
+    return self:GetCelerityScalar()
 end
 function Alien:GetEffectParams(tableParams)
 
-    Player.GetEffectParams(self,tableParams)
     //Silence Controls volume levels, dont think this actually works tho.
     local upg, level = GetHasSilenceUpgrade(player)
     if level == 3 then
@@ -573,10 +562,6 @@ function Alien:GetIsPrimaled()
 end
 
 function Alien:OnHiveTeleport()
-end
-
-function Alien:GetUnassignedHives()
-    return self.unassignedhives
 end
 
 function Alien:OnUpdateAnimationInput(modelMixin)

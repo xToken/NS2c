@@ -25,9 +25,23 @@ function CreateStatusDisplay(scriptHandle, hudLayer, frame)
     
 end
 
-GUIMarineStatus.kParasiteColor = Color(0xFF / 0xFF, 0xFF / 0xFF, 0xFF / 0xFF, 0.8)
 
-GUIMarineStatus.kStatusTexture = "ui/marine_HUD_status.dds"
+
+NO_PARASITE = 1
+PARASITED = 2
+ON_INFESTATION = 3
+
+GUIMarineStatus.kParasiteTextureName = PrecacheAsset("ui/parasite_hud.dds")
+GUIMarineStatus.kParasiteTextureCoords = { 0, 0, 64, 64 }
+GUIMarineStatus.kParasiteSize = Vector(54, 54, 0)
+GUIMarineStatus.kParasitePos = Vector(70, 0, 0)
+
+GUIMarineStatus.kParasiteColor = {}
+GUIMarineStatus.kParasiteColor[NO_PARASITE] = Color(0,0,0,0)
+GUIMarineStatus.kParasiteColor[PARASITED] = Color(0xFF / 0xFF, 0xFF / 0xFF, 0xFF / 0xFF, 0.8)
+GUIMarineStatus.kParasiteColor[ON_INFESTATION] = Color(0.7, 0.4, 0.4, 0.8)
+
+GUIMarineStatus.kStatusTexture = PrecacheAsset("ui/marine_HUD_status.dds")
 
 GUIMarineStatus.kTextXOffset = 95
 
@@ -64,7 +78,7 @@ GUIMarineStatus.kAnimSpeedDown = 0.01
 GUIMarineStatus.kAnimSpeedUp = 0.01
 GUIMarineStatus.kLowAmmoWarning = 0.2
 
-local kBorderTexture = "ui/unitstatus_marine.dds"
+local kBorderTexture = PrecacheAsset("ui/unitstatus_marine.dds")
 local kBorderCoords = { 256, 256, 256 + 512, 256 + 128 }
 local kBorderMaskPixelCoords = { 256, 384, 256 + 512, 384 + 512 }
 local kBorderMaskCircleRadius = 240
@@ -81,7 +95,8 @@ function GUIMarineStatus:Initialize()
     self.lastHealth = 0
     self.lastArmor = 0
     self.spawnArmorParticles = false
-
+    self.lastParasiteState = 1
+    
     self.statusbackground = self.script:CreateAnimatedGraphicItem()
     self.statusbackground:SetAnchor(GUIItem.Left, GUIItem.Bottom)
     self.statusbackground:SetTexture(GUIMarineStatus.kStatusTexture)
@@ -133,7 +148,15 @@ function GUIMarineStatus:Initialize()
     self.healthBar:SetTexture(GUIMarineStatus.kStatusTexture)
     self.healthBar:SetTexturePixelCoordinates(unpack(GUIMarineStatus.kHealthBarPixelCoords))
     self.healthBar:AddAsChildTo(self.statusbackground)
-
+    
+    self.parasiteState = self.script:CreateAnimatedGraphicItem()
+    self.parasiteState:SetTexture(GUIMarineStatus.kParasiteTextureName)
+    self.parasiteState:SetTexturePixelCoordinates(unpack(GUIMarineStatus.kParasiteTextureCoords))
+    self.parasiteState:AddAsChildTo(self.statusbackground)
+    self.parasiteState:SetAnchor(GUIItem.Right, GUIItem.Center)
+    self.parasiteState:SetColor(GUIMarineStatus.kParasiteColor[NO_PARASITE])
+    self.parasiteState:SetBlendTechnique(GUIItem.Add)
+    
     self.healthBorder = GetGUIManager():CreateGraphicItem()
     self.healthBorder:SetAnchor(GUIItem.Middle, GUIItem.Center)
     self.healthBorder:SetTexture(kBorderTexture)
@@ -214,7 +237,11 @@ function GUIMarineStatus:Reset(scale)
     self.healthBar:SetUniformScale(self.scale)
     self.healthBar:SetSize(GUIMarineStatus.kHealthBarSize)
     self.healthBar:SetPosition(GUIMarineStatus.kHealthBarPos)
-
+    
+    self.parasiteState:SetUniformScale(self.scale)
+    self.parasiteState:SetSize(GUIMarineStatus.kParasiteSize)
+    self.parasiteState:SetPosition(GUIMarineStatus.kParasitePos)
+    
     self.healthBorder:SetSize(kHealthBorderSize * self.scale)
     self.healthBorder:SetPosition(kHealthBorderPos * self.scale)
     self.healthBorderMask:SetSize(Vector(kBorderMaskCircleRadius * 2, kBorderMaskCircleRadius * 2, 0) * self.scale)
@@ -328,6 +355,9 @@ function GUIMarineStatus:Update(deltaTime, parameters)
     
     if currentArmor ~= self.lastArmor then
     
+        self.armorBar:DestroyAnimations()
+        self.armorText:DestroyAnimations()
+    
         local animSpeed = ConditionalValue(currentArmor < self.lastArmor, GUIMarineStatus.kAnimSpeedDown, GUIMarineStatus.kAnimSpeedUp)
         
         local armorFraction = currentArmor / maxArmor
@@ -366,11 +396,8 @@ function GUIMarineStatus:Update(deltaTime, parameters)
             
         else
         
-            self.armorBar:DestroyAnimations()
             self.armorBar:SetSize( armorBarSize, animSpeed )
             self.armorBar:SetTexturePixelCoordinates(pixelCoords[1], pixelCoords[2], pixelCoords[3], pixelCoords[4], animSpeed, "ANIM_ARMOR_TEXTURE")
-            
-            self.armorText:DestroyAnimations()
             self.armorText:SetNumberText(tostring(math.ceil(currentArmor)), animSpeed)
             
         end
@@ -382,7 +409,23 @@ function GUIMarineStatus:Update(deltaTime, parameters)
         self.lastArmor = currentArmor
 
     end
+    
+    // update parasite state
+    
+    if self.lastParasiteState ~= parasiteState then
 
+        self.parasiteState:DestroyAnimations()
+        self.parasiteState:SetColor(GUIMarineStatus.kParasiteColor[parasiteState], 0.3)
+        
+        if self.lastParasiteState < parasiteState then
+            self.parasiteState:SetSize(GUIMarineStatus.kParasiteSize * 1.55)
+            self.parasiteState:SetSize(GUIMarineStatus.kParasiteSize, 0.4)
+        end
+        
+        self.lastParasiteState = parasiteState
+    
+    end
+    
     // update border animation
     local baseRotationPercentage = (Shared.GetTime() % kRotationDuration) / kRotationDuration
     local color = Color(1, 1, 1,  math.sin(Shared.GetTime() * 0.5 ) * 0.5)

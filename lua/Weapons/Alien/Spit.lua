@@ -52,10 +52,6 @@ function Spit:TimeUp()
     
 end
 
-function Spit:GetAbilityUsesFocus()
-    return true
-end
-
 function Spit:GetSimulatePhysics()
     return not self:GetIsOnSurface()
 end
@@ -148,14 +144,7 @@ function Spit:ProcessHit(targetHit, surface, normal)
     // Don't hit owner - shooter
     elseif self:GetOwner() ~= targetHit then
     
-        self:TriggerEffects("spit_hit", { effecthostcoords = Coords.GetTranslation(self:GetOrigin()) } )
-    
-        self:DoDamage(Spit.kDamage, targetHit, self:GetOrigin(), nil, surface)
-        
-        if targetHit.OnSpitHit then
-            targetHit:OnSpitHit()
-        end
-        
+        self:TriggerEffects("spit_hit", { effecthostcoords = Coords.GetTranslation(self:GetOrigin()) } )        
         DestroyEntity(self)
         
     end    

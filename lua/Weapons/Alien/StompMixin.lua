@@ -10,7 +10,6 @@ StompMixin = CreateMixin( StompMixin  )
 StompMixin.type = "Stomp"
 
 local kMaxPlayerVelocityToStomp = 8
-local kDisruptRange = kStompRange
 local kStompVerticalRange = 1.5
 
 // GetHasSecondary and GetSecondaryEnergyCost should completely override any existing
@@ -29,9 +28,9 @@ StompMixin.networkVars =
     stomping = "boolean"
 }
 
-local function DisruptInCone(self, player, origin, direction, range, disruptDuration)
+local function StunInCone(self, player, origin, direction, range, stunDuration)
 
-    local ents = GetEntitiesWithMixinWithinRange("Disruptable", origin, range)
+    local ents = GetEntitiesWithMixinWithinRange("Stun", origin, range)
     
     for index, ent in ipairs(ents) do
     
@@ -41,9 +40,9 @@ local function DisruptInCone(self, player, origin, direction, range, disruptDura
             local dotProduct = Math.DotProduct(direction, toEnemy)
             local verticalDistance = math.abs(ent:GetOrigin().y - origin.y)
             
-            // Disrupt everything in a cone in front
+            // Stun everything in a cone in front
             if dotProduct > .8 and verticalDistance < kStompVerticalRange then
-                ent:SetDisruptDuration(disruptDuration, false)
+                ent:SetStun(stunDuration)
             end
             
         end
@@ -73,7 +72,7 @@ function StompMixin:PerformStomp(player)
         xZDirection:Normalize()
         local origin = player:GetOrigin() + Vector(0, 0.4, 0) + player:GetViewCoords().zAxis * 0.9
         
-        local endPoint = origin + xZDirection * kDisruptRange
+        local endPoint = origin + xZDirection * kStompRange
         
         local trace = Shared.TraceRay(origin, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterAll())
         
@@ -81,7 +80,7 @@ function StompMixin:PerformStomp(player)
         
         local range = math.abs( (trace.endPoint - origin):GetLength() )
 
-        DisruptInCone(self, player, origin, xZDirection, range + 0.3, kDisruptMarineTime)
+        StunInCone(self, player, origin, xZDirection, range + 0.3, kStunMarineTime)
         
         
     end    

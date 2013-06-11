@@ -25,6 +25,10 @@ function CragStructureAbility:GetDropStructureId()
     return kTechId.Crag
 end
 
+function CragStructureAbility:GetRequiredTechId()
+    return kTechId.CragHive
+end
+
 function CragStructureAbility:GetSuffixName()
     return "crag"
 end
@@ -39,11 +43,11 @@ end
 
 function CragStructureAbility:IsAllowed(player)
     local structures = GetEntitiesForTeamWithinRange(self:GetDropClassName(), player:GetTeamNumber(), player:GetEyePos(), kMaxAlienStructureRange)
-    local teamnum = player:GetTeamNumber()
-    local techTree = GetTechTree(teamnum)
-    local techNode = techTree:GetTechNode(kTechId.Crag)
-    if techNode == nil then
-        return false
+    if Server then
+        return UpgradeBaseHivetoChamberSpecific(player, self:GetDropStructureId()) and #structures < kMaxAlienStructuresofType
+    else
+        local teamInfo = GetTeamInfoEntity(Client.GetLocalPlayer():GetTeamNumber())
+        return (((teamInfo and teamInfo.GetActiveUnassignedHiveCount) and teamInfo:GetActiveUnassignedHiveCount() or 0) > 0 
+            or GetHasTech(Client.GetLocalPlayer(), self:GetRequiredTechId())) and #structures < kMaxAlienStructuresofType
     end
-    return (techNode:GetAvailable() or player:GetUnassignedHives() > 0) and #structures < kMaxAlienStructuresofType
 end

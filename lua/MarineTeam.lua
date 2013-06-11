@@ -24,7 +24,12 @@ function MarineTeam:ResetTeam()
     local commandStructure = PlayingTeam.ResetTeam(self)
     
     self.updateMarineArmor = false
-    
+    self.droppedWeapons = {}
+    self.droppedWeaponsCache = {}
+
+    if self.brain ~= nil then
+        self.brain:Reset()
+    end
     return commandStructure
 
 end
@@ -46,7 +51,8 @@ function MarineTeam:Initialize(teamName, teamNumber)
     self.updateMarineArmor = false
     
     self.lastTimeNoIPsMessageSent = Shared.GetTime()
-    
+    self.droppedWeapons = {}
+    self.droppedWeaponsCache = {}
 end
 
 function MarineTeam:OnInitialized()
@@ -139,6 +145,7 @@ function MarineTeam:Update(timePassed)
     
     // Update distress beacon mask
     self:UpdateGameMasks(timePassed)
+    self:UpdateDroppedWeapons()
     
     if GetGamerules():GetGameStarted() then
         CheckForNoIPs(self)
@@ -169,7 +176,7 @@ end
 
 function MarineTeam:InitTechTree()
    
-    PlayingTeam.InitTechTree(self)
+   PlayingTeam.InitTechTree(self)
     
  // Misc
     self.techTree:AddUpgradeNode(kTechId.Recycle, kTechId.None, kTechId.None)
@@ -259,4 +266,61 @@ end
 
 function MarineTeam:GetSpectatorMapName()
     return MarineSpectator.kMapName
+end
+
+function MarineTeam:RegisterDroppedWeapon(weaponid)
+    if tonumber(weaponid) then
+        table.insert(self.droppedWeapons, weaponid)
+    end
+end
+
+function MarineTeam:UpdateDroppedWeapons()
+    if self.lastweaponscan == nil or self.lastweaponscan + 1 < Shared.GetTime() then
+        for i = #self.droppedWeapons, 1, -1 do
+            if self.droppedWeapons[i] ~= nil then
+                local weapon = Shared.GetEntity(self.droppedWeapons[i])
+                if weapon then
+                    if weapon:GetWeaponWorldState() and (Shared.GetTime() - weapon.weaponWorldStateTime) >= kItemStayTime then
+                        DestroyEntity(weapon)
+                        self.droppedWeaponsCache[self.droppedWeapons[i]] = nil
+                        self.droppedWeapons[i] = nil
+                    elseif not weapon:GetWeaponWorldState() then
+                        self.droppedWeaponsCache[self.droppedWeapons[i]] = nil
+                        self.droppedWeapons[i] = nil
+                    end
+                else
+                    //Thinking theres some wierd instances of weapons picked back up and dropped that dont appear valid right away.
+                    if self.droppedWeaponsCache[self.droppedWeapons[i]] then
+                        self.droppedWeaponsCache[self.droppedWeapons[i]] = nil
+                        self.droppedWeapons[i] = nil
+                    else
+                        self.droppedWeaponsCache[self.droppedWeapons[i]] = true
+                    end
+                end
+            end
+         end
+         self.lastweaponscan = Shared.GetTime()
+         if self.lastdeepweaponscan == nil or self.lastdeepweaponscan + 60 < Shared.GetTime() then
+            for index, weapon in ientitylist(Shared.GetEntitiesWithClassname("Weapon")) do
+                if weapon and weapon:GetWeaponWorldState() and (Shared.GetTime() - weapon.weaponWorldStateTime) >= kItemStayTime then
+                    DestroyEntity(weapon)
+                end
+            end
+            self.lastdeepweaponscan = Shared.GetTime()
+         end
+     end
+end
+
+function MarineTeam:OnBought(techId)
+
+    local listeners = self.eventListeners['OnBought']
+
+    if listeners then
+
+        for _, listener in ipairs(listeners) do
+            listener(techId)
+        end
+
+    end
+
 end

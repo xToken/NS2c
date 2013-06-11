@@ -1,4 +1,4 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
 // lua\GUIInsight_OtherHealthbars.lua
 //
@@ -12,7 +12,7 @@ class 'GUIInsight_OtherHealthbars' (GUIScript)
 
 local isVisible
 local otherList
-local reusebackgrounds
+local reuseItems
 
 local kOtherHealthDrainRate = 0.1 --Percent per ???
 
@@ -24,7 +24,7 @@ local kOtherTypes = {
     "CommandStructure",
     "ResourceTower",
     -- marine
-    "Armory",    
+    "Armory",
     "ArmsLab",
     "Observatory",
     "PhaseGate",
@@ -34,6 +34,7 @@ local kOtherTypes = {
     "InfantryPortal",
     "ARC",
     -- alien
+    "Whip",
     "Crag",
     "Shade",
     "Shift",
@@ -45,31 +46,23 @@ function GUIInsight_OtherHealthbars:Initialize()
     isVisible = true
 
     otherList = table.array(24)
-    for index, otherType in ipairs(kOtherTypes) do
-        otherList[otherType] = table.array(4)
-    end
-    
-    reusebackgrounds = table.array(32)
+    reuseItems = table.array(32)
 
 end
 
 function GUIInsight_OtherHealthbars:Uninitialize()
    
     -- All healthbars
-    for index, otherType in ipairs(kOtherTypes) do
-        local currentList = otherList[otherType]
-        for i, other in pairs(currentList) do
-            GUI.DestroyItem(other.Background)
-        end
-        otherList[otherType] = nil
+    for i, other in pairs(otherList) do
+        GUI.DestroyItem(other.Background)
     end
     otherList = nil
     
     -- Reuse items
-    for index, background in ipairs(reusebackgrounds) do
+    for index, background in ipairs(reuseItems) do
         GUI.DestroyItem(background["Background"])
     end
-    reusebackgrounds = nil
+    reuseItems = nil
     
 end
 
@@ -87,62 +80,17 @@ function GUIInsight_OtherHealthbars:SetisVisible(bool)
 
 end
 
-function GUIInsight_OtherHealthbars:SendKeyEvent(key, down)
-
-    if key == InputKey.LeftControl and down then
-    
-        self:SetisVisible(not isVisible)
-    
-    end
-
-end
-
 function GUIInsight_OtherHealthbars:Update(deltaTime)
 
-    local player = Client.GetLocalPlayer()
-    if not player then
-        return
-    end
-
-    self:UpdateOthers(deltaTime)
-    
-end
-
-function GUIInsight_OtherHealthbars:UpdateOthers(deltaTime)
-
     local others
-    local currentList
-    for _, otherType in ipairs(kOtherTypes) do
+    for i=1, #kOtherTypes do
     
-        others = Shared.GetEntitiesWithClassname(otherType)
-        currentList = otherList[otherType]
-        
-        -- Remove old units
-            
-        for id, other in pairs(currentList) do
-        
-            local contains = false
-            for key, newUnit in ientitylist(others) do
-                if id == newUnit:GetId() then
-                    contains = true
-                end
-            end
-
-            if not contains then
-            
-                -- Store unused healthbars for later
-                other.Background:SetIsVisible(false)
-                table.insert(reusebackgrounds, other)
-                currentList[id] = nil
-                
-            end
-        end
-        
+        others = Shared.GetEntitiesWithClassname(kOtherTypes[i])        
         -- Add new and Update all units
         
         for index, other in ientitylist(others) do
         
-            local otherIndex = other:GetId()            
+            local otherIndex = other:GetId()
             local relevant = other:GetIsVisible() and isVisible and other:GetIsAlive()
             if (other:isa("PowerPoint") and not other:GetIsSocketed()) then
                 relevant = false
@@ -156,19 +104,21 @@ function GUIInsight_OtherHealthbars:UpdateOthers(deltaTime)
                 
                 -- Get/Create Healthbar
                 local otherGUI
-                if not currentList[otherIndex] then -- Add new GUI for new units
+                if not otherList[otherIndex] then -- Add new GUI for new units
                 
                     otherGUI = self:CreateOtherGUIItem()
                     otherGUI.StoredValues.HealthFraction = healthFraction
-                    table.insert(currentList, otherIndex, otherGUI)
+                    table.insert(otherList, otherIndex, otherGUI)
                     
                 else
                 
-                    otherGUI = currentList[otherIndex]
+                    otherGUI = otherList[otherIndex]
                     
                 end
                 
-                local barScale = maxHealth/2400 -- Based off ARC health                 
+                otherList[otherIndex].Visited = true
+                
+                local barScale = maxHealth/2400 -- Based off ARC health
                 local backgroundSize = math.max(kOtherHealthBarSize.x, barScale * kOtherHealthBarSize.x)
                 local kHealthbarOffset = Vector(-backgroundSize/2, -kOtherHealthBarSize.y - GUIScale(8), 0)
                 
@@ -177,7 +127,8 @@ function GUIInsight_OtherHealthbars:UpdateOthers(deltaTime)
                 local nameTagWorldPosition = other:GetOrigin() + Vector(0, max.y, 0)
                 local nameTagInScreenspace = Client.WorldToScreen(nameTagWorldPosition) + kHealthbarOffset
 
-                local color = ConditionalValue(other:GetTeamType() == kAlienTeamType, kRedColor, kBlueColor)   
+                --local color = kHealthBarColors[other:GetTeamType()]
+                local color = ConditionalValue(other:GetTeamType() == kAlienTeamType, kRedColor, kBlueColor)
                 otherGUI.Background:SetIsVisible(true)
 
                 -- Set Info
@@ -213,29 +164,30 @@ function GUIInsight_OtherHealthbars:UpdateOthers(deltaTime)
                     healthChangeBar:SetIsVisible(false)
                     otherGUI.StoredValues.HealthFraction = healthFraction
                     
-                end
-                
-            else -- No longer relevant, remove if necessary
-        
-                if currentList[otherIndex] then
-                    GUI.DestroyItem(currentList[otherIndex].Background)
-                    currentList[otherIndex] = nil
-                end
-        
+                end        
             end
-
         end
-    
     end
-
+    
+    // Slay any Others that were not visited during the update.
+    // dragonglass lol
+    for id, other in pairs(otherList) do
+        if not other.Visited then
+            other.Background:SetIsVisible(false)
+            table.insert(reuseItems, other)
+            otherList[id] = nil
+        end
+        other.Visited = false
+    end
+    
 end
 
 function GUIInsight_OtherHealthbars:CreateOtherGUIItem()
 
     -- Reuse an existing healthbar item if there is one.
-    if table.count(reusebackgrounds) > 0 then
-        local returnbackground = reusebackgrounds[1]
-        table.remove(reusebackgrounds, 1)
+    if table.count(reuseItems) > 0 then
+        local returnbackground = reuseItems[1]
+        table.remove(reuseItems, 1)
         return returnbackground
     end
 

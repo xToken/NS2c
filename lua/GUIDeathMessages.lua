@@ -12,7 +12,7 @@ class 'GUIDeathMessages' (GUIScript)
 
 local kBackgroundHeight = 32
 local kBackgroundColor = Color(0, 0, 0, 0)
-local kFontNames = { marine = "fonts/AgencyFB_small.fnt", alien = "fonts/Kartika_medium.fnt" }
+local kFontNames = { marine = "fonts/AgencyFB_small.fnt", alien = "fonts/AgencyFB_small.fnt" }
 local kScreenOffset = 40
 
 local kSustainTime = 4

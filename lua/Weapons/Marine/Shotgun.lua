@@ -20,6 +20,35 @@ local networkVars =
     emptyPoseParam = "private float (0 to 1 by 0.01)"
 }
 
+// higher numbers reduces the spread
+local kSpreadDistance = 11.3
+local kStartOffset = 0
+local kSpreadVectors =
+{
+    GetNormalizedVector(Vector(-0.01, 0.01, kSpreadDistance)),
+    
+    GetNormalizedVector(Vector(-0.45, 0.45, kSpreadDistance)),
+    GetNormalizedVector(Vector(0.45, 0.45, kSpreadDistance)),
+    GetNormalizedVector(Vector(0.45, -0.45, kSpreadDistance)),
+    GetNormalizedVector(Vector(-0.45, -0.45, kSpreadDistance)),
+    
+    GetNormalizedVector(Vector(-1, 0, kSpreadDistance)),
+    GetNormalizedVector(Vector(1, 0, kSpreadDistance)),
+    GetNormalizedVector(Vector(0, -1, kSpreadDistance)),
+    GetNormalizedVector(Vector(0, 1, kSpreadDistance)),
+    
+    GetNormalizedVector(Vector(-0.35, 0, kSpreadDistance)),
+    GetNormalizedVector(Vector(0.35, 0, kSpreadDistance)),
+    GetNormalizedVector(Vector(0, -0.35, kSpreadDistance)),
+    GetNormalizedVector(Vector(0, 0.35, kSpreadDistance)),
+    
+    GetNormalizedVector(Vector(-0.8, -0.8, kSpreadDistance)),
+    GetNormalizedVector(Vector(-0.8, 0.8, kSpreadDistance)),
+    GetNormalizedVector(Vector(0.8, 0.8, kSpreadDistance)),
+    GetNormalizedVector(Vector(0.8, -0.8, kSpreadDistance)),
+    
+}
+
 Shotgun.kModelName = PrecacheAsset("models/marine/shotgun/shotgun.model")
 local kViewModelName = PrecacheAsset("models/marine/shotgun/shotgun_view.model")
 local kAnimationGraph = PrecacheAsset("models/marine/shotgun/shotgun_view.animation_graph")
@@ -74,30 +103,16 @@ end
 function Shotgun:GetSpread(bulletNum)
 
     // NS1 was 20 degrees for half the shots and 20 degrees plus 7 degrees for half the shots
-    if bulletNum <= kShotgunMinSpreadBullets then
-        return Math.Radians(kShotgunMinSpread)
+    if bulletNum < (kShotgunBulletsPerShot / 2) then
+        return Math.Radians(10)
     else
-        return Math.Radians(kShotgunMaxSpread)
-    end
-    
-end
-
-function Shotgun:GetMinSpread(bulletNum)
-
-    if bulletNum <= kShotgunMinSpreadBullets then
-        return Math.Radians((kShotgunMinSpread - 2))
-    else
-        return Math.Radians((kShotgunMaxSpread - 2))
+        return Math.Radians(20)
     end
     
 end
 
 function Shotgun:GetRange()
     return kShotgunMaxRange
-end
-
-function Shotgun:GetNumStartClips()
-    return 2
 end
 
 // Only play weapon effects every other bullet to avoid sonic overload
@@ -193,10 +208,80 @@ function Shotgun:OnTag(tagName)
 end
 
 function Shotgun:FirePrimary(player)
-    
-    ClipWeapon.FirePrimary(self, player)
-    self:TriggerEffects("shotgun_attack")
 
+    local viewAngles = player:GetViewAngles()
+    viewAngles.roll = NetworkRandom() * math.pi * 2
+    
+    local viewCoords = viewAngles:GetCoords()
+    
+    
+    // Filter ourself out of the trace so that we don't hit ourselves.
+    local filter = EntityFilterTwo(player, self)
+    local range = self:GetRange()
+    
+    if GetIsVortexed(player) then
+        range = 5
+    end
+    
+    local numberBullets = self:GetBulletsPerShot()
+    local startPoint = player:GetEyePos()
+    
+    self:TriggerEffects("shotgun_attack")
+    
+    for bullet = 1, math.min(numberBullets, #kSpreadVectors) do
+    
+        if not kSpreadVectors[bullet] then
+            break
+        end    
+    
+        local spreadDirection = viewCoords:TransformVector(kSpreadVectors[bullet])
+
+        local endPoint = startPoint + spreadDirection * range
+        startPoint = player:GetEyePos() + viewCoords.xAxis * kSpreadVectors[bullet].x * kStartOffset + viewCoords.yAxis * kSpreadVectors[bullet].y * kStartOffset
+        
+        local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+        if not trace.entity then
+            local extents = GetDirectedExtentsForDiameter(viewCoords.zAxis, self:GetBulletSize())
+            trace = Shared.TraceBox(extents, startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+        end        
+        
+        local damage = 0
+
+        /*
+        // Check prediction
+        local values = GetPredictionValues(startPoint, endPoint, trace)
+        if not CheckPredictionData( string.format("attack%d", bullet), true, values ) then
+            Server.PlayPrivateSound(player, "sound/NS2.fev/marine/voiceovers/game_start", player, 1.0, Vector(0, 0, 0))
+        end
+        */
+            
+        // don't damage 'air'..
+        if trace.fraction < 1 or GetIsVortexed(player) then
+        
+            local direction = (trace.endPoint - startPoint):GetUnit()
+            local impactPoint = trace.endPoint - direction * kHitEffectOffset
+            local surfaceName = trace.surface
+
+            local effectFrequency = self:GetTracerEffectFrequency()
+            local showTracer = bullet % effectFrequency == 0
+            
+            self:ApplyBulletGameplayEffects(player, trace.entity, impactPoint, direction, kShotgunDamage, trace.surface, showTracer)
+            
+            if Client and showTracer then
+                TriggerFirstPersonTracer(self, trace.endPoint)
+            end
+            
+        end
+        
+        local client = Server and player:GetClient() or Client
+        if not Shared.GetIsRunningPrediction() and client.hitRegEnabled then
+            RegisterHitEvent(player, bullet, startPoint, trace, damage)
+        end
+        
+    end
+    
+    TEST_EVENT("Shotgun primary attack")
+    
 end
 
 function Shotgun:OnProcessMove(input)
@@ -225,6 +310,10 @@ if Client then
         
         return self:GetOrigin()
         
+    end
+    
+    function Shotgun:GetUIDisplaySettings()
+        return { xSize = 256, ySize = 128, script = "lua/GUIShotgunDisplay.lua" }
     end
 
 end

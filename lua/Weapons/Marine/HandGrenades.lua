@@ -62,22 +62,7 @@ end
 function HandGrenades:GetDropClassName()
     return "HandGrenades"
 end
-/*
-function HandGrenades:OnTouch(recipient)
-    recipient:AddWeapon(self, false)
-    Shared.PlayWorldSound(nil, Marine.kGunPickupSound, nil, recipient:GetOrigin())
-end
 
-function HandGrenades:GetIsValidRecipient(player)
-    if player then
-        local hasWeapon = player:GetWeaponInHUDSlot(self:GetHUDSlot())
-        if not hasWeapon and self.droppedtime + kPickupWeaponTimeLimit < Shared.GetTime() then
-            return true
-        end
-    end
-    return false
-end
-*/
 function HandGrenades:GetDropMapName()
     return HandGrenades.kMapName
 end

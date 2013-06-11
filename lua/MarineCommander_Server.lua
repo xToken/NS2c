@@ -45,14 +45,14 @@ end
 
 local function GetDroppackSoundName(techId)
 
-    /*if techId == kTechId.MedPack then
+    if techId == kTechId.MedPack then
         return MedPack.kHealthSound
     elseif techId == kTechId.AmmoPack then
         return AmmoPack.kPickupSound
     elseif techId == kTechId.CatPack then
         return CatPack.kPickupSound
-    end*/
-    return MarineCommander.kDropSound
+    end
+    //return MarineCommander.kDropSound
    
 end
 
@@ -64,7 +64,6 @@ function MarineCommander:TriggerDropPack(position, techId)
     
         local droppack = CreateEntity(mapName, position, self:GetTeamNumber())
         StartSoundEffectForPlayer(GetDroppackSoundName(techId), self)
-        //Shared.PlaySound(nil, GetDroppackSoundName(techId))
         self:ProcessSuccessAction(techId)
         success = true
         
@@ -86,7 +85,7 @@ local function GetIsDroppack(techId)
 end
 
 // check if a notification should be send for successful actions
-function MarineCommander:ProcessTechTreeActionForEntity(techNode, position, normal, pickVec, orientation, entity, trace)
+function MarineCommander:ProcessTechTreeActionForEntity(techNode, position, normal, pickVec, orientation, entity, trace, targetId, isBot)
 
     local techId = techNode:GetTechId()
     local success = false
@@ -97,6 +96,13 @@ function MarineCommander:ProcessTechTreeActionForEntity(techNode, position, norm
         keepProcessing = false
      
     elseif GetIsDroppack(techId) then
+    
+        // use the client side trace.entity here
+        local clientTargetEnt = Shared.GetEntity(targetId)
+        if clientTargetEnt and clientTargetEnt:isa("Marine") then
+            position = clientTargetEnt:GetOrigin() + Vector(0, 0.05, 0)
+        end
+    
         success = self:TriggerDropPack(position, techId)
         keepProcessing = false
         
@@ -112,7 +118,7 @@ function MarineCommander:ProcessTechTreeActionForEntity(techNode, position, norm
         keepProcessing = false
 
     else
-        success, keepProcessing = Commander.ProcessTechTreeActionForEntity(self, techNode, position, normal, pickVec, orientation, entity, trace)
+        success, keepProcessing = Commander.ProcessTechTreeActionForEntity(self, techNode, position, normal, pickVec, orientation, entity, trace, targetId, isBot)
     end
 
     if success then

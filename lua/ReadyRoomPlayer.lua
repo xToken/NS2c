@@ -30,37 +30,12 @@ function ReadyRoomPlayer:OnCreate()
     
 end
 
-function ReadyRoomPlayer:OnDestroy()
-
-    Player.OnDestroy(self)
-    
-    if self.guiReadyRoomOrders then    
-        GetGUIManager():DestroyGUIScript(self.guiReadyRoomOrders)
-        self.guiReadyRoomOrders = nil    
-    end
-
-end
-
 function ReadyRoomPlayer:OnInitialized()
 
     Player.OnInitialized(self)
     
     self:SetModel(Marine.kModelName, kAnimationGraph)
     
-end
-
-if Client then
-
-    function ReadyRoomPlayer:OnInitLocalClient()
-    
-        Player.OnInitLocalClient(self)
-    
-        if self.guiReadyRoomOrders == nil then
-            self.guiReadyRoomOrders = GetGUIManager():CreateGUIScript("GUIReadyRoomOrders")
-        end
-    
-    end
-
 end
 
 function ReadyRoomPlayer:GetPlayerStatusDesc()

@@ -7,8 +7,11 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/DropPack.lua")
 Script.Load("lua/PickupableMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
+Script.Load("lua/TeamMixin.lua")
 
 class 'MedPack' (DropPack)
 
@@ -19,16 +22,18 @@ MedPack.kHealthSound = PrecacheAsset("sound/NS2.fev/marine/common/health")
 
 MedPack.kHealth = 50
 
+local networkVars =
+{
+}
+
 function MedPack:OnInitialized()
 
     DropPack.OnInitialized(self)
     
     self:SetModel(MedPack.kModelName)
-    
-    InitMixin(self, PickupableMixin, { kRecipientType = "Marine" })
-    
-    if Server then
-        self:_CheckForPickup()
+
+    if Client then
+        InitMixin(self, PickupableMixin, { kRecipientType = "Marine" })
     end
     
 end
@@ -49,16 +54,5 @@ function MedPack:GetIsValidRecipient(recipient)
     
 end
 
-function GetAttachToMarineRequiresHealth(entity)
 
-    local valid = false
-    
-    if entity:isa("Marine") then
-        valid = entity:GetHealth() < entity:GetMaxHealth()
-    end
-    
-    return valid
-    
-end
-
-Shared.LinkClassToMap("MedPack", MedPack.kMapName)
+Shared.LinkClassToMap("MedPack", MedPack.kMapName, networkVars, false)

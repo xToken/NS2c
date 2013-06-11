@@ -10,7 +10,6 @@ Script.Load("lua/Utility.lua")
 Script.Load("lua/Alien.lua")
 Script.Load("lua/Weapons/Alien/SpitSpray.lua")
 Script.Load("lua/Weapons/Alien/DropStructureAbility.lua")
-Script.Load("lua/Weapons/Alien/DropStructureAbility2.lua")
 Script.Load("lua/Weapons/Alien/Web.lua")
 Script.Load("lua/Weapons/Alien/BileBomb.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
@@ -98,13 +97,16 @@ if Client then
     end  
 
     function Gorge:OverrideInput(input)
-    
-        local activeWeapon = self:GetActiveWeapon()
-        if activeWeapon and (activeWeapon.kMapName == "drop_structure_ability" or activeWeapon.kMapName == "drop_structure_ability2") then
-            input = activeWeapon:OverrideInput(input)
+
+        // Always let the DropStructureAbility override input, since it handles client-side-only build menu
+
+        local buildAbility = self:GetWeapon(DropStructureAbility.kMapName)
+
+        if buildAbility then
+            input = buildAbility:OverrideInput(input)
         end
         
-        Player.OverrideInput(self, input)
+        return Player.OverrideInput(self, input)
         
     end
     
@@ -380,7 +382,7 @@ if Client then
     function Gorge:GetShowGhostModel()
     
         local weapon = self:GetActiveWeapon()
-        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
+        if weapon and weapon:isa("DropStructureAbility") then
             return weapon:GetShowGhostModel()
         end
         
@@ -391,7 +393,7 @@ if Client then
     function Gorge:GetGhostModelTechId()
     
         local weapon = self:GetActiveWeapon()
-        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
+        if weapon and weapon:isa("DropStructureAbility") then
             return weapon:GetGhostModelTechId()
         end
         
@@ -400,7 +402,7 @@ if Client then
     function Gorge:GetGhostModelCoords()
     
         local weapon = self:GetActiveWeapon()
-        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
+        if weapon and weapon:isa("DropStructureAbility") then
             return weapon:GetGhostModelCoords()
         end
 
@@ -418,7 +420,7 @@ if Client then
     function Gorge:GetIsPlacementValid()
     
         local weapon = self:GetActiveWeapon()
-        if weapon and (weapon:isa("DropStructureAbility") or weapon:isa("DropStructureAbility2")) then
+        if weapon and weapon:isa("DropStructureAbility") then
             return weapon:GetIsPlacementValid()
         end
     

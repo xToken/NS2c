@@ -5,7 +5,7 @@
 //    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
 //                  Max McGuire (max@unknownworlds.com)
 //
-// Gore attack should send players flying (doesn't have to be ragdoll). Stomp will disrupt
+// Gore attack should send players flying (doesn't have to be ragdoll). Stomp will stun
 // structures in range. 
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
@@ -42,8 +42,8 @@ local kJumpHeight = 1.2
 local kViewOffsetHeight = 2.5
 // triggered when the momentum value has changed by this amount (negative because we trigger the effect when the onos stops, not accelerates)
 local kMomentumEffectTriggerDiff = 3
-local kMaxSpeed = 6.5
-local kMaxChargeSpeed = 13
+local kMaxSpeed = 6.0
+local kMaxChargeSpeed = 12
 
 local kChargeEnergyCost = 50
 local kChargeAcceleration = 40

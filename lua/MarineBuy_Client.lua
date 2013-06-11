@@ -58,31 +58,6 @@ function MarineBuy_GetCurrentWeapon()
     return TechIdToWeaponIndex(GetCurrentPrimaryWeaponTechId())
 end
 
-function DamageTypeToString(type)
-
-    local damageString = ""
-
-    if type == kDamageType.Light then
-        damageString = "Light - reduced vs. armor"
-    elseif type == kDamageType.Heavy then
-        damageString = "Heavy - extra vs. armor"
-    elseif type == kDamageType.Puncture then
-        damageString = "Puncture - extra vs. players"
-    elseif type == kDamageType.Structural then
-        damageString = "Structural - double vs. structures"
-    elseif type == kDamageType.Gas then
-        damageString = "Gas - damages breathing targets only"
-    elseif type == kDamageType.Biological then
-        damageString = "Biological - damages living targets only"
-    elseif type == kDamageType.StructuresOnly then
-        damageString = "Hurts structures only"
-    end
-    
-    return damageString
-    
-end
-
-
 /**
  * Return information about the available weapons in a linear array
  * Name - string (for tooltips?)
@@ -211,40 +186,30 @@ function MarineBuy_GetHas(techId)
 end
 
 function MarineBuy_OnMouseOver()
-
-    Shared.PlaySound(nil, kMarineBuyMenuSounds.Hover)
-
+    StartSoundEffect(kMarineBuyMenuSounds.Hover)
 end
 
 function MarineBuy_OnOpen()
-
-    Shared.PlaySound(nil, kMarineBuyMenuSounds.Open)
-
+    StartSoundEffect(kMarineBuyMenuSounds.Open)
 end
 
 function MarineBuy_OnClose()
 
-    Shared.PlaySound(nil, kMarineBuyMenuSounds.Close)
+    StartSoundEffect(kMarineBuyMenuSounds.Close)
     MarineBuy_CloseNonFlash()
 
 end
 
 function MarineBuy_OnPurchase()
-
-    Shared.PlaySound(nil, kMarineBuyMenuSounds.Puchase)
-
+    StartSoundEffect(kMarineBuyMenuSounds.Puchase)
 end
 
 function MarineBuy_OnUpgradeSelected()
-
-    Shared.PlaySound(nil, kMarineBuyMenuSounds.SelectUpgrade)
-    
+    StartSoundEffect(kMarineBuyMenuSounds.SelectUpgrade)    
 end
 
 function MarineBuy_OnUpgradeDeselected()
-
-    Shared.PlaySound(nil, kMarineBuyMenuSounds.SellUpgrade)
-    
+    StartSoundEffect(kMarineBuyMenuSounds.SellUpgrade)    
 end
 
 // special sounds for jetpack etc.
@@ -253,15 +218,15 @@ function MarineBuy_OnItemSelect(techId)
     if techId == kTechId.Axe or techId == kTechId.Rifle or techId == kTechId.Shotgun or techId == kTechId.GrenadeLauncher or 
         techId == kTechId.Welder or techId == kTechId.Mines then
        
-        Shared.PlaySound(nil, kMarineBuyMenuSounds.SelectWeapon)
+        StartSoundEffect(kMarineBuyMenuSounds.SelectWeapon)
         
     elseif techId == kTechId.Jetpack then
     
-        Shared.PlaySound(nil, kMarineBuyMenuSounds.SelectJetpack)
+        StartSoundEffect(kMarineBuyMenuSounds.SelectJetpack)
 
     elseif techId == kTechId.HeavyArmorMarine then
     
-        Shared.PlaySound(nil, kMarineBuyMenuSounds.SelectHeavyArmor)
+        StartSoundEffect(kMarineBuyMenuSounds.SelectHeavyArmor)
         
     end
 

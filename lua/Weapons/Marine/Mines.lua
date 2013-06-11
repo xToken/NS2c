@@ -8,16 +8,16 @@ class 'Mines' (Weapon)
 
 Mines.kMapName = "mines"
 
-Mines.kModelName = PrecacheAsset("models/marine/mine/mine_pile.model")
+local kDropModelName = PrecacheAsset("models/marine/mine/mine_pile.model")
+local kHeldModelName = PrecacheAsset("models/marine/mine/mine_3p.model")
 
 local kViewModelName = PrecacheAsset("models/marine/mine/mine_view.model")
 local kAnimationGraph = PrecacheAsset("models/marine/mine/mine_view.animation_graph")
 
-Mines.kPlacementDistance = 2
+local kPlacementDistance = 2
 
 local networkVars =
 {
-    showGhost = "boolean",
     minesLeft = string.format("integer (0 to %d)", kMineCount),
     droppingMine = "boolean"
 }
@@ -31,16 +31,18 @@ function Mines:OnCreate()
     self.showGhost = false
     self.minesLeft = kMineCount
     self.droppingMine = false
-
+    
 end
 
 function Mines:OnInitialized()
 
     Weapon.OnInitialized(self)
     
-    self:SetModel(Mines.kModelName)
-
+    self:SetModel(kHeldModelName)
+    
 end
+
+
 
 function Mines:GetDropStructureId()
     return kTechId.Mine
@@ -93,10 +95,13 @@ function Mines:OnTag(tagName)
             
             if self.minesLeft == 0 then
             
-                self.showGhost = false
                 self:OnHolster(player)
                 player:RemoveWeapon(self)
                 player:SwitchWeapon(1)
+                
+                if Server then                
+                    DestroyEntity(self)
+                end
                 
             end
             
@@ -121,17 +126,15 @@ function Mines:OnPrimaryAttack(player)
     // Ensure the current location is valid for placement.
     if not player:GetPrimaryAttackLastFrame() then
     
-        local coords, valid = self:GetPositionForStructure(player)
-        if valid  then
+        local showGhost, coords, valid = self:GetPositionForStructure(player)
+        if valid then
         
             if self.minesLeft > 0 then
-            
                 self.droppingMine = true
-                
             else
             
                 self.droppingMine = false
-            
+                
                 if Client then
                     player:TriggerInvalidSound()
                 end
@@ -141,7 +144,7 @@ function Mines:OnPrimaryAttack(player)
         else
         
             self.droppingMine = false
-        
+            
             if Client then
                 player:TriggerInvalidSound()
             end
@@ -156,12 +159,11 @@ local function DropStructure(self, player)
 
     if Server then
     
-        local coords, valid = self:GetPositionForStructure(player)
-        
+        local showGhost, coords, valid = self:GetPositionForStructure(player)
         if valid then
         
-            // Create mine
-            local mine = CreateEntity( self:GetDropMapName(), coords.origin, player:GetTeamNumber() )
+            // Create mine.
+            local mine = CreateEntity(self:GetDropMapName(), coords.origin, player:GetTeamNumber())
             if mine then
             
                 mine:SetOwner(player)
@@ -175,7 +177,7 @@ local function DropStructure(self, player)
                     
                     player:TriggerEffects("create_" .. self:GetSuffixName())
                     
-                    // Jackpot
+                    // Jackpot.
                     return true
                     
                 else
@@ -186,7 +188,7 @@ local function DropStructure(self, player)
                 end
                 
             else
-                player:TriggerInvalidSound()            
+                player:TriggerInvalidSound()
             end
             
         else
@@ -196,7 +198,7 @@ local function DropStructure(self, player)
             end
             
         end
-    
+        
     elseif Client then
         return true
     end
@@ -213,7 +215,7 @@ function Mines:PerformPrimaryAttack(player)
 
     local success = true
     
-    if self.showGhost then
+    if self.minesLeft > 0 then
     
         player:TriggerEffects("start_create_" .. self:GetSuffixName())
         
@@ -236,9 +238,8 @@ function Mines:OnHolster(player, previousWeaponMapName)
 
     Weapon.OnHolster(self, player, previousWeaponMapName)
     
-    self.showGhost = false
     self.droppingMine = false
-
+    
 end
 
 function Mines:OnDraw(player, previousWeaponMapName)
@@ -248,9 +249,18 @@ function Mines:OnDraw(player, previousWeaponMapName)
     // Attach weapon to parent's hand
     self:SetAttachPoint(Weapon.kHumanAttachPoint)
     
-    self.showGhost = self.minesLeft > 0
     self.droppingMine = false
+    
+    self:SetModel(kHeldModelName)
+    
+end
 
+function Mines:Dropped(prevOwner)
+
+    Weapon.Dropped(self, prevOwner)
+    
+    self:SetModel(kDropModelName)
+    
 end
 
 // Given a gorge player's position and view angles, return a position and orientation
@@ -258,10 +268,12 @@ end
 // Also returns bool if it's a valid position or not.
 function Mines:GetPositionForStructure(player)
 
-    local validPosition = false
+    local isPositionValid = false
+    local foundPositionInRange = false
+    local structPosition = nil
     
-    local origin = player:GetEyePos() + player:GetViewAngles():GetCoords().zAxis * Mines.kPlacementDistance
-
+    local origin = player:GetEyePos() + player:GetViewAngles():GetCoords().zAxis * kPlacementDistance
+    
     // Trace short distance in front
     local trace = Shared.TraceRay(player:GetEyePos(), origin, CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls, EntityFilterTwo(player, self))
     
@@ -270,47 +282,49 @@ function Mines:GetPositionForStructure(player)
     // If we hit nothing, trace down to place on ground
     if trace.fraction == 1 then
     
-        origin = player:GetEyePos() + player:GetViewAngles():GetCoords().zAxis * Mines.kPlacementDistance
-        trace = Shared.TraceRay(origin, origin - Vector(0, Mines.kPlacementDistance, 0), CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls, EntityFilterTwo(player, self))
+        origin = player:GetEyePos() + player:GetViewAngles():GetCoords().zAxis * kPlacementDistance
+        trace = Shared.TraceRay(origin, origin - Vector(0, kPlacementDistance, 0), CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls, EntityFilterTwo(player, self))
         
     end
+
     
     // If it hits something, position on this surface (must be the world or another structure)
     if trace.fraction < 1 then
+        
+        foundPositionInRange = true
     
         if trace.entity == nil then
-            validPosition = true
-        elseif not trace.entity:isa("ScriptActor") then
-            validPosition = true
+            isPositionValid = true
+        elseif not trace.entity:isa("ScriptActor") and not trace.entity:isa("Clog") then
+            isPositionValid = true
         end
         
         displayOrigin = trace.endPoint
+    
+        // Don't allow dropped structures to go too close to techpoints and resource nozzles
+        if GetPointBlocksAttachEntities(displayOrigin) then
+            isPositionValid = false
+        end
+    
+        // Don't allow placing above or below us and don't draw either
+        local structureFacing = player:GetViewAngles():GetCoords().zAxis
+    
+        if math.abs(Math.DotProduct(trace.normal, structureFacing)) > 0.9 then
+            structureFacing = trace.normal:GetPerpendicular()
+        end
+    
+        // Coords.GetLookIn will prioritize the direction when constructing the coords,
+        // so make sure the facing direction is perpendicular to the normal so we get
+        // the correct y-axis.
+        local perp = Math.CrossProduct(trace.normal, structureFacing)
+        structureFacing = Math.CrossProduct(perp, trace.normal)
+    
+        structPosition = Coords.GetLookIn(displayOrigin, structureFacing, trace.normal)
         
     end
     
-    // Don't allow dropped structures to go too close to techpoints and resource nozzles
-    if GetPointBlocksAttachEntities(displayOrigin) then
-        validPosition = false
-    end
+    return foundPositionInRange, structPosition, isPositionValid
     
-    // Don't allow placing above or below us and don't draw either
-// Don't allow placing above or below us and don't draw either
-    local structureFacing = player:GetViewAngles():GetCoords().zAxis
-    
-    if math.abs(Math.DotProduct(trace.normal, structureFacing)) > 0.9 then
-        structureFacing = trace.normal:GetPerpendicular()
-    end
-    
-    // Coords.GetLookIn will prioritize the direction when constructing the coords,
-    // so make sure the facing direction is perpendicular to the normal so we get
-    // the correct y-axis.
-    local perp = Math.CrossProduct( trace.normal, structureFacing )
-    structureFacing = Math.CrossProduct( perp, trace.normal )
-    
-    local coords = Coords.GetLookIn( displayOrigin, structureFacing, trace.normal )       
-    
-    return coords, validPosition
-
 end
 
 function Mines:GetGhostModelName()
@@ -325,20 +339,23 @@ function Mines:OnUpdateAnimationInput(modelMixin)
     
 end    
 
-function Mines:ProcessMoveOnWeapon(input)
-    
-    if Client and not Shared.GetIsRunningPrediction() then
+if Client then
 
+    function Mines:OnProcessIntermediate(input)
+    
         local player = self:GetParent()
         
         if player then
-
-            if self.showGhost then
-                self.ghostCoords, self.placementValid = self:GetPositionForStructure(player)
-            end
-          
+        
+            self.showGhost, self.ghostCoords, self.placementValid = self:GetPositionForStructure(player)
+            self.showGhost = self.showGhost and self.minesLeft > 0
+            
         end
         
+    end
+    
+    function Mines:GetUIDisplaySettings()
+        return { xSize = 256, ySize = 417, script = "lua/GUIMineDisplay.lua" }
     end
     
 end
@@ -353,21 +370,6 @@ end
 
 function Mines:GetIsPlacementValid()
     return self.placementValid
-end
-
-function Mines:OverrideWeaponName()
-    return "mine"
-end
-
-function Mines:OnGetIsVisible(visTable)
-
-    local parent = self:GetParent()
-    if parent then
-        visTable.Visible = false
-    else
-        Weapon.OnGetIsVisible(self, visTable)
-    end    
-
 end
 
 Shared.LinkClassToMap("Mines", Mines.kMapName, networkVars)

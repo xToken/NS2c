@@ -296,4 +296,12 @@ function Welder:OnUpdateRender()
 
 end
 
+if Client then
+
+    function Welder:GetUIDisplaySettings()
+        return { xSize = 512, ySize = 512, script = "lua/GUIWelderDisplay.lua" }
+    end
+    
+end
+
 Shared.LinkClassToMap("Welder", Welder.kMapName, networkVars)

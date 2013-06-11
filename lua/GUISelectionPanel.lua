@@ -130,7 +130,7 @@ function GUISelectionPanel:InitializeSingleSelectionItems()
     
     local useColor = Color(1,1,1,1)
     
-    teamType = PlayerUI_GetTeamType()
+    local teamType = PlayerUI_GetTeamType()
     
     if teamType == kMarineTeamType then
         useColor = kMarineFontColor

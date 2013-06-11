@@ -13,7 +13,7 @@ Script.Load("lua/Commander.lua")
 class 'MarineCommander' (Commander)
 
 MarineCommander.kMapName = "marine_commander"
-MarineCommander.kDropSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/commander/drop")
+//MarineCommander.kDropSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/commander/drop")
 
 if Client then
     Script.Load("lua/MarineCommander_Client.lua")
@@ -48,31 +48,6 @@ MarineCommander.kOrderClickedEffect = PrecacheAsset("cinematics/marine/order.cin
 MarineCommander.kSelectSound = PrecacheAsset("sound/NS2.fev/marine/commander/select")
 
 local kHoverSound = PrecacheAsset("sound/NS2.fev/marine/commander/hover")
-
-function MarineCommander:OnDestroy()
-
-    Commander.OnDestroy(self)
-    
-    if Client then
-        
-        if self.guiDistressBeacon then
-            GetGUIManager():DestroyGUIScript(self.guiDistressBeacon)
-            self.guiDistressBeacon = nil
-        end
-        
-        if self.sensorBlips then
-            GetGUIManager():DestroyGUIScript(self.sensorBlips)
-            self.sensorBlips = nil
-        end
-        
-        if self.waypoints then
-            GetGUIManager():DestroyGUIScript(self.waypoints)
-            self.waypoints = nil
-        end
-        
-    end
-
-end
 
 function MarineCommander:GetSelectionSound()
     return MarineCommander.kSelectSound

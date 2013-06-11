@@ -11,6 +11,8 @@
 
 Script.Load("lua/ScenarioHandler_Commands.lua")
 
+local gLastPosition = nil
+
 local function JoinTeam(player, teamIndex)
 
     if player ~= nil and player:GetTeamNumber() == kTeamReadyRoom then
@@ -40,8 +42,14 @@ local function JoinTeamTwo(player)
 end
 
 local function ReadyRoom(player)
-    player:SetCameraDistance(0)
-    return GetGamerules():JoinTeam(player, kTeamReadyRoom)
+
+    if not player:isa("ReadyRoomPlayer") then
+    
+        player:SetCameraDistance(0)
+        return GetGamerules():JoinTeam(player, kTeamReadyRoom)
+        
+    end
+    
 end
 
 local function Spectate(player)
@@ -49,23 +57,31 @@ local function Spectate(player)
 end
 
 local function OnCommandJoinTeamOne(client)
+
     local player = client:GetControllingPlayer()
     JoinTeamOne(player)
+    
 end
 
 local function OnCommandJoinTeamTwo(client)
+
     local player = client:GetControllingPlayer()
     JoinTeamTwo(player)
+    
 end
 
 local function OnCommandReadyRoom(client)
+
     local player = client:GetControllingPlayer()
     ReadyRoom(player)
+    
 end
 
 local function OnCommandSpectate(client)
+
     local player = client:GetControllingPlayer()
     Spectate(player)
+    
 end
 
 local function OnCommandFilm(client)
@@ -375,7 +391,7 @@ local function OnCommandGive(client, itemName)
     
 end
 
-local function OnCommandSpawn(client, itemName, teamnum)
+local function OnCommandSpawn(client, itemName, teamnum, useLastPos)
 
     local player = client:GetControllingPlayer()
     if(Shared.GetCheatsEnabled() and itemName ~= nil) then
@@ -383,23 +399,50 @@ local function OnCommandSpawn(client, itemName, teamnum)
         // trace along players zAxis and spawn the item there
         local startPoint = player:GetEyePos()
         local endPoint = startPoint + player:GetViewCoords().zAxis * 100
-        
-        local trace = Shared.TraceRay(startPoint, endPoint,  CollisionRep.Default, PhysicsMask.Bullets, EntityFilterAll())
+        local usePos = nil
         
         if not teamnum then
             teamnum = player:GetTeamNumber()
         else
             teamnum = tonumber(teamnum)
         end
-
-        local newItem = CreateEntity(itemName, trace.endPoint, teamnum)
-        if newItem:isa("Projectile") then
-            newItem:SetVelocity(Vector(0, 1, 0))
-        end
         
+        if useLastPos and gLastPosition then
+            usePos = gLastPosition
+        else    
+        
+            local trace = Shared.TraceRay(startPoint, endPoint,  CollisionRep.Default, PhysicsMask.Bullets, EntityFilterAll())
+            usePos = trace.endPoint
+        
+        end
+
+        local newItem = CreateEntity(itemName, usePos, teamnum)
         
     end
     
+end
+
+local function OnCommandShoot(client, projectileName, velocity)
+
+    local player = client:GetControllingPlayer()
+    if Shared.GetCheatsEnabled() and projectileName ~= nil then    
+    
+        velocity = velocity or 15
+        
+        local viewAngles = player:GetViewAngles()
+        local viewCoords = viewAngles:GetCoords()
+        local startPoint = player:GetEyePos() + viewCoords.zAxis * 1
+        
+        local startPointTrace = Shared.TraceRay(player:GetEyePos(), startPoint, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterOne(player))
+        startPoint = startPointTrace.endPoint
+        
+        local startVelocity = viewCoords.zAxis * velocity
+        
+        local projectile = CreateEntity(projectileName, startPoint, player:GetTeamNumber())
+        projectile:Setup(player, startVelocity, true, nil, player)    
+    
+    end
+
 end
 
 local function OnCommandGiveUpgrade(client, techIdString)
@@ -562,16 +605,6 @@ local function OnCommandWeldDoors(client)
     
 end
 
-local function OnCommandDisrupt(client)
-
-    local player = client:GetControllingPlayer()
-    
-    if Shared.GetCheatsEnabled() and player then
-        player:SetDisruptDuration(5)
-    end
-    
-end
-
 local function OnCommandPush(client)
 
     if Shared.GetCheatsEnabled() then
@@ -617,8 +650,8 @@ local function techIdStringToTechId(techIdString)
     
 end
 
-// Create structure, weapon, etc. near player
-local function OnCommandCreate(client, techIdString, number)
+// Create structure, weapon, etc. near player.
+local function OnCommandCreate(client, techIdString, number, teamNum)
 
     if Shared.GetCheatsEnabled() then
     
@@ -636,7 +669,7 @@ local function OnCommandCreate(client, techIdString, number)
                 for index = 1, 2000 do
                 
                     local player = client:GetControllingPlayer()
-                    local teamNumber = player:GetTeamNumber()
+                    local teamNumber = tonumber(teamNum) or player:GetTeamNumber()
                     if techId == kTechId.Scan then
                         teamNumber = GetEnemyTeamNumber(teamNumber)
                     end
@@ -1001,6 +1034,21 @@ local function OnCommandDevour(client)
 
 end
 
+local function OnCommandStoreLastPosition(client)
+
+    if Shared.GetCheatsEnabled() then
+    
+        local player = client:GetControllingPlayer()
+        if player then            
+            gLastPosition = player:GetOrigin()
+            Print("stored position %s", ToString(gLastPosition))
+        end
+        
+    end  
+
+end
+
+
 // GC commands
 Event.Hook("Console_changegcsettingserver", OnCommandChangeGCSettingServer)
 
@@ -1041,6 +1089,8 @@ Event.Hook("Console_damage", OnCommandDamage)
 Event.Hook("Console_highdamage", OnCommandHighDamage)
 Event.Hook("Console_give", OnCommandGive)
 Event.Hook("Console_spawn", OnCommandSpawn)
+Event.Hook("Console_storeposition", OnCommandStoreLastPosition)
+Event.Hook("Console_shoot", OnCommandShoot)
 Event.Hook("Console_giveupgrade", OnCommandGiveUpgrade)
 Event.Hook("Console_setfov", OnCommandSetFOV)
 
@@ -1058,7 +1108,6 @@ Event.Hook("Console_command", OnCommandCommand)
 Event.Hook("Console_catpack", OnCommandCatPack)
 Event.Hook("Console_alltech", OnCommandAllTech)
 Event.Hook("Console_location", OnCommandLocation)
-Event.Hook("Console_disrupt", OnCommandDisrupt)
 Event.Hook("Console_push", OnCommandPush)
 Event.Hook("Console_deployarcs", OnCommandDeployARCs)
 Event.Hook("Console_undeployarcs", OnCommandUndeployARCs)

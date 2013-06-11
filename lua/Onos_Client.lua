@@ -40,12 +40,6 @@ function Onos:PlayFootstepEffects(scalar)
     
 end
 
-function Onos:OnJumpLandNonLocalClient()
-
-    self:PlayFootstepEffects(3)
-    
-end
-
 function Onos:GetHeadAttachpointName()
     return "Onos_Head"
 end

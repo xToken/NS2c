@@ -46,10 +46,20 @@ function GUISpeedDebug:Initialize()
     self.debugText:SetFontSize(18)
     self.debugText:SetPosition(Vector(80, -gFractionBarHeight, 0))
     
+    self.OnGround = GetGUIManager():CreateTextItem()
+    self.OnGround:SetFontSize(18)
+    self.OnGround:SetPosition(Vector(40, -80, 0))
+    
+    self.OnWall = GetGUIManager():CreateTextItem()
+    self.OnWall:SetFontSize(18)
+    self.OnWall:SetPosition(Vector(40, -60, 0))
+    
     self.momentumBackGround:AddChild(self.momentumFraction)
     self.momentumBackGround:AddChild(self.xzSpeed)
     self.momentumBackGround:AddChild(self.currentFractionBg)
     self.momentumBackGround:AddChild(self.debugText)
+    self.momentumBackGround:AddChild(self.OnGround)
+    self.momentumBackGround:AddChild(self.OnWall)
     
     Print("enabled speed meter")
 
@@ -82,12 +92,14 @@ function GUISpeedDebug:Update(deltaTime)
         local currentFraction = player:GetSpeedDebugSpecial() 
         
         local input = ""
-        if player.latestinput then
-            input = string.format("keys: %s", ToString(player.latestinput.move))
+        if player:GetLastInput() then
+            input = string.format("keys: %s", ToString(player:GetLastInput().move))
         end
 
         self.momentumFraction:SetSize(Vector(gMomentumBarWidth * bonusSpeedFraction, 30, 0))
-        self.xzSpeed:SetText( string.format( "current speed: %s  vertical speed: %s acceleration angle: %s %s", ToString(RoundVelocity(speed)), ToString(RoundVelocity(velocity.y)), ToString(currentFraction), input ) )
+        self.xzSpeed:SetText( string.format( "current speed: %s  vertical speed: %s %s", ToString(RoundVelocity(speed)), ToString(RoundVelocity(velocity.y)), input ) )
+        self.OnGround:SetText( string.format( "OnGround : %s", ToString(player:GetIsOnGround()) ) )
+        self.OnWall:SetText( string.format( "OnWall : %s", ToString(player:GetIsOnSurface()) ) )
         
         if currentFraction then
             self.currentFraction:SetSize(Vector(15, -gFractionBarHeight * currentFraction, 0))

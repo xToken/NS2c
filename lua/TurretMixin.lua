@@ -13,6 +13,8 @@ TurretMixin.expectedCallbacks =
 
 TurretMixin.optionalCallbacks =
 {
+    OnPowerOn = "Called whenever turret is powered on.",
+    OnPowerOff = "Called whenever turret is powered down.",
 }
 
 TurretMixin.networkVars =
@@ -75,6 +77,9 @@ if Server then
                 tf:AddConsumer(self)
                 self.powered = true
                 self.tfId = tf:GetId()           
+                if self.OnPowerOn then
+                    self:OnPowerOn()
+                end
             elseif tf:GetId() ~= self.tfId then
                 self.tfId = tf:GetId()
                 tf:AddConsumer(self)     
@@ -82,6 +87,9 @@ if Server then
         else
             if self.powered then
                 self.powered = false
+                if self.OnPowerOff then
+                    self:OnPowerOff()
+                end
                 self.tfId = Entity.invalidId         
             end
         end        
@@ -113,9 +121,6 @@ if Server then
     function TurretMixin:OnDestroy()
         RemoveTurret(self)
     end
-    
-elseif Client then
-
 
 end
 

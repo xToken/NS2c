@@ -6,10 +6,9 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
-Script.Load("lua/FunctionContracts.lua")
 Script.Load("lua/BalanceHealth.lua")
 
-WeldableMixin = CreateMixin( WeldableMixin )
+WeldableMixin = CreateMixin(WeldableMixin)
 WeldableMixin.type = "Weldable"
 
 WeldableMixin.optionalCallbacks =
@@ -42,7 +41,6 @@ function WeldableMixin:OnWeld(doer, elapsedTime, player)
     end
     
 end
-AddFunctionContract(WeldableMixin.OnWeld, { Arguments = { "Entity", "number" }, Returns = { "boolean" } })
 
 function WeldableMixin:OnWeldCanceled(doer)
     return true
@@ -88,4 +86,3 @@ function WeldableMixin:GetCanBeWelded(doer)
     return canBeWelded
     
 end
-AddFunctionContract(WeldableMixin.GetCanBeWelded, { Arguments = { "Entity" }, Returns = { "boolean", "boolean" } })

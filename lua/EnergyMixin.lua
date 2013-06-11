@@ -6,9 +6,7 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
-Script.Load("lua/FunctionContracts.lua")
-
-EnergyMixin = CreateMixin( EnergyMixin )
+EnergyMixin = CreateMixin(EnergyMixin)
 EnergyMixin.type = "Energy"
 local kMaxEnergy = 100
 local kEnergyUpdateTime = 1
@@ -50,27 +48,22 @@ end
 function EnergyMixin:GetEnergy()
     return self.energy
 end
-AddFunctionContract(EnergyMixin.GetEnergy, { Arguments = { "Entity" }, Returns = { "number" } })
 
 function EnergyMixin:SetEnergy(newEnergy)
     self.energy = Clamp(newEnergy, 0, self.maxEnergy)
 end
-AddFunctionContract(EnergyMixin.SetEnergy, { Arguments = { "Entity", "number" }, Returns = { } })
 
 function EnergyMixin:AddEnergy(amount)
     self.energy = Clamp(self.energy + amount, 0, self.maxEnergy)
 end
-AddFunctionContract(EnergyMixin.AddEnergy, { Arguments = { "Entity", "number" }, Returns = { } })
 
 function EnergyMixin:SetMaxEnergy(amount)
     self.maxEnergy = Clamp(amount, 0, kMaxEnergy)
 end
-AddFunctionContract(EnergyMixin.SetMaxEnergy, { Arguments = { "Entity", "number" }, Returns = { } })
 
 function EnergyMixin:GetMaxEnergy()
     return self.maxEnergy
 end
-AddFunctionContract(EnergyMixin.GetMaxEnergy, { Arguments = { "Entity" }, Returns = { "number" } })
 
 function EnergyMixin:GetEnergyFraction()
     return self:GetEnergy() / self:GetMaxEnergy()

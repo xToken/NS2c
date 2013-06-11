@@ -16,7 +16,7 @@ Script.Load("lua/ConstructMixin.lua")
 Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/RecycleMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-Script.Load("lua/AlienDetectableMixin.lua")
+Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
@@ -79,7 +79,7 @@ AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(RecycleMixin, networkVars)
-AddMixinNetworkVars(AlienDetectableMixin, networkVars)
+AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
@@ -108,7 +108,7 @@ function Armory:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, CombatMixin)
-    InitMixin(self, AlienDetectableMixin)
+    InitMixin(self, DetectableMixin)
     InitMixin(self, ParasiteMixin)
     
     if Client then
@@ -139,7 +139,7 @@ end
 function Armory:OnInitialized()
 
     ScriptActor.OnInitialized(self)
-
+    
     self:SetModel(Armory.kModelName, kAnimationGraph)
     
     InitMixin(self, WeldableMixin)
@@ -355,7 +355,7 @@ end
 
 function ArmoryAddon:OnInitialized()
 
-    ScriptActor.OnCreate(self)
+    ScriptActor.OnInitialized(self)
     
     self:SetModel(Armory.kAdvancedArmoryChildModel, Armory.kAdvancedArmoryAnimationGraph)
     

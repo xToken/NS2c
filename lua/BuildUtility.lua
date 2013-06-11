@@ -257,6 +257,7 @@ function GetIsBuildLegal(techId, position, angle, snapRadius, player, ignoreEnti
     local attachEntity = nil
     local errorString = nil
     local ignoreEntities = LookupTechData(techId, kTechDataCollideWithWorldOnly, false)
+    local ignorePathing = LookupTechData(techId, kTechDataIgnorePathingMesh, false)
     
     BuildUtility_Print("------------- GetIsBuildLegal(%s) ---------------", EnumToString(kTechId, techId))
     
@@ -299,7 +300,7 @@ function GetIsBuildLegal(techId, position, angle, snapRadius, player, ignoreEnti
     BuildUtility_Print("CheckBuildTechAvailable legal: %s", ToString(legalBuild))
     
     // Ignore entities means ignore pathing as well.
-    if not ignoreEntities and legalBuild then
+    if not ignorePathing and legalBuild then
     
         legalBuild = GetPathingRequirementsMet(legalPosition, extents)
         if not legalBuild then

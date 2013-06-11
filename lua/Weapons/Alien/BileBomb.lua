@@ -52,7 +52,7 @@ function BileBomb:GetIconOffsetY(secondary)
 end
 
 function BileBomb:GetHUDSlot()
-    return 2
+    return 3
 end
 
 function BileBomb:GetSecondaryTechId()
@@ -133,7 +133,7 @@ function BileBomb:FireBombProjectile(player)
         local startVelocity = viewCoords.zAxis * kBombVelocity + velocity * kPlayerVelocityFraction
         
         local bomb = CreateEntity(Bomb.kMapName, startPoint, player:GetTeamNumber())
-        bomb:Setup(player, startVelocity, true, Vector(0.25,0.25,0.25))
+        bomb:Setup(player, startVelocity, true, nil, player)
         
     end
     

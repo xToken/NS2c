@@ -145,11 +145,6 @@ function Alien:OnHiveConstructed(newHive, activeHiveCount)
         SendPlayersMessage({self}, kTeamMessageTypes.AbilityUnlocked, AbilityData)
     end
     self:UpdateActiveAbilities(activeHiveCount)
-    self.unassignedhives = math.min(self.unassignedhives + 1, 4)
-end
-
-function Alien:OnHiveUpgraded(newHive, techId)
-    self.unassignedhives = math.max(self.unassignedhives - 1, 0)
 end
 
 function Alien:OnHiveDestroyed(destroyedHive, activeHiveCount)
@@ -161,9 +156,6 @@ function Alien:OnHiveDestroyed(destroyedHive, activeHiveCount)
     end
     if AbilityData ~= nil and AbilityData ~= kTechId.None then
         SendPlayersMessage({self}, kTeamMessageTypes.AbilityLost, AbilityData)
-    end
-    if destroyedHive:GetTechId() == kTechId.Hive then
-        self.unassignedhives = math.max(self.unassignedhives - 1, 0)
     end
     self:UpdateActiveAbilities(activeHiveCount)
 end
@@ -211,11 +203,6 @@ function Alien:ManuallyUpdateNumUpgradeStructures()
                     self.whips = 0
                 end
             end
-        end
-        if team.techIdCount[kTechId.Hive] and team.techIdCount[kTechId.Hive] ~= nil then
-            self.unassignedhives = math.min(team.techIdCount[kTechId.Hive], 4)
-        else
-            self.unassignedhives = 0
         end
     end
 end
@@ -345,11 +332,11 @@ function Alien:GetHealthPerArmorOverride(damageType, healthPerArmor)
     
     // make sure not to ignore damage types
     if numHives >= 3 then
-        newHealthPerArmor = healthPerArmor * kHealthPointsPerArmorScalarHive3
+        newHealthPerArmor = kHealthPointsPerArmorScalarHive3
     elseif numHives == 2 then
-        newHealthPerArmor = healthPerArmor * kHealthPointsPerArmorScalarHive2
+        newHealthPerArmor = kHealthPointsPerArmorScalarHive2
     elseif numHives == 1 then
-        newHealthPerArmor = healthPerArmor * kHealthPointsPerArmorScalarHive1
+        newHealthPerArmor = kHealthPointsPerArmorScalarHive1
     end
 
     return newHealthPerArmor
@@ -459,5 +446,4 @@ function Alien:CopyPlayerDataFrom(player)
     self.shifts = player.shifts
     self.shades = player.shades
 	self.whips = player.whips
-    self.unassignedhives = player.unassignedhives
 end

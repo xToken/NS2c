@@ -14,8 +14,14 @@ Script.Load("lua/OwnerMixin.lua")
 Script.Load("lua/TechMixin.lua")
 Script.Load("lua/TargetMixin.lua")
 Script.Load("lua/UsableMixin.lua")
+Script.Load("lua/EffectsMixin.lua")
+Script.Load("lua/RelevancyMixin.lua")
 
-class 'ScriptActor' (Actor)
+if Server then
+    Script.Load("lua/InvalidOriginMixin.lua")
+end
+
+class 'ScriptActor' (Entity)
 
 ScriptActor.kMapName = "scriptactor"
 
@@ -34,7 +40,6 @@ local networkVars =
     // not certain about the maximum number of cached strings
     locationId = "resource",
     
-    locationEntId = "entityid"
 }
 
 AddMixinNetworkVars(TechMixin, networkVars)
@@ -43,10 +48,14 @@ local kMass = 100
 
 // Called right after an entity is created on the client or server. This happens through Server.CreateEntity, 
 // or when a server-created object is propagated to client. 
-function ScriptActor:OnCreate()    
+function ScriptActor:OnCreate()
 
-    Actor.OnCreate(self)
+    Entity.OnCreate(self)
     
+    // This field is not synchronized over the network.
+    self.creationTime = Shared.GetTime()
+    
+    InitMixin(self, EffectsMixin)
     InitMixin(self, TechMixin)
     
     self.attachedId = Entity.invalidId
@@ -55,9 +64,12 @@ function ScriptActor:OnCreate()
     
     self.pathingFlags = 0
     
-    self.locationEntId = Entity.invalidId
-    
     if Server then
+    
+        self.locationEntId = Entity.invalidId
+        
+        InitMixin(self, InvalidOriginMixin)
+        InitMixin(self, RelevancyMixin)
         
         // Ownership only exists on the Server.
         InitMixin(self, OwnerMixin)
@@ -71,6 +83,10 @@ function ScriptActor:OnCreate()
     InitMixin(self, TargetMixin)
     InitMixin(self, UsableMixin)
     
+    self:SetUpdates(true)
+    self:SetPropagate(Entity.Propagate_Mask)
+    self:SetRelevancyDistance(kMaxRelevancyDistance)
+    
 end
 
 // Called when entity is created via CreateEntity(), after OnCreate(). Team number and origin will be set properly before it's called.
@@ -78,22 +94,28 @@ end
 // pre-placed map entities. Generally reset-type functionality will want to be placed in here and then called inside :Reset().
 function ScriptActor:OnInitialized()
 
-    Actor.OnInitialized(self)
-    
-    if Server then
-        self:TriggerEffects("spawn", { ismarine = GetIsMarineUnit(self), isalien = GetIsAlienUnit(self) })
-    end
-    
+    Entity.OnInitialized(self)
     self:ComputeLocation()
     
 end
 
-function ScriptActor:SetLocationEntity(location)
-    self.locationEntId = location and location:GetId() or Entity.invalidId
+/**
+ * Returns the time which this ScriptActor was created at.
+ */
+function ScriptActor:GetCreationTime()
+    return self.creationTime
 end
 
-function ScriptActor:GetLocationEntity()
-    return Shared.GetEntity(self.locationEntId)
+if Server then
+
+    function ScriptActor:SetLocationEntity(location)
+        self.locationEntId = location and location:GetId() or Entity.invalidId
+    end
+
+    function ScriptActor:GetLocationEntity()
+        return Shared.GetEntity(self.locationEntId)
+    end
+
 end
 
 function ScriptActor:ComputeLocation()

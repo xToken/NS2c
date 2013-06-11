@@ -9,6 +9,7 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+Script.Load("lua/Globals.lua")
 Script.Load("lua/GUIDial.lua")
 Script.Load("lua/GUIAnimatedScript.lua")
 
@@ -19,10 +20,10 @@ Script.Load("lua/Hud/GUIInventory.lua")
 
 class 'GUIAlienHUD' (GUIAnimatedScript)
 
-local kTextureName = "ui/alien_hud_health.dds"
+local kTextureName = PrecacheAsset("ui/alien_hud_health.dds")
 
 local kHealthFontName = "fonts/Stamp_large.fnt"
-local kArmorFontName = "fonts/Stamp_large.fnt"
+local kArmorFontName = "fonts/Stamp_medium.fnt"
 local kAbilityNumFontName = "fonts/Kartika_small.fnt"
 local kHiveLocationFontName = "fonts/AgencyFB_tiny.fnt"
 

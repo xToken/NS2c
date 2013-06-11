@@ -33,21 +33,16 @@ local networkVars =
     latestResearchId = "integer",
     numCapturedTechPoint = "integer (0 to 99)",
     lastCommPingTime = "time",
-    lastCommPingPosition       = "vector",
-    techResearchingMaskMarine  = "integer",
-    techResearchedMaskMarine   = "integer",
-    techResearchingMaskAlien   = "integer",
-    techResearchedMaskAlien    = "integer",
-    armsLabUp                  = "boolean",
-    protoLabUp                 = "boolean",
-    roboticsUp                 = "boolean",
-    observatoryUp              = "boolean",
-    playerCount                = "integer (0 to " .. kMaxPlayers - 1 .. ")",
-    workerCount                = "integer (0 to 18)"
+    lastCommPingPosition = "vector",
+    techActiveMask = "integer",
+    techOwnedMask = "integer",
+    playerCount = "integer (0 to " .. kMaxPlayers - 1 .. ")",
+    kills = "integer (0 to 9999)"
 }
 
 AddMixinNetworkVars(TeamMixin, networkVars)
 
+// Relevant techs must be ordered with children techs coming after their parents
 TeamInfo.kRelevantTechIdsMarine =
 {
 
@@ -93,7 +88,7 @@ TeamInfo.kRelevantTechIdsAlien =
 
 }
 
-function CreateRelevantIdMaskMarine()
+local function CreateRelevantIdMaskMarine()
 
     local t = {}
 
@@ -109,7 +104,7 @@ function CreateRelevantIdMaskMarine()
 
 end
 
-function CreateRelevantIdMaskAlien()
+local function CreateRelevantIdMaskAlien()
 
     local t = {}
 
@@ -145,20 +140,39 @@ function TeamInfo:OnCreate()
         self.lastCommPingTime = 0
         self.lastCommPingPosition = 0
         self.totalTeamResources = 0
-        self.techResearchingMaskMarine = 0
-        self.techResearchedMaskMarine = 0
-        self.techResearchingMaskAlien = 0
-        self.techResearchedMaskAlien = 0
-        self.armsLabUp = false
-        self.protoLabUp = false
-        self.roboticsUp = false
-        self.observatoryUp = false
+        self.techActiveMask = 0
+        self.techOwnedMask = 0
         self.playerCount = 0
+        self.kills = 0
         
     end
     
     InitMixin(self, TeamMixin)
     
+end
+
+if Server then
+
+    function TeamInfo:Reset()
+    
+        self.teamResources = 0
+        self.personalResources = 0
+        self.numResourceTowers = 0
+        self.latestResearchId = 0
+        self.researchDisplayTime = 0
+        self.lastTechPriority = 0
+        self.lastCommPingTime = 0
+        self.lastCommPingPosition = 0
+        self.totalTeamResources = 0
+        self.techActiveMask = 0
+        self.techOwnedMask = 0
+        self.playerCount = 0
+        self.workerCount = 0
+        self.kills = 0
+    
+    end
+
+
 end
 
 local function UpdateInfo(self)
@@ -168,7 +182,6 @@ local function UpdateInfo(self)
         self:SetTeamNumber(self.team:GetTeamNumber())
         self.teamResources = self.team:GetTeamResources()
         self.playerCount = Clamp(self.team:GetNumPlayers(), 0, 31)
-        
         self.totalTeamResources = self.team:GetTotalTeamResources()
         self.personalResources = 0
         for index, player in ipairs(self.team:GetPlayers()) do
@@ -176,73 +189,33 @@ local function UpdateInfo(self)
         end
         
         local rtCount = 0
+        local rtActiveCount = 0
         local rts = GetEntitiesForTeam("ResourceTower", self:GetTeamNumber())
         for index, rt in ipairs(rts) do
         
-            if rt:GetIsCollecting() then
+            if rt:GetIsAlive() then
                 rtCount = rtCount + 1
+                if rt:GetIsCollecting() then
+                    rtActiveCount = rtActiveCount + 1
+                end
             end
             
         end
         
-        self.numResourceTowers = rtCount
-        self.numCapturedResPoints = #rts
+        self.numCapturedResPoints = rtCount
+        self.numResourceTowers = rtActiveCount
+        self.kills = self.team:GetKills()
         
-        if self.lastTechTreeUpdate == nil or (Shared.GetTime() > (self.lastTechTreeUpdate + TeamInfo.kTechTreeUpdateInterval)) then
-
-            self:UpdateTechTreeInfo(self.team:GetTechTree(), self.team:GetTeamNumber())
-
-            if self.team:GetTeamNumber() == kTeam1Index then
-
-                self.armsLabUp = false
-               
-                for i, entity in ipairs(GetEntitiesForTeam("ArmsLab", kTeam1Index)) do
-                
-                    if entity:GetIsBuilt() then
-                        self.armsLabUp = true
-                        break
-                    end
-                
-                end
-                
-                self.protoLabUp = false
-
-                for i, entity in ipairs(GetEntitiesForTeam("PrototypeLab", kTeam1Index)) do
-
-                    if entity:GetIsBuilt() then
-                        self.protoLabUp = true
-                        break
-                    end
-
-                end
-                
-                self.roboticsUp = false
-
-                for i, entity in ipairs(GetEntitiesForTeam("RoboticsFactory", kTeam1Index)) do
-
-                    if entity:GetIsBuilt() then
-                        self.roboticsUp = true
-                        break
-                    end
-
-                end
-                
-                self.observatoryUp = false
-
-                for i, entity in ipairs(GetEntitiesForTeam("Observatory", kTeam1Index)) do
-
-                    if entity:GetIsBuilt() then
-                        self.observatoryUp = true
-                        break
-                    end
-
-                end
-
-            end
-
-        end
-
         if Server then
+        
+            if self.lastTechTreeUpdate == nil or (Shared.GetTime() > (self.lastTechTreeUpdate + TeamInfo.kTechTreeUpdateInterval)) then
+                if not GetGamerules():GetGameStarted() then
+                    self.techActiveMask = 0
+                    self.techOwnedMask = 0
+                else
+                    self:UpdateTechTreeInfo(self.team:GetTechTree())    
+                end
+            end
         
             if self.latestResearchId ~= 0 and self.researchDisplayTime < Shared.GetTime() then
             
@@ -257,11 +230,23 @@ local function UpdateInfo(self)
             
             self.lastCommPingTime = team:GetCommanderPingTime()
             self.lastCommPingPosition = team:GetCommanderPingPosition()
-            
+                       
         end
         
     end
     
+end
+
+function TeamInfo:GetRelevantTech()
+    if self:GetTeamType() == kMarineTeamType then
+        return TeamInfo.kRelevantIdMaskMarine, TeamInfo.kRelevantTechIdsMarine
+    else
+        return TeamInfo.kRelevantIdMaskAlien, TeamInfo.kRelevantTechIdsAlien
+    end
+end
+
+function TeamInfo:GetNumWorkers()
+    return 0
 end
 
 function TeamInfo:GetPingTime()
@@ -298,19 +283,23 @@ function TeamInfo:GetNumResourceTowers()
     return self.numResourceTowers
 end
 
+function TeamInfo:GetKills()
+    return self.kills
+end
+
 function TeamInfo:UpdateRelevancy()
 
-	self:SetRelevancyDistance(Math.infinity)
-	
-	local mask = 0
-	
-	if self:GetTeamNumber() == kTeam1Index then
-		mask = kRelevantToTeam1
-	elseif self:GetTeamNumber() == kTeam2Index then
-		mask = kRelevantToTeam2
-	end
-		
-	self:SetExcludeRelevancyMask(mask)
+    self:SetRelevancyDistance(Math.infinity)
+    
+    local mask = 0
+    
+    if self:GetTeamNumber() == kTeam1Index then
+        mask = kRelevantToTeam1
+    elseif self:GetTeamNumber() == kTeam2Index then
+        mask = kRelevantToTeam2
+    end
+        
+    self:SetExcludeRelevancyMask(mask)
 
 end
 
@@ -330,43 +319,24 @@ function TeamInfo:SetLatestResearchedTech(researchId, displayTime, techPriority)
     
 end
 
-function TeamInfo:UpdateTechTreeInfo(techTree, teamNumber)
+function TeamInfo:UpdateTechTreeInfo(techTree)
 
     if not techTree then return end
-    
-    if teamNumber == kTeam1Index then
 
-        for i,techId in ipairs(TeamInfo.kRelevantTechIdsMarine) do
+    local relevantIdMask, relevantTechIds = self:GetRelevantTech()
+    for i,techId in ipairs(relevantTechIds) do
 
-            local techNode = techTree:GetTechNode(techId)
+        local techNode = techTree:GetTechNode(techId)
 
-            if techNode and TeamInfo.kRelevantIdMaskMarine then
+        if techNode and relevantIdMask then
 
-                self:UpdateBitmasks(techId, techNode, true)
-
-            end
+            self:UpdateBitmasks(techId, techNode)
 
         end
 
-        self.lastTechTreeUpdate = Shared.GetTime()
-
-    elseif teamNumber == kTeam2Index then
-    
-        for i,techId in ipairs(TeamInfo.kRelevantTechIdsAlien) do
-
-            local techNode = techTree:GetTechNode(techId)
-
-            if techNode and TeamInfo.kRelevantIdMaskAlien then
-
-                self:UpdateBitmasks(techId, techNode, false)
-
-            end
-
-        end
-
-        self.lastTechTreeUpdate = Shared.GetTime()
-    
     end
+    
+    self.lastTechTreeUpdate = Shared.GetTime()
 
 end
 
@@ -378,68 +348,63 @@ function TeamInfo:GetLatestResearchedTech()
     return self.latestResearchId
 end
 
-function TeamInfo:GetTeamTechTreeInfoMarine()
-    return self.techResearchingMaskMarine, self.techResearchedMaskMarine
-end
-
-function TeamInfo:GetTeamTechTreeInfoAlien()
-    return self.techResearchingMaskAlien, self.techResearchedMaskAlien
-end
-
 function TeamInfo:GetTotalTeamResources()
     return self.totalTeamResources
 end
 
-function TeamInfo:IsArmsLabUp()
-    return self.armsLabUp
+function TeamInfo:GetTeamTechTreeInfo()
+    return self.techActiveMask, self.techOwnedMask
 end
 
-function TeamInfo:IsProtoLabUp()
-    return self.protoLabUp
-end
+--[[
+A - Active
+O - Owned
+-----
+A O |
+-----
+0 0 | None
+1 0 | Researching
+0 1 | Lost
+1 1 | Researched
+-----]]
 
-function TeamInfo:IsRoboticsUp()
-    return self.roboticsUp
-end
+function TeamInfo:UpdateBitmasks(techId, techNode)
 
-function TeamInfo:IsObservatoryUp()
-    return self.observatoryUp
-end
-
-function TeamInfo:UpdateBitmasks(techId, techNode, isMarine)
+    local relevantIdMask, relevantTechIds = self:GetRelevantTech()
 
     local techIdString = EnumToString(kTechId, techId)
-
-    if isMarine then
+    local mask = relevantIdMask[techIdString]
     
-        if techNode:GetResearching() then
-            self.techResearchingMaskMarine = bit.bor(self.techResearchingMaskMarine, TeamInfo.kRelevantIdMaskMarine[techIdString])
-        else
-            self.techResearchingMaskMarine = bit.band(self.techResearchingMaskMarine, bit.bnot(TeamInfo.kRelevantIdMaskMarine[techIdString]))
-        end
-
-        if (techNode:GetResearched() or techNode:GetHasTech()) then
-            self.techResearchedMaskMarine = bit.bor(self.techResearchedMaskMarine, TeamInfo.kRelevantIdMaskMarine[techIdString])
-            self.techResearchingMaskMarine = bit.band(self.techResearchingMaskMarine, bit.bnot(TeamInfo.kRelevantIdMaskMarine[techIdString]))
-        else
-            self.techResearchedMaskMarine = bit.band(self.techResearchedMaskMarine, bit.bnot(TeamInfo.kRelevantIdMaskMarine[techIdString]))
-        end
-
+    // Tech researching or researched
+    if (techNode:GetResearching() and not techNode:GetResearched()) or techNode:GetHasTech() then
+        self.techActiveMask = bit.bor(self.techActiveMask, mask)
     else
+        self.techActiveMask = bit.band(self.techActiveMask, bit.bnot(mask))
+    end
     
-        if techNode:GetResearching() then
-            self.techResearchingMaskAlien = bit.bor(self.techResearchingMaskAlien, TeamInfo.kRelevantIdMaskAlien[techIdString])
-        else
-            self.techResearchingMaskAlien = bit.band(self.techResearchingMaskAlien, bit.bnot(TeamInfo.kRelevantIdMaskAlien[techIdString]))
+    // Tech has been owned at some point
+    if techNode:GetHasTech() then
+        self.techOwnedMask = bit.bor(self.techOwnedMask, mask)
+    end
+    
+    // Hide prerequisite techs when this tech has been researched
+    if techNode:GetResearched() then
+        local preq1 = techNode:GetPrereq1()
+        local preq2 = techNode:GetPrereq2()
+        if preq1 ~= nil then
+            local msk = relevantIdMask[EnumToString(kTechId, preq1)]
+            if msk then
+                self.techActiveMask = bit.band(self.techActiveMask, bit.bnot(msk))
+                self.techOwnedMask = bit.band(self.techOwnedMask, bit.bnot(msk))
+            end
         end
-
-        if (techNode:GetResearched() or techNode:GetHasTech()) then
-            self.techResearchedMaskAlien = bit.bor(self.techResearchedMaskAlien, TeamInfo.kRelevantIdMaskAlien[techIdString])
-            self.techResearchingMaskAlien = bit.band(self.techResearchingMaskAlien, bit.bnot(TeamInfo.kRelevantIdMaskAlien[techIdString]))
-        else
-            self.techResearchedMaskAlien = bit.band(self.techResearchedMaskAlien, bit.bnot(TeamInfo.kRelevantIdMaskAlien[techIdString]))
+        if preq2 ~= nil then
+            local msk = relevantIdMask[EnumToString(kTechId, preq2)]
+            if msk then
+                self.techActiveMask = bit.band(self.techActiveMask, bit.bnot(msk))
+                self.techOwnedMask = bit.band(self.techOwnedMask, bit.bnot(msk))
+            end
         end
-        
     end
 
 end

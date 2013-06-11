@@ -1,10 +1,10 @@
 //
 // lua\Weapons\Alien\AcidRocket.lua
+// Created by:   Dragon
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/Rocket.lua")
 Script.Load("lua/Weapons/Alien/Blink.lua")
-Script.Load("lua/DamageMixin.lua")
 
 class 'AcidRocket' (Blink)
 
@@ -17,16 +17,13 @@ local kAnimationGraph = PrecacheAsset("models/alien/fade/fade_view.animation_gra
 
 AcidRocket.networkVars =
 {
-    firingPrimary = "boolean"
+    lastPrimaryAttackTime = "time"
 }
 
 function AcidRocket:OnCreate()
 
     Blink.OnCreate(self)
-    InitMixin(self, DamageMixin)
-        
-    self.firingPrimary = false
-    self.timeLastAcidRocket = 0
+    self.lastPrimaryAttackTime = 0
     
 end
 
@@ -56,29 +53,15 @@ end
 
 function AcidRocket:OnPrimaryAttack(player)
 
-    if player:GetEnergy() >= self:GetEnergyCost() and Shared.GetTime() > (self.timeLastAcidRocket + self:GetPrimaryAttackDelay()) then
+    if player:GetEnergy() >= self:GetEnergyCost() and Shared.GetTime() > (self.lastPrimaryAttackTime + self:GetPrimaryAttackDelay()) then
         if Server then
             self:FireRocketProjectile(player)
-            player:DeductAbilityEnergy(self:GetEnergyCost())
         end
-        self.firingPrimary = true
-        self.timeLastAcidRocket = Shared.GetTime()
+        self.lastPrimaryAttackTime = Shared.GetTime()
         self:TriggerEffects("acidrocket_attack")
-    else
-        self.firingPrimary = false
+        player:DeductAbilityEnergy(self:GetEnergyCost())
     end  
     
-end
-
-function AcidRocket:OnPrimaryAttackEnd(player)
-
-    Ability.OnPrimaryAttackEnd(self, player)
-    self.firingPrimary = false
-    
-end
-
-function AcidRocket:GetTimeLastAcidRocket()
-    return self.timeLastAcidRocket
 end
 
 function AcidRocket:GetPrimaryAttackRequiresPress()

@@ -25,10 +25,8 @@ function AmmoPack:OnInitialized()
     
     self:SetModel(AmmoPack.kModelName)
     
-    InitMixin(self, PickupableMixin, { kRecipientType = "Marine" })
-    
-    if Server then
-        self:_CheckForPickup()
+    if Client then
+        InitMixin(self, PickupableMixin, { kRecipientType = "Marine" })
     end
 
 end
@@ -51,23 +49,6 @@ function AmmoPack:GetIsValidRecipient(recipient)
     local weapon = recipient:GetActiveWeapon()
     return weapon ~= nil and weapon:isa("ClipWeapon") and weapon:GetNeedsAmmo(false)
     
-end
-
-function GetAttachToMarineRequiresAmmo(entity)
-
-    local valid = false
-    
-    if entity:isa("Marine") then
-    
-        local weapon = entity:GetActiveWeapon()
-        
-        // only attach ammo packs to marines who need ammo
-        valid = weapon ~= nil and weapon:isa("ClipWeapon") and weapon:GetNeedsAmmo(true)
-        
-    end
-    
-    return valid
-
 end
 
 Shared.LinkClassToMap("AmmoPack", AmmoPack.kMapName)

@@ -14,7 +14,7 @@ HeavyMachineGun.kModelName = PrecacheAsset("models/marine/heavymachinegun/heavym
 local kViewModelName = PrecacheAsset("models/marine/heavymachinegun/heavymachinegun_view.model")
 local kAnimationGraph = PrecacheAsset("models/marine/heavymachinegun/heavymachinegun_view.animation_graph")
 
-local kSpread = ClipWeapon.kCone6Degrees
+local kSpread = ClipWeapon.kCone5Degrees
 local kLoopingSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/hmg_fire")
 local kHeavyMachineGunEndSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin_down")
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/heavymachinegun/muzzle_flash.cinematic")
@@ -108,23 +108,6 @@ end
 function HeavyMachineGun:GetNumStartClips()
     return 2
 end
-
-/*
-function HeavyMachineGun:OnTouch(recipient)
-    recipient:AddWeapon(self, true)
-    Shared.PlayWorldSound(nil, Marine.kGunPickupSound, nil, recipient:GetOrigin())
-end
-
-function HeavyMachineGun:GetIsValidRecipient(player)
-    if player then
-        local hasWeapon = player:GetWeaponInHUDSlot(self:GetHUDSlot())
-        if (not hasWeapon or hasWeapon.kMapName == "rifle") and self.droppedtime + kPickupWeaponTimeLimit < Shared.GetTime() then
-            return true
-        end
-    end
-    return false
-end
-*/
 
 function HeavyMachineGun:GetMaxAmmo()
     return 2 * self:GetClipSize()

@@ -6,11 +6,10 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
-Script.Load("lua/FunctionContracts.lua")
 Script.Load("lua/TechTreeConstants.lua")
 Script.Load("lua/PhysicsGroups.lua")
 
-OrdersMixin = { }
+OrdersMixin = CreateMixin(OrdersMixin)
 OrdersMixin.type = "Orders"
 
 OrdersMixin.expectedCallbacks =
@@ -63,7 +62,6 @@ local function OrderChanged(self)
     end
     
 end
-AddFunctionContract(OrderChanged, { Arguments = { "Entity" }, Returns = { } })
 
 function OrdersMixin:TransferOrders(dest)
     
@@ -74,7 +72,6 @@ function OrdersMixin:TransferOrders(dest)
     OrderChanged(self)
     
 end
-AddFunctionContract(OrdersMixin.TransferOrders, { Arguments = { "Entity", "Entity" }, Returns = { } })
 
 function OrdersMixin:CopyOrdersTo(dest)
     
@@ -89,27 +86,22 @@ function OrdersMixin:CopyOrdersTo(dest)
     OrderChanged(dest)
     
 end
-AddFunctionContract(OrdersMixin.CopyOrdersTo, { Arguments = { "Entity", "Entity" }, Returns = { } })
 
 function OrdersMixin:GetHasOrder()
     return self:GetNumOrders() > 0
 end
-AddFunctionContract(OrdersMixin.GetHasOrder, { Arguments = { "Entity" }, Returns = { "boolean" } })
 
 function OrdersMixin:GetNumOrders()
     return table.count(self.orders)
 end
-AddFunctionContract(OrdersMixin.GetNumOrders, { Arguments = { "Entity" }, Returns = { "number" } })
 
 function OrdersMixin:SetIgnoreOrders(setIgnoreOrders)
     self.ignoreOrders = setIgnoreOrders
 end
-AddFunctionContract(OrdersMixin.SetIgnoreOrders, { Arguments = { "Entity", "boolean" }, Returns = { } })
 
 function OrdersMixin:GetIgnoreOrders()
     return self.ignoreOrders
 end
-AddFunctionContract(OrdersMixin.GetIgnoreOrders, { Arguments = { "Entity" }, Returns = { "boolean" } })
 
 local function SetOrder(self, order, clearExisting, insertFirst, giver, reusedOrder)
 
@@ -157,7 +149,6 @@ local function SetOrder(self, order, clearExisting, insertFirst, giver, reusedOr
     return true
     
 end
-AddFunctionContract(SetOrder, { Arguments = { "Entity", "Order", "boolean", "boolean", { "Entity", "nil" } }, Returns = { "boolean" } })
 
 /**
  * Children can provide a OnOverrideOrder function to issue build, construct, etc. orders on right-click.
@@ -171,7 +162,6 @@ local function OverrideOrder(self, order)
     end
     
 end
-AddFunctionContract(OverrideOrder, { Arguments = { "Entity", "Order" }, Returns = { } })
 
 local function OrderTargetInvalid(self, targetId)
 
@@ -239,7 +229,6 @@ function OrdersMixin:GiveOrder(orderType, targetId, targetOrigin, orientation, c
     return ConditionalValue(success, order:GetType(), kTechId.None)
     
 end
-AddFunctionContract(OrdersMixin.GiveOrder, { Arguments = { "Entity", "number", "number", { "Vector", "nil" }, { "Vector", "nil" }, { "boolean", "nil" }, { "boolean", "nil" }, { "Entity", "nil" } }, Returns = { "number" } })
 
 function OrdersMixin:GiveSharedOrder(order, clearExisting, insertFirst, giver)
 
@@ -279,8 +268,6 @@ function OrdersMixin:GiveSharedOrder(order, clearExisting, insertFirst, giver)
     return order:GetType()
 
 end
-AddFunctionContract(OrdersMixin.GiveSharedOrder, { Arguments = { "Entity", "Entity", { "boolean", "nil" }, { "boolean", "nil" }, { "Entity", "nil" } }, Returns = { "number" } })
-
 
 local function DestroyOrders(self)
     
@@ -315,7 +302,6 @@ local function DestroyOrders(self)
     table.clear(self.orders)
 
 end
-AddFunctionContract(DestroyOrders, { Arguments = { "Entity" }, Returns = { } })
 
 function OrdersMixin:ClearOrders()
 
@@ -327,17 +313,14 @@ function OrdersMixin:ClearOrders()
     end
     
 end
-AddFunctionContract(OrdersMixin.ClearOrders, { Arguments = { "Entity" }, Returns = { } })
 
 function OrdersMixin:Reset()
     self:ClearOrders()
 end
-AddFunctionContract(OrdersMixin.Reset, { Arguments = { "Entity" }, Returns = { } })
 
 function OrdersMixin:OnKill()
     self:ClearOrders()
 end
-AddFunctionContract(OrdersMixin.OnKill, { Arguments = { "Entity" }, Returns = { } })
 
 function OrdersMixin:GetHasSpecifiedOrder(orderEnt)
 
@@ -352,7 +335,6 @@ function OrdersMixin:GetHasSpecifiedOrder(orderEnt)
     return false
 
 end
-AddFunctionContract(OrdersMixin.GetHasSpecifiedOrder, { Arguments = { "Entity", "Order" }, Returns = { "boolean" } })
 
 function OrdersMixin:GetCurrentOrder()
 
@@ -362,7 +344,6 @@ function OrdersMixin:GetCurrentOrder()
     return nil
     
 end
-AddFunctionContract(OrdersMixin.GetCurrentOrder, { Arguments = { "Entity" }, Returns = { { "Order", "nil" } } })
 
 function OrdersMixin:ClearCurrentOrder()
 
@@ -384,7 +365,6 @@ function OrdersMixin:ClearCurrentOrder()
     OrderChanged(self)
     
 end
-AddFunctionContract(OrdersMixin.ClearCurrentOrder, { Arguments = { "Entity" }, Returns = { } })
 
 function OrdersMixin:CompletedCurrentOrder()
 
@@ -402,7 +382,6 @@ function OrdersMixin:CompletedCurrentOrder()
     end
     
 end
-AddFunctionContract(OrdersMixin.CompletedCurrentOrder, { Arguments = { "Entity" }, Returns = { } })
 
 // Convert rally orders to move and we're done.
 function OrdersMixin:ProcessRallyOrder(originatingEntity)
@@ -425,7 +404,6 @@ function OrdersMixin:ProcessRallyOrder(originatingEntity)
     end
     
 end
-AddFunctionContract(OrdersMixin.ProcessRallyOrder, { Arguments = { "Entity", "Entity" }, Returns = { } })
 
 if Server then
 
@@ -567,8 +545,7 @@ if Server then
         SharedUpdate(self)
         
     end
-    AddFunctionContract(OrdersMixin.OnUpdate, { Arguments = { "Entity", "number" }, Returns = { } })
-
+    
     function OrdersMixin:OnProcessMove(input)
 
         PROFILE("OrdersMixin:OnProcessMove")
@@ -576,8 +553,7 @@ if Server then
         SharedUpdate(self)
         
     end
-    AddFunctionContract(OrdersMixin.OnProcessMove, { Arguments = { "Entity", "Move" }, Returns = { } })
-
+    
 end
 
 // Note: This needs to be tested.

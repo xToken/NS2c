@@ -10,6 +10,7 @@
 
 Script.Load("lua/GUIBorderBackground.lua")
 Script.Load("lua/GUICommanderTooltip.lua")
+Script.Load("lua/GUIDial.lua")
 
 class 'GUICommanderButtons' (GUIScript)
 
@@ -157,7 +158,11 @@ function GUICommanderButtons:Initialize()
 
     self.background = GUIManager:CreateGraphicItem()
 
-    self:InitializeMarineBackground()
+    if CommanderUI_IsAlienCommander() then
+        self:InitializeAlienBackground()
+    else
+        self:InitializeMarineBackground()
+    end
     
     self.timeLastErrorMessage = 0
 
@@ -360,7 +365,15 @@ function GUICommanderButtons:SharedInitializeButtons(settingsTable)
         self.buttonbackground[i + self.numberOfTabs] = backgroundItem        
         
         self:UpdateButtonStatus(i + self.numberOfTabs)
-
+        
+        local cooldown = GUIDial()
+        cooldown:Initialize(kHealthCircleSettings[self.teamType])
+        cooldown:GetLeftSide():SetBlendTechnique(GUIItem.Add)
+        cooldown:GetRightSide():SetBlendTechnique(GUIItem.Add)
+        
+        buttonItem:AddChild(cooldown:GetBackground())
+        self.cooldowns[self.numberOfTabs + i] = cooldown
+        
     end
     
 end
@@ -591,8 +604,22 @@ end
 function GUICommanderButtons:UpdateButtonStatus(buttonIndex)
 
     local buttonStatus = CommanderUI_MenuButtonStatus(buttonIndex)
+    local buttonCooldownFraction = CommanderUI_MenuButtonCooldownFraction(buttonIndex)
     local buttonItem = self.buttons[buttonIndex]
+    local cooldownItem = self.cooldowns[buttonIndex]
     local backgroundItem = self.buttonbackground[buttonIndex]
+    
+    if cooldownItem then
+    
+        cooldownItem:SetIsVisible(buttonCooldownFraction ~= 0)
+        if buttonCooldownFraction ~= 0 then
+        
+            cooldownItem:SetPercentage(buttonCooldownFraction)
+            cooldownItem:Update()
+            
+        end
+        
+    end
     
     buttonItem:SetIsVisible(GUICommanderButtons.kButtonStatusData[buttonStatus].Visible)
     
@@ -695,6 +722,7 @@ local function SendButtonTargetedAction(index, x, y)
     
     // Don't execute targeted action if we're still on top of the UI
     if not CommanderUI_GetMouseIsOverUI() then
+        
         player:SendTargetedAction(techId, normalizedPickRay)
         return true
         
@@ -885,7 +913,7 @@ end
 function GUICommanderButtons:ContainsPoint(pointX, pointY)
 
     // Check if the point is over any of the UI managed by the GUICommanderButtons.
-    containsPoint = containsPoint or GUIItemContainsPoint(self.playerAlerts, pointX, pointY)
+    local containsPoint = GUIItemContainsPoint(self.playerAlerts, pointX, pointY)
     containsPoint = containsPoint or (selectAllPlayers ~= nil and GUIItemContainsPoint(self.selectAllPlayers, pointX, pointY))
     return containsPoint or GUIItemContainsPoint(self.background, pointX, pointY)
     

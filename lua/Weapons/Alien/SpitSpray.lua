@@ -74,6 +74,10 @@ function SpitSpray:GetAttackDelay()
     return kSpitDelay
 end
 
+function SpitSpray:GetAbilityUsesFocus()
+    return true
+end
+
 function SpitSpray:GetLastAttackTime()
     return self.lastPrimaryAttackTime
 end
@@ -90,8 +94,8 @@ local function CreateSpitProjectile(self, player)
         local startVelocity = viewCoords.zAxis * kSpitSpeed + velocity * 0.5
         
         local spit = CreateEntity(Spit.kMapName, startPoint, player:GetTeamNumber())
-        //SetAnglesFromVector(spit, viewCoords.zAxis)
-        spit:Setup(player, startVelocity, false, Vector(0.10,0.10,0.10))
+        SetAnglesFromVector(spit, viewCoords.zAxis)
+        spit:Setup(player, startVelocity, false, nil, player)
         
     end
 
@@ -222,6 +226,13 @@ if Server then
                         self.spitted = true
                         self:DoDamage(kSpitDamage, trace.entity, compensatedProjectile.origin, trace.endPoint - compensatedProjectile.origin, trace.surface)
                         self.spitted = false
+                        
+                        if trace.entity:isa("Marine") then
+                        
+                            local direction = compensatedProjectile.origin - trace.entity:GetEyePos()
+                            direction:Normalize()
+                            
+                        end
                         
                     else
                         compensatedProjectile.origin = compensatedProjectile.origin + input.time * compensatedProjectile.velocity

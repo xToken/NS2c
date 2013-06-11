@@ -176,8 +176,6 @@ end
 
 function Ability:GetEffectParams(tableParams)
 
-    Weapon.GetEffectParams(self, tableParams)
-    
     local player = self:GetParent()
     if player then
 		//Silence Controls volume levels, dont think this actually works tho.
