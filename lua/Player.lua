@@ -1714,7 +1714,7 @@ function Player:GetCanStep()
 end
 
 function Player:GetCanStepOver(entity)
-    return false
+    return entity:isa("Egg")
 end
 
 //function Player:GetCanStepOver(entity)
@@ -1918,7 +1918,7 @@ function Player:SetOrigin(origin)
 end
 
 function Player:GetPlayFootsteps()
-    return self:GetVelocityLength() > kFootstepsThreshold and self:GetIsOnGround() and self:GetIsAlive()    
+    return self:GetVelocityLength() > kFootstepsThreshold and self:GetIsOnGround() and self:GetIsAlive() and not self:GetIsDestroyed()  
 end
 
 function Player:GetMovementModifierState()
@@ -2788,13 +2788,13 @@ end
 
 function Player:TriggerFootstep()
     
-    self.leftFoot = not self.leftFoot
-    //local sprinting = not self.movementModiferState
-    local viewVec = self:GetViewAngles():GetCoords().zAxis
-    local forward = self:GetVelocity():DotProduct(viewVec) > -0.1
-    local crouch = self:GetCrouched()
-    self:TriggerEffects("footstep", {surface = self:GetMaterialBelowPlayer(), left = self.leftFoot, sprinting = true, forward = forward, crouch = crouch})
-    
+	self.leftFoot = not self.leftFoot
+	//local sprinting = not self.movementModiferState
+	local viewVec = self:GetViewAngles():GetCoords().zAxis
+	local forward = self:GetVelocity():DotProduct(viewVec) > -0.1
+	local crouch = self:GetCrouched()
+	self:TriggerEffects("footstep", {surface = self:GetMaterialBelowPlayer(), left = self.leftFoot, sprinting = true, forward = forward, crouch = crouch})
+	
 end
 
 local kStepTagNames = { }
