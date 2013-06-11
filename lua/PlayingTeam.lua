@@ -761,10 +761,7 @@ function PlayingTeam:Update(timePassed)
         self:UpdateResourceTowers()
 
         if #gServerBots > 0 then
-
-
-            self.brain:Update(timePassed)
-
+            self:GetTeamBrain():Update(timePassed)
         end
 
     else

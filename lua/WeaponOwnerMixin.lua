@@ -230,7 +230,7 @@ function WeaponOwnerMixin:QuickSwitchWeapon()
 end
 
 function WeaponOwnerMixin:GetActiveWeapon()
-    return Shared.GetEntity(self.activeWeaponId)
+    return (Shared.GetEntity(self.activeWeaponId))
 end
 
 function WeaponOwnerMixin:GetTimeOfLastWeaponSwitch()

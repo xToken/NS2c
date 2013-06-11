@@ -16,6 +16,7 @@ for i = 1, 100 do math.random() end
 // NOTE: EventTester.lua needs to be loaded first.
 Script.Load("lua/EventTester.lua")
 
+//Script.Load("lua/JITConsoleCommands.lua")
 // Utility and constants
 Script.Load("lua/Globals.lua")
 Script.Load("lua/DamageTypes.lua")
@@ -140,6 +141,17 @@ Script.Load("lua/Weapons/Marine/GrenadeLauncher.lua")
 Script.Load("lua/Weapons/Marine/Mines.lua")
 Script.Load("lua/Weapons/Marine/Welder.lua")
 Script.Load("lua/Weapons/Marine/HandGrenades.lua")
+local GRENADES_ENABLED = false
+if GRENADES_ENABLED then
+
+    Script.Load("lua/Weapons/Marine/GasGrenadeThrower.lua")
+    Script.Load("lua/Weapons/Marine/ClusterGrenadeThrower.lua")
+    Script.Load("lua/Weapons/Marine/PulseGrenadeThrower.lua")
+    Script.Load("lua/Weapons/Marine/GasGrenade.lua")
+    Script.Load("lua/Weapons/Marine/PulseGrenade.lua")
+    Script.Load("lua/Weapons/Marine/ClusterGrenade.lua")
+    
+end
 
 Script.Load("lua/NS2Utility.lua")
 Script.Load("lua/WeaponUtility.lua")

@@ -273,7 +273,7 @@ local function FindPlaceForTechId(filterEntity, origin, techId, minRange, maxRan
     
         if checkPath then
         
-            local pathPoints = { }
+            local pathPoints = PointArray()
             local hasPathToPoint = Pathing.GetPathPoints(origin, pointToUse, pathPoints)
             
             // This path is invalid if no path was found or the last path point was not the

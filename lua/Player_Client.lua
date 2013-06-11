@@ -263,7 +263,7 @@ function PlayerUI_GetOrderPath()
             local pheromone = GetMostRelevantPheromone(playerOrigin)
             if pheromone then
             
-                local points = { }
+                local points = PointArray()
                 local isReachable = Pathing.GetPathPoints(playerOrigin, pheromone:GetOrigin(), points)
                 if isReachable then
                     return points
@@ -277,7 +277,7 @@ function PlayerUI_GetOrderPath()
             if currentOrder then
             
                 local targetLocation = currentOrder:GetLocation()
-                local points = { }
+                local points = PointArray()
                 local isReachable = Pathing.GetPathPoints(player:GetOrigin(), targetLocation, points)
                 if isReachable then
                     return points

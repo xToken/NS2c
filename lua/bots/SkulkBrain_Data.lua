@@ -1,5 +1,24 @@
 
 Script.Load("lua/bots/CommonActions.lua")
+Script.Load("lua/bots/BrainSenses.lua")
+
+local kUpgrades = {
+    kTechId.Carapace,
+    kTechId.Regeneration,
+    kTechId.Redemption,
+
+    kTechId.Silence,
+    kTechId.Ghost,
+    kTechId.Aura,
+
+    kTechId.Celerity,
+    kTechId.Adrenaline,
+	kTechId.Redeployment,
+
+	kTechId.Focus,
+	kTechId.Bombard,
+	kTechId.Fury,
+}
 
 //----------------------------------------
 //  More urgent == should really attack it ASAP
@@ -186,16 +205,49 @@ kSkulkBrainActions =
     //  
     //----------------------------------------
     function(bot, brain)
-        local name = "hatch"
+        local name = "evolve"
 
         local weight = 0.0
-        if bot:GetPlayer():isa("AlienSpectator") then
-            weight = 1000.0
+        local player = bot:GetPlayer()
+        local s = brain:GetSenses()
+        
+        local distanceToNearestThreat = s:Get("nearestThreat").distance
+        local desiredUpgrades = {}
+        
+        if player:GetIsAllowedToBuy() and
+           (distanceToNearestThreat == nil or distanceToNearestThreat > 15) and 
+           (player.GetIsInCombat == nil or not player:GetIsInCombat()) then
+            
+            // Safe enough to try to evolve            
+            
+            local existingUpgrades = player:GetUpgrades()
+            
+            for i = 1, #kUpgrades do
+                local techId = kUpgrades[i]
+                local techNode = player:GetTechTree():GetTechNode(techId)
+
+                local isAvailable = false
+                if techNode ~= nil then
+                    isAvailable = techNode:GetAvailable(player, techId, false)
+                end                    
+                
+                if not player:GetHasUpgrade(techId) and isAvailable and 
+                   GetIsUpgradeAllowed(player, techId, existingUpgrades) and
+                   GetIsUpgradeAllowed(player, techId, desiredUpgrades) then
+                    table.insert(desiredUpgrades, techId)
+                end
+            end
+            
+            if  #desiredUpgrades > 0 then
+                weight = 100.0
+            end                                
         end
+
         return { name = name, weight = weight,
-            perform = function(move)    
-                move.commands = Move.PrimaryAttack
+            perform = function(move)
+                player:ProcessBuyAction( desiredUpgrades )
             end }
+    
     end,
 
     //----------------------------------------
@@ -363,7 +415,40 @@ function CreateSkulkBrainSenses()
     local s = BrainSenses()
     s:Initialize()
 
-    // TODO TODO
+    s:Add("allThreats", function(db)
+            local player = db.bot:GetPlayer()
+            local team = player:GetTeamNumber()
+            local memories = GetTeamMemories( team )
+            return FilterTableEntries( memories,
+                function( mem )                    
+                    local ent = Shared.GetEntity( mem.entId )
+                    
+                    if ent:isa("Player") or ent:isa("Sentry") then
+                        local isAlive = HasMixin(ent, "Live") and ent:GetIsAlive()
+                        local isEnemy = HasMixin(ent, "Team") and ent:GetTeamNumber() ~= team                    
+                        return isAlive and isEnemy
+                    else
+                        return false
+                    end
+                end)                
+        end)
+
+    s:Add("nearestThreat", function(db)
+            local allThreats = db:Get("allThreats")
+            local player = db.bot:GetPlayer()
+            local playerPos = player:GetOrigin()
+            
+            local distance, nearestThreat = GetMinTableEntry( allThreats,
+                function( mem )
+                    local origin = mem.origin
+                    if origin == nil then
+                        origin = Shared.GetEntity(mem.entId):GetOrigin()
+                    end
+                    return playerPos:GetDistance(origin)
+                end)
+
+            return {distance = distance, memory = nearestThreat}
+        end)
 
     return s
 end
