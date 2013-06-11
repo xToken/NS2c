@@ -84,7 +84,7 @@ function PlayerUI_GetHiveInformation()
     
     local player = Client.GetLocalPlayer()
     
-    if player.hivesinfo ~= { } then
+    if player and player.hivesinfo ~= nil and player.hivesinfo ~= { } then
         for i = 1, #player.hivesinfo do
             local hiveinfo = player.hivesinfo[i]
             if hiveinfo ~= nil then
@@ -92,9 +92,7 @@ function PlayerUI_GetHiveInformation()
                     table.removevalue(player.hivesinfo, hiveinfo)
                 end
             end
-        end      
-    end
-    if player then
+        end
         return player.hivesinfo
     end
     
@@ -615,4 +613,34 @@ function AlienUI_GetUpgradesForCategory(category)
     
     return upgrades
 
+end
+
+// create some blood on the ground below
+local kGroundDistanceBlood = Vector(0, 1, 0)
+local kGroundBloodStartOffset = Vector(0, 0.2, 0)
+function Alien:OnTakeDamageClient(damage, doer, position)
+
+    if not self.timeLastGroundBloodDecal then
+        self.timeLastGroundBloodDecal = 0
+    end
+    
+    if self.timeLastGroundBloodDecal + 0.5 < Shared.GetTime() then
+    
+        local trace = Shared.TraceRay(self:GetOrigin() + kGroundBloodStartOffset, self:GetOrigin() - kGroundDistanceBlood, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterAll())
+        if trace.fraction ~= 1 then
+        
+            local coords = Coords.GetIdentity()
+            coords.origin = trace.endPoint
+            coords.yAxis = trace.normal
+            coords.zAxis = coords.yAxis:GetPerpendicular()
+            coords.xAxis = coords.yAxis:CrossProduct(coords.zAxis)
+        
+            self:TriggerEffects("alien_blood_ground", {effecthostcoords = coords})
+            
+        end
+        
+        self.timeLastGroundBloodDecal = Shared.GetTime()
+        
+    end
+    
 end

@@ -11,6 +11,7 @@
 Script.Load("lua/Team.lua")
 Script.Load("lua/Entity.lua")
 Script.Load("lua/TeamDeathMessageMixin.lua")
+Script.Load("lua/bots/TeamBrain.lua")
 
 class 'PlayingTeam' (Team)
 
@@ -50,6 +51,7 @@ function PlayingTeam:Initialize(teamName, teamNumber)
     
     self.concedeVoteManager = VoteManager()
     self.concedeVoteManager:Initialize()
+    self.concedeVoteManager:SetTeamPercentNeeded(kPercentNeededForVoteConcede)
 
     // child classes can specify a custom team info class
     local teamInfoMapName = TeamInfo.kMapName
@@ -67,9 +69,9 @@ function PlayingTeam:Initialize(teamName, teamNumber)
     
     self.entityTechIds = {}
     self.techIdCount = {}
-    self.droppedWeapons = {}
-    self.droppedWeaponsCache = {}
+
     self.eventListeners = {}
+
 
 end
 
@@ -174,7 +176,7 @@ function PlayingTeam:ResetTeam()
         end
     end
     
-    self.techTree:SetTechChanged()
+    //self.techTree:SetTechChanged()
 
 	return commandStructure
 end
@@ -367,7 +369,7 @@ end
 // Play audio alert for all players, but don't trigger them too often. 
 // This also allows neat tactics where players can time strikes to prevent the other team from instant notification of an alert, ala RTS.
 // Returns true if the alert was played.
-function PlayingTeam:TriggerAlert(techId, entity)
+function PlayingTeam:TriggerAlert(techId, entity, force)
 
     local triggeredAlert = false
     
@@ -402,7 +404,7 @@ function PlayingTeam:TriggerAlert(techId, entity)
 
             // If time elapsed > kBaseAlertInterval and not a repeat, play it OR
             // If time elapsed > kRepeatAlertInterval then play it no matter what
-            if ignoreInterval or (timeElapsed >= PlayingTeam.kBaseAlertInterval and not isRepeat) or timeElapsed >= PlayingTeam.kRepeatAlertInterval or newAlertPriority  > self.lastAlertPriority then
+            if force or ignoreInterval or (timeElapsed >= PlayingTeam.kBaseAlertInterval and not isRepeat) or timeElapsed >= PlayingTeam.kRepeatAlertInterval or newAlertPriority  > self.lastAlertPriority then
             
                 // Play for commanders only or for the whole team
                 local commandersOnly = not LookupTechData(techId, kTechDataAlertTeam, false)
@@ -448,13 +450,6 @@ end
 
 function PlayingTeam:SetTeamResources(amount)
 
-    if(amount > self.teamResources) then
-    
-        // Save towards victory condition
-        self.totalTeamResourcesCollected = self.totalTeamResourcesCollected + (amount - self.teamResources)
-        
-    end
-    
     self.teamResources = math.min(kMaxTeamResources, amount)
     
     function PlayerSetTeamResources(player)
@@ -471,8 +466,14 @@ function PlayingTeam:GetTeamResources()
     
 end
 
-function PlayingTeam:AddTeamResources(amount)
+function PlayingTeam:AddTeamResources(amount, countTowardsTotal)
 
+    if countTowardsTotal then
+    
+        // Save towards victory condition
+        self.totalTeamResourcesCollected = self.totalTeamResourcesCollected + amount
+        
+    end
     self:SetTeamResources(self.teamResources + amount)
     
 end
@@ -599,49 +600,6 @@ end
 
 function PlayingTeam:GetIsMarineTeam()
     return false    
-end
-
-function PlayingTeam:RegisterDroppedWeapon(weaponid)
-    if tonumber(weaponid) then
-        table.insert(self.droppedWeapons, weaponid)
-    end
-end
-
-function PlayingTeam:UpdateDroppedWeapons()
-    if self.lastweaponscan == nil or self.lastweaponscan + 1 < Shared.GetTime() then
-        for i = #self.droppedWeapons, 1, -1 do
-            if self.droppedWeapons[i] ~= nil then
-                local weapon = Shared.GetEntity(self.droppedWeapons[i])
-                if weapon then
-                    if weapon:GetWeaponWorldState() and (Shared.GetTime() - weapon.weaponWorldStateTime) >= kItemStayTime then
-                        DestroyEntity(weapon)
-                        self.droppedWeaponsCache[self.droppedWeapons[i]] = nil
-                        self.droppedWeapons[i] = nil
-                    elseif not weapon:GetWeaponWorldState() then
-                        self.droppedWeaponsCache[self.droppedWeapons[i]] = nil
-                        self.droppedWeapons[i] = nil
-                    end
-                else
-                    //Thinking theres some wierd instances of weapons picked back up and dropped that dont appear valid right away.
-                    if self.droppedWeaponsCache[self.droppedWeapons[i]] then
-                        self.droppedWeaponsCache[self.droppedWeapons[i]] = nil
-                        self.droppedWeapons[i] = nil
-                    else
-                        self.droppedWeaponsCache[self.droppedWeapons[i]] = true
-                    end
-                end
-            end
-         end
-         self.lastweaponscan = Shared.GetTime()
-         if self.lastdeepweaponscan == nil or self.lastdeepweaponscan + 60 < Shared.GetTime() then
-            for index, weapon in ientitylist(Shared.GetEntitiesWithClassname("Weapon")) do
-                if weapon and weapon:GetWeaponWorldState() and (Shared.GetTime() - weapon.weaponWorldStateTime) >= kItemStayTime then
-                    DestroyEntity(weapon)
-                end
-            end
-            self.lastdeepweaponscan = Shared.GetTime()
-         end
-     end
 end
 
 /**
@@ -775,6 +733,19 @@ function PlayingTeam:TechRemoved(entity)
     
 end
 
+function PlayingTeam:GetTeamBrain()
+
+    // we have bots, need a team brain
+    // lazily init team brain
+    if self.brain == nil then
+        self.brain = TeamBrain()
+        self.brain:Initialize(self.teamName.."-Brain", self:GetTeamNumber())
+    end
+
+    return self.brain
+            
+end
+
 function PlayingTeam:Update(timePassed)
 
     PROFILE("PlayingTeam:Update")
@@ -785,11 +756,26 @@ function PlayingTeam:Update(timePassed)
     
     self:UpdateVotes()
     
-    self:UpdateDroppedWeapons()
-    
     if GetGamerules():GetGameStarted() then
+
         self:UpdateResourceTowers()
+
+        if #gServerBots > 0 then
+
+
+            self.brain:Update(timePassed)
+
+        end
+
+    else
+
+        // deinit team brain
+        if self.brain ~= nil then
+            self.brain = nil
+        end
+
     end
+        
     
 end
 
@@ -824,12 +810,15 @@ function PlayingTeam:UpdateResourceTowers()
         
         // update resources
         local ResGained = numRTs * kResourcePerTick
+        
         if self:GetTeamType() == kMarineTeamType then
-            self:AddTeamResources(ResGained)
+            self:AddTeamResources(ResGained, true)
         else
-            self:SplitPres(ResGained, false)
+            self:SplitPres(self:ApplyResourceScaling(ResGained))
         end 
         
+        self.totalTeamResFromTowers = self.totalTeamResFromTowers + ResGained
+    
     end
 
 end
@@ -903,6 +892,24 @@ function PlayingTeam:VoteToGiveUp(votingPlayer)
 
     if self.concedeVoteManager:PlayerVotes(votingPlayerSteamId, Shared.GetTime()) then
         PrintToLog("%s cast vote to give up.", votingPlayer:GetName())
+        
+        // notify all players on this team
+        if Server then
+
+            local vote = self.concedeVoteManager    
+
+            local netmsg = {
+                voterName = votingPlayer:GetName(),
+                votesMoreNeeded = vote:GetNumVotesNeeded()-vote:GetNumVotesCast()
+            }
+
+            local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
+
+            for index, player in ipairs(players) do
+                Server.SendNetworkMessage(player, "VoteConcedeCast", netmsg, false)
+            end
+
+        end
     end
 
 end
@@ -914,6 +921,24 @@ function PlayingTeam:VoteToEjectCommander(votingPlayer, targetCommander)
     
     if self.ejectCommVoteManager:PlayerVotesFor(votingPlayerSteamId, targetSteamId, Shared.GetTime()) then
         PrintToLog("%s cast vote to eject commander %s", votingPlayer:GetName(), targetCommander:GetName())
+
+        // notify all players on this team
+        if Server then
+
+            local vote = self.ejectCommVoteManager    
+
+            local netmsg = {
+                voterName = votingPlayer:GetName(),
+                votesMoreNeeded = vote:GetNumVotesNeeded()-vote:GetNumVotesCast()
+            }
+
+            local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
+
+            for index, player in ipairs(players) do
+                Server.SendNetworkMessage(player, "VoteEjectCast", netmsg, false)
+            end
+
+        end
     end
     
 end
@@ -925,36 +950,33 @@ function PlayingTeam:UpdateVotes()
     // Update with latest team size
     self.ejectCommVoteManager:SetNumPlayers(self:GetNumPlayers())
     self.concedeVoteManager:SetNumPlayers(self:GetNumPlayers())
-
+    
     // Eject commander if enough votes cast
-    if self.ejectCommVoteManager:GetVotePassed() then    
-        
-        local targetCommander = GetPlayerFromUserId( self.ejectCommVoteManager:GetTarget() )
+    if self.ejectCommVoteManager:GetVotePassed() then
+    
+        local targetCommander = GetPlayerFromUserId(self.ejectCommVoteManager:GetTarget())
         
         if targetCommander and targetCommander.Eject then
             targetCommander:Eject()
-        end        
+        end
         
         self.ejectCommVoteManager:Reset()
         
     elseif self.ejectCommVoteManager:GetVoteElapsed(Shared.GetTime()) then
-    
         self.ejectCommVoteManager:Reset()
-            
     end
     
-    // give up when enough votes
+    -- Give up when enough votes
     if self.concedeVoteManager:GetVotePassed() then
     
         self.concedeVoteManager:Reset()
         self.conceded = true
         
-    elseif self.concedeVoteManager:GetVoteElapsed(Shared.GetTime()) then
-    
-        self.concedeVoteManager:Reset()
-            
-    end 
+        Server.SendNetworkMessage("TeamConceded", { teamNumber = self:GetTeamNumber() })
         
+    elseif self.concedeVoteManager:GetVoteElapsed(Shared.GetTime()) then
+        self.concedeVoteManager:Reset()
+    end
     
 end
 
@@ -981,17 +1003,20 @@ function PlayingTeam:GetPresRecipientCount()
 
 end
 
-// split resources to all players until their they either have all reached the maximum or the rewarded res was splitted evenly
-function PlayingTeam:SplitPres(resAwarded, noscaling)
-
-    local recipientCount = self:GetPresRecipientCount()
+function PlayingTeam:ApplyResourceScaling(resAmount)
     local playercount = self:GetNumPlayers()
-    if (playercount <= kResourceScalingMinPlayers or playercount >= kResourceScalingMaxPlayers) and not noscaling then
+    if (playercount <= kResourceScalingMinPlayers or playercount >= kResourceScalingMaxPlayers) then
         local playerdiff = Clamp(playercount, kResourceScalingMinPlayers + 1, kResourceScalingMaxPlayers)
-        local oldres = resAwarded
-        resAwarded = resAwarded * Clamp((1 + ((playercount - playerdiff) / kResourceScaling)), kResourceScalingMinDelta, kResourceScalingMaxDelta)
+        resAmount = resAmount * Clamp((1 + ((playercount - playerdiff) / kResourceScaling)), kResourceScalingMinDelta, kResourceScalingMaxDelta)
         //Print(string.format("Resources adjusted to %s from %s for %s players.", ToString(resAwarded), ToString(oldres), ToString(playercount)))
     end
+    return resAmount
+end
+
+// split resources to all players until their they either have all reached the maximum or the rewarded res was splitted evenly
+function PlayingTeam:SplitPres(resAwarded)
+
+    local recipientCount = self:GetPresRecipientCount()
 
     for i = 1, recipientCount do 
     
@@ -1014,18 +1039,6 @@ function PlayingTeam:SplitPres(resAwarded, noscaling)
 
     if resAwarded > 0 then
         self:AddOverflowResources(resAwarded) 
-    end
-
-end
-
-// add resources to player and split overflow amongst the team
-function PlayingTeam:AwardPersonalResources(min, max, pointOwner)
-
-    local resAwarded = math.random(min, max) 
-    resAwarded = resAwarded - pointOwner:AwardResForKill(resAwarded)
-    
-    if resAwarded > 0 then
-        self:SplitPres(resAwarded, true)
     end
 
 end
@@ -1064,4 +1077,14 @@ function PlayingTeam:SetCommanderPing(position)
         self.lastCommPingPosition = position
     end
     
+end
+
+function PlayingTeam:OnEntityChange(oldId, newId)
+
+    Team.OnEntityChange( self, oldId, newId )
+
+    if self.brain then
+        self.brain:OnEntityChange( oldId, newId )
+    end
+
 end

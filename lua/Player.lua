@@ -27,7 +27,6 @@ Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/MobileTargetMixin.lua")
-Script.Load("lua/HintMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/BadgeMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
@@ -36,6 +35,7 @@ if Client then
     Script.Load("lua/HelpMixin.lua")
 end
 
+--@Abstract
 class 'Player' (ScriptActor)
 
 Player.kMapName = "player"
@@ -50,17 +50,23 @@ if Client then
 end
 
 if Predict then
-    function Player:OnUpdatePlayer(deltaTime)    
-    end
 
-    function Player:UpdateMisc(input)
-    end
+function Player:OnUpdatePlayer(deltaTime)    
+    // do nothing
+end
+
+function Player:UpdateMisc(input)
+    // do nothing
+end
+
 end
 
 Player.kNotEnoughResourcesSound     = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/more")
 Player.kGravity = -20
 Player.kXZExtents = 0.35
 Player.kYExtents = 0.95
+Player.kWalkMaxSpeed = 4
+Player.kOnGroundDistance = 0.1
 
 local kTapInterval = 0.27
 
@@ -91,19 +97,17 @@ local kTooltipSound = PrecacheAsset("sound/NS2.fev/common/tooltip")
 local kHintInterval = 18
 local kInvalidSound                = PrecacheAsset("sound/NS2.fev/common/invalid")
 local kChatSound                   = PrecacheAsset("sound/NS2.fev/common/chat")
-
 local kDownwardUseRange = 2.2
 local kUseBoxSize = Vector(0.5, 0.5, 0.5)
 local kWalkBackwardSpeedScalar = 1
 local kStowedWeaponWeightScalar = 1
 local kJumpHeight =  1.2
-local kOnGroundDistance = 0.1
+
 local kViewOffsetHeight = Player.kYExtents * 2 - 0.2
 local kCrouchSpeedScalar = 0.6
 local kCrouchShrinkAmount = 0.6
 local kExtentsCrouchShrinkAmount = 0.5
 local kCrouchAnimationTime = 0.4
-local kJumpMode = kJumpMode // default jumpmode copied into here, allows for classes to specify other modes
 local kThinkInterval = .2
 
 // Player speeds
@@ -116,7 +120,7 @@ local kGoldSrcFriction = 4
 local kStopSpeed = 3.6 //NS1 appears to have used 100, roughly 1.8 @ 60.. Trying 3.6 for interim.
 
 //NS1 bhop skulk could get around 530-540 units with good bhop, 290 base makes for 1.84 - Trying 1.9 for now
-local kBunnyJumpMaxSpeedFactor = 1.9 
+local kBunnyJumpMaxSpeedFactor = 1.7 
 local kMaxAirVeer = 1.2
 local kLadderAcceleration = 16
 local kMaxWalkableNormal =  math.cos( math.rad(45) )
@@ -128,7 +132,7 @@ local kBodyYawTurnThreshold = Math.Radians(5)
 local kTurnDelaySpeed = 8
 local kTurnRunDelaySpeed = 2.5
 local kTurnMoveYawBlendToMovingSpeed = 5
-local kMaxStepAmount = 1
+local kMaxStepAmount = 1.5
 local kUnstickDistance = .1
 local kUnstickOffsets =
 {
@@ -173,11 +177,11 @@ local networkVars =
     crouchfraction = "compensated interpolated float (0 to 1 by 0.01)",
     
     // bodyYaw must be compenstated as it feeds into the animation as a pose parameter
-    bodyYaw = "compensated interpolated angle (11 bits)",
-    standingBodyYaw = "angle interpolated (11 bits)",
+    bodyYaw = "compensated interpolated float (-3.14159265 to 3.14159265 by 0.003)",
+    standingBodyYaw = "interpolated float (0 to 6.2831853 by 0.003)",
     
-    bodyYawRun = "compensated interpolated angle (11 bits)",
-    runningBodyYaw = "angle interpolated (11 bits)",
+    bodyYawRun = "compensated interpolated float (-3.14159265 to 3.14159265 by 0.003)",
+    runningBodyYaw = "interpolated float (0 to 6.2831853 by 0.003)",
     timeLastMenu = "private time",
     darwinMode = "private boolean",
     
@@ -186,8 +190,8 @@ local networkVars =
     jumpHandled = "private compensated boolean",
     timeOfLastJump = "private time",
     jumping = "compensated boolean",
-    onGround = "compensated boolean",
-    onGroundNeedsUpdate = "private compensated boolean",
+    
+    moveButtonPressed = "compensated boolean",
     
     onLadder = "boolean",
     
@@ -223,7 +227,6 @@ local networkVars =
     
     communicationStatus = "enum kPlayerCommunicationStatus",
     
-    waitingForAutoTeamBalance = "private boolean",
 }
 
 ------------
@@ -240,7 +243,6 @@ AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(UpgradableMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
-AddMixinNetworkVars(HintMixin, networkVars)
 AddMixinNetworkVars(BadgeMixin, networkVars)
 
 local function GetTabDirectionVector(buttonReleased)
@@ -270,7 +272,6 @@ function Player:OnCreate()
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
-    InitMixin(self, HintMixin, { kHintSound = kTooltipSound, kHintInterval = kHintInterval })
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, BadgeMixin)
     
@@ -286,6 +287,7 @@ function Player:OnCreate()
         self.name = ""
         self.giveDamageTime = 0
         self.sendTechTreeBase = false
+        self.waitingForAutoTeamBalance = false
         
     end
     
@@ -303,8 +305,6 @@ function Player:OnCreate()
     self.movementModiferState = false
 	self.crouched = false
 	self.landtime = 0
-
-    self.showScoreboard = false
     
     self.timeLastMenu = 0
     self.darwinMode = false
@@ -328,12 +328,8 @@ function Player:OnCreate()
     self.timeOfDeath = nil
     self.crouching = false
     self.timeOfCrouchChange = 0
-    self.onGroundNeedsUpdate = true
-    self.onGround = false
     
     self.onLadder = false
-    
-    self.timeLastOnGround = 0
     
     self.resources = 0
     
@@ -342,6 +338,8 @@ function Player:OnCreate()
     
     self.isMoveBlocked = false
     self.isRookie = false
+    
+    self.moveButtonPressed = false
     
     // Create the controller for doing collision detection.
     // Just use default values for the capsule size for now. Player will update to correct
@@ -361,8 +359,6 @@ function Player:OnCreate()
     self.pushImpulse = Vector(0, 0, 0)
     self.pushTime = 0
     
-    self.waitingForAutoTeamBalance = false
-    
 end
 
 local function InitViewModel(self)
@@ -381,23 +377,24 @@ function Player:OnInitialized()
 
     ScriptActor.OnInitialized(self)
     
-    if Server then    
-        InitViewModel(self)        
-    end
-    
-    // Only give weapons when playing
-    if Server and self:GetTeamNumber() ~= kNeutralTeamType then
-        self:InitWeapons()
-    end
-    
-    // Set true on creation 
     if Server then
+    
+        InitViewModel(self)
+        // Only give weapons when playing.
+        if self:GetTeamNumber() ~= kNeutralTeamType then
+            self:InitWeapons()
+        end
+        
         self:SetName(kDefaultPlayerName)
+        
+        InitMixin(self, MobileTargetMixin)
+        
     end
+    
     self:SetScoreboardChanged(true)
     
     self:SetViewOffsetHeight(self:GetMaxViewOffsetHeight())
-
+    
     self:UpdateControllerFromEntity()
     
     if Client then
@@ -419,26 +416,63 @@ function Player:OnInitialized()
         
     end
     
-    if Server then
+    self.communicationStatus = kPlayerCommunicationStatus.None
     
-        self:SetNextThink(kThinkInterval)
-        
-        InitMixin(self, MobileTargetMixin)
-        
-    end
+end
 
-    // Make sure to call OnInitialized() for client entities that have been propagated by the server
+function DisablePlayerDanger(player)
+
+    // Stop looping music.
+    if player:GetIsLocalPlayer() then
+        Client.StopMusic("sound/NS2.fev/danger")
+    end
+    
+end
+
+/**
+ * Called when the player entity is destroyed.
+ */
+function Player:OnDestroy()
+
+    ScriptActor.OnDestroy(self)
+    
     if Client then
+    
+        if self.viewModel ~= nil then
         
-        // Only call OnInitLocalClient() for entities that are the local player
-        local player = Client.GetLocalPlayer()
-        if player == self then
-            self:OnInitLocalClient()
+            Client.DestroyRenderViewModel(self.viewModel)
+            self.viewModel = nil
+            
         end
         
+        self:UpdateCloakSoundLoop(false)
+        self:UpdateDisorientSoundLoop(false)
+        
+        self:CloseMenu()
+        
+        if self.idleSoundInstance then
+            Client.DestroySoundEffect(self.idleSoundInstance)
+        end
+        
+        if self.guiCountDownDisplay then
+        
+            GetGUIManager():DestroyGUIScript(self.guiCountDownDisplay)
+            self.guiCountDownDisplay = nil
+            
+        end
+        
+        if self.unitStatusDisplay then
+        
+            GetGUIManager():DestroyGUIScriptSingle("GUIUnitStatus")
+            self.unitStatusDisplay = nil
+            
+        end
+        
+        DisablePlayerDanger(self)
+        
+    elseif Server then
+        self:RemoveSpectators(nil)
     end
-    
-    self.communicationStatus = kPlayerCommunicationStatus.None
     
 end
 
@@ -491,8 +525,6 @@ end
 
 function Player:OverrideInput(input)
 
-    AdjustInputForInversion(input)
-    
     ClampInputPitch(input)
     
     if self.timeClosedMenu and (Shared.GetTime() < self.timeClosedMenu + .25) then
@@ -895,6 +927,10 @@ function Player:GetIsPlaying()
     return self.gameStarted and self:GetIsOnPlayingTeam()
 end
 
+function Player:GetIsOnGround()
+    return self.onGround
+end
+
 function Player:GetIsOnPlayingTeam()
     return self:GetTeamNumber() == kTeam1Index or self:GetTeamNumber() == kTeam2Index
 end
@@ -1064,7 +1100,7 @@ function Player:GetIsAffectedByAirFriction()
 end
 
 function Player:GetGroundFrictionForce()
-    return ConditionalValue(self.crouching or self.isUsing, 10, 4)
+    return ConditionalValue(self.crouching, 10, 4)
 end   
 
 function Player:GetAirFrictionForce()
@@ -1144,7 +1180,7 @@ function Player:GoldSrc_GetMaxSpeed(possible)
 end
 
 function Player:GoldSrc_GetAcceleration()
-    return ConditionalValue(self:GetIsOnGround(), kGoldSrcAcceleration, kGoldSrcAirAcceleration)
+    return ConditionalValue(self:GetIsOnSurface(), kGoldSrcAcceleration, kGoldSrcAirAcceleration)
 end
 
 function Player:GetGravityAllowed()
@@ -1156,21 +1192,6 @@ end
 
 function Player:GetCrouchSpeedScalar()
     return kCrouchSpeedScalar
-end
-
-function Player:GetMoveDirection(moveVelocity)
-
-    if self:GetIsOnLadder() then
-        return GetNormalizedVector(moveVelocity)
-    end
-    
-    local up = Vector(0, 1, 0)
-    local right = GetNormalizedVector(moveVelocity):CrossProduct(up)
-    local moveDirection = up:CrossProduct(right)
-    moveDirection:Normalize()
-    
-    return moveDirection
-    
 end
 
 function Player:OnUseTarget(target)
@@ -1240,8 +1261,8 @@ function Player:AdjustMove(input)
     
 end
 
-function Player:GetSmoothAngles()
-    return true
+function Player:GetAngleSmoothingMode()
+    return "euler"
 end
 
 function Player:GetDesiredAngles(deltaTime)
@@ -1267,6 +1288,10 @@ function Player:GetPitchSmoothRate()
     return 6
 end
 
+function Player:GetSlerpSmoothRate()
+    return 6
+end
+
 function Player:GetSmoothRoll()
     return true
 end
@@ -1284,23 +1309,24 @@ function Player:AdjustAngles(deltaTime)
 
     local angles = self:GetAngles()
     local desiredAngles = self:GetDesiredAngles(deltaTime)
+    local smoothMode = self:GetAngleSmoothingMode()
     
-    if self:GetSmoothAngles() then
+    if desiredAngles == nil then
+
+        // Just keep the old angles
+
+    elseif smoothMode == "euler" then
         
         angles.yaw = SlerpRadians(angles.yaw, desiredAngles.yaw, self:GetAngleSmoothRate() * deltaTime )
         angles.roll = SlerpRadians(angles.roll, desiredAngles.roll, self:GetRollSmoothRate() * deltaTime )
         angles.pitch = SlerpRadians(angles.pitch, desiredAngles.pitch, self:GetPitchSmoothRate() * deltaTime )
         
-        if angles.yaw > 2 * math.pi then
-            angles.yaw = angles.yaw - 2 * math.pi
-        elseif angles.yaw < 0 then
-            angles.yaw = angles.yaw + 2 * math.pi
-        end
-        
-        if self.OnAdjustAngles then
-            self:OnAdjustAngles(angles, desiredAngles)
-        end
-        
+    elseif smoothMode == "quatlerp" then
+
+        //DebugDrawAngles( angles, self:GetOrigin(), 2.0, 0.5 )
+        //Print("pre slerp = %s", ToString(angles)) 
+        angles = Angles.Lerp( angles, desiredAngles, self:GetSlerpSmoothRate()*deltaTime )
+
     else
         
         angles.pitch = desiredAngles.pitch
@@ -1309,6 +1335,7 @@ function Player:AdjustAngles(deltaTime)
 
     end
 
+    AnglesTo2PiRange(angles)
     self:SetAngles(angles)
     
 end
@@ -1335,12 +1362,17 @@ function Player:UpdateViewAngles(input)
     
 end
 
+function Player:TriggerLandEffects()
+    if not Shared.GetIsRunningPrediction() then
+        self:TriggerEffects("land", {surface = self:GetMaterialBelowPlayer()})
+    end
+end
+
 function Player:OnJumpLand(landIntensity, slowDown)
 
     self.landtime = Shared.GetTime()
-    
-    if Client and self:GetIsLocalPlayer() then
-        self:OnJumpLandLocalClient()
+    if self:GetPlayLandSound(landIntensity) then
+        self:TriggerLandEffects()
     end
     
 end
@@ -1393,42 +1425,58 @@ end
 local kDoublePI = math.pi * 2
 local kHalfPI = math.pi / 2
 
+function Player:GetIsUsingBodyYaw()
+    return true
+end
+
 local function UpdateBodyYaw(self, deltaTime, tempInput)
 
-    local yaw = self:GetAngles().yaw
-    
-    // Reset values when moving.
-    if self:GetVelocityLength() > 0.1 then
-    
-        // Take a bit of time to reset value so going into the move animation doesn't skip.
-        self.standingBodyYaw = SlerpRadians(self.standingBodyYaw, yaw, deltaTime * kTurnMoveYawBlendToMovingSpeed)
-        self.standingBodyYaw = Math.Wrap(self.standingBodyYaw, 0, kDoublePI)
+    if self:GetIsUsingBodyYaw() then
+
+        local yaw = self:GetAngles().yaw
+
+        // Reset values when moving.
+        if self:GetVelocityLength() > 0.1 then
         
-        self.runningBodyYaw = SlerpRadians(self.runningBodyYaw, yaw, deltaTime * kTurnRunDelaySpeed)
-        self.runningBodyYaw = Math.Wrap(self.runningBodyYaw, 0, kDoublePI)
+            // Take a bit of time to reset value so going into the move animation doesn't skip.
+            self.standingBodyYaw = SlerpRadians(self.standingBodyYaw, yaw, deltaTime * kTurnMoveYawBlendToMovingSpeed)
+            self.standingBodyYaw = Math.Wrap(self.standingBodyYaw, 0, kDoublePI)
+            
+            self.runningBodyYaw = SlerpRadians(self.runningBodyYaw, yaw, deltaTime * kTurnRunDelaySpeed)
+            self.runningBodyYaw = Math.Wrap(self.runningBodyYaw, 0, kDoublePI)
+            
+        else
         
-    else
-    
-        self.runningBodyYaw = yaw
-        
-        local diff = RadianDiff(self.standingBodyYaw, yaw)
-        if math.abs(diff) >= kBodyYawTurnThreshold then
-        
-            diff = Clamp(diff, -kBodyYawTurnThreshold, kBodyYawTurnThreshold)
-            self.standingBodyYaw = Math.Wrap(diff + yaw, 0, kDoublePI)
+            self.runningBodyYaw = yaw
+            
+            local diff = RadianDiff(self.standingBodyYaw, yaw)
+            if math.abs(diff) >= kBodyYawTurnThreshold then
+            
+                diff = Clamp(diff, -kBodyYawTurnThreshold, kBodyYawTurnThreshold)
+                self.standingBodyYaw = Math.Wrap(diff + yaw, 0, kDoublePI)
+                
+            end
             
         end
         
-    end
-    
-    self.bodyYawRun = Clamp(RadianDiff(self.runningBodyYaw, yaw), -kHalfPI, kHalfPI)
-    self.runningBodyYaw = Math.Wrap(self.bodyYawRun + yaw, 0, kDoublePI)
-    
-    local adjustedBodyYaw = RadianDiff(self.standingBodyYaw, yaw)
-    if adjustedBodyYaw >= 0 then
-        self.bodyYaw = adjustedBodyYaw % kHalfPI
+        self.bodyYawRun = Clamp(RadianDiff(self.runningBodyYaw, yaw), -kHalfPI, kHalfPI)
+        self.runningBodyYaw = Math.Wrap(self.bodyYawRun + yaw, 0, kDoublePI)
+        
+        local adjustedBodyYaw = RadianDiff(self.standingBodyYaw, yaw)
+        if adjustedBodyYaw >= 0 then
+            self.bodyYaw = adjustedBodyYaw % kHalfPI
+        else
+            self.bodyYaw = -(kHalfPI - adjustedBodyYaw % kHalfPI)
+        end
+
     else
-        self.bodyYaw = -(kHalfPI - adjustedBodyYaw % kHalfPI)
+
+        // Sometimes, probably due to prediction, these values can go out of range. Wrap them here
+        self.standingBodyYaw = Math.Wrap(self.standingBodyYaw, 0, kDoublePI)
+        self.runningBodyYaw = Math.Wrap(self.runningBodyYaw, 0, kDoublePI)
+        self.bodyYaw = 0
+        self.bodyYawRun = 0
+
     end
     
 end
@@ -1441,15 +1489,14 @@ local function UpdateAnimationInputs(self, input)
     
     local viewModel = self:GetViewModelEntity()
     if viewModel then
-        viewModel:ProcessMoveOnModel(input)
+        viewModel:ProcessMoveOnModel()
     end
     
     if self.ProcessMoveOnModel then
-        self:ProcessMoveOnModel(input)
+        self:ProcessMoveOnModel()
     end
 
 end
-
 
 function Player:OnProcessIntermediate(input)
    
@@ -1519,19 +1566,20 @@ function Player:OnProcessMove(input)
     
         ASSERT(self.controller ~= nil)
         
-        // Force an update to whether or not we're on the ground in case something
-        // has moved out from underneath us.
-        self.onGroundNeedsUpdate = true      
-        local wasOnGround = self.onGround
+        //local wasOnGround = self.onGround
         local previousVelocity = self:GetVelocity()
-                
+        local wasOnGround = self.onGround
+        
+        self:UpdateOnGroundState()
+
         // Update origin and velocity from input move (main physics behavior).
+        UpdateJumpLand(self, wasOnGround, previousVelocity)
+        
         self:UpdateMove(input)
         
         self:UpdateMaxMoveSpeed(input.time) 
         
         UpdateFallDamage(self, wasOnGround, previousVelocity)
-        UpdateJumpLand(self, wasOnGround, previousVelocity)
         
         // Restore the buttons so that things like the scoreboard, etc. work.
         input.commands = commands
@@ -1545,60 +1593,41 @@ function Player:OnProcessMove(input)
         
         UpdateBodyYaw(self, input.time, input)
         
-        //self:PushAIUnits()
-
-    end
-    
-    if Client then
-    
-        // Allow the use of scoreboard, chat, and map even when not alive.
-        self:UpdateScoreboardDisplay(input)
-        self:UpdateChat(input)
-        self:UpdateShowMap(input)
-        
     end
     
     self:EndUse(input.time)
     
 end
 
-function Player:PushAIUnits()
+function Player:OnProcessSpectate(deltaTime)
 
-    if not self.timeLastAIPush then
-        self.timeLastAIPush = Shared.GetTime()
-    end
-
-    if (GetIsMarineUnit(self) or GetIsAlienUnit(self)) and not self:isa("Commander") and self.timeLastAIPush + 0.5 < Shared.GetTime() then
-        
-        local entitiesInRange = GetEntitiesWithMixinForTeamWithinRange("Repositioning", self:GetTeamNumber(), self:GetOrigin(), 2)
-        local success = false
-        local baseYaw = 0
-
-        for i, entity in ipairs(entitiesInRange) do
-        
-            if entity:GetCanReposition() and ( (HasMixin(entity, "Orders") and entity:GetHasOrder()) or entity:isa("MAC") or entity:isa("Drifter") ) then
-
-                entity.isRepositioning = true
-                entity.timeLeftForReposition = RepositioningMixin.kRepositioningTime
-                
-                baseYaw = entity:FindBetterPosition( GetYawFromVector(entity:GetOrigin() - self:GetOrigin()), baseYaw, 0 )
-                
-            end
-        
+    ScriptActor.OnProcessSpectate(self, deltaTime)
+    
+    local numChildren = self:GetNumChildren()
+    for i = 1, numChildren do
+    
+        local child = self:GetChildAtIndex(i - 1)
+        if child.OnProcessIntermediate then
+            child:OnProcessIntermediate()
         end
         
-        self.timeLastAIPush = Shared.GetTime()
-        
     end
-
+    
+    local viewModel = self:GetViewModelEntity()
+    if viewModel then
+        viewModel:ProcessMoveOnModel()
+    end
+    
+    self:OnUpdatePlayer(deltaTime)
+    
 end
 
 function Player:OnUpdate(deltaTime)
 
     ScriptActor.OnUpdate(self, deltaTime)
-
+    
     self:OnUpdatePlayer(deltaTime)
-
+    
 end
 
 function Player:GetSlowOnLand()
@@ -1688,6 +1717,10 @@ function Player:GetCanStepOver(entity)
     return false
 end
 
+//function Player:GetCanStepOver(entity)
+    //return not entity:isa("Player") or entity:GetTeamNumber() == self:GetTeamNumber()
+//end
+
 local function CheckCanStepOver(self, hitEntities)
 
     local canStepOver = true
@@ -1761,7 +1794,7 @@ function Player:UpdatePosition(velocity, time)
             self:PerformMovement(horizontalOffset, maxSlideMoves, velocity)
             
             local movePerformed = self:GetOrigin() - (steppedStart or start)
-            fractionOfOffset = movePerformed:DotProduct(horizontalOffset) / (horizontalOffsetLength * horizontalOffsetLength)
+            fractionOfOffset = movePerformed:DotProduct(horizontalOffset) / (horizontalOffsetLength*horizontalOffsetLength)
             
         end
 
@@ -1866,33 +1899,6 @@ function Player:GetExtentsCrouchShrinkAmount()
     return kExtentsCrouchShrinkAmount
 end
 
-// Returns true if the player is currently standing on top of something solid. Recalculates
-// onGround if we've updated our position since we've last called this.
-function Player:GetIsOnGround()
-    
-    // Re-calculate every time SetOrigin is called
-    if self.onGroundNeedsUpdate then
-    
-        self.onGround = false
-        
-        self.onGround = self:GetIsCloseToGround(kOnGroundDistance)
-        
-        if self.onGround then
-            self.timeLastOnGround = Shared.GetTime()
-        end
-        
-        self.onGroundNeedsUpdate = false        
-        
-    end
-    
-    if self:GetIsOnLadder() then
-        return false
-    end
-    
-    return self.onGround
-    
-end
-
 function Player:SetIsOnLadder(onLadder, ladderEntity)
     self.onLadder = onLadder
 end
@@ -1909,53 +1915,10 @@ function Player:SetOrigin(origin)
     
     self:UpdateControllerFromEntity()
     
-    self.onGroundNeedsUpdate = true
-    
-end
-
-// Returns boolean indicating if we're at least the passed in distance from the ground.
-function Player:GetIsCloseToGround(distanceToGround)
-
-    PROFILE("Player:GetIsCloseToGround")
-
-    if self.controller == nil then
-        return false
-    end
-
-    if (self:GetVelocityPitch() > 0 and self.timeOfLastJump ~= nil and (Shared.GetTime() - self.timeOfLastJump < .2)) then
-    
-        // If we are moving away from the ground, don't treat
-        // us as standing on it.
-        return false
-        
-    end
-        
-    // Try to move the controller downward a small amount to determine if
-    // we're on the ground.
-    local offset = Vector(0, -distanceToGround, 0)
-    local trace = self.controller:Trace(offset, CollisionRep.Move, CollisionRep.Move, self:GetMovePhysicsMask())
-
-    local result = false
-    
-    if trace.fraction < 1 then
-    
-        // Trace ray down to get normal of ground
-        local rayTrace = Shared.TraceRay(self:GetOrigin() + Vector(0, 0.1, 0),
-                                         self:GetOrigin() - Vector(0, 1, 0),
-                                         CollisionRep.Move, EntityFilterOne(self))
-
-        if rayTrace.fraction == 1 or math.abs(rayTrace.normal.y) >= kMaxWalkableNormal then
-            result = true
-        end
-        
-    end
-
-    return result
-    
 end
 
 function Player:GetPlayFootsteps()
-    return self:GetVelocityLength() > kFootstepsThreshold and self:GetIsOnGround()
+    return self:GetVelocityLength() > kFootstepsThreshold and self:GetIsOnGround() and self:GetIsAlive()    
 end
 
 function Player:GetMovementModifierState()
@@ -1972,25 +1935,10 @@ function Player:UpdateSharedMisc(input)
     
 end
 
-function Player:UpdateScoreboardDisplay(input)
-    self.showScoreboard = (bit.band(input.commands, Move.Scoreboard) ~= 0)
-end
-
-function Player:UpdateShowMap(input)
-
-    PROFILE("Player:UpdateShowMap")
-    
-    if Client then
-    
-        self.minimapVisible = bit.band(input.commands, Move.ShowMap) ~= 0
-        self:ShowMap(self.minimapVisible, self.minimapVisible == true)
-        
-    end
-    
-end
-
-function Player:GetIsMinimapVisible()
-    return self.minimapVisible
+// Subclasses can override this.
+// In particular, the Skulk must override this since its view angles do NOT correspond to its head angles.
+function Player:GetHeadAngles()
+    return self:GetViewAngles()
 end
 
 function Player:OnUpdatePoseParameters()
@@ -2007,7 +1955,7 @@ function Player:OnUpdatePoseParameters()
             
         end
 
-        SetPlayerPoseParameters(self, viewModel)
+        SetPlayerPoseParameters(self, viewModel, self:GetHeadAngles())
         
     end
 
@@ -2046,6 +1994,11 @@ function Player:ProcessEndMode()
     return false
 end
 
+// for marquee selection
+function Player:GetIsMoveable()
+    return true
+end
+
 // Maximum speed a player can move backwards
 function Player:GetMaxBackwardSpeedScalar()
     return kWalkBackwardSpeedScalar
@@ -2060,7 +2013,7 @@ function Player:GetIsJumping()
 end
 
 function Player:GetIsIdle()
-    return self:GetVelocity():GetLengthXZ() < 0.1
+    return self:GetVelocity():GetLengthXZ() < 0.1 and not self.moveButtonPressed
 end
 
 local function CheckSpaceAboveForJump(self)
@@ -2085,6 +2038,10 @@ function Player:GetJumpVelocity(input, velocity)
     velocity.y = math.sqrt(math.abs(2 * self:GetJumpHeight() * self:GetGravityForce(input)))
 end
 
+function Player:GetPlayLandSound(landIntesity)
+    return landIntesity > 0.5
+end
+
 function Player:GetPlayJumpSound()
     return true
 end
@@ -2102,6 +2059,12 @@ function Player:PreventMegaBunnyJumping(velocity)
     end
 end
 
+function Player:TriggerJumpEffects()
+    if not Shared.GetIsRunningPrediction() then
+        self:TriggerEffects("jump", {surface = self:GetMaterialBelowPlayer()})
+    end
+end
+
 // If we jump, make sure to set self.timeOfLastJump to the current time
 function Player:HandleJump(input, velocity)
 
@@ -2116,11 +2079,7 @@ function Player:HandleJump(input, velocity)
         self:GetJumpVelocity(input, velocity)
         
         if self:GetPlayJumpSound() then
-        
-            if not Shared.GetIsRunningPrediction() then
-                self:TriggerEffects("jump", {surface = self:GetMaterialBelowPlayer()})
-            end
-            
+            self:TriggerJumpEffects()
         end
 
         // TODO: Set this somehow (set on sounds for entity, not by sound name?)
@@ -2129,7 +2088,6 @@ function Player:HandleJump(input, velocity)
         self.timeOfLastJump = Shared.GetTime()
         
         // Velocity may not have been set yet, so force onGround to false this frame
-        self.onGroundNeedsUpdate = false
         self.onGround = false
         
         self.jumping = true
@@ -2305,7 +2263,7 @@ function Player:GetSecondaryAttackLastFrame()
 end
 
 function Player:GetJumpMode()
-    return kJumpMode
+    return kJumpMode.Repeating
 end
 
 // Children can add or remove velocity according to special abilities, modes, etc.
@@ -2319,27 +2277,23 @@ function Player:ModifyVelocity(input, velocity)
             self:OnJump()
         end
         
-        if self:GetJumpMode() == 2 then
+        if self:GetJumpMode() == kJumpMode.Repeating then
             self.jumpHandled = false
-        elseif self:GetJumpMode() == 1 then
+        elseif self:GetJumpMode() == kJumpMode.Queued then
             self.jumpHandled = jumped
         else
             self.jumpHandled = true
         end
-
-    elseif self:GetIsOnGround() then
-        self:HandleOnGround(input, velocity)
+        
     end
 end
 
 function Player:GetSpeedDebugSpecial()
-    return 0
+    return self.crouchfraction
 end
 
-function Player:HandleOnGround(input, velocity)
-    if Sign(velocity.y) == -1 then
-        velocity.y = 0
-    end
+function Player:GetLastInput()
+    return self.latestinput
 end
 
 function Player:GetIsAbleToUse()
@@ -2355,7 +2309,7 @@ function Player:HandleButtons(input)
         // The following inputs are disabled when the player cannot control themself.
         input.commands = bit.band(input.commands, bit.bnot(bit.bor(Move.Use, Move.Buy, Move.Jump,
                                                                    Move.PrimaryAttack, Move.SecondaryAttack,
-                                                                   Move.NextWeapon, Move.PrevWeapon, Move.Reload,
+                                                                   Move.NextWeapon, Move.PrevWeapon, Move.Reload, Move.QuickSwitch,
                                                                    Move.Taunt, Move.Weapon1, Move.Weapon2,
                                                                    Move.Weapon3, Move.Weapon4, Move.Weapon5, Move.Crouch)))
                                                                    
@@ -2366,6 +2320,12 @@ function Player:HandleButtons(input)
         return
         
     end
+    
+    if self.HandleButtonsMixin then
+        self:HandleButtonsMixin(input)
+    end
+    
+    self.moveButtonPressed = input.move:GetLength() ~= 0
     
     // Update movement ability
     local newMovementState = bit.band(input.commands, Move.MovementModifier) ~= 0
@@ -2380,7 +2340,6 @@ function Player:HandleButtons(input)
     
     self.movementModiferState = newMovementState
     self.latestinput = input
-    self.idle = not (input.move:GetLength() > 0)
     
     local ableToUse = self:GetIsAbleToUse()
     if ableToUse and bit.band(input.commands, Move.Use) ~= 0 and not self.primaryAttackLastFrame and not self.secondaryAttackLastFrame then
@@ -2411,21 +2370,21 @@ function Player:HandleButtons(input)
     self:HandleAttacks(input)
     
     // self:HandleDoubleTap(input)
-    
-    if bit.band(input.commands, Move.NextWeapon) ~= 0 then
-        self:SelectNextWeapon()
-    end
-    
-    if bit.band(input.commands, Move.PrevWeapon) ~= 0 then
-        self:SelectPrevWeapon()
-    end
-    
+
     if bit.band(input.commands, Move.Reload) ~= 0 then
         self:Reload()
     end
     
     // Weapon switch
     if not self:GetIsCommander() and not self:GetIsUsing() then
+    
+        if bit.band(input.commands, Move.NextWeapon) ~= 0 then
+            self:SelectNextWeapon()
+        end
+        
+        if bit.band(input.commands, Move.PrevWeapon) ~= 0 then
+            self:SelectPrevWeapon()
+        end
     
         if bit.band(input.commands, Move.Weapon1) ~= 0 then
             self:SwitchWeapon(1)
@@ -2447,10 +2406,13 @@ function Player:HandleButtons(input)
             self:SwitchWeapon(5)
         end
         
+        if bit.band(input.commands, Move.QuickSwitch) ~= 0 then
+            self:QuickSwitchWeapon()
+        end
+        
     end
     
-    self:SetCrouchState(bit.band(input.commands, Move.Crouch) ~= 0, lastcrouch)    
-    self:UpdateShowMap(input)
+    self:SetCrouchState(bit.band(input.commands, Move.Crouch) ~= 0, lastcrouch)
     
 end
 
@@ -2583,7 +2545,6 @@ function Player:GoldSrc_FinishUnduck()
     self:UpdateControllerFromEntity()
     self.timeOfCrouchChange = 0.0
     self.crouchfraction = 0.0
-    self.onGroundNeedsUpdate = true
 end
 
 function Player:SetCrouchState(crouching, lastcrouching)
@@ -2667,11 +2628,7 @@ function Player:SetViewModel(viewModelName, weapon)
     // Currently there is an edge case where this function is called when
     // there is no view model entity. This will help us figure out why.
     if not viewModel then
-    
-        error("Warning: No view model entity in Player:SetViewModel(). self is a: " ..
-              self:GetClassName() .. " alive: " .. ToString(self:GetIsAlive()) ..
-              " viewModelName: " .. viewModelName .. " weapon: " .. weapon:GetClassName())
-        
+        return
     end
     
     local animationGraphFileName = nil
@@ -2829,20 +2786,14 @@ function Player:GetArmorAmount()
     return self:GetMaxArmor()
 end
 
-if Client then
-
-    function Player:TriggerFootstep()
+function Player:TriggerFootstep()
     
-        self.leftFoot = not self.leftFoot
-		//local sprinting = not self.movementModiferState
-        local viewVec = self:GetViewAngles():GetCoords().zAxis
-        local forward = self:GetVelocity():DotProduct(viewVec) > -0.1
-        local crouch = self:GetCrouched()
-        local localPlayer = Client.GetLocalPlayer()
-        local enemy = localPlayer and GetAreEnemies(self, localPlayer)
-        self:TriggerEffects("footstep", {surface = self:GetMaterialBelowPlayer(), left = self.leftFoot, sprinting = true, forward = forward, crouch = crouch, enemy = enemy})
-        
-    end
+    self.leftFoot = not self.leftFoot
+    //local sprinting = not self.movementModiferState
+    local viewVec = self:GetViewAngles():GetCoords().zAxis
+    local forward = self:GetVelocity():DotProduct(viewVec) > -0.1
+    local crouch = self:GetCrouched()
+    self:TriggerEffects("footstep", {surface = self:GetMaterialBelowPlayer(), left = self.leftFoot, sprinting = true, forward = forward, crouch = crouch})
     
 end
 
@@ -2851,6 +2802,7 @@ kStepTagNames["step"] = true
 kStepTagNames["step_run"] = true
 kStepTagNames["step_sprint"] = true
 kStepTagNames["step_crouch"] = true
+
 function Player:OnTag(tagName)
 
     PROFILE("Player:OnTag")
@@ -2860,8 +2812,8 @@ function Player:OnTag(tagName)
         return
     end
     
-    // Play footstep when foot hits the ground. Client side only.
-    if Client and self:GetPlayFootsteps() and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] then
+    // Play footstep when foot hits the ground.
+    if self:GetPlayFootsteps() and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] then
         self:TriggerFootstep()
     end
     
@@ -2937,6 +2889,9 @@ function Player:TriggerInvalidSound()
     
 end
 
+function Player:SetEthereal(ethereal)
+end
+
 function Player:GetIsWallWalkingAllowed(entity)
     return false
 end
@@ -2951,6 +2906,9 @@ function Player:OnInitialSpawn(techPointOrigin)
     local angles = Angles()
     angles:BuildFromCoords(viewCoords)
     self:SetViewAngles(angles)
+
+    angles.pitch = 0.0
+    self:SetAngles(angles)
     
 end
 
@@ -3000,13 +2958,17 @@ end
 if Server then
 
     function Player:SetWaitingForTeamBalance(waiting)
+    
         self.waitingForAutoTeamBalance = waiting
+        // Send a message as a FP spectating player will need to be notified.
+        Server.SendNetworkMessage(Server.GetOwner(self), "WaitingForAutoTeamBalance", { waiting = waiting }, true)
+        
     end
     
-end
-
-function Player:GetIsWaitingForTeamBalance()
-    return self.waitingForAutoTeamBalance
+    function Player:GetIsWaitingForTeamBalance()
+        return self.waitingForAutoTeamBalance
+    end
+    
 end
 
 function Player:GetPositionForMinimap()

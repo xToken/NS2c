@@ -71,7 +71,7 @@ Hive.kHealRadius = 12.7     // From NS1
 Hive.kHealthPercentage = .15
 Hive.kHealthUpdateTime = 2
 
-local kHiveInfestationRadius = 30
+local kHiveInfestationRadius = 25
 local kHiveInfestationBlobDensity = 3
 local kHiveInfestationGrowthRate = 0.1
 local kHiveMinInfestationRadius = 5

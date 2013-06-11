@@ -11,6 +11,7 @@ Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/PickupableMixin.lua")
 Script.Load("lua/JetpackOnBack.lua")
+Script.Load("lua/SelectableMixin.lua")
 
 class 'Jetpack' (ScriptActor)
 
@@ -21,6 +22,7 @@ Jetpack.kModelName = PrecacheAsset("models/marine/jetpack/jetpack.model")
 
 Jetpack.kAttachPoint = "JetPack"
 Jetpack.kPickupSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/jetpack_pickup")
+Jetpack.kEmptySound = PrecacheAsset("sound/NS2.fev/marine/common/jetpack_empty")
 
 Jetpack.kThinkInterval = .5
 
@@ -33,6 +35,7 @@ local networkVars = { }
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
+AddMixinNetworkVars(SelectableMixin, networkVars)
 
 function Jetpack:OnCreate ()
 
@@ -41,6 +44,7 @@ function Jetpack:OnCreate ()
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ModelMixin)
     InitMixin(self, TeamMixin)
+    InitMixin(self, SelectableMixin)
     
     InitMixin(self, PickupableMixin, { kRecipientType = "Marine" })
     
@@ -95,9 +99,5 @@ end
 function Jetpack:GetIsPermanent()
     return true
 end
-
-function Jetpack:HandledJump()
-    self.jumpHandled = true
-end  
 
 Shared.LinkClassToMap("Jetpack", Jetpack.kMapName, networkVars)

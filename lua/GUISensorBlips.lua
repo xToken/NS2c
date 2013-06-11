@@ -29,7 +29,6 @@ GUISensorBlips.kRotationDuration = 5
 function GUISensorBlips:Initialize()
 
     self.activeBlipList = { }
-    self.reuseBlips = { }
     
 end
 
@@ -41,17 +40,12 @@ function GUISensorBlips:Uninitialize()
     end
     self.activeBlipList = { }
     
-    for i, blip in ipairs(self.reuseBlips) do
-        GUI.DestroyItem(blip.GraphicsItem)
-    end
-    self.reuseBlips = { }
-    
 end
 
 function GUISensorBlips:Update(deltaTime)
 
     PROFILE("GUISensorBlips:Update")
-    
+
     self:UpdateBlipList(PlayerUI_GetSensorBlipInfo())
     
     self:UpdateAnimations(deltaTime)
@@ -61,17 +55,6 @@ end
 function GUISensorBlips:UpdateAnimations(deltaTime)
 
     PROFILE("GUISensorBlips:UpdateAnimations")
-    
-    // Update all the blip animations.
-    for i, blip in ipairs(self.reuseBlips) do
-        local currentColor = blip.GraphicsItem:GetColor()
-        local destAlpha = currentColor.a - GUISensorBlips.kAlphaPerSecond * deltaTime
-        destAlpha = Clamp(destAlpha, 0, 1)
-
-        currentColor.a = destAlpha
-        blip.GraphicsItem:SetColor(currentColor)
-        blip.TextItem:SetColor(currentColor)
-    end
     
     local baseRotationPercentage = (Shared.GetTime() % GUISensorBlips.kRotationDuration) / GUISensorBlips.kRotationDuration
     
@@ -118,13 +101,11 @@ function GUISensorBlips:UpdateBlipList(activeBlips)
     while numBlips > table.count(self.activeBlipList) do
         local newBlipItem = self:CreateBlipItem()
         table.insert(self.activeBlipList, newBlipItem)
-        newBlipItem.GraphicsItem:SetIsVisible(true)
     end
     
     while numBlips < table.count(self.activeBlipList) do
-        //self.activeBlipList[1].GraphicsItem:SetIsVisible(false)
-        table.insert(self.reuseBlips, self.activeBlipList[1])
-        table.remove(self.activeBlipList, 1)
+        GUI.DestroyItem(self.activeBlipList[#self.activeBlipList].GraphicsItem)
+        table.remove(self.activeBlipList, #self.activeBlipList)
     end
     
     // Update current blip state.
@@ -146,15 +127,6 @@ function GUISensorBlips:UpdateBlipList(activeBlips)
 end
 
 function GUISensorBlips:CreateBlipItem()
-
-    // Reuse an existing player item if there is one.
-    if table.count(self.reuseBlips) > 0 then
-        local returnBlip = self.reuseBlips[1]
-        table.remove(self.reuseBlips, 1)
-        returnBlip.GraphicsItem:SetIsVisible(true)
-        returnBlip.TextItem:SetIsVisible(true)
-        return returnBlip
-    end
 
     local newBlip = { ScreenX = 0, ScreenY = 0, Radius = 0, Type = 0 }
     newBlip.GraphicsItem = GUIManager:CreateGraphicItem()

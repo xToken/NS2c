@@ -16,7 +16,12 @@ Tracer.kMapName             = "tracer"
 kDefaultTracerEffectName = PrecacheAsset("cinematics/marine/tracer.cinematic")
 kHeavyMachineGunTracerEffectName = PrecacheAsset("cinematics/marine/exo_tracer.cinematic")
 kRailgunTracerEffectName = PrecacheAsset("cinematics/marine/railgun/tracer.cinematic")
+kRailgunTracerResidueEffectName = PrecacheAsset("cinematics/marine/railgun/tracer_residue.cinematic")
 kSpikeTracerEffectName = PrecacheAsset("cinematics/alien/tracer.cinematic")
+kSpikeTracerResidueEffectName = PrecacheAsset("cinematics/alien/tracer_residue.cinematic")
+kSpikeTracerFirstPersonResidueEffectName = PrecacheAsset("cinematics/alien/1p_tracer_residue.cinematic")
+
+local kTracerResidueDistance = 0.75
 
 function Tracer:OnDestroy()
 
@@ -32,20 +37,39 @@ end
 function Tracer:OnUpdate(deltaTime)
 
     self.timePassed = self.timePassed + deltaTime
+    
+    if not self.tracerCoords then
+    
+        self.tracerCoords = Coords()
+        self.tracerCoords.origin = self.startPoint
+        self.tracerCoords.zAxis = self.tracerVelocity:GetUnit()
+        self.tracerCoords.yAxis = self.tracerCoords.zAxis:GetPerpendicular()
+        self.tracerCoords.xAxis = Math.CrossProduct(self.tracerCoords.yAxis, self.tracerCoords.zAxis)
         
-    if self.tracerEffect ~= nil then
-
-        local coords = Coords()
+    end
+    
+    self.tracerCoords.origin = self.startPoint + self.timePassed * self.tracerVelocity
         
-        coords.origin = self.startPoint + self.timePassed * self.tracerVelocity
+    if self.tracerEffect then
+        self.tracerEffect:SetCoords(self.tracerCoords)
+    end
+    
+    if self.residueEffectName then
         
-        coords.zAxis = self.tracerVelocity:GetUnit()
-        coords.yAxis = coords.zAxis:GetPerpendicular()
-        coords.xAxis = Math.CrossProduct(coords.yAxis, coords.zAxis)
+        if not self.lastResidueOrigin then
+            self.lastResidueOrigin = Vector(self.startPoint)
+        end
         
-        self.tracerEffect:SetCoords(coords)
+        if (self.lastResidueOrigin - self.tracerCoords.origin):GetLength() > kTracerResidueDistance and (self.lifetime - self.timePassed > 0.005) then
         
-    end 
+            VectorCopy(self.tracerCoords.origin, self.lastResidueOrigin)
+            local residueCinematic = Client.CreateCinematic(RenderScene.Zone_Default)
+            residueCinematic:SetCinematic(self.residueEffectName)
+            residueCinematic:SetCoords(self.tracerCoords)
+            
+        end
+        
+    end
    
 end
 
@@ -53,7 +77,7 @@ function Tracer:GetTimeToDie()
     return self.timePassed >= self.lifetime
 end
     
-function BuildTracer(startPoint, endPoint, velocity, effectName)
+function BuildTracer(startPoint, endPoint, velocity, effectName, residueEffectName)
 
     local tracer = Tracer()
     
@@ -61,6 +85,7 @@ function BuildTracer(startPoint, endPoint, velocity, effectName)
     tracer.tracerEffect:SetCinematic(effectName)
     tracer.tracerEffect:SetCoords(Coords.GetLookIn( startPoint, GetNormalizedVector(endPoint - startPoint) ))
     tracer.tracerEffect:SetRepeatStyle(Cinematic.Repeat_Endless)
+    tracer.residueEffectName = residueEffectName
     
     tracer.tracerVelocity = Vector(0, 0, 0)
     VectorCopy(velocity, tracer.tracerVelocity)

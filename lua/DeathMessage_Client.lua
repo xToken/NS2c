@@ -9,7 +9,7 @@
 local kSubImageWidth = 128
 local kSubImageHeight = 64
 
-local queuedDeathMessages = {}
+local queuedDeathMessages = { }
 
 local resLostMarine = 0
 local resLostAlien = 0
@@ -65,37 +65,32 @@ function DeathMsgUI_GetTechHeight(doerId)
     return kSubImageHeight
 end
 
-function InitDeathMessages(player)
-
-    queuedDeathMessages = {}
-    
-end
-
-// Pass 1 for isPlayer if coming from a player (look it up from scoreboard data), otherwise it's a tech id
-function GetDeathMessageEntityName(isPlayer, clientIndex)
+-- Pass 1 for isPlayer if coming from a player (look it up from scoreboard data), otherwise it's a tech id
+local function GetDeathMessageEntityName(isPlayer, clientIndex)
 
     local name = ""
-
-    if isPlayer == 1 then
+    
+    if isPlayer then
         name = Scoreboard_GetPlayerData(clientIndex, "Name")
     elseif clientIndex ~= -1 then
         name = GetDisplayNameForTechId(clientIndex)
     end
     
-    if not name then
-        name = ""
-    end
-    
-    return name
+    return name or ""
     
 end
 
-// stored the name of the last killer
-local gKillerName = ""
-local gKillerWeaponIconIndex = 0
+-- Stored the name of the last killer.
+local gKillerName = nil
+local gKillerWeaponIconIndex = kDeathMessageIcon.None
 
+-- The killer name will clear when this is called.
 function GetKillerNameAndWeaponIcon()
-    return gKillerName, gKillerWeaponIconIndex
+
+    local killerName = gKillerName
+    gKillerName = nil
+    return killerName, gKillerWeaponIconIndex
+    
 end
 
 function DeathMsgUI_GetResLost(teamNumber)
@@ -172,10 +167,12 @@ function DeathMsgUI_AddResRecovered(amount)
 
 end
 
-function AddDeathMessage(killerIsPlayer, killerIndex, killerTeamNumber, iconIndex, targetIsPlayer, targetIndex, targetTeamNumber)
+local function AddDeathMessage(killerIsPlayer, killerIndex, killerTeamNumber, iconIndex, targetIsPlayer, targetIndex, targetTeamNumber)
 
     local killerName = GetDeathMessageEntityName(killerIsPlayer, killerIndex)
     local targetName = GetDeathMessageEntityName(targetIsPlayer, targetIndex)
+    
+    Print("%s killed %s with %s", killerName, targetName, EnumToString(kDeathMessageIcon, iconIndex))
     
     if targetIsPlayer ~= 1 then
     
@@ -210,25 +207,7 @@ function AddDeathMessage(killerIsPlayer, killerIndex, killerTeamNumber, iconInde
                 resOverride = 0
 
             elseif techIdString == "CragHive" or techIdString == "ShadeHive" or techIdString == "ShiftHive" or techIdString == "WhipHive" then
-
                 resOverride = kHiveCost
-
-            elseif techIdString == "Crag" then
-
-                resOverride = kCragCost
-
-            elseif techIdString == "Shift" then
-
-                resOverride = kShiftCost
-
-            elseif techIdString == "Shade" then
-
-                resOverride = kShadeCost
-                
-            elseif techIdString == "Whip" then
-
-                resOverride = kWhipCost
-
             end
             
             -- Change to only add cost if TRes, gonna add exceptions manually for now -DGH
@@ -247,7 +226,7 @@ function AddDeathMessage(killerIsPlayer, killerIndex, killerTeamNumber, iconInde
     local killedSelf = killerIsPlayer and targetIsPlayer and killerIndex == targetIndex
     
     local deathMessage = { GetColorForTeamNumber(killerTeamNumber), killerName, GetColorForTeamNumber(targetTeamNumber), killedSelf and "" or targetName, iconIndex, targetIsPlayer }
-    table.insertunique(queuedDeathMessages, deathMessage)
+    table.insert(queuedDeathMessages, deathMessage)
     
     local player = Client.GetLocalPlayer()
     if player and player:GetName() == targetName then
@@ -258,3 +237,8 @@ function AddDeathMessage(killerIsPlayer, killerIndex, killerTeamNumber, iconInde
     end
     
 end
+
+local function OnDeathMessage(message)
+    AddDeathMessage(message.killerIsPlayer, message.killerId, message.killerTeamNumber, message.iconIndex, message.targetIsPlayer, message.targetId, message.targetTeamNumber)
+end
+Client.HookNetworkMessage("DeathMessage", OnDeathMessage)

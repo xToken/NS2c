@@ -25,7 +25,7 @@ Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/SleeperMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
-Script.Load("lua/AlienDetectableMixin.lua")
+Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 Script.Load("lua/TargetCacheMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
@@ -93,8 +93,11 @@ local networkVars =
 {    
     // So we can update angles and pose parameters smoothly on client
     targetDirection = "vector",  
+    
     confused = "boolean",
+    
     deployed = "boolean",
+    
     attacking = "boolean"
 }
 
@@ -111,7 +114,7 @@ AddMixinNetworkVars(RecycleMixin, networkVars)
 AddMixinNetworkVars(TurretMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
-AddMixinNetworkVars(AlienDetectableMixin, networkVars)
+AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
@@ -143,7 +146,7 @@ function Sentry:OnCreate()
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
-    InitMixin(self, AlienDetectableMixin)
+    InitMixin(self, DetectableMixin)
     InitMixin(self, ParasiteMixin)
     
     if Client then
@@ -465,40 +468,11 @@ if Server then
 
     end
     
-    function Sentry:UpdateFactoryState()
-
-        local time = Shared.GetTime()
-        
-        if self.lastFactoryCheckTime == nil or (time > self.lastFactoryCheckTime + .5) then
-        
-            // Update if we're powered or not
-            self.powered = false
-            
-            local ents = GetEntitiesForTeamWithinRange("RoboticsFactory", self:GetTeamNumber(), self:GetOrigin(), kRoboticsFactoryAttachRange)
-            for index, ent in ipairs(ents) do
-            
-                if GetIsUnitActive(ent) then
-                
-                    self.powered = true
-                    break
-                    
-                end
-                
-            end
-            
-            self.lastFactoryCheckTime = time
-            
-        end
-        
-    end
-    
     function Sentry:OnUpdate(deltaTime)
     
         PROFILE("Sentry:OnUpdate")
-    
-        ScriptActor.OnUpdate(self, deltaTime)  
         
-        //self:UpdateFactoryState()
+        ScriptActor.OnUpdate(self, deltaTime)  
     
         if self.timeNextAttack == nil or (Shared.GetTime() > self.timeNextAttack) then
         
@@ -650,7 +624,7 @@ function GetCheckSentryLimit(techId, origin, normal, commander)
     if locationName then
     
         validRoom = true
-    
+        
         for index, sentry in ientitylist(Shared.GetEntitiesWithClassname("Sentry")) do
             
             if sentry:GetLocationName() == locationName then

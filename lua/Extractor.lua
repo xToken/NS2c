@@ -10,7 +10,7 @@
 
 Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/RecycleMixin.lua")
-Script.Load("lua/AlienDetectableMixin.lua")
+Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 Script.Load("lua/ResourceTower.lua")
 Script.Load("lua/WeldableMixin.lua")
@@ -39,7 +39,7 @@ AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(RecycleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
-AddMixinNetworkVars(AlienDetectableMixin, networkVars)
+AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
 AddMixinNetworkVars(EnergyMixin, networkVars)
 AddMixinNetworkVars(ElectrifyMixin, networkVars)
@@ -52,13 +52,12 @@ function Extractor:OnCreate()
     InitMixin(self, RecycleMixin)
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
-    InitMixin(self, AlienDetectableMixin)
+    InitMixin(self, DetectableMixin)
     InitMixin(self, ParasiteMixin)
     InitMixin(self, EnergyMixin)
     InitMixin(self, ElectrifyMixin)
     InitMixin(self, DamageMixin)
-    InitMixin(self, TeamMixin)
-    
+
     if Client then
         InitMixin(self, CommanderGlowMixin)
     end

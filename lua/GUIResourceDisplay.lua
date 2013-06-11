@@ -36,6 +36,9 @@ GUIResourceDisplay.kFontSize = 16
 GUIResourceDisplay.kIconTextXOffset = 5
 GUIResourceDisplay.kIconXOffset = 30
 
+local kFontName = "fonts/AgencyFB_small.fnt"
+local kFontScale = GUIScale(Vector(1,1,1))
+
 local kColorWhite = Color(1, 1, 1, 1)
 local kColorRed = Color(1, 0, 0, 1)
 
@@ -69,13 +72,13 @@ function GUIResourceDisplay:Initialize(settingsTable)
     self.background:AddChild(self.teamIcon)
 
     self.teamText = GUIManager:CreateTextItem()
-    self.teamText:SetFontSize(GUIResourceDisplay.kFontSize)
     self.teamText:SetAnchor(GUIItem.Right, GUIItem.Center)
     self.teamText:SetTextAlignmentX(GUIItem.Align_Min)
     self.teamText:SetTextAlignmentY(GUIItem.Align_Center)
     self.teamText:SetPosition(Vector(GUIResourceDisplay.kIconTextXOffset, 0, 0))
     self.teamText:SetColor(Color(1, 1, 1, 1))
-    self.teamText:SetFontIsBold(true)
+    self.teamText:SetFontName(kFontName)
+    self.teamText:SetScale(kFontScale)
     self.teamIcon:AddChild(self.teamText)
     
     // Tower display.
@@ -90,13 +93,13 @@ function GUIResourceDisplay:Initialize(settingsTable)
     self.background:AddChild(self.towerIcon)
 
     self.towerText = GUIManager:CreateTextItem()
-    self.towerText:SetFontSize(GUIResourceDisplay.kFontSize)
     self.towerText:SetAnchor(GUIItem.Right, GUIItem.Center)
     self.towerText:SetTextAlignmentX(GUIItem.Align_Min)
     self.towerText:SetTextAlignmentY(GUIItem.Align_Center)
     self.towerText:SetPosition(Vector(GUIResourceDisplay.kIconTextXOffset, 0, 0))
     self.towerText:SetColor(Color(1, 1, 1, 1))
-    self.towerText:SetFontIsBold(true)
+    self.towerText:SetFontName(kFontName)
+    self.towerText:SetScale(kFontScale)
     self.towerIcon:AddChild(self.towerText)
     
 end

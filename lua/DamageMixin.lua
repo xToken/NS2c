@@ -16,6 +16,11 @@ end
 // pass surface "none" for not hit/flinch effect
 function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode, showtracer)
 
+    // No prediction if the Client is spectating another player.
+    if Client and not Client.GetIsControllingPlayer() then
+        return false
+    end
+    
     local killedFromDamage = false
     local flinch_severe = false
     local doer = self
@@ -73,12 +78,25 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                 if Server and attacker:isa("Player") and (not doer.GetShowHitIndicator or doer:GetShowHitIndicator()) then
                     local showNumbers = GetAreEnemies(attacker,target) and target:GetIsAlive() and Shared.GetCheatsEnabled()
                     if showNumbers then
+                    
                         local msg = BuildDamageMessage(target, damage, point)
                         Server.SendNetworkMessage(attacker, "Damage", msg, false)
+                        
+                        for _, spectator in ientitylist(Shared.GetEntitiesWithClassname("Spectator")) do
+                        
+                            if attacker == Server.GetOwner(spectator):GetSpectatingPlayer() then
+                                Server.SendNetworkMessage(spectator, "Damage", msg, false)
+                            end
+                            
+                        end
+                        
                     end
                     
                     // This makes the cross hair turn red. Show it when hitting anything
-                    attacker.giveDamageTime = Shared.GetTime()
+                    if not doer.GetShowHitIndicator or doer:GetShowHitIndicator() then
+                        attacker.giveDamageTime = Shared.GetTime()
+                    end
+                    
                 end
                 
                 killedFromDamage = target:TakeDamage(damage, attacker, doer, point, direction, armorUsed, healthUsed, damageType)
@@ -128,7 +146,7 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
             
             elseif not surface or surface == "" then
             
-                surface = "metal"
+                surface = GetIsAlienUnit(target) and "organic" or "metal"
 
                 // define metal_thin, rock, or other
                 if target.GetSurfaceOverride then
@@ -159,45 +177,41 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
             end
             
             // send to all players in range, except to attacking player, he will predict the hit effect
+            local isPredicted = doer.GetAreAttackEffectsPredicted and doer:GetAreAttackEffectsPredicted()
+
             if Server then
             
                 if GetShouldSendHitEffect() then
+                                
+                    local directionVectorIndex = 1
+                    if direction then
+                        directionVectorIndex = GetIndexFromVector(direction)
+                    end
                     
                     local message = BuildHitEffectMessage(point, doer, surface, target, showtracer, altMode, flinch_severe, damage, directionVectorIndex)
                     
-                    local toPlayers = GetEntitiesWithinRange("Player", point, kHitEffectRelevancyDistance)
-                    //table.removevalue(toPlayers, attacker)
+                    local toPlayers = GetEntitiesWithinRange("Player", point, kHitEffectRelevancyDistance)                    
+                    for _, spectator in ientitylist(Shared.GetEntitiesWithClassname("Spectator")) do
+                    
+                        if table.contains(toPlayers, Server.GetOwner(spectator):GetSpectatingPlayer()) then
+                            table.insertunique(toPlayers, spectator)
+                        end
+                        
+                    end
+                    
+                    if isPredicted then
+                        table.removevalue(toPlayers, attacker)
+                    end
                     
                     for _, player in ipairs(toPlayers) do
                         Server.SendNetworkMessage(player, "HitEffect", message, false) 
                     end
                 
                 end
-            /*
+
             elseif Client then
             
-                local tableParams = { damagetype = damageType, flinch_severe = ConditionalValue(damage > 20, true, false) }
-                tableParams[kEffectHostCoords] = Coords.GetTranslation(point)
-                tableParams[kEffectFilterDoerName] = self:GetClassName()
-                tableParams[kEffectSurface] = surface
-                tableParams[kEffectFilterInAltMode] = altMode
-                
-                if target then
-                
-                    tableParams[kEffectFilterClassName] = target:GetClassName()
-                    
-                    if target.GetTeamType then
-                        tableParams[kEffectFilterIsMarine] = target:GetTeamType() == kMarineTeamType
-                        tableParams[kEffectFilterIsAlien] = target:GetTeamType() == kAlienTeamType
-                    end
-                    
-                else
-                        tableParams[kEffectFilterIsMarine] = false
-                        tableParams[kEffectFilterIsAlien] = false
-                end
-            
-                GetEffectManager():TriggerEffects("damage", tableParams, attacker)
-                GetEffectManager():TriggerEffects("damage_sound", tableParams, attacker)
+                HandleHitEffect(point, doer, surface, target, showtracer, altMode, false, damage, direction)
                 
                 // If we are far away from our target, trigger a private sound so we can hear we hit something
                 if target then
@@ -206,12 +220,8 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                         attacker:TriggerEffects("hit_effect_local", tableParams)
                     end
                     
-                    if damage > 0 and target.OnTakeDamageClient then
-                        target:OnTakeDamageClient(damage, doer, point)
-                    end
-                    
                 end
-            */
+                
             end
             
         end

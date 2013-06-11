@@ -194,6 +194,10 @@ function ARC:GetDeathIconIndex()
     return kDeathMessageIcon.ARC
 end
 
+function ARC:OnConstructionComplete()
+    self:SetRequiresAdvanced()
+end
+
 /**
  * Put the eye up 1 m.
  */
@@ -261,10 +265,7 @@ function ARC:GetFov()
 end
 
 function ARC:GetEffectParams(tableParams)
-
-    ScriptActor.GetEffectParams(self, tableParams)    
     tableParams[kEffectFilterDeployed] = self:GetInAttackMode() 
-    
 end
 
 function ARC:FilterTarget()
@@ -455,6 +456,30 @@ end
 
 function ARC:GetShowHitIndicator()
     return false
+end
+
+function GetCheckArcLimit(techId, origin, normal, commander)
+
+    local location = GetLocationForPoint(origin)
+    local locationName = location and location:GetName() or nil
+    local arcs = 0
+    
+    if locationName then
+    
+        validRoom = true
+        
+        for index, arc in ientitylist(Shared.GetEntitiesWithClassname("ARC")) do
+            
+            if arc:GetLocationName() == locationName then
+                arcs = arcs + 1
+            end
+            
+        end
+    
+    end
+    
+    return arcs < kArcsPerFactory
+    
 end
 
 Shared.LinkClassToMap("ARC", ARC.kMapName, networkVars, true)

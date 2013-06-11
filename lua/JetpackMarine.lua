@@ -30,13 +30,12 @@ end
 
 local kJetpackFuelReplenishDelay = .0
 local kJetpackMinimumFuelForLaunch = .03
-local kJumpMode = 0 // Default jumping allows for better jetpack control, while stopping jetpack-bunnyhopping
 local kVerticalThrustAccelerationMod = 2.1
 local kVerticalThrustMaxSpeed = 12.0 // note: changing this impacts kVerticalThrustAccelerationMod
 local kJetpackAcceleration = 17.0 // Horizontal acceleration
-local kWalkMaxSpeed = 3.5                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
-local kRunMaxSpeed = 6.0
-local kFlyMaxSpeed = 13.0 // NS1 jetpack is 2.9x running speed (walk: 192, jetpack: 576)
+local kWalkMaxSpeed = 3.0                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
+local kRunMaxSpeed = 5.25
+local kFlyMaxSpeed = 12.0 // NS1 jetpack is 2.9x running speed (walk: 192, jetpack: 576)
 local kJetpackTakeOffTime = .01
 
 local networkVars =
@@ -75,13 +74,13 @@ local function InitEquipment(self)
 
     assert(Server)
     
-    self.jetpackFuelRate = kJetpackUseFuelRate
+    self.jetpackFuelRate = kJetpackUseFuelRate    
 
     self.jetpackFuelOnChange = 1
     self.timeJetpackingChanged = Shared.GetTime()
     self.jetpacking = false
     
-    Shared.PlaySound(self, kJetpackPickupSound)
+    StartSoundEffectOnEntity(kJetpackPickupSound, self)
     
     self.jetpackLoop = Server.CreateEntity(SoundEffect.kMapName)
     self.jetpackLoop:SetAsset(kJetpackLoop)
@@ -111,22 +110,9 @@ function JetpackMarine:OnInitialized()
     
 end
 
-local function DestroyFuelGUI(self)
-
-    if Client and self.guiFuelDisplay then
-    
-        GetGUIManager():DestroyGUIScript(self.guiFuelDisplay)
-        self.guiFuelDisplay = nil
-        
-    end
-    
-end
-
 function JetpackMarine:OnDestroy()
 
     Marine.OnDestroy(self)
-    
-    DestroyFuelGUI(self)
     
     self.equipmentId = Entity.invalidId
     self.jetpackLoopId = Entity.invalidId
@@ -136,14 +122,6 @@ function JetpackMarine:OnDestroy()
         self.jetpackLoop = nil
         
     end
-    
-end
-
-function JetpackMarine:OnKillClient()
-
-    Marine.OnKillClient(self)
-    
-    DestroyFuelGUI(self)
     
 end
 
@@ -166,11 +144,23 @@ end
 function JetpackMarine:GetJetpack()
 
     if Server then
-        if self.equipmentId == Entity.invalidId then
+    
+        -- There is a case where this function is called after the JetpackMarine has been
+        -- destroyed but we don't have reproduction steps.
+        if not self:GetIsDestroyed() and self.equipmentId == Entity.invalidId then
             InitEquipment(self)
         end
+        
+        -- Help us track down this problem.
+        if self:GetIsDestroyed() then
+        
+            DebugPrint("Warning - JetpackMarine:GetJetpack() was called after the JetpackMarine was destroyed")
+            DebugPrint(Script.CallStack())
+            
+        end
+        
     end
-
+    
     return Shared.GetEntity(self.equipmentId)
     
 end
@@ -190,6 +180,8 @@ end
 function JetpackMarine:ReceivesFallDamage()
     return false
 end
+
+
 
 function JetpackMarine:HasJetpackDelay()
 
@@ -229,7 +221,7 @@ end
 
 function JetpackMarine:HandleJetPackEnd()
 
-    Shared.PlaySound(self, kJetpackEnd)
+    StartSoundEffectOnEntity(kJetpackEnd, self)
     
     if Server then
         self.jetpackLoop:Stop()
@@ -262,7 +254,7 @@ function JetpackMarine:GetWeaponName()
 end
 
 function JetpackMarine:GetJumpMode()
-    return kJumpMode
+    return kJumpMode.Default
 end
 
 function JetpackMarine:GetMaxBackwardSpeedScalar()
@@ -334,7 +326,7 @@ function JetpackMarine:GoldSrc_GetMaxSpeed(possible)
         return kRunMaxSpeed
     end
     
-    if self:GetIsDisrupted() then
+    if self:GetIsStunned() then
         return 0
     end
     
@@ -388,7 +380,7 @@ function JetpackMarine:GoldSrc_Accelerate(velocity, time, wishdir, wishspeed, ac
         Marine.GoldSrc_Accelerate(self, velocity, time, Vector(0,1,0), kVerticalThrustMaxSpeed, kVerticalThrustAccelerationMod)
         // Since the upwards velocity may be very small, manually set onGround to false
         // to avoid having code from sticking the player to the ground
-        self.onGround = false
+        //self.onGround = false
     end
 end
 
@@ -443,7 +435,7 @@ function JetpackMarine:GoldSrc_GetAcceleration()
     return acceleration
 end
 
-function JetpackMarine:GetCanBeDisrupted()
+function JetpackMarine:GetIsStunAllowed()
     return self:GetIsOnGround()
 end
 
@@ -477,7 +469,7 @@ function JetpackMarine:GetJetPackMode()
 end
 
 function JetpackMarine:GetIsJetpacking()
-    return self.jetpacking and (self:GetFuel()> 0) and not self:GetIsDisrupted()
+    return self.jetpacking and (self:GetFuel()> 0) and not self:GetIsStunned()
 end
 
 /**
@@ -500,7 +492,7 @@ function JetpackMarine:OnTag(tagName)
     Marine.OnTag(self, tagName)
     
     if tagName == "fly_start" and self.startedFromGround then
-        Shared.PlaySound(self, kJetpackStart)
+        StartSoundEffectOnEntity(kJetpackStart, self)
     end
 
 end

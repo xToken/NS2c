@@ -8,26 +8,17 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Script.Load("lua/FunctionContracts.lua")
-
 /**
  * Pass in a target direction and a spread amount in radians and a new
  * direction vector is returned. Pass in a function that returns a random
  * number between and including 0 and 1.
  */
-function CalculateSpread(directionCoords, spreadAmount, randomizer, minSpread)
+function CalculateSpread(directionCoords, spreadAmount, randomizer)
 
     local spreadAngle = spreadAmount / 2
-    if minSpread then
-        spreadAngle = (spreadAmount - minSpread) / 2
-    end
     
     local randomAngle = randomizer() * math.pi * 2
     local randomRadius = randomizer() * math.tan(spreadAngle)
-    
-    if minSpread then
-        randomRadius = randomRadius + math.tan(minSpread / 2)
-    end
     
     local spreadDirection = directionCoords.zAxis +
                             (directionCoords.xAxis * math.cos(randomAngle) +
@@ -38,4 +29,3 @@ function CalculateSpread(directionCoords, spreadAmount, randomizer, minSpread)
     return spreadDirection
 
 end
-AddFunctionContract(CalculateSpread, { Arguments = { "Coords", "number", "function" }, Returns = { "Vector" } })

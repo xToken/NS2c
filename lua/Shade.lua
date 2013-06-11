@@ -21,7 +21,7 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Script.Load("lua/Mixins/ClientModelMixin.lua")
+Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -46,7 +46,7 @@ Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/TriggerMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-Script.Load("lua/AlienDetectorMixin.lua")
+Script.Load("lua/DetectorMixin.lua")
 Script.Load("lua/HasUmbraMixin.lua")
 
 class 'Shade' (ScriptActor)
@@ -97,8 +97,8 @@ function Shade:OnCreate()
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
     InitMixin(self, SelectableMixin)
-    InitMixin(self, CloakableMixin)
     InitMixin(self, EntityChangeMixin)
+    InitMixin(self, CloakableMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, DetectableMixin)
     InitMixin(self, ConstructMixin)
@@ -108,7 +108,7 @@ function Shade:OnCreate()
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
     InitMixin(self, CombatMixin)
-    InitMixin(self, AlienDetectorMixin)
+    InitMixin(self, DetectorMixin)
     InitMixin(self, HasUmbraMixin)
     
     if Server then
@@ -173,15 +173,15 @@ function Shade:GetReceivesStructuralDamage()
     return true
 end
 
-function Shade:IsValidAlienDetection(detectable)
+function Shade:IsValidDetection(detectable)
     return true
 end
 
-function Shade:GetAlienDetectionRange()
+function Shade:GetDetectionRange()
     return Shade.kHiveSightRange
 end
 
-function Shade:OnCheckAlienDetectorActive()
+function Shade:OnCheckDetectorActive()
     return self:GetIsBuilt() and self:GetIsAlive()
 end
 
@@ -276,9 +276,7 @@ if Server then
     function Shade:UpdateCloaking()
     
         for _, cloakable in ipairs( GetEntitiesWithMixinForTeamWithinRange("Cloakable", self:GetTeamNumber(), self:GetOrigin(), Shade.kCloakRadius) ) do
-        
-            cloakable:SetIsCloaked(true, 1, false)
-        
+            cloakable:TriggerCloak()
         end
         
         return self:GetIsAlive()

@@ -11,7 +11,7 @@
 Script.Load("lua/TechTreeConstants.lua")
 Script.Load("lua/MixinUtility.lua")
 
-TechMixin = CreateMixin( TechMixin )
+TechMixin = CreateMixin(TechMixin)
 TechMixin.type = "Tech"
 
 TechMixin.optionalCallbacks =
@@ -130,7 +130,6 @@ function TechMixin:UpgradeToTechId(newTechId)
     return false
     
 end
-AddFunctionContract(TechMixin.UpgradeToTechId, { Arguments = { "Entity", "number" }, Returns = { "boolean" } })
 
 // Return techId that is the technology this entity represents. This is used to choose an icon to display to represent
 // this entity and also to lookup max health, spawn heights, etc.

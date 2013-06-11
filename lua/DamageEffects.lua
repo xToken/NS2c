@@ -16,6 +16,7 @@ kDamageEffects =
     {
         hitEffectLocalEffects =
         {
+
             // marine effects:
             {private_sound = "sound/NS2.fev/marine/rifle/alt_hit_hard", doer = "ClipWeapon", isalien = true, surface = "ethereal", done = true},
             {private_sound = "sound/NS2.fev/marine/rifle/alt_hit_hard", doer = "ClipWeapon", isalien = true, surface = "umbra", done = true},
@@ -30,151 +31,253 @@ kDamageEffects =
         },
     },
     
+    damage_sound_target_local =
+    {
+        damageSounds =
+        {
+            {sound = "sound/NS2.fev/alien/common/getting_shot", doer = "ClipWeapon", isalien = true, world_space = true},
+            {sound = "sound/NS2.fev/alien/common/getting_shot", doer = "Minigun", isalien = true, world_space = true},
+            {sound = "sound/NS2.fev/alien/common/getting_shot", doer = "Railgun", isalien = true, world_space = true},
+            {sound = "sound/NS2.fev/alien/common/getting_shot", doer = "Sentry", isalien = true, world_space = true},
+        }
+    
+    },
+    
     damage_sound =
     {
         damageSounds =
         {
-            {private_sound = "", surface = "nanoshield", done = true},
-            {private_sound = "", surface = "flame", done = true},
+            {sound = "", surface = "nanoshield", done = true},
+            {sound = "", surface = "flame", done = true},
             
             //Flinch sounds here, because they would otherwise never get triggered :/
-            {private_sound = "sound/NS2.fev/marine/common/wound_serious", classname = "Marine", flinch_severe = true, done = true},
-            {private_sound = "sound/NS2.fev/marine/common/wound", classname = "Marine", done = true},
+            {sound = "sound/NS2.fev/marine/common/wound_serious", classname = "Marine", flinch_severe = true, done = true},
+            {sound = "sound/NS2.fev/marine/common/wound", classname = "Marine", done = true},
             
             // alien flinch effects
-            {private_sound = "sound/NS2.fev/alien/skulk/wound_serious", classname = "Skulk", flinch_severe = true, done = true},
-            {private_sound = "sound/NS2.fev/alien/skulk/wound", classname = "Skulk", done = true},            
-            {private_sound = "sound/NS2.fev/alien/gorge/wound_serious", classname = "Gorge", flinch_severe = true, done = true},
-            {private_sound = "sound/NS2.fev/alien/gorge/wound", classname = "Gorge", done = true}, 
-            {private_sound = "sound/NS2.fev/alien/lerk/wound_serious", classname = "Lerk", flinch_severe = true, done = true},
-            {private_sound = "sound/NS2.fev/alien/lerk/wound", classname = "Lerk", done = true},
-            {private_sound = "sound/ns2c.fev/ns2c/alien/fade/wound", classname = "Fade", flinch_severe = true, done = true},
-            {private_sound = "sound/NS2.fev/alien/fade/wound", classname = "Fade", done = true},
-            {private_sound = "sound/NS2.fev/alien/onos/wound_serious", classname = "Onos", flinch_severe = true, done = true},
-            {private_sound = "sound/NS2.fev/alien/onos/wound", classname = "Onos", done = true},           
-            {private_sound = "sound/NS2.fev/alien/structures/shade/wound", classname = "Shade", done = true},
-            {private_sound = "sound/NS2.fev/alien/structures/hydra/wound", classname = "Hydra", done = true},
-            {private_sound = "sound/NS2.fev/alien/structures/crag/wound", classname = "Crag", done = true},
-            {private_sound = "sound/NS2.fev/alien/structures/whip/wound", classname = "Whip", done = true},
-            {private_sound = "sound/NS2.fev/alien/structures/harvester_wound", classname = "Harvester", done = true},       
-            {private_sound = "sound/NS2.fev/marine/common/pickup_ammo", done = true},
+            {sound = "sound/NS2.fev/alien/skulk/wound_serious", classname = "Skulk", flinch_severe = true, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/wound", classname = "Skulk", done = true},            
+            {sound = "sound/NS2.fev/alien/gorge/wound_serious", classname = "Gorge", flinch_severe = true, done = true},
+            {sound = "sound/NS2.fev/alien/gorge/wound", classname = "Gorge", done = true}, 
+            {sound = "sound/NS2.fev/alien/lerk/wound_serious", classname = "Lerk", flinch_severe = true, done = true},
+            {sound = "sound/NS2.fev/alien/lerk/wound", classname = "Lerk", done = true},
+            {sound = "sound/ns2c.fev/ns2c/alien/fade/wound", classname = "Fade", flinch_severe = true, done = true},
+            {sound = "sound/NS2.fev/alien/fade/wound", classname = "Fade", done = true},
+            {sound = "sound/NS2.fev/alien/onos/wound_serious", classname = "Onos", flinch_severe = true, done = true},
+            {sound = "sound/NS2.fev/alien/onos/wound", classname = "Onos", done = true},           
+            {sound = "sound/NS2.fev/alien/structures/shade/wound", classname = "Shade", done = true},
+            {sound = "sound/NS2.fev/alien/structures/hydra/wound", classname = "Hydra", done = true},
+            {sound = "sound/NS2.fev/alien/structures/crag/wound", classname = "Crag", done = true},
+            {sound = "sound/NS2.fev/alien/structures/whip/wound", classname = "Whip", done = true},
+            {sound = "sound/NS2.fev/alien/structures/harvester_wound", classname = "Harvester", done = true},       
+            //{sound = "sound/NS2.fev/marine/common/pickup_ammo", done = true},
             
             // marine effects:
-            {private_sound = "sound/NS2.fev/marine/rifle/alt_hit_hard", surface = "umbra", doer = "ClipWeapon", done = true},
+            {sound = "sound/NS2.fev/marine/rifle/alt_hit_hard", surface = "ethereal", world_space = true, done = true},
+            {sound = "sound/NS2.fev/marine/rifle/alt_hit_hard", surface = "hallucination", world_space = true, done = true},
+            {sound = "sound/NS2.fev/marine/rifle/alt_hit_hard", surface = "umbra", doer = "ClipWeapon", world_space = true, done = true},
+            {sound = "sound/NS2.fev/marine/rifle/alt_hit_hard", surface = "umbra", doer = "Minigun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/marine/rifle/alt_hit_hard", surface = "umbra", doer = "Railgun", world_space = true, done = true},
             
-            {private_sound = "sound/NS2.fev/materials/metal/bash", surface = "metal", doer = "Rifle", alt_mode = true, done = true},
-            {private_sound = "sound/NS2.fev/materials/organic/bash", surface = "organic", doer = "Rifle", alt_mode = true, done = true},
-            {private_sound = "sound/NS2.fev/materials/rock/bash", surface = "rock", doer = "Rifle", alt_mode = true, done = true},
-            {private_sound = "sound/NS2.fev/materials/thin_metal/bash", surface = "thin_metal", doer = "Rifle", alt_mode = true, done = true},
-            {private_sound = "sound/NS2.fev/materials/electronic/bash", surface = "electronic", doer = "Rifle", alt_mode = true, done = true},
-            {private_sound = "sound/NS2.fev/materials/armor/bash", surface = "armor", doer = "Rifle", alt_mode = true, done = true},
-            {private_sound = "sound/NS2.fev/materials/flesh/bash", surface = "flesh", doer = "Rifle", alt_mode = true, done = true},
-            {private_sound = "sound/NS2.fev/materials/membrane/bash", surface = "membrane", doer = "Rifle", alt_mode = true, done = true},
-            {private_sound = "sound/NS2.fev/materials/organic/bash", doer = "Rifle", alt_mode = true, done = true},
+            {sound = "sound/NS2.fev/materials/metal/bash", surface = "metal", doer = "Rifle", alt_mode = true, world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/bash", surface = "organic", doer = "Rifle", alt_mode = true, world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/bash", surface = "infestation", doer = "Rifle", alt_mode = true, world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/rock/bash", surface = "rock", doer = "Rifle", alt_mode = true, world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/thin_metal/bash", surface = "thin_metal", doer = "Rifle", alt_mode = true, world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/electronic/bash", surface = "electronic", doer = "Rifle", alt_mode = true, world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/armor/bash", surface = "armor", doer = "Rifle", alt_mode = true, world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/flesh/bash", surface = "flesh", doer = "Rifle", alt_mode = true, world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/membrane/bash", surface = "membrane", doer = "Rifle", alt_mode = true, world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/bash", doer = "Rifle", alt_mode = true, world_space = true, done = true},
             
-            {private_sound = "", doer = "Flamethrower", done = true},
+            {sound = "", doer = "Flamethrower", world_space = true, done = true},
 
-            {private_sound = "sound/NS2.fev/materials/metal/ricochet", surface = "metal", doer = "ClipWeapon", done = true},
-            {private_sound = "sound/NS2.fev/materials/organic/ricochet", surface = "organic", doer = "ClipWeapon", done = true},
-            {private_sound = "sound/NS2.fev/materials/rock/ricochet", surface = "rock", doer = "ClipWeapon", done = true},
-            {private_sound = "sound/NS2.fev/materials/thin_metal/ricochet", surface = "thin_metal", doer = "ClipWeapon", done = true},
-            {private_sound = "sound/NS2.fev/materials/door/ricochet", surface = "door", doer = "ClipWeapon", done = true},
-            {private_sound = "sound/NS2.fev/materials/electronic/ricochet", surface = "electronic", doer = "ClipWeapon", done = true},
-            {private_sound = "sound/NS2.fev/materials/armor/ricochet", surface = "armor", doer = "ClipWeapon", done = true},
-            {private_sound = "sound/NS2.fev/materials/flesh/ricochet", surface = "flesh", doer = "ClipWeapon", done = true},
-            {private_sound = "sound/NS2.fev/materials/membrane/ricochet", surface = "membrane", doer = "ClipWeapon", done = true},
-            {private_sound = "sound/NS2.fev/materials/organic/ricochet", doer = "ClipWeapon", done = true},
+            {sound = "sound/NS2.fev/materials/metal/ricochet", surface = "metal", doer = "ClipWeapon", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/ricochet", surface = "organic", doer = "ClipWeapon", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/ricochet", surface = "infestation", doer = "ClipWeapon", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/rock/ricochet", surface = "rock", doer = "ClipWeapon", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/thin_metal/ricochet", surface = "thin_metal", doer = "ClipWeapon", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/door/ricochet", surface = "door", doer = "ClipWeapon", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/electronic/ricochet", surface = "electronic", doer = "ClipWeapon", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/armor/ricochet", surface = "armor", doer = "ClipWeapon", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/flesh/ricochet", surface = "flesh", doer = "ClipWeapon", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/membrane/ricochet", surface = "membrane", doer = "ClipWeapon", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/ricochet", doer = "ClipWeapon", world_space = true, done = true},
             
-            {private_sound = "sound/NS2.fev/materials/metal/ricochet", surface = "metal", doer = "Sentry", done = true},
-            {private_sound = "sound/NS2.fev/materials/organic/ricochet", surface = "organic", doer = "Sentry", done = true},
-            {private_sound = "sound/NS2.fev/materials/rock/ricochet", surface = "rock", doer = "Sentry", done = true},
-            {private_sound = "sound/NS2.fev/materials/thin_metal/ricochet", surface = "thin_metal", doer = "Sentry", done = true},
-            {private_sound = "sound/NS2.fev/materials/door/ricochet", surface = "door", doer = "Sentry", done = true},
-            {private_sound = "sound/NS2.fev/materials/electronic/ricochet", surface = "electronic", doer = "Sentry", done = true},
-            {private_sound = "sound/NS2.fev/materials/armor/ricochet", surface = "armor", doer = "Sentry", done = true},
-            {private_sound = "sound/NS2.fev/materials/flesh/ricochet", surface = "flesh", doer = "Sentry", done = true},
-            {private_sound = "sound/NS2.fev/materials/membrane/ricochet", surface = "membrane", doer = "Sentry", done = true},
-            {private_sound = "sound/NS2.fev/materials/organic/ricochet", doer = "Sentry", done = true},
+            {sound = "sound/NS2.fev/materials/metal/ricochet", surface = "metal", doer = "Minigun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/ricochet", surface = "organic", doer = "Minigun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/ricochet", surface = "infestation", doer = "Minigun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/rock/ricochet", surface = "rock", doer = "Minigun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/thin_metal/ricochet", surface = "thin_metal", doer = "Minigun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/door/ricochet", surface = "door", doer = "Minigun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/electronic/ricochet", surface = "electronic", doer = "Minigun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/armor/ricochet", surface = "armor", doer = "Minigun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/flesh/ricochet", surface = "flesh", doer = "Minigun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/membrane/ricochet", surface = "membrane", doer = "Minigun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/ricochet", doer = "Minigun", world_space = true, done = true},
             
-            {private_sound = "sound/NS2.fev/materials/metal/axe", surface = "metal", doer = "Axe", done = true},
-            {private_sound = "sound/NS2.fev/materials/organic/axe", surface = "organic", doer = "Axe", done = true},
-            {private_sound = "sound/NS2.fev/materials/rock/axe", surface = "rock", doer = "Axe", done = true},
-            {private_sound = "sound/NS2.fev/materials/thin_metal/axe", surface = "thin_metal", doer = "Axe", done = true},
-            {private_sound = "sound/NS2.fev/materials/electronic/axe", surface = "electronic", doer = "Axe", done = true},
-            {private_sound = "sound/NS2.fev/materials/armor/axe", surface = "armor", doer = "Axe", done = true},
-            {private_sound = "sound/NS2.fev/materials/flesh/axe", surface = "flesh", doer = "Axe", done = true},
-            {private_sound = "sound/NS2.fev/materials/membrane/axe", surface = "membrane", doer = "Axe", done = true},
-            {private_sound = "sound/NS2.fev/materials/organic/axe", doer = "Axe", done = true},
+            {sound = "sound/NS2.fev/materials/metal/ricochet", surface = "metal", doer = "Railgun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/ricochet", surface = "organic", doer = "Railgun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/ricochet", surface = "infestation", doer = "Railgun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/rock/ricochet", surface = "rock", doer = "Railgun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/thin_metal/ricochet", surface = "thin_metal", doer = "Railgun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/door/ricochet", surface = "door", doer = "Railgun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/electronic/ricochet", surface = "electronic", doer = "Railgun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/armor/ricochet", surface = "armor", doer = "Railgun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/flesh/ricochet", surface = "flesh", doer = "Railgun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/membrane/ricochet", surface = "membrane", doer = "Railgun", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/ricochet", doer = "Railgun", world_space = true, done = true},
+
+            {sound = "sound/NS2.fev/materials/metal/ricochet", surface = "metal", doer = "Sentry", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/ricochet", surface = "organic", doer = "Sentry", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/ricochet", surface = "infestation", doer = "Sentry", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/rock/ricochet", surface = "rock", doer = "Sentry", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/thin_metal/ricochet", surface = "thin_metal", doer = "Sentry", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/door/ricochet", surface = "door", doer = "Sentry", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/electronic/ricochet", surface = "electronic", doer = "Sentry", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/armor/ricochet", surface = "armor", doer = "Sentry", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/flesh/ricochet", surface = "flesh", doer = "Sentry", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/membrane/ricochet", surface = "membrane", doer = "Sentry", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/ricochet", doer = "Sentry", world_space = true, done = true},
             
-            //{sound = "sound/NS2.fev/marine/heavy/punch_hit_alien", surface = "membrane", doer = "Claw", done = true},
-            //{sound = "sound/NS2.fev/marine/heavy/punch_hit_alien", surface = "organic", doer = "Claw", done = true},
-            //{sound = "sound/NS2.fev/marine/heavy/punch_hit_alien", surface = "infestation", doer = "Claw", done = true},
-            //{sound = "sound/NS2.fev/marine/heavy/punch_hit_geometry", doer = "Claw", done = true},
+            {sound = "sound/NS2.fev/materials/metal/axe", surface = "metal", doer = "Axe", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/axe", surface = "organic", doer = "Axe", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/axe", surface = "infestation", doer = "Axe", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/rock/axe", surface = "rock", doer = "Axe", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/thin_metal/axe", surface = "thin_metal", doer = "Axe", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/electronic/axe", surface = "electronic", doer = "Axe", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/armor/axe", surface = "armor", doer = "Axe", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/flesh/axe", surface = "flesh", doer = "Axe", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/membrane/axe", surface = "membrane", doer = "Axe", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/axe", doer = "Axe", world_space = true, done = true},
+            
+            {sound = "sound/NS2.fev/marine/heavy/punch_hit_alien", surface = "membrane", doer = "Claw", world_space = true, done = true},
+            {sound = "sound/NS2.fev/marine/heavy/punch_hit_alien", surface = "organic", doer = "Claw", world_space = true, done = true},
+            {sound = "sound/NS2.fev/marine/heavy/punch_hit_alien", surface = "infestation", doer = "Claw", world_space = true, done = true},
+            {sound = "sound/NS2.fev/marine/heavy/punch_hit_geometry", doer = "Claw", world_space = true, done = true},
 
             // alien effects:
-            {private_sound = "sound/NS2.fev/alien/structures/whip/hit", doer = "Whip", done = true},
+            {sound = "sound/NS2.fev/alien/structures/whip/hit", doer = "Whip", world_space = true, done = true},
             
-            {private_sound = "sound/NS2.fev/alien/skulk/bite_hit_metal", surface = "metal", doer = "BiteLeap", done = true},
-            {private_sound = "sound/NS2.fev/alien/skulk/bite_hit_organic", surface = "organic", doer = "BiteLeap", done = true},
-            {private_sound = "sound/NS2.fev/alien/skulk/bite_hit_rock", surface = "rock", doer = "BiteLeap", done = true},
-            {private_sound = "sound/NS2.fev/alien/skulk/bite_hit_marine", surface = "armor", doer = "BiteLeap", done = true},
-            {private_sound = "sound/NS2.fev/alien/skulk/bite_hit_marine", surface = "flesh", doer = "BiteLeap", done = true},
-            {private_sound = "sound/NS2.fev/alien/skulk/bite_hit_organic", surface = "membrane", doer = "BiteLeap", done = true},
-            {private_sound = "sound/NS2.fev/alien/skulk/bite_hit_metal", doer = "BiteLeap", done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_metal", surface = "metal", doer = "BiteLeap", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_organic", surface = "organic", doer = "BiteLeap", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_organic", surface = "infestation", doer = "BiteLeap", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_rock", surface = "rock", doer = "BiteLeap", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_marine", surface = "armor", doer = "BiteLeap", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_marine", surface = "flesh", doer = "BiteLeap", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_organic", surface = "membrane", doer = "BiteLeap", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_metal", doer = "BiteLeap", world_space = true, done = true},
             
-            {private_sound = "sound/NS2.fev/alien/skulk/parasite_hit", doer = "Parasite", classname = "Marine", done = true},
+            {sound = "sound/NS2.fev/alien/skulk/parasite_hit", doer = "Parasite", classname = "Marine", world_space = true, done = true},
             
-            {private_sound = "sound/NS2.fev/alien/gorge/spit_hit", doer = "Spit", classname = "Marine", done = true},        
+            {sound = "sound/NS2.fev/alien/gorge/spit_hit", doer = "Spit", classname = "Marine", world_space = true, done = true},        
             
 
-            {private_sound = "sound/NS2.fev/alien/common/spike_hit_marine", surface = "armor", doer = "LerkBite", alt_mode = true, done = true},
-            {private_sound = "sound/NS2.fev/alien/lerk/spikes_pierce", surface = "flesh", doer = "LerkBite", alt_mode = true, done = true},
-            {private_sound = "sound/NS2.fev/alien/common/spike_hit_marine", surface = "armor", doer = "Spores", alt_mode = true, done = true},
-            {private_sound = "sound/NS2.fev/alien/lerk/spikes_pierce", surface = "flesh", doer = "Spores", alt_mode = true, done = true},
-            {private_sound = "sound/NS2.fev/alien/common/spike_hit_marine", surface = "armor", doer = "LerkUmbra", alt_mode = true, done = true},
-            {private_sound = "sound/NS2.fev/alien/lerk/spikes_pierce", surface = "flesh", doer = "LerkUmbra", alt_mode = true, done = true},
+            {sound = "sound/NS2.fev/alien/common/spike_hit_marine", surface = "armor", doer = "LerkBite", alt_mode = true, done = true},
+            {sound = "sound/NS2.fev/alien/lerk/spikes_pierce", surface = "flesh", doer = "LerkBite", alt_mode = true, done = true},
+            {sound = "sound/NS2.fev/alien/common/spike_hit_marine", surface = "armor", doer = "Spores", alt_mode = true, done = true},
+            {sound = "sound/NS2.fev/alien/lerk/spikes_pierce", surface = "flesh", doer = "Spores", alt_mode = true, done = true},
+            {sound = "sound/NS2.fev/alien/common/spike_hit_marine", surface = "armor", doer = "LerkUmbra", alt_mode = true, done = true},
+            {sound = "sound/NS2.fev/alien/lerk/spikes_pierce", surface = "flesh", doer = "LerkUmbra", alt_mode = true, done = true},
             
-            {private_sound = "sound/NS2.fev/alien/skulk/bite_hit_metal", surface = "metal", doer = "LerkBite", done = true},
-            {private_sound = "sound/NS2.fev/alien/skulk/bite_hit_organic", surface = "organic", doer = "LerkBite", done = true},
-            {private_sound = "sound/NS2.fev/alien/skulk/bite_hit_rock", surface = "rock", doer = "LerkBite", done = true},
-            {private_sound = "sound/NS2.fev/alien/skulk/bite_hit_marine", surface = "armor", doer = "LerkBite", done = true},
-            {private_sound = "sound/NS2.fev/alien/skulk/bite_hit_marine", surface = "flesh", doer = "LerkBite", done = true},
-            {private_sound = "sound/NS2.fev/alien/skulk/bite_hit_organic", surface = "membrane", doer = "LerkBite", done = true},
-            {private_sound = "sound/NS2.fev/alien/skulk/bite_hit_metal", doer = "LerkBite", done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_metal", surface = "metal", doer = "LerkBite", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_organic", surface = "organic", doer = "LerkBite", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_organic", surface = "infestation", doer = "LerkBite", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_rock", surface = "rock", doer = "LerkBite", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_marine", surface = "armor", doer = "LerkBite", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_marine", surface = "flesh", doer = "LerkBite", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_organic", surface = "membrane", doer = "LerkBite", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_metal", doer = "LerkBite", world_space = true, done = true},
             
-            {private_sound = "sound/NS2.fev/materials/metal/metal_scrape", surface = "metal", doer = "SwipeBlink", done = true},
-            {private_sound = "sound/NS2.fev/materials/thin_metal/scrape", surface = "thin_metal", doer = "SwipeBlink", done = true},
-            {private_sound = "sound/NS2.fev/materials/thin_metal/scrape", surface = "electronic", doer = "SwipeBlink", done = true},
-            {private_sound = "sound/NS2.fev/materials/organic/scrape", surface = "organic", doer = "SwipeBlink", done = true},
-            {private_sound = "sound/NS2.fev/materials/rock/scrape", surface = "rock", doer = "SwipeBlink", done = true},
-            {private_sound = "sound/NS2.fev/alien/fade/swipe_hit_marine", surface = "armor", doer = "SwipeBlink", done = true},
-            {private_sound = "sound/NS2.fev/alien/fade/swipe_hit_marine", surface = "flesh", doer = "SwipeBlink", done = true},
-            {private_sound = "sound/NS2.fev/materials/organic/scrape", surface = "membrane", doer = "SwipeBlink", done = true},
-            {private_sound = "sound/NS2.fev/materials/metal/metal_scrape", doer = "SwipeBlink", done = true},
+            {sound = "sound/NS2.fev/materials/metal/metal_scrape", surface = "metal", doer = "SwipeBlink", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/thin_metal/scrape", surface = "thin_metal", doer = "SwipeBlink", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/thin_metal/scrape", surface = "electronic", doer = "SwipeBlink", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/scrape", surface = "organic", doer = "SwipeBlink", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/scrape", surface = "infestation", doer = "SwipeBlink", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/rock/scrape", surface = "rock", doer = "SwipeBlink", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/fade/swipe_hit_marine", surface = "armor", doer = "SwipeBlink", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/fade/swipe_hit_marine", surface = "flesh", doer = "SwipeBlink", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/scrape", surface = "membrane", doer = "SwipeBlink", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/metal/metal_scrape", doer = "SwipeBlink", world_space = true, done = true},
             
-            {private_sound = "sound/NS2.fev/alien/lerk/spikes_structure", surface = "metal", doer = "Hydra", done = true},
-            {private_sound = "sound/NS2.fev/alien/common/spike_hit_marine", surface = "armor", doer = "Hydra", done = true},
-            {private_sound = "sound/NS2.fev/alien/lerk/spikes_pierce", surface = "flesh", doer = "Hydra", done = true},
-            {private_sound = "sound/NS2.fev/materials/rock/ricochet", doer = "Hydra", done = true},
+            {sound = "sound/NS2.fev/alien/lerk/spikes_structure", surface = "metal", doer = "Hydra", done = true},
+            {sound = "sound/NS2.fev/alien/common/spike_hit_marine", surface = "armor", doer = "Hydra", done = true},
+            {sound = "sound/NS2.fev/alien/lerk/spikes_pierce", surface = "flesh", doer = "Hydra", done = true},
+            {sound = "sound/NS2.fev/materials/rock/ricochet", doer = "Hydra", done = true},
             
-            {private_sound = "sound/NS2.fev/alien/onos/gore_hit_metal", surface = "metal", doer = "Gore", done = true},
-            {private_sound = "sound/NS2.fev/alien/onos/gore_hit_organic", surface = "organic", doer = "Gore", done = true},
-            {private_sound = "sound/NS2.fev/alien/onos/gore_hit_thin_metal", surface = "glass", doer = "Gore", done = true},
-            {private_sound = "sound/NS2.fev/materials/rock/ricochet", surface = "rock", doer = "Gore", done = true},
-            {private_sound = "sound/NS2.fev/alien/onos/gore_hit_thin_metal", surface = "thin_metal", doer = "Gore", done = true},
-            {private_sound = "sound/NS2.fev/alien/onos/gore_hit_door", surface = "door", doer = "Gore", done = true},
-            {private_sound = "sound/NS2.fev/alien/onos/gore_hit_thin_metal", surface = "electronic", doer = "Gore", done = true},
-            {private_sound = "sound/NS2.fev/alien/onos/gore_hit_marine", surface = "armor", doer = "Gore", done = true},
-            {private_sound = "sound/NS2.fev/alien/onos/gore_hit_marine", surface = "flesh", doer = "Gore", done = true},
-            {private_sound = "sound/NS2.fev/materials/membrane/ricochet", surface = "membrane", doer = "Gore", done = true},
-            {private_sound = "sound/NS2.fev/materials/organic/ricochet", doer = "Gore", done = true},
+            {sound = "sound/NS2.fev/alien/onos/gore_hit_metal", surface = "metal", doer = "Gore", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/onos/gore_hit_organic", surface = "organic", doer = "Gore", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/onos/gore_hit_organic", surface = "infestation", doer = "Gore", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/onos/gore_hit_thin_metal", surface = "glass", doer = "Gore", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/rock/ricochet", surface = "rock", doer = "Gore", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/onos/gore_hit_thin_metal", surface = "thin_metal", doer = "Gore", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/onos/gore_hit_door", surface = "door", doer = "Gore", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/onos/gore_hit_thin_metal", surface = "electronic", doer = "Gore", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/onos/gore_hit_marine", surface = "armor", doer = "Gore", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/onos/gore_hit_marine", surface = "flesh", doer = "Gore", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/membrane/ricochet", surface = "membrane", doer = "Gore", world_space = true, done = true},
+            {sound = "sound/NS2.fev/materials/organic/ricochet", doer = "Gore", world_space = true, done = true},
             
         }
+    },
+    
+    alien_blood_ground =
+    {
+        alienGroundBloodDecal =
+        {
+            {decal = "cinematics/vfx_materials/decals/alien_blood_ground.material", scale = 2, done = true}
+        }
+    },
+    
+    damage_decal =
+    {
+        damageDecals = 
+        {
+                  
+            // marine blood 
+            {decal = {{.25, "cinematics/vfx_materials/decals/marine_blood_01.material"}, 
+                      {.25, "cinematics/vfx_materials/decals/marine_blood_02.material"}, 
+                      {.25, "cinematics/vfx_materials/decals/marine_blood_03.material"}, 
+                      {.25, "cinematics/vfx_materials/decals/marine_blood_04.material"}}, scale = 2, surface = "flesh", done = true}, 
+
+            // alien blood
+            {decal = {{.25, "cinematics/vfx_materials/decals/alien_blood_01.material"}, 
+                      {.25, "cinematics/vfx_materials/decals/alien_blood_02.material"},
+                      {.25, "cinematics/vfx_materials/decals/alien_blood_03.material"},
+                      {.25, "cinematics/vfx_materials/decals/alien_blood_04.material"}}, scale = 0.75, surface = "organic", done = true},   
+                      
+            {decal = "cinematics/vfx_materials/decals/alien_blood_02.material", scale = 0.75, surface = "membrane", done = true},   
+            
+            // surface marine weapons
+            {decal = "cinematics/vfx_materials/decals/clawmark_01.material", scale = 0.35, doer = "Axe", done = true},
+            {decal = "cinematics/vfx_materials/decals/clawmark_01.material", scale = 0.35, doer = "Rifle", alt_mode = true, done = true},            
+            {decal = "cinematics/vfx_materials/decals/bullet_hole_01.material", scale = 0.125, doer = "Rifle", alt_mode = false, done = true},        
+            {decal = "cinematics/vfx_materials/decals/bullet_hole_01.material", scale = 0.125, doer = "Shotgun", done = true},        
+            {decal = "cinematics/vfx_materials/decals/bullet_hole_01.material", scale = 0.125, doer = "Pistol", done = true}, 
+            {decal = "cinematics/vfx_materials/decals/bullet_hole_01.material", scale = 0.3, doer = "Minigun", done = true},
+            {decal = "cinematics/vfx_materials/decals/railgun_hole_02.material", scale = 0.3, doer = "Railgun", done = true},
+            
+            // surface alien weapons
+            {decal = "cinematics/vfx_materials/decals/bullet_hole_02.material", scale = 0.25, doer = "LerkBite", alt_mode = true, done = true}, 
+            {decal = "cinematics/vfx_materials/decals/bullet_hole_02.material", scale = 0.25, doer = "Spores", alt_mode = true, done = true}, 
+            {decal = "cinematics/vfx_materials/decals/bullet_hole_02.material", scale = 0.25, doer = "LerkUmbra", alt_mode = true, done = true}, 
+            
+            {decal = "cinematics/vfx_materials/decals/clawmark_01.material", scale = 0.5, doer = "BiteLeap", done = true}, 
+            {decal = "cinematics/vfx_materials/decals/bite_02.material", scale = 0.5, doer = "LerkBite", done = true}, 
+            
+            {decal = {{.25, "cinematics/vfx_materials/decals/clawmark_01.material"},
+                      {.25, "cinematics/vfx_materials/decals/clawmark_02.material"},
+                      {.25, "cinematics/vfx_materials/decals/clawmark_03.material"},
+                      {.25, "cinematics/vfx_materials/decals/clawmark_04.material"}}, scale = 0.25, doer = "SwipeBlink", done = true}, 
+                      
+            {decal = "cinematics/vfx_materials/decals/bash_01.material", scale = 1, doer = "Gore", done = true}, 
+        },    
     },
 
     // triggered client side for the shooter, all other players receive a message from the server
     damage =
     {
+    
         damageEffects =
         {
             
@@ -218,19 +321,23 @@ kDamageEffects =
             {cinematic = "cinematics/marine/roboticsfactory/hurt.cinematic", classname = "RoboticsFactory", done = true},
             {cinematic = "cinematics/marine/phasegate/hurt_severe.cinematic", classname = "PhaseGate", flinch_severe = true, done = true},
             {cinematic = "cinematics/marine/phasegate/hurt.cinematic", classname = "PhaseGate", done = true},
-            
-            {cinematic = "", classname = "PowerPoint", done = true},
-            
             {cinematic = "cinematics/marine/structures/hurt_small_severe.cinematic", classname = "ArmsLab", flinch_severe = true, done = true},
             {cinematic = "cinematics/marine/structures/hurt_small.cinematic", classname = "ArmsLab", done = true},
             {cinematic = "cinematics/marine/structures/hurt_small_severe.cinematic", classname = "Observatory", flinch_severe = true, done = true},
             {cinematic = "cinematics/marine/structures/hurt_small.cinematic", classname = "Observatory", done = true},
-            //{cinematic = "cinematics/marine/structures/hurt_small_severe.cinematic", classname = "PowerPack", flinch_severe = true, done = true},
-            //{cinematic = "cinematics/marine/structures/hurt_small.cinematic", classname = "SentryBattery", done = true},
-            //{parented_cinematic = "cinematics/marine/exo/hurt_severe.cinematic", classname = "HeavyArmorMarine", isalien = false, flinch_severe = true, done = true},
-            //{parented_cinematic = "cinematics/marine/exo/hurt.cinematic", classname = "HeavyArmorMarine", isalien = false, done = true},
-        
-        
+            {cinematic = "cinematics/marine/structures/hurt_small_severe.cinematic", classname = "PowerPack", flinch_severe = true, done = true},
+            {cinematic = "cinematics/marine/structures/hurt_small.cinematic", classname = "SentryBattery", done = true},
+            {parented_cinematic = "cinematics/marine/exo/hurt_severe.cinematic", classname = "Exo", isalien = false, flinch_severe = true, done = true},
+            {parented_cinematic = "cinematics/marine/exo/hurt.cinematic", classname = "Exo", isalien = false, done = true},
+            
+            {cinematic = "", classname = "PowerPoint", done = true},
+            {cinematic = "", classname = "Player", done = true},
+            {cinematic = "", classname = "MAC", done = true},
+            {cinematic = "", classname = "ARC", done = true},
+            {cinematic = "cinematics/marine/structures/hurt_severe.cinematic", classname = "ScriptActor", isalien = false, flinch_severe = true, done = true},
+            {cinematic = "cinematics/marine/structures/hurt.cinematic", classname = "ScriptActor", isalien = false, done = true},
+            
+            
             // alien damaged effects
             {cinematic = "cinematics/alien/hive/hurt_severe.cinematic", classname = "Hive", flinch_severe = true, done = true},
             {cinematic = "cinematics/alien/hive/hurt.cinematic", classname = "Hive", done = true},
@@ -248,9 +355,10 @@ kDamageEffects =
             {cinematic = "cinematics/alien/crag/hurt.cinematic", classname = "Crag", done = true},
             {cinematic = "cinematics/alien/whip/hurt_severe.cinematic", classname = "Whip", flinch_severe = true, done = true},
             {cinematic = "cinematics/alien/whip/hurt.cinematic", classname = "Whip", done = true},
-      
-            {cinematic = "cinematics/alien/structures/hurt_severe.cinematic", classname = "Structure", isalien = true, flinch_severe = true, done = true},   
-            {cinematic = "cinematics/alien/structures/hurt.cinematic", classname = "Structure", isalien = true, done = true},   
+            
+            {cinematic = "", classname = "Player", done = true},
+            {cinematic = "cinematics/alien/structures/hurt_severe.cinematic", classname = "ScriptActor", isalien = true, flinch_severe = true, done = true},   
+            {cinematic = "cinematics/alien/structures/hurt.cinematic", classname = "ScriptActor", isalien = true, done = true},   
         }
     },
 

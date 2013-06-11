@@ -19,8 +19,12 @@ kMarineTeamType = 1
 kAlienTeamType = 2
 kRandomTeamType = 3
 
+// 2 = Hold Space, 1 = Queued Jumping like Quake, 0 = Default NS2
+kJumpMode = { Repeating = 2, Queued = 1, Default = 0 }
+
 // after 5 minutes players are allowed to give up a round
-kTimeGiveupPossible = 5 * 60
+kMinTimeBeforeConcede = 10 * 60
+kPercentNeededForVoteConcede = 0.75
 
 // Team colors
 kMarineFontName = "fonts/AgencyFB_large.fnt"
@@ -94,7 +98,7 @@ kWorldMessageLifeTime = 1.0
 kCommanderErrorMessageLifeTime = 2.0
 kWorldMessageResourceOffset = Vector(0, 2.5, 0)
 kResourceMessageRange = 35
-kWorldDamageNumberAnimationSpeed = 150
+kWorldDamageNumberAnimationSpeed = 220
 // Updating messages with new numbers shouldn't reset animation - keep it big and faded-in intead of growing
 kWorldDamageRepeatAnimationScalar = .1
 
@@ -124,6 +128,7 @@ kMainMenuFlash = "ui/main_menu.swf"
 
 kPlayerStatus = enum( { "Hidden", "Dead", "Evolving", "Embryo", "Commander", "GrenadeLauncher", "Rifle", "Shotgun", "HeavyMachineGun", "Void", "Spectator", "Skulk", "Gorge", "Fade", "Lerk", "Onos" } )
 kPlayerCommunicationStatus = enum( {'None', 'Voice', 'Typing', 'Menu'} )
+kSpectatorMode = enum( { 'FreeLook', 'Overhead', 'Following', 'FirstPerson' } )
 
 kMaxAlienAbilities = 3
 
@@ -151,7 +156,7 @@ kDeathMessageIcon = enum( { 'None',
 kMinimapBlipType = enum( { 'Undefined', 'TechPoint', 'ResourcePoint', 'Scan',
                            'Sentry', 'CommandStation', 'CommandStationL2', 'CommandStationL3',
                            'Extractor', 'InfantryPortal', 'Armory', 'PhaseGate', 'Observatory',
-                           'RoboticsFactory', 'ArmsLab', 'PrototypeLab', 'PowerPack',
+                           'RoboticsFactory', 'ArmsLab', 'PrototypeLab', 'PowerPack', 'Embryo',
                            'Hive', 'Harvester', 'Hydra', 'Egg', 'Crag', 'Whip', 'Shade', 'Shift',
                            'Marine', 'JetpackMarine', 'HeavyArmorMarine', 'Jetpack', 'Skulk', 'Lerk', 'Onos', 'Fade', 'Gorge',
                            'Door', 'PowerPoint', 'DestroyedPowerPoint',
@@ -237,17 +242,21 @@ kFadeToBlackTime = 3
 kZFightingConstant = 0.1
 
 // Any geometry or props with this name won't be drawn or affect commanders
-kCommanderInvisibleGroupName    = "CommanderInvisible"
+kCommanderInvisibleGroupName = "CommanderInvisible"
+kCommanderInvisibleVentsGroupName = "CommanderInvisibleVents"
 // Any geometry or props with this name will not support being built on top of
-kCommanderNoBuildGroupName      = "CommanderNoBuild"
-kCommanderBuildGroupName        = "CommanderBuild"
+kCommanderNoBuildGroupName = "CommanderNoBuild"
+kCommanderBuildGroupName = "CommanderBuild"
 
-kCollisionGeometryGroupName     = "CollisionGeometry"
-kNonCollisionGeometryGroupName  = "NonCollisionGeometry"
+kCollisionGeometryGroupName = "CollisionGeometry"
+kNonCollisionGeometryGroupName = "NonCollisionGeometry"
+
+kPathingLayerName = "Pathing"
 
 // Max players allowed in game
 kMaxPlayers = 32
 
+kMaxIdleWorkers = 127
 kMaxPlayerAlerts = 127
 
 // Max distance to propagate entities with

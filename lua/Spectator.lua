@@ -8,7 +8,6 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Player.lua")
-Script.Load("lua/Mixins/BaseMoveMixin.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/Mixins/FreeLookMoveMixin.lua")
 Script.Load("lua/Mixins/OverheadMoveMixin.lua")
@@ -16,67 +15,39 @@ Script.Load("lua/FollowMoveMixin.lua")
 Script.Load("lua/FreeLookSpectatorMode.lua")
 Script.Load("lua/OverheadSpectatorMode.lua")
 Script.Load("lua/FollowingSpectatorMode.lua")
+Script.Load("lua/FirstPersonSpectatorMode.lua")
 Script.Load("lua/MinimapMoveMixin.lua")
 
 class 'Spectator' (Player)
 
 Spectator.kMapName = "spectator"
-Spectator.kSpectatorMode = enum( { 'FreeLook', 'Overhead', 'Following' } )
 
 local kSpectatorMapMode = enum( { 'Invisible', 'Small', 'Big' } )
 
 local kSpectatorModeClass = 
 {
-    [Spectator.kSpectatorMode.FreeLook] = FreeLookSpectatorMode,
-    [Spectator.kSpectatorMode.Following] = FollowingSpectatorMode,
-    [Spectator.kSpectatorMode.Overhead] = OverheadSpectatorMode
+    [kSpectatorMode.FreeLook] = FreeLookSpectatorMode,
+    [kSpectatorMode.Following] = FollowingSpectatorMode,
+    [kSpectatorMode.FirstPerson] = FirstPersonSpectatorMode,
+    [kSpectatorMode.Overhead] = OverheadSpectatorMode
 }
 
-local kDefaultFreeLookSpeed = 12
-local kMaxSpeed = 20
+local kDefaultFreeLookSpeed = Player.kWalkMaxSpeed * 3
+local kMaxSpeed = Player.kWalkMaxSpeed * 5
 local kAcceleration = 100
 local kDeltatimeBetweenAction = 0.3
 
 local networkVars =
 {
-    specMode = "private enum Spectator.kSpectatorMode"
+    specMode = "private enum kSpectatorMode",
+    selectedId = "private entityid"
 }
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
-AddMixinNetworkVars(BaseMoveMixin, networkVars)
 AddMixinNetworkVars(MinimapMoveMixin, networkVars)
 AddMixinNetworkVars(FreeLookMoveMixin, networkVars)
 AddMixinNetworkVars(FollowMoveMixin, networkVars)
 AddMixinNetworkVars(OverheadMoveMixin, networkVars)
-
-/**
- * Display the map accord to the input.
- */
-local function UpdateMapDisplay(self, input)
-
-    if Client and not Shared.GetIsRunningPrediction() then
-    
-        if self.showMapPressed == 0 and bit.band(input.commands, Move.ShowMap) ~= 0 then
-        
-            if self.mapMode == kSpectatorMapMode.Big or self.mapMode == kSpectatorMapMode.Invisible then
-            
-                self.mapMode = kSpectatorMapMode.Small
-                self:ShowMap(true, false, true)
-                
-            elseif self.mapMode == kSpectatorMapMode.Small then
-            
-                self.mapMode = kSpectatorMapMode.Big
-                self:ShowMap(true, true, true)
-                
-            end
-            
-        end
-        
-        self.showMapPressed = bit.band(input.commands, Move.ShowMap)
-        
-    end
-    
-end
 
 /**
  * Return the next mode according to the order of
@@ -90,7 +61,7 @@ local function NextSpectatorMode(self, mode)
     end
     
     local numModes = 0
-    for name, _ in pairs(Spectator.kSpectatorMode) do
+    for name, _ in pairs(kSpectatorMode) do
     
         if type(name) ~= "number" then
             numModes = numModes + 1
@@ -99,7 +70,8 @@ local function NextSpectatorMode(self, mode)
     end
     
     local nextMode = (mode % numModes) + 1
-    if not self:IsValidMode(nextMode) then
+    // Following is only used directly through SetSpectatorMode(), never in this function.
+    if not self:IsValidMode(nextMode) or nextMode == kSpectatorMode.Following then
         return NextSpectatorMode(self, nextMode)
     else
         return nextMode
@@ -107,6 +79,8 @@ local function NextSpectatorMode(self, mode)
     
 end
 
+// First Person mode switching handled at:
+// GUIFirstPersonSpectate:SendKeyEvent(key, down)
 local function UpdateSpectatorMode(self, input)
 
     assert(Server)
@@ -121,19 +95,32 @@ local function UpdateSpectatorMode(self, input)
             
         elseif bit.band(input.commands, Move.Weapon1) ~= 0 then
         
-            self:SetSpectatorMode(Spectator.kSpectatorMode.FreeLook)
+            self:SetSpectatorMode(kSpectatorMode.FreeLook)
             self.timeFromLastAction = 0
             
         elseif bit.band(input.commands, Move.Weapon2) ~= 0 then
         
-            self:SetSpectatorMode(Spectator.kSpectatorMode.Overhead)
+            self:SetSpectatorMode(kSpectatorMode.Overhead)
             self.timeFromLastAction = 0
             
         elseif bit.band(input.commands, Move.Weapon3) ~= 0 then
         
-            self:SetSpectatorMode(Spectator.kSpectatorMode.Following)
+            self:SetSpectatorMode(kSpectatorMode.FirstPerson)
             self.timeFromLastAction = 0
             
+        end
+        
+    end
+    
+    // Switch away from following mode ASAP while on a playing team.
+    // Prefer first person mode in this case.
+    if self:GetIsOnPlayingTeam() and self:GetIsFollowing() then
+    
+        local followTarget = Shared.GetEntity(self:GetFollowTargetId())
+        // Disallow following a Player in this case. Allow following Eggs and IPs
+        // for example.
+        if not followTarget or followTarget:isa("Player") then
+            self:SetSpectatorMode(kSpectatorMode.FirstPerson)
         end
         
     end
@@ -145,7 +132,6 @@ function Spectator:OnCreate()
     Player.OnCreate(self)
     
     InitMixin(self, CameraHolderMixin, { kFov = kDefaultFov })
-    InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
     InitMixin(self, FreeLookMoveMixin)
     InitMixin(self, FollowMoveMixin)
     InitMixin(self, OverheadMoveMixin)
@@ -172,14 +158,21 @@ function Spectator:OnInitialized()
 
     Player.OnInitialized(self)
     
-    self.lastTargetId = Entity.invalidId
-    self.specTargetId = Entity.invalidId
+    self.selectedId = Entity.invalidId
     
     if Server then
     
         self.timeFromLastAction = 0
         self:SetIsVisible(false)
         self:SetIsAlive(false)
+        // Start us off by looking for a target to follow.
+        self:SetSpectatorMode(kSpectatorMode.FirstPerson)
+        
+    elseif Client then
+    
+        if self:GetIsLocalPlayer() and self:GetTeamNumber() == kSpectatorIndex then
+            self:ShowMap(true, false, true)
+        end
         
     end
     
@@ -189,27 +182,74 @@ function Spectator:OnInitialized()
     // Other players never see a spectator.
     self:SetPropagate(Entity.Propagate_Never)
     
-    // Start us off by looking for a target to follow
-    if Server then
-        self:SetSpectatorMode(Spectator.kSpectatorMode.Following)
-    end
-    
 end
 
 function Spectator:OnDestroy()
 
     Player.OnDestroy(self)
     
-    if self.guiSpectator then
-    
-        GetGUIManager():DestroyGUIScriptSingle("GUISpectator")
-        self.guiSpectator = nil
-        
-    end
-    
     if self.modeInstance then
         self.modeInstance:Uninitialize(self)
     end
+    
+end
+
+function Spectator:OnClientUpdated(client)
+
+    Player.OnClientUpdated(self, client)
+    
+    if client and self.modeInstance and self.modeInstance.FindTarget then
+        self.modeInstance:FindTarget(self)
+    end
+    
+end
+
+function Spectator:CycleSpectatingPlayer(spectatingPlayer, forward)
+
+    if self.modeInstance and self.modeInstance.CycleSpectatingPlayer then
+    
+        local spectatorClient = Server.GetOwner(self)
+        return self.modeInstance:CycleSpectatingPlayer(spectatingPlayer, self, spectatorClient, forward)
+        
+    end
+    
+    return false
+    
+end
+
+/**
+ * Display the map accord to the input.
+ */
+local function UpdateMapDisplay(self, show)
+
+    if Client then
+    
+        if not self.showMapPressed and show then
+        
+            if self.mapMode == kSpectatorMapMode.Big or self.mapMode == kSpectatorMapMode.Invisible then
+            
+                self.mapMode = kSpectatorMapMode.Small
+                self:ShowMap(true, false, true)
+                
+            elseif self.mapMode == kSpectatorMapMode.Small then
+            
+                self.mapMode = kSpectatorMapMode.Big
+                self:ShowMap(true, true, true)
+                
+            end
+            
+        end
+        
+        self.showMapPressed = show
+        
+    end
+    
+end
+
+function Spectator:OnShowMap(show)
+
+    self.minimapVisible = down
+    UpdateMapDisplay(self, show)
     
 end
 
@@ -221,17 +261,15 @@ function Spectator:OnProcessMove(input)
 
     self:UpdateMove(input)
     
-    UpdateMapDisplay(self, input)
     if Server then
-        UpdateSpectatorMode(self, input)
-    end
     
-    if Client and not Shared.GetIsRunningPrediction() then
-    
-        self:UpdateScoreboardDisplay(input)
+        if not self:GetIsRespawning() then
+            UpdateSpectatorMode(self, input)
+        end
         
+    elseif Client then
+    
         self:UpdateCrossHairTarget()
-        self:UpdateChat(input)
         
         // Toggle the insight GUI.
         if self:GetTeamNumber() == kSpectatorIndex then
@@ -239,7 +277,7 @@ function Spectator:OnProcessMove(input)
             if bit.band(input.commands, Move.Weapon4) ~= 0 then
             
                 self.showInsight = not self.showInsight
-                self.guiSpectator:SetIsVisible(self.showInsight)
+                ClientUI.GetScript("GUISpectator"):SetIsVisible(self.showInsight)
                 
                 if self.showInsight then
                 
@@ -291,12 +329,20 @@ function Spectator:SetSpectatorMode(mode)
         self.modeInstance = newMode
         self.specMode = mode
         
+        if Server and Server.GetOwner(self) and self.modeInstance and self.modeInstance.FindTarget then
+            self.modeInstance:FindTarget(self)
+        end
+        
     end
     
     if Server then
         self:UpdateClientRelevancyMask()
     end
     
+end
+
+function Spectator:GetSpectatorMode()
+    return self.modeInstance
 end
 
 function Spectator:GetFollowMoveCameraDistance()
@@ -319,11 +365,8 @@ function Spectator:GetIsRespawning()
     return self.isRespawning
 end
 
-function Spectator:SetIsRespawning(value, entityId)
-
-    self.isRespawning = value
-    self.respawnHostId = entityId
-    
+function Spectator:SetIsRespawning(isRespawning)
+    self.isRespawning = isRespawning
 end
 
 function Spectator:GetPlayFootsteps()
@@ -336,6 +379,17 @@ end
 
 function Spectator:GetTraceCapsule()
     return 0, 0
+end
+
+// Needed so player origin is same as camera for selection
+function Spectator:GetViewOffset()
+
+    if self:GetIsOverhead() then
+        return Vector(0, 0, 0)
+    else
+        return Player.GetViewOffset(self)
+    end
+     
 end
 
 function Spectator:GetMaxSpeed(possible)
@@ -351,7 +405,15 @@ function Spectator:GetTechId()
 end
 
 function Spectator:GetIsOverhead()
-    return self.specMode == Spectator.kSpectatorMode.Overhead
+    return self.specMode == kSpectatorMode.Overhead
+end
+
+function Spectator:GetIsFollowing()
+    return self.specMode == kSpectatorMode.Following
+end
+
+function Spectator:GetIsFirstPerson()
+    return self.specMode == kSpectatorMode.FirstPerson
 end
 
 /**
@@ -367,24 +429,6 @@ end
 
 function Spectator:AdjustGravityForce(input, gravity)
     return 0
-end
-
--- ERASE OR REFACTOR
-// Handle player transitions to egg, new lifeforms, etc.
-function Spectator:OnEntityChange(oldEntityId, newEntityId)
-
-    if oldEntityId ~= Entity.invalidId and oldEntityId ~= nil then
-    
-        if oldEntityId == self.specTargetId then
-            self.specTargetId = newEntityId
-        end
-        
-        if oldEntityId == self.lastTargetId then
-            self.lastTargetId = newEntityId
-        end
-        
-    end
-    
 end
 
 /**
@@ -434,14 +478,37 @@ function Spectator:GetPlayerStatusDesc()
     return kPlayerStatus.Spectator
 end
 
+function Spectator:SelectEntity(entityId)
+    if entityId then
+        self.selectedId = entityId
+    else
+        self.selectedId = Entity.invalidId
+    end
+end
+
+function Spectator:GetFollowingPlayerId()
+
+    local playerId = Entity.invalidId
+    
+    if self.specMode == kSpectatorMode.Following or
+       self.specMode == kSpectatorMode.FirstPerson then
+    
+        playerId = self.selectedId
+        
+    end
+    
+    return playerId
+    
+end
+
 if Client then
 
     function Spectator:GetShowAtmosphericLight()
-        return self.specMode ~= Spectator.kSpectatorMode.Overhead
+        return self.specMode ~= kSpectatorMode.Overhead
     end
 
     function Spectator:GetDisplayUnitStates()
-        return self.specMode == Spectator.kSpectatorMode.FreeLook
+        return self.specMode == kSpectatorMode.FreeLook
     end
     
     function Spectator:OnPreUpdate()
@@ -459,7 +526,7 @@ if Client then
     
     function Spectator:OverrideInput(input)
     
-        if self.specMode == Spectator.kSpectatorMode.Overhead then
+        if self.specMode == kSpectatorMode.Overhead then
         
             // Move to position if minimap clicked.
             if self.setScrollPosition then
@@ -477,12 +544,8 @@ if Client then
                 input.yaw = self.minimapNormX
                 input.pitch = self.minimapNormY
                 
-            else
-                AdjustInputForInversion(input)
             end
             
-        else
-            AdjustInputForInversion(input)
         end
         
         ClampInputPitch(input)
@@ -495,27 +558,11 @@ if Client then
         
     end
     
-    function Spectator:OnInitLocalClient()
-    
-        Player.OnInitLocalClient(self)
-        
-        if self:GetTeamNumber() == kSpectatorIndex then
-        
-            self:ShowMap(true, false, true)
-            
-            if self.guiSpectator == nil then
-                self.guiSpectator = GetGUIManager():CreateGUIScriptSingle("GUISpectator")
-            end
-            
-        end
-        
-    end
-    
     function Spectator:GetCrossHairTarget()
     
-        if self.specMode == Spectator.kSpectatorMode.Following then
-            return Shared.GetEntity(self.specTargetId)
-        elseif self.specMode == Spectator.kSpectatorMode.Overhead then
+        if self.specMode == kSpectatorMode.Following then
+            return Shared.GetEntity(self.selectedId)
+        elseif self.specMode == kSpectatorMode.Overhead then
             return self.entityUnderCursor
         end
         
@@ -543,27 +590,11 @@ if Client then
     
     function Spectator:GetCrossHairText()
     
-        if self.specMode == Spectator.kSpectatorMode.Overhead then
+        if self.specMode == kSpectatorMode.Overhead then
             return nil
         end
         
         return self.crossHairText
-        
-    end
-    
-end
-
-if Server then
-
-    function Spectator:GetFollowingPlayerId()
-    
-        local playerId = Entity.invalidId
-        
-        if self.specMode == Spectator.kSpectatorMode.Following then
-            playerId = self.specTargetId
-        end
-        
-        return playerId
         
     end
     

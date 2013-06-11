@@ -6,20 +6,17 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-function Armory:OnConstructionComplete()
+local function OnDeploy(self)
 
-    self:AddTimedCallback(Armory.OnDeploy, Armory.kDeployTime)
-    
-    if self.startsUpgradet then
-        self:OnResearch(kTechId.AdvancedArmoryUpgrade)
-        self:OnResearchComplete(kTechId.AdvancedArmoryUpgrade)
-    end
-
-end
-
-function Armory:OnDeploy()
     self.deployed = true
     return false
+    
+end
+
+local kDeployTime = 3
+
+function Armory:OnConstructionComplete()
+    self:AddTimedCallback(OnDeploy, kDeployTime)
 end
 
 // west/east = x/-x

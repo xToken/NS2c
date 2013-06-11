@@ -72,6 +72,7 @@ function Marine:InitWeapons()
     if GetHasTech(self, kTechId.HandGrenadesTech, true) then
         self:GiveItem(HandGrenades.kMapName)
     end
+	self:SetQuickSwitchTarget(Pistol.kMapName)
     self:SetActiveWeapon(Rifle.kMapName)
 
 end

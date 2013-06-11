@@ -10,7 +10,6 @@ Script.Load("lua/ScoringMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
-Script.Load("lua/DisorientableMixin.lua")
 Script.Load("lua/LOSMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
@@ -25,8 +24,6 @@ HeavyArmorMarine.kMapName = "heavyarmormarine"
 
 if Server then
     Script.Load("lua/HeavyArmorMarine_Server.lua")
-else
-    Script.Load("lua/HeavyArmorMarine_Client.lua")
 end
 
 Shared.PrecacheSurfaceShader("models/marine/marine.surface_shader")
@@ -37,12 +34,10 @@ local kHeavyArmorMarineAnimationGraph = PrecacheAsset("models/marine/male/male.a
 
 local kMass = 200
 local kWalkMaxSpeed = 3.0
-local kRunMaxSpeed = 5.5
+local kRunMaxSpeed = 5.0
 
 function HeavyArmorMarine:OnCreate()
-
     Marine.OnCreate(self)
-    
 end
 
 function HeavyArmorMarine:OnInitialized()
@@ -86,7 +81,7 @@ function HeavyArmorMarine:GoldSrc_GetMaxSpeed(possible)
         return kRunMaxSpeed
     end
     
-    if self:GetIsDisrupted() then
+    if self:GetIsStunned() then
         return 0
     end
     

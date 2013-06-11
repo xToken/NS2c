@@ -9,12 +9,10 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
-Script.Load("lua/FunctionContracts.lua")
-
 /**
  * WallMovementMixin handles processing attack orders.
  */
-WallMovementMixin = CreateMixin( WallMovementMixin )
+WallMovementMixin = CreateMixin(WallMovementMixin)
 WallMovementMixin.type = "WallMovement"
 
 WallMovementMixin.expectedMixins =
@@ -80,53 +78,31 @@ function WallMovementMixin:SmoothWallNormal(currentNormal, goalNormal, fraction)
     return result
 end
 
-function WallMovementMixin:GetAnglesFromWallNormal(normal, fraction)
-    // Build out the orientation.
-    local coords = Coords()    
-    
-    coords.yAxis = normal
-    
-    local viewAngles = self:GetViewAngles()
-    local zAxis = viewAngles:GetCoords().zAxis
+function WallMovementMixin:GetAnglesFromWallNormal(normal)
 
-    // smooth out zAxis as well
-    if not self.lastWallMovementSmoothCoords then
-    
-        self.lastWallMovementSmoothCoords = CopyCoords(self:GetCoords())
-	    // Try to align the forward direction with our view forward direction
-	    coords.zAxis = zAxis
-    
-    else
+    // Use the wall normal as Y, and try to point Z according to the view
+    local c = Coords()
+    c.yAxis = normal
+    c.zAxis = self:GetViewAngles():GetCoords().zAxis
+    c.xAxis = c.yAxis:CrossProduct(c.zAxis)
+
+    if c.xAxis:Normalize() < 0.001 then
         
-        local currentPitch = GetPitchFromVector(zAxis)
-        if currentPitch < -kMaxPitch or currentPitch > kMaxPitch then
-            coords.zAxis = self.lastWallMovementSmoothCoords.zAxis
-        else
-            coords.zAxis = zAxis
-        end
+        // Can't really find a good coords, so just keep the previous one
+        return nil
+
+    else
+
+        c.zAxis = c.xAxis:CrossProduct( c.yAxis )
+
+        //DebugDrawAxes( c, self:GetOrigin(), 5.0, 0.5, 0.0 )
+
+        local angles = Angles()
+        angles:BuildFromCoords(c)
+        return angles
 
     end
 
-    coords.xAxis = coords.yAxis:CrossProduct( coords.zAxis )
-    if (coords.xAxis:Normalize() < 0.01) then
-        // We have to choose the x-axis arbitrarily since we're
-        // looking along the normal direction.
-        coords.xAxis = coords.yAxis:GetPerpendicular()
-    end 
-    
-    coords.zAxis = coords.xAxis:CrossProduct( coords.yAxis )
-    
-    local angles = Angles(self:GetAngles())
-    angles:BuildFromCoords(coords)
-    
-    if angles.yaw > 2 * math.pi then
-        angles.yaw = angles.yaw - 2 * math.pi
-    elseif angles.yaw < 0 then
-        angles.yaw = angles.yaw + 2 * math.pi
-    end
-    
-    self.lastWallMovementSmoothCoords = CopyCoords(self:GetCoords())
-    return angles
 end
 
 function WallMovementMixin:ValidWallTrace(trace)
@@ -139,7 +115,7 @@ end
 
 function WallMovementMixin:TraceWallNormal(startPoint, endPoint, result, feelerSize)
     
-    local theTrace = Shared.TraceCapsule(startPoint, endPoint, feelerSize, 0, CollisionRep.Move, PhysicsMask.AllButPCs, EntityFilterOne(self))
+    local theTrace = Shared.TraceCapsule(startPoint, endPoint, feelerSize, 0, CollisionRep.Move, PhysicsMask.AllButPCs, EntityFilterOneAndIsa(self, "Babbler"))
     
     if self:ValidWallTrace(theTrace) then    
         table.insert(result, theTrace.normal)
@@ -223,13 +199,13 @@ end
 
 function WallMovementMixin:OnAdjustModelCoords(modelCoords)
 
-    //local offset = self:GetExtents().y
+    local offset = self:GetExtents().y
 
     // Make the model rotate around the center point rather than the feet
     // when we're walking on walls.
 
-    //modelCoords.origin = modelCoords.origin - modelCoords.yAxis * offset
-    //modelCoords.origin.y = modelCoords.origin.y + offset
+    modelCoords.origin = modelCoords.origin - modelCoords.yAxis * offset
+    modelCoords.origin.y = modelCoords.origin.y + offset
             
     return modelCoords
     

@@ -6,9 +6,7 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
-Script.Load("lua/FunctionContracts.lua")
-
-WeaponOwnerMixin = CreateMixin( WeaponOwnerMixin )
+WeaponOwnerMixin = CreateMixin(WeaponOwnerMixin)
 WeaponOwnerMixin.type = "WeaponOwner"
 
 WeaponOwnerMixin.optionalCallbacks =
@@ -34,7 +32,8 @@ WeaponOwnerMixin.networkVars =
     processMove = "boolean",
     activeWeaponId = "entityid",
     timeOfLastWeaponSwitch = "time",
-    weaponsWeight = "float (0 to " .. WeaponOwnerMixin.kMaxWeaponsWeight .. " by 0.01)"
+    weaponsWeight = "float (0 to " .. WeaponOwnerMixin.kMaxWeaponsWeight .. " by 0.01)",
+	quickSwitchSlot = "integer (0 to 10)"
 }
 
 function WeaponOwnerMixin:__initmixin()
@@ -43,6 +42,7 @@ function WeaponOwnerMixin:__initmixin()
     self.activeWeaponId = Entity.invalidId
     self.timeOfLastWeaponSwitch = 0
     self.weaponsWeight = 0
+    self.quickSwitchSlot = 1
     
 end
 
@@ -50,7 +50,7 @@ function WeaponOwnerMixin:GetWeaponsWeight()
     return self.weaponsWeight
 end
 
-local function UpdateWeaponsWeight(self)
+function WeaponOwnerMixin:UpdateWeaponWeights()
 
     // Loop through all weapons, getting weight of each one
     local totalWeight = 0
@@ -74,15 +74,9 @@ local function UpdateWeaponsWeight(self)
 
 end
 
-function WeaponOwnerMixin:UpdateWeaponWeights()
-    UpdateWeaponsWeight(self)
-end
-AddFunctionContract(WeaponOwnerMixin.UpdateWeaponWeights, { Arguments = { "Entity" }, Returns = { } })
-
 function WeaponOwnerMixin:SetWeaponsProcessMove(processMove)
     self.processMove = processMove
 end
-AddFunctionContract(WeaponOwnerMixin.SetWeaponsProcessMove, { Arguments = { "Entity", "boolean" }, Returns = { } })
 
 function WeaponOwnerMixin:ProcessMoveOnWeapons(input)
 
@@ -104,7 +98,6 @@ function WeaponOwnerMixin:ProcessMoveOnWeapons(input)
     end
     
 end
-AddFunctionContract(WeaponOwnerMixin.ProcessMoveOnWeapons, { Arguments = { "Entity", "Move" }, Returns = { } })
 
 /**
  * Sorter used in WeaponOwnerMixin:GetHUDOrderedWeaponList().
@@ -132,7 +125,6 @@ function WeaponOwnerMixin:GetHUDOrderedWeaponList()
     return hudOrderedWeaponList
     
 end
-AddFunctionContract(WeaponOwnerMixin.GetHUDOrderedWeaponList, { Arguments = { "Entity" }, Returns = { "table" } })
 
 // Returns true if we switched to weapon or if weapon is already active. Returns false if we 
 // don't have that weapon.
@@ -170,6 +162,16 @@ function WeaponOwnerMixin:SetActiveWeapon(weaponMapName)
                 activeWeapon:OnHolster(self)
                 activeWeapon:SetIsVisible(false)
                 previousWeaponName = activeWeapon:GetMapName()
+                local hudSlot = activeWeapon:GetHUDSlot()
+
+                if keepQuickSwitchSlot == nil then
+                    keepQuickSwitchSlot = false
+                end
+
+                if hudSlot > 0 and not keepQuickSwitchSlot then
+                    //DebugPrint("setting prev hud slot to %d, %s", hudSlot, Script.CallStack())
+                    self.quickSwitchSlot = hudSlot
+                end
                 
             end
             
@@ -180,7 +182,7 @@ function WeaponOwnerMixin:SetActiveWeapon(weaponMapName)
             
             self.timeOfLastWeaponSwitch = Shared.GetTime()
             
-            UpdateWeaponsWeight(self)
+            self:UpdateWeaponWeights()
             
             return true
             
@@ -191,29 +193,49 @@ function WeaponOwnerMixin:SetActiveWeapon(weaponMapName)
     local activeWeapon = self:GetActiveWeapon()
     if activeWeapon ~= nil and activeWeapon:GetMapName() == weaponMapName then
     
-        UpdateWeaponsWeight(self)
+        self:UpdateWeaponWeights()
         return true
         
     end
     
     Print("%s:SetActiveWeapon(%s) failed", self:GetClassName(), weaponMapName or "No Weapon")
     
-    UpdateWeaponsWeight(self)
+    self:UpdateWeaponWeights()
     
     return false
 
 end
-AddFunctionContract(WeaponOwnerMixin.SetActiveWeapon, { Arguments = { "Entity", "string" }, Returns = { "boolean" } })
+
+function WeaponOwnerMixin:SetQuickSwitchTarget(weaponMapName)
+
+    for i = 0, self:GetNumChildren() - 1 do
+    
+        local child = self:GetChildAtIndex(i)
+        if child:isa("Weapon") and child:GetMapName() == weaponMapName then
+
+            self.quickSwitchSlot = child:GetHUDSlot()
+            return
+            
+        end
+        
+    end
+
+    Print("ERROR: Could not find weapon %s", weaponMapName)
+
+end
+
+function WeaponOwnerMixin:QuickSwitchWeapon()
+    //DebugPrint("switching to hud slot %d", self.quickSwitchSlot)
+    self:SwitchWeapon(self.quickSwitchSlot)
+end
 
 function WeaponOwnerMixin:GetActiveWeapon()
     return Shared.GetEntity(self.activeWeaponId)
 end
-AddFunctionContract(WeaponOwnerMixin.GetActiveWeapon, { Arguments = { "Entity" }, Returns = { { "Weapon", "nil" } } })
 
 function WeaponOwnerMixin:GetTimeOfLastWeaponSwitch()
     return self.timeOfLastWeaponSwitch
 end
-AddFunctionContract(WeaponOwnerMixin.GetTimeOfLastWeaponSwitch, { Arguments = { "Entity" }, Returns = { "number" } })
 
 function WeaponOwnerMixin:SwitchWeapon(hudSlot)
 
@@ -240,7 +262,6 @@ function WeaponOwnerMixin:SwitchWeapon(hudSlot)
     return success
     
 end
-AddFunctionContract(WeaponOwnerMixin.SwitchWeapon, { Arguments = { "Entity", "number" }, Returns = { "boolean" } })
 
 function WeaponOwnerMixin:SelectNextWeaponInDirection(direction)
 
@@ -274,7 +295,6 @@ function WeaponOwnerMixin:SelectNextWeaponInDirection(direction)
     end
     
 end
-AddFunctionContract(WeaponOwnerMixin.SelectNextWeaponInDirection, { Arguments = { "Entity", "number" }, Returns = { } })
 
 function WeaponOwnerMixin:GetActiveWeaponName()
 
@@ -288,21 +308,10 @@ function WeaponOwnerMixin:GetActiveWeaponName()
     return activeWeaponName
     
 end
-AddFunctionContract(WeaponOwnerMixin.GetActiveWeaponName, { Arguments = { "Entity" }, Returns = { "string" } })
 
 function WeaponOwnerMixin:GetActiveWeaponId()
-
-    local activeWeaponId = nil
-    local activeWeapon = self:GetActiveWeapon()
-    
-    if activeWeapon ~= nil then
-        activeWeaponId = activeWeapon:GetId()
-    end
-    
-    return activeWeaponId
-    
+    return self.activeWeaponId
 end
-AddFunctionContract(WeaponOwnerMixin.GetActiveWeaponId, { Arguments = { "Entity" }, Returns = { "number" } })
 
 /**
  * Checks to see if self already has a weapon with the passed in map name.
@@ -327,7 +336,6 @@ function WeaponOwnerMixin:GetWeapon(weaponMapName)
     return found
 
 end
-AddFunctionContract(WeaponOwnerMixin.GetWeapon, { Arguments = { "Entity", "string" }, Returns = { { "Weapon", "nil" } } })
 
 /**
  * Checks to see if self already has a weapon in the passed in HUD slot.
@@ -348,7 +356,6 @@ function WeaponOwnerMixin:GetWeaponInHUDSlot(slot)
     return nil
     
 end
-AddFunctionContract(WeaponOwnerMixin.GetWeaponInHUDSlot, { Arguments = { "Entity", "number" }, Returns = { { "Weapon", "nil" } } })
 
 function WeaponOwnerMixin:AddWeapon(weapon, setActive)
 
@@ -387,7 +394,7 @@ function WeaponOwnerMixin:AddWeapon(weapon, setActive)
     
         // SetActiveWeapon() will update the weight but
         // it must be manually called if SetActiveWeapon is not called.
-        UpdateWeaponsWeight(self)
+        self:UpdateWeaponWeights()
         
     end
     
@@ -395,8 +402,9 @@ function WeaponOwnerMixin:AddWeapon(weapon, setActive)
         self:OnWeaponAdded(weapon)
     end
     
+    return hasWeapon
+    
 end
-AddFunctionContract(WeaponOwnerMixin.AddWeapon, { Arguments = { "Entity", "Weapon", "boolean" }, Returns = { } })
 
 function WeaponOwnerMixin:RemoveWeapon(weapon)
 
@@ -415,10 +423,9 @@ function WeaponOwnerMixin:RemoveWeapon(weapon)
         
     end
     
-    UpdateWeaponsWeight(self)
+    self:UpdateWeaponWeights()
     
 end
-AddFunctionContract(WeaponOwnerMixin.RemoveWeapon, { Arguments = { "Entity", "Weapon" }, Returns = { } })
 
 function WeaponOwnerMixin:DestroyWeapons()
 
@@ -456,7 +463,10 @@ function WeaponOwnerMixin:UpdateClientEffects(deltaTime, isLocal)
                 weapon:OnHolsterClient(self)
             end
             
-            self:GetActiveWeapon():OnDrawClient()
+            local activeWeapon = self:GetActiveWeapon()
+            if activeWeapon then
+                activeWeapon:OnDrawClient()
+            end    
             
         end
         

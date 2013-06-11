@@ -6,12 +6,10 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
-Script.Load("lua/FunctionContracts.lua")
-
 /**
  * PointGiverMixin handles awarding points on kills and other events.
  */
-PointGiverMixin = CreateMixin( PointGiverMixin )
+PointGiverMixin = CreateMixin(PointGiverMixin)
 PointGiverMixin.type = "PointGiver"
 
 local kDefaultPointValue = 10

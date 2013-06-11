@@ -29,8 +29,16 @@ function HiveStructureAbility:GetDropStructureId()
     return kTechId.Hive
 end
 
-function HiveStructureAbility:GetIsPositionValid(position, player)
-    return GetIsBuildPickVecLegal(self:GetDropStructureId(), player, position, kStructureSnapRadius, player:GetViewCoords().zAxis)
+function HiveStructureAbility:GetIsPositionValid(displayOrigin, player, normal, lastClickedPosition, entity)
+    local checkBypass = { }
+    local coords
+    checkBypass["ValidExit"] = true
+    local validBuild, legalPosition, attachEntity, errorString = GetIsBuildLegal(self:GetDropStructureId(), displayOrigin, player:GetViewCoords().zAxis, self:GetDropRange(), player, false, checkBypass)
+    if attachEntity then
+        coords = attachEntity:GetAngles():GetCoords()
+        coords.origin = legalPosition
+    end
+    return validBuild, coords
 end
 
 function HiveStructureAbility:GetSuffixName()
@@ -45,7 +53,24 @@ function HiveStructureAbility:GetDropMapName()
     return Hive.kMapName
 end
 
+function HiveStructureAbility:CreateStructure(coords, player, lastClickedPosition)
+	local success, entid = player:AttemptToBuild(self:GetDropStructureId(), coords.origin, nil, 0, nil, false, self, nil, player)
+    if success then
+        return Shared.GetEntity(entid)
+    end
+    return nil
+end
+
 function HiveStructureAbility:IsAllowed(player)
-    local structures = GetEntitiesForTeamWithinRange(self:GetDropClassName(), player:GetTeamNumber(), player:GetEyePos(), kMaxAlienStructureRange)
-    return #structures < kMaxAlienStructuresofType
+    if Server then
+        local BuildingHives = 0
+        for index, hive in ipairs(GetEntitiesForTeam("Hive", player:GetTeamNumber())) do
+            if not hive:GetIsBuilt() then
+                BuildingHives = BuildingHives + 1
+            end
+        end
+        return BuildingHives < kMaxBuildingHives
+    else
+        return true
+    end
 end

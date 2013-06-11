@@ -47,7 +47,10 @@ GUIAlienBuyMenu.kEvolveButtonYOffset = GUIScale(20)
 GUIAlienBuyMenu.kEvolveButtonTextSize = GUIScale(22)
 GUIAlienBuyMenu.kEvolveButtonNeedResourcesTextureCoordinates = { 87, 429, 396, 511 }
 GUIAlienBuyMenu.kEvolveButtonTextureCoordinates = { 396, 428, 706, 511 }
-GUIAlienBuyMenu.kEvolveButtonVeinsTextureCoordinates = { 600, 341, 915, 428 }
+GUIAlienBuyMenu.kEvolveButtonVeinsTextureCoordinates = { 600, 350, 915, 419 }
+local kVeinsMargin = GUIScale(4)
+
+GUIAlienBuyMenu.kResourceIconTexture = PrecacheAsset("ui/pres_icon_big.dds")
 
 GUIAlienBuyMenu.kHighLightTexPixelCoords = { 560, 960, 640, 1040 }
 
@@ -64,9 +67,8 @@ GUIAlienBuyMenu.kResourceDisplayHeight = GUIScale((GUIAlienBuyMenu.kResourceDisp
 GUIAlienBuyMenu.kResourceFontSize = GUIScale(24)
 GUIAlienBuyMenu.kResourceTextYOffset = GUIScale(200)
 
-GUIAlienBuyMenu.kResourceIconTextureCoordinates = { 825, 309, 858, 342 }
-GUIAlienBuyMenu.kResourceIconWidth = GUIScale(GUIAlienBuyMenu.kResourceIconTextureCoordinates[3] - GUIAlienBuyMenu.kResourceIconTextureCoordinates[1])
-GUIAlienBuyMenu.kResourceIconHeight = GUIScale(GUIAlienBuyMenu.kResourceIconTextureCoordinates[4] - GUIAlienBuyMenu.kResourceIconTextureCoordinates[2])
+GUIAlienBuyMenu.kResourceIconWidth = GUIScale(33)
+GUIAlienBuyMenu.kResourceIconHeight = GUIScale(33)
 
 GUIAlienBuyMenu.kHealthIconTextureCoordinates = { 854, 318, 887, 351 }
 GUIAlienBuyMenu.kHealthIconWidth = GUIScale(GUIAlienBuyMenu.kHealthIconTextureCoordinates[3] - GUIAlienBuyMenu.kHealthIconTextureCoordinates[1])
@@ -455,8 +457,8 @@ function GUIAlienBuyMenu:_InitializeMouseOverInfo()
     // Anchor to parent's left so we can hard-code "float" distance
     self.mouseOverInfoResIcon:SetAnchor(GUIItem.Right, GUIItem.Top)
     self.mouseOverInfoResIcon:SetPosition(Vector(GUIScale(-34), GUIScale(120), 0))
-    self.mouseOverInfoResIcon:SetTexture(GUIAlienBuyMenu.kBuyMenuTexture)
-    self.mouseOverInfoResIcon:SetTexturePixelCoordinates(unpack(GUIAlienBuyMenu.kResourceIconTextureCoordinates))
+    self.mouseOverInfoResIcon:SetTexture(GUIAlienBuyMenu.kResourceIconTexture)
+    self.mouseOverInfoResIcon:SetColor(kIconColors[kAlienTeamType])
     self.mouseOverInfoResIcon:SetIsVisible(false)
     self.background:AddChild(self.mouseOverInfoResIcon)
     
@@ -641,7 +643,8 @@ function GUIAlienBuyMenu:_InitializeEvolveButton()
     self.background:AddChild(self.evolveButtonBackground)
     
     self.evolveButtonVeins = GUIManager:CreateGraphicItem()
-    self.evolveButtonVeins:SetSize(Vector(GUIAlienBuyMenu.kEvolveButtonWidth, GUIAlienBuyMenu.kEvolveButtonHeight, 0))
+    self.evolveButtonVeins:SetSize(Vector(GUIAlienBuyMenu.kEvolveButtonWidth - kVeinsMargin * 2, GUIAlienBuyMenu.kEvolveButtonHeight - kVeinsMargin * 2, 0))
+    self.evolveButtonVeins:SetPosition(Vector(kVeinsMargin, kVeinsMargin, 0))
     self.evolveButtonVeins:SetTexture(GUIAlienBuyMenu.kBuyMenuTexture)
     self.evolveButtonVeins:SetTexturePixelCoordinates(unpack(GUIAlienBuyMenu.kEvolveButtonVeinsTextureCoordinates))
     self.evolveButtonVeins:SetColor(Color(1, 1, 1, 0))
@@ -661,8 +664,8 @@ function GUIAlienBuyMenu:_InitializeEvolveButton()
     self.evolveResourceIcon:SetSize(Vector(GUIAlienBuyMenu.kResourceIconWidth, GUIAlienBuyMenu.kResourceIconHeight, 0))
     self.evolveResourceIcon:SetAnchor(GUIItem.Middle, GUIItem.Top)
     self.evolveResourceIcon:SetPosition(Vector(4, -GUIAlienBuyMenu.kResourceIconHeight / 2, 0))
-    self.evolveResourceIcon:SetTexture(GUIAlienBuyMenu.kBuyMenuTexture)
-    self.evolveResourceIcon:SetTexturePixelCoordinates(unpack(GUIAlienBuyMenu.kResourceIconTextureCoordinates))
+    self.evolveResourceIcon:SetTexture(GUIAlienBuyMenu.kResourceIconTexture)
+    self.evolveResourceIcon:SetColor(Color(0, 0, 0, 1))
     self.evolveResourceIcon:SetIsVisible(false)
     self.evolveButtonText:AddChild(self.evolveResourceIcon)
     
@@ -1119,7 +1122,7 @@ function GUIAlienBuyMenu:_UpdateAbilityIcons()
                 local abilityInfoText = Locale.ResolveString(LookupTechData(abilityItem.TechId, kTechDataDisplayName, ""))
                 local tooltip = Locale.ResolveString(LookupTechData(abilityItem.TechId, kTechDataTooltipInfo, ""))
                 
-                self:_ShowMouseOverInfo(abilityInfoText, tooltip, 0, 0, 0)
+                self:_ShowMouseOverInfo(abilityInfoText, tooltip)
                 
             end
             
@@ -1502,9 +1505,6 @@ function GUIAlienBuyMenu:_DeselectAllUpgrades()
     for i, currentButton in ipairs(self.upgradeButtons) do    
         currentButton.Selected = false        
     end
-    
-    self.numSelectedUpgrades = 0
-    self.upgradeList = {}
 
 end
 

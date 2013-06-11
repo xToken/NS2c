@@ -93,7 +93,7 @@ function ScenarioHandler:Save()
     Shared.Message(ScenarioHandler.kStartTag)
     Shared.Message(string.format("TeamData|1|%s", GetGamerules():GetTeam1():GetInitialTechPoint():GetLocationName()))
     Shared.Message(string.format("TeamData|2|%s", GetGamerules():GetTeam2():GetInitialTechPoint():GetLocationName()))
-    for index, entity in ientitylist(Shared.GetEntitiesWithClassname("Actor")) do
+    for index, entity in ientitylist(Shared.GetEntitiesWithClassname("Entity")) do
         local cname = entity:GetClassName()
         local handler = self:LookupHandler(cname)
         local accepted = handler and handler:Accept(entity)

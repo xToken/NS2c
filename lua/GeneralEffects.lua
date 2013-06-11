@@ -368,29 +368,16 @@ kGeneralEffectData =
         },
     },
     
-    alien_move1 =
+    alien_move =
     {
-        alienMove1Effects =
+        alienMoveEffects =
         {
             {sound = "", silenceupgrade = true, done = true},
             //{sound = "sound/NS2.fev/alien/skulk/death", classname = "Skulk", done = true},
             //{sound = "sound/NS2.fev/alien/gorge/death", classname = "Gorge", done = true},
             //{sound = "sound/NS2.fev/alien/lerk/death", classname = "Lerk", done = true},            
-            {sound = "sound/ns2c.fev/ns2c/alien/fade/move1", classname = "Fade", done = true},
-            //{sound = "sound/NS2.fev/alien/onos/death", classname = "Onos", done = true},
-            {sound = "", done = true},
-        },
-    },
-    
-    alien_move2 =
-    {
-        alienMove2Effects =
-        {
-            {sound = "", silenceupgrade = true, done = true},
-            //{sound = "sound/NS2.fev/alien/skulk/death", classname = "Skulk", done = true},
-            //{sound = "sound/NS2.fev/alien/gorge/death", classname = "Gorge", done = true},
-            //{sound = "sound/NS2.fev/alien/lerk/death", classname = "Lerk", done = true},            
-            {sound = "sound/ns2c.fev/ns2c/alien/fade/move2", classname = "Fade", done = true},
+            {sound = "sound/ns2c.fev/ns2c/alien/fade/move1", classname = "Fade", randsound = 1, done = true},
+            {sound = "sound/ns2c.fev/ns2c/alien/fade/move2", classname = "Fade", randsound = 2, done = true},
             //{sound = "sound/NS2.fev/alien/onos/death", classname = "Onos", done = true},
             {sound = "", done = true},
         },

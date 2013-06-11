@@ -151,6 +151,25 @@ function CommanderUI_MenuButtonStatus(index)
 
 end
 
+function CommanderUI_MenuButtonCooldownFraction(index)
+
+    local player = Client.GetLocalPlayer()
+    local cooldownFraction = 0
+    
+    if index <= table.count(player.menuTechButtons) then
+    
+        techId = player.menuTechButtons[index]
+        
+        if techId ~= kTechId.None then        
+            cooldownFraction = player:GetCooldownFraction(techId)
+        end    
+            
+    end
+    
+    return cooldownFraction
+    
+end
+
 local kDeselectUnitsOnTech = { }
 kDeselectUnitsOnTech[kTechId.BuildMenu] = true
 kDeselectUnitsOnTech[kTechId.AdvancedMenu] = true
@@ -354,51 +373,60 @@ local function ComputeMenuTechAvailability(self)
         
         local isTab, isSelect = self:IsTabSelected(techId)
         local forceAllow = self:GetForceAllow(techId)
-            
-        if isTab or forceAllow then
         
-            menuTechButtonAllowed = true
+        if self:GetCooldownFraction(techId) ~= 0 then
+            
+            menuTechButtonAllowed = false
             menuTechButtonAffordable = true
             
-        elseif techNode then
-        
-            local selection = self:GetSelection()
-        
-            if #selection > 0 then
+        else
             
-                for e = 1, #selection do
+            if isTab or forceAllow then
+            
+                menuTechButtonAllowed = true
+                menuTechButtonAffordable = true
                 
-                    local entity = selection[e]
-                    local isTechAllowed = false
-                    local canAfford = false
+            elseif techNode then
+            
+                local selection = self:GetSelection()
+            
+                if #selection > 0 then
+                
+                    for e = 1, #selection do
                     
-                    local _, isSelectTabSelected = self:IsTabSelected(kTechId.WeaponsMenu)
-                    if isSelectTabSelected then
-                        isTechAllowed, canAfford = entity:GetTechAllowed(techId, techNode, self)
-                    else
-                        isTechAllowed, canAfford = self:GetTechAllowed(techId, techNode, self)
+                        local entity = selection[e]
+                        local isTechAllowed = false
+                        local canAfford = false
+                        
+                        local _, isSelectTabSelected = self:IsTabSelected(kTechId.WeaponsMenu)
+                        if isSelectTabSelected then
+                            isTechAllowed, canAfford = entity:GetTechAllowed(techId, techNode, self)
+                        else
+                            isTechAllowed, canAfford = self:GetTechAllowed(techId, techNode, self)
+                        end
+                        
+                        menuTechButtonAllowed = isTechAllowed
+                        menuTechButtonAffordable = canAfford
+                        
+                        // If any of the selection entities allows this tech, it is allowed!
+                        // For example, if 2 ARCs are selected and one is in deploy mode while the other is not,
+                        // The first ARC would allow undeploy and the second would not, so at least one ARC allows it.
+                        if menuTechButtonAllowed and menuTechButtonAffordable then
+                            break
+                        end
+                        
                     end
                     
-                    menuTechButtonAllowed = isTechAllowed
-                    menuTechButtonAffordable = canAfford
-                    
-                    // If any of the selection entities allows this tech, it is allowed!
-                    // For example, if 2 ARCs are selected and one is in deploy mode while the other is not,
-                    // The first ARC would allow undeploy and the second would not, so at least one ARC allows it.
-                    if menuTechButtonAllowed and menuTechButtonAffordable then
-                        break
-                    end
+                else
+                
+                    // Handle the case where nothing is selected.
+                    menuTechButtonAllowed, menuTechButtonAffordable = self:GetTechAllowed(techId, techNode, self)
                     
                 end
                 
-            else
-            
-                // Handle the case where nothing is selected.
-                menuTechButtonAllowed, menuTechButtonAffordable = self:GetTechAllowed(techId, techNode, self)
-                
             end
             
-        end
+        end   
         
         table.insert(self.menuTechButtonsAllowed, menuTechButtonAllowed)
         table.insert(self.menuTechButtonsAffordable, menuTechButtonAffordable)

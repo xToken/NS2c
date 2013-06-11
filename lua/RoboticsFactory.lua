@@ -20,7 +20,7 @@ Script.Load("lua/RecycleMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/TurretFactoryMixin.lua")
-Script.Load("lua/AlienDetectableMixin.lua")
+Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
@@ -71,7 +71,7 @@ AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(TurretFactoryMixin, networkVars)
-AddMixinNetworkVars(AlienDetectableMixin, networkVars)
+AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 
@@ -99,7 +99,7 @@ function RoboticsFactory:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, TurretFactoryMixin)
-    InitMixin(self, AlienDetectableMixin)
+    InitMixin(self, DetectableMixin)
     InitMixin(self, ParasiteMixin)
     
     if Client then
@@ -195,7 +195,7 @@ function RoboticsFactory:ManufactureEntity()
     
 end
 
-// actual creation of entity happens delayed
+// Actual creation of entity happens delayed.
 function RoboticsFactory:OverrideCreateManufactureEntity(techId)
 
 end

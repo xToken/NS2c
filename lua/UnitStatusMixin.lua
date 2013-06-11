@@ -6,8 +6,6 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
-Script.Load("lua/FunctionContracts.lua")
-
 kUnitStatus = enum({
     'None',
     'Inactive',
@@ -19,7 +17,7 @@ kUnitStatus = enum({
     'Researching'
 })
 
-UnitStatusMixin = CreateMixin( UnitStatusMixin )
+UnitStatusMixin = CreateMixin(UnitStatusMixin)
 UnitStatusMixin.type = "UnitStatus"
 
 function UnitStatusMixin:__initmixin()

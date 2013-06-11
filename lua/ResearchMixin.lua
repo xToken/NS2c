@@ -6,9 +6,7 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
-Script.Load("lua/FunctionContracts.lua")
-
-ResearchMixin = CreateMixin( ResearchMixin )
+ResearchMixin = CreateMixin(ResearchMixin)
 ResearchMixin.type = "Research"
 
 ResearchMixin.networkVars =
@@ -104,17 +102,9 @@ end
 function ResearchMixin:OnUpdate(deltaTime)
     SharedUpdate(self, deltaTime)
 end
-AddFunctionContract(ResearchMixin.OnUpdate, { Arguments = { "Entity", "number" }, Returns = { } })
 
 function ResearchMixin:OnProcessMove(input)
     SharedUpdate(self, input.time)
-end
-AddFunctionContract(ResearchMixin.OnProcessMove, { Arguments = { "Entity", "Move" }, Returns = { } })
-
-function ResearchMixin:OnUpdateAnimationInput(modelMixin)
-
-    PROFILE("ResearchMixin:OnUpdateAnimationInput")
-    
 end
 
 function ResearchMixin:GetResearchingId()
@@ -139,8 +129,44 @@ function ResearchMixin:GetResearchTechAllowed(techNode)
     
 end
 
+local function AbortResearch(self, refundCost)
+
+    if self.researchProgress > 0 then
+    
+        local team = self:GetTeam()
+        // Team is not always available due to order of destruction during map change.
+        if team then
+        
+            local researchNode = team:GetTechTree():GetTechNode(self.researchingId)
+            if researchNode ~= nil then
+            
+                // Give money back if refundCost is true.
+                if refundCost then
+                    team:AddTeamResources(researchNode:GetCost())
+                end
+                
+                ASSERT(researchNode:GetResearching() or researchNode:GetIsUpgrade())
+                
+                researchNode:ClearResearching()
+                
+                if self.OnResearchCancel then
+                    self:OnResearchCancel(self.researchingId)
+                end
+                
+                self:ClearResearch()
+                
+                team:GetTechTree():SetTechChanged()
+                
+            end
+            
+        end
+        
+    end
+    
+end
+
 function ResearchMixin:OnKill()
-    self:AbortResearch()
+    AbortResearch(self)
 end 
 
 function ResearchMixin:ClearResearch()
@@ -189,7 +215,7 @@ function ResearchMixin:GetIsUpgrading()
     end
     
     return false
-
+    
 end
 
 // Could be for research or upgrade
@@ -210,42 +236,6 @@ function ResearchMixin:SetResearching(techNode, player)
     
 end
 
-function ResearchMixin:AbortResearch(refundCost)
-
-    if self.researchProgress > 0 then
-    
-        local team = self:GetTeam()
-        // Team is not always available due to order of destruction during map change.
-        if team then
-        
-            local researchNode = team:GetTechTree():GetTechNode(self.researchingId)
-            if researchNode ~= nil then
-            
-                // Give money back if refundCost is true
-                if refundCost then
-                    team:SetTeamResources(team:GetTeamResources() + researchNode:GetCost())
-                end
-                
-                ASSERT(researchNode:GetResearching() or researchNode:GetIsUpgrade())
-                
-                researchNode:ClearResearching()
-                
-                if self.OnResearchCancel then
-                    self:OnResearchCancel(self.researchingId)
-                end
-                
-                self:ClearResearch()
-                
-                team:GetTechTree():SetTechChanged()
-                
-            end
-            
-        end
-        
-    end
-    
-end
-
 function ResearchMixin:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("ResearchMixin:OnUpdateAnimationInput")
@@ -255,13 +245,13 @@ end
 
 function ResearchMixin:PerformAction(techNode, position)
 
-    // Process Cancel of research or upgrade
+    // Process Cancel of research or upgrade.
     if techNode.techId == kTechId.Cancel then
     
-        if self:GetIsResearching() then        
-            self:AbortResearch(true)            
-        end       
-
+        if self:GetIsResearching() then
+            AbortResearch(self, true)
+        end
+        
     end
     
 end
@@ -282,12 +272,6 @@ function ResearchMixin:GetCanResearch(techId)
 
     if techId == kTechId.Recycle and HasMixin(self, "Recycle") then
         return true
-    end
-    
-    if techId == kTechId.Cancel and self:GetIsResearching() then
-        if self.researchingId == kTechId.Recycle and self.researchProgress > kRecycleCancelWindow then
-            return false        
-        end
     end
 
     if self.GetCanResearchOverride then

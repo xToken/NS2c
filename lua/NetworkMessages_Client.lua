@@ -25,12 +25,12 @@ function OnCommandHitEffect(hitEffectTable)
 
 end
 
-// Show damage numbers for players
+// Show damage numbers for players.
 function OnCommandDamage(damageTable)
 
     local target, amount, hitpos = ParseDamageMessage(damageTable)
     if target then
-        Client.AddWorldMessage(kWorldTextMessageType.Damage, ToString(math.round(amount)), hitpos, target:GetId())
+        Client.AddWorldMessage(kWorldTextMessageType.Damage, amount, hitpos, target:GetId())
     end
     
 end
@@ -91,13 +91,6 @@ function OnCommandTechNodeUpdate(techNodeUpdateTable)
     GetTechTree():UpdateTechNodeFromNetwork(techNodeUpdateTable)
 end
 
-function OnCommandResetMouse()
-
-    Client.SetYaw(0)
-    Client.SetPitch(0)
-    
-end
-
 function OnCommandOnResetGame()
 
     Scoreboard_OnResetGame()
@@ -147,6 +140,9 @@ function OnCommandRecieveHiveInfo(hiveinfo)
     local player = Client.GetLocalPlayer()
     if player:isa("Alien") then
         hiveinfo.time = Shared.GetTime()
+        if player.hivesinfo == nil then
+            player.hivesinfo = { } 
+        end
         if player.hivesinfo == { } or player.hivesinfo[hiveinfo.key] ~= hiveinfo then
             player.hivesinfo[hiveinfo.key] = hiveinfo
         end
@@ -165,18 +161,69 @@ function OnCommandJoinError(message)
     ChatUI_AddSystemMessage( Locale.ResolveString("JOIN_ERROR_TOO_MANY") )
 end
 
-function OnCommandCreateDecal(message)
+function OnVoteConcedeCast(message)
+
+    local text = string.format(Locale.ResolveString("VOTE_CONCEDE_BROADCAST"), message.voterName, message.votesMoreNeeded)
+    ChatUI_AddSystemMessage(text)
+    
+end
+
+function OnVoteEjectCast(message)
+
+    local text = string.format(Locale.ResolveString("VOTE_EJECT_BROADCAST"), message.voterName, message.votesMoreNeeded)
+    ChatUI_AddSystemMessage(text)
+    
+end
+
+function OnTeamConceded(message)
+
+    if message.teamNumber == kMarineTeamType then
+        ChatUI_AddSystemMessage(Locale.ResolveString("TEAM_MARINES_CONCEDED"))
+    else
+        ChatUI_AddSystemMessage(Locale.ResolveString("TEAM_ALIENS_CONCEDED"))
+    end
+    
+end
+
+local function OnCommandCreateDecal(message)
     
     local normal, position, materialName, scale = ParseCreateDecalMessage(message)
     
     local coords = Coords.GetTranslation(position)
     coords.yAxis = normal
-    coords.zAxis = coords.yAxis:GetPerpendicular()
-    coords.xAxis = coords.yAxis:CrossProduct(coords.zAxis)
     
-    Shared.CreateRenderDecal(materialName, coords, scale)
+    local randomAxis = Vector(math.random() * 2 - 0.9, math.random() * 2 - 1.1, math.random() * 2 - 1)
+    randomAxis:Normalize()
+    
+    coords.zAxis = randomAxis
+    coords.xAxis = coords.yAxis:CrossProduct(coords.zAxis)
+    coords.zAxis = coords.xAxis:CrossProduct(coords.yAxis)
+    
+    coords.xAxis:Normalize()
+    coords.yAxis:Normalize()
+    
+    Shared.CreateTimeLimitedDecal(materialName, coords, scale)
 
 end
+Client.HookNetworkMessage("CreateDecal", OnCommandCreateDecal)
+
+local function OnSetClientIndex(message)
+    Client.localClientIndex = message.clientIndex
+end
+Client.HookNetworkMessage("SetClientIndex", OnSetClientIndex)
+
+local function OnSetClientTeamNumber(message)
+    Client.localClientTeamNumber = message.teamNumber
+end
+Client.HookNetworkMessage("SetClientTeamNumber", OnSetClientTeamNumber)
+
+local function OnMessageAutoConcedeWarning(message)
+
+    local warningText = StringReformat(Locale.ResolveString("AUTO_CONCEDE_WARNING"), { time = message.time, teamName = message.team1Conceding and "Marines" or "Aliens" })
+    ChatUI_AddSystemMessage(warningText)
+    
+end
+Client.HookNetworkMessage("AutoConcedeWarning", OnMessageAutoConcedeWarning)
 
 Client.HookNetworkMessage("Ping", OnCommandPing)
 Client.HookNetworkMessage("HitEffect", OnCommandHitEffect)
@@ -191,7 +238,6 @@ Client.HookNetworkMessage("TechNodeUpdate", OnCommandTechNodeUpdate)
 Client.HookNetworkMessage("MinimapAlert", OnCommandMinimapAlert)
 Client.HookNetworkMessage("CommanderNotification", OnCommandCommanderNotification)
 
-Client.HookNetworkMessage("ResetMouse", OnCommandResetMouse)
 Client.HookNetworkMessage("ResetGame", OnCommandOnResetGame)
 
 Client.HookNetworkMessage("DebugLine", OnCommandDebugLine)
@@ -200,4 +246,7 @@ Client.HookNetworkMessage("DebugCapsule", OnCommandDebugCapsule)
 Client.HookNetworkMessage("WorldText", OnCommandWorldText)
 Client.HookNetworkMessage("HiveInfo", OnCommandRecieveHiveInfo)
 Client.HookNetworkMessage("CommanderError", OnCommandCommanderError)
-Client.HookNetworkMessage("CreateDecal", OnCommandCreateDecal)
+
+Client.HookNetworkMessage("VoteConcedeCast", OnVoteConcedeCast)
+Client.HookNetworkMessage("VoteEjectCast", OnVoteEjectCast)
+Client.HookNetworkMessage("TeamConceded", OnTeamConceded)

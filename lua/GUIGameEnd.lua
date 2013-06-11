@@ -94,7 +94,21 @@ function GUIGameEnd:SetGameEnded(playerWon, playerIsMarine)
         self.messageText:SetColor(kMessageLoseColor[playerIsMarine and "marine" or "alien"])
     end
     
-    self.messageText:SetText(Locale.ResolveString(kMessageText[endState]))
+    local messageString = Locale.ResolveString(kMessageText[endState])
+    if PlayerUI_IsASpectator() then
+        local winningTeamName = nil
+        if endState == kEndStates.MarinePlayerWin then
+            winningTeamName = InsightUI_GetTeam1Name()
+            Shared.ConsoleCommand("score1 +")
+        elseif endState == kEndStates.AlienPlayerWin then
+            winningTeamName = InsightUI_GetTeam2Name()
+            Shared.ConsoleCommand("score2 +")
+        end
+        if winningTeamName then
+            messageString = string.format("%s Wins!", winningTeamName)
+        end
+    end
+    self.messageText:SetText(messageString)
     
 end
 

@@ -93,10 +93,7 @@ function CommandStructure:GetIsOccupied()
 end
 
 function CommandStructure:GetEffectParams(tableParams)
-
-    ScriptActor.GetEffectParams(self, tableParams)
     tableParams[kEffectFilterOccupied] = self.occupied
-    
 end
 
 if Client then

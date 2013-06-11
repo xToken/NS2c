@@ -38,7 +38,6 @@ end
 Lerk.XZExtents = 0.4
 Lerk.YExtents = 0.4
 
-local kJumpMode = 0 //Prevents all your flaps from being used at once yo
 local kWallGripSlideTime = 0.7
 local kWallGripRange = 0.05
 local kWallGripFeelerSize = 0.25
@@ -52,7 +51,7 @@ local kSwoopGravityScalar = -25.0
 local kRegularGravityScalar = -7
 local kFlightGravityScalar = -4
 local kMaxWalkSpeed = 4.8
-local kMaxSpeed = 14
+local kMaxSpeed = 13
 local kDefaultAttackSpeed = 1.65
 
 local networkVars =
@@ -111,6 +110,7 @@ function Lerk:OnInitialized()
         self.previousYaw = 0
         
         self:AddHelpWidget("GUILerkFlapHelp", 2)
+        self:AddHelpWidget("GUILerkSporesHelp", 2)
         
     end
     
@@ -135,7 +135,7 @@ local kMaxGlideRoll = math.rad(60)
 function Lerk:GetDesiredAngles()
 
     if self:GetIsWallGripping() then
-        return self:GetAnglesFromWallNormal(self.wallGripNormalGoal, 1)
+        return self:GetAnglesFromWallNormal( self.wallGripNormalGoal )
     end
 
     local desiredAngles = Alien.GetDesiredAngles(self)
@@ -152,8 +152,14 @@ function Lerk:GetDesiredAngles()
 
 end
 
-function Lerk:GetSmoothAngles()
-    return not self:GetIsWallGripping()
+function Lerk:GetAngleSmoothingMode()
+
+    if self:GetIsWallGripping() then
+        return "quatlerp"
+    else
+        return "euler"
+    end
+
 end
 
 function Lerk:GetBaseArmor()
@@ -189,7 +195,7 @@ function Lerk:ReceivesFallDamage()
 end
 
 function Lerk:GetJumpMode()
-    return kJumpMode
+    return kJumpMode.Default
 end
 
 // Gain speed gradually the longer we stay in the air
@@ -306,8 +312,6 @@ function Lerk:HandleJump(input, velocity)
         
         self.timeOfLastJump = Shared.GetTime()
         
-        // Velocity may not have been set yet, so force onGround to false this frame
-        self.onGroundNeedsUpdate = false
         self.onGround = false
         
         self.lastTimeFlapped = Shared.GetTime()
@@ -393,7 +397,7 @@ end
 function Lerk:CalcWallGripSpeedFraction()
 
     local dt = (Shared.GetTime() - self.wallGripTime)
-    if dt > Lerk.kWallGripSlideTime then
+    if dt > kWallGripSlideTime then
         return 0
     end
     local k = kWallGripSlideTime
@@ -516,7 +520,7 @@ function Lerk:HandleAttacks(input)
     local holdingJump = bit.band(input.commands, Move.Jump) ~= 0
     
     // If we're holding down jump, glide
-    self.gliding = input.move.z > 0 and self:GetVelocityLength() > kMaxSpeed *.5 and not self:GetIsOnSurface() and not turnedSharp and holdingJump
+    self.gliding = input.move.z > 0 and self:GetVelocity():GetLength() > kMaxSpeed *.5 and not self:GetIsOnSurface() and not turnedSharp and holdingJump
     
 end
 
