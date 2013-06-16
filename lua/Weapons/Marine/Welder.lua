@@ -112,7 +112,7 @@ function Welder:OnDraw(player, previousWeaponMapName)
 end
 
 function Welder:GetCheckForRecipient()
-    return true
+    return false
 end
 
 function Welder:OnTouch(recipient)

@@ -361,8 +361,7 @@ kSwipeRange = 1.1
 kSwipeMeleeBaseWidth = 0.9
 kSwipeMeleeBaseHeight = 1
 
-kStartBlinkEnergyCost = 8
-kBlinkEnergyCost = 65
+kStartBlinkEnergyCost = 7
 kBlinkPulseEnergyCost = 4
 kBlinkCooldown = 0.05
 

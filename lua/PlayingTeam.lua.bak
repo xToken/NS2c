@@ -501,7 +501,6 @@ function PlayingTeam:GetHasTeamLost()
         
         if not abilityToRespawn and not activePlayers or self:GetNumPlayers() == 0 or self:GetHasConceded() then
             return true
-            
         end
         
     end

@@ -42,12 +42,12 @@ Fade.XZExtents = .4
 Fade.YExtents = .85
 
 local kViewOffsetHeight = 1.7
-local kMass = 76 // 50 // ~350 pounds // FADE WEIGHS LESS THAN LERK??? WTFFFFF TANK BIRD
+local kMass = 76 // 50 // ~350 pounds
 local kMaxSpeed = 4.5
 local kMaxBlinkSpeed = 16 // ns1 fade blink is (3x maxSpeed) + celerity
 local kWalkSpeed = 2
 local kCrouchedSpeed = 1.8
-local kBlinkAccelerationDuration = 2
+local kBlinkAccelerationDuration = 0.33
 local kBlinkImpulseForce = 10
 local kBlinkJumpThreshold = -0.3
 local networkVars =
@@ -180,18 +180,9 @@ function Fade:OnBlinking(input)
         velocity.y = oldYvelocity
     end
     
-    if velocity.y < 2 then
-        // Jump if the player isn't looking too far down
-        local pitchAngle = self:GetViewCoords().zAxis.y
-        pitchAngle = Clamp(pitchAngle, -0.5, 1)
-        if pitchAngle > kBlinkJumpThreshold then
-            velocity.y = self:GetJumpForce() * 1.05
-         else
-            velocity.y = velocity.y + (pitchAngle * self:GetJumpForce() * 0.03)
-         end
-    end
+    local pitchAngle = Clamp(self:GetViewCoords().zAxis.y, -0.5, 0.5)
     //Cap Y Velocity
-    velocity.y = Clamp(velocity.y, (-1 * (kMaxBlinkSpeed + self:GetMovementSpeedModifier())), kMaxBlinkSpeed + self:GetMovementSpeedModifier())    
+    velocity.y = Clamp(velocity.y + (pitchAngle * self:GetJumpForce() * 0.01), (-1 * (kMaxBlinkSpeed + self:GetMovementSpeedModifier())), kMaxBlinkSpeed + self:GetMovementSpeedModifier())    
     
     // Finish
     self:SetVelocity(velocity)

@@ -76,7 +76,7 @@ function HandGrenades:GetWeight()
 end
 
 function HandGrenades:GetCheckForRecipient()
-    return true
+    return false
 end
 
 function HandGrenades:OnPrimaryAttackEnd(player)

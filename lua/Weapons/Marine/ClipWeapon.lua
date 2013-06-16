@@ -169,7 +169,7 @@ function ClipWeapon:GetMaxAmmo()
 end
 
 function ClipWeapon:GetCheckForRecipient()
-    return true
+    return false
 end
 
 function ClipWeapon:OnTouch(recipient)
