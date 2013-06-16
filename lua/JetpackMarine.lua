@@ -30,8 +30,8 @@ end
 
 local kJetpackFuelReplenishDelay = .0
 local kJetpackMinimumFuelForLaunch = .03
-local kVerticleThrust = 22
-local kJetpackAcceleration = 2.2 // Horizontal acceleration
+local kVerticleThrust = 16
+local kJetpackAcceleration = 3.2 // Horizontal acceleration
 local kWalkMaxSpeed = 2.2
 local kCrouchMaxSpeed = 1.6
 local kRunMaxSpeed = 4.6

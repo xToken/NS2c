@@ -148,6 +148,10 @@ function Commander:GetTeamType()
     return kNeutralTeamType
 end
 
+function Commander:GetCanCrouch()
+    return false
+end
+
 function Commander:GetTechAllowed(techId, techNode, self)
 
     local allowed, canAfford = Player.GetTechAllowed(self, techId, techNode, self)
@@ -209,12 +213,6 @@ end
 
 function Commander:GetNumPlayerAlerts()
     return self.numPlayerAlerts
-end
-
-function Commander:UpdateMisc(input)
-
-    PROFILE("Commander:UpdateMisc")
-    
 end
 
 // Returns true if it set our position

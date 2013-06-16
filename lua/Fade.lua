@@ -49,7 +49,7 @@ local kWalkSpeed = 2
 local kCrouchedSpeed = 1.8
 local kBlinkAccelerationDuration = 0.33
 local kBlinkImpulseForce = 10
-local kBlinkJumpThreshold = -0.3
+local kBlinkVerticleScalar = 0.05
 local networkVars =
 {    
     etherealStartTime = "private time",
@@ -181,8 +181,13 @@ function Fade:OnBlinking(input)
     end
     
     local pitchAngle = Clamp(self:GetViewCoords().zAxis.y, -0.5, 0.5)
-    //Cap Y Velocity
-    velocity.y = Clamp(velocity.y + (pitchAngle * self:GetJumpForce() * 0.01), (-1 * (kMaxBlinkSpeed + self:GetMovementSpeedModifier())), kMaxBlinkSpeed + self:GetMovementSpeedModifier())    
+    if pitchAngle < 0.25 and pitchAngle >= -0.05 and math.abs(velocity.y) < 1 then
+        self:GetJumpVelocity(input, velocity)
+    else
+        velocity.y = velocity.y + (pitchAngle * self:GetJumpForce() * kBlinkVerticleScalar * input.time)
+    end
+    //Cap Y Velocity    
+    velocity.y = Clamp(velocity.y, (-1 * (kMaxBlinkSpeed + self:GetMovementSpeedModifier())), kMaxBlinkSpeed + self:GetMovementSpeedModifier())    
     
     // Finish
     self:SetVelocity(velocity)

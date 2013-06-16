@@ -266,9 +266,9 @@ kBiteDamage = 75
 kBiteDamageType = kDamageType.Normal
 kBiteEnergyCost = 5.0
 kBiteDelay = 0.4
-kBiteRange = 1
+kBiteRange = 1.1
 kBiteMeleeBaseWidth = 0.7
-kBiteMeleeBaseHeight = 0.8
+kBiteMeleeBaseHeight = 0.9
 
 kLeapEnergyCost = 45
 
@@ -318,7 +318,7 @@ kLerkBiteDamageType = kDamageType.Normal
 kLerkBiteDelay = 0.32
 kLerkBiteRange = 1.1
 kLerkBiteMeleeBaseWidth = 0.8
-kLerkBiteMeleeBaseHeight = 0.8
+kLerkBiteMeleeBaseHeight = 0.9
 
 kSporeEnergyCost = 20
 kSporeDuration = 4
@@ -357,12 +357,12 @@ kSwipeDamage = 80
 kSwipeDamageType = kDamageType.Normal
 kSwipeEnergyCost = 6.5
 kSwipeDelay = 0.48
-kSwipeRange = 1.1
+kSwipeRange = 1.3
 kSwipeMeleeBaseWidth = 0.9
 kSwipeMeleeBaseHeight = 1
 
-kStartBlinkEnergyCost = 7
-kBlinkPulseEnergyCost = 4
+kStartBlinkEnergyCost = 8
+kBlinkPulseEnergyCost = 5
 kBlinkCooldown = 0.05
 
 kMetabolizeEnergyCost = 25

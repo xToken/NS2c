@@ -537,7 +537,7 @@ function GetExtents(techId)
 
     local extents = LookupTechData(techId, kTechDataMaxExtents)
     if not extents then
-        extents = Vector(1.5, 1.5, .75)
+        extents = Vector(1.0, 1.0, .75)
     end
     return extents
 
