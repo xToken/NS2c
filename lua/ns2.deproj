@@ -199,6 +199,9 @@
     <filename>Embryo.lua</filename>
   </file>
   <file>
+    <filename>EmpowerMixin.lua</filename>
+  </file>
+  <file>
     <filename>EnergyMixin.lua</filename>
   </file>
   <file>
@@ -521,6 +524,9 @@
   </file>
   <file>
     <filename>PhaseGate.lua</filename>
+  </file>
+  <file>
+    <filename>PickupableWeaponMixin.lua</filename>
   </file>
   <file>
     <filename>Weapons\Marine\Pistol.lua</filename>

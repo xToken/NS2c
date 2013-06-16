@@ -29,8 +29,6 @@ Script.Load("lua/DoorMixin.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/SleeperMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
-Script.Load("lua/StaticTargetMixin.lua")
-Script.Load("lua/TargetCacheMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DamageMixin.lua")
@@ -48,20 +46,13 @@ Whip.kMapName = "whip"
 Whip.kModelName = PrecacheAsset("models/alien/whip/whip.model")
 Whip.kAnimationGraph = PrecacheAsset("models/alien/whip/whip.animation_graph")
 
-Whip.kScanThinkInterval = .1
-Whip.kROF = 2.0
-Whip.kFov = 360
-Whip.kTargetCheckTime = .3
-Whip.kRange = 6
-Whip.kAreaEffectRadius = 3
-Whip.kDamage = 50
+local kEmpowerRange = 6
+local kEmpowerThinkTime = 2
 
 Whip.kWhipBallParam = "ball"
 
 local networkVars =
 {
-    attackYaw = "integer (0 to 360)",
-    slapping = "private boolean"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -81,13 +72,6 @@ AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
-
-if Server then
-
-    Script.Load("lua/AiAttacksMixin.lua")
-    Script.Load("lua/AiSlapAttackType.lua")
-    
-end
 
 Shared.PrecacheSurfaceShader("models/alien/whip/ball.surface_shader")
 
@@ -115,11 +99,7 @@ function Whip:OnCreate()
     InitMixin(self, ObstacleMixin)
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
-    InitMixin(self, CombatMixin)
     InitMixin(self, HasUmbraMixin)
-    
-    self.attackYaw = 0 
-    self.slapping = false
     
     if Client then
         InitMixin(self, CommanderGlowMixin)    
@@ -135,28 +115,11 @@ function Whip:OnInitialized()
 
     ScriptActor.OnInitialized(self)
 
-    InitMixin(self, DoorMixin)
-
     self:SetModel(Whip.kModelName, Whip.kAnimationGraph)
     
     self:SetUpdates(true)
     
     if Server then
-    
-        InitMixin(self, StaticTargetMixin)
-    
-        // The AiAttacks create TargetSelectors, so the TargetCacheMixin is required.
-        InitMixin(self, TargetCacheMixin)
-        
-        InitMixin(self, AiAttacksMixin)
-        
-        // The various attacks are added here.
-        self.slapAttack = AiSlapAttackType():Init(self)
-        self:AddAiAttackType(self.slapAttack)
-        
-        self:UpdateAiAttacks()
-        
-        InitMixin(self, SleeperMixin)
         
         // This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
@@ -177,16 +140,11 @@ function Whip:GetDamagedAlertId()
 end
 
 function Whip:GetCanSleep()
-    return false // not self.moving and not self.whackAttack:GetTarget()
+    return true
 end
 
 function Whip:GetMinimumAwakeTime()
     return 10
-end
-
-// Used for targeting
-function Whip:GetFov()
-    return Whip.kFov
 end
 
 function Whip:GetDeathIconIndex()
@@ -202,10 +160,7 @@ function Whip:ConstructOverride(deltaTime)
 end
 
 function Whip:OnUpdatePoseParameters()
-
-    self:SetPoseParam("attack_yaw", self.attackYaw)
-    self:SetPoseParam(Whip.kWhipBallParam, 0)
-    
+    self:SetPoseParam(Whip.kWhipBallParam, 0) 
 end
 
 function Whip:GetCanGiveDamageOverride()
@@ -216,15 +171,24 @@ function Whip:GetIsRooted()
     return self.rooted
 end
 
-function Whip:OnUpdate(deltaTime)
+function Whip:EmpowerInRange()
 
-    PROFILE("Whip:OnUpdate")
-    ScriptActor.OnUpdate(self, deltaTime)
+    if self:GetIsBuilt() and self:GetIsAlive() then
     
-    if Server then        
-
-        self:UpdateOrders(deltaTime)
+        local empents = GetEntitiesWithMixinForTeamWithinRange("Empower", self:GetTeamNumber(), self:GetOrigin(), kEmpowerRange)
+        
+        for _, entity in ipairs(empents) do
+        
+            if entity ~= self then
+                Print("POWEA")
+                entity:Empower()
+            end
+            
+        end
+    
     end
+    
+    return self:GetIsAlive()
     
 end
 
@@ -232,7 +196,7 @@ function Whip:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Whip:OnUpdateAnimationInput")  
     
-    modelMixin:SetAnimationInput("activity", ((self.slapping and "primary") or "none" ))
+    modelMixin:SetAnimationInput("activity", "none" )
     modelMixin:SetAnimationInput("rooted", true)
     modelMixin:SetAnimationInput("move", "idle")
     
@@ -259,52 +223,10 @@ if Client then
     end
 
 elseif Server then
-        
-    function Whip:UpdateOrders(deltaTime)
-        self:UpdateAiAttacks(deltaTime) 
-    end
-
-    function Whip:SetAttackYaw(toPoint)
-
-        // Update our attackYaw to aim at our current target
-        local attackDir = GetNormalizedVector(toPoint - self:GetModelOrigin())
-        
-        // This is negative because of how model is set up (spins clockwise)
-        local attackYawRadians = -math.atan2(attackDir.x, attackDir.z)
-        
-        // Factor in the orientation of the whip.
-        attackYawRadians = attackYawRadians + self:GetAngles().yaw
-        
-        self.attackYaw = DegreesTo360(math.deg(attackYawRadians))
-        
-        if self.attackYaw < 0 then
-            self.attackYaw = self.attackYaw + 360
-        end
-
-    end
-    
-    function Whip:OnAiAttackStart(attackType)
-        local target = attackType:GetTarget()
-        assert(not target or HasMixin(target, "Target"))
-        local point = target and target:GetEngagementPoint() or attackType.targetLocation
-        self:SetAttackYaw(point)
-        self.slapping = attackType.slapping == true 
-    end
-
-    function Whip:OnAiAttackEnd(attackType)
-        self.slapping = false
-    end
-
-    function Whip:OnAiAttackHit(attackType)
-        self.slapping = false 
-    end
-
-    function Whip:OnAiAttackHitFail(attackType)
-        self.slapping = false
-    end
-    
+            
     function Whip:OnConstructionComplete()
     
+        self:AddTimedCallback(Whip.EmpowerInRange, kEmpowerThinkTime)
         local team = self:GetTeam()
         if team then
             team:OnUpgradeChamberConstructed(self)

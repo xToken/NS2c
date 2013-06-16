@@ -397,9 +397,13 @@ end
 
 gMaxHeightOffGround = 0.0
 
-function GetAttachEntity(techId, position, snapRadius)
+function GetAttachEntity(techId, position, player)
 
     local attachClass = LookupTechData(techId, kStructureAttachClass)    
+    //DUMBBBB
+    if player == nil and techId == kTechId.CommandStation then
+        attachClass = "TechPoint"
+    end
 
     if attachClass then
     
@@ -533,7 +537,7 @@ function GetExtents(techId)
 
     local extents = LookupTechData(techId, kTechDataMaxExtents)
     if not extents then
-        extents = Vector(.5, .5, .5)
+        extents = Vector(1.5, 1.5, .75)
     end
     return extents
 
@@ -1348,7 +1352,7 @@ function SetPlayerPoseParameters(player, viewModel, headAngles)
     
     local velocity = player:GetVelocityFromPolar()
     // Not all players will contrain their movement to the X/Z plane only.
-    if player.GetMoveSpeedIs2D and player:GetMoveSpeedIs2D() then
+    if player.PerformsVerticalMove and player:PerformsVerticalMove() then
         velocity.y = 0
     end
     
@@ -1356,7 +1360,7 @@ function SetPlayerPoseParameters(player, viewModel, headAngles)
     local z = Math.DotProduct(headCoords.zAxis, velocity)
     
     local moveYaw = Math.Wrap(Math.Degrees( math.atan2(z,x) ), -180, 180)
-    local speedScalar = velocity:GetLength() / player:GoldSrc_GetMaxSpeed(true)
+    local speedScalar = velocity:GetLength() / player:GetMaxSpeed(true)
     
     player:SetPoseParam("move_yaw", moveYaw)
     player:SetPoseParam("move_speed", speedScalar)
@@ -2166,13 +2170,10 @@ end
 
 gSpeedDebug = nil
 
-function SetSpeedDebugText(text, ...)
+function SetSpeedDebugText(text, text2)
 
     if gSpeedDebug then
-    
-        local result = string.format(text, ...)
-    
-        gSpeedDebug:SetDebugText(result)
+        gSpeedDebug:SetDebugText(text, text2)
     end
     
 end

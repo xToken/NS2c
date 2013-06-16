@@ -121,16 +121,23 @@ kGeneralEffectData =
         
     },
 
-    drifter_shoot_enzyme =
+    empower =
     {
         drifterShootEnzymeEffects =
         {
-            //{cinematic = "cinematics/alien/drifter/enzyme_muzzle.cinematic"},
+            {cinematic = "cinematics/alien/drifter/enzyme_muzzle.cinematic"},
             {sound = "sound/NS2.fev/alien/drifter/parasite", done = true}            
         }
     },
     
-
+    enzymed =
+    {
+        drifterShootEnzymeEffects =
+        {
+            {cinematic = "cinematics/alien/drifter/enzyme_muzzle.cinematic"},
+            {sound = "sound/NS2.fev/alien/drifter/parasite", done = true}            
+        }
+    },
 
     issue_order =
     {
@@ -155,38 +162,6 @@ kGeneralEffectData =
         {
             {sound = "sound/NS2.fev/alien/common/join_team", isalien = true, done = true},
             {sound = "sound/NS2.fev/marine/common/join_team", isalien = false, done = true},
-        },
-    },
-    
-    victory =
-    {
-        victoryEffects =
-        {
-            {sound = "sound/ns2c.fev/ns2c/ui/you_win", done = true},
-        },
-    },
-    
-    loss =
-    {
-        lossEffects =
-        {
-            {sound = "sound/ns2c.fev/ns2c/ui/you_lose", done = true},
-        },
-    },
-    
-    ayumi =
-    {
-        ayumiEffects =
-        {
-            {private_sound = "sound/ns2c.fev/ns2c/ui/nancy_rr", done = true},
-        },
-    },
-    
-    end_ayumi =
-    {
-        ayumiEffects =
-        {
-            {stop_sound = "sound/ns2c.fev/ns2c/ui/nancy_rr", done = true},
         },
     },
     

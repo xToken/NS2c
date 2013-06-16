@@ -43,14 +43,13 @@ Fade.YExtents = .85
 
 local kViewOffsetHeight = 1.7
 local kMass = 76 // 50 // ~350 pounds // FADE WEIGHS LESS THAN LERK??? WTFFFFF TANK BIRD
-local kJumpHeight = 1.1
-local kMaxSpeed = 6.0
-local kMaxBlinkSpeed = 18 // ns1 fade blink is (3x maxSpeed) + celerity
-local kWalkSpeed = 4
-//local kBlinkAcceleration = 50
+local kMaxSpeed = 4.5
+local kMaxBlinkSpeed = 16 // ns1 fade blink is (3x maxSpeed) + celerity
+local kWalkSpeed = 2
+local kCrouchedSpeed = 1.8
 local kBlinkAccelerationDuration = 2
-local kBlinkImpulseForce = 6.2
-
+local kBlinkImpulseForce = 10
+local kBlinkJumpThreshold = -0.3
 local networkVars =
 {    
     etherealStartTime = "private time",
@@ -77,11 +76,6 @@ function Fade:OnCreate()
     self.etherealStartTime = 0
     self.etherealEndTime = 0
     self.ethereal = false
-    
-end
-
-function Fade:AdjustGravityForce(input, gravity)
-    return gravity
     
 end
 
@@ -135,43 +129,7 @@ function Fade:ReceivesFallDamage()
     return false
 end
 
-function Fade:HandleJump(input, velocity)
-
-    local success = false
-    
-    if self:GetCanJump() then
-    
-        self:PreventMegaBunnyJumping(velocity)
-    
-        // Compute the initial velocity to give us the desired jump
-        // height under the force of gravity.
-        if not self:GetIsBlinking() then
-            self:GetJumpVelocity(input, velocity)
-        end
-        
-        if self:GetPlayJumpSound() then
-        
-            if not Shared.GetIsRunningPrediction() then
-                self:TriggerEffects("jump", {surface = self:GetMaterialBelowPlayer()})
-            end
-            
-        end
-        
-        self.timeOfLastJump = Shared.GetTime()
-        
-        // Velocity may not have been set yet, so force onGround to false this frame
-        self.onGround = false
-        
-        self.jumping = true
-        success = true
-        
-    end
-    
-    return success
-    
-end
-
-function Fade:GoldSrc_GetMaxSpeed(possible)
+function Fade:GetMaxSpeed(possible)
     if possible then
         return kMaxSpeed
     end
@@ -182,15 +140,15 @@ function Fade:GoldSrc_GetMaxSpeed(possible)
         maxSpeed = kWalkSpeed
     end
     
-    return maxSpeed * self:GetMovementSpeedModifier()
+    if self:GetCrouched() then
+        maxSpeed = kCrouchedSpeed
+    end
+        
+    return maxSpeed + self:GetMovementSpeedModifier()
 end
 
 function Fade:GetMass()
     return kMass 
-end
-
-function Fade:GetJumpHeight()
-    return kJumpHeight
 end
 
 function Fade:GetIsBlinking()
@@ -201,51 +159,44 @@ function Fade:GetRecentlyBlinked()
     return Shared.GetTime() - self.etherealEndTime < kBlinkAccelerationDuration
 end
 
-function Fade:GetGravityAllowed()
-    return true
-end
-
 function Fade:OnBlink()
-    self.onGround = false
-    self.jumping = true
+    self:SetIsOnGround(false)
+    self:SetIsJumping(true)
 end
 
 function Fade:OnBlinking(input)
     local velocity = self:GetVelocity()
-    
-    if self:GetIsOnGround() then
-        // Jump if the player isn't looking too far down
-        local pitchAngle = self:GetViewCoords().zAxis.y
-        pitchAngle = math.max((pitchAngle + 1.0), 1)
-        self:GetJumpVelocity(input, velocity)
-        velocity.y = pitchAngle * velocity.y
-    end
-    
+       
     // Blink impulse
     velocity:Add( self:GetViewCoords().zAxis * kBlinkImpulseForce )
     
     // Cap groundspeed
     local groundspeed = velocity:GetLengthXZ()
-    local maxspeed = kMaxBlinkSpeed * self:GetMovementSpeedModifier()
+    local maxspeed = kMaxBlinkSpeed + self:GetMovementSpeedModifier()
+    
     if groundspeed > maxspeed then
-        // Keep vertical velocity
-        local verticalVelocity = velocity.y
-        // Scale it back to maxspeed
+        local oldYvelocity = velocity.y
         velocity:Scale(maxspeed/groundspeed)
-        velocity.y = verticalVelocity
+        velocity.y = oldYvelocity
     end
+    
+    if velocity.y < 2 then
+        // Jump if the player isn't looking too far down
+        local pitchAngle = self:GetViewCoords().zAxis.y
+        pitchAngle = Clamp(pitchAngle, -0.5, 1)
+        if pitchAngle > kBlinkJumpThreshold then
+            velocity.y = self:GetJumpForce() * 1.05
+         else
+            velocity.y = velocity.y + (pitchAngle * self:GetJumpForce() * 0.03)
+         end
+    end
+    //Cap Y Velocity
+    velocity.y = Clamp(velocity.y, (-1 * (kMaxBlinkSpeed + self:GetMovementSpeedModifier())), kMaxBlinkSpeed + self:GetMovementSpeedModifier())    
     
     // Finish
     self:SetVelocity(velocity)
     self.jumping = true // Animation
-
-end
-
-function Fade:OverrideInput(input)
-
-    Player.OverrideInput(self, input)
-    
-    return input
+    self:SetIsOnGround(false)
     
 end
 

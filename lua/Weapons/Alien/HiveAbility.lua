@@ -29,18 +29,6 @@ function HiveStructureAbility:GetDropStructureId()
     return kTechId.Hive
 end
 
-function HiveStructureAbility:GetIsPositionValid(displayOrigin, player, normal, lastClickedPosition, entity)
-    local checkBypass = { }
-    local coords
-    checkBypass["ValidExit"] = true
-    local validBuild, legalPosition, attachEntity, errorString = GetIsBuildLegal(self:GetDropStructureId(), displayOrigin, player:GetViewCoords().zAxis, self:GetDropRange(), player, false, checkBypass)
-    if attachEntity then
-        coords = attachEntity:GetAngles():GetCoords()
-        coords.origin = legalPosition
-    end
-    return validBuild, coords
-end
-
 function HiveStructureAbility:GetSuffixName()
     return "hive"
 end

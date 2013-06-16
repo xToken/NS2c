@@ -2,7 +2,6 @@
 // lua\Weapons\HeavyMachineGun.lua
 
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
-Script.Load("lua/PickupableWeaponMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/Weapons/ClientWeaponEffectsMixin.lua")
 
@@ -24,7 +23,6 @@ function HeavyMachineGun:OnCreate()
 
     ClipWeapon.OnCreate(self)
     
-    InitMixin(self, PickupableWeaponMixin, { kRecipientType = "Marine" })
     InitMixin(self, EntityChangeMixin)
     
     if Client then
@@ -235,12 +233,6 @@ function HeavyMachineGun:UpdateViewModelPoseParameters(viewModel)
     local sign = (attacking and 1) or 0
 
     self:SetGunLoopParam(viewModel, "arm_loop", sign)
-    
-end
-
-function HeavyMachineGun:Dropped(prevOwner)
-
-    ClipWeapon.Dropped(self, prevOwner)
     
 end
 

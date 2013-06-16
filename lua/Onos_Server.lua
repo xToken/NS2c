@@ -13,7 +13,6 @@ function Onos:InitWeapons()
     Alien.InitWeapons(self)
 
     self:GiveItem(Gore.kMapName)
-    //self:GiveItem(Devour.kMapName)
     self:SetActiveWeapon(Gore.kMapName)
     
 end
@@ -23,5 +22,5 @@ function Onos:GetTierTwoTechId()
 end
 
 function Onos:GetTierThreeTechId()
-    return kTechId.Devour
+    //return kTechId.Devour
 end

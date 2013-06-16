@@ -106,7 +106,7 @@ function Gamerules_GetDamageMultiplier()
     
 end
 
-kDamageType = enum( {'Normal', 'Structural', 'Gas', 'Splash', 'StructuresOnly', 'Heavy',
+kDamageType = enum( {'Normal', 'Structural', 'Gas', 'Splash', 'StructuresOnly', 'Light', 'Heavy',
                     'Falling', 'Corrode', 'Biological', 'HalfStructure' } )
 
 // Describe damage types for tooltips
@@ -114,17 +114,20 @@ kDamageTypeDesc = {
     "",
     "Structural damage: Double vs. structures",
     "Gas damage: affects breathing targets only",
-    "Heavy damage: extra vs. armor",
+    "Splash: same as structures only but always affects ARCs (friendly fire).",
     "Structures only: Doesn't damage players or AI units",
+    "Light damage: reduced vs. armor",
+    "Heavy damage: extra vs. armor",    
     "Falling damage: Ignores armor for humans, no damage for aliens",
     "Corrode damage: Damage structures or armor only for non structures",
-    "Splash: same as structures only but always affects ARCs (friendly fire).",
+    "Biological damage: Heals aliens and damages humans",
     "HalfStructure: Half damage to structures."
 }
 
 kBaseArmorUseFraction = 0.7
 kHeavyDamageArmorUseFraction = 0.5
 kHeavyArmorUseFraction = 0.95
+kLightHealthPerArmor = 4
 kStructuralDamageScalar = 2
 kHalfStructureDamageReduction = 2
 kHealthPointsPerArmor = 2
@@ -331,6 +334,11 @@ local function BuildDamageTypeRules()
     // normal damage rules
     kDamageTypeRules[kDamageType.Normal] = {}
     table.insert(kDamageTypeRules[kDamageType.Normal], IgnoreDoors)
+    
+    // light damage rules
+    kDamageTypeRules[kDamageType.Light] = {}
+    table.insert(kDamageTypeRules[kDamageType.Light], IgnoreDoors)
+    table.insert(kDamageTypeRules[kDamageType.Light], DoubleHealthPerArmor)
     
     // heavy damage rules
     kDamageTypeRules[kDamageType.Heavy] = {}

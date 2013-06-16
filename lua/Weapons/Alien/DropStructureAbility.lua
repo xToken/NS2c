@@ -332,9 +332,7 @@ function DropStructureAbility:GetPositionForStructure(startPosition, direction, 
     	if trace.entity == nil then
         	validPosition = true
 		end
-        
         displayOrigin = trace.endPoint
-        
     end
     
     // Don't allow dropped structures to go too close to techpoints and resource nozzles

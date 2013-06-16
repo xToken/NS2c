@@ -30,12 +30,12 @@ end
 
 local kJetpackFuelReplenishDelay = .0
 local kJetpackMinimumFuelForLaunch = .03
-local kVerticalThrustAccelerationMod = 2.1
-local kVerticalThrustMaxSpeed = 12.0 // note: changing this impacts kVerticalThrustAccelerationMod
-local kJetpackAcceleration = 17.0 // Horizontal acceleration
-local kWalkMaxSpeed = 3.0                // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
-local kRunMaxSpeed = 5.25
-local kFlyMaxSpeed = 12.0 // NS1 jetpack is 2.9x running speed (walk: 192, jetpack: 576)
+local kVerticleThrust = 22
+local kJetpackAcceleration = 2.2 // Horizontal acceleration
+local kWalkMaxSpeed = 2.2
+local kCrouchMaxSpeed = 1.6
+local kRunMaxSpeed = 4.6
+local kFlyMaxSpeed = 13.0 // NS1 jetpack is 2.9x running speed (walk: 192, jetpack: 576)
 local kJetpackTakeOffTime = .01
 
 local networkVars =
@@ -173,34 +173,23 @@ function JetpackMarine:OnEntityChange(oldId, newId)
 
 end
 
-function JetpackMarine:GetSlowOnLand()
-    return not self:GetIsJetpacking()
-end
-
 function JetpackMarine:ReceivesFallDamage()
     return false
 end
 
-
-
 function JetpackMarine:HasJetpackDelay()
-
     if (Shared.GetTime() - self.timeJetpackingChanged > kJetpackFuelReplenishDelay) then
         return false
     end
     
     return true
-    
 end
 
 function JetpackMarine:GetIsOnGround()
-
-    //if self:GetIsJetpacking() and self.timeJetpackingChanged ~= Shared.GetTime() then
-    //    return false
-    //end
-    
-    return Marine.GetIsOnGround(self)
-    
+    if self:GetIsJetpacking() and self.timeJetpackingChanged ~= Shared.GetTime() then
+        return false
+    end
+    return Player.GetIsOnGround(self)
 end
 
 function JetpackMarine:HandleJetpackStart()
@@ -253,15 +242,10 @@ function JetpackMarine:GetWeaponName()
     
 end
 
-function JetpackMarine:GetJumpMode()
-    return kJumpMode.Default
-end
-
 function JetpackMarine:GetMaxBackwardSpeedScalar()
     if not self:GetIsOnGround() then
         return 1
     end
-
     return Marine.GetMaxBackwardSpeedScalar(self)
 end
 
@@ -306,21 +290,11 @@ function JetpackMarine:HandleButtons(input)
     
 end
 
-function JetpackMarine:GetCrouchSpeedScalar()
-
-    if self:GetIsJetpacking() then
-        return 0
-    end
-    
-    return Player.GetCrouchSpeedScalar(self)
-    
-end
-
 function JetpackMarine:GetInventorySpeedScalar()
     return 1 - self:GetWeaponsWeight() - kJetpackWeight
 end
 
-function JetpackMarine:GoldSrc_GetMaxSpeed(possible)
+function JetpackMarine:GetMaxSpeed(possible)
 
     if possible then
         return kRunMaxSpeed
@@ -336,13 +310,17 @@ function JetpackMarine:GoldSrc_GetMaxSpeed(possible)
         maxSpeed = kWalkMaxSpeed
     end
     
-    if self:GetIsJetpacking() or not self:GetIsOnSurface() then
-        maxSpeed = kFlyMaxSpeed
-    else
-        // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
-        local inventorySpeedScalar = self:GetInventorySpeedScalar()
-        maxSpeed = maxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier() * inventorySpeedScalar 
+    if self:GetCrouched() and self:GetIsOnSurface() then
+        maxSpeed = kCrouchMaxSpeed
     end
+    
+    if not self:GetIsOnSurface() or self:GetIsJetpacking() then
+        maxSpeed = kFlyMaxSpeed
+    end
+        
+    // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
+    local inventorySpeedScalar = self:GetInventorySpeedScalar()
+    maxSpeed = maxSpeed * self:GetCatalystMoveSpeedModifier() * inventorySpeedScalar 
     
     return maxSpeed
     
@@ -352,16 +330,15 @@ function JetpackMarine:GetIsTakingOffFromGround()
     return self.startedFromGround and (self.timeJetpackingChanged + kJetpackTakeOffTime > Shared.GetTime())
 end
 
-function JetpackMarine:GoldSrc_AirAccelerate(velocity, time, wishdir, wishspeed, acceleration)
+function JetpackMarine:AirAccelerate(velocity, time, wishdir, wishspeed, acceleration)
     if not self:GetIsJetpacking() and wishspeed > Player.GetMaxAirVeer(self) then
         wishspeed = Player.GetMaxAirVeer(self)
     end
-    
-    self:GoldSrc_Accelerate(velocity, time, wishdir, wishspeed, acceleration)
+    self:Accelerate(velocity, time, wishdir, wishspeed, acceleration)
 end
 
-function JetpackMarine:GoldSrc_Accelerate(velocity, time, wishdir, wishspeed, acceleration)
-    Marine.GoldSrc_Accelerate(self, velocity, time, wishdir, wishspeed, acceleration)
+function JetpackMarine:Accelerate(velocity, time, wishdir, wishspeed, acceleration)
+    Player.Accelerate(self, velocity, time, wishdir, wishspeed, acceleration)
     
     // From testing in NS1: There is a hard cap on velocity of the jetpack marine,
     // probably to prevent air-strafing into crazy speeds
@@ -377,59 +354,21 @@ function JetpackMarine:GoldSrc_Accelerate(velocity, time, wishdir, wishspeed, ac
     
     // Add thrust from the jetpack
     if self:GetIsJetpacking() then
-        Marine.GoldSrc_Accelerate(self, velocity, time, Vector(0,1,0), kVerticalThrustMaxSpeed, kVerticalThrustAccelerationMod)
+        velocity.y = velocity.y + (kVerticleThrust * time)
+        //Marine.Accelerate(self, velocity, time, Vector(0,1,0), kVerticalThrustMaxSpeed, kVerticalThrustAccelerationMod)
         // Since the upwards velocity may be very small, manually set onGround to false
         // to avoid having code from sticking the player to the ground
-        //self.onGround = false
+        self:SetIsOnGround(false)
     end
 end
 
-function JetpackMarine:GetJumpVelocity(input, velocity)
-    velocity.y = math.sqrt(math.abs(1 * self:GetJumpHeight() * self:GetGravityForce(input)))
-end
-
-function JetpackMarine:GoldSrc_GetWishVelocity(input)
-    if HasMixin(self, "Stun") and self:GetIsStunned() then
-        return Vector(0,0,0)
-    end
-    
-    // goldSrc maxspeed works different than ns2 maxspeed.
-    // Here is it used as an acceleration target, in ns2
-    // it's seemingly used for clamping the speed
-    local maxspeed = self:GoldSrc_GetMaxSpeed()
-
-    // wishdir
-    local move = GetNormalizedVector(input.move)
-    move:Scale(maxspeed)
-    
-    // grab view angle (ignoring pitch)
-    local angles = self:ConvertToViewAngles(0, input.yaw, 0)
-    
-    if self:GetIsOnLadder() and not self:GetIsJetpacking() then
-        angles = self:ConvertToViewAngles(input.pitch, input.yaw, 0)
-    end
-    
-    local viewCoords = angles:GetCoords() // to matrix?
-    local moveVelocity = viewCoords:TransformVector(move) // get world-space move direction
-    
-    // Scale down velocity if moving backwards
-    if input.move.z < 0 then
-        moveVelocity:Scale(self:GetMaxBackwardSpeedScalar())
-    end
-    
-    return moveVelocity
-end
-
-function JetpackMarine:GoldSrc_GetAcceleration()
+function JetpackMarine:GetAcceleration()
     local acceleration = 0
 
     if self:GetIsJetpacking() then
-
-        acceleration = kJetpackAcceleration * 0.17
-        acceleration = acceleration * self:GetInventorySpeedScalar()
-
+        acceleration = kJetpackAcceleration * self:GetInventorySpeedScalar()
     else
-        acceleration = Marine.GoldSrc_GetAcceleration(self)
+        acceleration = Player.GetAcceleration(self)
     end
     
     return acceleration
@@ -463,26 +402,18 @@ function JetpackMarine:UpdateJetpackMode()
 end
 
 function JetpackMarine:GetJetPackMode()
-
     return self.jetpackMode
-
 end
 
 function JetpackMarine:GetIsJetpacking()
     return self.jetpacking and (self:GetFuel()> 0) and not self:GetIsStunned()
 end
 
-/**
- * Since Jetpack is a child of JetpackMarine, we need to manually
- * call ProcessMoveOnModel() on it so animations play properly.
- */
 function JetpackMarine:ProcessMoveOnModel(input)
-
     local jetpack = self:GetJetpack()
     if jetpack then
         jetpack:ProcessMoveOnModel(input)
     end
-    
 end
 
 function JetpackMarine:OnTag(tagName)

@@ -23,9 +23,7 @@ kChamberLostNotification = 0    // Amount of Upgrade Chambers remaining for aler
 kPingOfDeathDelay = 2
 kPingOfDeathDamagePercent = 12
 kResearchMod = 1
-kAirMaxSpeedScalar = 1.8
-kOnLandDelay = 0.1
-kFootstepsThreshold = 1
+kFootstepsThreshold = 3.5
 
 kGhostStructureModifier = .75
 kEnergyUpdateRate = 0.25
@@ -41,7 +39,7 @@ kFallDamageMinimumVelocity = 15
 kFallDamageScalar = 13
 kKnockbackTime = 0.05
 
-kCeleritySpeedModifier = 0.2
+kCeleritySpeedModifier = 1.67 //75 Units NS1
 kFocusAttackSlowdown = 0.5
 kCloakingMaxSpeed = 3.0
 kFocusAttackDamageMultipler = 2
@@ -95,8 +93,7 @@ kUpgradeGestationTime = 2
 // Jetpack
 // NS1: 6.5 seconds of fuel
 // NS1: 9 seconds for full refuel
-kJetpackUseFuelRate = 0.18
-kJetpackUpgradeUseFuelRate = 0.15
+kJetpackUseFuelRate = 0.21
 kJetpackReplenishFuelRate = 0.11
 kJetpackWeight = 0.08
 

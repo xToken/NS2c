@@ -8,7 +8,6 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
-Script.Load("lua/PickupableWeaponMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/Weapons/ClientWeaponEffectsMixin.lua")
 
@@ -63,7 +62,6 @@ function Rifle:OnCreate()
 
     ClipWeapon.OnCreate(self)
     
-    InitMixin(self, PickupableWeaponMixin)
     InitMixin(self, EntityChangeMixin)
     
     if Client then

@@ -22,11 +22,13 @@ local networkVars =
     droppingMine = "boolean"
 }
 
+AddMixinNetworkVars(PickupableWeaponMixin, networkVars)
+
 function Mines:OnCreate()
 
     Weapon.OnCreate(self)
     
-    InitMixin(self, PickupableWeaponMixin, { kRecipientType = "Marine" })
+    InitMixin(self, PickupableWeaponMixin)
     
     self.showGhost = false
     self.minesLeft = kMineCount
@@ -258,9 +260,18 @@ end
 function Mines:Dropped(prevOwner)
 
     Weapon.Dropped(self, prevOwner)
-    
+    self.droppedtime = Shared.GetTime()
     self:SetModel(kDropModelName)
-    
+    self:RestartPickupScan()
+end
+
+function Mines:GetCheckForRecipient()
+    return true
+end
+
+function Mines:OnTouch(recipient)
+    recipient:AddWeapon(self, true)
+    StartSoundEffectAtOrigin(Marine.kGunPickupSound, recipient:GetOrigin())
 end
 
 // Given a gorge player's position and view angles, return a position and orientation

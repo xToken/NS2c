@@ -25,7 +25,7 @@ local networkVars =
 function HandGrenades:OnCreate()
 
     Weapon.OnCreate(self)
-    InitMixin(self, PickupableWeaponMixin, { kRecipientType = "Marine" })
+    InitMixin(self, PickupableWeaponMixin)
     self.nadesLeft = kNumHandGrenades
     self.throwing = false
     self.throwntime = 0
@@ -75,12 +75,28 @@ function HandGrenades:GetWeight()
     return kHandGrenadesWeight
 end
 
+function HandGrenades:GetCheckForRecipient()
+    return true
+end
+
 function HandGrenades:OnPrimaryAttackEnd(player)
     self.throwing = false
 end
 
 function HandGrenades:GetIsDroppable()
     return true
+end
+
+function HandGrenades:OnTouch(recipient)
+    recipient:AddWeapon(self, true)
+    StartSoundEffectAtOrigin(Marine.kGunPickupSound, recipient:GetOrigin())
+end
+
+function HandGrenades:Dropped(prevOwner)
+
+    Weapon.Dropped(self, prevOwner)
+    self.droppedtime = Shared.GetTime()
+    self:RestartPickupScan()
 end
 
 local function ThrowGrenade(self, player)

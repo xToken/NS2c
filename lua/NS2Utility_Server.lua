@@ -75,7 +75,7 @@ function CreateEntityForTeam(techId, position, teamNumber, player)
         newEnt = CreateEntity( mapName, spawnHeightPosition, teamNumber )
         
         // Hook it up to attach entity
-        local attachEntity = GetAttachEntity(techId, position)    
+        local attachEntity = GetAttachEntity(techId, position, player)    
         if attachEntity then    
             newEnt:SetAttached(attachEntity)        
         end

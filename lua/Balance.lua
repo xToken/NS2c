@@ -165,20 +165,20 @@ kResourceScaling = 20 //Controls the factoring per player.
 kRifleDamage = 10
 kRifleDamageType = kDamageType.Normal
 kRifleClipSize = 50
-kRifleWeight = 0.03
+kRifleWeight = 0.01
 kRifleClipWeight = 0.01
 
 kPistolDamage = 20
 kPistolDamageType = kDamageType.Normal
 kPistolClipSize = 10
-kPistolWeight = 0.01
-kPistolFireDelay = 0.1
+kPistolWeight = 0.005
+kPistolFireDelay = 0.08
 kPistolClipWeight = 0.01
 
 kWelderDamage = 4
 kWelderDamageType = kDamageType.Normal
 kWelderFireDelay = 0.4
-kWelderWeight = 0.035
+kWelderWeight = 0.005
 kWelderRate = 60
 kWelderStructureMultipler = 2
 
@@ -193,8 +193,8 @@ kGrenadeLauncherGrenadeDamageType = kDamageType.Structural
 kGrenadeLauncherClipSize = 4
 kGrenadeLauncherGrenadeDamageRadius = 5
 kGrenadeLifetime = 2.0
-kGrenadeLauncherWeight = 0.10
-kGrenadeLauncherShellWeight = 0.0045
+kGrenadeLauncherWeight = 0.05
+kGrenadeLauncherShellWeight = 0.0035
 
 kShotgunDamage = 17
 kShotgunDamageType = kDamageType.Normal
@@ -205,16 +205,16 @@ kShotgunMinSpread = 10
 kShotgunMinSpreadBullets = 5
 kShotgunMaxSpread = 18
 //kShotgunDropOffStartRange = 4
-kShotgunWeight = 0.07
+kShotgunWeight = 0.03
 kShotgunShellWeight = 0.0025
 
 kHeavyMachineGunDamage = 20
 kHeavyMachineGunDamageType = kDamageType.HalfStructure
 kHeavyMachineGunClipSize = 125
-kHeavyMachineGunWeight = 0.12
+kHeavyMachineGunWeight = 0.05
 kHeavyMachineGunROF = 0.05
 kHeavyMachineGunReloadTime = 6.3
-kHeavyMachineGunClipWeight = 0.033
+kHeavyMachineGunClipWeight = 0.035
 
 kMineDamage = 125
 kMineDamageType = kDamageType.Normal
@@ -230,11 +230,11 @@ kHandGrenadesRange = 4
 kHandGrenadesDamage = 80
 kHandGrenadesDamageType = kDamageType.Normal
 kHandGrenadesLifetime = 0.75
-kHandGrenadesWeight = 0.025
+kHandGrenadesWeight = 0.005
 
 kSentryAttackDamage = 10
-kSentryAttackDamageType = kDamageType.Normal
-kSentryAttackBaseROF = 0.15
+kSentryAttackDamageType = kDamageType.Light
+kSentryAttackBaseROF = 0.33
 kSentryAttackRandROF = 0.0
 kSentryAttackBulletsPerSalvo = 1
 kConfusedSentryBaseROF = 1.0
@@ -243,7 +243,7 @@ kSentriesPerFactory = 3
 kARCDamage = 400
 kARCDamageType = kDamageType.StructuresOnly
 kARCRange = 25 //1100 NS1 - Bigger than NS1, dropping to 25
-kArcsPerFactory = 3
+kArcsPerFactory = 5
 
 kWeapons1DamageScalar = 1.1
 kWeapons2DamageScalar = 1.2
@@ -257,7 +257,7 @@ kElectricalUpgradeResearchTime = 30
 kElectrifyDamageTime = 1
 kElectrifyCooldownTime = 10
 kElectrifyEnergyRegain = 25
-kElectrifyEnergyCost = 10
+kElectrifyEnergyCost = 12.5
 kExtractorInitialEnergy = 25
 kExtractorMaxEnergy = 100
 
@@ -351,7 +351,7 @@ kPrimalScreamDamageModifier = 1.3
 kPrimalScreamDuration = 4
 kPrimalScreamEnergyGain = 60
 kPrimalScreamROF = 5
-kPrimalScreamROFIncrease = 1.3
+kPrimalScreamROFIncrease = .3
 
 kSwipeDamage = 80
 kSwipeDamageType = kDamageType.Normal
@@ -415,6 +415,7 @@ kHydraAttackDamageType = kDamageType.Normal
 
 kWhipDamage = 50
 kWhipAttackDamageType = kDamageType.Normal
+kEmpoweredROFIncrease = 0.25
 
 // SPAWN TIMES
 kMarineRespawnTime = 10

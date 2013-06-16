@@ -18,10 +18,10 @@ GUIPlayerResource.kPersonalResourceIcon.Height = 64
 GUIPlayerResource.kPersonalResourceIconSize = Vector(GUIPlayerResource.kPersonalResourceIcon.Width, GUIPlayerResource.kPersonalResourceIcon.Height, 0)
 GUIPlayerResource.kPersonalResourceIconSizeBig = Vector(GUIPlayerResource.kPersonalResourceIcon.Width, GUIPlayerResource.kPersonalResourceIcon.Height, 0) * 1.1
 
-GUIPlayerResource.kPersonalIconPos = Vector(-120, 0, 0)
-GUIPlayerResource.kPersonalTextPos = Vector(-130, 0, 0)
-GUIPlayerResource.kPresDescriptionPos = Vector(-120, 0, 0)
-GUIPlayerResource.kResGainedTextPos = Vector(-70, 10, 0)
+GUIPlayerResource.kPersonalIconPos = Vector(-120, 40, 0)
+GUIPlayerResource.kPersonalTextPos = Vector(-130, 40, 0)
+GUIPlayerResource.kPresDescriptionPos = Vector(-120, 40, 0)
+GUIPlayerResource.kResGainedTextPos = Vector(-70, 50, 0)
 
 GUIPlayerResource.kRTCountSize = Vector(20, 40, 0)
 GUIPlayerResource.kPixelWidth = 16

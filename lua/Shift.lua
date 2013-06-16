@@ -54,7 +54,7 @@ Shift.kEnergizeTargetSoundEffect = PrecacheAsset("sound/NS2.fev/alien/structures
 Shift.kEnergizeEffect = PrecacheAsset("cinematics/alien/shift/energize.cinematic")
 Shift.kEnergizeSmallTargetEffect = PrecacheAsset("cinematics/alien/shift/energize_small.cinematic")
 Shift.kEnergizeLargeTargetEffect = PrecacheAsset("cinematics/alien/shift/energize_large.cinematic")
-Shift.kEnergizeThinkTime = 2
+local kEnergizeThinkTime = 2
 
 local networkVars =
 {
@@ -196,7 +196,7 @@ end
 if Server then
     
     function Shift:OnConstructionComplete()
-        self:AddTimedCallback(Shift.EnergizeInRange, Shift.kEnergizeThinkTime)
+        self:AddTimedCallback(Shift.EnergizeInRange, kEnergizeThinkTime)
         local team = self:GetTeam()
         if team then
             team:OnUpgradeChamberConstructed(self)

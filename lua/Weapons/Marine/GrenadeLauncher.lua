@@ -8,7 +8,6 @@
 
 Script.Load("lua/Balance.lua")
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
-Script.Load("lua/PickupableWeaponMixin.lua")
 Script.Load("lua/Weapons/Marine/Grenade.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 
@@ -29,8 +28,6 @@ local kAnimationGraph = PrecacheAsset("models/marine/grenadelauncher/grenadelaun
 function GrenadeLauncher:OnCreate()
 
     ClipWeapon.OnCreate(self)
-    
-    InitMixin(self, PickupableWeaponMixin)
     
     self.emptyPoseParam = 0
     

@@ -19,7 +19,7 @@ Script.Load("lua/Mixins/BaseMoveMixin.lua")
 Script.Load("lua/Mixins/CustomGroundMoveMixin.lua")
 Script.Load("lua/WeaponOwnerMixin.lua")
 Script.Load("lua/DoorMixin.lua")
-Script.Load("lua/mixins/ControllerMixin.lua")
+Script.Load("lua/Mixins/ControllerMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -51,18 +51,18 @@ end
 
 if Predict then
 
-function Player:OnUpdatePlayer(deltaTime)    
-    // do nothing
-end
+    function Player:OnUpdatePlayer(deltaTime)    
+        // do nothing
+    end
 
-function Player:UpdateMisc(input)
-    // do nothing
-end
+    function Player:UpdateMisc(input)
+        // do nothing
+    end
 
 end
 
 Player.kNotEnoughResourcesSound     = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/more")
-Player.kGravity = -20
+Player.kGravity = -15
 Player.kXZExtents = 0.35
 Player.kYExtents = 0.95
 Player.kWalkMaxSpeed = 4
@@ -95,44 +95,36 @@ local tapString =
 
 local kTooltipSound = PrecacheAsset("sound/NS2.fev/common/tooltip")
 local kHintInterval = 18
-local kInvalidSound                = PrecacheAsset("sound/NS2.fev/common/invalid")
-local kChatSound                   = PrecacheAsset("sound/NS2.fev/common/chat")
+local kInvalidSound = PrecacheAsset("sound/NS2.fev/common/invalid")
+local kChatSound = PrecacheAsset("sound/NS2.fev/common/chat")
 local kDownwardUseRange = 2.2
 local kUseBoxSize = Vector(0.5, 0.5, 0.5)
-local kWalkBackwardSpeedScalar = 1
 local kStowedWeaponWeightScalar = 1
-local kJumpHeight =  1.2
-
-local kViewOffsetHeight = Player.kYExtents * 2 - 0.2
-local kCrouchSpeedScalar = 0.6
-local kCrouchShrinkAmount = 0.6
-local kExtentsCrouchShrinkAmount = 0.5
-local kCrouchAnimationTime = 0.4
 local kThinkInterval = .2
 
-// Player speeds
-local kMass = 90.7 // ~200 pounds (incl. armor, weapons)
-local kWalkMaxSpeed = 4             // Four miles an hour = 6,437 meters/hour = 1.8 meters/second (increase for FPS tastes)
-local kRunMaxSpeed = 8
+//Movement Code Vars
+local kMaxAirVeer = 1.2
 local kGoldSrcAcceleration = 6.5
 local kGoldSrcAirAcceleration = 50
-local kGoldSrcFriction = 4
-local kStopSpeed = 3.6 //NS1 appears to have used 100, roughly 1.8 @ 60.. Trying 3.6 for interim.
-
-//NS1 bhop skulk could get around 530-540 units with good bhop, 290 base makes for 1.84 - Trying 1.9 for now
-local kBunnyJumpMaxSpeedFactor = 1.7 
-local kMaxAirVeer = 1.2
-local kLadderAcceleration = 16
-local kMaxWalkableNormal =  math.cos( math.rad(45) )
+local kGroundFriction = 4
+local kWalkMaxSpeed = 3.5
+local kRunMaxSpeed = 6
+local kJumpForce = 6.2
 local kDownSlopeFactor = math.tan( math.rad(60) ) // Stick to ground on down slopes up to 60 degrees
+
+//Other Vars
+local kMass = 90.7 // ~200 pounds (incl. armor, weapons)
+local kStepTotalTime    = 0.1  // Total amount of time to interpolate up a step
+local kViewOffsetHeight = Player.kYExtents * 2 - 0.2
+local kMaxStepAmount = 1.5
+local kCrouchShrinkAmount = 0.6
+local kExtentsCrouchShrinkAmount = 0.5
 local kTauntMovementScalar = .05           // Players can only move a little while taunting
 local kMinSlowSpeedScalar = .3
-local kStepTotalTime    = 0.1  // Total amount of time to interpolate up a step
 local kBodyYawTurnThreshold = Math.Radians(5)
 local kTurnDelaySpeed = 8
 local kTurnRunDelaySpeed = 2.5
 local kTurnMoveYawBlendToMovingSpeed = 5
-local kMaxStepAmount = 1.5
 local kUnstickDistance = .1
 local kUnstickOffsets =
 {
@@ -171,11 +163,6 @@ local networkVars =
     
     timeOfLastUse = "private time",
     
-    crouching = "compensated boolean",
-    crouched = "compensated boolean",
-    timeOfCrouchChange = "compensated interpolated float (0 to 1 by 0.001)",
-    crouchfraction = "compensated interpolated float (0 to 1 by 0.01)",
-    
     // bodyYaw must be compenstated as it feeds into the animation as a pose parameter
     bodyYaw = "compensated interpolated float (-3.14159265 to 3.14159265 by 0.003)",
     standingBodyYaw = "interpolated float (0 to 6.2831853 by 0.003)",
@@ -187,13 +174,8 @@ local networkVars =
     
     // Set to true when jump key has been released after jump processed
     // Used to require the key to pressed multiple times
-    jumpHandled = "private compensated boolean",
-    timeOfLastJump = "private time",
-    jumping = "compensated boolean",
-    
+
     moveButtonPressed = "compensated boolean",
-    
-    onLadder = "boolean",
     
     // Player-specific mode. When set to kPlayerMode.Default, player moves and acts normally, otherwise
     // he doesn't take player input. Change mode and set modeTime to the game time that the mode
@@ -208,7 +190,7 @@ local networkVars =
     primaryAttackLastFrame = "boolean",
     secondaryAttackLastFrame = "boolean",
     
-    // Used to smooth out the eye movement when going up steps.
+        // Used to smooth out the eye movement when going up steps.
     stepStartTime = "compensated time",
     stepAmount = "compensated float(-2.1 to 2.1 by 0.001)", // limits must be just slightly bigger than kMaxStepAmount
     
@@ -225,8 +207,7 @@ local networkVars =
     
     isMoveBlocked = "private boolean",
     
-    communicationStatus = "enum kPlayerCommunicationStatus",
-    
+    communicationStatus = "enum kPlayerCommunicationStatus"    
 }
 
 ------------
@@ -303,16 +284,12 @@ function Player:OnCreate()
 	//NS2c Additions
     self.forwardModifier = false
     self.movementModiferState = false
-	self.crouched = false
-	self.landtime = 0
     
     self.timeLastMenu = 0
     self.darwinMode = false
     self.kills = 0
     self.deaths = 0
-    
-    self.jumpHandled = false
-    self.jumping = false
+
     self.leftFoot = true
     self.mode = kPlayerMode.Default
     self.modeTime = -1
@@ -326,10 +303,6 @@ function Player:OnCreate()
     self.timeOfLastUse = 0
     
     self.timeOfDeath = nil
-    self.crouching = false
-    self.timeOfCrouchChange = 0
-    
-    self.onLadder = false
     
     self.resources = 0
     
@@ -608,10 +581,8 @@ end
 
 // Return modifier to our max speed (1 is none, 0 is full)
 function Player:GetSlowSpeedModifier()
-
     // Never drop to 0 speed
     return 1 - (1 - kMinSlowSpeedScalar) * self.slowAmount
-    
 end
 
 function Player:GetController()
@@ -927,10 +898,6 @@ function Player:GetIsPlaying()
     return self.gameStarted and self:GetIsOnPlayingTeam()
 end
 
-function Player:GetIsOnGround()
-    return self.onGround
-end
-
 function Player:GetIsOnPlayingTeam()
     return self:GetTeamNumber() == kTeam1Index or self:GetTeamNumber() == kTeam2Index
 end
@@ -1017,181 +984,12 @@ function Player:GetVerticleMove()
     return false
 end
 
-function Player:GetMaxAirVeer()
-    return kMaxAirVeer
-end
-
-function Player:GoldSrc_AirAccelerate(velocity, time, wishdir, wishspeed, acceleration)
-    if wishspeed > kMaxAirVeer then
-        wishspeed = kMaxAirVeer
-    end
-    
-    return self:GoldSrc_Accelerate(velocity, time, wishdir, wishspeed, acceleration)
-end
-
-function Player:GoldSrc_Accelerate(velocity, time, wishdir, wishspeed, acceleration)
-    // Determine veer amount    
-    local currentspeed = velocity:DotProduct(wishdir)
-    
-    // See how much to add
-    local addSpeed = wishspeed - currentspeed
-    
-    // If not adding any, done.
-    if addSpeed <= 0.0 then
-        return velocity
-    end
-    
-    // Determine acceleration speed after acceleration
-    local accelspeed = acceleration * wishspeed * time
-    
-    // Cap it
-    if accelspeed > addSpeed then
-        accelspeed = addSpeed
-    end
-    
-    wishdir:Scale(accelspeed)
-    
-    // Add to velocity
-    velocity:Add(wishdir)
-    
-    return velocity
-end
-
 function Player:UpdateMovementMode(movementmode)
     self.forwardModifier = movementmode
 end
 
-function Player:GoldSrc_GetWishVelocity(input)
-    if HasMixin(self, "Stun") and self:GetIsStunned() then
-        return Vector(0,0,0)
-    end
-    
-    // goldSrc maxspeed works different than ns2 maxspeed.
-    // Here is it used as an acceleration target, in ns2
-    // it's seemingly used for clamping the speed
-    local maxspeed = self:GoldSrc_GetMaxSpeed()
-    
-    // Override forward input to allow greater ease of use if set.
-    if not self.forwardModifier and input.move.z > 0 and input.move.x ~= 0 and not self:GetIsOnGround() then
-        input.move.z = 0
-    end
-
-    // wishdir
-    local move = GetNormalizedVector(input.move)
-    move:Scale(maxspeed)
-    
-    // grab view angle (ignoring pitch)
-    local angles = self:ConvertToViewAngles(0, input.yaw, 0)
-    
-    if self:GetIsOnLadder() then
-        angles = self:ConvertToViewAngles(input.pitch, input.yaw, 0)
-    elseif self.GetIsWallWalking and self:GetIsWallWalking() then
-        angles = self:ConvertToViewAngles(input.pitch, input.yaw, 0)
-    end
-    
-    local viewCoords = angles:GetCoords() // to matrix?
-    local moveVelocity = viewCoords:TransformVector(move) // get world-space move direction
-
-    return moveVelocity
-end
-
-function Player:GetIsAffectedByAirFriction()
-    return not self:GetIsOnGround()
-end
-
-function Player:GetGroundFrictionForce()
-    return ConditionalValue(self.crouching, 10, 4)
-end   
-
-function Player:GetAirFrictionForce()
-    return 0.5
-end
-
-function Player:GetClimbFrictionForce()
-    return 5
-end
-
 function Player:GetCanClimb()
     return true
-end
-
-function Player:GetStopSpeed()
-    return kStopSpeed
-end
-
-function Player:PerformsVerticalMove()
-    return false
-end
-
-function Player:GoldSrc_GetFriction()
-    return kGoldSrcFriction
-end
-
-function Player:GoldSrc_Friction(input, velocity)
-    if self:GetIsOnSurface() or self:GetIsOnLadder() then
-        // Calculate speed
-        local speed = velocity:GetLength()
-        
-        if speed < 0.0001 then
-            return velocity
-        end
-        
-        local friction = self:GoldSrc_GetFriction()
-        if self:GetIsOnLadder() then
-            friction = self:GetClimbFrictionForce()
-        end
-        
-        local stopspeed = self:GetStopSpeed()
-        // Bleed off some speed, but if we have less than the bleed
-		//  threshhold, bleed the theshold amount.
-        local control = (speed < stopspeed) and stopspeed or speed
-        
-        // Add the amount to the drop amount.
-        local drop = control * friction * input.time
-        
-        // scale the velocity
-        local newspeed = speed - drop
-        if newspeed < 0 then
-            newspeed = 0
-        end
-        
-        // Determine proportion of old speed we are using.
-        newspeed = newspeed / speed
-        
-        // Adjust velocity according to proportion.
-        velocity:Scale(newspeed)
-    end
-    
-    return velocity
-end
-
-function Player:GoldSrc_GetMaxSpeed(possible)
-    if possible then
-        return kRunMaxSpeed
-    end
-    
-    local maxSpeed = kRunMaxSpeed
-    
-    if self.movementModiferState and self:GetIsOnSurface() then
-        maxSpeed = kWalkMaxSpeed
-    end
-      
-    return maxSpeed
-end
-
-function Player:GoldSrc_GetAcceleration()
-    return ConditionalValue(self:GetIsOnSurface(), kGoldSrcAcceleration, kGoldSrcAirAcceleration)
-end
-
-function Player:GetGravityAllowed()
-
-    // No gravity when on ladders or on the ground.
-    return not self:GetIsOnLadder() and not self:GetIsOnGround()
-    
-end
-
-function Player:GetCrouchSpeedScalar()
-    return kCrouchSpeedScalar
 end
 
 function Player:OnUseTarget(target)
@@ -1368,13 +1166,13 @@ function Player:TriggerLandEffects()
     end
 end
 
-function Player:OnJumpLand(landIntensity, slowDown)
-
-    self.landtime = Shared.GetTime()
+function Player:OnJumpLand(landIntensity)
+	if self:GetSlowOnLand() then
+    	self:AddSlowScalar(0.33)
+	end
     if self:GetPlayLandSound(landIntensity) then
         self:TriggerLandEffects()
     end
-    
 end
 
 function Player:SlowDown(slowScalar)
@@ -1383,43 +1181,6 @@ end
 
 function Player:GetIsOnSurface()
     return self:GetIsOnGround()
-end    
-
-function Player:ReceivesFallDamage()
-    return true
-end
-
-local function UpdateJumpLand(self, wasOnGround, previousVelocity)
-
-    // If we landed this frame
-    if self.jumping and wasOnGround == false and self:GetIsOnSurface() then
-    
-        local slowDown = false
-        if self:GetSlowOnLand() then
-        
-            self:AddSlowScalar(0.5)
-            slowDown = true
-            
-        end
-        
-        self.landIntensity = math.abs(previousVelocity.y) / 10
-        
-        self.jumping = false
-        
-        self:OnJumpLand(self.landIntensity, slowDown)
-        
-    end
-    
-end
-
-local function UpdateFallDamage(self, wasOnGround, previousVelocity)
-
-    if wasOnGround == false and self:GetIsOnSurface() and self:ReceivesFallDamage() then
-        if math.abs(previousVelocity.y) > kFallDamageMinimumVelocity then
-            local damage = math.max(0, math.abs(previousVelocity.y * kFallDamageScalar) - 195)
-            self:TakeDamage(damage, self, self, self:GetOrigin(), nil, 0, damage, kDamageType.Falling)
-        end
-    end
 end
 
 local kDoublePI = math.pi * 2
@@ -1551,9 +1312,6 @@ function Player:OnProcessMove(input)
         
     end
     
-    // Drop timers
-    self.timeOfCrouchChange = math.max(0, self.timeOfCrouchChange - input.time)
-    
     self:OnUpdatePlayer(input.time)
     
     ScriptActor.OnProcessMove(self, input)
@@ -1566,21 +1324,9 @@ function Player:OnProcessMove(input)
     
         ASSERT(self.controller ~= nil)
         
-        //local wasOnGround = self.onGround
-        local previousVelocity = self:GetVelocity()
-        local wasOnGround = self.onGround
-        
-        self:UpdateOnGroundState()
-
-        // Update origin and velocity from input move (main physics behavior).
-        UpdateJumpLand(self, wasOnGround, previousVelocity)
-        
         self:UpdateMove(input)
-        
-        self:UpdateMaxMoveSpeed(input.time) 
-        
-        UpdateFallDamage(self, wasOnGround, previousVelocity)
-        
+		self:UpdateMaxMoveSpeed(input.time)
+
         // Restore the buttons so that things like the scoreboard, etc. work.
         input.commands = commands
         
@@ -1713,184 +1459,235 @@ function Player:GetCanStep()
     return self:GetIsOnGround()
 end
 
-function Player:GetCanStepOver(entity)
-    return entity:isa("Egg")
+function Player:GetIsJumping()
+    return self.jumping
 end
 
-//function Player:GetCanStepOver(entity)
-    //return not entity:isa("Player") or entity:GetTeamNumber() == self:GetTeamNumber()
-//end
+local function CheckSpaceAboveForJump(self)
 
-local function CheckCanStepOver(self, hitEntities)
-
-    local canStepOver = true
-
-    if hitEntities then
+    local startPoint = self:GetOrigin() + Vector(0, self:GetExtents().y, 0)
+    local endPoint = startPoint + Vector(0, 0.5, 0)
+    local trace = Shared.TraceCapsule(startPoint, endPoint, 0.1, self:GetExtents().y, CollisionRep.Move, PhysicsMask.Movement, EntityFilterOne(self))
     
-        for _, entity in ipairs(hitEntities) do
+    return trace.fraction == 1
+    
+end
+
+function Player:GetCanJump()
+    return not self:GetHasLandedThisFrame() and self:GetIsOnGround() and CheckSpaceAboveForJump(self)
+end
+
+function Player:GetCanCrouch()
+    return true
+end
+
+function Player:GetJumpMode()
+    return kJumpMode.Repeating
+end
+
+function Player:HandleJump(input, velocity)
+    if bit.band(input.commands, Move.Jump) ~= 0 and not self.jumpHandled then
+        if self:GetCanJump() then
         
-            if not self:GetCanStepOver(entity) then
-                canStepOver = false
+            self:PreventMegaBunnyJumping(velocity)
+            self:GetJumpVelocity(input, velocity)
+            if self.GetPlayJumpSound and self:GetPlayJumpSound() and self.TriggerJumpEffects then
+                self:TriggerJumpEffects()
+            end
+            self.timeOfLastJump = Shared.GetTime()
+            self.onGround = false
+            self.jumping = true
+            
+            if self.OnJump then
+                self:OnJump()
             end
             
+            if self:GetJumpMode() == kJumpMode.Repeating then
+                self.jumpHandled = false
+            else
+                self.jumpHandled = true
+            end
+        elseif self:GetJumpMode() == kJumpMode.Default then
+            self.jumpHandled = true
         end
+    end
+end
+
+function Player:GetJumpForce()
+    return kJumpForce
+end
+
+function Player:GetJumpVelocity(input, velocity)
+    velocity.y = self:GetJumpForce() - math.abs(self:GetGravityForce(input) * input.time)
+end
+
+local function DoStepMove(self, input, velocity, time)
     
-    end 
+    local oldOrigin = Vector(self:GetOrigin())
+    local oldVelocity = Vector(velocity)
+    local success = false
+    local stepAmount = 0
     
-    return canStepOver
+    // step up at first
+    self:PerformMovement(Vector(0, self:GetStepHeight(), 0), 1)
+    stepAmount = self:GetOrigin().y - oldOrigin.y
+    // do the normal move
+    local startOrigin = Vector(self:GetOrigin())
+    local completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(velocity * time, 3, velocity, true)
+    local horizMoveAmount = (startOrigin - self:GetOrigin()):GetLengthXZ()
+    
+    if completedMove then
+        // step down again
+        local completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(Vector(0, -stepAmount - horizMoveAmount * kDownSlopeFactor, 0), 1)
+        
+        local onGround, normal = self:GetIsCloseToGround(0.15)
+        
+        if onGround then
+            success = true
+        end
+
+    end    
+        
+    // not succesful. fall back to normal move
+    if not success then
+    
+        self:SetOrigin(oldOrigin)
+        VectorCopy(oldVelocity, velocity)
+        self:PerformMovement(velocity * time, 3, velocity, true)
+        
+    end
+
+    return success
 
 end
 
-function Player:UpdatePosition(velocity, time)
+function Player:UpdatePosition(input, velocity, time)
 
     PROFILE("Player:UpdatePosition")
     
-    if not self.controller then
-        return velocity
-    end
-
-    // We need to make a copy so that we aren't holding onto a reference
-    // which is updated when the origin changes.
-    local start         = Vector(self:GetOrigin())
-    local startVelocity = Vector(velocity)
-   
-    local maxSlideMoves = 3
+    if self.controller then
     
-    local offset = nil
-    local stepHeight = self:GetStepHeight()
-    local canStep = self:GetCanStep()
-    local onGround = self:GetIsOnGround()
+        local oldVelocity = Vector(velocity)
+        local stepAllowed = self.onGround and self:GetCanStep()
+        local didStep = false
+        local stepAmount = 0
+        local hitObstacle = false
     
-    local offset = velocity * time
-    local horizontalOffset = Vector(offset)
-    horizontalOffset.y = 0
-    local hitEntities = nil
-    local completedMove = false
-    local averageSurfaceNormal = nil
-    
-    local stepUpOffset = 0
-
-    if canStep then
+        // check if we are allowed to step:
+        local completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(velocity * time * 2, 3, nil, false)
+  
+        if stepAllowed and hitEntities then
         
-        local horizontalOffsetLength = horizontalOffset:GetLength()
-        local fractionOfOffset = 1
-        
-        if horizontalOffsetLength > 0 then
-        
-            // check if we would collide with something, set fourth parameter to false
-            completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(horizontalOffset, maxSlideMoves, velocity, false)   
-            velocity = Vector(startVelocity)       
-
-            if CheckCanStepOver(self, hitEntities) then
-
-                // Move up
-                self:PerformMovement(Vector(0, stepHeight, 0), 1)
-                local steppedStart = self:GetOrigin()
-                stepUpOffset = steppedStart.y - start.y
-            
+            for i = 1, #hitEntities do
+                if not self:GetCanStepOver(hitEntities[i]) then
+                
+                    hitObstacle = true
+                    stepAllowed = false
+                    break
+                    
+                end
             end
         
-            // Horizontal move
-            self:PerformMovement(horizontalOffset, maxSlideMoves, velocity)
-            
-            local movePerformed = self:GetOrigin() - (steppedStart or start)
-            fractionOfOffset = movePerformed:DotProduct(horizontalOffset) / (horizontalOffsetLength*horizontalOffsetLength)
-            
-        end
-
-        local downStepAmount = offset.y - stepUpOffset - horizontalOffsetLength * kDownSlopeFactor
-        
-        if fractionOfOffset < 0.5 then
-        
-            // Didn't really move very far, try moving without step up
-            local savedOrigin = Vector(self:GetOrigin())
-            local savedVelocity = Vector(velocity)
-
-            self:SetOrigin(start)
-            velocity = Vector(startVelocity)
-                 
-            self:PerformMovement(offset, maxSlideMoves, velocity)
-            
-            local movePerformed = self:GetOrigin() - start
-            local alternativeFractionOfOffset = movePerformed:DotProduct(offset) / offset:GetLengthSquared()
-            
-            if alternativeFractionOfOffset > fractionOfOffset then
-                // This move is better!
-                downStepAmount = 0
-            else
-                // Stepped move was better - go back to it!
-                self:SetOrigin(savedOrigin)
-                velocity = savedVelocity                    
-            end            
-
         end
         
-        // Vertical move
-        if downStepAmount ~= 0 then
-            self:PerformMovement(Vector(0, downStepAmount, 0), 1)
+        if not stepAllowed then
+        
+            if hitObstacle then
+                velocity.y = oldVelocity.y
+            end
+            
+            self:PerformMovement(velocity * time, 3, velocity, true)
+            
+        else        
+            didStep, stepAmount = DoStepMove(self, input, velocity, time)            
         end
         
-        // Check to see if we moved up a step and need to smooth out
-        // the movement.
-        local yDelta = self:GetOrigin().y - start.y
+        if self.OnPositionUpdated then
+            self:OnPositionUpdated(self:GetOrigin() - self.prevOrigin, stepAllowed, input, velocity)
+        end
         
-        if yDelta ~= 0 then
-        
-            // If we're already interpolating up a step, we need to take that into account
-            // so that we continue that interpolation, plus our new step interpolation
-            
-            local deltaTime      = Shared.GetTime() - self.stepStartTime
-            local prevStepAmount = 0
-            
-            if deltaTime < kStepTotalTime then
-                prevStepAmount = self.stepAmount * (1 - deltaTime / kStepTotalTime)
-            end        
-            
-            self.stepStartTime = Shared.GetTime()
-            self.stepAmount    = Clamp(yDelta + prevStepAmount, -kMaxStepAmount, kMaxStepAmount)
-            
-        end      
-
-    else
-        
-        // Just do the move
-        completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(offset, maxSlideMoves, velocity)        
-            
     end
-
-    return velocity, hitEntities, averageSurfaceNormal
     
 end
 
-// Return the height that this player can step over automatically
-function Player:GetStepHeight()
-    return .5
+function Player:GetGroundFriction()
+    return kGroundFriction
 end
 
-function Player:SplineFraction(value, scale)
-    value = scale * value
-    local valueSq = value * value
+function Player:Accelerate(velocity, time, wishdir, wishspeed, acceleration)
+    // Determine veer amount    
+    local currentspeed = velocity:DotProduct(wishdir)
     
-    // Nice little ease-in, ease-out spline-like curve
-    return 3.0 * valueSq - 2.0 * valueSq * value
+    // See how much to add
+    local addSpeed = wishspeed - currentspeed
+
+    // If not adding any, done.
+    if addSpeed <= 0.0 then
+        return velocity
+    end
+    
+    // Determine acceleration speed after acceleration
+    local accelspeed = acceleration * wishspeed * time
+    
+    // Cap it
+    if accelspeed > addSpeed then
+        accelspeed = addSpeed
+    end
+    
+    wishdir:Scale(accelspeed)
+    
+    // Add to velocity
+    velocity:Add(wishdir)
+    
+    return velocity
+end
+
+function Player:AirAccelerate(velocity, time, wishdir, wishspeed, acceleration)
+    if wishspeed > self:GetMaxAirVeer() then
+        wishspeed = self:GetMaxAirVeer()
+    end
+    return self:Accelerate(velocity, time, wishdir, wishspeed, acceleration)
+end
+
+function Player:PerformsVerticalMove()
+    return self.GetIsOnLadder and self:GetIsOnLadder()
+end
+
+function Player:GetGravityAllowed()
+    return not self:GetIsOnLadder() and not self:GetIsOnGround()
+end
+
+function Player:GetIsOnGround()
+    return self.onGround
+end
+
+function Player:GetAcceleration()
+    return ConditionalValue(self:GetIsOnSurface(), kGoldSrcAcceleration, kGoldSrcAirAcceleration)
+end
+
+function Player:GetMaxSpeed(possible)
+    if possible then
+        return kRunMaxSpeed
+    end
+    
+    local maxSpeed = kRunMaxSpeed
+    
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = kWalkMaxSpeed
+    end
+      
+    return maxSpeed
+end
+
+function Player:GetMaxAirVeer()
+    return kMaxAirVeer
 end
 
 /**
  * Returns a value between 0 and 1 indicating how much the player has crouched
  * visually (actual crouching is binary).
  */
-function Player:GetCrouchAmount()
-    return self.crouchfraction
-end
-
-function Player:GetCrouching()
-    return self.crouching
-end
-
-function Player:GetCrouched()
-    return self.crouched
-end
-
+  
 function Player:GetCrouchShrinkAmount()
     return kCrouchShrinkAmount
 end
@@ -1899,16 +1696,6 @@ function Player:GetExtentsCrouchShrinkAmount()
     return kExtentsCrouchShrinkAmount
 end
 
-function Player:SetIsOnLadder(onLadder, ladderEntity)
-    self.onLadder = onLadder
-end
-
-// Override this for Player types that shouldn't be on Ladders
-function Player:GetIsOnLadder()
-    return self.onLadder
-end
-
-// Recalculate self.onGround next time
 function Player:SetOrigin(origin)
 
     Entity.SetOrigin(self, origin)
@@ -1923,6 +1710,31 @@ end
 
 function Player:GetMovementModifierState()
     return self.movementModiferState
+end
+
+local function UpdateStepAmount(self, stepAmount)
+
+    local deltaTime      = Shared.GetTime() - self.stepStartTime
+    local prevStepAmount = 0
+    
+    if deltaTime < kStepTotalTime then
+        prevStepAmount = self.stepAmount * (1 - deltaTime / kStepTotalTime)
+    end        
+    
+    self.stepStartTime = Shared.GetTime()
+    self.stepAmount    = Clamp(stepAmount + prevStepAmount, -kMaxStepAmount, kMaxStepAmount)
+
+end
+
+// Check to see if we moved up a step and need to smooth out the movement.
+function Player:OnPositionUpdated(moveVector, stepAllowed)
+
+    if not Shared.GetIsRunningPrediction() then
+        if moveVector.y ~= 0 and stepAllowed then
+            UpdateStepAmount(self, moveVector.y)
+        end
+    end
+
 end
 
 // Called by client/server UpdateMisc()
@@ -1961,11 +1773,6 @@ function Player:OnUpdatePoseParameters()
 
 end
 
-// By default the movement speed will not factor in the vertical velocity.
-function Player:GetMoveSpeedIs2D()
-    return true
-end
-
 function Player:UpdateMode()
 
     if(self.mode ~= kPlayerMode.Default and self.modeTime ~= -1 and Shared.GetTime() > self.modeTime) then
@@ -1999,64 +1806,15 @@ function Player:GetIsMoveable()
     return true
 end
 
-// Maximum speed a player can move backwards
-function Player:GetMaxBackwardSpeedScalar()
-    return kWalkBackwardSpeedScalar
-end
-
 function Player:GetAirMoveScalar()
     return 0.7
 end
-
-function Player:GetIsJumping()
-    return self.jumping
-end
-
 function Player:GetIsIdle()
     return self:GetVelocity():GetLengthXZ() < 0.1 and not self.moveButtonPressed
 end
 
-local function CheckSpaceAboveForJump(self)
-
-    local startPoint = self:GetOrigin() + Vector(0, self:GetExtents().y, 0)
-    local endPoint = startPoint + Vector(0, 0.5, 0)
-    local trace = Shared.TraceCapsule(startPoint, endPoint, 0.1, self:GetExtents().y, CollisionRep.Move, PhysicsMask.Movement, EntityFilterOne(self))
-    
-    return trace.fraction == 1
-    
-end
-
-function Player:GetCanJump()
-    return self:GetIsOnGround() and CheckSpaceAboveForJump(self)
-end
-
-function Player:GetJumpHeight()
-    return kJumpHeight
-end
-
-function Player:GetJumpVelocity(input, velocity)
-    velocity.y = math.sqrt(math.abs(2 * self:GetJumpHeight() * self:GetGravityForce(input)))
-end
-
 function Player:GetPlayLandSound(landIntesity)
-    return landIntesity > 0.5
-end
-
-function Player:GetPlayJumpSound()
-    return true
-end
-
-function Player:PreventMegaBunnyJumping(velocity)
-    local maxscaledspeed = kBunnyJumpMaxSpeedFactor * self:GoldSrc_GetMaxSpeed()
-    
-    if maxscaledspeed > 0.0 then
-       local spd = velocity:GetLength()
-        
-        if spd > maxscaledspeed then
-            local fraction = (maxscaledspeed / spd)
-            velocity:Scale(fraction)
-        end
-    end
+    return landIntesity > 0.3
 end
 
 function Player:TriggerJumpEffects()
@@ -2065,49 +1823,12 @@ function Player:TriggerJumpEffects()
     end
 end
 
-// If we jump, make sure to set self.timeOfLastJump to the current time
-function Player:HandleJump(input, velocity)
-
-    local success = false
-    
-    if self:GetCanJump() then
-    
-        self:PreventMegaBunnyJumping(velocity)
-    
-        // Compute the initial velocity to give us the desired jump
-        // height under the force of gravity.
-        self:GetJumpVelocity(input, velocity)
-        
-        if self:GetPlayJumpSound() then
-            self:TriggerJumpEffects()
-        end
-
-        // TODO: Set this somehow (set on sounds for entity, not by sound name?)
-        //self:SetSoundParameter(soundName, "speed", self:GetFootstepSpeedScalar(), 1)
-        
-        self.timeOfLastJump = Shared.GetTime()
-        
-        // Velocity may not have been set yet, so force onGround to false this frame
-        self.onGround = false
-        
-        self.jumping = true
-        success = true
-        
-    end
-    
-    return success
-    
-end
-
 // 0-1 scalar which goes away over time (takes 1 seconds to get expire of a scalar of 1)
 // Never more than 1 second of recovery time
 // Also reduce velocity by this amount
 function Player:AddSlowScalar(scalar)
-
     self.slowAmount = Clamp(self.slowAmount + scalar, 0, 1)
-    
-    self:SetVelocity(self:GetVelocity() * (1 - (scalar * (1 - kMinSlowSpeedScalar))))
-    
+    //self:SetVelocity(self:GetVelocity() * (1 - (scalar * (1 - kMinSlowSpeedScalar))))
 end
 
 function Player:GetMaterialBelowPlayer()
@@ -2183,74 +1904,6 @@ function Player:HandleAttacks(input)
     
 end
 
-function Player:HandleDoubleTap(input)
-
-    PROFILE("Player:HandleDoubleTap")
-    
-    // check which button has been released and store that one
-    if not self.previousMove then
-        self.previousMove = Vector(input.move)
-        self.lastButtonReleased = TAP_NONE
-        self.timeLastButtonReleased = 0
-        return
-    end  
-    
-    local buttonReleased = TAP_NONE
-
-    if input.move.x == 0 then
-        if self.previousMove.x > 0 then
-            buttonReleased = TAP_LEFT
-        elseif self.previousMove.x < 0 then
-            buttonReleased = TAP_RIGHT
-        end
-    end
-
-    if input.move.z == 0 then
-        if self.previousMove.z < 0 then
-            buttonReleased = TAP_BACKWARD
-        elseif self.previousMove.z > 0 then
-            buttonReleased = TAP_FORWARD
-        end
-    end
-    
-    /*
-    if buttonReleased ~= TAP_NONE then
-        Print("button released %s", ToString(tapString[buttonReleased]))
-    end
-    */
-
-    if buttonReleased ~= TAP_NONE then
-    
-        if self.timeLastButtonReleased ~= 0 and self.timeLastButtonReleased + kTapInterval > Shared.GetTime() then
-        
-            if self.lastButtonReleased == buttonReleased then
-            
-                self.timeLastButtonReleased = 0
-                self.lastButtonReleased = TAP_NONE
-                self:OnDoubleTap(GetTabDirectionVector(buttonReleased) )
-            
-            else
-            
-                self.lastButtonReleased = buttonReleased
-                self.timeLastButtonReleased = Shared.GetTime()
-                
-            end
-        
-        else
-            self.lastButtonReleased = buttonReleased
-            self.timeLastButtonReleased = Shared.GetTime()
-        end
-    
-    end    
-    
-    self.previousMove = Vector(input.move)
-    
-end
-
-// Pass view model direction
-function Player:OnDoubleTap(direction)
-end
-
 function Player:MovementModifierChanged(state, input)
 end
 
@@ -2262,38 +1915,8 @@ function Player:GetSecondaryAttackLastFrame()
     return self.secondaryAttackLastFrame
 end
 
-function Player:GetJumpMode()
-    return kJumpMode.Repeating
-end
-
-// Children can add or remove velocity according to special abilities, modes, etc.
-function Player:ModifyVelocity(input, velocity)   
-    PROFILE("Player:ModifyVelocity")
-    
-    if bit.band(input.commands, Move.Jump) ~= 0 and not self.jumpHandled then
-        
-        local jumped = self:HandleJump(input, velocity)
-        if jumped and self.OnJump then
-            self:OnJump()
-        end
-        
-        if self:GetJumpMode() == kJumpMode.Repeating then
-            self.jumpHandled = false
-        elseif self:GetJumpMode() == kJumpMode.Queued then
-            self.jumpHandled = jumped
-        else
-            self.jumpHandled = true
-        end
-        
-    end
-end
-
 function Player:GetSpeedDebugSpecial()
     return self.crouchfraction
-end
-
-function Player:GetLastInput()
-    return self.latestinput
 end
 
 function Player:GetIsAbleToUse()
@@ -2333,13 +1956,7 @@ function Player:HandleButtons(input)
         self:MovementModifierChanged(newMovementState, input)
     end
     
-    local lastcrouch = false
-    if self.latestinput ~= nil then
-        lastcrouch = bit.band(self.latestinput.commands, Move.Crouch) ~= 0
-    end
-    
     self.movementModiferState = newMovementState
-    self.latestinput = input
     
     local ableToUse = self:GetIsAbleToUse()
     if ableToUse and bit.band(input.commands, Move.Use) ~= 0 and not self.primaryAttackLastFrame and not self.secondaryAttackLastFrame then
@@ -2368,8 +1985,6 @@ function Player:HandleButtons(input)
     end
     
     self:HandleAttacks(input)
-    
-    // self:HandleDoubleTap(input)
 
     if bit.band(input.commands, Move.Reload) ~= 0 then
         self:Reload()
@@ -2412,179 +2027,6 @@ function Player:HandleButtons(input)
         
     end
     
-    self:SetCrouchState(bit.band(input.commands, Move.Crouch) ~= 0, lastcrouch)
-    
-end
-
-function Player:GetCanCrouch()
-    return true
-end
-
-function Player:GoldSrc_FinishDuck()
-    self.crouched = true
-    self.crouching = false
-    if not self:GetIsOnGround() then
-        // Player is crouching while in the air, move legs up instead of moving upper body down
-        local org = self:GetOrigin()
-        org.y = org.y + self:GetCrouchShrinkAmount() * 0.5
-        self:SetOrigin(org)
-        if self:GetIsColliding() then
-            org.y = org.y - self:GetCrouchShrinkAmount() * 0.5
-            self:SetOrigin(org)
-        end
-    end
-    self:UpdateControllerFromEntity()
-    self.crouchfraction = 1.0
-end
-
-function Player:GoldSrc_Duck(crouching, lastcrouching)
-    local duckpressed = crouching and not lastcrouching
-    local duckreleased = not crouching and lastcrouching
-
-    // crouching = player holding down crouch
-    // self.crouching = in process of crouching (up or down)
-    // self.crouched = player is fully crouched
-    if not self:GetCanCrouch() then
-        // Keep button-state for skulk as un-sticky button
-        // todo: change to use self.latestinput?
-        self.crouching = crouching
-        return
-    end
-    
-    // Holding duck, in process of ducking or fully ducked?
-    if crouching or self.crouching or self.crouched then
-        // holding duck
-        if crouching then
-            // Just pressed duck, and not fully ducked?
-            if duckpressed and not self.crouched then
-                self.timeOfCrouchChange = 1.0
-                self.crouching = true
-            end
-            
-            // doing a duck movement? (ie. not fully ducked?)
-            if self.crouching then
-                // Finish ducking immediately if duck time is over or not on ground
-                local time = 1.0 - self.timeOfCrouchChange
-                if time > kCrouchAnimationTime or not self:GetIsOnGround() or self.crouched then
-                    self:GoldSrc_FinishDuck()
-                else
-                    // Set view
-                    self.crouchfraction = self:SplineFraction(time/kCrouchAnimationTime, 1.0)
-                end
-            end
-        else
-            if duckreleased and self.crouched then
-                // start a unduck
-                self.timeOfCrouchChange = 1.0
-                self.crouching = true
-            end
-            
-            if self:GoldSrc_CanUnduck() then
-                if self.crouched or self.crouching then
-                    // Finish ducking immediately if duck time is over or not on ground
-                    local time = 1.0 - self.timeOfCrouchChange
-                    local animationtime = (kCrouchAnimationTime * 0.5)
-                    if time > animationtime or not self:GetIsOnGround() then
-                        self:GoldSrc_FinishUnduck()
-                    else
-                        // set view
-                        self.crouchfraction = self:SplineFraction(1.0 - (time/animationtime), 1.0)
-                    end
-                end
-            else
-                // Still under something where we can't unduck, so make sure we reset this timer so
-                //  that we'll unduck once we exit the tunnel, etc.
-                self.timeOfCrouchChange = 1.0
-            end
-        end
-    end
-end
-
-function Player:GoldSrc_CanUnduck()
-    if not self.crouched then
-        if self.crouching then
-            // In a partial duck, allow unducking without checking bbox, as the
-            // bounding box is only shrinked when self.crouched is true
-            return true
-        end
-        // Not ducked and not in a partial duck
-        return false
-    end
-    
-    local oldOrg = Vector(self:GetOrigin())
-    local org = self:GetOrigin()
-    
-    if not self:GetIsOnGround() then
-        // See if we can put down our feet
-        org.y = org.y -  self:GetCrouchShrinkAmount() * 0.5
-        self:SetOrigin(org)
-    end
-    
-    self.crouched = false
-    local blocked = self:GetIsColliding()
-    
-    // Revert changes
-    self.crouched = true
-    self:SetOrigin(oldOrg)
-    self:UpdateControllerFromEntity()
-    
-    return not blocked
-end
-
-function Player:GoldSrc_FinishUnduck()
-    local org = self:GetOrigin()
-    
-    if not self:GetIsOnGround() then
-        // See if we can put down our feet
-        org.y = org.y -  self:GetCrouchShrinkAmount() * 0.5
-        self:SetOrigin(org)
-    end
-    
-    self.crouched = false
-    self.crouching = false
-    self:UpdateControllerFromEntity()
-    self.timeOfCrouchChange = 0.0
-    self.crouchfraction = 0.0
-end
-
-function Player:SetCrouchState(crouching, lastcrouching)
-
-    PROFILE("Player:SetCrouchState")
-    
-    self:GoldSrc_Duck(crouching, lastcrouching)
-    /*
-    if crouching == self.crouching then
-        return
-    end
-   
-    if not crouching then
-        
-        // Check if there is room for us to stand up.
-        self.crouching = crouching
-        self:UpdateControllerFromEntity()
-        
-        if self:GetIsColliding() then
-            self.crouching = true
-            self:UpdateControllerFromEntity()
-        else
-            self.timeOfCrouchChange = Shared.GetTime()
-        end
-        
-    elseif self:GetCanCrouch() then
-    
-        if not self:GetIsOnGround() then
-            // Player is crouching while in the air, move legs up instead of moving upper body down
-            local org = self:GetOrigin()
-            org.y = org.y + self:GetCrouchShrinkAmount()
-            self:SetOrigin(org)
-        end
-        
-    
-        self.crouching = crouching
-        self.timeOfCrouchChange = Shared.GetTime()
-        self:UpdateControllerFromEntity()
-    end
-    */
 end
 
 function Player:GetNotEnoughResourcesSound()
@@ -2853,7 +2295,7 @@ function Player:OnUpdateAnimationInput(modelMixin)
 end
 
 function Player:GetSpeedScalar()
-    return self:GetVelocityLength() / self:GoldSrc_GetMaxSpeed()
+    return self:GetVelocityLength() / self:GetMaxSpeed()
 end
 
 function Player:OnUpdateCamera(deltaTime)

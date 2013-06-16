@@ -183,14 +183,11 @@ function Commander:HandleButtons(input)
     
 end
 
-function Commander:UpdateCrouch()
-end
-
 function Commander:UpdateViewAngles()
 end
 
 // Move commander without any collision detection
-function Commander:UpdatePosition(velocity, time)
+function Commander:UpdatePosition(input, velocity, time)
 
     PROFILE("Commander:UpdatePosition")
 
