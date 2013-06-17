@@ -35,8 +35,8 @@ kRecycleRefundScalar = 0.5
 
 // set to -1 for no time limit
 kParasiteDuration = -1
-kFallDamageMinimumVelocity = 15
-kFallDamageScalar = 13
+kFallDamageMinimumVelocity = 12
+kFallDamageScalar = 11.88
 kKnockbackTime = 0.05
 
 kCeleritySpeedModifier = 1.67 //75 Units NS1
@@ -57,6 +57,7 @@ kGhostMotionTrackingDodgePerLevel = 33
 kGhostObservatoryDodgePerLevel = 33
 kGhostMinimapDodgePerLevel = 33
 kGhostScanDodgePerLevel = 33
+kGhostCloakingPerLevel = 0.25
 kAlienBaseMoveNoise = 6
 kAlienRandMoveNoise = 12
 kAlienMoveNoises = 2

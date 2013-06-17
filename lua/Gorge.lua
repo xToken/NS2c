@@ -255,7 +255,7 @@ function Gorge:GetMaxSpeed(possible)
         maxSpeed = (kMaxSlideSpeed - (Shared.GetTime() - self.timeSlideStart))
     end
     
-    if self:GetCrouched() then
+    if self:GetCrouched() and self:GetIsOnSurface() then
         maxSpeed = kMaxWalkSpeed
     end
     

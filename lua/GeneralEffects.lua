@@ -125,8 +125,8 @@ kGeneralEffectData =
     {
         drifterShootEnzymeEffects =
         {
-            {cinematic = "cinematics/alien/drifter/enzyme_muzzle.cinematic"},
-            {sound = "sound/NS2.fev/alien/drifter/parasite", done = true}            
+            //{cinematic = "cinematics/alien/drifter/enzyme_muzzle.cinematic"},
+            //{sound = "sound/NS2.fev/alien/drifter/parasite", done = true}            
         }
     },
     
@@ -134,8 +134,8 @@ kGeneralEffectData =
     {
         drifterShootEnzymeEffects =
         {
-            {cinematic = "cinematics/alien/drifter/enzyme_muzzle.cinematic"},
-            {sound = "sound/NS2.fev/alien/drifter/parasite", done = true}            
+            //{cinematic = "cinematics/alien/drifter/enzyme_muzzle.cinematic"},
+            //{sound = "sound/NS2.fev/alien/drifter/parasite", done = true}            
         }
     },
 

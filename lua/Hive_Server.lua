@@ -419,15 +419,13 @@ function Hive:OnUse(player, elapsedTime, useSuccessTable)
 end
 
 function Hive:OnSpitHit()
-
-    if self:GetIsBuilt() then
+    if not self:GetIsBuilt() then
         local team = self:GetTeam()
         if team then
             team:TriggerAlert(EnemyApproachesAlerts[math.random(1,2)], self)
         end
+        self.lastHiveFlinchEffectTime = Shared.GetTime()
     end
-    self.lastHiveFlinchEffectTime = Shared.GetTime()
-    
 end
 
 function Hive:OnTakeDamage(damage, attacker, doer, point)

@@ -27,7 +27,6 @@ Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/WebableMixin.lua")
 Script.Load("lua/DevouredMixin.lua")
-Script.Load("lua/Weapons/PredictedProjectile.lua")
 
 if Client then
     Script.Load("lua/TeamMessageMixin.lua")
@@ -108,7 +107,7 @@ function Marine:OnCreate()
     InitMixin(self, RagdollMixin)   
 	InitMixin(self, WebableMixin)
     InitMixin(self, DevouredMixin)
-	InitMixin(self, PredictedProjectileShooterMixin)
+		
     if Server then
 
 

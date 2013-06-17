@@ -1,4 +1,4 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
 // lua\Weapons\PredictedProjectile.lua
 //
@@ -17,10 +17,10 @@ function PredictedProjectileShooterMixin:__initmixin()
     self.predictedProjectiles = {}
 end
 
-function PredictedProjectileShooterMixin:CreatePredictedProjectile(className, startPoint, velocity, bounce, friction)
+function PredictedProjectileShooterMixin:CreatePredictedProjectile(className, startPoint, velocity, bounce, friction, gravity, clearOnImpact)
 
     local projectileController = ProjectileController()
-    projectileController:Initialize(startPoint, velocity, _G[className].kRadius, self, bounce, friction, GetEnemyTeamNumber(self:GetTeamNumber()))
+    projectileController:Initialize(startPoint, velocity, _G[className].kRadius, self, bounce, friction, gravity, GetEnemyTeamNumber(self:GetTeamNumber()), clearOnImpact)
     projectileController.projectileId = self.nextProjectileId
     projectileController.modelName = _G[className].kModelName
     
@@ -37,22 +37,40 @@ function PredictedProjectileShooterMixin:CreatePredictedProjectile(className, st
     end
     
     local projectileModel = nil
+    local projectileCinematic = nil
     
     if Client then
+    
+        local coords = Coords.GetLookIn(startPoint, GetNormalizedVector(velocity))
         
-        local modelIndex = Shared.GetModelIndex(_G[className].kModelName)
-        if modelIndex then
+        if _G[className].kModelName then
         
-            //DebugPrint("create render model")
-            projectileModel = Client.CreateRenderModel(RenderScene.Zone_Default)
-            projectileModel:SetModel(modelIndex)
-            projectileModel:SetCoords(Coords.GetTranslation(startPoint))
+            local modelIndex = Shared.GetModelIndex(_G[className].kModelName)
+            if modelIndex then
             
+                projectileModel = Client.CreateRenderModel(RenderScene.Zone_Default)
+                projectileModel:SetModel(modelIndex)
+                projectileModel:SetCoords(coords)
+                
+            end
+        
+        end
+        
+        local cinematicName = _G[className].kProjectileCinematic
+        
+        if cinematicName then
+        
+            projectileCinematic = Client.CreateCinematic(RenderScene.Zone_Default)
+            projectileCinematic:SetCinematic(cinematicName)          
+            projectileCinematic:SetRepeatStyle(Cinematic.Repeat_Endless)                
+            projectileCinematic:SetIsVisible(true)
+            projectileCinematic:SetCoords(coords)
+        
         end
     
     end
-    //DebugPrint("self.nextProjectileId %s", ToString(self.nextProjectileId))
-    self.predictedProjectiles[self.nextProjectileId] = { Controller = projectileController, Model = projectileModel, EntityId = projectileEntId, CreationTime = Shared.GetTime() }
+    
+    self.predictedProjectiles[self.nextProjectileId] = { Controller = projectileController, Model = projectileModel, EntityId = projectileEntId, CreationTime = Shared.GetTime(), Cinematic = projectileCinematic }
     
     self.nextProjectileId = self.nextProjectileId + 1
     if self.nextProjectileId > kMaxNumProjectiles then
@@ -72,12 +90,21 @@ local function UpdateProjectiles(self, input, predict)
             entry.Controller:Update(input.time, projectile, predict)
         end
         
-        //DebugPrint("update entry %s  entId %s", ToString(projectileId), ToString(entry.EntityId))
-        
-        if entry.Model then
+        if not Server then
+ 
             local coords = Coords.GetLookIn(entry.Controller:GetPosition(), GetNormalizedVector(entry.Controller.velocity))
-            entry.Model:SetCoords(coords)
-            entry.Model:SetIsVisible(entry.Controller.stopSimulation ~= true)
+            local isVisible = entry.Controller.stopSimulation ~= true
+ 
+            if entry.Model then
+                entry.Model:SetCoords(coords)
+                entry.Model:SetIsVisible(isVisible)
+            end
+            
+            if entry.Cinematic then
+                entry.Cinematic:SetCoords(coords)
+                entry.Cinematic:SetIsVisible(isVisible)
+            end
+        
         end
         
         if entry.EntityId == Entity.invalidId and Shared.GetTime() - entry.CreationTime > 5 then
@@ -125,8 +152,11 @@ local function DestroyProjectiles(self)
         
             projectile:SetProjectileController(entry.Controller)
             if entry.Model then
-                //DebugPrint("destroy render model")
                 Client.DestroyRenderModel(entry.Model)
+            end
+            
+            if entry.Cinematic then
+                Client.DestroyCinematic(entry.Cinematic)
             end
             
         end
@@ -151,12 +181,9 @@ end
 
 function PredictedProjectileShooterMixin:SetProjectileEntity(projectile)
 
-    //DebugPrint("PredictedProjectileShooterMixin:SetProjectileEntity(%s)", ToString(projectile))
-
     local entry = self.predictedProjectiles[projectile.projectileId]
     if entry then
         entry.EntityId = projectile:GetId()
-        //DebugPrint("set entity")
     end
 
 end
@@ -168,8 +195,11 @@ function PredictedProjectileShooterMixin:SetProjectileDestroyed(projectileId)
     if entry then
 
         if entry.Model then
-            //DebugPrint("destroy render model")
             Client.DestroyRenderModel(entry.Model)
+        end
+        
+        if entry.Cinematic then
+            Client.DestroyCinematic(entry.Cinematic)
         end
 
         if entry.Controller then
@@ -177,8 +207,6 @@ function PredictedProjectileShooterMixin:SetProjectileDestroyed(projectileId)
         end
 
         self.predictedProjectiles[projectileId] = nil
-        
-        //DebugPrint("cleaned up %s", ToString(projectileId))
     
     end
 
@@ -186,7 +214,7 @@ end
 
 class 'ProjectileController'
 
-function ProjectileController:Initialize(startPoint, velocity, radius, predictor, bounce, friction, detonateWithTeam)
+function ProjectileController:Initialize(startPoint, velocity, radius, predictor, bounce, friction, gravity, detonateWithTeam, clearOnImpact)
 
     self.controller = Shared.CreateCollisionObject(predictor)
     self.controller:SetPhysicsType(CollisionObject.Kinematic)
@@ -196,10 +224,12 @@ function ProjectileController:Initialize(startPoint, velocity, radius, predictor
     self.velocity = Vector(velocity)
     self.bounce = bounce or 0.5
     self.friction = friction or 0
+    self.gravity = gravity or 9.81
     
     self.controller:SetPosition(startPoint, false)
     
     self.detonateWithTeam = detonateWithTeam
+    self.clearOnImpact = clearOnImpact
 
 end
 
@@ -277,7 +307,7 @@ function ProjectileController:Update(deltaTime, projectile, predict)
         local velocity = Vector(self.velocity)
         
         // apply gravity
-        velocity.y = velocity.y - deltaTime * 9.81
+        velocity.y = velocity.y - deltaTime * self.gravity
     
         // apply friction
         ApplyFriction(velocity, self.friction, deltaTime)
@@ -304,12 +334,12 @@ function ProjectileController:Update(deltaTime, projectile, predict)
                 projectile:SetOrigin(endPoint)
                 
                 if projectile.ProcessHit then
-                    projectile:ProcessHit(hitEntity)
+                    projectile:ProcessHit(hitEntity, nil, normal)
                 end   
                 
             end
             
-            self.stopSimulation = hitEntity ~= nil and HasMixin(hitEntity, "Team") and hitEntity:GetTeamNumber() == self.detonateWithTeam
+            self.stopSimulation = self.clearOnImpact or ( hitEntity ~= nil and HasMixin(hitEntity, "Team") and hitEntity:GetTeamNumber() == self.detonateWithTeam )
         
         end
         
@@ -380,20 +410,31 @@ end
 function PredictedProjectile:OnInitialized()
 
     if Client then
-    
-        //DebugPrint("PredictedProjectile:OnInitialized, projectileId %s", ToString(self.projectileId))
-        
+
         local owner = Shared.GetEntity(self.ownerId)
         
-        if owner and owner == Client.GetLocalPlayer() then        
+        if owner and owner == Client.GetLocalPlayer() and Client.GetIsControllingPlayer() then        
             owner:SetProjectileEntity(self)
         else
         
-            local modelIndex = Shared.GetModelIndex(self.kModelName)
-            if modelIndex then
-                //DebugPrint("create render model")
-                self.renderModel = Client.CreateRenderModel(RenderScene.Zone_Default)
-                self.renderModel:SetModel(modelIndex)
+            if self.kModelName then
+        
+                local modelIndex = Shared.GetModelIndex(self.kModelName)
+                if modelIndex then
+                    self.renderModel = Client.CreateRenderModel(RenderScene.Zone_Default)
+                    self.renderModel:SetModel(modelIndex)
+                end
+            
+            end
+            
+            if self.kProjectileCinematic then
+            
+                self.projectileCinematic = Client.CreateCinematic(RenderScene.Zone_Default)
+                self.projectileCinematic:SetCinematic(self.kProjectileCinematic)          
+                self.projectileCinematic:SetRepeatStyle(Cinematic.Repeat_Endless)                
+                self.projectileCinematic:SetIsVisible(true)
+                self.projectileCinematic:SetCoords(self:GetCoords())
+            
             end
             
         end    
@@ -403,8 +444,6 @@ function PredictedProjectile:OnInitialized()
 end
 
 function PredictedProjectile:OnDestroy()
-
-    //DebugPrint("PredictedProjectile:OnDestroy")
 
     if self.projectileController then
         
@@ -416,8 +455,14 @@ function PredictedProjectile:OnDestroy()
     if self.renderModel then
     
         Client.DestroyRenderModel(self.renderModel)
-        //DebugPrint("destroy render model")
         self.renderModel = nil
+    
+    end
+    
+    if self.projectileCinematic then
+    
+        Client.DestroyCinematic(self.projectileCinematic)
+        self.projectileCinematic = nil
     
     end
     
@@ -470,6 +515,10 @@ function PredictedProjectile:OnUpdateRender()
 
     if self.renderModel then
         self.renderModel:SetCoords(self:GetCoords())
+    end
+    
+    if self.projectileCinematic then
+        self.projectileCinematic:SetCoords(self:GetCoords())
     end
 
 end

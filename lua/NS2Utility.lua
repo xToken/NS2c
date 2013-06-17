@@ -537,7 +537,7 @@ function GetExtents(techId)
 
     local extents = LookupTechData(techId, kTechDataMaxExtents)
     if not extents then
-        extents = Vector(1.0, 1.0, .75)
+        extents = Vector(0.75, 0.75, 0.75)
     end
     return extents
 
@@ -1829,13 +1829,18 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
     local width, height = weapon:GetMeleeBase()
     width = scale * width
     height = scale * height
-        
+    
+    /*
+    if Client then
+        Client.DebugCapsule(eyePoint, eyePoint + axis * range, width, 0, 3)
+    end
+    */
+    
     // extents defines a world-axis aligned box, so x and z must be the same. 
     local extents = Vector(width / 6, height / 6, width / 6)
     if not filter then
         filter = EntityFilterOne(player)
     end
-        
     local middleTrace,middleStart
     local target,endPoint,surface,startPoint
     

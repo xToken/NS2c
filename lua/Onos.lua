@@ -274,7 +274,7 @@ function Onos:GetMaxSpeed(possible)
         maxSpeed = kMaxChargeSpeed
     end
     
-    if self:GetCrouched() then
+    if self:GetCrouched() and self:GetIsOnSurface() then
         maxSpeed = kMaxWalkSpeed
     end
 

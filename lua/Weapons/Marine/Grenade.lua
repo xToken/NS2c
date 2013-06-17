@@ -27,6 +27,7 @@ local networkVars = { }
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
+
 -- Blow up after a time.
 local function UpdateLifetime(self)
 
@@ -88,7 +89,7 @@ function Grenade:ProcessHit(targetHit, surface)
     if targetHit and GetAreEnemies(self, targetHit) then
     
         if Server then
-            self:Detonate()
+            self:Detonate(targetHit)
         else
             return true
         end    
@@ -149,22 +150,7 @@ if Server then
         DestroyEntity(self)
         
     end
-    
-    function Grenade:PrepareToBeWhackedBy(whacker)
-    
-        self.whackerId = whacker:GetId()
-        
-        // It is possible that the endOfLife isn't set yet.
-        if not self.endOfLife then
-            self.endOfLife = 0
-        end
-        
-        // Prolong lifetime a bit to give it time to get out of range.
-        self.endOfLife = math.max(self.endOfLife, Shared.GetTime() + 2)
-        self.prepTime = Shared.GetTime()
-        
-    end
-    
+       
     function Grenade:GetCanDetonate()
     
         if self.creationTime then

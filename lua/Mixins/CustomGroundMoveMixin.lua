@@ -290,7 +290,7 @@ function CustomGroundMoveMixin:UpdateFallDamage(previousVelocity)
 
     if self:ReceivesFallDamage() then
         if math.abs(previousVelocity.y) > kFallDamageMinimumVelocity then
-            local damage = math.max(0, math.abs(previousVelocity.y * kFallDamageScalar) - 195)
+            local damage = math.max(0, math.abs(previousVelocity.y * kFallDamageScalar) - kFallDamageMinimumVelocity * kFallDamageScalar)
             self:TakeDamage(damage, self, self, self:GetOrigin(), nil, 0, damage, kDamageType.Falling)
         end
     end

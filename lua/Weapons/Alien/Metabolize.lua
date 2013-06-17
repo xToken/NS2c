@@ -8,8 +8,6 @@ class 'Metabolize' (Blink)
 
 Metabolize.kMapName = "metabolize"
 
-local kDefaultAttackSpeed = 1.4
-
 local networkVars =
 {
     lastPrimaryAttackTime = "time"
@@ -67,7 +65,6 @@ function Metabolize:OnPrimaryAttack(player)
     end
     
 end
-
 
 function Metabolize:OnPrimaryAttackEnd()
     

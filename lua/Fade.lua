@@ -47,11 +47,9 @@ local kMaxSpeed = 4.5
 local kMaxBlinkSpeed = 16 // ns1 fade blink is (3x maxSpeed) + celerity
 local kWalkSpeed = 2
 local kCrouchedSpeed = 1.8
-local kBlinkAccelerationDuration = 0.33
 local kBlinkImpulseForce = 10
-local kBlinkVerticleScalar = 0.05
 local networkVars =
-{    
+{
     etherealStartTime = "private time",
     etherealEndTime = "private time",
     // True when we're moving quickly "through the ether"
@@ -140,7 +138,7 @@ function Fade:GetMaxSpeed(possible)
         maxSpeed = kWalkSpeed
     end
     
-    if self:GetCrouched() then
+    if self:GetCrouched() and self:GetIsOnSurface() then
         maxSpeed = kCrouchedSpeed
     end
         
@@ -153,10 +151,6 @@ end
 
 function Fade:GetIsBlinking()
     return self.ethereal and self:GetIsAlive()
-end
-
-function Fade:GetRecentlyBlinked()
-    return Shared.GetTime() - self.etherealEndTime < kBlinkAccelerationDuration
 end
 
 function Fade:OnBlink()
@@ -183,8 +177,6 @@ function Fade:OnBlinking(input)
     local pitchAngle = Clamp(self:GetViewCoords().zAxis.y, -0.5, 0.5)
     if pitchAngle < 0.25 and pitchAngle >= -0.05 and math.abs(velocity.y) < 1 then
         self:GetJumpVelocity(input, velocity)
-    else
-        velocity.y = velocity.y + (pitchAngle * self:GetJumpForce() * kBlinkVerticleScalar * input.time)
     end
     //Cap Y Velocity    
     velocity.y = Clamp(velocity.y, (-1 * (kMaxBlinkSpeed + self:GetMovementSpeedModifier())), kMaxBlinkSpeed + self:GetMovementSpeedModifier())    

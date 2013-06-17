@@ -462,7 +462,7 @@ function Alien:HandleButtons(input)
 end
 
 function Alien:GetIsCamouflaged()
-    return GetHasCamouflageUpgrade(self) and not self:GetIsInCombat()
+    return GetHasGhostUpgrade(self) and not self:GetIsInCombat()
 end
 
 function Alien:GetNotEnoughResourcesSound()

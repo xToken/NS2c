@@ -33,7 +33,7 @@ function CommandStation:OnUse(player, elapsedTime, useSuccessTable)
             if not team:GetHasCommander() then
             
                 // Must use attach point if specified (Command Station)            
-                if not self.occupied and self.loginAllowed and self:GetIsPlayerValidForCommander(player) and GetIsUnitActive(self) then
+                if not self.occupied and self.loginAllowed and self:GetIsPlayerValidForCommander(player) then
                 
                     self:LoginPlayer(player)                      
                     self.occupied = true

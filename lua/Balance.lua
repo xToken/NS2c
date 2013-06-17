@@ -132,12 +132,12 @@ kBombardCost = 0
 kFuryCost = 0
 
 kHiveBuildTime = 180
-kHarvesterBuildTime = 20
-kCragBuildTime = 20
-kShiftBuildTime = 12
-kShadeBuildTime = 14
-kHydraBuildTime = 11
-kWhipBuildTime = 13
+kHarvesterBuildTime = 40
+kCragBuildTime = 28
+kShiftBuildTime = 20
+kShadeBuildTime = 24
+kHydraBuildTime = 18
+kWhipBuildTime = 22
 kSkulkGestateTime = 3
 kGorgeGestateTime = 10
 kLerkGestateTime = 15
@@ -229,7 +229,7 @@ kNumHandGrenades = 2
 kHandGrenadesRange = 4
 kHandGrenadesDamage = 80
 kHandGrenadesDamageType = kDamageType.Normal
-kHandGrenadesLifetime = 0.75
+kHandGrenadesLifetime = 1
 kHandGrenadesWeight = 0.005
 
 kSentryAttackDamage = 10

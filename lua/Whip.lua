@@ -12,7 +12,6 @@
 
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
-Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
@@ -23,15 +22,11 @@ Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/ConstructMixin.lua")
-Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/ScriptActor.lua")
-Script.Load("lua/DoorMixin.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/SleeperMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
-Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
-Script.Load("lua/DamageMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
@@ -58,7 +53,6 @@ local networkVars =
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
-AddMixinNetworkVars(UpgradableMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
@@ -66,9 +60,7 @@ AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
-AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
-AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
@@ -82,7 +74,6 @@ function Whip:OnCreate()
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ModelMixin)
     InitMixin(self, LiveMixin)
-    InitMixin(self, UpgradableMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
@@ -93,11 +84,8 @@ function Whip:OnCreate()
     InitMixin(self, LOSMixin)
     InitMixin(self, DetectableMixin)
     InitMixin(self, ConstructMixin)
-    InitMixin(self, ResearchMixin)
     InitMixin(self, RagdollMixin)
-    InitMixin(self, DamageMixin)
     InitMixin(self, ObstacleMixin)
-    InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
     InitMixin(self, HasUmbraMixin)
     
@@ -155,10 +143,6 @@ function Whip:GetReceivesStructuralDamage()
     return true
 end
 
-function Whip:ConstructOverride(deltaTime)
-    return deltaTime / 2
-end
-
 function Whip:OnUpdatePoseParameters()
     self:SetPoseParam(Whip.kWhipBallParam, 0) 
 end
@@ -180,7 +164,6 @@ function Whip:EmpowerInRange()
         for _, entity in ipairs(empents) do
         
             if entity ~= self then
-                Print("POWEA")
                 entity:Empower()
             end
             

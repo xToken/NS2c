@@ -102,36 +102,30 @@ end
 local function ThrowGrenade(self, player)
 
     self:TriggerEffects("grenadelauncher_attack")
+    
+    if Server or (Client and Client.GetIsControllingPlayer()) then
 
-    if Server and player then
         local viewAngles = player:GetViewAngles()
         local viewCoords = viewAngles:GetCoords()
+        
         // Make sure start point isn't on the other side of a wall or object
         local startPoint = player:GetEyePos() - (viewCoords.zAxis * 0.2)
-        local trace = Shared.TraceRay(startPoint, startPoint + viewCoords.zAxis * 25, CollisionRep.Default, PhysicsMask.Bullets, EntityFilterOne(player))
-
+        local trace = Shared.TraceRay(startPoint, startPoint + viewCoords.zAxis * 25, CollisionRep.Default, PhysicsMask.Bullets, EntityFilterAll())
+        
         // make sure the grenades flies to the crosshairs target
-        local grenadeStartPoint = player:GetEyePos() + viewCoords.zAxis * .5 - viewCoords.xAxis * .1 - viewCoords.yAxis * .25
-
+        local grenadeStartPoint = player:GetEyePos() + viewCoords.zAxis * 0.65 - viewCoords.xAxis * 0.35 - viewCoords.yAxis * 0.25
+        
         // if we would hit something use the trace endpoint, otherwise use the players view direction (for long range shots)
         local grenadeDirection = ConditionalValue(trace.fraction ~= 1, trace.endPoint - grenadeStartPoint, viewCoords.zAxis)
         grenadeDirection:Normalize()
-
-        local grenade = CreateEntity(HandGrenade.kMapName, grenadeStartPoint, player:GetTeamNumber())
-
-        // Inherit player velocity?
-        local startVelocity = grenadeDirection  
-
-        startVelocity = startVelocity * 10
-        startVelocity.y = startVelocity.y + 3
-
-        local angles = Angles(0,0,0)
-        angles.yaw = GetYawFromVector(grenadeDirection)
-        angles.pitch = GetPitchFromVector(grenadeDirection)
-        grenade:SetAngles(angles)
-
-        grenade:Setup(player, startVelocity, true)
         
+        // Inherit player velocity?
+        local startVelocity = grenadeDirection * 10
+                
+        startVelocity.y = startVelocity.y + 3
+        
+        local grenade = player:CreatePredictedProjectile("HandGrenade", grenadeStartPoint, startVelocity, 0.6)
+    
     end
     
 end

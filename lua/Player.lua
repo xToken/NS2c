@@ -30,6 +30,7 @@ Script.Load("lua/MobileTargetMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/BadgeMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
+Script.Load("lua/Weapons/PredictedProjectile.lua")
 
 if Client then
     Script.Load("lua/HelpMixin.lua")
@@ -255,7 +256,8 @@ function Player:OnCreate()
     InitMixin(self, PointGiverMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, BadgeMixin)
-    
+  	InitMixin(self, PredictedProjectileShooterMixin)
+    	
     if Client then
         InitMixin(self, HelpMixin)
     end

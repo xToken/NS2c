@@ -120,9 +120,17 @@ function BileBomb:FireBombProjectile(player)
 
     PROFILE("BileBomb:FireBombProjectile")
     
-    if Server then
+    if not Predict then
     
         local viewAngles = player:GetViewAngles()
+        local velocity = player:GetVelocity()
+        local viewCoords = viewAngles:GetCoords()
+        local startPoint = player:GetEyePos() + viewCoords.zAxis * 0.3
+        local startVelocity = velocity * kPlayerVelocityFraction + viewCoords.zAxis * kBombVelocity
+        
+        local rocket = player:CreatePredictedProjectile("Bomb", startPoint, startVelocity, nil, nil, 13, true)
+    
+        /*local viewAngles = player:GetViewAngles()
         local velocity = player:GetVelocity()
         local viewCoords = viewAngles:GetCoords()
         local startPoint = player:GetEyePos() + viewCoords.zAxis * 0.35
@@ -133,7 +141,7 @@ function BileBomb:FireBombProjectile(player)
         local startVelocity = viewCoords.zAxis * kBombVelocity + velocity * kPlayerVelocityFraction
         
         local bomb = CreateEntity(Bomb.kMapName, startPoint, player:GetTeamNumber())
-        bomb:Setup(player, startVelocity, true, nil, player)
+        bomb:Setup(player, startVelocity, true, nil, player)*/
         
     end
     

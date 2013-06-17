@@ -151,7 +151,7 @@ local function ShootGrenade(self, player)
     
     self:TriggerEffects("grenadelauncher_attack")
 
-    if not Predict then
+    if Server or (Client and Client.GetIsControllingPlayer()) then
 
         local viewAngles = player:GetViewAngles()
         local viewCoords = viewAngles:GetCoords()
@@ -179,8 +179,6 @@ local function ShootGrenade(self, player)
     TEST_EVENT("Grenade Launcher primary attack")
     
 end
-
-
 
 function GrenadeLauncher:GetNumStartClips()
     return 2

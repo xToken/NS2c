@@ -41,7 +41,7 @@ if Server then
     function EmpowerMixin:Empower()
         
         self.empowered = true
-        self.empowerGiveTime = Shared.GetTime() + 1
+        self.empowerGiveTime = Shared.GetTime() + 2.25
     
     end
 
@@ -51,17 +51,6 @@ local function SharedUpdate(self, deltaTime)
 
     if Server then         
         self.empowered = self.empowerGiveTime - Shared.GetTime() > 0
-    elseif Client then
-
-        if self:GetGameEffectMask(kGameEffect.Fury) and (not HasMixin(self, "Cloakable") or not self:GetIsCloaked() ) then
-        
-            if (not self.timeLastEmpowerEffect or self.timeLastEmpowerEffect + 2 < Shared.GetTime()) then
-                self:TriggerEffects("empower")
-                self.timeLastEmpowerEffect = Shared.GetTime() 
-            end
-            
-        end
-    
     end
     
 end

@@ -9,7 +9,8 @@
 SpikesMixin = CreateMixin( SpikesMixin )
 SpikesMixin.type = "Spikes"
 
-local kSpread = Math.Radians(7)
+local kSpread = Math.Radians(4)
+local kSpikeSize = 0.03
 
 // GetHasSecondary and GetSecondaryEnergyCost should completely override any existing
 // same named function defined in the object.
@@ -60,16 +61,16 @@ local function FireSpikes(self)
     for spike = 1, numSpikes do
 
         // Calculate spread for each shot, in case they differ    
-        local randomAngle  = NetworkRandom() * math.pi * 2
-        local randomRadius = NetworkRandom() * NetworkRandom() * math.tan(kSpread)
-        local spreadDirection = (viewCoords.xAxis * math.cos(randomAngle) + viewCoords.yAxis * math.sin(randomAngle))
-        local fireDirection = viewCoords.zAxis + spreadDirection * randomRadius
-        fireDirection:Normalize()  
+        local spreadDirection = CalculateSpread(viewCoords, kSpread, NetworkRandom) 
 
-        local endPoint = startPoint + fireDirection * range
+        local endPoint = startPoint + spreadDirection * range
         startPoint = player:GetEyePos()
         
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+        if not trace.entity then
+            local extents = GetDirectedExtentsForDiameter(spreadDirection, kSpikeSize)
+            trace = Shared.TraceBox(extents, startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+        end
         
         local distToTarget = (trace.endPoint - startPoint):GetLength()
         

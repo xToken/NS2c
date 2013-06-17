@@ -109,6 +109,9 @@
     <filename>Weapons\Marine\ClipWeapon.lua</filename>
   </file>
   <file>
+    <filename>CloakableMixin.lua</filename>
+  </file>
+  <file>
     <filename>CommandStation.lua</filename>
   </file>
   <file>
@@ -548,6 +551,9 @@
   </file>
   <file>
     <filename>PointGiverMixin.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\PredictedProjectile.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\PrimalScreamMixin.lua</filename>

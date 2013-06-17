@@ -246,8 +246,4 @@ if Server then
     
 end
 
-function Crag:ConstructOverride(deltaTime)
-    return deltaTime / 2
-end
-
 Shared.LinkClassToMap("Crag", Crag.kMapName, networkVars)

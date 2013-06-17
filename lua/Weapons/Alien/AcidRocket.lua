@@ -54,7 +54,7 @@ end
 function AcidRocket:OnPrimaryAttack(player)
 
     if player:GetEnergy() >= self:GetEnergyCost() and Shared.GetTime() > (self.lastPrimaryAttackTime + self:GetPrimaryAttackDelay()) then
-        if Server then
+        if not Predict then
             self:FireRocketProjectile(player)
         end
         self.lastPrimaryAttackTime = Shared.GetTime()
@@ -74,20 +74,15 @@ end
 
 function AcidRocket:FireRocketProjectile(player)
 
-    if Server then
+    if not Predict then
         
         local viewAngles = player:GetViewAngles()
         local velocity = player:GetVelocity()
         local viewCoords = viewAngles:GetCoords()
-        local startPoint = player:GetEyePos() + viewCoords.zAxis * 0.35 + Vector(0, 0, -0.25)
-        
-        local startPointTrace = Shared.TraceRay(player:GetEyePos(), startPoint, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterOne(player))
-        startPoint = startPointTrace.endPoint
-        
+        local startPoint = player:GetEyePos() + viewCoords.zAxis * 0.3
         local startVelocity = velocity * kPlayerVelocityFraction + viewCoords.zAxis * kRocketVelocity
         
-        local rocket = CreateEntity(Rocket.kMapName, startPoint, player:GetTeamNumber())
-        rocket:Setup(player, startVelocity, true, Vector(0.20,0.20,0.20))
+        local rocket = player:CreatePredictedProjectile("Rocket", startPoint, startVelocity, nil, nil, 5, true)
         
     end
 

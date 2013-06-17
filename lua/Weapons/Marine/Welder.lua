@@ -279,6 +279,15 @@ end
 
 function Welder:OnUpdateRender()
 
+    Weapon.OnUpdateRender(self)
+    
+    if self.ammoDisplayUI then
+    
+        local progress = PlayerUI_GetUnitStatusPercentage()
+        self.ammoDisplayUI:SetGlobal("weldPercentage", progress)
+        
+    end
+    
     local parent = self:GetParent()
     if parent and self.welding then
 
