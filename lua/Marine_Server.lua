@@ -37,7 +37,7 @@ function Marine:OnTakeDamage(damage, attacker, doer, point)
     
     if damage > 50 and (not self.timeLastDamageKnockback or self.timeLastDamageKnockback + 1 < Shared.GetTime()) then    
     
-        self:AddPushImpulse(GetNormalizedVectorXZ(self:GetOrigin() - point) * damage * 0.025 * self:GetSlowSpeedModifier())
+        self:AddPushImpulse(GetNormalizedVectorXZ(self:GetOrigin() - point) * damage * 0.025)
         self.timeLastDamageKnockback = Shared.GetTime()
         
     end

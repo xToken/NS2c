@@ -4,8 +4,9 @@
 Script.Load("lua/Weapons/Projectile.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/DamageMixin.lua")
+Script.Load("lua/Weapons/PredictedProjectile.lua")
 
-class 'Rocket' (Projectile)
+class 'Rocket' (PredictedProjectile)
 
 Rocket.kMapName            = "rocket"
 Rocket.kModelName          = PrecacheAsset("models/alien/gorge/bilebomb.model")
@@ -21,7 +22,7 @@ AddMixinNetworkVars(TeamMixin, networkVars)
 
 function Rocket:OnCreate()
 
-    Projectile.OnCreate(self)
+    PredictedProjectile.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ModelMixin)
@@ -56,10 +57,15 @@ end
 
 if Server then
 
-    function Rocket:ProcessHit(targetHit)
+    function Rocket:ProcessHit(targetHit, surface)
 
         if (not self:GetOwner() or targetHit ~= self:GetOwner()) and not self:GetIsDestroyed() then
             local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kAcidRocketRadius)
+            // full damage on direct impact
+            if targetHit then
+                table.removevalue(hitEntities, targetHit)
+                self:DoDamage(kAcidRocketDamage, targetHit, targetHit:GetOrigin(), GetNormalizedVector(targetHit:GetOrigin() - self:GetOrigin()), "none")
+            end
             RadiusDamage(hitEntities, self:GetOrigin(), kAcidRocketRadius, kAcidRocketDamage, self, true)
             self:TriggerEffects("acidrocket_hit")
             DestroyEntity(self)

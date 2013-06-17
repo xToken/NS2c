@@ -185,10 +185,6 @@ function Shade:OnCheckDetectorActive()
     return self:GetIsBuilt() and self:GetIsAlive()
 end
 
-function Shade:ConstructOverride(deltaTime)
-    return deltaTime / 2
-end
-
 function Shade:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Shade:OnUpdateAnimationInput")

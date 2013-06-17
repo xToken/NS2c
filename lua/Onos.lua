@@ -38,14 +38,12 @@ Onos.YExtents = 1.0
 Onos.ZExtents = .4
 
 local kMass = 453 // Half a ton
-local kJumpHeight = 1.2
 local kViewOffsetHeight = 2.5
-// triggered when the momentum value has changed by this amount (negative because we trigger the effect when the onos stops, not accelerates)
 local kMomentumEffectTriggerDiff = 3
-local kMaxSpeed = 6.0
-local kMaxChargeSpeed = 12
-
-local kChargeEnergyCost = 50
+local kMaxSpeed = 4.5
+local kMaxChargeSpeed = 11
+local kMaxWalkSpeed = 2
+local kChargeEnergyCost = 60
 local kChargeAcceleration = 40
 local kChargeUpDuration = 0.4
 local kChargeDelay = 0.1
@@ -107,11 +105,11 @@ function Onos:GetCanJump()
 end
 
 function Onos:GetCanCrouch()
-    return Alien.GetCanCrouch(self) and not self.charging
+    return not self.charging
 end
 
-function Onos:GoldSrc_GetAcceleration()
-    local acceleration = Alien.GoldSrc_GetAcceleration(self)
+function Onos:GetAcceleration()
+    local acceleration = Player.GetAcceleration(self)
     if self.charging then
         acceleration = acceleration + kChargeAcceleration * self:GetChargeFraction()  * 0.11
     end
@@ -177,10 +175,6 @@ function Onos:PreUpdateMove(input, runningPrediction)
         end
             
     end
-
-    if self.autoCrouching then
-        self.crouching = self.autoCrouching
-    end 
 
 end
 
@@ -268,7 +262,7 @@ function Onos:GetMaxViewOffsetHeight()
     return kViewOffsetHeight
 end
 
-function Onos:GoldSrc_GetMaxSpeed(possible)
+function Onos:GetMaxSpeed(possible)
 
     if possible then
         return kMaxSpeed
@@ -279,18 +273,18 @@ function Onos:GoldSrc_GetMaxSpeed(possible)
     if self.charging then
         maxSpeed = kMaxChargeSpeed
     end
+    
+    if self:GetCrouched() and self:GetIsOnSurface() then
+        maxSpeed = kMaxWalkSpeed
+    end
 
-    return maxSpeed * self:GetMovementSpeedModifier()
+    return maxSpeed + self:GetMovementSpeedModifier()
 
 end
 
 // Half a ton
 function Onos:GetMass()
     return kMass
-end
-
-function Onos:GetJumpHeight()
-    return kJumpHeight
 end
 
 local kOnosHeadMoveAmount = 0.0
@@ -308,13 +302,8 @@ function Onos:OnUpdateCamera(deltaTime)
 
 end
 
-function Onos:OnUpdateAnimationInput(modelMixin)
-
-    PROFILE("Onos:OnUpdateAnimationInput")
-    
-    Alien.OnUpdateAnimationInput(self, modelMixin)
-
-    modelMixin:SetAnimationInput("attack_speed", self:GetIsPrimaled() and (kDefaultAttackSpeed * kPrimalScreamROFIncrease) or kDefaultAttackSpeed)
+function Onos:GetBaseAttackSpeed()
+    return kDefaultAttackSpeed
 end
 
 local kOnosEngageOffset = Vector(0, 1.3, 0)

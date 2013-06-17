@@ -194,6 +194,10 @@ function Spectator:OnDestroy()
     
 end
 
+function Spectator:GetIsForwardOverrideDesired()
+    return false
+end
+
 function Spectator:OnClientUpdated(client)
 
     Player.OnClientUpdated(self, client)

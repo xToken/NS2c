@@ -64,5 +64,5 @@ function WebsAbility:GetDropMapName()
 end
 
 function WebsAbility:IsAllowed(player)
-    return player:GetHasThreeHives() and kWebEnabled
+    return player.GetHasThreeHives and player:GetHasThreeHives() and kWebEnabled
 end

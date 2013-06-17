@@ -109,6 +109,9 @@
     <filename>Weapons\Marine\ClipWeapon.lua</filename>
   </file>
   <file>
+    <filename>CloakableMixin.lua</filename>
+  </file>
+  <file>
     <filename>CommandStation.lua</filename>
   </file>
   <file>
@@ -197,6 +200,9 @@
   </file>
   <file>
     <filename>Embryo.lua</filename>
+  </file>
+  <file>
+    <filename>EmpowerMixin.lua</filename>
   </file>
   <file>
     <filename>EnergyMixin.lua</filename>
@@ -523,6 +529,9 @@
     <filename>PhaseGate.lua</filename>
   </file>
   <file>
+    <filename>PickupableWeaponMixin.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Marine\Pistol.lua</filename>
   </file>
   <file>
@@ -542,6 +551,9 @@
   </file>
   <file>
     <filename>PointGiverMixin.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\PredictedProjectile.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\PrimalScreamMixin.lua</filename>

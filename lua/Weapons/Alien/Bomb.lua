@@ -12,9 +12,11 @@
 Script.Load("lua/Weapons/Projectile.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/DamageMixin.lua")
+Script.Load("lua/Weapons/PredictedProjectile.lua")
+
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/decals/bilebomb_decal.surface_shader")
 
-class 'Bomb' (Projectile)
+class 'Bomb' (PredictedProjectile)
 
 Bomb.kMapName            = "bomb"
 Bomb.kModelName          = PrecacheAsset("models/alien/gorge/bilebomb.model")
@@ -32,7 +34,7 @@ AddMixinNetworkVars(TeamMixin, networkVars)
 
 function Bomb:OnCreate()
 
-    Projectile.OnCreate(self)
+    PredictedProjectile.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ModelMixin)
@@ -72,6 +74,12 @@ if Server then
         if (not self:GetOwner() or targetHit ~= self:GetOwner()) and not self:GetIsDestroyed() then
 
             local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kBileBombSplashRadius)
+            
+            // full damage on direct impact
+            if targetHit then
+                table.removevalue(hitEntities, targetHit)
+                self:DoDamage(kBileBombDamage, targetHit, targetHit:GetOrigin(), GetNormalizedVector(targetHit:GetOrigin() - self:GetOrigin()), "none")
+            end
             
             RadiusDamage(hitEntities, self:GetOrigin(), kBileBombSplashRadius, kBileBombDamage, self)
             

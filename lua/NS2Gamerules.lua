@@ -25,6 +25,7 @@ local kGameEndCheckInterval = 0.75
 local kPregameLength = 15
 local kTimeToReadyRoom = 8
 local kPauseToSocializeBeforeMapcycle = 30
+local kGameStartMessageInterval = 10
 
 // How often to send the "No commander" message to players in seconds.
 local kSendNoCommanderMessageRate = 50
@@ -718,17 +719,19 @@ if Server then
     end
     
     // Commander ejection functionality
-    function NS2Gamerules:CastVoteByPlayer( voteTechId, player )
+    function NS2Gamerules:CastVoteByPlayer(voteTechId, player)
     
         if voteTechId == kTechId.VoteConcedeRound then
         
             if self.timeSinceGameStateChanged > kMinTimeBeforeConcede and self:GetGameStarted() then
             
                 local team = player:GetTeam()
-                team:VoteToGiveUp(player)
+                if team.VoteToGiveUp then
+                    team:VoteToGiveUp(player)
+                end
                 
             end
-        
+            
         elseif voteTechId == kTechId.VoteDownCommander1 or voteTechId == kTechId.VoteDownCommander2 or voteTechId == kTechId.VoteDownCommander3 then
 
             // Get the 1st, 2nd or 3rd commander by entity order (does this on client as well)    
@@ -1052,10 +1055,10 @@ if Server then
         return ConditionalValue(math.random() < .5, kTeam1Index, kTeam2Index)
         
     end
-    
+
     -- No enforced balanced teams on join as the auto team balance system balances teams.
     function NS2Gamerules:GetCanJoinTeamNumber(teamNumber)
-    
+
         local forceEvenTeams = Server.GetConfigSetting("force_even_teams_on_join")
         -- This option was added after shipping, so support older config files that don't include it.
         -- Fallback to forcing even teams if they don't have this entry in the config file.
@@ -1251,16 +1254,29 @@ if Server then
         
             // Start pre-game when both teams have players or when once side does if cheats are enabled
             local team1Players = self.team1:GetNumPlayers()
+			local team1Commander = self.team1:GetCommander()
             local team2Players = self.team2:GetNumPlayers()
             
-            if (team1Players > 0 and team2Players > 0) or (Shared.GetCheatsEnabled() and (team1Players > 0 or team2Players > 0)) then
+            if (team1Players > 0 and team2Players > 0 and team1Commander) or (Shared.GetCheatsEnabled() and (team1Players > 0 or team2Players > 0)) then
             
                 if self:GetGameState() == kGameState.NotStarted then
                     self:SetGameState(kGameState.PreGame)
                 end
                 
-            elseif self:GetGameState() == kGameState.PreGame then
-                self:SetGameState(kGameState.NotStarted)
+            else
+            
+                if self:GetGameState() == kGameState.PreGame then
+                    self:SetGameState(kGameState.NotStarted)
+                end
+                
+                if not self.nextGameStartMessageTime or Shared.GetTime() > self.nextGameStartMessageTime then
+                
+                    SendTeamMessage(self.team1, kTeamMessageTypes.GameStartCommanders)
+                    SendTeamMessage(self.team2, kTeamMessageTypes.GameStartCommanders)
+                    self.nextGameStartMessageTime = Shared.GetTime() + kGameStartMessageInterval
+                    
+                end
+                
             end
             
         end
@@ -1268,29 +1284,31 @@ if Server then
     end
     
     local function CheckAutoConcede(self)
-    
+
         // This is an optional end condition based on the teams being unbalanced.
         local endGameOnUnbalancedAmount = Server.GetConfigSetting("end_round_on_team_unbalance")
         if endGameOnUnbalancedAmount and endGameOnUnbalancedAmount > 0 then
-        
+
             local gameLength = Shared.GetTime() - self:GetGameStartTime()
             // Don't start checking for auto-concede until the game has started for some time.
             local checkAutoConcedeAfterTime = Server.GetConfigSetting("end_round_on_team_unbalance_check_after_time") or 300
             if gameLength > checkAutoConcedeAfterTime then
-            
+
                 local team1Players = self.team1:GetNumPlayers()
                 local team2Players = self.team2:GetNumPlayers()
                 local totalCount = team1Players + team2Players
-                
                 // Don't consider unbalanced game end until enough people are playing.
+
                 if totalCount > 6 then
                 
                     local team1ShouldLose = false
                     local team2ShouldLose = false
                     
                     if (1 - (team1Players / team2Players)) >= endGameOnUnbalancedAmount then
+
                         team1ShouldLose = true
                     elseif (1 - (team2Players / team1Players)) >= endGameOnUnbalancedAmount then
+
                         team2ShouldLose = true
                     end
                     

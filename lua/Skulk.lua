@@ -37,16 +37,15 @@ Skulk.kYExtents = .45
 Skulk.kZExtents = .45
 
 local kLeapTime = 0.2
-local kLeapVerticalVelocity = 8
-local kLeapForce = 15
-local kMaxSpeed = 7
+local kLeapForce = 11
+local kMaxSpeed = 6.5
 local kGoodJumpSpeed = 10
 local kBestJumpSpeed = 12
-local kMaxWalkSpeed = 4
-local kJumpHeight = 1.3
+local kMaxWalkSpeed = 3.1
 local kWallJumpForce = 7
 local kWallJumpYBoost = 2
 local kJumpDelay = 0.25
+local kMaxLeapSpeed = 20
 
 local kMass = 45 // ~100 pounds
 local kWallWalkCheckInterval = .1
@@ -157,6 +156,10 @@ function Skulk:GetCrouchShrinkAmount()
     return 0
 end
 
+function Skulk:GetGroundFriction()
+    return ConditionalValue(self:GetIsWallWalking(), Player.GetGroundFriction(self) + 3, Player.GetGroundFriction(self))
+end
+
 function Skulk:GetExtentsCrouchShrinkAmount()
     return 0
 end
@@ -166,29 +169,28 @@ function Skulk:GetIsJumping()
     return Player.GetIsJumping(self) and not self.wallWalking
 end
 
-// The Skulk movement should factor in the vertical velocity
-// only when wall walking.
-function Skulk:GetMoveSpeedIs2D()
-    return not self:GetIsWallWalking()
-end
-
 function Skulk:OnLeap()
 
     local velocity = self:GetVelocity()
     //local minSpeed = math.max(0, kMinLeapVelocity - velocity:GetLengthXZ() - kLeapVerticalForce) * self:GetMovementSpeedModifier()
 
     local forwardVec = self:GetViewAngles():GetCoords().zAxis
-    local newVelocity = velocity + (GetNormalizedVector(forwardVec) * (kLeapForce * self:GetMovementSpeedModifier()))
+    local newVelocity = velocity + (GetNormalizedVector(forwardVec) * (kLeapForce))
     
-    if newVelocity.y < 1 then
-        newVelocity.y = kLeapVerticalVelocity * self:GetMovementSpeedModifier()
+    local moveSpeed = newVelocity:GetLengthXZ()
+    if moveSpeed > kMaxLeapSpeed + self:GetMovementSpeedModifier() then
+        newVelocity:Scale((kMaxLeapSpeed + self:GetMovementSpeedModifier()) / moveSpeed)
+    end
+    
+    if self:GetIsOnGround() then
+        newVelocity.y = self:GetJumpForce()
     end
     
     self:SetVelocity(newVelocity)
     
     self.leaping = true
     self.wallWalkingEnabled = false
-    
+    self:SetIsOnGround(false)
     self.timeOfLeap = Shared.GetTime()
     self.timeOfLastJump = Shared.GetTime()
     
@@ -203,7 +205,7 @@ function Skulk:GetRecentlyWallJumped()
 end
 
 function Skulk:GetCanWallJump()
-    return self:GetIsWallWalking() or (not self:GetIsOnGround() and self:GetAverageWallWalkingNormal(kJumpWallRange, kJumpWallFeelerSize) ~= nil) and not self:GetRecentlyWallJumped() and not self.crouching 
+    return self:GetIsWallWalking() or (not self:GetIsOnGround() and self:GetAverageWallWalkingNormal(kJumpWallRange, kJumpWallFeelerSize) ~= nil) and not self:GetRecentlyWallJumped() and not self:GetCrouching() 
 end
 
 function Skulk:GetViewModelName()
@@ -211,7 +213,7 @@ function Skulk:GetViewModelName()
 end
 
 function Skulk:GetCanJump()
-    return Alien.GetCanJump(self) or self:GetCanWallJump()    
+    return Player.GetCanJump(self) or self:GetCanWallJump()    
 end
 
 function Skulk:GetIsWallWalking()
@@ -232,7 +234,7 @@ function Skulk:GetIsOnLadder()
 end
 
 function Skulk:GetIsWallWalkingPossible() 
-    return not self.crouching
+    return not self:GetCrouching()
 end
 
 local function PredictGoal(self, velocity)
@@ -266,7 +268,42 @@ function Skulk:TriggerJumpEffects()
     end
 end
 
-// Update wall-walking from current origin
+function Skulk:GetAngleSmoothRate()
+
+    if self:GetIsWallWalking() then
+        return 1.5
+    end
+
+    return 7
+    
+end
+
+function Skulk:GetRollSmoothRate()
+    return 4
+end
+
+function Skulk:GetPitchSmoothRate()
+    return 3
+end
+
+function Skulk:GetSlerpSmoothRate()
+    return 5
+end
+
+function Skulk:GetDesiredAngles(deltaTime)
+    return self.currentWallWalkingAngles
+end 
+
+function Skulk:GetHeadAngles()
+
+    if self:GetIsWallWalking() then
+        return self.currentWallWalkingAngles
+    else
+        return self:GetViewAngles()
+    end
+
+end
+
 function Skulk:PreUpdateMove(input, runningPrediction)
 
     PROFILE("Skulk:PreUpdateMove")
@@ -317,62 +354,21 @@ function Skulk:PreUpdateMove(input, runningPrediction)
     end
     
     self.currentWallWalkingAngles = self:GetAnglesFromWallNormal(PredictGoal(self, self:GetVelocity()) or Vector.yAxis) or self.currentWallWalkingAngles
-    
-end
-
-function Skulk:GetAngleSmoothRate()
-
-    if self:GetIsWallWalking() then
-        return 1.5
-    end
-
-    return 7
-    
-end
-
-function Skulk:GetRollSmoothRate()
-    return 4
-end
-
-function Skulk:GetPitchSmoothRate()
-    return 3
-end
-
-function Skulk:GetSlerpSmoothRate()
-    return 5
-end
-
-function Skulk:GetDesiredAngles(deltaTime)
-    return self.currentWallWalkingAngles
-end 
-
-function Skulk:GetHeadAngles()
-
-    if self:GetIsWallWalking() then
-        return self.currentWallWalkingAngles
-    else
-        return self:GetViewAngles()
-    end
 
 end
 
-function Skulk:UpdatePosition(velocity, time)
+function Skulk:UpdatePosition(input, velocity, time)
 
     PROFILE("Skulk:UpdatePosition")
     local yAxis = self.wallWalkingNormalGoal
     local requestedVelocity = Vector(velocity)
-    
-    if self.adjustToGround then
-        velocity.y = 0
-        self.adjustToGround = false
-    end
         
     // Fallback on default behavior when wallWalking is disabled
     if not self.wallWalkingEnabled then
         
         local oldSpeed = velocity:GetLengthXZ()
         local wereOnGround = self:GetIsOnGround()
-        velocity = Alien.UpdatePosition(self, velocity, time)
+        Player.UpdatePosition(self, input, velocity, time)
         // we enable wallkwalk if we are no longer on ground but were the previous 
         if wereOnGround and not self:GetIsOnGround() then
             self.wallWalkingEnabled = self:GetIsWallWalkingPossible()
@@ -443,20 +439,10 @@ function Skulk:GetAngleSmoothingMode()
 end
 
 function Skulk:GetIsUsingBodyYaw()
-
     return not self:GetIsWallWalking()
-
 end
 
-function Skulk:GoldSrc_GetFriction()
-    return ConditionalValue(self:GetIsWallWalking(), Player.GoldSrc_GetFriction(self) + 3.0, Player.GoldSrc_GetFriction(self))
-end
-
-function Skulk:UpdateCrouch()
-    // Skulks cannot crouch! 
-end
-
-function Skulk:GoldSrc_GetMaxSpeed(possible)
+function Skulk:GetMaxSpeed(possible)
 
     if possible then
         return kMaxSpeed
@@ -468,7 +454,7 @@ function Skulk:GoldSrc_GetMaxSpeed(possible)
         maxSpeed = kMaxWalkSpeed
     end
 
-    return maxSpeed * self:GetMovementSpeedModifier()
+    return maxSpeed + self:GetMovementSpeedModifier()
     
 end
 
@@ -477,25 +463,11 @@ function Skulk:GetMass()
 end
 
 function Skulk:GetGravityAllowed()
-    return not self:GetIsWallWalking()
+    return Player.GetGravityAllowed(self) and not self:GetIsWallWalking()
 end
 
 function Skulk:GetIsOnSurface()
-    return Alien.GetIsOnSurface(self) or (self:GetIsWallWalking() and not self.crouching)
-end
-
-function Skulk:GetIsAffectedByAirFriction()
-    return not self:GetIsOnSurface()
-end
-
-function Skulk:GetIsCloseToGround(distanceToGround)
-
-    if self:GetIsWallWalking() then
-        return false
-    end
-    
-    return Alien.GetIsCloseToGround(self, distanceToGround)
-    
+    return Alien.GetIsOnSurface(self) or (self:GetIsWallWalking() and not self:GetCrouching())
 end
 
 function Skulk:GetPlayFootsteps()
@@ -506,12 +478,7 @@ end
  * Knockback only allowed while the Skulk is in the air (jumping or leaping).
  */
 function Skulk:GetIsKnockbackAllowed()
-
     return not self:GetIsOnSurface()
-end
-
-function Skulk:GetJumpHeight()
-    return kJumpHeight
 end
 
 function Skulk:PerformsVerticalMove()
@@ -530,30 +497,24 @@ function Skulk:GetJumpVelocity(input, velocity)
             // Previous velocity seems to be ignored
             local direction = self:GetViewAngles():GetCoords().zAxis
             if self.wallWalkingNormalGoal:DotProduct(direction) >= 0.0 then
-                direction:Scale(kWallJumpForce * self:GetMovementSpeedModifier())
-                direction.y = direction.y + kWallJumpYBoost * self:GetMovementSpeedModifier()
+                direction:Scale(kWallJumpForce)
+                direction.y = direction.y + kWallJumpYBoost
                 VectorCopy(direction, velocity)
                 self.lastwalljump = Shared.GetTime()
             end
         end
     else
-        Alien.GetJumpVelocity(self, input, velocity)
+        Player.GetJumpVelocity(self, input, velocity)
     end
 end
 
-function Skulk:HandleJump(input, velocity)
+function Skulk:OnJump()
+    self.wallWalking = false
+    self.wallWalkingEnabled = false    
+end
 
-    local success = Alien.HandleJump(self, input, velocity)
-    
-    if success then
-    
-        self.wallWalking = false
-        self.wallWalkingEnabled = false
-    
-    end
-        
-    return success
-    
+function Skulk:GetBaseAttackSpeed()
+    return kDefaultAttackSpeed
 end
 
 function Skulk:OnUpdateAnimationInput(modelMixin)
@@ -567,7 +528,6 @@ function Skulk:OnUpdateAnimationInput(modelMixin)
     end
     
     modelMixin:SetAnimationInput("onwall", self:GetIsWallWalking() and not self:GetIsJumping())
-    modelMixin:SetAnimationInput("attack_speed", self:GetIsPrimaled() and (kDefaultAttackSpeed * kPrimalScreamROFIncrease) or kDefaultAttackSpeed)
 end
 
 local kSkulkEngageOffset = Vector(0, 0.5, 0)

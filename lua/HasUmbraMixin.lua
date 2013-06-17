@@ -14,6 +14,14 @@ Script.Load("lua/FunctionContracts.lua")
 HasUmbraMixin = CreateMixin( HasUmbraMixin )
 HasUmbraMixin.type = "HasUmbra"
 
+local kMaterialName = "cinematics/vfx_materials/umbra.material"
+local kViewMaterialName = "cinematics/vfx_materials/umbra_view.material"
+
+if Client then
+    Shared.PrecacheSurfaceShader("cinematics/vfx_materials/umbra.surface_shader")
+    Shared.PrecacheSurfaceShader("cinematics/vfx_materials/umbra_view.surface_shader")
+end
+
 HasUmbraMixin.expectedMixins =
 {
 }
@@ -41,4 +49,30 @@ if Server then
         self.umbratime = umbraTime
     end
     
+end
+
+function HasUmbraMixin:OnUpdateRender()
+
+    local model = self:GetRenderModel()
+    if model then
+    
+        if not self.umbraMaterial then        
+            self.umbraMaterial = AddMaterial(model, kMaterialName)  
+        end
+        
+        self.umbraMaterial:SetParameter("intensity", self:GetHasUmbra() and 1 or 0)
+    
+    end
+    
+    local viewModel = self.GetViewModelEntity and self:GetViewModelEntity() and self:GetViewModelEntity():GetRenderModel()
+    if viewModel then
+    
+        if not self.umbraViewMaterial then        
+            self.umbraViewMaterial = AddMaterial(viewModel, kViewMaterialName)        
+        end
+        
+        self.umbraViewMaterial:SetParameter("intensity", self:GetHasUmbra() and 1 or 0)
+    
+    end
+
 end

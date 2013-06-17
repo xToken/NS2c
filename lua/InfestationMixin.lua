@@ -308,13 +308,8 @@ if Client then
 
 	function InfestationMixin:UpdateClientGeometry()
 		
-		local cloakFraction = 0
-		
-		if GetAreEnemies( self, Client_GetLocalPlayer()) then
-            if HasMixin(self, "Cloakable") then
-                cloakFraction = self:GetCloakedFraction()
-            end
-		end
+		local playerIsEnemy = Client and GetAreEnemies(self, Client.GetLocalPlayer()) or false
+        local cloakFraction = (playerIsEnemy and HasMixin(self, "Cloakable")) and self:GetCloakFraction() or 0
 		
 		local radius = self:GetRadius()
 		local maxRadius = self:GetMaxRadius()
@@ -695,7 +690,7 @@ if Client then
         local cloakFraction = 0
         if GetAreEnemies( self, Client_GetLocalPlayer() ) then
             // we may be invisible to enemies
-            cloakFraction = self:GetCloakedFraction()
+            cloakFraction = self:GetCloakFraction()
         end
 
         //Log("%s: %s, %s, %s, %s, %s", self, self.clientisalive, self.numBlobsToGenerate, cloakFraction, self:GetRadius(), self:GetMaxRadius()) 

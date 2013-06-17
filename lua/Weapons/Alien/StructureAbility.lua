@@ -25,8 +25,17 @@ function CheckTeamHasStructure(structure_name)
 	
 end
 
-function StructureAbility:GetIsPositionValid(position)
-    return true
+function StructureAbility:GetIsPositionValid(displayOrigin, player, normal, lastClickedPosition, entity)
+    local checkBypass = { }
+    local coords
+    checkBypass["ValidExit"] = true
+    checkBypass["TechAvailable"] = true
+    local validBuild, legalPosition, attachEntity, errorString = GetIsBuildLegal(self:GetDropStructureId(), displayOrigin, player:GetViewCoords().zAxis, self:GetDropRange(), player, player, checkBypass)
+    if attachEntity then
+        coords = attachEntity:GetAngles():GetCoords()
+        coords.origin = legalPosition
+    end
+    return validBuild, coords
 end
 
 function StructureAbility:GetDropRange()

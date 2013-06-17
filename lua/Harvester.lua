@@ -136,8 +136,4 @@ function Harvester:GetHealthbarOffset()
     return kHarvesterHealthbarOffset
 end 
 
-function Harvester:ConstructOverride(deltaTime)
-    return deltaTime / 2
-end
-
 Shared.LinkClassToMap("Harvester", Harvester.kMapName, networkVars)

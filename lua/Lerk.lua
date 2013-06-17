@@ -46,12 +46,12 @@ local kJumpImpulse = 4
 local kFlapStraightUpImpulse = 4.7
 local kFlapThrustMoveScalar = 7.5
 local kMass = 54
-local kJumpHeight = 1.5
 local kSwoopGravityScalar = -25.0
 local kRegularGravityScalar = -7
 local kFlightGravityScalar = -4
-local kMaxWalkSpeed = 4.8
-local kMaxSpeed = 13
+local kMaxWalkSpeed = 3.9
+local kWalkSpeed = 2.4
+local kMaxSpeed = 14
 local kDefaultAttackSpeed = 1.65
 
 local networkVars =
@@ -199,29 +199,23 @@ function Lerk:GetJumpMode()
 end
 
 // Gain speed gradually the longer we stay in the air
-function Lerk:GoldSrc_GetMaxSpeed(possible)
+function Lerk:GetMaxSpeed(possible)
 
     if possible then
-        return 13
+        return kMaxSpeed
     end
 
     local speed = kMaxWalkSpeed
+    
     if not self:GetIsOnGround() then
+        speed = kMaxSpeed
+    end
     
-        local kBaseAirScalar = 1.2      // originally 0.5
-        local kAirTimeToMaxSpeed = 5  // originally 10
-        local airTimeScalar = Clamp((Shared.GetTime() - self.timeLastOnGround) / kAirTimeToMaxSpeed, 0, 1)
-        local speedScalar = kBaseAirScalar + airTimeScalar * (1 - kBaseAirScalar)
-        speed = kMaxWalkSpeed + speedScalar * (kMaxSpeed - kMaxWalkSpeed)
-        
-        // half max speed while the walk key is pressed
-        if self.movementModiferState then
-            speed = speed * 0.5
-        end
-        
-    end 
+    if self.movementModiferState and self:GetIsOnSurface() then
+        maxSpeed = kWalkSpeed
+    end
     
-    return speed * self:GetMovementSpeedModifier()
+    return speed + self:GetMovementSpeedModifier()
     
 end
 
@@ -231,10 +225,6 @@ end
 
 function Lerk:GetMass()
     return kMass
-end
-
-function Lerk:GetJumpHeight()
-    return kJumpHeight
 end
 
 local function Flap(self, input, velocity)
@@ -258,7 +248,7 @@ local function Flap(self, input, velocity)
                 lift = kFlapStraightUpImpulse * 0.5
             end
             
-            flapVelocity = flapDirection * kFlapThrustMoveScalar * self:GetMovementSpeedModifier()
+            flapVelocity = flapDirection * kFlapThrustMoveScalar
             
         else
         
@@ -306,21 +296,17 @@ end
 // When gliding while looking up or horizontal, hover in mid-air.
 function Lerk:HandleJump(input, velocity)
 
-    if self:GetIsOnGround() then
-    
-        velocity.y = velocity.y + kJumpImpulse
-        
-        self.timeOfLastJump = Shared.GetTime()
-        
-        self.onGround = false
-        
-        self.lastTimeFlapped = Shared.GetTime()
-        
-    else
-        Flap(self, input, velocity)
+    if bit.band(input.commands, Move.Jump) ~= 0 and not self:GetIsJumpHandled() then
+        if self:GetIsOnGround() and self:GetCanJump() then
+            velocity.y = velocity.y + kJumpImpulse
+            self.timeOfLastJump = Shared.GetTime()
+            self:SetIsOnGround(false)
+            self.lastTimeFlapped = Shared.GetTime()
+        else
+            Flap(self, input, velocity)
+        end
+        self:SetIsJumpHandled(true)
     end
-    
-    return true
     
 end
 
@@ -405,7 +391,7 @@ function Lerk:CalcWallGripSpeedFraction()
     
 end
 
-function Lerk:UpdatePosition(velocity, time)
+function Lerk:UpdatePosition(input, velocity, time)
 
     PROFILE("Lerk:UpdatePosition")
     
@@ -422,7 +408,7 @@ function Lerk:UpdatePosition(velocity, time)
         velocity = velocity * self:CalcWallGripSpeedFraction()
     end
     
-    velocity, hitEntities, averageSurfaceNormal = Alien.UpdatePosition(self, velocity, time)
+    Player.UpdatePosition(self, input, velocity, time)
     
     if not self:GetIsWallGripping() and not self.wallGripCheckEnabled then
         // if we bounced into something and we are not on the ground, we enable one
@@ -436,9 +422,7 @@ function Lerk:UpdatePosition(velocity, time)
     local steepImpact = averageSurfaceNormal ~= nil and hitEntities == nil and moveDirection:DotProduct(averageSurfaceNormal) < -.85
 
     if self.gliding and not steepImpact then
-        return requestedVelocity
-    else
-        return velocity
+        velocity = requestedVelocity
     end
 
 end
@@ -555,11 +539,15 @@ function Lerk:OnUpdatePoseParameters()
     
 end
 
+function Lerk:GetBaseAttackSpeed()
+    return kDefaultAttackSpeed
+end
+
 function Lerk:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Lerk:OnUpdateAnimationInput")
     
-    Player.OnUpdateAnimationInput(self, modelMixin)
+    Alien.OnUpdateAnimationInput(self, modelMixin)
     
     if not self:GetIsWallGripping() and not self:GetIsOnGround() then
         modelMixin:SetAnimationInput("move", "fly")
@@ -567,7 +555,6 @@ function Lerk:OnUpdateAnimationInput(modelMixin)
     
     local flappedRecently = (Shared.GetTime() - self.lastTimeFlapped) <= 0.5
     modelMixin:SetAnimationInput("flapping", flappedRecently)
-    modelMixin:SetAnimationInput("attack_speed", self:GetIsPrimaled() and (kDefaultAttackSpeed * kPrimalScreamROFIncrease) or kDefaultAttackSpeed)
     
 end
 

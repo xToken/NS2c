@@ -11,22 +11,23 @@ Script.Load("lua/Weapons/Projectile.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/DamageMixin.lua")
+Script.Load("lua/Weapons/PredictedProjectile.lua")
 
-class 'Grenade' (Projectile)
+class 'Grenade' (PredictedProjectile)
 
 Grenade.kMapName = "grenade"
 Grenade.kModelName = PrecacheAsset("models/marine/rifle/rifle_grenade.model")
 
 local kMinLifeTime = .7
 
-// prevents collision with friendly players in range to spawnpoint
-Grenade.kDisableCollisionRange = 10
+local kMinLifeTime = .7
 
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
+
 -- Blow up after a time.
 local function UpdateLifetime(self)
 
@@ -36,9 +37,8 @@ local function UpdateLifetime(self)
     if not self.endOfLife then
         self.endOfLife = Shared.GetTime() + kGrenadeLifetime
     end
-    
-    local fuse = self.endOfLife - Shared.GetTime()
-    if fuse <= 0 then
+
+    if self.endOfLife <= Shared.GetTime() then
     
         self:Detonate(nil)
         return false
@@ -51,7 +51,7 @@ end
 
 function Grenade:OnCreate()
 
-    Projectile.OnCreate(self)
+    PredictedProjectile.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ModelMixin)
@@ -80,17 +80,35 @@ function Grenade:GetDamageType()
     return kGrenadeLauncherGrenadeDamageType
 end
 
-if Server then
+function Grenade:GetIsAffectedByWeaponUpgrades()
+    return true
+end
 
-    function Grenade:ProcessHit(targetHit, surface)
+function Grenade:ProcessHit(targetHit, surface)
+
+    if targetHit and GetAreEnemies(self, targetHit) then
     
-        if targetHit and (HasMixin(targetHit, "Live") and GetGamerules():CanEntityDoDamageTo(self, targetHit)) and self:GetOwner() ~= targetHit then
+        if Server then
             self:Detonate(targetHit)
-        elseif self:GetVelocity():GetLength() > 2 then
+        else
+            return true
+        end    
+    
+    end
+
+    if Server then
+    
+        if self:GetVelocity():GetLength() > 2 then
             self:TriggerEffects("grenade_bounce")
         end
         
     end
+    
+    return false
+    
+end
+
+if Server then
     
     function Grenade:Detonate(targetHit)
     
@@ -123,7 +141,8 @@ if Server then
         local surface = GetSurfaceFromEntity(targetHit)
                 
         local params = { surface = surface }
-        params[kEffectHostCoords] = Coords.GetLookIn( self:GetOrigin(), self:GetCoords().zAxis)        
+        params[kEffectHostCoords] = Coords.GetLookIn( self:GetOrigin(), self:GetCoords().zAxis)
+        
         self:TriggerEffects("grenade_explode", params)
         
         CreateExplosionDecals(self)
@@ -131,54 +150,16 @@ if Server then
         DestroyEntity(self)
         
     end
-    
-    function Grenade:PrepareToBeWhackedBy(whacker)
-    
-        self.whackerId = whacker:GetId()
-        
-        // It is possible that the endOfLife isn't set yet.
-        if not self.endOfLife then
-            self.endOfLife = 0
-        end
-        
-        // Prolong lifetime a bit to give it time to get out of range.
-        self.endOfLife = math.max(self.endOfLife, Shared.GetTime() + 2)
-        self.prepTime = Shared.GetTime()
-        
-    end
-    
+       
     function Grenade:GetCanDetonate()
+    
         if self.creationTime then
             return self.creationTime + kMinLifeTime < Shared.GetTime()
         end
         return false
+        
     end
     
-    function Grenade:SetVelocity(velocity)
-    
-        Projectile.SetVelocity(self, velocity)
-        
-        if Grenade.kDisableCollisionRange > 0 then
-        
-            if self.physicsBody and not self.collisionDisabled then
-            
-                // exclude all nearby friendly players from collision
-                for index, player in ipairs(GetEntitiesForTeamWithinRange("Player", self:GetTeamNumber(), self:GetOrigin(), Grenade.kDisableCollisionRange)) do
-                    
-                    if player:GetController() then
-                        Shared.SetPhysicsObjectCollisionsEnabled(self.physicsBody, player:GetController(), false)
-                    end
-                
-                end
-
-                self.collisionDisabled = true
-
-            end
-        
-        end
-        
-    end  
-
 end
 
 Shared.LinkClassToMap("Grenade", Grenade.kMapName, networkVars)

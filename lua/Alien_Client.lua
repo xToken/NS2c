@@ -8,6 +8,14 @@
 
 Script.Load("lua/MaterialUtility.lua")
 
+local kEnzymedViewMaterialName = "cinematics/vfx_materials/enzyme_view.material"
+Shared.PrecacheSurfaceShader("cinematics/vfx_materials/enzyme_view.surface_shader")
+
+local kEnzymedThirdpersonMaterialName = "cinematics/vfx_materials/enzyme.material"
+Shared.PrecacheSurfaceShader("cinematics/vfx_materials/enzyme.surface_shader")
+
+local kEmpoweredEffectInterval = 2
+
 local kFirstPersonDeathEffect = PrecacheAsset("cinematics/alien/death_1p_alien.cinematic")
 local kAlienFirstPersonHitEffectName = PrecacheAsset("cinematics/alien/hit_1p.cinematic")
 local screenEffects = { }
@@ -427,6 +435,66 @@ function Alien:OnInitLocalClient()
     
 end
 
+function Alien:UpdateEnzymeEffect(isLocal)
+
+    if self.empoweredClient ~= self.empowered then
+
+        if isLocal then
+        
+            local viewModel= nil        
+            if self:GetViewModelEntity() then
+                viewModel = self:GetViewModelEntity():GetRenderModel()  
+            end
+                
+            if viewModel then
+   
+                if self.empowered then
+                    self.enzymedViewMaterial = AddMaterial(viewModel, kEnzymedViewMaterialName)
+                else
+                
+                    if RemoveMaterial(viewModel, self.enzymedViewMaterial) then
+                        self.enzymedViewMaterial = nil
+                    end
+  
+                end
+            
+            end
+        
+        end
+        
+        local thirdpersonModel = self:GetRenderModel()
+        if thirdpersonModel then
+        
+            if self.empowered then
+                self.enzymedMaterial = AddMaterial(thirdpersonModel, kEnzymedThirdpersonMaterialName)
+            else
+            
+                if RemoveMaterial(thirdpersonModel, self.enzymedMaterial) then
+                    self.enzymedMaterial = nil
+                end
+
+            end
+        
+        end
+        
+        self.empoweredClient = self.empowered
+        
+    end
+
+    // update cinemtics
+    if self.empowered then
+
+        if not self.lastEmpoweredEffect or self.lastEmpoweredEffect + kEmpoweredEffectInterval < Shared.GetTime() then
+        
+            self:TriggerEffects("empower")
+            self.lastEmpoweredEffect = Shared.GetTime()
+        
+        end
+
+    end 
+
+end
+
 function Alien:GetDarkVisionEnabled()
     return self.darkVisionOn
 end
@@ -439,6 +507,8 @@ function Alien:UpdateClientEffects(deltaTime, isLocal)
     if isLocal and not self:GetIsAlive() and self:GetBuyMenuIsDisplaying() then
         self:CloseMenu()
     end
+    
+    self:UpdateEnzymeEffect(isLocal)
     
     if isLocal and self:GetIsAlive() then
     

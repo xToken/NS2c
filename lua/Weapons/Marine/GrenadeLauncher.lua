@@ -8,7 +8,6 @@
 
 Script.Load("lua/Balance.lua")
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
-Script.Load("lua/PickupableWeaponMixin.lua")
 Script.Load("lua/Weapons/Marine/Grenade.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 
@@ -30,16 +29,7 @@ function GrenadeLauncher:OnCreate()
 
     ClipWeapon.OnCreate(self)
     
-    InitMixin(self, PickupableWeaponMixin)
-    
     self.emptyPoseParam = 0
-    
-    if Server then
-    
-        self.lastFiredGrenadeId = Entity.invalidId
-        InitMixin(self, EntityChangeMixin)
-        
-    end
     
 end
 
@@ -160,15 +150,15 @@ local function ShootGrenade(self, player)
     PROFILE("ShootGrenade")
     
     self:TriggerEffects("grenadelauncher_attack")
-    
-    if Server and player then
-    
+
+    if Server or (Client and Client.GetIsControllingPlayer()) then
+
         local viewAngles = player:GetViewAngles()
         local viewCoords = viewAngles:GetCoords()
         
         // Make sure start point isn't on the other side of a wall or object
         local startPoint = player:GetEyePos() - (viewCoords.zAxis * 0.2)
-        local trace = Shared.TraceRay(startPoint, startPoint + viewCoords.zAxis * 25, CollisionRep.Default, PhysicsMask.Bullets, EntityFilterOne(player))
+        local trace = Shared.TraceRay(startPoint, startPoint + viewCoords.zAxis * 25, CollisionRep.Default, PhysicsMask.Bullets, EntityFilterAll())
         
         // make sure the grenades flies to the crosshairs target
         local grenadeStartPoint = player:GetEyePos() + viewCoords.zAxis * 0.65 - viewCoords.xAxis * 0.35 - viewCoords.yAxis * 0.25
@@ -177,30 +167,18 @@ local function ShootGrenade(self, player)
         local grenadeDirection = ConditionalValue(trace.fraction ~= 1, trace.endPoint - grenadeStartPoint, viewCoords.zAxis)
         grenadeDirection:Normalize()
         
-        local grenade = CreateEntity(Grenade.kMapName, grenadeStartPoint, player:GetTeamNumber())
-        
         // Inherit player velocity?
-        local startVelocity = grenadeDirection  
-
-        startVelocity = startVelocity * 15
+        local startVelocity = grenadeDirection * 20
+                
         startVelocity.y = startVelocity.y + 3
         
-        local angles = Angles(0,0,0)
-        angles.yaw = GetYawFromVector(grenadeDirection)
-        angles.pitch = GetPitchFromVector(grenadeDirection)
-        grenade:SetAngles(angles)
-        
-        grenade:Setup(player, startVelocity, true)
-        
-        self.lastFiredGrenadeId = grenade:GetId()
-        
+        local grenade = player:CreatePredictedProjectile("Grenade", grenadeStartPoint, startVelocity, 0.6)
+    
     end
     
     TEST_EVENT("Grenade Launcher primary attack")
     
 end
-
-
 
 function GrenadeLauncher:GetNumStartClips()
     return 2
@@ -215,52 +193,6 @@ function GrenadeLauncher:OnProcessMove(input)
     ClipWeapon.OnProcessMove(self, input)
     self.emptyPoseParam = Clamp(Slerp(self.emptyPoseParam, ConditionalValue(self.clip == 0, 1, 0), input.time * 1), 0, 1)
     
-end
-
-if Server then
-
-    local function DetonateGrenades(self, player)
-    
-        local grenade = Shared.GetEntity(self.lastFiredGrenadeId)  
-        
-        if grenade and grenade:GetCanDetonate() then
-            grenade:Detonate()
-            self.lastFiredGrenadeId = Entity.invalidId
-        end
-    
-    end
-    /*
-    local function DetonateGrenades(self, player)
-    
-        for _, grenade in ipairs( GetEntitiesForTeam("Grenade", player:GetTeamNumber()) ) do
-        
-            if grenade:GetOwner() == player and grenade:GetCanDetonate() then
-                grenade:Detonate()
-            end
-        
-        end
-    
-    end
-    */
-    
-    function GrenadeLauncher:OnEntityChange(oldId, newId)
-    
-        if oldId == self.lastFiredGrenadeId then
-            self.lastFiredGrenadeId = Entity.invalidId
-        end
-    
-    end
-
-    function GrenadeLauncher:OnSecondaryAttack(player)
-
-        local attackAllowed = not self:GetSecondaryAttackRequiresPress() or not player:GetSecondaryAttackLastFrame()
-    
-        if self:GetIsDeployed() and attackAllowed and not self.primaryAttacking then        
-            DetonateGrenades(self, player) 
-        end    
-
-    end
-
 end
 
 if Client then

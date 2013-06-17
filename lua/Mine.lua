@@ -98,7 +98,7 @@ local function Arm(self)
 
     if not self.armed then
         
-        self:AddTimedCallback(function() Detonate(self, Arm) end, kTimeArmed)
+        Detonate(self, Arm)
         
         self:TriggerEffects("mine_arm")
         

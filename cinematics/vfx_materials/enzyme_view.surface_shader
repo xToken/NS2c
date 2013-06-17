@@ -1,0 +1,35 @@
+<shader>
+
+	<inputs>
+
+		<input name="noiseMap" type="texture" address="wrap" />
+		<input name="enzymeTime" type="float" />
+	</inputs>	
+
+	<params>
+
+		<param name="twoSided">false</param>
+		<param name="alphaTest">true</param>	
+	</params>
+	
+	<code>
+	<![CDATA[
+		void MaterialShader(in Material_Input input, inout Material material)
+		{
+		
+			const float3 tint = float3(4, 0, 0);
+
+			float t = time - enzymeTime;
+	
+			float3 noise = tex2D( noiseMap, (input.texCoord + float2(time *-.07, time * .1)) * float2(3, 3.5) ).rgb; 
+			float3 noise2 = tex2D( noiseMap, (input.texCoord + float2(time * .17, time * -.1)) * float2(5, 5.3) ).rgb; 
+			
+		
+			material.emissive = (noise2  * noise ) * tint + float4(1, 0, 0, 1);
+			material.albedo = (noise2  * noise ) * tint;
+			material.opacity = (noise2  * noise ) ;
+		}
+	]]>
+	</code>
+
+</shader>

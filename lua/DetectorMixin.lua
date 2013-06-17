@@ -19,13 +19,12 @@ DetectorMixin.expectedCallbacks =
     
     // Returns 0 if not active currently
     GetDetectionRange = "Return range of the detector.",
-    
+    IsValidDetection = "Used to valid if target should be shown",
     GetOrigin = "Detection origin",
 }
 
 DetectorMixin.optionalCallbacks =
 {
-    IsValidDetection = "Used to valid if target should be shown",
     OnCheckDetectorActive = "Called to check if detector is active.",
     DeCloak = "Should decloak on detection",
 }
@@ -51,13 +50,8 @@ local function PerformDetection(self)
         
         for index, detectable in ipairs(detectables) do
             // Mark them as detected
-            if not self.IsValidDetection or self:IsValidDetection(detectable) then
-                if not self.DeCloak or self:DeCloak() then
-                    detectable:SetDetected(true, true)
-                else
-                    detectable:SetDetected(true, false)
-                end
-                
+            if self:IsValidDetection(detectable) then
+                detectable:SetDetected(true, self.DeCloak and self:DeCloak())                
             end
         
         end

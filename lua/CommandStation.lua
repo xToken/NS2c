@@ -125,10 +125,6 @@ function CommandStation:OnUpdateRender()
             state = kCommandStationState.Locked
         end
         
-        if not PlayerUI_GetHasGameStarted() then
-            state = kCommandStationState.Locked
-        end
-        
         model:SetMaterialParameter("state", state)
         
     end
@@ -138,6 +134,10 @@ end
 local kCommandStationHealthbarOffset = Vector(0, 2, 0)
 function CommandStation:GetHealthbarOffset()
     return kCommandStationHealthbarOffset
+end
+
+function CommandStation:GetDefaultEntryOrigin()
+    return self:GetOrigin() + Vector(1,0,1)
 end
 
 Shared.LinkClassToMap("CommandStation", CommandStation.kMapName, networkVars)

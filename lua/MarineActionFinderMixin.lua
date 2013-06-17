@@ -16,7 +16,7 @@ local function FindNearbyWeapon(self, toPosition)
     local closestDistance = Math.infinity
     for i, nearbyWeapon in ipairs(nearbyWeapons) do
     
-        if nearbyWeapon:isa("Weapon") and nearbyWeapon:GetIsValidRecipient(self) then
+        if nearbyWeapon:isa("Weapon") and nearbyWeapon:GetIsValidRecipient(self, false) then
         
             local nearbyWeaponDistance = (nearbyWeapon:GetOrigin() - toPosition):GetLengthSquared()
             if nearbyWeaponDistance < closestDistance then

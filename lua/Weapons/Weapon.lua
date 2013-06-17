@@ -87,7 +87,7 @@ function Weapon:OnDestroy()
         self.ammoDisplayUI = nil
         
     end
-    
+
 end
 
 function Weapon:GetAnimationGraphName()

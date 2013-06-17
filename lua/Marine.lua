@@ -49,12 +49,13 @@ Marine.kModelName = PrecacheAsset("models/marine/male/male.model")
 Marine.kBlackArmorModelName = PrecacheAsset("models/marine/male/male_special.model")
 Marine.kSpecialEditionModelName = PrecacheAsset("models/marine/male/male_special_v1.model")
 Marine.kMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_graph")
-
+Marine.kGunPickupSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/pickup")
 
 local kFlashlightSoundName = PrecacheAsset("sound/NS2.fev/common/light")
-local kGunPickupSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/pickup")
-local kWalkMaxSpeed = 3.0
-local kRunMaxSpeed = 5.5
+
+local kWalkMaxSpeed = 2.2
+local kCrouchMaxSpeed = 1.6
+local kRunMaxSpeed = 4.9
 local kDoubleJumpMinHeightChange = 0.4
 local kArmorWeldRate = 25
 local kWalkBackwardSpeedScalar = 0.4
@@ -106,6 +107,7 @@ function Marine:OnCreate()
     InitMixin(self, RagdollMixin)   
 	InitMixin(self, WebableMixin)
     InitMixin(self, DevouredMixin)
+		
     if Server then
 
 
@@ -213,6 +215,10 @@ function Marine:DeCloak()
     return false
 end
 
+function Marine:GetJumpMode()
+    return kJumpMode.Queued
+end
+
 function Marine:IsValidDetection(detectable)
     if detectable.GetReceivesStructuralDamage and detectable:GetReceivesStructuralDamage() then
         return false
@@ -297,7 +303,7 @@ function Marine:GetCanRepairOverride(target)
 end
 
 function Marine:GetSlowOnLand()
-    local adjustedy = ConditionalValue(self.crouching, self:GetOrigin().y - 0.5, self:GetOrigin().y)
+    local adjustedy = self:GetOrigin().y
     return ((adjustedy - self.lastjumpheight) <= kDoubleJumpMinHeightChange)
 end
 
@@ -392,7 +398,7 @@ function Marine:HandleButtons(input)
                         
                         self:AddWeapon(nearbyDroppedWeapon, true)
 		                self:SetScoreboardChanged(true)
-		                StartSoundEffectAtOrigin(kGunPickupSound, self:GetOrigin())
+		                StartSoundEffectAtOrigin(Marine.kGunPickupSound, self:GetOrigin())
                         self.timeOfLastPickUpWeapon = Shared.GetTime()
                         
                     end
@@ -428,7 +434,7 @@ function Marine:GetInventorySpeedScalar()
     return 1 - self:GetWeaponsWeight()
 end
 
-function Marine:GoldSrc_GetMaxSpeed(possible)
+function Marine:GetMaxSpeed(possible)
 
     if possible then
         return kRunMaxSpeed
@@ -443,6 +449,10 @@ function Marine:GoldSrc_GetMaxSpeed(possible)
     
     if self.movementModiferState and self:GetIsOnSurface() then
         maxSpeed = kWalkMaxSpeed
+    end
+    
+    if self:GetCrouched() and self:GetIsOnSurface() then
+        maxSpeed = kCrouchMaxSpeed
     end
 
     // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
@@ -461,16 +471,6 @@ end
 // Maximum speed a player can move backwards
 function Marine:GetMaxBackwardSpeedScalar()
     return kWalkBackwardSpeedScalar
-end
-
-function Marine:OnClampSpeed(input, velocity)
-    // Players moving backwards can't go full speed.
-    if input.move.z < 0 and self:GetIsOnGround() then
-        local moveSpeed = velocity:GetLengthXZ()
-        local maxSpeed = self:GoldSrc_GetMaxSpeed()
-        maxSpeed = maxSpeed * self:GetMaxBackwardSpeedScalar()
-        velocity:Scale(maxSpeed / moveSpeed)
-    end
 end
 
 function Marine:GetCanBeWeldedOverride()
@@ -495,7 +495,7 @@ function Marine:GetCatalystFireModifier()
     local weapon = self:GetActiveWeapon()    
     if weapon ~= nil then
         if weapon.kMapName == "shotgun" then
-            return ConditionalValue(self:GetHasCatpackBoost(), 1.69, 1.3)
+            return ConditionalValue(self:GetHasCatpackBoost(), 1.89, 1.5)
         end
     end
     

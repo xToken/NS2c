@@ -194,7 +194,7 @@ if Server then
             if not blip then
             
                 blip = CreateEntity(SensorBlip.kMapName)
-                blip:UpdateRelevancy(self:GetTeamNumber())
+                blip:UpdateRelevancy(GetEnemyTeamNumber(self:GetTeamNumber()))
                 self.sensorBlipId = blip:GetId()
                 
             end

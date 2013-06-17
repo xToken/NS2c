@@ -44,7 +44,7 @@ end
 
 function Ability:GetHasAttackDelay(self, player)
 
-    local attackDelay = ConditionalValue( player:GetIsPrimaled(), (self:GetAttackDelay() / kPrimalScreamROFIncrease), self:GetAttackDelay())
+    local attackDelay = self:GetAttackDelay() / player:GetAttackSpeed()
     if self:GetAbilityUsesFocus() then
         local upg, level = GetHasFocusUpgrade(player)
         if upg and level > 0 then

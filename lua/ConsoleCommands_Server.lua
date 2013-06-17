@@ -42,7 +42,7 @@ function OnCommandKill(client)
             end
 			client.timeLastKillCommand = Shared.GetTime()
             player:AddTimedCallback(OnKillPlayer, kKillDelay)
-            
+            Server.SendNetworkMessage(client, "Chat", BuildChatMessage(false, "Notification", -1, kTeamReadyRoom, kNeutralTeamType, "You will sucide in 3 seconds."), true)
         end
         
     end
