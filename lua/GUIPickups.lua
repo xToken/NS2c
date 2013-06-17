@@ -23,7 +23,7 @@ local function GetNearbyPickups()
         local function PickupableFilterFunction(entity)
         
             local sameTeam = entity:GetTeamNumber() == team
-            local canPickup = entity:GetIsValidRecipient(localPlayer)
+            local canPickup = entity:GetIsValidRecipient(localPlayer, false)
             return sameTeam and canPickup
             
         end

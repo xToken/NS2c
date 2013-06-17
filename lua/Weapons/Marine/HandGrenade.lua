@@ -5,8 +5,9 @@ Script.Load("lua/Weapons/Projectile.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/DamageMixin.lua")
+Script.Load("lua/Weapons/PredictedProjectile.lua")
 
-class 'HandGrenade' (Projectile)
+class 'HandGrenade' (PredictedProjectile)
 
 HandGrenade.kMapName = "handgrenade"
 HandGrenade.kModelName = PrecacheAsset("models/marine/rifle/rifle_grenade.model")
@@ -20,18 +21,40 @@ AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 
+-- Blow up after a time.
+local function UpdateLifetime(self)
+
+    // Grenades are created in predict movement, so in order to get the correct
+    // lifetime, we start counting our lifetime from the first UpdateLifetime rather than when
+    // we were created
+    if not self.endOfLife then
+        self.endOfLife = Shared.GetTime() + kHandGrenadesLifetime
+    end
+
+    if self.endOfLife <= Shared.GetTime() then
+    
+        self:Detonate(nil)
+        return false
+        
+    end
+    
+    return true
+    
+end
+
 function HandGrenade:OnCreate()
 
-    Projectile.OnCreate(self)
+    PredictedProjectile.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ModelMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
     
-    // don't start our lifetime from here, start it from the first actual tick the grenade exists.
-    self:SetNextThink(0.01)
-    self.endOfLife = nil
+    if Server then
+        self:AddTimedCallback(UpdateLifetime, 0.1)
+        self.endOfLife = nil
+    end
     
 end
 
@@ -47,39 +70,33 @@ function HandGrenade:GetDamageType()
     return kHandGrenadesDamageType
 end
 
-if Server then
+function HandGrenade:ProcessHit(targetHit, surface)
 
-    function HandGrenade:ProcessHit(targetHit, surface)
-        if targetHit and (HasMixin(targetHit, "Live") and GetGamerules():CanEntityDoDamageTo(self, targetHit)) and self:GetOwner() ~= targetHit then
-            self:Detonate(targetHit)            
+    if targetHit and GetAreEnemies(self, targetHit) then
+    
+        if Server then
+            self:Detonate(targetHit)
         else
-            if self:GetVelocity():GetLength() > 2 then
-                self:TriggerEffects("grenade_bounce")
-            end
-        end
-        
+            return true
+        end    
+    
     end
 
-    // Blow up after a time
-    function HandGrenade:OnThink()
+    if Server then
     
-        // Grenades are created in predict movement, so in order to get the correct
-        // lifetime, we start counting our lifetime from the first OnThink rather than when
-        // we were created
-        if not self.endOfLife then
-            self.endOfLife = Shared.GetTime() + kHandGrenadesLifetime
-        end
-    
-        local delta = self.endOfLife - Shared.GetTime()
-        if delta > 0 then
-            self:SetNextThink(delta)
-         else
-            self:Detonate(nil)
+        if self:GetVelocity():GetLength() > 2 then
+            self:TriggerEffects("grenade_bounce")
         end
         
     end
     
-    function HandGrenade:Detonate(targetHit)
+    return false
+    
+end
+
+if Server then
+    
+    function HandGrenade:Detonate(targetHit)       
     
         // Do damage to nearby targets.
         local hitEntities
@@ -91,6 +108,13 @@ if Server then
 		
         // Remove grenade and add firing player.
         table.removevalue(hitEntities, self)
+        
+        // full damage on direct impact
+        if targetHit then
+            table.removevalue(hitEntities, targetHit)
+            self:DoDamage(kHandGrenadesDamage, targetHit, targetHit:GetOrigin(), GetNormalizedVector(targetHit:GetOrigin() - self:GetOrigin()), "none")
+        end        
+        
         local owner = self:GetOwner()
         // It is possible this grenade does not have an owner.
         if owner then
@@ -109,42 +133,16 @@ if Server then
         
         self:TriggerEffects("grenade_explode", params)
         
+        CreateExplosionDecals(self)
+                
         DestroyEntity(self)
         
     end
     
     function HandGrenade:GetCanDetonate()
-        if self.creationTime then
-            return true
-        end
-        return false
+        return true
     end
     
-    function HandGrenade:SetVelocity(velocity)
-    
-        Projectile.SetVelocity(self, velocity)
-        
-        if HandGrenade.kDisableCollisionRange > 0 then
-        
-            if self.physicsBody and not self.collisionDisabled then
-            
-                // exclude all nearby friendly players from collision
-                for index, player in ipairs(GetEntitiesForTeamWithinRange("Player", self:GetTeamNumber(), self:GetOrigin(), HandGrenade.kDisableCollisionRange)) do
-                    
-                    if player:GetController() then
-                        Shared.SetPhysicsObjectCollisionsEnabled(self.physicsBody, player:GetController(), false)
-                    end
-                
-                end
-
-                self.collisionDisabled = true
-
-            end
-        
-        end
-        
-    end  
-
 end
 
 Shared.LinkClassToMap("HandGrenade", HandGrenade.kMapName, networkVars)

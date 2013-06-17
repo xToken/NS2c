@@ -36,13 +36,15 @@ local kWelderEffectRate = 1.0
 
 local kFireLoopingSound = PrecacheAsset("sound/NS2.fev/marine/welder/weld")
 
+AddMixinNetworkVars(PickupableWeaponMixin, networkVars)
+
 function Welder:OnCreate() 
 
     Weapon.OnCreate(self)
     
     self.welding = false
     
-    InitMixin(self, PickupableWeaponMixin, { kRecipientType = "Marine" })
+    InitMixin(self, PickupableWeaponMixin)
     
     self.loopingSoundEntId = Entity.invalidId
     
@@ -109,6 +111,15 @@ function Welder:OnDraw(player, previousWeaponMapName)
     
 end
 
+function Welder:GetCheckForRecipient()
+    return false
+end
+
+function Welder:OnTouch(recipient)
+    recipient:AddWeapon(self, true)
+    StartSoundEffectAtOrigin(Marine.kGunPickupSound, recipient:GetOrigin())
+end
+
 // for marine third person model pose, "builder" fits perfectly for this.
 function Welder:OverrideWeaponName()
     return "builder"
@@ -170,10 +181,11 @@ end
 function Welder:Dropped(prevOwner)
 
     Weapon.Dropped(self, prevOwner)
-    
+    self.droppedtime = Shared.GetTime()
     if Server then
         self.loopingFireSound:Stop()
     end
+    self:RestartPickupScan()
     
 end
 
@@ -267,6 +279,15 @@ end
 
 function Welder:OnUpdateRender()
 
+    Weapon.OnUpdateRender(self)
+    
+    if self.ammoDisplayUI then
+    
+        local progress = PlayerUI_GetUnitStatusPercentage()
+        self.ammoDisplayUI:SetGlobal("weldPercentage", progress)
+        
+    end
+    
     local parent = self:GetParent()
     if parent and self.welding then
 

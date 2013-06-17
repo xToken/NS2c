@@ -11,6 +11,7 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Weapon.lua")
+Script.Load("lua/PickupableWeaponMixin.lua")
 Script.Load("lua/Weapons/BulletsMixin.lua")
 
 PrecacheAsset("cinematics/materials/umbra/ricochet.cinematic")
@@ -47,6 +48,8 @@ ClipWeapon.kCone10Degrees = Math.Radians(10)
 ClipWeapon.kCone15Degrees = Math.Radians(15)
 ClipWeapon.kCone20Degrees = Math.Radians(20)
 
+AddMixinNetworkVars(PickupableWeaponMixin, networkVars)
+
 function ClipWeapon:OnCreate()
 
     Weapon.OnCreate(self)
@@ -59,6 +62,7 @@ function ClipWeapon:OnCreate()
     self.deployed = false
 
     InitMixin(self, BulletsMixin)
+    InitMixin(self, PickupableWeaponMixin)
     
 end
 
@@ -162,6 +166,15 @@ end
 
 function ClipWeapon:GetMaxAmmo()
     return 5 * self:GetClipSize()
+end
+
+function ClipWeapon:GetCheckForRecipient()
+    return false
+end
+
+function ClipWeapon:OnTouch(recipient)
+    recipient:AddWeapon(self, true)
+    StartSoundEffectAtOrigin(Marine.kGunPickupSound, recipient:GetOrigin())
 end
 
 // Return world position of gun barrel, used for weapon effects.
@@ -607,6 +620,8 @@ if Server then
             
         end
         
+        self.droppedtime = Shared.GetTime()
+        self:RestartPickupScan()
     end
     
 elseif Client then

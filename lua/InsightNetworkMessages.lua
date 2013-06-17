@@ -56,20 +56,26 @@ function BuildTechPointsMessage(techPoint)
     if structure then
 
         t.teamNumber = structure:GetTeamNumber()
-        t.techId     = structure:GetTechId()
+        t.techId = structure:GetTechId()
         if structure:GetIsAlive() then
-            t.builtFraction = structure:GetBuiltFraction()
+        
+            -- Structure may not have a GetBuiltFraction() function (Hallucinations for example).
+            t.builtFraction = structure.GetBuiltFraction and structure:GetBuiltFraction() or -1
             t.healthFraction= structure:GetHealthScalar()
+            
         else
+        
             t.builtFraction = -1
             t.healthFraction= -1
+            
         end
+        
         return t
-
+        
     end
     
     return t
-
+    
 end
 
 Shared.RegisterNetworkMessage( "TechPoints", kTechPointsMessage )

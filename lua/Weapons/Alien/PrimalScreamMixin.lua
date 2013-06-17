@@ -29,7 +29,7 @@ local function TriggerPrimal(self, lerk)
             end
             if player.SetPrimalScream then
                 player:SetPrimalScream(kPrimalScreamDuration)
-                player:TriggerEffects("enzymed")
+                //player:TriggerEffects("enzymed")
             end            
         end
     end

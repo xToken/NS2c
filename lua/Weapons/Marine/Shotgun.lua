@@ -9,7 +9,6 @@
 
 Script.Load("lua/Balance.lua")
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
-Script.Load("lua/PickupableWeaponMixin.lua")
 
 class 'Shotgun' (ClipWeapon)
 
@@ -60,8 +59,6 @@ function Shotgun:OnCreate()
 
     ClipWeapon.OnCreate(self)
     
-    InitMixin(self, PickupableWeaponMixin)
-    
     self.emptyPoseParam = 0
 
 end
@@ -90,6 +87,10 @@ end
 
 function Shotgun:GetHUDSlot()
     return kPrimaryWeaponSlot
+end
+
+function Shotgun:GetNumStartClips()
+    return 2
 end
 
 function Shotgun:GetClipSize()
@@ -213,7 +214,6 @@ function Shotgun:FirePrimary(player)
     viewAngles.roll = NetworkRandom() * math.pi * 2
     
     local viewCoords = viewAngles:GetCoords()
-    
     
     // Filter ourself out of the trace so that we don't hit ourselves.
     local filter = EntityFilterTwo(player, self)

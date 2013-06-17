@@ -499,8 +499,9 @@ function PlayingTeam:GetHasTeamLost()
         local abilityToRespawn = self:GetHasAbilityToRespawn()
         local numAliveCommandStructures = self:GetNumAliveCommandStructures()
         
-        if not abilityToRespawn and not activePlayers or self:GetNumPlayers() == 0 then
+        if not abilityToRespawn and not activePlayers or self:GetNumPlayers() == 0 or self:GetHasConceded() then
             return true
+            
         end
         
     end
@@ -761,10 +762,7 @@ function PlayingTeam:Update(timePassed)
         self:UpdateResourceTowers()
 
         if #gServerBots > 0 then
-
-
-            self.brain:Update(timePassed)
-
+            self:GetTeamBrain():Update(timePassed)
         end
 
     else

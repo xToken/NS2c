@@ -9,8 +9,6 @@
 // Set the name of the VM for debugging
 decoda_name = "Client"
 
-Script.Load("lua/PreLoadMod.lua")
-
 Script.Load("lua/ClientResources.lua")
 Script.Load("lua/Shared.lua")
 Script.Load("lua/Effect.lua")
@@ -1092,5 +1090,3 @@ function()
         DebugPrint("active weapon id = %d", player.activeWeaponId )
     end
 end)
-
-Script.Load("lua/PostLoadMod.lua")

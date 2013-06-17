@@ -287,7 +287,7 @@ function GetIsBuildLegal(techId, position, angle, snapRadius, player, ignoreEnti
     
     BuildUtility_Print("CheckBuildEntityRequirements legal: %s", ToString(legalBuild))
     
-    if legalBuild then
+    if legalBuild and (not ignoreChecks or ignoreChecks["TechAvailable"] ~= true) then
     
         legalBuild = legalBuild and CheckBuildTechAvailable(techId, teamNumber)
         

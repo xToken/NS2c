@@ -222,10 +222,6 @@ function Hive:GetShowUnitStatusForOverride(forEntity)
     return not GetAreEnemies(self, forEntity)
 end
 
-function Hive:ConstructOverride(deltaTime)
-    return deltaTime
-end
-
 function Hive:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Hive:OnUpdateAnimationInput")

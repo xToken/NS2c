@@ -16,7 +16,7 @@ kHeavyArmorHealth = 100  kHeavyArmorArmor = 200 kHeavyArmorPointValue = 2
 kSkulkHealth = 70	kSkulkArmor = 10	kSkulkPointValue = 2
 kGorgeHealth = 150	kGorgeArmor = 70	kGorgePointValue = 2
 kLerkHealth = 125	kLerkArmor = 30	    kLerkPointValue = 2
-kFadeHealth = 250	kFadeArmor = 150	kFadePointValue = 2
+kFadeHealth = 300	kFadeArmor = 150	kFadePointValue = 2
 kOnosHealth = 950	kOnosArmor = 700	kOnosPointValue = 2
 
 kEggHealth = 200	kEggArmor = 0    	kEggPointValue = 0
@@ -32,11 +32,11 @@ kRepairMarineArmorPointValue = 1
 kSkulkArmorFullyUpgradedAmount = 30
 kGorgeArmorFullyUpgradedAmount = 120
 kLerkArmorFullyUpgradedAmount = 50
-kFadeArmorFullyUpgradedAmount = 220
+kFadeArmorFullyUpgradedAmount = 250
 kOnosArmorFullyUpgradedAmount = 900
 
 kHealthPointsPerArmorScalarHive1 = 2
-kHealthPointsPerArmorScalarHive2 = 2.5
+kHealthPointsPerArmorScalarHive2 = 2
 kHealthPointsPerArmorScalarHive3 = 3
 
 // used for structures

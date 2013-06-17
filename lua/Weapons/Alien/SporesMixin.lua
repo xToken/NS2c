@@ -36,7 +36,7 @@ end
 
 local function GetHasAttackDelay(self, player)
 
-    local attackDelay = ConditionalValue( player:GetIsPrimaled(), (kSporeAttackDelay / kPrimalScreamROFIncrease), kSporeAttackDelay)
+    local attackDelay = kSporeAttackDelay / player:GetAttackSpeed()
     return self.lastSecondaryAttackTime + attackDelay > Shared.GetTime()
     
 end

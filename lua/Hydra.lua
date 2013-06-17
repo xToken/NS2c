@@ -200,10 +200,6 @@ function Hydra:GetCanSleep()
     return not self.alerting and not self.attacking
 end
 
-function Hydra:ConstructOverride(deltaTime)
-    return deltaTime / 2
-end
-
 function Hydra:GetMinimumAwakeTime()
     return 10
 end

@@ -8,7 +8,6 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
-Script.Load("lua/PickupableWeaponMixin.lua")
 
 class 'Pistol' (ClipWeapon)
 
@@ -40,8 +39,6 @@ end
 function Pistol:OnCreate()
 
     ClipWeapon.OnCreate(self)
-    
-    InitMixin(self, PickupableWeaponMixin)
     
     self.altMode = false
     self.emptyPoseParam = 0

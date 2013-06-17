@@ -138,7 +138,7 @@ function TeamInfo:OnCreate()
         self.researchDisplayTime = 0
         self.lastTechPriority = 0
         self.lastCommPingTime = 0
-        self.lastCommPingPosition = 0
+        self.lastCommPingPosition = Vector(0,0,0)
         self.totalTeamResources = 0
         self.techActiveMask = 0
         self.techOwnedMask = 0
@@ -162,7 +162,7 @@ if Server then
         self.researchDisplayTime = 0
         self.lastTechPriority = 0
         self.lastCommPingTime = 0
-        self.lastCommPingPosition = 0
+        self.lastCommPingPosition = Vector(0,0,0)
         self.totalTeamResources = 0
         self.techActiveMask = 0
         self.techOwnedMask = 0
@@ -229,7 +229,7 @@ local function UpdateInfo(self)
             self.numCapturedTechPoint = team:GetNumCapturedTechPoints()
             
             self.lastCommPingTime = team:GetCommanderPingTime()
-            self.lastCommPingPosition = team:GetCommanderPingPosition()
+            self.lastCommPingPosition = team:GetCommanderPingPosition() or Vector(0,0,0)
                        
         end
         

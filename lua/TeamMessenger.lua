@@ -11,7 +11,7 @@ kTeamMessageTypes = enum({ 'GameStarted', 'PowerLost', 'PowerRestored', 'Eject',
                            'HiveConstructed', 'HiveLowHealth', 'HiveKilled',
                            'CommandStationUnderAttack', 'IPUnderAttack', 'HiveUnderAttack', 'HiveInDanger',
                            'PowerPointUnderAttack', 'Beacon', 'NoCommander', 'TeamsUnbalanced',
-                           'TeamsBalanced'})
+                           'TeamsBalanced', 'GameStartCommanders'})
 
 local kTeamMessages = { }
 
@@ -61,6 +61,8 @@ kTeamMessages[kTeamMessageTypes.TeamsUnbalanced] = { text = { [kMarineTeamType] 
 
 kTeamMessages[kTeamMessageTypes.TeamsBalanced] = { text = { [kMarineTeamType] = "TEAMS_BALANCED", [kAlienTeamType] = "TEAMS_BALANCED" } }
 
+kTeamMessages[kTeamMessageTypes.GameStartCommanders] = { text = { [kMarineTeamType] = kNS2cLocalizedStrings.GAME_START_COMMANDERS, [kAlienTeamType] = kNS2cLocalizedStrings.GAME_START_COMMANDERS } }
+
 // Silly name but it fits the convention.
 local kTeamMessageMessage =
 {
@@ -92,17 +94,11 @@ if Server then
      * Sends every player on the passed in team the passed in message for display.
      */
     function SendTeamMessage(team, messageType, optionalData)
-    
-        if GetGamerules():GetGameStarted() then
-        
-            local function SendToPlayer(player)
-                Server.SendNetworkMessage(player, "TeamMessage", { type = messageType, data = optionalData or 0 }, true)
-            end
-            
-            team:ForEachPlayer(SendToPlayer)
-            
+        local function SendToPlayer(player)
+            Server.SendNetworkMessage(player, "TeamMessage", { type = messageType, data = optionalData or 0 }, true)
         end
         
+        team:ForEachPlayer(SendToPlayer)        
     end
     
     /**

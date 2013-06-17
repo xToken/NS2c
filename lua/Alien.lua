@@ -13,6 +13,7 @@ Script.Load("lua/ScoringMixin.lua")
 Script.Load("lua/Alien_Upgrade.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/EnergizeMixin.lua")
+Script.Load("lua/EmpowerMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CombatMixin.lua")
@@ -71,6 +72,7 @@ local networkVars =
 
 AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(EnergizeMixin, networkVars)
+AddMixinNetworkVars(EmpowerMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
@@ -83,6 +85,7 @@ function Alien:OnCreate()
     InitMixin(self, DetectorMixin)
     InitMixin(self, AlienActionFinderMixin)
     InitMixin(self, EnergizeMixin)
+    InitMixin(self, EmpowerMixin)
     InitMixin(self, CombatMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, SelectableMixin)
@@ -305,9 +308,7 @@ function Alien:GetCarapaceFraction()
 end
 
 function Alien:GetCarapaceMovementScalar()
-
     return 1
-
 end
 
 function Alien:GetHasOneHive()
@@ -461,7 +462,7 @@ function Alien:HandleButtons(input)
 end
 
 function Alien:GetIsCamouflaged()
-    return GetHasCamouflageUpgrade(self) and not self:GetIsInCombat()
+    return GetHasGhostUpgrade(self) and not self:GetIsInCombat()
 end
 
 function Alien:GetNotEnoughResourcesSound()
@@ -521,14 +522,6 @@ end
 function Alien:OnCatalystEnd()
 end
 
-function Alien:GetCanTakeDamageOverride()
-    return Player.GetCanTakeDamageOverride(self)
-end
-
-function Alien:GoldSrc_GetAcceleration()
-    return Player.GoldSrc_GetAcceleration(self) * self:GetMovementSpeedModifier()
-end
-
 function Alien:GetCeleritySpeedModifier()
     return kCeleritySpeedModifier
 end
@@ -536,11 +529,9 @@ end
 function Alien:GetCelerityScalar()
     local hasupg, level = GetHasCelerityUpgrade(self)
     if hasupg then
-        return 1 + ((self:GetCeleritySpeedModifier() / 3) * level)
+        return ((self:GetCeleritySpeedModifier() / 3) * level)
     end
-    
-    return 1
-
+    return 0
 end
 
 function Alien:GetMovementSpeedModifier()
@@ -564,11 +555,30 @@ end
 function Alien:OnHiveTeleport()
 end
 
+function Alien:GetBaseAttackSpeed()
+    return 1
+end
+
+function Alien:GetAttackSpeedModifiers()
+    local as = 1
+    if self:GetIsPrimaled() then
+        as = as + kPrimalScreamROFIncrease
+    end
+    if self:GetIsEmpowered() then
+        as = as + kEmpoweredROFIncrease
+    end
+    return as
+end
+
+function Alien:GetAttackSpeed()
+    return self:GetBaseAttackSpeed() * self:GetAttackSpeedModifiers()
+end
+
 function Alien:OnUpdateAnimationInput(modelMixin)
 
     Player.OnUpdateAnimationInput(self, modelMixin)
     
-    modelMixin:SetAnimationInput("attack_speed", self:GetIsPrimaled() and kPrimalScreamROFIncrease or 1)
+    modelMixin:SetAnimationInput("attack_speed", self:GetAttackSpeed())
     
 end
 

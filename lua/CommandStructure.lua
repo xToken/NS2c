@@ -129,4 +129,9 @@ function CommandStructure:GetCanBeUsedConstructed()
     return not self:GetIsOccupied()
 end
 
+// allow players to enter the hives before game start to signal that they want to command
+function CommandStructure:GetUseAllowedBeforeGameStart()
+    return true
+end
+
 Shared.LinkClassToMap("CommandStructure", CommandStructure.kMapName, networkVars, true)

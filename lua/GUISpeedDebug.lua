@@ -46,20 +46,40 @@ function GUISpeedDebug:Initialize()
     self.debugText:SetFontSize(18)
     self.debugText:SetPosition(Vector(80, -gFractionBarHeight, 0))
     
+    self.OnSurface = GetGUIManager():CreateTextItem()
+    self.OnSurface:SetFontSize(18)
+    self.OnSurface:SetPosition(Vector(40, -95, 0))
+    
     self.OnGround = GetGUIManager():CreateTextItem()
     self.OnGround:SetFontSize(18)
     self.OnGround:SetPosition(Vector(40, -80, 0))
     
-    self.OnWall = GetGUIManager():CreateTextItem()
-    self.OnWall:SetFontSize(18)
-    self.OnWall:SetPosition(Vector(40, -60, 0))
+    self.Friction = GetGUIManager():CreateTextItem()
+    self.Friction:SetFontSize(18)
+    self.Friction:SetPosition(Vector(40, -65, 0))
+    
+    self.MaxSpeed = GetGUIManager():CreateTextItem()
+    self.MaxSpeed:SetFontSize(18)
+    self.MaxSpeed:SetPosition(Vector(40, -50, 0))
+    
+    self.Landed = GetGUIManager():CreateTextItem()
+    self.Landed:SetFontSize(18)
+    self.Landed:SetPosition(Vector(40, -35, 0))
+    
+    self.Accel = GetGUIManager():CreateTextItem()
+    self.Accel:SetFontSize(18)
+    self.Accel:SetPosition(Vector(40, -20, 0))
     
     self.momentumBackGround:AddChild(self.momentumFraction)
     self.momentumBackGround:AddChild(self.xzSpeed)
     self.momentumBackGround:AddChild(self.currentFractionBg)
     self.momentumBackGround:AddChild(self.debugText)
+    self.momentumBackGround:AddChild(self.OnSurface)
     self.momentumBackGround:AddChild(self.OnGround)
-    self.momentumBackGround:AddChild(self.OnWall)
+    self.momentumBackGround:AddChild(self.Friction)
+    self.momentumBackGround:AddChild(self.MaxSpeed)
+    self.momentumBackGround:AddChild(self.Landed)
+    self.momentumBackGround:AddChild(self.Accel)
     
     Print("enabled speed meter")
 
@@ -76,8 +96,8 @@ function GUISpeedDebug:Uninitialize()
 
 end
 
-function GUISpeedDebug:SetDebugText(text)
-    self.debugText:SetText(text)
+function GUISpeedDebug:SetDebugText(text, text2)
+    self.Landed:SetText(string.format( "Landed This Frame : %s : With force : %s", text, text2))
 end
 
 function GUISpeedDebug:Update(deltaTime)
@@ -88,7 +108,7 @@ function GUISpeedDebug:Update(deltaTime)
 
         local velocity = player:GetVelocity()
         local speed = velocity:GetLengthXZ()
-        local bonusSpeedFraction = speed / player:GoldSrc_GetMaxSpeed()
+        local bonusSpeedFraction = speed / player:GetMaxSpeed()
         local currentFraction = player:GetSpeedDebugSpecial() 
         
         local input = ""
@@ -98,8 +118,12 @@ function GUISpeedDebug:Update(deltaTime)
 
         self.momentumFraction:SetSize(Vector(gMomentumBarWidth * bonusSpeedFraction, 30, 0))
         self.xzSpeed:SetText( string.format( "current speed: %s  vertical speed: %s %s", ToString(RoundVelocity(speed)), ToString(RoundVelocity(velocity.y)), input ) )
+        self.OnSurface:SetText( string.format( "OnSurface : %s", ToString(player:GetIsOnSurface()) ) )
         self.OnGround:SetText( string.format( "OnGround : %s", ToString(player:GetIsOnGround()) ) )
-        self.OnWall:SetText( string.format( "OnWall : %s", ToString(player:GetIsOnSurface()) ) )
+        self.Friction:SetText( string.format( "Friction : %s", ToString(player:GetGroundFriction()) ) )
+        self.MaxSpeed:SetText( string.format( "MaxSpeed : %s", ToString(player:GetMaxSpeed()) ) )
+        self.Landed:SetText( string.format( "Landed This Frame : %s : With force : %s", ToString(player:GetHasLandedThisFrame()), ToString(player:GetLastImpactForce()) ) )
+        self.Accel:SetText( string.format( "Accel : %s", ToString(player:GetAcceleration()) ) )
         
         if currentFraction then
             self.currentFraction:SetSize(Vector(15, -gFractionBarHeight * currentFraction, 0))

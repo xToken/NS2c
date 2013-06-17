@@ -57,7 +57,9 @@ function Weapon:SetWeaponWorldState(state)
             end
             
             self.weaponWorldStateTime = Shared.GetTime()
-            self:GetTeam():RegisterDroppedWeapon(self:GetId())
+            if self:GetTeam().RegisterDroppedWeapon then
+                self:GetTeam():RegisterDroppedWeapon(self:GetId())
+            end
             self:SetIsVisible(true)
             
         else
