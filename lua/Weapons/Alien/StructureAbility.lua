@@ -30,7 +30,7 @@ function StructureAbility:GetIsPositionValid(displayOrigin, player, normal, last
     local coords
     checkBypass["ValidExit"] = true
     checkBypass["TechAvailable"] = true
-    local validBuild, legalPosition, attachEntity, errorString = GetIsBuildLegal(self:GetDropStructureId(), displayOrigin, player:GetViewCoords().zAxis, self:GetDropRange(), player, false, checkBypass)
+    local validBuild, legalPosition, attachEntity, errorString = GetIsBuildLegal(self:GetDropStructureId(), displayOrigin, player:GetViewCoords().zAxis, self:GetDropRange(), player, player, checkBypass)
     if attachEntity then
         coords = attachEntity:GetAngles():GetCoords()
         coords.origin = legalPosition
