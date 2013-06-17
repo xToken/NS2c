@@ -54,7 +54,7 @@ end
 function AcidRocket:OnPrimaryAttack(player)
 
     if player:GetEnergy() >= self:GetEnergyCost() and Shared.GetTime() > (self.lastPrimaryAttackTime + self:GetPrimaryAttackDelay()) then
-        if not Predict then
+        if Server or (Client and Client.GetIsControllingPlayer()) then
             self:FireRocketProjectile(player)
         end
         self.lastPrimaryAttackTime = Shared.GetTime()

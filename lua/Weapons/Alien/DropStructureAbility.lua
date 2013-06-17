@@ -22,11 +22,13 @@ DropStructureAbility.kMapName = "drop_structure_ability"
 
 local kCreateFailSound = PrecacheAsset("sound/NS2.fev/alien/gorge/create_fail")
 local kAnimationGraph = PrecacheAsset("models/alien/gorge/gorge_view.animation_graph")
+local kDropCooldown = 1
 
 DropStructureAbility.kSupportedStructures = { CragStructureAbility, ShiftStructureAbility, ShadeStructureAbility, WhipStructureAbility, HarvesterStructureAbility, HiveStructureAbility, HydraStructureAbility, WebsAbility }
 
 local networkVars =
 {
+    lastPrimaryAttackTime = "time"
 }
 
 function DropStructureAbility:GetAnimationGraphName()
@@ -51,6 +53,7 @@ function DropStructureAbility:OnCreate()
     self.mouseDown = false
     self.activeStructure = nil
 	self.lastClickedPosition = nil
+    self.lastPrimaryAttackTime = 0
     if Server then
         self.lastCreatedId = Entity.invalidId
     end
@@ -131,6 +134,10 @@ function DropStructureAbility:GetHUDSlot()
     return 2
 end
 
+function DropStructureAbility:GetHasDropCooldown()
+    return self.timeLastDrop ~= nil and self.timeLastDrop + kDropCooldown > Shared.GetTime()
+end
+
 function DropStructureAbility:GetHasSecondary(player)
     return true
 end
@@ -169,7 +176,7 @@ function DropStructureAbility:PerformPrimaryAttack(player)
 
             // Ensure they have enough resources.
             local cost = GetCostForTech(self:GetActiveStructure().GetDropStructureId())
-            if player:GetResources() >= cost then
+            if player:GetResources() >= cost and not self:GetHasDropCooldown() then
 
                 local message = BuildGorgeDropStructureMessage(player:GetEyePos(), player:GetViewCoords().zAxis, self.activeStructure, self.lastClickedPosition)
                 Client.SendNetworkMessage("GorgeBuildStructure", message, true)
@@ -214,7 +221,7 @@ local function DropStructure(self, player, origin, direction, structureAbility, 
         local enoughRes = player:GetResources() >= cost
         local enoughEnergy = player:GetEnergy() >= kDropStructureEnergyCost
         
-        if valid and enoughRes and structureAbility:IsAllowed(player) and enoughEnergy then
+        if valid and enoughRes and structureAbility:IsAllowed(player) and enoughEnergy and not self:GetHasDropCooldown() then
         
             // Create structure
             local structure = self:CreateStructure(coords, player, structureAbility)
@@ -395,7 +402,7 @@ function DropStructureAbility:OnUpdateAnimationInput(modelMixin)
 end
 
 function DropStructureAbility:GetShowGhostModel()
-    return self.activeStructure ~= nil
+    return self.activeStructure ~= nil and not self:GetHasDropCooldown() 
 end
 
 function DropStructureAbility:GetGhostModelCoords()

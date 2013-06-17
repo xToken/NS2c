@@ -70,7 +70,9 @@ function BileBomb:OnTag(tagName)
         
         if player then
         
-            self:FireBombProjectile(player)
+            if Server or (Client and Client.GetIsControllingPlayer()) then
+                self:FireBombProjectile(player)
+            end
             
             player:DeductAbilityEnergy(self:GetEnergyCost())            
             self.timeLastBileBomb = Shared.GetTime()
