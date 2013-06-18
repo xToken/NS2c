@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Cant buy jetpacks
+
 /**
  * Don't allow purchase of jetpack when the Marine already has a Jetpack.
  */

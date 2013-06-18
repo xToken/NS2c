@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed powerpoint lights
+
 // Set the name of the VM for debugging
 decoda_name = "Client"
 
@@ -348,6 +351,10 @@ function SetCommanderPropState(isComm)
 
 end
 
+local kAmbientTrackTime = 300
+local lastAmbientUpdate = math.random(1, kAmbientTrackTime)
+local kAmbientMusicTracks = 5
+
 function UpdateAmbientSounds(deltaTime)
     
     PROFILE("Client:UpdateAmbientSounds")
@@ -356,6 +363,14 @@ function UpdateAmbientSounds(deltaTime)
     for index = 1,#ambientSoundList do
         local ambientSound = ambientSoundList[index]
         ambientSound:OnUpdate(deltaTime)
+    end
+    
+    if lastAmbientUpdate < Shared.GetTime() then
+        local localPlayer = Client.GetLocalPlayer()
+        if localPlayer then
+            localPlayer:TriggerEffects("ambient_music", { track = math.random(1, kAmbientMusicTracks)})
+        end
+        lastAmbientUpdate = Shared.GetTime() + kAmbientTrackTime
     end
     
 end

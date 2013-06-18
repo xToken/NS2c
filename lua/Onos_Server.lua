@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Changes to weapons
+
 function Onos:InitWeapons()
 
     Alien.InitWeapons(self)

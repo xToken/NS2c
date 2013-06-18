@@ -33,9 +33,6 @@ HeavyArmorMarine.kModelName = PrecacheAsset("models/marine/heavyarmor/heavyarmor
 local kHeavyArmorMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_graph")
 
 local kMass = 200
-local kWalkMaxSpeed = 2.2
-local kCrouchMaxSpeed = 1.6
-local kRunMaxSpeed = 4.6
 
 function HeavyArmorMarine:OnCreate()
     Marine.OnCreate(self)
@@ -76,37 +73,8 @@ function HeavyArmorMarine:GetInventorySpeedScalar()
     return 1 - self:GetWeaponsWeight() - kHeavyArmorWeight
 end
 
-function HeavyArmorMarine:GetMaxSpeed(possible)
-
-    if possible then
-        return kRunMaxSpeed
-    end
-    
-    if self:GetIsStunned() then
-        return 0
-    end
-    
-    local maxSpeed = kRunMaxSpeed
-    
-    if self.movementModiferState and self:GetIsOnSurface() then
-        maxSpeed = kWalkMaxSpeed
-    end
-    
-    if self:GetCrouched() and self:GetIsOnSurface() then
-        maxSpeed = kCrouchMaxSpeed
-    end
-    
-    // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
-    local inventorySpeedScalar = self:GetInventorySpeedScalar()
-
-    local adjustedMaxSpeed = maxSpeed * self:GetCatalystMoveSpeedModifier() * inventorySpeedScalar 
-    //Print("Adjusted max speed => %.2f (without inventory: %.2f)", adjustedMaxSpeed, adjustedMaxSpeed / inventorySpeedScalar )
-    return adjustedMaxSpeed
-    
-end
-
 function HeavyArmorMarine:GetFootstepSpeedScalar()
-    return Clamp(self:GetVelocity():GetLength() / (self:GetMaxSpeed() * self:GetCatalystMoveSpeedModifier()), 0, 1)
+    return Clamp(self:GetVelocity():GetLength() / (self:GetMaxSpeed() * self:GetSlowSpeedModifier() * self:GetCatalystMoveSpeedModifier()), 0, 1)
 end
 
 function HeavyArmorMarine:GetCanBeWeldedOverride()

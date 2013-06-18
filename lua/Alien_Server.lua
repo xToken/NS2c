@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Changed ability unlock detection, upgrade chamber detection and added redemption and hive teleport
+
 Script.Load("lua/AlienUpgradeManager.lua")
 
 function Alien:TeleportToHive(usedhive)
@@ -44,7 +47,7 @@ function Alien:TeleportToHive(usedhive)
             local notNearResourcePoint = #GetEntitiesWithinRange("ResourcePoint", position, 2) == 0
 
             if validForPlayer and notNearResourcePoint then
-                Shared.PlayWorldSound(nil, Alien.kTeleportSound, nil, self:GetOrigin())
+                StartSoundEffectAtOrigin(Alien.kTeleportSound, self:GetOrigin())
                 SpawnPlayerAtPoint(self, position)
                 self:OnHiveTeleport()
                 success = true

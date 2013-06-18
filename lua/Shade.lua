@@ -21,6 +21,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Changes to have passive SOF, removal of active abilities.
+
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
@@ -59,7 +62,7 @@ Shade.kAnimationGraph = PrecacheAsset("models/alien/shade/shade.animation_graph"
 local kCloakTriggered = PrecacheAsset("sound/NS2.fev/alien/structures/shade/cloak_triggered")
 local kCloakTriggered2D = PrecacheAsset("sound/NS2.fev/alien/structures/shade/cloak_triggered_2D")
 
-Shade.kCloakRadius = 20
+Shade.kCloakRadius = 15
 Shade.kCloakUpdateRate = 0.5
 Shade.kHiveSightRange = 25
 
@@ -165,10 +168,6 @@ function Shade:GetDamagedAlertId()
     return kTechId.AlienAlertStructureUnderAttack
 end
 
-function Shade:GetCanDie(byDeathTrigger)
-    return not byDeathTrigger
-end
-
 function Shade:GetReceivesStructuralDamage()
     return true
 end
@@ -230,21 +229,6 @@ if Server then
     
     end
 
-    /*    
-    function Shade:OnKill(attacker, doer, point, direction)
-    
-        ScriptActor.OnKill(self, attacker, doer, point, direction)
-        
-        local team = self:GetTeam()
-        if team then
-            for _, cloakable in ipairs(self:GetEntitiesInTrigger()) do
-                team:DeregisterCloakable(cloakable)
-            end
-        end 
-        
-    end
-    */
-    
     function Shade:GetTrackEntity(entity)
         return HasMixin(entity, "Team") and entity:GetTeamNumber() == self:GetTeamNumber() and HasMixin(entity, "Cloakable") and self:GetIsBuilt() and self:GetIsAlive()
     end
@@ -267,7 +251,6 @@ if Server then
         end
     
     end
-    
     
     function Shade:UpdateCloaking()
     

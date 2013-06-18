@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed power indicator, tech delays
+
 function MarineCommander:TechCausesDelay(techId)
     return false
 end

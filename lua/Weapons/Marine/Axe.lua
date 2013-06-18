@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Moved balance vars to balance.lua
+
 Script.Load("lua/Weapons/Weapon.lua")
 
 class 'Axe' (Weapon)

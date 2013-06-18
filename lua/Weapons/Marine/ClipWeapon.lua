@@ -10,6 +10,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added in auto pickup logic, and added some new overrides for starting ammo
+
 Script.Load("lua/Weapons/Weapon.lua")
 Script.Load("lua/PickupableWeaponMixin.lua")
 Script.Load("lua/Weapons/BulletsMixin.lua")
@@ -169,12 +172,20 @@ function ClipWeapon:GetMaxAmmo()
 end
 
 function ClipWeapon:GetCheckForRecipient()
-    return false
+    return true
 end
 
 function ClipWeapon:OnTouch(recipient)
+    local activeWeapon = recipient:GetActiveWeapon()
+    local weaponBeforeUse
+    if activeWeapon then
+        weaponBeforeUse = activeWeapon:GetMapName()
+    end
     recipient:AddWeapon(self, true)
     StartSoundEffectAtOrigin(Marine.kGunPickupSound, recipient:GetOrigin())
+    if self:GetHUDSlot() ~= 1 then
+        recipient:SetActiveWeapon(weaponBeforeUse, true)
+    end
 end
 
 // Return world position of gun barrel, used for weapon effects.

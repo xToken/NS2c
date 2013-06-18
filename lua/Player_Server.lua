@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed destruction of free dropped weapons, removed near death cinematic
+
 Script.Load("lua/Gamerules.lua")
 
 // Called when player first connects to server

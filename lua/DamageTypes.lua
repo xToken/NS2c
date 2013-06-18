@@ -27,15 +27,24 @@
 // http://www.unknownworlds.com/ns2/news/2010/6/damage_types_in_ns2
 // 
 // Normal - Regular damage
+// Light - Reduced vs. armor
+// Heavy - Extra damage vs. armor
+// Puncture - Extra vs. players
 // Structural - Double against structures
 // Gas - Breathing targets only (Spores, Nerve Gas GL). Ignores armor.
 // StructuresOnly - Doesn't damage players or AI units (ARC)
-// Falling - Ignores armor for humans, no damage for some creatures or ha
+// Falling - Ignores armor for humans, no damage for some creatures or exosuit
+// Door - Like Structural but also does damage to Doors. Nothing else damages Doors.
+// Flame - Like normal but catches target on fire and plays special flinch animation
 // Corrode - deals normal damage to structures but armor only to non structures
+// ArmorOnly - always affects only armor
 // Biological - only organic, biological targets (non mechanical)
 // HalfStructures - deals half to structures
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+
+//NS2c
+//Added HalfStructures damage type (for HMG), and added in alien damage scaling detection
 
 // utility functions
 
@@ -112,12 +121,13 @@ kDamageType = enum( {'Normal', 'Structural', 'Gas', 'Splash', 'StructuresOnly', 
 // Describe damage types for tooltips
 kDamageTypeDesc = {
     "",
+    "Light damage: reduced vs. armor",
+    "Heavy damage: extra vs. armor",
+    "Puncture damage: extra vs. players",
     "Structural damage: Double vs. structures",
     "Gas damage: affects breathing targets only",
     "Splash: same as structures only but always affects ARCs (friendly fire).",
-    "Structures only: Doesn't damage players or AI units",
-    "Light damage: reduced vs. armor",
-    "Heavy damage: extra vs. armor",    
+    "Structures only: Doesn't damage players or AI units",  
     "Falling damage: Ignores armor for humans, no damage for aliens",
     "Corrode damage: Damage structures or armor only for non structures",
     "Biological damage: Heals aliens and damages humans",

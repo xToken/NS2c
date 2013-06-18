@@ -9,9 +9,13 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added hiveinfo and upgrade info, tweaked positions.
+
 Script.Load("lua/Globals.lua")
 Script.Load("lua/GUIDial.lua")
 Script.Load("lua/GUIAnimatedScript.lua")
+
 Script.Load("lua/Hud/Alien/GUIAlienHUDStyle.lua")
 Script.Load("lua/Hud/GUIPlayerResource.lua")
 Script.Load("lua/Hud/GUIEvent.lua")
@@ -193,6 +197,11 @@ function GUIAlienHUD:Initialize()
     self.resourceDisplay.background:SetFloatParameter("correctionX", 1)
     self.resourceDisplay.background:SetFloatParameter("correctionY", 0.3)
     
+    self.babblerIndicationFrame = GetGUIManager():CreateGraphicItem()
+    self.babblerIndicationFrame:SetColor(Color(0,0,0,0))
+    self.babblerIndicationFrame:SetPosition(kBabblerIndicatorPosition)
+    self.babblerIndicationFrame:SetAnchor(GUIItem.Left, GUIItem.Bottom)
+
     self.upgrades = { }
     self.upgrades[kTechId.Crag] = { }
     self.upgrades[kTechId.Shift] = { }
@@ -814,7 +823,7 @@ function GUIAlienHUD:Update(deltaTime)
     
     UpdateHealthBall(self, deltaTime)
     UpdateEnergyBall(self, deltaTime)
-    //UpdateBabblerIndication(self, deltaTime)
+    UpdateBabblerIndication(self, deltaTime)
     self:UpdateHiveInformation(deltaTime)
     
     // update resource display

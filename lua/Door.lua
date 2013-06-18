@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed welding doors concept and tech buttons as it was causing some errors
+
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
@@ -347,21 +350,8 @@ function Door:GetHasLockTimeout()
     return self.lockTimeOut > Shared.GetTime()
 end
 
-function Door:OnUse(player, elapsedTime)
-
-    local state = self:GetState()
-    if state ~= Door.kState.DestroyedFront and state ~= Door.kState.DestroyedBack and not self:GetIsWeldedShut() and player:isa("Marine") then
-    
-        if Server then
-        
-            if state ~= Door.kState.Locked and not self:GetHasLockTimeout() then
-                self:TriggerDoorLock()
-            end
-            
-        end
-        
-    end
-    
+function Door:GetCanBeUsed(player, useSuccessTable)
+    useSuccessTable.useSuccess = false    
 end
 
 function Door:OnKill(attacker, doer, point, direction)

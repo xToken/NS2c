@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed damage around CC in pregame.
+
 function CommandStation:GetTeamType()
     return kMarineTeamType
 end

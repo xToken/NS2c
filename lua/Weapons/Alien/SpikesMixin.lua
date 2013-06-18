@@ -47,7 +47,7 @@ local function FireSpikes(self)
     local shootCoords = viewAngles:GetCoords()
     
     // Filter ourself out of the trace so that we don't hit ourselves.
-    local filter = EntityFilterTwo(player, self)
+    local filter = EntityFilterOneAndIsa(player, "Babbler")
     local range = kSpikesRange
     
     local numSpikes = kSpikesPerShot

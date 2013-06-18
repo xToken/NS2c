@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Restructured this file heavily, attempted to remove all unused vars
+
 kDefaultFov = 90
 kEmbryoFov = 100
 kSkulkFov = 105
@@ -19,6 +22,7 @@ kHiveUnderAttackTime = 15
 kMaxAlienStructureRange = 25
 kMaxAlienStructuresofType = 8
 kMaxBuildingHives = 1
+kMaxGorgeOwnedStructures = 24
 kChamberLostNotification = 0    // Amount of Upgrade Chambers remaining for alerts to be sent
 kPingOfDeathDelay = 2
 kPingOfDeathDamagePercent = 12
@@ -28,7 +32,7 @@ kFootstepsThreshold = 3.5
 kGhostStructureModifier = .75
 kEnergyUpdateRate = 0.25
 kDropWeaponTimeLimit = 1
-kPickupWeaponTimeLimit = 1
+kPickupWeaponTimeLimit = 2
 kItemStayTime = 30    // NS1
 kRecycleCancelWindow = 0.25
 kRecycleRefundScalar = 0.5

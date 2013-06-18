@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed alien comm references, adjusted resource clearing/setting
+
 Script.Load("lua/Gamerules.lua")
 Script.Load("lua/dkjson.lua")
 Script.Load("lua/ServerSponitor.lua")
@@ -22,13 +25,14 @@ class 'NS2Gamerules' (Gamerules)
 NS2Gamerules.kMapName = "ns2_gamerules"
 
 local kGameEndCheckInterval = 0.75
-local kPregameLength = 15
+local kPregameLength = 10
 local kTimeToReadyRoom = 8
 local kPauseToSocializeBeforeMapcycle = 30
 local kGameStartMessageInterval = 10
+local kRequireMarineComm = false
 
 // How often to send the "No commander" message to players in seconds.
-local kSendNoCommanderMessageRate = 50
+local kSendNoCommanderMessageRate = 60
 
 // Find team start with team 0 or for specified team. Remove it from the list so other teams don't start there. Return nil if there are none.
 function NS2Gamerules:ChooseTechPoint(techPoints, teamNumber)
@@ -749,6 +753,11 @@ if Server then
                 
             end
             
+        elseif voteTechId == kTechId.Crag or voteTechId == kTechId.Shift or voteTechId == kTechId.Shade or voteTechId == kTechId.Whip then
+            local team = player:GetTeam()
+            if team.VoteForUpgradeStructure then
+                team:VoteForUpgradeStructure(player, voteTechId)
+            end
         end
         
     end
@@ -1055,10 +1064,10 @@ if Server then
         return ConditionalValue(math.random() < .5, kTeam1Index, kTeam2Index)
         
     end
-
+    
     -- No enforced balanced teams on join as the auto team balance system balances teams.
     function NS2Gamerules:GetCanJoinTeamNumber(teamNumber)
-
+    
         local forceEvenTeams = Server.GetConfigSetting("force_even_teams_on_join")
         -- This option was added after shipping, so support older config files that don't include it.
         -- Fallback to forcing even teams if they don't have this entry in the config file.
@@ -1257,7 +1266,7 @@ if Server then
 			local team1Commander = self.team1:GetCommander()
             local team2Players = self.team2:GetNumPlayers()
             
-            if (team1Players > 0 and team2Players > 0 and team1Commander) or (Shared.GetCheatsEnabled() and (team1Players > 0 or team2Players > 0)) then
+            if (team1Players > 0 and team2Players > 0 and (team1Commander or not kRequireMarineComm)) or (Shared.GetCheatsEnabled() and (team1Players > 0 or team2Players > 0)) then
             
                 if self:GetGameState() == kGameState.NotStarted then
                     self:SetGameState(kGameState.PreGame)
@@ -1284,31 +1293,29 @@ if Server then
     end
     
     local function CheckAutoConcede(self)
-
+    
         // This is an optional end condition based on the teams being unbalanced.
         local endGameOnUnbalancedAmount = Server.GetConfigSetting("end_round_on_team_unbalance")
         if endGameOnUnbalancedAmount and endGameOnUnbalancedAmount > 0 then
-
+        
             local gameLength = Shared.GetTime() - self:GetGameStartTime()
             // Don't start checking for auto-concede until the game has started for some time.
             local checkAutoConcedeAfterTime = Server.GetConfigSetting("end_round_on_team_unbalance_check_after_time") or 300
             if gameLength > checkAutoConcedeAfterTime then
-
+            
                 local team1Players = self.team1:GetNumPlayers()
                 local team2Players = self.team2:GetNumPlayers()
                 local totalCount = team1Players + team2Players
+                
                 // Don't consider unbalanced game end until enough people are playing.
-
                 if totalCount > 6 then
                 
                     local team1ShouldLose = false
                     local team2ShouldLose = false
                     
                     if (1 - (team1Players / team2Players)) >= endGameOnUnbalancedAmount then
-
                         team1ShouldLose = true
                     elseif (1 - (team2Players / team1Players)) >= endGameOnUnbalancedAmount then
-
                         team2ShouldLose = true
                     end
                     

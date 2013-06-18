@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Tweaks for slots 6-10
+
 Script.Load("lua/GUIAnimatedScript.lua")
 
 local kMouseOverSound = "sound/NS2.fev/alien/common/alien_menu/hover"
@@ -55,9 +58,7 @@ function GorgeBuild_SendSelect(index)
 end
 
 function GorgeBuild_GetIsAbilityAvailable(index)
-
     return DropStructureAbility.kSupportedStructures[index] and DropStructureAbility.kSupportedStructures[index]:IsAllowed(Client.GetLocalPlayer())
-
 end
 
 function GorgeBuild_AllowConsumeDrop(techId)
@@ -70,6 +71,12 @@ function GorgeBuild_GetCanAffordAbility(techId)
     local abilityCost = LookupTechData(techId, kTechDataCostKey, 0)
     return player:GetResources() >= abilityCost
 
+end
+
+function GorgeBuild_GetIsBuildLegal(techId)
+    local player = Client.GetLocalPlayer()  
+    local structures = GetEntitiesForTeamWithinRange(LookupTechData(techId, kTechDataMapName, ""), player:GetTeamNumber(), player:GetEyePos(), kMaxAlienStructureRange)
+    return #structures < kMaxAlienStructuresofType
 end
 
 function GorgeBuild_GetStructureCost(techId)
@@ -197,7 +204,8 @@ local function GetRowForTechId(techId)
         rowTable[kTechId.Crag] = 6
         rowTable[kTechId.Shift] = 7
         rowTable[kTechId.Shade] = 8
-    
+        rowTable[kTechId.Shade] = 8
+        rowTable[kTechId.BabblerEgg] = 10
     end
     
     return rowTable[techId]

@@ -7,6 +7,11 @@
 //    Anything that spawns Infestation should use this.
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
+
+//NS2c
+//A Mostly client side infestation implementation
+
+
 Script.Load("lua/Infestation_Client_SparserBlobPatterns.lua")
 
 InfestationMixin = CreateMixin(InfestationMixin)

@@ -6,6 +6,10 @@
 // Copyright 2011, Unknown Worlds Entertainment
 //
 //=============================================================================
+
+//NS2c
+//Removed concept of hypermutation, added classic techids and data
+
 Script.Load("lua/InterfaceSounds_Client.lua")
 Script.Load("lua/AlienUpgrades_Client.lua")
 Script.Load("lua/Skulk.lua")

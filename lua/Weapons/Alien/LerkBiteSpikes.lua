@@ -155,7 +155,7 @@ function LerkBiteSpikes:OnTag(tagName)
             player:DeductAbilityEnergy(self:GetEnergyCost())            
             self:TriggerEffects("lerkbite_attack")
             self.lastPrimaryAttackTime = Shared.GetTime()    
-            local didHit, target = AttackMeleeCapsule(self, player, kLerkBiteDamage, self:GetRange())
+            local didHit, target = AttackMeleeCapsule(self, player, kLerkBiteDamage, self:GetRange(), nil, false, EntityFilterOneAndIsa(player, "Babbler"))
             
             if didHit and target then
             

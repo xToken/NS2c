@@ -7,7 +7,7 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 Script.Load("lua/Utility.lua")
 
-kWebEnabled = false
+kWebEnabled = true
 kDecalMaxLifetime = 60
 
 // All the layouts are based around this screen height.
@@ -25,6 +25,7 @@ kJumpMode = { Repeating = 2, Queued = 1, Default = 0 }
 // after 5 minutes players are allowed to give up a round
 kMinTimeBeforeConcede = 10 * 60
 kPercentNeededForVoteConcede = 0.75
+kPercentNeededForUpgradeChamberVote = 0.55
 
 // Team colors
 kMarineFontName = "fonts/AgencyFB_large.fnt"
@@ -150,7 +151,7 @@ kDeathMessageIcon = enum( { 'None',
                             'Mine', 'Gore', 'Spit', 'Jetpack', 'Claw',
                             'Minigun', 'Metabolize', 'LerkBite', 'Umbra', 
                             'Xenocide', 'Blink', 'Leap', 'Stomp',
-                            'Consumed', 'GL', 'Recycled'
+                            'Consumed', 'GL', 'Babbler', 'Recycled'
                             } )
 
 kMinimapBlipType = enum( { 'Undefined', 'TechPoint', 'ResourcePoint', 'Scan',

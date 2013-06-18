@@ -7,12 +7,16 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed some unneeded code, adjusted weapons.  Maybe tier3 babblers?
+
 function Gorge:InitWeapons()
 
     Alien.InitWeapons(self)
 
     self:GiveItem(SpitSpray.kMapName)
     self:GiveItem(DropStructureAbility.kMapName)
+    self:GiveItem(BabblerAbility.kMapName)
     self:SetActiveWeapon(SpitSpray.kMapName)
     
 end

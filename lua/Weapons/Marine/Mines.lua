@@ -266,7 +266,7 @@ function Mines:Dropped(prevOwner)
 end
 
 function Mines:GetCheckForRecipient()
-    return false
+    return true
 end
 
 function Mines:OnTouch(recipient)

@@ -9,6 +9,9 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
+//NS2c
+//Added in ghost cloaking logic
+
 CloakableMixin = CreateMixin(CloakableMixin)
 CloakableMixin.type = "Cloakable"
 

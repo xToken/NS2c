@@ -217,7 +217,8 @@ function TechTree:AddTargetedActivation(techId, prereq1, prereq2)
     
 end
 
-// If there's a cost, it's energy
+//NS2c
+//Adding back in Energy for Scans
 function TechTree:AddTargetedEnergyActivation(techId, prereq1, prereq2)
 
     local techNode = TechNode()
@@ -454,8 +455,9 @@ function TechTree:GetSpecialTechSupported(techId, structureTechIdList, techIdCou
         supportingIds = { kTechId.CommandStation }
         
     elseif techId == kTechId.TwoHives or techId == kTechId.ThreeHives then
+		//NS2c
+		//Added WhipHive as supportingID for Hive
         supportingIds = { kTechId.Hive, kTechId.ShadeHive, kTechId.ShiftHive, kTechId.CragHive, kTechId.WhipHive }
-        
     end
     
     local numBuiltSpecials = 0

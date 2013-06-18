@@ -7,6 +7,10 @@
 // Server-side NS2-specific utility functions.
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+
+//NS2c
+//Removal of some unneeded functions
+
 Script.Load("lua/Table.lua")
 Script.Load("lua/Utility.lua")
 
@@ -75,6 +79,8 @@ function CreateEntityForTeam(techId, position, teamNumber, player)
         newEnt = CreateEntity( mapName, spawnHeightPosition, teamNumber )
         
         // Hook it up to attach entity
+		//NS2c
+		//Adjusted so that inital CC attaches to techpoint, no others will
         local attachEntity = GetAttachEntity(techId, position, player)    
         if attachEntity then    
             newEnt:SetAttached(attachEntity)        

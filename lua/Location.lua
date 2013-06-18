@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removal of client side power status
+
 Script.Load("lua/Trigger.lua")
 
 Shared.PrecacheSurfaceShader("materials/power/powered_decal.surface_shader")

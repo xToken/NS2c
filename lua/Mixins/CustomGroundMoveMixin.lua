@@ -47,7 +47,8 @@ local kClimbFriction = 5
 local kCrouchAnimationTime = 0.4
 local kCrouchSpeedScalar = 0.6
 local kGroundFrictionTransition = 0.02
-local kStopSpeed = 1.8 //NS1 appears to have used 100, roughly 1.8 @ 60.. Trying 3.6 for interim.
+local kLandGraceTime = 0.1
+local kStopSpeed = 1.8 //NS1 appears to have used 100, roughly 1.8
 local kBackwardsMovementScalar = 1
 local kStepHeight = 0.5
 
@@ -123,6 +124,10 @@ function CustomGroundMoveMixin:GetHasLandedThisFrame()
     return self.timeTouchedGround + kGroundFrictionTransition >= Shared.GetTime()
 end
 
+function CustomGroundMoveMixin:GetLandedRecently()
+    return self.timeTouchedGround + kLandGraceTime > Shared.GetTime()
+end
+
 function CustomGroundMoveMixin:GetLastImpactForce()
     return self.lastimpact
 end
@@ -186,6 +191,9 @@ function CustomGroundMoveMixin:UpdateOnGroundState(previousVelocity)
             self.lastimpact = math.min(math.abs(previousVelocity.y / 10), 1)
             self:UpdateJumpLand()
             self:UpdateFallDamage(previousVelocity)
+            if self.OnGroundChanged then
+                self:OnGroundChanged()
+            end
         end
     end
     if onGround ~= self.onGround then

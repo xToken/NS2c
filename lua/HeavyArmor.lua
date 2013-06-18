@@ -45,16 +45,22 @@ function HeavyArmor:OnInitialized()
     
 end
 
-function HeavyArmor:GetCanBeUsed(player, useSuccessTable)
+/*function HeavyArmor:GetCanBeUsed(player, useSuccessTable)
     useSuccessTable.useSuccess = false
 end
 
 function HeavyArmor:OnTouch(recipient)
     if self:GetIsValidRecipient(recipient) then
-        Shared.PlayWorldSound(nil, HeavyArmor.kPickupSound, nil, recipient:GetOrigin())
+        StartSoundEffectAtOrigin(HeavyArmor.kPickupSound, recipient:GetOrigin())
         recipient:GiveHeavyArmor()
         return true
     end
+end*/
+
+function HeavyArmor:OnTouch(recipient)
+end
+
+function HeavyArmor:_GetNearbyRecipient()
 end
 
 // only give HA to standard marines
@@ -64,6 +70,26 @@ end
 
 function HeavyArmor:GetIsPermanent()
     return true
+end
+
+function HeavyArmor:GetCanBeUsed(player, useSuccessTable)
+    useSuccessTable.useSuccess = self:GetIsValidRecipient(player)      
 end  
+
+if Server then
+
+    function HeavyArmor:OnUse(player, elapsedTime, useSuccessTable)
+    
+        if self:GetIsValidRecipient(player) then
+        
+            DestroyEntity(self)
+            StartSoundEffectAtOrigin(HeavyArmor.kPickupSound, recipient:GetOrigin())
+            player:GiveHeavyArmor()
+            
+        end
+        
+    end
+    
+end
 
 Shared.LinkClassToMap("HeavyArmor", HeavyArmor.kMapName, networkVars)

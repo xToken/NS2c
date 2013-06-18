@@ -78,7 +78,7 @@ function Smash:OnTag(tagName)
         
             self.lastPrimaryAttackTime = Shared.GetTime()
             //local didHit, impactPoint, target = self:Attack(player)
-            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kSmashDamage, self:GetRange())
+            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kSmashDamage, self:GetRange(), nil, false, EntityFilterOneAndIsa(player, "Babbler"))
             self.lastPrimaryAttackTime = Shared.GetTime()
             self:TriggerEffects("smash_attack")
             player:DeductAbilityEnergy(self:GetEnergyCost())

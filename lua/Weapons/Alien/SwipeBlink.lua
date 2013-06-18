@@ -144,7 +144,7 @@ function SwipeBlink:PerformMeleeAttack()
 
     local player = self:GetParent()
     if player then
-        local didHit, hitObject, endPoint, surface = AttackMeleeCapsule(self, player, kSwipeDamage, self:GetRange())
+        local didHit, hitObject, endPoint, surface = AttackMeleeCapsule(self, player, kSwipeDamage, self:GetRange(), nil, false, EntityFilterOneAndIsa(player, "Babbler"))
     end
     
 end

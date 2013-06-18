@@ -1,20 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
 //    
 // lua\EmpowerMixin.lua    
 //    
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+//    Created by:   Dragon
 
 /**
  * EmpowerMixin speeds up attack speed on nearby players.
  */
 EmpowerMixin = CreateMixin(EmpowerMixin)
 EmpowerMixin.type = "Empower"
-
-EmpowerMixin.kSegment1Cinematic = PrecacheAsset("cinematics/alien/crag/umbraTrail1.cinematic")
-EmpowerMixin.kSegment2Cinematic = PrecacheAsset("cinematics/alien/crag/umbraTrail2.cinematic")
-EmpowerMixin.kViewModelCinematic = PrecacheAsset("cinematics/alien/crag/umbra_1p.cinematic")
 
 EmpowerMixin.expectedMixins =
 {
@@ -29,38 +22,26 @@ EmpowerMixin.networkVars =
 function EmpowerMixin:__initmixin()
 
     self.empowered = false
-
     if Server then
         self.empowerGiveTime = 0
-        self.timeLastEmpowerUpdate = 0
-    end    
+    end
+end
+
+local function CheckEmpower(self)
+	self.empowered = self.empowerGiveTime - Shared.GetTime() > 0
+	return self.empowered
 end
 
 if Server then
 
     function EmpowerMixin:Empower()
-        
+        if not self.empowered then
+			self:AddTimedCallback(CheckEmpower, 2)
+		end
         self.empowered = true
-        self.empowerGiveTime = Shared.GetTime() + 2.25
-    
+        self.empowerGiveTime = Shared.GetTime() + 2
     end
 
-end
-
-local function SharedUpdate(self, deltaTime)
-
-    if Server then         
-        self.empowered = self.empowerGiveTime - Shared.GetTime() > 0
-    end
-    
-end
-
-function EmpowerMixin:OnUpdate(deltaTime)
-    SharedUpdate(self, deltaTime)
-end
-
-function EmpowerMixin:OnProcessMove(input)
-    SharedUpdate(self, input.time)
 end
 
 function EmpowerMixin:GetIsEmpowered()

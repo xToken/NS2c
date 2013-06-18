@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Adjusted techData to match classic requirements
+
 // Set up structure data for easy use by Server.lua and model classes
 // Store whatever data is necessary here and use LookupTechData to access
 // Store any data that needs to used on both client and server here
@@ -58,6 +61,8 @@ kTechDataSpawnHeightOffset              = "spawnheight"
 // All player tech ids should have this, nothing else uses it. Pre-computed by looking at the min and max extents of the model, 
 // adding their absolute values together and dividing by 2. 
 kTechDataMaxExtents                     = "maxextents"
+// Radius of a cylinder carved out of the navmesh when a structure with this tech id is placed
+kTechDataObstacleRadius                 = "obstacleradius"
 // If specified, is amount of energy structure starts with
 kTechDataInitialEnergy                  = "initialenergy"
 // If specified, is max energy structure can have
@@ -115,8 +120,8 @@ kTechDataBuildRequiresMethod            = "buildrequiresmethod"
 kTechDataAllowStacking                 = "allowstacking"
 // will ignore other entities when searching for spawn position
 kTechDataCollideWithWorldOnly          = "collidewithworldonly"
-// the entity will be optionally attached if it passed the method check
-kTechDataOptionalAttachToMethod        = "optionalattach"
+// ignore pathing mesh when placing entities
+kTechDataIgnorePathingMesh     = "ignorepathing"
 // used for gorges
 kTechDataMaxAmount = "maxstructureamount"
 // requires tf
@@ -179,9 +184,9 @@ function BuildTechData()
         { [kTechDataId] = kTechId.DoorUnlock,            [kTechDataDisplayName] = "UNLOCK_DOOR", [kTechDataHotkey] = Move.U, [kTechDataTooltipInfo] = "UNLOCK_DOOR_TOOLTIP"},
         
         // Marine Commander abilities    
-        { [kTechDataId] = kTechId.AmmoPack,              [kTechDataAllowStacking] = true, [kTechDataCollideWithWorldOnly] = true, [kTechDataOptionalAttachToMethod] = GetAttachToMarineRequiresAmmo, [kTechDataMapName] = AmmoPack.kMapName,                 [kTechDataDisplayName] = "AMMO_PACK",      [kTechDataCostKey] = kAmmoPackCost,            [kTechDataModel] = AmmoPack.kModelName, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.AMMO_PACK_TOOLTIP, [kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight },
-        { [kTechDataId] = kTechId.MedPack,               [kTechDataAllowStacking] = true, [kTechDataCollideWithWorldOnly] = true, [kTechDataOptionalAttachToMethod] = GetAttachToMarineRequiresHealth, [kTechDataMapName] = MedPack.kMapName,                  [kTechDataDisplayName] = "MED_PACK",     [kTechDataCostKey] = kMedPackCost,             [kTechDataModel] = MedPack.kModelName,  [kTechDataTooltipInfo] = "MED_PACK_TOOLTIP", [kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight},
-        { [kTechDataId] = kTechId.CatPack,               [kTechDataAllowStacking] = true, [kTechDataCollideWithWorldOnly] = true, [kTechDataOptionalAttachToMethod] = GetAttachToMarineNotCatalysted, [kTechDataMapName] = CatPack.kMapName,                  [kTechDataDisplayName] = "CAT_PACK",      [kTechDataCostKey] = kCatPackCost,             [kTechDataModel] = CatPack.kModelName,  [kTechDataTooltipInfo] = "CAT_PACK_TOOLTIP", [kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight},
+        { [kTechDataId] = kTechId.AmmoPack,              [kTechDataAllowStacking] = true, [kTechDataCollideWithWorldOnly] = true, [kTechDataMapName] = AmmoPack.kMapName,                 [kTechDataDisplayName] = "AMMO_PACK",      [kTechDataCostKey] = kAmmoPackCost,            [kTechDataModel] = AmmoPack.kModelName, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.AMMO_PACK_TOOLTIP, [kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight },
+        { [kTechDataId] = kTechId.MedPack,               [kTechDataAllowStacking] = true, [kTechDataCollideWithWorldOnly] = true, [kTechDataMapName] = MedPack.kMapName,                  [kTechDataDisplayName] = "MED_PACK",     [kTechDataCostKey] = kMedPackCost,             [kTechDataModel] = MedPack.kModelName,  [kTechDataTooltipInfo] = "MED_PACK_TOOLTIP", [kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight},
+        { [kTechDataId] = kTechId.CatPack,               [kTechDataAllowStacking] = true, [kTechDataCollideWithWorldOnly] = true, [kTechDataMapName] = CatPack.kMapName,                  [kTechDataDisplayName] = "CAT_PACK",      [kTechDataCostKey] = kCatPackCost,             [kTechDataModel] = CatPack.kModelName,  [kTechDataTooltipInfo] = "CAT_PACK_TOOLTIP", [kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight},
         { [kTechDataId] = kTechId.Scan,                  [kTechDataAllowStacking] = true, [kTechDataCollideWithWorldOnly] = true, [kTechDataMapName] = Scan.kMapName,     [kTechDataDisplayName] = "SCAN",      [kTechDataHotkey] = Move.S,   [kTechDataCostKey] = kObservatoryScanCost, [kTechDataTooltipInfo] = "SCAN_TOOLTIP"},
         { [kTechDataId] = kTechId.DistressBeacon,    [kTechDataBuildTime] = 0.1,    [kTechDataDisplayName] = "DISTRESS_BEACON",   [kTechDataHotkey] = Move.B, [kTechDataCostKey] = kObservatoryDistressBeaconCost, [kTechDataTooltipInfo] =  kNS2cLocalizedStrings.DISTRESS_BEACON_TOOLTIP},
         { [kTechDataId] = kTechId.Recycle,               [kTechDataDisplayName] = "RECYCLE", [kTechDataCostKey] = 0,          [kTechDataResearchTimeKey] = kRecycleTime, [kTechDataHotkey] = Move.R, [kTechDataTooltipInfo] =  "RECYCLE_TOOLTIP"},
@@ -267,7 +272,10 @@ function BuildTechData()
         { [kTechDataId] = kTechId.PrimalScream,           [kTechDataMapName] = LerkBitePrimal.kMapName,         [kTechDataDisplayName] = kNS2cLocalizedStrings.PRIMAL_SCREAM, [kTechDataCostKey] = kPrimalScreamResearchCost, [kTechDataResearchTimeKey] = kPrimalScreamResearchTime, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.PRIMAL_SCREAM_TOOLTIP},
         { [kTechDataId] = kTechId.AcidRocket,             [kTechDataMapName] = AcidRocket.kMapName,   [kTechDataDisplayName] = kNS2cLocalizedStrings.ACID_ROCKET, [kTechDataCostKey] = kAcidRocketResearchCost, [kTechDataResearchTimeKey] = kAcidRocketResearchTime, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.ACID_ROCKET_TOOLTIP},
         { [kTechDataId] = kTechId.Devour,                 [kTechDataMapName] = Devour.kMapName,            [kTechDataDamageType] = kDevourDamageType,        [kTechDataDisplayName] = kNS2cLocalizedStrings.DEVOUR},
-        
+        { [kTechDataId] = kTechId.BabblerAbility,         [kTechDataMapName] = BabblerAbility.kMapName,   [kTechDataDisplayName] = "BABBLER_ABILITY", [kTechDataTooltipInfo] = "BABBLER_ABILITY_TOOLTIP", [kTechDataCostKey] = kBabblerAbilityResearchCost, [kTechDataResearchTimeKey] = kBabblerAbilityResearchTime},
+        { [kTechDataId] = kTechId.Babbler,                [kTechDataMapName] = Babbler.kMapName,  [kTechDataDisplayName] = "BABBLER",  [kTechDataModel] = Babbler.kModelName, [kTechDataMaxHealth] = kBabblerHealth, [kTechDataMaxArmor] = kBabblerArmor, [kTechDataPointValue] = kBabblerPointValue, [kTechDataTooltipInfo] = "BABBLER_TOOLTIP" },
+        { [kTechDataId] = kTechId.BabblerEgg,             [kTechDataAllowConsumeDrop] = true, [kTechDataMaxAmount] = kNumBabblerEggsPerGorge, [kTechDataCostKey] = kBabblerCost,   [kTechDataBuildTime] = kBabblerEggBuildTime,          [kTechDataMapName] = BabblerEgg.kMapName,  [kTechDataDisplayName] = "BABBLER_EGG",  [kTechDataModel] = BabblerEgg.kModelName, [kTechDataMaxHealth] = kBabblerEggHealth, [kTechDataMaxArmor] = kBabblerEggArmor, [kTechDataPointValue] = kBabblerEggPointValue, [kTechDataTooltipInfo] = "BABBLER_EGG_TOOLTIP" },
+
         // Dev Abilities
         { [kTechDataId] = kTechId.Spikes,                 [kTechDataMapName] = LerkBiteSpikes.kMapName,   [kTechDataDisplayName] = "SPIKES", [kTechDataCostKey] = kSpikesResearchCost, [kTechDataResearchTimeKey] = kSpikesResearchTime, [kTechDataTooltipInfo] = "SPIKES_TOOLTIP"},
 		{ [kTechDataId] = kTechId.Smash,                  [kTechDataMapName] = Smash.kMapName,            [kTechDataDamageType] = kSmashDamageType,        [kTechDataDisplayName] = "SMASH"},

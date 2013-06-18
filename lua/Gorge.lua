@@ -10,8 +10,9 @@ Script.Load("lua/Utility.lua")
 Script.Load("lua/Alien.lua")
 Script.Load("lua/Weapons/Alien/SpitSpray.lua")
 Script.Load("lua/Weapons/Alien/DropStructureAbility.lua")
-Script.Load("lua/Weapons/Alien/Web.lua")
+Script.Load("lua/Weapons/Alien/BabblerAbility.lua")
 Script.Load("lua/Weapons/Alien/BileBomb.lua")
+Script.Load("lua/Weapons/Alien/Web.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/BuildingMixin.lua")
@@ -255,7 +256,7 @@ function Gorge:GetMaxSpeed(possible)
         maxSpeed = (kMaxSlideSpeed - (Shared.GetTime() - self.timeSlideStart))
     end
     
-    if self:GetCrouched() and self:GetIsOnSurface() then
+    if self:GetCrouched() and self:GetIsOnSurface() and not self:GetLandedRecently() then
         maxSpeed = kMaxWalkSpeed
     end
     

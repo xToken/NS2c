@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added hive info and chamber counts, moved some vars to local
+
 Script.Load("lua/MaterialUtility.lua")
 
 local kEnzymedViewMaterialName = "cinematics/vfx_materials/enzyme_view.material"
@@ -32,62 +35,6 @@ function PlayerUI_GetActiveHiveCount()
 
 end
 
-local kEggDisplayRange = 30
-local kEggDisplayOffset = Vector(0, 0.8, 0)
-function PlayerUI_GetEggDisplayInfo()
-
-    local eggDisplay = {}
-    
-    local player = Client.GetLocalPlayer()
-    local animOffset = kEggDisplayOffset + kEggDisplayOffset * math.sin(Shared.GetTime() * 3) * 0.2
-    
-    if player then
-    
-        local eyePos = player:GetEyePos()         
-        for index, egg in ipairs(GetEntitiesForTeamWithinRange("Egg", player:GetTeamNumber(), player:GetEyePos(), kEggDisplayRange)) do
-        
-            local techId = egg:GetGestateTechId()
-            
-            if techId and (techId == kTechId.Gorge or techId == kTechId.Lerk or techId == kTechId.Fade or techId == kTechId.Onos) then
-            
-                local normToEntityVec = GetNormalizedVector(egg:GetOrigin() - eyePos)
-                local normViewVec = player:GetViewAngles():GetCoords().zAxis
-               
-                local dotProduct = normToEntityVec:DotProduct(normViewVec)
-                
-                if dotProduct > 0 then                
-                    table.insert(eggDisplay, { Position = Client.WorldToScreen(egg:GetOrigin() + animOffset), TechId = techId } )                
-                end
-            
-            end
-        
-        end
-        
-        if player:isa("Commander") then
-        
-            for index, egg in ipairs(GetEntitiesForTeamWithinRange("Embryo", player:GetTeamNumber(), player:GetEyePos(), kEggDisplayRange)) do
-            
-                local techId = egg:GetGestationTechId()
-
-                local normToEntityVec = GetNormalizedVector(egg:GetOrigin() - eyePos)
-                local normViewVec = player:GetViewAngles():GetCoords().zAxis
-               
-                local dotProduct = normToEntityVec:DotProduct(normViewVec)
-                
-                if dotProduct > 0 then                
-                    table.insert(eggDisplay, { Position = Client.WorldToScreen(egg:GetOrigin() + animOffset), TechId = techId } )                
-                end
-            
-            end
-        
-        end
-        
-    end
-    
-    return eggDisplay
-
-end
-
 function PlayerUI_GetHiveInformation()
     
     local player = Client.GetLocalPlayer()
@@ -108,23 +55,6 @@ function PlayerUI_GetHiveInformation()
 
 end
 
-function AlienUI_GetWaveSpawnTime()
-
-    local player = Client.GetLocalPlayer()
-    
-    if player and player:isa("AlienSpectator") then
-
-        local endTime = player:GetWaveSpawnEndTime()
-        if endTime > 0 then   
-            return endTime - Shared.GetTime()
-        end
-        
-    end
-    
-    return 0
-
-end
-
 function AlienUI_GetChamberCount(techId)
     local player = Client.GetLocalPlayer()
     if player ~= nil then
@@ -141,20 +71,6 @@ function AlienUI_GetChamberCount(techId)
         end
      end
      return 0
-end
-
-function PlayerUI_GetCanSpawn()
-
-    local player = Client.GetLocalPlayer()
-    
-    if player and player:isa("AlienSpectator") then
-    
-        return player:GetIsValidToSpawn()
-        
-    end
-
-    return true
-    
 end
 
 // array of totalPower, minPower, xoff, yoff, visibility (boolean), hud slot
@@ -249,39 +165,6 @@ function AlienUI_HasSameTypeUpgrade(selectedIds, techId)
     end
     
     return false
-
-end
-
-function AlienUI_GetInEgg()
-
-    local player = Client.GetLocalPlayer()
-    if player and player:isa("AlienSpectator") then
-        return player:GetHostEgg() ~= nil
-    end
-    
-    return false
-
-end
-
-function AlienUI_GetSpawnQueuePosition()
-
-    local player = Client.GetLocalPlayer()
-    if player and player:isa("AlienSpectator") then
-        return player:GetQueuePosition()
-    end
-    
-    return -1
-
-end
-
-function AlienUI_GetAutoSpawnTime()
-
-    local player = Client.GetLocalPlayer()
-    if player and player:isa("AlienSpectator") then
-        return math.max(0, player:GetAutoSpawnTime())
-    end
-    
-    return 0
 
 end
 
@@ -401,37 +284,10 @@ function PlayerUI_GetPlayerMaxEnergy()
 end
 
 function Alien:OnKillClient()
+
     Player.OnKillClient(self)
+    
     self:DestroyGUI()
-end
-
-function Alien:OnInitLocalClient()
-
-    Player.OnInitLocalClient(self)
-    
-    if self:GetTeamNumber() ~= kTeamReadyRoom then
-    
-        if self.alienHUD == nil then
-            self.alienHUD = GetGUIManager():CreateGUIScript("GUIAlienHUD")
-        end
-
-        if self.sensorBlips == nil then
-            self.sensorBlips = GetGUIManager():CreateGUIScript("GUISensorBlips")
-        end 
-        
-        if self.objectiveDisplay == nil then
-            self.objectiveDisplay = GetGUIManager():CreateGUIScript("GUIObjectiveDisplay")
-        end
-        
-        if self.progressDisplay == nil then
-            self.progressDisplay = GetGUIManager():CreateGUIScript("GUIProgressBar")
-        end
-        
-        if self.requestMenu == nil then
-            self.requestMenu = GetGUIManager():CreateGUIScript("GUIRequestMenu")
-        end
-        
-    end
     
 end
 
@@ -565,7 +421,7 @@ function Alien:CloseMenu()
         
         MouseTracker_SetIsVisible(false)
         
-        // Quick work-around to not fire weapon when closing menu
+        // Quick work-around to not fire weapon when closing menu.
         self.timeClosedMenu = Shared.GetTime()
         
         return true
@@ -621,20 +477,22 @@ function Alien:OnCountDown()
 
     Player.OnCountDown(self)
     
-    if self.alienHUD then
-        self.alienHUD:SetIsVisible(false)
+    local script = ClientUI.GetScript("GUIAlienHUD")
+    if script then
+        script:SetIsVisible(false)
     end
-
+    
 end
 
 function Alien:OnCountDownEnd()
 
     Player.OnCountDownEnd(self)
     
-    if self.alienHUD then
-        self.alienHUD:SetIsVisible(true)
+    local script = ClientUI.GetScript("GUIAlienHUD")
+    if script then
+        script:SetIsVisible(true)
     end
-
+    
 end
 
 function Alien:GetPlayFootsteps()

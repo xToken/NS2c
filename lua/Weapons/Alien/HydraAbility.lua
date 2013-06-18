@@ -24,6 +24,10 @@ function HydraStructureAbility:GetDropStructureId()
     return kTechId.Hydra
 end
 
+function HydraStructureAbility:GetRequiredTechId()
+    return kTechId.None
+end
+
 function HydraStructureAbility:GetSuffixName()
     return "hydra"
 end
@@ -34,9 +38,4 @@ end
 
 function HydraStructureAbility:GetDropMapName()
     return Hydra.kMapName
-end
-
-function HydraStructureAbility:IsAllowed(player)
-    local structures = GetEntitiesForTeamWithinRange(self:GetDropClassName(), player:GetTeamNumber(), player:GetEyePos(), kMaxAlienStructureRange)
-    return #structures < kMaxAlienStructuresofType
 end

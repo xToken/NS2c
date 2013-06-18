@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Adjusted for classic techids
+
 local kSubImageWidth = 128
 local kSubImageHeight = 64
 

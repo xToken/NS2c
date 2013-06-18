@@ -8,9 +8,12 @@
 //
 // Passive ability - heals nearby players and structures
 // Triggered ability - emit defensive umbra (8 seconds)
-// Active ability - stream Babblers out towards target, hampering their ability to attack
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+
+//NS2c
+//Removed unneeded mixins, changed healing to callback
+
 
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")

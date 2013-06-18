@@ -8,6 +8,31 @@
 
 kGeneralEffectData = 
 {
+	heal =
+    {        
+        healEffects =
+        {
+            {cinematic = "", classname = "Commander", done = true},
+            {parented_cinematic = "cinematics/alien/heal_big.cinematic", classname = "Onos", done = true},
+            {parented_cinematic = "cinematics/alien/heal_big.cinematic", classname = "Hive", done = true},
+            {parented_cinematic = "cinematics/alien/heal_big.cinematic", classname = "Crag", done = true},
+            {parented_cinematic = "cinematics/alien/heal_big.cinematic", classname = "Shade", done = true},
+            {parented_cinematic = "cinematics/alien/heal_big.cinematic", classname = "Shift", done = true},
+            {parented_cinematic = "cinematics/alien/heal.cinematic", isalien = true, done = true},
+        },
+    },    
+
+    heal_sound =
+    {        
+        healSoundEffects =
+        {   
+            {sound = "", classname = "Commander", done = true},
+            {sound = "", classname = "ReadyRoomPlayer", done = true},
+            {sound = "", silenceupgrade = true, done = true},
+            {sound = "sound/NS2.fev/alien/common/regeneration_ability", isalien = true, done = true},        
+            {sound = "sound/NS2.fev/marine/structures/mac/weld", isalien = false, done = true},  
+        }
+    },
 
     upgrade_complete =
     {
@@ -310,7 +335,8 @@ kGeneralEffectData =
             {sound = "sound/NS2.fev/alien/gorge/death", classname = "Gorge", done = true},
             {sound = "sound/NS2.fev/alien/lerk/death", classname = "Lerk", done = true},            
             {stop_sound = "sound/NS2.fev/alien/fade/blink_loop", classname = "Fade"},
-            {sound = "sound/NS2.fev/alien/fade/death", classname = "Fade", done = true},
+            //{sound = "sound/NS2.fev/alien/fade/death", classname = "Fade", done = true},
+            {sound = "sound/ns2c.fev/ns2c/alien/fade/die", classname = "Fade", done = true},
             {sound = "sound/NS2.fev/alien/onos/death", classname = "Onos", done = true},
             {sound = "sound/NS2.fev/marine/common/death", classname = "Marine", done = true},
             {sound = "sound/NS2.fev/marine/structures/extractor_death", classname = "Extractor", done = true},
@@ -365,6 +391,50 @@ kGeneralEffectData =
             {sound = "sound/NS2.fev/marine/voiceovers/complete"},
         }
     },
+    
+    babbler_pheromone =
+    {
+        babblerPheromoneEffects =
+        {
+            {cinematic = "cinematics/alien/babbler/pheromone_trail.cinematic" },
+        }
+    },
+    
+    babbler_pheromone_puff =
+    {
+        babblerPheromonePuffEffects =
+        {
+            {cinematic = "cinematics/alien/babbler/pheromone_puff.cinematic" },
+        }
+    },
+    
+    victory =
+    {
+        you_win =
+        {
+            {private_sound = "sound/ns2c.fev/ns2c/ui/you_win"},
+        }
+    },
+    
+    lose =
+    {
+        you_lose =
+        {
+            {private_sound = "sound/ns2c.fev/ns2c/ui/you_lose"},
+        }
+    },
+    
+    ambient_music =
+    {
+        ambient_music =
+        {
+            {private_sound = "sound/ns2c.fev/ns2c/ui/ambient_music1", track = 1, done = true},
+            {private_sound = "sound/ns2c.fev/ns2c/ui/ambient_music2", track = 2, done = true},
+            {private_sound = "sound/ns2c.fev/ns2c/ui/ambient_music3", track = 3, done = true},
+            {private_sound = "sound/ns2c.fev/ns2c/ui/ambient_music4", track = 4, done = true},
+            {private_sound = "sound/ns2c.fev/ns2c/ui/ambient_music5", track = 5, done = true},
+        }
+    },          
             
 }
 

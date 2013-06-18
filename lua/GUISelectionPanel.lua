@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed alien comm refs, added energy and removed maturity.
+
 Script.Load("lua/GUIIncrementBar.lua")
 
 class 'GUISelectionPanel' (GUIScript)

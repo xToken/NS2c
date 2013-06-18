@@ -14,6 +14,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Changed to remove some abilities, also to cleanup needless code.
+
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
@@ -142,8 +145,7 @@ function Shift:GetCanBeUsedConstructed()
 end   
 
 function Shift:GetCanBeUsed(player, useSuccessTable)
-    local hasupg, level = GetHasRedeploymentUpgrade(player)
-    if self:GetCanConstruct(player) or (hasupg and level > 0 and player.nextredeploy < Shared.GetTime()) then
+    if self:GetCanConstruct(player) or (HasMixin(player, "Redeploy") and player:GetCanRedeploy()) then
         useSuccessTable.useSuccess = true
     else
         useSuccessTable.useSuccess = false
@@ -184,8 +186,8 @@ end
 
 function Shift:OnUse(player, elapsedTime, useSuccessTable)
     local hasupg, level = GetHasRedeploymentUpgrade(player)
-    if hasupg and level > 0 and self:GetIsBuilt() and self:GetTeamNumber() == player:GetTeamNumber() then
-        self:TeleportPlayer(player, level)
+    if hasupg and level > 0 and self:GetIsBuilt() and self:GetTeamNumber() == player:GetTeamNumber() and HasMixin(player, "Redeploy") then
+        player:Redeploy(level)
     end
 end
 
@@ -210,64 +212,6 @@ if Server then
         
     end
     
-end
-
-function Shift:TeleportPlayer(player, level)
-    if Server then
-        if player.nextredeploy == nil or player.nextredeploy < Shared.GetTime() then
-            local validshifts = { }
-            local shifts = GetEntitiesForTeam("Shift", self:GetTeamNumber())
-            local success = false
-
-            local function SortByDistance(shift1, shift2)
-                return shift1.dist > shift2.dist
-            end
-            
-            for i, shift in ipairs(shifts) do
-                local shiftinfo = { shift = shift, dist = 0 }
-                local toTarget = shift:GetOrigin() - player:GetOrigin()
-                local distanceToTarget = toTarget:GetLength()
-                shiftinfo.dist = distanceToTarget
-                if shift:GetIsBuilt() and self ~= shift and distanceToTarget > 5 then
-                    table.insert(validshifts, shiftinfo)
-                end
-             end
-             
-             table.sort(validshifts, SortByDistance)
-
-             for s = 1, #validshifts do
-                selectedshift = validshifts[s].shift
-                local TechID = kTechId.Skulk
-                if player:GetIsAlive() then
-                    TechID = player:GetTechId()
-                end
-                local extents = LookupTechData(TechID, kTechDataMaxExtents)
-                local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)
-                local range = 6
-                for t = 1, 100 do //Persistance...
-                    local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, selectedshift:GetOrigin(), 2, range, EntityFilterAll())
-                    if spawnPoint then
-                        local validForPlayer = GetIsPlacementForTechId(spawnPoint, TechID)
-                        local notNearResourcePoint = #GetEntitiesWithinRange("ResourcePoint", spawnPoint, 2) == 0
-                        if notNearResourcePoint then
-                            Shared.PlayWorldSound(nil, Alien.kTeleportSound, nil, self:GetOrigin())
-                            SpawnPlayerAtPoint(player, spawnPoint)
-                            success = true
-                            player.nextredeploy = Shared.GetTime() + (kRedploymentCooldownBase / level)
-                            break
-                        end
-                    end
-                end
-                if success then
-                    break
-                 end
-             end
-             
-            if not success then
-                player:TriggerInvalidSound()
-            end
-        end
-    end
 end
 
 Shared.LinkClassToMap("Shift", Shift.kMapName, networkVars)

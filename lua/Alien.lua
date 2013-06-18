@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Moved vars to local and added goldsource movement, removed many outdated functions.
+
 Script.Load("lua/Player.lua")
 Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/ScoringMixin.lua")
@@ -14,6 +17,7 @@ Script.Load("lua/Alien_Upgrade.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/EnergizeMixin.lua")
 Script.Load("lua/EmpowerMixin.lua")
+Script.Load("lua/RedeployMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CombatMixin.lua")
@@ -23,6 +27,7 @@ Script.Load("lua/AlienActionFinderMixin.lua")
 Script.Load("lua/DetectorMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/RagdollMixin.lua")
+Script.Load("lua/BabblerClingMixin.lua")
 
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/decals/alien_blood.surface_shader")
 
@@ -66,18 +71,19 @@ local networkVars =
 	whips = string.format("integer (0 to 3)"),
     movenoise = "private time",
     
-    primalScreamBoost = "compensated boolean",
-    nextredeploy = "private time"
+    primalScreamBoost = "compensated boolean"
 }
 
 AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(EnergizeMixin, networkVars)
 AddMixinNetworkVars(EmpowerMixin, networkVars)
+AddMixinNetworkVars(RedeployMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
+AddMixinNetworkVars(BabblerClingMixin, networkVars)
 
 function Alien:OnCreate()
 
@@ -86,13 +92,15 @@ function Alien:OnCreate()
     InitMixin(self, AlienActionFinderMixin)
     InitMixin(self, EnergizeMixin)
     InitMixin(self, EmpowerMixin)
+	InitMixin(self, RedeployMixin)
     InitMixin(self, CombatMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, SelectableMixin)
     InitMixin(self, DetectableMixin)
     InitMixin(self, HasUmbraMixin)
     InitMixin(self, RagdollMixin)
- 
+    InitMixin(self, BabblerClingMixin)
+    
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
     
     self.timeLastMomentumEffect = 0
@@ -131,53 +139,11 @@ function Alien:DestroyGUI()
 
     if Client then
     
-        if self.alienHUD then
-        
-            GetGUIManager():DestroyGUIScript(self.alienHUD)
-            self.alienHUD = nil
-            
-        end
-        
-        if self.waypoints then
-        
-            GetGUIManager():DestroyGUIScript(self.waypoints)
-            self.waypoints = nil
-            
-        end
-        
-        if self.hints then
-        
-            GetGUIManager():DestroyGUIScript(self.hints)
-            self.hints = nil
-            
-        end
-        
         if self.buyMenu then
         
             GetGUIManager():DestroyGUIScript(self.buyMenu)
             MouseTracker_SetIsVisible(false)
             self.buyMenu = nil
-            
-        end
-        
-        if self.regenFeedback then
-        
-            GetGUIManager():DestroyGUIScript(self.regenFeedback)
-            self.regenFeedback = nil
-            
-        end
-        
-        if self.eggInfo then
-        
-            GetGUIManager():DestroyGUIScript(self.eggInfo)
-            self.eggInfo = nil
-            
-        end
-        
-        if self.sensorBlips then
-        
-            GetGUIManager():DestroyGUIScript(self.sensorBlips)
-            self.sensorBlips = nil
             
         end
         
@@ -187,28 +153,7 @@ function Alien:DestroyGUI()
             self.celerityViewCinematic = nil
             
         end
-
-        if self.objectiveDisplay then
         
-            GetGUIManager():DestroyGUIScript(self.objectiveDisplay)
-            self.objectiveDisplay = nil
-            
-        end
-        
-        if self.progressDisplay then
-        
-            GetGUIManager():DestroyGUIScript(self.progressDisplay)
-            self.progressDisplay = nil
-            
-        end 
-
-        if self.requestMenu then
-        
-            GetGUIManager():DestroyGUIScript(self.requestMenu)
-            self.requestMenu = nil
-            
-        end
-       
     end
     
 end
@@ -256,7 +201,7 @@ function Alien:OnInitialized()
     if Client and Client.GetLocalPlayer() == self then
     
         Client.SetPitch(0.0)
-        //self:AddHelpWidget("GUIAlienVisionHelp", 2)
+        self:AddHelpWidget("GUIAlienVisionHelp", 2)
         
     end
 
@@ -544,7 +489,7 @@ function Alien:GetEffectParams(tableParams)
     if level == 3 then
         tableParams[kEffectFilterSilenceUpgrade] = upg
     end
-    //tableParams[kEffectParamVolume] = (1 - (.33 * level))
+    tableParams[kEffectParamVolume] = (1 - (.33 * level))
 
 end
 

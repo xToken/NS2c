@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added in classic techids
+
 local kIconWidth = 128
 local kIconHeight = 64
 

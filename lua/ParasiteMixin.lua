@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Changes to allow parasite of structures and visibility changes
+
 ParasiteMixin = CreateMixin( ParasiteMixin )
 ParasiteMixin.type = "ParasiteAble"
 

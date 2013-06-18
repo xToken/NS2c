@@ -8,6 +8,10 @@
 //  Tries to log in to a command structure, then creates the appropriate brain for the team.
 //
 //=============================================================================
+
+//NS2c
+//Removed alien commander concept
+
 Script.Load("lua/bots/PlayerBot.lua")
 Script.Load("lua/bots/MarineCommanderBrain.lua")
 

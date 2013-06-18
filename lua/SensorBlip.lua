@@ -4,6 +4,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Sensor Blips can be relevant to either team now.
+
 class 'SensorBlip' (Entity)
 
 SensorBlip.kMapName = "sensorblip"

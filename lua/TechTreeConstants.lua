@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added in techIds required by classic
+
 kTechId = enum({
     
     'None',
@@ -81,11 +84,12 @@ kTechId = enum({
     'TwoHives', 'ThreeHives', 'UpgradeToCragHive', 'UpgradeToShadeHive', 'UpgradeToShiftHive', 'UpgradeToWhipHive',
     
     // Alien abilities (not all are needed, only ones with damage types)
-    'Bite', 'LerkBite', 'Parasite',  'Spit', 'BuildAbility', 'Spray', 'Spores', 'HydraSpike', 'Swipe', 'Gore', 'Smash', 'Devour',
+    'Bite', 'LerkBite', 'Parasite',  'Spit', 'BuildAbility', 'Spray', 'Spores', 'HydraSpike', 'Swipe', 'Gore', 'Smash', 'Devour', 'BabblerAbility',
 
     // upgradeable alien abilities (need to be unlocked)
     'BileBomb', 'Leap', 'Blink', 'Stomp', 'Spikes', 'Umbra', 'Metabolize', 'Xenocide', 'AcidRocket', 'Smash', 'WebStalk', 'Charge', 'PrimalScream',
-
+    'Babbler', 'BabblerEgg',
+    
     // Alien structures 
     'Hive', 'CragHive', 'ShadeHive', 'ShiftHive', 'WhipHive','Harvester', 'Egg', 'Embryo', 'Hydra', 'WebStalk',
     'GorgeEgg', 'LerkEgg', 'FadeEgg', 'OnosEgg',

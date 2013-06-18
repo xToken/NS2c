@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed concept of pre-evolved eggs
+
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -182,7 +185,8 @@ function Egg:RequeuePlayer()
                 error("AlienSpectator expected, instead " .. player:GetClassName() .. " was in queue")
             end
             
-            player:SetEggId(Entity.invalidId, 0)
+            player:SetEggId(Entity.invalidId)
+            player:SetWaveSpawnEndTime(0)
             team:PutPlayerInRespawnQueue(player, Shared.GetTime() - kAlienWaveSpawnInterval)
             
         end

@@ -25,6 +25,10 @@ function WebsAbility:GetDropStructureId()
     return kTechId.Web
 end
 
+function WebsAbility:GetRequiredTechId()
+    return kTechId.ThreeHives
+end
+
 function WebsAbility:GetSuffixName()
     return "web"
 end
@@ -64,5 +68,6 @@ function WebsAbility:GetDropMapName()
 end
 
 function WebsAbility:IsAllowed(player)
-    return player.GetHasThreeHives and player:GetHasThreeHives() and kWebEnabled
+    local structures = GetEntitiesForTeamWithinRange(self:GetDropClassName(), player:GetTeamNumber(), player:GetEyePos(), kMaxAlienStructureRange)
+    return GetHasTech(player, self:GetRequiredTechId()) and #structures < kMaxAlienStructuresofType and kWebEnabled
 end

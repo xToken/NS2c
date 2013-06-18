@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removal of feign death refs
+
 Script.Load("lua/GUIAnimatedScript.lua")
 Script.Load("lua/DeathMessage_Client.lua")
 

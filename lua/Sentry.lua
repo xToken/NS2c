@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Adjusted some values to have turrets work with Robotics factories.
+
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -477,7 +480,7 @@ if Server then
         if self.timeNextAttack == nil or (Shared.GetTime() > self.timeNextAttack) then
         
             local initialAttack = self.target == nil
-        
+            
             local prevTarget = nil
             if self.target then
                 prevTarget = self.target

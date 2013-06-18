@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added hiveinfo message, made adjustments to hitEffect
+
 Script.Load("lua/InsightNetworkMessages_Client.lua")
 
 function OnCommandPing(pingTable)
@@ -175,6 +178,13 @@ function OnVoteEjectCast(message)
     
 end
 
+function OnVoteChamberCast(message)
+
+    local text = string.format(kNS2cLocalizedStrings.VOTE_CHAMBER_BROADCAST, message.voterName, EnumToString(kTechId, message.voteId), message.votesMoreNeeded)
+    ChatUI_AddSystemMessage(text)
+    
+end
+
 function OnTeamConceded(message)
 
     if message.teamNumber == kMarineTeamType then
@@ -183,6 +193,11 @@ function OnTeamConceded(message)
         ChatUI_AddSystemMessage(Locale.ResolveString("TEAM_ALIENS_CONCEDED"))
     end
     
+end
+
+function OnChamberSelected(message)
+    local text = string.format(kNS2cLocalizedStrings.VOTE_CHAMBER_SELECTED, EnumToString(kTechId, message.voteId))
+    ChatUI_AddSystemMessage(text)
 end
 
 local function OnCommandCreateDecal(message)
@@ -248,5 +263,7 @@ Client.HookNetworkMessage("HiveInfo", OnCommandRecieveHiveInfo)
 Client.HookNetworkMessage("CommanderError", OnCommandCommanderError)
 
 Client.HookNetworkMessage("VoteConcedeCast", OnVoteConcedeCast)
+Client.HookNetworkMessage("VoteChamberCast", OnVoteChamberCast)
 Client.HookNetworkMessage("VoteEjectCast", OnVoteEjectCast)
 Client.HookNetworkMessage("TeamConceded", OnTeamConceded)
+Client.HookNetworkMessage("ChamberSelected", OnChamberSelected)

@@ -6,6 +6,9 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
+//NS2c
+//Removed outline on marines that took damage recently.
+
 HiveVisionMixin = CreateMixin( HiveVisionMixin )
 HiveVisionMixin.type = "HiveVision"
 

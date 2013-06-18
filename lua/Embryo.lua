@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removal of some hypermutation and mist code, adjustments to HP scaling
+
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/Alien.lua")
 
@@ -309,10 +312,10 @@ function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorSca
     self.gestationTime = math.max(kMinGestationTime, self.gestationTime)
     
     self.evolveTime = 0
-    self:AdjustMaxHealth(Embryo.kBaseHealth)
     self.maxHealth = Embryo.kBaseHealth
-    self:AdjustMaxArmor(Embryo.kBaseArmor)
+	self:SetHealth(self.maxHealth* healthScalar)
     self.maxArmor = Embryo.kBaseArmor
+	self:SetArmor(self.maxArmor* armorScalar)
     // Use this amount of health when we're done evolving
     self.healthScalar = healthScalar
     self.armorScalar = armorScalar

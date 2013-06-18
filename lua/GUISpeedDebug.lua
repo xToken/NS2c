@@ -10,6 +10,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added additional debug information
+
 local gMomentumBarWidth = 200
 local gFractionBarHeight = 80
 

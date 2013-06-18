@@ -7,6 +7,10 @@
 // Auto-generated. Copy and paste from balance spreadsheet.
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+
+//NS2c
+//Restructured this file heavily, attempted to remove all unused vars
+
 Script.Load("lua/BalanceHealth.lua")
 Script.Load("lua/BalanceMisc.lua")
 
@@ -285,6 +289,14 @@ kSpitDamage = 30
 kSpitDamageType = kDamageType.Normal
 kSpitEnergyCost = 8
 kSpitDelay = 0.4
+
+kBabblerPheromoneEnergyCost = 7
+kBabblerDamage = 10
+
+kBabblerCost = 0
+kBabblerEggBuildTime = 25
+kNumBabblerEggsPerGorge = 2
+kNumBabblersPerEgg = 5
 
 // Also see kHealsprayHealStructureRate
 kHealsprayDamage = 13

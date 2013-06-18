@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Adjusted armory healing logic
+
 local function OnDeploy(self)
 
     self.deployed = true

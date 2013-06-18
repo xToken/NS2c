@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Made most vars local, removal most screen effects and tweaked a couple GUI functions.
+
 Script.Load("lua/Chat.lua")
 Script.Load("lua/HudTooltips.lua")
 Script.Load("lua/tweener/Tweener.lua")
@@ -756,7 +759,7 @@ function PlayerUI_GetCrosshairY()
             // All alien crosshairs are the same for now
             elseif mapname == LerkBite.kMapName or mapname == LerkBiteUmbra.kMapName or mapname == LerkBitePrimal.kMapName or mapname == LerkBiteSpikes.kMapName or mapname == Parasite.kMapName or mapname == AcidRocket.kMapName then
                 index = 6
-            elseif(mapname == SpitSpray.kMapName) then
+            elseif(mapname == SpitSpray.kMapName or mapname == BabblerAbility.kMapName) then
                 index = 7
             // Blanks (with default damage indicator)
             else
@@ -1161,6 +1164,7 @@ end
 
 function PlayerUI_GetWeaponClip()
     local player = Client.GetLocalPlayer()
+    
     if player then
         return player:GetWeaponClip()
     end
@@ -1433,6 +1437,18 @@ function PlayerUI_GetPlayerName()
 
 end
 
+function PlayerUI_GetNumClingedBabblers()
+
+    local numBabblers = 0
+    local player = Client.GetLocalPlayer()
+    if player and HasMixin(player, "BabblerCling") then
+        numBabblers = player:GetNumClingedBabblers()    
+    end
+    
+    return numBabblers
+
+end
+
 function PlayerUI_GetEnergizeLevel()
 
     local energizeLevel = 0
@@ -1465,7 +1481,7 @@ function Player:GetCrossHairTarget()
     local startPoint = self:GetEyePos()
     local endPoint = startPoint + viewCoords.zAxis * kRangeFinderDistance
     
-    local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.AllButPCsAndRagdolls, EntityFilterOne(self))
+    local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.AllButPCsAndRagdolls, EntityFilterOneAndIsa(self, "Babbler"))
     return trace.entity
     
 end
@@ -2399,7 +2415,7 @@ function Player:OnCountDown()
         end
         
     end
-
+    
 end
 
 function Player:OnCountDownEnd()
@@ -2411,7 +2427,7 @@ function Player:OnCountDownEnd()
         
     end
     
-    Client.PlayMusic("sound/NS2.fev/round_start")
+    //Client.PlayMusic("sound/NS2.fev/round_start")
     
 end
 
@@ -3244,6 +3260,62 @@ function PlayerUI_GetShowGiveDamageIndicator()
     
     return false, 0
     
+end
+
+local kEggDisplayRange = 30
+local kEggDisplayOffset = Vector(0, 0.8, 0)
+function PlayerUI_GetEggDisplayInfo()
+
+    local eggDisplay = {}
+    
+    local player = Client.GetLocalPlayer()
+    local animOffset = kEggDisplayOffset + kEggDisplayOffset * math.sin(Shared.GetTime() * 3) * 0.2
+    
+    if player then
+    
+        local eyePos = player:GetEyePos()
+        for index, egg in ipairs(GetEntitiesWithinRange("Egg", player:GetEyePos(), kEggDisplayRange)) do
+        
+            local techId = egg:GetGestateTechId()
+            
+            if techId and (techId == kTechId.Gorge or techId == kTechId.Lerk or techId == kTechId.Fade or techId == kTechId.Onos) then
+            
+                local normToEntityVec = GetNormalizedVector(egg:GetOrigin() - eyePos)
+                local normViewVec = player:GetViewAngles():GetCoords().zAxis
+               
+                local dotProduct = normToEntityVec:DotProduct(normViewVec)
+                
+                if dotProduct > 0 then                
+                    table.insert(eggDisplay, { Position = Client.WorldToScreen(egg:GetOrigin() + animOffset), TechId = techId } )                
+                end
+            
+            end
+        
+        end
+        
+        if PlayerUI_IsOverhead() then
+        
+            for index, egg in ipairs(GetEntitiesWithinRange("Embryo", player:GetEyePos(), kEggDisplayRange)) do
+            
+                local techId = egg:GetGestationTechId()
+
+                local normToEntityVec = GetNormalizedVector(egg:GetOrigin() - eyePos)
+                local normViewVec = player:GetViewAngles():GetCoords().zAxis
+               
+                local dotProduct = normToEntityVec:DotProduct(normViewVec)
+                
+                if dotProduct > 0 then                
+                    table.insert(eggDisplay, { Position = Client.WorldToScreen(egg:GetOrigin() + animOffset), TechId = techId } )                
+                end
+            
+            end
+        
+        end
+        
+    end
+    
+    return eggDisplay
+
 end
 
 local function GetDamageEffectType(self)

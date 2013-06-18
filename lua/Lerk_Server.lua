@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added new weaponIds
+
 function Lerk:InitWeapons()
 
     Alien.InitWeapons(self)
