@@ -64,8 +64,6 @@ function Marine:UpdateClientEffects(deltaTime, isLocal)
     Player.UpdateClientEffects(self, deltaTime, isLocal)
     
     if isLocal then
-    
-        Client.SetMouseSensitivityScalar(ConditionalValue(self:GetIsStunned(), 0, 1))
         
         self:UpdateGhostModel()
 

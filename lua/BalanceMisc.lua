@@ -114,6 +114,12 @@ kAlienRegenerationPercentage = 0.09
 kFlinchDamageInterval = 0.1
 kFlinchDamagePercent = 0.30
 
+//Base Alien building infestation generation
+kInfestationRadius = 3.5
+kInfestationBlobDensity = 2
+kInfestationGrowthRate = 0.1
+kMinInfestationRadius = 0.5
+
 kKillDelay = 3
 
 kAbilityMaxEnergy = 100

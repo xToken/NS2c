@@ -124,6 +124,10 @@ function AlienSpectator:OnProcessMove(input)
     TeamSpectator.OnProcessMove(self, input)
     
     if Server then
+    
+        if self.timeWaveSpawnEnd > 0 and Shared.GetTime() >= self.timeWaveSpawnEnd then
+            self:SpawnPlayerOnAttack()
+        end
             
         if not self.waitingToSpawnMessageSent then
         
@@ -137,6 +141,19 @@ function AlienSpectator:OnProcessMove(input)
 end
 
 function AlienSpectator:SpawnPlayerOnAttack()
+
+    local egg = self:GetHostEgg()
+    
+    if egg ~= nil then
+        return egg:SpawnPlayer()
+    elseif Shared.GetCheatsEnabled() then
+        return self:GetTeam():ReplaceRespawnPlayer(self)
+    end
+    
+    self:TriggerInvalidSound()
+    
+    return false, nil
+    
 end
 
 // Same as Skulk so his view height is right when spawning in

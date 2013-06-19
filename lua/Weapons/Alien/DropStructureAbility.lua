@@ -207,8 +207,8 @@ function DropStructureAbility:PerformPrimaryAttack(player)
     end
     
     if not secondClick then
+        self:TriggerEffects("web_fire")
         self.lastClickedPosition = Vector(coords.origin)
-                
     elseif not valid then
         player:TriggerInvalidSound()
     end
@@ -269,10 +269,11 @@ local function DropStructure(self, player, origin, direction, structureAbility, 
                     end
                     
                     player:DeductAbilityEnergy(kDropStructureEnergyCost)
-                    self:TriggerEffects("spit_structure", {effecthostcoords = Coords.GetLookIn(origin, direction)} )
                     
                     if structureAbility.OnStructureCreated then
                         structureAbility:OnStructureCreated(structure, lastClickedPosition)
+                    else
+                        self:TriggerEffects("spit_structure", {effecthostcoords = Coords.GetLookIn(origin, direction)} )
                     end
                     
                     self.timeLastDrop = Shared.GetTime()
@@ -366,18 +367,6 @@ function DropStructureAbility:GetPositionForStructure(startPosition, direction, 
         	validPosition = true
 		end
         displayOrigin = trace.endPoint
-    end
-    
-    // Can only be built on infestation
-    local requiresInfestation = LookupTechData(structureAbility.GetDropStructureId(), kTechDataRequiresInfestation)
-    if requiresInfestation and not GetIsPointOnInfestation(displayOrigin) then
-    
-        if self:GetActiveStructure().OverrideInfestationCheck then
-            validPosition = self:GetActiveStructure():OverrideInfestationCheck(trace)
-        else
-            validPosition = false
-        end
-        
     end
     
     // Don't allow dropped structures to go too close to techpoints and resource nozzles
@@ -478,12 +467,16 @@ function DropStructureAbility:GetIsPlacementValid()
     return self.placementValid
 end
 
-function DropStructureAbility:GetGhostModelTechId()
+function DropStructureAbility:GetTakesSecondary()
+    return LookupTechData(self:GetActiveStructure().GetDropStructureId(), kTechDataSpecifyOrientation, false)
+end
+
+function DropStructureAbility:GetGhostModelTechId(ModelCheck)
 
     if self.activeStructure == nil then
         return nil
     else
-        return self:GetActiveStructure():GetDropStructureId()
+        return self:GetActiveStructure():GetDropStructureId(ModelCheck)
     end
 
 end

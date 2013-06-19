@@ -1,5 +1,9 @@
 /ns2c/alien/gorge/webspin1
 552
+/ns2c/alien/gorge/web_clear
+2043
+/ns2c/alien/gorge/web_form
+1076
 /ns2c/alien/lerk/bite2
 926
 /ns2c/alien/lerk/primal_scream
@@ -28,6 +32,14 @@
 1138
 /ns2c/alien/fade/acidrocket_hit
 2247
+/ns2c/alien/onos/devour_fire
+1212
+/ns2c/alien/onos/devour_hit
+1132
+/ns2c/alien/onos/devour_complete
+1472
+/ns2c/alien/onos/devour_cancel
+1760
 /ns2c/marine/weapon/elec_hit1
 512
 /ns2c/marine/weapon/elec_hit2

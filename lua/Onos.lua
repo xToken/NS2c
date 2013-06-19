@@ -253,6 +253,10 @@ function Onos:GetBaseArmor()
     return kOnosArmor
 end
 
+function Onos:GetBaseHealth()
+    return kOnosHealth
+end
+
 function Onos:GetArmorFullyUpgradedAmount()
     return kOnosArmorFullyUpgradedAmount
 end

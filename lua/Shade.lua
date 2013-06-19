@@ -51,6 +51,7 @@ Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/DetectorMixin.lua")
 Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/InfestationMixin.lua")
 
 class 'Shade' (ScriptActor)
 
@@ -88,6 +89,8 @@ AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
+AddMixinNetworkVars(InfestationMixin, networkVars)
+
 function Shade:OnCreate()
 
     ScriptActor.OnCreate(self)
@@ -132,7 +135,7 @@ function Shade:OnInitialized()
     ScriptActor.OnInitialized(self)
     
     self:SetModel(Shade.kModelName, Shade.kAnimationGraph)
-    
+    InitMixin(self, InfestationMixin)
     if Server then
     
         InitMixin(self, StaticTargetMixin)
@@ -162,7 +165,23 @@ end
 
 function Shade:GetShowOrderLine()
     return true
-end    
+end
+
+function Shade:GetMaxRadius()
+    return kInfestationRadius
+end
+
+function Shade:GetGrowthRate()
+    return kInfestationGrowthRate
+end
+
+function Shade:GetMinRadius()
+    return kMinInfestationRadius
+end
+
+function Shade:GetInfestationDensity()
+    return kInfestationBlobDensity
+end
 
 function Shade:GetDamagedAlertId()
     return kTechId.AlienAlertStructureUnderAttack

@@ -10,18 +10,22 @@ Script.Load("lua/Weapons/Alien/StructureAbility.lua")
 
 class 'WebsAbility' (StructureAbility)
 
-local kMaxWebLength = 20
-local kMinWebLength = 4
-
 function WebsAbility:GetEnergyCost(player)
     return kDropStructureEnergyCost
 end
 
 function WebsAbility:GetGhostModelName(ability)
-    return Bomb.kModelName
+    return Web.kModelName
 end
 
-function WebsAbility:GetDropStructureId()
+function WebsAbility:GetDropRange()
+    return kMaxWebBuildRange
+end
+
+function WebsAbility:GetDropStructureId(ModelCheck)
+    if ModelCheck then
+        return kTechId.WebStalk
+    end
     return kTechId.Web
 end
 
@@ -39,6 +43,7 @@ end
 
 function WebsAbility:OnStructureCreated(structure, lastClickedPosition)
     structure:SetEndPoint(lastClickedPosition)
+    structure:TriggerEffects("web_harden")
 end
 
 function WebsAbility:GetIsPositionValid(displayOrigin, player, normal, lastClickedPosition, entity)
@@ -69,5 +74,5 @@ end
 
 function WebsAbility:IsAllowed(player)
     local structures = GetEntitiesForTeamWithinRange(self:GetDropClassName(), player:GetTeamNumber(), player:GetEyePos(), kMaxAlienStructureRange)
-    return GetHasTech(player, self:GetRequiredTechId()) and #structures < kMaxAlienStructuresofType and kWebEnabled
+    return GetHasTech(player, self:GetRequiredTechId()) and kWebEnabled and #structures < kMaxAlienStructuresofType
 end

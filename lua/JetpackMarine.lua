@@ -297,7 +297,7 @@ end
 
 function JetpackMarine:GetMaxSpeed(possible)
 
-    if not self:GetIsOnSurface() or self:GetIsJetpacking() then
+    if (not self:GetIsOnSurface() or self:GetIsJetpacking()) and not self:GetIsWebbed() then
         return kFlyMaxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetInventorySpeedScalar()
     end
 

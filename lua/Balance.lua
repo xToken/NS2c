@@ -218,7 +218,7 @@ kHeavyMachineGunClipSize = 125
 kHeavyMachineGunWeight = 0.05
 kHeavyMachineGunROF = 0.05
 kHeavyMachineGunReloadTime = 6.3
-kHeavyMachineGunClipWeight = 0.035
+kHeavyMachineGunClipWeight = 0.0035
 
 kMineDamage = 125
 kMineDamageType = kDamageType.Normal
@@ -315,12 +315,12 @@ kBileBombDamageType = kDamageType.StructuresOnly
 kBileBombEnergyCost = 22
 kBileBombSplashRadius = 6  // 200 inches in NS1 = 5 meters           
 
-kWebSpinnerROF = 0.5
-kWebSpinnerEnergyCost = 18
-kWebImobilizeTime = 3
-kWebEngagementRange = 2
 kMinWebLength = 2
-kMaxWebLength = 20
+kMaxWebLength = 12
+kMaxWebBuildRange = 10
+kWebbedDuration = 3
+kNumWebsPerGorge = 2
+kWebBuildCost = 0
 
 kLerkFlapEnergyCost = 3
 
@@ -430,6 +430,9 @@ kEmpoweredROFIncrease = 0.25
 
 // SPAWN TIMES
 kMarineRespawnTime = 10
-kEggSpawnTime = 8
-kAlienWaveSpawnInterval = 7
+kEggSpawnTime = 6
+kAlienBaseSpawnInterval = 8
+kAlienSpawnIntervalPerPlayer = 0.166
+kAlienMinSpawnInterval = 6
+kAlienMaxSpawnInterval = 8
 kAlienEggsPerHive = 10

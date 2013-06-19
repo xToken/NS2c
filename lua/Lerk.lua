@@ -169,6 +169,10 @@ function Lerk:GetBaseArmor()
     return kLerkArmor
 end
 
+function Lerk:GetBaseHealth()
+    return kLerkHealth
+end
+
 function Lerk:GetArmorFullyUpgradedAmount()
     return kLerkArmorFullyUpgradedAmount
 end

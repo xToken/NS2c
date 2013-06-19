@@ -1730,7 +1730,7 @@ local function UpdateDangerEffects(self)
                     
                         self.dangerEnabled = true
                         self.dangerOrigin = commandStructure:GetOrigin()
-                        Client.PlayMusic("sound/NS2.fev/danger")
+                        //Client.PlayMusic("sound/NS2.fev/danger")
                         
                     end
                     
@@ -1744,7 +1744,7 @@ local function UpdateDangerEffects(self)
                    not commandStructure:GetIsInCombat() or
                    self.dangerOrigin:GetDistanceTo(playerOrigin) > kDangerCheckEndDistance then
                 
-                    Client.PlayMusic("sound/NS2.fev/no_danger")
+                    //Client.PlayMusic("sound/NS2.fev/no_danger")
                     self.dangerEnabled = false
                     self.dangerOrigin = nil
                     

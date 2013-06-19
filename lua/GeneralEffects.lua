@@ -423,19 +423,7 @@ kGeneralEffectData =
             {private_sound = "sound/ns2c.fev/ns2c/ui/you_lose"},
         }
     },
-    
-    ambient_music =
-    {
-        ambient_music =
-        {
-            {private_sound = "sound/ns2c.fev/ns2c/ui/ambient_music1", track = 1, done = true},
-            {private_sound = "sound/ns2c.fev/ns2c/ui/ambient_music2", track = 2, done = true},
-            {private_sound = "sound/ns2c.fev/ns2c/ui/ambient_music3", track = 3, done = true},
-            {private_sound = "sound/ns2c.fev/ns2c/ui/ambient_music4", track = 4, done = true},
-            {private_sound = "sound/ns2c.fev/ns2c/ui/ambient_music5", track = 5, done = true},
-        }
-    },          
-            
+
 }
 
 GetEffectManager():AddEffectData("GeneralEffectData", kGeneralEffectData)

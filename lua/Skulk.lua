@@ -137,6 +137,10 @@ function Skulk:GetBaseArmor()
     return kSkulkArmor
 end
 
+function Skulk:GetBaseHealth()
+    return kSkulkHealth
+end
+
 function Skulk:GetArmorFullyUpgradedAmount()
     return kSkulkArmorFullyUpgradedAmount
 end

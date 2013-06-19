@@ -209,7 +209,7 @@ function CustomGroundMoveMixin:ApplyHalfGravity(input, velocity, time)
 end
 
 function CustomGroundMoveMixin:GetWishVelocity(input)
-    if HasMixin(self, "Stun") and self:GetIsStunned() then
+    if HasMixin(self, "Stun") and self:GetIsStunned() or HasMixin(self, "Devourable") and self:GetIsDevoured() then
         return Vector(0,0,0)
     end
     

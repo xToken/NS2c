@@ -197,6 +197,30 @@ kAlienWeaponEffects =
             {sound = "sound/NS2.fev/alien/structures/spawn_small"},
         },
     },
+    
+    web_fire =
+    {
+        web_fire =
+        {
+            {sound = "sound/ns2c.fev/ns2c/alien/gorge/webspin1"},
+        },
+    },
+    
+    web_harden =
+    {
+        web_fire =
+        {
+            {sound = "sound/ns2c.fev/ns2c/alien/gorge/web_form"},
+        },
+    },
+    
+    web_clear =
+    {
+        web_fire =
+        {
+            {sound = "sound/ns2c.fev/ns2c/alien/gorge/web_clear"},
+        },
+    },
 
     spit_structure =
     {
@@ -324,6 +348,32 @@ kAlienWeaponEffects =
             {cinematic = "cinematics/alien/onos/stomp_hit.cinematic"},
             {sound = "", silenceupgrade = true, done = true},
             {player_sound = "sound/NS2.fev/alien/onos/stomp"},
+        },
+    },
+    
+    devour_fire =
+    {
+        DevourAttack =
+        {
+            {sound = "", silenceupgrade = true, done = true},
+            {player_sound = "sound/ns2c.fev/ns2c/alien/onos/devour_fire"},
+        },
+    },
+    
+    devour_hit =
+    {
+        DevourHit =
+        {
+            {sound = "", silenceupgrade = true, done = true},
+            {player_sound = "sound/ns2c.fev/ns2c/alien/onos/devour_hit"},
+        },
+    },
+    
+    devour_complete =
+    {
+        DevourCompleteEffects =
+        {
+            {player_sound = "sound/ns2c.fev/ns2c/alien/onos/devour_complete"},
         },
     },
     

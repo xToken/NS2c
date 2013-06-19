@@ -738,8 +738,8 @@ local function AssignPlayerToEgg(self, player, spawntime, hive)
     
 end
 
-local function GetSpawnTime()
-    return kAlienWaveSpawnInterval
+local function GetSpawnTime(self)
+    return Clamp(kAlienBaseSpawnInterval - (self:GetNumPlayers() * kAlienSpawnIntervalPerPlayer), kAlienMinSpawnInterval, kAlienMaxSpawnInterval)
 end
 
 local function RespawnPlayer(self, hive)
@@ -761,7 +761,7 @@ local function RespawnPlayer(self, hive)
                 end
                 if not success then
                     //Fail spawn, player will automatically re-queue.
-                    self:PutPlayerInRespawnQueue(alien, spawntime - GetSpawnTime())
+                    self:PutPlayerInRespawnQueue(alien, spawntime - GetSpawnTime(self))
                 else
                     alien:SetWaveSpawnEndTime(spawntime)
                 end
@@ -773,10 +773,10 @@ local function RespawnPlayer(self, hive)
                     //Not sure how this happens but i think its causing the spawn bug
                     //Requeue the player making sure to post date them correspondingly
                     Print(ToString("FAILEGGSPAWN"))
-                    self:PutPlayerInRespawnQueue(alien, spawntime - GetSpawnTime())   
+                    self:PutPlayerInRespawnQueue(alien, spawntime - GetSpawnTime(self))   
                 end
             else
-                self:PutPlayerInRespawnQueue(alien, spawntime - GetSpawnTime())            
+                self:PutPlayerInRespawnQueue(alien, spawntime - GetSpawnTime(self))            
             end
         end
     end
@@ -806,7 +806,7 @@ function AlienTeam:UpdateRespawn()
                         self:RemovePlayerFromRespawnQueue(player)
                     end
                     if hive.queuedplayer then    
-                        hive.timeWaveEnds = GetSpawnTime() + Shared.GetTime()      
+                        hive.timeWaveEnds = GetSpawnTime(self) + Shared.GetTime()      
                         local player = Shared.GetEntity(hive.queuedplayer)
                         if player then
                             AssignPlayerToEgg(self, player, hive.timeWaveEnds, hive)

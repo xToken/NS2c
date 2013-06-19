@@ -64,19 +64,27 @@ local function VoteChamber(player, techId)
 end
 
 local function VoteCrag(player)
-    VoteChamber(player, kTechId.Crag)
+	if not GetHasTech(player, kTechId.Crag) then
+		VoteChamber(player, kTechId.Crag)
+	end
 end
 
 local function VoteShift(player)
-    VoteChamber(player, kTechId.Shift)
+	if not GetHasTech(player, kTechId.Shift) then
+		VoteChamber(player, kTechId.Shift)
+	end
 end
 
 local function VoteShade(player)
-    VoteChamber(player, kTechId.Shade)
+	if not GetHasTech(player, kTechId.Shade) then
+		VoteChamber(player, kTechId.Shade)
+	end
 end
 
 local function VoteWhip(player)
-    VoteChamber(player, kTechId.Whip)
+	if not GetHasTech(player, kTechId.Whip) then
+		VoteChamber(player, kTechId.Whip)
+	end
 end
 
 local function GetLifeFormSound(player)

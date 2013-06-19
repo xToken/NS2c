@@ -62,6 +62,7 @@ Client.propList = { }
 Client.lightList = { }
 Client.skyBoxList = { }
 Client.ambientSoundList = { }
+Client.ambientMusicList = { }
 Client.tracersList = { }
 Client.fogAreaModifierList = { }
 Client.rules = { }
@@ -194,6 +195,10 @@ function DestroyLevelObjects()
         Client.ambientSoundList[a]:OnDestroy()
     end
     Client.ambientSoundList = { }
+    for a = 1, #Client.ambientMusicList do
+        Client.ambientMusicList[a]:OnDestroy()
+    end
+    Client.ambientMusicList = { }
     Client.rules = { }
     
 end
@@ -351,9 +356,15 @@ function SetCommanderPropState(isComm)
 
 end
 
-local kAmbientTrackTime = 300
+local kAmbientTrackTime = 180
 local lastAmbientUpdate = math.random(1, kAmbientTrackTime)
-local kAmbientMusicTracks = 5
+local kAmbientMusicTracks = {
+    "sound/ns2c.fev/ns2c/ui/ambient_music1",
+    "sound/ns2c.fev/ns2c/ui/ambient_music2",
+    "sound/ns2c.fev/ns2c/ui/ambient_music3",
+    "sound/ns2c.fev/ns2c/ui/ambient_music4",
+    "sound/ns2c.fev/ns2c/ui/ambient_music5" 
+}
 
 function UpdateAmbientSounds(deltaTime)
     
@@ -365,13 +376,34 @@ function UpdateAmbientSounds(deltaTime)
         ambientSound:OnUpdate(deltaTime)
     end
     
-    if lastAmbientUpdate < Shared.GetTime() then
-        local localPlayer = Client.GetLocalPlayer()
-        if localPlayer then
-            localPlayer:TriggerEffects("ambient_music", { track = math.random(1, kAmbientMusicTracks)})
+    if #Client.ambientMusicList == 0 then
+        local listenerOrigin = Vector(0, 0, 0)
+        for k, v in ipairs(kAmbientMusicTracks) do
+            local entity = AmbientSound()
+            entity.eventName = v
+            entity.minFalloff = 999
+            entity.maxFalloff = 1000
+            entity.falloffType = 2
+            entity.positioning = 2
+            entity.volume = 1
+            entity.pitch = 0
+            Client.PrecacheLocalSound(entity.eventName)
+            table.insert(Client.ambientMusicList, entity)
         end
-        lastAmbientUpdate = Shared.GetTime() + kAmbientTrackTime
+    else
+        if lastAmbientUpdate < Shared.GetTime() then
+            local sel = math.random(1, #kAmbientMusicTracks)
+            for k, v in ipairs(kAmbientMusicTracks) do
+                if k == sel then
+                    Client.ambientMusicList[k]:StartPlaying()
+                else
+                    Client.ambientMusicList[k]:StopPlaying()
+                end
+            end
+            lastAmbientUpdate = Shared.GetTime() + kAmbientTrackTime
+        end
     end
+    
     
 end
 

@@ -16,7 +16,6 @@
 //    GetArmorUseFractionOverride(damageType, armorFractionUsed)
 //    GetReceivesStructuralDamage(damageType)
 //    GetReceivesBiologicalDamage(damageType)
-//    GetHealthPerArmorOverride(damageType, healthPerArmor)
 //
 //
 //
@@ -215,10 +214,6 @@ local function ApplyTargetModifiers(target, attacker, doer, damage, armorFractio
     
     if target.GetArmorUseFractionOverride then
         armorFractionUsed = target:GetArmorUseFractionOverride(damageType, armorFractionUsed)
-    end
-    
-    if target.GetHealthPerArmorOverride then
-        healthPerArmor = target:GetHealthPerArmorOverride(damageType, healthPerArmor)
     end
     
     return damage, armorFractionUsed, healthPerArmor

@@ -33,6 +33,7 @@ Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/InfestationMixin.lua")
 
 class 'Whip' (ScriptActor)
 
@@ -64,6 +65,7 @@ AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
+AddMixinNetworkVars(InfestationMixin, networkVars)
 
 Shared.PrecacheSurfaceShader("models/alien/whip/ball.surface_shader")
 
@@ -104,7 +106,7 @@ function Whip:OnInitialized()
     ScriptActor.OnInitialized(self)
 
     self:SetModel(Whip.kModelName, Whip.kAnimationGraph)
-    
+    InitMixin(self, InfestationMixin)
     self:SetUpdates(true)
     
     if Server then
@@ -126,6 +128,22 @@ end
 function Whip:GetDamagedAlertId()
     return kTechId.AlienAlertStructureUnderAttack
 end
+
+function Whip:GetMaxRadius()
+    return kInfestationRadius
+end
+
+function Whip:GetGrowthRate()
+    return kInfestationGrowthRate
+end
+
+function Whip:GetMinRadius()
+    return kMinInfestationRadius
+end
+
+function Whip:GetInfestationDensity()
+    return kInfestationBlobDensity
+end 
 
 function Whip:GetCanSleep()
     return true

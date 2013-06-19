@@ -939,12 +939,13 @@ function PlayingTeam:VoteForUpgradeStructure(votingPlayer, techId)
                 voteId = techId
             }
 
-            local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
+            if netmsg.votesMoreNeeded > 0 then
+                local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
 
-            for index, player in ipairs(players) do
-                Server.SendNetworkMessage(player, "VoteChamberCast", netmsg, false)
+                for index, player in ipairs(players) do
+                    Server.SendNetworkMessage(player, "VoteChamberCast", netmsg, false)
+                end
             end
-
         end
     end
 
@@ -979,6 +980,20 @@ function PlayingTeam:VoteToEjectCommander(votingPlayer, targetCommander)
     
 end
 
+local function CompleteUpgradeChamberVote(self)
+    local techId = self.selectupgradechamber:GetTarget()
+    
+    if UpgradeBaseHivetoChamberSpecific(nil, techId, self) then
+        local netmsg = {
+                voteId = techId
+            }
+        local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
+        for index, player in ipairs(players) do
+            Server.SendNetworkMessage(player, "ChamberSelected", netmsg, false)
+        end
+    end
+end
+
 function PlayingTeam:UpdateVotes()
 
     PROFILE("PlayingTeam:UpdateVotes")
@@ -1005,22 +1020,12 @@ function PlayingTeam:UpdateVotes()
     
     // Upgrade chambers
     if self.selectupgradechamber:GetVotePassed() and self.GetActiveUnassignedHiveCount and self:GetActiveUnassignedHiveCount() > 0 then
-    
-        local techId = self.selectupgradechamber:GetTarget()
-        
-        if UpgradeBaseHivetoChamberSpecific(nil, techId, self) then
-            local netmsg = {
-                    voteId = techId
-                }
-            local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
-            for index, player in ipairs(players) do
-                Server.SendNetworkMessage(player, "ChamberSelected", netmsg, false)
-            end
-        end
-        
+        CompleteUpgradeChamberVote(self)
         self.selectupgradechamber:Reset()
-        
     elseif self.selectupgradechamber:GetVoteElapsed(Shared.GetTime()) then
+        if self.selectupgradechamber:GetTarget() ~= nil then
+            CompleteUpgradeChamberVote(self)
+        end
         self.selectupgradechamber:Reset()
     end
     

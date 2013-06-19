@@ -22,8 +22,9 @@ kLerkHealth = 125	    kLerkArmor = 30	        kLerkPointValue = 2
 kFadeHealth = 300	    kFadeArmor = 150	    kFadePointValue = 2
 kOnosHealth = 950	    kOnosArmor = 700	    kOnosPointValue = 2
 
+kEmbryoHealth = 200     kEmbryoArmor = 150      kEggPointValue = 0
 kEggHealth = 200	    kEggArmor = 0    	    kEggPointValue = 0
-kBabblerHealth = 50	    kBabblerArmor = 25	    kBabblerPointValue = 0
+kBabblerHealth = 25	    kBabblerArmor = 25	    kBabblerPointValue = 0
 kBabblerEggHealth = 200	kBabblerEggArmor = 100	kBabblerEggPointValue = 0
 
 kArmorPerUpgradeLevel = 20
@@ -40,9 +41,10 @@ kLerkArmorFullyUpgradedAmount = 50
 kFadeArmorFullyUpgradedAmount = 250
 kOnosArmorFullyUpgradedAmount = 900
 
-kHealthPointsPerArmorScalarHive1 = 2
-kHealthPointsPerArmorScalarHive2 = 2
-kHealthPointsPerArmorScalarHive3 = 3
+kAlienHealthPerArmorHive1 = 0
+kAlienHealthPerArmorHive2 = 0
+kAlienHealthPerArmorHive3 = 1
+kAlienHealthPerArmorHive4 = 2
 
 // used for structures
 kStartHealthScalar = 0.3

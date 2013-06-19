@@ -159,6 +159,10 @@ function BabblerEgg:GetEffectParams(tableParams)
     tableParams[kEffectFilterSilenceUpgrade] = self.silenced
 end
 
+function BabblerEgg:GetSendDeathMessageOverride()
+    return false
+end
+
 function BabblerEgg:GetCanBeUsed(player, useSuccessTable)
     if not self:GetCanConstruct(player) then
         useSuccessTable.useSuccess = false

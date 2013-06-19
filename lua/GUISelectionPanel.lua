@@ -73,8 +73,8 @@ GUISelectionPanel.kResourceTextXOffset = 4
 GUISelectionPanel.kResourceTextYOffset = 0
 
 GUISelectionPanel.kHealthIconPos = Vector(114, 74, 0) * kCommanderGUIsGlobalScale
-GUISelectionPanel.kArmorIconPos = Vector(0, 32, 0) * kCommanderGUIsGlobalScale + GUISelectionPanel.kHealthIconPos
-GUISelectionPanel.kEnergyIconPos = Vector(0, 32, 0) * kCommanderGUIsGlobalScale + GUISelectionPanel.kArmorIconPos
+GUISelectionPanel.kArmorIconPos = Vector(0, 18, 0) * kCommanderGUIsGlobalScale + GUISelectionPanel.kHealthIconPos
+GUISelectionPanel.kEnergyIconPos = Vector(0, 18, 0) * kCommanderGUIsGlobalScale + GUISelectionPanel.kArmorIconPos
 
 GUISelectionPanel.kSelectedHealthTextFontSize = 15 * kCommanderGUIsGlobalScale
 

@@ -112,6 +112,10 @@ function Fade:GetBaseArmor()
     return kFadeArmor
 end
 
+function Fade:GetBaseHealth()
+    return kFadeHealth
+end
+
 function Fade:GetArmorFullyUpgradedAmount()
     return kFadeArmorFullyUpgradedAmount
 end

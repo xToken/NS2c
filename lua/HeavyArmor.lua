@@ -83,7 +83,7 @@ if Server then
         if self:GetIsValidRecipient(player) then
         
             DestroyEntity(self)
-            StartSoundEffectAtOrigin(HeavyArmor.kPickupSound, recipient:GetOrigin())
+            StartSoundEffectAtOrigin(HeavyArmor.kPickupSound, player:GetOrigin())
             player:GiveHeavyArmor()
             
         end

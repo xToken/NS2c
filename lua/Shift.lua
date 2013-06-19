@@ -40,6 +40,7 @@ Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/HasUmbraMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/InfestationMixin.lua")
 
 class 'Shift' (ScriptActor)
 
@@ -80,6 +81,7 @@ AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
+AddMixinNetworkVars(InfestationMixin, networkVars)
 
 function Shift:OnCreate()
 
@@ -121,7 +123,7 @@ function Shift:OnInitialized()
     ScriptActor.OnInitialized(self)
     
     self:SetModel(Shift.kModelName, kAnimationGraph)
-    
+    InitMixin(self, InfestationMixin)
     if Server then
     
         InitMixin(self, StaticTargetMixin)
@@ -142,7 +144,23 @@ end
 
 function Shift:GetCanBeUsedConstructed()
     return true
-end   
+end
+
+function Shift:GetMaxRadius()
+    return kInfestationRadius
+end
+
+function Shift:GetGrowthRate()
+    return kInfestationGrowthRate
+end
+
+function Shift:GetMinRadius()
+    return kMinInfestationRadius
+end
+
+function Shift:GetInfestationDensity()
+    return kInfestationBlobDensity
+end 
 
 function Shift:GetCanBeUsed(player, useSuccessTable)
     if self:GetCanConstruct(player) or (HasMixin(player, "Redeploy") and player:GetCanRedeploy()) then

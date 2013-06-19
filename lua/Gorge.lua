@@ -116,6 +116,10 @@ function Gorge:GetBaseArmor()
     return kGorgeArmor
 end
 
+function Gorge:GetBaseHealth()
+    return kGorgeHealth
+end
+
 function Gorge:GetArmorFullyUpgradedAmount()
     return kGorgeArmorFullyUpgradedAmount
 end
@@ -324,7 +328,7 @@ if Client then
     
         local weapon = self:GetActiveWeapon()
         if weapon and weapon:isa("DropStructureAbility") then
-            return weapon:GetGhostModelTechId()
+            return weapon:GetGhostModelTechId(true)
         end
         
     end

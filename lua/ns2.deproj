@@ -61,9 +61,6 @@
     <filename>Weapons\Marine\Axe.lua</filename>
   </file>
   <file>
-    <filename>Weapons\Alien\BabblerAbility.lua</filename>
-  </file>
-  <file>
     <filename>BabblerEgg.lua</filename>
   </file>
   <file>
@@ -110,6 +107,9 @@
   </file>
   <file>
     <filename>Client.lua</filename>
+  </file>
+  <file>
+    <filename>ClientUI.lua</filename>
   </file>
   <file>
     <filename>Weapons\Marine\ClipWeapon.lua</filename>
@@ -676,9 +676,6 @@
     <filename>TechData.lua</filename>
   </file>
   <file>
-    <filename>TechMixin.lua</filename>
-  </file>
-  <file>
     <filename>TechPoint.lua</filename>
   </file>
   <file>
@@ -725,6 +722,12 @@
   </file>
   <file>
     <filename>Weapons\Weapon_Server.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\Web.lua</filename>
+  </file>
+  <file>
+    <filename>WebableMixin.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\WebsAbility.lua</filename>

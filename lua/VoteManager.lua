@@ -114,9 +114,10 @@ end
 // Note - doesn't reset number of players.
 function VoteManager:Reset()
 
+    self.playersTargets = {}
     self.playersVoted = { }
     self.target = nil
-    
+    self.timeVoteStarted = nil
 end
 
 function VoteManager:SetNumPlayers(numPlayers)
@@ -152,4 +153,3 @@ end
 function VoteManager:SetMinVotes(val)
     self.minvotes = val
 end
-

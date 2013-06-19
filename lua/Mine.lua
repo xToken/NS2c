@@ -111,6 +111,10 @@ local function Arm(self)
     
 end
 
+function Mine:GetSendDeathMessageOverride()
+    return false
+end
+
 local function CheckEntityExplodesMine(self, entity)
 
     if not self.active then

@@ -188,6 +188,7 @@ function Alien:OnInitialized()
             if self:GetTeam().GetActiveHiveCount then
                 self:UpdateActiveAbilities(self:GetTeam():GetActiveHiveCount())
                 self:ManuallyUpdateNumUpgradeStructures()
+                self:UpdateHiveScaledHealthValues()
             end
             return false
         end
@@ -406,8 +407,19 @@ function Alien:HandleButtons(input)
     
 end
 
+local function GetIsUnderShade(self)
+    local shady = false
+    for _, shade in ipairs( GetEntitiesForTeamWithinRange("Shade", self:GetTeamNumber(), self:GetOrigin(), Shade.kCloakRadius) ) do
+        if shade:GetIsBuilt() and shade:GetIsAlive() then
+            shady = true
+            break
+        end
+    end
+    return shady
+end
+
 function Alien:GetIsCamouflaged()
-    return GetHasGhostUpgrade(self) and not self:GetIsInCombat()
+    return GetHasGhostUpgrade(self) and not self:GetIsInCombat() and not GetIsUnderShade(self)
 end
 
 function Alien:GetNotEnoughResourcesSound()
@@ -430,8 +442,27 @@ end
 /**
  * Must override.
  */
+function Alien:GetBaseHealth()
+    assert(false)
+end
+
+/**
+ * Must override.
+ */
 function Alien:GetArmorFullyUpgradedAmount()
     assert(false)
+end
+
+function Alien:GetHiveHealthScalar(numHives)
+    if numHives <= 1 then
+        return kAlienHealthPerArmorHive1
+    elseif numHives == 2 then
+        return kAlienHealthPerArmorHive2
+    elseif numHives == 3 then
+        return kAlienHealthPerArmorHive3
+    elseif numHives >= 4 then
+        return kAlienHealthPerArmorHive4
+    end
 end
 
 function Alien:GetCanBeHealedOverride()

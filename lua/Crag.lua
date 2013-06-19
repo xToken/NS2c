@@ -42,6 +42,7 @@ Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/InfestationMixin.lua")
 
 class 'Crag' (ScriptActor)
 
@@ -80,6 +81,7 @@ AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
+AddMixinNetworkVars(InfestationMixin, networkVars)
 
 function Crag:OnCreate()
 
@@ -125,7 +127,7 @@ function Crag:OnInitialized()
     ScriptActor.OnInitialized(self)
     
     self:SetModel(Crag.kModelName, Crag.kAnimationGraph)
-    
+    InitMixin(self, InfestationMixin)
     if Server then
     
         InitMixin(self, StaticTargetMixin)
@@ -191,6 +193,22 @@ function Crag:TryHeal(target)
     end
     return amountHealed
     
+end
+
+function Crag:GetMaxRadius()
+    return kInfestationRadius
+end
+
+function Crag:GetGrowthRate()
+    return kInfestationGrowthRate
+end
+
+function Crag:GetMinRadius()
+    return kMinInfestationRadius
+end
+
+function Crag:GetInfestationDensity()
+    return kInfestationBlobDensity
 end
 
 function Crag:GetReceivesStructuralDamage()

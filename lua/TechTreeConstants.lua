@@ -91,7 +91,7 @@ kTechId = enum({
     'Babbler', 'BabblerEgg',
     
     // Alien structures 
-    'Hive', 'CragHive', 'ShadeHive', 'ShiftHive', 'WhipHive','Harvester', 'Egg', 'Embryo', 'Hydra', 'WebStalk',
+    'Hive', 'CragHive', 'ShadeHive', 'ShiftHive', 'WhipHive','Harvester', 'Egg', 'Embryo', 'Hydra',
     'GorgeEgg', 'LerkEgg', 'FadeEgg', 'OnosEgg',
     
     // Upgrade buildings and abilities (structure, upgraded structure, passive, triggered, targeted)

@@ -228,6 +228,10 @@ function PhaseGate:GetDestLocationId()
     return self.destLocationId
 end
 
+function PhaseGate:GetIsPowered()
+    return self.linked
+end
+
 function PhaseGate:GetEffectParams(tableParams)
 
     // Override active field here to mean "linked"
