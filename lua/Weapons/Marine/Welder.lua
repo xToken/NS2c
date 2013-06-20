@@ -116,7 +116,7 @@ function Welder:GetCheckForRecipient()
 end
 
 function Welder:OnTouch(recipient)
-    recipient:AddWeapon(self, true)
+    recipient:AddWeapon(self, false)
     StartSoundEffectAtOrigin(Marine.kGunPickupSound, recipient:GetOrigin())
 end
 

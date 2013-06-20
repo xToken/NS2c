@@ -16,7 +16,7 @@ local kShowOnTeam = { }
 kShowOnTeam["all"] = { GUIFeedback = true, GUIScoreboard = true, GUIDeathMessages = true, GUIChat = true,
                        GUIVoiceChat = true, GUIMinimapFrame = true, GUIMapAnnotations = true,
                        GUICommunicationStatusIcons = true, GUIUnitStatus = true, GUIDeathScreen = true,
-                       GUITipVideo = true, /* STEVETEMP GUIReadyVideoList = true,*/ GUIVoteMenu = true, GUIStartVoteMenu = true }
+                       GUITipVideo = true, GUISensorBlips = true, GUIVoteMenu = true, GUIStartVoteMenu = true }
 
 kShowOnTeam[kTeamReadyRoom] = { GUIReadyRoomOrders = true }
 kShowOnTeam[kTeam1Index] = { }
@@ -39,7 +39,7 @@ end
 // Below are the rules for what scripts should be active when the local player is a certain class.
 local kShowAsClass = { }
 kShowAsClass["Marine"] = { ["Hud/Marine/GUIMarineHUD"] = true, GUIPoisonedFeedback = true, GUIPickups = true, GUIOrders = true,
-                           GUISensorBlips = true, GUIObjectiveDisplay = true, GUIProgressBar = true, GUIRequestMenu = true,
+                           GUIObjectiveDisplay = true, GUIProgressBar = true, GUIRequestMenu = true,
                            GUIWaypoints = true, GUIMarineDevoured = true }
 kShowAsClass["JetpackMarine"] = { GUIJetpackFuel = true }
 kShowAsClass["Exo"] = { GUIExoThruster = true, ["Hud/Marine/GUIMarineHUD"] = true, ["Hud/Marine/GUIExoHUD"] = true, GUIProgressBar = true, GUIRequestMenu = true, GUIWaypoints = true }

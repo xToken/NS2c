@@ -47,7 +47,7 @@ Armory.kAdvancedArmoryChildModel = PrecacheAsset("models/marine/advanced_armory/
 Armory.kAdvancedArmoryAnimationGraph = PrecacheAsset("models/marine/advanced_armory/advanced_armory.animation_graph")
 
 Armory.kThinkTime = .3
-Armory.kHealAmount = 10
+Armory.kHealAmount = 15
 Armory.kResupplyInterval = 1
 
 // Players can use menu and be supplied by armor inside this range

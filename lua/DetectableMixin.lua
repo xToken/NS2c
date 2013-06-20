@@ -16,10 +16,6 @@ DetectableMixin.type = "Detectable"
 // Flushed in the UpdateServer hook by DetectableMixin.OnUpdateServer
 local DetectableMixinDirtyTable = { }
 
-Shared.PrecacheSurfaceShader("cinematics/vfx_materials/detected.surface_shader")
-local kDetectedMaterialName = "cinematics/vfx_materials/detected.material"
-local kDetectEffectInterval = 3
-
 local function UpdateSensorBlip(self)
 
     local blip = nil
@@ -47,6 +43,7 @@ local function UpdateSensorBlip(self)
         if not blip then
         
             blip = CreateEntity(SensorBlip.kMapName)
+            blip:UpdateRelevancy(GetEnemyTeamNumber(self:GetTeamNumber()))
             self.sensorBlipId = blip:GetId()
             
         end
@@ -103,7 +100,7 @@ DetectableMixin.optionalCallbacks =
     OnDetectedChange = "Called when self.detected changes."
 }
 
-local kResetDetectionInterval = 1.5
+local kResetDetectionInterval = 2
 
 DetectableMixin.networkVars =
 {
@@ -196,40 +193,3 @@ function DetectableMixin:SetDetected(state, decloak)
     end
     
 end
-
-/*function DetectableMixin:OnUpdateRender()
-
-    PROFILE("DetectableMixin:OnUpdateRender")
-    
-    if self:isa("Player") and self:GetIsLocalPlayer() then
-    
-        local viewModelEnt = self:GetViewModelEntity()
-        local viewModel = viewModelEnt and viewModelEnt:GetRenderModel()
-        
-        if viewModel then
-        
-            if not self.detectedMaterial then
-                self.detectedMaterial = AddMaterial(viewModel, kDetectedMaterialName)
-            end
-            
-            if self.clientDetected ~= self:GetIsDetected() then
-            
-                self.clientDetected = self:GetIsDetected()
-                
-                if self.clientDetected then
-                    self.timeLastDetectEffect = Shared.GetTime()
-                end
-                
-            end
-            
-            if self:GetIsDetected() and self.timeLastDetectEffect + kDetectEffectInterval < Shared.GetTime() then
-                self.timeLastDetectEffect = Shared.GetTime()
-            end
-            
-            self.detectedMaterial:SetParameter("timeDetected", self.timeLastDetectEffect)
-            
-        end
-        
-    end
-    
-end*/

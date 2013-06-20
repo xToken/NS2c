@@ -34,7 +34,7 @@ end
 
 local kJetpackFuelReplenishDelay = .0
 local kJetpackMinimumFuelForLaunch = .03
-local kVerticleThrust = 16
+local kVerticleThrust = 19
 local kJetpackAcceleration = 3.2 // Horizontal acceleration
 local kFlyMaxSpeed = 13.0 // NS1 jetpack is 2.9x running speed (walk: 192, jetpack: 576)
 local kJetpackTakeOffTime = .01

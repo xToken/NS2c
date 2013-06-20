@@ -125,7 +125,7 @@ local kMaxStepAmount = 1.5
 local kCrouchShrinkAmount = 0.6
 local kExtentsCrouchShrinkAmount = 0.5
 local kTauntMovementScalar = .05           // Players can only move a little while taunting
-local kMinSlowSpeedScalar = .3
+local kMinSlowSpeedScalar = .4
 local kBodyYawTurnThreshold = Math.Radians(5)
 local kTurnDelaySpeed = 8
 local kTurnRunDelaySpeed = 2.5
@@ -1174,7 +1174,7 @@ end
 
 function Player:OnJumpLand(landIntensity)
 	if self:GetSlowOnLand() then
-    	self:AddSlowScalar(0.33)
+    	self:AddSlowScalar(0.5)
 	end
     if self:GetPlayLandSound(landIntensity) then
         self:TriggerLandEffects()
@@ -1838,7 +1838,7 @@ end
 // Also reduce velocity by this amount
 function Player:AddSlowScalar(scalar)
     self.slowAmount = Clamp(self.slowAmount + scalar, 0, 1)
-    //self:SetVelocity(self:GetVelocity() * (1 - (scalar * (1 - kMinSlowSpeedScalar))))
+    self:SetVelocity(self:GetVelocity() * (1 - (scalar * (1 - kMinSlowSpeedScalar))))
 end
 
 function Player:GetMaterialBelowPlayer()

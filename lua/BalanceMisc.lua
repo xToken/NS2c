@@ -98,8 +98,8 @@ kUpgradeGestationTime = 2
 // Jetpack
 // NS1: 6.5 seconds of fuel
 // NS1: 9 seconds for full refuel
-kJetpackUseFuelRate = 0.21
-kJetpackReplenishFuelRate = 0.11
+kJetpackUseFuelRate = 0.22
+kJetpackReplenishFuelRate = 0.10
 kJetpackWeight = 0.08
 
 //HA

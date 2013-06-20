@@ -35,7 +35,7 @@ function SensorBlip:UpdateRelevancy(teamnum)
         includeMask = kRelevantToTeam1
     elseif teamnum == 2 then
         includeMask = kRelevantToTeam2
-    elseif teamnum == 0 then
+    else
         includeMask = 0
     end
     self:SetExcludeRelevancyMask(includeMask)

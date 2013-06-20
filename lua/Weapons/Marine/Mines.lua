@@ -270,7 +270,7 @@ function Mines:GetCheckForRecipient()
 end
 
 function Mines:OnTouch(recipient)
-    recipient:AddWeapon(self, true)
+    recipient:AddWeapon(self, false)
     StartSoundEffectAtOrigin(Marine.kGunPickupSound, recipient:GetOrigin())
 end
 

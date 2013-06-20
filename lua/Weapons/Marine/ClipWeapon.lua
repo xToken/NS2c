@@ -176,16 +176,8 @@ function ClipWeapon:GetCheckForRecipient()
 end
 
 function ClipWeapon:OnTouch(recipient)
-    local activeWeapon = recipient:GetActiveWeapon()
-    local weaponBeforeUse
-    if activeWeapon then
-        weaponBeforeUse = activeWeapon:GetMapName()
-    end
-    recipient:AddWeapon(self, true)
+    recipient:AddWeapon(self, self:GetHUDSlot() == 1)
     StartSoundEffectAtOrigin(Marine.kGunPickupSound, recipient:GetOrigin())
-    if self:GetHUDSlot() ~= 1 then
-        recipient:SetActiveWeapon(weaponBeforeUse, true)
-    end
 end
 
 // Return world position of gun barrel, used for weapon effects.

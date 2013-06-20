@@ -469,6 +469,10 @@ function Commander:GetHostCommandStructure()
     return Shared.GetEntity(self.commandStationId)
 end
 
+function Commander:GetIsForwardOverrideDesired()
+    return false
+end
+
 /**
  * Commanders never sight nearby enemy players.
  */

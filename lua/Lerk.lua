@@ -230,6 +230,10 @@ function Lerk:GetCanCrouch()
     return false
 end
 
+function Lerk:GetIsForwardOverrideDesired()
+    return false
+end
+
 function Lerk:GetMass()
     return kMass
 end

@@ -37,11 +37,6 @@ if Client then
             
         local time = Shared_GetTime()
         
-        // As long as we have a parasite we should be visible.
-        if HasMixin(self, "ParasiteAble") and self:GetIsParasited() then
-            self.hiveSightTime = time
-        end
-
         // Determine if the entity should be visible on hive sight
         local visible = false
 
