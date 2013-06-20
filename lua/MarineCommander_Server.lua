@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added energy back in, removed some unneeded drop functions
+
 /**
  * sends notification to all players (new research complete, structure created, etc)
  */

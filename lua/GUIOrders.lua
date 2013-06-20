@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed aliencommander logic
+
 Script.Load("lua/DynamicMeshUtility.lua")
 
 class 'GUIOrders' (GUIScript)

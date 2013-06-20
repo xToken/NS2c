@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed unneeded mixins, added infestation
+
 Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/ResourceTower.lua")
@@ -25,7 +28,7 @@ local kAnimationGraph = PrecacheAsset("models/alien/harvester/harvester.animatio
 local kHarvesterInfestationRadius = 15
 local kHarvesterInfestationBlobDensity = 2
 local kHarvesterInfestationGrowthRate = 0.1
-local kHarvesterMinInfestationRadius = 0.5
+local kHarvesterMinInfestationRadius = 1
 
 local networkVars = 
 {

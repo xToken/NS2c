@@ -132,7 +132,7 @@ function SporeCloud:OnUpdate(deltaTime)
             self:SetOrigin( self:GetOrigin() + GetNormalizedVector(travelVector) * deltaTime * SporeCloud.kTravelSpeed * distanceFraction )
         end
         if travelVector:GetLength() < 3 and not self.soundplayed then
-            Shared.PlayWorldSound(nil, kSporesSound, nil, self:GetOrigin())
+            StartSoundEffectAtOrigin(kSporesSound, self:GetOrigin())
             self.soundplayed = true
         end
     

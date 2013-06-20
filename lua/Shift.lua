@@ -14,12 +14,14 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Changed to remove some abilities, also to cleanup needless code.
+
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
-Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
 Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/LOSMixin.lua")
@@ -37,6 +39,7 @@ Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/HasUmbraMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/InfestationMixin.lua")
 
 class 'Shift' (ScriptActor)
 
@@ -73,10 +76,10 @@ AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
-AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
+AddMixinNetworkVars(InfestationMixin, networkVars)
 
 function Shift:OnCreate()
 
@@ -90,7 +93,6 @@ function Shift:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
-    InitMixin(self, SelectableMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, CloakableMixin)
     InitMixin(self, LOSMixin)
@@ -118,7 +120,7 @@ function Shift:OnInitialized()
     ScriptActor.OnInitialized(self)
     
     self:SetModel(Shift.kModelName, kAnimationGraph)
-    
+    InitMixin(self, InfestationMixin)
     if Server then
     
         InitMixin(self, StaticTargetMixin)
@@ -139,11 +141,26 @@ end
 
 function Shift:GetCanBeUsedConstructed()
     return true
-end   
+end
+
+function Shift:GetMaxRadius()
+    return kInfestationRadius
+end
+
+function Shift:GetGrowthRate()
+    return kInfestationGrowthRate
+end
+
+function Shift:GetMinRadius()
+    return kMinInfestationRadius
+end
+
+function Shift:GetInfestationDensity()
+    return kInfestationBlobDensity
+end 
 
 function Shift:GetCanBeUsed(player, useSuccessTable)
-    local hasupg, level = GetHasRedeploymentUpgrade(player)
-    if self:GetCanConstruct(player) or (hasupg and level > 0 and player.nextredeploy < Shared.GetTime()) then
+    if self:GetCanConstruct(player) or (HasMixin(player, "Redeploy") and player:GetCanRedeploy()) then
         useSuccessTable.useSuccess = true
     else
         useSuccessTable.useSuccess = false
@@ -184,8 +201,8 @@ end
 
 function Shift:OnUse(player, elapsedTime, useSuccessTable)
     local hasupg, level = GetHasRedeploymentUpgrade(player)
-    if hasupg and level > 0 and self:GetIsBuilt() and self:GetTeamNumber() == player:GetTeamNumber() then
-        self:TeleportPlayer(player, level)
+    if hasupg and level > 0 and self:GetIsBuilt() and self:GetTeamNumber() == player:GetTeamNumber() and HasMixin(player, "Redeploy") then
+        player:Redeploy(level)
     end
 end
 
@@ -210,64 +227,6 @@ if Server then
         
     end
     
-end
-
-function Shift:TeleportPlayer(player, level)
-    if Server then
-        if player.nextredeploy == nil or player.nextredeploy < Shared.GetTime() then
-            local validshifts = { }
-            local shifts = GetEntitiesForTeam("Shift", self:GetTeamNumber())
-            local success = false
-
-            local function SortByDistance(shift1, shift2)
-                return shift1.dist > shift2.dist
-            end
-            
-            for i, shift in ipairs(shifts) do
-                local shiftinfo = { shift = shift, dist = 0 }
-                local toTarget = shift:GetOrigin() - player:GetOrigin()
-                local distanceToTarget = toTarget:GetLength()
-                shiftinfo.dist = distanceToTarget
-                if shift:GetIsBuilt() and self ~= shift and distanceToTarget > 5 then
-                    table.insert(validshifts, shiftinfo)
-                end
-             end
-             
-             table.sort(validshifts, SortByDistance)
-
-             for s = 1, #validshifts do
-                selectedshift = validshifts[s].shift
-                local TechID = kTechId.Skulk
-                if player:GetIsAlive() then
-                    TechID = player:GetTechId()
-                end
-                local extents = LookupTechData(TechID, kTechDataMaxExtents)
-                local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)
-                local range = 6
-                for t = 1, 100 do //Persistance...
-                    local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, selectedshift:GetOrigin(), 2, range, EntityFilterAll())
-                    if spawnPoint then
-                        local validForPlayer = GetIsPlacementForTechId(spawnPoint, TechID)
-                        local notNearResourcePoint = #GetEntitiesWithinRange("ResourcePoint", spawnPoint, 2) == 0
-                        if notNearResourcePoint then
-                            Shared.PlayWorldSound(nil, Alien.kTeleportSound, nil, self:GetOrigin())
-                            SpawnPlayerAtPoint(player, spawnPoint)
-                            success = true
-                            player.nextredeploy = Shared.GetTime() + (kRedploymentCooldownBase / level)
-                            break
-                        end
-                    end
-                end
-                if success then
-                    break
-                 end
-             end
-             
-            if not success then
-                player:TriggerInvalidSound()
-            end
-        end
-    end
 end
 
 Shared.LinkClassToMap("Shift", Shift.kMapName, networkVars)

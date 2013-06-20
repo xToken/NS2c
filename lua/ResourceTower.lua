@@ -8,11 +8,13 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removal of TechButtons
+
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
-Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
 Script.Load("lua/LOSMixin.lua")
 Script.Load("lua/TeamMixin.lua")
@@ -42,7 +44,6 @@ AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
-AddMixinNetworkVars(SelectableMixin, networkVars)
 
 if Server then
     Script.Load("lua/ResourceTower_Server.lua")
@@ -59,7 +60,6 @@ function ResourceTower:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
-    InitMixin(self, SelectableMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, ConstructMixin)

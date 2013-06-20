@@ -7,6 +7,10 @@
 //    Thanks to twiliteblue for initial input.
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+
+//NS2c
+//Tweaked jetpack to make more like NS1 accel, made more vars local and added goldsource hooks
+
 Script.Load("lua/Marine.lua")
 Script.Load("lua/Jetpack.lua")
 
@@ -30,11 +34,8 @@ end
 
 local kJetpackFuelReplenishDelay = .0
 local kJetpackMinimumFuelForLaunch = .03
-local kVerticleThrust = 16
+local kVerticleThrust = 19
 local kJetpackAcceleration = 3.2 // Horizontal acceleration
-local kWalkMaxSpeed = 2.2
-local kCrouchMaxSpeed = 1.6
-local kRunMaxSpeed = 4.6
 local kFlyMaxSpeed = 13.0 // NS1 jetpack is 2.9x running speed (walk: 192, jetpack: 576)
 local kJetpackTakeOffTime = .01
 
@@ -296,33 +297,11 @@ end
 
 function JetpackMarine:GetMaxSpeed(possible)
 
-    if possible then
-        return kRunMaxSpeed
+    if (not self:GetIsOnSurface() or self:GetIsJetpacking()) and not self:GetIsWebbed() then
+        return kFlyMaxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetInventorySpeedScalar()
     end
-    
-    if self:GetIsStunned() then
-        return 0
-    end
-    
-    local maxSpeed = kRunMaxSpeed
-    
-    if self.movementModiferState and self:GetIsOnSurface() then
-        maxSpeed = kWalkMaxSpeed
-    end
-    
-    if self:GetCrouched() and self:GetIsOnSurface() then
-        maxSpeed = kCrouchMaxSpeed
-    end
-    
-    if not self:GetIsOnSurface() or self:GetIsJetpacking() then
-        maxSpeed = kFlyMaxSpeed
-    end
-        
-    // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
-    local inventorySpeedScalar = self:GetInventorySpeedScalar()
-    maxSpeed = maxSpeed * self:GetCatalystMoveSpeedModifier() * inventorySpeedScalar 
-    
-    return maxSpeed
+
+    return Marine.GetMaxSpeed(self, possible)
     
 end
 

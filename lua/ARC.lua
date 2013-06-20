@@ -10,6 +10,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Adjusted arcs to be constructed and require nearby TF
+
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/RagdollMixin.lua")

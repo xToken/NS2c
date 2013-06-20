@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removal of some hypermutation and mist code, adjustments to HP scaling
+
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/Alien.lua")
 
@@ -17,8 +20,6 @@ class 'Embryo' (Alien)
 Embryo.kMapName = "embryo"
 Embryo.kModelName = PrecacheAsset("models/alien/egg/egg.model")
 Embryo.kAnimationGraph = PrecacheAsset("models/alien/egg/egg.animation_graph")
-Embryo.kBaseHealth = 200
-Embryo.kBaseArmor = 150
 local kUpdateGestationTime = 0.1
 Embryo.kXExtents = .25
 Embryo.kYExtents = .25
@@ -253,6 +254,10 @@ function Embryo:GetBaseArmor()
     return 0
 end
 
+function Embryo:GetBaseHealth()
+    return kEmbryoHealth
+end
+
 function Embryo:GetArmorFullyUpgradedAmount()
     return 0
 end
@@ -309,10 +314,10 @@ function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorSca
     self.gestationTime = math.max(kMinGestationTime, self.gestationTime)
     
     self.evolveTime = 0
-    self:AdjustMaxHealth(Embryo.kBaseHealth)
-    self.maxHealth = Embryo.kBaseHealth
-    self:AdjustMaxArmor(Embryo.kBaseArmor)
-    self.maxArmor = Embryo.kBaseArmor
+    self.maxHealth = kEmbryoHealth
+	self:SetHealth(self.maxHealth* healthScalar)
+    self.maxArmor = kEmbryoArmor
+	self:SetArmor(self.maxArmor* armorScalar)
     // Use this amount of health when we're done evolving
     self.healthScalar = healthScalar
     self.armorScalar = armorScalar

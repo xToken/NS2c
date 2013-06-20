@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added in classic attack features (focus, attack delays) 
+
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/LeapMixin.lua")
 
@@ -120,7 +123,7 @@ function BiteLeap:OnTag(tagName)
         
         if player and not self:GetHasAttackDelay(self, player) then  
         
-            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kBiteDamage, self:GetRange(), nil, false)
+            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kBiteDamage, self:GetRange(), nil, false, EntityFilterOneAndIsa(player, "Babbler"))
             
             self.lastPrimaryAttackTime = Shared.GetTime()
             self:TriggerEffects("bite_attack")

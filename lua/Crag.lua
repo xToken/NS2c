@@ -8,16 +8,18 @@
 //
 // Passive ability - heals nearby players and structures
 // Triggered ability - emit defensive umbra (8 seconds)
-// Active ability - stream Babblers out towards target, hampering their ability to attack
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+
+//NS2c
+//Removed unneeded mixins, changed healing to callback
+
 
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
-Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
 Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/LOSMixin.lua")
@@ -26,19 +28,18 @@ Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/ConstructMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/SleeperMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
 Script.Load("lua/TargetCacheMixin.lua")
-Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/InfestationMixin.lua")
 
 class 'Crag' (ScriptActor)
 
@@ -74,9 +75,9 @@ AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
-AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
+AddMixinNetworkVars(InfestationMixin, networkVars)
 
 function Crag:OnCreate()
 
@@ -90,7 +91,6 @@ function Crag:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
-    InitMixin(self, SelectableMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, CloakableMixin)
     InitMixin(self, LOSMixin)
@@ -98,7 +98,6 @@ function Crag:OnCreate()
     InitMixin(self, ConstructMixin)
     InitMixin(self, RagdollMixin)
     InitMixin(self, ObstacleMixin)  
-    InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
     InitMixin(self, CombatMixin)
     InitMixin(self, HasUmbraMixin)
@@ -122,7 +121,7 @@ function Crag:OnInitialized()
     ScriptActor.OnInitialized(self)
     
     self:SetModel(Crag.kModelName, Crag.kAnimationGraph)
-    
+    InitMixin(self, InfestationMixin)
     if Server then
     
         InitMixin(self, StaticTargetMixin)
@@ -188,6 +187,22 @@ function Crag:TryHeal(target)
     end
     return amountHealed
     
+end
+
+function Crag:GetMaxRadius()
+    return kInfestationRadius
+end
+
+function Crag:GetGrowthRate()
+    return kInfestationGrowthRate
+end
+
+function Crag:GetMinRadius()
+    return kMinInfestationRadius
+end
+
+function Crag:GetInfestationDensity()
+    return kInfestationBlobDensity
 end
 
 function Crag:GetReceivesStructuralDamage()

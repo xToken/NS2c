@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed alien comm refs, sentry battery line, idle workers
+
 Script.Load("lua/Commander_Alerts.lua")
 Script.Load("lua/Commander_Buttons.lua")
 Script.Load("lua/Commander_HotkeyPanel.lua")

@@ -8,6 +8,10 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Adjusted to add basic buttons to all ScriptActors to prevent errors.
+//Removed maturity check
+
 Script.Load("lua/Globals.lua")
 Script.Load("lua/ExtentsMixin.lua")
 Script.Load("lua/OwnerMixin.lua")
@@ -270,6 +274,10 @@ end
 function ScriptActor:GetCanBeUsed(player, useSuccessTable)
 
     if HasMixin(player, "Live") and not player:GetIsAlive() then
+        useSuccessTable.useSuccess = false
+    end
+    
+    if GetIsVortexed(self) or GetIsVortexed(player) then
         useSuccessTable.useSuccess = false
     end
     

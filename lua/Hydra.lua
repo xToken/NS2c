@@ -9,11 +9,13 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed some uneeded mixins, infestation requirements
+
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
-Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
 Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/LOSMixin.lua")
@@ -29,12 +31,12 @@ Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DamageMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
-
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/TriggerMixin.lua")
 Script.Load("lua/TargettingMixin.lua")
 Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/InfestationMixin.lua")
 
 class 'Hydra' (ScriptActor)
 
@@ -80,6 +82,7 @@ AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
+AddMixinNetworkVars(InfestationMixin, networkVars)
 
 function Hydra:OnCreate()
 
@@ -92,7 +95,6 @@ function Hydra:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
-    InitMixin(self, SelectableMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, CloakableMixin)
     InitMixin(self, LOSMixin)
@@ -114,13 +116,12 @@ end
 
 function Hydra:OnInitialized()
 
-    if Server then
-    
-        ScriptActor.OnInitialized(self)
-        
-        self:SetModel(Hydra.kModelName, Hydra.kAnimationGraph)
-       
-        self:SetUpdates(true)
+    ScriptActor.OnInitialized(self)
+    self:SetModel(Hydra.kModelName, Hydra.kAnimationGraph)
+    InitMixin(self, InfestationMixin)
+    self:SetUpdates(true)
+
+    if Server then        
         
         // TargetSelectors require the TargetCacheMixin for cleanup.
         InitMixin(self, TargetCacheMixin)
@@ -171,6 +172,22 @@ end
 
 function Hydra:GetCanDie(byDeathTrigger)
     return not byDeathTrigger
+end
+
+function Hydra:GetMaxRadius()
+    return kInfestationRadius
+end
+
+function Hydra:GetGrowthRate()
+    return kInfestationGrowthRate
+end
+
+function Hydra:GetMinRadius()
+    return kMinInfestationRadius
+end
+
+function Hydra:GetInfestationDensity()
+    return kInfestationBlobDensity
 end
 
 function Hydra:GetCanAutoBuild()

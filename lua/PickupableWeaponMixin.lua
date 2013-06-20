@@ -6,6 +6,9 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
+//NS2c
+//Changed to offer automatic pickup of weapons, currently disabled.
+
 Script.Load("lua/FunctionContracts.lua")
 
 PickupableWeaponMixin = CreateMixin( PickupableWeaponMixin )

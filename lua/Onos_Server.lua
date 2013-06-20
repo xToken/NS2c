@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Changes to weapons
+
 function Onos:InitWeapons()
 
     Alien.InitWeapons(self)
@@ -22,5 +25,9 @@ function Onos:GetTierTwoTechId()
 end
 
 function Onos:GetTierThreeTechId()
-    //return kTechId.Devour
+    if kDevourEnabled then
+        return kTechId.Devour
+    else 
+        return kTechId.None
+    end
 end

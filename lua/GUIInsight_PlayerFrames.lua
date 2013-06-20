@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added in HMG
+
 class 'GUIInsight_PlayerFrames' (GUIScript)
 
 local isVisible

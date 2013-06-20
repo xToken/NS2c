@@ -20,6 +20,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Adjusted to hopefully work with classic, untested.
+
 Script.Load("lua/ScenarioHandler_Commands.lua")
 
 class "ScenarioHandler"
@@ -249,13 +252,7 @@ end
 
 
 function ScenarioEntityHandler:Matches(entityClassName)
-    // lookup the class table for the entityClassName in the global namespace
-    local cls = _G[entityClassName]
-    if not cls then
-        return false
-    end
-    // fortunately, isa does not actually use the "self" part, so we can call it without having an entity
-    return cls.isa(nil, self.handlerClassName)
+    return classisa(entityClassName, self.handlerClassName)
 end
 
 function ScenarioEntityHandler:GetTeamType(entityClassName)

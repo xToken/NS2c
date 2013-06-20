@@ -4,6 +4,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Sensor Blips can be relevant to either team now.
+
 class 'SensorBlip' (Entity)
 
 SensorBlip.kMapName = "sensorblip"
@@ -32,7 +35,7 @@ function SensorBlip:UpdateRelevancy(teamnum)
         includeMask = kRelevantToTeam1
     elseif teamnum == 2 then
         includeMask = kRelevantToTeam2
-    elseif teamnum == 0 then
+    else
         includeMask = 0
     end
     self:SetExcludeRelevancyMask(includeMask)

@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Changed ability unlock detection, upgrade chamber detection and added redemption and hive teleport
+
 Script.Load("lua/AlienUpgradeManager.lua")
 
 function Alien:TeleportToHive(usedhive)
@@ -44,7 +47,7 @@ function Alien:TeleportToHive(usedhive)
             local notNearResourcePoint = #GetEntitiesWithinRange("ResourcePoint", position, 2) == 0
 
             if validForPlayer and notNearResourcePoint then
-                Shared.PlayWorldSound(nil, Alien.kTeleportSound, nil, self:GetOrigin())
+                StartSoundEffectAtOrigin(Alien.kTeleportSound, self:GetOrigin())
                 SpawnPlayerAtPoint(self, position)
                 self:OnHiveTeleport()
                 success = true
@@ -145,6 +148,7 @@ function Alien:OnHiveConstructed(newHive, activeHiveCount)
         SendPlayersMessage({self}, kTeamMessageTypes.AbilityUnlocked, AbilityData)
     end
     self:UpdateActiveAbilities(activeHiveCount)
+    self:UpdateHiveScaledHealthValues()
 end
 
 function Alien:OnHiveDestroyed(destroyedHive, activeHiveCount)
@@ -158,6 +162,7 @@ function Alien:OnHiveDestroyed(destroyedHive, activeHiveCount)
         SendPlayersMessage({self}, kTeamMessageTypes.AbilityLost, AbilityData)
     end
     self:UpdateActiveAbilities(activeHiveCount)
+    self:UpdateHiveScaledHealthValues()
 end
 
 function Alien:GetDamagedAlertId()
@@ -322,25 +327,11 @@ function Alien:ProcessBuyAction(techIds)
     
 end
 
-// Increase armor absorption the depending on our defensive upgrade level
-function Alien:GetHealthPerArmorOverride(damageType, healthPerArmor)
-    
-    local newHealthPerArmor = healthPerArmor
-
+function Alien:UpdateHiveScaledHealthValues()
     local team = self:GetTeam()
     local numHives = team:GetActiveHiveCount()
-    
-    // make sure not to ignore damage types
-    if numHives >= 3 then
-        newHealthPerArmor = kHealthPointsPerArmorScalarHive3
-    elseif numHives == 2 then
-        newHealthPerArmor = kHealthPointsPerArmorScalarHive2
-    elseif numHives == 1 then
-        newHealthPerArmor = kHealthPointsPerArmorScalarHive1
-    end
-
-    return newHealthPerArmor
-    
+    local maxHealth = self:GetBaseHealth() + (self:GetBaseArmor() * self:GetHiveHealthScalar(numHives))
+    self:AdjustMaxHealth(maxHealth)
 end
 
 function Alien:GetTierOneTechId()

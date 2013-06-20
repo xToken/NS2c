@@ -9,6 +9,9 @@
 //
 //=============================================================================
 
+//NS2c
+//Bilebomb is now a predicted projectile.
+
 Script.Load("lua/Weapons/Projectile.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/DamageMixin.lua")
@@ -42,7 +45,7 @@ function Bomb:OnCreate()
     InitMixin(self, DamageMixin)
     
     self.radius = 0.2
-
+    
 end
 
 function Bomb:OnInitialized()

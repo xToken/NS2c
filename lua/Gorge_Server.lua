@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed some unneeded code, adjusted weapons.  Maybe tier3 babblers?
+
 function Gorge:InitWeapons()
 
     Alien.InitWeapons(self)
@@ -22,7 +25,7 @@ function Gorge:GetTierTwoTechId()
 end
 
 function Gorge:GetTierThreeTechId()
-    return kTechId.Web
+    return kTechId.BabblerAbility
 end
 
 

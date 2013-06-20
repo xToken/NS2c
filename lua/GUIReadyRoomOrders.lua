@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added welcome text to show that this is a mod.
+
 class 'GUIReadyRoomOrders' (GUIScript)
 
 local kOrderSize = GUIScale( Vector(60, 60, 0) )

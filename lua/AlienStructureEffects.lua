@@ -7,6 +7,15 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 kAlienStructureEffects = 
 {
+	babbler_hatch =
+    {
+        babblerEggLandEffects =
+        {
+            {cinematic = "cinematics/alien/babbler/spawn.cinematic" },
+            {sound = "", silenceupgrade = true, done = true},
+            {sound = "sound/NS2.fev/alien/drifter/attack", world_space = true, done = true},
+        },
+    },
 
     construct =
     {
@@ -117,6 +126,51 @@ kAlienStructureEffects =
             {sound = "sound/NS2.fev/alien/structures/whip/swing"},
         },
     },
+
+    babbler_jump =
+    {
+        babblerJumpEffect =
+        {
+            {sound = "", silenceupgrade = true, done = true},
+            {sound = "sound/NS2.fev/alien/babbler/jump" },     
+        },
+    }, 
+    
+    babbler_engage =
+    {
+        babblerEngageEffect =
+        {
+            {sound = "", silenceupgrade = true, done = true},
+            {sound = "sound/NS2.fev/alien/babbler/attack_jump" },     
+        },
+    }, 
+    
+    babbler_wag_begin =
+    {
+        babblerWagBeginEffect =
+        {
+            {sound = "", silenceupgrade = true, done = true},
+            {sound = "sound/NS2.fev/alien/babbler/fetch" },     
+        },
+    }, 
+    
+    babbler_move =
+    {
+        babblerIdleEffect =
+        {
+            {sound = "", silenceupgrade = true, done = true},
+            {sound = "sound/NS2.fev/alien/babbler/idle" },     
+        },
+    }, 
+    
+    babbler_attack =
+    {
+        babblerAttackEffect =
+        {
+            {sound = "", silenceupgrade = true, done = true},
+            {sound = "sound/NS2.fev/alien/babbler/attack_jump" },    
+        },
+    }, 
 
 }
 

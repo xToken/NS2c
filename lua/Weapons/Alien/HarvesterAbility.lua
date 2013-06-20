@@ -29,6 +29,10 @@ function HarvesterStructureAbility:GetSuffixName()
     return "harvester"
 end
 
+function HarvesterStructureAbility:GetRequiredTechId()
+    return kTechId.None
+end
+
 function HarvesterStructureAbility:GetDropClassName()
     return "Harvester"
 end
@@ -43,9 +47,4 @@ function HarvesterStructureAbility:CreateStructure(coords, player, lastClickedPo
         return Shared.GetEntity(entid)
     end
     return nil
-end
-
-function HarvesterStructureAbility:IsAllowed(player)
-    local structures = GetEntitiesForTeamWithinRange(self:GetDropClassName(), player:GetTeamNumber(), player:GetEyePos(), kMaxAlienStructureRange)
-    return #structures < kMaxAlienStructuresofType
 end

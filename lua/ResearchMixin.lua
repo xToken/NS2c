@@ -6,6 +6,10 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
+//NS2c
+//Removal of UnitActiveStatus on research progression
+//This might not be needed.
+
 ResearchMixin = CreateMixin(ResearchMixin)
 ResearchMixin.type = "Research"
 

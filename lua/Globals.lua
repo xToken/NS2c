@@ -8,6 +8,7 @@
 Script.Load("lua/Utility.lua")
 
 kWebEnabled = false
+kDevourEnabled = false
 kDecalMaxLifetime = 60
 
 // All the layouts are based around this screen height.
@@ -25,6 +26,7 @@ kJumpMode = { Repeating = 2, Queued = 1, Default = 0 }
 // after 5 minutes players are allowed to give up a round
 kMinTimeBeforeConcede = 10 * 60
 kPercentNeededForVoteConcede = 0.75
+kPercentNeededForUpgradeChamberVote = 0.55
 
 // Team colors
 kMarineFontName = "fonts/AgencyFB_large.fnt"
@@ -144,20 +146,20 @@ kDisplayWeaponTime = 1.5
 // Death message indices 
 kDeathMessageIcon = enum( { 'None', 
                             'Rifle', 'RifleButt', 'Pistol', 'Axe', 'Shotgun',
-                            'HeavyMachineGun', 'ARC', 'Grenade', 'Sentry', 'Welder',
+                            'Flamethrower', 'ARC', 'Grenade', 'Sentry', 'Welder',
                             'Bite', 'HydraSpike', 'Spray', 'PrimalScream', 'Parasite',
                             'SporeCloud', 'Swipe', 'BuildAbility', 'Whip', 'BileBomb',
                             'Mine', 'Gore', 'Spit', 'Jetpack', 'Claw',
-                            'Minigun', 'Metabolize', 'LerkBite', 'Umbra', 
+                            'HeavyMachineGun', 'Metabolize', 'LerkBite', 'Umbra', 
                             'Xenocide', 'Blink', 'Leap', 'Stomp',
-                            'Consumed', 'GL', 'Recycled'
+                            'Consumed', 'GL', 'Recycled', 'Babbler', 'Railgun', 'BabblerAbility', 'GorgeTunnel',
                             } )
 
 kMinimapBlipType = enum( { 'Undefined', 'TechPoint', 'ResourcePoint', 'Scan',
                            'Sentry', 'CommandStation', 'CommandStationL2', 'CommandStationL3',
                            'Extractor', 'InfantryPortal', 'Armory', 'PhaseGate', 'Observatory',
-                           'RoboticsFactory', 'ArmsLab', 'PrototypeLab', 'PowerPack', 'Embryo',
-                           'Hive', 'Harvester', 'Hydra', 'Egg', 'Crag', 'Whip', 'Shade', 'Shift',
+                           'RoboticsFactory', 'ArmsLab', 'PrototypeLab', 'PowerPack',
+                           'Hive', 'Harvester', 'Hydra', 'Egg', 'Embryo', 'Crag', 'Whip', 'Shade', 'Shift', 'Shell', 'Veil', 'Spur', 'TunnelEntrance',
                            'Marine', 'JetpackMarine', 'HeavyArmorMarine', 'Jetpack', 'Skulk', 'Lerk', 'Onos', 'Fade', 'Gorge',
                            'Door', 'PowerPoint', 'DestroyedPowerPoint',
                            'ARC', 'Drifter', 'MAC', 'Infestation', 'InfestationDying', 'MoveOrder', 'AttackOrder', 'BuildOrder', 'SensorBlip' } )

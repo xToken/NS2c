@@ -7,19 +7,25 @@
 // Auto-generated. Copy and paste from balance spreadsheet.		
 //		
 // ========= For more information, visit us at http://www.unknownworlds.com =====================		
+
+//NS2c
+//Restructured this file heavily, attempted to remove all unused vars
 		
 // HEALTH AND ARMOR		
 kMarineHealth = 100	     kMarineArmor = 30	    kMarinePointValue = 2
 kJetpackHealth = 100	 kJetpackArmor = 30	    kJetpackPointValue = 2
 kHeavyArmorHealth = 100  kHeavyArmorArmor = 200 kHeavyArmorPointValue = 2
 
-kSkulkHealth = 70	kSkulkArmor = 10	kSkulkPointValue = 2
-kGorgeHealth = 150	kGorgeArmor = 70	kGorgePointValue = 2
-kLerkHealth = 125	kLerkArmor = 30	    kLerkPointValue = 2
-kFadeHealth = 300	kFadeArmor = 150	kFadePointValue = 2
-kOnosHealth = 950	kOnosArmor = 700	kOnosPointValue = 2
+kSkulkHealth = 70	    kSkulkArmor = 10	    kSkulkPointValue = 2
+kGorgeHealth = 150	    kGorgeArmor = 70	    kGorgePointValue = 2
+kLerkHealth = 125	    kLerkArmor = 30	        kLerkPointValue = 2
+kFadeHealth = 300	    kFadeArmor = 150	    kFadePointValue = 2
+kOnosHealth = 950	    kOnosArmor = 700	    kOnosPointValue = 2
 
-kEggHealth = 200	kEggArmor = 0    	kEggPointValue = 0
+kEmbryoHealth = 200     kEmbryoArmor = 150      kEggPointValue = 0
+kEggHealth = 200	    kEggArmor = 0    	    kEggPointValue = 0
+kBabblerHealth = 25	    kBabblerArmor = 25	    kBabblerPointValue = 0
+kBabblerEggHealth = 200	kBabblerEggArmor = 100	kBabblerEggPointValue = 0
 
 kArmorPerUpgradeLevel = 20
 kHeavyArmorPerUpgradeLevel = 30
@@ -35,9 +41,10 @@ kLerkArmorFullyUpgradedAmount = 50
 kFadeArmorFullyUpgradedAmount = 250
 kOnosArmorFullyUpgradedAmount = 900
 
-kHealthPointsPerArmorScalarHive1 = 2
-kHealthPointsPerArmorScalarHive2 = 2
-kHealthPointsPerArmorScalarHive3 = 3
+kAlienHealthPerArmorHive1 = 0
+kAlienHealthPerArmorHive2 = 0
+kAlienHealthPerArmorHive3 = 1
+kAlienHealthPerArmorHive4 = 2
 
 // used for structures
 kStartHealthScalar = 0.3

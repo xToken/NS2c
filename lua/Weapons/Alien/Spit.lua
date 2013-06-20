@@ -38,7 +38,7 @@ function Spit:OnCreate()
     if Server then
         self:AddTimedCallback(Spit.TimeUp, kSpitLifeTime)
     end
-
+    
 end
 
 function Spit:TimeUp()

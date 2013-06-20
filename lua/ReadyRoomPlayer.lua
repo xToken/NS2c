@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//RR Player uses player movement mixins, for goldsource movement.
+
 Script.Load("lua/Player.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 

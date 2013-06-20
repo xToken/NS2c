@@ -8,6 +8,8 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
+//Adjustments to Recycle refunding.
+
 RecycleMixin = CreateMixin(RecycleMixin)
 RecycleMixin.type = "Recycle"
 

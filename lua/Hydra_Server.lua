@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed team tracking of gorge structures
+
 Hydra.kUpdateInterval = .5
 
 function Hydra:GetDistanceToTarget(target)

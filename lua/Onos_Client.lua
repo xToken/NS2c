@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removal of some annoying client side onos effects
+
 // Play footstep effects when moving
 function Onos:UpdateClientEffects(deltaTime, isLocal)
 

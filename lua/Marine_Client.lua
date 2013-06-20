@@ -1,5 +1,14 @@
+// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+//
 // lua\Marine_Client.lua
 //
+//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+//                  Max McGuire (max@unknownworlds.com)
+//
+// ========= For more information, visit us at http://www.unknownworlds.com =====================
+
+//NS2c
+//Removed some uneeded effects and other functions that were moved to player_client
 local kSensorBlipSize = 25
 
 local kMarineHealthbarOffset = Vector(0, 1.2, 0)
@@ -55,8 +64,6 @@ function Marine:UpdateClientEffects(deltaTime, isLocal)
     Player.UpdateClientEffects(self, deltaTime, isLocal)
     
     if isLocal then
-    
-        Client.SetMouseSensitivityScalar(ConditionalValue(self:GetIsStunned(), 0, 1))
         
         self:UpdateGhostModel()
 
@@ -99,6 +106,7 @@ end
 
 function Marine:CloseMenu()
     return false
+    
 end
 
 function Marine:AddNotification(locationId, techId)

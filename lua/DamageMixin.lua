@@ -6,6 +6,10 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
+//NS2c
+//Added in severe hits, used for >33% damage in a set period of time.
+//Also added flag for not having a weapons attacks 'predicted' client side.
+
 DamageMixin = CreateMixin(DamageMixin)
 DamageMixin.type = "Damage"
 
@@ -76,7 +80,8 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                 // Send the player a message so they get feedback about what damage they've done.
                 // We use messages to handle multiple-hits per frame, such as splash damage from grenades.
                 if Server and attacker:isa("Player") and (not doer.GetShowHitIndicator or doer:GetShowHitIndicator()) then
-                    local showNumbers = GetAreEnemies(attacker,target) and target:GetIsAlive() and Shared.GetCheatsEnabled()
+                    
+					local showNumbers = GetAreEnemies(attacker,target) and target:GetIsAlive() and Shared.GetCheatsEnabled()
                     if showNumbers then
                     
                         local msg = BuildDamageMessage(target, damage, point)

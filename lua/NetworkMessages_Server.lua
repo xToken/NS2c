@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added movementmode option
+
 function OnCommandCommMarqueeSelect(client, message)
     
     local player = client:GetControllingPlayer()

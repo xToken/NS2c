@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Changed ammo back to 1 clip, added in per weapon ammo packs
+
 Script.Load("lua/DropPack.lua")
 Script.Load("lua/PickupableMixin.lua")
 

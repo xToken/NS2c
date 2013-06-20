@@ -6,6 +6,9 @@
 //
 //=============================================================================
 
+//NS2c
+//Removed alien commander refs
+
 /**
  * Return the number of idle workers
  */

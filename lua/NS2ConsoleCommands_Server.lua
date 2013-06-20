@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed some unneeded commands
+
 Script.Load("lua/ScenarioHandler_Commands.lua")
 
 local gLastPosition = nil
@@ -629,6 +632,19 @@ local function OnCommandPrimal(client)
     
 end
 
+local function OnCommandUmbra(client)
+
+    if Shared.GetCheatsEnabled() then
+    
+        local player = client:GetControllingPlayer()
+        if player and HasMixin(player, "HasUmbra") then
+            player:SetHasUmbra(true, 5)
+        end
+        
+    end
+    
+end
+
 local function OnCommandOrderSelf(client)
 
     if Shared.GetCheatsEnabled() then
@@ -1109,13 +1125,14 @@ Event.Hook("Console_catpack", OnCommandCatPack)
 Event.Hook("Console_alltech", OnCommandAllTech)
 Event.Hook("Console_location", OnCommandLocation)
 Event.Hook("Console_push", OnCommandPush)
+Event.Hook("Console_primal",OnCommandPrimal)
+Event.Hook("Console_umbra", OnCommandUmbra)
 Event.Hook("Console_deployarcs", OnCommandDeployARCs)
 Event.Hook("Console_undeployarcs", OnCommandUndeployARCs)
 
 Event.Hook("Console_closemenu", OnCommandCloseMenu)
 Event.Hook("Console_welddoors", OnCommandWeldDoors)
 Event.Hook("Console_orderself", OnCommandOrderSelf)
-Event.Hook("Console_primal",OnCommandPrimal)
 
 Event.Hook("Console_create",OnCommandCreate)
 Event.Hook("Console_random_debug", OnCommandRandomDebug)
@@ -1131,5 +1148,4 @@ Event.Hook("Console_makespecial", OnCommandMakeSpecialEdition)
 Event.Hook("Console_makegreen", OnCommandGreenEdition)
 Event.Hook("Console_makeblack", OnCommandBlackEdition)
 Event.Hook("Console_devour", OnCommandDevour)
-    
 Event.Hook("Console_debugcommander", OnCommandDebugCommander)

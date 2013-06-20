@@ -14,6 +14,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Modified for goldsource movement, also made most vars local
+
 Script.Load("lua/Utility.lua")
 Script.Load("lua/Weapons/Alien/SwipeBlink.lua")
 Script.Load("lua/Weapons/Alien/Metabolize.lua")
@@ -48,6 +51,8 @@ local kMaxBlinkSpeed = 16 // ns1 fade blink is (3x maxSpeed) + celerity
 local kWalkSpeed = 2
 local kCrouchedSpeed = 1.8
 local kBlinkImpulseForce = 10
+local kBlinkVerticleConstraints = 0.6
+
 local networkVars =
 {
     etherealStartTime = "private time",
@@ -74,7 +79,7 @@ function Fade:OnCreate()
     self.etherealStartTime = 0
     self.etherealEndTime = 0
     self.ethereal = false
-    
+    self.landedafterblink = 0
 end
 
 function Fade:OnInitialized()
@@ -105,6 +110,10 @@ end
 
 function Fade:GetBaseArmor()
     return kFadeArmor
+end
+
+function Fade:GetBaseHealth()
+    return kFadeHealth
 end
 
 function Fade:GetArmorFullyUpgradedAmount()
@@ -138,7 +147,7 @@ function Fade:GetMaxSpeed(possible)
         maxSpeed = kWalkSpeed
     end
     
-    if self:GetCrouched() and self:GetIsOnSurface() then
+    if self:GetCrouched() and self:GetIsOnSurface() and not self:GetLandedRecently() then
         maxSpeed = kCrouchedSpeed
     end
         
@@ -153,6 +162,12 @@ function Fade:GetIsBlinking()
     return self.ethereal and self:GetIsAlive()
 end
 
+function Fade:OnGroundChanged()
+    if self.landedafterblink == 0 then
+        self.landedafterblink = Shared.GetTime()
+    end
+end
+
 function Fade:OnBlink()
     self:SetIsOnGround(false)
     self:SetIsJumping(true)
@@ -162,7 +177,9 @@ function Fade:OnBlinking(input)
     local velocity = self:GetVelocity()
        
     // Blink impulse
-    velocity:Add( self:GetViewCoords().zAxis * kBlinkImpulseForce )
+    local zAxis = self:GetViewCoords().zAxis
+    zAxis.y = Clamp(zAxis.y, -1 * kBlinkVerticleConstraints, kBlinkVerticleConstraints)
+    velocity:Add( zAxis * kBlinkImpulseForce )
     
     // Cap groundspeed
     local groundspeed = velocity:GetLengthXZ()
@@ -178,7 +195,8 @@ function Fade:OnBlinking(input)
     if pitchAngle < 0.25 and pitchAngle >= -0.05 and math.abs(velocity.y) < 1 then
         self:GetJumpVelocity(input, velocity)
     end
-    //Cap Y Velocity    
+    
+    //Cap Y Velocity
     velocity.y = Clamp(velocity.y, (-1 * (kMaxBlinkSpeed + self:GetMovementSpeedModifier())), kMaxBlinkSpeed + self:GetMovementSpeedModifier())    
     
     // Finish

@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added in classic tech ids, added in tracking of upgrade structures for alerts
+
 Script.Load("lua/TechData.lua")
 Script.Load("lua/Skulk.lua")
 Script.Load("lua/PlayingTeam.lua")
@@ -29,6 +32,8 @@ AlienTeam.kSupportingStructureClassNames = {[kTechId.Hive] = {"Hive"} }
 AlienTeam.kUpgradeStructureClassNames = {[kTechId.Crag] = {"Crag"}, [kTechId.Shift] = {"Shift"}, [kTechId.Shade] = {"Shade"} }
 
 AlienTeam.kTechTreeIdsToUpdate = {}
+
+local kSendUnAssignedHiveMessageRate = 45
 
 function AlienTeam:GetTeamType()
     return kAlienTeamType
@@ -55,13 +60,13 @@ function AlienTeam:Initialize(teamName, teamNumber)
     self.timeLastSpawnCheck = 0
     self.overflowres = 0
     self.lastOverflowCheck = 0
-    
+    self.timeLastAlienSpectatorCheck = 0
 end
 
 function AlienTeam:OnInitialized()
 
     PlayingTeam.OnInitialized(self)    
-
+    self.lastTimeUnassignedHivessent = 0
     self.timeLastAlienSpectatorCheck = 0
     self.lastPingOfDeathCheck = 0
     self.lastAutoHealIndex = 1
@@ -74,6 +79,149 @@ end
 
 function AlienTeam:GetTeamInfoMapName()
     return AlienTeamInfo.kMapName
+end
+
+local function RemoveGorgeStructureFromClient(self, techId, clientId)
+
+    local structureTypeTable = self.clientOwnedStructures[clientId]
+    
+    if structureTypeTable then
+    
+        if not structureTypeTable[techId] then
+        
+            structureTypeTable[techId] = { }
+            return
+            
+        end    
+        
+        local removeIndex = 0
+        local structure = nil
+        for index, id in ipairs(structureTypeTable[techId])  do
+        
+            if id then
+            
+                removeIndex = index
+                structure = Shared.GetEntity(id)
+                break
+                
+            end
+            
+        end
+        
+        if structure then
+        
+            table.remove(structureTypeTable[techId], removeIndex)
+            structure.consumed = true
+            if structure:GetCanDie() then
+                structure:Kill()
+            else
+                DestroyEntity(structure)
+            end
+            
+        end
+        
+    end
+    
+end
+
+function AlienTeam:AddGorgeStructure(player, structure)
+
+    if player ~= nil and structure ~= nil then
+    
+        local clientId = Server.GetOwner(player):GetUserId()
+        local structureId = structure:GetId()
+        local techId = structure:GetTechId()
+
+        if not self.clientOwnedStructures[clientId] then
+            self.clientOwnedStructures[clientId] = { }
+        end
+        
+        local structureTypeTable = self.clientOwnedStructures[clientId]
+        
+        if not structureTypeTable[techId] then
+            structureTypeTable[techId] = { }
+        end
+        
+        table.insertunique(structureTypeTable[techId], structureId)
+        
+        local numAllowedStructure = LookupTechData(techId, kTechDataMaxAmount, -1)
+        if numAllowedStructure <= 0 then
+            numAllowedStructure = kMaxGorgeOwnedStructures
+        end
+        if numAllowedStructure >= 0 and table.count(structureTypeTable[techId]) > numAllowedStructure then
+            RemoveGorgeStructureFromClient(self, techId, clientId)
+        end
+        
+    end
+    
+end
+
+function AlienTeam:GetDroppedGorgeStructures(player, techId)
+
+    local owner = Server.GetOwner(player)
+
+    if owner then
+    
+        local clientId = owner:GetUserId()
+        local structureTypeTable = self.clientOwnedStructures[clientId]
+        
+        if structureTypeTable then
+            return structureTypeTable[techId]
+        end
+    
+    end
+    
+end
+
+function AlienTeam:GetNumDroppedGorgeStructures(player, techId)
+
+    local structureTypeTable = self:GetDroppedGorgeStructures(player, techId)
+    return (not structureTypeTable and 0) or #structureTypeTable
+    
+end
+
+function AlienTeam:UpdateClientOwnedStructures(oldEntityId)
+
+    if oldEntityId then
+    
+        for clientId, structureTypeTable in pairs(self.clientOwnedStructures) do
+        
+            for techId, structureList in pairs(structureTypeTable) do
+            
+                for i, structureId in ipairs(structureList) do
+                
+                    if structureId == oldEntityId then
+                    
+                        if newEntityId then
+                            structureList[i] = newEntityId
+                        else
+                        
+                            table.remove(structureList, i)
+                            break
+                            
+                        end
+                        
+                    end
+                    
+                end
+                
+            end
+            
+        end
+        
+    end
+
+end
+
+function AlienTeam:OnEntityChange(oldEntityId, newEntityId)
+
+    PlayingTeam.OnEntityChange(self, oldEntityId, newEntityId)
+
+    // Check if the oldEntityId matches any client's built structure and
+    // handle the change.
+    
+    self:UpdateClientOwnedStructures(oldEntityId)
+
 end
 
 function AlienTeam:SpawnInitialStructures(techPoint)
@@ -107,6 +255,19 @@ function AlienTeam:DeductOverflowResources(extraRes)
     end
 end
 
+local function CheckUnassignedHives(self)
+
+    if Shared.GetTime() - self.lastTimeUnassignedHivessent >= kSendUnAssignedHiveMessageRate then
+    
+        self.lastTimeUnassignedHivessent = Shared.GetTime()
+        if self:GetActiveUnassignedHiveCount() > 0 then
+            SendTeamMessage(self, kTeamMessageTypes.UnassignedHive) 
+        end
+        
+    end
+    
+end
+
 function AlienTeam:Update(timePassed)
 
     PROFILE("AlienTeam:Update")
@@ -128,7 +289,7 @@ function AlienTeam:Update(timePassed)
     end
 
     PlayingTeam.Update(self, timePassed)
-    
+    CheckUnassignedHives(self)
     self:UpdateTeamAutoHeal(timePassed)
     self:UpdateRespawn()
     self:UpdatePingOfDeath()
@@ -286,7 +447,7 @@ function AlienTeam:InitTechTree()
     self.techTree:AddBuildNode(kTechId.Crag,                      kTechId.CragHive,           kTechId.None)
     self.techTree:AddBuildNode(kTechId.Shift,                     kTechId.ShiftHive,          kTechId.None)
     self.techTree:AddBuildNode(kTechId.Shade,                     kTechId.ShadeHive,          kTechId.None)
-    self.techTree:AddBuildNode(kTechId.Whip,                      kTechId.WhipHive,          kTechId.None)
+    self.techTree:AddBuildNode(kTechId.Whip,                      kTechId.WhipHive,           kTechId.None)
     self.techTree:AddBuildNode(kTechId.Hydra,                     kTechId.None,               kTechId.None)
     
     // Lifeforms
@@ -307,11 +468,12 @@ function AlienTeam:InitTechTree()
     // Tier 3 Abilities
     self.techTree:AddUpgradeNode(kTechId.Xenocide,            kTechId.ThreeHives,              kTechId.None)
     self.techTree:AddUpgradeNode(kTechId.PrimalScream,        kTechId.ThreeHives,              kTechId.None)
-    --self.techTree:AddUpgradeNode(kTechId.WebStalk,          kTechId.ThreeHives,              kTechId.None)
+    self.techTree:AddUpgradeNode(kTechId.Web,                 kTechId.ThreeHives,              kTechId.None)
     self.techTree:AddUpgradeNode(kTechId.AcidRocket,          kTechId.ThreeHives,              kTechId.None)
     self.techTree:AddUpgradeNode(kTechId.Devour,              kTechId.ThreeHives,              kTechId.None)  
     self.techTree:AddUpgradeNode(kTechId.Charge,              kTechId.ThreeHives,              kTechId.None)      
-    
+    self.techTree:AddBuildNode(kTechId.BabblerEgg,            kTechId.ThreeHives,              kTechId.None)
+        
     // Global alien upgrades. Make sure the first prerequisite is the main tech required for it, as this is 
     // what is used to display research % in the alien evolve menu.
     // The second prerequisite is needed to determine the buy node unlocked when the upgrade is actually researched.
@@ -330,8 +492,6 @@ function AlienTeam:InitTechTree()
 	self.techTree:AddBuyNode(kTechId.Focus, kTechId.Whip, kTechId.None, kTechId.AllAliens)
 	self.techTree:AddBuyNode(kTechId.Fury, kTechId.Whip, kTechId.None, kTechId.AllAliens)
 	self.techTree:AddBuyNode(kTechId.Bombard, kTechId.Whip, kTechId.None, kTechId.AllAliens)
-    
-    self.techTree:AddPassive(kTechId.ShiftTeleport,               kTechId.Shift,         kTechId.None)
     
     self.techTree:SetComplete()
     
@@ -578,8 +738,8 @@ local function AssignPlayerToEgg(self, player, spawntime, hive)
     
 end
 
-local function GetSpawnTime()
-    return kAlienWaveSpawnInterval
+local function GetSpawnTime(self)
+    return Clamp(kAlienBaseSpawnInterval - (self:GetNumPlayers() * kAlienSpawnIntervalPerPlayer), kAlienMinSpawnInterval, kAlienMaxSpawnInterval)
 end
 
 local function RespawnPlayer(self, hive)
@@ -601,7 +761,7 @@ local function RespawnPlayer(self, hive)
                 end
                 if not success then
                     //Fail spawn, player will automatically re-queue.
-                    self:PutPlayerInRespawnQueue(alien, spawntime - GetSpawnTime())
+                    self:PutPlayerInRespawnQueue(alien, spawntime - GetSpawnTime(self))
                 else
                     alien:SetWaveSpawnEndTime(spawntime)
                 end
@@ -613,10 +773,10 @@ local function RespawnPlayer(self, hive)
                     //Not sure how this happens but i think its causing the spawn bug
                     //Requeue the player making sure to post date them correspondingly
                     Print(ToString("FAILEGGSPAWN"))
-                    self:PutPlayerInRespawnQueue(alien, spawntime - GetSpawnTime())   
+                    self:PutPlayerInRespawnQueue(alien, spawntime - GetSpawnTime(self))   
                 end
             else
-                self:PutPlayerInRespawnQueue(alien, spawntime - GetSpawnTime())            
+                self:PutPlayerInRespawnQueue(alien, spawntime - GetSpawnTime(self))            
             end
         end
     end
@@ -646,7 +806,7 @@ function AlienTeam:UpdateRespawn()
                         self:RemovePlayerFromRespawnQueue(player)
                     end
                     if hive.queuedplayer then    
-                        hive.timeWaveEnds = GetSpawnTime() + Shared.GetTime()      
+                        hive.timeWaveEnds = GetSpawnTime(self) + Shared.GetTime()      
                         local player = Shared.GetEntity(hive.queuedplayer)
                         if player then
                             AssignPlayerToEgg(self, player, hive.timeWaveEnds, hive)

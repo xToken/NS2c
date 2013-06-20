@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Tweaked detector on Obs, added motion tracking and beaconing of dead players.
+
 Script.Load("lua/CommAbilities/Marine/Scan.lua")
 
 Script.Load("lua/Mixins/ModelMixin.lua")
@@ -404,7 +407,7 @@ end
 function Observatory:PerformActivation(techId, position, normal, commander)
 
     local success = false
-
+    
     if GetIsUnitActive(self) then
     
         if techId == kTechId.DistressBeacon then

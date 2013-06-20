@@ -10,6 +10,8 @@ class 'Devour' (Ability)
 Devour.kMapName = "devour"
 
 local kAnimationGraph = PrecacheAsset("models/alien/onos/onos_view.animation_graph")
+local kDevourCancelledSound = PrecacheAsset("sound/ns2c.fev/ns2c/alien/onos/devour_cancel")
+local kDevourSoundTime = 4
 
 local networkVars =
 {
@@ -31,7 +33,7 @@ function Devour:OnCreate()
     self.timeSinceLastDevourUpdate = 0
     self.lastPrimaryAttackTime = 0
     self.devouring = 0
-    
+    self.lastdevoursound = 0
 end
 
 function Devour:GetDeathIconIndex()
@@ -81,9 +83,9 @@ function Devour:OnTag(tagName)
         if player and not self:GetHasAttackDelay(self, player) then
         
             self.lastPrimaryAttackTime = Shared.GetTime()
-            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kDevourInitialDamage, self:GetRange())
+            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kDevourInitialDamage, self:GetRange(), nil, false, EntityFilterOneAndIsa(player, "Babbler"))
             self.lastPrimaryAttackTime = Shared.GetTime()
-            self:TriggerEffects("gore_attack")
+            self:TriggerEffects("devour_fire")
             player:DeductAbilityEnergy(self:GetEnergyCost())
             if didHit and target and target:isa("Marine") then
                 self:Devour(player, target)
@@ -171,10 +173,15 @@ if Server then
                     //Player still being eaten, damage them
                     self.timeSinceLastDevourUpdate = Shared.GetTime()
                     player:AddHealth(kDevourHealthPerSecond)
+                    if self.lastdevoursound + kDevourSoundTime < Shared.GetTime() then
+                        player:TriggerEffects("devour_hit")
+                        self.lastdevoursound = Shared.GetTime()
+                    end
                     if self:DoDamage(kDevourDamage, food, self:GetOrigin(), 0, "none") then
                         if food.OnDevouredEnd then 
                             food:OnDevouredEnd()
                         end
+                        player:TriggerEffects("devour_complete")
                         self.devouring = 0
                     end
                 end
@@ -188,6 +195,7 @@ if Server then
         if self.devouring ~= 0 then
             local food = Shared.GetEntity(self.devouring)
             if food and food.OnDevouredEnd then
+                StartSoundEffectAtOrigin(kDevourCancelledSound, food:GetOrigin())
                 food:OnDevouredEnd()
             end
         end

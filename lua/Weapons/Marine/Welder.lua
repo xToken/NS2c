@@ -20,7 +20,7 @@ Welder.kModelName = PrecacheAsset("models/marine/welder/welder.model")
 local kViewModelName = PrecacheAsset("models/marine/welder/welder_view.model")
 local kAnimationGraph = PrecacheAsset("models/marine/welder/welder_view.animation_graph")
 
-kWelderHUDSlot = 4
+local kWelderHUDSlot = 4
 
 local welderTraceExtents = Vector(0.4, 0.4, 0.4)
 
@@ -112,11 +112,11 @@ function Welder:OnDraw(player, previousWeaponMapName)
 end
 
 function Welder:GetCheckForRecipient()
-    return false
+    return true
 end
 
 function Welder:OnTouch(recipient)
-    recipient:AddWeapon(self, true)
+    recipient:AddWeapon(self, false)
     StartSoundEffectAtOrigin(Marine.kGunPickupSound, recipient:GetOrigin())
 end
 
@@ -244,7 +244,7 @@ function Welder:PerformWeld(player)
             end
             
         end
-        
+
     end
     
     if success then    

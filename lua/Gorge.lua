@@ -10,8 +10,9 @@ Script.Load("lua/Utility.lua")
 Script.Load("lua/Alien.lua")
 Script.Load("lua/Weapons/Alien/SpitSpray.lua")
 Script.Load("lua/Weapons/Alien/DropStructureAbility.lua")
-Script.Load("lua/Weapons/Alien/Web.lua")
+Script.Load("lua/Weapons/Alien/BabblerAbility.lua")
 Script.Load("lua/Weapons/Alien/BileBomb.lua")
+Script.Load("lua/Weapons/Alien/Web.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/BuildingMixin.lua")
@@ -113,6 +114,10 @@ end
 
 function Gorge:GetBaseArmor()
     return kGorgeArmor
+end
+
+function Gorge:GetBaseHealth()
+    return kGorgeHealth
 end
 
 function Gorge:GetArmorFullyUpgradedAmount()
@@ -255,7 +260,7 @@ function Gorge:GetMaxSpeed(possible)
         maxSpeed = (kMaxSlideSpeed - (Shared.GetTime() - self.timeSlideStart))
     end
     
-    if self:GetCrouched() and self:GetIsOnSurface() then
+    if self:GetCrouched() and self:GetIsOnSurface() and not self:GetLandedRecently() then
         maxSpeed = kMaxWalkSpeed
     end
     
@@ -323,7 +328,7 @@ if Client then
     
         local weapon = self:GetActiveWeapon()
         if weapon and weapon:isa("DropStructureAbility") then
-            return weapon:GetGhostModelTechId()
+            return weapon:GetGhostModelTechId(true)
         end
         
     end

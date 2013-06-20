@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Major changes here to support GLDSource Movement Code
+
 Script.Load("lua/Globals.lua")
 Script.Load("lua/TechData.lua")
 Script.Load("lua/Utility.lua")
@@ -108,6 +111,7 @@ local kMaxAirVeer = 1.2
 local kGoldSrcAcceleration = 6.5
 local kGoldSrcAirAcceleration = 50
 local kGroundFriction = 4
+local kCrouchMaxSpeed = 2.2
 local kWalkMaxSpeed = 3.5
 local kRunMaxSpeed = 6
 local kJumpForce = 6.2
@@ -121,7 +125,7 @@ local kMaxStepAmount = 1.5
 local kCrouchShrinkAmount = 0.6
 local kExtentsCrouchShrinkAmount = 0.5
 local kTauntMovementScalar = .05           // Players can only move a little while taunting
-local kMinSlowSpeedScalar = .3
+local kMinSlowSpeedScalar = .4
 local kBodyYawTurnThreshold = Math.Radians(5)
 local kTurnDelaySpeed = 8
 local kTurnRunDelaySpeed = 2.5
@@ -191,7 +195,7 @@ local networkVars =
     primaryAttackLastFrame = "boolean",
     secondaryAttackLastFrame = "boolean",
     
-        // Used to smooth out the eye movement when going up steps.
+    // Used to smooth out the eye movement when going up steps.
     stepStartTime = "compensated time",
     stepAmount = "compensated float(-2.1 to 2.1 by 0.001)", // limits must be just slightly bigger than kMaxStepAmount
     
@@ -1170,7 +1174,7 @@ end
 
 function Player:OnJumpLand(landIntensity)
 	if self:GetSlowOnLand() then
-    	self:AddSlowScalar(0.33)
+    	self:AddSlowScalar(0.5)
 	end
     if self:GetPlayLandSound(landIntensity) then
         self:TriggerLandEffects()
@@ -1677,6 +1681,10 @@ function Player:GetMaxSpeed(possible)
     if self.movementModiferState and self:GetIsOnSurface() then
         maxSpeed = kWalkMaxSpeed
     end
+    
+    if self:GetCrouched() and self:GetIsOnSurface() and not self:GetLandedRecently() then
+        maxSpeed = kCrouchMaxSpeed
+    end
       
     return maxSpeed
 end
@@ -1830,7 +1838,7 @@ end
 // Also reduce velocity by this amount
 function Player:AddSlowScalar(scalar)
     self.slowAmount = Clamp(self.slowAmount + scalar, 0, 1)
-    //self:SetVelocity(self:GetVelocity() * (1 - (scalar * (1 - kMinSlowSpeedScalar))))
+    self:SetVelocity(self:GetVelocity() * (1 - (scalar * (1 - kMinSlowSpeedScalar))))
 end
 
 function Player:GetMaterialBelowPlayer()
@@ -2246,7 +2254,6 @@ kStepTagNames["step"] = true
 kStepTagNames["step_run"] = true
 kStepTagNames["step_sprint"] = true
 kStepTagNames["step_crouch"] = true
-
 function Player:OnTag(tagName)
 
     PROFILE("Player:OnTag")

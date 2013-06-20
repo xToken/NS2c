@@ -266,11 +266,11 @@ function Mines:Dropped(prevOwner)
 end
 
 function Mines:GetCheckForRecipient()
-    return false
+    return true
 end
 
 function Mines:OnTouch(recipient)
-    recipient:AddWeapon(self, true)
+    recipient:AddWeapon(self, false)
     StartSoundEffectAtOrigin(Marine.kGunPickupSound, recipient:GetOrigin())
 end
 

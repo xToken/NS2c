@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed armory buy menu
+
 local kHealthIndicatorModelName = PrecacheAsset("models/marine/armory/health_indicator.model")
 
 local kArmoryHealthbarOffset = Vector(0, 2, 0)
