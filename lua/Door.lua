@@ -13,8 +13,6 @@
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
-Script.Load("lua/OrdersMixin.lua")
-Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/PathingMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/LiveMixin.lua")
@@ -65,10 +63,8 @@ local networkVars =
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
-AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
-AddMixinNetworkVars(SelectableMixin, networkVars)
 
 local kDoorLockTimeout = 6
 local kDoorLockDuration = 4
@@ -139,9 +135,7 @@ function Door:OnCreate()
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ModelMixin)
     InitMixin(self, GameEffectsMixin)
-    InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, PathingMixin)
-    InitMixin(self, SelectableMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, LiveMixin)
     

@@ -13,7 +13,6 @@
 Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/CommandStructure.lua")
-Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
@@ -28,7 +27,6 @@ local networkVars =
 }
 
 AddMixinNetworkVars(CloakableMixin, networkVars)
-AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(HiveVisionMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
@@ -90,7 +88,6 @@ function Hive:OnCreate()
     CommandStructure.OnCreate(self)
     
     InitMixin(self, CloakableMixin)
-    InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
     InitMixin(self, HasUmbraMixin)
         
