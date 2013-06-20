@@ -1,4 +1,4 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
+// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =====
 //    
 // lua\DetectorMixin.lua    
 //    
@@ -6,11 +6,14 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-DetectorMixin = { }
+//NS2c
+//Adjusted mixin to have overrides for if ents should be detected, and if they should be decloaked.
+
+DetectorMixin = CreateMixin(DetectorMixin)
 DetectorMixin.type = "Detector"
 
 // Should be smaller than DetectableMixin:kResetDetectionInterval
-DetectorMixin.kUpdateDetectionInterval = 1
+DetectorMixin.kUpdateDetectionInterval = 1.5
 
 DetectorMixin.expectedCallbacks =
 {

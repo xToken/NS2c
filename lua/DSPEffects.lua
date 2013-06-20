@@ -30,6 +30,9 @@
 //            
 // ========= For more information, visit us at http://www.unknownworlds.com =======================
 
+//NS2c
+//Removed low health DSP
+
 local masterCompressorId = -1
 local nearDeathId = -1
 

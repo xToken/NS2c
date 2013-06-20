@@ -8,11 +8,15 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed unneeded mixins and added electrify hooks.
+
 Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/RecycleMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 Script.Load("lua/ResourceTower.lua")
+Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
@@ -43,6 +47,7 @@ AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
 AddMixinNetworkVars(EnergyMixin, networkVars)
 AddMixinNetworkVars(ElectrifyMixin, networkVars)
+AddMixinNetworkVars(SelectableMixin, networkVars)
 
 function Extractor:OnCreate()
 
@@ -53,6 +58,7 @@ function Extractor:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, DetectableMixin)
+    InitMixin(self, SelectableMixin)
     InitMixin(self, ParasiteMixin)
     InitMixin(self, EnergyMixin)
     InitMixin(self, ElectrifyMixin)

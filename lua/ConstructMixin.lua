@@ -6,6 +6,10 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
+//NS2c
+//Added in alien build effects, removed healspray building.
+//Forced grow pose parm to 1
+
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/build.surface_shader")
 
 ConstructMixin = CreateMixin(ConstructMixin)
@@ -154,6 +158,8 @@ end
 function ConstructMixin:OnUpdatePoseParameters()
 
     if HasMixin(self, "Tech") and LookupTechData(self:GetTechId(), kTechDataGrows, false) then
+        self:SetPoseParam("grow", 1)
+    elseif self:GetClassName() == "BabblerEgg" then
         self:SetPoseParam("grow", 1)
     end
     

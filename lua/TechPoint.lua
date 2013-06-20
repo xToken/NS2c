@@ -10,6 +10,8 @@
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
+//NS2c
+//Removing Infestation Hooks
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 

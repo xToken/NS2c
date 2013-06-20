@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Tweaked player kill feed to be in a diff location on aliens
+
 class 'GUIDeathMessages' (GUIScript)
 
 local kBackgroundHeight = 32

@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Changed mine to detonate instantly, also can be killed before 'armed'
+
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/TriggerMixin.lua")
 Script.Load("lua/LiveMixin.lua")
@@ -108,6 +111,10 @@ local function Arm(self)
     
 end
 
+function Mine:GetSendDeathMessageOverride()
+    return false
+end
+
 local function CheckEntityExplodesMine(self, entity)
 
     if not self.active then
@@ -122,7 +129,7 @@ local function CheckEntityExplodesMine(self, entity)
         return false
     end
     
-    if not (entity:isa("Player") or entity:isa("Whip")) then
+    if not (entity:isa("Player") or entity:isa("Whip") or entity:isa("Babbler")) then
         return false
     end
     

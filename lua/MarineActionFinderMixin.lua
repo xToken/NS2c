@@ -6,6 +6,9 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
+//NS2c
+//Tweaks to drop weapon code, made keybind popup hidden under ShowHints client option
+
 local kFindWeaponRange = 1.5
 local kIconUpdateRate = 0.5
 
@@ -85,44 +88,40 @@ if Client then
             
             local success = false
             
-            if Client.GetOptionBoolean("showHints", true) then
+            if self:GetIsAlive() then
             
-                if self:GetIsAlive() then
+                local foundNearbyWeapon = FindNearbyWeapon(self, self:GetOrigin())
                 
-                    local foundNearbyWeapon = FindNearbyWeapon(self, self:GetOrigin())
+                if foundNearbyWeapon then
+                
+                    self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Drop"), foundNearbyWeapon:GetClassName())
+                    success = true
                     
-                    if foundNearbyWeapon then
+                else
+                
+                    local ent = self:PerformUseTrace()
+                    if ent then
                     
-                        self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Drop"), foundNearbyWeapon:GetClassName())
-                        success = true
+                        if GetPlayerCanUseEntity(self, ent) and not self:GetIsUsing() then
                         
-                    else
-                    
-                        local ent = self:PerformUseTrace()
-                        if ent then
-                        
-                            if GetPlayerCanUseEntity(self, ent) and not self:GetIsUsing() then
-                            
-                                local hintText = nil
-                                if ent:isa("CommandStation") and ent:GetIsBuilt() then
-                                    hintText = "START_COMMANDING"
-                                elseif ent:isa("PhaseGate") and ent:GetIsBuilt() then
-									hintText = kNS2cLocalizedStrings.MARINE_USE_PHASE
-								else
-								    hintText = kNS2cLocalizedStrings.MARINE_CONSTRUCT
-                                end
-
-                                self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Use"), nil, hintText)
-                                success = true
-                                
+                            local hintText = nil
+                            if ent:isa("CommandStation") and ent:GetIsBuilt() then
+                                hintText = "START_COMMANDING"
+                            elseif ent:isa("PhaseGate") and ent:GetIsBuilt() then
+                                hintText = kNS2cLocalizedStrings.MARINE_USE_PHASE
+                            else
+                                hintText = kNS2cLocalizedStrings.MARINE_CONSTRUCT
                             end
-                        
+
+                            self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Use"), nil, hintText)
+                            success = true
+                            
                         end
-                        
+                    
                     end
                     
                 end
-                
+
             end
             
             if not success then

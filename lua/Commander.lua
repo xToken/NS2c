@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed idle workers and adjusted to use goldsource movement code
+
 Script.Load("lua/Player.lua")
 Script.Load("lua/Globals.lua")
 Script.Load("lua/BuildingMixin.lua")
@@ -464,6 +467,10 @@ end
 
 function Commander:GetHostCommandStructure()
     return Shared.GetEntity(self.commandStationId)
+end
+
+function Commander:GetIsForwardOverrideDesired()
+    return false
 end
 
 /**

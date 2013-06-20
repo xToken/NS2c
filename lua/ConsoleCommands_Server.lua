@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =======================
 
+//NS2c
+//Added timed callback to kill
+
 function OnCommandSay(client, ...)
 
     if client == nil then

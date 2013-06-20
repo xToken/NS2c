@@ -1,10 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
 //
 // lua\ArmsLab.lua
 //
 //    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+
+//NS2c
+//Removed unneeded mixins, removed halo effect
 
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")

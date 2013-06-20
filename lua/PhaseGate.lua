@@ -6,6 +6,10 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed some unneeded mixins.
+//These used to require using but that seemed to confused players - Not sure what is best atm
+
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -114,7 +118,8 @@ local networkVars =
     linked = "boolean",
     phase = "boolean",
     deployed = "boolean",
-    destLocationId = "entityid"
+    destLocationId = "entityid",
+    phaseallowed = "time"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -169,7 +174,7 @@ function PhaseGate:OnCreate()
     self.phase = false
     self.deployed = false
     self.destLocationId = Entity.invalidId
-    
+    self.phaseallowed = 0
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup)
@@ -186,7 +191,6 @@ function PhaseGate:OnInitialized()
     
     if Server then
     
-        self:AddTimedCallback(PhaseGate.Update, kUpdateInterval)
         self.timeOfLastPhase = nil
         // This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
@@ -224,9 +228,15 @@ function PhaseGate:GetDestLocationId()
     return self.destLocationId
 end
 
+function PhaseGate:GetIsPowered()
+    return self.linked
+end
+
 function PhaseGate:GetEffectParams(tableParams)
+
     // Override active field here to mean "linked"
     tableParams[kEffectFilterActive] = self.linked
+    
 end
 
 function PhaseGate:GetReceivesStructuralDamage()
@@ -241,6 +251,20 @@ function PhaseGate:GetIsIdle()
     return ScriptActor.GetIsIdle(self) and self.linked
 end
 
+function PhaseGate:GetCanBeUsedConstructed()
+    return true
+end   
+
+function PhaseGate:GetCanBeUsed(player, useSuccessTable)
+
+    if self:GetCanConstruct(player) or (self.phaseallowed > 0 and self.phaseallowed < Shared.GetTime()) then
+        useSuccessTable.useSuccess = true
+    else
+        useSuccessTable.useSuccess = false
+    end
+    
+end
+
 if Server then
 
     /**
@@ -248,7 +272,7 @@ if Server then
      * there is a destination phase gate however.
      */
     local function GetCanPhase(self)
-    
+        
         if not self.deployed or not GetIsUnitActive(self) then
             return false
         end
@@ -309,74 +333,53 @@ if Server then
         
     end
     
-    function PhaseGate:Update()
-    
+    function PhaseGate:ScanForGates()
+
         local destinationPhaseGate = GetDestinationGate(self)
-        if destinationPhaseGate ~= nil then
-            self.destinationEndpoint = destinationPhaseGate:GetOrigin()
-        else
-            self.destinationEndpoint = nil
-        end
-        
-        if destinationPhaseGate ~= nil and GetCanPhase(destinationPhaseGate) and GetCanPhase(self) then
-
-            local players = GetEntitiesForTeamWithinRange("Marine", self:GetTeamNumber(), self:GetOrigin(), 1)
-            
-            for p = 1, #players do
-            
-                local player = players[p]
-                if player.GetCanPhase and player:GetCanPhase() then
-                
-                    // check for free place
-                    local destOrigin = GetDestinationOrigin(destinationPhaseGate:GetOrigin(), destinationPhaseGate:GetCoords().zAxis, destinationPhaseGate, player:GetExtents())
-                    
-                    // Don't bother checking if destination is clear, rely on pushing away entities
-                    self:TriggerEffects("phase_gate_player_enter")
-                    
-                    player:TriggerEffects("teleport")
-                    
-                    TransformPlayerCoordsForPhaseGate(player, self:GetCoords(), destinationPhaseGate:GetCoords())
-                    
-                    //PushPlayersInRange(destOrigin, kPushRange, kPushImpulseStrength, GetEnemyTeamNumber(self:GetTeamNumber()))
-                    
-                    player:SetOrigin(destOrigin)
-                    
-                    destinationPhaseGate:TriggerEffects("phase_gate_player_exit")
-                    
-                    self.timeOfLastPhase = Shared.GetTime()
-                    destinationPhaseGate.timeOfLastPhase = Shared.GetTime()
-                    
-                    player:SetTimeOfLastPhase(self.timeOfLastPhase)
-                    
-                    break
-                    
-                end
-                
-            end
-
-        end
-        
         // Update network variable state
         self.linked = GetIsUnitActive(self) and self.deployed and (destinationPhaseGate ~= nil) and destinationPhaseGate.deployed
-        self.phase = (self.timeOfLastPhase ~= nil) and (Shared.GetTime() < (self.timeOfLastPhase + 0.3))
-        
+        self.phase = (self.timeOfLastPhase ~= nil) and (Shared.GetTime() < (self.timeOfLastPhase + .1))
         // Update destination id for displaying in description
         self.destLocationId = ComputeDestinationLocationId(self)
-        
-        return true
+        return self:GetIsAlive()
         
     end
     
-    function PhaseGate:GetConnectionStartPoint()
-        return self:GetOrigin()
+    function PhaseGate:OnConstructionComplete()
+        self:AddTimedCallback(PhaseGate.ScanForGates, kUpdateInterval)
+        self.phaseallowed = Shared.GetTime() + 1
     end
     
-    function PhaseGate:GetConnectionEndPoint()
+    function PhaseGate:OnUse(player, elapsedTime, useSuccessTable)
 
-        if GetIsUnitActive(self) then
-            return self.destinationEndpoint
-        end    
+        local destinationPhaseGate = GetDestinationGate(self)
+        
+        // If built and active 
+        if destinationPhaseGate ~= nil and GetCanPhase(destinationPhaseGate) and GetCanPhase(self) and player.GetCanPhase and player:GetCanPhase() then
+            
+            // check for free place
+            local destOrigin = GetDestinationOrigin(destinationPhaseGate:GetOrigin(), destinationPhaseGate:GetCoords().zAxis, destinationPhaseGate, player:GetExtents())
+            
+            // Don't bother checking if destination is clear, rely on pushing away entities
+            self:TriggerEffects("phase_gate_player_enter")
+            
+            player:TriggerEffects("teleport")
+            
+            TransformPlayerCoordsForPhaseGate(player, self:GetCoords(), destinationPhaseGate:GetCoords())
+            
+            PushPlayersInRange(destOrigin, kPushRange, kPushImpulseStrength, GetEnemyTeamNumber(self:GetTeamNumber()))
 
+            SpawnPlayerAtPoint(player, destOrigin)
+            
+            destinationPhaseGate:TriggerEffects("phase_gate_player_exit")
+            
+            self.timeOfLastPhase = Shared.GetTime()
+            destinationPhaseGate.timeOfLastPhase = Shared.GetTime()
+            
+            player:SetTimeOfLastPhase(self.timeOfLastPhase)
+            
+        end
+        
     end
     
 end

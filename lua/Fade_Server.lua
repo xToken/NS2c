@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Modified for new ability techids
+
 function Fade:InitWeapons()
 
     Alien.InitWeapons(self)

@@ -7,6 +7,9 @@
 //
 //=============================================================================
 
+//NS2c
+//Adjusted techids for classic
+
 local gWeaponDescription = nil
 function MarineBuy_GetWeaponDescription(techId)
 

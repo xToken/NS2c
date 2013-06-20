@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added classic techids
+
 Script.Load("lua/GUIAnimatedScript.lua")
 
 class 'GUIMarineBuyMenu' (GUIAnimatedScript)

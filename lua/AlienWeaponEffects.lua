@@ -56,8 +56,8 @@ kAlienWeaponEffects =
             {sound = "", silenceupgrade = true, done = true},
             
             //{player_sound = "sound/ns2c.fev/ns2c/alien/lerk/bite", attach_point = "Bip01_Head", surface = "structure", done = true},
-            //{player_sound = "sound/ns2c.fev/ns2c/alien/lerk/bite", attach_point = "Bip01_Head"},
-            {player_sound = "sound/NS2.fev/alien/lerk/bite", attach_point = "Bip01_Head"},
+            {player_sound = "sound/ns2c.fev/ns2c/alien/lerk/bite2", attach_point = "Bip01_Head"},
+            //{player_sound = "sound/NS2.fev/alien/lerk/bite", attach_point = "Bip01_Head"},
         },
     },
     
@@ -112,6 +112,15 @@ kAlienWeaponEffects =
         },
     },
     
+    babblerability_attack =
+    {
+        babblerabilityAttackEffects = 
+        {   
+            {sound = "", silenceupgrade = true, done = true}, 
+            {player_sound = "sound/NS2.fev/alien/gorge/babbler_ball_spit", world_space = true},
+        },
+    },
+    
     healspray_collide =
     {
         healSpayCollideEffects =
@@ -146,8 +155,8 @@ kAlienWeaponEffects =
         acidrocketFireEffects = 
         {   
             {sound = "", silenceupgrade = true, done = true}, 
-            //{player_sound = "sound/ns2c.fev/ns2c/alien/fade/acidrocket_fire"},
-            {player_sound = "sound/NS2.fev/alien/gorge/spit"},
+            {player_sound = "sound/ns2c.fev/ns2c/alien/fade/acidrocket_fire"},
+            //{player_sound = "sound/NS2.fev/alien/gorge/spit"},
             //{cinematic = "cinematics/alien/gorge/spit_fire.cinematic"},
         },
     },
@@ -174,8 +183,8 @@ kAlienWeaponEffects =
             {cinematic = "cinematics/alien/gorge/bilebomb_impact.cinematic"},
             
             {sound = "", silenceupgrade = true, done = true},
-            //{sound = "sound/ns2c.fev/ns2c/alien/fade/acidrocket_hit", done = true},
-            {sound = "sound/NS2.fev/alien/gorge/bilebomb_hit", done = true},
+            {sound = "sound/ns2c.fev/ns2c/alien/fade/acidrocket_hit", done = true},
+            //{sound = "sound/NS2.fev/alien/gorge/bilebomb_hit", done = true},
         },
     },
     
@@ -186,6 +195,30 @@ kAlienWeaponEffects =
         {
             {sound = "", silenceupgrade = true, done = true}, 
             {sound = "sound/NS2.fev/alien/structures/spawn_small"},
+        },
+    },
+    
+    web_fire =
+    {
+        web_fire =
+        {
+            {sound = "sound/ns2c.fev/ns2c/alien/gorge/webspin1"},
+        },
+    },
+    
+    web_harden =
+    {
+        web_fire =
+        {
+            {sound = "sound/ns2c.fev/ns2c/alien/gorge/web_form"},
+        },
+    },
+    
+    web_clear =
+    {
+        web_fire =
+        {
+            {sound = "sound/ns2c.fev/ns2c/alien/gorge/web_clear"},
         },
     },
 
@@ -214,8 +247,8 @@ kAlienWeaponEffects =
             {sound = "", silenceupgrade = true, done = true}, 
             //{viewmodel_cinematic = "cinematics/alien/lerk/spore_view_fire.cinematic", attach_point = "fxnode_hole_left"},
             //{viewmodel_cinematic = "cinematics/alien/lerk/spore_view_fire.cinematic", attach_point = "fxnode_hole_right"},
-            //{player_sound = "sound/ns2c.fev/ns2c/alien/lerk/spore_fire"},
-            {player_sound = "sound/NS2.fev/alien/lerk/spores_shoot"},
+            {player_sound = "sound/ns2c.fev/ns2c/alien/lerk/spore_fire"},
+            //{player_sound = "sound/NS2.fev/alien/lerk/spores_shoot"},
         },
     },    
 
@@ -226,8 +259,8 @@ kAlienWeaponEffects =
             {sound = "", silenceupgrade = true, done = true}, 
             {viewmodel_cinematic = "cinematics/alien/lerk/umbra_view_fire.cinematic", attach_point = "fxnode_hole_left"},
             {viewmodel_cinematic = "cinematics/alien/lerk/umbra_view_fire.cinematic", attach_point = "fxnode_hole_right"},
-            //{player_sound = "sound/ns2c.fev/ns2c/alien/lerk/umbra_fire"},
-            {player_sound = "sound/NS2.fev/alien/structures/crag/umbra"},
+            {player_sound = "sound/ns2c.fev/ns2c/alien/lerk/umbra_fire"},
+            //{player_sound = "sound/NS2.fev/alien/structures/crag/umbra"},
         },
     },
     
@@ -246,15 +279,16 @@ kAlienWeaponEffects =
         metabolizeEffects =
         {
             {sound = "", silenceupgrade = true, done = true}, 
-            //{player_sound = "sound/ns2c.fev/ns2c/alien/fade/metabolize"},
-            {player_sound = "sound/NS2.fev/alien/fade/stab"},
+            {player_sound = "sound/ns2c.fev/ns2c/alien/fade/metabolize"},
+            //{player_sound = "sound/NS2.fev/alien/fade/stab"},
         },
     },
 
     blink_in =
     {
         blinkInEffects =
-        {        
+        {
+            
             //{player_cinematic = "cinematics/alien/fade/blink_in_silent.cinematic", done = true},
         },
     },
@@ -265,7 +299,7 @@ kAlienWeaponEffects =
         {   
             {sound = "", silenceupgrade = true, done = true},
             {stop_sound = "sound/ns2c.fev/ns2c/alien/fade/blink"},
-            {player_sound = "sound/ns2c.fev/ns2c/alien/fade/blink"},  
+            {player_sound = "sound/ns2c.fev/ns2c/alien/fade/blink"},
             //{player_cinematic = "cinematics/alien/fade/blink_out_silent.cinematic", done = true},
         },
     },
@@ -314,6 +348,32 @@ kAlienWeaponEffects =
             {cinematic = "cinematics/alien/onos/stomp_hit.cinematic"},
             {sound = "", silenceupgrade = true, done = true},
             {player_sound = "sound/NS2.fev/alien/onos/stomp"},
+        },
+    },
+    
+    devour_fire =
+    {
+        DevourAttack =
+        {
+            {sound = "", silenceupgrade = true, done = true},
+            {player_sound = "sound/ns2c.fev/ns2c/alien/onos/devour_fire"},
+        },
+    },
+    
+    devour_hit =
+    {
+        DevourHit =
+        {
+            {sound = "", silenceupgrade = true, done = true},
+            {player_sound = "sound/ns2c.fev/ns2c/alien/onos/devour_hit"},
+        },
+    },
+    
+    devour_complete =
+    {
+        DevourCompleteEffects =
+        {
+            {player_sound = "sound/ns2c.fev/ns2c/alien/onos/devour_complete"},
         },
     },
     

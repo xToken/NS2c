@@ -41,6 +41,10 @@ function HiveStructureAbility:GetDropMapName()
     return Hive.kMapName
 end
 
+function HiveStructureAbility:GetRequiredTechId()
+    return kTechId.None
+end
+
 function HiveStructureAbility:CreateStructure(coords, player, lastClickedPosition)
 	local success, entid = player:AttemptToBuild(self:GetDropStructureId(), coords.origin, nil, 0, nil, false, self, nil, player)
     if success then

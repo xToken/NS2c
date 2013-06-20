@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed hypermutation refs, added in 4th slot for Whip and adjusted spacing
+
 Script.Load("lua/GUIParticleSystem.lua")
 Script.Load("lua/tweener/Tweener.lua")
 

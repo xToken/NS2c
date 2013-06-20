@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added dropped weapon tracking, slowed IP message.
+
 Script.Load("lua/Marine.lua")
 Script.Load("lua/PlayingTeam.lua")
 

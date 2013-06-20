@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Modified so insight doesnt bug out.
+
 function OnCommandHealth(healthTable)
 
     Insight_SetPlayerHealth(healthTable.clientIndex, healthTable.health, healthTable.maxHealth, healthTable.armor, healthTable.maxArmor)

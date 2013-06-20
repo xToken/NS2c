@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Adjusted arcs to be constructed and require nearby TF
+
 local kARCDamageOffset = Vector(0, 0.3, 0)
 local kMoveParam = "move_speed"
 local kMuzzleNode = "fxnode_arcmuzzle"

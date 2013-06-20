@@ -135,7 +135,7 @@ function ElectrifyMixin:Update()
         end
         if damagedentities > 0 then
             self.lastElectrifiedTime = Shared.GetTime()
-            Shared.PlayWorldSound(nil, kElectrifiedSounds[math.random(1,2)], nil, self:GetOrigin())
+            StartSoundEffectAtOrigin(kElectrifiedSounds[math.random(1,2)], self:GetOrigin())
             self.lastDamagetick = Shared.GetTime()
         end
     end

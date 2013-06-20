@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Adjusted button references for classic techIds
+
 // These are the icons that appear next to alerts or as hotkey icons.
 // Icon size should be 20x20. Also used for the alien buy menu.
 function CommanderUI_Icons()
@@ -188,6 +191,8 @@ kTechIdToMaterialOffset[kTechId.CatPackTech] = 105
 kTechIdToMaterialOffset[kTechId.Electrify] = 106
 
 kTechIdToMaterialOffset[kTechId.Recycle] = 108
+kTechIdToMaterialOffset[kTechId.Babbler] = 115
+kTechIdToMaterialOffset[kTechId.BabblerEgg] = 115
 kTechIdToMaterialOffset[kTechId.Move] = 121
 kTechIdToMaterialOffset[kTechId.Stop] = 122
 kTechIdToMaterialOffset[kTechId.Attack] = 123
@@ -248,7 +253,6 @@ function GetMaterialXYOffset(techId)
     index = kTechIdToMaterialOffset[techId]
     
     if index == nil then
-        assert(techId ~= nil)
         Print("Warning: %s did not define kTechIdToMaterialOffset ", EnumToString(kTechId, techId) )
     end
 

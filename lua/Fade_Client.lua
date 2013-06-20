@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Modified to remove visual effects of fade while blinking
+
 local kFirstPersonMiniBlinkCinematic = "cinematics/alien/fade/miniblink1p.cinematic"
 
 local kFadeCameraYOffset = 0.6

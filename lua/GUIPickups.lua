@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added classic tech ids, tweaks for auto pickup
+
 local kPickupsVisibleRange = 15
 
 local function GetNearbyPickups()

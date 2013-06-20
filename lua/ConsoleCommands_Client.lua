@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Changed debugspeed to not require cheats
+
 function OnCommandOnClientDisconnect(clientIndexString)
     Scoreboard_OnClientDisconnect(tonumber(clientIndexString))
 end

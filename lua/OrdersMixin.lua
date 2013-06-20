@@ -6,6 +6,9 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
+//NS2c
+//Removal of powerpoint detections
+
 Script.Load("lua/TechTreeConstants.lua")
 Script.Load("lua/PhysicsGroups.lua")
 
@@ -183,7 +186,7 @@ function OrdersMixin:GiveOrder(orderType, targetId, targetOrigin, orientation, c
 
     ASSERT(type(orderType) == "number")
     
-    if self.ignoreOrders or OrderTargetInvalid(self, targetId) or ( #self.orders > OrdersMixin.kMaxOrdersPerUnit or (self.timeLastOrder and self.timeLastOrder + OrdersMixin.kOrderDelay > Shared.GetTime()) )  then
+    if GetIsVortexed(self) or self.ignoreOrders or OrderTargetInvalid(self, targetId) or ( #self.orders > OrdersMixin.kMaxOrdersPerUnit or (self.timeLastOrder and self.timeLastOrder + OrdersMixin.kOrderDelay > Shared.GetTime()) )  then
         return kTechId.None
     end
     

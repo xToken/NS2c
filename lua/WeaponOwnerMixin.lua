@@ -33,7 +33,7 @@ WeaponOwnerMixin.networkVars =
     activeWeaponId = "entityid",
     timeOfLastWeaponSwitch = "time",
     weaponsWeight = "float (0 to " .. WeaponOwnerMixin.kMaxWeaponsWeight .. " by 0.01)",
-	quickSwitchSlot = "integer (0 to 10)"
+    quickSwitchSlot = "integer (0 to 10)"
 }
 
 function WeaponOwnerMixin:__initmixin()
@@ -50,6 +50,8 @@ function WeaponOwnerMixin:GetWeaponsWeight()
     return self.weaponsWeight
 end
 
+//NS2c
+//Changed to global as weapons will now call this also.
 function WeaponOwnerMixin:UpdateWeaponWeights()
 
     // Loop through all weapons, getting weight of each one
@@ -128,7 +130,7 @@ end
 
 // Returns true if we switched to weapon or if weapon is already active. Returns false if we 
 // don't have that weapon.
-function WeaponOwnerMixin:SetActiveWeapon(weaponMapName)
+function WeaponOwnerMixin:SetActiveWeapon(weaponMapName, keepQuickSwitchSlot)
 
     local foundWeapon = nil
     for i = 0, self:GetNumChildren() - 1 do

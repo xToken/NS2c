@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed delays in commander interface
+
 assert(Client)
 
 local function GetSelectionAllowed(commander)

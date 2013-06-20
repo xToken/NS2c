@@ -6,6 +6,9 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
+//NS2c
+//Modified to add Recycling as a seperate Unit Status from researching.
+
 kUnitStatus = enum({
     'None',
     'Inactive',
@@ -97,12 +100,11 @@ function UnitStatusMixin:GetUnitHint(forEntity)
     if HasMixin(self, "Tech") then
     
         local hintString = LookupTechData(self:GetTechId(), kTechDataHint, "")
-        if hintString ~= "" then
-            
-            if self.OverrideHintString then
-                hintString = self:OverrideHintString(hintString)
-            end
-            
+        if self.OverrideHintString then
+            hintString = self:OverrideHintString(hintString, forEntity)
+        end
+        
+        if hintString ~= "" then            
             return Locale.ResolveString(hintString)
         end
         

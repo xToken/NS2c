@@ -8,6 +8,10 @@
 // See the Messages section of the Networking docs in Spark Engine scripting docs for details.
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+
+//NS2c
+//Added hiveinfo, removed ability cooldown netmessages
+
 Script.Load("lua/Globals.lua")
 Script.Load("lua/TechTreeConstants.lua")
 Script.Load("lua/VoiceOver.lua")
@@ -273,7 +277,7 @@ end
 
 Shared.RegisterNetworkMessage( "Ping", kPingMessage )
 
-kWorldTextMessageType = enum({ 'Resources', 'Resource', 'Damage' })
+kWorldTextMessageType = enum({ 'Resources', 'Resource', 'Damage', 'CommanderError' })
 local kWorldTextMessage =
 {
     messageType = "enum kWorldTextMessageType",
@@ -824,6 +828,13 @@ function BuildChatMessage(teamOnly, playerName, playerLocationId, playerTeamNumb
     
 end
 
+local kVoteChamberCastMessage =
+{
+    voterName = "string (" .. kMaxNameLength .. ")",
+    votesMoreNeeded = "integer (0 to 64)",
+    voteId = "enum kTechId" 
+}
+
 local kVoteConcedeCastMessage =
 {
     voterName = "string (" .. kMaxNameLength .. ")",
@@ -833,6 +844,11 @@ local kVoteConcedeCastMessage =
 local kTeamConcededMessage =
 {
     teamNumber = string.format("integer (-1 to %d)", kRandomTeamType)
+}
+
+local kChamberSelectedMessage =
+{
+    voteId = "enum kTechId" 
 }
 
 local kVoteEjectCastMessage =
@@ -894,8 +910,10 @@ Shared.RegisterNetworkMessage("CreateHotKeyGroup", kCreateHotkeyGroupMessage)
 Shared.RegisterNetworkMessage("MinimapAlert", kMinimapAlertMessage)
 Shared.RegisterNetworkMessage("CommanderNotification", kCommanderNotificationMessage)
 Shared.RegisterNetworkMessage("VoteConcedeCast", kVoteConcedeCastMessage)
+Shared.RegisterNetworkMessage("VoteChamberCast", kVoteChamberCastMessage)
 Shared.RegisterNetworkMessage("VoteEjectCast", kVoteEjectCastMessage)
 Shared.RegisterNetworkMessage("TeamConceded", kTeamConcededMessage)
+Shared.RegisterNetworkMessage("ChamberSelected", kChamberSelectedMessage)
 
 // Player actions
 Shared.RegisterNetworkMessage("MutePlayer", kMutePlayerMessage)

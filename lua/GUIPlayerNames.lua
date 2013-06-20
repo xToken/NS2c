@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Remove alien comm reference
+
 class 'GUIPlayerNames' (GUIScript)
 
 GUIPlayerNames.kMaxNames = kMaxPlayers/2

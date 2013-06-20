@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added focus and silence hooks
+
 Script.Load("lua/Weapons/Weapon.lua")
 
 class 'Ability' (Weapon)

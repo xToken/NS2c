@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Adjusted techids for classic
+
 Script.Load("lua/Commander.lua")
 
 class 'MarineCommander' (Commander)

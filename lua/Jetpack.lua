@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Changed pickup sound, altered so HA cannot have jp also.
+
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/TeamMixin.lua")
@@ -77,10 +80,10 @@ function Jetpack:OnDestroy()
 
 end
 
-function Jetpack:OnTouch(recipient)
+/*function Jetpack:OnTouch(recipient)
 
     if self:GetIsValidRecipient(recipient) then
-        Shared.PlayWorldSound(nil, Jetpack.kPickupSound, nil, recipient:GetOrigin())
+        StartSoundEffectAtOrigin(Jetpack.kPickupSound, recipient:GetOrigin())
         recipient:GiveJetpack()
         return true
     end
@@ -89,6 +92,12 @@ end
 
 function Jetpack:GetCanBeUsed(player, useSuccessTable)
     useSuccessTable.useSuccess = false
+end*/
+
+function Jetpack:OnTouch(recipient)
+end
+
+function Jetpack:_GetNearbyRecipient()
 end
 
 // only give jetpacks to standard marines
@@ -98,6 +107,26 @@ end
 
 function Jetpack:GetIsPermanent()
     return true
+end  
+
+function Jetpack:GetCanBeUsed(player, useSuccessTable)
+    useSuccessTable.useSuccess = self:GetIsValidRecipient(player)      
+end
+
+if Server then
+
+    function Jetpack:OnUse(player, elapsedTime, useSuccessTable)
+    
+        if self:GetIsValidRecipient(player) then
+        
+            DestroyEntity(self)
+            StartSoundEffectAtOrigin(Jetpack.kPickupSound, player:GetOrigin())
+            player:GiveJetpack()
+            
+        end
+        
+    end
+    
 end
 
 Shared.LinkClassToMap("Jetpack", Jetpack.kMapName, networkVars)

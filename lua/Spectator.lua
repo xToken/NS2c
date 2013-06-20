@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Changed spectator to also use player movement logic, which is goldsource based.
+
 Script.Load("lua/Player.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/Mixins/FreeLookMoveMixin.lua")

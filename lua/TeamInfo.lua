@@ -11,6 +11,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Adjusted techIds to classic requirements, removed workerCount.
+
 Script.Load("lua/TeamMixin.lua")
 
 class 'TeamInfo' (Entity)

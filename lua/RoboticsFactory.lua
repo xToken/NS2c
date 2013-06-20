@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Updated to add hooks for turret factory mixin, removal of production values.
+
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -211,18 +214,6 @@ end
 function RoboticsFactory:OnTag(tagName)
     
     PROFILE("RoboticsFactory:OnTag")
-
-    if self.open and self.researchId ~= Entity.invalidId and tagName == "end" then
-    
-        // Create structure
-        //self:ManufactureEntity()
-        
-        //self:ClearResearch()
-        
-        // Close up
-        //self.open = false
-        
-    end
     
     if tagName == "open_start" then
         StartSoundEffectAtOrigin(kOpenSound, self:GetOrigin())

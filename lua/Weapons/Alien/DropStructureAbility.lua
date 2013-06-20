@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added in additional build abilities
+
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/CragAbility.lua")
 Script.Load("lua/Weapons/Alien/ShiftAbility.lua")
@@ -15,6 +18,7 @@ Script.Load("lua/Weapons/Alien/HydraAbility.lua")
 Script.Load("lua/Weapons/Alien/WebsAbility.lua")
 Script.Load("lua/Weapons/Alien/HarvesterAbility.lua")
 Script.Load("lua/Weapons/Alien/HiveAbility.lua")
+Script.Load("lua/Weapons/Alien/BabblerEggAbility.lua")
 
 class 'DropStructureAbility' (Ability)
 
@@ -23,11 +27,14 @@ DropStructureAbility.kMapName = "drop_structure_ability"
 local kCreateFailSound = PrecacheAsset("sound/NS2.fev/alien/gorge/create_fail")
 local kAnimationGraph = PrecacheAsset("models/alien/gorge/gorge_view.animation_graph")
 local kDropCooldown = 1
+local kMaxStructuresPerType = 5
 
-DropStructureAbility.kSupportedStructures = { CragStructureAbility, ShiftStructureAbility, ShadeStructureAbility, WhipStructureAbility, HarvesterStructureAbility, HiveStructureAbility, HydraStructureAbility, WebsAbility }
+DropStructureAbility.kSupportedStructures = { CragStructureAbility, ShiftStructureAbility, ShadeStructureAbility, WhipStructureAbility, HarvesterStructureAbility, HiveStructureAbility, HydraStructureAbility, WebsAbility, BabblerEggAbility }
 
 local networkVars =
 {
+    numWebsLeft = string.format("private integer (0 to %d)", kMaxStructuresPerType),
+    numBabblersLeft = string.format("private integer (0 to %d)", kMaxStructuresPerType),
     lastPrimaryAttackTime = "time"
 }
 
@@ -54,6 +61,8 @@ function DropStructureAbility:OnCreate()
     self.activeStructure = nil
 	self.lastClickedPosition = nil
     self.lastPrimaryAttackTime = 0
+    self.numBabblersLeft = 0
+    self.numWebsLeft = 0
     if Server then
         self.lastCreatedId = Entity.invalidId
     end
@@ -74,6 +83,12 @@ function DropStructureAbility:GetSecondaryTechId()
 end
 
 function DropStructureAbility:GetNumStructuresBuilt(techId)
+    if techId == kTechId.Web then
+        return self.numWebsLeft
+    end
+    if techId == kTechId.BabblerEgg then
+        return self.numBabblersLeft
+    end
     return -1
 end
 
@@ -188,12 +203,13 @@ function DropStructureAbility:PerformPrimaryAttack(player)
         end
 
         self.lastClickedPosition = nil
-
-    else
-        self.lastClickedPosition = Vector(coords.origin)
+        
     end
     
-    if not valid then
+    if not secondClick then
+        self:TriggerEffects("web_fire")
+        self.lastClickedPosition = Vector(coords.origin)
+    elseif not valid then
         player:TriggerInvalidSound()
     end
         
@@ -228,11 +244,17 @@ local function DropStructure(self, player, origin, direction, structureAbility, 
             if structure then
             
                 structure:SetOwner(player)
+                player:GetTeam():AddGorgeStructure(player, structure)
                 
                 // Check for space
                 if structure:SpaceClearForEntity(coords.origin) then
                 
                     local angles = Angles()
+                    
+                    if structure:isa("BabblerEgg") and coords.yAxis.y > 0.8 then
+                        angles.yaw = math.random() * math.pi * 2
+                    end
+                    
                     angles:BuildFromCoords(coords)
                     structure:SetAngles(angles)
                     
@@ -247,10 +269,11 @@ local function DropStructure(self, player, origin, direction, structureAbility, 
                     end
                     
                     player:DeductAbilityEnergy(kDropStructureEnergyCost)
-                    self:TriggerEffects("spit_structure", {effecthostcoords = Coords.GetLookIn(origin, direction)} )
                     
                     if structureAbility.OnStructureCreated then
                         structureAbility:OnStructureCreated(structure, lastClickedPosition)
+                    else
+                        self:TriggerEffects("spit_structure", {effecthostcoords = Coords.GetLookIn(origin, direction)} )
                     end
                     
                     self.timeLastDrop = Shared.GetTime()
@@ -308,6 +331,10 @@ function DropStructureAbility:CreateStructure(coords, player, structureAbility, 
     end
 end
 
+local function FilterBabblersAndTwo(ent1, ent2)
+    return function (test) return test == ent1 or test == ent2 or test:isa("Babbler") end
+end
+
 // Given a gorge player's position and view angles, return a position and orientation
 // for structure. Used to preview placement via a ghost structure and then to create it.
 // Also returns bool if it's a valid position or not.
@@ -322,7 +349,7 @@ function DropStructureAbility:GetPositionForStructure(startPosition, direction, 
     local adjustedcoords
 
     // Trace short distance in front
-    local trace = Shared.TraceRay(player:GetEyePos(), origin, CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls, EntityFilterTwo(player, self))
+    local trace = Shared.TraceRay(player:GetEyePos(), origin, CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls, FilterBabblersAndTwo(player, self))
     
     local displayOrigin = trace.endPoint
     
@@ -330,7 +357,7 @@ function DropStructureAbility:GetPositionForStructure(startPosition, direction, 
     if trace.fraction == 1 then
     
         origin = startPosition + direction * range
-        trace = Shared.TraceRay(origin, origin - Vector(0, range, 0), CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls, EntityFilterTwo(player, self))
+        trace = Shared.TraceRay(origin, origin - Vector(0, range, 0), CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls, FilterBabblersAndTwo(player, self))
         
     end
     
@@ -401,6 +428,33 @@ function DropStructureAbility:OnUpdateAnimationInput(modelMixin)
     
 end
 
+function DropStructureAbility:ProcessMoveOnWeapon(input)
+
+    // Show ghost if we're able to create structure, and if menu is not visible
+    local player = self:GetParent()
+    if player then
+    
+        if Server then
+
+            local team = player:GetTeam()
+            //local hiveCount = team:GetNumHives()
+            local numAllowedWebs = LookupTechData(kTechId.Web, kTechDataMaxAmount, -1) 
+            local numAllowedBabblers = LookupTechData(kTechId.BabblerEgg, kTechDataMaxAmount, -1) 
+            
+            if numAllowedWebs >= 0 then     
+                self.numWebsLeft = team:GetNumDroppedGorgeStructures(player, kTechId.Web)           
+            end
+            
+            if numAllowedBabblers >= 0 then     
+                self.numBabblersLeft = team:GetNumDroppedGorgeStructures(player, kTechId.BabblerEgg)           
+            end
+            
+        end
+        
+    end    
+    
+end
+
 function DropStructureAbility:GetShowGhostModel()
     return self.activeStructure ~= nil and not self:GetHasDropCooldown() 
 end
@@ -413,12 +467,16 @@ function DropStructureAbility:GetIsPlacementValid()
     return self.placementValid
 end
 
-function DropStructureAbility:GetGhostModelTechId()
+function DropStructureAbility:GetTakesSecondary()
+    return LookupTechData(self:GetActiveStructure().GetDropStructureId(), kTechDataSpecifyOrientation, false)
+end
+
+function DropStructureAbility:GetGhostModelTechId(ModelCheck)
 
     if self.activeStructure == nil then
         return nil
     else
-        return self:GetActiveStructure():GetDropStructureId()
+        return self:GetActiveStructure():GetDropStructureId(ModelCheck)
     end
 
 end

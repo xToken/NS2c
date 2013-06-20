@@ -6,6 +6,9 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
+//NS2c
+//Changed umbra to damage reduction
+
 BulletsMixin = CreateMixin( BulletsMixin )
 BulletsMixin.type = "Bullets"
 

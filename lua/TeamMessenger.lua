@@ -6,12 +6,16 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Adding messages for Abilities/Chambers lost/gained, and removed Power notifications
+//Changed Hive Health messages to only go to aliens, and added Hive in Danger notification.
+
 kTeamMessageTypes = enum({ 'GameStarted', 'PowerLost', 'PowerRestored', 'Eject', 'CannotSpawn',
                            'SpawningWait', 'Spawning', 'ResearchComplete', 'ResearchLost', 'AbilityUnlocked', 'AbilityLost',
                            'HiveConstructed', 'HiveLowHealth', 'HiveKilled',
                            'CommandStationUnderAttack', 'IPUnderAttack', 'HiveUnderAttack', 'HiveInDanger',
                            'PowerPointUnderAttack', 'Beacon', 'NoCommander', 'TeamsUnbalanced',
-                           'TeamsBalanced', 'GameStartCommanders'})
+                           'TeamsBalanced', 'GameStartCommanders', 'UnassignedHive'})
 
 local kTeamMessages = { }
 
@@ -62,6 +66,8 @@ kTeamMessages[kTeamMessageTypes.TeamsUnbalanced] = { text = { [kMarineTeamType] 
 kTeamMessages[kTeamMessageTypes.TeamsBalanced] = { text = { [kMarineTeamType] = "TEAMS_BALANCED", [kAlienTeamType] = "TEAMS_BALANCED" } }
 
 kTeamMessages[kTeamMessageTypes.GameStartCommanders] = { text = { [kMarineTeamType] = kNS2cLocalizedStrings.GAME_START_COMMANDERS, [kAlienTeamType] = kNS2cLocalizedStrings.GAME_START_COMMANDERS } }
+
+kTeamMessages[kTeamMessageTypes.UnassignedHive] = { text = { [kAlienTeamType] = kNS2cLocalizedStrings.UNASSIGNED_HIVES } }
 
 // Silly name but it fits the convention.
 local kTeamMessageMessage =

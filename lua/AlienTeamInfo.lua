@@ -10,6 +10,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added in unassigned hives for tracking
+
 Script.Load("lua/TeamInfo.lua")
 
 class 'AlienTeamInfo' (TeamInfo)

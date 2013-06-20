@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added attackspeed, tweaked some vars for goldsource movement and made some vars local
+
 Script.Load("lua/Utility.lua")
 Script.Load("lua/Alien.lua")
 Script.Load("lua/Weapons/Alien/LerkBite.lua")
@@ -166,6 +169,10 @@ function Lerk:GetBaseArmor()
     return kLerkArmor
 end
 
+function Lerk:GetBaseHealth()
+    return kLerkHealth
+end
+
 function Lerk:GetArmorFullyUpgradedAmount()
     return kLerkArmorFullyUpgradedAmount
 end
@@ -220,6 +227,10 @@ function Lerk:GetMaxSpeed(possible)
 end
 
 function Lerk:GetCanCrouch()
+    return false
+end
+
+function Lerk:GetIsForwardOverrideDesired()
     return false
 end
 

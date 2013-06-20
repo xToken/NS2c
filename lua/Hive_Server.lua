@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Tweaked egg spawns and respawn queues which are hive specific.
+
 // Send out an impulse to maintain infestations every 10 seconds.
 local kImpulseInterval = 10
 
@@ -84,7 +87,7 @@ local function EmptySpawnWave(self)
 
         local player = Shared.GetEntity(self.queuedplayer)
         if player then
-            player:SetEggId(Entity.invalidId, 0)
+            player:SetEggId(Entity.invalidId)
             player:SetWaveSpawnEndTime(0)
             //Correctly sets time back so that players position in the queue isnt completely botched 
             //only would miss next spawn by 1 if another player is already queued and in progress at another hive.

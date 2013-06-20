@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Restructured this file heavily, attempted to remove all unused vars
+
 kDefaultFov = 90
 kEmbryoFov = 100
 kSkulkFov = 105
@@ -19,6 +22,7 @@ kHiveUnderAttackTime = 15
 kMaxAlienStructureRange = 25
 kMaxAlienStructuresofType = 8
 kMaxBuildingHives = 1
+kMaxGorgeOwnedStructures = 24
 kChamberLostNotification = 0    // Amount of Upgrade Chambers remaining for alerts to be sent
 kPingOfDeathDelay = 2
 kPingOfDeathDamagePercent = 12
@@ -28,7 +32,7 @@ kFootstepsThreshold = 3.5
 kGhostStructureModifier = .75
 kEnergyUpdateRate = 0.25
 kDropWeaponTimeLimit = 1
-kPickupWeaponTimeLimit = 1
+kPickupWeaponTimeLimit = 2
 kItemStayTime = 30    // NS1
 kRecycleCancelWindow = 0.25
 kRecycleRefundScalar = 0.5
@@ -94,8 +98,8 @@ kUpgradeGestationTime = 2
 // Jetpack
 // NS1: 6.5 seconds of fuel
 // NS1: 9 seconds for full refuel
-kJetpackUseFuelRate = 0.21
-kJetpackReplenishFuelRate = 0.11
+kJetpackUseFuelRate = 0.22
+kJetpackReplenishFuelRate = 0.10
 kJetpackWeight = 0.08
 
 //HA
@@ -109,6 +113,12 @@ kAlienRegenerationPercentage = 0.09
 //Severe Flinch Effects
 kFlinchDamageInterval = 0.1
 kFlinchDamagePercent = 0.30
+
+//Base Alien building infestation generation
+kInfestationRadius = 3.5
+kInfestationBlobDensity = 2
+kInfestationGrowthRate = 0.1
+kMinInfestationRadius = 0.5
 
 kKillDelay = 3
 

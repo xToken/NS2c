@@ -5,6 +5,10 @@
 //    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+
+//NS2c
+//Added in Fixed HotKey for final panel
+
 Script.Load("lua/Commander_Hotkeys.lua")
 Script.Load("lua/TechTreeButtons.lua")
 

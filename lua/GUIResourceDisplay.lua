@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed idle workers item
+
 Script.Load("lua/GUIScript.lua")
 
 class 'GUIResourceDisplay' (GUIScript)

@@ -1,4 +1,4 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
 //
 // lua\Weapons\Alien\Blink.lua
 //
@@ -6,9 +6,14 @@
 //                  Max McGuire (max@unknownworlds.com)
 //
 // Blink - Attacking many times in a row will create a cool visual "chain" of attacks, 
-// showing the more flavorful animations in sequence. Base class for swipe and Metabolize, available at tier 2.
+// showing the more flavorful animations in sequence. Base class for swipe and vortex,
+// available at tier 2.
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+
+//NS2c
+//Adjusted blink impact and energy usage, also removed visual effects
+
 Script.Load("lua/Weapons/Alien/Ability.lua")
 
 class 'Blink' (Ability)

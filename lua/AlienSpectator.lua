@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Adjusted logic so that player can be queued to an egg earlier in the spawning process
+
 Script.Load("lua/TeamSpectator.lua")
 Script.Load("lua/ScoringMixin.lua")
 
@@ -29,7 +32,23 @@ local networkVars =
 
 local function UpdateQueuePosition(self)
 
+    if self:GetIsDestroyed() then
+        return false
+    end
+    
     self.queuePosition = self:GetTeam():GetPlayerPositionInRespawnQueue(self)
+    return true
+    
+end
+
+local function UpdateWaveTime(self)
+
+    if self:GetIsDestroyed() then
+        return false
+    end
+        
+    Server.SendNetworkMessage(Server.GetOwner(self), "SetTimeWaveSpawnEnds", { time = self.timeWaveSpawnEnd }, true)
+    
     return true
     
 end
@@ -62,49 +81,8 @@ function AlienSpectator:OnInitialized()
     
         self.evolveTechIds = { kTechId.Skulk }
         self:AddTimedCallback(UpdateQueuePosition, 0.1)
+        self:AddTimedCallback(UpdateWaveTime, 0.1)
         UpdateQueuePosition(self)
-        
-    end
-    
-    if Client and Client.GetLocalPlayer() == self then
-        self.spawnHUD = GetGUIManager():CreateGUIScript("GUIAlienSpectatorHUD")
-    end
-    
-end
-
-function AlienSpectator:OnDestroy()
-
-    TeamSpectator.OnDestroy(self)
-    
-    if Client  then
-    
-        if self.spawnHUD then
-        
-            GetGUIManager():DestroyGUIScript(self.spawnHUD)
-            self.spawnHUD = nil
-            
-        end
-        
-        if self.requestMenu then
-        
-            GetGUIManager():DestroyGUIScript(self.requestMenu)
-            self.requestMenu = nil
-            
-        end  
-        
-    end
-    
-end
-
-if Client then
-
-    function AlienSpectator:OnInitLocalClient()
-    
-        TeamSpectator.OnInitLocalClient(self)
-        
-        if self.requestMenu == nil then
-            self.requestMenu = GetGUIManager():CreateGUIScript("GUIRequestMenu")
-        end
         
     end
     
@@ -125,16 +103,8 @@ function AlienSpectator:GetHostEgg()
     
 end
 
-function AlienSpectator:SetEggId(id, autospawntime)
-
-    self.eggId = id
-    
-    if self.eggId == Entity.invalidId then
-        self.timeWaveSpawnEnd = 0
-    else
-        self.timeWaveSpawnEnd = autospawntime
-    end
-    
+function AlienSpectator:SetEggId(id)
+    self.eggId = id    
 end
 
 function AlienSpectator:GetEggId()
@@ -154,6 +124,10 @@ function AlienSpectator:OnProcessMove(input)
     TeamSpectator.OnProcessMove(self, input)
     
     if Server then
+    
+        if self.timeWaveSpawnEnd > 0 and Shared.GetTime() >= self.timeWaveSpawnEnd then
+            self:SpawnPlayerOnAttack()
+        end
             
         if not self.waitingToSpawnMessageSent then
         
@@ -167,6 +141,19 @@ function AlienSpectator:OnProcessMove(input)
 end
 
 function AlienSpectator:SpawnPlayerOnAttack()
+
+    local egg = self:GetHostEgg()
+    
+    if egg ~= nil then
+        return egg:SpawnPlayer()
+    elseif Shared.GetCheatsEnabled() then
+        return self:GetTeam():ReplaceRespawnPlayer(self)
+    end
+    
+    self:TriggerInvalidSound()
+    
+    return false, nil
+    
 end
 
 // Same as Skulk so his view height is right when spawning in

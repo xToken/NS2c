@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed EGG counts and powernode status
+
 local kHealthMessage =
 {
     clientIndex = "entityid",

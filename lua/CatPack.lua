@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Adjusted CatPack Balance vars
+
 Script.Load("lua/DropPack.lua")
 Script.Load("lua/PickupableMixin.lua")
 

@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed some unneeded functions and updated some to support classic techids
+
 Script.Load("lua/Table.lua")
 Script.Load("lua/Utility.lua")
 
@@ -537,7 +540,7 @@ function GetExtents(techId)
 
     local extents = LookupTechData(techId, kTechDataMaxExtents)
     if not extents then
-        extents = Vector(0.75, 0.75, 0.75)
+        extents = Vector(0.5, 0.5, 0.75)
     end
     return extents
 
@@ -1336,7 +1339,7 @@ function SetPlayerPoseParameters(player, viewModel, headAngles)
     
     local pitch = -Math.Wrap(Math.Degrees(headAngles.pitch), -180, 180)
     
-    local landIntensity = player.landIntensity or 0
+    local landIntensity = player:GetLastImpactForce() or 0
     
     local bodyYaw = 0
     if player.bodyYaw then
@@ -1382,7 +1385,7 @@ function SetPlayerPoseParameters(player, viewModel, headAngles)
     //Print("body yaw = %f, move_yaw = %f", bodyYaw, moveYaw);
     
     player:SetPoseParam("crouch", player:GetCrouchAmount())
-    player:SetPoseParam("land_intensity", 0)
+    player:SetPoseParam("land_intensity", landIntensity)
     
     if viewModel then
     
@@ -1392,7 +1395,7 @@ function SetPlayerPoseParameters(player, viewModel, headAngles)
         viewModel:SetPoseParam("crouch", player:GetCrouchAmount())
         viewModel:SetPoseParam("body_yaw", bodyYaw)
         viewModel:SetPoseParam("body_yaw_run", bodyYawRun)
-        viewModel:SetPoseParam("land_intensity", 0)
+        viewModel:SetPoseParam("land_intensity", landIntensity)
         
     end
     
@@ -1675,7 +1678,7 @@ function CanEntityDoDamageTo(attacker, target, cheats, devMode, friendlyFire, da
         return false
     end
 
-    if (not target:GetCanTakeDamage()) then
+    if not target:GetCanTakeDamage() then
         return false
     end
     
@@ -1841,6 +1844,7 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
     if not filter then
         filter = EntityFilterOne(player)
     end
+        
     local middleTrace,middleStart
     local target,endPoint,surface,startPoint
     
@@ -2317,7 +2321,8 @@ function GetTexCoordsForTechId(techId)
         gTechIdPosition[kTechId.Swipe] = kDeathMessageIcon.Swipe
         gTechIdPosition[kTechId.Blink] = kDeathMessageIcon.Blink
         gTechIdPosition[kTechId.Metabolize] = kDeathMessageIcon.Metabolize
-        
+        gTechIdPosition[kTechId.BabblerAbility] = kDeathMessageIcon.BabblerAbility
+
         gTechIdPosition[kTechId.Gore] = kDeathMessageIcon.Gore
         gTechIdPosition[kTechId.Stomp] = kDeathMessageIcon.Stomp
         

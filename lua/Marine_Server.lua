@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added HA pickup, fury kill rewards and removed old blinds.  Made some vars local.
+
 local kDieSoundName = PrecacheAsset("sound/NS2.fev/marine/common/death")
 local kPlayerPhaseDelay = 2
 

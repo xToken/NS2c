@@ -10,6 +10,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Modified to only be gore, no smash
+
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/StompMixin.lua")
 
@@ -87,7 +90,7 @@ function Gore:OnTag(tagName)
         
             self.lastPrimaryAttackTime = Shared.GetTime()
             //local didHit, impactPoint, target = self:Attack(player)
-            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kGoreDamage, self:GetRange())
+            local didHit, target, endPoint = AttackMeleeCapsule(self, player, kGoreDamage, self:GetRange(), nil, false, EntityFilterOneAndIsa(player, "Babbler"))
             self.lastPrimaryAttackTime = Shared.GetTime()
             self:TriggerEffects("gore_attack")
             player:DeductAbilityEnergy(self:GetEnergyCost())

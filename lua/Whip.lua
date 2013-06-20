@@ -14,7 +14,6 @@ Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
-Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
 Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/LOSMixin.lua")
@@ -33,6 +32,7 @@ Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/InfestationMixin.lua")
 
 class 'Whip' (ScriptActor)
 
@@ -64,6 +64,7 @@ AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(HasUmbraMixin, networkVars)
+AddMixinNetworkVars(InfestationMixin, networkVars)
 
 Shared.PrecacheSurfaceShader("models/alien/whip/ball.surface_shader")
 
@@ -78,7 +79,6 @@ function Whip:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
-    InitMixin(self, SelectableMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, CloakableMixin)
     InitMixin(self, LOSMixin)
@@ -104,7 +104,7 @@ function Whip:OnInitialized()
     ScriptActor.OnInitialized(self)
 
     self:SetModel(Whip.kModelName, Whip.kAnimationGraph)
-    
+    InitMixin(self, InfestationMixin)
     self:SetUpdates(true)
     
     if Server then
@@ -126,6 +126,22 @@ end
 function Whip:GetDamagedAlertId()
     return kTechId.AlienAlertStructureUnderAttack
 end
+
+function Whip:GetMaxRadius()
+    return kInfestationRadius
+end
+
+function Whip:GetGrowthRate()
+    return kInfestationGrowthRate
+end
+
+function Whip:GetMinRadius()
+    return kMinInfestationRadius
+end
+
+function Whip:GetInfestationDensity()
+    return kInfestationBlobDensity
+end 
 
 function Whip:GetCanSleep()
     return true

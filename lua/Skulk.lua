@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Adjusted Skulk for goldsource movement, also moved most variables to be local
+
 Script.Load("lua/Utility.lua")
 Script.Load("lua/Weapons/Alien/BiteLeap.lua")
 Script.Load("lua/Weapons/Alien/Parasite.lua")
@@ -44,7 +47,7 @@ local kBestJumpSpeed = 12
 local kMaxWalkSpeed = 3.1
 local kWallJumpForce = 7
 local kWallJumpYBoost = 2
-local kJumpDelay = 0.25
+local kJumpDelay = 1
 local kMaxLeapSpeed = 20
 
 local kMass = 45 // ~100 pounds
@@ -130,14 +133,12 @@ function Skulk:OnInitialized()
     
 end
 
-function Skulk:OnDestroy()
-
-    Alien.OnDestroy(self)
-
-end
-
 function Skulk:GetBaseArmor()
     return kSkulkArmor
+end
+
+function Skulk:GetBaseHealth()
+    return kSkulkHealth
 end
 
 function Skulk:GetArmorFullyUpgradedAmount()

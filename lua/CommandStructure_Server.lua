@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Changed chair to login on use, and not scan periodically for someone logging in..
+
 function CommandStructure:SetCustomPhysicsGroup()
     self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup)
 end
@@ -66,6 +69,7 @@ end
 function CommandStructure:LoginPlayer(player)
 
     local commanderStartOrigin = Vector(player:GetOrigin())
+    player:SetVelocity(Vector(0,0,0))
     
     if player.OnCommanderStructureLogin then
         player:OnCommanderStructureLogin(self)

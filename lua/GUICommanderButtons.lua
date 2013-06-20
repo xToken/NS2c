@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed idle workers panel.
+
 Script.Load("lua/GUIBorderBackground.lua")
 Script.Load("lua/GUICommanderTooltip.lua")
 Script.Load("lua/GUIDial.lua")

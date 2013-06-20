@@ -12,6 +12,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
+//NS2c
+//Removal of powerpoint and cysts
+
 MapBlipMixin = CreateMixin( MapBlipMixin )
 MapBlipMixin.type = "MapBlip"
 

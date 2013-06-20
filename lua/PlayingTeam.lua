@@ -8,6 +8,9 @@
 // This class is used for teams that are actually playing the game, e.g. Marines or Aliens.
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+
+//NS2c
+//Added concept of overflow pres, added slight scaling to aliens and setup team specific resources
 Script.Load("lua/Team.lua")
 Script.Load("lua/Entity.lua")
 Script.Load("lua/TeamDeathMessageMixin.lua")
@@ -52,6 +55,12 @@ function PlayingTeam:Initialize(teamName, teamNumber)
     self.concedeVoteManager = VoteManager()
     self.concedeVoteManager:Initialize()
     self.concedeVoteManager:SetTeamPercentNeeded(kPercentNeededForVoteConcede)
+    
+    self.selectupgradechamber = VoteManager()
+    self.selectupgradechamber:Initialize()
+    self.selectupgradechamber:SetTeamPercentNeeded(kPercentNeededForUpgradeChamberVote)
+    self.selectupgradechamber:SetDuration(30)
+    self.selectupgradechamber:SetMinVotes(1)
 
     // child classes can specify a custom team info class
     local teamInfoMapName = TeamInfo.kMapName
@@ -147,6 +156,7 @@ function PlayingTeam:OnInitialized()
     
     self.ejectCommVoteManager:Reset()
     self.concedeVoteManager:Reset()
+    self.selectupgradechamber:Reset()
     
     self.conceded = false
     
@@ -176,9 +186,8 @@ function PlayingTeam:ResetTeam()
         end
     end
     
-    //self.techTree:SetTechChanged()
-
-	return commandStructure
+    return commandStructure
+    
 end
 
 function PlayingTeam:OnResetComplete()
@@ -912,6 +921,36 @@ function PlayingTeam:VoteToGiveUp(votingPlayer)
 
 end
 
+function PlayingTeam:VoteForUpgradeStructure(votingPlayer, techId)
+
+    local votingPlayerSteamId = tonumber(Server.GetOwner(votingPlayer):GetUserId())
+
+    if self.selectupgradechamber:PlayerVotesFor(votingPlayerSteamId, techId, Shared.GetTime()) then
+        PrintToLog(string.format("%s cast vote for %s upgrade.", votingPlayer:GetName(), EnumToString(kTechId, techId)))
+        
+        // notify all players on this team
+        if Server then
+
+            local vote = self.selectupgradechamber    
+
+            local netmsg = {
+                voterName = votingPlayer:GetName(),
+                votesMoreNeeded = vote:GetNumVotesNeeded()-vote:GetNumVotesCast(),
+                voteId = techId
+            }
+
+            if netmsg.votesMoreNeeded > 0 then
+                local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
+
+                for index, player in ipairs(players) do
+                    Server.SendNetworkMessage(player, "VoteChamberCast", netmsg, false)
+                end
+            end
+        end
+    end
+
+end
+
 function PlayingTeam:VoteToEjectCommander(votingPlayer, targetCommander)
 
     local votingPlayerSteamId = tonumber(Server.GetOwner(votingPlayer):GetUserId())
@@ -941,6 +980,20 @@ function PlayingTeam:VoteToEjectCommander(votingPlayer, targetCommander)
     
 end
 
+local function CompleteUpgradeChamberVote(self)
+    local techId = self.selectupgradechamber:GetTarget()
+    
+    if UpgradeBaseHivetoChamberSpecific(nil, techId, self) then
+        local netmsg = {
+                voteId = techId
+            }
+        local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
+        for index, player in ipairs(players) do
+            Server.SendNetworkMessage(player, "ChamberSelected", netmsg, false)
+        end
+    end
+end
+
 function PlayingTeam:UpdateVotes()
 
     PROFILE("PlayingTeam:UpdateVotes")
@@ -948,6 +1001,7 @@ function PlayingTeam:UpdateVotes()
     // Update with latest team size
     self.ejectCommVoteManager:SetNumPlayers(self:GetNumPlayers())
     self.concedeVoteManager:SetNumPlayers(self:GetNumPlayers())
+    self.selectupgradechamber:SetNumPlayers(self:GetNumPlayers())
     
     // Eject commander if enough votes cast
     if self.ejectCommVoteManager:GetVotePassed() then
@@ -962,6 +1016,17 @@ function PlayingTeam:UpdateVotes()
         
     elseif self.ejectCommVoteManager:GetVoteElapsed(Shared.GetTime()) then
         self.ejectCommVoteManager:Reset()
+    end
+    
+    // Upgrade chambers
+    if self.selectupgradechamber:GetVotePassed() and self.GetActiveUnassignedHiveCount and self:GetActiveUnassignedHiveCount() > 0 then
+        CompleteUpgradeChamberVote(self)
+        self.selectupgradechamber:Reset()
+    elseif self.selectupgradechamber:GetVoteElapsed(Shared.GetTime()) then
+        if self.selectupgradechamber:GetTarget() ~= nil then
+            CompleteUpgradeChamberVote(self)
+        end
+        self.selectupgradechamber:Reset()
     end
     
     -- Give up when enough votes

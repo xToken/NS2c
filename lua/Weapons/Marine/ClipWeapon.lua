@@ -10,6 +10,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added in auto pickup logic, and added some new overrides for starting ammo
+
 Script.Load("lua/Weapons/Weapon.lua")
 Script.Load("lua/PickupableWeaponMixin.lua")
 Script.Load("lua/Weapons/BulletsMixin.lua")
@@ -169,11 +172,11 @@ function ClipWeapon:GetMaxAmmo()
 end
 
 function ClipWeapon:GetCheckForRecipient()
-    return false
+    return true
 end
 
 function ClipWeapon:OnTouch(recipient)
-    recipient:AddWeapon(self, true)
+    recipient:AddWeapon(self, self:GetHUDSlot() == 1)
     StartSoundEffectAtOrigin(Marine.kGunPickupSound, recipient:GetOrigin())
 end
 
@@ -289,8 +292,10 @@ function ClipWeapon:GetIsPrimaryAttackAllowed(player)
     attackAllowed = attackAllowed and (not self:GetIsReloading() or self:GetPrimaryCanInterruptReload())
     attackAllowed = attackAllowed and not self.blockingSecondary
     attackAllowed = attackAllowed and (not self:GetPrimaryIsBlocking() or not self.blockingPrimary)
+    attackAllowed = attackAllowed and not (player.GetIsDevoured and player:GetIsDevoured()) 
+    attackAllowed = attackAllowed and not (player.GetIsWebbed and player:GetIsWebbed())
     
-    return self:GetIsDeployed() and attackAllowed and not player:GetIsStunned() and (not player.GetIsDevoured or not player:GetIsDevoured())
+    return self:GetIsDeployed() and attackAllowed and not player:GetIsStunned()
 
 end
 

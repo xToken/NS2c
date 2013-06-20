@@ -7,11 +7,12 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed welding doors concept and tech buttons as it was causing some errors
+
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
-Script.Load("lua/OrdersMixin.lua")
-Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/PathingMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/LiveMixin.lua")
@@ -62,10 +63,8 @@ local networkVars =
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
-AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
-AddMixinNetworkVars(SelectableMixin, networkVars)
 
 local kDoorLockTimeout = 6
 local kDoorLockDuration = 4
@@ -136,9 +135,7 @@ function Door:OnCreate()
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ModelMixin)
     InitMixin(self, GameEffectsMixin)
-    InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, PathingMixin)
-    InitMixin(self, SelectableMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, LiveMixin)
     
@@ -347,21 +344,8 @@ function Door:GetHasLockTimeout()
     return self.lockTimeOut > Shared.GetTime()
 end
 
-function Door:OnUse(player, elapsedTime)
-
-    local state = self:GetState()
-    if state ~= Door.kState.DestroyedFront and state ~= Door.kState.DestroyedBack and not self:GetIsWeldedShut() and player:isa("Marine") then
-    
-        if Server then
-        
-            if state ~= Door.kState.Locked and not self:GetHasLockTimeout() then
-                self:TriggerDoorLock()
-            end
-            
-        end
-        
-    end
-    
+function Door:GetCanBeUsed(player, useSuccessTable)
+    useSuccessTable.useSuccess = false    
 end
 
 function Door:OnKill(attacker, doer, point, direction)

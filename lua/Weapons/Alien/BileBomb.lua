@@ -5,6 +5,10 @@
 //    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+
+//NS2c
+//Bilebomb is now predicted
+
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/Bomb.lua")
 Script.Load("lua/Weapons/Alien/HealSprayMixin.lua")
@@ -130,7 +134,7 @@ function BileBomb:FireBombProjectile(player)
         local startPoint = player:GetEyePos() + viewCoords.zAxis * 0.3
         local startVelocity = velocity * kPlayerVelocityFraction + viewCoords.zAxis * kBombVelocity
         
-        local rocket = player:CreatePredictedProjectile("Bomb", startPoint, startVelocity, nil, nil, 13, true)
+        local bomb = player:CreatePredictedProjectile("Bomb", startPoint, startVelocity, nil, nil, 13, true)
     
         /*local viewAngles = player:GetViewAngles()
         local velocity = player:GetVelocity()

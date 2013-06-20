@@ -9,11 +9,13 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed concept of pre-evolved eggs
+
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
-Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
 Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/LOSMixin.lua")
@@ -38,9 +40,6 @@ Egg.kAnimationGraph = PrecacheAsset("models/alien/egg/egg.animation_graph")
 Egg.kXExtents = 1
 Egg.kYExtents = 1
 Egg.kZExtents = 1
-
-Egg.kHealth = kEggHealth
-Egg.kArmor = kEggArmor
 
 Egg.kSkinOffset = Vector(0, 0.12, 0)
 
@@ -73,7 +72,6 @@ function Egg:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
-    InitMixin(self, SelectableMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, CloakableMixin)
     InitMixin(self, LOSMixin)
@@ -125,7 +123,11 @@ function Egg:GetIsWallWalkingAllowed()
 end    
 
 function Egg:GetBaseArmor()
-    return Egg.kArmor
+    return kEggArmor
+end
+
+function Egg:GetBaseHealth()
+    return kEggHealth
 end
 
 function Egg:GetArmorFullyUpgradedAmount()
@@ -182,7 +184,8 @@ function Egg:RequeuePlayer()
                 error("AlienSpectator expected, instead " .. player:GetClassName() .. " was in queue")
             end
             
-            player:SetEggId(Entity.invalidId, 0)
+            player:SetEggId(Entity.invalidId)
+            player:SetWaveSpawnEndTime(0)
             team:PutPlayerInRespawnQueue(player, Shared.GetTime() - kAlienWaveSpawnInterval)
             
         end

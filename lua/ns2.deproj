@@ -34,9 +34,6 @@
     <filename>AlienTeamInfo.lua</filename>
   </file>
   <file>
-    <filename>AlienUpgrades_Client.lua</filename>
-  </file>
-  <file>
     <filename>AlienWeaponEffects.lua</filename>
   </file>
   <file>
@@ -58,13 +55,19 @@
     <filename>Armory_Client.lua</filename>
   </file>
   <file>
-    <filename>Armory_Server.lua</filename>
-  </file>
-  <file>
     <filename>ArmsLab.lua</filename>
   </file>
   <file>
     <filename>Weapons\Marine\Axe.lua</filename>
+  </file>
+  <file>
+    <filename>BabblerEgg.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\BabblerEggAbility.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\BabblerPheromone.lua</filename>
   </file>
   <file>
     <filename>Balance.lua</filename>
@@ -104,6 +107,9 @@
   </file>
   <file>
     <filename>Client.lua</filename>
+  </file>
+  <file>
+    <filename>ClientUI.lua</filename>
   </file>
   <file>
     <filename>Weapons\Marine\ClipWeapon.lua</filename>
@@ -230,9 +236,6 @@
   </file>
   <file>
     <filename>GUICommanderButtons.lua</filename>
-  </file>
-  <file>
-    <filename>GUICrosshair.lua</filename>
   </file>
   <file>
     <filename>GUIDeathMessages.lua</filename>
@@ -472,9 +475,6 @@
     <filename>Marine_Server.lua</filename>
   </file>
   <file>
-    <filename>MedPack.lua</filename>
-  </file>
-  <file>
     <filename>Weapons\Alien\Metabolize.lua</filename>
   </file>
   <file>
@@ -574,6 +574,9 @@
     <filename>RecycleMixin.lua</filename>
   </file>
   <file>
+    <filename>RedeployMixin.lua</filename>
+  </file>
+  <file>
     <filename>ResearchMixin.lua</filename>
   </file>
   <file>
@@ -637,12 +640,6 @@
     <filename>Weapons\Alien\Smash.lua</filename>
   </file>
   <file>
-    <filename>..\..\..\..\..\..\Games\Steam\steamapps\common\natural selection 2\ns2\lua\Weapons\SnowBall.lua</filename>
-  </file>
-  <file>
-    <filename>..\..\..\..\..\..\Games\Steam\steamapps\common\natural selection 2\ns2\lua\Weapons\SnowBallThrower.lua</filename>
-  </file>
-  <file>
     <filename>Spectator.lua</filename>
   </file>
   <file>
@@ -679,9 +676,6 @@
     <filename>TechData.lua</filename>
   </file>
   <file>
-    <filename>TechMixin.lua</filename>
-  </file>
-  <file>
     <filename>TechPoint.lua</filename>
   </file>
   <file>
@@ -712,7 +706,10 @@
     <filename>UnitStatusMixin.lua</filename>
   </file>
   <file>
-    <filename>WallMovementMixin.lua</filename>
+    <filename>VoiceOver.lua</filename>
+  </file>
+  <file>
+    <filename>VoteManager.lua</filename>
   </file>
   <file>
     <filename>Weapons\Weapon.lua</filename>
@@ -725,6 +722,12 @@
   </file>
   <file>
     <filename>Weapons\Weapon_Server.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\Web.lua</filename>
+  </file>
+  <file>
+    <filename>WebableMixin.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\WebsAbility.lua</filename>

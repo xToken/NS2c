@@ -10,6 +10,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Changed many vars to local, removed unneeded movement and effect code.
+
 Script.Load("lua/Utility.lua")
 Script.Load("lua/Weapons/Alien/Gore.lua")
 Script.Load("lua/Weapons/Alien/Devour.lua")
@@ -111,7 +114,7 @@ end
 function Onos:GetAcceleration()
     local acceleration = Player.GetAcceleration(self)
     if self.charging then
-        acceleration = acceleration + kChargeAcceleration * self:GetChargeFraction()  * 0.11
+        acceleration = acceleration + kChargeAcceleration * self:GetChargeFraction()  * 0.03
     end
     
     return acceleration
@@ -250,6 +253,10 @@ function Onos:GetBaseArmor()
     return kOnosArmor
 end
 
+function Onos:GetBaseHealth()
+    return kOnosHealth
+end
+
 function Onos:GetArmorFullyUpgradedAmount()
     return kOnosArmorFullyUpgradedAmount
 end
@@ -274,7 +281,7 @@ function Onos:GetMaxSpeed(possible)
         maxSpeed = kMaxChargeSpeed
     end
     
-    if self:GetCrouched() and self:GetIsOnSurface() then
+    if self:GetCrouched() and self:GetIsOnSurface() and not self:GetLandedRecently() then
         maxSpeed = kMaxWalkSpeed
     end
 

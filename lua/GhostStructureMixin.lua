@@ -6,6 +6,9 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
+//NS2c
+//Adjusted to acount for recycling refund changes
+
 GhostStructureMixin = CreateMixin(GhostStructureMixin)
 GhostStructureMixin.type = "GhostStructure"
 

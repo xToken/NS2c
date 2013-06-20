@@ -6,6 +6,9 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
+//NS2c
+//Addition of Ghost upgrade
+
 LOSMixin = CreateMixin(LOSMixin)
 
 LOSMixin.type = "LOS"

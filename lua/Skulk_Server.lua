@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added in Hive1 Weapons
+
 function Skulk:InitWeapons()
 
     Alien.InitWeapons(self)

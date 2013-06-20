@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed alien comm refs, cooldown refs and added back in energy
+
 Script.Load("lua/Globals.lua")
 
 local function SortByEnergy(ent1, ent2)

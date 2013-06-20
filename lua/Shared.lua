@@ -9,6 +9,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added some NS2c files, removed un-needed files
+
 math.randomseed(Shared.GetSystemTime())
 // math.random() is more random the more you call it. Don't ask.
 for i = 1, 100 do math.random() end
@@ -16,7 +19,7 @@ for i = 1, 100 do math.random() end
 // NOTE: EventTester.lua needs to be loaded first.
 Script.Load("lua/EventTester.lua")
 
-//Script.Load("lua/JITConsoleCommands.lua")
+Script.Load("lua/JITConsoleCommands.lua")
 // Utility and constants
 Script.Load("lua/Globals.lua")
 Script.Load("lua/DamageTypes.lua")
@@ -108,6 +111,8 @@ Script.Load("lua/Shade.lua")
 Script.Load("lua/Hydra.lua")
 Script.Load("lua/Egg.lua")
 Script.Load("lua/Embryo.lua")
+Script.Load("lua/Babbler.lua")
+Script.Load("lua/BabblerEgg.lua")
 
 // Base players
 Script.Load("lua/ReadyRoomPlayer.lua")

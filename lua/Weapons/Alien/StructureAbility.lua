@@ -29,7 +29,6 @@ function StructureAbility:GetIsPositionValid(displayOrigin, player, normal, last
     local checkBypass = { }
     local coords
     checkBypass["ValidExit"] = true
-    checkBypass["TechAvailable"] = true
     local validBuild, legalPosition, attachEntity, errorString = GetIsBuildLegal(self:GetDropStructureId(), displayOrigin, player:GetViewCoords().zAxis, self:GetDropRange(), player, player, checkBypass)
     if attachEntity then
         coords = attachEntity:GetAngles():GetCoords()
@@ -89,8 +88,7 @@ function StructureAbility:CreateStructure()
 end
 
 function StructureAbility:IsAllowed(player)
-
     local structures = GetEntitiesForTeamWithinRange(self:GetDropClassName(), player:GetTeamNumber(), player:GetEyePos(), kMaxAlienStructureRange)
-    return #structures < kMaxAlienStructuresofType
+    return GetHasTech(player, self:GetRequiredTechId()) and #structures < kMaxAlienStructuresofType
 end
 

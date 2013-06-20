@@ -6,6 +6,9 @@
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
+//NS2c
+//Adjustments made for RFK
+
 /**
  * PointGiverMixin handles awarding points on kills and other events.
  */

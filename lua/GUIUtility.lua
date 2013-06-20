@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added hack for slots 6-10
+
 // Temporary to scale the commander UIs.
 kCommanderGUIsGlobalScale = 0.75
 

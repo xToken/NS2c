@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added classic upgrades and upgrade chamber levels
+
 kAlienUpgradeChambers = {kTechId.Crag, kTechId.Shift, kTechId.Shade, kTechId.Whip}
 
 function GetHasPrereqs(teamNumber, techId)

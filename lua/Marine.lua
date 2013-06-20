@@ -7,6 +7,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Changes for movement code overhaul, removal of effects
+
 Script.Load("lua/Player.lua")
 Script.Load("lua/OrderSelfMixin.lua")
 Script.Load("lua/MarineActionFinderMixin.lua")
@@ -56,6 +59,7 @@ local kFlashlightSoundName = PrecacheAsset("sound/NS2.fev/common/light")
 local kWalkMaxSpeed = 2.2
 local kCrouchMaxSpeed = 1.6
 local kRunMaxSpeed = 4.9
+local kMaxWebbedMoveSpeed = 0.5
 local kDoubleJumpMinHeightChange = 0.4
 local kArmorWeldRate = 25
 local kWalkBackwardSpeedScalar = 0.4
@@ -107,7 +111,7 @@ function Marine:OnCreate()
     InitMixin(self, RagdollMixin)   
 	InitMixin(self, WebableMixin)
     InitMixin(self, DevouredMixin)
-		
+    
     if Server then
 
 
@@ -440,8 +444,12 @@ function Marine:GetMaxSpeed(possible)
         return kRunMaxSpeed
     end
     
-    if self:GetIsStunned() then
+    if self:GetIsStunned() or self:GetIsDevoured() then
         return 0
+    end
+    
+    if self:GetIsWebbed() then
+        return kMaxWebbedMoveSpeed
     end
     
     //Walking
@@ -451,7 +459,7 @@ function Marine:GetMaxSpeed(possible)
         maxSpeed = kWalkMaxSpeed
     end
     
-    if self:GetCrouched() and self:GetIsOnSurface() then
+    if self:GetCrouched() and self:GetIsOnSurface() and not self:GetLandedRecently() then
         maxSpeed = kCrouchMaxSpeed
     end
 
@@ -630,7 +638,7 @@ function Marine:OnWeldOverride(doer, elapsedTime)
 end
 
 function Marine:GetCanChangeViewAngles()
-    return not self:GetIsStunned()
+    return not self:GetIsStunned() and not self:GetIsDevoured()
 end
 
 function Marine:OnStun()

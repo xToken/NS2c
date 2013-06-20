@@ -8,6 +8,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Removed unused structures
+
 class 'GUIInsight_OtherHealthbars' (GUIScript)
 
 local isVisible

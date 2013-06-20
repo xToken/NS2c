@@ -9,6 +9,8 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Added logic for team sensor blips
 
 class 'GUISensorBlips' (GUIScript)
 

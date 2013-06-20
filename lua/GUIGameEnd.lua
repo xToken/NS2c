@@ -6,6 +6,9 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+//NS2c
+//Tweak to use NS2c endgame music
+
 Script.Load("lua/GUIAnimatedScript.lua")
 
 local kEndStates = enum({ 'AlienPlayerWin', 'MarinePlayerWin', 'AlienPlayerLose', 'MarinePlayerLose' })
@@ -122,10 +125,16 @@ local function OnGameEnd(message)
             -- Spectators always want the 'Win' screen to appear
             -- Using the win variable to specify which team won instead
             ClientUI.GetScript("GUIGameEnd"):SetGameEnded(true, message.win)
-            Client.PlayMusic("sound/ns2c.fev/ns2c/ui/you_win")
+            localPlayer:TriggerEffects("victory")
+            //Client.PlayMusic("sound/ns2c.fev/you_win")
         else
             ClientUI.GetScript("GUIGameEnd"):SetGameEnded(message.win, localPlayer:GetTeamType() == kMarineTeamType)
-            Client.PlayMusic("sound/ns2c.fev/ns2c/ui/you_" .. (message.win and "win" or "lose"))
+            if message.win then
+                localPlayer:TriggerEffects("victory")
+            else
+                localPlayer:TriggerEffects("lose")
+            end
+            //Client.PlayMusic("sound/ns2c.fev/you_" .. (message.win and "win" or "lose"))
         end
         
     end
