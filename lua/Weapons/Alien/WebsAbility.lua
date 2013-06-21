@@ -74,5 +74,5 @@ end
 
 function WebsAbility:IsAllowed(player)
     local structures = GetEntitiesForTeamWithinRange(self:GetDropClassName(), player:GetTeamNumber(), player:GetEyePos(), kMaxAlienStructureRange)
-    return GetHasTech(player, self:GetRequiredTechId()) and kWebEnabled and #structures < kMaxAlienStructuresofType
+    return GetHasTech(player, self:GetRequiredTechId()) and #structures < kMaxAlienStructuresofType
 end

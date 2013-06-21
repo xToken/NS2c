@@ -28,7 +28,7 @@ function DevouredMixin:OnDevoured(onos)
     self.prevAnimGraph = self:GetGraphName()
     self.devoured = true
     self:SetModel(nil)
-    //self:SetIsThirdPerson(4)
+    self:SetIsThirdPerson(4)
     self.lastdevoursound = 0
     local activeWeapon = self:GetActiveWeapon()
     if activeWeapon then
@@ -42,7 +42,7 @@ function DevouredMixin:OnDevouredEnd()
         self.devoured = false
         self.devourer = nil
         self:SetModel(self.prevModelName, self.prevAnimGraph)
-        //self:SetDesiredCamera(0.3, { move = true })
+        self:SetDesiredCamera(0.3, { move = true })
     end
 end
 

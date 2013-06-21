@@ -124,13 +124,13 @@ function Alien:UpdateAutoHeal()
     if hasupg and level > 0 then
         if self:GetIsHealable() and self.timeLastAlienAutoHeal == nil or self.timeLastAlienAutoHeal + kAlienRegenerationTime <= Shared.GetTime() then
             local healRate = ((kAlienRegenerationPercentage / 3) * level)
-            self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), false, false, true)    
+            self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), true, (self:GetMaxHealth() - self:GetHealth() ~= 0), true)    
             self.timeLastAlienAutoHeal = Shared.GetTime()
         end
     else
         if self:GetIsHealable() and self.timeLastAlienAutoHeal == nil or self.timeLastAlienAutoHeal + kAlienInnateRegenerationTime <= Shared.GetTime() then
             local healRate = kAlienInnateRegenerationPercentage
-            self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), false, false, true)    
+            self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), false, (self:GetMaxHealth() - self:GetHealth() ~= 0), true)    
             self.timeLastAlienAutoHeal = Shared.GetTime()
         end
     end

@@ -186,7 +186,7 @@ function Egg:RequeuePlayer()
             
             player:SetEggId(Entity.invalidId)
             player:SetWaveSpawnEndTime(0)
-            team:PutPlayerInRespawnQueue(player, Shared.GetTime() - kAlienWaveSpawnInterval)
+            team:PutPlayerInRespawnQueue(player, Shared.GetTime() - kAlienMinSpawnInterval)
             
         end
         

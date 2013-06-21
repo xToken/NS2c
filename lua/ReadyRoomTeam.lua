@@ -81,6 +81,7 @@ function ReadyRoomTeam:ReplaceRespawnPlayer(player, origin, angles)
     self:RespawnPlayer(newPlayer, origin, angles)
     
     newPlayer:ClearGameEffects()
+    newPlayer:TriggerEffects("tooltip")
     
     return (newPlayer ~= nil), newPlayer
     

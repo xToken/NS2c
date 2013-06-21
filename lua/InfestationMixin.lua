@@ -325,7 +325,7 @@ if Client then
 
 		// apply cloaking effects
 		amount = amount * (1-cloakFraction)
-		
+
 		SetMaterialParameters(self.infestationModelArray, amount, origin, maxRadius)
 		SetMaterialParameters(self.infestationShellModelArray, amount, origin, maxRadius)
 		
@@ -576,7 +576,7 @@ if Client then
 	
 	local function GetDisplayBlobs(self)
 
-		if PlayerUI_IsOverhead() and self:ReturnPatchCoords(1).yAxis:DotProduct(Vector(0, 1, 0)) < 0.2 then
+		if PlayerUI_IsOverhead() and self:ReturnPatchCoords(1).yAxis.y < 0.5 then
 			return false
 		end
 

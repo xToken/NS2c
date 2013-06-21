@@ -318,8 +318,8 @@ kBileBombSplashRadius = 6  // 200 inches in NS1 = 5 meters
 kMinWebLength = 2
 kMaxWebLength = 12
 kMaxWebBuildRange = 10
-kWebbedDuration = 3
-kNumWebsPerGorge = 2
+kWebbedDuration = 2
+kNumWebsPerGorge = 15
 kWebBuildCost = 0
 
 kLerkFlapEnergyCost = 3
