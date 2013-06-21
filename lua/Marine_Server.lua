@@ -251,8 +251,8 @@ function Marine:OnKill(attacker, doer, point, direction)
     if attacker and attacker:GetTeamNumber() ~= self:GetTeamNumber() and attacker:GetTeamNumber() == kAlienTeamType and attacker:isa("Alien") then
         local hasupg, level = GetHasFuryUpgrade(attacker)
         if hasupg and level > 0 and attacker:GetIsAlive() then
-            attacker:AddHealth((((1 / 3) * level) * kFuryHealthRegained) + ((((1 / 3) * level) * kFuryHealthPercentageRegained) * (attacker:GetMaxHealth() + attacker:GetMaxArmor())))
-            attacker:AddEnergy((((1 / 3) * level) * kFuryEnergyRegained))
+            attacker:AddHealth((((1 / 3) * level) * kFuryHealthRegained) + ((((1 / 3) * level) * kFuryHealthPercentageRegained) * (attacker:GetMaxHealth())), true, (attacker:GetMaxHealth() - attacker:GetHealth() ~= 0))
+            attacker:AddEnergy((((1 / 3) * level) * kFuryEnergyRegained), true, (self:GetMaxHealth() - self:GetHealth() ~= 0))
         end
     end
     

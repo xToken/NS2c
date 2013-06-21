@@ -382,7 +382,7 @@ end
 
 function Alien:UpdateMoveNoise()
     if self:ShouldMakeMoveNoises() then
-        self:TriggerEffects("alien_move", { randsound = math.random(1, kAlienMoveNoises) })
+        self:TriggerEffects("alien_move")
         self:AddTimedCallback(Alien.UpdateMoveNoise, math.random(self:GetLowerMoveNoiseTime(), self:GetUpperMoveNoiseTime()))
     end
     return false  

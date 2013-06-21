@@ -377,8 +377,7 @@ kGeneralEffectData =
             //{sound = "sound/NS2.fev/alien/skulk/death", classname = "Skulk", done = true},
             //{sound = "sound/NS2.fev/alien/gorge/death", classname = "Gorge", done = true},
             //{sound = "sound/NS2.fev/alien/lerk/death", classname = "Lerk", done = true},            
-            {sound = "sound/ns2c.fev/ns2c/alien/fade/move1", classname = "Fade", randsound = 1, done = true},
-            {sound = "sound/ns2c.fev/ns2c/alien/fade/move2", classname = "Fade", randsound = 2, done = true},
+            {sound = "sound/ns2c.fev/ns2c/alien/fade/move", classname = "Fade", randsound = 1, done = true},
             //{sound = "sound/NS2.fev/alien/onos/death", classname = "Onos", done = true},
             {sound = "", done = true},
         },
@@ -421,6 +420,14 @@ kGeneralEffectData =
         you_lose =
         {
             {private_sound = "sound/ns2c.fev/ns2c/ui/you_lose"},
+        }
+    },
+    
+    tooltip =
+    {
+        tooltip =
+        {
+            {sound = "sound/ns2c.fev/ns2c/ui/tooltip"},
         }
     },
 

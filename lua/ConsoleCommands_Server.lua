@@ -39,7 +39,7 @@ function OnCommandKill(client)
         if player ~= nil and (not client.timeLastKillCommand or client.timeLastKillCommand + kKillDelay < Shared.GetTime()) then
         
             local function OnKillPlayer(self)
-                if HasMixin(self, "Live") and self:GetCanDie() then
+                if HasMixin(self, "Live") and self:GetCanDie() and self:GetCanSuicide() then
                     self:Kill(nil, nil, self:GetOrigin())
                 end
             end

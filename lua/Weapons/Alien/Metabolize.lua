@@ -84,7 +84,7 @@ local function PerformMetabolize(self)
 
     local player = self:GetParent()
     if player then
-        player:AddHealth(kMetabolizeHealthGain)
+        player:AddHealth(kMetabolizeHealthGain, false, (player:GetMaxHealth() - player:GetHealth() ~= 0))
         player:AddEnergy(kMetabolizeEnergyGain)
     end
     

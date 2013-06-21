@@ -91,7 +91,7 @@ local function EmptySpawnWave(self)
             player:SetWaveSpawnEndTime(0)
             //Correctly sets time back so that players position in the queue isnt completely botched 
             //only would miss next spawn by 1 if another player is already queued and in progress at another hive.
-            team:PutPlayerInRespawnQueue(player, self.timeWaveEnds - kAlienWaveSpawnInterval)
+            team:PutPlayerInRespawnQueue(player, self.timeWaveEnds - kAlienMinSpawnInterval)
         end
         
     end
@@ -126,7 +126,7 @@ local function UpdateHealing(self)
             
                 if player:GetIsAlive() and ((player:GetOrigin() - self:GetOrigin()):GetLength() < Hive.kHealRadius) then
                 
-                    player:AddHealth( player:GetMaxHealth() * Hive.kHealthPercentage, true )
+                    player:AddHealth( math.min(player:GetMaxHealth() * Hive.kHealthPercentage, kHiveMaxHealAmount), true , (player:GetMaxHealth() - player:GetHealth() ~= 0))
                 
                 end
                 
@@ -401,8 +401,6 @@ function Hive:GetDamagedAlertId()
     
 end
 
-local EnemyApproachesAlerts = {kTechId.AlienAlertEnemyApproaches1, kTechId.AlienAlertEnemyApproaches2}
-
 function Hive:OnUse(player, elapsedTime, useSuccessTable)
 
     local csUseSuccess = false
@@ -412,7 +410,7 @@ function Hive:OnUse(player, elapsedTime, useSuccessTable)
     else
         local team = self:GetTeam()
         if team then
-            team:TriggerAlert(EnemyApproachesAlerts[math.random(1,2)], self)
+            team:TriggerAlert(kTechId.AlienAlertEnemyApproaches, self)
         end
         self.lastHiveFlinchEffectTime = Shared.GetTime()
     end
@@ -425,7 +423,7 @@ function Hive:OnSpitHit()
     if not self:GetIsBuilt() then
         local team = self:GetTeam()
         if team then
-            team:TriggerAlert(EnemyApproachesAlerts[math.random(1,2)], self)
+            team:TriggerAlert(kTechId.AlienAlertEnemyApproaches, self)
         end
         self.lastHiveFlinchEffectTime = Shared.GetTime()
     end
@@ -515,7 +513,7 @@ function Hive:OnConstructionComplete()
     
     local team = self:GetTeam()
     
-    if team then
+    if team and team.OnHiveConstructed then
         team:OnHiveConstructed(self)
     end
     
@@ -536,7 +534,7 @@ end
 function Hive:OnDelayedConstructionComplete()
     local team = self:GetTeam()
     
-    if team and self:GetIsAlive() then    
+    if team and self:GetIsAlive() and team.OnHiveDelayedConstructed then    
         team:OnHiveDelayedConstructed(self)        
     end
     return false

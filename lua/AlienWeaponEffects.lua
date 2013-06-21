@@ -202,7 +202,7 @@ kAlienWeaponEffects =
     {
         web_fire =
         {
-            {sound = "sound/ns2c.fev/ns2c/alien/gorge/webspin1"},
+            {sound = "sound/ns2c.fev/ns2c/alien/gorge/webspin"},
         },
     },
     
@@ -397,7 +397,7 @@ kAlienWeaponEffects =
             {sound = "sound/NS2.fev/alien/common/vision_on"},
         },
     },
-    
+   
     alien_vision_off = 
     {
         visionModeOnEffects = 
@@ -405,7 +405,7 @@ kAlienWeaponEffects =
             {sound = "", silenceupgrade = true, done = true},
             {sound = "sound/NS2.fev/alien/common/vision_off"},
         },
-    },
+    },    
 
 }
 

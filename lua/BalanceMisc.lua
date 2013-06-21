@@ -105,10 +105,11 @@ kJetpackWeight = 0.08
 //HA
 kHeavyArmorWeight = 0.10
 
-kAlienInnateRegenerationTime = 1
+kAlienInnateRegenerationTime = 2
 kAlienRegenerationTime = 2
 kAlienInnateRegenerationPercentage  = 0.02
 kAlienRegenerationPercentage = 0.09
+kHiveMaxHealAmount = 80
 
 //Severe Flinch Effects
 kFlinchDamageInterval = 0.1

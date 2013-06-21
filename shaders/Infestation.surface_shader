@@ -1,0 +1,16 @@
+<shader>
+	
+	<inputs>
+		<input name="materialAlbedoMap" type="texture" address="wrap" />
+	</inputs>
+	
+	<code>
+		void MaterialShader(in Material_Input input, inout Material material)
+		{
+			float4 albedo = tex2D(materialAlbedoMap, input.texCoord);
+			material.albedo 	= albedo.rgb;
+			material.opacity    = albedo.a;
+		}
+	</code>
+
+</shader>

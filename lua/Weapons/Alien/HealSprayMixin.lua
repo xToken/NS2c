@@ -142,7 +142,7 @@ local function HealEntity(self, player, targetEntity)
         health = health * .5
     end
     
-    local amountHealed = targetEntity:AddHealth(health)
+    local amountHealed = targetEntity:AddHealth(health, false, (targetEntity:GetMaxHealth() - targetEntity:GetHealth() ~= 0))
 
     if targetEntity.OnHealSpray then
         targetEntity:OnHealSpray(player)

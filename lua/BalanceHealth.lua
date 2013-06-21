@@ -74,7 +74,7 @@ kShiftHealth = 1000	kShiftArmor = 0	kShiftPointValue = 10
 kShadeHealth = 800	kShadeArmor = 0	kShadePointValue = 10
 kWhipHealth  = 1100	kWhipArmor = 0	kWhipPointValue = 10
 kHydraHealth = 1000	kHydraArmor = 0	kHydraPointValue = 10
-kWebHealth = 15     kWebArmor = 0   kWebPointValue = 0
+kWebHealth = 1     kWebArmor = 0   kWebPointValue = 0
 
 //GTFO DOOR
 kDoorHealth = 2000	kDoorArmor = 1000	kDoorPointValue = 15

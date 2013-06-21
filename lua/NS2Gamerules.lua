@@ -91,8 +91,8 @@ if Server then
     Script.Load("lua/GameViz.lua")
     Script.Load("lua/ObstacleMixin.lua")
 
-    NS2Gamerules.kMarineStartSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/game_start")
-    NS2Gamerules.kAlienStartSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/game_start")
+    NS2Gamerules.kMarineStartSound = PrecacheAsset("sound/ns2c.fev/ns2c/ui/marine_gamestart")
+    NS2Gamerules.kAlienStartSound = PrecacheAsset("sound/ns2c.fev/ns2c/ui/alien_gamestart")
     NS2Gamerules.kCountdownSound = PrecacheAsset("sound/NS2.fev/common/countdown")
 
     // Allow players to spawn in for free (not using IP or eggs) for this many seconds after the game starts
@@ -907,7 +907,9 @@ if Server then
             elseif not self.noCommanderStartTime[commanderType] then
                 self.noCommanderStartTime[commanderType] = Shared.GetTime()
             elseif Shared.GetTime() - self.noCommanderStartTime[commanderType] >= kSendNoCommanderMessageRate then
-            
+                if commanderType == "Gorge" then
+                    onTeam:PlayPrivateTeamSound(AlienTeam.kNeedBuildersSound)
+                end
                 self.noCommanderStartTime[commanderType] = nil
                 SendTeamMessage(onTeam, kTeamMessageTypes.NoCommander)
                 

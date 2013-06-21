@@ -26,7 +26,9 @@ AlienTeam.kAutoHealUpdateNum = 20 // number of structures to update per autoheal
 AlienTeam.kSpawnScanInterval = 2
 AlienTeam.kOrganicStructureHealRate = 0.02     // Health per second
 
-AlienTeam.kPingSound = PrecacheAsset("sound/NS2.fev/ambient/feild_walkthrough")
+AlienTeam.kPingSound = PrecacheAsset("sound/ns2c.fev/ns2c/ui/countdown")
+AlienTeam.kNewTraitSound = PrecacheAsset("sound/ns2c.fev/ns2c/ui/alien_newtrait")
+AlienTeam.kNeedBuildersSound = PrecacheAsset("sound/ns2c.fev/ns2c/ui/alien_needbuilders")
 
 AlienTeam.kSupportingStructureClassNames = {[kTechId.Hive] = {"Hive"} }
 AlienTeam.kUpgradeStructureClassNames = {[kTechId.Crag] = {"Crag"}, [kTechId.Shift] = {"Shift"}, [kTechId.Shade] = {"Shade"} }
@@ -54,9 +56,7 @@ function AlienTeam:Initialize(teamName, teamNumber)
     // counts even if a player leaves and rejoins a server.
     self.clientOwnedStructures = { }
     self.lastAutoHealIndex = 1
-    
-    self.updateAlienArmorInTicks = nil
-    
+
     self.timeLastSpawnCheck = 0
     self.overflowres = 0
     self.lastOverflowCheck = 0
@@ -268,28 +268,20 @@ local function CheckUnassignedHives(self)
     
 end
 
+local function UpdateAlienArmor(self)
+    for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
+        alien:UpdateArmorAmount()
+    end
+end
+
 function AlienTeam:Update(timePassed)
 
     PROFILE("AlienTeam:Update")
     
-    if self.updateAlienArmorInTicks then
-    
-        if self.updateAlienArmorInTicks == 0 then
-        
-            for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
-                alien:UpdateArmorAmount()
-            end
-            
-            self.updateAlienArmorInTicks = nil
-        
-        else
-            self.updateAlienArmorInTicks = self.updateAlienArmorInTicks - 1
-        end
-        
+    if GetGamerules():GetGameStarted() then
+        CheckUnassignedHives(self)
     end
-
     PlayingTeam.Update(self, timePassed)
-    CheckUnassignedHives(self)
     self:UpdateTeamAutoHeal(timePassed)
     self:UpdateRespawn()
     self:UpdatePingOfDeath()
@@ -334,17 +326,6 @@ function AlienTeam:UpdateHiveInformation()
         self.timeToUpdateHiveInfo =  Shared.GetTime() + 1
     end
     
-end
-
-function AlienTeam:OnTechTreeUpdated()
-
-    if self.updateAlienArmor then
-        
-        self.updateAlienArmor = false
-        self.updateAlienArmorInTicks = 100
-        
-    end
-
 end
 
 function AlienTeam:UpdatePingOfDeath()
@@ -548,10 +529,9 @@ end
 /**
  * Inform all alien players about the hive construction (add new abilities).
  */
+  
 function AlienTeam:OnHiveConstructed(newHive)
-    
     SendTeamMessage(self, kTeamMessageTypes.HiveConstructed, newHive:GetLocationId()) 
-    
 end
 
 function AlienTeam:OnHiveDelayedConstructed(newHive)
@@ -598,10 +578,6 @@ local checkForLostResearch = { [kTechId.Crag] = { "Crag", kTechId.Crag },
 
 function AlienTeam:OnUpgradeChamberConstructed(upgradeChamber)
 
-    if upgradeChamber:GetTechId() == kTechId.Crag then
-        self.updateAlienArmor = true
-    end
-
     local checkTech = checkForLostResearch[upgradeChamber:GetTechId()]
     if checkTech then
     
@@ -615,6 +591,7 @@ function AlienTeam:OnUpgradeChamberConstructed(upgradeChamber)
         
         if anyremain == 0 then
             SendTeamMessage(self, kTeamMessageTypes.ResearchComplete, checkTech[2])
+            self:PlayPrivateTeamSound(AlienTeam.kNewTraitSound)
         end
         
         for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
@@ -625,13 +602,14 @@ function AlienTeam:OnUpgradeChamberConstructed(upgradeChamber)
         
     end
     
+    if upgradeChamber:GetTechId() == kTechId.Crag then
+        UpdateAlienArmor(self)
+    end
+
+    
 end
 
 function AlienTeam:OnUpgradeChamberDestroyed(upgradeChamber)
-
-    if upgradeChamber:GetTechId() == kTechId.Crag then
-        self.updateAlienArmor = true
-    end
     
     local checkTech = checkForLostResearch[upgradeChamber:GetTechId()]
     if checkTech then
@@ -656,6 +634,10 @@ function AlienTeam:OnUpgradeChamberDestroyed(upgradeChamber)
             
         end
         
+    end
+    
+    if upgradeChamber:GetTechId() == kTechId.Crag then
+        UpdateAlienArmor(self)
     end
     
 end

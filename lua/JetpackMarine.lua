@@ -385,7 +385,7 @@ function JetpackMarine:GetJetPackMode()
 end
 
 function JetpackMarine:GetIsJetpacking()
-    return self.jetpacking and (self:GetFuel()> 0) and not self:GetIsStunned()
+    return self.jetpacking and (self:GetFuel()> 0) and not self:GetIsStunned() and not self:GetIsWebbed()
 end
 
 function JetpackMarine:ProcessMoveOnModel(input)
