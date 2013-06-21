@@ -360,6 +360,10 @@ function Marine:GetCanControl()
     return (not self.isMoveBlocked) and self:GetIsAlive() and not self:GetIsDevoured() and not self.countingDown
 end
 
+function Marine:GetPhysicsModelAllowedOverride()
+    return not self:GetIsDevoured()
+end
+
 function Marine:HandleButtons(input)
 
     PROFILE("Marine:HandleButtons")
@@ -616,10 +620,6 @@ end
 
 function Marine:GetCanBeHealedOverride()
     return not self:GetIsDevoured()
-end
-
-function Marine:GetCanSkipPhysics()
-    return self:GetIsDevoured()
 end
 
 function Marine:GetWeldPercentageOverride()

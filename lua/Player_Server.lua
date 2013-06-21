@@ -18,6 +18,7 @@ function Player:OnClientConnect(client)
     self:SetRequestsScores(true)   
     self.clientIndex = client:GetId()
     self.client = client
+    self:TriggerEffects("tooltip")
     
 end
 

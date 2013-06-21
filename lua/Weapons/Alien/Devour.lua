@@ -172,12 +172,12 @@ if Server then
                 if self.timeSinceLastDevourUpdate + kDevourDigestionSpeed < Shared.GetTime() then   
                     //Player still being eaten, damage them
                     self.timeSinceLastDevourUpdate = Shared.GetTime()
-                    player:AddHealth(kDevourHealthPerSecond)
+                    player:AddHealth(kDevourHealthPerSecond, true, (player:GetMaxHealth() - player:GetHealth() ~= 0))
                     if self.lastdevoursound + kDevourSoundTime < Shared.GetTime() then
                         player:TriggerEffects("devour_hit")
                         self.lastdevoursound = Shared.GetTime()
                     end
-                    if self:DoDamage(kDevourDamage, food, self:GetOrigin(), 0, "none") then
+                    if self:DoDamage(kDevourDamage, food, player:GetOrigin(), 0, "none") then
                         if food.OnDevouredEnd then 
                             food:OnDevouredEnd()
                         end

@@ -181,7 +181,7 @@ function Crag:TryHeal(target)
 
     local heal = (target:GetHealth() * Crag.kPercentHeal) + Crag.kHealAmount
 
-    local amountHealed = target:AddHealth(heal)
+    local amountHealed = target:AddHealth(heal, false, (target:GetMaxHealth() - target:GetHealth() ~= 0))
     if amountHealed > 0 then
         target:TriggerEffects("crag_target_healed")           
     end

@@ -82,9 +82,11 @@ function Web:OnInitialized()
     
 end
 
+/*
 function Web:GetPhysicsModelAllowedOverride()
     return false
 end
+*/
 
 if Server then
     
@@ -183,13 +185,23 @@ function Web:OnDestroy()
 
 end
 
-function Web:ComputeDamageOverride(attacker, damage, damageType, doer) 
-    
-    if not doer:isa("Grenade") and not doer:isa("HandGrenade") and not doer:isa("Welder") then
-        return 0
+if Server then
+
+    function Web:OnKill(attacker, doer, point, direction)
+        DestroyEntity(self)  
     end
-    return damage
     
+end
+
+function Web:GetSendDeathMessageOverride()
+    return false
+end
+
+function Web:ComputeDamageOverride(attacker, damage, damageType, doer) 
+    if doer:GetClassName() == "Grenade" or doer:GetClassName() == "HandGrenade" or doer:GetClassName() == "Welder" then
+        return damage
+    end
+    return 0
 end
 
 if Client then

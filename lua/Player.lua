@@ -919,12 +919,12 @@ function Player:GetCanTakeDamageOverride()
     return HasTeamAssigned(self)
 end
 
-function Player:GetIsDevoured()
-    return false
+function Player:GetCanDieOverride()
+    return HasTeamAssigned(self)
 end
 
-function Player:GetCanDieOverride()
-    return HasTeamAssigned(self) and not self:GetIsDevoured()
+function Player:GetCanSuicide()
+    return not self.GetIsDevoured and not self:GetIsDevoured()
 end
 
 // Individual resources
