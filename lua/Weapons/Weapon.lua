@@ -307,10 +307,17 @@ function Weapon:OnUpdateRender()
 end
 
 function Weapon:GetIsActive()
-
     local parent = self:GetParent()
     return (parent ~= nil and (parent.GetActiveWeapon) and (parent:GetActiveWeapon() == self))
-    
+end
+
+// Max degrees that weapon can swing left or right
+function Weapon:GetSwingAmount()
+    return 40
+end
+
+function Weapon:GetSwingSensitivity()
+    return .5
 end
 
 function Weapon:SetRelevancy(sighted)

@@ -475,6 +475,9 @@
     <filename>Marine_Server.lua</filename>
   </file>
   <file>
+    <filename>MedPack.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Alien\Metabolize.lua</filename>
   </file>
   <file>

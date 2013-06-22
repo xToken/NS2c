@@ -186,7 +186,7 @@ function Ability:GetEffectParams(tableParams)
         if level == 3 then
             tableParams[kEffectFilterSilenceUpgrade] = upg
         end
-        //tableParams[kEffectParamVolume] = (1 - (.33 * level))
+        tableParams[kEffectParamVolume] = (1 - (.33 * level))
     end
     
 end

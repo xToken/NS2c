@@ -50,7 +50,7 @@ function AmmoPack:GetIsValidRecipient(recipient)
 
     // Ammo packs give ammo to clip as well (so pass true to GetNeedsAmmo())
     local weapon = recipient:GetActiveWeapon()
-    return weapon ~= nil and weapon:isa("ClipWeapon") and weapon:GetNeedsAmmo(false)
+    return weapon ~= nil and weapon:isa("ClipWeapon") and weapon:GetNeedsAmmo(false) and recipient:GetIsAlive()
     
 end
 
