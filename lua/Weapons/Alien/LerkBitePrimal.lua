@@ -118,22 +118,6 @@ function LerkBitePrimal:GetAbilityUsesFocus()
     return true
 end
 
-function LerkBitePrimal:GetEffectParams(tableParams)
-
-    Ability.GetEffectParams(self, tableParams)
-    
-    // There is a special case for biting structures.
-    if self.lastBittenEntityId ~= Entity.invalidId then
-    
-        local lastBittenEntity = Shared.GetEntity(self.lastBittenEntityId)
-        if lastBittenEntity and GetReceivesStructuralDamage(lastBittenEntity) then
-            tableParams[kEffectFilterHitSurface] = "structure"
-        end
-        
-    end
-    
-end
-
 function LerkBitePrimal:GetMeleeBase()
     return kLerkBiteMeleeBaseWidth, kLerkBiteMeleeBaseHeight
 end

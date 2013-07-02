@@ -61,16 +61,11 @@ function Spit:ProcessHit(targetHit, surface, normal)
     //self:TriggerEffects("spit_hit", { effecthostcoords = Coords.GetTranslation(self:GetOrigin()) } )
     self:DoDamage(kSpitDamage, targetHit, self:GetOrigin() + normal * kHitEffectOffset, self:GetCoords().zAxis, surface, false, false)
     
-    if Server then
-    
-        
+    if Server then        
         if targetHit and targetHit:isa("Hive") and targetHit.OnSpitHit then
             targetHit:OnSpitHit()
         end
-        
-
         DestroyEntity(self)    
-
     end
     
 end

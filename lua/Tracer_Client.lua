@@ -17,6 +17,7 @@ kDefaultTracerEffectName = PrecacheAsset("cinematics/marine/tracer.cinematic")
 //NS2c
 //HMG uses Minigun tracers
 kHeavyMachineGunTracerEffectName = PrecacheAsset("cinematics/marine/exo_tracer.cinematic")
+kMinigunTracerEffectName = PrecacheAsset("cinematics/marine/exo_tracer.cinematic")
 kRailgunTracerEffectName = PrecacheAsset("cinematics/marine/railgun/tracer.cinematic")
 kRailgunTracerResidueEffectName = PrecacheAsset("cinematics/marine/railgun/tracer_residue.cinematic")
 kSpikeTracerEffectName = PrecacheAsset("cinematics/alien/tracer.cinematic")

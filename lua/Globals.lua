@@ -128,7 +128,7 @@ kMaxHitEffectsPerSecond = 200
 
 kMainMenuFlash = "ui/main_menu.swf"
 
-kPlayerStatus = enum( { "Hidden", "Dead", "Evolving", "Embryo", "Commander", "GrenadeLauncher", "Rifle", "Shotgun", "HeavyMachineGun", "Void", "Spectator", "Skulk", "Gorge", "Fade", "Lerk", "Onos" } )
+kPlayerStatus = enum( { "Hidden", "Dead", "Evolving", "Embryo", "Commander", "Exo", "GrenadeLauncher", "Rifle", "Shotgun", "HeavyMachineGun", "Void", "Spectator", "Skulk", "Gorge", "Fade", "Lerk", "Onos" } )
 kPlayerCommunicationStatus = enum( {'None', 'Voice', 'Typing', 'Menu'} )
 kSpectatorMode = enum( { 'FreeLook', 'Overhead', 'Following', 'FirstPerson' } )
 
@@ -160,7 +160,7 @@ kMinimapBlipType = enum( { 'Undefined', 'TechPoint', 'ResourcePoint', 'Scan',
                            'Extractor', 'InfantryPortal', 'Armory', 'PhaseGate', 'Observatory',
                            'RoboticsFactory', 'ArmsLab', 'PrototypeLab', 'PowerPack',
                            'Hive', 'Harvester', 'Hydra', 'Egg', 'Embryo', 'Crag', 'Whip', 'Shade', 'Shift', 'Shell', 'Veil', 'Spur', 'TunnelEntrance',
-                           'Marine', 'JetpackMarine', 'HeavyArmorMarine', 'Jetpack', 'Skulk', 'Lerk', 'Onos', 'Fade', 'Gorge',
+                           'Marine', 'JetpackMarine', 'HeavyArmorMarine', 'Exo', 'Jetpack', 'Skulk', 'Lerk', 'Onos', 'Fade', 'Gorge',
                            'Door', 'PowerPoint', 'DestroyedPowerPoint',
                            'ARC', 'Drifter', 'MAC', 'Infestation', 'InfestationDying', 'MoveOrder', 'AttackOrder', 'BuildOrder', 'SensorBlip' } )
 

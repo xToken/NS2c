@@ -80,6 +80,11 @@ kTechIdToMaterialOffset[kTechId.Shade] = 21
 kTechIdToMaterialOffset[kTechId.Marine] = 24
 kTechIdToMaterialOffset[kTechId.HeavyArmorMarine] = 25
 kTechIdToMaterialOffset[kTechId.HeavyArmor] = 25
+
+kTechIdToMaterialOffset[kTechId.ExosuitTech] = 25
+kTechIdToMaterialOffset[kTechId.Exo] = 25
+kTechIdToMaterialOffset[kTechId.Exosuit] = 25
+
 kTechIdToMaterialOffset[kTechId.JetpackMarine] = 26
 kTechIdToMaterialOffset[kTechId.Skulk] = 27
 kTechIdToMaterialOffset[kTechId.Gorge] = 28

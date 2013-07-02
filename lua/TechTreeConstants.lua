@@ -43,7 +43,7 @@ kTechId = enum({
     /////////////
     
     // Marine classes + spectators
-    'Marine', 'HeavyArmorMarine', 'MarineCommander', 'JetpackMarine', 'Spectator', 'AlienSpectator',
+    'Marine', 'HeavyArmorMarine', 'MarineCommander', 'JetpackMarine', 'Spectator', 'AlienSpectator', 'Exo',
     
     // Marine alerts (specified alert sound and text in techdata if any)
     'MarineAlertAcknowledge', 'MarineAlertNeedMedpack', 'MarineAlertNeedAmmo', 'MarineAlertNeedOrder', 'MarineAlertHostiles', 'MarineCommanderEjected', 'MACAlertConstructionComplete',    
@@ -65,10 +65,10 @@ kTechId = enum({
     'PrototypeLab', 'AdvancedArmory', 'HandGrenadesTech', 'Electrify', 
     
     // Research 
-    'PhaseTech', 'Jetpack', 'JetpackTech','HeavyArmorTech', 'HeavyArmor', 
+    'PhaseTech', 'Jetpack', 'JetpackTech','HeavyArmorTech', 'HeavyArmor', 'ExosuitTech', 'Exosuit',
     
     // Weapons 
-    'Rifle', 'Pistol', 'Shotgun', 'GrenadeLauncher', 'Axe', 'Mines', 'Welder', 'HeavyMachineGun', 'HandGrenades',
+    'Rifle', 'Pistol', 'Shotgun', 'GrenadeLauncher', 'Axe', 'Mines', 'Minigun', 'Railgun', 'Welder', 'HeavyMachineGun', 'HandGrenades',
     
     // Marine upgrades
     'Weapons1', 'Weapons2', 'Weapons3', 'Armor1', 'Armor2', 'Armor3', 'MotionTracking', 

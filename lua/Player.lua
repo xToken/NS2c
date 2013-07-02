@@ -114,7 +114,7 @@ local kGroundFriction = 4
 local kCrouchMaxSpeed = 2.2
 local kWalkMaxSpeed = 3.5
 local kRunMaxSpeed = 6
-local kJumpForce = 6.2
+local kJumpForce = 6.5
 local kDownSlopeFactor = math.tan( math.rad(60) ) // Stick to ground on down slopes up to 60 degrees
 
 //Other Vars
@@ -1174,7 +1174,7 @@ end
 
 function Player:OnJumpLand(landIntensity)
 	if self:GetSlowOnLand() then
-    	self:AddSlowScalar(0.5)
+    	self:AddSlowScalar(0.75)
 	end
     if self:GetPlayLandSound(landIntensity) then
         self:TriggerLandEffects()
@@ -1465,10 +1465,6 @@ function Player:GetCanStep()
     return self:GetIsOnGround()
 end
 
-function Player:GetIsJumping()
-    return self.jumping
-end
-
 local function CheckSpaceAboveForJump(self)
 
     local startPoint = self:GetOrigin() + Vector(0, self:GetExtents().y, 0)
@@ -1480,7 +1476,7 @@ local function CheckSpaceAboveForJump(self)
 end
 
 function Player:GetCanJump()
-    return not self:GetHasLandedThisFrame() and self:GetIsOnGround() and CheckSpaceAboveForJump(self)
+    return self:GetIsOnGround() and CheckSpaceAboveForJump(self)
 end
 
 function Player:GetCanCrouch()
@@ -1492,31 +1488,40 @@ function Player:GetJumpMode()
 end
 
 function Player:HandleJump(input, velocity)
-    if bit.band(input.commands, Move.Jump) ~= 0 and not self.jumpHandled then
+
+    if bit.band(input.commands, Move.Jump) ~= 0 and not self:GetIsJumpHandled() then
+    
         if self:GetCanJump() then
         
             self:PreventMegaBunnyJumping(velocity)
             self:GetJumpVelocity(input, velocity)
+            
             if self.GetPlayJumpSound and self:GetPlayJumpSound() and self.TriggerJumpEffects then
                 self:TriggerJumpEffects()
             end
-            self.timeOfLastJump = Shared.GetTime()
-            self.onGround = false
-            self.jumping = true
+            
+            self:UpdateLastJumpTime()
+            self:SetIsOnGround(false)
+            self:SetIsJumping(true)
             
             if self.OnJump then
                 self:OnJump()
             end
             
             if self:GetJumpMode() == kJumpMode.Repeating then
-                self.jumpHandled = false
+                self:SetIsJumpHandled(false)
             else
-                self.jumpHandled = true
+                self:SetIsJumpHandled(true)
             end
+            
         elseif self:GetJumpMode() == kJumpMode.Default then
-            self.jumpHandled = true
+        
+            self:SetIsJumpHandled(true)
+            
         end
+        
     end
+    
 end
 
 function Player:GetJumpForce()
@@ -1663,10 +1668,6 @@ function Player:GetGravityAllowed()
     return not self:GetIsOnLadder() and not self:GetIsOnGround()
 end
 
-function Player:GetIsOnGround()
-    return self.onGround
-end
-
 function Player:GetAcceleration()
     return ConditionalValue(self:GetIsOnSurface(), kGoldSrcAcceleration, kGoldSrcAirAcceleration)
 end
@@ -1715,7 +1716,7 @@ function Player:SetOrigin(origin)
 end
 
 function Player:GetPlayFootsteps()
-    return self:GetVelocityLength() > kFootstepsThreshold and self:GetIsOnGround() and self:GetIsAlive() and not self:GetIsDestroyed()  
+    return self:GetVelocityLength() > kFootstepsThreshold and self:GetIsOnSurface() and self:GetIsAlive() and not self:GetIsDestroyed()  
 end
 
 function Player:GetMovementModifierState()
@@ -1816,9 +1817,6 @@ function Player:GetIsMoveable()
     return true
 end
 
-function Player:GetAirMoveScalar()
-    return 0.7
-end
 function Player:GetIsIdle()
     return self:GetVelocity():GetLengthXZ() < 0.1 and not self.moveButtonPressed
 end
@@ -1991,7 +1989,7 @@ function Player:HandleButtons(input)
     
     // Remember when jump released
     if bit.band(input.commands, Move.Jump) == 0 then
-        self.jumpHandled = false
+        self:SetIsJumpHandled(false)
     end
     
     self:HandleAttacks(input)

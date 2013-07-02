@@ -218,7 +218,7 @@ function GUIMainMenu:Initialize()
             end
         })
         
-        self.tutorialLink = self:CreateMainLink("TRAINING", "tutorial_ingame", "06")
+        self.tutorialLink = self:CreateMainLink("PRACTICE", "tutorial_ingame", "06")
         self.tutorialLink:AddEventCallbacks(
         {
             OnClick = function(self)
@@ -263,7 +263,7 @@ function GUIMainMenu:Initialize()
             end
         })
         
-        self.tutorialLink = self:CreateMainLink("TRAINING", "tutorial", "02")
+        self.tutorialLink = self:CreateMainLink("PRACTICE", "tutorial", "02")
         self.tutorialLink:AddEventCallbacks(
         {
             OnClick = function(self)

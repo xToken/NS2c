@@ -129,6 +129,7 @@ function Alien:OnCreate()
     
     if Server then
         self.timeWhenPrimalScreamExpires = 0
+        self.timeLastAlienAutoHeal = 0
     elseif Client then
         InitMixin(self, TeamMessageMixin, { kGUIScriptName = "GUIAlienTeamMessage" })
     end
@@ -202,7 +203,7 @@ function Alien:OnInitialized()
     if Client and Client.GetLocalPlayer() == self then
     
         Client.SetPitch(0.0)
-        self:AddHelpWidget("GUIAlienVisionHelp", 2)
+        //self:AddHelpWidget("GUIAlienVisionHelp", 2)
         
     end
 
@@ -514,14 +515,13 @@ function Alien:GetMovementSpeedModifier()
     return self:GetCelerityScalar()
 end
 function Alien:GetEffectParams(tableParams)
-
-    //Silence Controls volume levels, dont think this actually works tho.
-    local upg, level = GetHasSilenceUpgrade(player)
-    if level == 3 then
-        tableParams[kEffectFilterSilenceUpgrade] = upg
+    if tableParams[kEffectFilterSilenceUpgrade] == nil then
+        local upg, level = GetHasSilenceUpgrade(player)
+        if level == 3 then
+            tableParams[kEffectFilterSilenceUpgrade] = upg
+        end
+        tableParams[kEffectParamVolume] = 1 - Clamp(level / 3, 0, 1)
     end
-    tableParams[kEffectParamVolume] = (1 - (.33 * level))
-
 end
 
 function Alien:GetIsPrimaled()

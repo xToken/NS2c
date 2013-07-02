@@ -278,6 +278,9 @@ function GetTeamHasCommander(teamNumber)
     end
     
 end
+function GetCommanderLogoutAllowed()
+    return true 
+end
 
 function GetPlayerCanUseEntity(player, target)
 
@@ -1987,6 +1990,7 @@ function BuildClassToGrid()
     ClassToGrid["ReadyRoomPlayer"] = { 1, 2 }
     ClassToGrid["Marine"] = { 1, 2 }
     ClassToGrid["HeavyArmorMarine"] = { 2, 2 }
+    ClassToGrid["Exo"] = { 2, 2 }
     ClassToGrid["JetpackMarine"] = { 3, 2 }
     ClassToGrid["CommandStationOccupied"] = { 5, 2 }
     ClassToGrid["CommandStationL2Occupied"] = { 6, 2 }

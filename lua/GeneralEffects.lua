@@ -427,7 +427,7 @@ kGeneralEffectData =
     {
         tooltip =
         {
-            {sound = "sound/ns2c.fev/ns2c/ui/tooltip"},
+            {private_sound = "sound/ns2c.fev/ns2c/ui/tooltip"},
         }
     },
 
