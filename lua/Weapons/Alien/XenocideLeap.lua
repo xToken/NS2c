@@ -121,7 +121,7 @@ function XenocideLeap:OnProcessMove(input)
             
             if self.xenocideTimeLeft == 0 and player:GetIsAlive() then
             
-                player:TriggerEffects("xenocide", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
+                self:TriggerEffects("xenocide", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
                 
                 local hitEntities = GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(player:GetTeamNumber()), player:GetOrigin(), kXenocideRange)
                 RadiusDamage(hitEntities, player:GetOrigin(), kXenocideRange, kXenocideDamage, self)

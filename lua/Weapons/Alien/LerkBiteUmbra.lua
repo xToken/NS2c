@@ -154,7 +154,7 @@ function LerkBiteUmbra:OnTag(tagName)
         if player and not self:GetHasAttackDelay(self, player) then  
             
             player:DeductAbilityEnergy(self:GetEnergyCost())            
-            self:TriggerEffects("lerkbite_attack")
+            player:TriggerEffects("lerkbite_attack")
             self.lastPrimaryAttackTime = Shared.GetTime()    
             local didHit, target = AttackMeleeCapsule(self, player, kLerkBiteDamage, self:GetRange(), nil, false, EntityFilterOneAndIsa(player, "Babbler"))
             
@@ -167,7 +167,7 @@ function LerkBiteUmbra:OnTag(tagName)
             end
             
             if target and HasMixin(target, "Live") and not target:GetIsAlive() then
-                self:TriggerEffects("bite_kill")
+                player:TriggerEffects("bite_kill")
             end
             
         end

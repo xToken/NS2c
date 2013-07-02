@@ -1119,6 +1119,8 @@ Event.Hook("Console_onos", OnCommandChangeClass("onos", kTeam2Index))
 Event.Hook("Console_marine", OnCommandChangeClass("marine", kTeam1Index))
 Event.Hook("Console_heavyarmor", OnCommandChangeClass("heavyarmormarine", kTeam1Index))
 Event.Hook("Console_jetpack", OnCommandChangeClass("jetpackmarine", kTeam1Index))
+Event.Hook("Console_mexo", OnCommandChangeClass("exo", kTeam1Index, { layout = "MinigunMinigun" }))
+Event.Hook("Console_rexo", OnCommandChangeClass("exo", kTeam1Index, { layout = "RailgunRailgun" }))
 
 Event.Hook("Console_command", OnCommandCommand)
 Event.Hook("Console_catpack", OnCommandCatPack)

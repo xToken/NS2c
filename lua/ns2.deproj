@@ -34,6 +34,9 @@
     <filename>AlienTeamInfo.lua</filename>
   </file>
   <file>
+    <filename>AlienUpgrades_Client.lua</filename>
+  </file>
+  <file>
     <filename>AlienWeaponEffects.lua</filename>
   </file>
   <file>
@@ -133,6 +136,9 @@
     <filename>Commander.lua</filename>
   </file>
   <file>
+    <filename>CommanderHelp.lua</filename>
+  </file>
+  <file>
     <filename>Commander_Buttons.lua</filename>
   </file>
   <file>
@@ -214,6 +220,18 @@
     <filename>EnergyMixin.lua</filename>
   </file>
   <file>
+    <filename>Exo.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Marine\ExoWeaponHolder.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Marine\ExoWeaponSlotMixin.lua</filename>
+  </file>
+  <file>
+    <filename>Exosuit.lua</filename>
+  </file>
+  <file>
     <filename>Extractor.lua</filename>
   </file>
   <file>
@@ -236,6 +254,9 @@
   </file>
   <file>
     <filename>GUICommanderButtons.lua</filename>
+  </file>
+  <file>
+    <filename>GUICommanderTooltip.lua</filename>
   </file>
   <file>
     <filename>GUIDeathMessages.lua</filename>
@@ -373,6 +394,9 @@
     <filename>HiveVisionMixin.lua</filename>
   </file>
   <file>
+    <filename>Hive_Client.lua</filename>
+  </file>
+  <file>
     <filename>Hive_Server.lua</filename>
   </file>
   <file>
@@ -424,9 +448,6 @@
     <filename>Weapons\Alien\LerkBiteUmbra.lua</filename>
   </file>
   <file>
-    <filename>Weapons\Alien\LerkSpores.lua</filename>
-  </file>
-  <file>
     <filename>Weapons\Alien\LerkUmbra.lua</filename>
   </file>
   <file>
@@ -475,6 +496,9 @@
     <filename>Marine_Server.lua</filename>
   </file>
   <file>
+    <filename>MedPack.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Alien\Metabolize.lua</filename>
   </file>
   <file>
@@ -482,6 +506,9 @@
   </file>
   <file>
     <filename>Weapons\Marine\Mines.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Marine\Minigun.lua</filename>
   </file>
   <file>
     <filename>NS2ConsoleCommands_Server.lua</filename>
@@ -565,6 +592,9 @@
     <filename>PrototypeLab.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Marine\Railgun.lua</filename>
+  </file>
+  <file>
     <filename>ReadyRoomPlayer.lua</filename>
   </file>
   <file>
@@ -581,6 +611,9 @@
   </file>
   <file>
     <filename>ResourceTower.lua</filename>
+  </file>
+  <file>
+    <filename>ResourceTower_Server.lua</filename>
   </file>
   <file>
     <filename>Weapons\Marine\Rifle.lua</filename>

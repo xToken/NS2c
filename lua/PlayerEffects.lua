@@ -43,8 +43,7 @@ kPlayerEffectData =
     {
         jumpBestSoundEffects =
         {
-            {sound = "", silenceupgrade = true, done = true},
-            {player_sound = "sound/NS2.fev/alien/skulk/jump_best", classname = "Skulk", done = true},
+            {private_sound = "sound/NS2.fev/alien/skulk/jump_best", classname = "Skulk", done = true},
         }
     },   
     
@@ -52,8 +51,7 @@ kPlayerEffectData =
     {
         jumpGoodSoundEffects =
         {
-            {sound = "", silenceupgrade = true, done = true},
-            {player_sound = "sound/NS2.fev/alien/skulk/jump_good", classname = "Skulk", done = true},
+            {private_sound = "sound/NS2.fev/alien/skulk/jump_good", classname = "Skulk", done = true},
         }
     },
         
@@ -64,7 +62,8 @@ kPlayerEffectData =
             {sound = "", silenceupgrade = true, done = true},        
             // Use private_sounds (ie, don't send network message) because this is generated on the client 
             // when animation plays and conserves bandwidth
-            {player_sound = "sound/NS2.fev/alien/skulk/jump", classname = "Skulk", done = true},
+            {player_sound = "sound/ns2c.fev/ns2c/alien/skulk/step", classname = "Skulk", done = true},
+            //{player_sound = "sound/NS2.fev/alien/skulk/jump", classname = "Skulk", done = true},
             {player_sound = "sound/NS2.fev/alien/gorge/jump", classname = "Gorge", done = true},
             {player_sound = "sound/NS2.fev/alien/fade/jump", classname = "Fade", done = true},
             {player_sound = "sound/NS2.fev/alien/onos/jump", classname = "Onos", done = true},
@@ -228,7 +227,7 @@ kPlayerEffectData =
         {
             {sound = "", silenceupgrade = true, done = true},  
         
-            {player_sound = "sound/NS2.fev/alien/skulk/land", classname = "Skulk", done = true},
+            //{player_sound = "sound/NS2.fev/alien/skulk/land", classname = "Skulk", done = true},
             {player_sound = "sound/NS2.fev/alien/lerk/land", classname = "Lerk", done = true},
             {player_sound = "sound/NS2.fev/alien/gorge/land", classname = "Gorge", done = true},
             {player_sound = "sound/NS2.fev/alien/fade/land", classname = "Fade", done = true},

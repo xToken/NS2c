@@ -42,7 +42,7 @@ kShowAsClass["Marine"] = { ["Hud/Marine/GUIMarineHUD"] = true, GUIPoisonedFeedba
                            GUIObjectiveDisplay = true, GUIProgressBar = true, GUIRequestMenu = true,
                            GUIWaypoints = true, GUIMarineDevoured = true }
 kShowAsClass["JetpackMarine"] = { GUIJetpackFuel = true }
-kShowAsClass["Exo"] = { GUIExoThruster = true, ["Hud/Marine/GUIMarineHUD"] = true, ["Hud/Marine/GUIExoHUD"] = true, GUIProgressBar = true, GUIRequestMenu = true, GUIWaypoints = true }
+kShowAsClass["Exo"] = { GUIExoThruster = true }
 kShowAsClass["MarineSpectator"] = { GUIRequestMenu = true }
 kShowAsClass["Alien"] = { GUIObjectiveDisplay = true, GUIProgressBar = true, GUIRequestMenu = true, GUIWaypoints = true, GUIAlienHUD = true,
                           GUIEggDisplay = true, GUIRegenerationFeedback = true }

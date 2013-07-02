@@ -52,11 +52,11 @@ function Blink:GetSecondaryAttackRequiresPress()
 end
 
 function Blink:TriggerBlinkOutEffects(player)
-    player:TriggerEffects("blink_out")
+    self:TriggerEffects("blink_out")
 end
 
 function Blink:TriggerBlinkInEffects(player)
-    player:TriggerEffects("blink_in")
+    self:TriggerEffects("blink_in")
 end
 
 function Blink:GetIsBlinking()

@@ -119,14 +119,6 @@ function Extractor:OnUpdateAnimationInput(modelMixin)
     
 end
 
-if Server then
-
-    function Extractor:GetIsCollecting()    
-        return ResourceTower.GetIsCollecting(self)  
-    end
-    
-end
-
 local kExtractorHealthbarOffset = Vector(0, 2.0, 0)
 function Extractor:GetHealthbarOffset()
     return kExtractorHealthbarOffset

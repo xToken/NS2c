@@ -73,10 +73,6 @@ function HeavyArmorMarine:GetInventorySpeedScalar()
     return 1 - self:GetWeaponsWeight() - kHeavyArmorWeight
 end
 
-function HeavyArmorMarine:GetFootstepSpeedScalar()
-    return Clamp(self:GetVelocity():GetLength() / (self:GetMaxSpeed() * self:GetSlowSpeedModifier() * self:GetCatalystMoveSpeedModifier()), 0, 1)
-end
-
 function HeavyArmorMarine:GetCanBeWeldedOverride()
     return self:GetArmor() < self:GetMaxArmor(), false
 end

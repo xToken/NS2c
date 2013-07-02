@@ -47,7 +47,7 @@ end
  * Any Marine is a valid recipient.
  */
 function CatPack:GetIsValidRecipient(recipient)
-    return (recipient.GetHasCatpackBoost and not recipient:GetHasCatpackBoost())    
+    return (recipient.GetHasCatpackBoost and not recipient:GetHasCatpackBoost() and recipient:GetIsAlive())
 end
 
 Shared.LinkClassToMap("CatPack", CatPack.kMapName)

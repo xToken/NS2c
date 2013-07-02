@@ -218,6 +218,7 @@ function MarineTeam:InitTechTree()
     self.techTree:AddResearchNode(kTechId.CatPackTech,              kTechId.None,              kTechId.None)
     self.techTree:AddResearchNode(kTechId.JetpackTech,              kTechId.PrototypeLab, kTechId.AdvancedArmory)
     self.techTree:AddResearchNode(kTechId.HeavyArmorTech,           kTechId.PrototypeLab, kTechId.AdvancedArmory)
+    //self.techTree:AddResearchNode(kTechId.ExosuitTech,              kTechId.PrototypeLab, kTechId.AdvancedArmory)
     self.techTree:AddResearchNode(kTechId.MotionTracking,           kTechId.Observatory, kTechId.None)
 
     // Door actions
@@ -241,10 +242,11 @@ function MarineTeam:InitTechTree()
     self.techTree:AddTargetedActivation(kTechId.Shotgun,                    kTechId.Armory,         kTechId.None)
     self.techTree:AddTargetedActivation(kTechId.GrenadeLauncher,                    kTechId.AdvancedArmory,             kTechId.None)
     self.techTree:AddTargetedActivation(kTechId.HeavyMachineGun,                    kTechId.AdvancedArmory,             kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.Mines,      kTechId.Armory,        kTechId.None)
+    self.techTree:AddTargetedActivation(kTechId.Mines,          kTechId.Armory,        kTechId.None)
     self.techTree:AddTargetedActivation(kTechId.Welder,         kTechId.Armory,        kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.Jetpack,    kTechId.JetpackTech, kTechId.PrototypeLab)
+    self.techTree:AddTargetedActivation(kTechId.Jetpack,        kTechId.JetpackTech, kTechId.PrototypeLab)
     self.techTree:AddTargetedActivation(kTechId.HeavyArmor,     kTechId.HeavyArmorTech, kTechId.PrototypeLab)
+    //self.techTree:AddTargetedActivation(kTechId.Exosuit,        kTechId.ExosuitTech, kTechId.PrototypeLab)
     
     self.techTree:AddMenu(kTechId.WeaponsMenu)
     

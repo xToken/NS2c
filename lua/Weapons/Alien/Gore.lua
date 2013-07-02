@@ -94,9 +94,7 @@ function Gore:OnTag(tagName)
             self.lastPrimaryAttackTime = Shared.GetTime()
             self:TriggerEffects("gore_attack")
             player:DeductAbilityEnergy(self:GetEnergyCost())
-            if didHit then
-
-            end
+            
         end
     end    
 

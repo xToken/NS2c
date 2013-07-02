@@ -115,7 +115,7 @@ function Gamerules_GetDamageMultiplier()
 end
 
 kDamageType = enum( {'Normal', 'Structural', 'Gas', 'Splash', 'StructuresOnly', 'Light', 'Heavy',
-                    'Falling', 'Corrode', 'Biological', 'HalfStructure' } )
+                    'Falling', 'Corrode', 'Biological', 'HalfStructure', 'Flame' } )
 
 // Describe damage types for tooltips
 kDamageTypeDesc = {
@@ -136,11 +136,13 @@ kDamageTypeDesc = {
 kBaseArmorUseFraction = 0.7
 kHeavyDamageArmorUseFraction = 0.5
 kHeavyArmorUseFraction = 0.95
+kExoArmorUseFraction = 0.9
 kLightHealthPerArmor = 4
 kStructuralDamageScalar = 2
 kHalfStructureDamageReduction = 2
 kHealthPointsPerArmor = 2
 kHeavyArmorHealthPointsPerArmor = 4
+kExoHealthPointsPerArmor = 3
 kCorrodeDamagePlayerArmorScalar = 0.1
 kHeavyHealthPerArmor = 1
 
@@ -154,6 +156,10 @@ end
 local function ApplyHighArmorUseFractionForHA(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType)
     if target:isa("HeavyArmorMarine") then
         armorFractionUsed = kHeavyArmorUseFraction
+        healthPerArmor = kHeavyArmorHealthPointsPerArmor
+    end
+    if target:isa("Exo") then
+        armorFractionUsed = kExoArmorUseFraction
         healthPerArmor = kHeavyArmorHealthPointsPerArmor
     end
     return damage, armorFractionUsed, healthPerArmor

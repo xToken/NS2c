@@ -308,6 +308,15 @@ function Marine:GiveHeavyArmor()
     
 end
 
+function Marine:GiveExo(type)
+
+    local health = self:GetHealth()
+    self:DropAllWeapons()
+    local ExoMarine = self:Replace(Exo.kMapName, self:GetTeamNumber(), false, Vector(self:GetOrigin()), { layout = type })
+    ExoMarine:SetHealth(health)
+    
+end
+
 function Marine:MakeSpecialEdition()
     self:SetModel(Marine.kBlackArmorModelName, Marine.kMarineAnimationGraph)
 end

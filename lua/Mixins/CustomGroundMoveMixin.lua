@@ -41,14 +41,15 @@ CustomGroundMoveMixin.networkVars =
 local kNetPrecision = 1/128 // should import from server
 local kMaxDeltaTime = 0.1
 local kOnGroundDistance = 0.1
-//NS1 bhop skulk could get around 530-540 units with good bhop, 290 base makes for 1.84 - Trying 1.8 for now
-local kBunnyJumpMaxSpeedFactor = 1.8
+//NS1 bhop skulk could get around 530-540 units with good bhop, 290 base makes for 1.84 - Trying 1.7 now
+//need to figure out what NS1 clamped speed to each jump, not what the average speed you could get was.
+local kBunnyJumpMaxSpeedFactor = 1.7
 local kClimbFriction = 5
 local kCrouchAnimationTime = 0.4
 local kCrouchSpeedScalar = 0.6
-local kGroundFrictionTransition = 0.02
 local kLandGraceTime = 0.1
-local kStopSpeed = 1.8 //NS1 appears to have used 100, roughly 1.8
+local kMinimumJumpTime = 0.05
+local kStopSpeed = 2.0 //NS1 appears to have used 100, roughly 1.8
 local kBackwardsMovementScalar = 1
 local kStepHeight = 0.5
 
@@ -104,6 +105,10 @@ function CustomGroundMoveMixin:GetPlayJumpSound()
     return true
 end
 
+function CustomGroundMoveMixin:GetIsJumping()
+    return self.jumping
+end
+
 function CustomGroundMoveMixin:SetIsJumping(Jumping)
     self.jumping = Jumping
 end
@@ -120,12 +125,27 @@ function CustomGroundMoveMixin:GetMaxJumpingSpeedScalar()
     return kBunnyJumpMaxSpeedFactor
 end
 
-function CustomGroundMoveMixin:GetHasLandedThisFrame()
-    return self.timeTouchedGround + kGroundFrictionTransition >= Shared.GetTime()
-end
-
 function CustomGroundMoveMixin:GetLandedRecently()
     return self.timeTouchedGround + kLandGraceTime > Shared.GetTime()
+end
+
+function CustomGroundMoveMixin:GetIsOnGround()
+    if self.OnGroundOverride then
+        return self:OnGroundOverride()
+    end
+    return self.onGround
+end
+
+function CustomGroundMoveMixin:GetLastJumpTime()
+    return self.timeOfLastJump
+end
+
+function CustomGroundMoveMixin:GetWithinJumpWindow()
+    return self.timeOfLastJump + kMinimumJumpTime > Shared.GetTime()
+end
+
+function CustomGroundMoveMixin:UpdateLastJumpTime()
+    self.timeOfLastJump = Shared.GetTime()
 end
 
 function CustomGroundMoveMixin:GetLastImpactForce()
@@ -203,8 +223,12 @@ function CustomGroundMoveMixin:UpdateOnGroundState(previousVelocity)
 end
 
 function CustomGroundMoveMixin:ApplyHalfGravity(input, velocity, time)
-    if self.gravityEnabled and self:GetGravityAllowed() then
-        velocity.y = velocity.y + self:GetGravityForce(input) * time * 0.5
+    if self:GetGravityAllowed() then
+        local gforce = self:GetGravityForce(input)
+        if self.AdjustGravityForce then
+            gforce = self:AdjustGravityForce(input, gforce)
+        end
+        velocity.y = velocity.y + gforce * time * 0.5
     end
 end
 
@@ -249,7 +273,7 @@ function CustomGroundMoveMixin:ApplyFriction(input, velocity, time)
         // Calculate speed
         local speed = velocity:GetLength()
         
-        if speed < 0.0001 or self:GetHasLandedThisFrame() then
+        if speed < 0.0001 then
             return velocity
         end
         
@@ -309,7 +333,7 @@ function CustomGroundMoveMixin:UpdateMove(input)
 
     local runningPrediction = Shared.GetIsRunningPrediction()
     local previousVelocity = self:GetVelocity()
-    local time = input.time
+    local time = math.min(input.time, kMaxDeltaTime)
     // use the full precision origin
     if self.fullPrecisionOrigin then
         local orig = self:GetOrigin()
@@ -364,7 +388,13 @@ function CustomGroundMoveMixin:UpdateMove(input)
  
     self:UpdatePosition(input, velocity, time)
     
-    self:UpdateOnGroundState(previousVelocity)
+    if self.ModifyVelocity then
+        self:ModifyVelocity(input, velocity, time)
+    end
+    
+    if not self:GetWithinJumpWindow() then
+        self:UpdateOnGroundState(previousVelocity)
+    end
     
     // Store new velocity
     self:SetVelocity(velocity)

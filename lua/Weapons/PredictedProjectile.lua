@@ -19,6 +19,7 @@ end
 
 function PredictedProjectileShooterMixin:CreatePredictedProjectile(className, startPoint, velocity, bounce, friction, gravity, clearOnImpact)
 
+    local projectile = nil
     local projectileController = ProjectileController()
     projectileController:Initialize(startPoint, velocity, _G[className].kRadius, self, bounce, friction, gravity, GetEnemyTeamNumber(self:GetTeamNumber()), clearOnImpact)
     projectileController.projectileId = self.nextProjectileId
@@ -28,7 +29,7 @@ function PredictedProjectileShooterMixin:CreatePredictedProjectile(className, st
     
     if Server then
     
-        local projectile = CreateEntity(_G[className].kMapName, startPoint, self:GetTeamNumber())
+        projectile = CreateEntity(_G[className].kMapName, startPoint, self:GetTeamNumber())
         projectile.projectileId = self.nextProjectileId
         projectile:SetProjectileController(projectileController)
         projectileEntId = projectile:GetId()
@@ -76,6 +77,8 @@ function PredictedProjectileShooterMixin:CreatePredictedProjectile(className, st
     if self.nextProjectileId > kMaxNumProjectiles then
         self.nextProjectileId = 1
     end
+    
+    return projectile
 
 end
 

@@ -186,11 +186,11 @@ function JetpackMarine:HasJetpackDelay()
     return true
 end
 
-function JetpackMarine:GetIsOnGround()
+function JetpackMarine:OnGroundOverride()
     if self:GetIsJetpacking() and self.timeJetpackingChanged ~= Shared.GetTime() then
         return false
     end
-    return Player.GetIsOnGround(self)
+    return self:GetIsOnGround()
 end
 
 function JetpackMarine:HandleJetpackStart()
@@ -199,7 +199,7 @@ function JetpackMarine:HandleJetpackStart()
     self.jetpacking = true
     self.timeJetpackingChanged = Shared.GetTime()
     
-    self.startedFromGround = self:GetIsOnGround() or self.timeOfLastJump == Shared.GetTime()
+    self.startedFromGround = self:GetIsOnGround() or self:GetLastJumpTime() == Shared.GetTime()
     
     local jetpack = self:GetJetpack()    
     if jetpack then
@@ -347,7 +347,7 @@ function JetpackMarine:GetAcceleration()
     if self:GetIsJetpacking() then
         acceleration = kJetpackAcceleration * self:GetInventorySpeedScalar()
     else
-        acceleration = Player.GetAcceleration(self)
+        acceleration = Marine.GetAcceleration(self)
     end
     
     return acceleration

@@ -397,7 +397,7 @@ function ARC:OnUpdate(deltaTime)
         end
     end
     
-    if self.mode ~= ARC.kMode.Stationary and self.deployMode ~= ARC.kDeployMode.Deploying and self.deployMode ~= ARC.kMode.Undeploying and self.mode ~= ARC.kMode.Destroyed then
+    if self.mode ~= ARC.kMode.Stationary and self.deployMode ~= ARC.kDeployMode.Deploying and self.deployMode ~= ARC.kDeployMode.Undeploying and self.mode ~= ARC.kMode.Destroyed then
         self:UpdateAngles(deltaTime)
     end
     

@@ -49,7 +49,6 @@ function UmbraMixin:OnSecondaryAttack(player)
 
     if player:GetEnergy() >= self:GetSecondaryEnergyCost(player) and not self.primaryAttacking and not GetHasAttackDelay(self,player) then
         self:TriggerEffects("umbra_attack")
-        self:TriggerEffects("spikes_attack")
         if Server then
             CreateUmbraCloud(self, player)
             self:GetParent():DeductAbilityEnergy(self:GetSecondaryEnergyCost())
@@ -94,8 +93,4 @@ end
 
 function UmbraMixin:GetIsSecondaryBlocking()
     return false
-end
-
-function UmbraMixin:OnClientSecondaryAttacking()
-    self:TriggerEffects("spikes_attack")
 end

@@ -102,9 +102,9 @@ function Metabolize:OnTag(tagName)
             local player = self:GetParent()
             if player then
                 player:DeductAbilityEnergy(self:GetEnergyCost())
+                player:TriggerEffects("metabolize")
             end
             PerformMetabolize(self)
-            self:TriggerEffects("metabolize")
             
         elseif tagName == "attack_end" then
             self.primaryAttacking = false

@@ -134,9 +134,9 @@ function BiteLeap:OnTag(tagName)
             end
             
             if target and HasMixin(target, "Live") and not target:GetIsAlive() then
-                self:TriggerEffects("bite_kill")
+                self:TriggerEffects("bite_kill", {silenceupgrade = false})
             elseif target and GetReceivesStructuralDamage(target) then
-                self:TriggerEffects("bite_structure", {isalien = GetIsAlienUnit(target)})
+                self:TriggerEffects("bite_structure", {isalien = GetIsAlienUnit(target), silenceupgrade = false})
             end
             
         end

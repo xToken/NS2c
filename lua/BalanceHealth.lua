@@ -15,6 +15,7 @@
 kMarineHealth = 100	     kMarineArmor = 30	    kMarinePointValue = 2
 kJetpackHealth = 100	 kJetpackArmor = 30	    kJetpackPointValue = 2
 kHeavyArmorHealth = 100  kHeavyArmorArmor = 200 kHeavyArmorPointValue = 2
+kExosuitHealth = 100     kExosuitArmor = 70     kExosuitPointValue = 2
 
 kSkulkHealth = 70	    kSkulkArmor = 10	    kSkulkPointValue = 2
 kGorgeHealth = 150	    kGorgeArmor = 70	    kGorgePointValue = 2
@@ -29,6 +30,7 @@ kBabblerEggHealth = 200	kBabblerEggArmor = 100	kBabblerEggPointValue = 0
 
 kArmorPerUpgradeLevel = 20
 kHeavyArmorPerUpgradeLevel = 30
+kExosuitArmorPerUpgradeLevel = 25
 kArmorHealScalar = 1 // 0.75
 
 kBuildPointValue = 5

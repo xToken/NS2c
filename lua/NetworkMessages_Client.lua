@@ -74,6 +74,8 @@ function OnCommandScores(scoreTable)
     elseif scoreTable.status == kPlayerStatus.HeavyMachineGun then
         //status = Locale.ResolveString("STATUS_HEAVY_MACHINE_GUN")
         status = "HMG"
+    elseif scoreTable.status == kPlayerStatus.Exo then
+        status = Locale.ResolveString("STATUS_EXO")
     end
     
     Scoreboard_SetPlayerData(scoreTable.clientId, scoreTable.entityId, scoreTable.playerName, scoreTable.teamNumber, scoreTable.score,

@@ -51,10 +51,6 @@ function BileBomb:GetEnergyCost(player)
     return kBileBombEnergyCost
 end
 
-function BileBomb:GetIconOffsetY(secondary)
-    return kAbilityOffset.BileBomb
-end
-
 function BileBomb:GetHUDSlot()
     return 3
 end
@@ -62,7 +58,6 @@ end
 function BileBomb:GetSecondaryTechId()
     return kTechId.Spray
 end
-
 
 function BileBomb:OnTag(tagName)
 
@@ -90,7 +85,7 @@ function BileBomb:OnTag(tagName)
                 
             end
             
-            TEST_EVENT("BileBomp shot")
+            TEST_EVENT("BileBomb shot")
             
         end
     

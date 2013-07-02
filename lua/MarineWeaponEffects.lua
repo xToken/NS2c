@@ -50,6 +50,14 @@ kMarineWeaponEffects =
     {
 
     },
+    
+    exo_login =
+    {
+        viewModelCinematics =
+        {
+            {viewmodel_cinematic = "cinematics/marine/heavy/deploy_light.cinematic", attach_point = "exosuit_camBone"},
+        },
+    },
 
     reload = 
     {

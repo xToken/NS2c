@@ -37,6 +37,7 @@ kHeavyMachineGunCost = 15
 kGrenadeLauncherDropCost = 15
 kJetpackDropCost = 12
 kHeavyArmorDropCost = 15
+kExosuitDropCost = 20
 kRoboticsFactoryCost = 10
 kAmmoPackCost = 1
 kMedPackCost = 2
@@ -49,6 +50,9 @@ kJetpackTechResearchTime = 75
 
 kHeavyArmorTechResearchCost = 40
 kHeavyArmorTechResearchTime = 110
+
+kExosuitTechResearchCost = 45
+kExosuitTechResearchTime = 120
 
 kWeapons1ResearchCost = 20
 kWeapons1ResearchTime = 60
@@ -219,6 +223,16 @@ kHeavyMachineGunWeight = 0.05
 kHeavyMachineGunROF = 0.05
 kHeavyMachineGunReloadTime = 6.3
 kHeavyMachineGunClipWeight = 0.0035
+
+kMinigunDamage = 15
+kMinigunDamageType = kDamageType.HalfStructure
+kMinigunClipSize = 100
+kMinigunWeight = 0.06
+
+kRailgunDamage = 25
+kRailgunDamageType = kDamageType.Structural
+kRailgunClipSize = 25
+kRailgunWeight = 0.06
 
 kMineDamage = 125
 kMineDamageType = kDamageType.Normal

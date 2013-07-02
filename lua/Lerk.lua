@@ -113,7 +113,7 @@ function Lerk:OnInitialized()
         self.previousYaw = 0
         
         self:AddHelpWidget("GUILerkFlapHelp", 2)
-        self:AddHelpWidget("GUILerkSporesHelp", 2)
+        //self:AddHelpWidget("GUILerkSporesHelp", 2)
         
     end
     
@@ -310,7 +310,7 @@ function Lerk:HandleJump(input, velocity)
     if bit.band(input.commands, Move.Jump) ~= 0 and not self:GetIsJumpHandled() then
         if self:GetIsOnGround() and self:GetCanJump() then
             velocity.y = velocity.y + kJumpImpulse
-            self.timeOfLastJump = Shared.GetTime()
+            self:UpdateLastJumpTime()
             self:SetIsOnGround(false)
             self.lastTimeFlapped = Shared.GetTime()
         else

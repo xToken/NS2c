@@ -44,11 +44,9 @@ local kMass = 453 // Half a ton
 local kViewOffsetHeight = 2.5
 local kMomentumEffectTriggerDiff = 3
 local kMaxSpeed = 4.5
-local kMaxChargeSpeed = 11
+local kMaxChargeSpeed = 10
 local kMaxWalkSpeed = 2
-local kChargeEnergyCost = 60
-local kChargeAcceleration = 40
-local kChargeUpDuration = 0.4
+local kChargeEnergyCost = 30
 local kChargeDelay = 0.1
 local kDefaultAttackSpeed = 1.1
 
@@ -111,19 +109,6 @@ function Onos:GetCanCrouch()
     return not self.charging
 end
 
-function Onos:GetAcceleration()
-    local acceleration = Player.GetAcceleration(self)
-    if self.charging then
-        acceleration = acceleration + kChargeAcceleration * self:GetChargeFraction()  * 0.03
-    end
-    
-    return acceleration
-end
-
-function Onos:GetChargeFraction()
-    return ConditionalValue(self.charging, math.min(1, (Shared.GetTime() - self.timeLastCharge) / kChargeUpDuration ), 0)
-end
-
 function Onos:EndCharge()
 
     local surface, normal = GetSurfaceAndNormalUnderEntity(self)
@@ -145,38 +130,12 @@ function Onos:GetCanCloakOverride()
 end
 
 function Onos:PreUpdateMove(input, runningPrediction)
-    // determines how manuverable the onos is. When not charging, manuverability is 1. 
-    // when charging it goes towards zero as the speed increased. At zero, you can't strafe or change
-    // direction.
-    // The math.sqrt makes you drop manuverability quickly at the start and then drop it less and less
-    // the 0.8 cuts manuverability to zero before the max speed is reached
-    // Fiddle until it feels right. 
-    // 0.8 allows about a 90 degree turn in atrium, ie you can start charging
-    // at the entrance, and take the first two stairs before you hit the lockdown.
-    local manuverability = ConditionalValue(self.charging, math.max(0, 0.8 - math.sqrt(self:GetChargeFraction())), 1)
 
     if self.charging then
-
-        // fiddle here to determine strafing 
-        input.move.x = input.move.x * math.max(0.3, manuverability)
-        input.move.z = 1
-        
         self:DeductAbilityEnergy(kChargeEnergyCost * input.time)
-    
-        local xzViewDirection = self:GetViewCoords().zAxis
-        xzViewDirection.y = 0
-        xzViewDirection:Normalize()
-        
-        // stop charging if out of energy, jumping or we have charged for a second and our speed drops below 4.5
-        // - changed from 0.5 to 1s, as otherwise touchin small obstactles orat started stopped you from charging 
-        if self:GetEnergy() == 0 or 
-           self:GetIsJumping() or
-          (self.timeLastCharge + 1 < Shared.GetTime() and self:GetVelocity():GetLengthXZ() < 4.5 ) then
-    
+        if self:GetEnergy() == 0 or (self.timeLastCharge + 1 < Shared.GetTime() and self:GetVelocity():GetLengthXZ() < 4.5 ) then
             self:EndCharge()
-            
         end
-            
     end
 
 end
@@ -208,7 +167,7 @@ end
 
 function Onos:TriggerCharge(move)
     
-    if not self.charging and self.timeLastChargeEnd + kChargeDelay < Shared.GetTime() and self:GetIsOnGround() and not self:GetCrouching() and self:GetHasOneHive() then
+    if not self.charging and self.timeLastChargeEnd + kChargeDelay < Shared.GetTime() and not self:GetCrouching() and not self:GetCrouched() and self:GetHasOneHive() then
 
         self.charging = true
         self.timeLastCharge = Shared.GetTime()
@@ -294,19 +253,11 @@ function Onos:GetMass()
     return kMass
 end
 
-local kOnosHeadMoveAmount = 0.0
-
 // Give dynamic camera motion to the player
 function Onos:OnUpdateCamera(deltaTime) 
-
     local camOffsetHeight = 0
-    
-    if not self:GetIsJumping() then
-        camOffsetHeight = -self:GetMaxViewOffsetHeight() * self:GetCrouchShrinkAmount() * self:GetCrouchAmount()
-    end
-    
+    camOffsetHeight = -self:GetMaxViewOffsetHeight() * self:GetCrouchShrinkAmount() * self:GetCrouchAmount()
     self:SetCameraYOffset(camOffsetHeight)
-
 end
 
 function Onos:GetBaseAttackSpeed()

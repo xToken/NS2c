@@ -298,11 +298,9 @@ end
 function Hive:OnKill(attacker, doer, point, direction)
 
     if self:GetIsBuilt() then
-
         EmptySpawnWave(self)
         self:AddTimedCallback(Hive.OnDelayedKill, 2)
-
-    end    
+    end
 
     CommandStructure.OnKill(self, attacker, doer, point, direction)
     
@@ -312,6 +310,12 @@ function Hive:OnKill(attacker, doer, point, direction)
         SendTeamMessage(team, kTeamMessageTypes.HiveKilled, self:GetLocationId())
     end
     
+    self:SetBypassRagdoll(true)
+    
+    if not self:GetIsBuilt() then
+        DestroyEntitySafe(self)
+    end
+    
 end
 
 function Hive:OnDelayedKill()
@@ -319,6 +323,7 @@ function Hive:OnDelayedKill()
     if team then
         team:OnHiveDestroyed(self)
     end
+    DestroyEntitySafe(self)
     return false
 end
 
