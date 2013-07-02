@@ -136,7 +136,7 @@ function HandGrenades:OnPrimaryAttack(player)
         self.throwing = true
         self.throwntime = Shared.GetTime()
 
-        player:TriggerEffects("start_create_" .. self:GetSuffixName())
+        self:TriggerEffects("start_create_" .. self:GetSuffixName())
 
         ThrowGrenade(self, player)
 

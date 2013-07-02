@@ -180,13 +180,12 @@ end
 function Ability:GetEffectParams(tableParams)
 
     local player = self:GetParent()
-    if player then
-		//Silence Controls volume levels, dont think this actually works tho.
+    if player and tableParams[kEffectFilterSilenceUpgrade] == nil then
         local upg, level = GetHasSilenceUpgrade(player)
         if level == 3 then
             tableParams[kEffectFilterSilenceUpgrade] = upg
         end
-        tableParams[kEffectParamVolume] = (1 - (.33 * level))
+        tableParams[kEffectParamVolume] = 1 - Clamp(level / 3, 0, 1)
     end
     
 end

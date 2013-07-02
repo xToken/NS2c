@@ -209,19 +209,7 @@ function Whip:GetShowHitIndicator()
     return false
 end
 
-if Client then
-
-    function Whip:OnTag(tagName)
-
-        PROFILE("WHIP:OnTag")
-        
-        if tagName == "attack_start" then
-            self:TriggerEffects("whip_attack_start")        
-        end
-        
-    end
-
-elseif Server then
+if Server then
             
     function Whip:OnConstructionComplete()
     

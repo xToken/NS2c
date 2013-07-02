@@ -85,7 +85,7 @@ local gMarineMenuButtons =
                         kTechId.None, kTechId.None, kTechId.None, kTechId.None},
                           
     [kTechId.WeaponsMenu] = { kTechId.Mines, kTechId.Shotgun, kTechId.HeavyMachineGun, kTechId.GrenadeLauncher,
-                        kTechId.Welder, kTechId.Jetpack, kTechId.HeavyArmor, kTechId.None}
+                        kTechId.Welder, kTechId.Jetpack, kTechId.HeavyArmor, kTechId.None/*kTechId.Exosuit*/}
 
 
 }

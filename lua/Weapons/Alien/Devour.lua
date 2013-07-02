@@ -142,10 +142,6 @@ function Devour:OnAttackEnd()
     self.primaryAttacking = false
 end
 
-function Devour:GetEffectParams(tableParams)
-    Ability.GetEffectParams(self, tableParams)
-end
-
 function Devour:OnUpdateAnimationInput(modelMixin)
 
     local activityString = "none"
@@ -174,14 +170,14 @@ if Server then
                     self.timeSinceLastDevourUpdate = Shared.GetTime()
                     player:AddHealth(kDevourHealthPerSecond, true, (player:GetMaxHealth() - player:GetHealth() ~= 0))
                     if self.lastdevoursound + kDevourSoundTime < Shared.GetTime() then
-                        player:TriggerEffects("devour_hit")
+                        self:TriggerEffects("devour_hit")
                         self.lastdevoursound = Shared.GetTime()
                     end
                     if self:DoDamage(kDevourDamage, food, player:GetOrigin(), 0, "none") then
                         if food.OnDevouredEnd then 
                             food:OnDevouredEnd()
                         end
-                        player:TriggerEffects("devour_complete")
+                        self:TriggerEffects("devour_complete")
                         self.devouring = 0
                     end
                 end

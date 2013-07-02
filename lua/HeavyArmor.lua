@@ -65,7 +65,7 @@ end
 
 // only give HA to standard marines
 function HeavyArmor:GetIsValidRecipient(recipient)
-    return not recipient:isa("JetpackMarine") and not recipient:isa("HeavyArmorMarine")
+    return not recipient:isa("JetpackMarine") and not recipient:isa("HeavyArmorMarine") and not recipient:isa("Exo")
 end
 
 function HeavyArmor:GetIsPermanent()

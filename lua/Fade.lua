@@ -52,6 +52,7 @@ local kWalkSpeed = 2
 local kCrouchedSpeed = 1.8
 local kBlinkImpulseForce = 10
 local kBlinkVerticleConstraints = 0.6
+local kBlinkSpeedGracePeriod = 0.4
 
 local networkVars =
 {
@@ -101,11 +102,7 @@ function Fade:GetHeadAttachpointName()
 end
 
 function Fade:PreCopyPlayerData()
-
-    // Reset visibility and gravity in case we were in ether mode.
     self:SetIsVisible(true)
-    self:SetGravityEnabled(true)
-    
 end
 
 function Fade:GetBaseArmor()
@@ -151,7 +148,7 @@ function Fade:GetMaxSpeed(possible)
         maxSpeed = kCrouchedSpeed
     end
         
-    return maxSpeed + self:GetMovementSpeedModifier()
+    return maxSpeed + self:GetMovementSpeedModifier() + (self:GetBlinkGracePeriod() * kMaxBlinkSpeed * kBlinkSpeedGracePeriod)
 end
 
 function Fade:GetMass()
@@ -160,6 +157,10 @@ end
 
 function Fade:GetIsBlinking()
     return self.ethereal and self:GetIsAlive()
+end
+
+function Fade:GetBlinkGracePeriod()
+    return Clamp((self.landedafterblink + kBlinkSpeedGracePeriod) - Shared.GetTime(), 0, 1)
 end
 
 function Fade:OnGroundChanged()
@@ -201,14 +202,15 @@ function Fade:OnBlinking(input)
     
     // Finish
     self:SetVelocity(velocity)
-    self.jumping = true // Animation
+    self:SetIsJumping(true)
     self:SetIsOnGround(false)
+    self.landedafterblink = 0
     
 end
 
 function Fade:OnBlinkEnd()
     if self:GetIsOnGround() then
-        self.jumping = false
+        self:SetIsJumping(false)
     end
 end
 

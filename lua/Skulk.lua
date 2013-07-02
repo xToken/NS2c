@@ -39,15 +39,15 @@ Skulk.kXExtents = .45
 Skulk.kYExtents = .45
 Skulk.kZExtents = .45
 
-local kLeapTime = 0.2
+local kLeapTime = 0.33
 local kLeapForce = 11
-local kMaxSpeed = 6.5
+local kMaxSpeed = 6.45
 local kGoodJumpSpeed = 10
 local kBestJumpSpeed = 12
 local kMaxWalkSpeed = 3.1
 local kWallJumpForce = 7
 local kWallJumpYBoost = 2
-local kJumpDelay = 1
+local kJumpDelay = 0.35
 local kMaxLeapSpeed = 20
 
 local kMass = 45 // ~100 pounds
@@ -77,11 +77,7 @@ local networkVars =
     timeOfLeap = "private compensated time",
     // wallwalking is enabled only after we bump into something that changes our velocity
     // it disables when we are on ground or after we jump or leap
-    wallWalkingEnabled = "private compensated boolean",
-    timeOfLastJumpLand = "private compensated time",
-    timeLastWallJump = "private compensated time",
-    jumpLandSpeed = "private compensated float"
-
+    wallWalkingEnabled = "private compensated boolean"
 }
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
@@ -129,8 +125,6 @@ function Skulk:OnInitialized()
     
     self.leaping = false
     
-    self.timeLastWallJump = 0
-    
 end
 
 function Skulk:GetBaseArmor()
@@ -167,7 +161,7 @@ end
 
 // required to trigger wall walking animation
 function Skulk:GetIsJumping()
-    return Player.GetIsJumping(self) and not self.wallWalking
+    return CustomGroundMoveMixin.GetIsJumping(self) and not self.wallWalking
 end
 
 function Skulk:OnLeap()
@@ -193,7 +187,6 @@ function Skulk:OnLeap()
     self.wallWalkingEnabled = false
     self:SetIsOnGround(false)
     self.timeOfLeap = Shared.GetTime()
-    self.timeOfLastJump = Shared.GetTime()
     
 end
 
@@ -202,11 +195,11 @@ function Skulk:GetCanCrouch()
 end
 
 function Skulk:GetRecentlyWallJumped()
-    return self.timeLastWallJump + kJumpDelay > Shared.GetTime()
+    return self:GetLastJumpTime() + kJumpDelay > Shared.GetTime()
 end
 
 function Skulk:GetCanWallJump()
-    return self:GetIsWallWalking() or (not self:GetIsOnGround() and self:GetAverageWallWalkingNormal(kJumpWallRange, kJumpWallFeelerSize) ~= nil) and not self:GetRecentlyWallJumped() and not self:GetCrouching() 
+    return not self:GetRecentlyWallJumped() and not self:GetCrouching() and (self:GetIsWallWalking() or (not self:GetIsOnGround() and self:GetAverageWallWalkingNormal(kJumpWallRange, kJumpWallFeelerSize) ~= nil))
 end
 
 function Skulk:GetViewModelName()
@@ -256,18 +249,19 @@ local function PredictGoal(self, velocity)
 
 end
 
+/*
 function Skulk:TriggerJumpEffects()
     if not Shared.GetIsRunningPrediction() then
         local spd = self:GetVelocity():GetLength()
         if spd > kBestJumpSpeed then
-            self:TriggerEffects("jump_best", {surface = self:GetMaterialBelowPlayer()})
+            self:TriggerEffects("jump_best")
         elseif spd > kGoodJumpSpeed then
-            self:TriggerEffects("jump_good", {surface = self:GetMaterialBelowPlayer()})
-        else
-            self:TriggerEffects("jump", {surface = self:GetMaterialBelowPlayer()})
+            self:TriggerEffects("jump_good")
         end
+        self:TriggerEffects("jump")
     end
 end
+*/
 
 function Skulk:GetAngleSmoothRate()
 
@@ -471,10 +465,6 @@ function Skulk:GetIsOnSurface()
     return Alien.GetIsOnSurface(self) or (self:GetIsWallWalking() and not self:GetCrouching())
 end
 
-function Skulk:GetPlayFootsteps()
-    return self:GetVelocityLength() > 4 and not GetHasSilenceUpgrade(self) and self:GetIsOnSurface() and self:GetIsAlive()
-end
-
 /**
  * Knockback only allowed while the Skulk is in the air (jumping or leaping).
  */
@@ -501,7 +491,6 @@ function Skulk:GetJumpVelocity(input, velocity)
                 direction:Scale(kWallJumpForce)
                 direction.y = direction.y + kWallJumpYBoost
                 VectorCopy(direction, velocity)
-                self.lastwalljump = Shared.GetTime()
             end
         end
     else

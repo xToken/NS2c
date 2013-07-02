@@ -73,7 +73,6 @@ local networkVars =
     timeOfLastPickUpWeapon = "private time",
     
     flashlightLastFrame = "private boolean",
-    lastjumpheight = "private float",
     catpackboost = "private boolean",
     weaponUpgradeLevel = "integer (0 to 3)",
     
@@ -127,8 +126,8 @@ function Marine:OnCreate()
         self.flashlight:SetColor( Color(.8, .8, 1) )
         self.flashlight:SetInnerCone( math.rad(30) )
         self.flashlight:SetOuterCone( math.rad(35) )
-        self.flashlight:SetIntensity( 10 )
-        self.flashlight:SetRadius( 15 ) 
+        self.flashlight:SetIntensity(10)
+        self.flashlight:SetRadius(25)
         self.flashlight:SetGoboTexture("models/marine/male/flashlight.dds")
         
         self.flashlight:SetIsVisible(false)
@@ -298,17 +297,12 @@ function Marine:GetIsStunAllowed()
     return not self:GetIsJumping()
 end
 
-function Marine:OnJump()
-    self.lastjumpheight = ConditionalValue(self.crouching, self:GetOrigin().y - 0.5, self:GetOrigin().y)
-end
-
 function Marine:GetCanRepairOverride(target)
     return self:GetWeapon(Welder.kMapName) and HasMixin(target, "Weldable") and ( (target:isa("Marine") and target:GetArmor() < target:GetMaxArmor()) or (not target:isa("Marine") and target:GetHealthScalar() < 0.9) )
 end
 
 function Marine:GetSlowOnLand()
-    local adjustedy = self:GetOrigin().y
-    return ((adjustedy - self.lastjumpheight) <= kDoubleJumpMinHeightChange)
+    return math.abs(self:GetVelocity().y) > self:GetMaxSpeed()
 end
 
 function Marine:GetArmorAmount()
@@ -426,10 +420,6 @@ function Marine:HandleButtons(input)
     
 end
 
-function Marine:GetOnGroundRecently()
-    return (self.timeLastOnGround ~= nil and Shared.GetTime() < self.timeLastOnGround + 0.4) 
-end
-
 function Marine:SetFlashlightOn(state)
     self.flashlightOn = state
 end
@@ -445,7 +435,7 @@ end
 function Marine:GetMaxSpeed(possible)
 
     if possible then
-        return kRunMaxSpeed
+        return kRunMaxSpeed * self:GetInventorySpeedScalar()
     end
     
     if self:GetIsStunned() or self:GetIsDevoured() then
@@ -468,16 +458,19 @@ function Marine:GetMaxSpeed(possible)
     end
 
     // Take into account our weapon inventory and current weapon. Assumes a vanilla marine has a scalar of around .8.
-    local inventorySpeedScalar = self:GetInventorySpeedScalar()
     local useModifier = self.isUsing and 0.5 or 1
-    local adjustedMaxSpeed = maxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier() * inventorySpeedScalar * useModifier
+    local adjustedMaxSpeed = maxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier() * self:GetInventorySpeedScalar() * useModifier
     //Print("Adjusted max speed => %.2f (without inventory: %.2f)", adjustedMaxSpeed, adjustedMaxSpeed / inventorySpeedScalar )
     
     return adjustedMaxSpeed
 end
 
+function Marine:GetAcceleration()
+    return Player.GetAcceleration(self) * self:GetSlowSpeedModifier()
+end
+
 function Marine:GetFootstepSpeedScalar()
-    return Clamp(self:GetVelocityLength() / (kRunMaxSpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier()), 0, 1)
+    return Clamp(self:GetVelocityLength() / (self:GetMaxSpeed(true) * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier()), 0, 1)
 end
 
 // Maximum speed a player can move backwards

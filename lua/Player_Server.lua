@@ -373,9 +373,6 @@ function Player:CopyPlayerDataFrom(player)
     // This is a hack, CameraHolderMixin should be doing this.
     self.baseYaw = player.baseYaw
     
-    // MoveMixin fields.
-    self:SetGravityEnabled(player:GetGravityEnabled())
-    
     self.name = player.name
     self.clientIndex = player.clientIndex
     self.client = player.client

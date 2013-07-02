@@ -49,11 +49,10 @@ function SporesMixin:OnSecondaryAttack(player)
 
     if player:GetEnergy() >= self:GetSecondaryEnergyCost(player) and not self.primaryAttacking and not GetHasAttackDelay(self,player) then
         self:TriggerEffects("spores_attack")
-        self:TriggerEffects("spikes_attack")
         if Server then
             CreateSporeCloud(self, player)
-            self:GetParent():DeductAbilityEnergy(self:GetSecondaryEnergyCost())
         end
+        self:GetParent():DeductAbilityEnergy(self:GetSecondaryEnergyCost())
         self.lastSecondaryAttackTime = Shared.GetTime()
         self.secondaryAttacking = true
     else
@@ -94,8 +93,4 @@ end
 
 function SporesMixin:GetIsSecondaryBlocking()
     return false
-end
-
-function SporesMixin:OnClientSecondaryAttacking()
-    self:TriggerEffects("spikes_attack")
 end

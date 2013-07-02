@@ -209,7 +209,9 @@ function GUIAlienHUD:Initialize()
     self.upgrades[kTechId.Whip] = { }
     //self.upgrades[kTechId.Hive] = { }
     for i = 1, #kAlienUpgradeChambers do
-        self.upgrades[kAlienUpgradeChambers[i]][0] = 0
+        self.upgrades[kAlienUpgradeChambers[i]][4] = 0
+        self.upgrades[kAlienUpgradeChambers[i]][5] = kTechId.None
+        self.upgrades[kAlienUpgradeChambers[i]][6] = kTechId.None
         for j = 1, 3 do
             self.upgrades[kAlienUpgradeChambers[i]][j] = GetGUIManager():CreateGraphicItem()
             self.upgrades[kAlienUpgradeChambers[i]][j]:SetTexture(kUpgradesTexture)
@@ -836,10 +838,17 @@ function GUIAlienHUD:Update(deltaTime)
 
     if PlayerUI_GetIsPlaying() then
         for i = 1, #kAlienUpgradeChambers do
-            local chambers = 0
+            local chambers, hastech, upgrade, upgrades
             chambers = AlienUI_GetChamberCount(kAlienUpgradeChambers[i])
-            if self.upgrades[kAlienUpgradeChambers[i]][0] ~= chambers then
-                self:ShowUpgradeIcon(kAlienUpgradeChambers[i], chambers)
+            hastech = AlienBuy_GetHasTech(kAlienUpgradeRequirements[i])
+            upgrades = AlienUI_GetUpgradesForCategory(kAlienUpgradeRequirements[i])
+            for j = 1, #upgrades do
+                if AlienBuy_GetUpgradePurchased(upgrades[j]) then
+                    upgrade = upgrades[j]
+                end
+            end
+            if self.upgrades[kAlienUpgradeChambers[i]][4] ~= chambers or self.upgrades[kAlienUpgradeChambers[i]][5] ~= hastech or self.upgrades[kAlienUpgradeChambers[i]][6] ~= upgrade then
+                self:ShowUpgradeIcon(kAlienUpgradeChambers[i], chambers, hastech, upgrade)
             end
         end
     end
@@ -1052,15 +1061,25 @@ function GUIAlienHUD:ForceUnfade(unfadeItem)
     
 end
 
-function GUIAlienHUD:ShowUpgradeIcon(techId, count)
-	local textureCoords = GetTextureCoordinatesForIcon(techId, false)
-	if count ~= nil then
-		for i = 1, 3 do
-			self.upgrades[techId][i]:SetIsVisible(i <= count)
-			self.upgrades[techId][i]:SetTexturePixelCoordinates(unpack(textureCoords))
-		end
+function GUIAlienHUD:ShowUpgradeIcon(techId, count, hastech, upgrade)
+    local textureCoords
+    if upgrade ~= nil then
+	    textureCoords = GetTextureCoordinatesForIcon(upgrade, false)
+    else
+        textureCoords = GetTextureCoordinatesForIcon(techId, false)
 	end
-	self.upgrades[techId][0] = count
+    for i = 1, 3 do
+        if count == 0 and not hastech then 
+            self.upgrades[techId][i]:SetIsVisible(false)
+        else
+            self.upgrades[techId][i]:SetIsVisible(true)
+        end
+        self.upgrades[techId][i]:SetColor(ConditionalValue(i <= count, kAlienFontColor, Color(1, 0, 0, 1)))
+        self.upgrades[techId][i]:SetTexturePixelCoordinates(unpack(textureCoords))
+    end
+	self.upgrades[techId][4] = count
+    self.upgrades[techId][5] = hastech
+    self.upgrades[techId][6] = upgrade
 end
 
 local kHiveDamageAnimRate = 0.2

@@ -496,7 +496,7 @@ function Alien:OnCountDownEnd()
 end
 
 function Alien:GetPlayFootsteps()
-    return Player.GetPlayFootsteps(self) and not GetHasSilenceUpgrade(self) and not self:GetIsCloaked()
+    return Player.GetPlayFootsteps(self) and not GetHasSilenceUpgrade(self)
 end
 
 function Alien:GetFirstPersonHitEffectName()

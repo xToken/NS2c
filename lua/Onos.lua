@@ -44,9 +44,9 @@ local kMass = 453 // Half a ton
 local kViewOffsetHeight = 2.5
 local kMomentumEffectTriggerDiff = 3
 local kMaxSpeed = 4.5
-local kMaxChargeSpeed = 11
+local kMaxChargeSpeed = 10
 local kMaxWalkSpeed = 2
-local kChargeEnergyCost = 60
+local kChargeEnergyCost = 30
 local kChargeDelay = 0.1
 local kDefaultAttackSpeed = 1.1
 
@@ -133,7 +133,7 @@ function Onos:PreUpdateMove(input, runningPrediction)
 
     if self.charging then
         self:DeductAbilityEnergy(kChargeEnergyCost * input.time)
-        if self:GetEnergy() == 0 or self:GetIsJumping() or (self.timeLastCharge + 1 < Shared.GetTime() and self:GetVelocity():GetLengthXZ() < 4.5 ) then
+        if self:GetEnergy() == 0 or (self.timeLastCharge + 1 < Shared.GetTime() and self:GetVelocity():GetLengthXZ() < 4.5 ) then
             self:EndCharge()
         end
     end
@@ -167,7 +167,7 @@ end
 
 function Onos:TriggerCharge(move)
     
-    if not self.charging and self.timeLastChargeEnd + kChargeDelay < Shared.GetTime() and self:GetIsOnGround() and not self:GetCrouching() and not self:GetCrouched() and self:GetHasOneHive() then
+    if not self.charging and self.timeLastChargeEnd + kChargeDelay < Shared.GetTime() and not self:GetCrouching() and not self:GetCrouched() and self:GetHasOneHive() then
 
         self.charging = true
         self.timeLastCharge = Shared.GetTime()

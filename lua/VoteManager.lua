@@ -85,7 +85,15 @@ function VoteManager:PlayerVotesFor(playerId, target, time)
 end
 
 function VoteManager:GetVotePassed()
-    return table.count(self.playersVoted) >= self:GetNumVotesNeeded()
+	local target, votes
+	votes = 0
+    for i = 1, #self.playersTargets do
+        if votes == nil or votes < self.playersTargets[i].v then
+            target = self.playersTargets[i].t
+			votes = self.playersTargets[i].v
+        end
+    end
+    return votes >= self:GetNumVotesNeeded()
 end
 
 function VoteManager:GetNumVotesNeeded()
@@ -99,9 +107,11 @@ end
 
 function VoteManager:GetTarget()
     local target, votes
+	votes = 0
     for i = 1, #self.playersTargets do
         if votes == nil or votes < self.playersTargets[i].v then
             target = self.playersTargets[i].t
+			votes = self.playersTargets[i].v
         end
     end
     return target

@@ -12,6 +12,7 @@
 //Added classic upgrades and upgrade chamber levels
 
 kAlienUpgradeChambers = {kTechId.Crag, kTechId.Shift, kTechId.Shade, kTechId.Whip}
+kAlienUpgradeRequirements = {kTechId.CragHive, kTechId.ShiftHive, kTechId.ShadeHive, kTechId.WhipHive}
 
 function GetHasPrereqs(teamNumber, techId)
 

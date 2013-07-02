@@ -9,6 +9,8 @@
 // Set the name of the VM for debugging
 decoda_name = "Server"
 
+Script.Load("lua/PreLoadMod.lua")
+
 Script.Load("lua/Shared.lua")
 Script.Load("lua/MapEntityLoader.lua")
 Script.Load("lua/TechData.lua")
@@ -399,3 +401,5 @@ Event.Hook("MapPreLoad", OnMapPreLoad)
 Event.Hook("MapPostLoad", OnMapPostLoad)
 Event.Hook("MapLoadEntity", OnMapLoadEntity)
 Event.Hook("CanPlayerHearPlayer", OnCanPlayerHearPlayer)
+
+Script.Load("lua/PostLoadMod.lua")

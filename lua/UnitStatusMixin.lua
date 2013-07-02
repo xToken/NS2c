@@ -11,6 +11,7 @@
 
 kUnitStatus = enum({
     'None',
+    'Active',
     'Inactive',
     'Unpowered',
     'Dying',

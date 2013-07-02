@@ -113,12 +113,6 @@ function Smash:OnAttackEnd()
     self.primaryAttacking = false
 end
 
-function Smash:GetEffectParams(tableParams)
-
-    Ability.GetEffectParams(self, tableParams)
-    
-end
-
 function Smash:OnUpdateAnimationInput(modelMixin)
 
     local activityString = "none"

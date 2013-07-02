@@ -34,6 +34,7 @@ Gorge.kYExtents = 0.475
 
 local kMass = 80
 local kStartSlideForce = 1.5
+local kStartSlideSpeed = 7
 local kViewOffsetHeight = 0.6
 local kMaxSpeed = 3.8
 local kMaxSlideSpeed = 8
@@ -49,7 +50,7 @@ local networkVars =
 {
     bellyYaw = "private float",
     timeSlideEnd = "private time",
-    timeSlideStart = "private time",
+    startedSliding = "private boolean",
     sliding = "boolean"
 }
 
@@ -67,7 +68,7 @@ function Gorge:OnCreate()
     
     self.bellyYaw = 0
     self.timeSlideEnd = 0
-    self.timeSlideStart = 0
+    self.startedSliding = false
     self.sliding = false
     self.verticalVelocity = 0
 
@@ -185,31 +186,16 @@ local function UpdateGorgeSliding(self, input)
     if slidingDesired and not self.sliding and self.timeSlideEnd + kSlideCoolDown < Shared.GetTime() and self:GetIsOnGround() and self:GetEnergy() >= kBellySlideCost then
     
         self.sliding = true  
-        self.timeSlideStart = Shared.GetTime()
         self:DeductAbilityEnergy(kBellySlideCost)
         self:TriggerUncloak()
         self:PrimaryAttackEnd()
         self:SecondaryAttackEnd()
-        
-    
-        local pushDirection = GetNormalizedVectorXZ(self:GetViewCoords().zAxis)
-        local force = kStartSlideForce * self:GetMovementSpeedModifier()
-        local velocity = self:GetVelocity()
-        
-        local impulse = pushDirection * force
-
-        velocity.x = velocity.x * 0.5 + impulse.x
-        velocity.y = velocity.y * 0.5 + impulse.y
-        velocity.z = velocity.z * 0.5 + impulse.z
-        
-        self:SetVelocity(velocity)
         
     end
     
     if not slidingDesired and self.sliding then
     
         self.sliding = false
-        self.timeSlideStart = 0
         self.timeSlideEnd = Shared.GetTime()
     
     end
@@ -248,6 +234,48 @@ function Gorge:OnUpdatePoseParameters(viewModel)
     
 end
 
+function Gorge:ModifyVelocity(input, velocity, deltaTime)
+    
+    // Give a little push forward to make sliding useful
+    if self.startedSliding then
+    
+        if self:GetIsOnGround() then
+    
+            local pushDirection = GetNormalizedVectorXZ(self:GetViewCoords().zAxis)
+            
+            local currentSpeed = math.max(0, pushDirection:DotProduct(velocity))
+            
+            local addSpeed = math.max(0, kStartSlideSpeed - currentSpeed)
+            local impulse = pushDirection * addSpeed
+
+            velocity:Add(impulse)
+        
+        end
+        
+        self.startedSliding = false
+
+    end
+    
+    if self:GetIsBellySliding() then
+    
+        local currentSpeed = velocity:GetLengthXZ()
+        local prevY = velocity.y
+        velocity.y = 0  
+        
+        local addVelocity = self:GetViewCoords():TransformVector(input.move)
+        addVelocity.y = 0
+        addVelocity:Normalize()
+        addVelocity:Scale(deltaTime * 10)
+        
+        velocity:Add(addVelocity) 
+        velocity:Normalize()
+        velocity:Scale(currentSpeed)
+        velocity.y = prevY
+    
+    end
+    
+end
+
 function Gorge:GetMaxSpeed(possible)
     
     if possible then
@@ -255,10 +283,6 @@ function Gorge:GetMaxSpeed(possible)
     end
     
     local maxSpeed = kMaxSpeed
-    
-    if self:GetIsBellySliding() and self:GetIsOnGround() then
-        maxSpeed = (kMaxSlideSpeed - (Shared.GetTime() - self.timeSlideStart))
-    end
     
     if self:GetCrouched() and self:GetIsOnSurface() and not self:GetLandedRecently() then
         maxSpeed = kMaxWalkSpeed
@@ -308,6 +332,35 @@ function Gorge:GetDesiredAngles()
     end
     
     return desiredAngles
+
+end
+
+function Gorge:PostUpdateMove(input, runningPrediction)
+
+    if self:GetIsBellySliding() and self:GetIsOnGround() then
+    
+        local velocity = self:GetVelocity()
+    
+        local yTravel = self:GetOrigin().y - self.prevY
+        local xzSpeed = velocity:GetLengthXZ()
+        
+        xzSpeed = xzSpeed + yTravel * -4
+        
+        if xzSpeed < kMaxSlideSpeed or yTravel > 0 then
+        
+            local directionXZ = GetNormalizedVectorXZ(velocity)
+            directionXZ:Scale(xzSpeed)
+
+            velocity.x = directionXZ.x
+            velocity.z = directionXZ.z
+            
+            self:SetVelocity(velocity)
+            
+        end
+
+        self.verticalVelocity = yTravel / input.time
+    
+    end
 
 end
 

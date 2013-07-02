@@ -108,16 +108,13 @@ function LerkUmbra:OnTag(tagName)
         local player = self:GetParent()
         
         if player then  
-        
-            self:TriggerEffects("umbra_attack")
-            
-            if Server then
-                if player:GetEnergy() >= self:GetEnergyCost() then
+            if player:GetEnergy() >= self:GetEnergyCost() then
+                self:TriggerEffects("umbra_attack")
+                player:DeductAbilityEnergy(self:GetEnergyCost())
+                if Server then
                     CreateUmbraCloud(self, player)
-                    player:DeductAbilityEnergy(self:GetEnergyCost())
                 end
             end
-            
         end
         
     end
