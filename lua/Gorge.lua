@@ -335,6 +335,10 @@ function Gorge:GetDesiredAngles()
 
 end
 
+function Gorge:PreUpdateMove(input, runningPrediction)
+    self.prevY = self:GetOrigin().y
+end
+
 function Gorge:PostUpdateMove(input, runningPrediction)
 
     if self:GetIsBellySliding() and self:GetIsOnGround() then

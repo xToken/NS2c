@@ -30,7 +30,7 @@ CustomGroundMoveMixin.networkVars =
     jumpHandled = "private compensated boolean",
     timeOfLastJump = "private time",
     jumping = "private compensated boolean",
-    onLadder = "boolean",
+    onLadder = "private compensated boolean",
     crouching = "private compensated boolean",
     crouched = "private compensated boolean",
     timeOfCrouchChange = "compensated interpolated float (0 to 1 by 0.001)",
@@ -131,7 +131,7 @@ end
 
 function CustomGroundMoveMixin:GetIsOnGround()
     if self.OnGroundOverride then
-        return self:OnGroundOverride()
+        return self:OnGroundOverride(self.onGround)
     end
     return self.onGround
 end

@@ -24,8 +24,6 @@ local kJetpackEnd = PrecacheAsset("sound/NS2.fev/marine/common/jetpack_end")
 local kJetpackPickupSound = PrecacheAsset("sound/NS2.fev/marine/common/pickup_jetpack")
 local kJetpackLoop = PrecacheAsset("sound/NS2.fev/marine/common/jetpack_on")
 
-local kAnimLandSuffix = "_jetpack_land"
-
 if Server then
     Script.Load("lua/JetpackMarine_Server.lua")
 elseif Client then
@@ -38,6 +36,7 @@ local kVerticleThrust = 19
 local kJetpackAcceleration = 3.2 // Horizontal acceleration
 local kFlyMaxSpeed = 13.0 // NS1 jetpack is 2.9x running speed (walk: 192, jetpack: 576)
 local kJetpackTakeOffTime = .01
+local kAnimLandSuffix = "_jetpack_land"
 
 local networkVars =
 {
@@ -47,7 +46,7 @@ local networkVars =
     // If jetpack is currently active and affecting our movement. If active, use loss rate, if inactive use gain rate
     jetpacking = "boolean",
     // when we last changed state of jetpack
-    timeJetpackingChanged = "compensated time",
+    timeJetpackingChanged = "time",
     // amount of fuel when we last changed jetpacking state
     jetpackFuelOnChange = "float (0 to 1 by 0.01)",
     
@@ -118,10 +117,7 @@ function JetpackMarine:OnDestroy()
     self.equipmentId = Entity.invalidId
     self.jetpackLoopId = Entity.invalidId
     if Server then
-    
-        // The children have already been destroyed.
         self.jetpackLoop = nil
-        
     end
     
 end
@@ -161,7 +157,7 @@ function JetpackMarine:GetJetpack()
         end
         
     end
-    
+
     return Shared.GetEntity(self.equipmentId)
     
 end
@@ -182,15 +178,15 @@ function JetpackMarine:HasJetpackDelay()
     if (Shared.GetTime() - self.timeJetpackingChanged > kJetpackFuelReplenishDelay) then
         return false
     end
-    
     return true
 end
 
-function JetpackMarine:OnGroundOverride()
+function JetpackMarine:OnGroundOverride(onGround)
     if self:GetIsJetpacking() and self.timeJetpackingChanged ~= Shared.GetTime() then
         return false
+    else
+        return onGround
     end
-    return self:GetIsOnGround()
 end
 
 function JetpackMarine:HandleJetpackStart()
@@ -199,7 +195,7 @@ function JetpackMarine:HandleJetpackStart()
     self.jetpacking = true
     self.timeJetpackingChanged = Shared.GetTime()
     
-    self.startedFromGround = self:GetIsOnGround() or self:GetLastJumpTime() == Shared.GetTime()
+    self.startedFromGround = self:GetIsOnGround()
     
     local jetpack = self:GetJetpack()    
     if jetpack then
@@ -284,10 +280,10 @@ function JetpackMarine:UpdateJetpack(input)
 end
 
 function JetpackMarine:HandleButtons(input)
-
-    Marine.HandleButtons(self, input)
+   	self:UpdateJetpack(input)
+	Marine.HandleButtons(self, input)
     
-    self:UpdateJetpack(input)
+
     
 end
 
@@ -381,7 +377,9 @@ function JetpackMarine:UpdateJetpackMode()
 end
 
 function JetpackMarine:GetJetPackMode()
+
     return self.jetpackMode
+
 end
 
 function JetpackMarine:GetIsJetpacking()
@@ -389,10 +387,12 @@ function JetpackMarine:GetIsJetpacking()
 end
 
 function JetpackMarine:ProcessMoveOnModel(input)
+
     local jetpack = self:GetJetpack()
     if jetpack then
         jetpack:ProcessMoveOnModel(input)
     end
+    
 end
 
 function JetpackMarine:OnTag(tagName)

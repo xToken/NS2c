@@ -9,12 +9,23 @@
 //NS2c
 //Tweaks to drop weapon code, made keybind popup hidden under ShowHints client option
 
-local kFindWeaponRange = 1.5
+local kFindWeaponRange = 2
 local kIconUpdateRate = 0.5
+
+local function SortByValue(item1, item2)
+
+    local cost1 = HasMixin(item1, "Tech") and LookupTechData(item1:GetTechId(), kTechDataCostKey, 0) or 0
+    local cost2 = HasMixin(item2, "Tech") and LookupTechData(item2:GetTechId(), kTechDataCostKey, 0) or 0
+
+    return cost1 > cost2
+
+end
 
 local function FindNearbyWeapon(self, toPosition)
 
     local nearbyWeapons = GetEntitiesWithMixinWithinRange("Pickupable", toPosition, kFindWeaponRange)
+    table.sort(nearbyWeapons, SortByValue)
+    
     local closestWeapon = nil
     local closestDistance = Math.infinity
     for i, nearbyWeapon in ipairs(nearbyWeapons) do

@@ -47,7 +47,7 @@ kShowAsClass["MarineSpectator"] = { GUIRequestMenu = true }
 kShowAsClass["Alien"] = { GUIObjectiveDisplay = true, GUIProgressBar = true, GUIRequestMenu = true, GUIWaypoints = true, GUIAlienHUD = true,
                           GUIEggDisplay = true, GUIRegenerationFeedback = true }
 kShowAsClass["AlienSpectator"] = { GUIRequestMenu = true }
-kShowAsClass["Commander"] = { GUIOrders = true, GUIWaypoints = true }
+kShowAsClass["Commander"] = { GUICommanderOrders = true }
 kShowAsClass["MarineCommander"] = { GUISensorBlips = true, GUIDistressBeacon = true }
 kShowAsClass["AlienCommander"] = { GUIEggDisplay = true, GUICommanderPheromoneDisplay = true }
 kShowAsClass["ReadyRoomPlayer"] = { }

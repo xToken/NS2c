@@ -226,9 +226,6 @@
     <filename>Weapons\Marine\ExoWeaponHolder.lua</filename>
   </file>
   <file>
-    <filename>Weapons\Marine\ExoWeaponSlotMixin.lua</filename>
-  </file>
-  <file>
     <filename>Exosuit.lua</filename>
   </file>
   <file>
@@ -578,9 +575,6 @@
   </file>
   <file>
     <filename>PointGiverMixin.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\PredictedProjectile.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\PrimalScreamMixin.lua</filename>

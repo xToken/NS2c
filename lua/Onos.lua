@@ -254,14 +254,19 @@ function Onos:GetMass()
 end
 
 // Give dynamic camera motion to the player
-function Onos:OnUpdateCamera(deltaTime) 
-    local camOffsetHeight = 0
-    camOffsetHeight = -self:GetMaxViewOffsetHeight() * self:GetCrouchShrinkAmount() * self:GetCrouchAmount()
-    self:SetCameraYOffset(camOffsetHeight)
-end
+function Onos:PlayerCameraCoordsAdjustment(cameraCoords)
 
-function Onos:GetBaseAttackSpeed()
-    return kDefaultAttackSpeed
+    local camOffsetHeight = 0
+
+    if self:GetIsFirstPerson() then
+    
+        local camOffsetHeight = 0
+	    cameraCoords.origin.y = cameraCoords.origin.y - self:GetMaxViewOffsetHeight() * self:GetCrouchShrinkAmount() * self:GetCrouchAmount()
+
+    end
+
+    return cameraCoords
+
 end
 
 local kOnosEngageOffset = Vector(0, 1.3, 0)

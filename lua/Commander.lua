@@ -174,10 +174,7 @@ function Commander:HandleButtons(input)
     
     // Update to the current view angles.
     self:SetViewAngles(angles)
-    
-    // Update shift order drawing/queueing.
-    self.queuingOrders = (bit.band(input.commands, Move.MovementModifier) ~= 0)
-    
+
     // Check for commander cancel action. It is reset in the flash hook to make
     // sure it's recognized.
     if bit.band(input.commands, Move.Exit) ~= 0 then

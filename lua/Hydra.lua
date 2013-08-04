@@ -151,6 +151,8 @@ function Hydra:OnInitialized()
         
     end
     
+    self:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup)
+    
 end
 
 function Hydra:GetBarrelPoint()
@@ -210,7 +212,7 @@ function Hydra:GetReceivesStructuralDamage()
 end
 
 function Hydra:GetDamagedAlertId()
-    return kTechId.AlienAlertHydraUnderAttack
+    return kTechId.AlienAlertStructureUnderAttack
 end
 
 function Hydra:GetCanSleep()

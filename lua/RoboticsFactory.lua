@@ -150,10 +150,6 @@ function RoboticsFactory:GetReceivesStructuralDamage()
     return true
 end
 
-function RoboticsFactory:GetShowOrderLine()
-    return true
-end
-
 function RoboticsFactory:GetTechAllowed(techId, techNode, player)
 
     local allowed, canAfford = ScriptActor.GetTechAllowed(self, techId, techNode, player) 

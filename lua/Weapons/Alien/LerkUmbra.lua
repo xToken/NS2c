@@ -15,7 +15,7 @@ Script.Load("lua/Weapons/ClientWeaponEffectsMixin.lua")
 
 class 'LerkUmbra' (Ability)
 
-LerkUmbra.kMapName = "LerkUmbra"
+LerkUmbra.kMapName = "lerkumbra"
 
 local kRange = 17
 

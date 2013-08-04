@@ -916,7 +916,7 @@ end
 function GUICommanderButtons:ContainsPoint(pointX, pointY)
 
     // Check if the point is over any of the UI managed by the GUICommanderButtons.
-    local containsPoint = GUIItemContainsPoint(self.playerAlerts, pointX, pointY)
+    local containsPoint = (self.playerAlerts:GetIsVisible() and GUIItemContainsPoint(self.playerAlerts, pointX, pointY))
     containsPoint = containsPoint or (selectAllPlayers ~= nil and GUIItemContainsPoint(self.selectAllPlayers, pointX, pointY))
     return containsPoint or GUIItemContainsPoint(self.background, pointX, pointY)
     

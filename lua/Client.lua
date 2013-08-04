@@ -75,6 +75,13 @@ Client.destroyTrailCinematics = { }
 Client.worldMessages = { }
 Client.timeLimitedDecals = { }
 
+Client.timeOfLastPowerPoints = nil
+
+Client.serverHidden = false
+function Client.GetServerIsHidden()
+    return Client.serverHidden
+end
+
 Client.localClientIndex = nil
 function Client.GetLocalClientIndex()
     return Client.localClientIndex
@@ -782,9 +789,45 @@ local function UpdateFogAreaModifiers(fromOrigin)
     
 end
 
+local gShowDebugTrace = false
+function SetShowDebugTrace(value)
+    gShowDebugTrace = value
+end
+
+local kDebugTraceGUISize = Vector(40, 40, 0)
+local function UpdateDebugTrace()
+
+    if not debugTraceGUI then
+    
+        debugTraceGUI = GUI.CreateItem()
+        debugTraceGUI:SetSize(kDebugTraceGUISize)
+        debugTraceGUI:SetAnchor(GUIItem.Middle, GUIItem.Center)
+        debugTraceGUI:SetPosition(-kDebugTraceGUISize * 0.5)
+        
+    end
+
+    debugTraceGUI:SetIsVisible(gShowDebugTrace)
+    if gShowDebugTrace then
+    
+        local player = Client.GetLocalPlayer()
+        if player then
+            
+            local viewCoords = player:GetViewCoords()
+            local normalTrace = Shared.TraceRay(viewCoords.origin, viewCoords.origin + viewCoords.zAxis * 100, CollisionRep.Default, PhysicsMask.CystBuild, EntityFilterAll())
+            
+            local color = normalTrace.fraction == 1 and Color(1, 0, 0, 0.5) or Color(1,1,1,0.5)
+            debugTraceGUI:SetColor(color)
+        
+        end
+    
+    end
+
+end
+
 /**
  * Called once per frame to setup the camera for rendering the scene.
  */
+
 local function OnUpdateRender()
 
     Infestation_UpdateForPlayer()
@@ -858,6 +901,8 @@ local function OnUpdateRender()
         EquipmentOutline_SetEnabled( false )
         
     end
+    
+    UpdateDebugTrace()
     
 end
 
@@ -989,6 +1034,7 @@ local function SendAddBotCommands()
         local numAlienBots = Client.GetOptionInteger("botsSettings_numAlienBots", 0)
         local addMarineCom = Client.GetOptionBoolean("botsSettings_marineCom", false)
         local addAlienCom = Client.GetOptionBoolean("botsSettings_alienCom", false)
+        local marineSkill = Client.GetOptionString("botsSettings_marineSkillLevel", "Intermediate")
 
         if numMarineBots > 0 then
             Shared.ConsoleCommand( string.format("addbot %d 1", numMarineBots) )
@@ -1006,6 +1052,13 @@ local function SendAddBotCommands()
             Shared.ConsoleCommand("addbot 1 2 com")
         end
 
+        local skill2jitter =
+        {
+            Beginner = 1.2,
+            Intermediate = 0.8,
+            Expert = 0.4
+        }
+        Shared.ConsoleCommand(string.format("marinejitter %f", skill2jitter[marineSkill]))
     end
 
 end

@@ -126,6 +126,9 @@ function XenocideLeap:OnProcessMove(input)
                 local hitEntities = GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(player:GetTeamNumber()), player:GetOrigin(), kXenocideRange)
                 RadiusDamage(hitEntities, player:GetOrigin(), kXenocideRange, kXenocideDamage, self)
                 
+				
+
+				player:SetBypassRagdoll(true)
                 player:Kill()
                 
             end

@@ -378,6 +378,10 @@ function Commander:OnDestroy()
     
 end
 
+function Commander:GetCanSeeConstructIcon(ofEntity)
+    return true
+end
+
 function Commander:AddGhostGuide(origin, radius)
 
     local guide = nil
@@ -786,7 +790,7 @@ function Commander:SendAction(techId)
 
     //Print("Commander:SendAction(%s)", EnumToString(kTechId, techId))
     
-    local message = BuildCommActionMessage(techId)
+    local message = BuildCommActionMessage(techId, self.shiftDown)
     Client.SendNetworkMessage("CommAction", message, true)
     
 end
@@ -797,7 +801,7 @@ function Commander:SendTargetedAction(techId, normalizedPickRay, orientation, en
 
     local entityId = entity and entity:GetId() or Entity.invalidId
     local orientation = ConditionalValue(orientation, orientation, math.random() * 2 * math.pi)
-    local message = BuildCommTargetedActionMessage(techId, normalizedPickRay.x, normalizedPickRay.y, normalizedPickRay.z, orientation, entityId)
+    local message = BuildCommTargetedActionMessage(techId, normalizedPickRay.x, normalizedPickRay.y, normalizedPickRay.z, orientation, entityId, self.shiftDown)
     Client.SendNetworkMessage("CommTargetedAction", message, true)
     self.timeLastTargetedAction = Shared.GetTime()
     self:SetCurrentTech(kTechId.None)
@@ -813,7 +817,7 @@ function Commander:SendTargetedActionWorld(techId, worldCoords, orientation, ent
     //Print("Commander:SendTargetedActionWorld(%s)", EnumToString(kTechId, techId))
     
     local entityId = entity and entity:GetId() or Entity.invalidId
-    local message = BuildCommTargetedActionMessage(techId, worldCoords.x, worldCoords.y, worldCoords.z, ConditionalValue(orientation, orientation, 0), entityId)
+    local message = BuildCommTargetedActionMessage(techId, worldCoords.x, worldCoords.y, worldCoords.z, ConditionalValue(orientation, orientation, 0), entityId, self.shiftDown)
     Client.SendNetworkMessage("CommTargetedActionWorld", message, true)
     self:SetCurrentTech(kTechId.None)
     self.timeLastTargetedAction = Shared.GetTime()
@@ -854,17 +858,19 @@ end
 
 local function UpdateGhostStructureVisuals(self)
 
+    local coords = Coords(GetCommanderGhostStructureCoords())
+    local validCoords = coords:GetIsFinite()
+    
     local commSpecifyingOrientation = GetCommanderGhostStructureSpecifyingOrientation()
     
     local sentryRangeModel = ClientResources.GetResource("CommSentryRange")
-    sentryRangeModel:SetIsVisible(self.currentTechId == kTechId.Sentry and commSpecifyingOrientation)
-    
-    local coords = GetCommanderGhostStructureCoords()
+    sentryRangeModel:SetIsVisible(validCoords and self.currentTechId == kTechId.Sentry and commSpecifyingOrientation)
+    //ClientResources.GetResource("CommSentryBatteryLine"):SetIsVisible(validCoords and self.currentTechId == kTechId.SentryBattery)
     
     local displayOrientation = GetCommanderGhostStructureValid() and commSpecifyingOrientation
     local orientationModel = ClientResources.GetResource("CommSentryOrientation")
-    orientationModel:SetIsVisible(displayOrientation)
-    if displayOrientation then
+    orientationModel:SetIsVisible(validCoords and displayOrientation)
+    if validCoords and displayOrientation then
     
         coords:Scale(Commander.kSentryArcScale)
         coords.zAxis = -coords.zAxis
@@ -872,10 +878,13 @@ local function UpdateGhostStructureVisuals(self)
         
     end
     
-    if self.currentTechId == kTechId.Sentry then
+    if validCoords and self.currentTechId == kTechId.Sentry then
     
         coords.zAxis = coords.zAxis * Sentry.kRange
         sentryRangeModel:SetCoords(coords)
+        
+    //elseif validCoords and self.currentTechId == kTechId.SentryBattery then
+        //UpdateSentryBatteryLine(self, coords.origin)
     end
     
 end

@@ -173,6 +173,7 @@ function HandleHitEffect(position, doer, surface, target, showtracer, altMode, f
         target:OnTakeDamageClient(damage, doer, position)
     end
 
+    
     HandleImpactDecal(position, doer, surface, target, showtracer, altMode, damage, direction, tableParams)
 
 end
@@ -184,6 +185,10 @@ function GetCommanderForTeam(teamNumber)
         return commanders[1]
     end    
 
+end
+
+function GetPowerPointForLocation(locationName)   
+    return nil
 end
 
 function UpdateMenuTechId(teamNumber, selected)
@@ -1365,7 +1370,16 @@ function SetPlayerPoseParameters(player, viewModel, headAngles)
     local x = Math.DotProduct(headCoords.xAxis, velocity)
     local z = Math.DotProduct(headCoords.zAxis, velocity)
     
-    local moveYaw = Math.Wrap(Math.Degrees( math.atan2(z,x) ), -180, 180)
+    local moveYaw
+    
+    if player.OverrideGetMoveYaw then
+        moveYaw = player:OverrideGetMoveYaw()
+    end
+    
+    if not moveYaw then
+        moveYaw = Math.Wrap(Math.Degrees( math.atan2(z,x) ), -180, 180)
+    end
+    
     local speedScalar = velocity:GetLength() / player:GetMaxSpeed(true)
     
     player:SetPoseParam("move_yaw", moveYaw)
@@ -1847,7 +1861,6 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
     if not filter then
         filter = EntityFilterOne(player)
     end
-        
     local middleTrace,middleStart
     local target,endPoint,surface,startPoint
     
@@ -1889,6 +1902,7 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
 end
 
 local kNumMeleeZones = 3
+local kRangeMult = 0 // 0.15
 function PerformGradualMeleeAttack(weapon, player, damage, range, optionalCoords, altMode, filter)
 
     local didHit, target, endPoint, direction, surface
@@ -1898,6 +1912,7 @@ function PerformGradualMeleeAttack(weapon, player, damage, range, optionalCoords
     
     for i = 1, kNumMeleeZones do
     
+        local attackRange = range * (1 - (i-1) * kRangeMult)
         didHitNow, target, endPoint, direction, surface = CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, true, i * stepSize, nil, filter)
         didHit = didHit or didHitNow
         if target and didHitNow then
@@ -1905,9 +1920,7 @@ function PerformGradualMeleeAttack(weapon, player, damage, range, optionalCoords
             if target:isa("Player") then
                 damageMult = 1 - (i - 1) * stepSize
             end
-    
-            //damageMult = math.cos(damageMult * (math.pi / 2) + math.pi) + 1
-            //Print(ToString(damageMult))
+
             break
             
         end
@@ -1927,14 +1940,38 @@ end
  */
 function AttackMeleeCapsule(weapon, player, damage, range, optionalCoords, altMode, filter)
 
-    // Enable tracing on this capsule check, last argument.
-    local didHit, target, endPoint, direction, surface = CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, true, 1, nil, filter)
+    local targets = {}
+    local didHit, target, endPoint, direction, surface
     
-    if didHit then
-        weapon:DoDamage(damage, target, endPoint, direction, surface, altMode)
+    if not filter then
+        filter = EntityFilterTwo(player, weapon)
+    end
+
+    for i = 1, 20 do
+    
+        local traceFilter = function(test)
+            return EntityFilterList(targets)(test) or filter(test)
+        end
+    
+        // Enable tracing on this capsule check, last argument.
+        didHit, target, endPoint, direction, surface = CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, true, 1, nil, traceFilter)
+        local alreadyHitTarget = target ~= nil and table.contains(targets, target)
+
+        if didHit and not alreadyHitTarget then
+            weapon:DoDamage(damage, target, endPoint, direction, surface, altMode)
+        end
+        
+        if target and not alreadyHitTarget then
+            table.insert(targets, target)
+        end
+        
+        if not target or not HasMixin(target, "SoftTarget") then
+            break
+        end
+    
     end
     
-    return didHit, target, endPoint, surface
+    return didHit, targets[#targets], endPoint, surface
     
 end
 
@@ -2421,4 +2458,160 @@ function GetInstalledMapList()
     
     return mapNames, mapFiles
     
+end
+
+// TODO: move to Utility.lua
+
+function EntityFilterList(list)
+    return function(test) return table.contains(list, test) end
+end
+
+function GetBulletTargets(startPoint, endPoint, spreadDirection, bulletSize, filter)
+
+    local targets = {}
+    local hitPoints = {}
+    local trace
+    
+    for i = 1, 20 do
+    
+        local traceFilter = nil 
+        if filter then
+
+            traceFilter = function(test)
+                return EntityFilterList(targets)(test) or filter(test)
+            end
+        
+        else        
+            traceFilter = EntityFilterList(targets)        
+        end
+    
+        trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, traceFilter)
+        if not trace.entity then
+            local extents = GetDirectedExtentsForDiameter(spreadDirection, bulletSize)
+            trace = Shared.TraceBox(extents, startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, traceFilter)
+        end
+        
+        if trace.entity and not table.contains(targets, trace.entity) then
+        
+            table.insert(targets, trace.entity)
+            table.insert(hitPoints, trace.endPoint)
+            
+        end
+        
+        if (not trace.entity or not HasMixin(trace.entity, "SoftTarget")) or trace.fraction == 1 then
+            break
+        end
+    
+    end
+    
+    return targets, trace, hitPoints
+
+end
+
+local kAlienStructureMoveSound = PrecacheAsset("sound/NS2.fev/alien/infestation/build")
+function UpdateAlienStructureMove(self, deltaTime)
+
+    if Server then
+
+        local currentOrder = self:GetCurrentOrder()
+        if GetIsUnitActive(self) and currentOrder and currentOrder:GetType() == kTechId.Move then
+        
+            /*
+            if not self.timeLastShiftCheck or self.timeLastShiftCheck + 0.5 < Shared.GetTime() then
+                
+                self.shiftBoost = self:isa("Shift") or #GetEntitiesForTeamWithinRange("Shift", self:GetTeamNumber(), self:GetOrigin(), 8) > 0
+                self.timeLastShiftCheck = Shared.GetTime()
+            
+            end
+            */
+
+            local speed = self:GetMaxSpeed()
+            if self.shiftBoost then
+                speed = speed * kShiftStructurespeedScalar
+            end
+        
+            self:MoveToTarget(PhysicsMask.AIMovement, currentOrder:GetLocation(), speed, deltaTime)
+            
+            if self:IsTargetReached(currentOrder:GetLocation(), kAIMoveOrderCompleteDistance) then
+                self:CompletedCurrentOrder()
+                self.moving = false
+            else
+                self.moving = true            
+            end
+            
+        else
+            self.moving = false
+        end
+
+        if HasMixin(self, "Obstacle") then
+
+            if currentOrder and currentOrder:GetType() == kTechId.Move then
+                self:RemoveFromMesh()
+            elseif self.obstacleId == -1 then
+                self:AddToMesh()
+            end
+
+        end   
+
+    elseif Client then
+    
+        if self.clientMoving ~= self.moving then
+        
+            if self.moving then
+                Shared.PlaySound(self, kAlienStructureMoveSound, 1)
+            else
+                Shared.StopSound(self, kAlienStructureMoveSound)
+            end
+            
+            self.clientMoving = self.moving
+        
+        end
+        
+        if self.moving and (not self.timeLastDecalCreated or self.timeLastDecalCreated + 1.1 < Shared.GetTime() ) then
+        
+            self:TriggerEffects("structure_move")
+            self.timeLastDecalCreated = Shared.GetTime()
+        
+        end
+    
+    end
+
+end
+
+function GetCommanderLogoutAllowed()
+
+    return true
+    
+    /*
+
+    local gameState = kGameState.PreGame
+    local gameStateDuration = 0
+
+    if Server then   
+
+        local gamerules = GetGamerules()
+        if gamerules then
+        
+            gameState = gamerules:GetGameState()
+            gameStateDuration = gamerules:GetGameTimeChanged()
+        
+        end
+
+    else  
+    
+        local gameInfo = GetGameInfoEntity()
+        
+        if gameInfo then
+        
+            gameState = gameInfo:GetState()
+            gameStateDuration = math.max(0, Shared.GetTime() - gameInfo:GetStartTime())
+            
+        end
+
+    end
+
+    return ( gameState ~= kGameState.Countdown and gameState ~= kGameState.Started ) or gameStateDuration >= kCommanderMinTime
+    
+    */
+
 end

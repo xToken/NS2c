@@ -101,6 +101,7 @@ function UnitStatusMixin:GetUnitHint(forEntity)
     if HasMixin(self, "Tech") then
     
         local hintString = LookupTechData(self:GetTechId(), kTechDataHint, "")
+
         if self.OverrideHintString then
             hintString = self:OverrideHintString(hintString, forEntity)
         end
@@ -148,18 +149,17 @@ function UnitStatusMixin:GetActionName(forEntity)
     
         local researchingId = self:GetResearchingId()
         local displayName = LookupTechData(researchingId, kTechDataDisplayName, "")
-    
-        /*
-        // Override a couple special cases        
-        if researchingId == kTechId.AdvancedArmoryUpgrade or researchingId == kTechId.UpgradeRoboticsFactory or researchingId == kTechId.EvolveBombard then
-            displayName = "COMM_SEL_UPGRADING"
-        end
-        */
         
         return Locale.ResolveString(displayName)
         
     end
     
     return ""
+
+end
+
+function UnitStatusMixin:GetHasWelder(forEntity)
+
+    return not GetAreEnemies(forEntity, self) and HasMixin(self, "WeaponOwner") and self:GetWeapon(Welder.kMapName) ~= nil
 
 end

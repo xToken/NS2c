@@ -249,6 +249,9 @@ function ConstructMixin:Construct(elapsedTime, builder)
                     
                 end
                 
+                self.timeLastConstruct = Shared.GetTime()
+                self.underConstruction = true
+                
                 self.buildTime = newBuildTime
                 self.buildFraction = math.max(math.min((self.buildTime / timeToComplete), 1), 0)
                 
@@ -273,6 +276,13 @@ function ConstructMixin:Construct(elapsedTime, builder)
         success = true
         
     end
+    
+    if playAV then
+
+        local builderClassName = builder and builder:GetClassName()    
+        self:TriggerEffects("construct", {classname = self:GetClassName(), doer = builderClassName, isalien = GetIsAlienUnit(self)})
+        
+    end 
     
     return success, playAV
     
@@ -336,13 +346,6 @@ function ConstructMixin:OnUse(player, elapsedTime, useSuccessTable)
         
         if success then
 
-            if playAV then
-                self:TriggerEffects("construct", {classname = self:GetClassName(), isalien = GetIsAlienUnit(self)})
-            end
-            
-            self.timeLastConstruct = Shared.GetTime()
-            self.underConstruction = true
-            
             used = true
         
         end

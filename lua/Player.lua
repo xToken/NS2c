@@ -108,7 +108,7 @@ local kThinkInterval = .2
 
 //Movement Code Vars
 local kMaxAirVeer = 1.2
-local kGoldSrcAcceleration = 6.5
+local kGoldSrcAcceleration = 10
 local kGoldSrcAirAcceleration = 50
 local kGroundFriction = 4
 local kCrouchMaxSpeed = 2.2

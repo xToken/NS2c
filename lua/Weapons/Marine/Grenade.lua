@@ -18,36 +18,18 @@ class 'Grenade' (PredictedProjectile)
 Grenade.kMapName = "grenade"
 Grenade.kModelName = PrecacheAsset("models/marine/rifle/rifle_grenade.model")
 
-local kMinLifeTime = .7
+Grenade.kRadius = 0.17
 
-local kMinLifeTime = .7
+Grenade.kMinLifeTime = 0.15
+local kGrenadeCameraShakeDistance = 15
+local kGrenadeMinShakeIntensity = 0.02
+local kGrenadeMaxShakeIntensity = 0.13
 
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
-
--- Blow up after a time.
-local function UpdateLifetime(self)
-
-    // Grenades are created in predict movement, so in order to get the correct
-    // lifetime, we start counting our lifetime from the first UpdateLifetime rather than when
-    // we were created
-    if not self.endOfLife then
-        self.endOfLife = Shared.GetTime() + kGrenadeLifetime
-    end
-
-    if self.endOfLife <= Shared.GetTime() then
-    
-        self:Detonate(nil)
-        return false
-        
-    end
-    
-    return true
-    
-end
 
 function Grenade:OnCreate()
 
@@ -59,11 +41,8 @@ function Grenade:OnCreate()
     InitMixin(self, DamageMixin)
 	
 
-	if Server then
-    
-        self:AddTimedCallback(UpdateLifetime, 0.1)
-        self.endOfLife = nil
-        
+    if Server then    
+        self:AddTimedCallback(Grenade.Detonate, kGrenadeLifetime)        
     end
     
 end
@@ -146,17 +125,9 @@ if Server then
         self:TriggerEffects("grenade_explode", params)
         
         CreateExplosionDecals(self)
+        TriggerCameraShake(self, kGrenadeMinShakeIntensity, kGrenadeMaxShakeIntensity, kGrenadeCameraShakeDistance)
         
         DestroyEntity(self)
-        
-    end
-       
-    function Grenade:GetCanDetonate()
-    
-        if self.creationTime then
-            return self.creationTime + kMinLifeTime < Shared.GetTime()
-        end
-        return false
         
     end
     

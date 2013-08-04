@@ -44,8 +44,14 @@
 512
 /ns2c/marine/weapon/heavyarmor_pickup
 413
-/ns2c/marine/heavyarmor/run_step
-441
+/ns2c/marine/heavyarmor/run_step1
+440
+/ns2c/marine/heavyarmor/run_step2
+440
+/ns2c/marine/heavyarmor/run_step3
+440
+/ns2c/marine/heavyarmor/run_step4
+440
 /ns2c/marine/weapon/jetpack_pickup
 3930
 /ns2c/marine/weapon/pickup

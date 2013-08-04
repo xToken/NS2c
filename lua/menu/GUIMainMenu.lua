@@ -605,12 +605,12 @@ function GUIMainMenu:CreatePasswordPromptWindow()
     self.passwordForm = CreateMenuElement(passwordPromptWindow, "Form", false)
     self.passwordForm:SetCSSClass("passwordprompt")
     
-    local textinput = self.passwordForm:CreateFormElement(Form.kElementType.TextInput, "PASSWORD", Client.GetOptionString("serverPassword", ""))
+    local textinput = self.passwordForm:CreateFormElement(Form.kElementType.TextInput, "PASSWORD", "")
     textinput:SetCSSClass("serverpassword")    
     textinput:AddEventCallbacks({
         OnEscape = function(self)
             passwordPromptWindow:SetIsVisible(false) 
-        end 
+        end
     })
     
     local descriptionText = CreateMenuElement(passwordPromptWindow.titleBar, "Font", false)
@@ -2789,7 +2789,7 @@ end
 // Called when the options file is changed externally
 local function OnOptionsChanged()
 
-    if gMainMenu ~= nil then
+    if gMainMenu ~= nil and gMainMenu.optionElements then
         InitOptions(gMainMenu.optionElements)
     end
     

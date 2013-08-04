@@ -18,6 +18,25 @@ Script.Load("lua/VoiceOver.lua")
 Script.Load("lua/InsightNetworkMessages.lua")
 Script.Load("lua/SharedDecal.lua")
 
+local kCameraShakeMessage =
+{
+    intensity = "float (0 to 1 by 0.01)"
+}
+
+Shared.RegisterNetworkMessage("CameraShake", kCameraShakeMessage)
+
+function BuildCameraShakeMessage(intensity)
+    
+    local t = {}
+    t.intensity = intensity
+    return t
+
+end
+
+function ParseCameraShakeMessage(message)
+    return message.intensity
+end
+
 local kSelectUnitMessage =
 {
     teamNumber = "integer (0 to 4)",
@@ -496,21 +515,23 @@ end
 // Commander actions
 local kCommAction = 
 {
-    techId              = "enum kTechId"
+    techId = "enum kTechId",
+    shiftDown = "boolean"
 }
 
-function BuildCommActionMessage(techId)
+function BuildCommActionMessage(techId, shiftDown)
 
     local t = {}
     
     t.techId = techId
+    t.shiftDown = shiftDown == true
     
     return t
     
 end
 
 function ParseCommActionMessage(t)
-    return t.techId
+    return t.techId, t.shiftDown
 end
 
 local kCommTargetedAction = 
@@ -524,10 +545,12 @@ local kCommTargetedAction =
     z = "float",
     
     orientationRadians  = "angle (11 bits)",
-    targetId = "entityid"
+    targetId = "entityid",
+    
+    shiftDown = "boolean"
 }
 
-function BuildCommTargetedActionMessage(techId, x, y, z, orientationRadians, targetId)
+function BuildCommTargetedActionMessage(techId, x, y, z, orientationRadians, targetId, shiftDown)
 
     local t = {}
     
@@ -537,13 +560,14 @@ function BuildCommTargetedActionMessage(techId, x, y, z, orientationRadians, tar
     t.z = z
     t.orientationRadians = orientationRadians
     t.targetId = targetId
+    t.shiftDown = shiftDown == true
     
     return t
     
 end
 
 function ParseCommTargetedActionMessage(t)
-    return t.techId, Vector(t.x, t.y, t.z), t.orientationRadians, t.targetId
+    return t.techId, Vector(t.x, t.y, t.z), t.orientationRadians, t.targetId, t.shiftDown
 end
 
 local kGorgeBuildStructureMessage = 
@@ -1027,6 +1051,7 @@ Shared.RegisterNetworkMessage("SpectatePlayer", { entityId = "entityid"})
 Shared.RegisterNetworkMessage("SwitchFromFirstPersonSpectate", { mode = "enum kSpectatorMode" })
 Shared.RegisterNetworkMessage("SwitchFirstPersonSpectatePlayer", { forward = "boolean" })
 Shared.RegisterNetworkMessage("SetClientIndex", { clientIndex = "integer" })
+Shared.RegisterNetworkMessage("ServerHidden", { hidden = "boolean" })
 Shared.RegisterNetworkMessage("SetClientTeamNumber", { teamNumber = string.format("integer (-1 to %d)", kRandomTeamType) })
 Shared.RegisterNetworkMessage("WaitingForAutoTeamBalance", { waiting = "boolean" })
 Shared.RegisterNetworkMessage("SetTimeWaveSpawnEnds", { time = "time" })

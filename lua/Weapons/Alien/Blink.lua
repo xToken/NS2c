@@ -20,6 +20,7 @@ class 'Blink' (Ability)
 Blink.kMapName = "blink"
 
 local kEtherealForce = 8
+local kMinBlinkEffectTime = 0.75
 Blink.kMinEnterEtherealTime = 0.1
 Blink.kMinTimeBetweenEffects = 0.2
 
@@ -32,7 +33,8 @@ function Blink:OnCreate()
 
     Ability.OnCreate(self)
     self.lastblinktime = 0
-
+    self.lastblinkeffect = 0
+    
 end
 
 function Blink:OnHolster(player)
@@ -52,7 +54,10 @@ function Blink:GetSecondaryAttackRequiresPress()
 end
 
 function Blink:TriggerBlinkOutEffects(player)
-    self:TriggerEffects("blink_out")
+    if self.lastblinkeffect + kMinBlinkEffectTime < Shared.GetTime() then
+        self.lastblinkeffect = Shared.GetTime()
+        self:TriggerEffects("blink_out")
+    end
 end
 
 function Blink:TriggerBlinkInEffects(player)

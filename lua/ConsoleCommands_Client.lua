@@ -10,6 +10,50 @@
 //NS2c
 //Changed debugspeed to not require cheats
 
+local gShowingUncollideables = false
+local kMaterialName = "cinematics/vfx_materials/placement_invalid.material"
+local gRedMaterial = nil
+function OnCommandDebugCyst()
+    
+    local value = not gShowingUncollideables
+
+    if value and not gRedMaterial then
+    
+        gRedMaterial = Client.CreateRenderMaterial()
+        gRedMaterial:SetMaterial(kMaterialName)
+        gRedMaterial:SetParameter("edge", 0)
+        
+    end
+    
+    SetShowDebugTrace(value)
+
+    if Client.propList ~= nil then
+    
+        for index, models in ipairs(Client.propList) do
+        
+            if models[1] and not models[2] then
+            
+                if value then
+                    models[1]:AddMaterial(gRedMaterial)
+                else
+                    models[1]:RemoveMaterial(gRedMaterial)
+                end
+            
+            end
+            
+        end
+
+    end
+    
+    if value then
+        Shared.Message("Debug cyst enabled.")
+    else
+        Shared.Message("Debug cyst disabled.")
+    end
+
+end
+Event.Hook("Console_debugcyst", OnCommandDebugCyst)
+
 function OnCommandOnClientDisconnect(clientIndexString)
     Scoreboard_OnClientDisconnect(tonumber(clientIndexString))
 end

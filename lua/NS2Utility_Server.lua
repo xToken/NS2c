@@ -14,6 +14,17 @@
 Script.Load("lua/Table.lua")
 Script.Load("lua/Utility.lua")
 
+function OnCommanderLogOut(commander)
+/*
+    local client = Server.GetOwner(commander)
+    
+    local addTime = math.max(0, 60 - GetGamerules():GetGameTimeChanged())
+    
+    client.timeUntilResourceBlock = Shared.GetTime() + addTime + kCommanderResourceBlockTime
+    client.blockPersonalResources = true
+*/
+end
+
 function SetAlwaysRelevantToCommander(unit, relevant)
     
     local includeMask = 0
@@ -336,3 +347,46 @@ function GetPlayerFromUserId(userId)
     return nil
     
 end
+function ScaleWithPlayerCount(value, numPlayers, scaleUp)
+
+    // 6 is supposed to be ideal, in this case the value wont be modified
+    local factor = 1
+    
+    if scaleUp then
+        factor = math.max(6, numPlayers) / 6
+    else
+        factor = 6 / math.max(6, numPlayers)
+    end
+
+    return value * factor
+
+end
+
+function TriggerCameraShake(triggerinEnt, minIntensity, maxIntensity, range)
+
+    local players = GetEntitiesWithinRange("Player", triggerinEnt:GetOrigin(), range)
+    local owner = HasMixin(triggerinEnt, "Owner") and triggerinEnt:GetOwner()
+
+    if owner then
+    
+        table.removevalue(players, owner)
+        local shakeIntensity = (owner:GetOrigin() - triggerinEnt:GetOrigin()):GetLength() / (range*2)
+        shakeIntensity = 1 - Clamp(shakeIntensity, 0, 1)
+        shakeIntensity = minIntensity + shakeIntensity * (maxIntensity - minIntensity)
+        
+        owner:SetCameraShake(shakeIntensity)
+        
+    end
+    
+    for _, player in ipairs(players) do
+    
+        local shakeIntensity = (player:GetOrigin() - triggerinEnt:GetOrigin()):GetLength() / range
+        shakeIntensity = 1 - Clamp(shakeIntensity, 0, 1)
+        shakeIntensity = minIntensity + shakeIntensity * (maxIntensity - minIntensity)
+        
+        player:SetCameraShake(shakeIntensity)
+    
+    end
+
+end
+

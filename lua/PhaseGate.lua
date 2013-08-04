@@ -272,7 +272,7 @@ if Server then
      * there is a destination phase gate however.
      */
     local function GetCanPhase(self)
-        
+    
         if not self.deployed or not GetIsUnitActive(self) then
             return false
         end
@@ -450,6 +450,10 @@ function PhaseGate:GetUnitNameOverride(viewer)
 
     return unitName
 
+end
+
+function CheckSpaceForPhaseGate(techId, origin, normal, commander)
+    return GetHasRoomForCapsule(Vector(Player.kXZExtents, Player.kYExtents, Player.kXZExtents), origin + Vector(0, 0.1 + Player.kYExtents, 0), CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls)
 end
 
 Shared.LinkClassToMap("PhaseGate", PhaseGate.kMapName, networkVars)
