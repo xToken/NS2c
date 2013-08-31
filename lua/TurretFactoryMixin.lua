@@ -10,15 +10,7 @@ TurretFactoryMixin.expectedCallbacks =
 {
 }
 
-TurretFactoryMixin.networkVars =
-{
-    powering = "boolean"
-}
-
 function TurretFactoryMixin:__initmixin()
-
-    self.powering = true
-
     if Server then
         self.powerConsumerIds = {}
     end
@@ -81,11 +73,4 @@ if Server then
         ScanForUnPoweredTurrets(self)
     end
 
-end
-
-function TurretFactoryMixin:OnUpdateAnimationInput(modelMixin)
-
-    PROFILE("PowerSourceMixin:OnUpdateAnimationInput")
-    modelMixin:SetAnimationInput("powering", self.powering)
-    
 end

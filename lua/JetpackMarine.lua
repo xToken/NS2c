@@ -44,15 +44,13 @@ local networkVars =
     // time since change has the kJetpackFuelReplenishDelay subtracted if not jetpacking
     // jpFuel = Clamp(jetpackFuelOnChange + time since change * gain/loss rate, 0, 1)
     // If jetpack is currently active and affecting our movement. If active, use loss rate, if inactive use gain rate
-    jetpacking = "boolean",
+    jetpacking = "compensated boolean",
     // when we last changed state of jetpack
     timeJetpackingChanged = "time",
     // amount of fuel when we last changed jetpacking state
     jetpackFuelOnChange = "float (0 to 1 by 0.01)",
     
     startedFromGround = "boolean",
-    
-    jetpackFuelRate = "float(0 to 1 by 0.01)",
     
     equipmentId = "entityid",
     jetpackMode = "enum JetpackMarine.kJetpackMode",
@@ -72,9 +70,7 @@ end
 
 local function InitEquipment(self)
 
-    assert(Server)
-    
-    self.jetpackFuelRate = kJetpackUseFuelRate    
+    assert(Server)  
 
     self.jetpackFuelOnChange = 1
     self.timeJetpackingChanged = Shared.GetTime()
@@ -117,7 +113,10 @@ function JetpackMarine:OnDestroy()
     self.equipmentId = Entity.invalidId
     self.jetpackLoopId = Entity.invalidId
     if Server then
+    
+        // The children have already been destroyed.
         self.jetpackLoop = nil
+        
     end
     
 end
@@ -129,7 +128,7 @@ end
 function JetpackMarine:GetFuel()
 
     local dt = Shared.GetTime() - self.timeJetpackingChanged
-    local rate = -self.jetpackFuelRate
+    local rate = -kJetpackUseFuelRate
     if not self.jetpacking then
         rate = kJetpackReplenishFuelRate
         dt = math.max(0, dt - kJetpackFuelReplenishDelay)
@@ -421,4 +420,4 @@ function JetpackMarine:OnUpdateAnimationInput(modelMixin)
 
 end
 
-Shared.LinkClassToMap("JetpackMarine", JetpackMarine.kMapName, networkVars)
+Shared.LinkClassToMap("JetpackMarine", JetpackMarine.kMapName, networkVars, true)

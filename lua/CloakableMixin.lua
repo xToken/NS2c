@@ -21,8 +21,9 @@ CloakableMixin.kUncloakRate = 12
 CloakableMixin.kTriggerCloakDuration = .6
 CloakableMixin.kTriggerUncloakDuration = 2.5
 
-local kEnemyUncloakDistanceSquared = 1.5 ^ 2
 local kPlayerMaxCloak = 0.75
+
+local kEnemyUncloakDistanceSquared = 1.5 ^ 2
 
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/cloaked.surface_shader")
 
@@ -119,14 +120,14 @@ local function UpdateDesiredCloakFraction(self, deltaTime)
                 self.cloakingDesired = true
                 
                 if self:isa("Player") then
-                    self.cloakRate = self.GetUpgradeChambers and self:GetUpgradeChambers(kTechId.Shade) or 0
+                    self.cloakRate = GetShades(self:GetTeamNumber())
                 else
                     self.cloakRate = 3
                 end
                 
             end
             
-        end    
+        end
     
     end
     

@@ -8,6 +8,39 @@
 
 kGeneralEffectData = 
 {
+    pickup =
+    {
+        effects =
+        {
+            {sound = "sound/NS2.fev/marine/common/pickup_jetpack", classname = "Jetpack", done = true},
+            {sound = "sound/NS2.fev/marine/common/pickup_heavy", classname = "Exosuit", done = true},
+        }
+    },    
+
+    webbed = 
+    {
+        effects =
+        {
+            {player_sound = "sound/NS2.fev/alien/structures/generic_build"}
+        }
+    },
+
+	babbler_pheromone =
+    {
+        babblerPheromoneEffects =
+        {
+            {cinematic = "cinematics/alien/babbler/pheromone_trail.cinematic" },
+        }
+    },
+    
+    babbler_pheromone_puff =
+    {
+        babblerPheromonePuffEffects =
+        {
+            {cinematic = "cinematics/alien/babbler/pheromone_puff.cinematic" },
+        }
+    },
+
 	heal =
     {        
         healEffects =
@@ -59,6 +92,7 @@ kGeneralEffectData =
             {cinematic = "", classname = "WeaponAmmoPack", done = true},            
             {cinematic = "cinematics/marine/spawn_item.cinematic", classname = "AmmoPack", done = true},
             {cinematic = "cinematics/marine/spawn_item.cinematic", classname = "MedPack", done = true},
+            {cinematic = "cinematics/marine/spawn_item.cinematic", classname = "CatPack", done = true},
             {cinematic = "cinematics/marine/spawn_item.cinematic", classname = "Mine", done = true},
             
             {cinematic = "cinematics/marine/structures/spawn_building_big.cinematic", classname = "CommandStation", done = true},
@@ -97,6 +131,7 @@ kGeneralEffectData =
             {sound = "", classname = "WeaponAmmoPack", done = true},
             {sound = "sound/NS2.fev/marine/structures/generic_spawn", classname = "AmmoPack", done = true},
             {sound = "sound/NS2.fev/marine/structures/generic_spawn", classname = "MedPack", done = true},
+            {sound = "sound/NS2.fev/marine/structures/generic_spawn", classname = "CatPack", done = true},
             
             {sound = "sound/NS2.fev/marine/structures/generic_spawn", classname = "CommandStation", done = true},
             {sound = "sound/NS2.fev/marine/structures/generic_spawn", classname = "RoboticsFactory", done = true},
@@ -200,11 +235,7 @@ kGeneralEffectData =
             
             {parented_cinematic = "cinematics/alien/nutrientmist_hive.cinematic", classname = "Hive", done = true},
             {parented_cinematic = "cinematics/alien/nutrientmist_onos.cinematic", classname = "Onos", done = true},
-            {parented_cinematic = "cinematics/alien/nutrientmist_player.cinematic", classname = "Embryo", done = true},
-            {parented_cinematic = "cinematics/alien/nutrientmist_structure.cinematic", classname = "Structure", isalien = true, done = true},
-            
-            // Cinematic doesn't exist.
-            //{cinematic = "cinematics/marine/catalyst.cinematic", isalien = false},
+            {parented_cinematic = "cinematics/alien/nutrientmist_structure.cinematic", isalien = true, done = true},
         },
     },
     
@@ -230,64 +261,6 @@ kGeneralEffectData =
         },
 
     },
-
-    idle =
-    {
-        idleSounds =
-        {
-            {parented_sound = "sound/NS2.fev/marine/structures/armory_idle", classname = "Armory", done = true},
-            {parented_sound = "sound/NS2.fev/marine/structures/command_station_active", classname = "CommandStation", done = true},
-            {parented_sound = "sound/NS2.fev/marine/structures/extractor_active", classname = "Extractor", done = true},
-            {parented_sound = "sound/NS2.fev/marine/structures/infantry_portal_active", classname = "InfantryPortal", done = true},
-            {parented_sound = "sound/NS2.fev/marine/structures/phase_gate_active", classname = "PhaseGate", done = true},
-            {parented_sound = "sound/NS2.fev/marine/structures/arc/idle", classname = "ARC", done = true},
-            
-            {parented_sound = "sound/NS2.fev/alien/structures/hive_idle", classname = "Hive", done = true},
-            {parented_sound = "sound/NS2.fev/alien/structures/hydra/idle", classname = "Hydra", done = true},
-            {parented_sound = "sound/NS2.fev/alien/structures/crag/idle", classname = "Crag", done = true},
-            {parented_sound = "sound/NS2.fev/alien/structures/shade/idle", classname = "Shade", done = true},
-            {parented_sound = "sound/NS2.fev/alien/structures/shift/idle", classname = "Shift", done = true},
-            {parented_sound = "sound/NS2.fev/alien/structures/whip/idle", classname = "Whip", done = true},
-            {parented_sound = "sound/NS2.fev/alien/structures/harvester_active", classname = "Harvester", done = true},
-            
-            {parented_sound = "sound/NS2.fev/alien/skulk/idle", classname = "Skulk", done = true},
-            {parented_sound = "sound/NS2.fev/alien/gorge/idle", classname = "Gorge", done = true},
-            {parented_sound = "sound/NS2.fev/alien/lerk/idle", classname = "Lerk", done = true},
-            // No Fade idle sound in FMOD yet.
-            //{parented_sound = "sound/NS2.fev/alien/fade/idle", classname = "Fade", done = true},
-            {parented_sound = "sound/NS2.fev/alien/onos/idle", classname = "Onos", done = true},
-            
-        },
-    },
-    
-    idle_stop =
-    {
-        idleStopSounds =
-        {
-            
-            {stop_sound = "sound/NS2.fev/marine/structures/armory_idle", classname = "Armory", done = true},
-            {stop_sound = "sound/NS2.fev/marine/structures/command_station_active", classname = "CommandStation", done = true},
-            {stop_sound = "sound/NS2.fev/marine/structures/extractor_active", classname = "Extractor", done = true},
-            {stop_sound = "sound/NS2.fev/marine/structures/infantry_portal_active", classname = "InfantryPortal", done = true},
-            {stop_sound = "sound/NS2.fev/marine/structures/phase_gate_active", classname = "PhaseGate", done = true},
-            {stop_sound = "sound/NS2.fev/marine/structures/arc/idle", classname = "ARC", done = true},
-            
-            {stop_sound = "sound/NS2.fev/alien/structures/hive_idle", classname = "Hive", done = true},
-            {stop_sound = "sound/NS2.fev/alien/structures/hydra/idle", classname = "Hydra", done = true},
-            {stop_sound = "sound/NS2.fev/alien/structures/crag/idle", classname = "Crag", done = true},
-            {stop_sound = "sound/NS2.fev/alien/structures/shade/idle", classname = "Shade", done = true},
-            {stop_sound = "sound/NS2.fev/alien/structures/shift/idle", classname = "Shift", done = true},
-            {stop_sound = "sound/NS2.fev/alien/structures/whip/idle", classname = "Whip", done = true},
-            {stop_sound = "sound/NS2.fev/alien/structures/harvester_active", classname = "Harvester", done = true},
-            
-            {stop_sound = "sound/NS2.fev/alien/skulk/idle", classname = "Skulk", done = true},
-            {stop_sound = "sound/NS2.fev/alien/gorge/idle", classname = "Gorge", done = true},
-            {stop_sound = "sound/NS2.fev/alien/lerk/idle", classname = "Lerk", done = true},
-            //{stop_sound = "sound/NS2.fev/alien/fade/idle", classname = "Fade", done = true},
-            {stop_sound = "sound/NS2.fev/alien/onos/idle", classname = "Onos", done = true},
-            
-        }        
-    },    
     
     construct =
     {
@@ -308,7 +281,7 @@ kGeneralEffectData =
         destroySoundEffects = 
         {
             // Delete all parented or looping sounds and effects associated with this object
-            {stop_effects = "", classname = "Actor"},
+            {stop_effects = "", classname = "Entity"},
         },
     },
     
@@ -319,6 +292,13 @@ kGeneralEffectData =
         // Otherwise, effects are responsible for setting ragdoll/death time.
         generalDeathCinematicEffects =
         {
+            {cinematic = "cinematics/marine/exo/explosion.cinematic", classname = "Exo", done = true},
+            {cinematic = "cinematics/marine/exo/explosion.cinematic", classname = "Exosuit", done = true},
+            {cinematic = "cinematics/alien/skulk/explode.cinematic", classname = "Skulk", doer = "Railgun", done = true},
+            {cinematic = "cinematics/alien/gorge/explode.cinematic", classname = "Gorge", doer = "Railgun", done = true},
+            {cinematic = "cinematics/alien/lerk/explode.cinematic", classname = "Lerk", doer = "Railgun", done = true},
+            {cinematic = "cinematics/alien/fade/explode.cinematic", classname = "Fade", doer = "Railgun", done = true},
+            {cinematic = "cinematics/alien/onos/explode.cinematic", classname = "Onos", doer = "Railgun", done = true},
             // TODO: Substitute material properties?
             {cinematic = "cinematics/materials/%s/grenade_explosion.cinematic", classname = "Grenade", done = true},
             {cinematic = "cinematics/marine/arc/destroyed.cinematic", classname = "ARC", done = true},
@@ -326,7 +306,10 @@ kGeneralEffectData =
       
         // Play world sound instead of parented sound as entity is going away?
         deathSoundEffects = 
-        {            
+        {
+            {sound = "sound/NS2.fev/marine/structures/generic_death", classname = "Exo", done = true},
+            {sound = "sound/NS2.fev/marine/structures/generic_death", classname = "Exosuit", done = true},
+            
             {sound = "sound/NS2.fev/alien/skulk/bite_kill", doer = "BiteLeap"},
                         
             {stop_sound = "sound/NS2.fev/marine/structures/arc/fire", classname = "ARC"},
@@ -356,6 +339,10 @@ kGeneralEffectData =
         },
     },
     
+    infestation_grown =
+    {
+    },
+    
     res_received =
     {
         resReceivedEffects =
@@ -363,23 +350,9 @@ kGeneralEffectData =
             {private_sound = "sound/NS2.fev/alien/common/res_received", classname = "Alien", done = true},
             {private_sound = "sound/NS2.fev/alien/commander/res_received", classname = "Commander", isalien = true, done = true},
             {private_sound = "sound/NS2.fev/marine/commander/res_received", classname = "Commander", isalien = false,  done = true},            
-            // Marine
+            // Marine/Exo
             {private_sound = "sound/NS2.fev/marine/common/res_received", done = true},
 
-        },
-    },
-    
-    alien_move =
-    {
-        alienMoveEffects =
-        {
-            {sound = "", silenceupgrade = true, done = true},
-            //{sound = "sound/NS2.fev/alien/skulk/death", classname = "Skulk", done = true},
-            //{sound = "sound/NS2.fev/alien/gorge/death", classname = "Gorge", done = true},
-            //{sound = "sound/NS2.fev/alien/lerk/death", classname = "Lerk", done = true},            
-            {sound = "sound/ns2c.fev/ns2c/alien/fade/move", classname = "Fade", randsound = 1, done = true},
-            //{sound = "sound/NS2.fev/alien/onos/death", classname = "Onos", done = true},
-            {sound = "", done = true},
         },
     },
     
@@ -387,24 +360,29 @@ kGeneralEffectData =
     {
         completeOrderSound =
         {
-            {sound = "sound/NS2.fev/marine/voiceovers/complete"},
+            {sound = "sound/NS2.fev/marine/voiceovers/complete_female", sex = "female", done = true},
+            {sound = "sound/NS2.fev/marine/voiceovers/complete"}
         }
     },
     
-    babbler_pheromone =
+    destroydoor_front =
     {
-        babblerPheromoneEffects =
+        destroyDoorFrontEffects =
         {
-            {cinematic = "cinematics/alien/babbler/pheromone_trail.cinematic" },
+            {sound = "sound/NS2.fev/marine/structures/generic_death"},
+            {cinematic = "cinematics/destroydoor_front.cinematic"},    
         }
+    
     },
     
-    babbler_pheromone_puff =
+    destroydoor_back =
     {
-        babblerPheromonePuffEffects =
+        destroyDoorFrontEffects =
         {
-            {cinematic = "cinematics/alien/babbler/pheromone_puff.cinematic" },
+            {sound = "sound/NS2.fev/marine/structures/generic_death"},
+            {cinematic = "cinematics/destroydoor_back.cinematic"},    
         }
+    
     },
     
     victory =

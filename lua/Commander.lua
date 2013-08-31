@@ -90,13 +90,14 @@ AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(OverheadMoveMixin, networkVars)
 AddMixinNetworkVars(MinimapMoveMixin, networkVars)
 AddMixinNetworkVars(HotkeyMoveMixin, networkVars)
+AddMixinNetworkVars(ScoringMixin, networkVars)
 
 function Commander:OnCreate()
 
     Player.OnCreate(self)
     
     InitMixin(self, CameraHolderMixin, { kFov = Commander.kFov })
-    
+
 end
 
 function Commander:OnInitialized()
@@ -115,8 +116,7 @@ function Commander:OnInitialized()
     if Client then
     
         self.drawResearch = false
-        
-        // Start in build menu (more useful then command station menu)
+
         if self:GetIsLocalPlayer() then
             self:SetCurrentTech(kTechId.BuildMenu)
         end
@@ -217,7 +217,7 @@ end
 
 // Returns true if it set our position
 function Commander:ProcessNumberKeysMove(input, newPosition)
-    return setPosition
+    return false
 end
 
 local function DeleteHotkeyGroup(self, number)

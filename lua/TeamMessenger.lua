@@ -100,11 +100,13 @@ if Server then
      * Sends every player on the passed in team the passed in message for display.
      */
     function SendTeamMessage(team, messageType, optionalData)
+    
         local function SendToPlayer(player)
             Server.SendNetworkMessage(player, "TeamMessage", { type = messageType, data = optionalData or 0 }, true)
         end
         
-        team:ForEachPlayer(SendToPlayer)        
+        team:ForEachPlayer(SendToPlayer)
+        
     end
     
     /**

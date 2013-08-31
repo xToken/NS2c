@@ -9,6 +9,9 @@ Script.Load("lua/Utility.lua")
 
 kDevourEnabled = false
 
+kMaxPlayerSkill = 1000
+kMaxPlayerLevel = 100
+
 kDecalMaxLifetime = 60
 
 // All the layouts are based around this screen height.
@@ -147,22 +150,23 @@ kDisplayWeaponTime = 1.5
 kDeathMessageIcon = enum( { 'None', 
                             'Rifle', 'RifleButt', 'Pistol', 'Axe', 'Shotgun',
                             'Flamethrower', 'ARC', 'Grenade', 'Sentry', 'Welder',
-                            'Bite', 'HydraSpike', 'Spray', 'PrimalScream', 'Parasite',
+                            'Bite', 'HydraSpike', 'Spray', 'Spikes', 'Parasite',
                             'SporeCloud', 'Swipe', 'BuildAbility', 'Whip', 'BileBomb',
                             'Mine', 'Gore', 'Spit', 'Jetpack', 'Claw',
                             'HeavyMachineGun', 'Metabolize', 'LerkBite', 'Umbra', 
                             'Xenocide', 'Blink', 'Leap', 'Stomp',
-                            'Consumed', 'GL', 'Recycled', 'Babbler', 'Railgun', 'BabblerAbility', 'GorgeTunnel',
+                            'Consumed', 'GL', 'Recycled', 'Babbler', 'Railgun', 'BabblerAbility', 'GorgeTunnel', 'BoneShield',
+							'HandGrenade', 'GasGrenade', 'PulseGrenade', 'StabBlink',
                             } )
 
-kMinimapBlipType = enum( { 'Undefined', 'TechPoint', 'ResourcePoint', 'Scan',
-                           'Sentry', 'CommandStation', 'CommandStationL2', 'CommandStationL3',
-                           'Extractor', 'InfantryPortal', 'Armory', 'PhaseGate', 'Observatory',
-                           'RoboticsFactory', 'ArmsLab', 'PrototypeLab', 'PowerPack',
+kMinimapBlipType = enum( { 'Undefined', 'TechPoint', 'ResourcePoint', 'Scan', 'EtherealGate', 'HighlightWorld',
+                           'Sentry', 'CommandStation',
+                           'Extractor', 'InfantryPortal', 'Armory', 'AdvancedArmory', 'PhaseGate', 'Observatory',
+                           'RoboticsFactory', 'ArmsLab', 'PrototypeLab',
                            'Hive', 'Harvester', 'Hydra', 'Egg', 'Embryo', 'Crag', 'Whip', 'Shade', 'Shift', 'Shell', 'Veil', 'Spur', 'TunnelEntrance',
-                           'Marine', 'JetpackMarine', 'HeavyArmorMarine', 'Exo', 'Jetpack', 'Skulk', 'Lerk', 'Onos', 'Fade', 'Gorge',
+                           'Marine', 'JetpackMarine', 'HeavyArmorMarine', 'Skulk', 'Lerk', 'Onos', 'Fade', 'Gorge',
                            'Door', 'PowerPoint', 'DestroyedPowerPoint',
-                           'ARC', 'Drifter', 'MAC', 'Infestation', 'InfestationDying', 'MoveOrder', 'AttackOrder', 'BuildOrder', 'SensorBlip' } )
+                           'ARC', 'Drifter', 'MAC', 'Infestation', 'InfestationDying', 'MoveOrder', 'AttackOrder', 'BuildOrder', 'SensorBlip', 'SentryBattery' } )
 
 // Friendly IDs
 // 0 = friendly
@@ -185,9 +189,6 @@ kMaxStackLevel = 10
 
 kMaxEntityStringLength = 32
 kMaxAnimationStringLength = 32
-
-// Player modes. When outside the default player mode, input isn't processed from the player
-kPlayerMode = enum( {'Default', 'Taunt', 'Knockback', 'StandUp'} )
 
 // Team alert types
 kAlertType = enum( {'Attack', 'Info', 'Request'} )
@@ -250,7 +251,13 @@ kCommanderInvisibleVentsGroupName = "CommanderInvisibleVents"
 kCommanderNoBuildGroupName = "CommanderNoBuild"
 kCommanderBuildGroupName = "CommanderBuild"
 
+// invisible and blocks all movement
+kMovementCollisionGroupName = "MovementCollisionGeometry"
+// same as 'MovementCollisionGeometry'
 kCollisionGeometryGroupName = "CollisionGeometry"
+// invisible, blocks anything default geometry would block
+kInvisibleCollisionGroupName = "InvisibleGeometry"
+// visible and won't block anything
 kNonCollisionGeometryGroupName = "NonCollisionGeometry"
 
 kPathingLayerName = "Pathing"
@@ -282,6 +289,7 @@ kSoundOutputDeviceOptionsKey = "sound/output-device"
 kSoundVolumeOptionsKey = "soundVolume"
 kMusicVolumeOptionsKey = "musicVolume"
 kVoiceVolumeOptionsKey = "voiceVolume"
+kDisplayOptionsKey = "graphics/display/display"
 kWindowModeOptionsKey = "graphics/display/window-mode"
 kDisplayQualityOptionsKey = "graphics/display/quality"
 kInvertedMouseOptionsKey = "input/mouse/invert"
@@ -289,6 +297,7 @@ kLastServerConnected = "lastConnectedServer"
 kLastServerPassword  = "lastServerPassword"
 kLastServerMapName  = "lastServerMapName"
 
+kPhysicsGpuAccelerationKey = "physics/gpu-acceleration"
 kGraphicsXResolutionOptionsKey = "graphics/display/x-resolution"
 kGraphicsYResolutionOptionsKey = "graphics/display/y-resolution"
 kAntiAliasingOptionsKey = "graphics/display/anti-aliasing"

@@ -75,7 +75,7 @@ function GUIDeathScreen:Update(deltaTime)
     
     if isDead ~= self.lastIsDead then
     
-        -- Check for the killer name as it will be nil if it hasn't been received yet.
+        // Check for the killer name as it will be nil if it hasn't been received yet.
         local killerName = nil
         local weaponIconIndex = nil
         if isDead then

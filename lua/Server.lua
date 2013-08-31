@@ -29,6 +29,7 @@ Script.Load("lua/VotingRandomizeRR.lua")
 
 Script.Load("lua/ServerConfig.lua")
 Script.Load("lua/ServerAdmin.lua")
+Script.Load("lua/TournamentMode.lua")
 Script.Load("lua/ServerAdminCommands.lua")
 Script.Load("lua/ServerWebInterface.lua")
 Script.Load("lua/MapCycle.lua")
@@ -58,6 +59,11 @@ Server.mapPostLoadEntities = table.array(32)
 // Recent chat messages are stored on the server.
 Server.recentChatMessages = CreateRingBuffer(20)
 local chatMessageCount = 0
+
+local reservedSlots = Server.GetConfigSetting("reserved_slots")
+if reservedSlots and reservedSlots.amount > 0 then
+    SetReservedSlotAmount(reservedSlots.amount)
+end
 
 function Server.AddChatToHistory(message, playerName, steamId, teamNumber, teamOnly)
 
@@ -264,6 +270,8 @@ end
 function OnMapPreLoad()
 
     Shared.PreLoadSetGroupNeverVisible(kCollisionGeometryGroupName)
+    Shared.PreLoadSetGroupNeverVisible(kMovementCollisionGroupName)
+    Shared.PreLoadSetGroupNeverVisible(kInvisibleCollisionGroupName)
     Shared.PreLoadSetGroupPhysicsId(kNonCollisionGeometryGroupName, 0)
     
     Shared.PreLoadSetGroupNeverVisible(kCommanderBuildGroupName)   
@@ -276,6 +284,7 @@ function OnMapPreLoad()
     
     // Don't have bullets collide with collision geometry
     Shared.PreLoadSetGroupPhysicsId(kCollisionGeometryGroupName, PhysicsGroup.CollisionGeometryGroup)
+    Shared.PreLoadSetGroupPhysicsId(kMovementCollisionGroupName, PhysicsGroup.CollisionGeometryGroup)
     
     // Pathing mesh
     Shared.PreLoadSetGroupNeverVisible(kPathingLayerName)
@@ -396,6 +405,42 @@ end
 local function OnCanPlayerHearPlayer(listener, speaker)
     return GetGamerules():GetCanPlayerHearPlayer(listener, speaker)
 end
+
+/**
+ * The reserved slot system allows players marked as reserved players to join while
+ * all non-reserved slots are taken and the server is not full.
+ */
+local function OnCheckConnectionAllowed(userId)
+
+    local reservedSlots = Server.GetConfigSetting("reserved_slots")
+    
+    if not reservedSlots or not reservedSlots.amount or not reservedSlots.ids then
+        return true
+    end
+    
+    local newPlayerIsReserved = false
+    for name, id in pairs(reservedSlots.ids) do
+    
+        if id == userId then
+        
+            newPlayerIsReserved = true
+            break
+            
+        end
+        
+    end
+    
+    local numPlayers = Server.GetNumPlayers()
+    local maxPlayers = Server.GetMaxPlayers()
+    
+    if (numPlayers < (maxPlayers - reservedSlots.amount)) or (newPlayerIsReserved and (numPlayers < maxPlayers)) then
+        return true
+    end
+    
+    return false
+    
+end
+Event.Hook("CheckConnectionAllowed", OnCheckConnectionAllowed)
 
 Event.Hook("MapPreLoad", OnMapPreLoad)
 Event.Hook("MapPostLoad", OnMapPostLoad)

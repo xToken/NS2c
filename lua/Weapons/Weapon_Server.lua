@@ -12,7 +12,8 @@ function Weapon:OnInitialized()
 
     ScriptActor.OnInitialized(self)
     
-    self:SetWeaponWorldState(true)
+    self:SetWeaponWorldState(true, true)
+    self:SetRelevancy(false)
     
 end
 
@@ -40,7 +41,7 @@ function Weapon:Dropped(prevOwner)
 end
 
 // Set to true for being a world weapon, false for when it's carried by a player
-function Weapon:SetWeaponWorldState(state)
+function Weapon:SetWeaponWorldState(state, preventExpiration)
 
     if state ~= self.weaponWorldState then
     
@@ -56,10 +57,15 @@ function Weapon:SetWeaponWorldState(state)
                 self.physicsModel:SetCCDEnabled(true)
             end
             
-            self.weaponWorldStateTime = Shared.GetTime()
-            if self:GetTeam().RegisterDroppedWeapon then
-                self:GetTeam():RegisterDroppedWeapon(self:GetId())
-            end
+			if not preventExpiration then
+            	self.weaponWorldStateTime = Shared.GetTime()
+            	if self:GetTeam().RegisterDroppedWeapon then
+	                self:GetTeam():RegisterDroppedWeapon(self:GetId())
+            	end
+            else
+                self.preventExpiration = true
+			end
+
             self:SetIsVisible(true)
             
         else

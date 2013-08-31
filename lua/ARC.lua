@@ -38,6 +38,7 @@ Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/TurretMixin.lua")
+Script.Load("lua/IdleMixin.lua")
 
 class 'ARC' (ScriptActor)
 
@@ -63,8 +64,11 @@ ARC.kBarrelMoveRate         = 150
 ARC.kMaxPitch               = 45
 ARC.kMaxYaw                 = 180
 ARC.kDeployAnimationTime    = 4
+ARC.kCapsuleHeight = .05
+ARC.kCapsuleRadius = .5
 
-ARC.kMode = enum( {'Stationary', 'Targeting', 'Destroyed'} )
+ARC.kMode = enum( {'Stationary', 'Moving', 'Targeting', 'Destroyed'} )
+
 ARC.kDeployMode = enum( { 'Undeploying', 'Undeployed', 'Deploying', 'Deployed' } )
 
 if Server then
@@ -74,18 +78,14 @@ end
 local networkVars =
 {
     // ARCs can only fire when deployed and can only move when not deployed
-    mode            = "enum ARC.kMode",
-    deployMode      = "enum ARC.kDeployMode",
+    mode = "enum ARC.kMode",
+    deployMode = "enum ARC.kDeployMode",
     
-    barrelYawDegrees            = "compensated float",
-    barrelPitchDegrees          = "compensated float",
+    barrelYawDegrees = "compensated float",
+    barrelPitchDegrees = "compensated float",
     
-    // pose parameters for forward track (should be compensated??)
-    forwardTrackYawDegrees        = "float",
-    forwardTrackPitchDegrees      = "float",
-    deploytime                  = "private time",
     // So we can update angles and pose parameters smoothly on client
-    targetDirection             = "vector"
+    targetDirection = "vector",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -95,15 +95,16 @@ AddMixinNetworkVars(UpgradableMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
-AddMixinNetworkVars(ResearchMixin, networkVars)
-AddMixinNetworkVars(RecycleMixin, networkVars)
-AddMixinNetworkVars(TurretMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
+AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
-AddMixinNetworkVars(SelectableMixin, networkVars)
+AddMixinNetworkVars(ResearchMixin, networkVars)
+AddMixinNetworkVars(RecycleMixin, networkVars)
+AddMixinNetworkVars(TurretMixin, networkVars)
+AddMixinNetworkVars(IdleMixin, networkVars)
 
 function ARC:OnCreate()
 
@@ -116,9 +117,6 @@ function ARC:OnCreate()
     InitMixin(self, UpgradableMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, FlinchMixin)
-    InitMixin(self, ResearchMixin)
-    InitMixin(self, RecycleMixin)
-    InitMixin(self, TurretMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
     InitMixin(self, SelectableMixin)
@@ -129,21 +127,26 @@ function ARC:OnCreate()
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, GhostStructureMixin)
-    
+    InitMixin(self, ResearchMixin)
+    InitMixin(self, RecycleMixin)
+    InitMixin(self, TurretMixin)
+
     if Server then
         InitMixin(self, SleeperMixin)
-        
     elseif Client then
         InitMixin(self, CommanderGlowMixin)
     end
     
     self:SetLagCompensated(true)
+    
 end
 
 function ARC:OnInitialized()
 
-    ScriptActor.OnInitialized(self) 
-    InitMixin(self, WeldableMixin) 
+    ScriptActor.OnInitialized(self)
+    
+    InitMixin(self, WeldableMixin)
+
     self:SetModel(ARC.kModelName, kAnimationGraph)
     
     if Server then
@@ -161,24 +164,31 @@ function ARC:OnInitialized()
 
         
         self:SetPhysicsType(PhysicsType.Kinematic)
+        
+        // Cannons start out mobile
+        self:SetMode(ARC.kMode.Stationary)
         // This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end
-        self:SetMode(ARC.kMode.Stationary)
     elseif Client then
+    
         self.lastModeClient = self.mode
         InitMixin(self, UnitStatusMixin)
+    
     end
+    
+    InitMixin(self, IdleMixin)
+    
     self.deployMode = ARC.kDeployMode.Undeployed
     self.deploytime = 0
     self.active = true
     self:SetUpdates(true)
+    
 end
 
-local kARCHealthbarOffset = Vector(0, 0.7, 0)
 function ARC:GetHealthbarOffset()
-    return kARCHealthbarOffset
+    return 0.7
 end 
 
 function ARC:GetIsIdle()
@@ -213,30 +223,29 @@ function ARC:GetEyePos()
 end
 
 function ARC:OnPowerOn()
-
     self.deployMode = ARC.kDeployMode.Deploying
     self:TriggerEffects("arc_deploying")
     self.deploytime = Shared.GetTime()
-    //Print("POWERON")
     self.active = true
 end
 
 function ARC:OnPowerOff()
-
     if self:GetTarget() ~= nil then
         self:CompletedCurrentOrder()
     end
     self.deploytime = 0
     self.active = false
-    //Print("POWEROFF")
     self.deployMode = ARC.kDeployMode.Undeploying
     self:TriggerEffects("arc_stop_charge")
     self:TriggerEffects("arc_undeploying")
-    
 end
 
 function ARC:PerformActivation(techId, position, normal, commander)
     return false, true
+end
+
+function ARC:GetPlayIdleSound()
+    return self.deployMode == ARC.kDeployMode.Deployed and self:GetTarget() == nil
 end
 
 function ARC:GetActivationTechAllowed(techId)
@@ -268,7 +277,7 @@ function ARC:GetFov()
 end
 
 function ARC:GetEffectParams(tableParams)
-    tableParams[kEffectFilterDeployed] = self:GetInAttackMode() 
+    tableParams[kEffectFilterDeployed] = self:GetInAttackMode()
 end
 
 function ARC:FilterTarget()
@@ -371,8 +380,6 @@ function ARC:OnUpdatePoseParameters()
     
     self:SetPoseParam(kArcPitchParam, self.barrelPitchDegrees)
     self:SetPoseParam(kArcYawParam , self.barrelYawDegrees)
-    //self:SetPoseParam(ARC.kArcForwardTrackYawParam , self.forwardTrackYawDegrees)
-    //self:SetPoseParam(ARC.kArcForwardTrackPitchParam , self.forwardTrackPitchDegrees)
     
 end
 
@@ -383,17 +390,16 @@ function ARC:OnUpdate(deltaTime)
     ScriptActor.OnUpdate(self, deltaTime)
     
     if Server then
+    
         self:UpdateOrders(deltaTime)
         if self.deploytime ~= 0 and self.deploytime + ARC.kDeployAnimationTime < Shared.GetTime() and self:GetIsAlive() and self:GetIsPowered() and self.deployMode == ARC.kDeployMode.Deploying then
             self.deploytime = 0
             self:ForceDeployed()
-            //Print("FORCEDEPLOYED")
         end
         if self.deployMode == ARC.kDeployMode.Undeployed and self:GetIsPowered() then
             self.deployMode = ARC.kDeployMode.Deploying
             self:TriggerEffects("arc_deploying")
             self.deploytime = Shared.GetTime()
-            //Print("FORCEDEPLOYED2")
         end
     end
     
@@ -434,6 +440,16 @@ function ARC:OnKill(attacker, doer, point, direction)
         
     end 
   
+end
+
+function ARC:GetVisualRadius()
+    
+    if self.mode == ARC.kMode.Stationary or self.mode == ARC.kMode.Moving then
+        return nil
+    end
+    
+    return ScriptActor.GetVisualRadius(self)
+    
 end
 
 function ARC:OnUpdateAnimationInput(modelMixin)

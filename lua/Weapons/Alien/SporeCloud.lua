@@ -27,9 +27,7 @@ SporeCloud.kMaxRange = 20
 SporeCloud.kThinkTime = 0.5
 SporeCloud.kTravelSpeed = 60 // meters per second
 
-local networkVars =
-{
-}
+local networkVars = { }
 
 function SporeCloud:OnCreate()
 

@@ -24,7 +24,6 @@ Script.Load("lua/RecycleMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
-Script.Load("lua/ParasiteMixin.lua")
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
@@ -32,8 +31,11 @@ Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
+Script.Load("lua/IdleMixin.lua")
+Script.Load("lua/ParasiteMixin.lua")
 
 class 'InfantryPortal' (ScriptActor)
 
@@ -55,8 +57,6 @@ InfantryPortal.kAnimSpinStart = "spin_start"
 InfantryPortal.kAnimSpinContinuous = "spin"
 
 InfantryPortal.kUnderAttackSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/base_under_attack")
-
-InfantryPortal.kLoopSound = PrecacheAsset("sound/NS2.fev/marine/structures/infantry_portal_active")
 InfantryPortal.kIdleLightEffect = PrecacheAsset("cinematics/marine/infantryportal/idle_light.cinematic")
 
 InfantryPortal.kTransponderUseTime = .5
@@ -88,8 +88,9 @@ AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
-AddMixinNetworkVars(ParasiteMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
+AddMixinNetworkVars(IdleMixin, networkVars)
+AddMixinNetworkVars(ParasiteMixin, networkVars)
 
 local function CreateSpinEffect(self)
 
@@ -169,6 +170,7 @@ function InfantryPortal:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, DetectableMixin)
+    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
     if Client then
@@ -233,6 +235,8 @@ function InfantryPortal:OnInitialized()
     elseif Client then
         InitMixin(self, UnitStatusMixin)
     end
+    
+    InitMixin(self, IdleMixin)
     
 end
 
@@ -461,7 +465,6 @@ function InfantryPortal:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("InfantryPortal:OnUpdateAnimationInput")
     modelMixin:SetAnimationInput("spawning", self.queuedPlayerId ~= Entity.invalidId)
-	modelMixin:SetAnimationInput("powered", true)
     
 end
 
@@ -547,9 +550,8 @@ function InfantryPortal:GetTechButtons()
              kTechId.None, kTechId.None, kTechId.None, kTechId.None,  }
 end
 
-local kInfantryPortalHealthbarOffset = Vector(0, 0.5, 0)
 function InfantryPortal:GetHealthbarOffset()
-    return kInfantryPortalHealthbarOffset
+    return 0.5
 end 
 
 Shared.LinkClassToMap("InfantryPortal", InfantryPortal.kMapName, networkVars, true)

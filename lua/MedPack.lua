@@ -20,11 +20,7 @@ MedPack.kMapName = "medpack"
 MedPack.kModelName = PrecacheAsset("models/marine/medpack/medpack.model")
 MedPack.kHealthSound = PrecacheAsset("sound/NS2.fev/marine/common/health")
 
-MedPack.kHealth = 50
-
-local networkVars =
-{
-}
+local networkVars = { }
 
 function MedPack:OnInitialized()
 
@@ -40,7 +36,7 @@ end
 
 function MedPack:OnTouch(recipient)
 
-    recipient:AddHealth(MedPack.kHealth, false, true)
+    recipient:AddHealth(kHealthPerMedpack, false, true)
 
     StartSoundEffectAtOrigin(MedPack.kHealthSound, self:GetOrigin())
     
@@ -49,8 +45,8 @@ function MedPack:OnTouch(recipient)
 end
 
 function MedPack:GetIsValidRecipient(recipient)
-    return not GetIsVortexed(recipient) and recipient:GetHealth() < recipient:GetMaxHealth() and recipient:GetIsAlive()
+    return not GetIsVortexed(recipient) and recipient:GetHealth() < recipient:GetMaxHealth() and recipient:GetIsAlive() and (not HasMixin(self, "Devourable") or not self:GetIsDevoured())
 end
 
 
-Shared.LinkClassToMap("MedPack", MedPack.kMapName, networkVars, false)
+Shared.LinkClassToMap("MedPack", MedPack.kMapName, networkVars)

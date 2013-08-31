@@ -58,6 +58,10 @@ function Ability:GetHasAttackDelay(self, player)
     
 end
 
+function Ability:GetAbilityUsesFocus()
+    return false
+end
+
 // return array of player energy (0-1), ability energy cost (0-1), techId, visibility and hud slot
 function Ability:GetInterfaceData(secondary, inactive)
 
@@ -123,10 +127,6 @@ function Ability:PerformSecondaryAttack(player)
     return false
 end
 
-function Ability:GetAbilityUsesFocus()
-    return false
-end
-
 // Child class should override if preventing the primary attack is needed.
 function Ability:GetPrimaryAttackAllowed()
     return true
@@ -181,11 +181,13 @@ function Ability:GetEffectParams(tableParams)
 
     local player = self:GetParent()
     if player and tableParams[kEffectFilterSilenceUpgrade] == nil then
-        local upg, level = GetHasSilenceUpgrade(player)
-        if level == 3 then
-            tableParams[kEffectFilterSilenceUpgrade] = upg
+        local hasupg, level = GetHasSilenceUpgrade(player)
+        if hasupg then
+            if level == 3 then
+                tableParams[kEffectFilterSilenceUpgrade] = true
+            end
+            tableParams[kEffectParamVolume] = 1 - Clamp(level / 3, 0, 1)
         end
-        tableParams[kEffectParamVolume] = 1 - Clamp(level / 3, 0, 1)
     end
     
 end

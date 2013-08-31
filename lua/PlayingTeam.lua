@@ -81,7 +81,6 @@ function PlayingTeam:Initialize(teamName, teamNumber)
 
     self.eventListeners = {}
 
-
 end
 
 function PlayingTeam:AddListener( event, func )
@@ -246,9 +245,11 @@ function PlayingTeam:InitTechTree()
     // Orders
     self.techTree:AddOrder(kTechId.Default)
     self.techTree:AddOrder(kTechId.Move)
+    self.techTree:AddOrder(kTechId.Patrol)
     self.techTree:AddOrder(kTechId.Attack)
     self.techTree:AddOrder(kTechId.Build)
     self.techTree:AddOrder(kTechId.Construct)
+    self.techTree:AddOrder(kTechId.AutoConstruct)
     
     self.techTree:AddAction(kTechId.Cancel)
     
@@ -470,33 +471,21 @@ function PlayingTeam:SetTeamResources(amount)
 end
 
 function PlayingTeam:GetTeamResources()
-
     return self.teamResources
-    
 end
 
-function PlayingTeam:AddTeamResources(amount, countTowardsTotal)
+function PlayingTeam:AddTeamResources(amount, isIncome)
 
-    if countTowardsTotal then
-    
-        // Save towards victory condition
+    if amount > 0 and isIncome then
         self.totalTeamResourcesCollected = self.totalTeamResourcesCollected + amount
-        
     end
+    
     self:SetTeamResources(self.teamResources + amount)
     
 end
+
 function PlayingTeam:GetTotalTeamResources()
-
     return self.totalTeamResourcesCollected
-
-end
-
-
-function PlayingTeam:GetTotalTeamResourcesFromTowers()
-
-    return self.totalTeamResFromTowers
-
 end
 
 function PlayingTeam:GetHasTeamLost()
@@ -657,19 +646,15 @@ function PlayingTeam:RespawnPlayer(player, origin, angles)
         // Compute random spawn location
         local capsuleHeight, capsuleRadius = player:GetTraceCapsule()
         local spawnOrigin = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, initialTechPoint:GetOrigin(), 2, 15, EntityFilterAll())
-        if spawnOrigin ~= nil then
         
-            // Orient player towards tech point
-            local lookAtPoint = initialTechPoint:GetOrigin() + Vector(0, 5, 0)
-            local toTechPoint = GetNormalizedVector(lookAtPoint - spawnOrigin)
-            success = Team.RespawnPlayer(self, player, spawnOrigin, Angles(GetPitchFromVector(toTechPoint), GetYawFromVector(toTechPoint), 0))
-            
-        else
-        
-            Print("PlayingTeam:RespawnPlayer: Couldn't compute random spawn for player.\n")
-            Print(Script.CallStack())
-            
+        if not spawnOrigin then
+            spawnOrigin = initialTechPoint:GetOrigin() + Vector(0.01, 0.2, 0)
         end
+        
+        // Orient player towards tech point
+        local lookAtPoint = initialTechPoint:GetOrigin() + Vector(0, 5, 0)
+        local toTechPoint = GetNormalizedVector(lookAtPoint - spawnOrigin)
+        success = Team.RespawnPlayer(self, player, spawnOrigin, Angles(GetPitchFromVector(toTechPoint), GetYawFromVector(toTechPoint), 0))
         
     else
         Print("PlayingTeam:RespawnPlayer(): No initial tech point.")
@@ -726,10 +711,6 @@ function PlayingTeam:TechRemoved(entity)
         self.techIdCount[techId] = self.techIdCount[techId] - 1    
     end
     
-    if techId == kTechId.Crag then
-        self.updateAlienArmorInTicks = 100
-    end
-    
     if self.techIdCount[techId] == nil or self.techIdCount[techId] <= 0 then
         table.removevalue(self.entityTechIds, techId)
         self.techIdCount[techId] = nil
@@ -782,19 +763,7 @@ function PlayingTeam:Update(timePassed)
         end
 
     end
-        
     
-end
-
-function PlayingTeam:PrintWorldTextForTeamInRange(messageType, data, position, range)
-
-    local playersInRange = GetEntitiesForTeamWithinRange("Player", self:GetTeamNumber(), position, range)
-    local message = BuildWorldTextMessage(messageType, data, position)
-    
-    for _, player in ipairs(playersInRange) do
-        Server.SendNetworkMessage(player, "WorldText", message, true)        
-    end
-
 end
 
 function PlayingTeam:UpdateResourceTowers()
@@ -830,6 +799,17 @@ function PlayingTeam:UpdateResourceTowers()
 
 end
 
+function PlayingTeam:PrintWorldTextForTeamInRange(messageType, data, position, range)
+
+    local playersInRange = GetEntitiesForTeamWithinRange("Player", self:GetTeamNumber(), position, range)
+    local message = BuildWorldTextMessage(messageType, data, position)
+    
+    for _, player in ipairs(playersInRange) do
+        Server.SendNetworkMessage(player, "WorldText", message, true)        
+    end
+
+end
+
 function PlayingTeam:GetTechTree()
     return self.techTree
 end
@@ -839,7 +819,7 @@ function PlayingTeam:UpdateTechTree()
     PROFILE("PlayingTeam:UpdateTechTree")
     
     // Compute tech tree availability only so often because it's very slooow
-    if self.techTree ~= nil and (self.timeOfLastTechTreeUpdate == nil or Shared.GetTime() > self.timeOfLastTechTreeUpdate + PlayingTeam.kTechTreeUpdateTime) then
+    if self.techTree and (self.timeOfLastTechTreeUpdate == nil or Shared.GetTime() > self.timeOfLastTechTreeUpdate + PlayingTeam.kTechTreeUpdateTime) then
 
         self.techTree:Update(self.entityTechIds, self.techIdCount)
         
@@ -1005,7 +985,7 @@ function PlayingTeam:UpdateVotes()
     
     // Eject commander if enough votes cast
     if self.ejectCommVoteManager:GetVotePassed() then
-    
+
         local targetCommander = GetPlayerFromUserId(self.ejectCommVoteManager:GetTarget())
         
         if targetCommander and targetCommander.Eject then
@@ -1034,12 +1014,12 @@ function PlayingTeam:UpdateVotes()
     
         self.concedeVoteManager:Reset()
         self.conceded = true
-        
         Server.SendNetworkMessage("TeamConceded", { teamNumber = self:GetTeamNumber() })
         
     elseif self.concedeVoteManager:GetVoteElapsed(Shared.GetTime()) then
         self.concedeVoteManager:Reset()
     end
+
     
 end
 
@@ -1085,7 +1065,7 @@ function PlayingTeam:SplitPres(resAwarded)
     
         if resAwarded <= 0.001 or recipientCount <= 0 then
             break;
-        end
+        end    
     
         local resPerPlayer = resAwarded / recipientCount
         
@@ -1145,7 +1125,7 @@ end
 function PlayingTeam:OnEntityChange(oldId, newId)
 
     Team.OnEntityChange( self, oldId, newId )
-
+    
     if self.brain then
         self.brain:OnEntityChange( oldId, newId )
     end

@@ -36,9 +36,7 @@ if Server then
     Script.Load("lua/CommandStation_Server.lua")
 end
 
-local networkVars = 
-{
-}
+local networkVars = { }
 
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
@@ -137,11 +135,12 @@ function CommandStation:OnUpdateRender()
     
 end
 
-local kCommandStationHealthbarOffset = Vector(0, 2, 0)
 function CommandStation:GetHealthbarOffset()
-    return kCommandStationHealthbarOffset
+    return 2
 end
 
+// return a good spot from which a player could have entered the hive
+// used for initial entry point for the commander
 function CommandStation:GetDefaultEntryOrigin()
     return self:GetOrigin() + Vector(1,0,1)
 end

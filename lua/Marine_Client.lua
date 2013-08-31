@@ -11,9 +11,8 @@
 //Removed some uneeded effects and other functions that were moved to player_client
 local kSensorBlipSize = 25
 
-local kMarineHealthbarOffset = Vector(0, 1.2, 0)
 function Marine:GetHealthbarOffset()
-    return kMarineHealthbarOffset
+    return 1.2
 end
 
 function MarineUI_GetHasObservatory()
@@ -40,15 +39,6 @@ function MarineUI_GetHasArmsLab()
     
 end
 
-local function GetIsCloseToMenuStructure(self)
-    
-    local ptlabs = GetEntitiesForTeamWithinRange("PrototypeLab", self:GetTeamNumber(), self:GetOrigin(), PrototypeLab.kResupplyUseRange)
-    local armories = GetEntitiesForTeamWithinRange("Armory", self:GetTeamNumber(), self:GetOrigin(), Armory.kResupplyUseRange)
-    
-    return (ptlabs and #ptlabs > 0) or (armories and #armories > 0)
-
-end
-
 function Marine:UnitStatusPercentage()
     return self.unitStatusPercentage
 end
@@ -73,6 +63,8 @@ function Marine:UpdateClientEffects(deltaTime, isLocal)
         end
         
     end
+    
+    
 end
 
 function Marine:OnUpdateRender()
@@ -101,11 +93,6 @@ function Marine:OnUpdateRender()
         self.flashlight:SetAtmosphericDensity(density)
         
     end
-    
-end
-
-function Marine:CloseMenu()
-    return false
     
 end
 
@@ -182,7 +169,20 @@ end
 // Give dynamic camera motion to the player
 /*
 function Marine:PlayerCameraCoordsAdjustment(cameraCoords) 
+
+    if self:GetIsFirstPerson() then
+        
+        if self:GetIsStunned() then
+            local attachPointOffset = self:GetAttachPointOrigin("Head") - cameraCoords.origin
+            attachPointOffset.x = attachPointOffset.x * .5
+            attachPointOffset.z = attachPointOffset.z * .5
+            cameraCoords.origin = cameraCoords.origin + attachPointOffset
+        end
+    
+    end
+    
     return cameraCoords
+
 end*/
 
 function Marine:OnCountDown()
@@ -211,7 +211,6 @@ function Marine:OnCountDownEnd()
 end
 
 function Marine:OnOrderSelfComplete(orderType)
-
     self:TriggerEffects("complete_order")
 
 end

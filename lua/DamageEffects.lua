@@ -258,6 +258,7 @@ kDamageEffects =
             {decal = "cinematics/vfx_materials/decals/railgun_hole_02.material", scale = 0.3, doer = "Railgun", done = true},
             
             // surface alien weapons
+            {decal = "cinematics/vfx_materials/decals/spit_decal.material", scale = 0.25, doer = "Spit", done = true}, 
             {decal = "cinematics/vfx_materials/decals/bullet_hole_02.material", scale = 0.25, doer = "LerkBite", alt_mode = true, done = true}, 
             {decal = "cinematics/vfx_materials/decals/bullet_hole_02.material", scale = 0.25, doer = "Spores", alt_mode = true, done = true}, 
             {decal = "cinematics/vfx_materials/decals/bullet_hole_02.material", scale = 0.25, doer = "LerkUmbra", alt_mode = true, done = true}, 
@@ -283,6 +284,8 @@ kDamageEffects =
             
             {player_cinematic = "cinematics/materials/%s/bash.cinematic", doer = "Rifle", alt_mode = true, done = true},
             {player_cinematic = "cinematics/materials/%s/ricochetHeavy.cinematic", doer = "Shotgun", done = true},
+            {player_cinematic = "cinematics/materials/%s/ricochetMinigun.cinematic", doer = "Minigun", done = true},
+            {player_cinematic = "cinematics/materials/%s/ricochetRailgun.cinematic", doer = "Railgun", done = true},
             {player_cinematic = "cinematics/materials/%s/ricochet.cinematic", doer = "ClipWeapon", done = true},
             {player_cinematic = "cinematics/materials/%s/ricochet.cinematic", doer = "Sentry", done = true},
             {player_cinematic = "cinematics/materials/%s/axe.cinematic", doer = "Axe", done = true},
@@ -325,7 +328,6 @@ kDamageEffects =
             {cinematic = "cinematics/marine/structures/hurt_small.cinematic", classname = "ArmsLab", done = true},
             {cinematic = "cinematics/marine/structures/hurt_small_severe.cinematic", classname = "Observatory", flinch_severe = true, done = true},
             {cinematic = "cinematics/marine/structures/hurt_small.cinematic", classname = "Observatory", done = true},
-            {cinematic = "cinematics/marine/structures/hurt_small_severe.cinematic", classname = "PowerPack", flinch_severe = true, done = true},
             {cinematic = "cinematics/marine/structures/hurt_small.cinematic", classname = "SentryBattery", done = true},
             {parented_cinematic = "cinematics/marine/exo/hurt_severe.cinematic", classname = "Exo", isalien = false, flinch_severe = true, done = true},
             {parented_cinematic = "cinematics/marine/exo/hurt.cinematic", classname = "Exo", isalien = false, done = true},

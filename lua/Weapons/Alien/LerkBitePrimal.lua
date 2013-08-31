@@ -9,7 +9,6 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
-Script.Load("lua/Weapons/Alien/PrimalScreamMixin.lua")
 Script.Load("lua/Weapons/ClientWeaponEffectsMixin.lua")
 
 Shared.PrecacheSurfaceShader("materials/effects/mesh_effects/view_blood.surface_shader")
@@ -31,21 +30,43 @@ end
 
 local networkVars =
 {
-    lastBittenEntityId = "entityid",
-    lastPrimaryAttackTime = "time"
+    lastPrimaryAttackTime = "time",
+    lastSecondaryAttackTime = "time"
 }
 
-AddMixinNetworkVars(PrimalScreamMixin, networkVars)
+local function TriggerPrimal(self, lerk)
+
+    local players = GetEntitiesForTeam("Player", lerk:GetTeamNumber())
+    for index, player in ipairs(players) do
+        if player:GetIsAlive() and ((player:GetOrigin() - lerk:GetOrigin()):GetLength() < kPrimalScreamRange) then
+            if player ~= lerk then
+                player:AddEnergy(kPrimalScreamEnergyGain)
+            end
+            if player.SetPrimalScream then
+                player:SetPrimalScream(kPrimalScreamDuration)
+                //player:TriggerEffects("enzymed")
+            end            
+        end
+    end
+    
+end
+
+local function GetHasAttackDelay(self, player)
+    
+    //Primal scream immune to its own ROF increase
+    local attackDelay = kPrimalScreamROF
+    return self.lastSecondaryAttackTime + attackDelay > Shared.GetTime()
+    
+end
 
 function LerkBitePrimal:OnCreate()
 
     Ability.OnCreate(self)
-    
-    InitMixin(self, PrimalScreamMixin)
-    
-    self.lastBittenEntityId = Entity.invalidId
+
     self.primaryAttacking = false
+    self.secondaryAttacking = false
     self.lastPrimaryAttackTime = 0
+    self.lastSecondaryAttackTime = 0
     if Client then
         InitMixin(self, ClientWeaponEffectsMixin)
     end
@@ -58,6 +79,10 @@ end
 
 function LerkBitePrimal:GetEnergyCost(player)
     return kLerkBiteEnergyCost
+end
+
+function LerkBitePrimal:GetSecondaryEnergyCost(player)
+    return kPrimalScreamEnergyCost
 end
 
 function LerkBitePrimal:GetHUDSlot()
@@ -84,6 +109,10 @@ function LerkBitePrimal:GetAttackDelay()
     return kLerkBiteDelay
 end
 
+function LerkBitePrimal:GetHasSecondary(player)
+    return player:GetHasThreeHives()
+end
+
 function LerkBitePrimal:GetLastAttackTime()
     return self.lastPrimaryAttackTime
 end
@@ -106,12 +135,30 @@ function LerkBitePrimal:OnPrimaryAttack(player)
     
 end
 
+function LerkBitePrimal:OnSecondaryAttack(player)
+
+    if player:GetEnergy() >= self:GetSecondaryEnergyCost(player) and not self.primaryAttacking and not GetHasAttackDelay(self, player) then
+        self:TriggerEffects("primal_scream")
+        if Server then        
+            TriggerPrimal(self, player)
+            self:GetParent():DeductAbilityEnergy(self:GetSecondaryEnergyCost())
+        end
+        self.lastSecondaryAttackTime = Shared.GetTime()
+        self.secondaryAttacking = true
+    else
+        self.secondaryAttacking = false
+    end
+    
+end
+
 function LerkBitePrimal:OnPrimaryAttackEnd()
-    
     Ability.OnPrimaryAttackEnd(self)
-    
     self.primaryAttacking = false
-    
+end
+
+function LerkBitePrimal:OnSecondaryAttackEnd(player)
+    Ability.OnSecondaryAttackEnd(self, player)    
+    self.secondaryAttacking = false
 end
 
 function LerkBitePrimal:GetAbilityUsesFocus()
@@ -199,17 +246,18 @@ function LerkBitePrimal:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("LerkBitePrimal:OnUpdateAnimationInput")
 
-    if not self:GetIsSecondaryBlocking() then
-        
-        local activityString = "none"
-        if self.primaryAttacking then
-            modelMixin:SetAnimationInput("ability", "bite")
-            activityString = "primary"
-        end        
-        
-        modelMixin:SetAnimationInput("activity", activityString)
-    
-    end
+    local activityString = "none"
+    local player = self:GetParent()
+    if self.primaryAttacking then
+        modelMixin:SetAnimationInput("ability", "bite")
+        activityString = "primary"
+    elseif self.secondaryAttacking then
+        modelMixin:SetAnimationInput("ability", "umbra")
+    elseif player and not GetHasAttackDelay(self, player) then
+        modelMixin:SetAnimationInput("ability", "bite")
+    end     
+
+    modelMixin:SetAnimationInput("activity", activityString)
     
 end
 

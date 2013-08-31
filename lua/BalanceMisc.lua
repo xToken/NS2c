@@ -28,6 +28,7 @@ kPingOfDeathDelay = 2
 kPingOfDeathDamagePercent = 12
 kResearchMod = 1
 kFootstepsThreshold = 3.5
+kIdleThreshold = 5
 
 kGhostStructureModifier = .75
 kEnergyUpdateRate = 0.25
@@ -39,6 +40,7 @@ kRecycleRefundScalar = 0.5
 
 // set to -1 for no time limit
 kParasiteDuration = -1
+kParasitePlayerPointValue = 1
 kFallDamageMinimumVelocity = 12
 kFallDamageScalar = 11.88
 kKnockbackTime = 0.05
@@ -121,6 +123,17 @@ kInfestationBlobDensity = 2
 kInfestationGrowthRate = 0.1
 kMinInfestationRadius = 0.5
 
+//DropPacks
+kClipsPerAmmoPack = 1
+kHealthPerMedpack = 50
+kCatPackFireRateScalar = 1.3
+kCatPackMoveSpeedScalar = 1.2
+kCatPackDuration = 6
+
+//Armory
+kArmoryHealAmount = 15
+
 kKillDelay = 3
 
 kAbilityMaxEnergy = 100
+kDoorWeldTime = 999

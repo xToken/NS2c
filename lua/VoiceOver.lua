@@ -117,6 +117,22 @@ local function PingInViewDirection(player)
 
 end
 
+local function GiveWeldOrder(player)
+
+    if ( player:isa("Marine") or player:isa("Exo") ) and player:GetArmor() < player:GetMaxArmor() then
+    
+        for _, marine in ipairs(GetEntitiesForTeamWithinRange("Marine", player:GetTeamNumber(), player:GetOrigin(), 8)) do
+        
+            if player ~= marine and marine:GetWeapon(Welder.kMapName) then
+                marine:GiveOrder(kTechId.AutoWeld, player:GetId(), player:GetOrigin(), nil, true, false)
+            end
+        
+        end
+    
+    end
+
+end
+
 local kSoundData = 
 {
 
@@ -127,7 +143,7 @@ local kSoundData =
     [kVoiceId.Ping] = { Function = PingInViewDirection, Description = "REQUEST_PING", KeyBind = "PingLocation" },
 
     // marine vote menu
-    [kVoiceId.RequestWeld] = { Sound = "sound/NS2.fev/marine/voiceovers/weld", Description = "REQUEST_MARINE_WELD", KeyBind = "RequestHealth", AlertTechId = kTechId.None },
+    [kVoiceId.RequestWeld] = { Sound = "sound/NS2.fev/marine/voiceovers/weld", Function = GiveWeldOrder, Description = "REQUEST_MARINE_WELD", KeyBind = "RequestWeld", AlertTechId = kTechId.None },
     [kVoiceId.MarineRequestMedpack] = { Sound = "sound/NS2.fev/marine/voiceovers/medpack", Description = "REQUEST_MARINE_MEDPACK", KeyBind = "RequestHealth", AlertTechId = kTechId.MarineAlertNeedMedpack },
     [kVoiceId.MarineRequestAmmo] = { Sound = "sound/NS2.fev/marine/voiceovers/ammo", Description = "REQUEST_MARINE_AMMO", KeyBind = "RequestAmmo", AlertTechId = kTechId.MarineAlertNeedAmmo },
     [kVoiceId.MarineRequestOrder] = { Sound = "sound/NS2.fev/marine/voiceovers/need_orders", Description = "REQUEST_MARINE_ORDER",  KeyBind = "RequestOrder", AlertTechId = kTechId.MarineAlertNeedOrder },
@@ -157,14 +173,25 @@ function GetVoiceSoundData(voiceId)
 end
 
 for _, soundData in pairs(kSoundData) do
+
     if soundData.Sound ~= nil and string.len(soundData.Sound) > 0 then
+    
         PrecacheAsset(soundData.Sound)
+        
+        soundData.SoundFemale = soundData.Sound .. "_female"
+        PrecacheAsset(soundData.SoundFemale)
+        
     end
+    
+end
+
+function GetVoiceSoundData(voiceId)
+    return kSoundData[voiceId]
 end
 
 local kMarineMenu =
 {
-    [LEFT_MENU] = { kVoiceId.MarineRequestMedpack, kVoiceId.MarineRequestAmmo, kVoiceId.MarineRequestOrder, kVoiceId.Ping },
+    [LEFT_MENU] = { kVoiceId.RequestWeld, kVoiceId.MarineRequestMedpack, kVoiceId.MarineRequestAmmo, kVoiceId.MarineRequestOrder, kVoiceId.Ping },
     [RIGHT_MENU] = { kVoiceId.MarineTaunt, kVoiceId.MarineCovering, kVoiceId.MarineFollowMe, kVoiceId.MarineHostiles, kVoiceId.MarineLetsMove, }
 }
 
@@ -184,7 +211,7 @@ local kRequestMenus =
     ["JetpackMarine"] = kMarineMenu,
     ["Exo"] =
     {
-        [LEFT_MENU] = { kVoiceId.RequestWeld, kVoiceId.Ping },
+        [LEFT_MENU] = { kVoiceId.RequestWeld, kVoiceId.MarineRequestOrder, kVoiceId.Ping },
         [RIGHT_MENU] = { kVoiceId.MarineTaunt, kVoiceId.MarineCovering, kVoiceId.MarineFollowMe, kVoiceId.MarineHostiles, kVoiceId.MarineLetsMove }
     },
     
@@ -211,7 +238,6 @@ function GetRequestMenu(side, className)
     return { }
     
 end
-
 
 if Client then
 

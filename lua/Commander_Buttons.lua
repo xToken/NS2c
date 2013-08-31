@@ -30,6 +30,30 @@ function CommanderUI_Logout()
         
 end
 
+local kButtonClickedSound =
+{
+    [kMarineTeamType] = PrecacheAsset("sound/NS2.fev/common/hovar"),
+    [kAlienTeamType] = PrecacheAsset("sound/NS2.fev/alien/common/alien_menu/hover"),
+}
+
+function CommanderUI_OnButtonClicked()
+
+    local player = Client.GetLocalPlayer()
+    if player and HasMixin(player, "Team") then
+        
+        local soundToPlay = kButtonClickedSound[player:GetTeamType()]
+        if soundToPlay then
+            StartSoundEffect(soundToPlay)
+        end
+        
+    end
+
+end
+
+function CommanderUI_OnButtonHover()
+    CommanderUI_OnButtonClicked()
+end
+
 function CommanderUI_MenuButtonWidth()
     return 80
 end
@@ -194,6 +218,20 @@ function CommanderUI_MenuButtonAction(index)
         DeselectAllUnits(player:GetTeamNumber())
     end
     
+end
+
+local function GetIsMenu(techId)
+
+    local techTree = GetTechTree()
+    if techTree then
+    
+        local techNode = techTree:GetTechNode(techId)
+        return techNode ~= nil and techNode:GetIsMenu()
+        
+    end
+    
+    return false
+
 end
 
 function CommanderUI_MenuButtonOffset(index)

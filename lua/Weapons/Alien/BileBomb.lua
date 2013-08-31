@@ -25,10 +25,7 @@ local kAnimationGraph = PrecacheAsset("models/alien/gorge/gorge_view.animation_g
 
 local kBbombViewEffect = PrecacheAsset("cinematics/alien/gorge/bbomb_1p.cinematic")
 
-local networkVars =
-{
-    firingPrimary = "boolean"
-}
+local networkVars = { }
 
 AddMixinNetworkVars(HealSprayMixin, networkVars)
 
@@ -36,7 +33,7 @@ function BileBomb:OnCreate()
 
     Ability.OnCreate(self)
     
-    self.firingPrimary = false
+    self.primaryAttacking = false
     self.timeLastBileBomb = 0
     
     InitMixin(self, HealSprayMixin)
@@ -63,7 +60,7 @@ function BileBomb:OnTag(tagName)
 
     PROFILE("BileBomb:OnTag")
 
-    if self.firingPrimary and tagName == "shoot" then
+    if self.primaryAttacking and tagName == "shoot" then
     
         local player = self:GetParent()
         
@@ -97,10 +94,10 @@ function BileBomb:OnPrimaryAttack(player)
 
     if player:GetEnergy() >= self:GetEnergyCost() then
     
-        self.firingPrimary = true
+        self.primaryAttacking = true
         
     else
-        self.firingPrimary = false
+        self.primaryAttacking = false
     end  
     
 end
@@ -109,7 +106,7 @@ function BileBomb:OnPrimaryAttackEnd(player)
 
     Ability.OnPrimaryAttackEnd(self, player)
     
-    self.firingPrimary = false
+    self.primaryAttacking = false
     
 end
 
@@ -155,7 +152,7 @@ function BileBomb:OnUpdateAnimationInput(modelMixin)
     modelMixin:SetAnimationInput("ability", "bomb")
     
     local activityString = "none"
-    if self.firingPrimary then
+    if self.primaryAttacking then
         activityString = "primary"
     end
     modelMixin:SetAnimationInput("activity", activityString)

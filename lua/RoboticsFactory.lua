@@ -32,6 +32,7 @@ Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 
@@ -45,18 +46,9 @@ RoboticsFactory.kModelName = PrecacheAsset("models/marine/robotics_factory/robot
 
 RoboticsFactory.kAttachPoint = "target"
 
-RoboticsFactory.kCloseDelay  = .5
 RoboticsFactory.kActiveEffect = PrecacheAsset("cinematics/marine/roboticsfactory/active.cinematic")
-RoboticsFactory.kAnimOpen   = "open"
-RoboticsFactory.kAnimClose  = "close"
 
-local kOpenSound = PrecacheAsset("sound/NS2.fev/marine/structures/roboticsfactory_open")
-local kCloseSound = PrecacheAsset("sound/NS2.fev/marine/structures/roboticsfactory_close")
-
-local networkVars =
-{
-    open = "boolean",
-}
+local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
@@ -73,10 +65,9 @@ AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
-AddMixinNetworkVars(TurretFactoryMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
-AddMixinNetworkVars(ParasiteMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
+AddMixinNetworkVars(ParasiteMixin, networkVars)
 
 function RoboticsFactory:OnCreate()
 
@@ -103,17 +94,16 @@ function RoboticsFactory:OnCreate()
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, TurretFactoryMixin)
     InitMixin(self, DetectableMixin)
+    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
     if Client then
         InitMixin(self, CommanderGlowMixin)
     end
 
-    self:SetLagCompensated(true)
+    self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup)
-        
-    self.open = false
 
 end
 
@@ -152,10 +142,7 @@ end
 
 function RoboticsFactory:GetTechAllowed(techId, techNode, player)
 
-    local allowed, canAfford = ScriptActor.GetTechAllowed(self, techId, techNode, player) 
-
-    allowed = allowed and not self.open
-    
+    local allowed, canAfford = ScriptActor.GetTechAllowed(self, techId, techNode, player)
     return allowed, canAfford
     
 end
@@ -205,25 +192,6 @@ function RoboticsFactory:OnResearchComplete(researchId)
         self:UpgradeToTechId(kTechId.ARCRoboticsFactory)
     end
         
-end
-
-function RoboticsFactory:OnTag(tagName)
-    
-    PROFILE("RoboticsFactory:OnTag")
-    
-    if tagName == "open_start" then
-        StartSoundEffectAtOrigin(kOpenSound, self:GetOrigin())
-    elseif tagName == "close_start" then
-        StartSoundEffectAtOrigin(kCloseSound, self:GetOrigin())
-    end
-    
-end
-
-function RoboticsFactory:OnUpdateAnimationInput(modelMixin)
-
-    PROFILE("RoboticsFactory:OnUpdateAnimationInput")
-    modelMixin:SetAnimationInput("open", self.open)
-
 end
 
 function GetRoomHasNoRoboticsFactory(techId, origin, normal, commander)
@@ -285,13 +253,6 @@ if Server then
     
 end
 
-function RoboticsFactory:OnUpdateAnimationInput(modelMixin)
-
-    PROFILE("RoboticsFactory:OnUpdateAnimationInput")
-	modelMixin:SetAnimationInput("powered", true)
-    
-end
-
 function RoboticsFactory:OnOverrideOrder(order)
 
     // Convert default to set rally point.
@@ -301,13 +262,11 @@ function RoboticsFactory:OnOverrideOrder(order)
     
 end
 
-local kRoboticsFactoryHealthbarOffset = Vector(0, 1., 0)
 function RoboticsFactory:GetHealthbarOffset()
-    return kRoboticsFactoryHealthbarOffset
+    return 1
 end 
 
-
-Shared.LinkClassToMap("RoboticsFactory", RoboticsFactory.kMapName, networkVars, true)
+Shared.LinkClassToMap("RoboticsFactory", RoboticsFactory.kMapName, networkVars)
 
 
 class 'ARCRoboticsFactory' (RoboticsFactory)

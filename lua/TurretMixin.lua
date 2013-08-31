@@ -97,9 +97,6 @@ if Server then
 
     function TurretMixin:OnConstructionComplete()
         CheckForTF(self)
-        if self.powered then
-            self:TriggerEffects("deploy")     
-        end 
     end
     
     function TurretMixin:OnTurretFactoryDestroyed(tfac)
@@ -122,11 +119,4 @@ if Server then
         RemoveTurret(self)
     end
 
-end
-
-function TurretMixin:OnUpdateAnimationInput(modelMixin)
-
-    PROFILE("TurretFactoryMixin:OnUpdateAnimationInput")
-    modelMixin:SetAnimationInput("powered", self:GetIsPowered())
-    
 end

@@ -50,6 +50,25 @@ function WeaponOwnerMixin:GetWeaponsWeight()
     return self.weaponsWeight
 end
 
+function WeaponOwnerMixin:GetWeapons()
+
+    local weapons = {}
+
+    for i = 0, self:GetNumChildren() - 1 do
+    
+        local child = self:GetChildAtIndex(i)
+        if child:isa("Weapon") then
+        
+            table.insert(weapons, child)
+            
+        end
+    
+    end
+    
+    return weapons
+
+end
+
 //NS2c
 //Changed to global as weapons will now call this also.
 function WeaponOwnerMixin:UpdateWeaponWeights()
@@ -359,6 +378,22 @@ function WeaponOwnerMixin:GetWeaponInHUDSlot(slot)
     
 end
 
+function WeaponOwnerMixin:SetHUDSlotActive(slot)
+
+    local weapon = self:GetWeaponInHUDSlot(slot)
+    if weapon then
+        self:SetActiveWeapon(weapon:GetMapName())
+    else
+    
+        local orderedList = self:GetHUDOrderedWeaponList()
+        if #orderedList > 0 then
+            self:SetActiveWeapon(orderedList[1]:GetMapName())
+        end
+        
+    end
+
+end
+
 function WeaponOwnerMixin:AddWeapon(weapon, setActive)
 
     assert(weapon:GetParent() ~= self)
@@ -432,18 +467,8 @@ end
 function WeaponOwnerMixin:DestroyWeapons()
 
     self.activeWeaponId = Entity.invalidId
-    
-    local allWeapons = { }
-    for i = 0, self:GetNumChildren() - 1 do
-    
-        local child = self:GetChildAtIndex(i)
-        if child:isa("Weapon") then
-            table.insert(allWeapons, child)
-        end
-        
-    end
-    
-    for i, weapon in ipairs(allWeapons) do
+
+    for i, weapon in ipairs(self:GetWeapons()) do
         DestroyEntity(weapon)
     end
 

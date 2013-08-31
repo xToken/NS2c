@@ -29,21 +29,13 @@ kMarineStructureEffects =
 
     // When players or MACs build a structure
     construct =
-    {
-        
-        marineConstructSounds =
-        {
-            // TODO: hook up new sounds for builder
-            //{ sound = "sound/NS2.fev/marine/welder/deploy", isalien = false, done = true },
-        },
-    
+    {    
         marineConstructEffects =
         {
             {cinematic = "cinematics/marine/construct_infantryportal.cinematic", classname = "InfantryPortal", isalien = false, done = true},
             {cinematic = "cinematics/marine/construct_big.cinematic", classname = "CommandStation", isalien = false, done = true},
             {cinematic = "cinematics/marine/construct.cinematic", isalien = false},
-        },
-        
+        },        
     },
     
     // Play when marine welds another marine's armor
@@ -87,7 +79,7 @@ kMarineStructureEffects =
         {
             {cinematic = "cinematics/marine/structures/death_large.cinematic", classname = "RoboticsFactory", done = true},
             {cinematic = "cinematics/marine/structures/death_large.cinematic", classname = "PhaseGate", done = true},
-            {cinematic = "cinematics/marine/structures/death_large.cinematic", classname = "Extractor", done = true},
+            {cinematic = "cinematics/marine/structures/death_small.cinematic", classname = "Extractor", done = true},
             {cinematic = "cinematics/marine/structures/death_large.cinematic", classname = "CommandStation", done = true},
             {cinematic = "cinematics/marine/structures/death_large.cinematic", classname = "PrototypeLab", done = true},
             {cinematic = "cinematics/marine/structures/death_large.cinematic", classname = "ArmsLab", done = true},
@@ -209,7 +201,6 @@ kMarineStructureEffects =
         arcHitStopEffects = 
         {
             {stop_effects = ""},
-            //{sound = "sound/NS2.fev/marine/structures/power_down"},
         },
     },
     
@@ -226,7 +217,6 @@ kMarineStructureEffects =
         extractorCollectEffect =
         {
             {sound = "sound/NS2.fev/marine/structures/extractor_harvested"},
-            //{cinematic = "cinematics/marine/extractor/collection_effect.cinematic"},
         },
     },
     
@@ -319,8 +309,8 @@ kMarineStructureEffects =
     {
         pgSpawnEffect =
         {
-            {sound = "sound/NS2.fev/marine/structures/phase_gate_teleport"},
-            {cinematic = "cinematics/marine/infantryportal/player_spawn.cinematic"},            
+            {player_sound = "sound/NS2.fev/marine/structures/phase_gate_teleport"},
+            {player_cinematic = "cinematics/marine/infantryportal/player_spawn.cinematic"},            
         },
     }, 
 
@@ -329,8 +319,8 @@ kMarineStructureEffects =
     {
         pgSpawnEffect =
         {
-            {sound = "sound/NS2.fev/marine/structures/phase_gate_teleport"},
-            {cinematic = "cinematics/marine/infantryportal/player_spawn.cinematic"},            
+            {player_sound = "sound/NS2.fev/marine/structures/phase_gate_teleport"},
+            {player_cinematic = "cinematics/marine/infantryportal/player_spawn.cinematic"},            
         },
     },
     
@@ -341,7 +331,6 @@ kMarineStructureEffects =
         {
             // Play spin for spinning infantry portal
             {looping_cinematic = "cinematics/marine/phasegate/phasegate.cinematic"},
-            {parented_sound = "sound/NS2.fev/marine/structures/phase_gate_active"},
         },
     },
     
@@ -350,7 +339,6 @@ kMarineStructureEffects =
         pgLinkedEffects = 
         {
             // Destroy it if not spinning
-            {stop_sound = "sound/NS2.fev/marine/structures/phase_gate_active"},
             {stop_cinematic = "cinematics/marine/phasegate/phasegate.cinematic", done = true},            
         },
     },
@@ -402,18 +390,8 @@ kMarineStructureEffects =
         sentryAttackEffects = 
         {
             {parented_cinematic = "cinematics/marine/sentry/fire.cinematic", attach_point = "fxnode_sentrymuzzle"},
-            //{parented_cinematic = "cinematics/marine/sentry/muzzle_smoke.cinematic", attach_point = "fxnode_sentrymuzzle"}
         }    
     },
-    
-    disrupt =
-    {
-        disruptEffects =
-        {
-            {cinematic = "cinematics/marine/structures/disrupt.cinematic", classname = "ARC", done = true},
-            {cinematic = "cinematics/marine/structures/disrupt.cinematic", classname = "Structure", done = true}
-        }
-    }
     
 }
 

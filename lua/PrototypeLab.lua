@@ -31,6 +31,7 @@ Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
+Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 
@@ -42,9 +43,7 @@ PrototypeLab.kMapName = "prototypelab"
 
 PrototypeLab.kModelName = PrecacheAsset("models/marine/prototype_lab/prototype_lab.model")
 
-local networkVars =
-{
-}
+local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
@@ -60,8 +59,8 @@ AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
-AddMixinNetworkVars(ParasiteMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
+AddMixinNetworkVars(ParasiteMixin, networkVars)
 
 function PrototypeLab:OnCreate()
 
@@ -85,6 +84,7 @@ function PrototypeLab:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, DetectableMixin)
+    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
     if Client then
@@ -118,7 +118,7 @@ function PrototypeLab:OnInitialized()
     elseif Client then
         InitMixin(self, UnitStatusMixin)
     end
-
+    
 end
 
 function PrototypeLab:GetTechButtons(techId)
@@ -130,21 +130,8 @@ function PrototypeLab:GetDamagedAlertId()
     return kTechId.MarineAlertStructureUnderAttack
 end
 
-function PrototypeLab:GetItemList()
-
-    return nil
-    
-end
-
 function PrototypeLab:GetReceivesStructuralDamage()
     return true
-end
-
-function PrototypeLab:OnUpdateAnimationInput(modelMixin)
-
-    PROFILE("PrototypeLab:OnUpdateAnimationInput")
-	modelMixin:SetAnimationInput("powered", true)
-    
 end
 
 

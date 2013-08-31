@@ -17,32 +17,22 @@ class 'Axe' (Weapon)
 Axe.kMapName = "axe"
 
 Axe.kModelName = PrecacheAsset("models/marine/axe/axe.model")
-Axe.kViewModelName = PrecacheAsset("models/marine/axe/axe_view.model")
+
+local kViewModels = GenerateMarineViewModelPaths("axe")
 local kAnimationGraph = PrecacheAsset("models/marine/axe/axe_view.animation_graph")
 
-local networkVars =
-{
-    sprintAllowed = "boolean",
-}
-
-function Axe:OnCreate()
-
-    Weapon.OnCreate(self)
-    
-    self.sprintAllowed = true
-
-end
+local networkVars = { }
 
 function Axe:OnInitialized()
 
     Weapon.OnInitialized(self)
     
     self:SetModel(Axe.kModelName)
-
+    
 end
 
-function Axe:GetViewModelName()
-    return Axe.kViewModelName
+function Axe:GetViewModelName(sex, variant)
+    return kViewModels[sex][variant]
 end
 
 function Axe:GetAnimationGraphName()
@@ -62,7 +52,7 @@ function Axe:GetShowDamageIndicator()
 end
 
 function Axe:GetSprintAllowed()
-    return self.sprintAllowed
+    return false
 end
 
 function Axe:GetDeathIconIndex()
@@ -86,8 +76,7 @@ end
 function Axe:OnHolster(player)
 
     Weapon.OnHolster(self, player)
-    
-    self.sprintAllowed = true
+
     self.primaryAttacking = false
     
 end
@@ -96,7 +85,6 @@ function Axe:OnPrimaryAttack(player)
 
     if not self.attacking then
         
-        self.sprintAllowed = false
         self.primaryAttacking = true
         
     end
@@ -112,16 +100,18 @@ function Axe:OnTag(tagName)
     PROFILE("Axe:OnTag")
 
     if tagName == "swipe_sound" then
-        self:TriggerEffects("axe_attack")
+    
+        local player = self:GetParent()
+        if player then
+            player:TriggerEffects("axe_attack")
+        end
+        
     elseif tagName == "hit" then
     
         local player = self:GetParent()
         if player then
             AttackMeleeCapsule(self, player, kAxeDamage, self:GetRange())
         end
-        
-    elseif tagName == "attack_end" then
-        self.sprintAllowed = true
     end
     
 end

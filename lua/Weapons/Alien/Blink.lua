@@ -111,11 +111,9 @@ function Blink:SetEthereal(player, state)
     if player.ethereal ~= state then
     
         if state then
-            player.etherealStartTime = Shared.GetTime()
             self:TriggerBlinkOutEffects(player)            
         else
             self:TriggerBlinkInEffects(player)     
-            player.etherealEndTime = Shared.GetTime() 
         end
         
         player.ethereal = state

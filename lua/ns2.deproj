@@ -22,6 +22,9 @@
     <filename>AlienBuy_Client.lua</filename>
   </file>
   <file>
+    <filename>AlienCommanderTutorial.lua</filename>
+  </file>
+  <file>
     <filename>AlienSpectator.lua</filename>
   </file>
   <file>
@@ -32,6 +35,9 @@
   </file>
   <file>
     <filename>AlienTeamInfo.lua</filename>
+  </file>
+  <file>
+    <filename>AlienTechMap.lua</filename>
   </file>
   <file>
     <filename>AlienUpgrades_Client.lua</filename>
@@ -56,6 +62,9 @@
   </file>
   <file>
     <filename>Armory_Client.lua</filename>
+  </file>
+  <file>
+    <filename>Armory_Server.lua</filename>
   </file>
   <file>
     <filename>ArmsLab.lua</filename>
@@ -104,9 +113,6 @@
   </file>
   <file>
     <filename>CatPack.lua</filename>
-  </file>
-  <file>
-    <filename>Class.lua</filename>
   </file>
   <file>
     <filename>Client.lua</filename>
@@ -199,9 +205,6 @@
     <filename>DevouredMixin.lua</filename>
   </file>
   <file>
-    <filename>Door.lua</filename>
-  </file>
-  <file>
     <filename>Weapons\Alien\DropStructureAbility.lua</filename>
   </file>
   <file>
@@ -250,6 +253,9 @@
     <filename>GUIAlienHUD.lua</filename>
   </file>
   <file>
+    <filename>GUIAuraDisplay.lua</filename>
+  </file>
+  <file>
     <filename>GUICommanderButtons.lua</filename>
   </file>
   <file>
@@ -262,7 +268,7 @@
     <filename>GUIDeathScreen.lua</filename>
   </file>
   <file>
-    <filename>Hud\GUIEvent.lua</filename>
+    <filename>GUIEvent.lua</filename>
   </file>
   <file>
     <filename>GUIGameEnd.lua</filename>
@@ -280,9 +286,6 @@
     <filename>GUIInsight_PlayerFrames.lua</filename>
   </file>
   <file>
-    <filename>GUIInsight_Tech.lua</filename>
-  </file>
-  <file>
     <filename>menu\GUIMainMenu.lua</filename>
   </file>
   <file>
@@ -292,10 +295,13 @@
     <filename>GUIMarineDevoured.lua</filename>
   </file>
   <file>
-    <filename>Hud\Marine\GUIMarineHud.lua</filename>
+    <filename>GUIMarineHud.lua</filename>
   </file>
   <file>
-    <filename>Hud\Marine\GUIMarineStatus.lua</filename>
+    <filename>GUIMarineStatus.lua</filename>
+  </file>
+  <file>
+    <filename>GUIMotionTrackingDisplay.lua</filename>
   </file>
   <file>
     <filename>GUIOrders.lua</filename>
@@ -307,7 +313,7 @@
     <filename>GUIPlayerNames.lua</filename>
   </file>
   <file>
-    <filename>Hud\GUIPlayerResource.lua</filename>
+    <filename>GUIPlayerResource.lua</filename>
   </file>
   <file>
     <filename>GUIReadyRoomOrders.lua</filename>
@@ -364,9 +370,6 @@
     <filename>Weapons\Alien\HarvesterAbility.lua</filename>
   </file>
   <file>
-    <filename>HasUmbraMixin.lua</filename>
-  </file>
-  <file>
     <filename>Weapons\Alien\HealSprayMixin.lua</filename>
   </file>
   <file>
@@ -388,9 +391,6 @@
     <filename>Weapons\Alien\HiveAbility.lua</filename>
   </file>
   <file>
-    <filename>HiveVisionMixin.lua</filename>
-  </file>
-  <file>
     <filename>Hive_Client.lua</filename>
   </file>
   <file>
@@ -404,6 +404,9 @@
   </file>
   <file>
     <filename>Hydra_Server.lua</filename>
+  </file>
+  <file>
+    <filename>IdleMixin.lua</filename>
   </file>
   <file>
     <filename>InfantryPortal.lua</filename>
@@ -430,6 +433,9 @@
     <filename>LOSMixin.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Alien\LeapMixin.lua</filename>
+  </file>
+  <file>
     <filename>Lerk.lua</filename>
   </file>
   <file>
@@ -443,9 +449,6 @@
   </file>
   <file>
     <filename>Weapons\Alien\LerkBiteUmbra.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\LerkUmbra.lua</filename>
   </file>
   <file>
     <filename>Lerk_Server.lua</filename>
@@ -472,6 +475,9 @@
     <filename>MarineCommander.lua</filename>
   </file>
   <file>
+    <filename>MarineCommanderTutorial.lua</filename>
+  </file>
+  <file>
     <filename>MarineCommander_Client.lua</filename>
   </file>
   <file>
@@ -482,6 +488,9 @@
   </file>
   <file>
     <filename>MarineTeam.lua</filename>
+  </file>
+  <file>
+    <filename>MarineTechMap.lua</filename>
   </file>
   <file>
     <filename>MarineWeaponEffects.lua</filename>
@@ -577,9 +586,6 @@
     <filename>PointGiverMixin.lua</filename>
   </file>
   <file>
-    <filename>Weapons\Alien\PrimalScreamMixin.lua</filename>
-  </file>
-  <file>
     <filename>PropDynamic.lua</filename>
   </file>
   <file>
@@ -617,9 +623,6 @@
   </file>
   <file>
     <filename>Weapons\Alien\Rocket.lua</filename>
-  </file>
-  <file>
-    <filename>Sayings.lua</filename>
   </file>
   <file>
     <filename>CommAbilities\Marine\Scan.lua</filename>
@@ -670,9 +673,6 @@
     <filename>Spectator.lua</filename>
   </file>
   <file>
-    <filename>Weapons\Alien\SpikesMixin.lua</filename>
-  </file>
-  <file>
     <filename>Weapons\Alien\Spit.lua</filename>
   </file>
   <file>
@@ -680,9 +680,6 @@
   </file>
   <file>
     <filename>Weapons\Alien\SporeCloud.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\SporesMixin.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\StompMixin.lua</filename>
@@ -727,7 +724,7 @@
     <filename>Weapons\Alien\UmbraCloud.lua</filename>
   </file>
   <file>
-    <filename>Weapons\Alien\UmbraMixin.lua</filename>
+    <filename>UmbraMixin.lua</filename>
   </file>
   <file>
     <filename>UnitStatusMixin.lua</filename>
@@ -743,9 +740,6 @@
   </file>
   <file>
     <filename>WeaponOwnerMixin.lua</filename>
-  </file>
-  <file>
-    <filename>WeaponUtility.lua</filename>
   </file>
   <file>
     <filename>Weapons\Weapon_Server.lua</filename>

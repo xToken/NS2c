@@ -148,19 +148,9 @@ Script.Load("lua/Weapons/Marine/GrenadeLauncher.lua")
 Script.Load("lua/Weapons/Marine/Minigun.lua")
 Script.Load("lua/Weapons/Marine/Railgun.lua")
 Script.Load("lua/Weapons/Marine/Mines.lua")
+Script.Load("lua/Weapons/Marine/Builder.lua")
 Script.Load("lua/Weapons/Marine/Welder.lua")
 Script.Load("lua/Weapons/Marine/HandGrenades.lua")
-local GRENADES_ENABLED = false
-if GRENADES_ENABLED then
-
-    Script.Load("lua/Weapons/Marine/GasGrenadeThrower.lua")
-    Script.Load("lua/Weapons/Marine/ClusterGrenadeThrower.lua")
-    Script.Load("lua/Weapons/Marine/PulseGrenadeThrower.lua")
-    Script.Load("lua/Weapons/Marine/GasGrenade.lua")
-    Script.Load("lua/Weapons/Marine/PulseGrenade.lua")
-    Script.Load("lua/Weapons/Marine/ClusterGrenade.lua")
-    
-end
 
 Script.Load("lua/NS2Utility.lua")
 Script.Load("lua/WeaponUtility.lua")

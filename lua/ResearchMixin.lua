@@ -121,15 +121,8 @@ end
 
 function ResearchMixin:GetResearchTechAllowed(techNode)
 
-    // Return true unless it's it's specified that it can only be triggered for specific tech id (ie, an upgraded version of a structure)
-    local addOnRequirementMet = true
-    local addOnTechId = techNode:GetAddOnTechId()
-    if addOnTechId ~= kTechId.None then        
-        addOnRequirementMet = (self:GetTechId() == addOnTechId)
-    end
-
     // Return false if we're researching, or if tech is being researched
-    return not (self.researchingId ~= kTechId.None or techNode.researched or techNode.researching or not addOnRequirementMet)
+    return not (self.researchingId ~= kTechId.None or techNode.researched or techNode.researching)
     
 end
 
@@ -316,7 +309,7 @@ function ResearchMixin:CreateManufactureEntity(techId)
         end
         
     end    
-    
+
     if entity and self.OnManufactured then
         self:OnManufactured(entity)
     end

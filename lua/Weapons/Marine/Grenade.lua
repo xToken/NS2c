@@ -1,11 +1,10 @@
-//=============================================================================
+// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
 // lua\Weapons\Marine\Grenade.lua
 //
-// Created by Charlie Cleveland (charlie@unknownworlds.com)
-// Copyright (c) 2011, Unknown Worlds Entertainment, Inc.
+//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
 //
-//=============================================================================
+// ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Projectile.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")

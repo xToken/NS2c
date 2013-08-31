@@ -14,9 +14,10 @@ Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/ResourceTower.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/InfestationMixin.lua")
 
 class 'Harvester' (ResourceTower)
@@ -30,15 +31,13 @@ local kHarvesterInfestationBlobDensity = 2
 local kHarvesterInfestationGrowthRate = 0.1
 local kHarvesterMinInfestationRadius = 1
 
-local networkVars = 
-{
-}
+local networkVars = { }
 
 AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(HiveVisionMixin, networkVars)
-AddMixinNetworkVars(HasUmbraMixin, networkVars)
+AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(InfestationMixin, networkVars)
 
 function Harvester:OnCreate()
@@ -48,7 +47,7 @@ function Harvester:OnCreate()
     InitMixin(self, CloakableMixin)
     InitMixin(self, DetectableMixin)
     InitMixin(self, DissolveMixin)
-    InitMixin(self, HasUmbraMixin)
+    InitMixin(self, UmbraMixin)
         
     if Client then
         InitMixin(self, CommanderGlowMixin)    
@@ -134,9 +133,8 @@ if Client then
 
 end
 
-local kHarvesterHealthbarOffset = Vector(0, 2.2, 0)
 function Harvester:GetHealthbarOffset()
-    return kHarvesterHealthbarOffset
+    return 2.2
 end 
 
 Shared.LinkClassToMap("Harvester", Harvester.kMapName, networkVars)

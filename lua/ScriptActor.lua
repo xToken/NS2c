@@ -37,13 +37,9 @@ end
 
 local networkVars =
 {
-    // Whether this entity is in sight of the enemy team
-    sighted = "boolean",
-    
     // Id used to look up precached string representing room location ("Marine Start")
     // not certain about the maximum number of cached strings
     locationId = "resource",
-    
 }
 
 AddMixinNetworkVars(TechMixin, networkVars)
@@ -156,7 +152,7 @@ end
 // a ARC can siege, or when a unit has enough energy to perform an action, etc.)
 // Return list of 8 tech ids, represnting the 2nd and 3rd row of the 4x3 build icons.
 function ScriptActor:GetTechButtons(techId)
-    return  { kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+    return nil
 end
 
 function ScriptActor:GetCost()
@@ -236,6 +232,10 @@ function ScriptActor:GetTechAllowed(techId, techNode, player)
     
 end
 
+function ScriptActor:GetPlayIdleSound()
+    return GetIsUnitActive(self)
+end
+
 // Children can decide not to allow certain activations at certain times (energy cost already considered)
 function ScriptActor:GetActivationTechAllowed(techId)
     return true
@@ -258,7 +258,7 @@ function ScriptActor:GetDescription()
     return GetDisplayNameForTechId(self:GetTechId(), "<no description>")
 end
 
-function ScriptActor:GetVisualRadius ()
+function ScriptActor:GetVisualRadius()
     return LookupTechData(self:GetTechId(), kVisualRange, nil)
 end
 

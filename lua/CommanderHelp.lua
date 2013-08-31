@@ -82,7 +82,7 @@ end
 local function GetHarvesterIndicators()
 
     local conditionFunc = function(resourceNode)    
-        return GetIsPointOnInfestation( resourceNode:GetOrigin(), kTechId.Harvester )
+        return true
     end
     
     return GetEmptyResourceNodes( conditionFunc )
@@ -230,7 +230,7 @@ local function GetPlaceInBaseForTechIdSingleton(techId)
             local extents = GetExtents(techId)
             gUsedCommStructureOrigin = closestCommStructure:GetOrigin()
             
-            local validationFunc = LookupTechData(techId, kTechDataRequiresInfestation, nil) and GetIsPointOnInfestation or nil
+            local validationFunc = nil
             gCachedRandomPos = GetRandomSpawnForCapsule(extents.y, extents.x, closestCommStructure:GetOrigin(), 3.5, 18, EntityFilterAll(), validationFunc)
     
         end

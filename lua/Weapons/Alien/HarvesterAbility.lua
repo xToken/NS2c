@@ -1,4 +1,4 @@
-//
+// - NS2 Classic Addition - Dragon
 // lua\Weapons\Alien\HarvesterAbility.lua
 
 Script.Load("lua/Weapons/Alien/StructureAbility.lua")

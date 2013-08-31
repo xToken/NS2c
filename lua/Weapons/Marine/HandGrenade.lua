@@ -10,11 +10,16 @@ Script.Load("lua/Weapons/PredictedProjectile.lua")
 class 'HandGrenade' (PredictedProjectile)
 
 HandGrenade.kMapName = "handgrenade"
-HandGrenade.kModelName = PrecacheAsset("models/marine/rifle/rifle_grenade.model")
+HandGrenade.kModelName = PrecacheAsset("models/marine/grenades/gr_cluster.model")
 
 // prevents collision with friendly players in range to spawnpoint
 HandGrenade.kDisableCollisionRange = 10
+HandGrenade.kClearOnImpact = false
+HandGrenade.kClearOnEnemyImpact = true
 
+local kGrenadeCameraShakeDistance = 15
+local kGrenadeMinShakeIntensity = 0.01
+local kGrenadeMaxShakeIntensity = 0.12
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -134,6 +139,7 @@ if Server then
         self:TriggerEffects("grenade_explode", params)
         
         CreateExplosionDecals(self)
+        TriggerCameraShake(self, kGrenadeMinShakeIntensity, kGrenadeMaxShakeIntensity, kGrenadeCameraShakeDistance)
                 
         DestroyEntity(self)
         

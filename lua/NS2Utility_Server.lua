@@ -14,14 +14,27 @@
 Script.Load("lua/Table.lua")
 Script.Load("lua/Utility.lua")
 
+function DestroyEntitiesWithinRange(className, origin, range, filterFunc)
+
+    for index, entity in ipairs(GetEntitiesWithinRange(className, origin, range)) do
+        if not filterFunc or not filterFunc(entity) then
+            DestroyEntity(entity)
+        end
+    end
+
+end
+
 function OnCommanderLogOut(commander)
 /*
     local client = Server.GetOwner(commander)
+    if client then
     
-    local addTime = math.max(0, 60 - GetGamerules():GetGameTimeChanged())
+        local addTime = math.max(0, 30 - GetGamerules():GetGameTimeChanged())
+        
+        client.timeUntilResourceBlock = Shared.GetTime() + addTime + kCommanderResourceBlockTime
+        client.blockPersonalResources = true
     
-    client.timeUntilResourceBlock = Shared.GetTime() + addTime + kCommanderResourceBlockTime
-    client.blockPersonalResources = true
+    end
 */
 end
 
@@ -92,7 +105,7 @@ function CreateEntityForTeam(techId, position, teamNumber, player)
         // Hook it up to attach entity
 		//NS2c
 		//Adjusted so that inital CC attaches to techpoint, no others will
-        local attachEntity = GetAttachEntity(techId, position, player)    
+        local attachEntity = GetAttachEntity(techId, position, kStructureSnapRadius, player)    
         if attachEntity then    
             newEnt:SetAttached(attachEntity)        
         end

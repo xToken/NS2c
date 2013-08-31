@@ -72,7 +72,7 @@ function Onos:OnCreate()
     self.timeLastChargeEnd = 0
     self.chargeSpeed = 0
     
-    if Client then    
+    if Client then
         self:SetUpdates(true)
     end
     
@@ -81,6 +81,7 @@ end
 function Onos:OnInitialized()
 
     Alien.OnInitialized(self)
+    
     self:SetModel(Onos.kModelName, kOnosAnimationGraph)
 
 end
@@ -137,19 +138,39 @@ function Onos:PreUpdateMove(input, runningPrediction)
             self:EndCharge()
         end
     end
-
+    
 end
 
 function Onos:GetAngleSmoothRate()
     return 3
 end
 
-function Onos:OnKill(attacker, doer, point, direction)
+local function ClearDevourState(self)
     local devourWeapon = self:GetWeapon("devour")
-    if devourWeapon and devourWeapon:IsAlreadyEating() then
+    if devourWeapon and devourWeapon:IsDevouringPlayer() then
         devourWeapon:OnForceUnDevour()
     end
+end
+
+function Onos:OnKill(attacker, doer, point, direction)
+    ClearDevourState(self)
     Alien.OnKill(self, attacker, doer, point, direction)
+end
+
+function Onos:OnRedemed()
+    ClearDevourState(self)
+end
+
+function Onos:GetPlayerControllersGroup()
+    return PhysicsGroup.BigPlayerControllersGroup
+end
+
+function Onos:EvolveAllowed()
+    local devourWeapon = self:GetWeapon("devour")
+    if devourWeapon and devourWeapon:IsDevouringPlayer() then
+        return false
+    end
+    return true
 end
 
 function Onos:PostUpdateMove(input, runningPrediction)

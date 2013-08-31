@@ -26,9 +26,7 @@ BabblerEgg.kMapName = "babbleregg"
 BabblerEgg.kModelName = PrecacheAsset("models/alien/babbler/babbler_egg.model")
 local kAnimationGraph = PrecacheAsset("models/alien/babbler/babbler_egg.animation_graph")
 
-local networkVars =
-{
-}
+local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)

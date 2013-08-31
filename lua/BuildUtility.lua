@@ -193,13 +193,9 @@ local function CheckBuildEntityRequirements(techId, position, player, ignoreEnti
     
 end
 
-local function FilterBabblersAndTwo(ent1, ent2)
-    return function (test) return test == ent1 or test == ent2 or test:isa("Babbler") end
-end
-
 local function CheckClearForStacking(position, extents, attachEntity, ignoreEntity)
 
-    local filter = FilterBabblersAndTwo(ignoreEntity, attachEntity)
+    local filter = CreateFilter(ignoreEntity, attachEntity)
     local trace = Shared.TraceBox(extents, position + Vector(0, 1.5, 0), position - Vector(0, 3, 0), CollisionRep.Default, PhysicsMask.CommanderStack, filter)
     return trace.entity == nil
     

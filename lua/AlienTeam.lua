@@ -65,7 +65,8 @@ end
 
 function AlienTeam:OnInitialized()
 
-    PlayingTeam.OnInitialized(self)    
+    PlayingTeam.OnInitialized(self) 
+   
     self.lastTimeUnassignedHivessent = 0
     self.timeLastAlienSpectatorCheck = 0
     self.lastPingOfDeathCheck = 0
@@ -131,7 +132,7 @@ function AlienTeam:AddGorgeStructure(player, structure)
         local clientId = Server.GetOwner(player):GetUserId()
         local structureId = structure:GetId()
         local techId = structure:GetTechId()
-
+        
         if not self.clientOwnedStructures[clientId] then
             self.clientOwnedStructures[clientId] = { }
         end
@@ -192,14 +193,8 @@ function AlienTeam:UpdateClientOwnedStructures(oldEntityId)
                 
                     if structureId == oldEntityId then
                     
-                        if newEntityId then
-                            structureList[i] = newEntityId
-                        else
-                        
-                            table.remove(structureList, i)
-                            break
-                            
-                        end
+                        table.remove(structureList, i)
+                        break
                         
                     end
                     
@@ -210,7 +205,7 @@ function AlienTeam:UpdateClientOwnedStructures(oldEntityId)
         end
         
     end
-
+    
 end
 
 function AlienTeam:OnEntityChange(oldEntityId, newEntityId)
@@ -594,10 +589,9 @@ function AlienTeam:OnUpgradeChamberConstructed(upgradeChamber)
             self:PlayPrivateTeamSound(AlienTeam.kNewTraitSound)
         end
         
-        for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
-            if alien:GetIsAlive() and alien.UpdateNumUpgradeStructures then
-                alien:UpdateNumUpgradeStructures(checkTech[2], (anyremain + 1))
-            end
+        local teamInfo = GetTeamInfoEntity(self:GetTeamNumber())  
+        if teamInfo then
+            teamInfo:UpdateNumUpgradeStructures(checkTech[2], (anyremain + 1))
         end
         
     end
@@ -626,12 +620,9 @@ function AlienTeam:OnUpgradeChamberDestroyed(upgradeChamber)
             SendTeamMessage(self, kTeamMessageTypes.ResearchLost, checkTech[2])
         end
         
-        for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
-    
-            if alien:GetIsAlive() and alien.UpdateNumUpgradeStructures then
-                alien:UpdateNumUpgradeStructures(checkTech[2], (anyremain))
-            end
-            
+        local teamInfo = GetTeamInfoEntity(self:GetTeamNumber())  
+        if teamInfo then
+            teamInfo:UpdateNumUpgradeStructures(checkTech[2], (anyremain))
         end
         
     end
@@ -664,13 +655,12 @@ function AlienTeam:GetSpectatorMapName()
     return AlienSpectator.kMapName
 end
 
-function AlienTeam:AwardResources(min, max, pointOwner)
+function AlienTeam:AwardResources(resAward, pointOwner)
 
-    local resAwarded = math.random(min, max) 
-    resAwarded = resAwarded - pointOwner:AwardResForKill(resAwarded)
+    resAward = resAward - pointOwner:AwardResForKill(resAward)
     
-    if resAwarded > 0 then
-        self:SplitPres(resAwarded)
+    if resAward > 0 then
+        self:SplitPres(resAward)
     end
 
 end

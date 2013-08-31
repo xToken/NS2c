@@ -10,7 +10,6 @@
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/UmbraCloud.lua")
-Script.Load("lua/Weapons/Alien/UmbraMixin.lua")
 Script.Load("lua/Weapons/ClientWeaponEffectsMixin.lua")
 
 Shared.PrecacheSurfaceShader("materials/effects/mesh_effects/view_blood.surface_shader")
@@ -24,6 +23,7 @@ LerkBiteUmbra.kMapName = "lerkbiteumbra"
 
 local kAnimationGraph = PrecacheAsset("models/alien/lerk/lerk_view.animation_graph")
 local attackEffectMaterial = nil
+local kRange = 20
 
 if Client then
     attackEffectMaterial = Client.CreateRenderMaterial()
@@ -32,21 +32,36 @@ end
 
 local networkVars =
 {
-    lastBittenEntityId = "entityid",
-    lastPrimaryAttackTime = "time"
+    lastPrimaryAttackTime = "time",
+    lastSecondaryAttackTime = "time"
 }
 
-AddMixinNetworkVars(UmbraMixin, networkVars)
+local function CreateUmbraCloud(self, player)
+
+    local trace = Shared.TraceRay(player:GetEyePos(), player:GetEyePos() + player:GetViewCoords().zAxis * kRange, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterTwo(self, player))
+    local destination = trace.endPoint + trace.normal * 2
+    
+    local umbraCloud = CreateEntity(UmbraCloud.kMapName, player:GetEyePos() + player:GetViewCoords().zAxis, player:GetTeamNumber())
+    umbraCloud:SetOwner(player)
+    umbraCloud:SetTravelDestination(destination)
+
+end
+
+local function GetHasAttackDelay(self, player)
+
+    local attackDelay = kUmbraAttackDelay / player:GetAttackSpeed()
+    return self.lastSecondaryAttackTime + attackDelay > Shared.GetTime()
+    
+end
 
 function LerkBiteUmbra:OnCreate()
 
     Ability.OnCreate(self)
-    
-    InitMixin(self, UmbraMixin)
-    
-    self.lastBittenEntityId = Entity.invalidId
+
     self.primaryAttacking = false
+    self.secondaryAttacking = false
     self.lastPrimaryAttackTime = 0
+    self.lastSecondaryAttackTime = 0
     if Client then
         InitMixin(self, ClientWeaponEffectsMixin)
     end
@@ -63,6 +78,14 @@ end
 
 function LerkBiteUmbra:GetEnergyCost(player)
     return kLerkBiteEnergyCost
+end
+
+function LerkBiteUmbra:GetHasSecondary(player)
+    return player.twoHives 
+end
+
+function LerkBiteUmbra:GetSecondaryEnergyCost(player)
+    return kUmbraEnergyCost
 end
 
 function LerkBiteUmbra:GetHUDSlot()
@@ -107,32 +130,38 @@ function LerkBiteUmbra:OnPrimaryAttack(player)
     
 end
 
+function LerkBiteUmbra:OnSecondaryAttack(player)
+
+    if player:GetEnergy() >= self:GetSecondaryEnergyCost(player) and not self.primaryAttacking and not GetHasAttackDelay(self,player) then
+        self:TriggerEffects("umbra_attack")
+        if Server then
+            CreateUmbraCloud(self, player)
+            self:GetParent():DeductAbilityEnergy(self:GetSecondaryEnergyCost())
+        end
+        self.lastSecondaryAttackTime = Shared.GetTime()
+        self.secondaryAttacking = true
+    else
+        self.secondaryAttacking = false
+    end
+    
+end
+
 function LerkBiteUmbra:OnPrimaryAttackEnd()
     
     Ability.OnPrimaryAttackEnd(self)
-    
     self.primaryAttacking = false
     
 end
 
-function LerkBiteUmbra:GetAbilityUsesFocus()
-    return true
+function LerkBiteUmbra:OnSecondaryAttackEnd(player)
+
+    Ability.OnSecondaryAttackEnd(self, player)    
+    self.secondaryAttacking = false
+
 end
 
-function LerkBiteUmbra:GetEffectParams(tableParams)
-
-    Ability.GetEffectParams(self, tableParams)
-    
-    // There is a special case for biting structures.
-    if self.lastBittenEntityId ~= Entity.invalidId then
-    
-        local lastBittenEntity = Shared.GetEntity(self.lastBittenEntityId)
-        if lastBittenEntity and GetReceivesStructuralDamage(lastBittenEntity) then
-            tableParams[kEffectFilterHitSurface] = "structure"
-        end
-        
-    end
-    
+function LerkBiteUmbra:GetAbilityUsesFocus()
+    return true
 end
 
 function LerkBiteUmbra:GetMeleeBase()
@@ -214,19 +243,20 @@ end
 
 function LerkBiteUmbra:OnUpdateAnimationInput(modelMixin)
 
-    PROFILE("Bite:OnUpdateAnimationInput")
-
-    if not self:GetIsSecondaryBlocking() then
-        
-        local activityString = "none"
-        if self.primaryAttacking then
-            modelMixin:SetAnimationInput("ability", "bite")
-            activityString = "primary"
-        end        
-        
-        modelMixin:SetAnimationInput("activity", activityString)
-    
+    PROFILE("Bite:OnUpdateAnimationInput")  
+     
+    local activityString = "none"
+    local player = self:GetParent()
+    if self.primaryAttacking then
+        modelMixin:SetAnimationInput("ability", "bite")
+        activityString = "primary"
+    elseif self.secondaryAttacking then
+        modelMixin:SetAnimationInput("ability", "umbra")
+    elseif player and not GetHasAttackDelay(self, player) then
+        modelMixin:SetAnimationInput("ability", "bite")
     end
+    
+    modelMixin:SetAnimationInput("activity", activityString)
     
 end
 

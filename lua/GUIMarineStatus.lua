@@ -327,8 +327,8 @@ function GUIMarineStatus:Update(deltaTime, parameters)
             self.healthBar:SetTexturePixelCoordinates(unpack(pixelCoords))
         else
             self.healthText:SetNumberText(tostring(math.ceil(currentHealth)), GUIMarineStatus.kAnimSpeedUp, "ANIM_TEXT")
-            self.healthBar:SetSize(healthBarSize, animSpeed, "ANIM_HEALTH_SIZE")
-            self.healthBar:SetTexturePixelCoordinates(pixelCoords[1], pixelCoords[2], pixelCoords[3], pixelCoords[4], animSpeed, "ANIM_HEALTH_TEXTURE")
+            self.healthBar:SetSize(healthBarSize, GUIMarineStatus.kAnimSpeedUp, "ANIM_HEALTH_SIZE")
+            self.healthBar:SetTexturePixelCoordinates(pixelCoords[1], pixelCoords[2], pixelCoords[3], pixelCoords[4], GUIMarineStatus.kAnimSpeedUp, "ANIM_HEALTH_TEXTURE")
         end
 	    
 	    self.lastHealth = currentHealth

@@ -8,7 +8,6 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
-Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/Weapons/ClientWeaponEffectsMixin.lua")
 
 class 'Rifle' (ClipWeapon)
@@ -16,7 +15,7 @@ class 'Rifle' (ClipWeapon)
 Rifle.kMapName = "rifle"
 
 Rifle.kModelName = PrecacheAsset("models/marine/rifle/rifle.model")
-local kViewModelName = PrecacheAsset("models/marine/rifle/rifle_view.model")
+local kViewModels = GenerateMarineViewModelPaths("rifle")
 local kAnimationGraph = PrecacheAsset("models/marine/rifle/rifle_view.animation_graph")
 
 // 4 degrees in NS1
@@ -113,8 +112,6 @@ function Rifle:OnCreate()
 
     ClipWeapon.OnCreate(self)
     
-    InitMixin(self, EntityChangeMixin)
-    
     if Client then
         InitMixin(self, ClientWeaponEffectsMixin)
     end
@@ -146,25 +143,26 @@ end
 
 function Rifle:OnHolster(player)
 
-    DestroyMuzzleEffect(self)  
-    DestroyShellEffect(self)  
+    DestroyMuzzleEffect(self)
+    DestroyShellEffect(self)
     ClipWeapon.OnHolster(self, player)
     
 end
 
 function Rifle:OnHolsterClient()
+
     DestroyMuzzleEffect(self)
     DestroyShellEffect(self)
     ClipWeapon.OnHolsterClient(self)
+    
 end
-
 
 function Rifle:GetAnimationGraphName()
     return kAnimationGraph
 end
 
-function Rifle:GetViewModelName()
-    return kViewModelName
+function Rifle:GetViewModelName(sex, variant)
+    return kViewModels[sex][variant]
 end
 
 function Rifle:GetDeathIconIndex()
@@ -184,10 +182,6 @@ function Rifle:GetClipSize()
     return kRifleClipSize
 end
 
-function Rifle:GetReloadTime()
-    return kRifleReloadTime
-end
-
 function Rifle:GetSpread()
     return kSpread
 end
@@ -200,19 +194,7 @@ function Rifle:GetWeight()
     return kRifleWeight + ((math.ceil(self.ammo / self:GetClipSize()) + math.ceil(self.clip / self:GetClipSize())) * kRifleClipWeight)
 end
 
-function Rifle:GetBarrelSmokeEffect()
-    return Rifle.kBarrelSmokeEffect
-end
-
 function Rifle:OnSecondaryAttack(player)
-end
-
-function Rifle:GetShellEffect()
-    return chooseWeightedEntry ( Rifle.kShellEffectTable )
-end
-
-function Rifle:GetShellEffect()
-    return chooseWeightedEntry ( Rifle.kShellEffectTable )
 end
 
 function Rifle:OnTag(tagName)

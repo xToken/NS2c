@@ -48,8 +48,9 @@ Script.Load("lua/TriggerMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/DetectorMixin.lua")
-Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/InfestationMixin.lua")
+Script.Load("lua/IdleMixin.lua")
 
 class 'Shade' (ScriptActor)
 
@@ -65,12 +66,10 @@ Shade.kCloakRadius = 15
 Shade.kCloakUpdateRate = 0.5
 Shade.kHiveSightRange = 25
 
-local networkVars = 
-{ 
-}
+local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
+AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(UpgradableMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
@@ -84,14 +83,15 @@ AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
-AddMixinNetworkVars(HasUmbraMixin, networkVars)
+AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(InfestationMixin, networkVars)
+AddMixinNetworkVars(IdleMixin, networkVars)
 
 function Shade:OnCreate()
 
     ScriptActor.OnCreate(self)
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ClientModelMixin)
+    InitMixin(self, ModelMixin)
     InitMixin(self, LiveMixin)
     InitMixin(self, UpgradableMixin)
     InitMixin(self, GameEffectsMixin)
@@ -109,16 +109,15 @@ function Shade:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, CombatMixin)
     InitMixin(self, DetectorMixin)
-    InitMixin(self, HasUmbraMixin)
+    InitMixin(self, UmbraMixin)
     
     if Server then
-    
         //InitMixin(self, TriggerMixin, {kPhysicsGroup = PhysicsGroup.TriggerGroup, kFilterMask = PhysicsMask.AllButTriggers} )    
     elseif Client then
         InitMixin(self, CommanderGlowMixin)            
     end
     
-    self:SetLagCompensated(true)
+    self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
     
@@ -133,7 +132,6 @@ function Shade:OnInitialized()
     if Server then
     
         InitMixin(self, StaticTargetMixin)
-        InitMixin(self, SleeperMixin)
 
         // This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
@@ -146,6 +144,8 @@ function Shade:OnInitialized()
         InitMixin(self, HiveVisionMixin)
         
     end
+    
+    InitMixin(self, IdleMixin)
 
 end
 
@@ -185,18 +185,6 @@ function Shade:GetReceivesStructuralDamage()
     return true
 end
 
-function Shade:IsValidDetection(detectable)
-    return true
-end
-
-function Shade:GetDetectionRange()
-    return Shade.kHiveSightRange
-end
-
-function Shade:OnCheckDetectorActive()
-    return self:GetIsBuilt() and self:GetIsAlive()
-end
-
 function Shade:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Shade:OnUpdateAnimationInput")
@@ -211,10 +199,6 @@ function Shade:OnOverrideOrder(order)
         order:SetType(kTechId.SetRally)
     end
     
-end
-
-function Shade:GetCanSleep()
-    return true
 end
 
 function Shade:GetCanBeUsed(player, useSuccessTable)
@@ -247,9 +231,9 @@ if Server then
     end
     
     function Shade:OnConstructionComplete() 
-        self:AddTimedCallback(Shade.UpdateCloaking, Shade.kCloakUpdateRate)    
         local team = self:GetTeam()
-        if team then
+        if team and team.OnUpgradeChamberConstructed then
+			self:AddTimedCallback(Shade.UpdateCloaking, Shade.kCloakUpdateRate)
             team:OnUpgradeChamberConstructed(self)
         end
     end
@@ -259,7 +243,7 @@ if Server then
         ScriptActor.OnKill(self, attacker, doer, point, direction)
         
         local team = self:GetTeam()
-        if team then
+        if team and team.OnUpgradeChamberDestroyed then
             team:OnUpgradeChamberDestroyed(self)
         end
     
@@ -277,4 +261,4 @@ if Server then
 
 end
 
-Shared.LinkClassToMap("Shade", Shade.kMapName, networkVars, true)
+Shared.LinkClassToMap("Shade", Shade.kMapName, networkVars)

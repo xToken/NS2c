@@ -26,7 +26,7 @@ end
 
 function ARC:UpdateOrders(deltaTime)
 
-    // If deployed, check for targets
+    // If deployed, check for targets.
     local currentOrder = self:GetCurrentOrder()
     if currentOrder then
     
@@ -115,9 +115,11 @@ local function PerformAttack(self)
 end
 
 function ARC:SetMode(mode)
-    if mode ~= 1 and mode ~= 2 and mode ~= 3 then
+
+    if mode ~= 1 and mode ~= 2 and mode ~= 3 and mode ~= 4 then
         assert(false)
     end
+    
     if self.mode ~= mode then
     
         local triggerEffectName = "arc_" .. string.lower(EnumToString(ARC.kMode, mode))        

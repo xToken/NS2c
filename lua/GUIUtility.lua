@@ -326,3 +326,36 @@ if Locale then
     end
     
 end
+
+function GetLinePositionForTechMap(techMap, fromTechId, toTechId)
+
+    local positions = { 0, 0, 0, 0 }
+    local foundFrom = false
+    local foundTo = false
+
+    for i = 1, #techMap do
+    
+        local entry = techMap[i]
+        if entry[1] == fromTechId then
+        
+            positions[1] = entry[2]
+            positions[2] = entry[3]
+            foundFrom = true
+            
+        elseif entry[1] == toTechId then
+        
+            positions[3] = entry[2]
+            positions[4] = entry[3]
+            foundTo = true
+            
+        end
+
+        if foundFrom and foundTo then
+            break
+        end 
+    
+    end
+    
+    return positions
+
+end

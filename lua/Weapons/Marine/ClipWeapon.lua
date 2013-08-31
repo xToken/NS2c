@@ -21,6 +21,8 @@ PrecacheAsset("cinematics/materials/umbra/ricochet.cinematic")
 
 class 'ClipWeapon' (Weapon)
 
+local kBulletSize = 0.010
+
 ClipWeapon.kMapName = "clipweapon"
 
 local networkVars =
@@ -157,6 +159,17 @@ end
 
 function ClipWeapon:GetClip()
     return self.clip
+end
+
+function ClipWeapon:GetAmmoFraction()
+
+    local maxAmmo = self:GetMaxAmmo()
+    if maxAmmo > 0 then
+        return Clamp((self.clip + self.ammo) / maxAmmo, 0, 1)
+    end
+    
+    return 1
+
 end
 
 function ClipWeapon:SetClip(clip)
@@ -326,12 +339,7 @@ function ClipWeapon:OnPrimaryAttack(player)
             player:Reload()
             
         else
-        
-            // Once the ClipWeapon empty animations are working again, this
-            // should be added back and should only play on a tag.
-            //self:TriggerEffects("clipweapon_empty")
-            self:OnPrimaryAttackEnd(player)
-            
+            self:OnPrimaryAttackEnd(player)            
         end
         
     else
@@ -375,12 +383,19 @@ function ClipWeapon:OnSecondaryAttack(player)
         self.blockingSecondary = true
         self.timeAttackStarted = Shared.GetTime()
         
-        return true
-        
+    else
+        self:OnSecondaryAttackEnd(player)
     end
     
-    return false
+end
+
+function ClipWeapon:OnSecondaryAttackEnd(player)
+
+    Weapon.OnSecondaryAttackEnd(self, player)
     
+    self.secondaryAttacking = false
+    self.timeAttackEnded = Shared.GetTime()
+
 end
 
 function ClipWeapon:GetPrimaryAttacking()
@@ -406,7 +421,11 @@ function ClipWeapon:GetPrimaryIsBlocking()
 end
 
 function ClipWeapon:GetBulletSize()
-    return 0.010
+    return kBulletSize
+end
+
+function ClipWeapon:CalculateSpreadDirection(shootCoords, player)
+    return CalculateSpread(shootCoords, self:GetSpread() * self:GetInaccuracyScalar(player), NetworkRandom)
 end
 
 /**
@@ -563,6 +582,8 @@ function ClipWeapon:OnTag(tagName)
             
             Weapon.OnPrimaryAttack(self, player)
             
+            //DebugFireRate(self)
+            
         end
         
     //elseif tagName == "reload" then
@@ -578,6 +599,8 @@ function ClipWeapon:OnTag(tagName)
         self.blockingPrimary = false
     elseif tagName == "alt_attack_end" then
         self.blockingSecondary = false
+    elseif tagName == "shoot_empty" then
+        self:TriggerEffects("clipweapon_empty")
     end
     
 end

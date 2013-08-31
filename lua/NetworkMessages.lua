@@ -92,23 +92,27 @@ function ParseSelectUnitMessage(message)
     return message.teamNumber, Shared.GetEntity(message.unitId), message.selected, message.keepSelection
 end
 
-function BuildConnectMessage(armorId)
+function BuildConnectMessage(armorId, isMale)
 
-    local t = {}
+    local t = { }
     t.armorId = armorId
+    t.isMale = isMale
     return t
     
 end
 
 function ParseConnectMessage(message)
-    return message.armorId
+    return message.armorId, message.isMale
 end
 
 local kConnectMessage =
 {
     armorId = "enum kArmorType",
+    isMale = "boolean"
 }
-Shared.RegisterNetworkMessage( "ConnectMessage", kConnectMessage )
+Shared.RegisterNetworkMessage("ConnectMessage", kConnectMessage)
+
+Shared.RegisterNetworkMessage("SetPlayerVariant", { armorId = "enum kArmorType", isMale = "boolean" })
 
 function BuildVoiceMessage(voiceId)
 
@@ -346,6 +350,7 @@ local kScoresMessage =
     teamNumber = string.format("integer (-1 to %d)", kRandomTeamType),
     score = string.format("integer (0 to %d)", kMaxScore),
     kills = string.format("integer (0 to %d)", kMaxKills),
+    assists = string.format("integer (0 to %d)", kMaxKills),
     deaths = string.format("integer (0 to %d)", kMaxDeaths),
     resources = string.format("integer (0 to %d)", kMaxResources),
     isCommander = "boolean",
@@ -365,11 +370,19 @@ function BuildScoresMessage(scorePlayer, sendToPlayer)
     t.playerName = string.sub(scorePlayer:GetName(), 0, kMaxNameLength)
     t.teamNumber = scorePlayer:GetTeamNumber()
     t.score = 0
+    t.kills = 0
+    t.assists = 0
+    t.deaths = 0
+    
     if HasMixin(scorePlayer, "Scoring") then
+    
         t.score = scorePlayer:GetScore()
+        t.kills = scorePlayer:GetKills()
+        t.assists = scorePlayer:GetAssistKills()
+        t.deaths = scorePlayer:GetDeaths()
+        
     end
-    t.kills = scorePlayer:GetKills()
-    t.deaths = scorePlayer:GetDeaths()
+
     t.resources = ConditionalValue(isEnemy, 0, math.floor(scorePlayer:GetResources()))
     t.isCommander = ConditionalValue(isEnemy, false, scorePlayer:isa("Commander"))
     t.isRookie = ConditionalValue(isEnemy, false, scorePlayer:GetIsRookie())
@@ -709,9 +722,6 @@ local kTechNodeBaseMessage =
     // on structures of this type (ie, mature versions of a structure).
     addOnTechId         = string.format("integer (0 to %d)", kTechIdMax),
 
-    // Resource costs (team resources, individual resources or energy depending on type)
-    cost                = "integer (0 to 150)",
-
     // If tech node can be built/researched/used. Requires prereqs to be met and for 
     // research, means that it hasn't already been researched and that it's not
     // in progress. Computed when structures are built or killed or when
@@ -750,7 +760,7 @@ function ParseTechNodeBaseMessage(techNode, networkVars)
     techNode.prereq1                = networkVars.prereq1
     techNode.prereq2                = networkVars.prereq2
     techNode.addOnTechId            = networkVars.addOnTechId
-    techNode.cost                   = networkVars.cost
+    techNode.cost                   = LookupTechData(networkVars.techId, kTechDataCostKey, 0)
     techNode.available              = networkVars.available
     techNode.time                   = networkVars.time
     techNode.researchProgress       = networkVars.researchProgress
@@ -784,7 +794,6 @@ function BuildTechNodeBaseMessage(techNode)
     t.prereq1                   = techNode.prereq1
     t.prereq2                   = techNode.prereq2
     t.addOnTechId               = techNode.addOnTechId
-    t.cost                      = techNode.cost
     t.available                 = techNode.available
     t.time                      = techNode.time
     t.researchProgress          = techNode.researchProgress
@@ -815,7 +824,6 @@ local kSetNameMessage =
 }
 Shared.RegisterNetworkMessage("SetName", kSetNameMessage)
 
--- Adding 1 to kMaxChatLength here to account for the zero terminated string.
 local kChatClientMessage =
 {
     teamOnly = "boolean",
@@ -826,7 +834,6 @@ function BuildChatClientMessage(teamOnly, chatMessage)
     return { teamOnly = teamOnly, message = chatMessage }
 end
 
--- Adding 1 to kMaxChatLength here to account for the zero terminated string.
 local kChatMessage =
 {
     teamOnly = "boolean",

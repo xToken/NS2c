@@ -1,18 +1,16 @@
 // ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
 //    
-// lua\HasUmbraMixin.lua    
+// lua\UmbraMixin.lua    
 //    
 //    Created by:   Andreas Urwalek (andi@unknownworlds.com)
 //    
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
-Script.Load("lua/FunctionContracts.lua")
-
 /**
  * UmbraMixin drags out parts of an umbra cloud to protect an alien for additional UmbraMixin.kUmbraDragTime seconds.
  */
-HasUmbraMixin = CreateMixin( HasUmbraMixin )
-HasUmbraMixin.type = "HasUmbra"
+UmbraMixin = CreateMixin( UmbraMixin )
+UmbraMixin.type = "Umbra"
 
 local kMaterialName = "cinematics/vfx_materials/umbra.material"
 local kViewMaterialName = "cinematics/vfx_materials/umbra_view.material"
@@ -22,26 +20,26 @@ if Client then
     Shared.PrecacheSurfaceShader("cinematics/vfx_materials/umbra_view.surface_shader")
 end
 
-HasUmbraMixin.expectedMixins =
+UmbraMixin.expectedMixins =
 {
 }
 
-HasUmbraMixin.networkVars =
+UmbraMixin.networkVars =
 {
     umbratime = "private time"
 }
 
-function HasUmbraMixin:__initmixin()
+function UmbraMixin:__initmixin()
     self.umbratime = 0
 end
 
-function HasUmbraMixin:GetHasUmbra()
+function UmbraMixin:GetHasUmbra()
     return self.umbratime > Shared.GetTime()
 end
 
 if Server then
 
-    function HasUmbraMixin:SetHasUmbra(state, umbraTime, force)
+    function UmbraMixin:SetHasUmbra(state, umbraTime, force)
     
         if HasMixin(self, "Live") and not self:GetIsAlive() then
             return
@@ -51,7 +49,7 @@ if Server then
     
 end
 
-function HasUmbraMixin:OnUpdateRender()
+function UmbraMixin:OnUpdateRender()
 
     local model = self:GetRenderModel()
     if model then

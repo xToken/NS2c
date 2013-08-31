@@ -19,7 +19,7 @@ local kModeText =
     ["loading_assets"]          = { text = "LOADING ASSETS" },
     ["downloading_mods"]        = { text = "DOWNLOADING MODS" },
     ["checking_consistency"]    = { text = "CHECKING CONSISTENCY" },
-    ["compiling_shaders"]       = { text = "COMPILING UPDATED SHADERS", display = "count" }
+    ["compiling_shaders"]       = { text = "LOADING SHADERS", display = "count" }
 }
 
 local kTipStrings =
@@ -320,6 +320,10 @@ end
 
 // NOTE: This does not refer to the loading screen being done..it's referring to the loading of the loading screen
 function OnLoadComplete()
+
+    // Make the mouse visible so that the user can alt-tab out in Windowed mode.
+    Client.SetMouseVisible(true)
+    Client.SetMouseClipped(false)
 
     local randomizer = Randomizer()
     randomizer:randomseed(Shared.GetSystemTime())

@@ -27,7 +27,7 @@ Script.Load("lua/CommanderGlowMixin.lua")
 
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/MapBlipMixin.lua")
-Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/UmbraMixin.lua")
 
 class 'Egg' (ScriptActor)
 
@@ -59,7 +59,7 @@ AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
-AddMixinNetworkVars(HasUmbraMixin, networkVars)
+AddMixinNetworkVars(UmbraMixin, networkVars)
 
 function Egg:OnCreate()
 
@@ -77,9 +77,11 @@ function Egg:OnCreate()
     InitMixin(self, LOSMixin)
     InitMixin(self, DetectableMixin)
     InitMixin(self, ResearchMixin)
-    InitMixin(self, HasUmbraMixin)
+    InitMixin(self, UmbraMixin)
     
-    if Client then
+    if Server then
+
+    elseif Client then
         InitMixin(self, CommanderGlowMixin)    
     end
     
@@ -143,16 +145,6 @@ function Egg:GetTechAllowed(techId, techNode, player)
     end
     
     return allowed, canAfford
-    
-end
-
-function Egg:OverrideHintString(hintString)
-
-    if self:GetIsResearching() then
-        return "COMM_SEL_UPGRADING"
-    end
-    
-    return hintString
     
 end
 
@@ -272,24 +264,8 @@ local function GestatePlayer(self, player, fromTechId)
     
     newPlayer:DropToFloor()
     
-    local techIds = { self:GetGestateTechId() } // player:GetUpgrades()    
-    //table.insert(techIds, self:GetGestateTechId())
-
+    local techIds = { self:GetGestateTechId() }
     newPlayer:SetGestationData(techIds, fromTechId, 1, 1)
-    
-    if self:GetIsResearching() then
-    
-        local progress = self:GetResearchProgress()
-        newPlayer.gestationTime = newPlayer.gestationTime - newPlayer.gestationTime * progress
-        
-        // rese tiers, otherwise the player could gain unresearched abilities
-        newPlayer.twoHives = false
-        newPlayer.threeHives = false
-    
-    // apply min gestation time
-    else
-        newPlayer.gestationTime = 2
-    end
 
 end
 
@@ -335,6 +311,7 @@ function Egg:SpawnPlayer(overrideplayer)
         local team = queuedPlayer:GetTeam()
         local success, player = team:ReplaceRespawnPlayer(queuedPlayer, spawnOrigin, queuedPlayer:GetAngles(), gestationClass)                
         player:SetCameraDistance(0)
+        player:SetHatched()
         // It is important that the player was spawned at the spot we specified.
         assert(player:GetOrigin() == spawnOrigin)
         
@@ -403,9 +380,8 @@ function Egg:OverrideCheckVision()
     return false
 end
 
-local kEggHealthbarOffset = Vector(0, 0.4, 0)
 function Egg:GetHealthbarOffset()
-    return kEggHealthbarOffset
+    return 0.4
 end
 
 function Egg:GetEngagementPointOverride()

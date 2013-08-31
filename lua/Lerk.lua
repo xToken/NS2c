@@ -55,14 +55,13 @@ local kFlightGravityScalar = -4
 local kMaxWalkSpeed = 3.9
 local kWalkSpeed = 2.4
 local kMaxSpeed = 14
-local kDefaultAttackSpeed = 1.65
+local kDefaultAttackSpeed = 1.1
 
 local networkVars =
 {
-    gliding = "boolean",
+    gliding = "private compensated boolean",
     
     lastTimeFlapped = "compensated time",
-    
     // Wall grip. time == 0 no grip, > 0 when grip started.
     wallGripTime = "private compensated time",
     // the normal that the model will use. Calculated the same way as the skulk
@@ -72,9 +71,7 @@ local networkVars =
     // if wallChecking is enabled. Means that the next time you press use
     wallGripCheckEnabled = "private compensated boolean",
     
-    prevInputMove = "private boolean",
-    
-    bombPoseParam = "float (0 to 1 by 0.05)",
+    prevInputMove = "private boolean"
 }
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
@@ -96,8 +93,6 @@ function Lerk:OnCreate()
     self.wallGripRecheckDone = false
     self.wallGripCheckEnabled = false
     
-    self.bombPoseParam = 0
-    
 end
 
 function Lerk:OnInitialized()
@@ -113,7 +108,7 @@ function Lerk:OnInitialized()
         self.previousYaw = 0
         
         self:AddHelpWidget("GUILerkFlapHelp", 2)
-        //self:AddHelpWidget("GUILerkSporesHelp", 2)
+        self:AddHelpWidget("GUILerkSporesHelp", 2)
         
     end
     
@@ -145,8 +140,8 @@ function Lerk:GetDesiredAngles()
 
     if not self:GetIsOnGround() and self.gliding then
         desiredAngles.pitch = self.viewPitch
-    end    
-
+    end 
+   
     if not self:GetIsOnSurface() then    
         desiredAngles.roll = Clamp( RadianDiff( self:GetAngles().yaw, self.viewYaw ), -kMaxGlideRoll, kMaxGlideRoll)    
     end
@@ -515,7 +510,7 @@ function Lerk:HandleAttacks(input)
     local holdingJump = bit.band(input.commands, Move.Jump) ~= 0
     
     // If we're holding down jump, glide
-    self.gliding = input.move.z > 0 and self:GetVelocity():GetLength() > kMaxSpeed *.5 and not self:GetIsOnSurface() and not turnedSharp and holdingJump
+    self.gliding = input.move.z > 0 and self:GetVelocityLength() > kMaxSpeed *.5 and not self:GetIsOnSurface() and not turnedSharp and holdingJump
     
 end
 
@@ -569,4 +564,4 @@ function Lerk:OnUpdateAnimationInput(modelMixin)
     
 end
 
-Shared.LinkClassToMap("Lerk", Lerk.kMapName, networkVars)
+Shared.LinkClassToMap("Lerk", Lerk.kMapName, networkVars, true)

@@ -18,12 +18,16 @@ local kEnzymedThirdpersonMaterialName = "cinematics/vfx_materials/enzyme.materia
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/enzyme.surface_shader")
 
 local kEmpoweredEffectInterval = 2
+local kRegenerationViewCinematic = PrecacheAsset("cinematics/alien/regeneration_1p.cinematic")
 
 local kFirstPersonDeathEffect = PrecacheAsset("cinematics/alien/death_1p_alien.cinematic")
 local kAlienFirstPersonHitEffectName = PrecacheAsset("cinematics/alien/hit_1p.cinematic")
-local screenEffects = { }
-screenEffects.darkVision = Client.CreateScreenEffect("shaders/DarkVision.screenfx")
-screenEffects.darkVision:SetActive(false)
+
+local kUpgradeChamberFunctions = { }
+kUpgradeChamberFunctions[kTechId.Crag] = GetCrags
+kUpgradeChamberFunctions[kTechId.Shift] = GetShifts
+kUpgradeChamberFunctions[kTechId.Shade] = GetShades
+kUpgradeChamberFunctions[kTechId.Whip] = GetWhips
 
 function PlayerUI_GetActiveHiveCount()
 
@@ -55,20 +59,23 @@ function PlayerUI_GetHiveInformation()
 
 end
 
+function AlienUI_GetHasMovementSpecial()
+
+    local hasMovementSpecial = false
+    
+    local player = Client.GetLocalPlayer()
+    if player and player.GetHasMovementSpecial then
+        hasMovementSpecial = player:GetHasMovementSpecial()
+    end
+     
+    return hasMovementSpecial
+
+end
+
 function AlienUI_GetChamberCount(techId)
     local player = Client.GetLocalPlayer()
     if player ~= nil then
-        if techId == kTechId.Crag then
-            return player.crags
-        elseif techId == kTechId.Shift then
-            return player.shifts
-        elseif techId == kTechId.Shade then
-            return player.shades
-		elseif techId == kTechId.Whip then
-            return player.whips
-        elseif techId == kTechId.Hive then
-            return player.unassignedhives
-        end
+        return GetChambers(techId, player:GetTeamNumber())
      end
      return 0
 end
@@ -114,7 +121,7 @@ end
 function AlienUI_GetInUmbra()
 
     local player = Client.GetLocalPlayer()
-    if player ~= nil and HasMixin(player, "HasUmbra") then
+    if player ~= nil and HasMixin(player, "Umbra") then
         return player:GetHasUmbra()
     end
 
@@ -172,16 +179,13 @@ function AlienUI_GetEggCount()
 
     local eggCount = 0
     
-    local player = Client.GetLocalPlayer()
-    if player then
-    
-        local teamInfo = GetTeamInfoEntity(player:GetTeamNumber())
-        eggCount = teamInfo:GetEggCount()        
-        
-    end    
+    local teamInfo = GetTeamInfoEntity(kTeam2Index)
+    if teamInfo then
+        eggCount = teamInfo:GetEggCount()
+    end
     
     return eggCount
-
+    
 end
 
 /**
@@ -276,18 +280,10 @@ end
 function PlayerUI_GetPlayerMaxEnergy()
 
     local player = Client.GetLocalPlayer()
-    if player and player.GetEnergy then
+    if player and player.GetMaxEnergy then
         return player:GetMaxEnergy()
     end
     return kAbilityMaxEnergy
-    
-end
-
-function Alien:OnKillClient()
-
-    Player.OnKillClient(self)
-    
-    self:DestroyGUI()
     
 end
 
@@ -352,8 +348,20 @@ function Alien:UpdateEnzymeEffect(isLocal)
 end
 
 function Alien:GetDarkVisionEnabled()
-    return self.darkVisionOn
+
+    if Client.GetIsControllingPlayer() then
+        return self.darkVisionOn
+    else
+        return self.darkVisionSpectatorOn
+    end    
+
 end
+
+local alienVisionEnabled = true
+local function ToggleAlienVision(enabled)
+    alienVisionEnabled = enabled ~= "false"
+end
+Event.Hook("Console_alienvision", ToggleAlienVision)
 
 function Alien:UpdateClientEffects(deltaTime, isLocal)
 
@@ -371,20 +379,41 @@ function Alien:UpdateClientEffects(deltaTime, isLocal)
         local darkVisionFadeAmount = 1
         local darkVisionFadeTime = 0.2
         local darkVisionPulseTime = 4
+        local darkVisionState = self:GetDarkVisionEnabled()
+
+        if self.lastDarkVisionState ~= darkVisionState then
+
+            if darkVisionState then
+            
+                self.darkVisionTime = Shared.GetTime()
+                self:TriggerEffects("alien_vision_on") 
+                
+            else
+            
+                self.darkVisionEndTime = Shared.GetTime()
+                self:TriggerEffects("alien_vision_off")
+                
+            end
+            
+            self.lastDarkVisionState = darkVisionState
         
-        if not self.darkVisionOn then
+        end
+        
+        if not darkVisionState then
             darkVisionFadeAmount = math.max(1 - (Shared.GetTime() - self.darkVisionEndTime) / darkVisionFadeTime, 0)
         end
         
-        if screenEffects.darkVision then
+        if self:GetScreenEffects().darkVision then
         
-            screenEffects.darkVision:SetActive(self.darkVisionOn or darkVisionFadeAmount > 0)
+            self:GetScreenEffects().darkVision:SetActive(alienVisionEnabled)
             
-            screenEffects.darkVision:SetParameter("startTime", self.darkVisionTime)
-            screenEffects.darkVision:SetParameter("time", Shared.GetTime())
-            screenEffects.darkVision:SetParameter("amount", darkVisionFadeAmount)
+            self:GetScreenEffects().darkVision:SetParameter("startTime", self.darkVisionTime)
+            self:GetScreenEffects().darkVision:SetParameter("time", Shared.GetTime())
+            self:GetScreenEffects().darkVision:SetParameter("amount", darkVisionFadeAmount)
             
         end
+        
+        self:UpdateRegenerationEffect()
         
     end
     
@@ -394,6 +423,27 @@ function Alien:GetFirstPersonDeathEffect()
     return kFirstPersonDeathEffect
 end
 
+function Alien:UpdateRegenerationEffect()
+
+    if GetHasRegenerationUpgrade(self) and not ClientUI.GetScript("GUIRegenerationFeedback"):GetIsAnimating() then
+    
+        if self.lastHealth then
+        
+            if self.lastHealth < self:GetHealth() then
+            
+                ClientUI.GetScript("GUIRegenerationFeedback"):TriggerRegenEffect()
+                local cinematic = Client.CreateCinematic(RenderScene.Zone_ViewModel)
+                cinematic:SetCinematic(kRegenerationViewCinematic)
+                
+            end
+            
+        end
+        
+        self.lastHealth = self:GetHealth()
+        
+    end
+    
+end
 
 function Alien:UpdateMisc(input)
 
@@ -407,28 +457,6 @@ function Alien:UpdateMisc(input)
         end
         
     end
-    
-end
-
-function Alien:CloseMenu()
-
-    if self.buyMenu then
-    
-        self.buyMenu:OnClose()
-        
-        GetGUIManager():DestroyGUIScript(self.buyMenu)
-        self.buyMenu = nil
-        
-        MouseTracker_SetIsVisible(false)
-        
-        // Quick work-around to not fire weapon when closing menu.
-        self.timeClosedMenu = Shared.GetTime()
-        
-        return true
-        
-    end
-    
-    return false
     
 end
 

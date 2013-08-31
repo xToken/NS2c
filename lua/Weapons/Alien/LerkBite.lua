@@ -10,7 +10,6 @@
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/SporeCloud.lua")
-Script.Load("lua/Weapons/Alien/SporesMixin.lua")
 Script.Load("lua/Weapons/ClientWeaponEffectsMixin.lua")
 
 Shared.PrecacheSurfaceShader("materials/effects/mesh_effects/view_blood.surface_shader")
@@ -24,6 +23,7 @@ LerkBite.kMapName = "lerkbite"
 
 local kAnimationGraph = PrecacheAsset("models/alien/lerk/lerk_view.animation_graph")
 local attackEffectMaterial = nil
+local kRange = 20
 
 if Client then
     attackEffectMaterial = Client.CreateRenderMaterial()
@@ -32,19 +32,36 @@ end
 
 local networkVars =
 {
-    lastPrimaryAttackTime = "time"
+    lastPrimaryAttackTime = "time",
+    lastSecondaryAttackTime = "time"
 }
 
-AddMixinNetworkVars(SporesMixin, networkVars)
+local function CreateSporeCloud(self, player)
+
+    local trace = Shared.TraceRay(player:GetEyePos(), player:GetEyePos() + player:GetViewCoords().zAxis * kRange, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterTwo(self, player))
+    local destination = trace.endPoint + trace.normal * 2
+    
+    local sporeCloud = CreateEntity(SporeCloud.kMapName, player:GetEyePos() + player:GetViewCoords().zAxis, player:GetTeamNumber())
+    sporeCloud:SetOwner(player)
+    sporeCloud:SetTravelDestination(destination)
+
+end
+
+local function GetHasAttackDelay(self, player)
+
+    local attackDelay = kSporeAttackDelay / player:GetAttackSpeed()
+    return self.lastSecondaryAttackTime + attackDelay > Shared.GetTime()
+    
+end
 
 function LerkBite:OnCreate()
 
     Ability.OnCreate(self)
-    
-    InitMixin(self, SporesMixin)
-    
+
     self.primaryAttacking = false
+    self.secondaryAttacking = false
     self.lastPrimaryAttackTime = 0
+    self.lastSecondaryAttackTime = 0
     if Client then
         InitMixin(self, ClientWeaponEffectsMixin)
     end
@@ -57,6 +74,14 @@ end
 
 function LerkBite:GetEnergyCost(player)
     return kLerkBiteEnergyCost
+end
+
+function LerkBite:GetHasSecondary(player)
+    return player:GetHasOneHive() 
+end
+
+function LerkBite:GetSecondaryEnergyCost(player)
+    return kSporeEnergyCost
 end
 
 function LerkBite:GetHUDSlot()
@@ -103,12 +128,35 @@ function LerkBite:OnPrimaryAttack(player)
     
 end
 
+function LerkBite:OnSecondaryAttack(player)
+
+    if player:GetEnergy() >= self:GetSecondaryEnergyCost(player) and not self.primaryAttacking and not GetHasAttackDelay(self,player) then
+        self:TriggerEffects("spores_attack")
+        if Server then
+            CreateSporeCloud(self, player)
+        end
+        self:GetParent():DeductAbilityEnergy(self:GetSecondaryEnergyCost())
+        self.lastSecondaryAttackTime = Shared.GetTime()
+        self.secondaryAttacking = true
+    else
+        self.secondaryAttacking = false
+    end
+    
+end
+
 function LerkBite:OnPrimaryAttackEnd()
     
     Ability.OnPrimaryAttackEnd(self)
     
     self.primaryAttacking = false
     
+end
+
+function LerkBite:OnSecondaryAttackEnd(player)
+
+    Ability.OnSecondaryAttackEnd(self, player)    
+    self.secondaryAttacking = false
+
 end
 
 function LerkBite:GetAbilityUsesFocus()
@@ -196,17 +244,18 @@ function LerkBite:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Bite:OnUpdateAnimationInput")
 
-    if not self:GetIsSecondaryBlocking() then
-        
-        local activityString = "none"
-        if self.primaryAttacking then
-            modelMixin:SetAnimationInput("ability", "bite")
-            activityString = "primary"
-        end        
-        
-        modelMixin:SetAnimationInput("activity", activityString)
+    local activityString = "none"
+    local player = self:GetParent()
+    if self.primaryAttacking then
+        modelMixin:SetAnimationInput("ability", "bite")
+        activityString = "primary"
+    elseif self.secondaryAttacking then
+        modelMixin:SetAnimationInput("ability", "spores")
+    elseif player and not GetHasAttackDelay(self, player) then
+        modelMixin:SetAnimationInput("ability", "bite")
+    end       
     
-    end
+    modelMixin:SetAnimationInput("activity", activityString)
     
 end
 

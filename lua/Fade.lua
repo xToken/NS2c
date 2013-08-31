@@ -24,6 +24,7 @@ Script.Load("lua/Weapons/Alien/AcidRocket.lua")
 Script.Load("lua/Alien.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/Weapons/PredictedProjectile.lua")
 
 class 'Fade' (Alien)
 
@@ -51,13 +52,14 @@ local kMaxBlinkSpeed = 16 // ns1 fade blink is (3x maxSpeed) + celerity
 local kWalkSpeed = 2
 local kCrouchedSpeed = 1.8
 local kBlinkImpulseForce = 10
-local kBlinkVerticleConstraints = 0.6
+local kBlinkVerticleDampner = 4
 local kBlinkSpeedGracePeriod = 0.4
 
 local networkVars =
 {
     etherealStartTime = "private time",
     etherealEndTime = "private time",
+    
     // True when we're moving quickly "through the ether"
     ethereal = "boolean"
 }
@@ -72,7 +74,8 @@ function Fade:OnCreate()
     Alien.OnCreate(self)
     
     InitMixin(self, DissolveMixin)
-
+    InitMixin(self, PredictedProjectileShooterMixin)
+    
     if Server then
         self.isBlinking = false
     end
@@ -125,6 +128,10 @@ function Fade:GetViewModelName()
     return kViewModelName
 end
 
+function Fade:GetPlayerControllersGroup()
+    return PhysicsGroup.BigPlayerControllersGroup
+end
+
 function Fade:PerformsVerticalMove()
     return self:GetIsBlinking()
 end
@@ -134,6 +141,7 @@ function Fade:ReceivesFallDamage()
 end
 
 function Fade:GetMaxSpeed(possible)
+
     if possible then
         return kMaxSpeed
     end
@@ -174,12 +182,16 @@ function Fade:OnBlink()
     self:SetIsJumping(true)
 end
 
+local function GetSign(number)
+    return number >= 0 and 1 or -1    
+end
+
 function Fade:OnBlinking(input)
     local velocity = self:GetVelocity()
        
     // Blink impulse
     local zAxis = self:GetViewCoords().zAxis
-    zAxis.y = Clamp(zAxis.y, -1 * kBlinkVerticleConstraints, kBlinkVerticleConstraints)
+    zAxis.y = math.pow(zAxis.y, kBlinkVerticleDampner) * GetSign(zAxis.y)
     velocity:Add( zAxis * kBlinkImpulseForce )
     
     // Cap groundspeed
@@ -193,7 +205,7 @@ function Fade:OnBlinking(input)
     end
     
     local pitchAngle = Clamp(self:GetViewCoords().zAxis.y, -0.5, 0.5)
-    if pitchAngle < 0.25 and pitchAngle >= -0.05 and math.abs(velocity.y) < 1 then
+    if pitchAngle < 0.3 and pitchAngle >= -0.05 and math.abs(velocity.y) < 1 then
         self:GetJumpVelocity(input, velocity)
     end
     
@@ -223,4 +235,4 @@ function Fade:GetEngagementPointOverride()
     return self:GetOrigin() + Vector(0, 0.8, 0)
 end
 
-Shared.LinkClassToMap("Fade", Fade.kMapName, networkVars)
+Shared.LinkClassToMap("Fade", Fade.kMapName, networkVars, true)

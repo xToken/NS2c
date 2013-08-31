@@ -22,8 +22,6 @@ Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/RecycleMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-Script.Load("lua/DetectableMixin.lua")
-Script.Load("lua/ParasiteMixin.lua")
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
@@ -31,7 +29,10 @@ Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
+Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
+Script.Load("lua/DetectableMixin.lua")
+Script.Load("lua/ParasiteMixin.lua")
 
 class 'ArmsLab' (ScriptActor)
 ArmsLab.kMapName = "armslab"
@@ -42,22 +43,7 @@ local kAnimationGraph = PrecacheAsset("models/marine/arms_lab/arms_lab.animation
 local kHaloCinematic = PrecacheAsset("cinematics/marine/arms_lab/arms_lab_holo.cinematic")
 local kHaloAttachPoint = "ArmsLab_hologram"
 
-local function SendArmorUpdateNotification(self)
-
-    if Server then
-
-        local team = self:GetTeam()
-        if team then
-            team:OnArmsLabChanged()
-        end
-        
-    end    
-
-end
-
-local networkVars =
-{
-}
+local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ClientModelMixin, networkVars)
@@ -70,12 +56,12 @@ AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(RecycleMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
-AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
-AddMixinNetworkVars(ParasiteMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
+AddMixinNetworkVars(ParasiteMixin, networkVars)
+AddMixinNetworkVars(DetectableMixin, networkVars)
 
 function ArmsLab:OnCreate()
 
@@ -100,10 +86,14 @@ function ArmsLab:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, DetectableMixin)
+	InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
     if Client then
+    
         InitMixin(self, CommanderGlowMixin)
+        self.deployed = false
+        
     end
     
     self:SetLagCompensated(false)
@@ -145,39 +135,10 @@ end
 
 function ArmsLab:GetTechButtons(techId)
 
-    return { kTechId.Weapons1, kTechId.Weapons2, kTechId.Weapons3, kTechId.CatPackTech, //kTechId.CatPackTech,
+    return { kTechId.Weapons1, kTechId.Weapons2, kTechId.Weapons3, kTechId.CatPackTech,
              kTechId.Armor1, kTechId.Armor2, kTechId.Armor3, kTechId.None }
 
 end
-
-function ArmsLab:OnUpdateAnimationInput(modelMixin)
-
-    PROFILE("ArmsLab:OnUpdateAnimationInput")
-	modelMixin:SetAnimationInput("powered", true)
-    
-end
-
-function ArmsLab:OnConstructionComplete()
-    SendArmorUpdateNotification(self)
-end
-
-if Server then
-
-    function ArmsLab:OnResearchComplete(researchId)
-    
-        if researchId == kTechId.Armor1 or researchId == kTechId.Armor2 or researchId == kTechId.Armor3 then
-            SendArmorUpdateNotification(self)
-        end
-        
-    end
-    
-    function ArmsLab:UpdateTechAvailability()
-        SendArmorUpdateNotification(self) 
-    end
-    
-end
-
-
 
 if Client then
 
@@ -213,7 +174,6 @@ end
 function ArmsLab:OnDestroy()
 
     ScriptActor.OnDestroy(self)
-    SendArmorUpdateNotification(self)
     
     -- if Client and self.haloCinematic then
     

@@ -11,9 +11,9 @@
 Script.Load("lua/GUIUtility.lua")
 Script.Load("lua/GUIAnimatedScript.lua")
 
-Script.Load("lua/Hud/GUIPlayerResource.lua")
-Script.Load("lua/Hud/Marine/GUIMarineStatus.lua")
-Script.Load("lua/Hud/GUIEvent.lua")
+Script.Load("lua/GUIPlayerResource.lua")
+Script.Load("lua/GUIMarineStatus.lua")
+Script.Load("lua/GUIEvent.lua")
 Script.Load("lua/Hud/Marine/GUIMarineFuel.lua")
 Script.Load("lua/Hud/Marine/GUIMarineHUDStyle.lua")
 Script.Load("lua/Hud/GUIInventory.lua")
@@ -51,8 +51,6 @@ local function GetTechIdForWeaponLevel(level)
     return weaponTechId[level]
 
 end
-
-GUIMarineHUD.kDefaultZoom = 0.75
 
 GUIMarineHUD.kUpgradeSize = Vector(80, 80, 0) * 0.8
 GUIMarineHUD.kUpgradePos = Vector(-GUIMarineHUD.kUpgradeSize.x - 16, 40, 0)
@@ -157,7 +155,7 @@ function GUIMarineHUD:Initialize()
     self.background:SetIsVisible(true)
     self.background:SetLayer(kGUILayerPlayerHUDBackground)
     self.background:SetColor( Color(1, 1, 1, 0) )
-
+    
     self:InitFrame()
 
     // create all hud elements
@@ -624,6 +622,7 @@ function GUIMarineHUD:Update(deltaTime)
     local weaponLevel = 0
     local motiontracking = false
     
+
     armorLevel = PlayerUI_GetArmorLevel()
     weaponLevel = PlayerUI_GetWeaponLevel()
     motiontracking = PlayerUI_GetHasMotionTracking()

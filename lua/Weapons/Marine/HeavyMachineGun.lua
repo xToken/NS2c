@@ -123,7 +123,7 @@ function HeavyMachineGun:GetFireDelay()
     local player = self:GetParent()
     local modifier = 1
     if player then
-        modifier = ConditionalValue(player:GetHasCatpackBoost(), CatPack.kAttackSpeedModifier, 1)
+        modifier = ConditionalValue(player:GetHasCatpackBoost(), kCatPackFireRateScalar, 1)
     end
     return (kHeavyMachineGunROF / modifier)
 end

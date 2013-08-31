@@ -364,7 +364,7 @@ function Commander:OnDestroy()
         GetGUIManager():DestroyGUIScript(self.managerScript)
         self.managerScript = nil
         
-        GetGUIManager():DestroyGUIScriptSingle("GUICommanderHelpWidget")
+        //GetGUIManager():DestroyGUIScriptSingle("GUICommanderHelpWidget")
         
         GetGUIManager():DestroyGUIScriptSingle("GUICommanderTooltip")
         
@@ -634,7 +634,7 @@ local function SetupHud(self)
     minimapScript:GetBackground():AddChild(hotkeyIconScript:GetBackground())
     self.managerScript = GetGUIManager():CreateGUIScript("GUICommanderManager")
     
-    local worldbuttons = GetGUIManager():CreateGUIScriptSingle("GUICommanderHelpWidget")
+    //local worldbuttons = GetGUIManager():CreateGUIScriptSingle("GUICommanderHelpWidget")
     
     self.production = GetGUIManager():CreateGUIScript("GUIProduction")
     self.production:SetTeam(self:GetTeamType())
@@ -649,12 +649,12 @@ local function SetupHud(self)
     self.managerScript:AddChildScript(hotkeyIconScript)
     self.managerScript:AddChildScript(logoutScript)
     self.managerScript:AddChildScript(minimapButtons)
-    self.managerScript:AddChildScript(worldbuttons)
+    //self.managerScript:AddChildScript(worldbuttons)
     
     self.commanderTooltip = GetGUIManager():CreateGUIScriptSingle("GUICommanderTooltip")
     
     self.commanderTooltip:Register(self.buttonsScript)
-    self.commanderTooltip:Register(worldbuttons)
+    //self.commanderTooltip:Register(worldbuttons)
     
     self.buttonsScript.background:AddChild(self.commanderTooltip:GetBackground())
     
@@ -685,7 +685,6 @@ function Commander:OnInitLocalClient()
 
     Player.OnInitLocalClient(self)
     
-    self.selectionCircles = { }
     self.sentryArcs = { }
     self.ghostGuides = { }
     self.reuseGhostGuides = { }
@@ -792,6 +791,7 @@ function Commander:SendAction(techId)
     
     local message = BuildCommActionMessage(techId, self.shiftDown)
     Client.SendNetworkMessage("CommAction", message, true)
+    self.lastUsedTech = techId
     
 end
 
@@ -805,11 +805,20 @@ function Commander:SendTargetedAction(techId, normalizedPickRay, orientation, en
     Client.SendNetworkMessage("CommTargetedAction", message, true)
     self.timeLastTargetedAction = Shared.GetTime()
     self:SetCurrentTech(kTechId.None)
+    self.lastUsedTech = techId
     
 end
 
 function Commander:GetTimeLastTargetedAction()
     return self.timeLastTargetedAction or 0
+end
+
+function Commander:PollLastUsedTech()
+    
+    local lastUsedTech = self.lastUsedTech
+    self.lastUsedTech = nil
+    return lastUsedTech
+    
 end
 
 function Commander:SendTargetedActionWorld(techId, worldCoords, orientation, entity)
@@ -821,6 +830,7 @@ function Commander:SendTargetedActionWorld(techId, worldCoords, orientation, ent
     Client.SendNetworkMessage("CommTargetedActionWorld", message, true)
     self:SetCurrentTech(kTechId.None)
     self.timeLastTargetedAction = Shared.GetTime()
+    self.lastUsedTech = techId
     
 end
 
@@ -858,19 +868,18 @@ end
 
 local function UpdateGhostStructureVisuals(self)
 
-    local coords = Coords(GetCommanderGhostStructureCoords())
-    local validCoords = coords:GetIsFinite()
-    
     local commSpecifyingOrientation = GetCommanderGhostStructureSpecifyingOrientation()
     
     local sentryRangeModel = ClientResources.GetResource("CommSentryRange")
-    sentryRangeModel:SetIsVisible(validCoords and self.currentTechId == kTechId.Sentry and commSpecifyingOrientation)
-    //ClientResources.GetResource("CommSentryBatteryLine"):SetIsVisible(validCoords and self.currentTechId == kTechId.SentryBattery)
+    sentryRangeModel:SetIsVisible(self.currentTechId == kTechId.Sentry and commSpecifyingOrientation)
+    //ClientResources.GetResource("CommSentryBatteryLine"):SetIsVisible(self.currentTechId == kTechId.SentryBattery)
+    
+    local coords = GetCommanderGhostStructureCoords()
     
     local displayOrientation = GetCommanderGhostStructureValid() and commSpecifyingOrientation
     local orientationModel = ClientResources.GetResource("CommSentryOrientation")
-    orientationModel:SetIsVisible(validCoords and displayOrientation)
-    if validCoords and displayOrientation then
+    orientationModel:SetIsVisible(displayOrientation)
+    if displayOrientation then
     
         coords:Scale(Commander.kSentryArcScale)
         coords.zAxis = -coords.zAxis
@@ -878,12 +887,12 @@ local function UpdateGhostStructureVisuals(self)
         
     end
     
-    if validCoords and self.currentTechId == kTechId.Sentry then
+    if coords and self.currentTechId == kTechId.Sentry then
     
         coords.zAxis = coords.zAxis * Sentry.kRange
         sentryRangeModel:SetCoords(coords)
         
-    //elseif validCoords and self.currentTechId == kTechId.SentryBattery then
+    //elseif coords and self.currentTechId == kTechId.SentryBattery then
         //UpdateSentryBatteryLine(self, coords.origin)
     end
     
@@ -898,7 +907,7 @@ local function UpdateCircleUnderCursor(self)
     if self.entityIdUnderCursor ~= Entity.invalidId then
     
         local entity = Shared.GetEntity(self.entityIdUnderCursor)
-        if entity ~= nil then
+        if entity ~= nil and HasMixin(entity, "Selectable") then
         
             local scale = GetCircleSizeForEntity(entity)
             

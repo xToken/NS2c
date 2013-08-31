@@ -19,7 +19,6 @@ XenocideLeap.kMapName = "xenocide"
 local kDetonateTime = 2.5
 local kXenocideSoundName = PrecacheAsset("sound/NS2.fev/alien/common/xenocide_start")
 
-
 local networkVars = { }
 
 local function TriggerXenocide(self, player)
@@ -39,7 +38,18 @@ local function TriggerXenocide(self, player)
         player:SetCameraShake(.01, 15, kDetonateTime)
         
     end
+    
+end
 
+local function CleanUI(self)
+
+    if self.xenocideGui ~= nil then
+    
+        GetGUIManager():DestroyGUIScript(self.xenocideGui)
+        self.xenocideGui = nil
+        
+    end
+    
 end
 
 function XenocideLeap:OnDestroy()
@@ -47,15 +57,9 @@ function XenocideLeap:OnDestroy()
     BiteLeap.OnDestroy(self)
     
     if Client then
-    
-        if self.xenocideGui ~= nil then
-        
-            GetGUIManager():DestroyGUIScript(self.xenocideGui)
-            self.xenocideGui = nil
-        
-        end
-    
+        CleanUI(self)
     end
+    
 end
 
 function XenocideLeap:GetDeathIconIndex()
@@ -63,11 +67,13 @@ function XenocideLeap:GetDeathIconIndex()
 end
 
 function XenocideLeap:GetEnergyCost(player)
+
     if not self.xenociding then
         return kXenocideEnergyCost
     else
         return BiteLeap.GetEnergyCost(self, player)
     end
+    
 end
 
 function XenocideLeap:GetHUDSlot()
@@ -93,18 +99,11 @@ function XenocideLeap:OnPrimaryAttack(player)
     
 end
 
-function XenocideLeap:OnHolster(player)
+local function StopXenocide(self)
 
-    /*
-    if self.xenocideGui ~= nil then
-    
-        GetGUIManager():DestroyGUIScript(self.xenocideGui)
-        self.xenocideGui = nil
-    
-    end
+    CleanUI(self)
     
     self.xenociding = false
-    */
     
 end
 
@@ -115,7 +114,9 @@ function XenocideLeap:OnProcessMove(input)
     local player = self:GetParent()
     if self.xenociding then
     
-        if Server then
+        if player:isa("Commander") then
+            StopXenocide(self)
+        elseif Server then
         
             self.xenocideTimeLeft = math.max(self.xenocideTimeLeft - input.time, 0)
             
@@ -134,26 +135,25 @@ function XenocideLeap:OnProcessMove(input)
             end
             
         elseif Client and not player:GetIsAlive() and self.xenocideGui then
-        
-            GetGUIManager():DestroyGUIScript(self.xenocideGui)
-            self.xenocideGui = nil
-            
+            CleanUI(self)
         end
         
     end
     
 end
-    
+
 if Server then
-    
+
     function XenocideLeap:GetDamageType()
+    
         if self.xenocideTimeLeft == 0 then
             return kXenocideDamageType
         else
             return kBiteDamageType
-        end    
+        end
+        
     end
-
+    
 end
 
 Shared.LinkClassToMap("XenocideLeap", XenocideLeap.kMapName, networkVars)

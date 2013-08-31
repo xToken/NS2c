@@ -24,7 +24,8 @@ kShowOnTeam[kTeam2Index] = { GUIAlienSpectatorHUD = true }
 kShowOnTeam[kSpectatorIndex] = { GUIGameEnd = true, GUISpectator = true }
 
 local kBothAlienAndMarine = { GUICrosshair = true, GUINotifications = true, GUIDamageIndicators = true, GUIGameEnd = true, GUIWorldText = true,
-                              GUIPing = true, GUIWaitingForAutoTeamBalance = true }
+                              GUIPing = true, GUIWaitingForAutoTeamBalance = true, GUITechMap = true }
+                              
 for n, e in pairs(kBothAlienAndMarine) do
 
     kShowOnTeam[kTeam1Index][n] = e
@@ -38,18 +39,18 @@ end
 
 // Below are the rules for what scripts should be active when the local player is a certain class.
 local kShowAsClass = { }
-kShowAsClass["Marine"] = { ["Hud/Marine/GUIMarineHUD"] = true, GUIPoisonedFeedback = true, GUIPickups = true, GUIOrders = true,
+kShowAsClass["Marine"] = { GUIMarineHUD = true, GUIPoisonedFeedback = true, GUIPickups = true, GUIOrders = true,
                            GUIObjectiveDisplay = true, GUIProgressBar = true, GUIRequestMenu = true,
-                           GUIWaypoints = true, GUIMarineDevoured = true }
+                           GUIWaypoints = true, GUIMarineDevoured = true, GUIMotionTrackingDisplay = true }
 kShowAsClass["JetpackMarine"] = { GUIJetpackFuel = true }
 kShowAsClass["Exo"] = { GUIExoThruster = true }
 kShowAsClass["MarineSpectator"] = { GUIRequestMenu = true }
 kShowAsClass["Alien"] = { GUIObjectiveDisplay = true, GUIProgressBar = true, GUIRequestMenu = true, GUIWaypoints = true, GUIAlienHUD = true,
-                          GUIEggDisplay = true, GUIRegenerationFeedback = true }
+                          GUIEggDisplay = true, GUIRegenerationFeedback = true, GUIAuraDisplay = true }
 kShowAsClass["AlienSpectator"] = { GUIRequestMenu = true }
 kShowAsClass["Commander"] = { GUICommanderOrders = true }
-kShowAsClass["MarineCommander"] = { GUISensorBlips = true, GUIDistressBeacon = true }
-kShowAsClass["AlienCommander"] = { GUIEggDisplay = true, GUICommanderPheromoneDisplay = true }
+kShowAsClass["MarineCommander"] = { GUICommanderTutorial = true, GUISensorBlips = true, GUIDistressBeacon = true }
+kShowAsClass["AlienCommander"] = { GUICommanderTutorial = true, GUIEggDisplay = true, GUICommanderPheromoneDisplay = true, GUIBioMassDisplay = true }
 kShowAsClass["ReadyRoomPlayer"] = { }
 kShowAsClass["TeamSpectator"] = { }
 kShowAsClass["Spectator"] = { }

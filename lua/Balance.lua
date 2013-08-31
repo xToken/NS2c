@@ -11,9 +11,6 @@
 //NS2c
 //Restructured this file heavily, attempted to remove all unused vars
 
-Script.Load("lua/BalanceHealth.lua")
-Script.Load("lua/BalanceMisc.lua")
-
 // used as fallback
 kDefaultBuildTime = 60
 
@@ -159,8 +156,8 @@ kAlienTeamInitialRes = 25
 kMaxPersonalResources = 100
 kResourceTowerResourceInterval = 4
 kResourcePerTick = 1
-kKillRewardMin = 2
-kKillRewardMax = 2
+kKillReward = 2
+kHighLifeformKillReward = 1
 kResourceScalingMinPlayers = 4
 kResourceScalingMaxPlayers = 12
 kResourceScalingMaxDelta = 1.2
@@ -215,22 +212,23 @@ kShotgunMaxSpread = 18
 //kShotgunDropOffStartRange = 4
 kShotgunWeight = 0.03
 kShotgunShellWeight = 0.0025
+kShotgunBaseRateOfFire = 1.5
 
-kHeavyMachineGunDamage = 20
-kHeavyMachineGunDamageType = kDamageType.HalfStructure
+kHeavyMachineGunDamage = 10
+kHeavyMachineGunDamageType = kDamageType.Puncture
 kHeavyMachineGunClipSize = 125
 kHeavyMachineGunWeight = 0.05
 kHeavyMachineGunROF = 0.05
 kHeavyMachineGunReloadTime = 6.3
 kHeavyMachineGunClipWeight = 0.0035
 
-kMinigunDamage = 15
-kMinigunDamageType = kDamageType.HalfStructure
+kMinigunDamage = 8
+kMinigunDamageType = kDamageType.Puncture
 kMinigunClipSize = 100
 kMinigunWeight = 0.06
 
-kRailgunDamage = 25
-kRailgunDamageType = kDamageType.Structural
+kRailgunDamage = 125
+kRailgunDamageType = kDamageType.StructuresOnly
 kRailgunClipSize = 25
 kRailgunWeight = 0.06
 
@@ -361,9 +359,9 @@ kUmbraDamageReduction = 0.35
 kUmbraRetainTime = 0.1
 kUmbraAttackDelay = 1.0
 
-kSpikeMaxDamage = 15
-kSpikeMinDamage = 10
-kSpikeDamageType = kDamageType.Heavy
+kSpikeMaxDamage = 8
+kSpikeMinDamage = 5
+kSpikeDamageType = kDamageType.Normal
 kSpikeEnergyCost = 1.8
 kSpikesAttackDelay = 0.12
 kSpikeMinDamageRange = 15
@@ -424,6 +422,8 @@ kDevourMeleeBaseHeight = 0.7
 kStompEnergyCost = 30
 kStompRange = 12
 kStunMarineTime = 2
+kDisruptMarineTime = 2
+kStompDamage = 20
 
 kSmashDamage = 125
 kSmashDamageType = kDamageType.Structural

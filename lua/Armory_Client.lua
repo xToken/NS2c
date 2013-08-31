@@ -13,11 +13,6 @@
 
 local kHealthIndicatorModelName = PrecacheAsset("models/marine/armory/health_indicator.model")
 
-local kArmoryHealthbarOffset = Vector(0, 2, 0)
-function Armory:GetHealthbarOffset()
-    return kArmoryHealthbarOffset
-end 
-
 function GetResearchPercentage(techId)
 
     local techNode = GetTechTree():GetTechNode(techId)
@@ -83,12 +78,6 @@ end
 
 function Armory:GetWarmupCompleted()
     return not self.timeConstructionCompleted or (self.timeConstructionCompleted + 0.7 < Shared.GetTime())
-end
-
-function Armory:OnUse(player, elapsedTime, useSuccessTable)
-
-    self:UpdateArmoryWarmUp()
-    
 end
 
 function Armory:SetOpacity(amount, identifier)

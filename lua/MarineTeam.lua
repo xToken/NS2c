@@ -17,6 +17,8 @@ Script.Load("lua/PlayingTeam.lua")
 
 class 'MarineTeam' (PlayingTeam)
 
+MarineTeam.gSandboxMode = false
+
 // How often to send the "No IPs" message to the Marine team in seconds.
 local kSendNoIPsMessageRate = 45
 
@@ -142,6 +144,27 @@ local function CheckForNoIPs(self)
     
 end
 
+local function GetArmorLevel(self)
+
+    local armorLevels = 0
+    
+    local techTree = self:GetTechTree()
+    if techTree then
+    
+        if techTree:GetHasTech(kTechId.Armor3) then
+            armorLevels = 3
+        elseif techTree:GetHasTech(kTechId.Armor2) then
+            armorLevels = 2
+        elseif techTree:GetHasTech(kTechId.Armor1) then
+            armorLevels = 1
+        end
+    
+    end
+    
+    return armorLevels
+
+end
+
 function MarineTeam:Update(timePassed)
 
     PlayingTeam.Update(self, timePassed)
@@ -154,27 +177,17 @@ function MarineTeam:Update(timePassed)
         CheckForNoIPs(self)
     end
     
-end
-
-
-
-function MarineTeam:OnTechTreeUpdated()
-
-    // true when some event occured that could require marine armor values to get updated
-    if self.updateMarineArmor then
-        
+    local newArmorLevel = GetArmorLevel(self)
+    if self.armorLevel ~= newArmorLevel then
+    
+        self.armorLevel = newArmorLevel
+    
         for index, player in ipairs(GetEntitiesForTeam("Player", self:GetTeamNumber())) do
-            player:UpdateArmorAmount()
+            player:UpdateArmorAmount(self.armorLevel)
         end
-        
-        self.updateMarineArmor = false
-        
+    
     end
-
-end
-
-function MarineTeam:OnArmsLabChanged()
-    self.updateMarineArmor = true
+    
 end
 
 function MarineTeam:InitTechTree()
@@ -254,16 +267,26 @@ function MarineTeam:InitTechTree()
 
 end
 
-function MarineTeam:AwardResources(min, max, pointOwner)
+function MarineTeam:AwardResources(resAward, pointOwner)
 
-    local resAwarded = math.random(min, max) 
-     self:AddTeamResources(resAwarded)
+     self:AddTeamResources(resAward)
 
 end
 
 function MarineTeam:SpawnInitialStructures(techPoint)
 
     local tower, commandStation = PlayingTeam.SpawnInitialStructures(self, techPoint)
+    
+    if Shared.GetCheatsEnabled() and MarineTeam.gSandboxMode then
+
+        // Pretty dumb way of spawning two things..heh
+        local origin = techPoint:GetOrigin()
+        local right = techPoint:GetCoords().xAxis
+        local forward = techPoint:GetCoords().zAxis
+        CreateEntity( AdvancedArmory.kMapName, origin+right*3.5+forward*1.5, kMarineTeamType)
+        CreateEntity( PrototypeLab.kMapName, origin+right*3.5-forward*1.5, kMarineTeamType)
+
+    end
     
     return tower, commandStation
     
@@ -307,7 +330,7 @@ function MarineTeam:UpdateDroppedWeapons()
          self.lastweaponscan = Shared.GetTime()
          if self.lastdeepweaponscan == nil or self.lastdeepweaponscan + 60 < Shared.GetTime() then
             for index, weapon in ientitylist(Shared.GetEntitiesWithClassname("Weapon")) do
-                if weapon and weapon:GetWeaponWorldState() and (Shared.GetTime() - weapon.weaponWorldStateTime) >= kItemStayTime then
+                if weapon and weapon:GetWeaponWorldState() and weapon.preventExpiration == nil and (Shared.GetTime() - weapon.weaponWorldStateTime) >= kItemStayTime then
                     DestroyEntity(weapon)
                 end
             end

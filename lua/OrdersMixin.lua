@@ -68,6 +68,9 @@ local function OrderChanged(self)
     
         self.currentOrderId = self.orders[1]
         local order = Shared.GetEntity(self.currentOrderId)
+        if order then
+            order:SetOrigin(self:GetOrigin())
+        end
     
     else
         self.currentOrderId = Entity.invalidId
@@ -143,14 +146,10 @@ local function SetOrder(self, order, clearExisting, insertFirst, giver)
     
     order:SetOwner(self)
     
-    if not reusedOrder then
-    
-        if insertFirst then
-            table.insert(self.orders, 1, order:GetId())
-        else    
-            table.insert(self.orders, order:GetId())
-        end
-        
+    if insertFirst then
+        table.insert(self.orders, 1, order:GetId())
+    else
+        table.insert(self.orders, order:GetId())
     end
     
     self.timeLastOrder = Shared.GetTime()
@@ -216,9 +215,8 @@ function OrdersMixin:GiveOrder(orderType, targetId, targetOrigin, orientation, c
     end
     
     local order = nil
-    local reusedOrder = false
-    
     order = CreateOrder(orderType, targetId, targetOrigin, orientation)
+    order:SetOrigin(self:GetOrigin())
     
     OverrideOrder(self, order)
     
@@ -226,49 +224,10 @@ function OrdersMixin:GiveOrder(orderType, targetId, targetOrigin, orientation, c
     
     if success and self.OnOrderGiven then
         self:OnOrderGiven(order)
-    end    
+    end
     
     return ConditionalValue(success, order:GetType(), kTechId.None)
     
-end
-
-function OrdersMixin:GiveSharedOrder(order, clearExisting, insertFirst, giver)
-
-    ASSERT(type(orderType) == "number")
-    ASSERT(type(targetId) == "number")
-    
-    if self.ignoreOrders or ( #self.orders > OrdersMixin.kMaxOrdersPerUnit or (self.timeLastOrder and self.timeLastOrder + OrdersMixin.kOrderDelay > Shared.GetTime()) ) then
-        return kTechId.None
-    end
-    
-    // prevent AI units from attack friendly players
-    if orderType == kTechId.Attack then
-    
-        local target = Shared.GetEntity(targetId)
-        if target and target:isa("Player") and target:GetTeamNumber() == self:GetTeamNumber() and not GetGamerules():GetFriendlyFire() then
-            return
-        end
-    
-    end
-
-    if clearExisting == nil then
-        clearExisting = true
-    end
-    
-    if insertFirst == nil then
-        insertFirst = true
-    end
-
-    //OverrideOrder(self, order)
-    
-    SetOrder(self, order, clearExisting, insertFirst, giver)
-    
-    if self.OnOrderGiven then
-        self:OnOrderGiven(order)
-    end    
-    
-    return order:GetType()
-
 end
 
 local function DestroyOrders(self)
@@ -435,13 +394,8 @@ if Server then
         
         if currentOrder ~= nil then
             
-            // we update the order source only for units that enable it, otherwise it's hidden
-            if self.GetShowOrderLine and self:GetShowOrderLine() then
-                currentOrder:SetOrderSource(self:GetOrigin())
-            end
-            
             local orderType = currentOrder:GetType()
-            
+
             if orderType == kTechId.Move then
             
                 if (currentOrder:GetLocation() - self:GetOrigin()):GetLength() < self:GetMixinConstants().kMoveOrderCompleteDistance then
@@ -450,8 +404,20 @@ if Server then
                     self:CompletedCurrentOrder()
                     
                 end
+                
+            elseif orderType == kTechId.Patrol then
             
-            elseif orderType == kTechId.Construct then
+                if (currentOrder:GetLocation() - self:GetOrigin()):GetLength() < self:GetMixinConstants().kMoveOrderCompleteDistance then
+                
+                    local prevTarget = currentOrder:GetLocation()
+                    local prevOrigin = currentOrder:GetOrigin()
+                    
+                    currentOrder:SetLocation(prevOrigin)
+                    currentOrder:SetOrigin(prevTarget)
+                    
+                end
+            
+            elseif orderType == kTechId.Construct or orderType == kTechId.AutoConstruct then
             
                 local orderTarget = Shared.GetEntity(currentOrder:GetParam())
                 

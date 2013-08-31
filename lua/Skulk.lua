@@ -252,7 +252,7 @@ end
 /*
 function Skulk:TriggerJumpEffects()
     if not Shared.GetIsRunningPrediction() then
-        local spd = self:GetVelocity():GetLength()
+        local spd = self:GetVelocityLength()
         if spd > kBestJumpSpeed then
             self:TriggerEffects("jump_best")
         elseif spd > kGoodJumpSpeed then
@@ -344,7 +344,7 @@ function Skulk:PreUpdateMove(input, runningPrediction)
         
     end
     
-    if self.leaping and (Alien.GetIsOnGround(self) or self.wallWalking) and (Shared.GetTime() > self.timeOfLeap + kLeapTime) then
+    if self.leaping and (self:GetIsOnGround() or self.wallWalking) and (Shared.GetTime() > self.timeOfLeap + kLeapTime) then
         self.leaping = false
     end
     

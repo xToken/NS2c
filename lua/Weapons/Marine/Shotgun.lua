@@ -7,7 +7,6 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Script.Load("lua/Balance.lua")
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
 
 class 'Shotgun' (ClipWeapon)
@@ -49,7 +48,7 @@ local kSpreadVectors =
 }
 
 Shotgun.kModelName = PrecacheAsset("models/marine/shotgun/shotgun.model")
-local kViewModelName = PrecacheAsset("models/marine/shotgun/shotgun_view.model")
+local kViewModels = GenerateMarineViewModelPaths("shotgun")
 local kAnimationGraph = PrecacheAsset("models/marine/shotgun/shotgun_view.animation_graph")
 
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/shotgun/muzzle_flash.cinematic")
@@ -77,8 +76,8 @@ function Shotgun:GetAnimationGraphName()
     return kAnimationGraph
 end
 
-function Shotgun:GetViewModelName()
-    return kViewModelName
+function Shotgun:GetViewModelName(sex, variant)
+    return kViewModels[sex][variant]
 end
 
 function Shotgun:GetDeathIconIndex()
@@ -91,6 +90,10 @@ end
 
 function Shotgun:GetNumStartClips()
     return 2
+end
+
+function Shotgun:GetBaseRateofFire()
+    return kShotgunBaseRateOfFire
 end
 
 function Shotgun:GetClipSize()

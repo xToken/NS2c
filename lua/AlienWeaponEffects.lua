@@ -10,15 +10,23 @@
 
 kAlienWeaponEffects =
 {
-        
-    spit_hit =
+    shockwave_trail =
     {
-        spitHitEffects =
         {
-            {sound = "sound/NS2.fev/alien/gorge/spit_hit"},
-            {cinematic = "cinematics/alien/gorge/spit_impact.cinematic"},
+            {cinematic = "cinematics/alien/onos/shockwave.cinematic"},
         }
+    },
     
+    shockwave_hit =
+    {
+        {
+            {decal =  "cinematics/vfx_materials/decals/shockwave_hit.material", scale = 2.0},
+            {cinematic = "cinematics/alien/onos/shockwave_hit.cinematic"},
+        }
+    },
+
+    draw = 
+    {
     },
     
     bite_kill =
@@ -141,15 +149,6 @@ kAlienWeaponEffects =
         },
     },
     
-    bilebomb_attack =
-    {
-        bilebombFireEffects = 
-        {   
-            {sound = "", silenceupgrade = true, done = true}, 
-            {player_sound = "sound/NS2.fev/alien/gorge/bilebomb"},
-        },
-    },
-    
     acidrocket_attack =
     {
         acidrocketFireEffects = 
@@ -161,6 +160,15 @@ kAlienWeaponEffects =
         },
     },
 
+    bilebomb_attack =
+    {
+        bilebombFireEffects = 
+        {   
+            {sound = "", silenceupgrade = true, done = true}, 
+            {player_sound = "sound/NS2.fev/alien/gorge/bilebomb"},
+        },
+    },
+
     bilebomb_hit =
     {
         bilebombHitEffects = 
@@ -168,9 +176,7 @@ kAlienWeaponEffects =
             
             // TODO: Change to something else
             {cinematic = "cinematics/alien/gorge/bilebomb_impact.cinematic"},
-            
-            {sound = "", silenceupgrade = true, done = true},
-            {sound = "sound/NS2.fev/alien/gorge/bilebomb_hit", done = true},
+            {parented_sound = "sound/NS2.fev/alien/gorge/bilebomb_hit", done = true},
         },
     },
     
@@ -283,15 +289,15 @@ kAlienWeaponEffects =
             //{player_sound = "sound/NS2.fev/alien/fade/stab"},
         },
     },
-
+    
     blink_in =
     {
         blinkInEffects =
-        {
-            
-            //{player_cinematic = "cinematics/alien/fade/blink_in_silent.cinematic", done = true},
+        {        
+            {player_sound = "sound/NS2.fev/alien/fade/blink_end"},
+            {player_cinematic = "cinematics/alien/fade/blink_in_silent.cinematic", done = true},     
         },
-    },
+    },  
 
     blink_out =
     {
@@ -300,9 +306,18 @@ kAlienWeaponEffects =
             {sound = "", silenceupgrade = true, done = true},
             {stop_sound = "sound/ns2c.fev/ns2c/alien/fade/blink"},
             {sound = "sound/ns2c.fev/ns2c/alien/fade/blink"},
+            //{player_sound = "sound/NS2.fev/alien/fade/blink"},
             //{player_cinematic = "cinematics/alien/fade/blink_out_silent.cinematic", done = true},
         },
     },
+    
+    blink_out_local =
+    {
+        blinkOutEffects =
+        {        
+            {viewmodel_cinematic = "cinematics/alien/fade/blink_view.cinematic", attach_point = ""},
+        },
+    },  
     
     // Sound Effects only
     gore_attack =
@@ -350,6 +365,15 @@ kAlienWeaponEffects =
             {player_sound = "sound/NS2.fev/alien/onos/stomp"},
         },
     },
+        
+    onos_charge_crash =
+    {
+        onosChargeCrashEffects =
+        {
+            {cinematic = "cinematics/alien/onos/stomp_hit.cinematic"},
+        },    
+    
+    },
     
     devour_fire =
     {
@@ -386,7 +410,7 @@ kAlienWeaponEffects =
             {player_sound = "sound/ns2c.fev/ns2c/alien/lerk/primal_scream"},
         },    
     
-    }, 
+    },
     
     // Alien vision mode effects
     alien_vision_on = 
@@ -397,7 +421,7 @@ kAlienWeaponEffects =
             {sound = "sound/NS2.fev/alien/common/vision_on"},
         },
     },
-   
+    
     alien_vision_off = 
     {
         visionModeOnEffects = 
@@ -405,7 +429,7 @@ kAlienWeaponEffects =
             {sound = "", silenceupgrade = true, done = true},
             {sound = "sound/NS2.fev/alien/common/vision_off"},
         },
-    },    
+    },
 
 }
 

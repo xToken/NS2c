@@ -13,6 +13,17 @@
 
 Hydra.kUpdateInterval = .5
 
+function Hydra:OnKill(attacker, doer, point, direction)
+
+    ScriptActor.OnKill(self, attacker, doer, point, direction)
+    
+    local team = self:GetTeam()
+    if team then
+        team:UpdateClientOwnedStructures(self:GetId())
+    end
+
+end
+
 function Hydra:GetDistanceToTarget(target)
     return (target:GetEngagementPoint() - self:GetModelOrigin()):GetLength()           
 end
@@ -132,7 +143,7 @@ end
 
 function Hydra:GetIsEnemyNearby()
 
-    local enemyPlayers = GetEntitiesForTeam("Player", GetEnemyTeamNumber(self:GetTeamNumber()))
+    local enemyPlayers = GetEntitiesForTeam("ScriptActor", GetEnemyTeamNumber(self:GetTeamNumber()))
     
     for index, player in ipairs(enemyPlayers) do                
     

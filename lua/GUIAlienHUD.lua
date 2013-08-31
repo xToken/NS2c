@@ -17,8 +17,8 @@ Script.Load("lua/GUIDial.lua")
 Script.Load("lua/GUIAnimatedScript.lua")
 
 Script.Load("lua/Hud/Alien/GUIAlienHUDStyle.lua")
-Script.Load("lua/Hud/GUIPlayerResource.lua")
-Script.Load("lua/Hud/GUIEvent.lua")
+Script.Load("lua/GUIPlayerResource.lua")
+Script.Load("lua/GUIEvent.lua")
 Script.Load("lua/Hud/GUIInventory.lua")
 
 class 'GUIAlienHUD' (GUIAnimatedScript)
@@ -88,6 +88,8 @@ local kEnergyAdrenalineTextureX1 = 128
 local kEnergyAdrenalineTextureY1 = 128
 local kEnergyAdrenalineTextureX2 = 256
 local kEnergyAdrenalineTextureY2 = 256
+
+local kMovementSpecialIconSize = GUIScale(70)
 
 local energyBallSettings = { }
 energyBallSettings.BackgroundWidth = GUIScale(kEnergyBackgroundWidth)
@@ -499,8 +501,13 @@ function GUIAlienHUD:CreateEnergyBall()
     self.secondaryAbilityIcon:SetInheritsParentAlpha(true)
     self.secondaryAbilityBackground:AddChild(self.secondaryAbilityIcon)
     
-    //self:CreateInactiveAbilityIcons()
-    
+    self.movementSpecialIcon = GUIManager:CreateGraphicItem()
+    self.movementSpecialIcon:SetSize(Vector(kMovementSpecialIconSize, kMovementSpecialIconSize, 0))
+    self.movementSpecialIcon:SetPosition(Vector(-kMovementSpecialIconSize * 0.5, kMovementSpecialIconSize * 0.25, 0))
+    self.movementSpecialIcon:SetTexture("ui/buildmenu.dds")
+    self.movementSpecialIcon:SetIsVisible(false)
+    self.energyBall:GetBackground():AddChild(self.movementSpecialIcon)
+
 end
 
 function GUIAlienHUD:CreateInactiveAbilityIcons()
@@ -748,8 +755,26 @@ local function UpdateEnergyBall(self, deltaTime)
     self.energyBall:Update(deltaTime)
     
     self:UpdateFading(self.energyBall:GetBackground(), self.energyBarPercentage, deltaTime)
-    
     self:UpdateAbilities(deltaTime)
+    
+    local hasMovementSpecial = AlienUI_GetHasMovementSpecial()
+    if hasMovementSpecial then
+
+        local techId = AlienUI_GetMovementSpecialTechId()
+        if techId then
+        
+            local energyCost = AlienUI_GetMovementSpecialEnergyCost()
+            local color = PlayerUI_GetPlayerEnergy() >= energyCost and Color(kArmorCircleColor) or Color(1, 0, 0, 1)
+        
+            self.movementSpecialIcon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId)))
+            self.movementSpecialIcon:SetIsVisible(true)
+            self.movementSpecialIcon:SetColor(color)
+            
+        end
+        
+    else
+        self.movementSpecialIcon:SetIsVisible(false)
+    end  
     
     local currentAlpha = self.energyBall:GetLeftSide():GetColor().a
     local useColor = Color(230/255, 171/255, 46/255, 1)

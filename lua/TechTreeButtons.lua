@@ -210,6 +210,7 @@ kTechIdToMaterialOffset[kTechId.AdvancedMenu] = 129
 
 kTechIdToMaterialOffset[kTechId.AssistMenu] = 130
 kTechIdToMaterialOffset[kTechId.Construct] = 131
+kTechIdToMaterialOffset[kTechId.AutoConstruct] = 131
 //kTechIdToMaterialOffset[kTechId.NeedHealingMarker] = 132
 kTechIdToMaterialOffset[kTechId.RootMenu] = 133
 //kTechIdToMaterialOffset[kTechId.LifeFormMenu] = 136
@@ -218,6 +219,8 @@ kTechIdToMaterialOffset[kTechId.SetRally] = 137
 
 //kTechIdToMaterialOffset[kTechId.ExpandingMarker] = 141
 kTechIdToMaterialOffset[kTechId.Defend] = 142
+kTechIdToMaterialOffset[kTechId.PingLocation] = 162
+kTechIdToMaterialOffset[kTechId.Research] = 163
 kTechIdToMaterialOffset[kTechId.MarineAlertSentryUnderAttack] = 123
 kTechIdToMaterialOffset[kTechId.MarineAlertSoldierUnderAttack] = 123
 kTechIdToMaterialOffset[kTechId.MarineAlertStructureUnderAttack] = 123

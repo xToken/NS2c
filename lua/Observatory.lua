@@ -33,9 +33,11 @@ Script.Load("lua/ObstacleMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
+Script.Load("lua/IdleMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 
 class 'Observatory' (ScriptActor)
@@ -55,6 +57,7 @@ Observatory.kDistressBeaconTime = kDistressBeaconTime
 Observatory.kDistressBeaconRange = kDistressBeaconRange
 Observatory.kDetectionRange = 22 // From NS1 
 
+local kPassiveDetectorSoundDelay = 30
 local kAnimationGraph = PrecacheAsset("models/marine/observatory/observatory.animation_graph")
 
 local networkVars = { }
@@ -75,8 +78,9 @@ AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
-AddMixinNetworkVars(ParasiteMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
+AddMixinNetworkVars(IdleMixin, networkVars)
+AddMixinNetworkVars(ParasiteMixin, networkVars)
 
 function Observatory:OnCreate()
 
@@ -117,6 +121,7 @@ function Observatory:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, DetectableMixin)
+    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
     if Client then
@@ -152,6 +157,8 @@ function Observatory:OnInitialized()
         InitMixin(self, UnitStatusMixin)
         
     end
+    
+    InitMixin(self, IdleMixin)
 
 end
 
@@ -186,29 +193,12 @@ function Observatory:GetDetectionRange()
     
 end
 
-function Observatory:DeCloak()
-    return true
-end
-
-function Observatory:IsValidDetection(detectable)
-    if detectable:GetMapName() == "egg" then
-        return false
-    end
-    
-    //Ghost adds a chance to 'evade' detection
-    if detectable:isa("Alien") then
-        local hasupg, level = GetHasGhostUpgrade(detectable)
-        if hasupg and level > 0 then
-            local hide = math.random(1, 100) <= (level * kGhostObservatoryDodgePerLevel)
-            return hide
-        end
-    end
-    
-    return true
-end
-
 function Observatory:GetReceivesStructuralDamage()
     return true
+end
+
+function Observatory:GetIdleSoundInterval()
+    return kPassiveDetectorSoundDelay
 end
 
 function Observatory:GetDamagedAlertId()
@@ -297,19 +287,22 @@ end
 local function GetPlayersToBeacon(self, toOrigin)
 
     local players = { }
-    
+    //local clients = { }
     for index, player in ipairs(self:GetTeam():GetPlayers()) do
-    
+        local uniqueclient = true
         // Don't affect Commanders
         if not player:isa("Commander") then
-        
+            //for index, client in ipairs(clients) do
+                //if client == Server.GetOwner(player) then
+                    //uniqueclient = false
+                //end
+            //end
             // Don't respawn players that are already nearby.
-            if not GetIsPlayerNearby(self, player, toOrigin) or not player:GetIsAlive() and Server.GetOwner(player) ~= nil then
+            if not GetIsPlayerNearby(self, player, toOrigin) and (not HasMixin(self, "Devourable") or not self:GetIsDevoured()) and uniqueclient and (not player.GetIsRagdoll or not player:GetIsRagdoll()) then
                 table.insert(players, player)
+                //table.insert(clients, Server.GetOwner(player))
             end
-            
         end
-        
     end
     
     return players
@@ -346,7 +339,9 @@ local function RespawnPlayer(self, player, distressOrigin)
     if spawnPoint then
     
         player:SetOrigin(spawnPoint)
-        player:TriggerEffects("distress_beacon_spawn")
+        if player.TriggerBeaconEffects then
+            player:TriggerBeaconEffects()
+        end
         
     else
         Print("Observatory:RespawnPlayer(): Couldn't find space to respawn player.")
@@ -441,13 +436,6 @@ function Observatory:OverrideTechTreeAction(techNode, position, orientation, com
     
 end
 
-function Observatory:OnUpdateAnimationInput(modelMixin)
-
-    PROFILE("Observatory:OnUpdateAnimationInput")
-	modelMixin:SetAnimationInput("powered", true)
-    
-end
-
 function Observatory:GetIsBeaconing()
     return self.distressBeaconTime ~= nil
 end
@@ -506,9 +494,8 @@ if Server then
     
 end    
 
-local kObservatoryHealthbarOffset = Vector(0, .9, 0)
 function Observatory:GetHealthbarOffset()
-    return kObservatoryHealthbarOffset
+    return 0.9
 end 
 
 

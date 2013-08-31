@@ -391,7 +391,7 @@ function TeamInfo:UpdateBitmasks(techId, techNode)
     end
     
     // Hide prerequisite techs when this tech has been researched
-    if techNode:GetResearched() then
+    if techNode:GetResearched() or (techNode:GetIsSpecial() and techNode:GetHasTech()) then
         local preq1 = techNode:GetPrereq1()
         local preq2 = techNode:GetPrereq2()
         if preq1 ~= nil then

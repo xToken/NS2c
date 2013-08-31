@@ -20,8 +20,6 @@ AmmoPack.kMapName = "ammopack"
 AmmoPack.kModelName = PrecacheAsset("models/marine/ammopack/ammopack.model")
 AmmoPack.kPickupSound = PrecacheAsset("sound/NS2.fev/marine/common/pickup_ammo")
 
-AmmoPack.kNumClips = 1
-
 function AmmoPack:OnInitialized()
 
     DropPack.OnInitialized(self)
@@ -38,7 +36,7 @@ function AmmoPack:OnTouch(recipient)
 
     local weapon = recipient:GetActiveWeapon()
     
-    if weapon and weapon:GiveAmmo(AmmoPack.kNumClips, false) then
+    if weapon and weapon:GiveAmmo(kClipsPerAmmoPack, false) then
         StartSoundEffectAtOrigin(AmmoPack.kPickupSound, recipient:GetOrigin())
     end
     
@@ -77,7 +75,7 @@ function WeaponAmmoPack:GetIsValidRecipient(recipient)
 
     local weapon = recipient:GetActiveWeapon()
     local correctWeaponType = weapon and weapon:isa(self:GetWeaponClassName())    
-    return self.ammoPackSize ~= nil and correctWeaponType and AmmoPack.GetIsValidRecipient(self, recipient)
+    return self.ammoPackSize ~= nil and correctWeaponType and AmmoPack.GetIsValidRecipient(self, recipient) and (not HasMixin(self, "Devourable") or not self:GetIsDevoured())
     
 end
 

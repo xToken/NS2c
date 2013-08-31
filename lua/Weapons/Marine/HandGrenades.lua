@@ -1,70 +1,144 @@
+// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
-// lua\Weapons\Marine\HandGrenades.lua
+// lua\Weapons\Marine\GrenadeThrower.lua
+//
+//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+//
+//    Base class for hand grenades. Override GetViewModelName and GetGrenadeMapName in implementation.
+//
+// ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Script.Load("lua/Weapons/Weapon.lua")
 Script.Load("lua/Weapons/Marine/HandGrenade.lua")
-Script.Load("lua/PickupableWeaponMixin.lua")
-Script.Load("lua/EntityChangeMixin.lua")
+
+local kViewModelTemplates = { green = "_view.model", special = "_view_special.model", deluxe = "_view_deluxe.model" }
+function GenerateMarineGrenadeViewModelPaths(grenadeType)
+
+    local viewModels = { male = { }, female = { } }
+    
+    for name, suffix in pairs(kViewModelTemplates) do
+        viewModels.male[name] = PrecacheAsset("models/marine/grenades/" .. grenadeType .. suffix)
+    end
+    
+    for name, suffix in pairs(kViewModelTemplates) do
+        viewModels.female[name] = PrecacheAsset("models/marine/grenades/female_" .. grenadeType .. suffix)
+    end
+    
+    return viewModels
+    
+end
 
 class 'HandGrenades' (Weapon)
 
 HandGrenades.kMapName = "handgrenades"
 
-HandGrenades.kModelName = PrecacheAsset("models/marine/rifle/rifle_grenade.model")
+local kModelName = PrecacheAsset("models/marine/grenades/gr_cluster.model")
+local kViewModels = GenerateMarineGrenadeViewModelPaths("gr_cluster")
+local kAnimationGraph = PrecacheAsset("models/marine/grenades/grenade_view.animation_graph")
 
-local kViewModelName = PrecacheAsset("models/marine/rifle/rifle_grenade.model")
-local kAnimationGraph = PrecacheAsset("models/marine/mine/mine_view.animation_graph")
-local kThrowDelay = 1.25
+local kGrenadeVelocity = 18
+
+local function ThrowGrenade(self, player)
+
+    if Server or (Client and Client.GetIsControllingPlayer()) then
+
+        local viewCoords = player:GetViewCoords()
+        local eyePos = player:GetEyePos()
+
+        local startPointTrace = Shared.TraceCapsule(eyePos, eyePos + viewCoords.zAxis, 0.2, 0, CollisionRep.Move, PhysicsMask.PredictedProjectileGroup, EntityFilterTwo(self, player))
+        local startPoint = startPointTrace.endPoint
+
+        local direction = viewCoords.zAxis
+        
+        if startPointTrace.fraction ~= 1 then
+            direction = GetNormalizedVector(direction:GetProjection(startPointTrace.normal))
+        end
+        
+        local grenade = player:CreatePredictedProjectile("HandGrenade", startPoint, direction * kGrenadeVelocity, 0.7, 0.45)
+        
+    end
+    
+end
 
 local networkVars =
 {
-    nadesLeft = string.format("integer (0 to %d)", kNumHandGrenades),
-    throwing = "boolean"
+    grenadesLeft = "integer (0 to ".. kNumHandGrenades ..")",
 }
 
 function HandGrenades:OnCreate()
 
     Weapon.OnCreate(self)
-    InitMixin(self, PickupableWeaponMixin)
-    self.nadesLeft = kNumHandGrenades
-    self.throwing = false
-    self.throwntime = 0
-    if Server then
-        InitMixin(self, EntityChangeMixin)
-    end
-
-end
-
-function HandGrenades:OnInitialized()
-
-    Weapon.OnInitialized(self)
     
-    self:SetModel(HandGrenades.kModelName)
+    self.grenadesLeft = kNumHandGrenades
+    
+    self:SetModel(self:GetThirdPersonModelName())
+    
+end
+
+function HandGrenades:OnDraw(player, previousWeaponMapName)
+
+    Weapon.OnDraw(self, player, previousWeaponMapName)
+    
+    // Attach weapon to parent's hand.
+    self:SetAttachPoint(Weapon.kHumanAttachPoint)
+    
+end
+
+function HandGrenades:OnPrimaryAttack(player)
+
+    if self.grenadesLeft > 0 then
+    
+        if not self.primaryAttacking then
+            self:TriggerEffects("grenade_pull_pin")
+        end
+    
+        self.primaryAttacking = true
+    else
+        self.primaryAttacking = false
+    end    
 
 end
 
-function HandGrenades:GetNadesLeft()
-    return self.nadesLeft
+function HandGrenades:GetThirdPersonModelName()
+    return kModelName
 end
 
-function HandGrenades:GetViewModelName()
-    return kViewModelName
+function HandGrenades:GetViewModelName(sex, variant)
+    return kViewModels[sex][variant]
 end
 
 function HandGrenades:GetAnimationGraphName()
     return kAnimationGraph
 end
 
-function HandGrenades:GetSuffixName()
-    return "handgrenades"
+function HandGrenades:OnPrimaryAttackEnd(player)
+    self.primaryAttacking = false
 end
 
-function HandGrenades:GetDropClassName()
-    return "HandGrenades"
-end
+function HandGrenades:OnTag(tagName)
 
-function HandGrenades:GetDropMapName()
-    return HandGrenades.kMapName
+    local player = self:GetParent()
+    
+    if tagName == "throw" then
+    
+        if player then
+        
+            ThrowGrenade(self, player)
+            self.grenadesLeft = math.max(0, self.grenadesLeft - 1)
+            self:SetIsVisible(false)
+            self:TriggerEffects("grenade_throw")
+            
+        end
+        
+    elseif tagName == "attack_end" then
+    
+        if self.grenadesLeft == 0 then        
+            self.readyToDestroy = true    
+        else
+            self:SetIsVisible(true)
+        end
+        
+    end
+    
 end
 
 function HandGrenades:GetHUDSlot()
@@ -75,117 +149,51 @@ function HandGrenades:GetWeight()
     return kHandGrenadesWeight
 end
 
-function HandGrenades:GetCheckForRecipient()
-    return false
-end
-
-function HandGrenades:OnPrimaryAttackEnd(player)
-    self.throwing = false
-end
-
-function HandGrenades:GetIsDroppable()
-    return true
-end
-
-function HandGrenades:OnTouch(recipient)
-    recipient:AddWeapon(self, true)
-    StartSoundEffectAtOrigin(Marine.kGunPickupSound, recipient:GetOrigin())
-end
-
-function HandGrenades:Dropped(prevOwner)
-
-    Weapon.Dropped(self, prevOwner)
-    self.droppedtime = Shared.GetTime()
-    self:RestartPickupScan()
-end
-
-local function ThrowGrenade(self, player)
-
-    self:TriggerEffects("grenadelauncher_attack")
-    
-    if Server or (Client and Client.GetIsControllingPlayer()) then
-
-        local viewAngles = player:GetViewAngles()
-        local viewCoords = viewAngles:GetCoords()
-        
-        // Make sure start point isn't on the other side of a wall or object
-        local startPoint = player:GetEyePos() - (viewCoords.zAxis * 0.2)
-        local trace = Shared.TraceRay(startPoint, startPoint + viewCoords.zAxis * 25, CollisionRep.Default, PhysicsMask.Bullets, EntityFilterAll())
-        
-        // make sure the grenades flies to the crosshairs target
-        local grenadeStartPoint = player:GetEyePos() + viewCoords.zAxis * 0.65 - viewCoords.xAxis * 0.35 - viewCoords.yAxis * 0.25
-        
-        // if we would hit something use the trace endpoint, otherwise use the players view direction (for long range shots)
-        local grenadeDirection = ConditionalValue(trace.fraction ~= 1, trace.endPoint - grenadeStartPoint, viewCoords.zAxis)
-        grenadeDirection:Normalize()
-        
-        // Inherit player velocity?
-        local startVelocity = grenadeDirection * 10
-                
-        startVelocity.y = startVelocity.y + 3
-        
-        local grenade = player:CreatePredictedProjectile("HandGrenade", grenadeStartPoint, startVelocity, 0.6)
-    
-    end
-    
-end
-
-function HandGrenades:OnPrimaryAttack(player)
-    
-    if self.throwntime == nil or self.throwntime + kThrowDelay < Shared.GetTime() then
-        self.throwing = true
-        self.throwntime = Shared.GetTime()
-
-        self:TriggerEffects("start_create_" .. self:GetSuffixName())
-
-        ThrowGrenade(self, player)
-
-        self.nadesLeft = Clamp(self.nadesLeft - 1, 0, kNumHandGrenades)
-        
-        if self.nadesLeft == 0 then
-            
-            self:OnHolster(player)
-            player:RemoveWeapon(self)
-            player:SwitchWeapon(1)
-                
-        end
-    end
-    
-end
-
-function HandGrenades:Refill(amount)
-    self.nadesLeft = amount
-end
-
-function HandGrenades:OnHolster(player, previousWeaponMapName)
-
-    Weapon.OnHolster(self, player, previousWeaponMapName)
-    
-    self.throwing = false
-
-end
-
-function HandGrenades:OnDraw(player, previousWeaponMapName)
-
-    Weapon.OnDraw(self, player, previousWeaponMapName)
-    
-    // Attach weapon to parent's hand
-    self:SetAttachPoint(Weapon.kHumanAttachPoint)
-    
-    self.throwing = false
-
+function HandGrenades:GetNadesLeft()
+    return self.grenadesLeft
 end
 
 function HandGrenades:OnUpdateAnimationInput(modelMixin)
+
+    modelMixin:SetAnimationInput("activity", self.primaryAttacking and "primary" or "none")
+    modelMixin:SetAnimationInput("grenadesLeft", self.grenadesLeft)
     
-    PROFILE("HandGrenades:OnUpdateAnimationInput")
-    
-    modelMixin:SetAnimationInput("activity", ConditionalValue(self.throwing, "primary", "none") )
-    
-end    
+end
 
 function HandGrenades:OverrideWeaponName()
-    return "mine"
+    return "grenades"
+end
+
+if Server then
+
+    function HandGrenades:OnProcessMove(input)
+
+        Weapon.OnProcessMove(self, input)
+        
+        local player = self:GetParent()
+        if player then
+
+            local activeWeapon = player:GetActiveWeapon()
+            local allowDestruction = self.readyToDestroy or (activeWeapon ~= self and self.grenadesLeft == 0)
+        
+            if allowDestruction then
+
+                if activeWeapon == self then
+                
+                    self:OnHolster(player)
+                    player:SwitchWeapon(1)
+                    
+                end
+                    
+                player:RemoveWeapon(self)
+                DestroyEntity(self)
+            
+            end
+
+        end
+
+    end
+
 end
 
 Shared.LinkClassToMap("HandGrenades", HandGrenades.kMapName, networkVars)

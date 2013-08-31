@@ -119,7 +119,7 @@ function GUIPlayerResource:Initialize(style)
     self.ResGainedText:SetFontIsBold(false)
     self.ResGainedText:SetBlendTechnique(GUIItem.Add)
     self.ResGainedText:SetFontName(GUIPlayerResource.kResGainedFontName)
-    self.ResGainedText:SetText("")
+    self.ResGainedText:SetText("+")
     self.background:AddChild(self.ResGainedText)
     
     // Team display.
@@ -189,14 +189,13 @@ function GUIPlayerResource:Update(deltaTime, parameters)
     self.teamText:SetText(string.format(Locale.ResolveString("TEAM_RES"), tRes))
     
     if pRes > self.lastPersonalResources then
-    
-        self.ResGainedText:SetText("+" .. ToString( math.floor((pRes - self.lastPersonalResources)*100)/100 ))
+
         self.ResGainedText:DestroyAnimations()
         self.ResGainedText:SetColor(self.style.textColor)
         self.ResGainedText:FadeOut(2)
         
         self.lastPersonalResources = pRes
-        self.pulseLeft = numRTs - 1
+        self.pulseLeft = 1
         
         self.personalText:SetFontSize(GUIPlayerResource.kFontSizePersonalBig)
         self.personalText:SetFontSize(GUIPlayerResource.kFontSizePersonal, GUIPlayerResource.kPulseTime, "RES_PULSATE")
