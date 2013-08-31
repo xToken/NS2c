@@ -120,6 +120,10 @@ function Fade:GetArmorFullyUpgradedAmount()
     return kFadeArmorFullyUpgradedAmount
 end
 
+function Fade:ModifyCrouchAnimation(crouchAmount)    
+    return Clamp(crouchAmount * (1 - ( (self:GetVelocityLength() - kMaxSpeed) / (kMaxSpeed * 0.5))), 0, 1)
+end
+
 function Fade:GetMaxViewOffsetHeight()
     return kViewOffsetHeight
 end

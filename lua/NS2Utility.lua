@@ -1406,6 +1406,11 @@ function SetPlayerPoseParameters(player, viewModel, headAngles)
     end
     
     local speedScalar = velocity:GetLength() / player:GetMaxSpeed(true)
+
+    local crouchAmount = player:GetCrouchAmount()
+    if player.ModifyCrouchAnimation then
+        crouchAmount = player:ModifyCrouchAnimation(crouchAmount)
+    end
     
     player:SetPoseParam("move_yaw", moveYaw)
     player:SetPoseParam("move_speed", speedScalar)
@@ -1426,7 +1431,7 @@ function SetPlayerPoseParameters(player, viewModel, headAngles)
 
     //Print("body yaw = %f, move_yaw = %f", bodyYaw, moveYaw);
     
-    player:SetPoseParam("crouch", player:GetCrouchAmount())
+    player:SetPoseParam("crouch", crouchAmount)
     player:SetPoseParam("land_intensity", landIntensity)
     
     if viewModel then

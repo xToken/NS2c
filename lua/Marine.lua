@@ -315,6 +315,14 @@ function Marine:GetPlayerControllersGroup()
     return PhysicsGroup.BigPlayerControllersGroup
 end
 
+// Required by ControllerMixin.
+function Marine:GetMovePhysicsMask()
+    if self:GetIsDevoured() then
+        return PhysicsMask.All
+    end
+    return Player.GetMovePhysicsMask(self)
+end
+
 function Marine:GetArmorAmount(armorLevels)
 
     if not armorLevels then

@@ -20,9 +20,7 @@ class 'Blink' (Ability)
 Blink.kMapName = "blink"
 
 local kEtherealForce = 8
-local kMinBlinkEffectTime = 0.75
-Blink.kMinEnterEtherealTime = 0.1
-Blink.kMinTimeBetweenEffects = 0.2
+local kMinBlinkEffectTime = 1
 
 local networkVars =
 {
@@ -61,7 +59,10 @@ function Blink:TriggerBlinkOutEffects(player)
 end
 
 function Blink:TriggerBlinkInEffects(player)
-    self:TriggerEffects("blink_in")
+    if self.lastblinkeffect + kMinBlinkEffectTime < Shared.GetTime() then
+        self.lastblinkeffect = Shared.GetTime()
+        self:TriggerEffects("blink_in")
+    end
 end
 
 function Blink:GetIsBlinking()
@@ -141,11 +142,6 @@ function Blink:ProcessMoveOnWeapon(player, input)
         player.lastBlinkTime = time
         player:OnBlinking(input)
         player:DeductAbilityEnergy(kBlinkPulseEnergyCost)
-        
-        if deltaTime > Blink.kMinTimeBetweenEffects then
-            // Just pressed blink, play effect
-            self:TriggerBlinkInEffects(player)
-        end
     end
     
 end

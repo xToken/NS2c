@@ -171,14 +171,14 @@ kRifleDamage = 10
 kRifleDamageType = kDamageType.Normal
 kRifleClipSize = 50
 kRifleWeight = 0.01
-kRifleClipWeight = 0.01
+kRifleClipWeight = 0.005
 
 kPistolDamage = 20
 kPistolDamageType = kDamageType.Normal
 kPistolClipSize = 10
 kPistolWeight = 0.005
 kPistolFireDelay = 0.08
-kPistolClipWeight = 0.01
+kPistolClipWeight = 0.0033
 
 kWelderDamage = 4
 kWelderDamageType = kDamageType.Normal
@@ -211,16 +211,16 @@ kShotgunMinSpreadBullets = 5
 kShotgunMaxSpread = 18
 //kShotgunDropOffStartRange = 4
 kShotgunWeight = 0.03
-kShotgunShellWeight = 0.0025
+kShotgunShellWeight = 0.002
 kShotgunBaseRateOfFire = 1.5
 
 kHeavyMachineGunDamage = 10
 kHeavyMachineGunDamageType = kDamageType.Puncture
 kHeavyMachineGunClipSize = 125
-kHeavyMachineGunWeight = 0.05
+kHeavyMachineGunWeight = 0.08
 kHeavyMachineGunROF = 0.05
 kHeavyMachineGunReloadTime = 6.3
-kHeavyMachineGunClipWeight = 0.0035
+kHeavyMachineGunClipWeight = 0.01
 
 kMinigunDamage = 8
 kMinigunDamageType = kDamageType.Puncture
@@ -415,7 +415,7 @@ kDevourAttackDelay = 2
 kDevourDigestionSpeed = 1
 kDevourHealthPerSecond = 20
 kDevourDamageType = kDamageType.Falling
-kDevourRange = 1.2
+kDevourRange = 1.4
 kDevourMeleeBaseWidth = 0.8
 kDevourMeleeBaseHeight = 0.7
 
@@ -434,6 +434,7 @@ kSmashMeleeBaseHeight = 1.4
 
 kChargeMaxDamage = 4
 kChargeMinDamage = 1
+kStartChargeEnergyCost = 8
 
 kHydraDamage = 20 // From NS1
 kHydraAttackDamageType = kDamageType.Normal

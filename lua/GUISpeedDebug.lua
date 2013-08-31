@@ -124,8 +124,8 @@ function GUISpeedDebug:Update(deltaTime)
         self.OnSurface:SetText( string.format( "OnSurface : %s", ToString(player:GetIsOnSurface()) ) )
         self.OnGround:SetText( string.format( "OnGround : %s", ToString(player:GetIsOnGround()) ) )
         self.Friction:SetText( string.format( "Friction : %s", ToString(player:GetGroundFriction()) ) )
-        self.MaxSpeed:SetText( string.format( "MaxSpeed : %s", ToString(player:GetMaxSpeed()) ) )
-        self.Jumping:SetText( string.format( "Jumping : %s : With force : %s", ToString(player:GetIsJumping()), ToString(player:GetLastImpactForce()) ) )
+        self.MaxSpeed:SetText( string.format( "MaxSpeed : %s : Weapon weight : %s", ToString(player:GetMaxSpeed()), ToString(player:GetWeaponsWeight() or 0) ) )
+        self.Jumping:SetText( string.format( "Jumping : %s : Last landing force : %s", ToString(player:GetIsJumping()), ToString(player:GetLastImpactForce()) ) )
         self.Accel:SetText( string.format( "Accel : %s", ToString(player:GetAcceleration()) ) )
         
         if currentFraction then

@@ -25,9 +25,5 @@ function Onos:GetTierTwoTechId()
 end
 
 function Onos:GetTierThreeTechId()
-    if kDevourEnabled then
-        return kTechId.Devour
-    else 
-        return kTechId.None
-    end
+    return kTechId.Devour
 end

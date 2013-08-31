@@ -188,7 +188,7 @@ end
 
 function Onos:TriggerCharge(move)
     
-    if not self.charging and self.timeLastChargeEnd + kChargeDelay < Shared.GetTime() and not self:GetCrouching() and not self:GetCrouched() and self:GetHasOneHive() then
+    if not self.charging and self.timeLastChargeEnd + kChargeDelay < Shared.GetTime() and not self:GetCrouching() and not self:GetCrouched() and self:GetHasOneHive() and self:GetEnergy() > kStartChargeEnergyCost then
 
         self.charging = true
         self.timeLastCharge = Shared.GetTime()
@@ -201,7 +201,7 @@ function Onos:TriggerCharge(move)
         end
         
         self:TriggerUncloak()
-    
+        self:DeductAbilityEnergy(kStartChargeEnergyCost)
     end
     
 end

@@ -7,8 +7,6 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 Script.Load("lua/Utility.lua")
 
-kDevourEnabled = false
-
 kMaxPlayerSkill = 1000
 kMaxPlayerLevel = 100
 
