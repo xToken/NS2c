@@ -40,8 +40,8 @@ kTechId = createTechIdEnum({
     // Commander menus for selected units
     'RootMenu', 'BuildMenu', 'AdvancedMenu', 'AssistMenu', 'MarkersMenu', 'UpgradesMenu', 'WeaponsMenu',
     
-    // Robotics factory menus
-    'RoboticsFactoryARCUpgradesMenu', 'RoboticsFactoryMACUpgradesMenu', 'UpgradeRoboticsFactory',
+    // Turret factory menus
+    'UpgradeTurretFactory',
 
     'ReadyRoomPlayer', 
     
@@ -74,7 +74,7 @@ kTechId = createTechIdEnum({
 
     // Marine tech 
     'CommandStation', 'Armory', 'InfantryPortal', 'Extractor', 'Sentry', 'ARC',
-    'Scan', 'AmmoPack', 'MedPack', 'CatPack', 'CatPackTech', 'AdvancedArmoryUpgrade', 'Observatory', 'Detector', 'DistressBeacon', 'PhaseGate', 'RoboticsFactory', 'ARCRoboticsFactory', 'ArmsLab',
+    'Scan', 'AmmoPack', 'MedPack', 'CatPack', 'CatPackTech', 'AdvancedArmoryUpgrade', 'Observatory', 'Detector', 'DistressBeacon', 'PhaseGate', 'TurretFactory', 'AdvancedTurretFactory', 'ArmsLab',
     'PrototypeLab', 'AdvancedArmory', 'HandGrenadesTech', 'Electrify', 
     
     // Research 

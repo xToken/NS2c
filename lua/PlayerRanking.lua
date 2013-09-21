@@ -97,6 +97,8 @@ function PlayerRanking:OnUpdate()
                         steamId = steamId,
                         nickname = player:GetName() or "",
                         playTime = player:GetPlayTime(),
+                        marineTime = player:GetMarinePlayTime(),
+                        alienTime = player:GetAlienPlayTime(),
                         kills = player:GetKills(),
                         deaths = player:GetDeaths(),
                         assists = player:GetAssistKills(),
@@ -113,6 +115,8 @@ function PlayerRanking:OnUpdate()
                     playerData.steamId = steamId
                     playerData.nickname = player:GetName() or ""
                     playerData.playTime = player:GetPlayTime()
+                    playerData.marineTime = player:GetMarinePlayTime()
+                    playerData.alienTime = player:GetAlienPlayTime()
                     playerData.kills = player:GetKills()
                     playerData.deaths = player:GetDeaths()
                     playerData.assists = player:GetAssistKills()
@@ -147,6 +151,7 @@ function PlayerRanking:EndGame(winningTeam)
             local gameInfo = {
 
                 serverIp = IPAddressToString(Server.GetIpAddress()),
+                port = Server.GetPort(),
                 mapName = Shared.GetMapName(),
                 gameTime = gameTime,
                 tournamentMode = GetTournamentModeEnabled(),
@@ -196,6 +201,8 @@ function PlayerRanking:InsertPlayerData(playerTable, recordedData, winningTeam, 
             steamId = recordedData.steamId,
             nickname = recordedData.nickname or "",
             playTime = recordedData.playTime,
+            marineTime = recordedData.marineTime,
+            alienTime = recordedData.alienTime,
             kills = recordedData.kills,
             deaths = recordedData.deaths,
             assists = recordedData.assists,
@@ -366,6 +373,7 @@ if Server then
                 player:SetTotalScore(playerData.score)
                 player:SetTotalPlayTime(playerData.playTime)
                 player:SetPlayerLevel(playerData.level)
+                player:SetReinforcedTier(playerData.reinforcedTier)
             
             end
         

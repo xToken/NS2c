@@ -13,10 +13,6 @@ function WhipStructureAbility:GetPrimaryAttackDelay()
     return 0
 end
 
-function WhipStructureAbility:GetIconOffsetY(secondary)
-    return kAbilityOffset.Hydra
-end
-
 function WhipStructureAbility:GetGhostModelName(ability)
     return Whip.kModelName
 end

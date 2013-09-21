@@ -53,7 +53,7 @@ local kWalkSpeed = 2
 local kCrouchedSpeed = 1.8
 local kBlinkImpulseForce = 10
 local kBlinkVerticleDampner = 4
-local kBlinkSpeedGracePeriod = 0.4
+local kBlinkSpeedGracePeriod = 0.0
 
 local networkVars =
 {
@@ -122,6 +122,10 @@ end
 
 function Fade:ModifyCrouchAnimation(crouchAmount)    
     return Clamp(crouchAmount * (1 - ( (self:GetVelocityLength() - kMaxSpeed) / (kMaxSpeed * 0.5))), 0, 1)
+end
+
+function Fade:GetExtentsCrouchShrinkAmount()
+    return ConditionalValue(self:GetIsOnGround(), Player.GetExtentsCrouchShrinkAmount(self), 0)
 end
 
 function Fade:GetMaxViewOffsetHeight()

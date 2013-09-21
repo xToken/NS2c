@@ -42,6 +42,7 @@ local kAnimationGraph = PrecacheAsset("models/marine/arms_lab/arms_lab.animation
 
 local kHaloCinematic = PrecacheAsset("cinematics/marine/arms_lab/arms_lab_holo.cinematic")
 local kHaloAttachPoint = "ArmsLab_hologram"
+local kArmsLabScale = 1.2
 
 local networkVars = { }
 
@@ -140,6 +141,14 @@ function ArmsLab:GetTechButtons(techId)
 
 end
 
+function ArmsLab:OnAdjustModelCoords(modelCoords)
+    local coords = modelCoords
+    coords.xAxis = coords.xAxis * kArmsLabScale
+    coords.yAxis = coords.yAxis * kArmsLabScale
+    coords.zAxis = coords.zAxis * kArmsLabScale
+    return coords
+end
+
 if Client then
 
     function ArmsLab:OnTag(tagName)
@@ -152,22 +161,22 @@ if Client then
         
     end
     
-    -- function ArmsLab:OnUpdateRender()
+    function ArmsLab:OnUpdateRender()
     
-        -- if not self.haloCinematic then
+        if not self.haloCinematic then
         
-            -- self.haloCinematic = Client.CreateCinematic(RenderScene.Zone_Default)
-            -- self.haloCinematic:SetCinematic(kHaloCinematic)
-            -- self.haloCinematic:SetParent(self)
-            -- self.haloCinematic:SetAttachPoint(self:GetAttachPointIndex(kHaloAttachPoint))
-            -- self.haloCinematic:SetCoords(Coords.GetIdentity())
-            -- self.haloCinematic:SetRepeatStyle(Cinematic.Repeat_Endless)
+            self.haloCinematic = Client.CreateCinematic(RenderScene.Zone_Default)
+            self.haloCinematic:SetCinematic(kHaloCinematic)
+            self.haloCinematic:SetParent(self)
+            self.haloCinematic:SetAttachPoint(self:GetAttachPointIndex(kHaloAttachPoint))
+            self.haloCinematic:SetCoords(Coords.GetIdentity())
+            self.haloCinematic:SetRepeatStyle(Cinematic.Repeat_Endless)
             
-        -- end
+        end
         
-        -- self.haloCinematic:SetIsVisible(self.deployed and self:GetIsPowered())
+        self.haloCinematic:SetIsVisible(self.deployed)
         
-    -- end
+    end
     
 end
 
@@ -175,12 +184,12 @@ function ArmsLab:OnDestroy()
 
     ScriptActor.OnDestroy(self)
     
-    -- if Client and self.haloCinematic then
+    if Client and self.haloCinematic then
     
-        -- Client.DestroyCinematic(self.haloCinematic)
-        -- self.haloCinematic = nil
+        Client.DestroyCinematic(self.haloCinematic)
+        self.haloCinematic = nil
         
-    -- end
+    end
     
 end
 

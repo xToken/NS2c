@@ -61,7 +61,7 @@ TeamInfo.kRelevantTechIdsMarine =
     kTechId.JetpackTech,
     kTechId.HeavyArmorTech,
     kTechId.MotionTracking,
-    kTechId.ARCRoboticsFactory,
+    kTechId.AdvancedTurretFactory,
     kTechId.PhaseTech
     
 }
@@ -76,7 +76,7 @@ TeamInfo.kRelevantTechIdsAlien =
     kTechId.Stomp,
     
     kTechId.Xenocide,
-    kTechId.WebStalk,
+    kTechId.Web,
     kTechId.PrimalScream,
     kTechId.AcidRocket,
     kTechId.Devour,

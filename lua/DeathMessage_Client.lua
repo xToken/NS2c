@@ -187,8 +187,8 @@ local function AddDeathMessage(killerIsPlayer, killerIndex, killerTeamNumber, ic
             
             if techIdString == "AdvancedArmory" then
                 resOverride = kArmoryCost + kAdvancedArmoryUpgradeCost
-            elseif techIdString == "ARCRoboticsFactory" then
-                resOverride = kRoboticsFactoryCost + kUpgradeRoboticsFactoryCost
+            elseif techIdString == "AdvancedTurretFactory" then
+                resOverride = kTurretFactoryCost + kUpgradeTurretFactoryCost
             end
             
             local amount = resOverride or LookupTechData(techId, kTechDataCostKey, 0)

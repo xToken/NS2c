@@ -19,6 +19,7 @@ XenocideLeap.kMapName = "xenocide"
 local kDetonateTime = 2.5
 local kXenocideSoundName = PrecacheAsset("sound/NS2.fev/alien/common/xenocide_start")
 
+
 local networkVars = { }
 
 local function TriggerXenocide(self, player)
@@ -83,10 +84,12 @@ end
 function XenocideLeap:OnPrimaryAttack(player)
 
     if player:GetEnergy() >= self:GetEnergyCost() then
-        
+    
         if not self.xenociding then
+        
             TriggerXenocide(self, player)
             self.xenociding = true
+            
         else
         
             if self.xenocideTimeLeft and self.xenocideTimeLeft < kDetonateTime * 0.4 then        
@@ -124,7 +127,7 @@ function XenocideLeap:OnProcessMove(input)
             
                 self:TriggerEffects("xenocide", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
                 
-                local hitEntities = GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(player:GetTeamNumber()), player:GetOrigin(), kXenocideRange)
+                local hitEntities = GetEntitiesWithMixinWithinRange("Live", player:GetOrigin(), kXenocideRange)
                 RadiusDamage(hitEntities, player:GetOrigin(), kXenocideRange, kXenocideDamage, self)
                 
 				

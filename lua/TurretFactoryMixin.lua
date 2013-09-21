@@ -35,8 +35,8 @@ if Server then
         for index, turret in ipairs(turrets) do
             local toTarget = turret:GetOrigin() - self:GetOrigin()
             local distanceToTarget = toTarget:GetLength()
-            if distanceToTarget < kRoboticsFactoryAttachRange and GetIsUnitActive(turret) then
-                if (turret:GetRequiresAdvanced() and self:GetTechId() == kTechId.ARCRoboticsFactory) or not turret:GetRequiresAdvanced() then
+            if distanceToTarget < kTurretFactoryAttachRange and GetIsUnitActive(turret) then
+                if (turret:GetRequiresAdvanced() and self:GetTechId() == kTechId.AdvancedTurretFactory) or not turret:GetRequiresAdvanced() then
                     turret:OnTurretFactoryCompleted()
                 end
             end

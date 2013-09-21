@@ -8,7 +8,7 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//PrecacheAsset("shaders/GUIAura.surface_shader")
+Shared.PrecacheSurfaceShader("shaders/GUIAura.surface_shader")
 
 class 'GUIAuraDisplay' (GUIScript)
 

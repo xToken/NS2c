@@ -15,8 +15,8 @@
 
 Script.Load("lua/Utility.lua")
 Script.Load("lua/Weapons/Alien/Gore.lua")
-Script.Load("lua/Weapons/Alien/Devour.lua")
 Script.Load("lua/Weapons/Alien/Smash.lua")
+Script.Load("lua/Weapons/Alien/Devour.lua")
 Script.Load("lua/Alien.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
@@ -272,22 +272,6 @@ end
 // Half a ton
 function Onos:GetMass()
     return kMass
-end
-
-// Give dynamic camera motion to the player
-function Onos:PlayerCameraCoordsAdjustment(cameraCoords)
-
-    local camOffsetHeight = 0
-
-    if self:GetIsFirstPerson() then
-    
-        local camOffsetHeight = 0
-	    cameraCoords.origin.y = cameraCoords.origin.y - self:GetMaxViewOffsetHeight() * self:GetCrouchShrinkAmount() * self:GetCrouchAmount()
-
-    end
-
-    return cameraCoords
-
 end
 
 local kOnosEngageOffset = Vector(0, 1.3, 0)

@@ -60,11 +60,8 @@ function Gore:GetHUDSlot()
 end
 
 function Gore:OnHolster(player)
-
     Ability.OnHolster(self, player)
-    
-    self:OnAttackEnd()
-    
+    self.primaryAttacking = false
 end
 
 function Gore:GetRange()
@@ -75,10 +72,6 @@ function Gore:GetMeleeBase()
     return kGoreMeleeBaseWidth, kGoreMeleeBaseHeight
 end
 
-function Gore:GetIconOffsetY(secondary)
-    return kAbilityOffset.Gore
-end
-
 function Gore:OnTag(tagName)
 
     PROFILE("Gore:OnTag")
@@ -86,7 +79,7 @@ function Gore:OnTag(tagName)
     if tagName == "hit" then
     
         local player = self:GetParent()
-        if player and not self:GetHasAttackDelay(self, player) then
+        if player then
         
             self.lastPrimaryAttackTime = Shared.GetTime()
             //local didHit, impactPoint, target = self:Attack(player)
@@ -102,10 +95,10 @@ end
 
 function Gore:OnPrimaryAttack(player)
 
-    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(self, player) then
+    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(player) then
         self.primaryAttacking = true
     else
-        self:OnAttackEnd()
+        self.primaryAttacking = false
     end 
 
 end
@@ -119,30 +112,21 @@ function Gore:GetLastAttackTime()
 end
 
 function Gore:OnPrimaryAttackEnd(player)
-    
     Ability.OnPrimaryAttackEnd(self, player)
-    self:OnAttackEnd()
-    
+    self.primaryAttacking = false
 end
 
 function Gore:GetAbilityUsesFocus()
     return true
 end
 
-function Gore:OnAttackEnd()
-    self.primaryAttacking = false
-end
-
 function Gore:OnUpdateAnimationInput(modelMixin)
 
-    local activityString = "none"
-    local abilityString = "gore"
-    
+    local activityString = "none"   
     if self.primaryAttacking then
         activityString = "primary"        
     end
-   
-    modelMixin:SetAnimationInput("ability", abilityString) 
+    modelMixin:SetAnimationInput("ability", "gore") 
     modelMixin:SetAnimationInput("activity", activityString)
     
 end

@@ -33,6 +33,8 @@ end
 local kJetpackFuelReplenishDelay = .0
 local kJetpackMinimumFuelForLaunch = .03
 local kVerticleThrust = 19
+local kJumpForce = 5.75
+local kMaxCrouchSpeed = 4
 local kJetpackAcceleration = 3.2 // Horizontal acceleration
 local kFlyMaxSpeed = 13.0 // NS1 jetpack is 2.9x running speed (walk: 192, jetpack: 576)
 local kJetpackTakeOffTime = .01
@@ -188,6 +190,10 @@ function JetpackMarine:OnGroundOverride(onGround)
     end
 end
 
+function JetpackMarine:GetExtentsCrouchShrinkAmount()
+    return ConditionalValue(self:GetIsOnGround(), Player.GetExtentsCrouchShrinkAmount(self), 0)
+end
+
 function JetpackMarine:HandleJetpackStart()
 
     self.jetpackFuelOnChange = self:GetFuel()
@@ -278,12 +284,13 @@ function JetpackMarine:UpdateJetpack(input)
 
 end
 
+function JetpackMarine:GetJumpForce()
+    return kJumpForce
+end
+
 function JetpackMarine:HandleButtons(input)
    	self:UpdateJetpack(input)
 	Marine.HandleButtons(self, input)
-    
-
-    
 end
 
 function JetpackMarine:GetInventorySpeedScalar()
@@ -298,10 +305,6 @@ function JetpackMarine:GetMaxSpeed(possible)
 
     return Marine.GetMaxSpeed(self, possible)
     
-end
-
-function JetpackMarine:GetIsTakingOffFromGround()
-    return self.startedFromGround and (self.timeJetpackingChanged + kJetpackTakeOffTime > Shared.GetTime())
 end
 
 function JetpackMarine:AirAccelerate(velocity, time, wishdir, wishspeed, acceleration)
@@ -376,13 +379,15 @@ function JetpackMarine:UpdateJetpackMode()
 end
 
 function JetpackMarine:GetJetPackMode()
-
     return self.jetpackMode
-
 end
 
 function JetpackMarine:GetIsJetpacking()
     return self.jetpacking and (self:GetFuel()> 0) and not self:GetIsStunned() and not self:GetIsWebbed()
+end
+
+function JetpackMarine:GetIsForwardOverrideDesired()
+    return not self.jetpacking and not self:GetIsOnGround()
 end
 
 function JetpackMarine:ProcessMoveOnModel(input)

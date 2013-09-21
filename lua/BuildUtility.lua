@@ -235,7 +235,7 @@ local function CheckValidExit(techId, position, angle)
     //local directionVec = GetNormalizedVector(Vector(math.sin(angle), 0, math.cos(angle)))
     // TODO: Add something to tech data for "ExitDistance".
     local validExit = true
-    //if techId == kTechId.RoboticsFactory then
+    //if techId == kTechId.TurretFactory then
         //validExit = GetIsStructureExitValid(position, directionVec, 5)
     //elseif techId == kTechId.PhaseGate then
         //validExit = GetIsStructureExitValid(position, directionVec, 1.5)

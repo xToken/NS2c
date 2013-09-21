@@ -59,7 +59,7 @@ function PlayingTeam:Initialize(teamName, teamNumber)
     self.selectupgradechamber = VoteManager()
     self.selectupgradechamber:Initialize()
     self.selectupgradechamber:SetTeamPercentNeeded(kPercentNeededForUpgradeChamberVote)
-    self.selectupgradechamber:SetDuration(30)
+    self.selectupgradechamber:SetDuration(60)
     self.selectupgradechamber:SetMinVotes(1)
 
     // child classes can specify a custom team info class
@@ -963,7 +963,7 @@ end
 local function CompleteUpgradeChamberVote(self)
     local techId = self.selectupgradechamber:GetTarget()
     
-    if UpgradeBaseHivetoChamberSpecific(nil, techId, self) then
+    if techId ~= nil and UpgradeBaseHivetoChamberSpecific(nil, techId, self) then
         local netmsg = {
                 voteId = techId
             }
@@ -999,13 +999,8 @@ function PlayingTeam:UpdateVotes()
     end
     
     // Upgrade chambers
-    if self.selectupgradechamber:GetVotePassed() and self.GetActiveUnassignedHiveCount and self:GetActiveUnassignedHiveCount() > 0 then
+    if self.selectupgradechamber:GetVotePassed() or self.selectupgradechamber:GetVoteElapsed(Shared.GetTime()) then
         CompleteUpgradeChamberVote(self)
-        self.selectupgradechamber:Reset()
-    elseif self.selectupgradechamber:GetVoteElapsed(Shared.GetTime()) then
-        if self.selectupgradechamber:GetTarget() ~= nil then
-            CompleteUpgradeChamberVote(self)
-        end
         self.selectupgradechamber:Reset()
     end
     

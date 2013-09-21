@@ -18,8 +18,10 @@ Grenade.kMapName = "grenade"
 Grenade.kModelName = PrecacheAsset("models/marine/rifle/rifle_grenade.model")
 
 Grenade.kRadius = 0.17
-
 Grenade.kMinLifeTime = 0.15
+Grenade.kClearOnImpact = false
+Grenade.kClearOnEnemyImpact = true
+
 local kGrenadeCameraShakeDistance = 15
 local kGrenadeMinShakeIntensity = 0.02
 local kGrenadeMaxShakeIntensity = 0.13
@@ -91,13 +93,8 @@ if Server then
     function Grenade:Detonate(targetHit)
     
         // Do damage to nearby targets.
-        local hitEntities
-        if GetGamerules():GetFriendlyFire() then
-            hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kGrenadeLauncherGrenadeDamageRadius)
-        else
-            hitEntities = GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), kGrenadeLauncherGrenadeDamageRadius)
-        end
-		
+        local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kGrenadeLauncherGrenadeDamageRadius)
+        
         // Remove grenade and add firing player.
         table.removevalue(hitEntities, self)
         
@@ -106,13 +103,7 @@ if Server then
             table.removevalue(hitEntities, targetHit)
             self:DoDamage(kGrenadeLauncherGrenadeDamage, targetHit, targetHit:GetOrigin(), GetNormalizedVector(targetHit:GetOrigin() - self:GetOrigin()), "none")
         end
-        
-        local owner = self:GetOwner()
-        // It is possible this grenade does not have an owner.
-        if owner then
-            table.insertunique(hitEntities, owner)
-        end
-        
+
         RadiusDamage(hitEntities, self:GetOrigin(), kGrenadeLauncherGrenadeDamageRadius, kGrenadeLauncherGrenadeDamage, self)
         
         // TODO: use what is defined in the material file

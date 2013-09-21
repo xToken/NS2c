@@ -132,6 +132,14 @@ function Alien:OnCreate()
     
 end
 
+function Alien:OnJoinTeam()
+
+    self.oneHive = false
+    self.twoHives = false
+    self.threeHives = false
+
+end
+
 function Alien:OnInitialized()
 
     Player.OnInitialized(self)
@@ -171,7 +179,6 @@ function Alien:OnInitialized()
     if Client and Client.GetLocalPlayer() == self then
     
         Client.SetPitch(0.0)
-        self:AddHelpWidget("GUIAlienVisionHelp", 2)
         
     end
 

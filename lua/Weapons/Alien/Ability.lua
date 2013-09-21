@@ -45,7 +45,7 @@ function Ability:GetLastAttackTime()
     return 0
 end
 
-function Ability:GetHasAttackDelay(self, player)
+function Ability:GetHasAttackDelay(player)
 
     local attackDelay = self:GetAttackDelay() / player:GetAttackSpeed()
     if self:GetAbilityUsesFocus() then
@@ -58,7 +58,32 @@ function Ability:GetHasAttackDelay(self, player)
     
 end
 
+function Ability:GetSecondaryAttackDelay()
+    return 0
+end
+
+function Ability:GetLastSecondaryAttackTime()
+    return 0
+end
+
+function Ability:GetHasSecondaryAttackDelay(player)
+
+    local attackDelay = self:GetSecondaryAttackDelay() / player:GetAttackSpeed()
+    if self:GetSecondaryAbilityUsesFocus() then
+        local upg, level = GetHasFocusUpgrade(player)
+        if upg and level > 0 then
+            attackDelay = attackDelay + (attackDelay * (kFocusAttackSlowdown * level))
+        end
+    end
+    return self:GetLastSecondaryAttackTime() + attackDelay > Shared.GetTime()
+    
+end
+
 function Ability:GetAbilityUsesFocus()
+    return false
+end
+
+function Ability:GetSecondaryAbilityUsesFocus()
     return false
 end
 

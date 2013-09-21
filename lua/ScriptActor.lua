@@ -208,7 +208,7 @@ function ScriptActor:GetTechAllowed(techId, techNode, player)
     // If tech is action or buy action
     elseif techNode:GetIsAction() or techNode:GetIsBuy() then
     
-        canAfford = player:GetResources() > techNode:GetCost()
+        canAfford = player:GetResources() >= techNode:GetCost()
         
     // If tech is activation
     elseif techNode:GetIsActivation() then

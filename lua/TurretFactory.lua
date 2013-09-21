@@ -1,13 +1,6 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+// NS2 - Classic
+// lua\TurretFactory.lua
 //
-// lua\RoboticsFactory.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
-//NS2c
-//Updated to add hooks for turret factory mixin, removal of production values.
 
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
@@ -36,17 +29,17 @@ Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 
-class 'RoboticsFactory' (ScriptActor)
+class 'TurretFactory' (ScriptActor)
 
-RoboticsFactory.kAnimationGraph = PrecacheAsset("models/marine/robotics_factory/robotics_factory.animation_graph")
+TurretFactory.kAnimationGraph = PrecacheAsset("models/marine/robotics_factory/robotics_factory.animation_graph")
 
-RoboticsFactory.kMapName = "roboticsfactory"
+TurretFactory.kMapName = "turretfactory"
 
-RoboticsFactory.kModelName = PrecacheAsset("models/marine/robotics_factory/robotics_factory.model")
+TurretFactory.kModelName = PrecacheAsset("models/marine/robotics_factory/robotics_factory.model")
 
-RoboticsFactory.kAttachPoint = "target"
+TurretFactory.kAttachPoint = "target"
 
-RoboticsFactory.kActiveEffect = PrecacheAsset("cinematics/marine/roboticsfactory/active.cinematic")
+TurretFactory.kActiveEffect = PrecacheAsset("cinematics/marine/roboticsfactory/active.cinematic")
 
 local networkVars = { }
 
@@ -69,7 +62,7 @@ AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
 
-function RoboticsFactory:OnCreate()
+function TurretFactory:OnCreate()
 
     ScriptActor.OnCreate(self)
     
@@ -107,13 +100,13 @@ function RoboticsFactory:OnCreate()
 
 end
 
-function RoboticsFactory:OnInitialized()
+function TurretFactory:OnInitialized()
 
     ScriptActor.OnInitialized(self)
     
     InitMixin(self, WeldableMixin)
     
-    self:SetModel(RoboticsFactory.kModelName, RoboticsFactory.kAnimationGraph)
+    self:SetModel(TurretFactory.kModelName, TurretFactory.kAnimationGraph)
     
     self:SetPhysicsType(PhysicsType.Kinematic)
     
@@ -136,23 +129,16 @@ function RoboticsFactory:OnInitialized()
 
 end
 
-function RoboticsFactory:GetReceivesStructuralDamage()
+function TurretFactory:GetReceivesStructuralDamage()
     return true
 end
 
-function RoboticsFactory:GetTechAllowed(techId, techNode, player)
+function TurretFactory:GetTechButtons(techId)
 
-    local allowed, canAfford = ScriptActor.GetTechAllowed(self, techId, techNode, player)
-    return allowed, canAfford
-    
-end
-
-function RoboticsFactory:GetTechButtons(techId)
-
-    local techButtons = {   kTechId.UpgradeRoboticsFactory, kTechId.None, kTechId.None, kTechId.None, 
+    local techButtons = {   kTechId.UpgradeTurretFactory, kTechId.None, kTechId.None, kTechId.None, 
                kTechId.None, kTechId.None, kTechId.None, kTechId.None }
                
-    if self:GetTechId() == kTechId.ARCRoboticsFactory then
+    if self:GetTechId() == kTechId.AdvancedTurretFactory then
         techButtons[1] = kTechId.None
     end
 
@@ -160,41 +146,19 @@ function RoboticsFactory:GetTechButtons(techId)
     
 end
 
-function RoboticsFactory:GetDamagedAlertId()
+function TurretFactory:GetDamagedAlertId()
     return kTechId.MarineAlertStructureUnderAttack
 end
 
-function RoboticsFactory:GetPositionForEntity(entity)
-    
-    local direction = Vector(self:GetAngles():GetCoords().zAxis)    
-    local origin = self:GetOrigin() + direction * 3.2
-    
-    if entity:GetIsFlying() then
-        origin = GetHoverAt(entity, origin)
-    end
-    
-    return Coords.GetLookIn( origin, direction )
+function TurretFactory:OnResearchComplete(researchId)
 
-end
-
-function RoboticsFactory:ManufactureEntity()
-    
-end
-
-// Actual creation of entity happens delayed.
-function RoboticsFactory:OverrideCreateManufactureEntity(techId)
-
-end
-
-function RoboticsFactory:OnResearchComplete(researchId)
-
-    if researchId == kTechId.UpgradeRoboticsFactory then
-        self:UpgradeToTechId(kTechId.ARCRoboticsFactory)
+    if researchId == kTechId.UpgradeTurretFactory then
+        self:UpgradeToTechId(kTechId.AdvancedTurretFactory)
     end
         
 end
 
-function GetRoomHasNoRoboticsFactory(techId, origin, normal, commander)
+function GetRoomHasNoTurretFactory(techId, origin, normal, commander)
 
     local location = GetLocationForPoint(origin)
     local locationName = location and location:GetName() or nil
@@ -204,9 +168,9 @@ function GetRoomHasNoRoboticsFactory(techId, origin, normal, commander)
     
         validRoom = true
     
-        for index, sentryBattery in ientitylist(Shared.GetEntitiesWithClassname("RoboticsFactory")) do
+        for index, tf in ientitylist(Shared.GetEntitiesWithClassname("TurretFactory")) do
             
-            if sentryBattery:GetLocationName() == locationName then
+            if tf:GetLocationName() == locationName then
                 validRoom = false
                 break
             end
@@ -220,13 +184,9 @@ function GetRoomHasNoRoboticsFactory(techId, origin, normal, commander)
 end
 
 if Server then
-
-    function RoboticsFactory:OnUpdate()
-               
-    end
     
-    function RoboticsFactory:OnConstructionComplete()
-        local entities = GetEntitiesWithMixinWithinRange("TurretFactoryMixin", self:GetOrigin(), kRoboticsFactoryAttachRange)
+    function TurretFactory:OnConstructionComplete()
+        local entities = GetEntitiesWithMixinWithinRange("TurretFactoryMixin", self:GetOrigin(), kTurretFactoryAttachRange)
         for index, entity in ipairs(entities) do
             if entity:GetTeamNumber() == self:GetTeamNumber() then
                 if entity.Completed then
@@ -236,9 +196,9 @@ if Server then
         end
     end
     
-    function RoboticsFactory:OnDestroy()
+    function TurretFactory:OnDestroy()
      
-        local entities = GetEntitiesWithMixinWithinRange("TurretFactoryMixin", self:GetOrigin(), kRoboticsFactoryAttachRange)
+        local entities = GetEntitiesWithMixinWithinRange("TurretFactoryMixin", self:GetOrigin(), kTurretFactoryAttachRange)
         for index, entity in ipairs(entities) do
             if entity:GetTeamNumber() == self:GetTeamNumber() then
                 if entity.Destroyed then
@@ -253,7 +213,7 @@ if Server then
     
 end
 
-function RoboticsFactory:OnOverrideOrder(order)
+function TurretFactory:OnOverrideOrder(order)
 
     // Convert default to set rally point.
     if order:GetType() == kTechId.Default then
@@ -262,35 +222,13 @@ function RoboticsFactory:OnOverrideOrder(order)
     
 end
 
-function RoboticsFactory:GetHealthbarOffset()
+function TurretFactory:GetHealthbarOffset()
     return 1
 end 
 
-Shared.LinkClassToMap("RoboticsFactory", RoboticsFactory.kMapName, networkVars)
+Shared.LinkClassToMap("TurretFactory", TurretFactory.kMapName, networkVars)
 
 
-class 'ARCRoboticsFactory' (RoboticsFactory)
-ARCRoboticsFactory.kMapName = "arcroboticsfactory"
-Shared.LinkClassToMap("ARCRoboticsFactory", ARCRoboticsFactory.kMapName, { })
-
-
-class 'RoboticsAddon' (ScriptActor)
-
-RoboticsAddon.kMapName = "RoboticsAddon"
-
-local addonNetworkVars = { }
-
-AddMixinNetworkVars(ModelMixin, addonNetworkVars)
-AddMixinNetworkVars(TeamMixin, addonNetworkVars)
-
-function RoboticsAddon:OnCreate()
-
-    ScriptActor.OnCreate(self)
-    
-    InitMixin(self, BaseModelMixin)    
-    InitMixin(self, ModelMixin)
-    InitMixin(self, TeamMixin)
-    
-end
-
-Shared.LinkClassToMap("RoboticsAddon", RoboticsAddon.kMapName, addonNetworkVars)
+class 'AdvancedTurretFactory' (TurretFactory)
+AdvancedTurretFactory.kMapName = "advancedturretfactory"
+Shared.LinkClassToMap("AdvancedTurretFactory", AdvancedTurretFactory.kMapName, { })

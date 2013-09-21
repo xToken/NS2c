@@ -533,9 +533,6 @@ function Player:Replace(mapName, newTeamNumber, preserveWeapons, atOrigin, extra
         client:SetSpectatingPlayer(nil)
     end
     
-    // Must happen after the client has been set on the player.
-    player:InitializeBadges()
-    
     // Log player spawning
     if teamNumber ~= 0 then
         PostGameViz(string.format("%s spawned", SafeClassName(self)), self)
@@ -693,15 +690,6 @@ function Player:SetDarwinMode(darwinMode)
     self.darwinMode = darwinMode
 end
 
-function Player:UpdateArmorAmount()
-
-    // note: some player may have maxArmor == 0
-    local armorPercent = self.maxArmor > 0 and self.armor/self.maxArmor or 0
-    self.maxArmor = self:GetArmorAmount()
-    self:SetArmor(self.maxArmor * armorPercent)
-    
-end
-
 function Player:GetIsInterestedInAlert(techId)
     return LookupTechData(techId, kTechDataAlertTeam, false)
 end
@@ -752,23 +740,8 @@ function Player:SetRookieMode(rookieMode)
 end
 
 function Player:OnClientUpdated(client)
-
-    if client then
-    
-        if HasMixin(self, "PlayerVariant") then
-        
-            local variant = "green"
-            if client.armorType == kArmorType.Black and GetHasBlackArmor(client) then
-                variant = "special"
-            elseif client.armorType == kArmorType.Deluxe and GetHasDeluxeEdition(client) then
-                variant = "deluxe"
-            end
-            self:SetVariant(variant, client.sexType or "male")
-            
-        end
-        
-    end
-    
+    // override me
+    //DebugPrint("Player:OnClientUpdated")
 end
 
 // only use intensity value here to reduce traffic

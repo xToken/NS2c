@@ -205,13 +205,13 @@ function DropStructureAbility:PerformPrimaryAttack(player)
         end
 
         self.lastClickedPosition = nil
-
-    elseif valid then
-		self:TriggerEffects("web_fire")
-        self.lastClickedPosition = Vector(coords.origin)
+        
     end
     
-    if not valid then
+    if not secondClick then
+        self:TriggerEffects("web_fire")
+        self.lastClickedPosition = Vector(coords.origin)
+    elseif not valid then
         player:TriggerInvalidSound()
     end
         

@@ -214,10 +214,10 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                 
                 end
 
-            elseif Client then
+            elseif Client and isPredicted then
             
                 HandleHitEffect(point, doer, surface, target, showtracer, altMode, flinch_severe, damage, direction)
-                
+
                 // If we are far away from our target, trigger a private sound so we can hear we hit something
                 if target then
                 

@@ -177,15 +177,9 @@ function MarineTeam:Update(timePassed)
         CheckForNoIPs(self)
     end
     
-    local newArmorLevel = GetArmorLevel(self)
-    if self.armorLevel ~= newArmorLevel then
-    
-        self.armorLevel = newArmorLevel
-    
-        for index, player in ipairs(GetEntitiesForTeam("Player", self:GetTeamNumber())) do
-            player:UpdateArmorAmount(self.armorLevel)
-        end
-    
+    local armorLevel = GetArmorLevel(self)
+    for index, player in ipairs(GetEntitiesForTeam("Player", self:GetTeamNumber())) do
+        player:UpdateArmorAmount(armorLevel)
     end
     
 end
@@ -204,16 +198,16 @@ function MarineTeam:InitTechTree()
     self.techTree:AddBuildNode(kTechId.CommandStation,            kTechId.None,                kTechId.None)
     self.techTree:AddBuildNode(kTechId.Extractor,                 kTechId.None,                kTechId.None)
     self.techTree:AddBuildNode(kTechId.InfantryPortal,            kTechId.None,                kTechId.None)
-    self.techTree:AddBuildNode(kTechId.Sentry,                    kTechId.RoboticsFactory,     kTechId.None)
+    self.techTree:AddBuildNode(kTechId.Sentry,                    kTechId.TurretFactory,       kTechId.None)
     self.techTree:AddBuildNode(kTechId.Armory,                    kTechId.None,                kTechId.None)  
     self.techTree:AddBuildNode(kTechId.ArmsLab,                   kTechId.Armory,              kTechId.None)  
-    self.techTree:AddUpgradeNode(kTechId.AdvancedArmory,               kTechId.Armory,        kTechId.None)
-    self.techTree:AddBuildNode(kTechId.Observatory,               kTechId.InfantryPortal,       kTechId.None)      
-    self.techTree:AddBuildNode(kTechId.PhaseGate,                    kTechId.PhaseTech,        kTechId.None)
-    self.techTree:AddBuildNode(kTechId.RoboticsFactory,                    kTechId.Armory,              kTechId.None)  
-    self.techTree:AddBuildNode(kTechId.ARCRoboticsFactory,                 kTechId.Armory,              kTechId.RoboticsFactory)
-    self.techTree:AddTechInheritance(kTechId.RoboticsFactory, kTechId.ARCRoboticsFactory)
-    self.techTree:AddBuildNode(kTechId.ARC,                          kTechId.ARCRoboticsFactory,                kTechId.None)       
+    self.techTree:AddUpgradeNode(kTechId.AdvancedArmory,          kTechId.Armory,              kTechId.None)
+    self.techTree:AddBuildNode(kTechId.Observatory,               kTechId.InfantryPortal,      kTechId.None)      
+    self.techTree:AddBuildNode(kTechId.PhaseGate,                 kTechId.PhaseTech,           kTechId.None)
+    self.techTree:AddBuildNode(kTechId.TurretFactory,             kTechId.Armory,              kTechId.None)  
+    self.techTree:AddBuildNode(kTechId.AdvancedTurretFactory,     kTechId.Armory,              kTechId.TurretFactory)
+    self.techTree:AddTechInheritance(kTechId.TurretFactory,       kTechId.AdvancedTurretFactory)
+    self.techTree:AddBuildNode(kTechId.ARC,                       kTechId.AdvancedTurretFactory,  kTechId.None)       
     self.techTree:AddBuildNode(kTechId.PrototypeLab,          kTechId.AdvancedArmory,              kTechId.ArmsLab)        
     self.techTree:AddUpgradeNode(kTechId.Electrify,           kTechId.Extractor,               kTechId.None)
     
@@ -221,7 +215,7 @@ function MarineTeam:InitTechTree()
     self.techTree:AddResearchNode(kTechId.PhaseTech,                    kTechId.Observatory,        kTechId.None)
     self.techTree:AddUpgradeNode(kTechId.AdvancedArmoryUpgrade,     kTechId.Armory,        kTechId.InfantryPortal)
     self.techTree:AddResearchNode(kTechId.HandGrenadesTech,           kTechId.Armory, kTechId.None)
-    self.techTree:AddUpgradeNode(kTechId.UpgradeRoboticsFactory,           kTechId.Armory,              kTechId.RoboticsFactory) 
+    self.techTree:AddUpgradeNode(kTechId.UpgradeTurretFactory,           kTechId.Armory,              kTechId.TurretFactory) 
     self.techTree:AddResearchNode(kTechId.Armor1,                   kTechId.ArmsLab,              kTechId.None)
     self.techTree:AddResearchNode(kTechId.Weapons1,                 kTechId.ArmsLab,               kTechId.None)
     self.techTree:AddResearchNode(kTechId.Armor2,                   kTechId.Armor1,              kTechId.None)
@@ -308,7 +302,10 @@ function MarineTeam:UpdateDroppedWeapons()
             if self.droppedWeapons[i] ~= nil then
                 local weapon = Shared.GetEntity(self.droppedWeapons[i])
                 if weapon then
-                    if weapon:GetWeaponWorldState() and (Shared.GetTime() - weapon.weaponWorldStateTime) >= kItemStayTime then
+                    if not weapon.GetWeaponWorldState then
+                        self.droppedWeaponsCache[self.droppedWeapons[i]] = nil
+                        self.droppedWeapons[i] = nil
+                    elseif weapon:GetWeaponWorldState() and (Shared.GetTime() - weapon.weaponWorldStateTime) >= kItemStayTime then
                         DestroyEntity(weapon)
                         self.droppedWeaponsCache[self.droppedWeapons[i]] = nil
                         self.droppedWeapons[i] = nil

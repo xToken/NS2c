@@ -641,11 +641,11 @@ function GetCheckSentryLimit(techId, origin, normal, commander)
     
 end
 
-function GetRoboticsInRange(commander)
+function GetTurretFactoriesInRange(commander)
 
     local robos = {}
-    for _, robo in ipairs(GetEntitiesForTeam("RoboticsFactory", commander:GetTeamNumber())) do
-        robos[robo] = kRoboticsFactoryAttachRange
+    for _, robo in ipairs(GetEntitiesForTeam("TurretFactory", commander:GetTeamNumber())) do
+        robos[robo] = kTurretFactoryAttachRange
     end
     
     return robos

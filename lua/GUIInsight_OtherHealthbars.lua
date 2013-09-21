@@ -31,7 +31,7 @@ local kOtherTypes = {
     "ArmsLab",
     "Observatory",
     "PhaseGate",
-    "RoboticsFactory",
+    "TurretFactory",
     "PrototypeLab",
     "Sentry",
     "InfantryPortal",

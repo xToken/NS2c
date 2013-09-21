@@ -265,9 +265,6 @@
     <filename>GUIDeathMessages.lua</filename>
   </file>
   <file>
-    <filename>GUIDeathScreen.lua</filename>
-  </file>
-  <file>
     <filename>GUIEvent.lua</filename>
   </file>
   <file>
@@ -439,16 +436,7 @@
     <filename>Lerk.lua</filename>
   </file>
   <file>
-    <filename>Weapons\Alien\LerkBite.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\LerkBitePrimal.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\LerkBiteSpikes.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Alien\LerkBiteUmbra.lua</filename>
+    <filename>Weapons\Alien\LerkBiteMixin.lua</filename>
   </file>
   <file>
     <filename>Lerk_Server.lua</filename>
@@ -586,6 +574,9 @@
     <filename>PointGiverMixin.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Alien\Primal.lua</filename>
+  </file>
+  <file>
     <filename>PropDynamic.lua</filename>
   </file>
   <file>
@@ -617,9 +608,6 @@
   </file>
   <file>
     <filename>Weapons\Marine\Rifle.lua</filename>
-  </file>
-  <file>
-    <filename>RoboticsFactory.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\Rocket.lua</filename>
@@ -658,6 +646,9 @@
     <filename>Weapons\Alien\ShiftAbility.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Alien\Shockwave.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Marine\Shotgun.lua</filename>
   </file>
   <file>
@@ -673,6 +664,9 @@
     <filename>Spectator.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Alien\Spikes.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Alien\Spit.lua</filename>
   </file>
   <file>
@@ -680,6 +674,9 @@
   </file>
   <file>
     <filename>Weapons\Alien\SporeCloud.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\Spores.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\StompMixin.lua</filename>
@@ -715,10 +712,16 @@
     <filename>Tracer_Client.lua</filename>
   </file>
   <file>
+    <filename>TurretFactory.lua</filename>
+  </file>
+  <file>
     <filename>TurretFactoryMixin.lua</filename>
   </file>
   <file>
     <filename>TurretMixin.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\Umbra.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\UmbraCloud.lua</filename>

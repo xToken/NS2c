@@ -13,10 +13,6 @@ function HarvesterStructureAbility:GetPrimaryAttackDelay()
     return 0
 end
 
-function HarvesterStructureAbility:GetIconOffsetY(secondary)
-    return kAbilityOffset.Hydra
-end
-
 function HarvesterStructureAbility:GetGhostModelName(ability)
     return Harvester.kModelName
 end

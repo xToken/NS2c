@@ -25,7 +25,7 @@ kOnosHealth = 950	    kOnosArmor = 700	    kOnosPointValue = 2
 
 kEmbryoHealth = 200     kEmbryoArmor = 150      kEggPointValue = 0
 kEggHealth = 200	    kEggArmor = 0    	    kEggPointValue = 0
-kBabblerHealth = 25	    kBabblerArmor = 25	    kBabblerPointValue = 0
+kBabblerHealth = 20	    kBabblerArmor = 0	    kBabblerPointValue = 0
 kBabblerEggHealth = 200	kBabblerEggArmor = 100	kBabblerEggPointValue = 0
 
 kArmorPerUpgradeLevel = 20
@@ -57,8 +57,8 @@ kAdvancedArmoryHealth = 4000	kAdvancedArmoryArmor = 0	kAdvancedArmoryPointValue 
 kCommandStationHealth = 8000	kCommandStationArmor = 1000	kCommandStationPointValue = 25
 kObservatoryHealth = 1700	kObservatoryArmor = 0	kObservatoryPointValue = 15
 kPhaseGateHealth = 3000	kPhaseGateArmor = 0	kPhaseGatePointValue = 20
-kRoboticsFactoryHealth = 3000	kRoboticsFactoryArmor = 0	kRoboticsFactoryPointValue = 20
-kARCRoboticsFactoryHealth = 3000	kARCRoboticsFactoryArmor = 0	kARCRoboticsFactoryPointValue = 20
+kTurretFactoryHealth = 3000	kTurretFactoryArmor = 0	kTurretFactoryPointValue = 20
+kAdvancedTurretFactory = 3000	kAdvancedTurretFactoryArmor = 0	kAdvancedTurretFactoryPointValue = 20
 kPrototypeLabHealth = 4000	kPrototypeLabArmor = 0	kPrototypeLabPointValue = 20
 kInfantryPortalHealth = 2500	kInfantryPortalArmor = 0	kInfantryPortalPointValue = 15
 kArmsLabHealth = 2200	kArmsLabArmor = 0	kArmsLabPointValue = 20

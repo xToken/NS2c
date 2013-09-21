@@ -171,12 +171,7 @@ function HeavyMachineGun:OnTag(tagName)
 end
 
 function HeavyMachineGun:GetDeathIconIndex()
-
-    if self:GetSecondaryAttacking() then
-        return kDeathMessageIcon.HeavyMachineGun
-    end
-    return kDeathMessageIcon.HeavyMachineGun
-    
+    return kDeathMessageIcon.HeavyMachineGun 
 end
 
 function HeavyMachineGun:GetHUDSlot()

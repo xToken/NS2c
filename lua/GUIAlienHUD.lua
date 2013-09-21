@@ -127,6 +127,7 @@ local kUnselectedAbilityColor = Color(0.5, 0.5, 0.5, 1)
 local kUpgradeSize = Vector(80, 80, 0) * 0.8
 local kUpgradeYspacing = 50
 local kUpgradePos = Vector(kUpgradeSize.x - 120, -200, 0)
+local kUpgradeYStartPOS = -250
 
 local kHiveStatusSize = Vector(80, 80, 0)
 local kHiveStatusPos = Vector(kHiveStatusSize.x - 180, -80, 0)
@@ -287,7 +288,7 @@ function GUIAlienHUD:Reset()
     for i = 1, #kAlienUpgradeChambers do
         for j = 1, 3 do
             local xPOS = kUpgradePos.x - (j *30)
-            local yPOS = -200
+            local yPOS = kUpgradeYStartPOS
             for k = 1, i do
                 yPOS = yPOS - kUpgradeYspacing
             end

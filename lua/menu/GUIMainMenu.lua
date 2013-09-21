@@ -28,7 +28,6 @@ local kMainMenuLinkColor = Color(137 / 255, 137 / 255, 137 / 255, 1)
 
 class 'GUIMainMenu' (GUIAnimatedScript)
 
-Script.Load("lua/menu/GUIMainMenu_FindPeople.lua")
 Script.Load("lua/menu/GUIMainMenu_PlayNow.lua")
 Script.Load("lua/menu/GUIMainMenu_Mods.lua")
 Script.Load("lua/menu/GUIMainMenu_Training.lua")
@@ -48,6 +47,15 @@ local kAmbientOcclusionModes = { "off", "medium", "high" }
 local kInfestationModes      = { "minimal", "rich" }
 local kParticleQualityModes  = { "low", "high" }
 local kRenderDevices         = Client.GetRenderDeviceNames()
+local kRenderDeviceDisplayNames = {}
+
+for i = 1, #kRenderDevices do
+    local name = kRenderDevices[i]
+    if name == "D3D11" or name == "OpenGL" then
+        name = name .. " (Beta)"
+    end
+    kRenderDeviceDisplayNames[i] = name
+end
     
 local kLocales =
     {
@@ -94,6 +102,18 @@ function GetServerPlayerSkill(serverIndex)
 end
 
 local gMainMenu
+
+function GUIMainMenu:TriggerOpenAnimation(window)
+
+    if not window:GetIsVisible() then
+
+        self.windowToOpen = window
+        self:SetShowWindowName(window:GetWindowName())
+
+    end
+
+end
+    
 
 function GUIMainMenu:Initialize()
 
@@ -172,27 +192,20 @@ function GUIMainMenu:Initialize()
     self:CreateAutoJoinWindow()
     self:CreateAlertWindow()
     
-    local TriggerOpenAnimation = function(window)
-    
-        if not window:GetIsVisible() then
-        
-            window.scriptHandle.windowToOpen = window
-            window.scriptHandle:SetShowWindowName(window:GetWindowName())
-            
-        end
-        
-    end
-    
     self.scanLine = CreateMenuElement(self.mainWindow, "Image")
     self.scanLine:SetCSSClass("scanline")
 
     self.tweetText = CreateMenuElement(self.mainWindow, "Ticker")
     
-    self.logo = CreateMenuElement(self.mainWindow, "Image")
-    self.logo:SetCSSClass("logo")
+    //self.logo = CreateMenuElement(self.mainWindow, "Image")
+    //self.logo:SetCSSClass("logo")
     
     self:CreateMenuBackground()
     self:CreateProfile()
+
+    local function TriggerOpenAnimation(window)
+        self:TriggerOpenAnimation(window)
+    end
     
     if MainMenu_IsInGame() then
     
@@ -229,14 +242,8 @@ function GUIMainMenu:Initialize()
         self.playLink = self:CreateMainLink("PLAY", "play_ingame", "04")
         self.playLink:AddEventCallbacks(
         {
-            OnClick = function(self)
-            
-                if not self.scriptHandle.playWindow then
-                    self.scriptHandle:CreatePlayWindow()
-                end
-                TriggerOpenAnimation(self.scriptHandle.playWindow)
-                self.scriptHandle:HideMenu()
-                
+            OnClick = function()
+                self:ActivatePlayWindow()
             end
         })
         
@@ -254,8 +261,8 @@ function GUIMainMenu:Initialize()
             end
         })
         
-        self.tutorialLink = self:CreateMainLink("TRAINING", "tutorial_ingame", "06")
-        self.tutorialLink:AddEventCallbacks(
+        self.trainingLink = self:CreateMainLink("TRAINING", "tutorial_ingame", "06")
+        self.trainingLink:AddEventCallbacks(
         {
             OnClick = function(self)
             
@@ -288,19 +295,13 @@ function GUIMainMenu:Initialize()
         self.playLink = self:CreateMainLink("PLAY", "play", "01")
         self.playLink:AddEventCallbacks(
         {
-            OnClick = function(self)
-            
-                if not self.scriptHandle.playWindow then
-                    self.scriptHandle:CreatePlayWindow()
-                end
-                TriggerOpenAnimation(self.scriptHandle.playWindow)
-                self.scriptHandle:HideMenu()
-                
+            OnClick = function()
+                self:OnPlayClicked()
             end
         })
         
-        self.tutorialLink = self:CreateMainLink("TRAINING", "tutorial", "02")
-        self.tutorialLink:AddEventCallbacks(
+        self.trainingLink = self:CreateMainLink("TRAINING", "tutorial", "02")
+        self.trainingLink:AddEventCallbacks(
         {
             OnClick = function(self)
             
@@ -340,8 +341,20 @@ function GUIMainMenu:Initialize()
                 
             end
         })
+
+        self.creditsLink = self:CreateMainLink("CREDITS", "credits", "05" )
+        self.creditsLink:AddEventCallbacks(
+        {
+            OnClick = function()
+
+                self:HideMenu()
+                self.creditsScript = GetGUIManager():CreateGUIScript("menu/GUICredits")
+                self.creditsScript.closeEvent:AddHandler( self, function() self:ShowMenu() end)
+
+            end
+        })
         
-        self.quitLink = self:CreateMainLink("EXIT", "exit", "05")
+        self.quitLink = self:CreateMainLink("EXIT", "exit", "06")
         self.quitLink:AddEventCallbacks(
         {
             OnClick = function(self)
@@ -1544,7 +1557,6 @@ local function InitOptions(optionElements)
     local windowModeOptionIndex = table.find(windowModes, windowMode) or 1
     
     local displayBuffering      = Client.GetOptionInteger("graphics/display/display-buffering", 0)
-    local multicoreRendering    = Client.GetOptionBoolean("graphics/multithreaded", true)
     local textureStreaming      = Client.GetOptionBoolean("graphics/texture-streaming", false)
     local ambientOcclusion      = Client.GetOptionString("graphics/display/ambient-occlusion", kAmbientOcclusionModes[1])
     local reflections           = Client.GetOptionBoolean("graphics/reflections", false)
@@ -1556,21 +1568,38 @@ local function InitOptions(optionElements)
     local decalLifeTime         = Client.GetOptionFloat("graphics/decallifetime", 0.2)
     
     local minimapZoom = Client.GetOptionFloat("minimap-zoom", 0.75)
-    local armorType = Client.GetOptionString("armorType", "")
+    local marineVariant = Client.GetOptionInteger("marineVariant", -1)
+    local skulkVariant = Client.GetOptionInteger("skulkVariant", -1)
     
-    if string.len(armorType) == 0 then
-    
-        if GetHasBlackArmor() then
-            armorType = "Black"
-        elseif GetHasDeluxeEdition() then
-            armorType = "Deluxe"
-        else
-            armorType = "Green"
+    // if not set explicitly, always use the highest available tier
+    if marineVariant == -1 then
+
+        for variant = 1,GetEnumCount(kMarineVariant) do
+        DebugPrint("checking variant "..GetVariantName(kMarineVariantData, variant))
+            if GetHasVariant( kMarineVariantData, variant ) then
+                marineVariant = variant
+                // do not break - use the highest one they have
+            end
         end
         
     end
-    
-    Client.SetOptionString("armorType", armorType)
+
+    if skulkVariant == -1 then
+
+        for variant = 1,GetEnumCount(kSkulkVariant),1 do
+            if GetHasVariant( kSkulkVariantData, variant ) then
+                skulkVariant = variant
+                // do not break - use the highest one they have
+            end
+        end
+        
+    end
+
+    assert( marineVariant ~= -1 )
+    assert( skulkVariant ~= -1 )
+
+    Client.SetOptionInteger("marineVariant", marineVariant)
+    Client.SetOptionInteger("skulkVariant", skulkVariant)
     
     local sexType = Client.GetOptionString("sexType", "Male")
     Client.SetOptionString("sexType", sexType)
@@ -1640,13 +1669,13 @@ local function InitOptions(optionElements)
     optionElements.AnisotropicFiltering:SetOptionActive( BoolToIndex(anisotropicFiltering) )
     optionElements.AntiAliasing:SetOptionActive( BoolToIndex(antiAliasing) )
     optionElements.Detail:SetOptionActive(visualDetailIdx)
-    optionElements.MulticoreRendering:SetOptionActive( BoolToIndex(multicoreRendering) )
     optionElements.TextureStreaming:SetOptionActive( BoolToIndex(textureStreaming) )
     optionElements.AmbientOcclusion:SetOptionActive( table.find(kAmbientOcclusionModes, ambientOcclusion) )
     optionElements.Reflections:SetOptionActive( BoolToIndex(reflections) )
     optionElements.FOVAdjustment:SetValue(fovAdjustment)
     optionElements.MinimapZoom:SetValue(minimapZoom)
-    optionElements.ArmorType:SetValue(armorType)
+    optionElements.MarineVariantName:SetValue(GetVariantName(kMarineVariantData,marineVariant))
+    optionElements.SkulkVariantName:SetValue(GetVariantName(kSkulkVariantData,skulkVariant))
     optionElements.SexType:SetValue(sexType)
     optionElements.DecalLifeTime:SetValue(decalLifeTime)
     optionElements.CameraAnimation:SetValue(cameraAnimation)
@@ -1667,8 +1696,7 @@ end
 local function SaveSecondaryGraphicsOptions(mainMenu)
     // These are options that are pretty quick to change, unlike screen resolution etc.
     // Have this separate, since graphics options are auto-applied
-        
-    local multicoreRendering    = mainMenu.optionElements.MulticoreRendering:GetActiveOptionIndex() > 1
+
     local textureStreaming      = mainMenu.optionElements.TextureStreaming:GetActiveOptionIndex() > 1
     local ambientOcclusionIdx   = mainMenu.optionElements.AmbientOcclusion:GetActiveOptionIndex()
     local visualDetailIdx       = mainMenu.optionElements.Detail:GetActiveOptionIndex()
@@ -1683,7 +1711,6 @@ local function SaveSecondaryGraphicsOptions(mainMenu)
     local renderDeviceIdx       = mainMenu.optionElements.RenderDevice:GetActiveOptionIndex()
 
     Client.SetOptionBoolean("graphics/reflections", reflections)
-    Client.SetOptionBoolean("graphics/multithreaded", multicoreRendering)
     Client.SetOptionBoolean("graphics/texture-streaming", textureStreaming)
     Client.SetOptionString("graphics/display/ambient-occlusion", kAmbientOcclusionModes[ambientOcclusionIdx] )
     Client.SetOptionString("graphics/display/particles", kParticleQualityModes[particleQualityIdx] )
@@ -1756,10 +1783,21 @@ function OnDisplayChanged(oldDisplay, newDisplay)
 end
 
 
-local function SendArmorAndSexUpdate(armorType, sexType)
+local function SendPlayerVariantUpdate(marineVariant, sexType, skulkVariant)
+
+    assert( marineVariant ~= -1 )
+    assert( marineVariant ~= nil )
+    assert( skulkVariant ~= -1 )
+    assert( skulkVariant ~= nil )
 
     if MainMenu_IsInGame() then
-        Client.SendNetworkMessage("SetPlayerVariant", { armorId = StringToEnum(kArmorType, armorType), isMale = string.lower(sexType) == "male" }, true)
+        Client.SendNetworkMessage("SetPlayerVariant",
+                {
+                    marineVariant = marineVariant,
+                    skulkVariant = skulkVariant,
+                    isMale = string.lower(sexType) == "male",
+                },
+                true)
     end
     
 end
@@ -1796,7 +1834,8 @@ local function SaveOptions(mainMenu)
     local musicVol              = mainMenu.optionElements.MusicVolume:GetValue() * 100
     local voiceVol              = mainMenu.optionElements.VoiceVolume:GetValue() * 100
     
-    local armorType             = mainMenu.optionElements.ArmorType:GetValue()
+    local marineVariantName     = mainMenu.optionElements.MarineVariantName:GetValue()
+    local skulkVariantName      = mainMenu.optionElements.SkulkVariantName:GetValue()
     local sexType               = mainMenu.optionElements.SexType:GetValue()
     local cameraAnimation       = mainMenu.optionElements.CameraAnimation:GetActiveOptionIndex() > 1
 	local physicsGpuAcceleration = mainMenu.optionElements.PhysicsGpuAcceleration:GetActiveOptionIndex() > 1
@@ -1814,10 +1853,14 @@ local function SaveOptions(mainMenu)
     Client.SetOptionBoolean("CameraAnimation", cameraAnimation)
     Client.SetOptionBoolean(kPhysicsGpuAccelerationKey, physicsGpuAcceleration)
 	Client.SetOptionBoolean( "AdvancedMovement", advancedmovement)
-    Client.SetOptionString("armorType", armorType)
+    Client.SetOptionInteger("marineVariant", FindVariant( kMarineVariantData, marineVariantName ) )
+    Client.SetOptionInteger("skulkVariant", FindVariant( kSkulkVariantData, skulkVariantName ) )
     Client.SetOptionString("sexType", sexType)
     
-    SendArmorAndSexUpdate(armorType, sexType)
+    SendPlayerVariantUpdate(
+            FindVariant( kMarineVariantData, marineVariantName ),
+            sexType,
+            FindVariant( kSkulkVariantData, skulkVariantName ) )
     
     Client.SetOptionFloat("input/mouse/acceleration-amount", accelerationAmount)
     
@@ -2013,14 +2056,22 @@ function GUIMainMenu:CreateOptionWindow()
         languages[i] = kLocales[i].label
     end
     
-    local armorTypes = { "Green" }
-    
-    if GetHasBlackArmor() then
-        table.insert(armorTypes, "Black")
+    local marineVariantNames = {}
+    local skulkVariantNames = {}
+
+    //DebugPrint("we have "..GetEnumCount(kMarineVariant).." marine variants")
+    //DebugPrint("we have "..GetEnumCount(kSkulkVariant).." skulk variants")
+
+    for key,value in pairs(kMarineVariantData) do
+        if GetHasVariant( kMarineVariantData, key ) then
+            table.insert( marineVariantNames, value.displayName )
+        end
     end
-    
-    if GetHasDeluxeEdition() then
-        table.insert(armorTypes, "Deluxe")
+
+    for key,value in pairs(kSkulkVariantData) do
+        if GetHasVariant( kSkulkVariantData, key ) then
+            table.insert( skulkVariantNames, value.displayName )
+        end
     end
     
     local sexTypes = { "Male", "Female" }
@@ -2103,18 +2154,24 @@ function GUIMainMenu:CreateOptionWindow()
             },
             
             {
-                name    = "ArmorType",
-                label   = "ARMOR TYPE",
+                name    = "MarineVariantName",
+                label   = "MARINE ARMOR",
                 type    = "select",
-                values  = armorTypes
+                values  = marineVariantNames
             },
-            
             {
                 name    = "SexType",
-                label   = "SEX",
+                label   = "MARINE GENDER",
                 type    = "select",
                 values  = sexTypes
             },
+            {
+                name = "SkulkVariantName",
+                label = "SKULK TYPE",
+                type = "select",
+                values = skulkVariantNames,
+            },
+            
             
             {
                 name    = "CameraAnimation",
@@ -2134,7 +2191,7 @@ function GUIMainMenu:CreateOptionWindow()
 
 			{
                 name    = "PhysicsGpuAcceleration",
-                label   = "PhysX GPU Acceleration",
+                label   = "PHYSX GPU ACCELERATION",
                 type    = "select",
                 values  = { "OFF", "ON" },
                 callback = StorePhysicsGpuAccelerationOption
@@ -2197,7 +2254,7 @@ function GUIMainMenu:CreateOptionWindow()
                 name   = "RenderDevice",
                 label  = "DEVICE",
                 type   = "select",
-                values = kRenderDevices,
+                values = kRenderDeviceDisplayNames,
                 callback = function(formElement) SaveSecondaryGraphicsOptions(self) self:UpdateRestartMessage() end,
             },  
             {
@@ -2307,13 +2364,6 @@ function GUIMainMenu:CreateOptionWindow()
                 values  = { "OFF", "ON" },
                 callback = autoApplyCallback
             },
-            {
-                name    = "MulticoreRendering",
-                label   = "MULTICORE RENDERING",
-                type    = "select",
-                values  = { "OFF", "ON" },
-                callback = autoApplyCallback
-            }, 
         }
         
     // save our option elements for future reference
@@ -2484,8 +2534,6 @@ function GUIMainMenu:Update(deltaTime)
             
         end
         
-        self:UpdateFindPeople(deltaTime)
-
         if self.playNowWindow then
             self.playNowWindow:UpdateLogic(self)
         end
@@ -2554,7 +2602,7 @@ function GUIMainMenu:ShowMenu()
     self.menuBackground:SetIsVisible(true)
     self.menuBackground:SetCSSClass("menu_bg_show", false)
     
-    self.logo:SetIsVisible(true)
+    //self.logo:SetIsVisible(true)
     
     if self.newsScript then
         self.newsScript:SetIsVisible(true)
@@ -2579,7 +2627,7 @@ function GUIMainMenu:HideMenu()
         self.modsLink:SetIsVisible(false)
     end
     self.playLink:SetIsVisible(false)
-    self.tutorialLink:SetIsVisible(false)
+    self.trainingLink:SetIsVisible(false)
     self.optionLink:SetIsVisible(false)
     if self.quitLink then
         self.quitLink:SetIsVisible(false)
@@ -2588,7 +2636,7 @@ function GUIMainMenu:HideMenu()
         self.disconnectLink:SetIsVisible(false)
     end
     
-    self.logo:SetIsVisible(false)
+    //self.logo:SetIsVisible(false)
     if self.newsScript then
         self.newsScript:SetIsVisible(false)
     end
@@ -2629,7 +2677,7 @@ function GUIMainMenu:OnAnimationCompleted(animatedItem, animationName, itemHandl
             table.insert(animBackgroundLink, self.voteLink)
         end
         table.insert(animBackgroundLink, self.playLink)
-        table.insert(animBackgroundLink, self.tutorialLink)
+        table.insert(animBackgroundLink, self.trainingLink)
         table.insert(animBackgroundLink, self.optionLink)
         
         for i = 1, #animBackgroundLink do        
@@ -2667,7 +2715,7 @@ function GUIMainMenu:OnAnimationCompleted(animatedItem, animationName, itemHandl
                 self.modsLink:SetIsVisible(true)
             end
             self.playLink:SetIsVisible(true)
-            self.tutorialLink:SetIsVisible(true)
+            self.trainingLink:SetIsVisible(true)
             self.optionLink:SetIsVisible(true)
             if self.quitLink then
                 self.quitLink:SetIsVisible(true)
@@ -2863,6 +2911,83 @@ function GUIMainMenu:MaybeCreateFirstRunWindow()
         end})
 
 end
+
+function GUIMainMenu:ActivatePlayWindow()
+
+    if not self.playWindow then
+        self:CreatePlayWindow()
+    end
+    self:TriggerOpenAnimation(self.playWindow)
+    self:HideMenu()
+
+end
+
+//----------------------------------------
+//  
+//----------------------------------------
+function GUIMainMenu:OnPlayClicked()
+
+    local isRookie = Client.GetOptionBoolean( kRookieOptionsKey, true )
+    local doneTutorial = Client.GetOptionBoolean( "playedTutorial", false )
+    local stopNagging = Client.GetOptionBoolean( "disableTutorialNag", false )
+
+    // TEMP TMEP
+    /*
+    isRookie = true
+    DebugPrint(ToString(isRookie).." "..ToString(doneTutorial).." "..ToString(stopNagging))
+    */
+
+    if not isRookie or doneTutorial or stopNagging then
+        self:ActivatePlayWindow()
+        return
+    end
+
+    self.tutorialNagWindow = self:CreateWindow()  
+    self.tutorialNagWindow:SetWindowName("HINT")
+    self.tutorialNagWindow:SetInitialVisible(true)
+    self.tutorialNagWindow:SetIsVisible(true)
+    self.tutorialNagWindow:DisableResizeTile()
+    self.tutorialNagWindow:DisableSlideBar()
+    self.tutorialNagWindow:DisableContentBox()
+    self.tutorialNagWindow:SetCSSClass("tutnag_window")
+    self.tutorialNagWindow:DisableCloseButton()
+    self.tutorialNagWindow:SetLayer(kGUILayerMainMenuDialogs)
+    
+    local hint = CreateMenuElement(self.tutorialNagWindow, "Font")
+    hint:SetCSSClass("first_run_msg")
+    hint:SetText(Locale.ResolveString("TUTNAG_MSG"))
+    hint:SetTextClipped( true, 400, 400 )
+
+    local okButton = CreateMenuElement(self.tutorialNagWindow, "MenuButton")
+    okButton:SetCSSClass("tutnag_play")
+    okButton:SetText(Locale.ResolveString("TUTNAG_PLAY"))
+    okButton:AddEventCallbacks({ OnClick = function()
+            self:DestroyWindow( self.tutorialNagWindow )
+            self.tutorialNagWindow = nil
+            self:StartTutorial()
+        end})
+
+    local skipButton = CreateMenuElement(self.tutorialNagWindow, "MenuButton")
+    skipButton:SetCSSClass("tutnag_later")
+    skipButton:SetText(Locale.ResolveString("TUTNAG_LATER"))
+    skipButton:AddEventCallbacks({OnClick = function()
+            self:DestroyWindow( self.tutorialNagWindow )
+            self.tutorialNagWindow = nil
+            self:ActivatePlayWindow()
+        end})
+
+    local skipButton = CreateMenuElement(self.tutorialNagWindow, "MenuButton")
+    skipButton:SetCSSClass("tutnag_stop")
+    skipButton:SetText(Locale.ResolveString("TUTNAG_STOP"))
+    skipButton:AddEventCallbacks({OnClick = function()
+            self:DestroyWindow( self.tutorialNagWindow )
+            self.tutorialNagWindow = nil
+            Client.SetOptionBoolean( "disableTutorialNag", true )
+            self:ActivatePlayWindow()
+        end})
+
+end
+
 
 Event.Hook("SoundDeviceListChanged", OnSoundDeviceListChanged)
 Event.Hook("OptionsChanged", OnOptionsChanged)

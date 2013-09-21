@@ -64,6 +64,7 @@ function Hive:OnResearchComplete(researchId)
         end
        
     end   
+    return success
     
 end
 
@@ -317,12 +318,6 @@ local function CheckLowHealth(self)
         end
         
     end
-    
-end
-
-function Hive:OnEntityChange(oldId, newId)
-
-    CommandStructure.OnEntityChange(self, oldId, newId)
     
 end
 

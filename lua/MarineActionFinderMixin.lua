@@ -28,15 +28,23 @@ local function FindNearbyWeapon(self, toPosition)
     
     local closestWeapon = nil
     local closestDistance = Math.infinity
+    local cost = 0
+    
     for i, nearbyWeapon in ipairs(nearbyWeapons) do
     
         if nearbyWeapon:isa("Weapon") and nearbyWeapon:GetIsValidRecipient(self, false) then
         
             local nearbyWeaponDistance = (nearbyWeapon:GetOrigin() - toPosition):GetLengthSquared()
-            if nearbyWeaponDistance < closestDistance then
+            local currentCost = HasMixin(nearbyWeapon, "Tech") and LookupTechData(nearbyWeapon:GetTechId(), kTechDataCostKey, 0) or 0
+
+            if currentCost < cost then            
+                break
+                
+            else    
             
                 closestWeapon = nearbyWeapon
                 closestDistance = nearbyWeaponDistance
+                cost = currentCost
             
             end
             

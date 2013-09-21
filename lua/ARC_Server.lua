@@ -84,15 +84,16 @@ local function PerformAttack(self)
 
     local target = self:GetTarget()
     if target then
-    
-        self:TriggerEffects("arc_firing")
-    
+
+        self:TriggerEffects("arc_firing")    
         // Play big hit sound at origin
-        target:TriggerEffects("arc_hit_primary")
+        
+        // don't pass triggering entity so the sound / cinematic will always be relevant for everyone
+        GetEffectManager():TriggerEffects("arc_hit_primary", {effecthostcoords = Coords.GetTranslation(self.targetPosition)})
 
         // Do damage to everything in radius. Use upgraded splash radius if researched.
         local damageRadius = ARC.kSplashRadius
-        local hitEntities = GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(self:GetTeamNumber()), target:GetOrigin() + kARCDamageOffset, damageRadius)
+        local hitEntities = GetEntitiesWithMixinWithinRange("Live", self.targetPosition, damageRadius)
 
         // Do damage to every target in range
         RadiusDamage(hitEntities, target:GetOrigin(), damageRadius, ARC.kAttackDamage, self, true)
@@ -100,8 +101,10 @@ local function PerformAttack(self)
         // Play hit effect on each
         for index, target in ipairs(hitEntities) do
         
-            target:TriggerEffects("arc_hit_secondary")
-            
+            if HasMixin(target, "Effects") then
+                target:TriggerEffects("arc_hit_secondary")
+            end 
+           
         end
         
         if not self:GetCanFireAtTarget(target, targetPoint) then

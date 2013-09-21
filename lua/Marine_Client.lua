@@ -93,7 +93,7 @@ function Marine:OnUpdateRender()
         self.flashlight:SetAtmosphericDensity(density)
         
     end
-    
+
 end
 
 function Marine:AddNotification(locationId, techId)

@@ -77,7 +77,6 @@ end
 local function Detonate(self, armFunc)
 
     local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kMineDetonateRange)
-    
     RadiusDamage(hitEntities, self:GetOrigin(), kMineDetonateRange, kMineDamage, self, false, SineFalloff)
     
     // Start the timed destruction sequence for any mine within range of this exploded mine.

@@ -15,7 +15,7 @@ kVoiceId = enum ({
     'None', 'VoteEject', 'VoteConcede', 'Ping',
 
     'RequestWeld', 'MarineRequestMedpack', 'MarineRequestAmmo', 'MarineRequestOrder', 
-    'MarineTaunt', 'MarineCovering', 'MarineFollowMe', 'MarineHostiles', 'MarineLetsMove',
+    'MarineTaunt', 'MarineTauntExclusive', 'MarineCovering', 'MarineFollowMe', 'MarineHostiles', 'MarineLetsMove',
     
     'AlienRequestHealing', 'AlienVoteCrag', 'AlienVoteShift', 'AlienVoteShade', 'AlienVoteWhip',
     'AlienTaunt', 'AlienFollowMe', 'AlienChuckle', 'EmbryoChuckle',
@@ -64,25 +64,25 @@ local function VoteChamber(player, techId)
 end
 
 local function VoteCrag(player)
-	if not GetHasTech(player, kTechId.Crag) then
+	if not GetHasTech(player, kTechId.CragHive) then
 		VoteChamber(player, kTechId.Crag)
 	end
 end
 
 local function VoteShift(player)
-	if not GetHasTech(player, kTechId.Shift) then
+	if not GetHasTech(player, kTechId.ShiftHive) then
 		VoteChamber(player, kTechId.Shift)
 	end
 end
 
 local function VoteShade(player)
-	if not GetHasTech(player, kTechId.Shade) then
+	if not GetHasTech(player, kTechId.ShadeHive) then
 		VoteChamber(player, kTechId.Shade)
 	end
 end
 
 local function VoteWhip(player)
-	if not GetHasTech(player, kTechId.Whip) then
+	if not GetHasTech(player, kTechId.WhipHive) then
 		VoteChamber(player, kTechId.Whip)
 	end
 end
@@ -149,6 +149,7 @@ local kSoundData =
     [kVoiceId.MarineRequestOrder] = { Sound = "sound/NS2.fev/marine/voiceovers/need_orders", Description = "REQUEST_MARINE_ORDER",  KeyBind = "RequestOrder", AlertTechId = kTechId.MarineAlertNeedOrder },
     
     [kVoiceId.MarineTaunt] = { Sound = "sound/NS2.fev/marine/voiceovers/taunt", Description = "REQUEST_MARINE_TAUNT", KeyBind = "Taunt", AlertTechId = kTechId.None },
+    [kVoiceId.MarineTauntExclusive] = { Sound = "sound/NS2.fev/marine/voiceovers/taunt_exclusive", Description = "REQUEST_MARINE_TAUNT", KeyBind = "Taunt", AlertTechId = kTechId.None },
     [kVoiceId.MarineCovering] = { Sound = "sound/NS2.fev/marine/voiceovers/covering", Description = "REQUEST_MARINE_COVERING", AlertTechId = kTechId.None },
     [kVoiceId.MarineFollowMe] = { Sound = "sound/NS2.fev/marine/voiceovers/follow_me", Description = "REQUEST_MARINE_FOLLOWME", AlertTechId = kTechId.None },
     [kVoiceId.MarineHostiles] = { Sound = "sound/NS2.fev/marine/voiceovers/hostiles", Description = "REQUEST_MARINE_HOSTILES", AlertTechId = kTechId.None },

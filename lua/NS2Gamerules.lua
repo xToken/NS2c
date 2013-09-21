@@ -1294,6 +1294,10 @@ if Server then
                     newPlayerClient:SetSpectatingPlayer(nil)
                 end
                 
+                if newPlayer.OnJoinTeam then
+                    newPlayer:OnJoinTeam()
+                end    
+                
                 Server.SendNetworkMessage(newPlayerClient, "SetClientTeamNumber", { teamNumber = newPlayer:GetTeamNumber() }, true)
                 
             end

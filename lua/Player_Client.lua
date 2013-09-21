@@ -441,10 +441,14 @@ function PlayerUI_GetUnitStatusInfo()
 
                     end
                     
-                    local badge = ""
+                    local badgeTextures = ""
                     
-                    if HasMixin(unit, "Badge") then
-                        badge = unit:GetBadgeIcon() or ""
+                    if HasMixin(unit, "Player") then
+                        if unit.GetShowBadgeOverride and not unit:GetShowBadgeOverride() then
+                            badgeTextures = {}
+                        else
+                            badgeTextures = Badges_GetBadgeTextures(unit:GetClientIndex(), "unitstatus") or {}
+                        end
                     end
                     
                     local hasWelder = false 
@@ -467,7 +471,7 @@ function PlayerUI_GetUnitStatusInfo()
                         IsCrossHairTarget = (unit == crossHairTarget and visibleToPlayer) or LocalIsFriendlyCommander(player, unit),
                         TeamType = kNeutralTeamType,
                         ForceName = unit:isa("Player") and not GetAreEnemies(player, unit),
-                        BadgeTexture = badge,
+                        BadgeTextures = badgeTextures,
                         HasWelder = hasWelder
                     
                     }
@@ -737,7 +741,7 @@ function PlayerUI_GetCrosshairY()
             elseif mapname == Shotgun.kMapName then
                 index = 3
             // All alien crosshairs are the same for now
-            elseif mapname == LerkBite.kMapName or mapname == LerkBiteUmbra.kMapName or mapname == LerkBitePrimal.kMapName or mapname == LerkBiteSpikes.kMapName or mapname == Parasite.kMapName or mapname == AcidRocket.kMapName then
+            elseif mapname == Spores.kMapName or mapname == Umbra.kMapName or mapname == Primal.kMapName or mapname == Spikes.kMapName or mapname == Parasite.kMapName or mapname == AcidRocket.kMapName then
                 index = 6
             elseif(mapname == SpitSpray.kMapName or mapname == BabblerAbility.kMapName) then
                 index = 7
@@ -755,9 +759,7 @@ function PlayerUI_GetCrosshairY()
 end
 
 function PlayerUI_GetCrosshairDamageIndicatorY()
-
     return 8 * 64
-    
 end
 
 /**
@@ -1695,77 +1697,11 @@ end
 function Player:GetDrawWorld(isLocal)
     return not self:GetIsLocalPlayer() or self:GetIsThirdPerson() or ((self.countingDown and not Shared.GetCheatsEnabled()) and self:GetTeamNumber() ~= kNeutralTeamType)
 end
-
-local kDangerCheckEndDistance = 25
-local kDangerCheckStartDistance = 15
-assert(kDangerCheckEndDistance > kDangerCheckStartDistance)
-local kDangerHealthEndAmount = 0.6
-local kDangerHealthStartAmount = 0.5
-assert(kDangerHealthEndAmount > kDangerHealthStartAmount)
-local function UpdateDangerEffects(self)
-
-    if self:GetGameStarted() then
-    
-        local now = Shared.GetTime()
-        self.lastDangerCheckTime = self.lastDangerCheckTime or now
-        if now - self.lastDangerCheckTime > 1 then
-        
-            local playerOrigin = self:GetOrigin()
-            // Check to see if there are any nearby Command Structures that are close to death.
-            local commandStructures = GetEntitiesWithinRange("CommandStructure", playerOrigin, kDangerCheckEndDistance)
-            Shared.SortEntitiesByDistance(playerOrigin, commandStructures)
-            
-            // Check if danger needs to be enabled or disabled
-            if not self.dangerEnabled then
-            
-                if #commandStructures > 0 then
-                
-                    local commandStructure = commandStructures[1]
-                    if commandStructure:GetIsBuilt() and commandStructure:GetIsAlive() and
-                       commandStructure:GetIsInCombat() and
-                       commandStructure:GetHealthScalar() <= kDangerHealthStartAmount and
-                       commandStructure:GetDistance(playerOrigin) <= kDangerCheckStartDistance then
-                    
-                        self.dangerEnabled = true
-                        self.dangerOrigin = commandStructure:GetOrigin()
-                        //Client.PlayMusic("sound/NS2.fev/danger")
-                        
-                    end
-                    
-                end
-                
-            else
-            
-                local commandStructure = commandStructures[1]
-                if not commandStructure or not commandStructure:GetIsAlive() or
-                   commandStructure:GetHealthScalar() >= kDangerHealthEndAmount or
-                   not commandStructure:GetIsInCombat() or
-                   self.dangerOrigin:GetDistanceTo(playerOrigin) > kDangerCheckEndDistance then
-                
-                    //Client.PlayMusic("sound/NS2.fev/no_danger")
-                    self.dangerEnabled = false
-                    self.dangerOrigin = nil
-                    
-                end
-                
-            end
-            
-            self.lastDangerCheckTime = now
-            
-        end
-        
-    end
-    
-end
-
 // Only called when not running prediction
 function Player:UpdateClientEffects(deltaTime, isLocal)
 
     if isLocal then
-    
         self:UpdateCommanderPingSound()
-        UpdateDangerEffects(self)
-        
     end
     
 end
@@ -1929,6 +1865,9 @@ function Player:OnInitLocalClient()
     // Show props normally
     SetCommanderPropState(false)
     
+    // Assume not in overhead mode.
+    SetLocalPlayerIsOverhead(false)
+    
     // Turn on sound occlusion for non-commanders
     Client.SetSoundGeometryEnabled(true)
     
@@ -1944,9 +1883,6 @@ function Player:OnInitLocalClient()
     
     // reset mouse sens in case it hase been forgotten somewhere else
     Client.SetMouseSensitivityScalar(1)
-    
-    // Just in case the danger music wasn't stopped already for some reason.
-    DisablePlayerDanger(self)
     
 end
 
@@ -2010,7 +1946,6 @@ end
 function Player:OnKillClient()
 
     DisableScreenEffects(self)
-    DisablePlayerDanger(self)
     
     if self.unitStatusDisplay then
     

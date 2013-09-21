@@ -35,7 +35,7 @@ kGrenadeLauncherDropCost = 15
 kJetpackDropCost = 12
 kHeavyArmorDropCost = 15
 kExosuitDropCost = 20
-kRoboticsFactoryCost = 10
+kTurretFactoryCost = 10
 kAmmoPackCost = 1
 kMedPackCost = 2
 kCatPackCost = 3
@@ -74,8 +74,8 @@ kCatPackTechResearchTime = 15
 kPhaseTechResearchCost = 15
 kPhaseTechResearchTime = 45
 
-kUpgradeRoboticsFactoryCost = 15
-kUpgradeRoboticsFactoryTime = 30
+kUpgradeTurretFactoryCost = 15
+kUpgradeTurretFactoryTime = 30
 
 kMotionTrackingResearchCost = 35
 kMotionTrackingResearchTime = 100
@@ -91,7 +91,7 @@ kArmsLabBuildTime = 19
 kExtractorBuildTime = 15
 kInfantryPortalBuildTime = 10
 kCommandStationBuildTime = 15
-kRoboticsFactoryBuildTime = 15
+kTurretFactoryBuildTime = 15
 kSentryBuildTime = 7
 kArcBuildTime  = 10
 kObservatoryBuildTime = 15
@@ -180,7 +180,7 @@ kPistolWeight = 0.005
 kPistolFireDelay = 0.08
 kPistolClipWeight = 0.0033
 
-kWelderDamage = 4
+kWelderDamage = 2
 kWelderDamageType = kDamageType.Normal
 kWelderFireDelay = 0.4
 kWelderWeight = 0.005
@@ -350,6 +350,7 @@ kSporeDamage = 7
 kSporeRadius = 5 //225 NS1
 kSporeAttackDelay = 1.0
 kSporeDamageDelay = .5
+kSporeDamageType = kDamageType.Normal
 
 kUmbraEnergyCost = 30
 kUmbraDuration = 5
@@ -368,6 +369,8 @@ kSpikeMinDamageRange = 15
 kSpikeMaxDamageRange = 3
 kSpikesPerShot = 1
 kSpikesRange = 30 -- As as shotgun range
+kSpikesSize = 0.03
+kSpikesSpread = Math.Radians(4)
 
 kPrimalScreamEnergyCost = 45
 kPrimalScreamRange = 10
@@ -421,11 +424,11 @@ kDevourMeleeBaseHeight = 0.7
 
 kStompEnergyCost = 30
 kStompRange = 12
-kStunMarineTime = 2
-kDisruptMarineTime = 2
+kStunMarineTime = 2.5
 kStompDamage = 20
+kShockwaveRadius = 2.5
 
-kSmashDamage = 125
+kSmashDamage = 90
 kSmashDamageType = kDamageType.Structural
 kSmashEnergyCost = 9
 kSmashRange = 1.9

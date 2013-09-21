@@ -21,8 +21,6 @@ local kSporesSound = PrecacheAsset("sound/ns2c.fev/ns2c/alien/lerk/spore_hit")
 
 local gHurtBySpores = { }
 // duration of cinematic, increase cinematic duration and kSporeCloudDuration to 12 to match the old value from Crag.lua
-SporeCloud.kSporeCloudDuration = kSporeDuration
-SporeCloud.kRadius = kSporeRadius
 SporeCloud.kMaxRange = 20
 SporeCloud.kThinkTime = 0.5
 SporeCloud.kTravelSpeed = 60 // meters per second
@@ -69,7 +67,7 @@ function SporeCloud:GetRepeatCinematic()
 end
     
 function SporeCloud:GetLifeSpan()
-    return SporeCloud.kSporeCloudDuration
+    return kSporeDuration
 end
 
 function SporeCloud:SetTravelDestination(position)
@@ -85,7 +83,7 @@ function SporeCloud:GetDeathIconIndex()
 end
 
 function SporeCloud:GetDamageType()
-    return kDamageType.Normal
+    return kSporeDamageType
 end
 
 local function GetEntityRecentlyHurt(entityId, time)
@@ -116,7 +114,7 @@ end
 function SporeCloud:GetDamageRadius()
     
     local scalar = Clamp((Shared.GetTime() - self.createTime) * 4, 0, 1)
-    return scalar * SporeCloud.kRadius
+    return scalar * kSporeRadius
     
 end
 

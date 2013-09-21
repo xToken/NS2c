@@ -68,7 +68,7 @@ end
 Player.kNotEnoughResourcesSound     = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/more")
 Player.kGravity = -15
 Player.kXZExtents = 0.35
-Player.kYExtents = 0.95
+Player.kYExtents = 0.9
 Player.kWalkMaxSpeed = 4
 Player.kOnGroundDistance = 0.1
 
@@ -124,8 +124,7 @@ local kStepTotalTime    = 0.1  // Total amount of time to interpolate up a step
 local kViewOffsetHeight = Player.kYExtents * 2 - 0.2
 local kMaxStepAmount = 1.5
 local kCrouchShrinkAmount = 0.6
-local kExtentsCrouchShrinkAmount = 0.5
-local kTauntMovementScalar = .05           // Players can only move a little while taunting
+local kExtentsCrouchShrinkAmount = 0.4
 local kMinSlowSpeedScalar = .4
 local kBodyYawTurnThreshold = Math.Radians(5)
 local kTurnDelaySpeed = 8
@@ -391,15 +390,6 @@ function Player:OnInitialized()
     
 end
 
-function DisablePlayerDanger(player)
-
-    // Stop looping music.
-    if player:GetIsLocalPlayer() then
-        Client.StopMusic("danger")
-    end
-    
-end
-
 /**
  * Called when the player entity is destroyed.
  */
@@ -434,8 +424,6 @@ function Player:OnDestroy()
             self.unitStatusDisplay = nil
             
         end
-        
-        DisablePlayerDanger(self)
         
     elseif Server then
         self:RemoveSpectators(nil)
@@ -872,8 +860,8 @@ end
 function Player:GetExtentsOverride()
 
     local extents = self:GetMaxExtents()
-    if self.crouched then
-        extents.y = extents.y * (1 - self:GetExtentsCrouchShrinkAmount())
+    if self:GetCrouched() then
+        extents.y = extents.y * (1 - (self:GetExtentsCrouchShrinkAmount()))
     end
     return extents
     
@@ -2225,9 +2213,11 @@ function Player:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Player:OnUpdateAnimationInput")
     
-    local moveState = "idle"
-    if not self:GetIsIdle() then
-        moveState = "run"
+    local moveState = "run"
+    if self:GetIsJumping() and not self:GetIsOnLadder() then
+        moveState = "jump"
+    elseif self:GetIsIdle() then
+        moveState = "idle"
     end
     modelMixin:SetAnimationInput("move", moveState)
     
@@ -2402,6 +2392,21 @@ function Player:GetDirectionForMinimap()
     
     return direction
 
+end
+
+function Player:UpdateArmorAmount(armorLevel)
+
+    // note: some player may have maxArmor == 0
+    local armorPercent = self.maxArmor > 0 and self.armor/self.maxArmor or 0
+    local newMaxArmor = self:GetArmorAmount(armorLevel)
+    
+    if newMaxArmor ~= self.maxArmor then    
+    
+        self.maxArmor = newMaxArmor
+        self:SetArmor(self.maxArmor * armorPercent)
+        
+    end
+    
 end
 
 Shared.LinkClassToMap("Player", Player.kMapName, networkVars, true)

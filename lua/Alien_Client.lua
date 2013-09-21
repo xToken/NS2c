@@ -23,12 +23,6 @@ local kRegenerationViewCinematic = PrecacheAsset("cinematics/alien/regeneration_
 local kFirstPersonDeathEffect = PrecacheAsset("cinematics/alien/death_1p_alien.cinematic")
 local kAlienFirstPersonHitEffectName = PrecacheAsset("cinematics/alien/hit_1p.cinematic")
 
-local kUpgradeChamberFunctions = { }
-kUpgradeChamberFunctions[kTechId.Crag] = GetCrags
-kUpgradeChamberFunctions[kTechId.Shift] = GetShifts
-kUpgradeChamberFunctions[kTechId.Shade] = GetShades
-kUpgradeChamberFunctions[kTechId.Whip] = GetWhips
-
 function PlayerUI_GetActiveHiveCount()
 
     for _, ent in ientitylist(Shared.GetEntitiesWithClassname("AlienTeamInfo")) do

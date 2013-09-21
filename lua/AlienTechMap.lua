@@ -89,7 +89,7 @@ kAlienTechMap =
   
   //{kTechId.Crag, 10, 6}, 
   //{kTechId.UpgradeOnos, 10, 7},   
-  //{kTechId.Charge, 9, 8, nil, "3"},{kTechId.BoneShield, 10, 8, nil, "5"}, {kTechId.Stomp, 11, 8, nil, "9"},
+  //{kTechId.Charge, 9, 8, nil, "3"},{kTechId.Devour, 10, 8, nil, "5"}, {kTechId.Stomp, 11, 8, nil, "9"},
   
   //{kTechId.Shift, 4, 9},    
   //{kTechId.UpgradeLerk, 4, 10},                                 
@@ -129,7 +129,7 @@ kAlienLines =
 
     //GetLinePositionForTechMap(kAlienTechMap, kTechId.Crag, kTechId.UpgradeOnos),
     //GetLinePositionForTechMap(kAlienTechMap, kTechId.UpgradeOnos, kTechId.Charge),
-    //GetLinePositionForTechMap(kAlienTechMap, kTechId.UpgradeOnos, kTechId.BoneShield),
+    //GetLinePositionForTechMap(kAlienTechMap, kTechId.UpgradeOnos, kTechId.Devour),
     //GetLinePositionForTechMap(kAlienTechMap, kTechId.UpgradeOnos, kTechId.Stomp),
 
     //GetLinePositionForTechMap(kAlienTechMap, kTechId.Shift, kTechId.UpgradeLerk),  

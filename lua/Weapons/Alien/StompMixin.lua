@@ -11,11 +11,6 @@ Script.Load("lua/Weapons/Alien/Shockwave.lua")
 StompMixin = CreateMixin( StompMixin  )
 StompMixin.type = "Stomp"
 
-local kMaxPlayerVelocityToStomp = 8
-local kStompVerticalRange = 1.5
-
-local kStompRadius = 2
-
 // GetHasSecondary and GetSecondaryEnergyCost should completely override any existing
 // same named function defined in the object.
 StompMixin.overrideFunctions =

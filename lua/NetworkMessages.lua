@@ -92,27 +92,26 @@ function ParseSelectUnitMessage(message)
     return message.teamNumber, Shared.GetEntity(message.unitId), message.selected, message.keepSelection
 end
 
-function BuildConnectMessage(armorId, isMale)
+function BuildConnectMessage(isMale, marineVariant, skulkVariant)
 
     local t = { }
-    t.armorId = armorId
     t.isMale = isMale
+    t.marineVariant = marineVariant
+    t.skulkVariant = skulkVariant
     return t
     
 end
 
-function ParseConnectMessage(message)
-    return message.armorId, message.isMale
-end
-
 local kConnectMessage =
 {
-    armorId = "enum kArmorType",
-    isMale = "boolean"
+    isMale = "boolean",
+    marineVariant = "enum kMarineVariant",
+    skulkVariant = "enum kSkulkVariant",
 }
 Shared.RegisterNetworkMessage("ConnectMessage", kConnectMessage)
 
-Shared.RegisterNetworkMessage("SetPlayerVariant", { armorId = "enum kArmorType", isMale = "boolean" })
+local kSetPlayerVariantMessage = kConnectMessage
+Shared.RegisterNetworkMessage("SetPlayerVariant", kSetPlayerVariantMessage)
 
 function BuildVoiceMessage(voiceId)
 
@@ -356,7 +355,7 @@ local kScoresMessage =
     isCommander = "boolean",
     isRookie = "boolean",
     status = "enum kPlayerStatus",
-    isSpectator = "boolean"
+    isSpectator = "boolean",
 }
 
 function BuildScoresMessage(scorePlayer, sendToPlayer)
@@ -388,6 +387,8 @@ function BuildScoresMessage(scorePlayer, sendToPlayer)
     t.isRookie = ConditionalValue(isEnemy, false, scorePlayer:GetIsRookie())
     t.status = ConditionalValue(isEnemy, kPlayerStatus.Hidden, scorePlayer:GetPlayerStatusDesc())
     t.isSpectator = ConditionalValue(isEnemy, false, scorePlayer:isa("Spectator"))
+
+    t.reinforcedTierNum = scorePlayer.reinforcedTierNum
     
     return t
     

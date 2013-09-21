@@ -26,6 +26,7 @@ Script.Load("lua/VotingKickPlayer.lua")
 Script.Load("lua/VotingChangeMap.lua")
 Script.Load("lua/VotingResetGame.lua")
 Script.Load("lua/VotingRandomizeRR.lua")
+Script.Load("lua/Badges_Server.lua")
 
 Script.Load("lua/ServerConfig.lua")
 Script.Load("lua/ServerAdmin.lua")

@@ -412,6 +412,16 @@ kAlienWeaponEffects =
     
     },
     
+    primal =
+    {
+        primalReceieveEffects =
+        {
+            //{cinematic = "cinematics/alien/onos/stomp_hit.cinematic"},
+            {sound = "", silenceupgrade = true, done = true},
+        },    
+    
+    },
+    
     // Alien vision mode effects
     alien_vision_on = 
     {

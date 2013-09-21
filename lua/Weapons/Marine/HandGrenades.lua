@@ -10,17 +10,21 @@
 
 Script.Load("lua/Weapons/Marine/HandGrenade.lua")
 
-local kViewModelTemplates = { green = "_view.model", special = "_view_special.model", deluxe = "_view_deluxe.model" }
+local kDefaultVariantData = kMarineVariantData[ kDefaultMarineVariant ]
 function GenerateMarineGrenadeViewModelPaths(grenadeType)
 
     local viewModels = { male = { }, female = { } }
     
-    for name, suffix in pairs(kViewModelTemplates) do
-        viewModels.male[name] = PrecacheAsset("models/marine/grenades/" .. grenadeType .. suffix)
+    local function MakePath(prefix, suffix)
+        return "models/marine/grenades/" .. prefix .. grenadeType .. "_view" .. suffix .. ".model"
     end
     
-    for name, suffix in pairs(kViewModelTemplates) do
-        viewModels.female[name] = PrecacheAsset("models/marine/grenades/female_" .. grenadeType .. suffix)
+    for variant, data in pairs(kMarineVariantData) do
+        viewModels.male[variant] = PrecacheAssetSafe(MakePath("", data.viewModelFilePart), MakePath("", kDefaultVariantData.viewModelFilePart))
+    end
+    
+    for variant, data in pairs(kMarineVariantData) do
+        viewModels.female[variant] = PrecacheAssetSafe(MakePath("female_", data.viewModelFilePart), MakePath("female_", kDefaultVariantData.viewModelFilePart))
     end
     
     return viewModels

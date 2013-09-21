@@ -30,7 +30,7 @@ Script.Load("lua/WebableMixin.lua")
 Script.Load("lua/DevouredMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/Weapons/PredictedProjectile.lua")
-Script.Load("lua/PlayerVariantMixin.lua")
+Script.Load("lua/MarineVariantMixin.lua")
 
 if Client then
     Script.Load("lua/TeamMessageMixin.lua")
@@ -44,23 +44,6 @@ if Server then
     Script.Load("lua/Marine_Server.lua")
 elseif Client then
     Script.Load("lua/Marine_Client.lua")
-end
-
-local kViewModelTemplates = { green = "_view.model", special = "_view_special.model", deluxe = "_view_deluxe.model" }
-function GenerateMarineViewModelPaths(weaponName)
-
-    local viewModels = { male = { }, female = { } }
-    
-    for name, suffix in pairs(kViewModelTemplates) do
-        viewModels.male[name] = PrecacheAsset("models/marine/" .. weaponName .. "/" .. weaponName .. suffix)
-    end
-    
-    for name, suffix in pairs(kViewModelTemplates) do
-        viewModels.female[name] = PrecacheAsset("models/marine/" .. weaponName .. "/female_" .. weaponName .. suffix)
-    end
-    
-    return viewModels
-    
 end
 
 Shared.PrecacheSurfaceShader("models/marine/marine.surface_shader")
@@ -101,7 +84,6 @@ local networkVars =
     weaponUpgradeLevel = "integer (0 to 3)",
     
     unitStatusPercentage = "private integer (0 to 100)"
-    
 }
 
 AddMixinNetworkVars(OrdersMixin, networkVars)
@@ -116,7 +98,7 @@ AddMixinNetworkVars(ParasiteMixin, networkVars)
 AddMixinNetworkVars(WebableMixin, networkVars)
 AddMixinNetworkVars(DevouredMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
-AddMixinNetworkVars(PlayerVariantMixin, networkVars)
+AddMixinNetworkVars(MarineVariantMixin, networkVars)
 
 function Marine:OnCreate()
 
@@ -135,7 +117,7 @@ function Marine:OnCreate()
     InitMixin(self, WebableMixin)
     InitMixin(self, DevouredMixin)
 	InitMixin(self, DetectableMixin)
-	InitMixin(self, PlayerVariantMixin)
+	InitMixin(self, MarineVariantMixin)
 	InitMixin(self, PredictedProjectileShooterMixin)
     if Server then
 
@@ -186,7 +168,7 @@ function Marine:OnInitialized()
     
     // SetModel must be called before Player.OnInitialized is called so the attach points in
     // the Marine are valid to attach weapons to. This is far too subtle...
-    self:SetModel(Marine.kModelNames[self:GetSex()][self:GetVariant()], Marine.kMarineAnimationGraph)
+    self:SetModel(self:GetVariantModel(), MarineVariantMixin.kMarineAnimationGraph)
     
     Player.OnInitialized(self)
     
@@ -234,11 +216,6 @@ function Marine:OnInitialized()
     
     self.flashlightLastFrame = false
     
-end
-
-local blockBlackArmor = false
-if Server then
-    Event.Hook("Console_blockblackarmor", function() if Shared.GetCheatsEnabled() then blockBlackArmor = not blockBlackArmor end end)
 end
 
 function Marine:GetJumpMode()
@@ -297,6 +274,10 @@ end
 
 function Marine:GetIsStunAllowed()
     return not self:GetIsJumping()
+end
+
+function Marine:GetCanJump()
+    return Player.GetCanJump(self) and not self:GetIsStunned()
 end
 
 function Marine:GetCanRepairOverride(target)
@@ -723,14 +704,6 @@ end
 
 function Marine:GetCanSeeDamagedIcon(ofEntity)
     return HasMixin(ofEntity, "Weldable")
-end
-
-function Marine:OnPostUpdateCamera(deltaTime)
-
-    if self:GetIsStunned() then
-        self:SetDesiredCameraYOffset(-0.25)
-    end
-    
 end
 
 function Marine:GetHasCatpackBoost()

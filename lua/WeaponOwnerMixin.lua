@@ -25,14 +25,14 @@ WeaponOwnerMixin.expectedConstants =
 }
 
 // lets assume you can't carry more than 20 rifles in weight. Seems reasonable
-WeaponOwnerMixin.kMaxWeaponsWeight = 20 * kRifleWeight
+local kMaxWeaponsWeight = 0.3
 
 WeaponOwnerMixin.networkVars =
 {
     processMove = "boolean",
     activeWeaponId = "entityid",
     timeOfLastWeaponSwitch = "time",
-    weaponsWeight = "float (0 to " .. WeaponOwnerMixin.kMaxWeaponsWeight .. " by 0.01)",
+    weaponsWeight = "float (0 to " .. kMaxWeaponsWeight .. " by 0.001)",
     quickSwitchSlot = "integer (0 to 10)"
 }
 
@@ -81,17 +81,12 @@ function WeaponOwnerMixin:UpdateWeaponWeights()
     
         local child = self:GetChildAtIndex(i)
         if child:isa("Weapon") then
-        
-            // Active items count full, count less when stowed.
-            local weaponIsActive = activeWeapon and (child:GetId() == activeWeapon:GetId())
-            local weaponWeight = (weaponIsActive and child:GetWeight()) or (child:GetWeight() * self:GetMixinConstants().kStowedWeaponWeightScalar)
-            totalWeight = totalWeight + weaponWeight
-            
+            totalWeight = totalWeight + child:GetWeight()
         end
     
     end
     
-    self.weaponsWeight = Clamp(totalWeight, 0, 1)
+    self.weaponsWeight = Clamp(totalWeight, 0, kMaxWeaponsWeight)
 
 end
 

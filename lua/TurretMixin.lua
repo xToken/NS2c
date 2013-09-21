@@ -58,8 +58,8 @@ if Server then
         for index, turretfac in ipairs(turretfactories) do
             local toTarget = turretfac:GetOrigin() - self:GetOrigin()
             local distanceToTarget = toTarget:GetLength()
-            if distanceToTarget < kRoboticsFactoryAttachRange and GetIsUnitActive(turretfac) then
-                if self.requiresupgtf and turretfac:GetTechId() == kTechId.ARCRoboticsFactory or not self.requiresupgtf then
+            if distanceToTarget < kTurretFactoryAttachRange and GetIsUnitActive(turretfac) then
+                if self.requiresupgtf and turretfac:GetTechId() == kTechId.AdvancedTurretFactory or not self.requiresupgtf then
                     if tfac == nil or (tfac ~= nil and turretfac ~= tfac) then
                         return turretfac
                     end

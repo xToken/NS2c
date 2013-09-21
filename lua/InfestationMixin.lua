@@ -24,8 +24,9 @@ local kInfestationRecedeRate = 6
 // local kBlobsPerFrame = 10 
 // Have a feeling this would cause only 10 blobs to be drawn ever - might not want that tbh.  Dont think the fps hit is from the number of blobs, moreso the animations of those blobs.
 // Sleeping those to random fps intervals might help reduce impact, but may introduce other wierd effects.
-local _quality = nil
-local _numBlobsGenerated = 0
+local gInfestationQuality = nil
+local kInfestationScalar = 1
+
 
 local kSlowUpdateInterval = 1 // when the infestation has been stable for a while, run full updates this many times/sec
 local kSlowUpdateCountLimit = 5 // how many stable updates need to pass before going into slow update mode
@@ -278,10 +279,10 @@ if Client then
 
 	function InfestationMixin:CreateClientGeometry()
 
-		if _quality == "rich" then
+		if gInfestationQuality == "rich" then
 			self:CreateModelArrays(1, 0)
 		end
-		
+		self.quality = gInfestationQuality
 		self.hasClientGeometry = true
 		
 	end
@@ -487,7 +488,7 @@ if Client then
 		local maxRadius = self:GetMaxRadius()
 
 		local numBlobs   = 0
-		local numBlobTries = numBlobGens * 2
+		local numBlobTries = numBlobGens * 3
 
 		for j = 1, numBlobTries do
 		
@@ -555,7 +556,7 @@ if Client then
 
 		self.blobCoords = { }
 		
-		local numBlobGens = self:GetMaxRadius() * self.validpositions * self:GetInfestationDensity()
+		local numBlobGens = self:GetMaxRadius() * self.validpositions * self:GetInfestationDensity() * kInfestationScalar
 		
 		self.numBlobsToGenerate = numBlobGens
 		
@@ -628,15 +629,19 @@ if Client then
         
 		PROFILE("InfestationMixin:OnUpdate")
 		
-        if _quality ~= "rich" then
+		local qualityChanged = self.quality ~= gInfestationQuality
+		if qualityChanged then
+			self:DestroyClientGeometry(self)
+			self:RunUpdatesAtFullSpeed()
+		end
+	
+        if gInfestationQuality ~= "rich" then
             return
         end
         
-         if self.lastUpdateTime + self.updateInterval > Shared.GetTime() then
-            return
+        if self.lastUpdateTime + self.updateInterval > Shared.GetTime() then
+			return
         end
-		
-		ScriptActor.OnUpdate(self, deltaTime)
 
         if not self:GetIsAlive() then
             OnHostKilledClient(self)
@@ -791,19 +796,6 @@ if Client then
 
 	end
 
-	function Infestation_SetQuality(quality)
-
-		_quality = quality
-		Client.SetRenderSetting("infestation", _quality)
-		
-		local ents = GetEntitiesWithMixin("Infestation")
-		for id,ent in ipairs(ents) do
-			ent:DestroyClientGeometry()
-			ent:RunUpdatesAtFullSpeed()
-		end
-		
-	end
-
 	function Infestation_UpdateForPlayer()
 		
 		// Maximum number of blobs to generate in a frame
@@ -820,7 +812,8 @@ if Client then
 	end
 
 	function Infestation_SyncOptions()
-		Infestation_SetQuality( Client.GetOptionString("graphics/infestation", "rich") )
+		gInfestationQuality = Client.GetOptionString("graphics/infestation", "rich")
+        Client.SetRenderSetting("infestation", gInfestationQuality)
 	end
 
 	local function OnLoadComplete()
@@ -841,6 +834,15 @@ if Client then
 			Print("Usage: blobspeed 2.0")
 		end
 		Print("blobspeed = %f", kDebugVisualGrowthScale)
+	end)
+	
+	Event.Hook("Console_blobdensity", function(scalar)
+		if tonumber(scalar) then
+			kInfestationScalar = tonumber(scalar)
+		else
+			Print("Usage: blobdensity 1.0")
+		end
+		Print("blobdensity = %f", kInfestationScalar)
 	end)
 	
 end

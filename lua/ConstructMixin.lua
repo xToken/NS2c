@@ -408,8 +408,10 @@ function ConstructMixin:OnConstructionComplete(builder)
             team:TriggerAlert(kTechId.MarineAlertConstructionComplete, self)
             
         end
-
-        team:OnConstructionComplete(self)
+        
+        if team.OnConstructionComplete then
+            team:OnConstructionComplete(self)
+        end
 
     end     
 

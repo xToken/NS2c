@@ -29,7 +29,7 @@ end
 function Devour:OnCreate()
 
     Ability.OnCreate(self)
-    
+    InitMixin(self, StompMixin)
     self.timeSinceLastDevourUpdate = 0
     self.lastPrimaryAttackTime = 0
     self.devouring = 0
@@ -37,7 +37,7 @@ function Devour:OnCreate()
 end
 
 function Devour:GetDeathIconIndex()
-    return kDeathMessageIcon.Gore
+    return kDeathMessageIcon.Devour
 end
 
 function Devour:GetAnimationGraphName()
@@ -53,7 +53,7 @@ function Devour:GetEnergyCost(player)
 end
 
 function Devour:GetHUDSlot()
-    return 2
+    return 3
 end
 
 function Devour:OnHolster(player)
@@ -69,10 +69,6 @@ function Devour:GetMeleeBase()
     return kDevourMeleeBaseWidth, kDevourMeleeBaseHeight
 end
 
-function Devour:GetIconOffsetY(secondary)
-    return kAbilityOffset.Gore
-end
-
 function Devour:OnTag(tagName)
 
     PROFILE("Devour:OnTag")
@@ -80,7 +76,7 @@ function Devour:OnTag(tagName)
     if tagName == "hit" then
     
         local player = self:GetParent()
-        if player and not self:GetHasAttackDelay(self, player) then
+        if player then
         
             self.lastPrimaryAttackTime = Shared.GetTime()
             local didHit, target, endPoint = AttackMeleeCapsule(self, player, kDevourInitialDamage, self:GetRange(), nil, false, EntityFilterOneAndIsa(player, "Babbler"))
@@ -90,6 +86,7 @@ function Devour:OnTag(tagName)
             if didHit and target and target:isa("Marine") then
                 self:Devour(player, target)
             end
+            
         end
     end    
 
@@ -126,7 +123,7 @@ function Devour:GetLastAttackTime()
 end
 
 function Devour:OnPrimaryAttack(player)
-    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(self, player) and not self:IsDevouringPlayer() then
+    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(player) and not self:IsDevouringPlayer() then
         self.primaryAttacking = true
     else
         self:OnAttackEnd()
@@ -163,7 +160,7 @@ if Server then
     local function EndDevour(self)
         if self.devouring ~= 0 then
             local devouredplayer = Shared.GetEntity(self.devouring)
-            StartSoundEffectAtOrigin(kDevourCancelledSound, devouredplayer:GetOrigin())
+            StartSoundEffectAtOrigin(kDevourCancelledSound, self:GetOrigin())
             if devouredplayer and devouredplayer.OnDevouredEnd then
                 devouredplayer:OnDevouredEnd()
             end

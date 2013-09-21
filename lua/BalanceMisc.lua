@@ -64,9 +64,6 @@ kGhostObservatoryDodgePerLevel = 33
 kGhostMinimapDodgePerLevel = 33
 kGhostScanDodgePerLevel = 33
 kGhostCloakingPerLevel = 0.25
-kAlienBaseMoveNoise = 6
-kAlienRandMoveNoise = 12
-kAlienMoveNoises = 2
 
 // per second
 kAlienVisionCost = 0
@@ -76,7 +73,7 @@ kDefaultStructureCost = 10
 kStructureCircleRange = 4
 kInfantryPortalAttachRange = 12
 kArmoryWeaponAttachRange = 10
-kRoboticsFactoryAttachRange = 12
+kTurretFactoryAttachRange = 12
 
 // Obs stuff
 kScanDuration = 10

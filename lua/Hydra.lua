@@ -211,6 +211,7 @@ end
 function Hydra:GetTracerResidueEffectName()
     return kSpikeTracerResidueEffectName
 end
+
 function Hydra:GetReceivesStructuralDamage()
     return true
 end

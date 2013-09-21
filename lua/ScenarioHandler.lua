@@ -54,7 +54,7 @@ function ScenarioHandler:Init()
         OrientedEntityHandler():Init("Armory",kMarineTeamType),
         OrientedEntityHandler():Init("Sentry",kMarineTeamType),
         OrientedEntityHandler():Init("PrototypeLab",kMarineTeamType),
-        OrientedEntityHandler():Init("RoboticsFactory",kMarineTeamType),
+        OrientedEntityHandler():Init("TurretFactory",kMarineTeamType),
         OrientedEntityHandler():Init("Observatory",kMarineTeamType),
         OrientedEntityHandler():Init("Extractor",kMarineTeamType),
         

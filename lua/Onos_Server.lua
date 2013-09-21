@@ -16,6 +16,7 @@ function Onos:InitWeapons()
     Alien.InitWeapons(self)
 
     self:GiveItem(Gore.kMapName)
+    self:GiveItem(Smash.kMapName)
     self:SetActiveWeapon(Gore.kMapName)
     
 end

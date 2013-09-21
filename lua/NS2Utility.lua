@@ -446,7 +446,7 @@ function GetCircleSizeForEntity(entity)
     size = ConditionalValue(entity:isa("Armory"), 4.0, size)
     size = ConditionalValue(entity:isa("Harvester"), 3.7, size)
     size = ConditionalValue(entity:isa("Crag"), 3, size)
-    size = ConditionalValue(entity:isa("RoboticsFactory"), 6, size)
+    size = ConditionalValue(entity:isa("TurretFactory"), 6, size)
     size = ConditionalValue(entity:isa("ARC"), 3.5, size)
     size = ConditionalValue(entity:isa("ArmsLab"), 4.3, size)
     return size
@@ -1439,7 +1439,7 @@ function SetPlayerPoseParameters(player, viewModel, headAngles)
         viewModel:SetPoseParam("body_pitch", pitch)
         viewModel:SetPoseParam("move_yaw", moveYaw)
         viewModel:SetPoseParam("move_speed", speedScalar)
-        viewModel:SetPoseParam("crouch", player:GetCrouchAmount())
+        viewModel:SetPoseParam("crouch", crouchAmount)
         viewModel:SetPoseParam("body_yaw", bodyYaw)
         viewModel:SetPoseParam("body_yaw_run", bodyYawRun)
         viewModel:SetPoseParam("land_intensity", landIntensity)
@@ -1717,7 +1717,7 @@ end
 // All damage is routed through here.
 function CanEntityDoDamageTo(attacker, target, cheats, devMode, friendlyFire, damageType)
 
-    if not GetGameInfoEntity():GetGameStarted() then
+    if GetGameInfoEntity():GetState() == kGameState.NotStarted then
         return false
     end
    
@@ -1877,6 +1877,9 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
     end
     
     local width, height = weapon:GetMeleeBase()
+    if not width or not height then
+        width, height = weapon:GetMixinMeleeBase()
+    end
     width = scale * width
     height = scale * height
     
@@ -2091,7 +2094,7 @@ function BuildClassToGrid()
     ClassToGrid["AdvancedArmoryModule"] = { 4, 5 }
     ClassToGrid["PhaseGate"] = { 5, 5 }
     ClassToGrid["Observatory"] = { 6, 5 }
-    ClassToGrid["RoboticsFactory"] = { 7, 5 }
+    ClassToGrid["TurretFactory"] = { 7, 5 }
     ClassToGrid["ArmsLab"] = { 8, 5 }
     ClassToGrid["PrototypeLab"] = { 4, 4 }
 
@@ -2172,7 +2175,7 @@ function CheckWeaponForFocus(doer, player)
         return 0 
     end
     if doer and hasupg and level > 0 then
-        if doer.GetAbilityUsesFocus and doer:GetAbilityUsesFocus() then
+        if (doer.GetAbilityUsesFocus and doer:GetAbilityUsesFocus() and doer.primaryAttacking) or (doer.GetSecondaryAbilityUsesFocus and doer:GetSecondaryAbilityUsesFocus() and doer.secondaryAttacking) then
             return level    
         end
     end
@@ -2394,9 +2397,12 @@ function GetTexCoordsForTechId(techId)
         gTechIdPosition[kTechId.Swipe] = kDeathMessageIcon.Swipe
         gTechIdPosition[kTechId.Blink] = kDeathMessageIcon.Blink
         gTechIdPosition[kTechId.Metabolize] = kDeathMessageIcon.Metabolize
+        gTechIdPosition[kTechId.AcidRocket] = kDeathMessageIcon.BileBomb
 
         gTechIdPosition[kTechId.Gore] = kDeathMessageIcon.Gore
+        gTechIdPosition[kTechId.Smash] = kDeathMessageIcon.Gore
         gTechIdPosition[kTechId.Stomp] = kDeathMessageIcon.Stomp
+        gTechIdPosition[kTechId.Devour] = kDeathMessageIcon.Devour
         
     end
     
@@ -2621,16 +2627,7 @@ function UpdateAlienStructureMove(self, deltaTime)
     if Server then
 
         local currentOrder = self:GetCurrentOrder()
-        if GetIsUnitActive(self) and currentOrder and currentOrder:GetType() == kTechId.Move then
-        
-            /*
-            if not self.timeLastShiftCheck or self.timeLastShiftCheck + 0.5 < Shared.GetTime() then
-                
-                self.shiftBoost = self:isa("Shift") or #GetEntitiesForTeamWithinRange("Shift", self:GetTeamNumber(), self:GetOrigin(), 8) > 0
-                self.timeLastShiftCheck = Shared.GetTime()
-            
-            end
-            */
+        if GetIsUnitActive(self) and currentOrder and currentOrder:GetType() == kTechId.Move and (not HasMixin(self, "TeleportAble") or not self:GetIsTeleporting()) then
 
             local speed = self:GetMaxSpeed()
             if self.shiftBoost then
@@ -2653,9 +2650,21 @@ function UpdateAlienStructureMove(self, deltaTime)
         if HasMixin(self, "Obstacle") then
 
             if currentOrder and currentOrder:GetType() == kTechId.Move then
+            
                 self:RemoveFromMesh()
-            elseif self.obstacleId == -1 then
+            
+                if not self.removedMesh then            
+                    
+                    self.removedMesh = true
+                    self:OnObstacleChanged()
+                
+                end
+                
+            elseif self.removedMesh then
+            
                 self:AddToMesh()
+                self.removedMesh = false
+                
             end
 
         end   
@@ -2720,5 +2729,40 @@ function GetCommanderLogoutAllowed()
     return ( gameState ~= kGameState.Countdown and gameState ~= kGameState.Started ) or gameStateDuration >= kCommanderMinTime
     
     */
+
+end
+
+function GetFileExists(path)
+    local searchResult = {}
+    Shared.GetMatchingFileNames( path, false, searchResult )
+    return #searchResult > 0
+end
+
+//----------------------------------------
+//  This will return nil if the asset DNE
+//----------------------------------------
+function PrecacheAssetIfExists( path )
+
+    if GetFileExists(path) then
+        return PrecacheAsset(path)
+    else
+        //DebugPrint("attempted to precache asset that does not exist: "..path)
+        return nil
+    end
+
+end
+
+//----------------------------------------
+//  If the first path DNE, it will use the fallback
+//----------------------------------------
+function PrecacheAssetSafe( path, fallback )
+
+    if GetFileExists(path) then
+        return PrecacheAsset(path)
+    else
+        //DebugPrint("Could not find "..path.."\n    Loading "..fallback.." instead" )
+        assert( GetFileExists(fallback) )
+        return PrecacheAsset(fallback)
+    end
 
 end

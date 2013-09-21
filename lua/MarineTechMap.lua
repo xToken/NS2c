@@ -16,7 +16,7 @@ kMarineTechMap =
 
         { kTechId.Extractor, 5, 1 },{ kTechId.CommandStation, 7, 1 },{ kTechId.InfantryPortal, 9, 1 },
         
-        { kTechId.RoboticsFactory, 9, 3 },{ kTechId.UpgradeRoboticsFactory, 10, 2 },{ kTechId.ARC, 11, 2 },
+        { kTechId.TurretFactory, 9, 3 },{ kTechId.UpgradeTurretFactory, 10, 2 },{ kTechId.ARC, 11, 2 },
                                           { kTechId.Sentry, 11, 4 },
                                           
                                           
@@ -85,8 +85,8 @@ kMarineLines =
     GetLinePositionForTechMap(kMarineTechMap, kTechId.ArmsLab, kTechId.CatPackTech),
     
     { 7, 3, 9, 3 },
-    GetLinePositionForTechMap(kMarineTechMap, kTechId.RoboticsFactory, kTechId.ARCRoboticsFactory),
-    GetLinePositionForTechMap(kMarineTechMap, kTechId.ARCRoboticsFactory, kTechId.ARC),
-    GetLinePositionForTechMap(kMarineTechMap, kTechId.RoboticsFactory, kTechId.Sentry),
+    GetLinePositionForTechMap(kMarineTechMap, kTechId.TurretFactory, kTechId.AdvancedTurretFactory),
+    GetLinePositionForTechMap(kMarineTechMap, kTechId.AdvancedTurretFactory, kTechId.ARC),
+    GetLinePositionForTechMap(kMarineTechMap, kTechId.TurretFactory, kTechId.Sentry),
     
 }

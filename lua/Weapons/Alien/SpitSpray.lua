@@ -98,7 +98,7 @@ end
 
 function SpitSpray:OnPrimaryAttack(player)
 
-    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(self, player) then
+    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(player) then
         self.primaryAttacking = true
     else
         self.primaryAttacking = false
@@ -122,7 +122,7 @@ function SpitSpray:OnTag(tagName)
     
         local player = self:GetParent()
         
-        if player and not self:GetHasAttackDelay(self, player) then
+        if player then
             
             self.lastPrimaryAttackTime = Shared.GetTime()
             if Server or (Client and Client.GetIsControllingPlayer()) then

@@ -311,10 +311,3 @@ function Marine:GiveExo(type)
     ExoMarine:SetHealth(health)
     
 end
-
-function Marine:OnVariantUpdated()
-
-    local modelName = Marine.kModelNames[self:GetSex()][self:GetVariant()]
-    self:SetModel(modelName, Marine.kMarineAnimationGraph)
-    
-end

@@ -267,6 +267,20 @@ local function OnCommandParasite(client)
     
 end
 
+local function OnCommandStun(client)
+
+    if client ~= nil and Shared.GetCheatsEnabled() then
+
+        local player = client:GetControllingPlayer()
+        
+        if HasMixin(player, "Stun") then
+            player:SetStun(10)
+        end  
+        
+    end
+    
+end
+
 
 local function OnCommandEnts(client, className)
 
@@ -1206,6 +1220,7 @@ Event.Hook("Console_takedamage", OnCommandTakeDamage)
 Event.Hook("Console_heal", OnCommandHeal)
 Event.Hook("Console_giveammo", OnCommandGiveAmmo)
 Event.Hook("Console_parasite", OnCommandParasite)
+Event.Hook("Console_stun", OnCommandStun)
 Event.Hook("Console_respawn_team", OnCommandRespawnTeam)
 
 Event.Hook("Console_ents", OnCommandEnts)
@@ -1270,3 +1285,11 @@ Event.Hook("Console_make", OnCommandMake)
 Event.Hook("Console_devour", OnCommandDevour)
 Event.Hook("Console_debugcommander", OnCommandDebugCommander)
 Event.Hook("Console_trace", OnCommandTrace)
+
+Event.Hook("Console_dlc", function(client)
+        if Shared.GetCheatsEnabled() then
+            GetHasDLC = function(pid, client)
+                return true
+                end
+        end
+        end)
