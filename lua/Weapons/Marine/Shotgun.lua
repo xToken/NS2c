@@ -57,18 +57,7 @@ local kMuzzleAttachPoint = "fxnode_shotgunmuzzle"
 function Shotgun:OnCreate()
 
     ClipWeapon.OnCreate(self)
-    
     self.emptyPoseParam = 0
-
-end
-
-if Client then
-
-    function Shotgun:OnInitialized()
-    
-        ClipWeapon.OnInitialized(self)
-    
-    end
 
 end
 
@@ -178,9 +167,10 @@ end
 function Shotgun:OnTag(tagName)
 
     PROFILE("Shotgun:OnTag")
-
-    continueReloading = false
+    
+    local continueReloading = false
     if self:GetIsReloading() and tagName == "reload_end" then
+    
         continueReloading = true
     end
     
@@ -235,7 +225,7 @@ function Shotgun:FirePrimary(player)
     
         if not kSpreadVectors[bullet] then
             break
-        end    
+        end
     
         local spreadDirection = viewCoords:TransformVector(kSpreadVectors[bullet])
 
@@ -243,7 +233,7 @@ function Shotgun:FirePrimary(player)
         startPoint = player:GetEyePos() + viewCoords.xAxis * kSpreadVectors[bullet].x * kStartOffset + viewCoords.yAxis * kSpreadVectors[bullet].y * kStartOffset
         
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
-        if not trace.entity then
+        if not trace.entity and Server then
             local extents = GetDirectedExtentsForDiameter(viewCoords.zAxis, self:GetBulletSize())
             trace = Shared.TraceBox(extents, startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
         end        

@@ -137,18 +137,19 @@ kBombardCost = 0
 kFuryCost = 0
 
 kHiveBuildTime = 180
-kHarvesterBuildTime = 40
-kCragBuildTime = 28
-kShiftBuildTime = 20
-kShadeBuildTime = 24
-kHydraBuildTime = 18
+kHarvesterBuildTime = 27
+kCragBuildTime = 27
+kShiftBuildTime = 16
+kShadeBuildTime = 19
+kHydraBuildTime = 15
 kWhipBuildTime = 22
 kSkulkGestateTime = 3
 kGorgeGestateTime = 10
 kLerkGestateTime = 15
 kFadeGestateTime = 25
 kOnosGestateTime = 35
-kEvolutionGestateTime = 3
+kUpgradeGestationTime = 2
+kReplaceUpgradeGestationTime = 6
 
 kMarineTeamIntialRes = 100
 kMaxTeamResources = 999
@@ -389,7 +390,7 @@ kSwipeMeleeBaseWidth = 0.9
 kSwipeMeleeBaseHeight = 1
 
 kStartBlinkEnergyCost = 8
-kBlinkPulseEnergyCost = 5
+kBlinkPulseEnergyCost = 4
 kBlinkCooldown = 0.05
 
 kMetabolizeEnergyCost = 25

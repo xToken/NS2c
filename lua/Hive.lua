@@ -215,6 +215,10 @@ end
 function Hive:OnManufactured(createdEntity)
 end
 
+function Hive:GetAutoBuildScalar()
+    return 1
+end
+
 function Hive:GetShowUnitStatusForOverride(forEntity)
     return not GetAreEnemies(self, forEntity)
 end

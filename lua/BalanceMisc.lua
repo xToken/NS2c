@@ -22,6 +22,7 @@ kHiveUnderAttackTime = 15
 kMaxAlienStructureRange = 25
 kMaxAlienStructuresofType = 8
 kMaxBuildingHives = 1
+kAutoBuildScalar = 0.33
 kMaxGorgeOwnedStructures = 24
 kChamberLostNotification = 0    // Amount of Upgrade Chambers remaining for alerts to be sent
 kPingOfDeathDelay = 2
@@ -90,9 +91,6 @@ kEnergizeEnergyIncrease = 0.25
 kStructureEnergyPerEnergize = 0.15
 kPlayerEnergyPerEnergize = 6
 kEnergizeUpdateRate = 1
-
-// Each upgrade costs this much extra evolution time
-kUpgradeGestationTime = 2
 
 // Jetpack
 // NS1: 6.5 seconds of fuel

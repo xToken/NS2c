@@ -110,9 +110,16 @@ local function SharedUpdate(self, deltaTime)
         // Only Alien structures auto build.
         // Update build fraction every tick to be smooth.
         if not self:GetIsBuilt() and GetIsAlienUnit(self) and self:GetIsAlive() then
-
+            
+            local buildTime = deltaTime
+            if self.GetAutoBuildScalar then
+                buildTime = buildTime * self:GetAutoBuildScalar()
+            else
+                buildTime = buildTime * kAutoBuildScalar
+            end
+            
             if not self.GetCanAutoBuild or self:GetCanAutoBuild() then
-                self:Construct(deltaTime)
+                self:Construct(buildTime)
             end
         
         end

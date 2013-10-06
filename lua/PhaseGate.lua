@@ -111,7 +111,7 @@ PhaseGate.kModelName = PrecacheAsset("models/marine/phase_gate/phase_gate.model"
 local kUpdateInterval = 0.1
 
 // Can only teleport a player every so often
-local kDepartureRate = 0.5
+local kDepartureRate = 0.75
 
 local kPushRange = 1
 local kPushImpulseStrength = 20
@@ -122,7 +122,6 @@ local networkVars =
     phase = "boolean",
     deployed = "boolean",
     destLocationId = "entityid",
-    targetYaw = "float (-3.14159265 to 3.14159265 by 0.003)",
     timeOfLastPhase = "compensated time",
     destinationEndpoint = "position"
 }
@@ -277,12 +276,8 @@ function PhaseGate:GetCanBeUsed(player, useSuccessTable)
 end
 
 function PhaseGate:OnUse(player, elapsedTime, useSuccessTable)
-    if self:GetIsDeployed() and self:GetIsPhaseReady() and GetIsUnitActive(self) and self:Phase(player) then
-		if Client then
-			local viewAngles = player:GetViewAngles()
-			Client.SetYaw(viewAngles.yaw)
-			Client.SetPitch(viewAngles.pitch)     
-		end
+    if self:GetIsDeployed() and self:GetIsPhaseReady() and GetIsUnitActive(self) and Server then
+        self:Phase(player)
 	end
 end
 
@@ -332,15 +327,21 @@ local function ComputeDestinationLocationId(self, destGate)
     
 end
 
+function PhaseGate:OnIncomingPhase()
+    self.timeOfLastPhase = Shared.GetTime()
+end
+
 function PhaseGate:Phase(user)
 
-    if self.linked and not GetAreEnemies(self, user) then
+    local destinationPhaseGate = GetDestinationGate(self)
+    if self.linked and not GetAreEnemies(self, user) and destinationPhaseGate and GetIsUnitActive(destinationPhaseGate) and destinationPhaseGate:GetIsPhaseReady() then
 
+        destinationPhaseGate:OnIncomingPhase()
         // Don't bother checking if destination is clear, rely on pushing away entities
         user:TriggerEffects("phase_gate_player_enter")        
         user:TriggerEffects("teleport")
         
-        local destinationCoords = Angles(0, self.targetYaw, 0):GetCoords()
+        local destinationCoords = Angles(0, destinationPhaseGate:GetAngles().yaw, 0):GetCoords()
         destinationCoords.origin = self.destinationEndpoint
         
         TransformPlayerCoordsForPhaseGate(user, self:GetCoords(), destinationCoords)
@@ -374,12 +375,10 @@ if Server then
         
             self.destinationEndpoint = destinationPhaseGate:GetOrigin()
             self.linked = true
-            self.targetYaw = destinationPhaseGate:GetAngles().yaw
             self.destLocationId = ComputeDestinationLocationId(self, destinationPhaseGate)
             
         else
             self.linked = false
-            self.targetYaw = 0
             self.destLocationId = Entity.invalidId
         end
 

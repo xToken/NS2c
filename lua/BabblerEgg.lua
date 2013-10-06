@@ -13,6 +13,7 @@ Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/TeamMixin.lua")
+Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/MobileTargetMixin.lua")
 Script.Load("lua/DamageMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
@@ -60,8 +61,10 @@ function BabblerEgg:OnInitialized()
 
     self:SetModel(BabblerEgg.kModelName, kAnimationGraph)
     
-    if Server then    
+    if Server then
         InitMixin(self, MobileTargetMixin)        
+    elseif Client then
+        InitMixin(self, UnitStatusMixin)
     end
     
 end

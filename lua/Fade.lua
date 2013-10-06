@@ -51,7 +51,7 @@ local kMaxSpeed = 4.5
 local kMaxBlinkSpeed = 16 // ns1 fade blink is (3x maxSpeed) + celerity
 local kWalkSpeed = 2
 local kCrouchedSpeed = 1.8
-local kBlinkImpulseForce = 10
+local kBlinkImpulseForce = 5
 local kBlinkVerticleDampner = 4
 local kBlinkSpeedGracePeriod = 0.0
 

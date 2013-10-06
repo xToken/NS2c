@@ -655,6 +655,9 @@
     <filename>Skulk.lua</filename>
   </file>
   <file>
+    <filename>bots\SkulkBrain_Data.lua</filename>
+  </file>
+  <file>
     <filename>Skulk_Server.lua</filename>
   </file>
   <file>

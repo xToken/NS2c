@@ -90,6 +90,8 @@ function GUIReadyRoomOrders:Initialize()
     self.welcomeText:SetTextAlignmentY(GUIItem.Align_Center)
     self.welcomeText:SetAnchor(GUIItem.Middle, GUIItem.Center)
     self.welcomeText:SetText("This Server is running the Natural Selection 2 Classic Mod.")
+    local localPlayer = Client.GetLocalPlayer()
+    localPlayer:TriggerEffects("tooltip")
     self.welcomeText:SetColor(kFadeOutColor)
     self.welcomeTextStartTime = Shared.GetTime()
     self.welcometextCount = 0

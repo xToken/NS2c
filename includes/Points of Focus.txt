@@ -1,0 +1,3 @@
+Alien hive status updates - currently using networkmessages, move to teaminfo entity for propigation to clients.
+Arcs - refactor/code from ground up?  Look over state change code/complete rename.
+Health Circles?  Maybe finally?

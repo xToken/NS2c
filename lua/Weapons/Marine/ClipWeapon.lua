@@ -27,15 +27,16 @@ ClipWeapon.kMapName = "clipweapon"
 
 local networkVars =
 {
-    blockingPrimary = "boolean",
-    blockingSecondary = "boolean",
+    blockingPrimary = "compensated boolean",
+    blockingSecondary = "compensated boolean",
     timeAttackStarted = "time",
     deployed = "boolean",
     
-    ammo = "integer (0 to 400)",
+    ammo = "integer (0 to 511)",
     clip = "integer (0 to 200)",
     
-    reloading = "boolean"
+    reloading = "compensated boolean",
+	reloaded = "compensated boolean"
 }
 
 // Weapon spread - from NS1/Half-life
@@ -208,8 +209,6 @@ end
 
 // Add energy back over time, called from Player:OnProcessMove
 function ClipWeapon:ProcessMoveOnWeapon(player, input)
-
-    
 end
 
 function ClipWeapon:OnProcessMove(input)
@@ -283,10 +282,6 @@ function ClipWeapon:GetNeedsAmmo(includeClip)
     return (includeClip and (self:GetClip() < self:GetClipSize())) or (self:GetAmmo() < self:GetMaxAmmo())
 end
 
-function ClipWeapon:GetWarmupTime()
-    return 0
-end
-
 function ClipWeapon:GetPrimaryAttackRequiresPress()
     return false
 end
@@ -299,7 +294,7 @@ function ClipWeapon:GetIsPrimaryAttackAllowed(player)
 
     if not player then
         return false
-    end    
+    end
 
     local attackAllowed = (not self:GetPrimaryAttackRequiresPress() or not player:GetPrimaryAttackLastFrame())
     attackAllowed = attackAllowed and (not self:GetIsReloading() or self:GetPrimaryCanInterruptReload())
@@ -307,7 +302,6 @@ function ClipWeapon:GetIsPrimaryAttackAllowed(player)
     attackAllowed = attackAllowed and (not self:GetPrimaryIsBlocking() or not self.blockingPrimary)
     attackAllowed = attackAllowed and not (player.GetIsDevoured and player:GetIsDevoured()) 
     attackAllowed = attackAllowed and not (player.GetIsWebbed and player:GetIsWebbed())
-    
     return self:GetIsDeployed() and attackAllowed and not player:GetIsStunned()
 
 end
@@ -317,19 +311,14 @@ function ClipWeapon:OnPrimaryAttack(player)
     if self:GetIsPrimaryAttackAllowed(player) then
     
         if self.clip > 0 then
-        
-            local warmingUp = Shared.GetTime() < (self.timeAttackStarted + self:GetWarmupTime())
-            if not warmingUp then
+
+            CancelReload(self)
             
-                CancelReload(self)
-                
-                self.primaryAttacking = true
-                self.timeAttackStarted = Shared.GetTime()
-                
-                if self:GetPrimaryIsBlocking() then
-                    self.blockingPrimary = true
-                end
-                
+            self.primaryAttacking = true
+            self.timeAttackStarted = Shared.GetTime()
+            
+            if self:GetPrimaryIsBlocking() then
+                self.blockingPrimary = true
             end
             
         elseif self.ammo > 0 then
@@ -355,6 +344,7 @@ function ClipWeapon:OnPrimaryAttackEnd(player)
         Weapon.OnPrimaryAttackEnd(self, player)
         
         self.primaryAttacking = false
+        self.timeAttackEnded = Shared.GetTime()
         
     end
     
@@ -586,12 +576,15 @@ function ClipWeapon:OnTag(tagName)
             
         end
         
-    //elseif tagName == "reload" then
+    elseif tagName == "reload" then
         
+		self.reloaded = true
     elseif tagName == "deploy_end" then
         self.deployed = true
     elseif tagName == "reload_end" then
         self.reloading = false
+		self.reloaded = false
+		self.blockingPrimary = false
         if self.mapName ~= "shotgun" and self.mapName ~= "grenadelauncher" then
             FillClip(self)
         end

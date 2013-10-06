@@ -227,10 +227,6 @@ function Pistol:GetPrimaryIsBlocking()
     return true
 end
 
-function Pistol:OnDraw(player, previousWeaponMapName)
-    ClipWeapon.OnDraw(self, player, previousWeaponMapName)
-end
-
 function Pistol:GetMaxAmmo()
     return 3 * self:GetClipSize()
 end

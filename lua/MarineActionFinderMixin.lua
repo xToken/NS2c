@@ -128,6 +128,10 @@ if Client then
                                 hintText = "START_COMMANDING"
                             elseif ent:isa("PhaseGate") and ent:GetIsBuilt() then
                                 hintText = kNS2cLocalizedStrings.MARINE_USE_PHASE
+                            elseif ent:isa("Jetpack") then
+                                hintText = kNS2cLocalizedStrings.MARINE_PICKUP_JETPACK
+                            elseif ent:isa("HeavyArmor") then
+                                hintText = kNS2cLocalizedStrings.MARINE_PICKUP_HEAVYARMOR
                             else
                                 hintText = kNS2cLocalizedStrings.MARINE_CONSTRUCT
                             end

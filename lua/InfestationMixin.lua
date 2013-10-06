@@ -739,7 +739,7 @@ if Client then
 				c.xAxis  = coords.xAxis  * radiusScale
 				c.yAxis  = coords.yAxis  * radiusScale2
 				c.zAxis  = coords.zAxis  * radiusScale
-				c.origin = coords.origin - coords.yAxis * 0.3 // Embed slightly in the surface
+				c.origin = coords.origin - coords.yAxis * 0.25 // Embed slightly in the surface
 				
 				numModels = numModels + 1
 				coordsArray[numModels] = c
@@ -772,8 +772,8 @@ if Client then
 		// obscured.
 		//Hmm this makes all blobs thinner - do i want that?
 
-		self.infestationModelArray      = CreateInfestationModelArray( "models/alien/infestation/infestation_blob.model", self.blobCoords, self.growthOrigin, radialOffset, growthFraction, self:GetMaxRadius(), 1, 0.75 )
-		self.infestationShellModelArray = CreateInfestationModelArray( "models/alien/infestation/infestation_shell.model", self.blobCoords, self.growthOrigin, radialOffset, growthFraction, self:GetMaxRadius(), 2.5, 0.75 )
+		self.infestationModelArray      = CreateInfestationModelArray( "models/alien/infestation/infestation_blob.model", self.blobCoords, self.growthOrigin, radialOffset, growthFraction, self:GetMaxRadius(), 1, 0.60 )
+		self.infestationShellModelArray = CreateInfestationModelArray( "models/alien/infestation/infestation_shell.model", self.blobCoords, self.growthOrigin, radialOffset, growthFraction, self:GetMaxRadius(), 2.5, 0.60 )
 		
 	end
 

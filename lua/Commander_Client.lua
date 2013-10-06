@@ -710,47 +710,6 @@ function Commander:OnInitLocalClient()
     
 end
 
-/**
- * Allow player to create a different move if desired (Client only).
- */
-function Commander:OverrideInput(input)
-
-    // Completely override movement and impulses
-    input.move.x = 0
-    input.move.y = 0
-    input.move.z = 0
-    
-    // Move to position if minimap clicked or idle work clicked.
-    // Put in yaw and pitch because they are 16 bits
-    // each. Without them we get a "settling" after
-    // clicking the minimap due to differences after
-    // sending to the server
-    input.yaw = self.minimapNormX
-    input.pitch = self.minimapNormY
-    
-    if self.setScrollPosition then
-    
-        input.commands = bit.bor(input.commands, Move.Minimap)
-        
-        // self.setScrollPosition is cleared in OnProcessMove() because
-        // this OverrideInput() function is called in intermediate mode
-        // in addition to non-intermediate mode. This means that sometimes
-        // OverrideInput() is called when the move is not going to be sent
-        // to the server which would mean this special Move.Minimap flag
-        // would not be sent and would be lost. So moving the clearing of
-        // the flag into OnProcessMove() fixes this problem as OnProcessMove()
-        // is called right before sending the move to the server.
-        
-    end
-    
-    if self.OverrideMove then
-        input = self:OverrideMove(input)
-    end
-    
-    return input
-    
-end
-
 function Commander:HotkeyGroupButtonPressed(index)
     self.hotkeyGroupButtonPressed = index
 end
