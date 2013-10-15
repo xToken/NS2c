@@ -18,6 +18,25 @@ Script.Load("lua/VoiceOver.lua")
 Script.Load("lua/InsightNetworkMessages.lua")
 Script.Load("lua/SharedDecal.lua")
 
+local kCameraShakeMessage =
+{
+    intensity = "float (0 to 1 by 0.01)"
+}
+
+Shared.RegisterNetworkMessage("CameraShake", kCameraShakeMessage)
+
+function BuildCameraShakeMessage(intensity)
+    
+    local t = {}
+    t.intensity = intensity
+    return t
+
+end
+
+function ParseCameraShakeMessage(message)
+    return message.intensity
+end
+
 local kSelectUnitMessage =
 {
     teamNumber = "integer (0 to 4)",
@@ -73,23 +92,26 @@ function ParseSelectUnitMessage(message)
     return message.teamNumber, Shared.GetEntity(message.unitId), message.selected, message.keepSelection
 end
 
-function BuildConnectMessage(armorId)
+function BuildConnectMessage(isMale, marineVariant, skulkVariant)
 
-    local t = {}
-    t.armorId = armorId
+    local t = { }
+    t.isMale = isMale
+    t.marineVariant = marineVariant
+    t.skulkVariant = skulkVariant
     return t
     
 end
 
-function ParseConnectMessage(message)
-    return message.armorId
-end
-
 local kConnectMessage =
 {
-    armorId = "enum kArmorType",
+    isMale = "boolean",
+    marineVariant = "enum kMarineVariant",
+    skulkVariant = "enum kSkulkVariant",
 }
-Shared.RegisterNetworkMessage( "ConnectMessage", kConnectMessage )
+Shared.RegisterNetworkMessage("ConnectMessage", kConnectMessage)
+
+local kSetPlayerVariantMessage = kConnectMessage
+Shared.RegisterNetworkMessage("SetPlayerVariant", kSetPlayerVariantMessage)
 
 function BuildVoiceMessage(voiceId)
 
@@ -327,12 +349,13 @@ local kScoresMessage =
     teamNumber = string.format("integer (-1 to %d)", kRandomTeamType),
     score = string.format("integer (0 to %d)", kMaxScore),
     kills = string.format("integer (0 to %d)", kMaxKills),
+    assists = string.format("integer (0 to %d)", kMaxKills),
     deaths = string.format("integer (0 to %d)", kMaxDeaths),
     resources = string.format("integer (0 to %d)", kMaxResources),
     isCommander = "boolean",
     isRookie = "boolean",
     status = "enum kPlayerStatus",
-    isSpectator = "boolean"
+    isSpectator = "boolean",
 }
 
 function BuildScoresMessage(scorePlayer, sendToPlayer)
@@ -346,16 +369,26 @@ function BuildScoresMessage(scorePlayer, sendToPlayer)
     t.playerName = string.sub(scorePlayer:GetName(), 0, kMaxNameLength)
     t.teamNumber = scorePlayer:GetTeamNumber()
     t.score = 0
+    t.kills = 0
+    t.assists = 0
+    t.deaths = 0
+    
     if HasMixin(scorePlayer, "Scoring") then
+    
         t.score = scorePlayer:GetScore()
+        t.kills = scorePlayer:GetKills()
+        t.assists = scorePlayer:GetAssistKills()
+        t.deaths = scorePlayer:GetDeaths()
+        
     end
-    t.kills = scorePlayer:GetKills()
-    t.deaths = scorePlayer:GetDeaths()
+
     t.resources = ConditionalValue(isEnemy, 0, math.floor(scorePlayer:GetResources()))
     t.isCommander = ConditionalValue(isEnemy, false, scorePlayer:isa("Commander"))
     t.isRookie = ConditionalValue(isEnemy, false, scorePlayer:GetIsRookie())
     t.status = ConditionalValue(isEnemy, kPlayerStatus.Hidden, scorePlayer:GetPlayerStatusDesc())
     t.isSpectator = ConditionalValue(isEnemy, false, scorePlayer:isa("Spectator"))
+
+    t.reinforcedTierNum = scorePlayer.reinforcedTierNum
     
     return t
     
@@ -496,21 +529,23 @@ end
 // Commander actions
 local kCommAction = 
 {
-    techId              = "enum kTechId"
+    techId = "enum kTechId",
+    shiftDown = "boolean"
 }
 
-function BuildCommActionMessage(techId)
+function BuildCommActionMessage(techId, shiftDown)
 
     local t = {}
     
     t.techId = techId
+    t.shiftDown = shiftDown == true
     
     return t
     
 end
 
 function ParseCommActionMessage(t)
-    return t.techId
+    return t.techId, t.shiftDown
 end
 
 local kCommTargetedAction = 
@@ -524,10 +559,12 @@ local kCommTargetedAction =
     z = "float",
     
     orientationRadians  = "angle (11 bits)",
-    targetId = "entityid"
+    targetId = "entityid",
+    
+    shiftDown = "boolean"
 }
 
-function BuildCommTargetedActionMessage(techId, x, y, z, orientationRadians, targetId)
+function BuildCommTargetedActionMessage(techId, x, y, z, orientationRadians, targetId, shiftDown)
 
     local t = {}
     
@@ -537,13 +574,14 @@ function BuildCommTargetedActionMessage(techId, x, y, z, orientationRadians, tar
     t.z = z
     t.orientationRadians = orientationRadians
     t.targetId = targetId
+    t.shiftDown = shiftDown == true
     
     return t
     
 end
 
 function ParseCommTargetedActionMessage(t)
-    return t.techId, Vector(t.x, t.y, t.z), t.orientationRadians, t.targetId
+    return t.techId, Vector(t.x, t.y, t.z), t.orientationRadians, t.targetId, t.shiftDown
 end
 
 local kGorgeBuildStructureMessage = 
@@ -685,9 +723,6 @@ local kTechNodeBaseMessage =
     // on structures of this type (ie, mature versions of a structure).
     addOnTechId         = string.format("integer (0 to %d)", kTechIdMax),
 
-    // Resource costs (team resources, individual resources or energy depending on type)
-    cost                = "integer (0 to 150)",
-
     // If tech node can be built/researched/used. Requires prereqs to be met and for 
     // research, means that it hasn't already been researched and that it's not
     // in progress. Computed when structures are built or killed or when
@@ -726,7 +761,7 @@ function ParseTechNodeBaseMessage(techNode, networkVars)
     techNode.prereq1                = networkVars.prereq1
     techNode.prereq2                = networkVars.prereq2
     techNode.addOnTechId            = networkVars.addOnTechId
-    techNode.cost                   = networkVars.cost
+    techNode.cost                   = LookupTechData(networkVars.techId, kTechDataCostKey, 0)
     techNode.available              = networkVars.available
     techNode.time                   = networkVars.time
     techNode.researchProgress       = networkVars.researchProgress
@@ -760,7 +795,6 @@ function BuildTechNodeBaseMessage(techNode)
     t.prereq1                   = techNode.prereq1
     t.prereq2                   = techNode.prereq2
     t.addOnTechId               = techNode.addOnTechId
-    t.cost                      = techNode.cost
     t.available                 = techNode.available
     t.time                      = techNode.time
     t.researchProgress          = techNode.researchProgress
@@ -791,7 +825,6 @@ local kSetNameMessage =
 }
 Shared.RegisterNetworkMessage("SetName", kSetNameMessage)
 
--- Adding 1 to kMaxChatLength here to account for the zero terminated string.
 local kChatClientMessage =
 {
     teamOnly = "boolean",
@@ -802,7 +835,6 @@ function BuildChatClientMessage(teamOnly, chatMessage)
     return { teamOnly = teamOnly, message = chatMessage }
 end
 
--- Adding 1 to kMaxChatLength here to account for the zero terminated string.
 local kChatMessage =
 {
     teamOnly = "boolean",
@@ -1027,6 +1059,7 @@ Shared.RegisterNetworkMessage("SpectatePlayer", { entityId = "entityid"})
 Shared.RegisterNetworkMessage("SwitchFromFirstPersonSpectate", { mode = "enum kSpectatorMode" })
 Shared.RegisterNetworkMessage("SwitchFirstPersonSpectatePlayer", { forward = "boolean" })
 Shared.RegisterNetworkMessage("SetClientIndex", { clientIndex = "integer" })
+Shared.RegisterNetworkMessage("ServerHidden", { hidden = "boolean" })
 Shared.RegisterNetworkMessage("SetClientTeamNumber", { teamNumber = string.format("integer (-1 to %d)", kRandomTeamType) })
 Shared.RegisterNetworkMessage("WaitingForAutoTeamBalance", { waiting = "boolean" })
 Shared.RegisterNetworkMessage("SetTimeWaveSpawnEnds", { time = "time" })

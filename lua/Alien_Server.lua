@@ -12,34 +12,30 @@
 
 Script.Load("lua/AlienUpgradeManager.lua")
 
-function Alien:TeleportToHive(usedhive)
-    local HivesInfo = { }
-    local hives = GetEntitiesForTeam("Hive", self:GetTeamNumber())
-    local success = false
+local function GetRelocationHive(usedhive, origin, teamnumber)
+    local hives = GetEntitiesForTeam("Hive", teamnumber)
+    local selectedhivedist = 0
+	local selectedhive
+	
     for i, hive in ipairs(hives) do
-        local hiveinfo = { hive = hive, underattack = false, dist = 0 }
-        local toTarget = hive:GetOrigin() - self:GetOrigin()
-        local distanceToTarget = toTarget:GetLength()
-        hiveinfo.dist = distanceToTarget
-        if hive.lastHiveFlinchEffectTime ~= nil and hive.lastHiveFlinchEffectTime + kHiveUnderAttackTime > Shared.GetTime() then
-            hiveinfo.underattack = true
+        local toTarget = hive:GetOrigin() - origin
+        local distancetohive = toTarget:GetLength()
+		if hive.lastHiveFlinchEffectTime ~= nil and hive.lastHiveFlinchEffectTime + kHiveUnderAttackTime > Shared.GetTime() then
+            return hive
         end
-        if (hiveinfo.underattack or hive:GetIsBuilt()) and usedhive ~= hive then
-            table.insert(HivesInfo, hiveinfo)
-        end
-     end
-     local selectedhive
-     local selectedhivedist = 0
-     local selectedhiveunderattack = false
-     //Print(ToString(#HivesInfo))
-     for h = 1, #HivesInfo do
-        if HivesInfo[h].underattack or not selectedhiveunderattack and selectedhivedist < HivesInfo[h].dist then
-            selectedhive = HivesInfo[h].hive
-            selectedhivedist = HivesInfo[h].dist
-            selectedhiveunderattack = HivesInfo[h].underattack
-        end
-     end
-     if selectedhive then
+		if selectedhivedist < distancetohive and hive ~= usedhive then
+			selectedhive = hive
+			selectedhivedist = distancetohive
+		end
+	end
+	
+	return selectedhive
+end
+
+function Alien:TeleportToHive(usedhive)
+	local selectedhive = GetRelocationHive(usedhive, self:GetOrigin(), self:GetTeamNumber())
+    local success = false
+    if selectedhive and selectedhive ~= usedhive then
         //Success, now teleport the player, try 10 times?
         for i = 1, 10 do
             local position = table.random(selectedhive.eggSpawnPoints)
@@ -61,25 +57,26 @@ function Alien:TeleportToHive(usedhive)
 
 end
 
+function Alien:OnRedemed()
+end
+
+function Alien:EvolveAllowed()
+    return true
+end
+
 function Alien:CheckRedemption()
 
     local hasupg, level = GetHasRedemptionUpgrade(self)
     if hasupg and level > 0 and (self.lastredemptioncheck == nil or self.lastredemptioncheck + kRedemptionCheckTime < Shared.GetTime()) then
         //local maxhp, maxap
-        local chance = math.random(0, 50) / 100
-        chance = chance + (math.random(0, 50) / 100)
+        local chance = math.random(0, 100) / 100
         //maxhp = LookupTechData(self.gestationTypeTechId, kTechDataMaxHealth)
         //maxap = LookupTechData(self.gestationTypeTechId, kTechDataMaxArmor)
         if self:GetHealthScalar() <= kRedemptionEHPThreshold then
             //Double Random Check to insure its actually random
             if chance <= (kRedemptionChancePerLevel * level) and self.redemed + kRedemptionCooldown < Shared.GetTime() then
                 //Redemed
-                if self:GetTechId() == kTechId.Onos then
-                    local devourWeapon = self:GetWeapon("devour")
-                    if devourWeapon and devourWeapon:IsAlreadyEating() then
-                        devourWeapon:OnForceUnDevour()
-                    end
-                end
+                self:OnRedemed()
                 self:TeleportToHive()
                 self.redemed = Shared.GetTime()
             end
@@ -105,6 +102,12 @@ function Alien:Reset()
 end
 
 function Alien:OnProcessMove(input)
+    
+   
+    // need to clear this value or spectators would see the hatch effect every time they cycle through players
+    if self.hatched and self.creationTime + 3 < Shared.GetTime() then
+        self.hatched = false
+    end
     
     Player.OnProcessMove(self, input)
     
@@ -173,53 +176,7 @@ function Alien:GetDamagedAlertId()
     return kTechId.AlienAlertLifeformUnderAttack
 end
 
-function Alien:UpdateNumUpgradeStructures(techId, count)
-    if techId == kTechId.Crag then
-        self.crags = Clamp(count, 0, 3)
-    elseif techId == kTechId.Shift then
-        self.shifts = Clamp(count, 0, 3)
-    elseif techId == kTechId.Shade then
-        self.shades = Clamp(count, 0, 3)
-    elseif techId == kTechId.Whip then
-        self.whips = Clamp(count, 0, 3)
-        elseif techId == kTechId.Whip then
-        self.whips = Clamp(count, 0, 3)
-    end
-end
-
-function Alien:ManuallyUpdateNumUpgradeStructures()
-    local team = self:GetTeam()
-    if team and team.GetIsAlienTeam and team:GetIsAlienTeam() and team.techIdCount then
-        for i = 1, #kAlienUpgradeChambers do
-            if team.techIdCount[kAlienUpgradeChambers[i]] and team.techIdCount[kAlienUpgradeChambers[i]] ~= nil then
-                if kAlienUpgradeChambers[i] == kTechId.Crag then
-                    self.crags = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
-                elseif kAlienUpgradeChambers[i] == kTechId.Shift then
-                    self.shifts = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
-                elseif kAlienUpgradeChambers[i] == kTechId.Shade then
-                    self.shades = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
-                elseif kAlienUpgradeChambers[i] == kTechId.Whip then
-                    self.whips = math.min(team.techIdCount[kAlienUpgradeChambers[i]], 3)
-                end
-            else
-                if kAlienUpgradeChambers[i] == kTechId.Crag then
-                    self.crags = 0
-                elseif kAlienUpgradeChambers[i] == kTechId.Shift then
-                    self.shifts = 0
-                elseif kAlienUpgradeChambers[i] == kTechId.Shade then
-                    self.shades = 0
-                elseif kAlienUpgradeChambers[i] == kTechId.Whip then
-                    self.whips = 0
-                end
-            end
-        end
-    end
-end
-
-/**
- * Morph into new class or buy upgrade.
- */
-
+// Morph into new class or buy upgrade.
 function Alien:ProcessBuyAction(techIds)
 
     ASSERT(type(techIds) == "table")
@@ -241,6 +198,8 @@ function Alien:ProcessBuyAction(techIds)
         end
         
     end
+
+    local oldLifeFormTechId = self:GetTechId()
     
     local upgradesAllowed = true
     local upgradeManager = AlienUpgradeManager()
@@ -251,32 +210,29 @@ function Alien:ProcessBuyAction(techIds)
     end
     for _, newUpgradeId in ipairs(techIds) do
 
-        if newUpgradeId ~= kTechId.None and not upgradeManager:AddUpgrade(newUpgradeId) then
+        if newUpgradeId ~= kTechId.None and not upgradeManager:AddUpgrade(newUpgradeId, true) then
             upgradesAllowed = false 
             break
         end
         
     end
     
+    upgradesAllowed = upgradesAllowed and self:EvolveAllowed()
+     
     if upgradesAllowed then
     
         // Check for room
         local eggExtents = LookupTechData(kTechId.Embryo, kTechDataMaxExtents)
         local newLifeFormTechId = upgradeManager:GetLifeFormTechId()
         local newAlienExtents = LookupTechData(newLifeFormTechId, kTechDataMaxExtents)
-        local physicsMask = PhysicsMask.AllButPCsAndRagdolls
+        local physicsMask = PhysicsMask.Evolve
         local position = self:GetOrigin()
+        -- Add a bit to the extents when looking for a clear space to spawn.
+        local spawnBufferExtents = Vector(0.1, 0.1, 0.1)
         
         local evolveAllowed = self:GetIsOnGround()
-        evolveAllowed = evolveAllowed and GetHasRoomForCapsule(eggExtents, position + Vector(0, eggExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
-        evolveAllowed = evolveAllowed and GetHasRoomForCapsule(newAlienExtents, position + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
-        
-        if self:GetTechId() == kTechId.Onos then
-            local devourWeapon = self:GetWeapon("devour")
-            if devourWeapon and devourWeapon:IsAlreadyEating() then
-                evolveAllowed = false
-            end
-        end
+        evolveAllowed = evolveAllowed and GetHasRoomForCapsule(eggExtents + spawnBufferExtents, position + Vector(0, eggExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
+        evolveAllowed = evolveAllowed and GetHasRoomForCapsule(newAlienExtents + spawnBufferExtents, position + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
         
         // If not on the ground for the buy action, attempt to automatically
         // put the player on the ground in an area with enough room for the new Alien.
@@ -427,7 +383,8 @@ function Alien:OnKill(attacker, doer, point, direction)
     Player.OnKill(self, attacker, doer, point, direction)
     self.oneHive = false
     self.twoHives = false
-    self.threeHives = false    
+    self.threeHives = false
+    
 end
 
 function Alien:CopyPlayerDataFrom(player)
@@ -437,8 +394,5 @@ function Alien:CopyPlayerDataFrom(player)
     self.oneHive = player.oneHive
     self.twoHives = player.twoHives
     self.threeHives = player.threeHives
-    self.crags = player.crags
-    self.shifts = player.shifts
-    self.shades = player.shades
-	self.whips = player.whips
+    
 end

@@ -69,7 +69,6 @@ end
 function CommandStructure:LoginPlayer(player)
 
     local commanderStartOrigin = Vector(player:GetOrigin())
-    player:SetVelocity(Vector(0,0,0))
     
     if player.OnCommanderStructureLogin then
         player:OnCommanderStructureLogin(self)
@@ -99,7 +98,7 @@ function CommandStructure:LoginPlayer(player)
     
     // Must reset offset angles once player becomes commander
     commanderPlayer:SetOffsetAngles(Angles(0, 0, 0))
-    
+
     self:OnCommanderLogin()
     
     return commanderPlayer
@@ -145,6 +144,8 @@ function CommandStructure:Logout()
         local timeStartedCommanderMode = commander.timeStartedCommanderMode
         local parasiteState = commander.parasited
         local parasiteTime = commander.timeParasited
+        
+        OnCommanderLogOut(commander)
         
         local returnPlayer = commander:Replace(commander.previousMapName, commander:GetTeamNumber(), true, previousOrigin)    
         

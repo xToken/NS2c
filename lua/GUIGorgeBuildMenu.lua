@@ -58,7 +58,9 @@ function GorgeBuild_SendSelect(index)
 end
 
 function GorgeBuild_GetIsAbilityAvailable(index)
+
     return DropStructureAbility.kSupportedStructures[index] and DropStructureAbility.kSupportedStructures[index]:IsAllowed(Client.GetLocalPlayer())
+
 end
 
 function GorgeBuild_AllowConsumeDrop(techId)

@@ -18,10 +18,6 @@ CatPack.kMapName = "catpack"
 CatPack.kModelName = PrecacheAsset("models/marine/catpack/catpack.model")
 CatPack.kPickupSound = PrecacheAsset("sound/NS2.fev/marine/common/catalyst")
 
-CatPack.kDuration = 6
-CatPack.kAttackSpeedModifier = 1.3
-CatPack.kMoveSpeedScalar = 1.2
-
 function CatPack:OnInitialized()
 
     DropPack.OnInitialized(self)
@@ -47,7 +43,7 @@ end
  * Any Marine is a valid recipient.
  */
 function CatPack:GetIsValidRecipient(recipient)
-    return (recipient.GetHasCatpackBoost and not recipient:GetHasCatpackBoost() and recipient:GetIsAlive())
+    return (recipient.GetHasCatpackBoost and not recipient:GetHasCatpackBoost() and recipient:GetIsAlive()) and (not HasMixin(self, "Devourable") or not self:GetIsDevoured())
 end
 
-Shared.LinkClassToMap("CatPack", CatPack.kMapName)
+Shared.LinkClassToMap("CatPack", CatPack.kMapName, { })

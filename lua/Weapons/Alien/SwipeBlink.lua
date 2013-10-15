@@ -44,10 +44,6 @@ function SwipeBlink:GetHUDSlot()
     return 1
 end
 
-function SwipeBlink:GetIconOffsetY(secondary)
-    return kAbilityOffset.Swipe
-end
-
 function SwipeBlink:GetPrimaryAttackRequiresPress()
     return false
 end
@@ -82,8 +78,7 @@ end
 
 function SwipeBlink:OnPrimaryAttack(player)
 
-    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(self, player) then
-        //self:PerformPrimaryAttack(player)
+    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(player) then
         self.primaryAttacking = true
     else
         self.primaryAttacking = false
@@ -125,8 +120,7 @@ function SwipeBlink:OnTag(tagName)
     if self.primaryAttacking and tagName == "start" then
     
         local player = self:GetParent()
-        if player and not self:GetHasAttackDelay(self, player) then
-        
+        if player then
             self.lastPrimaryAttackTime = Shared.GetTime()
             player:DeductAbilityEnergy(self:GetEnergyCost())
             self:TriggerEffects("swipe_attack")

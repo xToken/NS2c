@@ -12,13 +12,36 @@ Rocket.kMapName            = "rocket"
 Rocket.kModelName          = PrecacheAsset("models/alien/gorge/bilebomb.model")
 
 // The max amount of time a Bomb can last for
-Rocket.kLifetime = 6
+Rocket.kClearOnImpact = true
+Rocket.kClearOnEnemyImpact = true
+local kRocketLifetime = 6
 
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
+
+-- Blow up after a time.
+local function UpdateLifetime(self)
+
+    // Grenades are created in predict movement, so in order to get the correct
+    // lifetime, we start counting our lifetime from the first UpdateLifetime rather than when
+    // we were created
+    if not self.endOfLife then
+        self.endOfLife = Shared.GetTime() + kRocketLifetime
+    end
+
+    if self.endOfLife <= Shared.GetTime() then
+    
+        self:Detonate(nil)
+        return false
+        
+    end
+    
+    return true
+    
+end
 
 function Rocket:OnCreate()
 
@@ -28,17 +51,10 @@ function Rocket:OnCreate()
     InitMixin(self, ModelMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
-
-    self.radius = 0.2
-
-end
-
-function Rocket:OnInitialized()
-
-    Projectile.OnInitialized(self)
     
     if Server then
-        self:AddTimedCallback(Rocket.TimeUp, Rocket.kLifetime)
+        self:AddTimedCallback(UpdateLifetime, 0.1)
+        self.endOfLife = nil
     end
 
 end
@@ -55,11 +71,21 @@ function Rocket:GetDamageType()
     return kAcidRocketDamageType
 end
 
+function Rocket:ProcessHit(targetHit, surface)
+
+    if Server then
+        self:Detonate(targetHit, surface)
+    else
+        return true
+    end
+    
+end
+
 if Server then
 
-    function Rocket:ProcessHit(targetHit, surface)
+    function Rocket:Detonate(targetHit, surface)
 
-        if (not self:GetOwner() or targetHit ~= self:GetOwner()) and not self:GetIsDestroyed() then
+        if not self:GetIsDestroyed() then
             local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kAcidRocketRadius)
             // full damage on direct impact
             if targetHit then
@@ -71,13 +97,6 @@ if Server then
             DestroyEntity(self)
         end
 
-    end
-    
-    function Rocket:TimeUp(currentRate)
-        if not self:GetIsDestroyed() then
-            DestroyEntity(self)
-        end
-        return false
     end
 
 end

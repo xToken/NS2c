@@ -9,26 +9,39 @@
 //NS2c
 //Added in techIds required by classic
 
-kTechId = enum({
+local gTechIdToString = {}
+
+local function createTechIdEnum(table)
+
+    for i = 1, #table do    
+        gTechIdToString[table[i]] = i  
+    end
     
-    'None',
+    return enum(table)
+
+end
+
+kTechId = createTechIdEnum({
+    
+    'None', 'PingLocation',
     
     'VoteConcedeRound',
     
-    'SpawnMarine', 'SpawnAlien', 'CollectResources',
+    'SpawnMarine', 'SpawnAlien', 'CollectResources', 'Research',
     
     // General orders and actions ("Default" is right-click)
-    'Default', 'Move', 'Attack', 'Build', 'Construct', 'Cancel', 'Recycle', 'Weld', 'AutoWeld', 'Stop', 'SetRally', 'SetTarget', 'Follow',
+    'Default', 'Move', 'Patrol', 'Attack', 'Build', 'Construct', 'AutoConstruct', 'Cancel', 'Recycle', 'Weld', 'AutoWeld', 'Stop', 'SetRally', 'SetTarget', 'Follow',
     // special mac order (follows the target, welds the target as priority and others in range)
     'FollowAndWeld',
+    
     // Alien specific orders
     'AlienMove', 'AlienAttack', 'AlienConstruct', 'Heal', 'AutoHeal',
     
     // Commander menus for selected units
     'RootMenu', 'BuildMenu', 'AdvancedMenu', 'AssistMenu', 'MarkersMenu', 'UpgradesMenu', 'WeaponsMenu',
     
-    // Robotics factory menus
-    'RoboticsFactoryARCUpgradesMenu', 'RoboticsFactoryMACUpgradesMenu', 'UpgradeRoboticsFactory',
+    // Turret factory menus
+    'UpgradeTurretFactory',
 
     'ReadyRoomPlayer', 
     
@@ -60,8 +73,8 @@ kTechId = enum({
     'TwoCommandStations', 'ThreeCommandStations',
 
     // Marine tech 
-    'CommandStation', 'Armory', 'InfantryPortal', 'Extractor', 'Sentry', 'ARC',
-    'Scan', 'AmmoPack', 'MedPack', 'CatPack', 'CatPackTech', 'AdvancedArmoryUpgrade', 'Observatory', 'Detector', 'DistressBeacon', 'PhaseGate', 'RoboticsFactory', 'ARCRoboticsFactory', 'ArmsLab',
+    'CommandStation', 'Armory', 'InfantryPortal', 'Extractor', 'Sentry', 'SiegeCannon',
+    'Scan', 'AmmoPack', 'MedPack', 'CatPack', 'CatPackTech', 'AdvancedArmoryUpgrade', 'Observatory', 'Detector', 'DistressBeacon', 'PhaseGate', 'TurretFactory', 'AdvancedTurretFactory', 'ArmsLab',
     'PrototypeLab', 'AdvancedArmory', 'HandGrenadesTech', 'Electrify', 
     
     // Research 
@@ -87,7 +100,7 @@ kTechId = enum({
     'Bite', 'LerkBite', 'Parasite',  'Spit', 'BuildAbility', 'Spray', 'Spores', 'HydraSpike', 'Swipe', 'Gore', 'Smash', 'Devour', 'BabblerAbility',
 
     // upgradeable alien abilities (need to be unlocked)
-    'BileBomb', 'Leap', 'Blink', 'Stomp', 'Spikes', 'Umbra', 'Metabolize', 'Xenocide', 'AcidRocket', 'Smash', 'WebStalk', 'Charge', 'PrimalScream',
+    'BileBomb', 'Leap', 'Blink', 'Stomp', 'Spikes', 'Umbra', 'Metabolize', 'Xenocide', 'AcidRocket', 'WebStalk', 'Charge', 'PrimalScream',
     'Babbler', 'BabblerEgg',
     
     // Alien structures 
@@ -117,6 +130,10 @@ kTechId = enum({
     'Max'
     
     })
+    
+function StringToTechId(string)
+    return gTechIdToString[string] or kTechId.None
+end    
 
 // Increase techNode network precision if more needed
 kTechIdMax  = kTechId.Max

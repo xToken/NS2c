@@ -7,11 +7,11 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Script.Load("lua/ScriptActor.lua")
-Script.Load("lua/Mixins/ClientModelMixin.lua")
-Script.Load("lua/GameEffectsMixin.lua")
 //NS2c
 //Removing Infestation Hooks
+
+Script.Load("lua/ScriptActor.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 
@@ -34,15 +34,12 @@ local networkVars =
 {
     smashed = "boolean",
     smashScouted = "boolean",
-    showObjective = "boolean",
     occupiedTeam = string.format("integer (-1 to %d)", kSpectatorIndex),
-    attachedId = "entityid",
-    extendAmount = "float (0 to 1 by 0.01)"
+    attachedId = "entityid"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ClientModelMixin, networkVars)
-AddMixinNetworkVars(GameEffectsMixin, networkVars)
 
 function TechPoint:OnCreate()
 
@@ -50,10 +47,9 @@ function TechPoint:OnCreate()
     
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ClientModelMixin)
-    InitMixin(self, GameEffectsMixin)
     
     if Client then
-        InitMixin(self, CommanderGlowMixin)    
+        InitMixin(self, CommanderGlowMixin)
     end
     
     // Anything that can be built upon should have this group
@@ -65,8 +61,6 @@ function TechPoint:OnCreate()
     // Defaults to 1 but the mapper can adjust this setting in the editor.
     // The higher the chooseWeight, the more likely this point will be randomly chosen for a team.
     self.chooseWeight = 1
-    
-    self.extendAmount = 0
     
 end
 
@@ -81,16 +75,13 @@ function TechPoint:OnInitialized()
     self:SetModel(TechPoint.kModelName, kGraphName)
     
     self:SetTechId(kTechId.TechPoint)
-    
-    self.extendAmount = math.min(1, math.max(0, self.extendAmount))
-    
+
     if Server then
     
         // 0 indicates all teams allowed for random selection process.
         self.allowedTeamNumber = self.teamNumber or 0
         self.smashed = false
         self.smashScouted = false
-        self.showObjective = false
         self.occupiedTeam = 0
         
         // This Mixin must be inited inside this OnInitialized() function.
@@ -132,10 +123,6 @@ function TechPoint:SetSmashScouted()
     
 end
 
-function TechPoint:GetExtendAmount()
-    return self.extendAmount
-end
-
 if Server then
 
     function TechPoint:GetTeamNumberAllowed()
@@ -167,11 +154,6 @@ if Client then
         
     end
     
-end
-
-local kTechPointHealthbarOffset = Vector(0, 2.0, 0)
-function TechPoint:GetHealthbarOffset()
-    return kTechPointHealthbarOffset
 end
 
 Shared.LinkClassToMap("TechPoint", TechPoint.kMapName, networkVars)

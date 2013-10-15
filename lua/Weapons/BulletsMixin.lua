@@ -17,9 +17,7 @@ BulletsMixin.expectedMixins =
     Damage = "Needed for dealing Damage."
 }
 
-BulletsMixin.networkVars =
-{
-}
+BulletsMixin.networkVars = { }
 
 function BulletsMixin:__initmixin()
 end

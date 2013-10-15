@@ -30,6 +30,8 @@ local networkVars =
     timeWaveSpawnEnd = "private time"
 }
 
+AddMixinNetworkVars(ScoringMixin, networkVars)
+
 local function UpdateQueuePosition(self)
 
     if self:GetIsDestroyed() then

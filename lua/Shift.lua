@@ -37,9 +37,10 @@ Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/InfestationMixin.lua")
+Script.Load("lua/IdleMixin.lua")
 
 class 'Shift' (ScriptActor)
 
@@ -59,9 +60,7 @@ Shift.kEnergizeSmallTargetEffect = PrecacheAsset("cinematics/alien/shift/energiz
 Shift.kEnergizeLargeTargetEffect = PrecacheAsset("cinematics/alien/shift/energize_large.cinematic")
 local kEnergizeThinkTime = 2
 
-local networkVars =
-{
-}
+local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
@@ -77,9 +76,10 @@ AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
-AddMixinNetworkVars(HasUmbraMixin, networkVars)
+AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(InfestationMixin, networkVars)
+AddMixinNetworkVars(IdleMixin, networkVars)
 
 function Shift:OnCreate()
 
@@ -102,7 +102,7 @@ function Shift:OnCreate()
     InitMixin(self, RagdollMixin)
     InitMixin(self, ObstacleMixin)
     InitMixin(self, CombatMixin)
-    InitMixin(self, HasUmbraMixin)
+    InitMixin(self, UmbraMixin)
 	InitMixin(self, DissolveMixin)
     
     if Client then
@@ -136,6 +136,8 @@ function Shift:OnInitialized()
         InitMixin(self, HiveVisionMixin)
         
     end
+    
+    InitMixin(self, IdleMixin)
 
 end
 
@@ -209,9 +211,9 @@ end
 if Server then
     
     function Shift:OnConstructionComplete()
-        self:AddTimedCallback(Shift.EnergizeInRange, kEnergizeThinkTime)
         local team = self:GetTeam()
-        if team then
+        if team and team.OnUpgradeChamberConstructed then
+			self:AddTimedCallback(Shift.EnergizeInRange, kEnergizeThinkTime)
             team:OnUpgradeChamberConstructed(self)
         end
     end
@@ -221,7 +223,7 @@ if Server then
         ScriptActor.OnKill(self, attacker, doer, point, direction)
         
         local team = self:GetTeam()
-        if team then
+        if team and team.OnUpgradeChamberDestroyed then
             team:OnUpgradeChamberDestroyed(self)
         end
         

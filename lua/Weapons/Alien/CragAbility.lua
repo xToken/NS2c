@@ -13,10 +13,6 @@ function CragStructureAbility:GetPrimaryAttackDelay()
     return 0
 end
 
-function CragStructureAbility:GetIconOffsetY(secondary)
-    return kAbilityOffset.Hydra
-end
-
 function CragStructureAbility:GetGhostModelName(ability)
     return Crag.kModelName
 end

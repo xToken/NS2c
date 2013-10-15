@@ -24,7 +24,6 @@ Jetpack.kMapName = "jetpack"
 Jetpack.kModelName = PrecacheAsset("models/marine/jetpack/jetpack.model")
 
 Jetpack.kAttachPoint = "JetPack"
-Jetpack.kPickupSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/jetpack_pickup")
 Jetpack.kEmptySound = PrecacheAsset("sound/NS2.fev/marine/common/jetpack_empty")
 
 Jetpack.kThinkInterval = .5
@@ -80,24 +79,7 @@ function Jetpack:OnDestroy()
 
 end
 
-/*function Jetpack:OnTouch(recipient)
-
-    if self:GetIsValidRecipient(recipient) then
-        StartSoundEffectAtOrigin(Jetpack.kPickupSound, recipient:GetOrigin())
-        recipient:GiveJetpack()
-        return true
-    end
-    
-end
-
-function Jetpack:GetCanBeUsed(player, useSuccessTable)
-    useSuccessTable.useSuccess = false
-end*/
-
-function Jetpack:OnTouch(recipient)
-end
-
-function Jetpack:_GetNearbyRecipient()
+function Jetpack:OnTouch(recipient)    
 end
 
 // only give jetpacks to standard marines
@@ -111,6 +93,9 @@ end
 
 function Jetpack:GetCanBeUsed(player, useSuccessTable)
     useSuccessTable.useSuccess = self:GetIsValidRecipient(player)      
+end  
+
+function Jetpack:_GetNearbyRecipient()
 end
 
 if Server then
@@ -119,9 +104,9 @@ if Server then
     
         if self:GetIsValidRecipient(player) then
         
-            DestroyEntity(self)
-            StartSoundEffectAtOrigin(Jetpack.kPickupSound, player:GetOrigin())
             player:GiveJetpack()
+            self:TriggerEffects("pickup")
+            DestroyEntity(self)
             
         end
         

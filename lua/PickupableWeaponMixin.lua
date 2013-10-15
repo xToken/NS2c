@@ -9,8 +9,6 @@
 //NS2c
 //Changed to offer automatic pickup of weapons, currently disabled.
 
-Script.Load("lua/FunctionContracts.lua")
-
 PickupableWeaponMixin = CreateMixin( PickupableWeaponMixin )
 PickupableWeaponMixin.type = "Pickupable"
 
@@ -91,11 +89,11 @@ end
 
 function PickupableWeaponMixin:GetIsValidRecipient(player, autoscan)
     if not autoscan then
-        return self:GetParent() == nil    
+        return self:GetParent() == nil  and self.weaponWorldState == true    
     end
     if player then
         local hasWeapon = player:GetWeaponInHUDSlot(self:GetHUDSlot())
-        if not hasWeapon and self.droppedtime + kPickupWeaponTimeLimit < Shared.GetTime() then
+        if not hasWeapon and self.weaponWorldState == true and self.droppedtime + kPickupWeaponTimeLimit < Shared.GetTime() then
             return true
         end
     end
@@ -104,13 +102,13 @@ end
 
 function PickupableWeaponMixin:OnUpdate(deltaTime)
 
-    if Client then    
-        EquipmentOutline_UpdateModel(self)    
+    if Client then
+        EquipmentOutline_UpdateModel(self)
     end
-
+    
 end
 
-function PickupableWeaponMixin:OnUpdate(deltaTime)
+function PickupableWeaponMixin:OnProcessMove(input)
 
     if Client then
         EquipmentOutline_UpdateModel(self)

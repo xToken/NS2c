@@ -11,7 +11,7 @@ Mines.kMapName = "mines"
 local kDropModelName = PrecacheAsset("models/marine/mine/mine_pile.model")
 local kHeldModelName = PrecacheAsset("models/marine/mine/mine_3p.model")
 
-local kViewModelName = PrecacheAsset("models/marine/mine/mine_view.model")
+local kViewModels = GenerateMarineViewModelPaths("mine")
 local kAnimationGraph = PrecacheAsset("models/marine/mine/mine_view.animation_graph")
 
 local kPlacementDistance = 2
@@ -19,7 +19,7 @@ local kPlacementDistance = 2
 local networkVars =
 {
     minesLeft = string.format("integer (0 to %d)", kMineCount),
-    droppingMine = "boolean"
+	droppingMine = "boolean"
 }
 
 AddMixinNetworkVars(PickupableWeaponMixin, networkVars)
@@ -30,9 +30,8 @@ function Mines:OnCreate()
     
     InitMixin(self, PickupableWeaponMixin)
     
-    self.showGhost = false
     self.minesLeft = kMineCount
-    self.droppingMine = false
+	self.droppingMine = false
     
 end
 
@@ -44,8 +43,6 @@ function Mines:OnInitialized()
     
 end
 
-
-
 function Mines:GetDropStructureId()
     return kTechId.Mine
 end
@@ -54,8 +51,8 @@ function Mines:GetMinesLeft()
     return self.minesLeft
 end
 
-function Mines:GetViewModelName()
-    return kViewModelName
+function Mines:GetViewModelName(sex, variant)
+    return kViewModels[sex][variant]
 end
 
 function Mines:GetAnimationGraphName()
@@ -85,7 +82,7 @@ end
 function Mines:OnTag(tagName)
 
     PROFILE("Mines:OnTag")
-
+    
     ClipWeapon.OnTag(self, tagName)
     
     if tagName == "mine" then
@@ -237,11 +234,8 @@ function Mines:PerformPrimaryAttack(player)
 end
 
 function Mines:OnHolster(player, previousWeaponMapName)
-
     Weapon.OnHolster(self, player, previousWeaponMapName)
-    
-    self.droppingMine = false
-    
+	self.droppingMine = false
 end
 
 function Mines:OnDraw(player, previousWeaponMapName)
@@ -251,8 +245,7 @@ function Mines:OnDraw(player, previousWeaponMapName)
     // Attach weapon to parent's hand
     self:SetAttachPoint(Weapon.kHumanAttachPoint)
     
-    self.droppingMine = false
-    
+	self.droppingMine = false
     self:SetModel(kHeldModelName)
     
 end
@@ -263,6 +256,7 @@ function Mines:Dropped(prevOwner)
     self.droppedtime = Shared.GetTime()
     self:SetModel(kDropModelName)
     self:RestartPickupScan()
+
 end
 
 function Mines:GetCheckForRecipient()
@@ -346,7 +340,7 @@ function Mines:OnUpdateAnimationInput(modelMixin)
     
     PROFILE("Mines:OnUpdateAnimationInput")
     
-    modelMixin:SetAnimationInput("activity", ConditionalValue(self.droppingMine, "primary", "none") )
+    modelMixin:SetAnimationInput("activity", ConditionalValue(self.droppingMine, "primary", "none"))
     
 end    
 

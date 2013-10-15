@@ -80,7 +80,7 @@ function Marine:InitWeapons()
 
 end
 
-local function GetHostSupportsTechId(host, techId)
+local function GetHostSupportsTechId(forPlayer, host, techId)
 
     if Shared.GetCheatsEnabled() then
         return true
@@ -90,7 +90,7 @@ local function GetHostSupportsTechId(host, techId)
     
     if host.GetItemList then
     
-        for index, supportedTechId in ipairs(host:GetItemList()) do
+        for index, supportedTechId in ipairs(host:GetItemList(forPlayer)) do
         
             if supportedTechId == techId then
             
@@ -107,10 +107,6 @@ local function GetHostSupportsTechId(host, techId)
     
 end
 
-local function PlayerIsFacingHostStructure(player, host)
-    return true
-end
-
 function GetHostStructureFor(entity, techId)
 
     local hostStructures = {}
@@ -122,9 +118,9 @@ function GetHostStructureFor(entity, techId)
         for index, host in ipairs(hostStructures) do
         
             // check at first if the structure is hostign the techId:
-            if GetHostSupportsTechId(host, techId) and PlayerIsFacingHostStructure(player, host) then
+            if GetHostSupportsTechId(entity,host, techId) then
                 return host
-            end    
+            end
         
         end
             
@@ -204,7 +200,7 @@ function Marine:GiveItem(itemMapName)
                 DestroyEntity(hgWeapon)
                 continue = true
             end
-            
+        
         end
         
         if continue == true then
@@ -234,14 +230,13 @@ end
 
 function Marine:OnKill(attacker, doer, point, direction)
 
-    // drop all weapons which cost resources
+    // Drop all weapons which cost resources
     self:DropAllWeapons()
-
-    // destroy remaining weapons
+    
+    // Destroy remaining weapons
     self:DestroyWeapons()
     
     Player.OnKill(self, attacker, doer, point, direction)
-    self:PlaySound(kDieSoundName)
     
     // Don't play alert if we suicide
     if attacker ~= self then
@@ -315,12 +310,4 @@ function Marine:GiveExo(type)
     local ExoMarine = self:Replace(Exo.kMapName, self:GetTeamNumber(), false, Vector(self:GetOrigin()), { layout = type })
     ExoMarine:SetHealth(health)
     
-end
-
-function Marine:MakeSpecialEdition()
-    self:SetModel(Marine.kBlackArmorModelName, Marine.kMarineAnimationGraph)
-end
-
-function Marine:MakeDeluxeEdition()
-    self:SetModel(Marine.kSpecialEditionModelName, Marine.kMarineAnimationGraph)
 end

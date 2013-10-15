@@ -16,11 +16,13 @@ Script.Load("lua/Weapons/Alien/Web.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/BuildingMixin.lua")
+Script.Load("lua/Weapons/PredictedProjectile.lua")
 
 class 'Gorge' (Alien)
 
 Gorge.kMapName = "gorge"
 
+Gorge.kHealTarget = PrecacheAsset("sound/NS2.fev/alien/voiceovers/need_healing")
 Gorge.kModelName = PrecacheAsset("models/alien/gorge/gorge.model")
 local kViewModelName = PrecacheAsset("models/alien/gorge/gorge_view.model")
 local kGorgeAnimationGraph = PrecacheAsset("models/alien/gorge/gorge.animation_graph")
@@ -34,12 +36,14 @@ Gorge.kYExtents = 0.475
 
 local kMass = 80
 local kStartSlideForce = 1.5
+local kSlidingGroundFriction = 0.2
+local kSlidingAcceleration = 0
 local kStartSlideSpeed = 7
 local kViewOffsetHeight = 0.6
 local kMaxSpeed = 3.8
 local kMaxSlideSpeed = 8
 local kMaxWalkSpeed = 1.8
-local kBellySlideCost = 25
+local kBellySlideCost = 30
 local kSlidingMoveInputScalar = 0.1
 local kSlideCoolDown = 1.5
 
@@ -65,6 +69,7 @@ function Gorge:OnCreate()
     Alien.OnCreate(self)
     
     InitMixin(self, DissolveMixin)
+	InitMixin(self, PredictedProjectileShooterMixin)
     
     self.bellyYaw = 0
     self.timeSlideEnd = 0
@@ -92,9 +97,8 @@ end
 
 if Client then
 
-    local kGorgeHealthbarOffset = Vector(0, 0.7, 0)
     function Gorge:GetHealthbarOffset()
-        return kGorgeHealthbarOffset
+        return 0.7
     end  
 
     function Gorge:OverrideInput(input)
@@ -145,6 +149,14 @@ function Gorge:GetIsBellySliding()
     return self.sliding
 end
 
+function Gorge:GetGroundFriction()
+    return ConditionalValue(self:GetIsBellySliding(), kSlidingGroundFriction, Player.GetGroundFriction(self))
+end
+
+function Gorge:GetAcceleration()
+    return ConditionalValue(self:GetIsBellySliding(), kSlidingAcceleration, Player.GetAcceleration(self))
+end
+
 local function GetIsSlidingDesired(self, input)
 
     if bit.band(input.commands, Move.MovementModifier) == 0 then
@@ -185,7 +197,9 @@ local function UpdateGorgeSliding(self, input)
     local slidingDesired = GetIsSlidingDesired(self, input)
     if slidingDesired and not self.sliding and self.timeSlideEnd + kSlideCoolDown < Shared.GetTime() and self:GetIsOnGround() and self:GetEnergy() >= kBellySlideCost then
     
-        self.sliding = true  
+        self.sliding = true
+        self.startedSliding = true
+        
         self:DeductAbilityEnergy(kBellySlideCost)
         self:TriggerUncloak()
         self:PrimaryAttackEnd()
@@ -203,7 +217,7 @@ local function UpdateGorgeSliding(self, input)
     // Have Gorge lean into turns depending on input. He leans more at higher rates of speed.
     if self:GetIsBellySliding() then
 
-        local desiredBellyYaw = 2 * (-input.move.x / kSlidingMoveInputScalar) * (self:GetVelocity():GetLength() / self:GetMaxSpeed())
+        local desiredBellyYaw = 2 * (-input.move.x / kSlidingMoveInputScalar) * (self:GetVelocityLength() / self:GetMaxSpeed())
         self.bellyYaw = Slerp(self.bellyYaw, desiredBellyYaw, input.time * kGorgeLeanSpeed)
         
     end
@@ -211,6 +225,10 @@ local function UpdateGorgeSliding(self, input)
 end
 
 function Gorge:GetCanRepairOverride(target)
+    return true
+end
+
+function Gorge:GetCanSeeDamagedIcon(ofEntity)
     return true
 end
 
@@ -335,6 +353,12 @@ function Gorge:GetDesiredAngles()
 
 end
 
+function Gorge:PreUpdateMove(input, runningPrediction)
+
+    self.prevY = self:GetOrigin().y
+
+end
+
 function Gorge:PostUpdateMove(input, runningPrediction)
 
     if self:GetIsBellySliding() and self:GetIsOnGround() then
@@ -415,6 +439,10 @@ if Client then
 
 end
 
+function Gorge:GetCanSeeDamagedIcon(ofEntity)
+    return not ofEntity:isa("Cyst")
+end
+
 function Gorge:GetCanAttack()
     return Alien.GetCanAttack(self) and not self:GetIsBellySliding()
 end
@@ -423,4 +451,4 @@ function Gorge:GetEngagementPointOverride()
     return self:GetOrigin() + Vector(0, 0.28, 0)
 end
 
-Shared.LinkClassToMap("Gorge", Gorge.kMapName, networkVars)
+Shared.LinkClassToMap("Gorge", Gorge.kMapName, networkVars, true)

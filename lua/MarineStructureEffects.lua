@@ -29,21 +29,13 @@ kMarineStructureEffects =
 
     // When players or MACs build a structure
     construct =
-    {
-        
-        marineConstructSounds =
-        {
-            // TODO: hook up new sounds for builder
-            //{ sound = "sound/NS2.fev/marine/welder/deploy", isalien = false, done = true },
-        },
-    
+    {    
         marineConstructEffects =
         {
             {cinematic = "cinematics/marine/construct_infantryportal.cinematic", classname = "InfantryPortal", isalien = false, done = true},
             {cinematic = "cinematics/marine/construct_big.cinematic", classname = "CommandStation", isalien = false, done = true},
             {cinematic = "cinematics/marine/construct.cinematic", isalien = false},
-        },
-        
+        },        
     },
     
     // Play when marine welds another marine's armor
@@ -85,9 +77,9 @@ kMarineStructureEffects =
     {
         marineStructureDeathCinematics =
         {
-            {cinematic = "cinematics/marine/structures/death_large.cinematic", classname = "RoboticsFactory", done = true},
+            {cinematic = "cinematics/marine/structures/death_large.cinematic", classname = "TurretFactory", done = true},
             {cinematic = "cinematics/marine/structures/death_large.cinematic", classname = "PhaseGate", done = true},
-            {cinematic = "cinematics/marine/structures/death_large.cinematic", classname = "Extractor", done = true},
+            {cinematic = "cinematics/marine/structures/death_small.cinematic", classname = "Extractor", done = true},
             {cinematic = "cinematics/marine/structures/death_large.cinematic", classname = "CommandStation", done = true},
             {cinematic = "cinematics/marine/structures/death_large.cinematic", classname = "PrototypeLab", done = true},
             {cinematic = "cinematics/marine/structures/death_large.cinematic", classname = "ArmsLab", done = true},
@@ -100,7 +92,7 @@ kMarineStructureEffects =
         
         marineStructureDeathSounds =
         {
-            {sound = "sound/NS2.fev/marine/structures/generic_death", classname = "RoboticsFactory", done = true},
+            {sound = "sound/NS2.fev/marine/structures/generic_death", classname = "TurretFactory", done = true},
             {sound = "sound/NS2.fev/marine/structures/generic_death", classname = "PhaseGate", done = true},
             {sound = "sound/NS2.fev/marine/structures/generic_death", classname = "PrototypeLab", done = true},
             {sound = "sound/NS2.fev/marine/structures/generic_death", classname = "ArmsLab", done = true},
@@ -124,8 +116,8 @@ kMarineStructureEffects =
         },
     },
 
-    // Called when ARC is created out of robotics factory
-    arc_built =
+    // Called when SiegeCannon is created out of robotics factory
+    sc_built =
     {
         arcDeployEffects =
         {
@@ -134,55 +126,52 @@ kMarineStructureEffects =
     },            
     
     // Switching into siege mode
-    arc_deploying =
+    sc_deploying =
     {
         arcDeployEffects =
         {
-            {sound = "sound/NS2.fev/marine/structures/arc/deploy"},
+            {sound = "sound/ns2c.fev/ns2c/marine/siegecannon/deploy"},
         },
     },    
     
     // Switching back to movement mode
-    arc_undeploying =
+    sc_inactive =
     {
         arcUndeployEffects =
         {
-            {stop_sound = "sound/NS2.fev/marine/structures/arc/charge"},
             {sound = "sound/NS2.fev/marine/structures/arc/undeploy"},
         },
     },
     
-    arc_charge =
+    sc_charge =
     {
         arcChargeEffects = 
         {
-            {parented_sound = "sound/NS2.fev/marine/structures/arc/charge"},
             {parented_cinematic = "cinematics/marine/arc/target.cinematic", attach_point = "fxnode_arcmuzzle"},
         },
     },
     
-    arc_stop_charge =
+    sc_stop_charge =
     {
         arcStopChargeEffects = 
         {
-            {stop_sound = "sound/NS2.fev/marine/structures/arc/charge"},
             {stop_cinematic = "cinematics/marine/arc/target.cinematic"},
         },
     },
     
-    arc_firing =
+    sc_firing =
     {
         arcFireEffects =
         {
             // "trail" like a tracer
-            {stop_sound = "sound/NS2.fev/marine/structures/arc/charge"},
-            {sound = "sound/NS2.fev/marine/structures/arc/fire"},
-            {parented_cinematic = "cinematics/marine/arc/fire.cinematic", attach_point = "fxnode_arcmuzzle"},
+            //{sound = "sound/NS2.fev/marine/structures/arc/fire"},
+            {sound = "sound/ns2c.fev/ns2c/marine/siegecannon/fire"},
+            {cinematic = "cinematics/marine/arc/fire.cinematic", attach_point = "fxnode_arcmuzzle"},
         },
     },
     
     // Center of ARC blast
-    arc_hit_primary =
+    sc_hit_primary =
     {
         arcHitPrimaryEffects = 
         {
@@ -192,7 +181,7 @@ kMarineStructureEffects =
     },
     
     // Played for secondary targets within blast radius
-    arc_hit_secondary =
+    sc_hit_secondary =
     {
         arcHitSecondaryEffects = 
         {
@@ -204,12 +193,11 @@ kMarineStructureEffects =
     },
     
     
-    arc_stop_effects =
+    sc_stop_effects =
     {
         arcHitStopEffects = 
         {
             {stop_effects = ""},
-            //{sound = "sound/NS2.fev/marine/structures/power_down"},
         },
     },
     
@@ -226,7 +214,6 @@ kMarineStructureEffects =
         extractorCollectEffect =
         {
             {sound = "sound/NS2.fev/marine/structures/extractor_harvested"},
-            //{cinematic = "cinematics/marine/extractor/collection_effect.cinematic"},
         },
     },
     
@@ -319,8 +306,8 @@ kMarineStructureEffects =
     {
         pgSpawnEffect =
         {
-            {sound = "sound/NS2.fev/marine/structures/phase_gate_teleport"},
-            {cinematic = "cinematics/marine/infantryportal/player_spawn.cinematic"},            
+            {player_sound = "sound/NS2.fev/marine/structures/phase_gate_teleport"},
+            {player_cinematic = "cinematics/marine/infantryportal/player_spawn.cinematic"},            
         },
     }, 
 
@@ -329,8 +316,8 @@ kMarineStructureEffects =
     {
         pgSpawnEffect =
         {
-            {sound = "sound/NS2.fev/marine/structures/phase_gate_teleport"},
-            {cinematic = "cinematics/marine/infantryportal/player_spawn.cinematic"},            
+            {player_sound = "sound/NS2.fev/marine/structures/phase_gate_teleport"},
+            {player_cinematic = "cinematics/marine/infantryportal/player_spawn.cinematic"},            
         },
     },
     
@@ -341,7 +328,6 @@ kMarineStructureEffects =
         {
             // Play spin for spinning infantry portal
             {looping_cinematic = "cinematics/marine/phasegate/phasegate.cinematic"},
-            {parented_sound = "sound/NS2.fev/marine/structures/phase_gate_active"},
         },
     },
     
@@ -350,7 +336,6 @@ kMarineStructureEffects =
         pgLinkedEffects = 
         {
             // Destroy it if not spinning
-            {stop_sound = "sound/NS2.fev/marine/structures/phase_gate_active"},
             {stop_cinematic = "cinematics/marine/phasegate/phasegate.cinematic", done = true},            
         },
     },
@@ -402,18 +387,8 @@ kMarineStructureEffects =
         sentryAttackEffects = 
         {
             {parented_cinematic = "cinematics/marine/sentry/fire.cinematic", attach_point = "fxnode_sentrymuzzle"},
-            //{parented_cinematic = "cinematics/marine/sentry/muzzle_smoke.cinematic", attach_point = "fxnode_sentrymuzzle"}
         }    
     },
-    
-    disrupt =
-    {
-        disruptEffects =
-        {
-            {cinematic = "cinematics/marine/structures/disrupt.cinematic", classname = "ARC", done = true},
-            {cinematic = "cinematics/marine/structures/disrupt.cinematic", classname = "Structure", done = true}
-        }
-    }
     
 }
 

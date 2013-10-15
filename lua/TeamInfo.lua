@@ -61,7 +61,7 @@ TeamInfo.kRelevantTechIdsMarine =
     kTechId.JetpackTech,
     kTechId.HeavyArmorTech,
     kTechId.MotionTracking,
-    kTechId.ARCRoboticsFactory,
+    kTechId.AdvancedTurretFactory,
     kTechId.PhaseTech
     
 }
@@ -76,7 +76,7 @@ TeamInfo.kRelevantTechIdsAlien =
     kTechId.Stomp,
     
     kTechId.Xenocide,
-    kTechId.WebStalk,
+    kTechId.Web,
     kTechId.PrimalScream,
     kTechId.AcidRocket,
     kTechId.Devour,
@@ -391,7 +391,7 @@ function TeamInfo:UpdateBitmasks(techId, techNode)
     end
     
     // Hide prerequisite techs when this tech has been researched
-    if techNode:GetResearched() then
+    if techNode:GetResearched() or (techNode:GetIsSpecial() and techNode:GetHasTech()) then
         local preq1 = techNode:GetPrereq1()
         local preq2 = techNode:GetPrereq2()
         if preq1 ~= nil then

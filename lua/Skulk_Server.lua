@@ -15,9 +15,10 @@ function Skulk:InitWeapons()
     
     self:GiveItem(BiteLeap.kMapName)
     self:GiveItem(Parasite.kMapName)
-
-    self:SetActiveWeapon(BiteLeap.kMapName)
     
+    self:SetActiveWeapon(BiteLeap.kMapName)    
+    
+
 end
 
 function Skulk:GetTierOneTechId()

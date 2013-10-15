@@ -36,12 +36,10 @@ local kShellsAttachPoints = { [ExoWeaponHolder.kSlotNames.Left] = "Exosuit_LElbo
 
 local kMinigunRange = 400
 local kMinigunSpread = Math.Radians(4)
-
 local kBulletSize = 0.03
 
 local networkVars =
 {
-    minigunAttacking = "private boolean",
     shooting = "boolean",
     spinSoundId = "entityid"
 }
@@ -54,7 +52,7 @@ function Minigun:OnCreate()
     
     InitMixin(self, ExoWeaponSlotMixin)
     
-    self.minigunAttacking = false
+    self.primaryAttacking = false
     self.shooting = false
     
     if Client then
@@ -129,7 +127,7 @@ end
 
 function Minigun:OnPrimaryAttack(player)
   
-    if not self.minigunAttacking then
+    if not self.primaryAttacking then
     
         if Server then
             StartSoundEffectOnEntity(kSpinUpSoundNames[self:GetExoWeaponSlot()], self)
@@ -137,13 +135,13 @@ function Minigun:OnPrimaryAttack(player)
         
     end
     
-    self.minigunAttacking = true
+    self.primaryAttacking = true
         
 end
 
 function Minigun:OnPrimaryAttackEnd(player)
 
-    if self.minigunAttacking then
+    if self.primaryAttacking then
     
         if Server then
         
@@ -163,7 +161,7 @@ function Minigun:OnPrimaryAttackEnd(player)
         
     end
     
-    self.minigunAttacking = false
+    self.primaryAttacking = false
     
 end
 
@@ -225,7 +223,7 @@ local function Shoot(self, leftSide)
     
     // We can get a shoot tag even when the clip is empty if the frame rate is low
     // and the animation loops before we have time to change the state.
-    if self.minigunAttacking and player then
+    if self.primaryAttacking and player then
     
         if Server and not self.spinSound:GetIsPlaying() then
             self.spinSound:Start()
@@ -246,11 +244,15 @@ local function Shoot(self, leftSide)
         end
         
         local endPoint = startPoint + spreadDirection * range
-        
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+        
         if not trace.entity then
+        
+            -- Limit the box trace to the point where the ray hit as an optimization.
+            local boxTraceEndPoint = trace.fraction ~= 1 and trace.endPoint or endPoint
             local extents = GetDirectedExtentsForDiameter(spreadDirection, kBulletSize)
-            trace = Shared.TraceBox(extents, startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+            trace = Shared.TraceBox(extents, startPoint, boxTraceEndPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+            
         end
         
         if trace.fraction < 1 or GetIsVortexed(player) then
@@ -320,7 +322,7 @@ end
 function Minigun:OnUpdateAnimationInput(modelMixin)
 
     local activity = "none"
-    if self.minigunAttacking then
+    if self.primaryAttacking then
         activity = "primary"
     end
     modelMixin:SetAnimationInput("activity_" .. self:GetExoWeaponSlotName(), activity)

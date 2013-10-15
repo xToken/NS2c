@@ -17,7 +17,7 @@ class 'Welder' (Weapon)
 Welder.kMapName = "welder"
 
 Welder.kModelName = PrecacheAsset("models/marine/welder/welder.model")
-local kViewModelName = PrecacheAsset("models/marine/welder/welder_view.model")
+local kViewModels = GenerateMarineViewModelPaths("welder")
 local kAnimationGraph = PrecacheAsset("models/marine/welder/welder_view.animation_graph")
 
 kWelderHUDSlot = 4
@@ -26,7 +26,6 @@ local welderTraceExtents = Vector(0.4, 0.4, 0.4)
 
 local networkVars =
 {
-    welding = "boolean",
     loopingSoundEntId = "entityid"
 }
 
@@ -41,9 +40,7 @@ AddMixinNetworkVars(PickupableWeaponMixin, networkVars)
 function Welder:OnCreate() 
 
     Weapon.OnCreate(self)
-    
-    self.welding = false
-    
+
     InitMixin(self, PickupableWeaponMixin)
     
     self.loopingSoundEntId = Entity.invalidId
@@ -71,8 +68,8 @@ function Welder:OnInitialized()
     
 end
 
-function Welder:GetViewModelName()
-    return kViewModelName
+function Welder:GetViewModelName(sex, variant)
+    return kViewModels[sex][variant]
 end
 
 function Welder:GetAnimationGraphName()
@@ -95,7 +92,6 @@ function Welder:OnHolster(player)
 
     Weapon.OnHolster(self, player)
     
-    self.welding = false
     // cancel muzzle effect
     self:TriggerEffects("welder_holster")
     player:SetPoseParam("welder", 0)
@@ -107,7 +103,6 @@ function Welder:OnDraw(player, previousWeaponMapName)
     Weapon.OnDraw(self, player, previousWeaponMapName)
     
     self:SetAttachPoint(Weapon.kHumanAttachPoint)
-    self.welding = false
     
 end
 
@@ -130,7 +125,7 @@ function Welder:OnPrimaryAttack(player)
     
     PROFILE("Welder:OnPrimaryAttack")
     
-    if not self.welding then
+    if not self.primaryAttacking then
     
         self:TriggerEffects("welder_start")
         self.timeWeldStarted = Shared.GetTime()
@@ -141,7 +136,7 @@ function Welder:OnPrimaryAttack(player)
         
     end
     
-    self.welding = true
+    self.primaryAttacking = true
     local hitPoint = nil
     
     if self.timeLastWeld + kWelderFireDelay < Shared.GetTime () then
@@ -166,11 +161,11 @@ end
 
 function Welder:OnPrimaryAttackEnd(player)
 
-    if self.welding then
+    if self.primaryAttacking then
         self:TriggerEffects("welder_end")
     end
     
-    self.welding = false
+    self.primaryAttacking = false
     
     if Server then
         self.loopingFireSound:Stop()
@@ -261,7 +256,7 @@ function Welder:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Welder:OnUpdateAnimationInput")
     
-    modelMixin:SetAnimationInput("activity", ConditionalValue(self.welding, "primary", "none"))
+    modelMixin:SetAnimationInput("activity", ConditionalValue(self.primaryAttacking, "primary", "none"))
     modelMixin:SetAnimationInput("welder", true)
     
 end
@@ -289,7 +284,7 @@ function Welder:OnUpdateRender()
     end
     
     local parent = self:GetParent()
-    if parent and self.welding then
+    if parent and self.primaryAttacking then
 
         if (not self.timeLastWeldHitEffect or self.timeLastWeldHitEffect + 0.06 < Shared.GetTime()) then
         

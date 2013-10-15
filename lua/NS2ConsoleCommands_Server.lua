@@ -254,8 +254,28 @@ local function OnCommandParasite(client)
         local player = client:GetControllingPlayer()
         
         if HasMixin(player, "ParasiteAble") then
-            player:SetParasited()
+        
+            if player:GetIsParasited() then
+                player:RemoveParasite()
+            else   
+                player:SetParasited()
+            end    
+                
         end
+        
+    end
+    
+end
+
+local function OnCommandStun(client)
+
+    if client ~= nil and Shared.GetCheatsEnabled() then
+
+        local player = client:GetControllingPlayer()
+        
+        if HasMixin(player, "Stun") then
+            player:SetStun(10)
+        end  
         
     end
     
@@ -420,8 +440,24 @@ local function OnCommandSpawn(client, itemName, teamnum, useLastPos)
         end
 
         local newItem = CreateEntity(itemName, usePos, teamnum)
+
+        Print("spawned \""..itemName.."\" at Vector("..usePos.x..", "..usePos.y..", "..usePos.z..")")
         
     end
+    
+end
+
+local function OnCommandTrace(client)
+
+    local player = client:GetControllingPlayer()
+    
+    // trace along players zAxis and spawn the item there
+    local startPoint = player:GetEyePos()
+    local endPoint = startPoint + player:GetViewCoords().zAxis * 100
+    local trace = Shared.TraceRay(startPoint, endPoint,  CollisionRep.Default, PhysicsMask.Bullets, EntityFilterAll())
+    local hitPos = trace.endPoint
+
+    Print("Vector("..hitPos.x..", "..hitPos.y..", "..hitPos.z.."),")
     
 end
 
@@ -477,7 +513,7 @@ end
 local function OnCommandLogout(client)
 
     local player = client:GetControllingPlayer()
-    if(player:GetIsCommander()) then
+    if player:GetIsCommander() and GetCommanderLogoutAllowed() then
     
         player:Logout()
     
@@ -534,6 +570,18 @@ local function OnCommandChangeClass(className, teamNumber, extraValues)
     
 end
 
+local function OnCommandSandbox(client)
+
+    local player = client:GetControllingPlayer()
+    if(Shared.GetCheatsEnabled()) then
+
+        MarineTeam.gSandboxMode = not MarineTeam.gSandboxMode
+        Print("Setting sandbox mode %s", ConditionalValue(MarineTeam.gSandboxMode, "on", "off"))
+        
+    end
+
+end
+
 local function OnCommandCommand(client)
 
     local player = client:GetControllingPlayer()
@@ -544,7 +592,7 @@ local function OnCommandCommand(client)
         if #ents > 0 then
         
             player:SetOrigin(ents[1]:GetOrigin() + Vector(0, 1, 0))
-            player:UseTarget(ents[1], nil, 0)
+            player:UseTarget(ents[1], 0)
             ents[1]:UpdateCommanderLogin(true)
             
         end
@@ -569,6 +617,30 @@ local function OnCommandAllTech(client)
         local newAllTechState = not GetGamerules():GetAllTech()
         GetGamerules():SetAllTech(newAllTechState)
         Print("Setting alltech cheat %s", ConditionalValue(newAllTechState, "on", "off"))
+        
+    end
+    
+end
+
+local function OnCommandFastEvolve(client)
+
+    local player = client:GetControllingPlayer()
+    if(Shared.GetCheatsEnabled()) then
+    
+        Embryo.gFastEvolveCheat = not Embryo.gFastEvolveCheat
+        Print("Setting fastevolve cheat %s", ConditionalValue(Embryo.gFastEvolveCheat, "on", "off"))
+        
+    end
+    
+end
+
+local function OnCommandAllFree(client)
+
+    local player = client:GetControllingPlayer()
+    if(Shared.GetCheatsEnabled()) then
+    
+        Player.kAllFreeCheat = not Player.kAllFreeCheat
+        Print("Setting allfree cheat %s", ConditionalValue(Player.kAllFreeCheat, "on", "off"))
         
     end
     
@@ -637,7 +709,7 @@ local function OnCommandUmbra(client)
     if Shared.GetCheatsEnabled() then
     
         local player = client:GetControllingPlayer()
-        if player and HasMixin(player, "HasUmbra") then
+        if player and HasMixin(player, "Umbra") then
             player:SetHasUmbra(true, 5)
         end
         
@@ -947,24 +1019,24 @@ local function OnCommandCommanderPing(client, classname)
     
 end
 
-local function OnCommandDeployARCs()
+local function OnCommandDeployCannons()
 
     if Shared.GetCheatsEnabled() then
     
-        for index, arc in ientitylist(Shared.GetEntitiesWithClassname("ARC")) do        
-            arc.deployMode = ARC.kDeployMode.Deploying        
+        for index, sc in ientitylist(Shared.GetEntitiesWithClassname("SiegeCannon")) do        
+            sc.mode = SiegeCannon.kMode.Active        
         end
         
     end
     
 end
 
-local function OnCommandUndeployARCs()
+local function OnCommandUndeployCannons()
 
     if Shared.GetCheatsEnabled() then
     
-        for index, arc in ientitylist(Shared.GetEntitiesWithClassname("ARC")) do        
-            arc.deployMode = ARC.kDeployMode.Undeploying        
+        for index, sc in ientitylist(Shared.GetEntitiesWithClassname("SiegeCannon")) do        
+            sc.mode = SiegeCannon.kMode.Inactive   
         end
         
     end
@@ -994,30 +1066,17 @@ local function OnCommandRespawnTeam(client, teamNum)
     
 end
 
-local function OnCommandMakeSpecialEdition(client)
-
-    if Shared.GetCheatsEnabled() then
-    
-        local player = client:GetControllingPlayer()
-        if player and player:isa("Marine") then        
-            player:SetModel(Marine.kSpecialEditionModelName, Marine.kMarineAnimationGraph)            
-        end
-        
-    end    
-
-end
-
 local function OnCommandGreenEdition(client)
 
     if Shared.GetCheatsEnabled() then
     
         local player = client:GetControllingPlayer()
-        if player and player:isa("Marine") then        
-            player:SetModel(Marine.kModelName, Marine.kMarineAnimationGraph)            
+        if player and player:isa("Marine") then
+            player:SetVariant("green", "male")
         end
         
-    end    
-
+    end
+    
 end
 
 local function OnCommandBlackEdition(client)
@@ -1025,12 +1084,77 @@ local function OnCommandBlackEdition(client)
     if Shared.GetCheatsEnabled() then
     
         local player = client:GetControllingPlayer()
-        if player and player:isa("Marine") then        
-            player:SetModel(Marine.kBlackArmorModelName, Marine.kMarineAnimationGraph)            
+        if player and player:isa("Marine") then
+            player:SetVariant("special", "male")
         end
         
-    end    
+    end
+    
+end
 
+local function OnCommandMakeSpecialEdition(client)
+
+    if Shared.GetCheatsEnabled() then
+    
+        local player = client:GetControllingPlayer()
+        if player and player:isa("Marine") then
+            player:SetVariant("deluxe", "male")
+        end
+        
+    end
+    
+end
+
+local function OnCommandGreenEditionFemale(client)
+
+    if Shared.GetCheatsEnabled() then
+    
+        local player = client:GetControllingPlayer()
+        if player and player:isa("Marine") then
+            player:SetVariant("green", "female")
+        end
+        
+    end
+    
+end
+
+local function OnCommandBlackEditionFemale(client)
+
+    if Shared.GetCheatsEnabled() then
+    
+        local player = client:GetControllingPlayer()
+        if player and player:isa("Marine") then
+            player:SetVariant("special", "female")
+        end
+        
+    end
+    
+end
+
+local function OnCommandMakeSpecialEditionFemale(client)
+
+    if Shared.GetCheatsEnabled() then
+    
+        local player = client:GetControllingPlayer()
+        if player and player:isa("Marine") then
+            player:SetVariant("deluxe", "female")
+        end
+        
+    end
+    
+end
+
+local function OnCommandMake(client, sex, variant)
+
+    if Shared.GetCheatsEnabled() then
+    
+        local player = client:GetControllingPlayer()
+        if player and HasMixin(player, "PlayerVariant") then
+            player:SetVariant(variant, sex)
+        end
+        
+    end
+    
 end
 
 local function OnCommandDevour(client)
@@ -1089,11 +1213,14 @@ Event.Hook("Console_selectallplayers", OnCommandSelectAllPlayers)
 // Cheats
 Event.Hook("Console_tres", OnCommandTeamResources)
 Event.Hook("Console_pres", OnCommandResources)
+Event.Hook("Console_allfree", OnCommandAllFree)
 Event.Hook("Console_autobuild", OnCommandAutobuild)
+Event.Hook("Console_energy", OnCommandEnergy)
 Event.Hook("Console_takedamage", OnCommandTakeDamage)
 Event.Hook("Console_heal", OnCommandHeal)
 Event.Hook("Console_giveammo", OnCommandGiveAmmo)
 Event.Hook("Console_parasite", OnCommandParasite)
+Event.Hook("Console_stun", OnCommandStun)
 Event.Hook("Console_respawn_team", OnCommandRespawnTeam)
 
 Event.Hook("Console_ents", OnCommandEnts)
@@ -1121,16 +1248,18 @@ Event.Hook("Console_heavyarmor", OnCommandChangeClass("heavyarmormarine", kTeam1
 Event.Hook("Console_jetpack", OnCommandChangeClass("jetpackmarine", kTeam1Index))
 Event.Hook("Console_mexo", OnCommandChangeClass("exo", kTeam1Index, { layout = "MinigunMinigun" }))
 Event.Hook("Console_rexo", OnCommandChangeClass("exo", kTeam1Index, { layout = "RailgunRailgun" }))
+Event.Hook("Console_sandbox", OnCommandSandbox)
 
 Event.Hook("Console_command", OnCommandCommand)
 Event.Hook("Console_catpack", OnCommandCatPack)
 Event.Hook("Console_alltech", OnCommandAllTech)
+Event.Hook("Console_fastevolve", OnCommandFastEvolve)
 Event.Hook("Console_location", OnCommandLocation)
 Event.Hook("Console_push", OnCommandPush)
 Event.Hook("Console_primal",OnCommandPrimal)
 Event.Hook("Console_umbra", OnCommandUmbra)
-Event.Hook("Console_deployarcs", OnCommandDeployARCs)
-Event.Hook("Console_undeployarcs", OnCommandUndeployARCs)
+Event.Hook("Console_deploycannons", OnCommandDeployCannons)
+Event.Hook("Console_undeploycannons", OnCommandUndeployCannons)
 
 Event.Hook("Console_closemenu", OnCommandCloseMenu)
 Event.Hook("Console_welddoors", OnCommandWeldDoors)
@@ -1146,8 +1275,21 @@ Event.Hook("Console_target", OnCommandTarget)
 Event.Hook("Console_hastech", OnCommandHasTech)
 Event.Hook("Console_eggspawntimes", OnCommandEggSpawnTimes)
 
-Event.Hook("Console_makespecial", OnCommandMakeSpecialEdition)
 Event.Hook("Console_makegreen", OnCommandGreenEdition)
 Event.Hook("Console_makeblack", OnCommandBlackEdition)
+Event.Hook("Console_makespecial", OnCommandMakeSpecialEdition)
+Event.Hook("Console_makegreenfemale", OnCommandGreenEditionFemale)
+Event.Hook("Console_makeblackfemale", OnCommandBlackEditionFemale)
+Event.Hook("Console_makespecialfemale", OnCommandMakeSpecialEditionFemale)
+Event.Hook("Console_make", OnCommandMake)
 Event.Hook("Console_devour", OnCommandDevour)
 Event.Hook("Console_debugcommander", OnCommandDebugCommander)
+Event.Hook("Console_trace", OnCommandTrace)
+
+Event.Hook("Console_dlc", function(client)
+        if Shared.GetCheatsEnabled() then
+            GetHasDLC = function(pid, client)
+                return true
+                end
+        end
+        end)

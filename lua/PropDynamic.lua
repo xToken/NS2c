@@ -12,6 +12,7 @@
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/Mixins/SignalEmitterMixin.lua")
+Script.Load("lua/PowerConsumerMixin.lua")
 
 class 'PropDynamic' (ScriptActor)
 
@@ -27,6 +28,7 @@ function PropDynamic:OnCreate()
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ModelMixin)
     InitMixin(self, SignalEmitterMixin)
+    InitMixin(self, PowerConsumerMixin)
     
     self.emitChannel = 0
     

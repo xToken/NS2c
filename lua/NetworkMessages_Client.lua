@@ -80,7 +80,7 @@ function OnCommandScores(scoreTable)
     
     Scoreboard_SetPlayerData(scoreTable.clientId, scoreTable.entityId, scoreTable.playerName, scoreTable.teamNumber, scoreTable.score,
                              scoreTable.kills, scoreTable.deaths, math.floor(scoreTable.resources), scoreTable.isCommander, scoreTable.isRookie,
-                             status, scoreTable.isSpectator)
+                             status, scoreTable.isSpectator, scoreTable.assists)
     
 end
 
@@ -229,6 +229,11 @@ local function OnSetClientIndex(message)
 end
 Client.HookNetworkMessage("SetClientIndex", OnSetClientIndex)
 
+local function OnSetServerHidden(message)
+    Client.serverHidden = message.hidden
+end
+Client.HookNetworkMessage("ServerHidden", OnSetServerHidden)
+
 local function OnSetClientTeamNumber(message)
     Client.localClientTeamNumber = message.teamNumber
 end
@@ -240,6 +245,18 @@ local function OnMessageAutoConcedeWarning(message)
     ChatUI_AddSystemMessage(warningText)
     
 end
+
+local function OnCommandCameraShake(message)
+
+    local intensity = ParseCameraShakeMessage(message)
+    
+    local player = Client.GetLocalPlayer()
+    if player and player.SetCameraShake then
+        player:SetCameraShake(intensity * 0.1, 5, 0.25)    
+    end
+
+end
+
 Client.HookNetworkMessage("AutoConcedeWarning", OnMessageAutoConcedeWarning)
 
 Client.HookNetworkMessage("Ping", OnCommandPing)
@@ -269,3 +286,5 @@ Client.HookNetworkMessage("VoteChamberCast", OnVoteChamberCast)
 Client.HookNetworkMessage("VoteEjectCast", OnVoteEjectCast)
 Client.HookNetworkMessage("TeamConceded", OnTeamConceded)
 Client.HookNetworkMessage("ChamberSelected", OnChamberSelected)
+Client.HookNetworkMessage("CameraShake", OnCommandCameraShake)
+

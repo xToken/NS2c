@@ -1,6 +1,0 @@
-shader = "models/marine/marine.surface_shader"
-surface = "metal"
-albedoMap = "models/marine/armory/armory.dds"
-normalMap = "models/marine/armory/armory_normal.dds"
-emissiveMap = "models/marine/armory/armory_illum.dds"
-specularMap = "models/marine/armory/armory_spec.dds"

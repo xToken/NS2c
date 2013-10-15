@@ -35,10 +35,6 @@ function AcidRocket:GetEnergyCost(player)
     return kAcidRocketEnergyCost
 end
 
-function AcidRocket:GetIconOffsetY(secondary)
-    return kAbilityOffset.BileBomb
-end
-
 function AcidRocket:GetPrimaryAttackDelay()
     return kAcidRocketFireDelay
 end
@@ -70,6 +66,10 @@ end
 
 function AcidRocket:GetBlinkAllowed()
     return true
+end
+
+function AcidRocket:GetSecondaryTechId()
+    return kTechId.Blink
 end
 
 function AcidRocket:FireRocketProjectile(player)

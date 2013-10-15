@@ -17,10 +17,6 @@ function HiveStructureAbility:GetPrimaryAttackDelay()
     return 0
 end
 
-function HiveStructureAbility:GetIconOffsetY(secondary)
-    return kAbilityOffset.Hydra
-end
-
 function HiveStructureAbility:GetGhostModelName(ability)
     return Hive.kModelName
 end

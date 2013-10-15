@@ -13,6 +13,7 @@ Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/TeamMixin.lua")
+Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/MobileTargetMixin.lua")
 Script.Load("lua/DamageMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
@@ -26,9 +27,7 @@ BabblerEgg.kMapName = "babbleregg"
 BabblerEgg.kModelName = PrecacheAsset("models/alien/babbler/babbler_egg.model")
 local kAnimationGraph = PrecacheAsset("models/alien/babbler/babbler_egg.animation_graph")
 
-local networkVars =
-{
-}
+local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
@@ -62,8 +61,10 @@ function BabblerEgg:OnInitialized()
 
     self:SetModel(BabblerEgg.kModelName, kAnimationGraph)
     
-    if Server then    
+    if Server then
         InitMixin(self, MobileTargetMixin)        
+    elseif Client then
+        InitMixin(self, UnitStatusMixin)
     end
     
 end

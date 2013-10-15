@@ -13,13 +13,6 @@ local kFirstPersonMiniBlinkCinematic = "cinematics/alien/fade/miniblink1p.cinema
 
 local kFadeCameraYOffset = 0.6
 
-function Fade:OnUpdateRender()
-    
-    PROFILE("Fade:OnUpdateRender")
-    Player.OnUpdateRender(self)
-
-end  
-
 function Fade:TriggerFirstPersonMiniBlinkEffect(direction)
 
     local cinematic = Client.CreateCinematic(RenderScene.Zone_ViewModel)

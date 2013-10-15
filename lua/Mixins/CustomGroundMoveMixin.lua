@@ -30,7 +30,7 @@ CustomGroundMoveMixin.networkVars =
     jumpHandled = "private compensated boolean",
     timeOfLastJump = "private time",
     jumping = "private compensated boolean",
-    onLadder = "boolean",
+    onLadder = "private compensated boolean",
     crouching = "private compensated boolean",
     crouched = "private compensated boolean",
     timeOfCrouchChange = "compensated interpolated float (0 to 1 by 0.001)",
@@ -44,6 +44,7 @@ local kOnGroundDistance = 0.1
 //NS1 bhop skulk could get around 530-540 units with good bhop, 290 base makes for 1.84 - Trying 1.7 now
 //need to figure out what NS1 clamped speed to each jump, not what the average speed you could get was.
 local kBunnyJumpMaxSpeedFactor = 1.7
+local kMaxSpeedClampPerJump = 3.0
 local kClimbFriction = 5
 local kCrouchAnimationTime = 0.4
 local kCrouchSpeedScalar = 0.6
@@ -52,6 +53,7 @@ local kMinimumJumpTime = 0.05
 local kStopSpeed = 2.0 //NS1 appears to have used 100, roughly 1.8
 local kBackwardsMovementScalar = 1
 local kStepHeight = 0.5
+local kStopSpeedScalar = 2
 
 function CustomGroundMoveMixin:__initmixin()
     self.onGround = true
@@ -86,7 +88,7 @@ function CustomGroundMoveMixin:GetStopSpeed()
 end
  
 function CustomGroundMoveMixin:GetCanStepOver(entity)
-    return entity:isa("Egg")
+    return entity:isa("Egg") or entity:isa("InfantryPortal")
 end
 
 function CustomGroundMoveMixin:GetLastInput()
@@ -131,7 +133,7 @@ end
 
 function CustomGroundMoveMixin:GetIsOnGround()
     if self.OnGroundOverride then
-        return self:OnGroundOverride()
+        return self:OnGroundOverride(self.onGround)
     end
     return self.onGround
 end
@@ -283,6 +285,10 @@ function CustomGroundMoveMixin:ApplyFriction(input, velocity, time)
         end
         
         local stopspeed = self:GetStopSpeed()
+        // Try bleeding at accelerated value when no inputs
+        if input.move.x == 0 and input.move.y == 0 and input.move.z == 0 then
+            stopspeed = stopspeed * kStopSpeedScalar
+        end
         // Bleed off some speed, but if we have less than the bleed
 		//  threshhold, bleed the theshold amount.
         local control = (speed < stopspeed) and stopspeed or speed
@@ -424,7 +430,7 @@ function CustomGroundMoveMixin:PreventMegaBunnyJumping(velocity)
        local spd = velocity:GetLength()
         
         if spd > maxscaledspeed then
-            local fraction = (maxscaledspeed / spd)
+            local fraction = (maxscaledspeed / (maxscaledspeed + Clamp(spd - maxscaledspeed, 0, kMaxSpeedClampPerJump)))
             velocity:Scale(fraction)
         end
     end

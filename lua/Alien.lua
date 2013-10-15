@@ -1,4 +1,4 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =====
 //
 // lua\Alien.lua
 //
@@ -16,18 +16,19 @@ Script.Load("lua/ScoringMixin.lua")
 Script.Load("lua/Alien_Upgrade.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/EnergizeMixin.lua")
-Script.Load("lua/EmpowerMixin.lua")
-Script.Load("lua/RedeployMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/LOSMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/AlienActionFinderMixin.lua")
-Script.Load("lua/DetectorMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/BabblerClingMixin.lua")
+Script.Load("lua/EmpowerMixin.lua")
+Script.Load("lua/RedeployMixin.lua")
+Script.Load("lua/UmbraMixin.lua")
+Script.Load("lua/IdleMixin.lua")
 
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/decals/alien_blood.surface_shader")
 
@@ -65,42 +66,42 @@ local networkVars =
     twoHives = "private boolean",
     threeHives = "private boolean",
     
-    crags = string.format("integer (0 to 3)"),
-    shifts = string.format("integer (0 to 3)"),
-    shades = string.format("integer (0 to 3)"),
-	whips = string.format("integer (0 to 3)"),
-    movenoise = "private time",
+    primalScreamBoost = "compensated boolean",
+	hatched = "private boolean",
     
-    primalScreamBoost = "compensated boolean"
+    darkVisionSpectatorOn = "private boolean"
+
 }
 
 AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(EnergizeMixin, networkVars)
-AddMixinNetworkVars(EmpowerMixin, networkVars)
-AddMixinNetworkVars(RedeployMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
-AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
-AddMixinNetworkVars(HasUmbraMixin, networkVars)
 AddMixinNetworkVars(BabblerClingMixin, networkVars)
+AddMixinNetworkVars(DetectableMixin, networkVars)
+AddMixinNetworkVars(EmpowerMixin, networkVars)
+AddMixinNetworkVars(RedeployMixin, networkVars)
+AddMixinNetworkVars(UmbraMixin, networkVars)
+AddMixinNetworkVars(IdleMixin, networkVars)
 
 function Alien:OnCreate()
 
     Player.OnCreate(self)
-    InitMixin(self, DetectorMixin)
-    InitMixin(self, AlienActionFinderMixin)
+
     InitMixin(self, EnergizeMixin)
-    InitMixin(self, EmpowerMixin)
-	InitMixin(self, RedeployMixin)
+    
     InitMixin(self, CombatMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, SelectableMixin)
+    InitMixin(self, AlienActionFinderMixin)
     InitMixin(self, DetectableMixin)
-    InitMixin(self, HasUmbraMixin)
     InitMixin(self, RagdollMixin)
     InitMixin(self, BabblerClingMixin)
-    
+	InitMixin(self, UmbraMixin)
+    InitMixin(self, EmpowerMixin)
+	InitMixin(self, RedeployMixin)
+
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
     
     self.timeLastMomentumEffect = 0
@@ -111,19 +112,14 @@ function Alien:OnCreate()
     
     // Only used on the local client.
     self.darkVisionOn = false
+    self.lastDarkVisionState = false
     self.darkVisionLastFrame = false
     self.darkVisionTime = 0
     self.darkVisionEndTime = 0
-    self.nextredeploy = 0
     self.oneHive = false
     self.twoHives = false
     self.threeHives = false
     self.primalScreamBoost = false
-    self.crags = 0
-    self.shifts = 0
-    self.shades = 0
-	self.whips = 0
-    self.unassignedhives = 0
     self.redemed = 0
     self.hivesinfo = { }
     
@@ -136,37 +132,12 @@ function Alien:OnCreate()
     
 end
 
-function Alien:DestroyGUI()
+function Alien:OnJoinTeam()
 
-    if Client then
-    
-        if self.buyMenu then
-        
-            GetGUIManager():DestroyGUIScript(self.buyMenu)
-            MouseTracker_SetIsVisible(false)
-            self.buyMenu = nil
-            
-        end
-        
-        if self.celerityViewCinematic then
-        
-            Client.DestroyCinematic(self.celerityViewCinematic)
-            self.celerityViewCinematic = nil
-            
-        end
-        
-    end
-    
-end
+    self.oneHive = false
+    self.twoHives = false
+    self.threeHives = false
 
-function Alien:OnDestroy()
-
-    Player.OnDestroy(self)
-    
-    self.loopingCeleritySound = nil
-    
-    self:DestroyGUI()
-    
 end
 
 function Alien:OnInitialized()
@@ -174,12 +145,12 @@ function Alien:OnInitialized()
     Player.OnInitialized(self)
     
     InitMixin(self, CloakableMixin)
-
+    InitMixin(self, IdleMixin)
     self.armor = self:GetArmorAmount()
     self.maxArmor = self.armor
     
     if Server then
-    
+  
         // This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
@@ -188,46 +159,43 @@ function Alien:OnInitialized()
         local function UpdateAlienSpecificVariables(self)
             if self:GetTeam().GetActiveHiveCount then
                 self:UpdateActiveAbilities(self:GetTeam():GetActiveHiveCount())
-                self:ManuallyUpdateNumUpgradeStructures()
                 self:UpdateHiveScaledHealthValues()
             end
             return false
         end
         
         self:AddTimedCallback(UpdateAlienSpecificVariables, 0.1)
-        self:AddTimedCallback(Alien.UpdateMoveNoise, math.random(self:GetLowerMoveNoiseTime(), self:GetUpperMoveNoiseTime()))    
+  
     elseif Client then
+    
         InitMixin(self, HiveVisionMixin)
+        
+        if self:GetIsLocalPlayer() and self.hatched then
+            self:TriggerHatchEffects()
+        end
+        
     end
     
     if Client and Client.GetLocalPlayer() == self then
     
         Client.SetPitch(0.0)
-        //self:AddHelpWidget("GUIAlienVisionHelp", 2)
         
     end
 
 end
 
-function Alien:GetDetectionRange()
-    local hasupg, level = GetHasAuraUpgrade(self)
-    if hasupg then
-        return (((1 / 3) * level) * kAuraDetectionRange)
-    end
-    return 0
-end
-
-function Alien:OnCheckDetectorActive()
-    local hasupg, level = GetHasAuraUpgrade(self)
-    return hasupg and level > 0
-end
-
-function Alien:IsValidDetection(detectable)
-    return true
+function Alien:SetHatched()
+    self.hatched = true
 end
 
 function Alien:GetCanRepairOverride(target)
     return false
+end
+
+
+// player for local player
+function Alien:TriggerHatchEffects()
+    self.clientTimeTunnelUsed = Shared.GetTime()
 end
 
 function Alien:GetArmorAmount()
@@ -270,6 +238,10 @@ function Alien:GetHasThreeHives()
     return self.threeHives
 end
 
+function Alien:GetPlayIdleSound()
+    return self:GetIsAlive() and self:GetVelocityLength() > kIdleThreshold
+end
+
 // For special ability, return an array of totalPower, minimumPower, tex x offset, tex y offset, 
 // visibility (boolean), command name
 function Alien:GetAbilityInterfaceData()
@@ -280,20 +252,6 @@ local function CalcEnergy(self, rate)
     local dt = Shared.GetTime() - self.timeAbilityEnergyChanged
     local result = Clamp(self.abilityEnergyOnChange + dt * rate, 0, self:GetMaxEnergy())
     return result
-end
-
-function Alien:GetUpgradeChambers(techId)
-    if techId == kTechId.Crag then
-        return self.crags
-    elseif techId == kTechId.Shift then
-        return self.shifts
-    elseif techId == kTechId.Shade then
-        return self.shades
-	elseif techId == kTechId.Whip then
-        return self.whips
-    else
-        return 0
-    end
 end
 
 function Alien:GetEnergy()
@@ -327,6 +285,7 @@ function Alien:DeductAbilityEnergy(energyCost)
     
         self.abilityEnergyOnChange = Clamp(self:GetEnergy() - energyCost, 0, maxEnergy)
         self.timeAbilityEnergyChanged = Shared.GetTime()
+        
     end
     
 end
@@ -348,45 +307,8 @@ function Alien:GetMaxEnergy()
 end
 
 function Alien:SetDarkVision(state)
-
-    if state ~= self.darkVisionOn then
-
-        if state then
-        
-            self.darkVisionTime = Shared.GetTime()
-            self:TriggerEffects("alien_vision_on") 
-            
-        else
-        
-            self.darkVisionEndTime = Shared.GetTime()
-            self:TriggerEffects("alien_vision_off")
-            
-        end
-    
-    end
-    
     self.darkVisionOn = state
-
-end
-
-function Alien:GetLowerMoveNoiseTime()
-    return kAlienBaseMoveNoise
-end
-
-function Alien:GetUpperMoveNoiseTime()
-    return kAlienRandMoveNoise
-end
-
-function Alien:ShouldMakeMoveNoises()
-    return self:GetIsAlive()
-end
-
-function Alien:UpdateMoveNoise()
-    if self:ShouldMakeMoveNoises() then
-        self:TriggerEffects("alien_move")
-        self:AddTimedCallback(Alien.UpdateMoveNoise, math.random(self:GetLowerMoveNoiseTime(), self:GetUpperMoveNoiseTime()))
-    end
-    return false  
+    self.darkVisionSpectatorOn = state
 end
 
 function Alien:HandleButtons(input)
@@ -395,7 +317,7 @@ function Alien:HandleButtons(input)
     
     Player.HandleButtons(self, input)
 
-    if Client and self:GetCanControl() and not Shared.GetIsRunningPrediction() then
+    if self:GetCanControl() and (Client or Server) then
     
         local darkVisionPressed = bit.band(input.commands, Move.ToggleFlashlight) ~= 0
         if not self.darkVisionLastFrame and darkVisionPressed then
@@ -440,9 +362,6 @@ function Alien:GetBaseArmor()
     assert(false)
 end
 
-/**
- * Must override.
- */
 function Alien:GetBaseHealth()
     assert(false)
 end
@@ -516,11 +435,13 @@ function Alien:GetMovementSpeedModifier()
 end
 function Alien:GetEffectParams(tableParams)
     if tableParams[kEffectFilterSilenceUpgrade] == nil then
-        local upg, level = GetHasSilenceUpgrade(player)
-        if level == 3 then
-            tableParams[kEffectFilterSilenceUpgrade] = upg
+        local hasupg, level = GetHasSilenceUpgrade(self)
+        if hasupg then
+            if level == 3 then
+                tableParams[kEffectFilterSilenceUpgrade] = true
+            end
+            tableParams[kEffectParamVolume] = 1 - Clamp(level / 3, 0, 1)
         end
-        tableParams[kEffectParamVolume] = 1 - Clamp(level / 3, 0, 1)
     end
 end
 
@@ -550,6 +471,10 @@ function Alien:GetAttackSpeed()
     return self:GetBaseAttackSpeed() * self:GetAttackSpeedModifiers()
 end
 
+function Alien:GetHasMovementSpecial()
+    return false
+end
+
 function Alien:OnUpdateAnimationInput(modelMixin)
 
     Player.OnUpdateAnimationInput(self, modelMixin)
@@ -558,4 +483,4 @@ function Alien:OnUpdateAnimationInput(modelMixin)
     
 end
 
-Shared.LinkClassToMap("Alien", Alien.kMapName, networkVars)
+Shared.LinkClassToMap("Alien", Alien.kMapName, networkVars, true)

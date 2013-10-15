@@ -92,20 +92,9 @@ local function HasUpgrade(callingEntity, techId)
     end
 
     local techtree = GetTechTree(callingEntity:GetTeamNumber())
-    local structurecount = 0
-    if techId == kTechId.Silence or techId == kTechId.Silence2 then
-        if callingEntity.GetUpgradeChambers then
-            structurecount = callingEntity:GetUpgradeChambers(GetChamberTypeForUpgrade(techId))
-        end
-        if callingEntity:GetHasUpgrade(kTechId.Silence2) or callingEntity:GetHasUpgrade(kTechId.Silence) then
-            return true, structurecount
-        else
-            return false, 0
-        end    
-    end
-    if callingEntity.GetUpgradeChambers then
-        structurecount = callingEntity:GetUpgradeChambers(GetChamberTypeForUpgrade(techId))
-    end
+    local chamberId = GetChamberTypeForUpgrade(techId)
+    local structurecount = GetChambers(chamberId, callingEntity:GetTeamNumber())
+    
     if techtree then
         return callingEntity:GetHasUpgrade(techId) and structurecount > 0, structurecount
     else

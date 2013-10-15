@@ -24,7 +24,6 @@ Shared.PrecacheSurfaceShader("cinematics/vfx_materials/decals/railgun_hole.surfa
 
 local networkVars =
 {
-    railgunAttacking = "boolean",
     timeOfLastShot = "time"
 }
 
@@ -36,7 +35,6 @@ function Railgun:OnCreate()
     
     InitMixin(self, ExoWeaponSlotMixin)
     
-    self.railgunAttacking = false
     self.timeOfLastShot = 0
 
 end
@@ -48,7 +46,7 @@ function Railgun:OnDestroy()
 end
 
 function Railgun:OnPrimaryAttack(player)
-    self.railgunAttacking = true
+    self.primaryAttacking = true
 end
 
 function Railgun:GetNumStartClips()
@@ -72,7 +70,7 @@ function Railgun:GetHUDSlot()
 end
 
 function Railgun:OnPrimaryAttackEnd(player)
-    self.railgunAttacking = false
+    self.primaryAttacking = false
 end
 
 function Railgun:GetBarrelPoint()
@@ -288,7 +286,7 @@ end
 function Railgun:OnUpdateAnimationInput(modelMixin)
 
     local activity = "none"
-    if self.railgunAttacking then
+    if self.primaryAttacking then
         activity = "primary"
     end
     modelMixin:SetAnimationInput("activity_" .. self:GetExoWeaponSlotName(), activity)

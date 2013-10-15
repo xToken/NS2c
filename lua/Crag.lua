@@ -28,6 +28,7 @@ Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/ConstructMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
+
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/SleeperMixin.lua")
@@ -38,8 +39,9 @@ Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CombatMixin.lua")
-Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/InfestationMixin.lua")
+Script.Load("lua/IdleMixin.lua")
 
 class 'Crag' (ScriptActor)
 
@@ -73,11 +75,13 @@ AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
-AddMixinNetworkVars(HasUmbraMixin, networkVars)
+
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(InfestationMixin, networkVars)
+AddMixinNetworkVars(UmbraMixin, networkVars)
+AddMixinNetworkVars(IdleMixin, networkVars)
 
 function Crag:OnCreate()
 
@@ -97,16 +101,17 @@ function Crag:OnCreate()
     InitMixin(self, DetectableMixin)
     InitMixin(self, ConstructMixin)
     InitMixin(self, RagdollMixin)
-    InitMixin(self, ObstacleMixin)  
     InitMixin(self, DissolveMixin)
-    InitMixin(self, CombatMixin)
-    InitMixin(self, HasUmbraMixin)
+    InitMixin(self, CombatMixin)    
+    InitMixin(self, UmbraMixin)
     
     self.healingActive = false
     
     self:SetUpdates(true)
     
-    if Client then
+    if Server then
+
+    elseif Client then    
         InitMixin(self, CommanderGlowMixin)    
     end
     
@@ -121,11 +126,13 @@ function Crag:OnInitialized()
     ScriptActor.OnInitialized(self)
     
     self:SetModel(Crag.kModelName, Crag.kAnimationGraph)
+
     InitMixin(self, InfestationMixin)
+
     if Server then
     
         InitMixin(self, StaticTargetMixin)
-
+        
         // This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
@@ -137,6 +144,8 @@ function Crag:OnInitialized()
         InitMixin(self, HiveVisionMixin)
         
     end
+    
+    InitMixin(self, IdleMixin)
     
 end
 
@@ -239,10 +248,9 @@ if Server then
 
     function Crag:OnConstructionComplete()
     
-        self:AddTimedCallback(Crag.HealInRange, Crag.kHealInterval)
-        
         local team = self:GetTeam()
-        if team then
+        if team and team.OnUpgradeChamberConstructed then
+			self:AddTimedCallback(Crag.HealInRange, Crag.kHealInterval)
             team:OnUpgradeChamberConstructed(self)
         end
         
@@ -253,7 +261,7 @@ if Server then
         ScriptActor.OnKill(self, attacker, doer, point, direction)
         
         local team = self:GetTeam()
-        if team then
+        if team and team.OnUpgradeChamberDestroyed then
             team:OnUpgradeChamberDestroyed(self)
         end
         

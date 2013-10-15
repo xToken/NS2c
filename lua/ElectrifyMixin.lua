@@ -22,7 +22,7 @@ ElectrifyMixin.expectedMixins =
 ElectrifyMixin.networkVars =
 {
     isElectrified = "boolean",
-	lastDamagetick = "time"
+	lastDamagetick = "compensated time"
 }
 
 function ElectrifyMixin:__initmixin()

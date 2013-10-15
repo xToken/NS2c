@@ -44,6 +44,8 @@ Script.Load("lua/VotingKickPlayer.lua")
 Script.Load("lua/VotingChangeMap.lua")
 Script.Load("lua/VotingResetGame.lua")
 Script.Load("lua/VotingRandomizeRR.lua")
+Script.Load("lua/Badges_Client.lua")
+Script.Load("lua/Mantis.lua")
 
 Script.Load("lua/ConsoleCommands_Client.lua")
 Script.Load("lua/NetworkMessages_Client.lua")
@@ -75,6 +77,13 @@ Client.destroyTrailCinematics = { }
 Client.worldMessages = { }
 Client.timeLimitedDecals = { }
 
+Client.timeOfLastPowerPoints = nil
+
+Client.serverHidden = false
+function Client.GetServerIsHidden()
+    return Client.serverHidden
+end
+
 Client.localClientIndex = nil
 function Client.GetLocalClientIndex()
     return Client.localClientIndex
@@ -92,6 +101,11 @@ end
 // For logging total time played for rookie mode, even with map switch
 local timePlayed = nil
 local kTimePlayedOptionsKey = "timePlayedSeconds"
+
+local function InitializeRenderCamera()
+    gRenderCamera = Client.CreateRenderCamera()
+    gRenderCamera:SetRenderSetup("renderer/Deferred.render_setup")
+end
 
 function GetRenderCameraCoords()
 
@@ -290,8 +304,11 @@ function OnMapLoadEntity(className, groupName, values)
         
         local repeatStyle = Cinematic.Repeat_None
         
+        -- 0 is Repeat_None but Repeat_None is not supported here because it would
+        -- cause the cinematic to kill itself but the cinematic would not be
+        -- removed from the Client.cinematics list which would cause errors.
         if values.repeatStyle == 0 then
-            repeatStyle = Cinematic.Repeat_None
+            repeatStyle = Cinematic.Repeat_Loop
         elseif values.repeatStyle == 1 then
             repeatStyle = Cinematic.Repeat_Loop
         elseif values.repeatStyle == 2 then
@@ -359,7 +376,7 @@ function SetCommanderPropState(isComm)
 end
 
 local kAmbientTrackTime = 180
-local lastAmbientUpdate = math.random(1, kAmbientTrackTime)
+local lastAmbientUpdate = math.random(30, 60)
 local kAmbientMusicTrack = "sound/ns2c.fev/ns2c/ui/ambient_music"
 
 function UpdateAmbientSounds(deltaTime)
@@ -488,9 +505,69 @@ local function UpdateDecals(deltaTime)
 
 end
 
+local kDangerCheckEndDistance = 25
+local kDangerCheckStartDistance = 15
+assert(kDangerCheckEndDistance > kDangerCheckStartDistance)
+local kDangerHealthEndAmount = 0.6
+local kDangerHealthStartAmount = 0.5
+assert(kDangerHealthEndAmount > kDangerHealthStartAmount)
+local lastDangerCheckTime = 0
+local dangerEnabled = false
+local dangerOrigin = nil
+local function UpdateDangerEffects(localPlayer)
+
+    local now = Shared.GetTime()
+    if now - lastDangerCheckTime > 1 then
+    
+        local playerOrigin = localPlayer:GetOrigin()
+        // Check to see if there are any nearby Command Structures that are close to death.
+        local commandStructures = GetEntitiesWithinRange("CommandStructure", playerOrigin, kDangerCheckEndDistance)
+        Shared.SortEntitiesByDistance(playerOrigin, commandStructures)
+        
+        // Check if danger needs to be enabled or disabled
+        if not dangerEnabled then
+        
+            if localPlayer:GetGameStarted() and #commandStructures > 0 then
+            
+                local commandStructure = commandStructures[1]
+                if commandStructure:GetIsBuilt() and commandStructure:GetIsAlive() and
+                   commandStructure:GetIsInCombat() and
+                   commandStructure:GetHealthScalar() <= kDangerHealthStartAmount and
+                   commandStructure:GetDistance(playerOrigin) <= kDangerCheckStartDistance then
+                    
+                    dangerEnabled = true
+                    dangerOrigin = commandStructure:GetOrigin()
+                    Client.PlayMusic("sound/NS2.fev/danger")
+                    
+                end
+                
+            end
+            
+        else
+        
+            local commandStructure = commandStructures[1]
+            if not commandStructure or not commandStructure:GetIsAlive() or
+               commandStructure:GetHealthScalar() >= kDangerHealthEndAmount or
+               not commandStructure:GetIsInCombat() or
+               dangerOrigin:GetDistanceTo(playerOrigin) > kDangerCheckEndDistance then
+                
+                Client.PlayMusic("sound/NS2.fev/no_danger")
+                dangerEnabled = false
+                dangerOrigin = nil
+                
+            end
+            
+        end
+        
+        lastDangerCheckTime = now
+        
+    end
+    
+end
+
 local optionsSent = false
 
-function OnUpdateClient(deltaTime)
+local function OnUpdateClient(deltaTime)
 
     PROFILE("Client:OnUpdateClient")
     
@@ -509,6 +586,8 @@ function OnUpdateClient(deltaTime)
         
         UpdateTimePlayed(deltaTime)
         
+        UpdateDangerEffects(player)
+        
     end
     
     GetEffectManager():OnUpdate(deltaTime)
@@ -521,9 +600,12 @@ function OnUpdateClient(deltaTime)
     
     if not optionsSent then
     
-        local armorType = StringToEnum(kArmorType, Client.GetOptionString("armorType", "Green"))
-        Client.SendNetworkMessage("ConnectMessage", BuildConnectMessage(armorType), true)
-        
+        local marineVariant = Client.GetOptionInteger("marineVariant", kDefaultMarineVariant)
+        local skulkVariant = Client.GetOptionInteger("skulkVariant", kDefaultSkulkVariant)
+        local isMale = Client.GetOptionString("sexType", "Male") == "Male"
+        Client.SendNetworkMessage("ConnectMessage",
+                BuildConnectMessage(isMale, marineVariant, skulkVariant),
+                true)
         optionsSent = true
         
     end
@@ -660,6 +742,8 @@ function OnMapPreLoad()
     Client.ResetSoundSystem()
     
     Shared.PreLoadSetGroupNeverVisible(kCollisionGeometryGroupName)   
+    Shared.PreLoadSetGroupNeverVisible(kMovementCollisionGroupName)   
+    Shared.PreLoadSetGroupNeverVisible(kInvisibleCollisionGroupName)
     Shared.PreLoadSetGroupPhysicsId(kNonCollisionGeometryGroupName, 0)
 
     Shared.PreLoadSetGroupNeverVisible(kCommanderBuildGroupName)   
@@ -672,6 +756,7 @@ function OnMapPreLoad()
     
     // Don't have bullets collide with collision geometry
     Shared.PreLoadSetGroupPhysicsId(kCollisionGeometryGroupName, PhysicsGroup.CollisionGeometryGroup)
+    Shared.PreLoadSetGroupPhysicsId(kMovementCollisionGroupName, PhysicsGroup.CollisionGeometryGroup)
     
     // Pathing mesh
     Shared.PreLoadSetGroupNeverVisible(kPathingLayerName)
@@ -782,9 +867,45 @@ local function UpdateFogAreaModifiers(fromOrigin)
     
 end
 
+local gShowDebugTrace = false
+function SetShowDebugTrace(value)
+    gShowDebugTrace = value
+end
+
+local kDebugTraceGUISize = Vector(40, 40, 0)
+local function UpdateDebugTrace()
+
+    if not debugTraceGUI then
+    
+        debugTraceGUI = GUI.CreateItem()
+        debugTraceGUI:SetSize(kDebugTraceGUISize)
+        debugTraceGUI:SetAnchor(GUIItem.Middle, GUIItem.Center)
+        debugTraceGUI:SetPosition(-kDebugTraceGUISize * 0.5)
+        
+    end
+
+    debugTraceGUI:SetIsVisible(gShowDebugTrace)
+    if gShowDebugTrace then
+    
+        local player = Client.GetLocalPlayer()
+        if player then
+            
+            local viewCoords = player:GetViewCoords()
+            local normalTrace = Shared.TraceRay(viewCoords.origin, viewCoords.origin + viewCoords.zAxis * 100, CollisionRep.Default, PhysicsMask.CystBuild, EntityFilterAll())
+            
+            local color = normalTrace.fraction == 1 and Color(1, 0, 0, 0.5) or Color(1,1,1,0.5)
+            debugTraceGUI:SetColor(color)
+        
+        end
+    
+    end
+
+end
+
 /**
  * Called once per frame to setup the camera for rendering the scene.
  */
+
 local function OnUpdateRender()
 
     Infestation_UpdateForPlayer()
@@ -858,6 +979,8 @@ local function OnUpdateRender()
         EquipmentOutline_SetEnabled( false )
         
     end
+    
+    UpdateDebugTrace()
     
 end
 
@@ -989,6 +1112,7 @@ local function SendAddBotCommands()
         local numAlienBots = Client.GetOptionInteger("botsSettings_numAlienBots", 0)
         local addMarineCom = Client.GetOptionBoolean("botsSettings_marineCom", false)
         local addAlienCom = Client.GetOptionBoolean("botsSettings_alienCom", false)
+        local marineSkill = Client.GetOptionString("botsSettings_marineSkillLevel", "Intermediate")
 
         if numMarineBots > 0 then
             Shared.ConsoleCommand( string.format("addbot %d 1", numMarineBots) )
@@ -1006,15 +1130,19 @@ local function SendAddBotCommands()
             Shared.ConsoleCommand("addbot 1 2 com")
         end
 
+        local skill2jitter =
+        {
+            Beginner = 1.2,
+            Intermediate = 0.8,
+            Expert = 0.4
+        }
+        Shared.ConsoleCommand(string.format("marinejitter %f", skill2jitter[marineSkill]))
     end
 
 end
 
 
 local function OnLoadComplete()
-
-    gRenderCamera = Client.CreateRenderCamera()
-    gRenderCamera:SetRenderSetup("renderer/Deferred.render_setup")
     
     Render_SyncRenderOptions()
     Input_SyncInputOptions()
@@ -1028,6 +1156,31 @@ local function OnLoadComplete()
     Client.SendNetworkMessage("SetName", { name = playerName }, true)
 
     SendAddBotCommands()
+    
+    //----------------------------------------
+    //  Stuff for first-time optimization dialog
+    //----------------------------------------
+
+    // Remember the build number of when we last loaded a map
+    Client.SetOptionInteger("lastLoadedBuild", Shared.GetBuildNumber())
+
+    if Client.GetOptionBoolean("immediateDisconnect", false) then
+        Client.SetOptionBoolean("immediateDisconnect", false)
+        Shared.ConsoleCommand("disconnect")
+    end
+
+    //----------------------------------------
+    //  Stuff for sandbox mode
+    //----------------------------------------
+    if Client.GetOptionBoolean("sandboxMode", false) then
+        Client.SetOptionBoolean("sandboxMode", false)
+        Shared.ConsoleCommand("cheats 1")
+        Shared.ConsoleCommand("autobuild")
+        Shared.ConsoleCommand("alltech")
+        Shared.ConsoleCommand("fastevolve")
+        Shared.ConsoleCommand("allfree")
+        Shared.ConsoleCommand("sandbox")
+    end
     
 end
 
@@ -1126,3 +1279,7 @@ function()
 end)
 
 Script.Load("lua/PostLoadMod.lua")
+
+// Initialize the camera at load time, so that the render setup will be
+// properly precached during the loading screen.
+InitializeRenderCamera()

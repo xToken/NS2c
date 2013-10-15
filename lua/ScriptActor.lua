@@ -37,13 +37,9 @@ end
 
 local networkVars =
 {
-    // Whether this entity is in sight of the enemy team
-    sighted = "boolean",
-    
     // Id used to look up precached string representing room location ("Marine Start")
     // not certain about the maximum number of cached strings
     locationId = "resource",
-    
 }
 
 AddMixinNetworkVars(TechMixin, networkVars)
@@ -153,10 +149,10 @@ end
 // Return tech ids that represent research or actions for this entity in specified menu. Parameter is kTechId.RootMenu for
 // default menu or a entity-defined menu id for a sub-menu. Return nil if this actor doesn't recognize a menu of that type.
 // Used for drawing icons in selection menu and also for verifying which actions are valid for entities and when (ie, when
-// a ARC can siege, or when a unit has enough energy to perform an action, etc.)
+// a SiegeCannon can siege, or when a unit has enough energy to perform an action, etc.)
 // Return list of 8 tech ids, represnting the 2nd and 3rd row of the 4x3 build icons.
 function ScriptActor:GetTechButtons(techId)
-    return  { kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+    return nil
 end
 
 function ScriptActor:GetCost()
@@ -212,7 +208,7 @@ function ScriptActor:GetTechAllowed(techId, techNode, player)
     // If tech is action or buy action
     elseif techNode:GetIsAction() or techNode:GetIsBuy() then
     
-        canAfford = player:GetResources() > techNode:GetCost()
+        canAfford = player:GetResources() >= techNode:GetCost()
         
     // If tech is activation
     elseif techNode:GetIsActivation() then
@@ -234,6 +230,10 @@ function ScriptActor:GetTechAllowed(techId, techNode, player)
     
     return allowed, canAfford
     
+end
+
+function ScriptActor:GetPlayIdleSound()
+    return GetIsUnitActive(self)
 end
 
 // Children can decide not to allow certain activations at certain times (energy cost already considered)
@@ -258,7 +258,7 @@ function ScriptActor:GetDescription()
     return GetDisplayNameForTechId(self:GetTechId(), "<no description>")
 end
 
-function ScriptActor:GetVisualRadius ()
+function ScriptActor:GetVisualRadius()
     return LookupTechData(self:GetTechId(), kVisualRange, nil)
 end
 

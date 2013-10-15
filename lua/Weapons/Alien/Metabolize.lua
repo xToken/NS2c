@@ -37,11 +37,7 @@ function Metabolize:GetHUDSlot()
 end
 
 function Metabolize:GetDeathIconIndex()
-    return kDeathMessageIcon.Swipe
-end
-
-function Metabolize:GetIconOffsetY(secondary)
-    return kAbilityOffset.Swipe
+    return kDeathMessageIcon.Metabolize
 end
 
 function Metabolize:GetBlinkAllowed()
@@ -56,9 +52,13 @@ function Metabolize:GetLastAttackTime()
     return self.lastPrimaryAttackTime
 end
 
+function Metabolize:GetSecondaryTechId()
+    return kTechId.Blink
+end
+
 function Metabolize:OnPrimaryAttack(player)
 
-    if not self:GetIsBlinking() and player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(self, player) then
+    if not self:GetIsBlinking() and player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(player) then
         self.primaryAttacking = true    
     else
         self:OnPrimaryAttackEnd()

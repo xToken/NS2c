@@ -84,7 +84,7 @@ end
 
 function BiteLeap:OnPrimaryAttack(player)
 
-    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(self, player) then
+    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(player) then
         self.primaryAttacking = true
     else
         self.primaryAttacking = false
@@ -109,10 +109,6 @@ function BiteLeap:GetMeleeBase()
     return kBiteMeleeBaseWidth, kBiteMeleeBaseHeight
 end
 
-function BiteLeap:GetMeleeOffset()
-    return 0.0
-end
-
 function BiteLeap:OnTag(tagName)
 
     PROFILE("BiteLeap:OnTag")
@@ -121,7 +117,7 @@ function BiteLeap:OnTag(tagName)
     
         local player = self:GetParent()
         
-        if player and not self:GetHasAttackDelay(self, player) then  
+        if player then
         
             local didHit, target, endPoint = AttackMeleeCapsule(self, player, kBiteDamage, self:GetRange(), nil, false, EntityFilterOneAndIsa(player, "Babbler"))
             

@@ -14,8 +14,8 @@ local kUpgradeIconRowSize = 6
 local kIconIndexToUpgradeId = {
     kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
     kTechId.None, kTechId.None, kTechId.Carapace, kTechId.Regeneration,
-    kTechId.None, kTechId.None, kTechId.Adrenaline, kTechId.None, kTechId.None, kTechId.None, 
-    kTechId.Stomp, kTechId.None, kTechId.Leap, kTechId.None, kTechId.None, kTechId.None, 
+    kTechId.None, kTechId.None, kTechId.Adrenaline, kTechId.None, kTechId.None, 
+    kTechId.Stomp, kTechId.Devour, kTechId.Leap, kTechId.None, kTechId.None, kTechId.None, 
 }
 
 function GetAlienUpgradeIconXY(techId)

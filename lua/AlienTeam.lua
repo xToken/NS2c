@@ -65,7 +65,8 @@ end
 
 function AlienTeam:OnInitialized()
 
-    PlayingTeam.OnInitialized(self)    
+    PlayingTeam.OnInitialized(self) 
+   
     self.lastTimeUnassignedHivessent = 0
     self.timeLastAlienSpectatorCheck = 0
     self.lastPingOfDeathCheck = 0
@@ -131,7 +132,7 @@ function AlienTeam:AddGorgeStructure(player, structure)
         local clientId = Server.GetOwner(player):GetUserId()
         local structureId = structure:GetId()
         local techId = structure:GetTechId()
-
+        
         if not self.clientOwnedStructures[clientId] then
             self.clientOwnedStructures[clientId] = { }
         end
@@ -192,14 +193,8 @@ function AlienTeam:UpdateClientOwnedStructures(oldEntityId)
                 
                     if structureId == oldEntityId then
                     
-                        if newEntityId then
-                            structureList[i] = newEntityId
-                        else
-                        
-                            table.remove(structureList, i)
-                            break
-                            
-                        end
+                        table.remove(structureList, i)
+                        break
                         
                     end
                     
@@ -210,7 +205,7 @@ function AlienTeam:UpdateClientOwnedStructures(oldEntityId)
         end
         
     end
-
+    
 end
 
 function AlienTeam:OnEntityChange(oldEntityId, newEntityId)
@@ -280,13 +275,14 @@ function AlienTeam:Update(timePassed)
     
     if GetGamerules():GetGameStarted() then
         CheckUnassignedHives(self)
+        self:UpdateTeamAutoHeal(timePassed)
+        self:UpdatePingOfDeath()
+        self:UpdateOverflowResources()
+        self:UpdateHiveInformation()
     end
+    
     PlayingTeam.Update(self, timePassed)
-    self:UpdateTeamAutoHeal(timePassed)
     self:UpdateRespawn()
-    self:UpdatePingOfDeath()
-    self:UpdateOverflowResources()
-    self:UpdateHiveInformation()
     
 end
 
@@ -330,7 +326,7 @@ end
 
 function AlienTeam:UpdatePingOfDeath()
 
-    if not self:GetHasAbilityToRespawn() and (not GetTournamentMode or not GetTournamentMode()) and self.lastPingOfDeathCheck + kPingOfDeathDelay < Shared.GetTime() then
+    if not self:GetHasAbilityToRespawn() and (not GetTournamentModeEnabled or not GetTournamentModeEnabled()) and self.lastPingOfDeathCheck + kPingOfDeathDelay < Shared.GetTime() then
         for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
             if alien:GetIsAlive() then
                 local damage = math.max(0, alien:GetMaxHealth() * (kPingOfDeathDamagePercent / 100))
@@ -581,23 +577,22 @@ function AlienTeam:OnUpgradeChamberConstructed(upgradeChamber)
     local checkTech = checkForLostResearch[upgradeChamber:GetTechId()]
     if checkTech then
     
-        local anyremain = 0
+        local count = 0
         for _, ent in ientitylist(Shared.GetEntitiesWithClassname(checkTech[1])) do
             if ent ~= upgradeChamber and ent:GetTechId() == upgradeChamber:GetTechId() and ent:GetIsBuilt() then
-                anyremain = anyremain + 1
+                count = count + 1
             end
             
         end
-        
-        if anyremain == 0 then
+
+        if count == 0 then
             SendTeamMessage(self, kTeamMessageTypes.ResearchComplete, checkTech[2])
             self:PlayPrivateTeamSound(AlienTeam.kNewTraitSound)
         end
         
-        for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
-            if alien:GetIsAlive() and alien.UpdateNumUpgradeStructures then
-                alien:UpdateNumUpgradeStructures(checkTech[2], (anyremain + 1))
-            end
+        local teamInfo = GetTeamInfoEntity(self:GetTeamNumber())  
+        if teamInfo then
+            teamInfo:UpdateNumUpgradeStructures(checkTech[2], (count + 1))
         end
         
     end
@@ -614,24 +609,21 @@ function AlienTeam:OnUpgradeChamberDestroyed(upgradeChamber)
     local checkTech = checkForLostResearch[upgradeChamber:GetTechId()]
     if checkTech then
 
-        local anyremain = 0
+        local count = 0
         for _, ent in ientitylist(Shared.GetEntitiesWithClassname(checkTech[1])) do
             if ent ~= upgradeChamber and ent:GetTechId() == upgradeChamber:GetTechId() then
-                anyremain = anyremain + 1
+                count = count + 1
             end
             
         end
         
-        if anyremain <= kChamberLostNotification then
+        if count <= kChamberLostNotification then
             SendTeamMessage(self, kTeamMessageTypes.ResearchLost, checkTech[2])
         end
         
-        for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
-    
-            if alien:GetIsAlive() and alien.UpdateNumUpgradeStructures then
-                alien:UpdateNumUpgradeStructures(checkTech[2], (anyremain))
-            end
-            
+        local teamInfo = GetTeamInfoEntity(self:GetTeamNumber())  
+        if teamInfo then
+            teamInfo:UpdateNumUpgradeStructures(checkTech[2], (count))
         end
         
     end
@@ -664,13 +656,12 @@ function AlienTeam:GetSpectatorMapName()
     return AlienSpectator.kMapName
 end
 
-function AlienTeam:AwardResources(min, max, pointOwner)
+function AlienTeam:AwardResources(resAward, pointOwner)
 
-    local resAwarded = math.random(min, max) 
-    resAwarded = resAwarded - pointOwner:AwardResForKill(resAwarded)
+    resAward = resAward - pointOwner:AwardResForKill(resAward)
     
-    if resAwarded > 0 then
-        self:SplitPres(resAwarded)
+    if resAward > 0 then
+        self:SplitPres(resAward)
     end
 
 end

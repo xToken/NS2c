@@ -11,9 +11,6 @@
 //NS2c
 //Restructured this file heavily, attempted to remove all unused vars
 
-Script.Load("lua/BalanceHealth.lua")
-Script.Load("lua/BalanceMisc.lua")
-
 // used as fallback
 kDefaultBuildTime = 60
 
@@ -25,7 +22,7 @@ kArmoryCost = 10
 kArmsLabCost = 20
 kPrototypeLabCost = 40
 kSentryCost = 10
-kARCCost = 15
+kSiegeCannonCost = 15
 kPhaseGateCost = 15
 kObservatoryCost = 15
 
@@ -38,7 +35,7 @@ kGrenadeLauncherDropCost = 15
 kJetpackDropCost = 12
 kHeavyArmorDropCost = 15
 kExosuitDropCost = 20
-kRoboticsFactoryCost = 10
+kTurretFactoryCost = 10
 kAmmoPackCost = 1
 kMedPackCost = 2
 kCatPackCost = 3
@@ -77,8 +74,8 @@ kCatPackTechResearchTime = 15
 kPhaseTechResearchCost = 15
 kPhaseTechResearchTime = 45
 
-kUpgradeRoboticsFactoryCost = 15
-kUpgradeRoboticsFactoryTime = 30
+kUpgradeTurretFactoryCost = 15
+kUpgradeTurretFactoryTime = 30
 
 kMotionTrackingResearchCost = 35
 kMotionTrackingResearchTime = 100
@@ -94,9 +91,9 @@ kArmsLabBuildTime = 19
 kExtractorBuildTime = 15
 kInfantryPortalBuildTime = 10
 kCommandStationBuildTime = 15
-kRoboticsFactoryBuildTime = 15
+kTurretFactoryBuildTime = 15
 kSentryBuildTime = 7
-kArcBuildTime  = 10
+kSiegeCannonBuildTime  = 10
 kObservatoryBuildTime = 15
 kPhaseGateBuildTime = 12
 
@@ -140,18 +137,19 @@ kBombardCost = 0
 kFuryCost = 0
 
 kHiveBuildTime = 180
-kHarvesterBuildTime = 40
-kCragBuildTime = 28
-kShiftBuildTime = 20
-kShadeBuildTime = 24
-kHydraBuildTime = 18
+kHarvesterBuildTime = 27
+kCragBuildTime = 27
+kShiftBuildTime = 16
+kShadeBuildTime = 19
+kHydraBuildTime = 15
 kWhipBuildTime = 22
 kSkulkGestateTime = 3
 kGorgeGestateTime = 10
 kLerkGestateTime = 15
 kFadeGestateTime = 25
 kOnosGestateTime = 35
-kEvolutionGestateTime = 3
+kUpgradeGestationTime = 2
+kReplaceUpgradeGestationTime = 6
 
 kMarineTeamIntialRes = 100
 kMaxTeamResources = 999
@@ -159,8 +157,8 @@ kAlienTeamInitialRes = 25
 kMaxPersonalResources = 100
 kResourceTowerResourceInterval = 4
 kResourcePerTick = 1
-kKillRewardMin = 2
-kKillRewardMax = 2
+kKillReward = 2
+kHighLifeformKillReward = 1
 kResourceScalingMinPlayers = 4
 kResourceScalingMaxPlayers = 12
 kResourceScalingMaxDelta = 1.2
@@ -174,16 +172,16 @@ kRifleDamage = 10
 kRifleDamageType = kDamageType.Normal
 kRifleClipSize = 50
 kRifleWeight = 0.01
-kRifleClipWeight = 0.01
+kRifleClipWeight = 0.005
 
 kPistolDamage = 20
 kPistolDamageType = kDamageType.Normal
 kPistolClipSize = 10
 kPistolWeight = 0.005
 kPistolFireDelay = 0.08
-kPistolClipWeight = 0.01
+kPistolClipWeight = 0.0033
 
-kWelderDamage = 4
+kWelderDamage = 2
 kWelderDamageType = kDamageType.Normal
 kWelderFireDelay = 0.4
 kWelderWeight = 0.005
@@ -214,23 +212,24 @@ kShotgunMinSpreadBullets = 5
 kShotgunMaxSpread = 18
 //kShotgunDropOffStartRange = 4
 kShotgunWeight = 0.03
-kShotgunShellWeight = 0.0025
+kShotgunShellWeight = 0.002
+kShotgunBaseRateOfFire = 1.5
 
-kHeavyMachineGunDamage = 20
-kHeavyMachineGunDamageType = kDamageType.HalfStructure
+kHeavyMachineGunDamage = 10
+kHeavyMachineGunDamageType = kDamageType.Puncture
 kHeavyMachineGunClipSize = 125
-kHeavyMachineGunWeight = 0.05
+kHeavyMachineGunWeight = 0.08
 kHeavyMachineGunROF = 0.05
 kHeavyMachineGunReloadTime = 6.3
-kHeavyMachineGunClipWeight = 0.0035
+kHeavyMachineGunClipWeight = 0.01
 
-kMinigunDamage = 15
-kMinigunDamageType = kDamageType.HalfStructure
+kMinigunDamage = 8
+kMinigunDamageType = kDamageType.Puncture
 kMinigunClipSize = 100
 kMinigunWeight = 0.06
 
-kRailgunDamage = 25
-kRailgunDamageType = kDamageType.Structural
+kRailgunDamage = 125
+kRailgunDamageType = kDamageType.StructuresOnly
 kRailgunClipSize = 25
 kRailgunWeight = 0.06
 
@@ -258,10 +257,11 @@ kSentryAttackBulletsPerSalvo = 1
 kConfusedSentryBaseROF = 1.0
 kSentriesPerFactory = 3
 
-kARCDamage = 400
-kARCDamageType = kDamageType.StructuresOnly
-kARCRange = 25 //1100 NS1 - Bigger than NS1, dropping to 25
-kArcsPerFactory = 5
+kSiegeCannonDamage = 400
+kSiegeCannonDamageType = kDamageType.StructuresOnly
+kSiegeCannonRange = 25 //1100 NS1 - Bigger than NS1, dropping to 25
+kSiegeCannonSplashRadius = 3
+kSiegeCannonsPerFactory = 5
 
 kWeapons1DamageScalar = 1.1
 kWeapons2DamageScalar = 1.2
@@ -352,6 +352,7 @@ kSporeDamage = 7
 kSporeRadius = 5 //225 NS1
 kSporeAttackDelay = 1.0
 kSporeDamageDelay = .5
+kSporeDamageType = kDamageType.Normal
 
 kUmbraEnergyCost = 30
 kUmbraDuration = 5
@@ -361,15 +362,17 @@ kUmbraDamageReduction = 0.35
 kUmbraRetainTime = 0.1
 kUmbraAttackDelay = 1.0
 
-kSpikeMaxDamage = 15
-kSpikeMinDamage = 10
-kSpikeDamageType = kDamageType.Heavy
+kSpikeMaxDamage = 8
+kSpikeMinDamage = 5
+kSpikeDamageType = kDamageType.Normal
 kSpikeEnergyCost = 1.8
 kSpikesAttackDelay = 0.12
 kSpikeMinDamageRange = 15
 kSpikeMaxDamageRange = 3
 kSpikesPerShot = 1
 kSpikesRange = 30 -- As as shotgun range
+kSpikesSize = 0.03
+kSpikesSpread = Math.Radians(4)
 
 kPrimalScreamEnergyCost = 45
 kPrimalScreamRange = 10
@@ -388,7 +391,7 @@ kSwipeMeleeBaseWidth = 0.9
 kSwipeMeleeBaseHeight = 1
 
 kStartBlinkEnergyCost = 8
-kBlinkPulseEnergyCost = 5
+kBlinkPulseEnergyCost = 4
 kBlinkCooldown = 0.05
 
 kMetabolizeEnergyCost = 25
@@ -417,15 +420,17 @@ kDevourAttackDelay = 2
 kDevourDigestionSpeed = 1
 kDevourHealthPerSecond = 20
 kDevourDamageType = kDamageType.Falling
-kDevourRange = 1.2
+kDevourRange = 1.4
 kDevourMeleeBaseWidth = 0.8
 kDevourMeleeBaseHeight = 0.7
 
 kStompEnergyCost = 30
 kStompRange = 12
-kStunMarineTime = 2
+kStunMarineTime = 2.5
+kStompDamage = 20
+kShockwaveRadius = 2.5
 
-kSmashDamage = 125
+kSmashDamage = 90
 kSmashDamageType = kDamageType.Structural
 kSmashEnergyCost = 9
 kSmashRange = 1.9
@@ -434,6 +439,7 @@ kSmashMeleeBaseHeight = 1.4
 
 kChargeMaxDamage = 4
 kChargeMinDamage = 1
+kStartChargeEnergyCost = 8
 
 kHydraDamage = 20 // From NS1
 kHydraAttackDamageType = kDamageType.Normal

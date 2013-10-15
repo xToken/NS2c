@@ -14,8 +14,8 @@ function Lerk:InitWeapons()
 
     Alien.InitWeapons(self)
 
-    self:GiveItem(LerkBite.kMapName)    
-    self:SetActiveWeapon(LerkBite.kMapName)
+    self:GiveItem(Spores.kMapName)    
+    self:SetActiveWeapon(Spores.kMapName)
     
 end
 

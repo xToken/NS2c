@@ -16,7 +16,6 @@ Script.Load("lua/MarineActionFinderMixin.lua")
 Script.Load("lua/StunMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/ScoringMixin.lua")
-Script.Load("lua/Weapons/Marine/Builder.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
@@ -24,12 +23,14 @@ Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/LOSMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
-Script.Load("lua/DetectorMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/WebableMixin.lua")
 Script.Load("lua/DevouredMixin.lua")
+Script.Load("lua/DetectableMixin.lua")
+Script.Load("lua/Weapons/PredictedProjectile.lua")
+Script.Load("lua/MarineVariantMixin.lua")
 
 if Client then
     Script.Load("lua/TeamMessageMixin.lua")
@@ -48,11 +49,18 @@ end
 Shared.PrecacheSurfaceShader("models/marine/marine.surface_shader")
 Shared.PrecacheSurfaceShader("models/marine/marine_noemissive.surface_shader")
 
-Marine.kModelName = PrecacheAsset("models/marine/male/male.model")
-Marine.kBlackArmorModelName = PrecacheAsset("models/marine/male/male_special.model")
-Marine.kSpecialEditionModelName = PrecacheAsset("models/marine/male/male_special_v1.model")
-Marine.kMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_graph")
 Marine.kGunPickupSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/pickup")
+Marine.kMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_graph")
+
+-- Generate 3rd person models.
+Marine.kModelNames = { male = { }, female = { } }
+local kModelTemplates = { green = ".model", special = "_special.model", deluxe = "_special_v1.model" }
+for name, suffix in pairs(kModelTemplates) do
+    Marine.kModelNames.male[name] = PrecacheAsset("models/marine/male/male" .. suffix)
+end
+for name, suffix in pairs(kModelTemplates) do
+    Marine.kModelNames.female[name] = PrecacheAsset("models/marine/female/female" .. suffix)
+end
 
 local kFlashlightSoundName = PrecacheAsset("sound/NS2.fev/common/light")
 
@@ -67,7 +75,6 @@ local kWalkBackwardSpeedScalar = 0.4
 local networkVars =
 {      
     flashlightOn = "boolean",
-    timeOfLastPhase = "private time",
     
     timeOfLastDrop = "private time",
     timeOfLastPickUpWeapon = "private time",
@@ -88,9 +95,10 @@ AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
-AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(WebableMixin, networkVars)
 AddMixinNetworkVars(DevouredMixin, networkVars)
+AddMixinNetworkVars(DetectableMixin, networkVars)
+AddMixinNetworkVars(MarineVariantMixin, networkVars)
 
 function Marine:OnCreate()
 
@@ -102,19 +110,17 @@ function Marine:OnCreate()
     
     Player.OnCreate(self)
     
-    InitMixin(self, DetectorMixin)
     InitMixin(self, DissolveMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, ParasiteMixin)
-    InitMixin(self, DetectableMixin)
-    InitMixin(self, RagdollMixin)   
-	InitMixin(self, WebableMixin)
+    InitMixin(self, RagdollMixin)
+    InitMixin(self, WebableMixin)
     InitMixin(self, DevouredMixin)
-    
+	InitMixin(self, DetectableMixin)
+	InitMixin(self, MarineVariantMixin)
+	InitMixin(self, PredictedProjectileShooterMixin)
     if Server then
 
-
-        // stores welder / builder progress
         self.unitStatusPercentage = 0
         self.timeLastUnitPercentageUpdate = 0
         
@@ -133,24 +139,36 @@ function Marine:OnCreate()
         self.flashlight:SetIsVisible(false)
         
         InitMixin(self, TeamMessageMixin, { kGUIScriptName = "GUIMarineTeamMessage" })
-    
+
     end
 
 end
 
 function Marine:OnInitialized()
 
+    // work around to prevent the spin effect at the infantry portal spawned from
+    // local player should not see the holo marine model
+    if Client and Client.GetIsControllingPlayer() then
+    
+        local ips = GetEntitiesForTeamWithinRange("InfantryPortal", self:GetTeamNumber(), self:GetOrigin(), 1)
+        if #ips > 0 then
+            Shared.SortEntitiesByDistance(self:GetOrigin(), ips)
+            ips[1]:PreventSpinEffect(0.2)
+        end
+        
+    end
+    
     // These mixins must be called before SetModel because SetModel eventually
     // calls into OnUpdatePoseParameters() which calls into these mixins.
     // Yay for convoluted class hierarchies!!!
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kPlayerMoveOrderCompleteDistance })
     InitMixin(self, OrderSelfMixin, { kPriorityAttackTargets = { "Harvester" } })
-	InitMixin(self, StunMixin)
+    InitMixin(self, StunMixin)
     InitMixin(self, WeldableMixin)
     
     // SetModel must be called before Player.OnInitialized is called so the attach points in
     // the Marine are valid to attach weapons to. This is far too subtle...
-    self:SetModel(Marine.kModelName, Marine.kMarineAnimationGraph)
+    self:SetModel(self:GetVariantModel(), MarineVariantMixin.kMarineAnimationGraph)
     
     Player.OnInitialized(self)
     
@@ -182,7 +200,6 @@ function Marine:OnInitialized()
     end
     
     self.weaponDropTime = 0
-    self.timeOfLastPhase = 0
     
     local viewAngles = self:GetViewAngles()
     self.lastYaw = viewAngles.yaw
@@ -201,46 +218,8 @@ function Marine:OnInitialized()
     
 end
 
-local blockBlackArmor = false
-if Server then
-    Event.Hook("Console_blockblackarmor", function() if Shared.GetCheatsEnabled() then blockBlackArmor = not blockBlackArmor end end)
-end
-
-function Marine:GetDetectionRange()
-    return ConditionalValue(self:OnCheckDetectorActive(), kMotionTrackingDetectionRange, 0)
-end
-
-function Marine:OnCheckDetectorActive()
-    return GetHasTech(self, kTechId.Observatory) and GetHasTech(self, kTechId.MotionTracking)
-end
-
-function Marine:DeCloak()
-    return false
-end
-
 function Marine:GetJumpMode()
     return kJumpMode.Queued
-end
-
-function Marine:IsValidDetection(detectable)
-    if detectable.GetReceivesStructuralDamage and detectable:GetReceivesStructuralDamage() then
-        return false
-    end
-    
-    //Ghost adds a chance to 'evade' detection
-    if detectable:isa("Alien") then
-        local hasupg, level = GetHasGhostUpgrade(detectable)
-        if hasupg and level > 0 then
-            return math.random(1, 100) <= (level * kGhostMotionTrackingDodgePerLevel)
-        end
-		
-		//Dont detect stationary/slow moving aliens.
-		if detectable:GetVelocity():GetLengthXZ() < kMotionTrackingMinimumSpeed then
-			return false
-		end
-    end
-    
-    return true
 end
 
 function Marine:GetArmorLevel()
@@ -297,24 +276,48 @@ function Marine:GetIsStunAllowed()
     return not self:GetIsJumping()
 end
 
+function Marine:GetCanJump()
+    return Player.GetCanJump(self) and not self:GetIsStunned()
+end
+
 function Marine:GetCanRepairOverride(target)
     return self:GetWeapon(Welder.kMapName) and HasMixin(target, "Weldable") and ( (target:isa("Marine") and target:GetArmor() < target:GetMaxArmor()) or (not target:isa("Marine") and target:GetHealthScalar() < 0.9) )
+end
+
+function Marine:GetCanSeeDamagedIcon(ofEntity)
+    return HasMixin(ofEntity, "Weldable")
 end
 
 function Marine:GetSlowOnLand()
     return math.abs(self:GetVelocity().y) > self:GetMaxSpeed()
 end
 
-function Marine:GetArmorAmount()
+function Marine:GetPlayerControllersGroup()
+    return PhysicsGroup.BigPlayerControllersGroup
+end
 
-    local armorLevels = 0
+// Required by ControllerMixin.
+function Marine:GetMovePhysicsMask()
+    if self:GetIsDevoured() then
+        return PhysicsMask.All
+    end
+    return Player.GetMovePhysicsMask(self)
+end
+
+function Marine:GetArmorAmount(armorLevels)
+
+    if not armorLevels then
     
-    if(GetHasTech(self, kTechId.Armor3, true)) then
-        armorLevels = 3
-    elseif(GetHasTech(self, kTechId.Armor2, true)) then
-        armorLevels = 2
-    elseif(GetHasTech(self, kTechId.Armor1, true)) then
-        armorLevels = 1
+        armorLevels = 0
+    
+        if GetHasTech(self, kTechId.Armor3, true) then
+            armorLevels = 3
+        elseif GetHasTech(self, kTechId.Armor2, true) then
+            armorLevels = 2
+        elseif GetHasTech(self, kTechId.Armor1, true) then
+            armorLevels = 1
+        end
+    
     end
     
     return kMarineArmor + armorLevels * kArmorPerUpgradeLevel
@@ -326,7 +329,7 @@ function Marine:OnDestroy()
     Player.OnDestroy(self)
     
     if Client then
-    
+
         if self.ruptureMaterial then
         
             Client.DestroyRenderMaterial(self.ruptureMaterial)
@@ -337,15 +340,7 @@ function Marine:OnDestroy()
         if self.flashlight ~= nil then
             Client.DestroyRenderLight(self.flashlight)
         end
-        
-        if self.buyMenu then
-        
-            GetGUIManager():DestroyGUIScript(self.buyMenu)
-            self.buyMenu = nil
-            MouseTracker_SetIsVisible(false)
-            
-        end
-        
+
     end
     
 end
@@ -490,25 +485,31 @@ end
 function Marine:GetWeaponDropTime()
     return self.weaponDropTime
 end
-                  
-function Marine:GetTechButtons(techId)    
-    return { kTechId.Attack, kTechId.Move, kTechId.Defend, kTechId.None, 
-            kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+
+local marineTechButtons = { kTechId.Attack, kTechId.Move, kTechId.Defend, kTechId.Construct }
+function Marine:GetTechButtons(techId)
+
+    local techButtons = nil
+    
+    if techId == kTechId.RootMenu then
+        techButtons = marineTechButtons
+    end
+    
+    return techButtons
+ 
 end
 
 function Marine:GetCatalystFireModifier()
-    local weapon = self:GetActiveWeapon()    
+    local weapon = self:GetActiveWeapon()
+    local baserof = 1
     if weapon ~= nil then
-        if weapon.kMapName == "shotgun" then
-            return ConditionalValue(self:GetHasCatpackBoost(), 1.89, 1.5)
-        end
+        baserof = weapon:GetBaseRateofFire()
     end
-    
-    return ConditionalValue(self:GetHasCatpackBoost(), CatPack.kAttackSpeedModifier, 1)
+    return ConditionalValue(self:GetHasCatpackBoost(), kCatPackFireRateScalar * baserof, baserof)
 end
 
 function Marine:GetCatalystMoveSpeedModifier()
-    return ConditionalValue(self:GetHasCatpackBoost(), CatPack.kMoveSpeedScalar, 1)
+    return ConditionalValue(self:GetHasCatpackBoost(), kCatPackMoveSpeedScalar, 1)
 end
 
 function Marine:GetDeathMapName()
@@ -637,6 +638,10 @@ end
 function Marine:OnStun()
 end
 
+function Marine:GetCanChangeViewAngles()
+    return not self:GetIsStunned()
+end    
+
 function Marine:OnUseTarget(target)
 
     local activeWeapon = self:GetActiveWeapon()
@@ -644,13 +649,13 @@ function Marine:OnUseTarget(target)
     if target and HasMixin(target, "Construct") and ( target:GetCanConstruct(self) or (target.CanBeWeldedByBuilder and target:CanBeWeldedByBuilder()) ) then
     
         if activeWeapon and activeWeapon:GetMapName() ~= Builder.kMapName then
-            self:SetActiveWeapon(Builder.kMapName)
+            self:SetActiveWeapon(Builder.kMapName, true)
             self.weaponBeforeUse = activeWeapon:GetMapName()
         end
         
     else
         if activeWeapon and activeWeapon:GetMapName() == Builder.kMapName and self.weaponBeforeUse then
-            self:SetActiveWeapon(self.weaponBeforeUse)
+            self:SetActiveWeapon(self.weaponBeforeUse, true)
         end    
     end
 
@@ -673,6 +678,7 @@ function Marine:OnUpdateAnimationInput(modelMixin)
     Player.OnUpdateAnimationInput(self, modelMixin)
     
     modelMixin:SetAnimationInput("attack_speed", self:GetCatalystFireModifier())
+	modelMixin:SetAnimationInput("catalyst_speed", self:GetCatalystFireModifier())
     
 end
 
@@ -684,7 +690,7 @@ function Marine:OnProcessMove(input)
 
     if Server then
     
-    	self.catpackboost = Shared.GetTime() - self.timeCatpackboost < CatPack.kDuration
+    	self.catpackboost = Shared.GetTime() - self.timeCatpackboost < kCatPackDuration
         if self.unitStatusPercentage ~= 0 and self.timeLastUnitPercentageUpdate + 2 < Shared.GetTime() then
             self.unitStatusPercentage = 0
         end
@@ -696,18 +702,12 @@ function Marine:OnProcessMove(input)
 
 end
 
-function Marine:OnUpdateCamera(deltaTime)
-
-    if self:GetIsStunned() then
-        self:SetDesiredCameraYOffset(-0.25)
-    else
-        Player.OnUpdateCamera(self, deltaTime)
-    end
-
+function Marine:GetCanSeeDamagedIcon(ofEntity)
+    return HasMixin(ofEntity, "Weldable")
 end
 
 function Marine:GetHasCatpackBoost()
     return self.catpackboost
 end
 
-Shared.LinkClassToMap("Marine", Marine.kMapName, networkVars)
+Shared.LinkClassToMap("Marine", Marine.kMapName, networkVars, true)

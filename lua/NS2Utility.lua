@@ -14,11 +14,6 @@
 Script.Load("lua/Table.lua")
 Script.Load("lua/Utility.lua")
 
-/**
- * Return an extents vector for tracing a bullet with the given caliber (diameter) along direction. 
- *
- * As the trace box is world-axis aligned, it must be shrunk when tracing a diagonal.
- */
 function GetDirectedExtentsForDiameter(direction, diameter)
     
     // normalize and scale the vector, then extract the extents from it
@@ -33,6 +28,58 @@ function GetDirectedExtentsForDiameter(direction, diameter)
     // Log("extents for %s/%s -> %s", direction, v, result)
     return result
     
+end
+
+function GetSupplyUsedByTeam(teamNumber)
+
+    assert(teamNumber)
+
+    local supplyUsed = 0
+    
+    if Server then
+        local team = GetGamerules():GetTeam(teamNumber)
+        if team and team.GetSupplyUsed then
+            supplyUsed = team:GetSupplyUsed() 
+        end    
+    else
+        
+        local teamInfoEnt = GetTeamInfoEntity(teamNumber)
+        if teamInfoEnt and teamInfoEnt.GetSupplyUsed then
+            supplyUsed = teamInfoEnt:GetSupplyUsed()
+        end
+    
+    end    
+
+    return supplyUsed
+
+end
+
+function GetMaxSupplyForTeam(teamNumber)
+
+    return kMaxSupply
+
+    /*
+    local maxSupply = 0
+
+    if Server then
+    
+        local team = GetGamerules():GetTeam(teamNumber)
+        if team and team.GetNumCapturedTechPoints then
+            maxSupply = team:GetNumCapturedTechPoints() * kSupplyPerTechpoint
+        end
+        
+    else    
+        
+        local teamInfoEnt = GetTeamInfoEntity(teamNumber)
+        if teamInfoEnt and teamInfoEnt.GetNumCapturedTechPoints then
+            maxSupply = teamInfoEnt:GetNumCapturedTechPoints() * kSupplyPerTechpoint
+        end
+
+    end   
+
+    return maxSupply 
+    */
+
 end
 
 if Client then
@@ -173,6 +220,7 @@ function HandleHitEffect(position, doer, surface, target, showtracer, altMode, f
         target:OnTakeDamageClient(damage, doer, position)
     end
 
+    
     HandleImpactDecal(position, doer, surface, target, showtracer, altMode, damage, direction, tableParams)
 
 end
@@ -184,6 +232,10 @@ function GetCommanderForTeam(teamNumber)
         return commanders[1]
     end    
 
+end
+
+function GetPowerPointForLocation(locationName)   
+    return nil
 end
 
 function UpdateMenuTechId(teamNumber, selected)
@@ -394,8 +446,8 @@ function GetCircleSizeForEntity(entity)
     size = ConditionalValue(entity:isa("Armory"), 4.0, size)
     size = ConditionalValue(entity:isa("Harvester"), 3.7, size)
     size = ConditionalValue(entity:isa("Crag"), 3, size)
-    size = ConditionalValue(entity:isa("RoboticsFactory"), 6, size)
-    size = ConditionalValue(entity:isa("ARC"), 3.5, size)
+    size = ConditionalValue(entity:isa("TurretFactory"), 6, size)
+    size = ConditionalValue(entity:isa("SiegeCannon"), 3.5, size)
     size = ConditionalValue(entity:isa("ArmsLab"), 4.3, size)
     return size
     
@@ -403,7 +455,7 @@ end
 
 gMaxHeightOffGround = 0.0
 
-function GetAttachEntity(techId, position, player)
+function GetAttachEntity(techId, position, snapRadius, player)
 
     local attachClass = LookupTechData(techId, kStructureAttachClass)    
     //DUMBBBB
@@ -462,7 +514,7 @@ end
 /**
  * Returns the spawn point on success, nil on failure.
  */
-local function ValidateSpawnPoint(spawnPoint, capsuleHeight, capsuleRadius, filter, origin)
+function ValidateSpawnPoint(spawnPoint, capsuleHeight, capsuleRadius, filter, origin)
 
     local center = Vector(0, capsuleHeight * 0.5 + capsuleRadius, 0)
     local spawnPointCenter = spawnPoint + center
@@ -543,7 +595,7 @@ function GetExtents(techId)
 
     local extents = LookupTechData(techId, kTechDataMaxExtents)
     if not extents then
-        extents = Vector(0.5, 0.5, 0.75)
+        extents = Vector(.5, .5, .5)
     end
     return extents
 
@@ -704,17 +756,7 @@ function GetTriggerEntity(position, teamNumber)
 end
 
 function GetBlockedByUmbra(entity)
-
-    if entity ~= nil and HasMixin(entity, "HasUmbra") then
-    
-        if entity:GetHasUmbra() then
-            return true
-        end
-        
-    end
-    
-    return false
-    
+    return entity ~= nil and HasMixin(entity, "Umbra") and entity:GetHasUmbra()
 end
 
 // TODO: use what is defined in the material file
@@ -1326,18 +1368,6 @@ local kUpVector = Vector(0, 1, 0)
 
 function SetPlayerPoseParameters(player, viewModel, headAngles)
 
-    //DebugDrawAngles( headAngles, player:GetOrigin(), 5.0, 0.5, 0.0 )
-
-    if not player or not player:isa("Player") then
-        Log("SetPlayerPoseParameters: player %s is not a player", player)
-    end
-    ASSERT(player and player:isa("Player"))
-    
-    if viewmodel and not viewmodel:isa("Viewmodel") then
-        Log("SetPlayerPoseParameters: player %s s viewmodel is a %s", player, viewmodel)
-    end
-    ASSERT(not viewmodel or viewmodel:isa("Viewmodel"))
-    
     local coords = player:GetCoords()
     
     local pitch = -Math.Wrap(Math.Degrees(headAngles.pitch), -180, 180)
@@ -1365,8 +1395,22 @@ function SetPlayerPoseParameters(player, viewModel, headAngles)
     local x = Math.DotProduct(headCoords.xAxis, velocity)
     local z = Math.DotProduct(headCoords.zAxis, velocity)
     
-    local moveYaw = Math.Wrap(Math.Degrees( math.atan2(z,x) ), -180, 180)
+    local moveYaw
+    
+    if player.OverrideGetMoveYaw then
+        moveYaw = player:OverrideGetMoveYaw()
+    end
+    
+    if not moveYaw then
+        moveYaw = Math.Wrap(Math.Degrees( math.atan2(z,x) ), -180, 180)
+    end
+    
     local speedScalar = velocity:GetLength() / player:GetMaxSpeed(true)
+
+    local crouchAmount = player:GetCrouchAmount()
+    if player.ModifyCrouchAnimation then
+        crouchAmount = player:ModifyCrouchAnimation(crouchAmount)
+    end
     
     player:SetPoseParam("move_yaw", moveYaw)
     player:SetPoseParam("move_speed", speedScalar)
@@ -1387,7 +1431,7 @@ function SetPlayerPoseParameters(player, viewModel, headAngles)
 
     //Print("body yaw = %f, move_yaw = %f", bodyYaw, moveYaw);
     
-    player:SetPoseParam("crouch", player:GetCrouchAmount())
+    player:SetPoseParam("crouch", crouchAmount)
     player:SetPoseParam("land_intensity", landIntensity)
     
     if viewModel then
@@ -1395,7 +1439,7 @@ function SetPlayerPoseParameters(player, viewModel, headAngles)
         viewModel:SetPoseParam("body_pitch", pitch)
         viewModel:SetPoseParam("move_yaw", moveYaw)
         viewModel:SetPoseParam("move_speed", speedScalar)
-        viewModel:SetPoseParam("crouch", player:GetCrouchAmount())
+        viewModel:SetPoseParam("crouch", crouchAmount)
         viewModel:SetPoseParam("body_yaw", bodyYaw)
         viewModel:SetPoseParam("body_yaw_run", bodyYawRun)
         viewModel:SetPoseParam("land_intensity", landIntensity)
@@ -1673,7 +1717,7 @@ end
 // All damage is routed through here.
 function CanEntityDoDamageTo(attacker, target, cheats, devMode, friendlyFire, damageType)
 
-    if not GetGameInfoEntity():GetGameStarted() then
+    if GetGameInfoEntity():GetState() == kGameState.NotStarted then
         return false
     end
    
@@ -1833,6 +1877,9 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
     end
     
     local width, height = weapon:GetMeleeBase()
+    if not width or not height then
+        width, height = weapon:GetMixinMeleeBase()
+    end
     width = scale * width
     height = scale * height
     
@@ -1847,7 +1894,6 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
     if not filter then
         filter = EntityFilterOne(player)
     end
-        
     local middleTrace,middleStart
     local target,endPoint,surface,startPoint
     
@@ -1889,6 +1935,7 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
 end
 
 local kNumMeleeZones = 3
+local kRangeMult = 0 // 0.15
 function PerformGradualMeleeAttack(weapon, player, damage, range, optionalCoords, altMode, filter)
 
     local didHit, target, endPoint, direction, surface
@@ -1898,6 +1945,7 @@ function PerformGradualMeleeAttack(weapon, player, damage, range, optionalCoords
     
     for i = 1, kNumMeleeZones do
     
+        local attackRange = range * (1 - (i-1) * kRangeMult)
         didHitNow, target, endPoint, direction, surface = CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, true, i * stepSize, nil, filter)
         didHit = didHit or didHitNow
         if target and didHitNow then
@@ -1905,9 +1953,7 @@ function PerformGradualMeleeAttack(weapon, player, damage, range, optionalCoords
             if target:isa("Player") then
                 damageMult = 1 - (i - 1) * stepSize
             end
-    
-            //damageMult = math.cos(damageMult * (math.pi / 2) + math.pi) + 1
-            //Print(ToString(damageMult))
+
             break
             
         end
@@ -1927,14 +1973,38 @@ end
  */
 function AttackMeleeCapsule(weapon, player, damage, range, optionalCoords, altMode, filter)
 
-    // Enable tracing on this capsule check, last argument.
-    local didHit, target, endPoint, direction, surface = CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, true, 1, nil, filter)
+    local targets = {}
+    local didHit, target, endPoint, direction, surface
     
-    if didHit then
-        weapon:DoDamage(damage, target, endPoint, direction, surface, altMode)
+    if not filter then
+        filter = EntityFilterTwo(player, weapon)
+    end
+
+    for i = 1, 20 do
+    
+        local traceFilter = function(test)
+            return EntityFilterList(targets)(test) or filter(test)
+        end
+    
+        // Enable tracing on this capsule check, last argument.
+        didHit, target, endPoint, direction, surface = CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, true, 1, nil, traceFilter)
+        local alreadyHitTarget = target ~= nil and table.contains(targets, target)
+
+        if didHit and not alreadyHitTarget then
+            weapon:DoDamage(damage, target, endPoint, direction, surface, altMode)
+        end
+        
+        if target and not alreadyHitTarget then
+            table.insert(targets, target)
+        end
+        
+        if not target or not HasMixin(target, "SoftTarget") then
+            break
+        end
+    
     end
     
-    return didHit, target, endPoint, surface
+    return didHit, targets[#targets], endPoint, surface
     
 end
 
@@ -1977,6 +2047,8 @@ end
 function BuildClassToGrid()
 
     local ClassToGrid = { }
+    
+    ClassToGrid["Undefined"] = { 5, 8 }
 
     ClassToGrid["TechPoint"] = { 1, 1 }
     ClassToGrid["ResourcePoint"] = { 2, 1 }
@@ -1984,14 +2056,17 @@ function BuildClassToGrid()
     ClassToGrid["DoorLocked"] = { 4, 1 }
     ClassToGrid["DoorWelded"] = { 5, 1 }
     ClassToGrid["Grenade"] = { 6, 1 }
+    ClassToGrid["PowerPoint"] = { 7, 1 }
     
     ClassToGrid["Scan"] = { 6, 8 }
+    ClassToGrid["HighlightWorld"] = { 4, 6 }
 
     ClassToGrid["ReadyRoomPlayer"] = { 1, 2 }
     ClassToGrid["Marine"] = { 1, 2 }
-    ClassToGrid["HeavyArmorMarine"] = { 2, 2 }
     ClassToGrid["Exo"] = { 2, 2 }
     ClassToGrid["JetpackMarine"] = { 3, 2 }
+    ClassToGrid["HeavyArmorMarine"] = { 2, 2 }
+    ClassToGrid["MAC"] = { 4, 2 }
     ClassToGrid["CommandStationOccupied"] = { 5, 2 }
     ClassToGrid["CommandStationL2Occupied"] = { 6, 2 }
     ClassToGrid["CommandStationL3Occupied"] = { 7, 2 }
@@ -2002,16 +2077,16 @@ function BuildClassToGrid()
     ClassToGrid["Lerk"] = { 3, 3 }
     ClassToGrid["Fade"] = { 4, 3 }
     ClassToGrid["Onos"] = { 5, 3 }
+    ClassToGrid["Drifter"] = { 6, 3 }
     ClassToGrid["HiveOccupied"] = { 7, 3 }
     ClassToGrid["Kill"] = { 8, 3 }
 
     ClassToGrid["CommandStation"] = { 1, 4 }
-    ClassToGrid["CommandStationL2"] = { 2, 4 }
-    ClassToGrid["CommandStationL3"] = { 3, 4 }
     ClassToGrid["Extractor"] = { 4, 4 }
     ClassToGrid["Sentry"] = { 5, 4 }
-    ClassToGrid["ARC"] = { 6, 4 }
-    ClassToGrid["ARCDeployed"] = { 7, 4 }
+    ClassToGrid["SiegeCannon"] = { 6, 4 }
+    ClassToGrid["SiegeCannonDeployed"] = { 7, 4 }
+    ClassToGrid["SentryBattery"] = { 8, 4 }
 
     ClassToGrid["InfantryPortal"] = { 1, 5 }
     ClassToGrid["Armory"] = { 2, 5 }
@@ -2019,15 +2094,21 @@ function BuildClassToGrid()
     ClassToGrid["AdvancedArmoryModule"] = { 4, 5 }
     ClassToGrid["PhaseGate"] = { 5, 5 }
     ClassToGrid["Observatory"] = { 6, 5 }
-    ClassToGrid["RoboticsFactory"] = { 7, 5 }
+    ClassToGrid["TurretFactory"] = { 7, 5 }
     ClassToGrid["ArmsLab"] = { 8, 5 }
     ClassToGrid["PrototypeLab"] = { 4, 4 }
 
     ClassToGrid["HiveBuilding"] = { 1, 6 }
     ClassToGrid["Hive"] = { 2, 6 }
+    ClassToGrid["Infestation"] = { 4, 6 }
     ClassToGrid["Harvester"] = { 5, 6 }
     ClassToGrid["Hydra"] = { 6, 6 }
     ClassToGrid["Egg"] = { 7, 6 }
+    ClassToGrid["Embryo"] = { 7, 6 }
+    
+    ClassToGrid["Shell"] = { 8, 6 }
+    ClassToGrid["Spur"] = { 7, 7 }
+    ClassToGrid["Veil"] = { 8, 7 }
 
     ClassToGrid["Crag"] = { 1, 7 }
     ClassToGrid["Whip"] = { 3, 7 }
@@ -2036,6 +2117,7 @@ function BuildClassToGrid()
 
     ClassToGrid["WaypointMove"] = { 1, 8 }
     ClassToGrid["WaypointDefend"] = { 2, 8 }
+    ClassToGrid["TunnelEntrance"] = { 3, 8 }
     ClassToGrid["PlayerFOV"] = { 4, 8 }
     
     ClassToGrid["MoveOrder"] = { 1, 8 }
@@ -2043,6 +2125,7 @@ function BuildClassToGrid()
     ClassToGrid["AttackOrder"] = { 2, 8 }
     
     ClassToGrid["SensorBlip"] = { 5, 8 }
+    ClassToGrid["EtherealGate"] = { 8, 1 }
     
     ClassToGrid["Player"] = { 7, 8 }
     
@@ -2057,8 +2140,10 @@ function GetSpriteGridByClass(class, classToGrid)
 
     // This really shouldn't happen but lets return something just in case.
     if not classToGrid[class] then
-        return 8, 1
-    end  
+        Print("No sprite defined for minimap icon %s", class)
+        Print(debug.traceback())
+        return 8, 8
+    end
     
     return unpack(classToGrid[class])
     
@@ -2071,7 +2156,17 @@ end
  */
 function CalcEggSpawnTime(numPlayers, eggNumber, numDeadPlayers)
     return kEggSpawnTime
+
+    //local clampedEggNumber = Clamp(eggNumber, 1, kAlienEggsPerHive)
+    //local clampedNumPlayers = Clamp(numPlayers, 1, kMaxPlayers/2)
+    
+    //local calcEggScalar = math.sin(((clampedEggNumber - 1)/kAlienEggsPerHive) * (math.pi / 2)) * kAlienEggSinScalar
+    //local calcSpawnTime = kAlienEggMinSpawnTime + (calcEggScalar / clampedNumPlayers) * kAlienEggPlayerScalar
+    
+    //return Clamp(calcSpawnTime, kAlienEggMinSpawnTime, kAlienEggMaxSpawnTime)
+    
 end
+
 
 function CheckWeaponForFocus(doer, player)
     
@@ -2080,36 +2175,11 @@ function CheckWeaponForFocus(doer, player)
         return 0 
     end
     if doer and hasupg and level > 0 then
-        if doer.GetAbilityUsesFocus and doer:GetAbilityUsesFocus() then
+        if (doer.GetAbilityUsesFocus and doer:GetAbilityUsesFocus() and doer.primaryAttacking) or (doer.GetSecondaryAbilityUsesFocus and doer:GetSecondaryAbilityUsesFocus() and doer.secondaryAttacking) then
             return level    
         end
     end
     return 0
-end
-
-/**
- * Returns true if the passed in entity is under the control of a client (i.e. either the
- * entity for which SetControllingPlayer has been called on the server, or one
- * of its children).
- */
-function GetIsClientControlled(entity)
-
-    PROFILE("NS2Utility:GetIsClientControlled")
-    
-    local parent = entity:GetParent()
-    
-    if parent ~= nil and GetIsClientControlled(parent) then
-        return true
-    end
-    
-    if Server then
-        return Server.GetOwner(entity) ~= nil
-    elseif Client then
-        return Client.GetLocalPlayer() == entity
-    elseif Predict then
-        return Predict.GetLocalPlayer() == entity
-    end
-
 end
 
 gEventTiming = {}
@@ -2300,7 +2370,7 @@ function GetTexCoordsForTechId(techId)
         gTechIdPosition[kTechId.Axe] = kDeathMessageIcon.Axe
         gTechIdPosition[kTechId.Shotgun] = kDeathMessageIcon.Shotgun
         gTechIdPosition[kTechId.HeavyMachineGun] = kDeathMessageIcon.HeavyMachineGun
-        gTechIdPosition[kTechId.HandGrenades] = kDeathMessageIcon.Grenade
+        gTechIdPosition[kTechId.HandGrenades] = kDeathMessageIcon.HandGrenade
         gTechIdPosition[kTechId.GrenadeLauncher] = kDeathMessageIcon.Grenade
         gTechIdPosition[kTechId.Welder] = kDeathMessageIcon.Welder
         gTechIdPosition[kTechId.Mines] = kDeathMessageIcon.Mine
@@ -2316,19 +2386,23 @@ function GetTexCoordsForTechId(techId)
         gTechIdPosition[kTechId.Spray] = kDeathMessageIcon.Spray
         gTechIdPosition[kTechId.BileBomb] = kDeathMessageIcon.BileBomb
         gTechIdPosition[kTechId.Web] = kDeathMessageIcon.BileBomb
+        gTechIdPosition[kTechId.BabblerAbility] = kDeathMessageIcon.BabblerAbility
         
         gTechIdPosition[kTechId.LerkBite] = kDeathMessageIcon.LerkBite
+        gTechIdPosition[kTechId.Spikes] = kDeathMessageIcon.Spikes
         gTechIdPosition[kTechId.Spores] = kDeathMessageIcon.SporeCloud
         gTechIdPosition[kTechId.Umbra] = kDeathMessageIcon.Umbra
-        gTechIdPosition[kTechId.PrimalScream] = kDeathMessageIcon.PrimalScream
+        gTechIdPosition[kTechId.PrimalScream] = kDeathMessageIcon.Spikes
         
         gTechIdPosition[kTechId.Swipe] = kDeathMessageIcon.Swipe
         gTechIdPosition[kTechId.Blink] = kDeathMessageIcon.Blink
         gTechIdPosition[kTechId.Metabolize] = kDeathMessageIcon.Metabolize
-        gTechIdPosition[kTechId.BabblerAbility] = kDeathMessageIcon.BabblerAbility
+        gTechIdPosition[kTechId.AcidRocket] = kDeathMessageIcon.BileBomb
 
         gTechIdPosition[kTechId.Gore] = kDeathMessageIcon.Gore
+        gTechIdPosition[kTechId.Smash] = kDeathMessageIcon.Gore
         gTechIdPosition[kTechId.Stomp] = kDeathMessageIcon.Stomp
+        gTechIdPosition[kTechId.Devour] = kDeathMessageIcon.Devour
         
     end
     
@@ -2357,6 +2431,82 @@ end
 
 function AddMoveCommand( commands, moveMask )
     return bit.bor(commands, moveMask)
+end
+
+function GetCrags(teamNumber)
+
+    if teamNumber then
+
+        local teamInfo = GetTeamInfoEntity(teamNumber)  
+        if teamInfo then
+            return teamInfo.crags or 0
+        end
+        
+    end
+    
+    return 0
+
+end
+
+function GetShifts(teamNumber)
+
+    if teamNumber then
+
+        local teamInfo = GetTeamInfoEntity(teamNumber)  
+        if teamInfo then
+            return teamInfo.shifts or 0
+        end
+        
+    end
+    
+    return 0
+
+end
+
+function GetShades(teamNumber)
+
+    if teamNumber then
+
+        local teamInfo = GetTeamInfoEntity(teamNumber)  
+        if teamInfo then
+            return teamInfo.shades or 0
+        end  
+        
+    end
+    
+    return 0
+
+end
+
+function GetWhips(teamNumber)
+
+    if teamNumber then
+
+        local teamInfo = GetTeamInfoEntity(teamNumber)  
+        if teamInfo then
+            return teamInfo.whips or 0
+        end  
+        
+    end
+    
+    return 0
+
+end
+
+function GetChambers(techId, teamNumber)
+    if techId == kTechId.Crag then
+        return GetCrags(teamNumber)
+    end
+    if techId == kTechId.Shift then
+        return GetShifts(teamNumber)
+    end
+    if techId == kTechId.Shade then
+        return GetShades(teamNumber)
+    end
+    if techId == kTechId.Whip then
+        return GetWhips(teamNumber)
+    end
+    return 0
 end
 
 function GetSelectablesOnScreen(commander, className, minPos, maxPos)
@@ -2421,4 +2571,202 @@ function GetInstalledMapList()
     
     return mapNames, mapFiles
     
+end
+
+// TODO: move to Utility.lua
+
+function EntityFilterList(list)
+    return function(test) return table.contains(list, test) end
+end
+
+function GetBulletTargets(startPoint, endPoint, spreadDirection, bulletSize, filter)
+
+    local targets = {}
+    local hitPoints = {}
+    local trace
+    
+    for i = 1, 20 do
+    
+        local traceFilter = nil 
+        if filter then
+
+            traceFilter = function(test)
+                return EntityFilterList(targets)(test) or filter(test)
+            end
+        
+        else        
+            traceFilter = EntityFilterList(targets)        
+        end
+    
+        trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, traceFilter)
+        if not trace.entity then
+        
+            -- Limit the box trace to the point where the ray hit as an optimization.
+            local boxTraceEndPoint = trace.fraction ~= 1 and trace.endPoint or endPoint
+            local extents = GetDirectedExtentsForDiameter(spreadDirection, bulletSize)
+            trace = Shared.TraceBox(extents, startPoint, boxTraceEndPoint, CollisionRep.Damage, PhysicsMask.Bullets, traceFilter)
+            
+        end
+        
+        if trace.entity and not table.contains(targets, trace.entity) then
+        
+            table.insert(targets, trace.entity)
+            table.insert(hitPoints, trace.endPoint)
+            
+        end
+        
+        if (not trace.entity or not HasMixin(trace.entity, "SoftTarget")) or trace.fraction == 1 then
+            break
+        end
+    
+    end
+    
+    return targets, trace, hitPoints
+
+end
+
+local kAlienStructureMoveSound = PrecacheAsset("sound/NS2.fev/alien/infestation/build")
+function UpdateAlienStructureMove(self, deltaTime)
+
+    if Server then
+
+        local currentOrder = self:GetCurrentOrder()
+        if GetIsUnitActive(self) and currentOrder and currentOrder:GetType() == kTechId.Move and (not HasMixin(self, "TeleportAble") or not self:GetIsTeleporting()) then
+
+            local speed = self:GetMaxSpeed()
+            if self.shiftBoost then
+                speed = speed * kShiftStructurespeedScalar
+            end
+        
+            self:MoveToTarget(PhysicsMask.AIMovement, currentOrder:GetLocation(), speed, deltaTime)
+            
+            if self:IsTargetReached(currentOrder:GetLocation(), kAIMoveOrderCompleteDistance) then
+                self:CompletedCurrentOrder()
+                self.moving = false
+            else
+                self.moving = true            
+            end
+            
+        else
+            self.moving = false
+        end
+
+        if HasMixin(self, "Obstacle") then
+
+            if currentOrder and currentOrder:GetType() == kTechId.Move then
+            
+                self:RemoveFromMesh()
+            
+                if not self.removedMesh then            
+                    
+                    self.removedMesh = true
+                    self:OnObstacleChanged()
+                
+                end
+                
+            elseif self.removedMesh then
+            
+                self:AddToMesh()
+                self.removedMesh = false
+                
+            end
+
+        end   
+
+    elseif Client then
+    
+        if self.clientMoving ~= self.moving then
+        
+            if self.moving then
+                Shared.PlaySound(self, kAlienStructureMoveSound, 1)
+            else
+                Shared.StopSound(self, kAlienStructureMoveSound)
+            end
+            
+            self.clientMoving = self.moving
+        
+        end
+        
+        if self.moving and (not self.timeLastDecalCreated or self.timeLastDecalCreated + 1.1 < Shared.GetTime() ) then
+        
+            self:TriggerEffects("structure_move")
+            self.timeLastDecalCreated = Shared.GetTime()
+        
+        end
+    
+    end
+
+end
+
+function GetCommanderLogoutAllowed()
+
+    return true
+    
+    /*
+
+    local gameState = kGameState.PreGame
+    local gameStateDuration = 0
+
+    if Server then   
+
+        local gamerules = GetGamerules()
+        if gamerules then
+        
+            gameState = gamerules:GetGameState()
+            gameStateDuration = gamerules:GetGameTimeChanged()
+        
+        end
+
+    else  
+    
+        local gameInfo = GetGameInfoEntity()
+        
+        if gameInfo then
+        
+            gameState = gameInfo:GetState()
+            gameStateDuration = math.max(0, Shared.GetTime() - gameInfo:GetStartTime())
+            
+        end
+
+    end
+
+    return ( gameState ~= kGameState.Countdown and gameState ~= kGameState.Started ) or gameStateDuration >= kCommanderMinTime
+    
+    */
+
+end
+
+function GetFileExists(path)
+    local searchResult = {}
+    Shared.GetMatchingFileNames( path, false, searchResult )
+    return #searchResult > 0
+end
+
+//----------------------------------------
+//  This will return nil if the asset DNE
+//----------------------------------------
+function PrecacheAssetIfExists( path )
+
+    if GetFileExists(path) then
+        return PrecacheAsset(path)
+    else
+        //DebugPrint("attempted to precache asset that does not exist: "..path)
+        return nil
+    end
+
+end
+
+//----------------------------------------
+//  If the first path DNE, it will use the fallback
+//----------------------------------------
+function PrecacheAssetSafe( path, fallback )
+
+    if GetFileExists(path) then
+        return PrecacheAsset(path)
+    else
+        //DebugPrint("Could not find "..path.."\n    Loading "..fallback.." instead" )
+        assert( GetFileExists(fallback) )
+        return PrecacheAsset(fallback)
+    end
+
 end

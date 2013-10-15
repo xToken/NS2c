@@ -113,7 +113,7 @@ function Exo:OnInitialized()
         self:SetModel(modelName, graphName)
         
     end
-   
+
     Marine.OnInitialized(self)
     
     if Server then
@@ -259,9 +259,8 @@ function Exo:GetEngagementPointOverride()
     return self:GetOrigin() + kEngageOffset
 end
 
-local kExoHealthbarOffset = Vector(0, 1.8, 0)
 function Exo:GetHealthbarOffset()
-    return kExoHealthbarOffset
+    return 1.8
 end
 
 function Exo:GetPlayerStatusDesc()
@@ -490,4 +489,4 @@ function Exo:OnUpdateAnimationInput(modelMixin)
     
 end
 
-Shared.LinkClassToMap("Exo", Exo.kMapName, networkVars)
+Shared.LinkClassToMap("Exo", Exo.kMapName, networkVars, true)

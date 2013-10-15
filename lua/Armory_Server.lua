@@ -65,7 +65,7 @@ function Armory:GetShouldResupplyPlayer(player)
     local inNeed = false
     
     // Don't resupply when already full
-    if (player:GetHealth() < player:GetMaxHealth()) or GetIsParasited(player) then
+    if (player:GetHealth() < player:GetMaxHealth()) then
         inNeed = true
     else
 
@@ -109,17 +109,24 @@ function Armory:ResupplyPlayer(player)
     local resuppliedPlayer = false
     
     // Heal player first
-    if (player:GetHealth() < player:GetMaxHealth()) or GetIsParasited(player) then
+    if (player:GetHealth() < player:GetMaxHealth()) then
 
-        player:AddHealth(Armory.kHealAmount, true, true)
+        // third param true = ignore armor
+        player:AddHealth(kArmoryHealAmount, false, true)
 
         self:TriggerEffects("armory_health", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
         
-        resuppliedPlayer = true
+        TEST_EVENT("Armory resupplied health")
         
-        //if HasMixin(player, "ParasiteAble") then
-            //player:RemoveParasite()
-        //end
+        resuppliedPlayer = true
+        /*
+        if HasMixin(player, "ParasiteAble") and player:GetIsParasited() then
+        
+            player:RemoveParasite()
+            TEST_EVENT("Armory removed Parasite")
+            
+        end
+        */
         
     end
 
@@ -153,7 +160,9 @@ function Armory:ResupplyPlayer(player)
             end
             
         end
+        
     end
+        
     if resuppliedPlayer then
     
         // Insert/update entry in table
@@ -166,40 +175,30 @@ function Armory:ResupplyPlayer(player)
 
 end
 
-// Sort players by last time resupplied so players aren't starved out when Armory low
-function Armory:GetSortedResupplyPlayerList()
+function Armory:ResupplyPlayers()
 
     local playersInRange = GetEntitiesForTeamWithinRange("Marine", self:GetTeamNumber(), self:GetOrigin(), Armory.kResupplyUseRange)
+    for index, player in ipairs(playersInRange) do
     
-    local function SortByOldestResupply(player1, player2)
-    
-        local player1Time = self.resuppliedPlayers[player1:GetId()]
-        local player2Time = self.resuppliedPlayers[player2:GetId()]
-        if player1Time == nil then
-            return false
-        elseif player2Time == nil then
-            return true
+        if self:GetShouldResupplyPlayer(player) then
+            self:ResupplyPlayer(player)
         end
-        
-        return player1Time < player2Time
-        
+            
     end
-
-    table.sort(playersInRange, SortByOldestResupply)
-    
-    return playersInRange
 
 end
 
-function Armory:ResupplyPlayers()
+function Armory:UpdateResearch()
 
-    for index, player in ipairs(self:GetSortedResupplyPlayerList()) do
-     
-        // For each, check if they are facing us and if they haven't been resupplied for awhile
-        if self:GetShouldResupplyPlayer(player) then
-            self:ResupplyPlayer(player)                  
-        end
-            
+    local researchId = self:GetResearchingId()
+
+    if researchId == kTechId.AdvancedArmoryUpgrade then
+    
+        local techTree = self:GetTeam():GetTechTree()    
+        local researchNode = techTree:GetTechNode(kTechId.AdvancedArmory)    
+        researchNode:SetResearchProgress(self.researchProgress)
+        techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", self.researchProgress)) 
+        
     end
 
 end
@@ -225,31 +224,45 @@ function Armory:OnResearch(researchId)
     
 end
 
+function Armory:OnResearchCancel(researchId)
+
+    if researchId == kTechId.AdvancedArmoryUpgrade then
+    
+        local team = self:GetTeam()
+        
+        if team then
+        
+            local techTree = team:GetTechTree()
+            local researchNode = techTree:GetTechNode(kTechId.AdvancedArmory)
+            if researchNode then
+            
+                researchNode:ClearResearching()
+                techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", 0))   
+         
+            end
+            
+            for i = 0, self:GetNumChildren() - 1 do
+            
+                local child = self:GetChildAtIndex(i)
+                if child:isa("ArmoryAddon") then
+                    DestroyEntity(child)
+                    break
+                end
+                
+            end  
+
+        end  
+    
+    end
+
+end
+
 // Called when research or upgrade complete
 function Armory:OnResearchComplete(researchId)
 
     if researchId == kTechId.AdvancedArmoryUpgrade then
         self:SetTechId(kTechId.AdvancedArmory)
-    end  
-    
-end
-
-// Check if friendly players are nearby and facing armory and heal/resupply them
-function Armory:OnThink()
-
-    ScriptActor.OnThink(self)
-
-    self:UpdateLoggedIn()
-    
-    // Make sure players are still close enough, alive, marines, etc.
-    if GetIsUnitActive(self) then
-    
-        // Give health and ammo to logged in players
-        self:ResupplyPlayers()
-        
-    end    
-    
-    self:SetNextThink(Armory.kThinkTime)
+    end
     
 end
 

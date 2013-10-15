@@ -11,21 +11,22 @@
 //NS2c
 //Removed unneeded mixins and added electrify hooks.
 
-Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/RecycleMixin.lua")
-Script.Load("lua/DetectableMixin.lua")
-Script.Load("lua/ParasiteMixin.lua")
+
 Script.Load("lua/ResourceTower.lua")
-Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
-Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
+Script.Load("lua/ParasiteMixin.lua")
+Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/ElectrifyMixin.lua")
 Script.Load("lua/EnergyMixin.lua")
+Script.Load("lua/ResearchMixin.lua")
+Script.Load("lua/DetectableMixin.lua")
 
 class 'Extractor' (ResourceTower)
 
@@ -43,26 +44,27 @@ AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(RecycleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
-AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ParasiteMixin, networkVars)
 AddMixinNetworkVars(EnergyMixin, networkVars)
 AddMixinNetworkVars(ElectrifyMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
+AddMixinNetworkVars(DetectableMixin, networkVars)
 
 function Extractor:OnCreate()
 
     ResourceTower.OnCreate(self)
-    
+
     InitMixin(self, ResearchMixin)
     InitMixin(self, RecycleMixin)
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
-    InitMixin(self, DetectableMixin)
-    InitMixin(self, SelectableMixin)
+    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     InitMixin(self, EnergyMixin)
     InitMixin(self, ElectrifyMixin)
     InitMixin(self, DamageMixin)
+	InitMixin(self, DetectableMixin)
+    InitMixin(self, SelectableMixin)
 
     if Client then
         InitMixin(self, CommanderGlowMixin)
@@ -112,16 +114,24 @@ function Extractor:GetCanUpdateEnergy()
     return self:GetIsElectrified() and self:GetCanRegainEnergy()
 end
 
-function Extractor:OnUpdateAnimationInput(modelMixin)
+function Extractor:GetHealthbarOffset()
+    return 2.0
+end 
 
-    PROFILE("Extractor:OnUpdateAnimationInput")
-	modelMixin:SetAnimationInput("powered", true)
+function Extractor:GetUnitNameOverride()
+    
+    local description = GetDisplayName(self)
+
+    if self:GetIsElectrified() then
+        description = "Electrified " .. description 
+    end
+    
+    if HasMixin(self, "Construct") and not self:GetIsBuilt() then
+        description = "Unbuilt " .. description
+    end
+    
+    return description
     
 end
-
-local kExtractorHealthbarOffset = Vector(0, 2.0, 0)
-function Extractor:GetHealthbarOffset()
-    return kExtractorHealthbarOffset
-end 
 
 Shared.LinkClassToMap("Extractor", Extractor.kMapName, networkVars)

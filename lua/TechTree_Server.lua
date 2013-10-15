@@ -73,7 +73,7 @@ function TechTree:AddTechInheritance(parentTech, childTech)
 end
 
 // Contains a bunch of tech nodes
-function TechTree:AddBuildNode(techId, prereq1, prereq2)
+function TechTree:AddBuildNode(techId, prereq1, prereq2, isRequired)
 
     assert(techId)
     
@@ -81,6 +81,7 @@ function TechTree:AddBuildNode(techId, prereq1, prereq2)
 
     techNode:Initialize(techId, kTechType.Build, prereq1, prereq2)
     techNode.requiresTarget = true
+    techNode.isRequired = isRequired
     
     self:AddNode(techNode)    
     
@@ -98,7 +99,7 @@ function TechTree:AddEnergyBuildNode(techId, prereq1, prereq2)
     
 end
 
-function TechTree:AddManufactureNode(techId, prereq1, prereq2)
+function TechTree:AddManufactureNode(techId, prereq1, prereq2, isRequired)
 
     local techNode = TechNode()
 
@@ -106,6 +107,7 @@ function TechTree:AddManufactureNode(techId, prereq1, prereq2)
     
     local buildTime = LookupTechData(techId, kTechDataBuildTime, kDefaultBuildTime)
     techNode.time = ConditionalValue(buildTime ~= nil, buildTime, 0)
+    techNode.isRequired = isRequired
     
     self:AddNode(techNode)  
 
@@ -217,6 +219,24 @@ function TechTree:AddTargetedActivation(techId, prereq1, prereq2)
     
 end
 
+function TechTree:AddMenu(techId, prereq1, prereq2)
+
+    local techNode = TechNode()
+    
+    if not prereq1 then
+        prereq1 = kTechId.None
+    end
+    
+    if not prereq2 then
+        prereq2 = kTechId.None
+    end
+    
+    techNode:Initialize(techId, kTechType.Menu, prereq1, prereq1)
+    
+    self:AddNode(techNode)  
+
+end
+
 //NS2c
 //Adding back in Energy for Scans
 function TechTree:AddTargetedEnergyActivation(techId, prereq1, prereq2)
@@ -228,16 +248,6 @@ function TechTree:AddTargetedEnergyActivation(techId, prereq1, prereq2)
     
     self:AddNode(techNode)  
     
-end
-
-function TechTree:AddMenu(techId)
-
-    local techNode = TechNode()
-    
-    techNode:Initialize(techId, kTechType.Menu, kTechId.None, kTechId.None)
-    
-    self:AddNode(techNode)  
-
 end
 
 function TechTree:AddEnergyManufactureNode(techId, prereq1, prereq2)
@@ -266,22 +276,22 @@ function TechTree:AddPlasmaManufactureNode(techId, prereq1, prereq2)
     
 end
 
-function TechTree:AddSpecial(techId, requiresTarget)
+function TechTree:AddSpecial(techId, prereq1, prereq2, requiresTarget)
 
     local techNode = TechNode()
     
-    techNode:Initialize(techId, kTechType.Special, kTechId.None, kTechId.None)
+    techNode:Initialize(techId, kTechType.Special, prereq1, prereq2)
     techNode.requiresTarget = ConditionalValue(requiresTarget, true, false)
     
     self:AddNode(techNode)  
 
 end
 
-function TechTree:AddPassive(techId)
+function TechTree:AddPassive(techId, prereq1, prereq2)
 
     local techNode = TechNode()
     
-    techNode:Initialize(techId, kTechType.Passive, kTechId.None, kTechId.None)
+    techNode:Initialize(techId, kTechType.Passive, prereq1, prereq2)
     techNode.requiresTarget = false
     
     self:AddNode(techNode)  
@@ -403,8 +413,8 @@ function TechTree:ComputeHasTech(structureTechIdList, techIdCount)
                 // Pre-reqs must be defined already
                 local prereq1 = node:GetPrereq1()
                 local prereq2 = node:GetPrereq2()
-                ASSERT(prereq1 == kTechId.None or (prereq1 < techId), string.format("Prereq %s bigger then %s", EnumToString(kTechId, prereq1), EnumToString(kTechId, techId)))
-                ASSERT(prereq2 == kTechId.None or (prereq2 < techId), string.format("Prereq %s bigger then %s", EnumToString(kTechId, prereq1), EnumToString(kTechId, techId)))
+                assert(prereq1 == kTechId.None or (prereq1 < techId), string.format("Prereq %s bigger then %s", EnumToString(kTechId, prereq1), EnumToString(kTechId, techId)))
+                assert(prereq2 == kTechId.None or (prereq2 < techId), string.format("Prereq %s bigger then %s", EnumToString(kTechId, prereq2), EnumToString(kTechId, techId)))
                 
                 hasTech =   node:GetResearched() and 
                             self:GetHasTech(node:GetPrereq1()) and 
@@ -444,7 +454,10 @@ function TechTree:ComputeHasTech(structureTechIdList, techIdCount)
 end
 
 function TechTree:GetTechSpecial(techId)
-    return (techId == kTechId.TwoCommandStations) or (techId == kTechId.ThreeCommandStations) or (techId == kTechId.TwoHives) or (techId == kTechId.ThreeHives)
+
+    local techNode = self:GetTechNode(techId)
+    return techNode ~= nil and techNode:GetIsSpecial()
+    
 end
 
 function TechTree:GetSpecialTechSupported(techId, structureTechIdList, techIdCount)
@@ -460,6 +473,10 @@ function TechTree:GetSpecialTechSupported(techId, structureTechIdList, techIdCou
         supportingIds = { kTechId.Hive, kTechId.ShadeHive, kTechId.ShiftHive, kTechId.CragHive, kTechId.WhipHive }
     end
     
+    if not supportingIds then
+        return false
+    end    
+    
     local numBuiltSpecials = 0
     
     for _, supportingId in ipairs(supportingIds) do
@@ -470,11 +487,19 @@ function TechTree:GetSpecialTechSupported(techId, structureTechIdList, techIdCou
     
     end
     
-    //Print("TechTree:GetSpecialTechSupported(%s), numBuiltSpecials: %s", EnumToString(kTechId, techId), ToString(numBuiltSpecials))
+    /*
+    local structureTechIdListText = ""
+    for _, structureTechId in ipairs(structureTechIdList) do
+        structureTechIdListText = structureTechIdListText .. ", " .. EnumToString(kTechId, structureTechId) .. "(" .. ToString(techIdCount[structureTechId]) .. ")"
+    end
+    
+    Print(structureTechIdListText)
+    Print("TechTree:GetSpecialTechSupported(%s), numBuiltSpecials: %s", EnumToString(kTechId, techId), ToString(numBuiltSpecials))
+    */
     
     if techId == kTechId.TwoCommandStations or techId == kTechId.TwoHives then
         return numBuiltSpecials >= 2
-    else    
+    else
         return numBuiltSpecials >= 3
     end
     

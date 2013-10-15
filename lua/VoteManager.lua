@@ -49,6 +49,9 @@ function VoteManager:PlayerVotesFor(playerId, target, time)
 
     if type(playerId) == "number" and target ~= nil and type(time) == "number" then
         // Make sure player hasn't voted already
+        if #self.playersVoted == 0 then
+            self.timeVoteStarted = time
+        end
         if table.find(self.playersVoted, playerId) then
             for i = 1, #self.playersTargets do
                 if self.playersTargets[i].t == self.playersvotefor[playerId] then
@@ -58,26 +61,21 @@ function VoteManager:PlayerVotesFor(playerId, target, time)
             end
             table.remove(self.playersVoted, playerId)
         end
-        if not table.find(self.playersVoted, playerId) then
-            local added = false
-            table.insert(self.playersVoted, playerId)
-            self.playersvotefor[playerId] = target
-            for i = 1, #self.playersTargets do
-                if self.playersTargets[i].t == target then
-                    self.playersTargets[i].v = self.playersTargets[i].v + 1
-                    added = true
-                    break
-                end
+        local added = false
+        table.insert(self.playersVoted, playerId)
+        self.playersvotefor[playerId] = target
+        for i = 1, #self.playersTargets do
+            if self.playersTargets[i].t == target then
+                self.playersTargets[i].v = self.playersTargets[i].v + 1
+                added = true
+                break
             end
-            if not added then
-                table.insert(self.playersTargets, {t = target, v = 1})
-            end
-            self.target = target
-            self.timeVoteStarted = time
-            return true
-            
         end
-
+        if not added then
+            table.insert(self.playersTargets, {t = target, v = 1})
+        end
+        self.target = target
+        return true
     end
     
     return false
@@ -124,7 +122,7 @@ end
 // Note - doesn't reset number of players.
 function VoteManager:Reset()
 
-    self.playersTargets = {}
+    self.playersTargets = { }
     self.playersVoted = { }
     self.target = nil
     self.timeVoteStarted = nil

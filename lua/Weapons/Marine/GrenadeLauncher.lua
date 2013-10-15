@@ -6,10 +6,8 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Script.Load("lua/Balance.lua")
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
 Script.Load("lua/Weapons/Marine/Grenade.lua")
-Script.Load("lua/EntityChangeMixin.lua")
 
 class 'GrenadeLauncher' (ClipWeapon)
 
@@ -22,7 +20,7 @@ local networkVars =
 }
 
 GrenadeLauncher.kModelName = PrecacheAsset("models/marine/grenadelauncher/grenadelauncher.model")
-local kViewModelName = PrecacheAsset("models/marine/grenadelauncher/grenadelauncher_view.model")
+local kViewModels = GenerateMarineViewModelPaths("grenadelauncher")
 local kAnimationGraph = PrecacheAsset("models/marine/grenadelauncher/grenadelauncher_view.animation_graph")
 
 function GrenadeLauncher:OnCreate()
@@ -37,8 +35,8 @@ function GrenadeLauncher:GetAnimationGraphName()
     return kAnimationGraph
 end
 
-function GrenadeLauncher:GetViewModelName()
-    return kViewModelName
+function GrenadeLauncher:GetViewModelName(sex, variant)
+    return kViewModels[sex][variant]
 end
 
 function GrenadeLauncher:GetDeathIconIndex()
@@ -101,9 +99,12 @@ function GrenadeLauncher:OnTag(tagName)
 
     PROFILE("GrenadeLauncher:OnTag")
     
-    continueReloading = false
+    local continueReloading = false
     if self:GetIsReloading() and tagName == "reload_end" then
+    
         continueReloading = true
+        self.reloading = false
+        
     end
     
     if tagName == "end" then

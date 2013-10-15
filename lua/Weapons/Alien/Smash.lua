@@ -17,11 +17,6 @@ local networkVars =
 
 AddMixinNetworkVars(StompMixin, networkVars)
 
-// required here to deals different damage depending on if we are goring
-function Smash:GetDamageType()
-    return kSmashDamageType
-end    
-
 function Smash:OnCreate()
 
     Ability.OnCreate(self)
@@ -29,6 +24,10 @@ function Smash:OnCreate()
     InitMixin(self, StompMixin)
     self.lastPrimaryAttackTime = 0
     
+end
+
+function Smash:GetDamageType()
+    return kSmashDamageType
 end
 
 function Smash:GetDeathIconIndex()
@@ -56,15 +55,8 @@ function Smash:GetMeleeBase()
 end
 
 function Smash:OnHolster(player)
-
     Ability.OnHolster(self, player)
-    
-    self:OnAttackEnd()
-    
-end
-
-function Smash:GetIconOffsetY(secondary)
-    return kAbilityOffset.Smash
+    self.primaryAttacking = false
 end
 
 function Smash:OnTag(tagName)
@@ -94,10 +86,10 @@ end
 
 function Smash:OnPrimaryAttack(player)
 
-    if player:GetEnergy() >= self:GetEnergyCost() then
+    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(player) then
         self.primaryAttacking = true
     else
-        self:OnAttackEnd()
+        self.primaryAttacking = false
     end 
 
 end
@@ -105,27 +97,18 @@ end
 function Smash:OnPrimaryAttackEnd(player)
     
     Ability.OnPrimaryAttackEnd(self, player)
-    self:OnAttackEnd()
-    
-end
-
-function Smash:OnAttackEnd()
     self.primaryAttacking = false
+    
 end
 
 function Smash:OnUpdateAnimationInput(modelMixin)
 
-    local activityString = "none"
-    local abilityString = "smash"
-    local attackMarine = false   
-    
+    local activityString = "none"    
     if self.primaryAttacking then
         activityString = "smash"          
     end
-   
-    modelMixin:SetAnimationInput("ability", abilityString) 
+    modelMixin:SetAnimationInput("ability", "smash") 
     modelMixin:SetAnimationInput("activity", activityString)
-    modelMixin:SetAnimationInput("attack_marine", attackMarine)
     
 end
 

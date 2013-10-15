@@ -35,8 +35,9 @@ Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/TriggerMixin.lua")
 Script.Load("lua/TargettingMixin.lua")
-Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/InfestationMixin.lua")
+Script.Load("lua/IdleMixin.lua")
 
 class 'Hydra' (ScriptActor)
 
@@ -47,7 +48,7 @@ Hydra.kModelName = PrecacheAsset("models/alien/offense_chamber/offense_chamber.m
 Hydra.kAnimationGraph = PrecacheAsset("models/alien/hydra/hydra.animation_graph")
 
 Hydra.kSpikeSpeed = 50
-Hydra.kSpread = Math.Radians(16)
+Hydra.kSpread = Math.Radians(12)
 Hydra.kTargetVelocityFactor = 2.0 // Don't always hit very fast moving targets (jetpackers).
 Hydra.kRange = 17.78              // From NS1 (also "alert" range)
 Hydra.kDamage = kHydraDamage
@@ -81,8 +82,9 @@ AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
-AddMixinNetworkVars(HasUmbraMixin, networkVars)
+AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(InfestationMixin, networkVars)
+AddMixinNetworkVars(IdleMixin, networkVars)
 
 function Hydra:OnCreate()
 
@@ -105,23 +107,25 @@ function Hydra:OnCreate()
     InitMixin(self, DamageMixin)
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
-    InitMixin(self, HasUmbraMixin)
+    InitMixin(self, UmbraMixin)
     
     self.alerting = false
     self.attacking = false
-    self.umbratime = 0
     self.hydraParentId = Entity.invalidId
-    
+	self:SetPhysicsType(PhysicsType.Kinematic)
+    self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
+	
 end
 
 function Hydra:OnInitialized()
 
-    ScriptActor.OnInitialized(self)
-    self:SetModel(Hydra.kModelName, Hydra.kAnimationGraph)
-    InitMixin(self, InfestationMixin)
-    self:SetUpdates(true)
-
-    if Server then        
+    if Server then
+    
+        ScriptActor.OnInitialized(self)
+        
+        self:SetModel(Hydra.kModelName, Hydra.kAnimationGraph)
+       
+        self:SetUpdates(true)
         
         // TargetSelectors require the TargetCacheMixin for cleanup.
         InitMixin(self, TargetCacheMixin)
@@ -150,6 +154,9 @@ function Hydra:OnInitialized()
         InitMixin(self, HiveVisionMixin)
         
     end
+    
+    InitMixin(self, InfestationMixin)
+    InitMixin(self, IdleMixin)
     
 end
 
@@ -205,12 +212,13 @@ end
 function Hydra:GetTracerResidueEffectName()
     return kSpikeTracerResidueEffectName
 end
+
 function Hydra:GetReceivesStructuralDamage()
     return true
 end
 
 function Hydra:GetDamagedAlertId()
-    return kTechId.AlienAlertHydraUnderAttack
+    return kTechId.AlienAlertStructureUnderAttack
 end
 
 function Hydra:GetCanSleep()

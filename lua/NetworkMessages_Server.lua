@@ -41,11 +41,11 @@ end
 
 function OnCommandCommAction(client, message)
 
-    local techId = ParseCommActionMessage(message)
+    local techId, shiftDown = ParseCommActionMessage(message)
     
     local player = client:GetControllingPlayer()
     if player and player:GetIsCommander() then
-        player:ProcessTechTreeAction(techId, nil, nil)
+        player:ProcessTechTreeAction(techId, nil, nil, nil, nil, shiftDown)
     else
         Shared.Message("CommAction message received with invalid player. TechID: " .. EnumToString(kTechId, techId))
     end
@@ -57,8 +57,8 @@ function OnCommandCommTargetedAction(client, message)
     local player = client:GetControllingPlayer()
     if player:GetIsCommander() then
     
-        local techId, pickVec, orientation, entityId = ParseCommTargetedActionMessage(message)
-        player:ProcessTechTreeAction(techId, pickVec, orientation, false, entityId)
+        local techId, pickVec, orientation, entityId, shiftDown = ParseCommTargetedActionMessage(message)
+        player:ProcessTechTreeAction(techId, pickVec, orientation, false, entityId, shiftDown)
     
     end
     
@@ -69,8 +69,8 @@ function OnCommandCommTargetedActionWorld(client, message)
     local player = client:GetControllingPlayer()
     if player:GetIsCommander() then
     
-        local techId, pickVec, orientation, entityId = ParseCommTargetedActionMessage(message)
-        player:ProcessTechTreeAction(techId, pickVec, orientation, true, entityId)
+        local techId, pickVec, orientation, entityId, shiftDown = ParseCommTargetedActionMessage(message)
+        player:ProcessTechTreeAction(techId, pickVec, orientation, true, entityId, shiftDown)
     
     end
     
@@ -193,6 +193,16 @@ local function OnChatReceived(client, message)
         
     end
     
+    // handle tournament mode commands
+    if client then  
+  
+        local player = client:GetControllingPlayer()
+        if player then        
+            ProcessSayCommand(player, chatMessage)
+        end
+    
+    end
+    
 end
 
 local function OnCommandCommPing(client, message)
@@ -257,10 +267,22 @@ end
 // function made public so bots can emit voice msgs
 function CreateVoiceMessage(player, voiceId)
 
+    //----------------------------------------
+    //  Respect special reinforced reward VO
+    //----------------------------------------
+    local tier = kReinforcedTierData[ player.reinforcedTierNum ]
+    if tier ~= nil and tier.voiceOverMapping ~= nil and tier.voiceOverMapping[voiceId] ~= nil then
+        voiceId = tier.voiceOverMapping[voiceId]
+    end
+
     local soundData = GetVoiceSoundData(voiceId)
     if soundData then
     
         local soundName = soundData.Sound
+        
+        if HasMixin(player, "MarineVariant") and not player:GetIsMale() and soundData.SoundFemale ~= nil then
+            soundName = soundData.SoundFemale
+        end
         
         if soundData.Function then            
             soundName = soundData.Function(player) or soundName    
@@ -293,28 +315,6 @@ local function OnVoiceMessage(client, message)
     
     if player then
         CreateVoiceMessage(player, voiceId)  
-    end
-
-end
-
-local function OnConnectMessage(client, message)
-
-    local armorType = ParseConnectMessage(message)
-    if client then
-    
-        local allowed = armorType == kArmorType.Green or
-                       (armorType == kArmorType.Black and GetHasBlackArmor(client)) or
-                       (armorType == kArmorType.Deluxe and GetHasDeluxeEdition(client))
-                        
-        if allowed then
-            client.armorType = armorType
-        end
-        
-        local player = client:GetControllingPlayer()
-        if player then
-            player:OnClientUpdated(client)
-        end
-    
     end
 
 end
@@ -403,6 +403,26 @@ local function OnSwitchFirstPersonSpectatePlayer(client, message)
 end
 Server.HookNetworkMessage("SwitchFirstPersonSpectatePlayer", OnSwitchFirstPersonSpectatePlayer)
 
+local function OnSetPlayerVariant(client, message)
+
+    if client then
+
+        client.variantData = message
+        
+        local player = client:GetControllingPlayer()
+        if player then
+            player:OnClientUpdated(client)
+        end
+        
+    end
+    
+end
+
+local function OnConnectMessage(client, message)
+    OnSetPlayerVariant( client, message )
+end
+
+Server.HookNetworkMessage("SetPlayerVariant", OnSetPlayerVariant)
 Server.HookNetworkMessage("SelectUnit", OnCommandSelectUnit)
 Server.HookNetworkMessage("SelectHotkeyGroup", OnCommandParseSelectHotkeyGroup)
 Server.HookNetworkMessage("CreateHotKeyGroup", OnCommandParseCreateHotkeyGroup)

@@ -1,4 +1,4 @@
-//
+// - NS2 Classic Addition - Dragon
 // lua\Weapons\Alien\HarvesterAbility.lua
 
 Script.Load("lua/Weapons/Alien/StructureAbility.lua")
@@ -11,10 +11,6 @@ end
 
 function HarvesterStructureAbility:GetPrimaryAttackDelay()
     return 0
-end
-
-function HarvesterStructureAbility:GetIconOffsetY(secondary)
-    return kAbilityOffset.Hydra
 end
 
 function HarvesterStructureAbility:GetGhostModelName(ability)

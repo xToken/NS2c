@@ -31,6 +31,9 @@ local kTimedDestruction = 0.5
 
 // range in which other mines are trigger when detonating
 local kMineChainDetonateRange = 1.5
+local kMineCameraShakeDistance = 15
+local kMineMinShakeIntensity = 0.01
+local kMineMaxShakeIntensity = 0.13
 
 local networkVars = { }
 
@@ -52,6 +55,7 @@ function Mine:OnCreate()
 
     if Server then
     
+        // init after OwnerMixin since 'OnEntityChange' is expected callback
         InitMixin(self, EntityChangeMixin)
         InitMixin(self, SleeperMixin)
         
@@ -65,12 +69,15 @@ function Mine:GetReceivesStructuralDamage()
     return true
 end    
 
+local function SineFalloff(distanceFraction)
+    local piFraction = Clamp(distanceFraction, 0, 1) * math.pi / 2
+    return math.cos(piFraction + math.pi) + 1 
+end
+
 local function Detonate(self, armFunc)
 
     local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kMineDetonateRange)
-    
-    // RadiusDamage without damage falloff. Ignore damage that goes through the world. Also hurt owner if in range.
-    RadiusDamage(hitEntities, self:GetOrigin(), kMineDetonateRange, kMineDamage, self, false, false)
+    RadiusDamage(hitEntities, self:GetOrigin(), kMineDetonateRange, kMineDamage, self, false, SineFalloff)
     
     // Start the timed destruction sequence for any mine within range of this exploded mine.
     local nearbyMines = GetEntitiesWithinRange("Mine", self:GetOrigin(), kMineChainDetonateRange)
@@ -92,6 +99,7 @@ local function Detonate(self, armFunc)
     DestroyEntity(self)
     
     CreateExplosionDecals(self)
+    TriggerCameraShake(self, kMineMinShakeIntensity, kMineMaxShakeIntensity, kMineCameraShakeDistance)
     
     TEST_EVENT("Mine detonated")
     
@@ -243,8 +251,18 @@ function Mine:GetCanBeUsed(player, useSuccessTable)
 end
 
 function Mine:GetTechButtons(techId)
-    return { kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
-               kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+
+    local techButtons = nil
+    
+    if techId == kTechId.RootMenu then
+    
+        techButtons = { kTechId.None, kTechId.None, kTechId.None, kTechId.None, 
+                        kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+        
+    end
+    
+    return techButtons
+    
 end
 
 function Mine:GetAttachPointOriginHardcoded(attachPointName)

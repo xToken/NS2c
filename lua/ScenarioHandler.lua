@@ -44,7 +44,7 @@ function ScenarioHandler:Init()
         //PowerPointHandler():Init("PowerPoint", kMarineTeamType),
         //OrientedEntityHandler():Init("MAC", kMarineTeamType),
         //OrientedEntityHandler():Init("Drifter", kAlienTeamType),
-        OrientedEntityHandler():Init("ARC",kMarineTeamType),
+        OrientedEntityHandler():Init("SiegeCannon",kMarineTeamType),
         IgnoreEntityHandler():Init("Embryo"),
         IgnoreEntityHandler():Init("Egg", true), 
          
@@ -54,7 +54,7 @@ function ScenarioHandler:Init()
         OrientedEntityHandler():Init("Armory",kMarineTeamType),
         OrientedEntityHandler():Init("Sentry",kMarineTeamType),
         OrientedEntityHandler():Init("PrototypeLab",kMarineTeamType),
-        OrientedEntityHandler():Init("RoboticsFactory",kMarineTeamType),
+        OrientedEntityHandler():Init("TurretFactory",kMarineTeamType),
         OrientedEntityHandler():Init("Observatory",kMarineTeamType),
         OrientedEntityHandler():Init("Extractor",kMarineTeamType),
         

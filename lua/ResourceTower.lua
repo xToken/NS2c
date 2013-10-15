@@ -25,6 +25,7 @@ Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/SleeperMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
 Script.Load("lua/CombatMixin.lua")
+Script.Load("lua/IdleMixin.lua")
 
 class 'ResourceTower' (ScriptActor)
 
@@ -44,6 +45,7 @@ AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
+AddMixinNetworkVars(IdleMixin, networkVars)
 
 if Server then
     Script.Load("lua/ResourceTower_Server.lua")
@@ -83,6 +85,8 @@ function ResourceTower:OnInitialized()
         InitMixin(self, StaticTargetMixin)
         
     end
+    
+    InitMixin(self, IdleMixin)
     
 end
 
