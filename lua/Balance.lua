@@ -182,7 +182,7 @@ kPistolFireDelay = 0.08
 kPistolClipWeight = 0.0033
 
 kWelderDamage = 2
-kWelderDamageType = kDamageType.Normal
+kWelderDamageType = kDamageType.Flame
 kWelderFireDelay = 0.4
 kWelderWeight = 0.005
 kWelderRate = 60
@@ -245,7 +245,7 @@ kMinesWeight = 0.05
 kNumHandGrenades = 2
 kHandGrenadesRange = 4
 kHandGrenadesDamage = 80
-kHandGrenadesDamageType = kDamageType.Normal
+kHandGrenadesDamageType = kDamageType.Structural
 kHandGrenadesLifetime = 1
 kHandGrenadesWeight = 0.005
 

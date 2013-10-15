@@ -65,6 +65,8 @@ Hive.kEnemyApproachesSound = PrecacheAsset("sound/ns2c.fev/ns2c/ui/alien_enemyap
 Hive.kTriggerCatalyst2DSound = PrecacheAsset("sound/NS2.fev/alien/commander/catalyze_2D")
 Hive.kTriggerCatalystSound = PrecacheAsset("sound/NS2.fev/alien/commander/catalyze_3D")
 
+Shared.PrecacheSurfaceShader("'cinematics/vfx_materials/hive_frag.surface_shader")
+
 Hive.kHealRadius = 12.7     // From NS1
 Hive.kHealthPercentage = .15
 Hive.kHealthUpdateTime = 2
