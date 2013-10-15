@@ -115,7 +115,7 @@ function Hydra:OnUpdate(deltaTime)
                 
             else
             
-                // Play alert animation if marines nearby and we're not targeting (ARCs?)
+                // Play alert animation if marines nearby and we're not targeting (SiegeCannons?)
                 if self.timeLastAlertCheck == nil or Shared.GetTime() > self.timeLastAlertCheck + Hydra.kAlertCheckInterval then
                 
                     self.alerting = false

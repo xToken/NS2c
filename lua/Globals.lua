@@ -147,7 +147,7 @@ kDisplayWeaponTime = 1.5
 // Death message indices 
 kDeathMessageIcon = enum( { 'None', 
                             'Rifle', 'RifleButt', 'Pistol', 'Axe', 'Shotgun',
-                            'Flamethrower', 'ARC', 'Grenade', 'Sentry', 'Welder',
+                            'Flamethrower', 'SiegeCannon', 'Grenade', 'Sentry', 'Welder',
                             'Bite', 'HydraSpike', 'Spray', 'Spikes', 'Parasite',
                             'SporeCloud', 'Swipe', 'BuildAbility', 'Whip', 'BileBomb',
                             'Mine', 'Gore', 'Spit', 'Jetpack', 'Claw',
@@ -164,7 +164,7 @@ kMinimapBlipType = enum( { 'Undefined', 'TechPoint', 'ResourcePoint', 'Scan', 'E
                            'Hive', 'Harvester', 'Hydra', 'Egg', 'Embryo', 'Crag', 'Whip', 'Shade', 'Shift', 'Shell', 'Veil', 'Spur', 'TunnelEntrance',
                            'Marine', 'JetpackMarine', 'HeavyArmorMarine', 'Skulk', 'Lerk', 'Onos', 'Fade', 'Gorge',
                            'Door', 'PowerPoint', 'DestroyedPowerPoint',
-                           'ARC', 'Drifter', 'MAC', 'Infestation', 'InfestationDying', 'MoveOrder', 'AttackOrder', 'BuildOrder', 'SensorBlip', 'SentryBattery' } )
+                           'SiegeCannon', 'Drifter', 'MAC', 'Infestation', 'InfestationDying', 'MoveOrder', 'AttackOrder', 'BuildOrder', 'SensorBlip', 'SentryBattery' } )
 
 // Friendly IDs
 // 0 = friendly

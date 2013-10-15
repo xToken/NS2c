@@ -112,7 +112,9 @@ function Hydra:OnCreate()
     self.alerting = false
     self.attacking = false
     self.hydraParentId = Entity.invalidId
-    
+	self:SetPhysicsType(PhysicsType.Kinematic)
+    self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
+	
 end
 
 function Hydra:OnInitialized()
@@ -153,7 +155,6 @@ function Hydra:OnInitialized()
         
     end
     
-    self:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup)
     InitMixin(self, InfestationMixin)
     InitMixin(self, IdleMixin)
     

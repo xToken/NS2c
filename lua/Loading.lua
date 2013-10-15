@@ -56,6 +56,7 @@ local currentBgId
 local currentBackground = nil
 local lastFadeEndTime = 0.0
 local currentMapName = ''
+local mainLoading = false
 local bgSize
 local bgPos
 
@@ -171,22 +172,28 @@ function OnUpdateRender()
         
     end
     
-    // Set backgrounds to the same size
-    tipTextBg:SetSize(Vector(tipText:GetSize().x, tipText:GetSize().y, 0))
-    tipTextBg:SetPosition(Vector(tipText:GetPosition().x - tipText:GetSize().x/2, tipText:GetPosition().y - tipText:GetSize().y/2, 0))
+    if not mainLoading then
     
-    tipNextHintBg:SetSize(Vector(tipNextHint:GetSize().x, tipNextHint:GetSize().y, 0))
-    tipNextHintBg:SetPosition(Vector(tipNextHint:GetPosition().x - tipNextHint:GetSize().x/2, tipNextHint:GetPosition().y - tipNextHint:GetSize().y/2, 0))
-    
-    // Check if map specific backgrounds became available
-    local newMapName = GetMapName()
-    if newMapName ~= '' and currentMapName ~= newMapName then    
-        currentMapName = newMapName
-        InitializeBackgrounds()
-        currentBgId = 0
-        lastFadeEndTime = time - 2*kBgStayTime
+        // Set backgrounds to the same size
+        tipTextBg:SetSize(Vector(tipText:GetSize().x, tipText:GetSize().y, 0))
+        tipTextBg:SetPosition(Vector(tipText:GetPosition().x - tipText:GetSize().x/2, tipText:GetPosition().y - tipText:GetSize().y/2, 0))
+        
+        tipNextHintBg:SetSize(Vector(tipNextHint:GetSize().x, tipNextHint:GetSize().y, 0))
+        tipNextHintBg:SetPosition(Vector(tipNextHint:GetPosition().x - tipNextHint:GetSize().x/2, tipNextHint:GetPosition().y - tipNextHint:GetSize().y/2, 0))
+        
     end
-    
+        
+    // Check if map specific backgrounds became available
+    if not mainLoading then
+        local newMapName = GetMapName()
+        if newMapName ~= '' and currentMapName ~= newMapName then    
+            currentMapName = newMapName
+            InitializeBackgrounds()
+            currentBgId = 0
+            lastFadeEndTime = time - 2*kBgStayTime
+        end
+    end
+        
     // Update background image slideshow
     if backgrounds ~= nil then
     
@@ -319,7 +326,9 @@ end
 
 
 // NOTE: This does not refer to the loading screen being done..it's referring to the loading of the loading screen
-function OnLoadComplete()
+function OnLoadComplete(main)
+
+    mainLoading = (main ~= nil)
 
     // Make the mouse visible so that the user can alt-tab out in Windowed mode.
     Client.SetMouseVisible(true)
@@ -337,17 +346,20 @@ function OnLoadComplete()
     bgPos = Vector( (Client.GetScreenWidth() - xSize) / 2, (Client.GetScreenHeight() - ySize) / 2, 0 ) 
 
     // Create all bgs
-    
-    currentMapName = GetMapName()
-    InitializeBackgrounds()
+    if not mainLoading then
+        
+        currentMapName = GetMapName()
+        InitializeBackgrounds()
 
-    // Init background slideshow state
+        // Init background slideshow state
 
-    lastFadeEndTime = Shared.GetTime()
-    currentBgId = 1
-    if currentBgId <= #backgrounds then
-        currentBackground = backgrounds[currentBgId]
-        currentBackground:SetIsVisible( true )
+        lastFadeEndTime = Shared.GetTime()
+        currentBgId = 1
+        if currentBgId <= #backgrounds then
+            currentBackground = backgrounds[currentBgId]
+            currentBackground:SetIsVisible( true )
+        end
+
     end
     
     local spinnerSize   = GUIScale(256)
@@ -397,46 +409,50 @@ function OnLoadComplete()
     dotsText:SetTextAlignmentY(GUIItem.Align_Center)
     dotsText:SetFontName("fonts/AgencyFB_large.fnt")
     dotsText:SetLayer(3)
+    
+    if not mainLoading then
 
-    // Draw background behind it (create first so it's behind)
-    tipTextBg = GUI.CreateItem()
-    tipTextBg:SetColor(Color(0, 0, 0, 0))
-    tipTextBg:SetIsVisible( Client.GetOptionBoolean("showHints", true) )
-    tipTextBg:SetLayer(3)
-    
-    tipText = GUI.CreateItem()
-    tipText:SetOptionFlag(GUIItem.ManageRender)
-    tipText:SetPosition(Vector(Client.GetScreenWidth() / 2, Client.GetScreenHeight() - 41, 0))
-    tipText:SetTextAlignmentX(GUIItem.Align_Center)
-    tipText:SetTextAlignmentY(GUIItem.Align_Center)
-    tipText:SetFontName("fonts/AgencyFB_small.fnt")
-    tipText:SetLayer(3)
-    
-    // Only show tip if show hints is on
-    tipText:SetIsVisible( Client.GetOptionBoolean("showHints", true) )
+        // Draw background behind it (create first so it's behind)
+        tipTextBg = GUI.CreateItem()
+        tipTextBg:SetColor(Color(0, 0, 0, 0))
+        tipTextBg:SetIsVisible( Client.GetOptionBoolean("showHints", true) )
+        tipTextBg:SetLayer(3)
+        
+        tipText = GUI.CreateItem()
+        tipText:SetOptionFlag(GUIItem.ManageRender)
+        tipText:SetPosition(Vector(Client.GetScreenWidth() / 2, Client.GetScreenHeight() - 41, 0))
+        tipText:SetTextAlignmentX(GUIItem.Align_Center)
+        tipText:SetTextAlignmentY(GUIItem.Align_Center)
+        tipText:SetFontName("fonts/AgencyFB_small.fnt")
+        tipText:SetLayer(3)
+        
+        // Only show tip if show hints is on
+        tipText:SetIsVisible( Client.GetOptionBoolean("showHints", true) )
 
-    // Pick random tip to start
-    tipIndex = randomizer:random(1, #kTipStrings)
-    SetTipText(tipIndex)
-    
-    // Tell user they can hit space for the next tip (create bg first so it draws behind)
-    tipNextHintBg = GUI.CreateItem()
-    tipNextHintBg:SetColor(Color(0, 0, 0, 0))
-    tipNextHintBg:SetIsVisible( Client.GetOptionBoolean("showHints", true) )
-    tipNextHintBg:SetLayer(3)
+        // Pick random tip to start
+        tipIndex = randomizer:random(1, #kTipStrings)
+        SetTipText(tipIndex)
+        
+        // Tell user they can hit space for the next tip (create bg first so it draws behind)
+        tipNextHintBg = GUI.CreateItem()
+        tipNextHintBg:SetColor(Color(0, 0, 0, 0))
+        tipNextHintBg:SetIsVisible( Client.GetOptionBoolean("showHints", true) )
+        tipNextHintBg:SetLayer(3)
 
-    tipNextHint = GUI.CreateItem()
-    tipNextHint:SetOptionFlag(GUIItem.ManageRender)
-    tipNextHint:SetPosition(Vector(Client.GetScreenWidth() / 2, Client.GetScreenHeight() - 15, 0))
-    tipNextHint:SetTextAlignmentX(GUIItem.Align_Center)
-    tipNextHint:SetTextAlignmentY(GUIItem.Align_Center)
-    tipNextHint:SetFontName("fonts/AgencyFB_small.fnt")
-    tipNextHint:SetColor(Color(1, 1, 0, 1))
-    tipNextHint:SetIsVisible( Client.GetOptionBoolean("showHints", true) )
-    tipNextHint:SetLayer(3)
+        tipNextHint = GUI.CreateItem()
+        tipNextHint:SetOptionFlag(GUIItem.ManageRender)
+        tipNextHint:SetPosition(Vector(Client.GetScreenWidth() / 2, Client.GetScreenHeight() - 15, 0))
+        tipNextHint:SetTextAlignmentX(GUIItem.Align_Center)
+        tipNextHint:SetTextAlignmentY(GUIItem.Align_Center)
+        tipNextHint:SetFontName("fonts/AgencyFB_small.fnt")
+        tipNextHint:SetColor(Color(1, 1, 0, 1))
+        tipNextHint:SetIsVisible( Client.GetOptionBoolean("showHints", true) )
+        tipNextHint:SetLayer(3)
     
-    // Translate string to account for findings
-    tipNextHint:SetText(" " .. SubstituteBindStrings(Locale.ResolveString("LOADING_TIP_NEXT")) .. " " )
+        // Translate string to account for findings
+        tipNextHint:SetText(" " .. SubstituteBindStrings(Locale.ResolveString("LOADING_TIP_NEXT")) .. " " )
+        
+    end
     
     // Create a box to show the mods that the server is running
     modsText = GUI.CreateItem()
@@ -459,11 +475,11 @@ end
 // Return true if the event should be stopped here.
 local function OnSendKeyEvent(key, down)
 
-    if key == InputKey.Space and (timeOfLastSpace == nil or Shared.GetTime() > timeOfLastSpace + 0.5) then
-    
-        NextTip()
-        timeOfLastSpace = Shared.GetTime()
-        
+    if not mainLoading then
+        if key == InputKey.Space and (timeOfLastSpace == nil or Shared.GetTime() > timeOfLastSpace + 0.5) then
+            NextTip()
+            timeOfLastSpace = Shared.GetTime()
+        end
     end
     
 end

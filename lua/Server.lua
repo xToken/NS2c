@@ -35,6 +35,7 @@ Script.Load("lua/ServerAdminCommands.lua")
 Script.Load("lua/ServerWebInterface.lua")
 Script.Load("lua/MapCycle.lua")
 Script.Load("lua/ConsistencyConfig.lua")
+Script.Load("lua/Mantis.lua")
 
 Script.Load("lua/ConsoleCommands_Server.lua")
 Script.Load("lua/NetworkMessages_Server.lua")

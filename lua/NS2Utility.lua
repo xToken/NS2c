@@ -447,7 +447,7 @@ function GetCircleSizeForEntity(entity)
     size = ConditionalValue(entity:isa("Harvester"), 3.7, size)
     size = ConditionalValue(entity:isa("Crag"), 3, size)
     size = ConditionalValue(entity:isa("TurretFactory"), 6, size)
-    size = ConditionalValue(entity:isa("ARC"), 3.5, size)
+    size = ConditionalValue(entity:isa("SiegeCannon"), 3.5, size)
     size = ConditionalValue(entity:isa("ArmsLab"), 4.3, size)
     return size
     
@@ -2084,8 +2084,8 @@ function BuildClassToGrid()
     ClassToGrid["CommandStation"] = { 1, 4 }
     ClassToGrid["Extractor"] = { 4, 4 }
     ClassToGrid["Sentry"] = { 5, 4 }
-    ClassToGrid["ARC"] = { 6, 4 }
-    ClassToGrid["ARCDeployed"] = { 7, 4 }
+    ClassToGrid["SiegeCannon"] = { 6, 4 }
+    ClassToGrid["SiegeCannonDeployed"] = { 7, 4 }
     ClassToGrid["SentryBattery"] = { 8, 4 }
 
     ClassToGrid["InfantryPortal"] = { 1, 5 }
@@ -2600,8 +2600,12 @@ function GetBulletTargets(startPoint, endPoint, spreadDirection, bulletSize, fil
     
         trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, traceFilter)
         if not trace.entity then
+        
+            -- Limit the box trace to the point where the ray hit as an optimization.
+            local boxTraceEndPoint = trace.fraction ~= 1 and trace.endPoint or endPoint
             local extents = GetDirectedExtentsForDiameter(spreadDirection, bulletSize)
-            trace = Shared.TraceBox(extents, startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, traceFilter)
+            trace = Shared.TraceBox(extents, startPoint, boxTraceEndPoint, CollisionRep.Damage, PhysicsMask.Bullets, traceFilter)
+            
         end
         
         if trace.entity and not table.contains(targets, trace.entity) then

@@ -151,7 +151,7 @@ function ClipWeapon:GetSpread()
 end
 
 function ClipWeapon:GetRange()
-    return 8012
+    return 100
 end
 
 function ClipWeapon:GetAmmo()
@@ -433,6 +433,7 @@ local function FireBullets(self, player)
       
     local numberBullets = self:GetBulletsPerShot()
     local startPoint = player:GetEyePos()
+    local bulletSize = self:GetBulletSize()
     
     for bullet = 1, numberBullets do
     
@@ -441,9 +442,13 @@ local function FireBullets(self, player)
         local endPoint = startPoint + spreadDirection * range
 
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
-        if not trace.entity then
-            local extents = GetDirectedExtentsForDiameter(viewCoords.zAxis, self:GetBulletSize())
-            trace = Shared.TraceBox(extents, startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+        if not trace.entity and Server  then
+        
+            -- Limit the box trace to the point where the ray hit as an optimization.
+            local boxTraceEndPoint = trace.fraction ~= 1 and trace.endPoint or endPoint
+            local extents = GetDirectedExtentsForDiameter(spreadDirection, bulletSize)
+            trace = Shared.TraceBox(extents, startPoint, boxTraceEndPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+            
         end   
         
         local damage = 0

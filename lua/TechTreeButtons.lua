@@ -92,9 +92,9 @@ kTechIdToMaterialOffset[kTechId.Lerk] = 29
 
 kTechIdToMaterialOffset[kTechId.Fade] = 30
 kTechIdToMaterialOffset[kTechId.Onos] = 31
-kTechIdToMaterialOffset[kTechId.ARC] = 32
-//kTechIdToMaterialOffset[kTechId.ARCUndeploy] = 32
-//kTechIdToMaterialOffset[kTechId.ARCDeploy] = 33
+kTechIdToMaterialOffset[kTechId.SiegeCannon] = 32
+//kTechIdToMaterialOffset[kTechId.SiegeCannonUndeploy] = 32
+//kTechIdToMaterialOffset[kTechId.SiegeCannonDeploy] = 33
 kTechIdToMaterialOffset[kTechId.Egg] = 34
 kTechIdToMaterialOffset[kTechId.Embryo] = 34
 //kTechIdToMaterialOffset[kTechId.Cyst] = 35

@@ -11,7 +11,6 @@
 //NS2c
 //A Mostly client side infestation implementation
 
-
 Script.Load("lua/Infestation_Client_SparserBlobPatterns.lua")
 
 InfestationMixin = CreateMixin(InfestationMixin)
@@ -26,13 +25,16 @@ local kInfestationRecedeRate = 6
 // Sleeping those to random fps intervals might help reduce impact, but may introduce other wierd effects.
 local gInfestationQuality = nil
 local kInfestationScalar = 1
-
-
 local kSlowUpdateInterval = 1 // when the infestation has been stable for a while, run full updates this many times/sec
 local kSlowUpdateCountLimit = 5 // how many stable updates need to pass before going into slow update mode
 
 // Purely for debugging/recording. This only affects the visual blobs, NOT the actual infestation radius
 local kDebugVisualGrowthScale = 1.0
+
+Shared.PrecacheSurfaceShader("materials/infestation/infestation_shell.surface_shader")
+Shared.PrecacheSurfaceShader("materials/infestation/infestation_shell.surface_shader")
+Shared.PrecacheSurfaceShader("materials/infestation/Infestation.surface_shader")
+Shared.PrecacheSurfaceShader("materials/infestation/Infestation.surface_shader")
 
 InfestationMixin.expectedMixins =
 {

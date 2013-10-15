@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project>
   <file>
-    <filename>ARC.lua</filename>
-  </file>
-  <file>
-    <filename>ARC_Server.lua</filename>
-  </file>
-  <file>
     <filename>Weapons\Alien\Ability.lua</filename>
   </file>
   <file>
@@ -650,6 +644,12 @@
   </file>
   <file>
     <filename>Weapons\Marine\Shotgun.lua</filename>
+  </file>
+  <file>
+    <filename>SiegeCannon.lua</filename>
+  </file>
+  <file>
+    <filename>SiegeCannon_Server.lua</filename>
   </file>
   <file>
     <filename>Skulk.lua</filename>

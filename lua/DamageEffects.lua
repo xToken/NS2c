@@ -342,7 +342,7 @@ kDamageEffects =
             {cinematic = "", classname = "PowerPoint", done = true},
             {cinematic = "", classname = "Player", done = true},
             {cinematic = "", classname = "MAC", done = true},
-            {cinematic = "", classname = "ARC", done = true},
+            {cinematic = "", classname = "SiegeCannon", done = true},
             {cinematic = "cinematics/marine/structures/hurt_severe.cinematic", classname = "ScriptActor", isalien = false, flinch_severe = true, done = true},
             {cinematic = "cinematics/marine/structures/hurt.cinematic", classname = "ScriptActor", isalien = false, done = true},
             

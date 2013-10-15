@@ -140,8 +140,8 @@ function Fade:GetPlayerControllersGroup()
     return PhysicsGroup.BigPlayerControllersGroup
 end
 
-function Fade:PerformsVerticalMove()
-    return self:GetIsBlinking()
+function Fade:GetIsForwardOverrideDesired()
+    return not self:GetIsBlinking() and not self:GetIsOnGround()
 end
 
 function Fade:ReceivesFallDamage()

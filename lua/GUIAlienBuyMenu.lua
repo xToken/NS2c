@@ -1512,6 +1512,11 @@ function GUIAlienBuyMenu:SendKeyEvent(key, down)
         
     end
     
+    // No matter what, this menu consumes MouseButton0/1 down.
+    if down and (key == InputKey.MouseButton0 or key == InputKey.MouseButton1) then
+        inputHandled = true
+    end
+    
     // AlienBuy_Close() must be the last thing called.
     if closeMenu then
     

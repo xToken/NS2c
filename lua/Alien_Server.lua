@@ -227,10 +227,12 @@ function Alien:ProcessBuyAction(techIds)
         local newAlienExtents = LookupTechData(newLifeFormTechId, kTechDataMaxExtents)
         local physicsMask = PhysicsMask.Evolve
         local position = self:GetOrigin()
+        -- Add a bit to the extents when looking for a clear space to spawn.
+        local spawnBufferExtents = Vector(0.1, 0.1, 0.1)
         
         local evolveAllowed = self:GetIsOnGround()
-        evolveAllowed = evolveAllowed and GetHasRoomForCapsule(eggExtents, position + Vector(0, eggExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
-        evolveAllowed = evolveAllowed and GetHasRoomForCapsule(newAlienExtents, position + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
+        evolveAllowed = evolveAllowed and GetHasRoomForCapsule(eggExtents + spawnBufferExtents, position + Vector(0, eggExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
+        evolveAllowed = evolveAllowed and GetHasRoomForCapsule(newAlienExtents + spawnBufferExtents, position + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
         
         // If not on the ground for the buy action, attempt to automatically
         // put the player on the ground in an area with enough room for the new Alien.

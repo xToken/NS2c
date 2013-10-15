@@ -451,8 +451,8 @@ local function ComputeMenuTechAvailability(self)
                         menuTechButtonAffordable = canAfford
                         
                         // If any of the selection entities allows this tech, it is allowed!
-                        // For example, if 2 ARCs are selected and one is in deploy mode while the other is not,
-                        // The first ARC would allow undeploy and the second would not, so at least one ARC allows it.
+                        // For example, if 2 SiegeCannons are selected and one is in deploy mode while the other is not,
+                        // The first SiegeCannon would allow undeploy and the second would not, so at least one SiegeCannon allows it.
                         if menuTechButtonAllowed and menuTechButtonAffordable then
                             break
                         end

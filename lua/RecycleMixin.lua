@@ -86,7 +86,7 @@ function RecycleMixin:OnResearchComplete(researchId)
         Server.SendNetworkMessage( "Recycle", BuildRecycleMessage(amount - finalRecycleAmount, self:GetTechId(), finalRecycleAmount), true )
         
         local team = self:GetTeam()
-        local deathMessageTable = team:GetDeathMessage(self, kDeathMessageIcon.Recycled, self)
+        local deathMessageTable = team:GetDeathMessage(team:GetCommander(), kDeathMessageIcon.Recycled, self)
         team:ForEachPlayer(function(player) if player:GetClient() then Server.SendNetworkMessage(player:GetClient(), "DeathMessage", deathMessageTable, true) end end)
         
         self.recycled = true

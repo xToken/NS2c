@@ -22,7 +22,7 @@ kArmoryCost = 10
 kArmsLabCost = 20
 kPrototypeLabCost = 40
 kSentryCost = 10
-kARCCost = 15
+kSiegeCannonCost = 15
 kPhaseGateCost = 15
 kObservatoryCost = 15
 
@@ -93,7 +93,7 @@ kInfantryPortalBuildTime = 10
 kCommandStationBuildTime = 15
 kTurretFactoryBuildTime = 15
 kSentryBuildTime = 7
-kArcBuildTime  = 10
+kSiegeCannonBuildTime  = 10
 kObservatoryBuildTime = 15
 kPhaseGateBuildTime = 12
 
@@ -257,10 +257,11 @@ kSentryAttackBulletsPerSalvo = 1
 kConfusedSentryBaseROF = 1.0
 kSentriesPerFactory = 3
 
-kARCDamage = 400
-kARCDamageType = kDamageType.StructuresOnly
-kARCRange = 25 //1100 NS1 - Bigger than NS1, dropping to 25
-kArcsPerFactory = 5
+kSiegeCannonDamage = 400
+kSiegeCannonDamageType = kDamageType.StructuresOnly
+kSiegeCannonRange = 25 //1100 NS1 - Bigger than NS1, dropping to 25
+kSiegeCannonSplashRadius = 3
+kSiegeCannonsPerFactory = 5
 
 kWeapons1DamageScalar = 1.1
 kWeapons2DamageScalar = 1.2

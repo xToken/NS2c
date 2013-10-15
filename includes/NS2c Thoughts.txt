@@ -29,7 +29,7 @@ Gorge - spit/healspray/non-dot bilebomb/web (WIP)
 Builder unit, can outrun marines but generally not win in combat.
 
 Lerk - bite/ranged spore/ranged umbra/primal scream
-Support unit, deals aoe damage and damage reduction, high ms and good exploration
+Support unit, deals aoe damage and damage reduction, high ms and good scouting.
 
 Fade - swipe/blink/metabolize/acid rocket
 Assault unit, accels at killing marines and groups of marines
@@ -43,7 +43,7 @@ there is a slight scaling applied when below 4 or above 12 players on the team.
 Aliens now have a spawn queue for each active hive, which spawns an alien about every 8 seconds.
 Aliens can teleport between hives built hives, and to unbuilt hives that are under attack.  Crags
 passive healing, the hives passive, and gorges healing have all been adjusted.  Shift gives passive energy
-to nearby aliens.  Infestation as a visual and a requirement has been removed completely.
+to nearby aliens.  Infestation is left only as a visual.
 
 Marines
 Focus back on strengths on NS1 marines, removal of sprint, increase of base movement
@@ -54,8 +54,8 @@ more like their originals, both in damage and capabilities.  Hand grenades and M
 have been added, with Motion Tracking working only within proximity of a marine, and not
 over the entire map.  Many adjustments to health of buildings and build times, and marine spawn times.
 Jetpack effectiveness is increased but also requires more to research.  Heavy armor works ala NS1.  Sentry
-guns and arcs need to be build next to an active robotics factory (turretfactory).  An upgraded once is needed 
-for arcs.  They cannot move and must be built by marines.  If the factory dies the turrets power down.
+guns and arcs need to be built next to an active turret factory.  An upgraded TF is needed 
+for siege cannons.  They cannot move and must be built by marines.  If the factory dies the turrets power down.
 
 Evaulating additional tech tree options for marines (potentially explore role for flamer).
 Consider adding tech path that requires second tech point to be captured.

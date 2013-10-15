@@ -32,7 +32,7 @@
 // Puncture - Extra vs. players
 // Structural - Double against structures
 // Gas - Breathing targets only (Spores, Nerve Gas GL). Ignores armor.
-// StructuresOnly - Doesn't damage players or AI units (ARC)
+// StructuresOnly - Doesn't damage players or AI units (SiegeCannon)
 // Falling - Ignores armor for humans, no damage for some creatures or exosuit
 // Door - Like Structural but also does damage to Doors. Nothing else damages Doors.
 // Flame - Like normal but catches target on fire and plays special flinch animation
@@ -128,7 +128,7 @@ kDamageTypeDesc = {
     "Corrode damage: Damage structures or armor only for non structures",
     "Armor damage: Will never reduce health",
     "StructuresOnlyLight: Damages structures only, light damage.",
-    "Splash: same as structures only but always affects ARCs (friendly fire).",
+    "Splash: same as structures only but always affects SiegeCannons (friendly fire).",
     "Spreading: Does less damage against small targets."
 }
 
@@ -148,7 +148,7 @@ kExoHealthPointsPerArmor = 3
 kHeavyHealthPerArmor = 1
 
 kFlameableMultiplier = 2.5
-kCorrodeDamagePlayerArmorScalar = 0.28
+kCorrodeDamagePlayerArmorScalar = 0.23
 kCorrodeDamageExoArmorScalar = 0.3
 
 // deal only 33% of damage to friendlies

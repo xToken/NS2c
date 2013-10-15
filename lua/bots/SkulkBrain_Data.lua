@@ -64,7 +64,7 @@ local function GetAttackUrgency(bot, mem)
         [kMinimapBlipType.Sentry] =             numOthers >= 3 and 0.5 or 0.95,
         
         // Structures
-        [kMinimapBlipType.ARC] =                numOthers >= 4 and 0.4 or 0.9,
+        [kMinimapBlipType.SiegeCannon] =        numOthers >= 4 and 0.4 or 0.9,
         [kMinimapBlipType.CommandStation] =     numOthers >= 8 and 0.3 or 0.85,
         [kMinimapBlipType.PhaseGate] =          numOthers >= 4 and 0.2 or 0.8,
         [kMinimapBlipType.Observatory] =        numOthers >= 3 and 0.2 or 0.75,

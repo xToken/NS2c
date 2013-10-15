@@ -591,7 +591,7 @@ function GUIMarineBuyMenu:_UpdateContent(deltaTime)
         self.itemName:SetColor(color)
         self.portrait:SetColor(color)        
         self.itemDescription:SetColor(color)
-        
+
         self.itemName:SetText(MarineBuy_GetDisplayName(techId))
         self.portrait:SetTexturePixelCoordinates(GetBigIconPixelCoords(techId, researched))
         self.itemDescription:SetText(MarineBuy_GetWeaponDescription(techId))
@@ -774,7 +774,7 @@ function GUIMarineBuyMenu:SendKeyEvent(key, down)
         local mouseX, mouseY = Client.GetCursorPosScreen()
         if down then
         
-            inputHandled, closeMenu = HandleItemClicked(self, mouseX, mouseY) or inputHandled
+            inputHandled, closeMenu = HandleItemClicked(self, mouseX, mouseY)
             
             if not inputHandled then
             
@@ -782,7 +782,6 @@ function GUIMarineBuyMenu:SendKeyEvent(key, down)
                 if GetIsMouseOver(self, self.closeButton) then
                 
                     closeMenu = true
-                    inputHandled = true
                     MarineBuy_OnClose()
                     
                 end
@@ -791,6 +790,11 @@ function GUIMarineBuyMenu:SendKeyEvent(key, down)
             
         end
         
+    end
+    
+    // No matter what, this menu consumes MouseButton0/1.
+    if key == InputKey.MouseButton0 or key == InputKey.MouseButton1 then
+        inputHandled = true
     end
     
     if InputKey.Escape == key and not down then

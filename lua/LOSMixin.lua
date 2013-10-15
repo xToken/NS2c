@@ -218,7 +218,7 @@ if Server then
         
         if not seen and lastViewer then
         
-            // prevents flickering, ARCs for example would lose their target
+            // prevents flickering, SiegeCannons for example would lose their target
             seen = GetCanSee(lastViewer, self)
             
         end

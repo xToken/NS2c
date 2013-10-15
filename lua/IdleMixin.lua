@@ -30,7 +30,7 @@ kIdleSoundNames["Lerk"] = "sound/NS2.fev/alien/lerk/idle"
 kIdleSoundNames["Fade"] = "sound/NS2.fev/alien/skulk/idle"
 kIdleSoundNames["Onos"] = "sound/NS2.fev/alien/onos/idle"
 
-kIdleSoundNames["ARC"] = "sound/NS2.fev/marine/structures/arc/idle"
+kIdleSoundNames["SiegeCannon"] = "sound/NS2.fev/marine/structures/arc/idle"
 kIdleSoundNames["PhaseGate"] = "sound/NS2.fev/marine/structures/phase_gate_active"
 kIdleSoundNames["InfantryPortal"] = "sound/NS2.fev/marine/structures/infantry_portal_active"
 kIdleSoundNames["Extractor"] = "sound/NS2.fev/marine/structures/extractor_active"

@@ -207,9 +207,9 @@ function MarineTeam:InitTechTree()
     self.techTree:AddBuildNode(kTechId.TurretFactory,             kTechId.Armory,              kTechId.None)  
     self.techTree:AddBuildNode(kTechId.AdvancedTurretFactory,     kTechId.Armory,              kTechId.TurretFactory)
     self.techTree:AddTechInheritance(kTechId.TurretFactory,       kTechId.AdvancedTurretFactory)
-    self.techTree:AddBuildNode(kTechId.ARC,                       kTechId.AdvancedTurretFactory,  kTechId.None)       
-    self.techTree:AddBuildNode(kTechId.PrototypeLab,          kTechId.AdvancedArmory,              kTechId.ArmsLab)        
-    self.techTree:AddUpgradeNode(kTechId.Electrify,           kTechId.Extractor,               kTechId.None)
+    self.techTree:AddBuildNode(kTechId.SiegeCannon,               kTechId.AdvancedTurretFactory,  kTechId.None)       
+    self.techTree:AddBuildNode(kTechId.PrototypeLab,              kTechId.AdvancedArmory,              kTechId.ArmsLab)        
+    self.techTree:AddUpgradeNode(kTechId.Electrify,               kTechId.Extractor,               kTechId.None)
     
     // Marine Upgrades
     self.techTree:AddResearchNode(kTechId.PhaseTech,                    kTechId.Observatory,        kTechId.None)
@@ -262,9 +262,7 @@ function MarineTeam:InitTechTree()
 end
 
 function MarineTeam:AwardResources(resAward, pointOwner)
-
      self:AddTeamResources(resAward)
-
 end
 
 function MarineTeam:SpawnInitialStructures(techPoint)

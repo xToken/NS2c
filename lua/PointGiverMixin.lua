@@ -182,12 +182,11 @@ if Server then
         
             if attacker:isa("Player") then
                 attacker:AddKill()
-            end
-
-			if Server then
-                local awardTeam = attacker:GetTeam()
-                if awardTeam.AwardResources and awardTeam ~= self:GetTeam() then
-                    awardTeam:AwardResources(self:GetResourceValue(attacker), attacker)
+                if Server then
+                    local awardTeam = attacker:GetTeam()
+                    if awardTeam.AwardResources and awardTeam ~= self:GetTeam() then
+                        awardTeam:AwardResources(self:GetResourceValue(attacker), attacker)
+                    end
                 end
             end
             

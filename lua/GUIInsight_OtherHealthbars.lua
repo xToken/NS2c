@@ -35,7 +35,7 @@ local kOtherTypes = {
     "PrototypeLab",
     "Sentry",
     "InfantryPortal",
-    "ARC",
+    "SiegeCannon",
     -- alien
     "Whip",
     "Crag",
@@ -121,7 +121,7 @@ function GUIInsight_OtherHealthbars:Update(deltaTime)
                 
                 otherList[otherIndex].Visited = true
                 
-                local barScale = maxHealth/2400 -- Based off ARC health
+                local barScale = maxHealth/2400 -- Based off SiegeCannon health
                 local backgroundSize = math.max(kOtherHealthBarSize.x, barScale * kOtherHealthBarSize.x)
                 local kHealthbarOffset = Vector(-backgroundSize/2, -kOtherHealthBarSize.y - GUIScale(8), 0)
                 

@@ -149,7 +149,7 @@ end
 // Return tech ids that represent research or actions for this entity in specified menu. Parameter is kTechId.RootMenu for
 // default menu or a entity-defined menu id for a sub-menu. Return nil if this actor doesn't recognize a menu of that type.
 // Used for drawing icons in selection menu and also for verifying which actions are valid for entities and when (ie, when
-// a ARC can siege, or when a unit has enough energy to perform an action, etc.)
+// a SiegeCannon can siege, or when a unit has enough energy to perform an action, etc.)
 // Return list of 8 tech ids, represnting the 2nd and 3rd row of the 4x3 build icons.
 function ScriptActor:GetTechButtons(techId)
     return nil

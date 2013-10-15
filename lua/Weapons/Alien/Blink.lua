@@ -52,17 +52,21 @@ function Blink:GetSecondaryAttackRequiresPress()
 end
 
 function Blink:TriggerBlinkOutEffects(player)
-    if self.lastblinkeffect + kMinBlinkEffectTime < Shared.GetTime() then
-        self.lastblinkeffect = Shared.GetTime()
-        self:TriggerEffects("blink_out")
-    end
+	if not Shared.GetIsRunningPrediction() then
+	    if self.lastblinkeffect + kMinBlinkEffectTime < Shared.GetTime() then
+	        self.lastblinkeffect = Shared.GetTime()
+	        player:TriggerEffects("blink_out")
+	    end
+	end
 end
 
 function Blink:TriggerBlinkInEffects(player)
-    if self.lastblinkeffect + kMinBlinkEffectTime < Shared.GetTime() then
-        self.lastblinkeffect = Shared.GetTime()
-        self:TriggerEffects("blink_in")
-    end
+	if not Shared.GetIsRunningPrediction() then
+	    if self.lastblinkeffect + kMinBlinkEffectTime < Shared.GetTime() then
+	        self.lastblinkeffect = Shared.GetTime()
+	        player:TriggerEffects("blink_in")
+	    end
+	end
 end
 
 function Blink:GetIsBlinking()

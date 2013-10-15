@@ -119,7 +119,7 @@ function Weapon:GetViewModelName()
 end
 
 function Weapon:GetRange()
-    return 8012
+    return 100
 end
 
 function Weapon:GetBaseRateofFire()
@@ -260,6 +260,8 @@ local function SharedUpdate(self)
     // Handle dropping on the client
     if Client then
         self:UpdateDropped()
+
+
     end
     
 end

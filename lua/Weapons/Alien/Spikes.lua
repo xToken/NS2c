@@ -60,8 +60,12 @@ local function FireSpikes(self)
         
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
         if not trace.entity then
+        
+            -- Limit the box trace to the point where the ray hit as an optimization.
+            local boxTraceEndPoint = trace.fraction ~= 1 and trace.endPoint or endPoint
             local extents = GetDirectedExtentsForDiameter(spreadDirection, kSpikesSize)
-            trace = Shared.TraceBox(extents, startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+            trace = Shared.TraceBox(extents, startPoint, boxTraceEndPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+            
         end
         
         local distToTarget = (trace.endPoint - startPoint):GetLength()

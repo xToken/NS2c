@@ -116,8 +116,8 @@ kMarineStructureEffects =
         },
     },
 
-    // Called when ARC is created out of robotics factory
-    arc_built =
+    // Called when SiegeCannon is created out of robotics factory
+    sc_built =
     {
         arcDeployEffects =
         {
@@ -126,55 +126,52 @@ kMarineStructureEffects =
     },            
     
     // Switching into siege mode
-    arc_deploying =
+    sc_deploying =
     {
         arcDeployEffects =
         {
-            {sound = "sound/NS2.fev/marine/structures/arc/deploy"},
+            {sound = "sound/ns2c.fev/ns2c/marine/siegecannon/deploy"},
         },
     },    
     
     // Switching back to movement mode
-    arc_undeploying =
+    sc_inactive =
     {
         arcUndeployEffects =
         {
-            {stop_sound = "sound/NS2.fev/marine/structures/arc/charge"},
             {sound = "sound/NS2.fev/marine/structures/arc/undeploy"},
         },
     },
     
-    arc_charge =
+    sc_charge =
     {
         arcChargeEffects = 
         {
-            {parented_sound = "sound/NS2.fev/marine/structures/arc/charge"},
             {parented_cinematic = "cinematics/marine/arc/target.cinematic", attach_point = "fxnode_arcmuzzle"},
         },
     },
     
-    arc_stop_charge =
+    sc_stop_charge =
     {
         arcStopChargeEffects = 
         {
-            {stop_sound = "sound/NS2.fev/marine/structures/arc/charge"},
             {stop_cinematic = "cinematics/marine/arc/target.cinematic"},
         },
     },
     
-    arc_firing =
+    sc_firing =
     {
         arcFireEffects =
         {
             // "trail" like a tracer
-            {stop_sound = "sound/NS2.fev/marine/structures/arc/charge"},
-            {sound = "sound/NS2.fev/marine/structures/arc/fire"},
-            {parented_cinematic = "cinematics/marine/arc/fire.cinematic", attach_point = "fxnode_arcmuzzle"},
+            //{sound = "sound/NS2.fev/marine/structures/arc/fire"},
+            {sound = "sound/ns2c.fev/ns2c/marine/siegecannon/fire"},
+            {cinematic = "cinematics/marine/arc/fire.cinematic", attach_point = "fxnode_arcmuzzle"},
         },
     },
     
     // Center of ARC blast
-    arc_hit_primary =
+    sc_hit_primary =
     {
         arcHitPrimaryEffects = 
         {
@@ -184,7 +181,7 @@ kMarineStructureEffects =
     },
     
     // Played for secondary targets within blast radius
-    arc_hit_secondary =
+    sc_hit_secondary =
     {
         arcHitSecondaryEffects = 
         {
@@ -196,7 +193,7 @@ kMarineStructureEffects =
     },
     
     
-    arc_stop_effects =
+    sc_stop_effects =
     {
         arcHitStopEffects = 
         {

@@ -63,8 +63,7 @@ kPrototypeLabHealth = 4000	kPrototypeLabArmor = 0	kPrototypeLabPointValue = 20
 kInfantryPortalHealth = 2500	kInfantryPortalArmor = 0	kInfantryPortalPointValue = 15
 kArmsLabHealth = 2200	kArmsLabArmor = 0	kArmsLabPointValue = 20
 kSentryHealth = 1100	kSentryArmor = 0 kSentryPointValue = 10
-kARCHealth = 2000	kARCArmor = 0	kARCPointValue = 20
-kARCDeployedHealth = 2000	kARCDeployedArmor = 0	kARCPointValue = 20
+kSiegeCannonHealth = 2000	kSiegeCannonArmor = 0	kSiegeCannonPointValue = 20
 kMineHealth = 70	kMineArmor = 0	kMinePointValue = 2
 
 // 5000/1000 is good average (is like 7,000 health from NS1, but protects somewhat from shotguns)

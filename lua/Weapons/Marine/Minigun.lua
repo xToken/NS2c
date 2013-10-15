@@ -36,7 +36,6 @@ local kShellsAttachPoints = { [ExoWeaponHolder.kSlotNames.Left] = "Exosuit_LElbo
 
 local kMinigunRange = 400
 local kMinigunSpread = Math.Radians(4)
-
 local kBulletSize = 0.03
 
 local networkVars =
@@ -245,11 +244,15 @@ local function Shoot(self, leftSide)
         end
         
         local endPoint = startPoint + spreadDirection * range
-        
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+        
         if not trace.entity then
+        
+            -- Limit the box trace to the point where the ray hit as an optimization.
+            local boxTraceEndPoint = trace.fraction ~= 1 and trace.endPoint or endPoint
             local extents = GetDirectedExtentsForDiameter(spreadDirection, kBulletSize)
-            trace = Shared.TraceBox(extents, startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+            trace = Shared.TraceBox(extents, startPoint, boxTraceEndPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+            
         end
         
         if trace.fraction < 1 or GetIsVortexed(player) then

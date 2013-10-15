@@ -30,7 +30,7 @@ elseif Client then
     Script.Load("lua/JetpackMarine_Client.lua")
 end
 
-local kJetpackFuelReplenishDelay = .0
+local kJetpackFuelReplenishDelay = .15
 local kJetpackMinimumFuelForLaunch = .03
 local kVerticleThrust = 19
 local kJumpForce = 5.75
@@ -176,10 +176,7 @@ function JetpackMarine:ReceivesFallDamage()
 end
 
 function JetpackMarine:HasJetpackDelay()
-    if (Shared.GetTime() - self.timeJetpackingChanged > kJetpackFuelReplenishDelay) then
-        return false
-    end
-    return true
+    return false
 end
 
 function JetpackMarine:OnGroundOverride(onGround)

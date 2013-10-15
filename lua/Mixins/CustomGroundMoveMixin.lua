@@ -44,7 +44,7 @@ local kOnGroundDistance = 0.1
 //NS1 bhop skulk could get around 530-540 units with good bhop, 290 base makes for 1.84 - Trying 1.7 now
 //need to figure out what NS1 clamped speed to each jump, not what the average speed you could get was.
 local kBunnyJumpMaxSpeedFactor = 1.7
-local kMaxSpeedClampPerJump = 4.0
+local kMaxSpeedClampPerJump = 3.0
 local kClimbFriction = 5
 local kCrouchAnimationTime = 0.4
 local kCrouchSpeedScalar = 0.6
@@ -88,7 +88,7 @@ function CustomGroundMoveMixin:GetStopSpeed()
 end
  
 function CustomGroundMoveMixin:GetCanStepOver(entity)
-    return entity:isa("Egg")
+    return entity:isa("Egg") or entity:isa("InfantryPortal")
 end
 
 function CustomGroundMoveMixin:GetLastInput()

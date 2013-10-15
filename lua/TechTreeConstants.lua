@@ -73,7 +73,7 @@ kTechId = createTechIdEnum({
     'TwoCommandStations', 'ThreeCommandStations',
 
     // Marine tech 
-    'CommandStation', 'Armory', 'InfantryPortal', 'Extractor', 'Sentry', 'ARC',
+    'CommandStation', 'Armory', 'InfantryPortal', 'Extractor', 'Sentry', 'SiegeCannon',
     'Scan', 'AmmoPack', 'MedPack', 'CatPack', 'CatPackTech', 'AdvancedArmoryUpgrade', 'Observatory', 'Detector', 'DistressBeacon', 'PhaseGate', 'TurretFactory', 'AdvancedTurretFactory', 'ArmsLab',
     'PrototypeLab', 'AdvancedArmory', 'HandGrenadesTech', 'Electrify', 
     

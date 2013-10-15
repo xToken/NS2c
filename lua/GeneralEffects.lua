@@ -137,7 +137,7 @@ kGeneralEffectData =
             {sound = "sound/NS2.fev/marine/structures/generic_spawn", classname = "TurretFactory", done = true},
             {sound = "sound/NS2.fev/marine/structures/generic_spawn", classname = "Extractor", done = true},
             {sound = "sound/NS2.fev/marine/structures/mac/passby_mac", classname = "MAC", done = true},
-            {sound = "sound/NS2.fev/marine/structures/arc/deploy", classname = "ARC", done = true},
+            {sound = "sound/NS2.fev/marine/structures/arc/deploy", classname = "SiegeCannon", done = true},
             
             {sound = "sound/NS2.fev/marine/structures/generic_spawn", classname = "Armory", done = true},
             {sound = "sound/NS2.fev/marine/structures/generic_spawn", classname = "ArmsLab", done = true},
@@ -301,7 +301,7 @@ kGeneralEffectData =
             {cinematic = "cinematics/alien/onos/explode.cinematic", classname = "Onos", doer = "Railgun", done = true},
             // TODO: Substitute material properties?
             {cinematic = "cinematics/materials/%s/grenade_explosion.cinematic", classname = "Grenade", done = true},
-            {cinematic = "cinematics/marine/arc/destroyed.cinematic", classname = "ARC", done = true},
+            {cinematic = "cinematics/marine/arc/destroyed.cinematic", classname = "SiegeCannon", done = true},
         },
       
         // Play world sound instead of parented sound as entity is going away?
@@ -312,7 +312,8 @@ kGeneralEffectData =
             
             {sound = "sound/NS2.fev/alien/skulk/bite_kill", doer = "BiteLeap"},
                         
-            {stop_sound = "sound/NS2.fev/marine/structures/arc/fire", classname = "ARC"},
+            {stop_sound = "sound/NS2.fev/marine/structures/arc/fire", classname = "SiegeCannon"},
+            {stop_sound = "sound/NS2.fev/marine/structures/arc/charge", classname = "SiegeCannon"},
 
             {sound = "sound/NS2.fev/alien/skulk/death", classname = "Skulk", done = true},
             {sound = "sound/NS2.fev/alien/gorge/death", classname = "Gorge", done = true},
@@ -324,7 +325,7 @@ kGeneralEffectData =
             {sound = "sound/NS2.fev/marine/common/death_female", classname = "Marine", sex = "female", done = true},
             {sound = "sound/NS2.fev/marine/common/death", classname = "Marine", done = true},
             {sound = "sound/NS2.fev/marine/structures/extractor_death", classname = "Extractor", done = true},
-            {sound = "sound/NS2.fev/marine/structures/arc/death", classname = "ARC", done = true},
+            {sound = "sound/NS2.fev/marine/structures/arc/death", classname = "SiegeCannon", done = true},
             
         },
         

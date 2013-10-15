@@ -180,7 +180,7 @@ end
 
 local function GetPlayerIsValidForRanking(recordedData, gameTime)
 
-    local playTime = recordedData.playTime
+    local playTime = recordedData.playTime or 0
     local playedFraction = playTime / gameTime
     
     //Print("player valid for ranking %s", ToString(playedFraction > 0.9 or playTime > kMinPlayTime))

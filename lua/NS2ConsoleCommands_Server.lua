@@ -1019,24 +1019,24 @@ local function OnCommandCommanderPing(client, classname)
     
 end
 
-local function OnCommandDeployARCs()
+local function OnCommandDeployCannons()
 
     if Shared.GetCheatsEnabled() then
     
-        for index, arc in ientitylist(Shared.GetEntitiesWithClassname("ARC")) do        
-            arc.deployMode = ARC.kDeployMode.Deploying        
+        for index, sc in ientitylist(Shared.GetEntitiesWithClassname("SiegeCannon")) do        
+            sc.mode = SiegeCannon.kMode.Active        
         end
         
     end
     
 end
 
-local function OnCommandUndeployARCs()
+local function OnCommandUndeployCannons()
 
     if Shared.GetCheatsEnabled() then
     
-        for index, arc in ientitylist(Shared.GetEntitiesWithClassname("ARC")) do        
-            arc.deployMode = ARC.kDeployMode.Undeploying        
+        for index, sc in ientitylist(Shared.GetEntitiesWithClassname("SiegeCannon")) do        
+            sc.mode = SiegeCannon.kMode.Inactive   
         end
         
     end
@@ -1258,8 +1258,8 @@ Event.Hook("Console_location", OnCommandLocation)
 Event.Hook("Console_push", OnCommandPush)
 Event.Hook("Console_primal",OnCommandPrimal)
 Event.Hook("Console_umbra", OnCommandUmbra)
-Event.Hook("Console_deployarcs", OnCommandDeployARCs)
-Event.Hook("Console_undeployarcs", OnCommandUndeployARCs)
+Event.Hook("Console_deploycannons", OnCommandDeployCannons)
+Event.Hook("Console_undeploycannons", OnCommandUndeployCannons)
 
 Event.Hook("Console_closemenu", OnCommandCloseMenu)
 Event.Hook("Console_welddoors", OnCommandWeldDoors)

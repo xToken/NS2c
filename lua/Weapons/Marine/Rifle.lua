@@ -18,6 +18,7 @@ Rifle.kModelName = PrecacheAsset("models/marine/rifle/rifle.model")
 local kViewModels = GenerateMarineViewModelPaths("rifle")
 local kAnimationGraph = PrecacheAsset("models/marine/rifle/rifle_view.animation_graph")
 
+local kRange = 100
 // 4 degrees in NS1
 local kSpread = ClipWeapon.kCone3Degrees
 
@@ -188,6 +189,10 @@ end
 
 function Rifle:GetBulletDamage(target, endPoint)
     return kRifleDamage
+end
+
+function Rifle:GetRange()
+    return kRange
 end
 
 function Rifle:GetWeight()
