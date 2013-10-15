@@ -15,8 +15,8 @@
 
 Script.Load("lua/Utility.lua")
 Script.Load("lua/Weapons/Alien/Gore.lua")
-Script.Load("lua/Weapons/Alien/Devour.lua")
 Script.Load("lua/Weapons/Alien/Smash.lua")
+Script.Load("lua/Weapons/Alien/Devour.lua")
 Script.Load("lua/Alien.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
@@ -72,7 +72,7 @@ function Onos:OnCreate()
     self.timeLastChargeEnd = 0
     self.chargeSpeed = 0
     
-    if Client then    
+    if Client then
         self:SetUpdates(true)
     end
     
@@ -81,6 +81,7 @@ end
 function Onos:OnInitialized()
 
     Alien.OnInitialized(self)
+    
     self:SetModel(Onos.kModelName, kOnosAnimationGraph)
 
 end
@@ -137,19 +138,39 @@ function Onos:PreUpdateMove(input, runningPrediction)
             self:EndCharge()
         end
     end
-
+    
 end
 
 function Onos:GetAngleSmoothRate()
     return 3
 end
 
-function Onos:OnKill(attacker, doer, point, direction)
+local function ClearDevourState(self)
     local devourWeapon = self:GetWeapon("devour")
-    if devourWeapon and devourWeapon:IsAlreadyEating() then
+    if devourWeapon and devourWeapon:IsDevouringPlayer() then
         devourWeapon:OnForceUnDevour()
     end
+end
+
+function Onos:OnKill(attacker, doer, point, direction)
+    ClearDevourState(self)
     Alien.OnKill(self, attacker, doer, point, direction)
+end
+
+function Onos:OnRedemed()
+    ClearDevourState(self)
+end
+
+function Onos:GetPlayerControllersGroup()
+    return PhysicsGroup.BigPlayerControllersGroup
+end
+
+function Onos:EvolveAllowed()
+    local devourWeapon = self:GetWeapon("devour")
+    if devourWeapon and devourWeapon:IsDevouringPlayer() then
+        return false
+    end
+    return true
 end
 
 function Onos:PostUpdateMove(input, runningPrediction)
@@ -167,7 +188,7 @@ end
 
 function Onos:TriggerCharge(move)
     
-    if not self.charging and self.timeLastChargeEnd + kChargeDelay < Shared.GetTime() and not self:GetCrouching() and not self:GetCrouched() and self:GetHasOneHive() then
+    if not self.charging and self.timeLastChargeEnd + kChargeDelay < Shared.GetTime() and not self:GetCrouching() and not self:GetCrouched() and self:GetHasOneHive() and self:GetEnergy() > kStartChargeEnergyCost then
 
         self.charging = true
         self.timeLastCharge = Shared.GetTime()
@@ -180,7 +201,7 @@ function Onos:TriggerCharge(move)
         end
         
         self:TriggerUncloak()
-    
+        self:DeductAbilityEnergy(kStartChargeEnergyCost)
     end
     
 end
@@ -251,17 +272,6 @@ end
 // Half a ton
 function Onos:GetMass()
     return kMass
-end
-
-// Give dynamic camera motion to the player
-function Onos:OnUpdateCamera(deltaTime) 
-    local camOffsetHeight = 0
-    camOffsetHeight = -self:GetMaxViewOffsetHeight() * self:GetCrouchShrinkAmount() * self:GetCrouchAmount()
-    self:SetCameraYOffset(camOffsetHeight)
-end
-
-function Onos:GetBaseAttackSpeed()
-    return kDefaultAttackSpeed
 end
 
 local kOnosEngageOffset = Vector(0, 1.3, 0)

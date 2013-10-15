@@ -17,9 +17,7 @@ UmbraCloud.kMaxRange = 20
 local kThinkTime = 0.5
 UmbraCloud.kTravelSpeed = 60 // meters per second
 
-local networkVars =
-{
-}
+local networkVars = { }
 
 function UmbraCloud:OnCreate()
 
@@ -115,7 +113,7 @@ if Server then
             
                 local trace = Shared.TraceRay(self:GetOrigin(), attackPoint, CollisionRep.Damage, PhysicsMask.Bullets, filterNonDoors)
                 if trace.fraction == 1.0 or trace.entity == entity then
-                    if HasMixin(entity, "HasUmbra") then
+                    if HasMixin(entity, "Umbra") then
                         entity:SetHasUmbra(true, time + 0.1)
                     end
                 end

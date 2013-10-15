@@ -1,4 +1,4 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =====
 //
 // lua\Skulk.lua
 //
@@ -18,6 +18,7 @@ Script.Load("lua/Alien.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/WallMovementMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/SkulkVariantMixin.lua")
 
 class 'Skulk' (Alien)
 
@@ -82,11 +83,13 @@ local networkVars =
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
+AddMixinNetworkVars(SkulkVariantMixin, networkVars)
 
 function Skulk:OnCreate()
 
     InitMixin(self, CameraHolderMixin, { kFov = kSkulkFov })
     InitMixin(self, WallMovementMixin)
+    InitMixin(self, SkulkVariantMixin)
     
     Alien.OnCreate(self)
 
@@ -106,7 +109,7 @@ function Skulk:OnInitialized()
     // the Skulk is initialized on the client.
     self.currentWallWalkingAngles = Angles(0.0, 0.0, 0.0)
     
-    self:SetModel(Skulk.kModelName, kSkulkAnimationGraph)
+    self:SetModel(self:GetVariantModel(), kSkulkAnimationGraph)
     
     self.wallWalking = false
     self.wallWalkingNormalGoal = Vector.yAxis
@@ -252,7 +255,7 @@ end
 /*
 function Skulk:TriggerJumpEffects()
     if not Shared.GetIsRunningPrediction() then
-        local spd = self:GetVelocity():GetLength()
+        local spd = self:GetVelocityLength()
         if spd > kBestJumpSpeed then
             self:TriggerEffects("jump_best")
         elseif spd > kGoodJumpSpeed then
@@ -344,7 +347,7 @@ function Skulk:PreUpdateMove(input, runningPrediction)
         
     end
     
-    if self.leaping and (Alien.GetIsOnGround(self) or self.wallWalking) and (Shared.GetTime() > self.timeOfLeap + kLeapTime) then
+    if self.leaping and (self:GetIsOnGround() or self.wallWalking) and (Shared.GetTime() > self.timeOfLeap + kLeapTime) then
         self.leaping = false
     end
     
@@ -463,6 +466,10 @@ end
 
 function Skulk:GetIsOnSurface()
     return Alien.GetIsOnSurface(self) or (self:GetIsWallWalking() and not self:GetCrouching())
+end
+
+function Skulk:GetIsForwardOverrideDesired()
+    return not self:GetIsOnSurface()
 end
 
 /**

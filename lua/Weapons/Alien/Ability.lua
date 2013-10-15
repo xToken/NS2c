@@ -45,7 +45,7 @@ function Ability:GetLastAttackTime()
     return 0
 end
 
-function Ability:GetHasAttackDelay(self, player)
+function Ability:GetHasAttackDelay(player)
 
     local attackDelay = self:GetAttackDelay() / player:GetAttackSpeed()
     if self:GetAbilityUsesFocus() then
@@ -56,6 +56,35 @@ function Ability:GetHasAttackDelay(self, player)
     end
     return self:GetLastAttackTime() + attackDelay > Shared.GetTime()
     
+end
+
+function Ability:GetSecondaryAttackDelay()
+    return 0
+end
+
+function Ability:GetLastSecondaryAttackTime()
+    return 0
+end
+
+function Ability:GetHasSecondaryAttackDelay(player)
+
+    local attackDelay = self:GetSecondaryAttackDelay() / player:GetAttackSpeed()
+    if self:GetSecondaryAbilityUsesFocus() then
+        local upg, level = GetHasFocusUpgrade(player)
+        if upg and level > 0 then
+            attackDelay = attackDelay + (attackDelay * (kFocusAttackSlowdown * level))
+        end
+    end
+    return self:GetLastSecondaryAttackTime() + attackDelay > Shared.GetTime()
+    
+end
+
+function Ability:GetAbilityUsesFocus()
+    return false
+end
+
+function Ability:GetSecondaryAbilityUsesFocus()
+    return false
 end
 
 // return array of player energy (0-1), ability energy cost (0-1), techId, visibility and hud slot
@@ -123,10 +152,6 @@ function Ability:PerformSecondaryAttack(player)
     return false
 end
 
-function Ability:GetAbilityUsesFocus()
-    return false
-end
-
 // Child class should override if preventing the primary attack is needed.
 function Ability:GetPrimaryAttackAllowed()
     return true
@@ -181,11 +206,13 @@ function Ability:GetEffectParams(tableParams)
 
     local player = self:GetParent()
     if player and tableParams[kEffectFilterSilenceUpgrade] == nil then
-        local upg, level = GetHasSilenceUpgrade(player)
-        if level == 3 then
-            tableParams[kEffectFilterSilenceUpgrade] = upg
+        local hasupg, level = GetHasSilenceUpgrade(player)
+        if hasupg then
+            if level == 3 then
+                tableParams[kEffectFilterSilenceUpgrade] = true
+            end
+            tableParams[kEffectParamVolume] = 1 - Clamp(level / 3, 0, 1)
         end
-        tableParams[kEffectParamVolume] = 1 - Clamp(level / 3, 0, 1)
     end
     
 end

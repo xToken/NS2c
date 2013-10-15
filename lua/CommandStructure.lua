@@ -25,6 +25,7 @@ Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
+Script.Load("lua/IdleMixin.lua")
 
 class 'CommandStructure' (ScriptActor)
 CommandStructure.kMapName = "commandstructure"
@@ -51,6 +52,7 @@ AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
+AddMixinNetworkVars(IdleMixin, networkVars)
 
 function CommandStructure:OnCreate()
 
@@ -82,6 +84,11 @@ function CommandStructure:OnCreate()
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup)
     
+end
+
+function CommandStructure:OnInitialized()
+    ScriptActor.OnInitialized(self)
+    InitMixin(self, IdleMixin)
 end
 
 function CommandStructure:GetReceivesStructuralDamage()

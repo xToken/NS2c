@@ -76,7 +76,7 @@ local gMarineMenuButtons =
 {
 
     [kTechId.BuildMenu] = { kTechId.Extractor, kTechId.InfantryPortal, kTechId.Armory, kTechId.CommandStation,
-                        kTechId.RoboticsFactory, kTechId.Sentry, kTechId.ARC, kTechId.None},
+                        kTechId.TurretFactory, kTechId.Sentry, kTechId.SiegeCannon, kTechId.None},
                             
     [kTechId.AdvancedMenu] = { kTechId.Observatory, kTechId.ArmsLab, kTechId.PrototypeLab, kTechId.PhaseGate, 
                               kTechId.None, kTechId.None, kTechId.None, kTechId.None},

@@ -36,6 +36,7 @@ Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DamageMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
+Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/TriggerMixin.lua")
 Script.Load("lua/TargettingMixin.lua")
@@ -121,8 +122,8 @@ AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
-AddMixinNetworkVars(ParasiteMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
+AddMixinNetworkVars(ParasiteMixin, networkVars)
 
 function Sentry:OnCreate()
 
@@ -150,6 +151,7 @@ function Sentry:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, DetectableMixin)
+    InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
     if Client then
@@ -326,8 +328,7 @@ function Sentry:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Sentry:OnUpdateAnimationInput")    
     modelMixin:SetAnimationInput("attack", self.attacking)
-    modelMixin:SetAnimationInput("powered", self.powered)
-    
+  
 end
 
 // used to prevent showing the hit indicator for the commander
@@ -335,9 +336,8 @@ function Sentry:GetShowHitIndicator()
     return false
 end
 
-local kSentryHealthbarOffset = Vector(0, 0.4, 0)
 function Sentry:GetHealthbarOffset()
-    return kSentryHealthbarOffset
+    return 0.4
 end 
 
 if Server then
@@ -386,9 +386,8 @@ if Server then
                 local blockedByUmbra = trace.entity and GetBlockedByUmbra(trace.entity) or false
                 
                 if blockedByUmbra then
-                
                     surface = "umbra"
-                    damage = 0
+                    damage = damage * math.max((1 - kUmbraDamageReduction), 0)
                     
                 end
                 
@@ -642,11 +641,11 @@ function GetCheckSentryLimit(techId, origin, normal, commander)
     
 end
 
-function GetRoboticsInRange(commander)
+function GetTurretFactoriesInRange(commander)
 
     local robos = {}
-    for _, robo in ipairs(GetEntitiesForTeam("RoboticsFactory", commander:GetTeamNumber())) do
-        robos[robo] = kRoboticsFactoryAttachRange
+    for _, robo in ipairs(GetEntitiesForTeam("TurretFactory", commander:GetTeamNumber())) do
+        robos[robo] = kTurretFactoryAttachRange
     end
     
     return robos

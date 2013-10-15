@@ -12,7 +12,7 @@
 
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/build.surface_shader")
 
-ConstructMixin = CreateMixin(ConstructMixin)
+ConstructMixin = CreateMixin( ConstructMixin )
 ConstructMixin.type = "Construct"
 
 local kBuildEffectsInterval = 1
@@ -110,11 +110,23 @@ local function SharedUpdate(self, deltaTime)
         // Only Alien structures auto build.
         // Update build fraction every tick to be smooth.
         if not self:GetIsBuilt() and GetIsAlienUnit(self) and self:GetIsAlive() then
-
+            
+            local buildTime = deltaTime
+            if self.GetAutoBuildScalar then
+                buildTime = buildTime * self:GetAutoBuildScalar()
+            else
+                buildTime = buildTime * kAutoBuildScalar
+            end
+            
             if not self.GetCanAutoBuild or self:GetCanAutoBuild() then
-                self:Construct(deltaTime)
+                self:Construct(buildTime)
             end
         
+        end
+        
+        // respect the cheat here; sometimes the cheat breaks due to things relying on it NOT being built until after a frame
+        if GetGamerules():GetAutobuild() then
+            self:SetConstructionComplete()
         end
         
     elseif Client then
@@ -131,6 +143,25 @@ local function SharedUpdate(self, deltaTime)
     
 end
 
+if Server then
+
+    function ConstructMixin:OnKill()
+
+        if not self:GetIsBuilt() then
+        
+            local techTree = self:GetTeam():GetTechTree()
+            local techNode = techTree:GetTechNode(self:GetTechId())
+            
+            if techNode then
+                techNode:SetResearchProgress(0.0)
+                techTree:SetTechNodeChanged(techNode, "researchProgress = 1.0f")
+            end 
+            
+        end
+        
+    end
+    
+end
 function ConstructMixin:ResetConstructionStatus()
 
     self.buildTime = 0
@@ -163,16 +194,6 @@ function ConstructMixin:OnUpdatePoseParameters()
         self:SetPoseParam("grow", 1)
     end
     
-end
-
-function GetConstructionTime(self)
-
-    if self.GetConstructionTimeOverride then
-        return self:GetConstructionTimeOverride()
-    end    
-    
-    return LookupTechData(self:GetTechId(), kTechDataBuildTime, kDefaultBuildTime)
-
 end    
 
 /**
@@ -223,18 +244,26 @@ function ConstructMixin:Construct(elapsedTime, builder)
         
         if Server then
 
+            if not self.lastBuildFractionTechUpdate then
+                self.lastBuildFractionTechUpdate = self.buildFraction
+            end
+            
+            local techTree = self:GetTeam():GetTechTree()
+            local techNode = techTree:GetTechNode(self:GetTechId())
+
+            local modifier = 1
             local startBuildFraction = self.buildFraction
-            local newBuildTime = self.buildTime + elapsedTime
-            local timeToComplete = GetConstructionTime(self)
+            local newBuildTime = self.buildTime + elapsedTime * modifier
+            local timeToComplete = self:GetTotalConstructionTime()           
             
             if newBuildTime >= timeToComplete then
             
                 self:SetConstructionComplete(builder)
                 
-                // Give points for building structures
-                if self:GetIsBuilt() and not self:isa("Hydra") and builder and HasMixin(builder, "Scoring") then                
-                    builder:AddScore(kBuildPointValue)
-                end
+                if techNode then
+                    techNode:SetResearchProgress(1.0)
+                    techTree:SetTechNodeChanged(techNode, "researchProgress = 1.0f")
+                end    
                 
             else
             
@@ -249,20 +278,34 @@ function ConstructMixin:Construct(elapsedTime, builder)
                     
                 end
                 
+                self.timeLastConstruct = Shared.GetTime()
+                self.underConstruction = true
+                
                 self.buildTime = newBuildTime
+                self.oldBuildFraction = self.buildFraction
                 self.buildFraction = math.max(math.min((self.buildTime / timeToComplete), 1), 0)
                 
-                local scalar = self.buildFraction - startBuildFraction
-                AddBuildHealth(self, scalar)
-                AddBuildArmor(self, scalar)
+                if techNode and (self.buildFraction - self.lastBuildFractionTechUpdate) >= 0.05 then
+                
+                    techNode:SetResearchProgress(self.buildFraction)
+                    techTree:SetTechNodeChanged(techNode, string.format("researchProgress = %.2f", self.buildFraction))
+                    self.lastBuildFractionTechUpdate = self.buildFraction
+                    
+                end
+                
+                if not self.GetAddConstructHealth or self:GetAddConstructHealth() then
+                
+                    local scalar = self.buildFraction - startBuildFraction
+                    AddBuildHealth(self, scalar)
+                    AddBuildArmor(self, scalar)
+                
+                end
                 
                 if self.oldBuildFraction ~= self.buildFraction then
                 
                     if self.OnConstruct then
-                        self:OnConstruct(builder, self.buildFraction)
+                        self:OnConstruct(builder, self.buildFraction, self.oldBuildFraction)
                     end
-                    
-                    self.oldBuildFraction = self.buildFraction
                     
                 end
                 
@@ -274,17 +317,24 @@ function ConstructMixin:Construct(elapsedTime, builder)
         
     end
     
+    if playAV then
+
+        local builderClassName = builder and builder:GetClassName()    
+        self:TriggerEffects("construct", {classname = self:GetClassName(), doer = builderClassName, isalien = GetIsAlienUnit(self)})
+        
+    end 
+    
     return success, playAV
     
 end
 
-function ConstructMixin:GetCanBeUsedConstructed()
+function ConstructMixin:GetCanBeUsedConstructed(byPlayer)
     return false
 end
 
 function ConstructMixin:GetCanBeUsed(player, useSuccessTable)
 
-    if self:GetIsBuilt() and not self:GetCanBeUsedConstructed() then
+    if self:GetIsBuilt() and not self:GetCanBeUsedConstructed(player) then
         useSuccessTable.useSuccess = false
     end
     
@@ -336,13 +386,6 @@ function ConstructMixin:OnUse(player, elapsedTime, useSuccessTable)
         
         if success then
 
-            if playAV then
-                self:TriggerEffects("construct", {classname = self:GetClassName(), isalien = GetIsAlienUnit(self)})
-            end
-            
-            self.timeLastConstruct = Shared.GetTime()
-            self.underConstruction = true
-            
             used = true
         
         end
@@ -372,8 +415,10 @@ function ConstructMixin:OnConstructionComplete(builder)
             team:TriggerAlert(kTechId.MarineAlertConstructionComplete, self)
             
         end
-
-        team:OnConstructionComplete(self)
+        
+        if team.OnConstructionComplete then
+            team:OnConstructionComplete(self)
+        end
 
     end     
 
@@ -383,6 +428,10 @@ end
 
 function ConstructMixin:GetBuiltFraction()
     return self.buildFraction
+end
+
+function ConstructMixin:GetTotalConstructionTime()
+    return LookupTechData(self:GetTechId(), kTechDataBuildTime, kDefaultBuildTime)
 end
 
 if Server then
@@ -399,7 +448,7 @@ if Server then
 
         self.startsBuilt = GetAndCheckBoolean(self.startsBuilt, "startsBuilt", false)
 
-        if (self.startsBuilt and not self:GetIsBuilt()) or GetGamerules():GetAutobuild() then
+        if (self.startsBuilt and not self:GetIsBuilt()) then
             self:SetConstructionComplete()
         end
         

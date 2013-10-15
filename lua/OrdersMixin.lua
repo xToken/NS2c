@@ -39,6 +39,19 @@ OrdersMixin.networkVars =
     currentOrderId  = "entityid"
 }
 
+local function UpdateOrderIndizes(self)
+
+    for i = 1, #self.orders do
+    
+        local order = Shared.GetEntity(self.orders[i])
+        if order then
+            order:SetIndex(i)
+        end
+    
+    end
+
+end
+
 function OrdersMixin:__initmixin()
 
     self.ignoreOrders = false
@@ -55,10 +68,15 @@ local function OrderChanged(self)
     
         self.currentOrderId = self.orders[1]
         local order = Shared.GetEntity(self.currentOrderId)
+        if order then
+            order:SetOrigin(self:GetOrigin())
+        end
     
     else
         self.currentOrderId = Entity.invalidId
     end
+    
+    UpdateOrderIndizes(self)
     
     if self.OnOrderChanged then
         self:OnOrderChanged()
@@ -81,6 +99,7 @@ function OrdersMixin:CopyOrdersTo(dest)
     for index, orderId in ipairs(self.orders) do
 
         local orderCopy = GetCopyFromOrder(Shared.GetEntity(orderId))
+        orderCopy:SetOwner(dest)
         
         table.insert(dest.orders, orderCopy:GetId())
         
@@ -106,13 +125,13 @@ function OrdersMixin:GetIgnoreOrders()
     return self.ignoreOrders
 end
 
-local function SetOrder(self, order, clearExisting, insertFirst, giver, reusedOrder)
+local function SetOrder(self, order, clearExisting, insertFirst, giver)
 
     if self.ignoreOrders or order:GetType() == kTechId.Default then
         return false
     end
     
-    if clearExisting and not reusedOrder then
+    if clearExisting then
         self:ClearOrders()
     end
     
@@ -125,25 +144,12 @@ local function SetOrder(self, order, clearExisting, insertFirst, giver, reusedOr
         
     end
     
-    if giver == nil or not giver:isa("Player") then
+    order:SetOwner(self)
     
-        giver = self:GetOwner()
-        if giver == nil then
-            giver = self
-        end
-        
-    end
-    
-    order:SetOwner(giver)
-    
-    if not reusedOrder then
-    
-        if insertFirst then
-            table.insert(self.orders, 1, order:GetId())
-        else    
-            table.insert(self.orders, order:GetId())
-        end
-        
+    if insertFirst then
+        table.insert(self.orders, 1, order:GetId())
+    else
+        table.insert(self.orders, order:GetId())
     end
     
     self.timeLastOrder = Shared.GetTime()
@@ -209,67 +215,19 @@ function OrdersMixin:GiveOrder(orderType, targetId, targetOrigin, orientation, c
     end
     
     local order = nil
-    local reusedOrder = false
-    
-    if clearExisting and self:GetHasOrder() then
-    
-        order = self:GetCurrentOrder()
-        order:Initialize(orderType, targetId, targetOrigin, tonumber(orientation))
-        reusedOrder = true
-        
-    else
-        order = CreateOrder(orderType, targetId, targetOrigin, orientation)
-    end
+    order = CreateOrder(orderType, targetId, targetOrigin, orientation)
+    order:SetOrigin(self:GetOrigin())
     
     OverrideOrder(self, order)
     
-    local success = SetOrder(self, order, clearExisting, insertFirst, giver, reusedOrder)
+    local success = SetOrder(self, order, clearExisting, insertFirst, giver)
     
     if success and self.OnOrderGiven then
         self:OnOrderGiven(order)
-    end    
+    end
     
     return ConditionalValue(success, order:GetType(), kTechId.None)
     
-end
-
-function OrdersMixin:GiveSharedOrder(order, clearExisting, insertFirst, giver)
-
-    ASSERT(type(orderType) == "number")
-    ASSERT(type(targetId) == "number")
-    
-    if self.ignoreOrders or ( #self.orders > OrdersMixin.kMaxOrdersPerUnit or (self.timeLastOrder and self.timeLastOrder + OrdersMixin.kOrderDelay > Shared.GetTime()) ) then
-        return kTechId.None
-    end
-    
-    // prevent AI units from attack friendly players
-    if orderType == kTechId.Attack then
-    
-        local target = Shared.GetEntity(targetId)
-        if target and target:isa("Player") and target:GetTeamNumber() == self:GetTeamNumber() and not GetGamerules():GetFriendlyFire() then
-            return
-        end
-    
-    end
-
-    if clearExisting == nil then
-        clearExisting = true
-    end
-    
-    if insertFirst == nil then
-        insertFirst = true
-    end
-
-    //OverrideOrder(self, order)
-    
-    SetOrder(self, order, clearExisting, insertFirst, giver, reusedOrder)
-    
-    if self.OnOrderGiven then
-        self:OnOrderGiven(order)
-    end    
-    
-    return order:GetType()
-
 end
 
 local function DestroyOrders(self)
@@ -346,6 +304,10 @@ function OrdersMixin:GetCurrentOrder()
     end
     return nil
     
+end
+
+function OrdersMixin:GetLastOrder()
+    return Shared.GetEntity(self.orders[#self.orders])
 end
 
 function OrdersMixin:ClearCurrentOrder()
@@ -432,13 +394,8 @@ if Server then
         
         if currentOrder ~= nil then
             
-            // we update the order source only for units that enable it, otherwise it's hidden
-            if self.GetShowOrderLine and self:GetShowOrderLine() then
-                currentOrder:SetOrderSource(self:GetOrigin())
-            end
-            
             local orderType = currentOrder:GetType()
-            
+
             if orderType == kTechId.Move then
             
                 if (currentOrder:GetLocation() - self:GetOrigin()):GetLength() < self:GetMixinConstants().kMoveOrderCompleteDistance then
@@ -447,8 +404,20 @@ if Server then
                     self:CompletedCurrentOrder()
                     
                 end
+                
+            elseif orderType == kTechId.Patrol then
             
-            elseif orderType == kTechId.Construct then
+                if (currentOrder:GetLocation() - self:GetOrigin()):GetLength() < self:GetMixinConstants().kMoveOrderCompleteDistance then
+                
+                    local prevTarget = currentOrder:GetLocation()
+                    local prevOrigin = currentOrder:GetOrigin()
+                    
+                    currentOrder:SetLocation(prevOrigin)
+                    currentOrder:SetOrigin(prevTarget)
+                    
+                end
+            
+            elseif orderType == kTechId.Construct or orderType == kTechId.AutoConstruct then
             
                 local orderTarget = Shared.GetEntity(currentOrder:GetParam())
                 
@@ -598,4 +567,68 @@ function OrdersMixin:CopyPlayerDataFrom(player)
         player:TransferOrders(self)
     end
     
+end
+
+if Client then
+
+    function ResetOrders(self)
+    
+        if self.lastClientOrderUpdate ~= Shared.GetTime() then
+            
+            self.ordersClient = {}
+            self.lastClientOrderUpdate = Shared.GetTime()
+            
+        end
+    
+    end
+
+    function OrdersMixin:AddClientOrder(order)
+    
+        ResetOrders(self)        
+        self.ordersClient[order:GetIndex()] = order
+    
+    end
+
+    local gLastOrdersUpdate = nil
+    local function UpdateOrdersClient()
+    
+        // update all orders for all entities once per frame
+        if gLastOrdersUpdate ~= Shared.GetTime() then
+        
+            for _, order in ientitylist(Shared.GetEntitiesWithClassname("Order")) do
+            
+                if not order:GetIsDestroyed() then
+            
+                    local orderOwner = order:GetOwner()
+                    if orderOwner and orderOwner.AddClientOrder then
+                        orderOwner:AddClientOrder(order)
+                    end
+                
+                end
+            
+            end
+        
+            gLastOrdersUpdate = Shared.GetTime()
+        
+        end
+        
+    
+    end
+
+    function OrdersMixin:GetOrdersClient()
+    
+        ResetOrders(self)
+        UpdateOrdersClient()
+        
+        local orders = {}
+
+        for i, order in pairs(self.ordersClient) do
+            table.insert(orders, order)
+        end
+        
+        return orders
+    
+    end
+
+
 end

@@ -1,11 +1,10 @@
-//=============================================================================
+// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
 // lua\Weapons\Marine\Grenade.lua
 //
-// Created by Charlie Cleveland (charlie@unknownworlds.com)
-// Copyright (c) 2011, Unknown Worlds Entertainment, Inc.
+//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
 //
-//=============================================================================
+// ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Projectile.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
@@ -18,36 +17,20 @@ class 'Grenade' (PredictedProjectile)
 Grenade.kMapName = "grenade"
 Grenade.kModelName = PrecacheAsset("models/marine/rifle/rifle_grenade.model")
 
-local kMinLifeTime = .7
+Grenade.kRadius = 0.17
+Grenade.kMinLifeTime = 0.15
+Grenade.kClearOnImpact = false
+Grenade.kClearOnEnemyImpact = true
 
-local kMinLifeTime = .7
+local kGrenadeCameraShakeDistance = 15
+local kGrenadeMinShakeIntensity = 0.02
+local kGrenadeMaxShakeIntensity = 0.13
 
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
-
--- Blow up after a time.
-local function UpdateLifetime(self)
-
-    // Grenades are created in predict movement, so in order to get the correct
-    // lifetime, we start counting our lifetime from the first UpdateLifetime rather than when
-    // we were created
-    if not self.endOfLife then
-        self.endOfLife = Shared.GetTime() + kGrenadeLifetime
-    end
-
-    if self.endOfLife <= Shared.GetTime() then
-    
-        self:Detonate(nil)
-        return false
-        
-    end
-    
-    return true
-    
-end
 
 function Grenade:OnCreate()
 
@@ -59,11 +42,8 @@ function Grenade:OnCreate()
     InitMixin(self, DamageMixin)
 	
 
-	if Server then
-    
-        self:AddTimedCallback(UpdateLifetime, 0.1)
-        self.endOfLife = nil
-        
+    if Server then    
+        self:AddTimedCallback(Grenade.Detonate, kGrenadeLifetime)        
     end
     
 end
@@ -113,13 +93,8 @@ if Server then
     function Grenade:Detonate(targetHit)
     
         // Do damage to nearby targets.
-        local hitEntities
-        if GetGamerules():GetFriendlyFire() then
-            hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kGrenadeLauncherGrenadeDamageRadius)
-        else
-            hitEntities = GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), kGrenadeLauncherGrenadeDamageRadius)
-        end
-		
+        local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kGrenadeLauncherGrenadeDamageRadius)
+        
         // Remove grenade and add firing player.
         table.removevalue(hitEntities, self)
         
@@ -128,13 +103,7 @@ if Server then
             table.removevalue(hitEntities, targetHit)
             self:DoDamage(kGrenadeLauncherGrenadeDamage, targetHit, targetHit:GetOrigin(), GetNormalizedVector(targetHit:GetOrigin() - self:GetOrigin()), "none")
         end
-        
-        local owner = self:GetOwner()
-        // It is possible this grenade does not have an owner.
-        if owner then
-            table.insertunique(hitEntities, owner)
-        end
-        
+
         RadiusDamage(hitEntities, self:GetOrigin(), kGrenadeLauncherGrenadeDamageRadius, kGrenadeLauncherGrenadeDamage, self)
         
         // TODO: use what is defined in the material file
@@ -146,17 +115,9 @@ if Server then
         self:TriggerEffects("grenade_explode", params)
         
         CreateExplosionDecals(self)
+        TriggerCameraShake(self, kGrenadeMinShakeIntensity, kGrenadeMaxShakeIntensity, kGrenadeCameraShakeDistance)
         
         DestroyEntity(self)
-        
-    end
-       
-    function Grenade:GetCanDetonate()
-    
-        if self.creationTime then
-            return self.creationTime + kMinLifeTime < Shared.GetTime()
-        end
-        return false
         
     end
     

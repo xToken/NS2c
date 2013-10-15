@@ -7,7 +7,7 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================    
 
 //NS2c
-//Added callbacks regarding decloaking on detection.
+//Added relevancy options for marine detectables
 
 DetectableMixin = CreateMixin(DetectableMixin)
 DetectableMixin.type = "Detectable"
@@ -15,6 +15,10 @@ DetectableMixin.type = "Detectable"
 // What entities have become dirty.
 // Flushed in the UpdateServer hook by DetectableMixin.OnUpdateServer
 local DetectableMixinDirtyTable = { }
+
+Shared.PrecacheSurfaceShader("cinematics/vfx_materials/detected.surface_shader")
+local kDetectedMaterialName = "cinematics/vfx_materials/detected.material"
+local kDetectEffectInterval = 3
 
 local function UpdateSensorBlip(self)
 
@@ -29,7 +33,7 @@ local function UpdateSensorBlip(self)
         alive = self:GetIsAlive()
     end
     
-    if not self:GetIsDetected() or not alive then
+    if not self:GetIsDetected() or not alive or (self.GetShowSensorBlip and not self:GetShowSensorBlip()) then
     
         if blip then
         
@@ -100,12 +104,11 @@ DetectableMixin.optionalCallbacks =
     OnDetectedChange = "Called when self.detected changes."
 }
 
-local kResetDetectionInterval = 2
+local kResetDetectionInterval = 1.5
 
 DetectableMixin.networkVars =
 {
-    detected = "private boolean",
-    decloak = "private boolean"
+    detected = "boolean"
 }
 
 local function DisableDetected(self)
@@ -121,8 +124,7 @@ end
 function DetectableMixin:__initmixin()
 
     self.detected = false
-    self.decloak = false
-    self.timeSinceDetection = nil
+    self.timeWasDetected = nil
     self.sensorBlipId = Entity.invalidId
     
     if Server then
@@ -162,14 +164,10 @@ function DetectableMixin:OnKill()
 end
 
 function DetectableMixin:GetIsDetected()
-    return self.detected
+    return self.detected or GetIsParasited(self)
 end
 
-function DetectableMixin:GetDecloaked()
-    return self.decloak
-end
-
-function DetectableMixin:SetDetected(state, decloak)
+function DetectableMixin:SetDetected(state)
 
     if state ~= self.detected then
     
@@ -180,9 +178,6 @@ function DetectableMixin:SetDetected(state, decloak)
         end
         
         self.detected = state
-        if decloak then
-            self.decloak = decloak
-        end
         
     end
     
@@ -191,5 +186,42 @@ function DetectableMixin:SetDetected(state, decloak)
     else
         self.timeWasDetected = nil
     end
+    
+end
+
+function DetectableMixin:OnUpdateRender()
+
+    PROFILE("DetectableMixin:OnUpdateRender")
+    
+    /*if self:isa("Player") and self:GetIsLocalPlayer() then
+    
+        local viewModelEnt = self:GetViewModelEntity()
+        local viewModel = viewModelEnt and viewModelEnt:GetRenderModel()
+        
+        if viewModel then
+        
+            if not self.detectedMaterial then
+                self.detectedMaterial = AddMaterial(viewModel, kDetectedMaterialName)
+            end
+            
+            if self.clientDetected ~= self:GetIsDetected() then
+            
+                self.clientDetected = self:GetIsDetected()
+                
+                if self.clientDetected then
+                    self.timeLastDetectEffect = Shared.GetTime()
+                end
+                
+            end
+            
+            if self:GetIsDetected() and self.timeLastDetectEffect + kDetectEffectInterval < Shared.GetTime() then
+                self.timeLastDetectEffect = Shared.GetTime()
+            end
+            
+            self.detectedMaterial:SetParameter("timeDetected", self.timeLastDetectEffect)
+            
+        end
+        
+    end*/
     
 end

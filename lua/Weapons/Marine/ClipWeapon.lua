@@ -21,19 +21,22 @@ PrecacheAsset("cinematics/materials/umbra/ricochet.cinematic")
 
 class 'ClipWeapon' (Weapon)
 
+local kBulletSize = 0.010
+
 ClipWeapon.kMapName = "clipweapon"
 
 local networkVars =
 {
-    blockingPrimary = "boolean",
-    blockingSecondary = "boolean",
+    blockingPrimary = "compensated boolean",
+    blockingSecondary = "compensated boolean",
     timeAttackStarted = "time",
     deployed = "boolean",
     
-    ammo = "integer (0 to 400)",
+    ammo = "integer (0 to 511)",
     clip = "integer (0 to 200)",
     
-    reloading = "boolean"
+    reloading = "compensated boolean",
+	reloaded = "compensated boolean"
 }
 
 // Weapon spread - from NS1/Half-life
@@ -148,7 +151,7 @@ function ClipWeapon:GetSpread()
 end
 
 function ClipWeapon:GetRange()
-    return 8012
+    return 100
 end
 
 function ClipWeapon:GetAmmo()
@@ -157,6 +160,17 @@ end
 
 function ClipWeapon:GetClip()
     return self.clip
+end
+
+function ClipWeapon:GetAmmoFraction()
+
+    local maxAmmo = self:GetMaxAmmo()
+    if maxAmmo > 0 then
+        return Clamp((self.clip + self.ammo) / maxAmmo, 0, 1)
+    end
+    
+    return 1
+
 end
 
 function ClipWeapon:SetClip(clip)
@@ -195,8 +209,6 @@ end
 
 // Add energy back over time, called from Player:OnProcessMove
 function ClipWeapon:ProcessMoveOnWeapon(player, input)
-
-    
 end
 
 function ClipWeapon:OnProcessMove(input)
@@ -270,10 +282,6 @@ function ClipWeapon:GetNeedsAmmo(includeClip)
     return (includeClip and (self:GetClip() < self:GetClipSize())) or (self:GetAmmo() < self:GetMaxAmmo())
 end
 
-function ClipWeapon:GetWarmupTime()
-    return 0
-end
-
 function ClipWeapon:GetPrimaryAttackRequiresPress()
     return false
 end
@@ -286,7 +294,7 @@ function ClipWeapon:GetIsPrimaryAttackAllowed(player)
 
     if not player then
         return false
-    end    
+    end
 
     local attackAllowed = (not self:GetPrimaryAttackRequiresPress() or not player:GetPrimaryAttackLastFrame())
     attackAllowed = attackAllowed and (not self:GetIsReloading() or self:GetPrimaryCanInterruptReload())
@@ -294,7 +302,6 @@ function ClipWeapon:GetIsPrimaryAttackAllowed(player)
     attackAllowed = attackAllowed and (not self:GetPrimaryIsBlocking() or not self.blockingPrimary)
     attackAllowed = attackAllowed and not (player.GetIsDevoured and player:GetIsDevoured()) 
     attackAllowed = attackAllowed and not (player.GetIsWebbed and player:GetIsWebbed())
-    
     return self:GetIsDeployed() and attackAllowed and not player:GetIsStunned()
 
 end
@@ -304,19 +311,14 @@ function ClipWeapon:OnPrimaryAttack(player)
     if self:GetIsPrimaryAttackAllowed(player) then
     
         if self.clip > 0 then
-        
-            local warmingUp = Shared.GetTime() < (self.timeAttackStarted + self:GetWarmupTime())
-            if not warmingUp then
+
+            CancelReload(self)
             
-                CancelReload(self)
-                
-                self.primaryAttacking = true
-                self.timeAttackStarted = Shared.GetTime()
-                
-                if self:GetPrimaryIsBlocking() then
-                    self.blockingPrimary = true
-                end
-                
+            self.primaryAttacking = true
+            self.timeAttackStarted = Shared.GetTime()
+            
+            if self:GetPrimaryIsBlocking() then
+                self.blockingPrimary = true
             end
             
         elseif self.ammo > 0 then
@@ -326,12 +328,7 @@ function ClipWeapon:OnPrimaryAttack(player)
             player:Reload()
             
         else
-        
-            // Once the ClipWeapon empty animations are working again, this
-            // should be added back and should only play on a tag.
-            //self:TriggerEffects("clipweapon_empty")
-            self:OnPrimaryAttackEnd(player)
-            
+            self:OnPrimaryAttackEnd(player)            
         end
         
     else
@@ -347,6 +344,7 @@ function ClipWeapon:OnPrimaryAttackEnd(player)
         Weapon.OnPrimaryAttackEnd(self, player)
         
         self.primaryAttacking = false
+        self.timeAttackEnded = Shared.GetTime()
         
     end
     
@@ -375,12 +373,19 @@ function ClipWeapon:OnSecondaryAttack(player)
         self.blockingSecondary = true
         self.timeAttackStarted = Shared.GetTime()
         
-        return true
-        
+    else
+        self:OnSecondaryAttackEnd(player)
     end
     
-    return false
+end
+
+function ClipWeapon:OnSecondaryAttackEnd(player)
+
+    Weapon.OnSecondaryAttackEnd(self, player)
     
+    self.secondaryAttacking = false
+    self.timeAttackEnded = Shared.GetTime()
+
 end
 
 function ClipWeapon:GetPrimaryAttacking()
@@ -406,7 +411,11 @@ function ClipWeapon:GetPrimaryIsBlocking()
 end
 
 function ClipWeapon:GetBulletSize()
-    return 0.010
+    return kBulletSize
+end
+
+function ClipWeapon:CalculateSpreadDirection(shootCoords, player)
+    return CalculateSpread(shootCoords, self:GetSpread() * self:GetInaccuracyScalar(player), NetworkRandom)
 end
 
 /**
@@ -424,6 +433,7 @@ local function FireBullets(self, player)
       
     local numberBullets = self:GetBulletsPerShot()
     local startPoint = player:GetEyePos()
+    local bulletSize = self:GetBulletSize()
     
     for bullet = 1, numberBullets do
     
@@ -432,9 +442,13 @@ local function FireBullets(self, player)
         local endPoint = startPoint + spreadDirection * range
 
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
-        if not trace.entity then
-            local extents = GetDirectedExtentsForDiameter(viewCoords.zAxis, self:GetBulletSize())
-            trace = Shared.TraceBox(extents, startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+        if not trace.entity and Server  then
+        
+            -- Limit the box trace to the point where the ray hit as an optimization.
+            local boxTraceEndPoint = trace.fraction ~= 1 and trace.endPoint or endPoint
+            local extents = GetDirectedExtentsForDiameter(spreadDirection, bulletSize)
+            trace = Shared.TraceBox(extents, startPoint, boxTraceEndPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+            
         end   
         
         local damage = 0
@@ -563,14 +577,19 @@ function ClipWeapon:OnTag(tagName)
             
             Weapon.OnPrimaryAttack(self, player)
             
+            //DebugFireRate(self)
+            
         end
         
-    //elseif tagName == "reload" then
+    elseif tagName == "reload" then
         
+		self.reloaded = true
     elseif tagName == "deploy_end" then
         self.deployed = true
     elseif tagName == "reload_end" then
         self.reloading = false
+		self.reloaded = false
+		self.blockingPrimary = false
         if self.mapName ~= "shotgun" and self.mapName ~= "grenadelauncher" then
             FillClip(self)
         end
@@ -578,6 +597,8 @@ function ClipWeapon:OnTag(tagName)
         self.blockingPrimary = false
     elseif tagName == "alt_attack_end" then
         self.blockingSecondary = false
+    elseif tagName == "shoot_empty" then
+        self:TriggerEffects("clipweapon_empty")
     end
     
 end

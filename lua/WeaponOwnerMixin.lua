@@ -25,14 +25,14 @@ WeaponOwnerMixin.expectedConstants =
 }
 
 // lets assume you can't carry more than 20 rifles in weight. Seems reasonable
-WeaponOwnerMixin.kMaxWeaponsWeight = 20 * kRifleWeight
+local kMaxWeaponsWeight = 0.3
 
 WeaponOwnerMixin.networkVars =
 {
     processMove = "boolean",
     activeWeaponId = "entityid",
     timeOfLastWeaponSwitch = "time",
-    weaponsWeight = "float (0 to " .. WeaponOwnerMixin.kMaxWeaponsWeight .. " by 0.01)",
+    weaponsWeight = "float (0 to " .. kMaxWeaponsWeight .. " by 0.001)",
     quickSwitchSlot = "integer (0 to 10)"
 }
 
@@ -50,6 +50,25 @@ function WeaponOwnerMixin:GetWeaponsWeight()
     return self.weaponsWeight
 end
 
+function WeaponOwnerMixin:GetWeapons()
+
+    local weapons = {}
+
+    for i = 0, self:GetNumChildren() - 1 do
+    
+        local child = self:GetChildAtIndex(i)
+        if child:isa("Weapon") then
+        
+            table.insert(weapons, child)
+            
+        end
+    
+    end
+    
+    return weapons
+
+end
+
 //NS2c
 //Changed to global as weapons will now call this also.
 function WeaponOwnerMixin:UpdateWeaponWeights()
@@ -62,17 +81,12 @@ function WeaponOwnerMixin:UpdateWeaponWeights()
     
         local child = self:GetChildAtIndex(i)
         if child:isa("Weapon") then
-        
-            // Active items count full, count less when stowed.
-            local weaponIsActive = activeWeapon and (child:GetId() == activeWeapon:GetId())
-            local weaponWeight = (weaponIsActive and child:GetWeight()) or (child:GetWeight() * self:GetMixinConstants().kStowedWeaponWeightScalar)
-            totalWeight = totalWeight + weaponWeight
-            
+            totalWeight = totalWeight + child:GetWeight()
         end
     
     end
     
-    self.weaponsWeight = Clamp(totalWeight, 0, 1)
+    self.weaponsWeight = Clamp(totalWeight, 0, kMaxWeaponsWeight)
 
 end
 
@@ -359,6 +373,22 @@ function WeaponOwnerMixin:GetWeaponInHUDSlot(slot)
     
 end
 
+function WeaponOwnerMixin:SetHUDSlotActive(slot)
+
+    local weapon = self:GetWeaponInHUDSlot(slot)
+    if weapon then
+        self:SetActiveWeapon(weapon:GetMapName())
+    else
+    
+        local orderedList = self:GetHUDOrderedWeaponList()
+        if #orderedList > 0 then
+            self:SetActiveWeapon(orderedList[1]:GetMapName())
+        end
+        
+    end
+
+end
+
 function WeaponOwnerMixin:AddWeapon(weapon, setActive)
 
     assert(weapon:GetParent() ~= self)
@@ -432,18 +462,8 @@ end
 function WeaponOwnerMixin:DestroyWeapons()
 
     self.activeWeaponId = Entity.invalidId
-    
-    local allWeapons = { }
-    for i = 0, self:GetNumChildren() - 1 do
-    
-        local child = self:GetChildAtIndex(i)
-        if child:isa("Weapon") then
-            table.insert(allWeapons, child)
-        end
-        
-    end
-    
-    for i, weapon in ipairs(allWeapons) do
+
+    for i, weapon in ipairs(self:GetWeapons()) do
         DestroyEntity(weapon)
     end
 

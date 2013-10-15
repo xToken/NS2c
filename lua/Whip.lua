@@ -31,8 +31,9 @@ Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/InfestationMixin.lua")
+Script.Load("lua/IdleMixin.lua")
 
 class 'Whip' (ScriptActor)
 
@@ -46,9 +47,7 @@ local kEmpowerThinkTime = 2
 
 Whip.kWhipBallParam = "ball"
 
-local networkVars =
-{
-}
+local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
@@ -63,8 +62,9 @@ AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
-AddMixinNetworkVars(HasUmbraMixin, networkVars)
+AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(InfestationMixin, networkVars)
+AddMixinNetworkVars(IdleMixin, networkVars)
 
 Shared.PrecacheSurfaceShader("models/alien/whip/ball.surface_shader")
 
@@ -87,13 +87,13 @@ function Whip:OnCreate()
     InitMixin(self, RagdollMixin)
     InitMixin(self, ObstacleMixin)
     InitMixin(self, DissolveMixin)
-    InitMixin(self, HasUmbraMixin)
+    InitMixin(self, UmbraMixin)
     
     if Client then
         InitMixin(self, CommanderGlowMixin)    
     end
     
-    self:SetLagCompensated(true)
+    self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
     
@@ -120,6 +120,8 @@ function Whip:OnInitialized()
         InitMixin(self, HiveVisionMixin)
         
     end
+    
+    InitMixin(self, IdleMixin)
     
 end
 
@@ -213,9 +215,9 @@ if Server then
             
     function Whip:OnConstructionComplete()
     
-        self:AddTimedCallback(Whip.EmpowerInRange, kEmpowerThinkTime)
         local team = self:GetTeam()
-        if team then
+        if team and team.OnUpgradeChamberConstructed then
+			self:AddTimedCallback(Whip.EmpowerInRange, kEmpowerThinkTime)
             team:OnUpgradeChamberConstructed(self)
         end
         
@@ -226,7 +228,7 @@ if Server then
         ScriptActor.OnKill(self, attacker, doer, point, direction)
         
         local team = self:GetTeam()
-        if team then
+        if team and team.OnUpgradeChamberDestroyed then
             team:OnUpgradeChamberDestroyed(self)
         end
     
@@ -242,4 +244,4 @@ function Whip:GetCanBeUsed(player, useSuccessTable)
     end
 end
 
-Shared.LinkClassToMap("Whip", Whip.kMapName, networkVars, true)
+Shared.LinkClassToMap("Whip", Whip.kMapName, networkVars)

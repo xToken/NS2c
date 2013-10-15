@@ -29,7 +29,7 @@ end
 function Devour:OnCreate()
 
     Ability.OnCreate(self)
-    
+    InitMixin(self, StompMixin)
     self.timeSinceLastDevourUpdate = 0
     self.lastPrimaryAttackTime = 0
     self.devouring = 0
@@ -37,7 +37,7 @@ function Devour:OnCreate()
 end
 
 function Devour:GetDeathIconIndex()
-    return kDeathMessageIcon.Gore
+    return kDeathMessageIcon.Devour
 end
 
 function Devour:GetAnimationGraphName()
@@ -45,7 +45,7 @@ function Devour:GetAnimationGraphName()
 end
 
 function Devour:GetEnergyCost(player)
-    if self:IsAlreadyEating() then
+    if self:IsDevouringPlayer() then
         return 101
     else
         return kDevourEnergyCost
@@ -53,7 +53,7 @@ function Devour:GetEnergyCost(player)
 end
 
 function Devour:GetHUDSlot()
-    return 2
+    return 3
 end
 
 function Devour:OnHolster(player)
@@ -69,10 +69,6 @@ function Devour:GetMeleeBase()
     return kDevourMeleeBaseWidth, kDevourMeleeBaseHeight
 end
 
-function Devour:GetIconOffsetY(secondary)
-    return kAbilityOffset.Gore
-end
-
 function Devour:OnTag(tagName)
 
     PROFILE("Devour:OnTag")
@@ -80,7 +76,7 @@ function Devour:OnTag(tagName)
     if tagName == "hit" then
     
         local player = self:GetParent()
-        if player and not self:GetHasAttackDelay(self, player) then
+        if player then
         
             self.lastPrimaryAttackTime = Shared.GetTime()
             local didHit, target, endPoint = AttackMeleeCapsule(self, player, kDevourInitialDamage, self:GetRange(), nil, false, EntityFilterOneAndIsa(player, "Babbler"))
@@ -90,6 +86,7 @@ function Devour:OnTag(tagName)
             if didHit and target and target:isa("Marine") then
                 self:Devour(player, target)
             end
+            
         end
     end    
 
@@ -113,7 +110,7 @@ function Devour:Devour(player, target)
 end
 
 //Silly onos, you cant eat multiple marines at once
-function Devour:IsAlreadyEating()
+function Devour:IsDevouringPlayer()
     return self.devouring ~= 0
 end
 
@@ -126,7 +123,7 @@ function Devour:GetLastAttackTime()
 end
 
 function Devour:OnPrimaryAttack(player)
-    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(self, player) and not self:IsAlreadyEating() then
+    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(player) and not self:IsDevouringPlayer() then
         self.primaryAttacking = true
     else
         self:OnAttackEnd()
@@ -160,11 +157,30 @@ end
 
 if Server then
 
+    local function EndDevour(self)
+        if self.devouring ~= 0 then
+            local devouredplayer = Shared.GetEntity(self.devouring)
+            StartSoundEffectAtOrigin(kDevourCancelledSound, self:GetOrigin())
+            if devouredplayer and devouredplayer.OnDevouredEnd then
+                devouredplayer:OnDevouredEnd()
+            end
+        end
+        self.devouring = 0
+    end
+	
+	local function CompleteDevour(self, devouredplayer)
+		if devouredplayer.OnDevouredEnd then 
+			devouredplayer:OnDevouredEnd()
+		end
+		self:TriggerEffects("devour_complete")
+		self.devouring = 0
+	end
+
     function Devour:OnProcessMove(input)
         if self.devouring ~= 0 then
-            local food = Shared.GetEntity(self.devouring)
+            local devouredplayer = Shared.GetEntity(self.devouring)
             local player = self:GetParent()
-            if food and player and player:GetIsAlive() then
+            if devouredplayer and player and player:GetIsAlive() then
                 if self.timeSinceLastDevourUpdate + kDevourDigestionSpeed < Shared.GetTime() then   
                     //Player still being eaten, damage them
                     self.timeSinceLastDevourUpdate = Shared.GetTime()
@@ -173,34 +189,19 @@ if Server then
                         self:TriggerEffects("devour_hit")
                         self.lastdevoursound = Shared.GetTime()
                     end
-                    if self:DoDamage(kDevourDamage, food, player:GetOrigin(), 0, "none") then
-                        if food.OnDevouredEnd then 
-                            food:OnDevouredEnd()
-                        end
-                        self:TriggerEffects("devour_complete")
-                        self.devouring = 0
+                    if self:DoDamage(kDevourDamage, devouredplayer, player:GetOrigin(), 0, "none") then
+                        CompleteDevour(self, devouredplayer)
                     end
                 end
             else
-                self.devouring = 0
+                EndDevour(self)
             end
         end
-    end
-
-    local function EndDevour(self)
-        if self.devouring ~= 0 then
-            local food = Shared.GetEntity(self.devouring)
-            if food and food.OnDevouredEnd then
-                StartSoundEffectAtOrigin(kDevourCancelledSound, food:GetOrigin())
-                food:OnDevouredEnd()
-            end
-        end
-        self.devouring = 0
     end
 
     function Devour:OnDestroy()
+		EndDevour(self)
         Ability.OnDestroy(self)        
-        EndDevour(self)
     end
     
     function Devour:OnKillPlayer(player, killer, doer, point, direction)   

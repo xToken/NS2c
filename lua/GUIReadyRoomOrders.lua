@@ -1,10 +1,8 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
 // lua\GUIReadyRoomOrders.lua
 //
 // Created by: Andreas Urwalek (andi@unknownworlds.com)
-//
-// Shows enemy command structures
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
@@ -92,6 +90,8 @@ function GUIReadyRoomOrders:Initialize()
     self.welcomeText:SetTextAlignmentY(GUIItem.Align_Center)
     self.welcomeText:SetAnchor(GUIItem.Middle, GUIItem.Center)
     self.welcomeText:SetText("This Server is running the Natural Selection 2 Classic Mod.")
+    local localPlayer = Client.GetLocalPlayer()
+    localPlayer:TriggerEffects("tooltip")
     self.welcomeText:SetColor(kFadeOutColor)
     self.welcomeTextStartTime = Shared.GetTime()
     self.welcometextCount = 0

@@ -1,0 +1,83 @@
+//NS2c
+//Renamed to SiegeCannon
+//Adjusted arcs to be constructed and require nearby TF
+
+local kSiegeCannonDamageOffset = Vector(0, 0.3, 0)
+local kMoveParam = "move_speed"
+local kMuzzleNode = "fxnode_arcmuzzle"
+
+function SiegeCannon:SetTargetDirection(targetPosition)
+    self.targetDirection = GetNormalizedVector(targetPosition - self:GetOrigin())
+end
+
+function SiegeCannon:ClearTargetDirection()
+    self.targetDirection = nil
+end
+
+function SiegeCannon:ValidateTargetPosition(position)
+    return true
+end
+
+function SiegeCannon:UpdateOrders(deltaTime)
+
+    if self:GetInAttackMode() then
+     
+        // Check for new target every so often, but not every frame.
+        local time = Shared.GetTime()
+        if self.timeOfLastAcquire == nil or (time > self.timeOfLastAcquire + 0.2) then
+        
+            self:AcquireTarget()
+            self.timeOfLastAcquire = time
+            
+        end
+        
+    end
+    
+end
+
+function SiegeCannon:AcquireTarget()
+    
+    local finaltarget = nil
+    
+    finaltarget = self.targetSelector:AcquireTarget()
+    
+    if finaltarget ~= nil and self:ValidateTargetPosition(finaltarget:GetOrigin()) then
+    
+        self:GiveOrder(kTechId.Attack, finaltarget:GetId(), nil)
+        self:SetMode(SiegeCannon.kMode.Targeting)
+        self.targetPosition = finaltarget:GetOrigin()
+        self:SetTargetDirection(self.targetPosition)
+        
+    else
+    
+        self:ClearOrders()
+        self:SetMode(SiegeCannon.kMode.Active)
+        self.targetPosition = nil
+        
+    end
+    
+end
+
+function SiegeCannon:SetMode(mode)
+    
+    if self.mode ~= mode then
+    
+        local triggerEffectName = "sc_" .. string.lower(EnumToString(SiegeCannon.kMode, mode))        
+        self:TriggerEffects(triggerEffectName)
+        
+        self.mode = mode
+
+    end
+    
+end
+
+function SiegeCannon:OnPowerOn()
+    self:SetMode(SiegeCannon.kMode.Active)
+    self:TriggerEffects("sc_deploying")
+end
+
+function SiegeCannon:OnPowerOff()
+    self:SetMode(SiegeCannon.kMode.Inactive)
+    self:ClearOrders()
+    self:TriggerEffects("sc_inactive")
+end

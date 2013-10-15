@@ -10,24 +10,25 @@
 //Added in additional build abilities
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
+Script.Load("lua/Weapons/Alien/HydraAbility.lua")
+Script.Load("lua/Weapons/Alien/WebsAbility.lua")
+Script.Load("lua/Weapons/Alien/BabblerEggAbility.lua")
 Script.Load("lua/Weapons/Alien/CragAbility.lua")
 Script.Load("lua/Weapons/Alien/ShiftAbility.lua")
 Script.Load("lua/Weapons/Alien/ShadeAbility.lua")
 Script.Load("lua/Weapons/Alien/WhipAbility.lua")
-Script.Load("lua/Weapons/Alien/HydraAbility.lua")
-Script.Load("lua/Weapons/Alien/WebsAbility.lua")
 Script.Load("lua/Weapons/Alien/HarvesterAbility.lua")
 Script.Load("lua/Weapons/Alien/HiveAbility.lua")
-Script.Load("lua/Weapons/Alien/BabblerEggAbility.lua")
 
 class 'DropStructureAbility' (Ability)
+
+local kMaxStructuresPerType = 5
+local kDropCooldown = 1
 
 DropStructureAbility.kMapName = "drop_structure_ability"
 
 local kCreateFailSound = PrecacheAsset("sound/NS2.fev/alien/gorge/create_fail")
 local kAnimationGraph = PrecacheAsset("models/alien/gorge/gorge_view.animation_graph")
-local kDropCooldown = 1
-local kMaxStructuresPerType = 5
 
 DropStructureAbility.kSupportedStructures = { CragStructureAbility, ShiftStructureAbility, ShadeStructureAbility, WhipStructureAbility, HarvesterStructureAbility, HiveStructureAbility, HydraStructureAbility, WebsAbility, BabblerEggAbility }
 
@@ -76,6 +77,7 @@ end
 
 function DropStructureAbility:SetActiveStructure(structureNum)
     self.activeStructure = structureNum
+	self.lastClickedPosition = nil
 end
 
 function DropStructureAbility:GetSecondaryTechId()
@@ -249,7 +251,7 @@ local function DropStructure(self, player, origin, direction, structureAbility, 
                 // Check for space
                 if structure:SpaceClearForEntity(coords.origin) then
                 
-                    local angles = Angles()
+                    local angles = Angles()                    
                     
                     if structure:isa("BabblerEgg") and coords.yAxis.y > 0.8 then
                         angles.yaw = math.random() * math.pi * 2

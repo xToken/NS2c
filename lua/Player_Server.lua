@@ -18,7 +18,6 @@ function Player:OnClientConnect(client)
     self:SetRequestsScores(true)   
     self.clientIndex = client:GetId()
     self.client = client
-    self:TriggerEffects("tooltip")
     
 end
 
@@ -32,14 +31,6 @@ function Player:Reset()
     
     self:SetCameraDistance(0)
     
-end
-
-function Player:ResetScores()
-
-    self.kills = 0
-    self.deaths = 0    
-    self:SetScoreboardChanged(true)
-
 end
 
 function Player:ClearEffects()
@@ -101,13 +92,6 @@ function Player:GetClientMuted(checkClientIndex)
     if not self.mutedClients then self.mutedClients = { } end
     return self.mutedClients[checkClientIndex] == true
     
-end
-
-// Changes the visual appearance of the player to the special edition version.
-function Player:MakeSpecialEdition()
-end
-
-function Player:MakeDeluxeEdition()
 end
 
 // Not authoritative, only visual and information. TeamResources is stored in the team.
@@ -384,11 +368,6 @@ function Player:CopyPlayerDataFrom(player)
     self.countingDown = player.countingDown
     self.frozen = player.frozen
     
-    // Don't copy alive, health, maxhealth, armor, maxArmor - they are set in Spawn()
-    self.score = player.score or 0
-    self.kills = player.kills
-    self.deaths = player.deaths
-    
     self.timeOfDeath = player.timeOfDeath
     self.timeOfLastUse = player.timeOfLastUse
     self.crouching = player.crouching
@@ -405,9 +384,6 @@ function Player:CopyPlayerDataFrom(player)
     self.jumpHandled = player.jumpHandled
     self.timeOfLastJump = player.timeOfLastJump
     self.darwinMode = player.darwinMode
-    
-    self.mode = player.mode
-    self.modeTime = player.modeTime
     
     self.requestsScores = player.requestsScores
     self.isRookie = player.isRookie
@@ -556,9 +532,6 @@ function Player:Replace(mapName, newTeamNumber, preserveWeapons, atOrigin, extra
         client:SetSpectatingPlayer(nil)
     end
     
-    // Must happen after the client has been set on the player.
-    player:InitializeBadges()
-    
     // Log player spawning
     if teamNumber ~= 0 then
         PostGameViz(string.format("%s spawned", SafeClassName(self)), self)
@@ -657,21 +630,6 @@ function Player:GiveItem(itemMapName, setActive)
     
 end
 
-function Player:GetKills()
-    return self.kills
-end
-
-function Player:GetDeaths()
-    return self.deaths
-end
-
-function Player:AddDeaths()
-
-    self.deaths = Clamp(self.deaths + 1, 0, kMaxDeaths)
-    self:SetScoreboardChanged(true)
-    
-end
-
 function Player:GetPing()
 
     local client = Server.GetOwner(self)
@@ -731,15 +689,6 @@ function Player:SetDarwinMode(darwinMode)
     self.darwinMode = darwinMode
 end
 
-function Player:UpdateArmorAmount()
-
-    // note: some player may have maxArmor == 0
-    local armorPercent = self.maxArmor > 0 and self.armor/self.maxArmor or 0
-    self.maxArmor = self:GetArmorAmount()
-    self:SetArmor(self.maxArmor * armorPercent)
-    
-end
-
 function Player:GetIsInterestedInAlert(techId)
     return LookupTechData(techId, kTechDataAlertTeam, false)
 end
@@ -790,15 +739,14 @@ function Player:SetRookieMode(rookieMode)
 end
 
 function Player:OnClientUpdated(client)
+    // override me
+    //DebugPrint("Player:OnClientUpdated")
+end
 
-    if client then
-    
-        if client.armorType == kArmorType.Black and GetHasBlackArmor(client) then
-            self:MakeSpecialEdition()
-        elseif client.armorType == kArmorType.Deluxe and GetHasDeluxeEdition(client) then
-            self:MakeDeluxeEdition()
-        end
-    
-    end
+// only use intensity value here to reduce traffic
+function Player:SetCameraShake(intensity)
+
+    local message = BuildCameraShakeMessage(intensity)
+    Server.SendNetworkMessage(self, "CameraShake", message, false)
 
 end

@@ -33,7 +33,7 @@ Script.Load("lua/MobileTargetMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/BadgeMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
-Script.Load("lua/Weapons/PredictedProjectile.lua")
+Script.Load("lua/AFKMixin.lua")
 
 if Client then
     Script.Load("lua/HelpMixin.lua")
@@ -55,23 +55,24 @@ end
 
 if Predict then
 
-    function Player:OnUpdatePlayer(deltaTime)    
-        // do nothing
-    end
+function Player:OnUpdatePlayer(deltaTime)    
+    // do nothing
+end
 
-    function Player:UpdateMisc(input)
-        // do nothing
-    end
+function Player:UpdateMisc(input)
+    // do nothing
+end
 
 end
 
 Player.kNotEnoughResourcesSound     = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/more")
 Player.kGravity = -15
 Player.kXZExtents = 0.35
-Player.kYExtents = 0.95
+Player.kYExtents = 0.9
 Player.kWalkMaxSpeed = 4
 Player.kOnGroundDistance = 0.1
 
+// Private
 local kTapInterval = 0.27
 
 local TAP_NONE = 0
@@ -108,7 +109,7 @@ local kThinkInterval = .2
 
 //Movement Code Vars
 local kMaxAirVeer = 1.2
-local kGoldSrcAcceleration = 6.5
+local kGoldSrcAcceleration = 10
 local kGoldSrcAirAcceleration = 50
 local kGroundFriction = 4
 local kCrouchMaxSpeed = 2.2
@@ -123,12 +124,13 @@ local kStepTotalTime    = 0.1  // Total amount of time to interpolate up a step
 local kViewOffsetHeight = Player.kYExtents * 2 - 0.2
 local kMaxStepAmount = 1.5
 local kCrouchShrinkAmount = 0.6
-local kExtentsCrouchShrinkAmount = 0.5
-local kTauntMovementScalar = .05           // Players can only move a little while taunting
+local kExtentsCrouchShrinkAmount = 0.4
 local kMinSlowSpeedScalar = .4
 local kBodyYawTurnThreshold = Math.Radians(5)
 local kTurnDelaySpeed = 8
 local kTurnRunDelaySpeed = 2.5
+// Controls how fast the body_yaw pose parameter used for turning while standing
+// still blends back to default when the player starts moving.
 local kTurnMoveYawBlendToMovingSpeed = 5
 local kUnstickDistance = .1
 local kUnstickOffsets =
@@ -181,16 +183,6 @@ local networkVars =
     // Used to require the key to pressed multiple times
 
     moveButtonPressed = "compensated boolean",
-    
-    // Player-specific mode. When set to kPlayerMode.Default, player moves and acts normally, otherwise
-    // he doesn't take player input. Change mode and set modeTime to the game time that the mode
-    // ends. ProcessEndMode() will be called when the mode ends. Return true from that to process
-    // that mode change, otherwise it will go back to kPlayerMode.Default. Used for things like taunting,
-    // building structures and other player actions that take time while the player is stationary.
-    mode = "private enum kPlayerMode",
-    
-    // Time when mode will end. Set to -1 to have it never end.
-    modeTime = "private float",
     
     primaryAttackLastFrame = "boolean",
     secondaryAttackLastFrame = "boolean",
@@ -260,8 +252,7 @@ function Player:OnCreate()
     InitMixin(self, PointGiverMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, BadgeMixin)
-  	InitMixin(self, PredictedProjectileShooterMixin)
-    	
+    
     if Client then
         InitMixin(self, HelpMixin)
     end
@@ -271,6 +262,9 @@ function Player:OnCreate()
     self:SetUpdates(true)
     
     if Server then
+    
+        InitMixin(self, AFKMixin)
+        
         self.name = ""
         self.giveDamageTime = 0
         self.sendTechTreeBase = false
@@ -293,12 +287,8 @@ function Player:OnCreate()
     
     self.timeLastMenu = 0
     self.darwinMode = false
-    self.kills = 0
-    self.deaths = 0
-
+    
     self.leftFoot = true
-    self.mode = kPlayerMode.Default
-    self.modeTime = -1
     self.primaryAttackLastFrame = false
     self.secondaryAttackLastFrame = false
     
@@ -323,7 +313,8 @@ function Player:OnCreate()
     // Create the controller for doing collision detection.
     // Just use default values for the capsule size for now. Player will update to correct
     // values when they are known.
-    self:CreateController(PhysicsGroup.PlayerControllersGroup)
+    local controllerGroup = self:GetPlayerControllersGroup()
+    self:CreateController(controllerGroup)
     
     // Make the player kinematic so that bullets and other things collide with it.
     self:SetPhysicsGroup(PhysicsGroup.PlayerGroup)
@@ -357,23 +348,23 @@ function Player:OnInitialized()
     ScriptActor.OnInitialized(self)
     
     if Server then
-    
+
         InitViewModel(self)
         // Only give weapons when playing.
-        if self:GetTeamNumber() ~= kNeutralTeamType then
+        if self:GetTeamNumber() ~= kNeutralTeamType and not self.preventWeapons then
             self:InitWeapons()
         end
         
         self:SetName(kDefaultPlayerName)
         
+        self:SetNextThink(kThinkInterval)
+        
         InitMixin(self, MobileTargetMixin)
         
     end
-    
+
     self:SetScoreboardChanged(true)
-    
     self:SetViewOffsetHeight(self:GetMaxViewOffsetHeight())
-    
     self:UpdateControllerFromEntity()
     
     if Client then
@@ -399,15 +390,6 @@ function Player:OnInitialized()
     
 end
 
-function DisablePlayerDanger(player)
-
-    // Stop looping music.
-    if player:GetIsLocalPlayer() then
-        Client.StopMusic("sound/NS2.fev/danger")
-    end
-    
-end
-
 /**
  * Called when the player entity is destroyed.
  */
@@ -429,10 +411,6 @@ function Player:OnDestroy()
         
         self:CloseMenu()
         
-        if self.idleSoundInstance then
-            Client.DestroySoundEffect(self.idleSoundInstance)
-        end
-        
         if self.guiCountDownDisplay then
         
             GetGUIManager():DestroyGUIScript(self.guiCountDownDisplay)
@@ -447,18 +425,9 @@ function Player:OnDestroy()
             
         end
         
-        DisablePlayerDanger(self)
-        
     elseif Server then
         self:RemoveSpectators(nil)
     end
-    
-end
-
-function Player:AddKill()
-
-    self.kills = Clamp(self.kills + 1, 0, kMaxKills)
-    self:SetScoreboardChanged(true)
     
 end
 
@@ -503,7 +472,7 @@ function Player:AddPushImpulse(vector)
 end
 
 function Player:OverrideInput(input)
-
+    
     ClampInputPitch(input)
     
     if self.timeClosedMenu and (Shared.GetTime() < self.timeClosedMenu + .25) then
@@ -587,6 +556,7 @@ end
 
 // Return modifier to our max speed (1 is none, 0 is full)
 function Player:GetSlowSpeedModifier()
+
     // Never drop to 0 speed
     return 1 - (1 - kMinSlowSpeedScalar) * self.slowAmount
 end
@@ -788,7 +758,7 @@ function Player:PerformUseTrace()
     
 end
 
-function Player:UseTarget(entity, attachPoint, timePassed)
+function Player:UseTarget(entity, timePassed)
 
     assert(entity)
     
@@ -838,7 +808,7 @@ local function AttemptToUse(self, timePassed)
         end
         
         // Use it.
-        if self:UseTarget(entity, attachPoint, kUseInterval) then
+        if self:UseTarget(entity, kUseInterval) then
         
             self:SetIsUsing(true)
             self.timeOfLastUse = Shared.GetTime()
@@ -890,8 +860,8 @@ end
 function Player:GetExtentsOverride()
 
     local extents = self:GetMaxExtents()
-    if self.crouched then
-        extents.y = extents.y * (1 - self:GetExtentsCrouchShrinkAmount())
+    if self:GetCrouched() then
+        extents.y = extents.y * (1 - (self:GetExtentsCrouchShrinkAmount()))
     end
     return extents
     
@@ -924,12 +894,18 @@ function Player:GetCanDieOverride()
 end
 
 function Player:GetCanSuicide()
-    return not self.GetIsDevoured and not self:GetIsDevoured()
+    return not HasMixin(self, "Devourable") or not self:GetIsDevoured()
 end
 
 // Individual resources
 function Player:GetResources()
-    return self.resources
+
+    if Shared.GetCheatsEnabled() and Player.kAllFreeCheat then
+        return 100
+    else
+        return self.resources
+    end
+
 end
 
 // Returns player mass in kg
@@ -967,7 +943,11 @@ end
 
 function Player:GetPersonalResources()
 
-    return self.resources
+    if Shared.GetCheatsEnabled() and Player.kAllFreeCheat then
+        return 100
+    else
+        return self.resources
+    end
     
 end
 
@@ -1052,13 +1032,6 @@ function Player:AdjustMove(input)
     // Don't allow movement when frozen in place
     if self.frozen then
         input.move:Scale(0)
-    else        
-    
-        // Allow child classes to affect how much input is allowed at any time
-        if self.mode == kPlayerMode.Taunt then
-            input.move:Scale(kTauntMovementScalar)
-        end
-        
     end
     
     return input
@@ -1081,7 +1054,7 @@ function Player:GetDesiredAngles(deltaTime)
 end
 
 function Player:GetAngleSmoothRate()
-    return 8
+    return 10
 end
 
 function Player:GetRollSmoothRate()
@@ -1120,6 +1093,7 @@ function Player:AdjustAngles(deltaTime)
         // Just keep the old angles
 
     elseif smoothMode == "euler" then
+
         
         angles.yaw = SlerpRadians(angles.yaw, desiredAngles.yaw, self:GetAngleSmoothRate() * deltaTime )
         angles.roll = SlerpRadians(angles.roll, desiredAngles.roll, self:GetRollSmoothRate() * deltaTime )
@@ -1204,7 +1178,6 @@ local function UpdateBodyYaw(self, deltaTime, tempInput)
 
         // Reset values when moving.
         if self:GetVelocityLength() > 0.1 then
-        
             // Take a bit of time to reset value so going into the move animation doesn't skip.
             self.standingBodyYaw = SlerpRadians(self.standingBodyYaw, yaw, deltaTime * kTurnMoveYawBlendToMovingSpeed)
             self.standingBodyYaw = Math.Wrap(self.standingBodyYaw, 0, kDoublePI)
@@ -1213,7 +1186,6 @@ local function UpdateBodyYaw(self, deltaTime, tempInput)
             self.runningBodyYaw = Math.Wrap(self.runningBodyYaw, 0, kDoublePI)
             
         else
-        
             self.runningBodyYaw = yaw
             
             local diff = RadianDiff(self.standingBodyYaw, yaw)
@@ -1247,7 +1219,6 @@ local function UpdateBodyYaw(self, deltaTime, tempInput)
     end
     
 end
-
 local function UpdateAnimationInputs(self, input)
 
     // From WeaponOwnerMixin.
@@ -1331,6 +1302,7 @@ function Player:OnProcessMove(input)
         ASSERT(self.controller ~= nil)
         
         self:UpdateMove(input)
+
 		self:UpdateMaxMoveSpeed(input.time)
 
         // Restore the buttons so that things like the scoreboard, etc. work.
@@ -1371,15 +1343,15 @@ function Player:OnProcessSpectate(deltaTime)
     end
     
     self:OnUpdatePlayer(deltaTime)
-    
+
 end
 
 function Player:OnUpdate(deltaTime)
 
     ScriptActor.OnUpdate(self, deltaTime)
-    
+
     self:OnUpdatePlayer(deltaTime)
-    
+
 end
 
 function Player:GetSlowOnLand()
@@ -1394,9 +1366,6 @@ function Player:UpdateMaxMoveSpeed(deltaTime)
     if self:GetIsOnGround() then
     
         local newSlow = math.max(0, self.slowAmount - deltaTime)
-        //if newSlow ~= self.slowAmount then
-        //    Print("UpdateMaxMoveSpeed(%s) => %s => %s (time: %s)", ToString(deltaTime), ToString(self.slowAmount), newSlow, ToString(Shared.GetTime()))
-        //end
         self.slowAmount = newSlow    
         
     end
@@ -1438,6 +1407,10 @@ end
 // Required by ControllerMixin.
 function Player:GetControllerSize()
     return GetTraceCapsuleFromExtents(self:GetExtents())
+end
+
+function Player:GetPlayerControllersGroup()
+    return PhysicsGroup.PlayerControllersGroup
 end
 
 // Required by ControllerMixin.
@@ -1753,9 +1726,6 @@ function Player:UpdateSharedMisc(input)
 
     // Update the view offet with the smoothed value.
     self:SetViewOffsetHeight(self:GetSmoothedViewOffset().y)
-    
-    self:UpdateMode()
-    
 end
 
 // Subclasses can override this.
@@ -1773,7 +1743,7 @@ function Player:OnUpdatePoseParameters()
         
             local activeWeapon = self:GetActiveWeapon()
             if activeWeapon and activeWeapon.UpdateViewModelPoseParameters then
-                activeWeapon:UpdateViewModelPoseParameters(viewModel, input)
+                activeWeapon:UpdateViewModelPoseParameters(viewModel)
             end
             
         end
@@ -1784,41 +1754,17 @@ function Player:OnUpdatePoseParameters()
 
 end
 
-function Player:UpdateMode()
-
-    if(self.mode ~= kPlayerMode.Default and self.modeTime ~= -1 and Shared.GetTime() > self.modeTime) then
-    
-        if(not self:ProcessEndMode()) then
-        
-            self.mode = kPlayerMode.Default
-            self.modeTime = -1
-            
-        end
-
-    end
-    
-end
-
-function Player:ProcessEndMode()
-
-    if(self.mode == kPlayerMode.Knockback) then
-        
-        // No anim yet, set modetime manually
-        self.modeTime = 1.25
-        return true
-        
-    end
-    
-    return false
-end
-
 // for marquee selection
 function Player:GetIsMoveable()
     return true
 end
 
 function Player:GetIsIdle()
-    return self:GetVelocity():GetLengthXZ() < 0.1 and not self.moveButtonPressed
+    return self:GetVelocityLength() < 0.1 and not self.moveButtonPressed
+end
+
+function Player:GetPlayIdleSound()
+    return self:GetIsAlive() and (self:GetVelocityLength() / self:GetMaxSpeed()) > 0.5
 end
 
 function Player:GetPlayLandSound(landIntesity)
@@ -1859,7 +1805,7 @@ function Player:GetMaterialBelowPlayer()
 end
 
 function Player:GetFootstepSpeedScalar()
-    return Clamp(self:GetVelocity():GetLength() / kRunMaxSpeed, 0, 1)
+    return Clamp(self:GetVelocityLength() / kRunMaxSpeed, 0, 1)
 end
 
 function Player:HandleAttacks(input)
@@ -1905,11 +1851,6 @@ function Player:HandleAttacks(input)
     self.primaryAttackLastFrame = (bit.band(input.commands, Move.PrimaryAttack) ~= 0)
     self.secondaryAttackLastFrame = (bit.band(input.commands, Move.SecondaryAttack) ~= 0)
     
-    // Have idle sound respond
-    if Client and (self.primaryAttackLastFrame or self.secondaryAttackLastFrame) then
-        self:SetIdleSoundInactive()
-    end
-    
 end
 
 function Player:MovementModifierChanged(state, input)
@@ -1928,7 +1869,7 @@ function Player:GetSpeedDebugSpecial()
 end
 
 function Player:GetIsAbleToUse()
-    return true
+    return self:GetIsAlive()
 end
 
 function Player:HandleButtons(input)
@@ -1940,9 +1881,9 @@ function Player:HandleButtons(input)
         // The following inputs are disabled when the player cannot control themself.
         input.commands = bit.band(input.commands, bit.bnot(bit.bor(Move.Use, Move.Buy, Move.Jump,
                                                                    Move.PrimaryAttack, Move.SecondaryAttack,
-                                                                   Move.NextWeapon, Move.PrevWeapon, Move.Reload, Move.QuickSwitch,
+                                                                   Move.NextWeapon, Move.PrevWeapon, Move.Reload,
                                                                    Move.Taunt, Move.Weapon1, Move.Weapon2,
-                                                                   Move.Weapon3, Move.Weapon4, Move.Weapon5, Move.Crouch)))
+                                                                   Move.Weapon3, Move.Weapon4, Move.Weapon5, Move.Crouch, Move.Drop, Move.MovementModifier)))
                                                                    
         input.move.x = 0
         input.move.y = 0
@@ -1986,14 +1927,14 @@ function Player:HandleButtons(input)
         self.buyLastFrame = buyButtonPressed
         
     end
+
+    self:HandleAttacks(input)
     
     // Remember when jump released
     if bit.band(input.commands, Move.Jump) == 0 then
         self:SetIsJumpHandled(false)
     end
     
-    self:HandleAttacks(input)
-
     if bit.band(input.commands, Move.Reload) ~= 0 then
         self:Reload()
     end
@@ -2273,7 +2214,7 @@ function Player:OnUpdateAnimationInput(modelMixin)
     PROFILE("Player:OnUpdateAnimationInput")
     
     local moveState = "run"
-    if self:GetIsJumping() then
+    if self:GetIsJumping() and not self:GetIsOnLadder() then
         moveState = "jump"
     elseif self:GetIsIdle() then
         moveState = "idle"
@@ -2322,7 +2263,7 @@ function Player:RetrieveMove()
 end
 
 function Player:GetCanControl()
-    return (not self.isMoveBlocked) and self:GetIsAlive() and not self.countingDown
+    return not self.isMoveBlocked and self:GetIsAlive() and not self.countingDown
 end
 
 function Player:GetCanAttack()
@@ -2336,9 +2277,6 @@ function Player:TriggerInvalidSound()
         self.timeLastInvalidSound = Shared.GetTime()
     end
     
-end
-
-function Player:SetEthereal(ethereal)
 end
 
 function Player:GetIsWallWalkingAllowed(entity)
@@ -2396,6 +2334,13 @@ function Player:GetIsRookie()
     return self.isRookie
 end
 
+function Player:TriggerBeaconEffects()
+
+    self.timeLastBeacon = Shared.GetTime()
+    self:TriggerEffects("distress_beacon_spawn")
+
+end
+
 function Player:GetCommunicationStatus()
     return self.communicationStatus
 end
@@ -2447,6 +2392,21 @@ function Player:GetDirectionForMinimap()
     
     return direction
 
+end
+
+function Player:UpdateArmorAmount(armorLevel)
+
+    // note: some player may have maxArmor == 0
+    local armorPercent = self.maxArmor > 0 and self.armor/self.maxArmor or 0
+    local newMaxArmor = self:GetArmorAmount(armorLevel)
+    
+    if newMaxArmor ~= self.maxArmor then    
+    
+        self.maxArmor = newMaxArmor
+        self:SetArmor(self.maxArmor * armorPercent)
+        
+    end
+    
 end
 
 Shared.LinkClassToMap("Player", Player.kMapName, networkVars, true)

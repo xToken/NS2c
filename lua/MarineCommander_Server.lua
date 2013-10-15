@@ -88,7 +88,7 @@ local function GetIsDroppack(techId)
 end
 
 // check if a notification should be send for successful actions
-function MarineCommander:ProcessTechTreeActionForEntity(techNode, position, normal, pickVec, orientation, entity, trace, targetId, isBot)
+function MarineCommander:ProcessTechTreeActionForEntity(techNode, position, normal, pickVec, orientation, entity, trace, targetId)
 
     local techId = techNode:GetTechId()
     local success = false
@@ -121,7 +121,7 @@ function MarineCommander:ProcessTechTreeActionForEntity(techNode, position, norm
         keepProcessing = false
 
     else
-        success, keepProcessing = Commander.ProcessTechTreeActionForEntity(self, techNode, position, normal, pickVec, orientation, entity, trace, targetId, isBot)
+        success, keepProcessing = Commander.ProcessTechTreeActionForEntity(self, techNode, position, normal, pickVec, orientation, entity, trace, targetId)
     end
 
     if success then

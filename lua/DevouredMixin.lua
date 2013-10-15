@@ -23,17 +23,20 @@ function DevouredMixin:__initmixin()
 end
 
 function DevouredMixin:OnDevoured(onos)
+
     self.devourer = onos:GetId()
-    self.prevModelName = self:GetModelName()
-    self.prevAnimGraph = self:GetGraphName()
     self.devoured = true
-    self:SetModel(nil)
-    self:SetIsThirdPerson(4)
     self.lastdevoursound = 0
+    self:SetPropagate(Entity.Propagate_Never)
+    
     local activeWeapon = self:GetActiveWeapon()
     if activeWeapon then
         activeWeapon:OnPrimaryAttackEnd(self)
         activeWeapon:OnSecondaryAttackEnd(self)
+        if activeWeapon.reloading then 
+            activeWeapon.reloading = false
+            activeWeapon:TriggerEffects("reload_cancel")
+        end
     end
 end
 
@@ -41,8 +44,7 @@ function DevouredMixin:OnDevouredEnd()
     if self:GetIsAlive() then
         self.devoured = false
         self.devourer = nil
-        self:SetModel(self.prevModelName, self.prevAnimGraph)
-        self:SetDesiredCamera(0.3, { move = true })
+        self:SetPropagate(Entity.Propagate_Mask)
     end
 end
 
@@ -53,11 +55,13 @@ end
 local function DevouredMixinUpdate(self, deltaTime)
     if self:GetIsDevoured() then
         local onos = self.devourer and Shared.GetEntity(self.devourer)
-        if onos and onos:isa("Onos") then
-            self:SetOrigin(onos:GetOrigin())
+        if onos and onos:isa("Onos") and onos:GetIsAlive() then
+            local coords = onos:GetCoords()
+            if coords ~= nil and coords.origin ~= nil then
+                self:SetCoords(coords)  
+            end
         end
     end
-    return self:GetIsDevoured()
 end
 
 function DevouredMixin:OnUpdate(deltaTime)

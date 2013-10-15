@@ -8,7 +8,6 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
-Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/Weapons/ClientWeaponEffectsMixin.lua")
 
 class 'Rifle' (ClipWeapon)
@@ -16,9 +15,10 @@ class 'Rifle' (ClipWeapon)
 Rifle.kMapName = "rifle"
 
 Rifle.kModelName = PrecacheAsset("models/marine/rifle/rifle.model")
-local kViewModelName = PrecacheAsset("models/marine/rifle/rifle_view.model")
+local kViewModels = GenerateMarineViewModelPaths("rifle")
 local kAnimationGraph = PrecacheAsset("models/marine/rifle/rifle_view.animation_graph")
 
+local kRange = 100
 // 4 degrees in NS1
 local kSpread = ClipWeapon.kCone3Degrees
 
@@ -28,6 +28,9 @@ local kSpread = ClipWeapon.kCone3Degrees
 local kSingleShotSound = PrecacheAsset("sound/NS2.fev/marine/rifle/fire_single_3")
 local kLoopingSound = PrecacheAsset("sound/NS2.fev/marine/rifle/fire_loop_1_upgrade_3")
 local kEndSound = PrecacheAsset("sound/NS2.fev/marine/rifle/end_upgrade_3")
+local kLoopingShellCinematic = PrecacheAsset("cinematics/marine/rifle/shell_looping.cinematic")
+local kLoopingShellCinematicFirstPerson = PrecacheAsset("cinematics/marine/rifle/shell_looping_1p.cinematic")
+local kShellEjectAttachPoint = "fxnode_riflecasing"
 
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/rifle/muzzle_flash.cinematic")
 local kMuzzleAttachPoint = "fxnode_riflemuzzle"
@@ -40,6 +43,16 @@ local function DestroyMuzzleEffect(self)
     
     self.muzzleCinematic = nil
     self.activeCinematicName = nil
+
+end
+
+local function DestroyShellEffect(self)
+
+    if self.shellsCinematic then
+        Client.DestroyCinematic(self.shellsCinematic)            
+    end
+    
+    self.shellsCinematic = nil
 
 end
 
@@ -58,11 +71,47 @@ local function CreateMuzzleEffect(self)
 
 end
 
+local function CreateShellCinematic(self)
+
+    local parent = self:GetParent()
+
+    if parent and Client.GetLocalPlayer() == parent then
+        self.loadedFirstPersonShellEffect = true
+    else
+        self.loadedFirstPersonShellEffect = false
+    end
+
+    if self.loadedFirstPersonShellEffect then
+        self.shellsCinematic = Client.CreateCinematic(RenderScene.Zone_ViewModel)        
+        self.shellsCinematic:SetCinematic(kLoopingShellCinematicFirstPerson)
+    else
+        self.shellsCinematic = Client.CreateCinematic(RenderScene.Zone_Default)
+        self.shellsCinematic:SetCinematic(kLoopingShellCinematic)
+    end    
+    
+    self.shellsCinematic:SetRepeatStyle(Cinematic.Repeat_Endless)
+    
+    if self.loadedFirstPersonShellEffect then    
+        self.shellsCinematic:SetParent(parent:GetViewModelEntity())
+    else
+        self.shellsCinematic:SetParent(self)
+    end
+    
+    self.shellsCinematic:SetCoords(Coords.GetIdentity())
+    
+    if self.loadedFirstPersonShellEffect then  
+        self.shellsCinematic:SetAttachPoint(parent:GetViewModelEntity():GetAttachPointIndex(kShellEjectAttachPoint))
+    else    
+        self.shellsCinematic:SetAttachPoint(self:GetAttachPointIndex(kShellEjectAttachPoint))
+    end    
+
+    self.shellsCinematic:SetIsActive(false)
+
+end
+
 function Rifle:OnCreate()
 
     ClipWeapon.OnCreate(self)
-    
-    InitMixin(self, EntityChangeMixin)
     
     if Client then
         InitMixin(self, ClientWeaponEffectsMixin)
@@ -75,6 +124,7 @@ function Rifle:OnDestroy()
     ClipWeapon.OnDestroy(self)
     
     DestroyMuzzleEffect(self)
+    DestroyShellEffect(self)
     
 end
 
@@ -94,23 +144,26 @@ end
 
 function Rifle:OnHolster(player)
 
-    DestroyMuzzleEffect(self)    
+    DestroyMuzzleEffect(self)
+    DestroyShellEffect(self)
     ClipWeapon.OnHolster(self, player)
     
 end
 
 function Rifle:OnHolsterClient()
-    DestroyMuzzleEffect(self)
-    ClipWeapon.OnHolsterClient(self)
-end
 
+    DestroyMuzzleEffect(self)
+    DestroyShellEffect(self)
+    ClipWeapon.OnHolsterClient(self)
+    
+end
 
 function Rifle:GetAnimationGraphName()
     return kAnimationGraph
 end
 
-function Rifle:GetViewModelName()
-    return kViewModelName
+function Rifle:GetViewModelName(sex, variant)
+    return kViewModels[sex][variant]
 end
 
 function Rifle:GetDeathIconIndex()
@@ -130,10 +183,6 @@ function Rifle:GetClipSize()
     return kRifleClipSize
 end
 
-function Rifle:GetReloadTime()
-    return kRifleReloadTime
-end
-
 function Rifle:GetSpread()
     return kSpread
 end
@@ -142,19 +191,15 @@ function Rifle:GetBulletDamage(target, endPoint)
     return kRifleDamage
 end
 
+function Rifle:GetRange()
+    return kRange
+end
+
 function Rifle:GetWeight()
     return kRifleWeight + ((math.ceil(self.ammo / self:GetClipSize()) + math.ceil(self.clip / self:GetClipSize())) * kRifleClipWeight)
 end
 
-function Rifle:GetBarrelSmokeEffect()
-    return Rifle.kBarrelSmokeEffect
-end
-
 function Rifle:OnSecondaryAttack(player)
-end
-
-function Rifle:GetShellEffect()
-    return chooseWeightedEntry ( Rifle.kShellEffectTable )
 end
 
 function Rifle:OnTag(tagName)
@@ -239,6 +284,22 @@ if Client then
             self.muzzleCinematic:SetIsVisible(true)
         end
         
+        if player then
+        
+            local useFirstPerson = player == Client.GetLocalPlayer()
+            
+            if useFirstPerson ~= self.loadedFirstPersonShellEffect then
+                DestroyShellEffect(self)
+            end
+        
+            if not self.shellsCinematic then
+                CreateShellCinematic(self)
+            end
+        
+            self.shellsCinematic:SetIsActive(true)
+
+        end
+        
     end
     
     /*function Rifle:OnClientPrimaryAttacking()
@@ -252,6 +313,7 @@ if Client then
         
         ClipWeapon.OnParentChanged(self, oldParent, newParent)
         DestroyMuzzleEffect(self)
+        DestroyShellEffect(self)
         
     end
     
@@ -263,6 +325,10 @@ if Client then
         Shared.PlaySound(self, kEndSound)
 		if self.muzzleCinematic then
             self.muzzleCinematic:SetIsVisible(false)
+        end
+        
+        if self.shellsCinematic then
+            self.shellsCinematic:SetIsActive(false)
         end
         
     end

@@ -22,12 +22,14 @@ kHiveUnderAttackTime = 15
 kMaxAlienStructureRange = 25
 kMaxAlienStructuresofType = 8
 kMaxBuildingHives = 1
+kAutoBuildScalar = 0.33
 kMaxGorgeOwnedStructures = 24
 kChamberLostNotification = 0    // Amount of Upgrade Chambers remaining for alerts to be sent
 kPingOfDeathDelay = 2
 kPingOfDeathDamagePercent = 12
 kResearchMod = 1
 kFootstepsThreshold = 3.5
+kIdleThreshold = 5
 
 kGhostStructureModifier = .75
 kEnergyUpdateRate = 0.25
@@ -39,6 +41,7 @@ kRecycleRefundScalar = 0.5
 
 // set to -1 for no time limit
 kParasiteDuration = -1
+kParasitePlayerPointValue = 1
 kFallDamageMinimumVelocity = 12
 kFallDamageScalar = 11.88
 kKnockbackTime = 0.05
@@ -62,9 +65,6 @@ kGhostObservatoryDodgePerLevel = 33
 kGhostMinimapDodgePerLevel = 33
 kGhostScanDodgePerLevel = 33
 kGhostCloakingPerLevel = 0.25
-kAlienBaseMoveNoise = 6
-kAlienRandMoveNoise = 12
-kAlienMoveNoises = 2
 
 // per second
 kAlienVisionCost = 0
@@ -74,7 +74,7 @@ kDefaultStructureCost = 10
 kStructureCircleRange = 4
 kInfantryPortalAttachRange = 12
 kArmoryWeaponAttachRange = 10
-kRoboticsFactoryAttachRange = 12
+kTurretFactoryAttachRange = 12
 
 // Obs stuff
 kScanDuration = 10
@@ -91,9 +91,6 @@ kEnergizeEnergyIncrease = 0.25
 kStructureEnergyPerEnergize = 0.15
 kPlayerEnergyPerEnergize = 6
 kEnergizeUpdateRate = 1
-
-// Each upgrade costs this much extra evolution time
-kUpgradeGestationTime = 2
 
 // Jetpack
 // NS1: 6.5 seconds of fuel
@@ -121,6 +118,17 @@ kInfestationBlobDensity = 2
 kInfestationGrowthRate = 0.1
 kMinInfestationRadius = 0.5
 
+//DropPacks
+kClipsPerAmmoPack = 1
+kHealthPerMedpack = 50
+kCatPackFireRateScalar = 1.3
+kCatPackMoveSpeedScalar = 1.2
+kCatPackDuration = 6
+
+//Armory
+kArmoryHealAmount = 15
+
 kKillDelay = 3
 
 kAbilityMaxEnergy = 100
+kDoorWeldTime = 999

@@ -9,7 +9,6 @@ Script.Load("lua/WeldableMixin.lua")
 Script.Load("lua/ScoringMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
-Script.Load("lua/HiveVisionMixin.lua")
 Script.Load("lua/LOSMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
@@ -30,7 +29,7 @@ Shared.PrecacheSurfaceShader("models/marine/marine.surface_shader")
 Shared.PrecacheSurfaceShader("models/marine/marine_noemissive.surface_shader")
 
 HeavyArmorMarine.kModelName = PrecacheAsset("models/marine/heavyarmor/heavyarmor.model")
-local kHeavyArmorMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_graph")
+HeavyArmorMarine.kAnimationGraph = PrecacheAsset("models/marine/male/male.animation_graph")
 
 local kMass = 200
 
@@ -39,18 +38,12 @@ function HeavyArmorMarine:OnCreate()
 end
 
 function HeavyArmorMarine:OnInitialized()
-
     Marine.OnInitialized(self)
-    self:SetModel(HeavyArmorMarine.kModelName, kHeavyArmorMarineAnimationGraph)   
-    
+    self:SetModel(HeavyArmorMarine.kModelName, HeavyArmorMarine.kAnimationGraph)   
 end
 
-function HeavyArmorMarine:MakeSpecialEdition()
-    self:SetModel(HeavyArmorMarine.kModelName, kHeavyArmorMarineAnimationGraph)
-end
-
-function HeavyArmorMarine:MakeDeluxeEdition()
-    self:SetModel(HeavyArmorMarine.kModelName, kHeavyArmorMarineAnimationGraph)
+function HeavyArmorMarine:GetVariantModel()
+    return HeavyArmorMarine.kModelName
 end
 
 function HeavyArmorMarine:GetArmorAmount()

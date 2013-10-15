@@ -34,6 +34,10 @@ function BabblerEggAbility:GetDropClassName()
     return "BabblerEgg"
 end
 
+function BabblerEggAbility:GetIsPositionValid(displayOrigin, player, normal, lastClickedPosition, entity)
+    return entity == nil
+end
+
 function BabblerEggAbility:GetDropRange()
     return 1.5
 end

@@ -20,8 +20,7 @@ class 'Blink' (Ability)
 Blink.kMapName = "blink"
 
 local kEtherealForce = 8
-Blink.kMinEnterEtherealTime = 0.1
-Blink.kMinTimeBetweenEffects = 0.2
+local kMinBlinkEffectTime = 1
 
 local networkVars =
 {
@@ -32,7 +31,8 @@ function Blink:OnCreate()
 
     Ability.OnCreate(self)
     self.lastblinktime = 0
-
+    self.lastblinkeffect = 0
+    
 end
 
 function Blink:OnHolster(player)
@@ -52,11 +52,21 @@ function Blink:GetSecondaryAttackRequiresPress()
 end
 
 function Blink:TriggerBlinkOutEffects(player)
-    self:TriggerEffects("blink_out")
+	if not Shared.GetIsRunningPrediction() then
+	    if self.lastblinkeffect + kMinBlinkEffectTime < Shared.GetTime() then
+	        self.lastblinkeffect = Shared.GetTime()
+	        player:TriggerEffects("blink_out")
+	    end
+	end
 end
 
 function Blink:TriggerBlinkInEffects(player)
-    self:TriggerEffects("blink_in")
+	if not Shared.GetIsRunningPrediction() then
+	    if self.lastblinkeffect + kMinBlinkEffectTime < Shared.GetTime() then
+	        self.lastblinkeffect = Shared.GetTime()
+	        player:TriggerEffects("blink_in")
+	    end
+	end
 end
 
 function Blink:GetIsBlinking()
@@ -106,11 +116,9 @@ function Blink:SetEthereal(player, state)
     if player.ethereal ~= state then
     
         if state then
-            player.etherealStartTime = Shared.GetTime()
             self:TriggerBlinkOutEffects(player)            
         else
             self:TriggerBlinkInEffects(player)     
-            player.etherealEndTime = Shared.GetTime() 
         end
         
         player.ethereal = state
@@ -138,11 +146,6 @@ function Blink:ProcessMoveOnWeapon(player, input)
         player.lastBlinkTime = time
         player:OnBlinking(input)
         player:DeductAbilityEnergy(kBlinkPulseEnergyCost)
-        
-        if deltaTime > Blink.kMinTimeBetweenEffects then
-            // Just pressed blink, play effect
-            self:TriggerBlinkInEffects(player)
-        end
     end
     
 end

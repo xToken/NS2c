@@ -7,10 +7,6 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-function Hive:GetIsIdle()
-    return CommandStructure.GetIsIdle(self) and not self:GetIsCloaked()
-end
-
 function Hive:OnUpdate(deltaTime)
 
     CommandStructure.OnUpdate(self, deltaTime)
@@ -23,7 +19,7 @@ function Hive:OnUpdate(deltaTime)
         effectName = Hive.kIdleMistEffect
     end
     
-    local isVisible = (not self:GetIsCloaked())
+    local isVisible = not self:GetIsCloaked() and self:GetIsAlive()
     
     self:AttachEffect(effectName, coords, Cinematic.Repeat_Loop)
     self:SetEffectVisible(effectName, isVisible)

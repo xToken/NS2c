@@ -18,7 +18,7 @@ end
 
 // damage type, doer and attacker don't need to be passed. that info is going to be fetched here. pass optional surface name
 // pass surface "none" for not hit/flinch effect
-function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode, showtracer)
+function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode, showtracer, blockfocus)
 
     // No prediction if the Client is spectating another player.
     if Client and not Client.GetIsControllingPlayer() then
@@ -67,7 +67,7 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
         
         if target and HasMixin(target, "Live") and damage > 0 then  
 
-            damage, armorUsed, healthUsed = GetDamageByType(target, attacker, doer, damage, damageType)
+            damage, armorUsed, healthUsed = GetDamageByType(target, attacker, doer, damage, damageType, point, blockfocus)
 
             // check once the damage
             if damage > 0 then
@@ -75,16 +75,18 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                 if not direction then
                     direction = Vector(0, 0, 1)
                 end
+                
+                killedFromDamage, damageDone = target:TakeDamage(damage, attacker, doer, point, direction, armorUsed, healthUsed, damageType)
                                 
                 // Many types of damage events are server-only, such as grenades.
                 // Send the player a message so they get feedback about what damage they've done.
                 // We use messages to handle multiple-hits per frame, such as splash damage from grenades.
-                if Server and attacker:isa("Player") and (not doer.GetShowHitIndicator or doer:GetShowHitIndicator()) then
-                    
-					local showNumbers = GetAreEnemies(attacker,target) and target:GetIsAlive() and Shared.GetCheatsEnabled()
+                if Server and attacker:isa("Player") then
+                
+                    local showNumbers = GetAreEnemies(attacker,target) and target:GetIsAlive() and damageDone > 0 and Shared.GetCheatsEnabled()
                     if showNumbers then
                     
-                        local msg = BuildDamageMessage(target, damage, point)
+                        local msg = BuildDamageMessage(target, damageDone, point)
                         Server.SendNetworkMessage(attacker, "Damage", msg, false)
                         
                         for _, spectator in ientitylist(Shared.GetEntitiesWithClassname("Spectator")) do
@@ -103,8 +105,6 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                     end
                     
                 end
-                
-                killedFromDamage = target:TakeDamage(damage, attacker, doer, point, direction, armorUsed, healthUsed, damageType)
                 
                 if target.damagetable ~= nil and not killedFromDamage then
                     if target.damagetable.dtime ~= nil and target.damagetable.dtime + kFlinchDamageInterval > Shared.GetTime() then
@@ -214,15 +214,15 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                 
                 end
 
-            elseif Client then
+            elseif Client and isPredicted then
             
-                HandleHitEffect(point, doer, surface, target, showtracer, altMode, false, damage, direction)
-                
+                HandleHitEffect(point, doer, surface, target, showtracer, altMode, flinch_severe, damage, direction)
+
                 // If we are far away from our target, trigger a private sound so we can hear we hit something
                 if target then
                 
                     if (point - attacker:GetOrigin()):GetLength() > 5 then
-                        attacker:TriggerEffects("hit_effect_local", tableParams)
+                        attacker:TriggerEffects("hit_effect_local")
                     end
                     
                 end

@@ -34,8 +34,36 @@ local kLOSTimeout = 1
 
 LOSMixin.networkVars =
 {
+    sighted = "boolean",
     visibleClient = "boolean"
 }
+
+local function UpdateLOS(self)
+
+    local mask = bit.bor(kRelevantToTeam1Unit, kRelevantToTeam2Unit, kRelevantToReadyRoom)
+    
+    if self.sighted then
+        mask = bit.bor(mask, kRelevantToTeam1Commander, kRelevantToTeam2Commander)
+    elseif self:GetTeamNumber() == 1 then
+        mask = bit.bor(mask, kRelevantToTeam1Commander)
+    elseif self:GetTeamNumber() == 2 then
+        mask = bit.bor(mask, kRelevantToTeam2Commander)
+    end
+    
+    self:SetExcludeRelevancyMask(mask)
+    self.visibleClient = self.sighted
+    
+    if self.lastSightedState ~= self.sighted then
+    
+        if self.OnSighted then
+            self:OnSighted(self.sighted)
+        end
+        
+        self.lastSightedState = self.sighted
+        
+    end
+    
+end
 
 function LOSMixin:__initmixin()
 
@@ -50,7 +78,7 @@ function LOSMixin:__initmixin()
         self.prevLOSorigin = Vector(0,0,0)
     
         self:SetIsSighted(false)
-        self:UpdateLOS()
+        UpdateLOS(self)
         self.oldSighted = true
         self.lastViewerId = Entity.invalidId
         
@@ -70,7 +98,7 @@ if Server then
      */
     function LOSMixin:OnTeamChange()
     
-        self:UpdateLOS()
+        UpdateLOS(self)
         self:SetIsSighted(false)
         
     end
@@ -190,40 +218,12 @@ if Server then
         
         if not seen and lastViewer then
         
-            // prevents flickering, ARCs for example would lose their target
+            // prevents flickering, SiegeCannons for example would lose their target
             seen = GetCanSee(lastViewer, self)
             
         end
         
         self:SetIsSighted(seen, lastViewer)
-        
-    end
-    
-    function LOSMixin:UpdateLOS()
-    
-        local mask = bit.bor(kRelevantToTeam1Unit, kRelevantToTeam2Unit, kRelevantToReadyRoom)
-        
-        if self.sighted then
-            mask = bit.bor(mask, kRelevantToTeam1Commander, kRelevantToTeam2Commander)
-        elseif self:GetTeamNumber() == 1 then
-            mask = bit.bor(mask, kRelevantToTeam1Commander)
-
-        elseif self:GetTeamNumber() == 2 then
-            mask = bit.bor(mask, kRelevantToTeam2Commander)
-        end
-        
-        self:SetExcludeRelevancyMask(mask)
-        self.visibleClient = self.sighted
-        
-        if self.lastSightedState ~= self.sighted then
-        
-            if self.OnSighted then
-                self:OnSighted(self.sighted)
-            end
-            
-            self.lastSightedState = self.sighted
-            
-        end
         
     end
     
@@ -269,7 +269,7 @@ if Server then
         
             if self.sighted then
             
-                self:UpdateLOS()
+                UpdateLOS(self)
                 self.timeUpdateLOS = nil
                 
             else
@@ -282,7 +282,7 @@ if Server then
         
         if self.timeUpdateLOS and self.timeUpdateLOS < Shared.GetTime() then
         
-            self:UpdateLOS()
+            UpdateLOS(self)
             self.timeUpdateLOS = nil
             
         end
@@ -342,7 +342,7 @@ if Server then
         if not self.dirtyLOS and self.prevViewLOSYaw ~= yaw then
         
             self.dirtyLOS = true
-            self.prevViewLOSYaw = newAngles
+            self.prevViewLOSYaw = yaw
             
         end
         

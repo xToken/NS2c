@@ -26,11 +26,7 @@ Embryo.kYExtents = .25
 Embryo.kZExtents = .25
 Embryo.kEvolveSpawnOffset = 0.2
 
-local kMinGestationTime = 1.5
-
 Embryo.kSkinOffset = Vector(0, 0.02, 0)
-
-local kAlienMaxUpgrades = 3
 
 local networkVars =
 {
@@ -124,6 +120,8 @@ local function UpdateGestation(self)
             newPlayer:SetHealth(healthScalar * LookupTechData(self.gestationTypeTechId, kTechDataMaxHealth))
             newPlayer:SetArmor(armorScalar * LookupTechData(self.gestationTypeTechId, kTechDataMaxArmor))
             newPlayer:UpdateArmorAmount()
+            newPlayer:SetHatched()
+            newPlayer:TriggerEffects("egg_death")
             
             if self.resOnGestationComplete then
                 newPlayer:AddResources(self.resOnGestationComplete)
@@ -198,9 +196,8 @@ function Embryo:GetPreventCameraPenetration()
     return true
 end
 
-local kEmbryoHealthbarOffset = Vector(0, 0.7, 0)
 function Embryo:GetHealthbarOffset()
-    return kEmbryoHealthbarOffset
+    return 0.7
 end
 
 function Embryo:GetShowHealthFor(player)
@@ -216,6 +213,16 @@ function Embryo:GetName(forEntity)
     
     return Alien.GetName(self, forEntity)
     
+end
+
+function Embryo:OverrideHintString(hintString, forEntity)
+
+    if GetAreEnemies(self, forEntity) then
+        return LookupTechData(kTechId.Egg, kTechDataHint, "")
+    end
+    
+    return hintString
+
 end
 
 function Embryo:SetOriginalAngles(angles)
@@ -298,7 +305,8 @@ function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorSca
     
     local lifeformTime = ConditionalValue(self.gestationTypeTechId ~= previousTechId, self:GetGestationTime(self.gestationTypeTechId), 0)
     
-    local newUpgradesAmount = 0    
+    local newUpgradesAmount = 0
+    local replacementUpgradesAmount = 0 
     local currentUpgrades = self:GetUpgrades()
     
     for _, upgradeId in ipairs(self.evolvingUpgrades) do
@@ -306,12 +314,20 @@ function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorSca
         if not table.contains(currentUpgrades, upgradeId) then
             newUpgradesAmount = newUpgradesAmount + 1
         end
+        local currentChamberId = GetChamberTypeForUpgrade(upgradeId)
+        for _, cId in ipairs(currentUpgrades) do
+            if GetChamberTypeForUpgrade(cId) == currentChamberId then
+                replacementUpgradesAmount = replacementUpgradesAmount + 1
+            end
+        end
         
     end
     
-    self.gestationTime = ConditionalValue(Shared.GetDevMode(), 2, lifeformTime + newUpgradesAmount * kUpgradeGestationTime)
+    self.gestationTime = ConditionalValue(Shared.GetDevMode(), 2, lifeformTime + (newUpgradesAmount * kUpgradeGestationTime) + (replacementUpgradesAmount * kReplaceUpgradeGestationTime))
     
-    self.gestationTime = math.max(kMinGestationTime, self.gestationTime)
+    if Embryo.gFastEvolveCheat then
+        self.gestationTime = 5
+    end
     
     self.evolveTime = 0
     self.maxHealth = kEmbryoHealth
@@ -325,6 +341,9 @@ function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorSca
     // we reset the upgrades entirely and set them again, simplifies the code
     self:ClearUpgrades()
     
+end
+
+function Embryo:UpdateHealthAmount()
 end
 
 function Embryo:GetEvolutionTime()

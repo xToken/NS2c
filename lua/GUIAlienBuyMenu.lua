@@ -300,17 +300,21 @@ end
 
 local function CreateAbilityIcons(self, alienGraphicItem, alienType)
 
-    local availableAbilities = AlienBuy_GetAbilitiesFor(IndexToAlienTechId(alienType.Index))
+    local lifeFormTechId = IndexToAlienTechId(alienType.Index)
+    local availableAbilities = GetTechForCategory(lifeFormTechId)
+
     local numAbilities = #availableAbilities
     
-    for i, techId in ipairs(availableAbilities) do
+    for i = 1, numAbilities do
     
+        local techId = availableAbilities[#availableAbilities - i + 1]
         local ability = CreateAbilityIcon(self, alienGraphicItem, techId)
-        local xPos = -numAbilities * GUIAlienBuyMenu.kUpgradeButtonSize + (i - 1) * GUIAlienBuyMenu.kUpgradeButtonSize
+        local xPos = ((i-1) % 3 + 1) * -GUIAlienBuyMenu.kUpgradeButtonSize
+        local yPos = (math.ceil(i/3)) * -GUIAlienBuyMenu.kUpgradeButtonSize
         
-        ability.Icon:SetPosition(Vector(xPos, -GUIAlienBuyMenu.kUpgradeButtonSize, 0))    
+        ability.Icon:SetPosition(Vector(xPos, yPos, 0))    
         table.insert(self.abilityIcons, ability)
-        
+    
     end
 
 end
@@ -591,16 +595,6 @@ function GUIAlienBuyMenu:_InitializeUpgradeButtons()
             // Render above the Alien image.
             buttonIcon:SetLayer(kGUILayerPlayerHUDForeground3)
             self.background:AddChild(buttonIcon)
-            
-            // The background is visible only inside the embryo.
-            /*
-            local buttonBackground = GUIManager:CreateGraphicItem()
-            buttonBackground:SetSize(Vector(GUIAlienBuyMenu.kUpgradeButtonSize, GUIAlienBuyMenu.kUpgradeButtonSize, 0))
-            buttonBackground:SetTexture(GUIAlienBuyMenu.kBuyMenuTexture)
-            buttonBackground:SetTexturePixelCoordinates(unpack(GUIAlienBuyMenu.kUpgradeButtonBackgroundTextureCoordinates))
-            buttonBackground:SetStencilFunc(GUIItem.NotEqual)
-            buttonIcon:AddChild(buttonBackground)
-            */
 
             local unselectedPosition = Vector( math.cos(angle) * GUIAlienBuyMenu.kUpgradeButtonDistance - GUIAlienBuyMenu.kUpgradeButtonSize * .5, math.sin(angle) * GUIAlienBuyMenu.kUpgradeButtonDistance - GUIAlienBuyMenu.kUpgradeButtonSize * .5, 0 )
             
@@ -612,7 +606,7 @@ function GUIAlienBuyMenu:_InitializeUpgradeButtons()
             end
             
 
-            table.insert(self.upgradeButtons, { Background = buttonBackground, Icon = buttonIcon, TechId = techId, Category = category,
+            table.insert(self.upgradeButtons, { Background = nil, Icon = buttonIcon, TechId = techId, Category = category,
                                                 Selected = purchased, SelectedMovePercent = 0, Cost = 0, Purchased = purchased, Index = nil, 
                                                 UnselectedPosition = unselectedPosition, SelectedPosition = self.slots[i].Graphic:GetPosition()  })
         
@@ -626,11 +620,15 @@ end
 function GUIAlienBuyMenu:_UninitializeUpgradeButtons()
 
     for i, currentButton in ipairs(self.upgradeButtons) do
+    
         GUI.DestroyItem(currentButton.Icon)
-        GUI.DestroyItem(currentButton.Background)
+        if currentButton.Background then
+            GUI.DestroyItem(currentButton.Background)
+        end
+        
     end
     self.upgradeButtons = { }
-
+    
 end
 
 function GUIAlienBuyMenu:_InitializeEvolveButton()
@@ -949,19 +947,63 @@ function GUIAlienBuyMenu:_UninitializeCorners()
 
 end
 
-local function GetSelectedUpgradesCost(self)
+local function GetUpgradeCostForLifeForm(player, alienType, upgradeId)
+
+    if player then
+    
+        local alienTechNode = GetAlienTechNode(alienType, true)
+        if alienTechNode then
+
+            if player:GetTechId() == alienTechNode:GetTechId() and player:GetHasUpgrade(upgradeId) then
+                return 0
+            end    
+        
+            return LookupTechData(alienTechNode:GetTechId(), kTechDataUpgradeCost, 0)
+            
+        end
+    
+    end
+    
+    return 0
+
+end
+
+local function GetSelectedUpgradesCost(self, alienType)
 
     local cost = 0
     for i, currentButton in ipairs(self.upgradeButtons) do
     
+        local upgradeCost = GetUpgradeCostForLifeForm(Client.GetLocalPlayer(), alienType, currentButton.TechId)
+    
         if currentButton.Selected then
-            cost = cost + currentButton.Cost
+            cost = cost + upgradeCost
         end
         
-    end
+    end   
     
     return cost
     
+end
+
+local function GetNumberOfNewlySelectedUpgrades(self)
+
+    local numSelected = 0
+    local player = Client.GetLocalPlayer()
+    
+    if player then
+    
+        for i, currentButton in ipairs(self.upgradeButtons) do
+        
+            if currentButton.Selected and not player:GetHasUpgrade(currentButton.TechId) then
+                numSelected = numSelected + 1
+            end
+            
+        end
+    
+    end
+    
+    return numSelected 
+
 end
 
 local function GetNumberOfSelectedUpgrades(self)
@@ -969,7 +1011,7 @@ local function GetNumberOfSelectedUpgrades(self)
     local numSelected = 0
     for i, currentButton in ipairs(self.upgradeButtons) do
     
-        if currentButton.Selected and not currentButton.Purchased then
+        if currentButton.Selected then
             numSelected = numSelected + 1
         end
         
@@ -981,7 +1023,7 @@ end
 
 local function GetCanAffordAlienTypeAndUpgrades(self, alienType)
 
-    local alienCost = AlienBuy_GetAlienCost(alienType)
+    local alienCost = AlienBuy_GetAlienCost(alienType, false)
     local upgradesCost = GetSelectedUpgradesCost(self, alienType)
     // Cannot buy the current alien without upgrades.
     if alienType == AlienBuy_GetCurrentAlien() then
@@ -996,14 +1038,14 @@ end
  * Returns true if the player has a different Alien or any upgrade selected.
  */
 local function GetAlienOrUpgradeSelected(self)
-    return self.selectedAlienType ~= AlienBuy_GetCurrentAlien() or GetNumberOfSelectedUpgrades(self) > 0
+    return self.selectedAlienType ~= AlienBuy_GetCurrentAlien() or GetNumberOfNewlySelectedUpgrades(self) > 0
 end
 
 local function UpdateEvolveButton(self)
 
     local researched, researchProgress, researching = self:_GetAlienTypeResearchInfo(GUIAlienBuyMenu.kAlienTypes[self.selectedAlienType].Index)
-    local selectedUpgradesCost = GetSelectedUpgradesCost(self)
-    local numberOfSelectedUpgrades = GetNumberOfSelectedUpgrades(self)
+    local selectedUpgradesCost = GetSelectedUpgradesCost(self, self.selectedAlienType)
+    local numberOfSelectedUpgrades = GetNumberOfNewlySelectedUpgrades(self)
     local evolveButtonTextureCoords = GUIAlienBuyMenu.kEvolveButtonTextureCoordinates
     local hasGameStarted = PlayerUI_GetHasGameStarted()
     local evolveText = Locale.ResolveString("ABM_GAME_NOT_STARTED")
@@ -1021,7 +1063,7 @@ local function UpdateEvolveButton(self)
             // If cannot afford selected alien type and/or upgrades, cannot evolve.
             evolveButtonTextureCoords = GUIAlienBuyMenu.kEvolveButtonNeedResourcesTextureCoordinates
             evolveText = Locale.ResolveString("ABM_NEED")
-            evolveCost = AlienBuy_GetAlienCost(self.selectedAlienType) + selectedUpgradesCost
+            evolveCost = AlienBuy_GetAlienCost(self.selectedAlienType, false) + selectedUpgradesCost
             
         else
         
@@ -1030,7 +1072,7 @@ local function UpdateEvolveButton(self)
             
             // Cannot buy the current alien.
             if self.selectedAlienType ~= AlienBuy_GetCurrentAlien() then
-                totalCost = totalCost + AlienBuy_GetAlienCost(self.selectedAlienType)
+                totalCost = totalCost + AlienBuy_GetAlienCost(self.selectedAlienType, false)
             end
             
             evolveText = Locale.ResolveString("ABM_EVOLVE_FOR")
@@ -1114,23 +1156,22 @@ function GUIAlienBuyMenu:_UpdateAbilityIcons()
 
     for index, abilityItem in ipairs(self.abilityIcons) do
     
-        if AlienBuy_GetHasTech(abilityItem.TechId) then
-        
-            abilityItem.Icon:SetIsVisible(true)
-            local mouseOver = self:_GetIsMouseOver(abilityItem.Icon)    
-            abilityItem.HighLight:SetIsVisible(mouseOver)
-            
-            if mouseOver then
-            
-                local abilityInfoText = Locale.ResolveString(LookupTechData(abilityItem.TechId, kTechDataDisplayName, ""))
-                local tooltip = Locale.ResolveString(LookupTechData(abilityItem.TechId, kTechDataTooltipInfo, ""))
-                
-                self:_ShowMouseOverInfo(abilityInfoText, tooltip)
-                
-            end
-            
+        if GetIsTechUnlocked(Client.GetLocalPlayer(), abilityItem.TechId) then        
+            abilityItem.Icon:SetColor(kIconColors[kAlienTeamType])            
         else
-            abilityItem.Icon:SetIsVisible(false)
+            abilityItem.Icon:SetColor(Color(0,0,0,1))
+        end
+        
+        local mouseOver = self:_GetIsMouseOver(abilityItem.Icon)    
+        abilityItem.HighLight:SetIsVisible(mouseOver)
+        
+        if mouseOver then
+        
+            local abilityInfoText = Locale.ResolveString(LookupTechData(abilityItem.TechId, kTechDataDisplayName, ""))
+            local tooltip = Locale.ResolveString(LookupTechData(abilityItem.TechId, kTechDataTooltipInfo, ""))
+            
+            self:_ShowMouseOverInfo(abilityInfoText, tooltip)
+            
         end
         
     end
@@ -1139,7 +1180,7 @@ end
 
 function GUIAlienBuyMenu:_GetCanAffordAlienType(alienType)
 
-    local alienCost = AlienBuy_GetAlienCost(alienType)
+    local alienCost = AlienBuy_GetAlienCost(alienType, false)
     // Cannot buy the current alien without upgrades.
     if alienType == AlienBuy_GetCurrentAlien() then
         return false
@@ -1259,7 +1300,7 @@ function GUIAlienBuyMenu:_UpdateUpgrades(deltaTime)
             
         elseif not currentButton.Selected and not AlienBuy_GetIsUpgradeAllowed(currentButton.TechId, self.upgradeList) then
             useColor = kNotAllowedColor
-        end    
+        end
         
         currentButton.Icon:SetColor(useColor)
         
@@ -1277,7 +1318,7 @@ function GUIAlienBuyMenu:_UpdateUpgrades(deltaTime)
             //local health = LookupTechData(currentButton.TechId, kTechDataMaxHealth)
             //local armor = LookupTechData(currentButton.TechId, kTechDataMaxArmor)
 
-            self:_ShowMouseOverInfo(currentUpgradeInfoText, tooltipText, LookupTechData(currentButton.TechId, kTechDataCostKey, 0))
+            self:_ShowMouseOverInfo(currentUpgradeInfoText, tooltipText, GetUpgradeCostForLifeForm(Client.GetLocalPlayer(), self.selectedAlienType, currentButton.TechId))
            
         end
 
@@ -1345,7 +1386,6 @@ function GUIAlienBuyMenu:_ShowMouseOverInfo(lifeformText, infoText, costAmount, 
     
 
 end
-AddFunctionContract(GUIAlienBuyMenu._ShowMouseOverInfo, { Arguments = { "GUIAlienBuyMenu", "string", "string", { "number", "nil" }, "number", "number" }, Returns = { } })
 
 function GUIAlienBuyMenu:_HideMouseOverInfo()
 
@@ -1358,8 +1398,6 @@ function GUIAlienBuyMenu:_HideMouseOverInfo()
     self.mouseOverInfoArmorAmount:SetIsVisible(false)
     
 end
-AddFunctionContract(GUIAlienBuyMenu._HideMouseOverInfo, { Arguments = { "GUIAlienBuyMenu" }, Returns = { } })
-
 
 function GUIAlienBuyMenu:GetNewLifeFormSelected()
 
@@ -1450,8 +1488,6 @@ function GUIAlienBuyMenu:SendKeyEvent(key, down)
                         
                         if self.selectedAlienType ~= AlienBuy_GetCurrentAlien() then 
                             self:_DeselectAllUpgrades()
-                        else
-                            self:SetPurchasedSelected()
                         end
                         
                         inputHandled = true
@@ -1474,6 +1510,11 @@ function GUIAlienBuyMenu:SendKeyEvent(key, down)
             
         end
         
+    end
+    
+    // No matter what, this menu consumes MouseButton0/1 down.
+    if down and (key == InputKey.MouseButton0 or key == InputKey.MouseButton1) then
+        inputHandled = true
     end
     
     // AlienBuy_Close() must be the last thing called.
@@ -1505,8 +1546,12 @@ end
 
 function GUIAlienBuyMenu:_DeselectAllUpgrades()
 
-    for i, currentButton in ipairs(self.upgradeButtons) do    
-        currentButton.Selected = false        
+    for i, currentButton in ipairs(self.upgradeButtons) do
+ 
+        currentButton.Selected = false
+        table.removevalue(self.upgradeList, currentButton.TechId)
+        self.numSelectedUpgrades = self.numSelectedUpgrades - 1
+  
     end
 
 end
@@ -1523,12 +1568,18 @@ function GUIAlienBuyMenu:_HandleUpgradeClicked(mouseX, mouseY)
     
     for i, currentButton in ipairs(self.upgradeButtons) do
         // Can't select if it has been purchased already.
-        local allowedToUnselect = (not currentButton.Purchased or self:GetHasNewLifeFormSelected()) and currentButton.Selected
+        
+        local allowedToUnselect = currentButton.Selected or currentButton.Purchased
         local allowedToPuchase = not currentButton.Selected and self:GetCanSelect(currentButton)
                 
         if (allowedToUnselect or allowedToPuchase) and self:_GetIsMouseOver(currentButton.Icon) then
         
             currentButton.Selected = not currentButton.Selected
+            
+            if currentButton.Purchased then
+                currentButton.Purchased = false
+            end
+            
             inputHandled = true
             
             if currentButton.Selected then

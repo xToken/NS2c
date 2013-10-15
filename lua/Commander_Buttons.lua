@@ -30,6 +30,30 @@ function CommanderUI_Logout()
         
 end
 
+local kButtonClickedSound =
+{
+    [kMarineTeamType] = PrecacheAsset("sound/NS2.fev/common/hovar"),
+    [kAlienTeamType] = PrecacheAsset("sound/NS2.fev/alien/common/alien_menu/hover"),
+}
+
+function CommanderUI_OnButtonClicked()
+
+    local player = Client.GetLocalPlayer()
+    if player and HasMixin(player, "Team") then
+        
+        local soundToPlay = kButtonClickedSound[player:GetTeamType()]
+        if soundToPlay then
+            StartSoundEffect(soundToPlay)
+        end
+        
+    end
+
+end
+
+function CommanderUI_OnButtonHover()
+    CommanderUI_OnButtonClicked()
+end
+
 function CommanderUI_MenuButtonWidth()
     return 80
 end
@@ -194,6 +218,20 @@ function CommanderUI_MenuButtonAction(index)
         DeselectAllUnits(player:GetTeamNumber())
     end
     
+end
+
+local function GetIsMenu(techId)
+
+    local techTree = GetTechTree()
+    if techTree then
+    
+        local techNode = techTree:GetTechNode(techId)
+        return techNode ~= nil and techNode:GetIsMenu()
+        
+    end
+    
+    return false
+
 end
 
 function CommanderUI_MenuButtonOffset(index)
@@ -413,8 +451,8 @@ local function ComputeMenuTechAvailability(self)
                         menuTechButtonAffordable = canAfford
                         
                         // If any of the selection entities allows this tech, it is allowed!
-                        // For example, if 2 ARCs are selected and one is in deploy mode while the other is not,
-                        // The first ARC would allow undeploy and the second would not, so at least one ARC allows it.
+                        // For example, if 2 SiegeCannons are selected and one is in deploy mode while the other is not,
+                        // The first SiegeCannon would allow undeploy and the second would not, so at least one SiegeCannon allows it.
                         if menuTechButtonAllowed and menuTechButtonAffordable then
                             break
                         end

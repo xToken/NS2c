@@ -13,6 +13,7 @@
 Script.Load("lua/Gamerules.lua")
 Script.Load("lua/dkjson.lua")
 Script.Load("lua/ServerSponitor.lua")
+Script.Load("lua/PlayerRanking.lua")
 
 if Client then
     Script.Load("lua/NS2ConsoleCommands_Client.lua")
@@ -169,6 +170,8 @@ if Server then
         self.sponitor = ServerSponitor()
         self.sponitor:Initialize(self)
         
+        self.playerRanking = PlayerRanking()
+        
         self.techPointRandomizer = Randomizer()
         self.techPointRandomizer:randomseed(Shared.GetSystemTime())
         
@@ -194,6 +197,8 @@ if Server then
         self.allTech = false
         self.orderSelf = false
         self.autobuild = false
+        self.teamsReady = false
+        self.tournamentMode = false
         
         self:SetIsVisible(false)
         self:SetPropagate(Entity.Propagate_Never)
@@ -375,6 +380,8 @@ if Server then
      */
     function NS2Gamerules:ResetGame()
     
+        TournamentModeOnReset()
+    
         // save commanders for later re-login
         local team1CommanderClientIndex = self.team1:GetCommander() and self.team1:GetCommander().clientIndex or nil
         //local team2CommanderClientIndex = self.team2:GetCommander() and self.team2:GetCommander().clientIndex or nil
@@ -448,6 +455,11 @@ if Server then
         local resourcePoints = Shared.GetEntitiesWithClassname("ResourcePoint")
         if resourcePoints:GetSize() < 2 then
             Print("Warning -- Found only %d %s entities.", resourcePoints:GetSize(), ResourcePoint.kPointMapName)
+        end
+        
+        // add obstacles for resource points back in
+        for index, resourcePoint in ientitylist(resourcePoints) do        
+            resourcePoint:AddToMesh()        
         end
         
         local team1TechPoint = nil
@@ -735,7 +747,7 @@ if Server then
                 end
                 
             end
-            
+        
         elseif voteTechId == kTechId.VoteDownCommander1 or voteTechId == kTechId.VoteDownCommander2 or voteTechId == kTechId.VoteDownCommander3 then
 
             // Get the 1st, 2nd or 3rd commander by entity order (does this on client as well)    
@@ -919,11 +931,43 @@ if Server then
         
     end
     
+	local kPlayerSkillUpdateRate = 10
+    local function UpdatePlayerSkill(self)
+    
+        self.lastTimeUpdatedPlayerSkill = self.lastTimeUpdatedPlayerSkill or 0
+        if Shared.GetTime() - self.lastTimeUpdatedPlayerSkill > kPlayerSkillUpdateRate then
+        
+            self.lastTimeUpdatedPlayerSkill = Shared.GetTime()
+            
+            -- Remove the player skill old tag.
+            local tags = { }
+            Server.GetTags(tags)
+            for t = 1, #tags do
+            
+                if string.find(tags[t], "P_S") then
+                    Server.RemoveTag(tags[t])
+                end
+                
+            end
+            
+            local averageSkill, marineAverageSkill, alienAverageSKill = self.playerRanking:GetAveragePlayerSkill()
+            Server.AddTag("P_S" .. math.floor(averageSkill))
+            
+            self.gameInfo:SetAveragePlayerSkill(averageSkill)
+            
+        end
+        
+        self.playerRanking:OnUpdate()
+        
+    end
+    
     function NS2Gamerules:OnUpdate(timePassed)
     
         PROFILE("NS2Gamerules:OnUpdate")
         
         GetEffectManager():OnUpdate(timePassed)
+        
+        UpdatePlayerSkill(self)
         
         if Server then
         
@@ -1012,9 +1056,21 @@ if Server then
             Shared.ConsoleCommand("p_endlog")
 
             self.sponitor:OnEndMatch(winningTeam)
+            self.playerRanking:EndGame(winningTeam)
+            TournamentModeOnGameEnd()
 
         end
         
+    end
+    
+    function NS2Gamerules:OnTournamentModeEnabled()
+        self.tournamentMode = true
+        self.sponitor.tournamentMode = true
+    end
+    
+    function NS2Gamerules:OnTournamentModeDisabled()
+        self.tournamentMode = false
+        self.sponitor.tournamentMode = false
     end
     
     function NS2Gamerules:DrawGame()
@@ -1066,10 +1122,10 @@ if Server then
         return ConditionalValue(math.random() < .5, kTeam1Index, kTeam2Index)
         
     end
-    
+
     -- No enforced balanced teams on join as the auto team balance system balances teams.
     function NS2Gamerules:GetCanJoinTeamNumber(teamNumber)
-    
+
         local forceEvenTeams = Server.GetConfigSetting("force_even_teams_on_join")
         -- This option was added after shipping, so support older config files that don't include it.
         -- Fallback to forcing even teams if they don't have this entry in the config file.
@@ -1149,7 +1205,11 @@ if Server then
         end
         
         // Join new team
-        if player and player:GetTeamNumber() ~= newTeamNumber or force then
+        if player and player:GetTeamNumber() ~= newTeamNumber or force then        
+            
+            if player:isa("Commander") then
+                OnCommanderLogOut(player)
+            end  
         
             local team = self:GetTeam(newTeamNumber)
             local oldTeam = self:GetTeam(player:GetTeamNumber())
@@ -1234,6 +1294,10 @@ if Server then
                     newPlayerClient:SetSpectatingPlayer(nil)
                 end
                 
+                if newPlayer.OnJoinTeam then
+                    newPlayer:OnJoinTeam()
+                end    
+                
                 Server.SendNetworkMessage(newPlayerClient, "SetClientTeamNumber", { teamNumber = newPlayer:GetTeamNumber() }, true)
                 
             end
@@ -1259,6 +1323,23 @@ if Server then
         self.preventGameEnd = state
     end
     
+    function NS2Gamerules:SetTeamsReady(ready)
+    
+        self.teamsReady = ready
+        
+        // unstart the game without tracking statistics
+        if self.tournamentMode and not ready and self:GetGameStarted() then
+            self:ResetGame()
+        end
+        
+    end
+    
+    function NS2Gamerules:SetPaused()    
+    end
+    
+    function NS2Gamerules:DisablePause()
+    end
+    
     function NS2Gamerules:CheckGameStart()
     
         if self:GetGameState() == kGameState.NotStarted or self:GetGameState() == kGameState.PreGame then
@@ -1268,7 +1349,7 @@ if Server then
 			local team1Commander = self.team1:GetCommander()
             local team2Players = self.team2:GetNumPlayers()
             
-            if (team1Players > 0 and team2Players > 0 and (team1Commander or not kRequireMarineComm)) or (Shared.GetCheatsEnabled() and (team1Players > 0 or team2Players > 0)) then
+            if (team1Players > 0 and team2Players > 0 and (team1Commander or not kRequireMarineComm)) or (Shared.GetCheatsEnabled() and (team1Players > 0 or team2Players > 0)) and (not self.tournamentMode or self.teamsReady) then
             
                 if self:GetGameState() == kGameState.NotStarted then
                     self:SetGameState(kGameState.PreGame)
@@ -1295,29 +1376,31 @@ if Server then
     end
     
     local function CheckAutoConcede(self)
-    
+
         // This is an optional end condition based on the teams being unbalanced.
         local endGameOnUnbalancedAmount = Server.GetConfigSetting("end_round_on_team_unbalance")
         if endGameOnUnbalancedAmount and endGameOnUnbalancedAmount > 0 then
-        
+
             local gameLength = Shared.GetTime() - self:GetGameStartTime()
             // Don't start checking for auto-concede until the game has started for some time.
             local checkAutoConcedeAfterTime = Server.GetConfigSetting("end_round_on_team_unbalance_check_after_time") or 300
             if gameLength > checkAutoConcedeAfterTime then
-            
+
                 local team1Players = self.team1:GetNumPlayers()
                 local team2Players = self.team2:GetNumPlayers()
                 local totalCount = team1Players + team2Players
-                
                 // Don't consider unbalanced game end until enough people are playing.
+
                 if totalCount > 6 then
                 
                     local team1ShouldLose = false
                     local team2ShouldLose = false
                     
                     if (1 - (team1Players / team2Players)) >= endGameOnUnbalancedAmount then
+
                         team1ShouldLose = true
                     elseif (1 - (team2Players / team1Players)) >= endGameOnUnbalancedAmount then
+
                         team2ShouldLose = true
                     end
                     
@@ -1459,6 +1542,8 @@ if Server then
                 
                 self:SetGameState(kGameState.Started)
                 self.sponitor:OnStartMatch()
+                self.playerRanking:StartGame()
+                
             end
             
         end

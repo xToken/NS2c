@@ -10,15 +10,7 @@ TurretFactoryMixin.expectedCallbacks =
 {
 }
 
-TurretFactoryMixin.networkVars =
-{
-    powering = "boolean"
-}
-
 function TurretFactoryMixin:__initmixin()
-
-    self.powering = true
-
     if Server then
         self.powerConsumerIds = {}
     end
@@ -43,8 +35,8 @@ if Server then
         for index, turret in ipairs(turrets) do
             local toTarget = turret:GetOrigin() - self:GetOrigin()
             local distanceToTarget = toTarget:GetLength()
-            if distanceToTarget < kRoboticsFactoryAttachRange and GetIsUnitActive(turret) then
-                if (turret:GetRequiresAdvanced() and self:GetTechId() == kTechId.ARCRoboticsFactory) or not turret:GetRequiresAdvanced() then
+            if distanceToTarget < kTurretFactoryAttachRange and GetIsUnitActive(turret) then
+                if (turret:GetRequiresAdvanced() and self:GetTechId() == kTechId.AdvancedTurretFactory) or not turret:GetRequiresAdvanced() then
                     turret:OnTurretFactoryCompleted()
                 end
             end
@@ -81,11 +73,4 @@ if Server then
         ScanForUnPoweredTurrets(self)
     end
 
-end
-
-function TurretFactoryMixin:OnUpdateAnimationInput(modelMixin)
-
-    PROFILE("PowerSourceMixin:OnUpdateAnimationInput")
-    modelMixin:SetAnimationInput("powering", self.powering)
-    
 end

@@ -11,21 +11,21 @@
 
 kUnitStatus = enum({
     'None',
-    'Active',
     'Inactive',
     'Unpowered',
     'Dying',
     'Unbuilt',
     'Damaged',
     'Recycling',
-    'Researching'
+    'Researching',
+    'Unrepaired'
 })
 
 UnitStatusMixin = CreateMixin(UnitStatusMixin)
 UnitStatusMixin.type = "UnitStatus"
 
 function UnitStatusMixin:__initmixin()
-    self.unitStatus = kUnitStatus.Active
+    self.unitStatus = kUnitStatus.None
 end
 
 function UnitStatusMixin:GetShowUnitStatusFor(forEntity)
@@ -56,10 +56,13 @@ function UnitStatusMixin:GetUnitStatus(forEntity)
     if GetAreFriends(forEntity, self) then
 
         if not GetIsUnitActive(self) then
+        
+            if HasMixin(self, "Construct") and not self:GetIsBuilt() and (forEntity:isa("Gorge") or forEntity:isa("Marine") or (forEntity.GetCanSeeConstructIcon and forEntity:GetCanSeeConstructIcon(self)) ) then
+                unitStatus = kUnitStatus.Unbuilt 
 
-            if (not HasMixin(self, "Construct") or self:GetIsBuilt()) then
-                unitStatus = kUnitStatus.Unpowered                
-            end   
+            //elseif HasMixin(self, "PowerConsumer") and self:GetRequiresPower() and not self:GetIsPowered() then
+                //unitStatus = kUnitStatus.Unpowered         
+            end
         
         else
         
@@ -70,8 +73,20 @@ function UnitStatusMixin:GetUnitStatus(forEntity)
                     unitStatus = kUnitStatus.Researching
                 end
             
-            elseif HasMixin(self, "Live") and self:GetHealthScalar() < 1 and self:GetIsAlive() and (not forEntity.GetCanRepairOverride or forEntity:GetCanRepairOverride(self)) then
-                unitStatus = kUnitStatus.Damaged
+            elseif HasMixin(self, "Live") and self:GetHealthScalar() < 1 and self:GetIsAlive() and (not forEntity.GetCanSeeDamagedIcon or forEntity:GetCanSeeDamagedIcon(self)) then
+            
+                if forEntity:isa("Marine") and self:isa("Marine") and self:GetArmor() < self:GetMaxArmor() then            
+                    unitStatus = kUnitStatus.Damaged
+                elseif forEntity:isa("Marine") and not self:isa("Marine") then
+                    unitStatus = kUnitStatus.Damaged
+                elseif forEntity:isa("Gorge") then
+                    unitStatus = kUnitStatus.Damaged
+                end
+                
+                if unitStatus == kUnitStatus.Damaged and forEntity:isa("Marine") and not forEntity:GetWeapon(Welder.kMapName) then
+                    unitStatus = kUnitStatus.Unrepaired
+                end
+                    
             end
         
         end
@@ -101,6 +116,7 @@ function UnitStatusMixin:GetUnitHint(forEntity)
     if HasMixin(self, "Tech") then
     
         local hintString = LookupTechData(self:GetTechId(), kTechDataHint, "")
+
         if self.OverrideHintString then
             hintString = self:OverrideHintString(hintString, forEntity)
         end
@@ -148,18 +164,17 @@ function UnitStatusMixin:GetActionName(forEntity)
     
         local researchingId = self:GetResearchingId()
         local displayName = LookupTechData(researchingId, kTechDataDisplayName, "")
-    
-        /*
-        // Override a couple special cases        
-        if researchingId == kTechId.AdvancedArmoryUpgrade or researchingId == kTechId.UpgradeRoboticsFactory or researchingId == kTechId.EvolveBombard then
-            displayName = "COMM_SEL_UPGRADING"
-        end
-        */
         
         return Locale.ResolveString(displayName)
         
     end
     
     return ""
+
+end
+
+function UnitStatusMixin:GetHasWelder(forEntity)
+
+    return not GetAreEnemies(forEntity, self) and HasMixin(self, "WeaponOwner") and self:GetWeapon(Welder.kMapName) ~= nil
 
 end

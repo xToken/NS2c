@@ -54,22 +54,68 @@ function Hive:OnResearchComplete(researchId)
         
     end
     
-    if success then
-    
-        if hiveTypeChosen then
-        
-            // Let gamerules know for stat tracking.
-            GetGamerules():SetHiveTechIdChosen(self, newTechId)
-            local team = self:GetTeam()
-            if team and team.SetHiveTechIdChosen then
-                team:SetHiveTechIdChosen(self, newTechId)
-            end
-            
+    if success and hiveTypeChosen then
+
+        // Let gamerules know for stat tracking.
+        GetGamerules():SetHiveTechIdChosen(self, newTechId)
+        local team = self:GetTeam()
+        if team and team.SetHiveTechIdChosen then
+            team:SetHiveTechIdChosen(self, newTechId)
         end
-        
+       
     end   
     return success
+    
 end
+
+local kResearchTypeToHiveType =
+{
+    [kTechId.UpgradeToCragHive] = kTechId.CragHive,
+    [kTechId.UpgradeToShadeHive] = kTechId.ShadeHive,
+    [kTechId.UpgradeToShiftHive] = kTechId.ShiftHive,
+	[kTechId.UpgradeToWhipHive] = kTechId.WhipHive,
+}
+
+function Hive:UpdateResearch()
+
+    local researchId = self:GetResearchingId()
+
+    if kResearchTypeToHiveType[researchId] then
+    
+        local hiveTypeTechId = kResearchTypeToHiveType[researchId]
+        local techTree = self:GetTeam():GetTechTree()    
+        local researchNode = techTree:GetTechNode(hiveTypeTechId)    
+        researchNode:SetResearchProgress(self.researchProgress)
+        techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", self.researchProgress)) 
+        
+    end
+
+end
+
+function Hive:OnResearchCancel(researchId)
+
+    if kResearchTypeToHiveType[researchId] then
+    
+        local hiveTypeTechId = kResearchTypeToHiveType[researchId]
+        local team = self:GetTeam()
+        
+        if team then
+        
+            local techTree = team:GetTechTree()
+            local researchNode = techTree:GetTechNode(hiveTypeTechId)
+            if researchNode then
+            
+                researchNode:ClearResearching()
+                techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", 0))   
+         
+            end
+            
+        end    
+        
+    end
+
+end
+
 
 function Hive:SetFirstLogin()
     //self.isFirstLogin = true
@@ -275,12 +321,6 @@ local function CheckLowHealth(self)
     
 end
 
-function Hive:OnEntityChange(oldId, newId)
-
-    CommandStructure.OnEntityChange(self, oldId, newId)
-    
-end
-
 function Hive:OnUpdate(deltaTime)
 
     PROFILE("Hive:OnUpdate")
@@ -457,16 +497,10 @@ function Hive:OnTakeDamage(damage, attacker, doer, point)
         
     end
     
-    // Update objective markers because OnSighted isn't always called
-    local attached = self:GetAttached()
-    if attached then
-        attached.showObjective = true
-    end
-    
 end
 
 function Hive:OnTeleportEnd()
-    
+
     local attachedTechPoint = self:GetAttached()
     if attachedTechPoint then
         attachedTechPoint:SetIsSmashed(true)
@@ -497,8 +531,6 @@ end
 function Hive:SetAttached(structure)
 
     CommandStructure.SetAttached(self, structure)
-    
-    self.extendAmount = structure:GetExtendAmount()
     
     if self:GetIsBuilt() then
         structure:SetIsSmashed(true)

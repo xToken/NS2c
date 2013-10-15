@@ -12,6 +12,11 @@ HealSprayMixin.type = "HealSpray"
 local kRange = 4
 local kHealCylinderWidth = 2
 
+local kHealScoreAdded = 2
+// Every kAmountHealedForPoints points of damage healed, the player gets
+// kHealScoreAdded points to their score.
+local kAmountHealedForPoints = 400
+
 // HealSprayMixin:GetHasSecondary should completely override any existing
 // GetHasSecondary function defined in the object.
 HealSprayMixin.overrideFunctions =
@@ -142,8 +147,13 @@ local function HealEntity(self, player, targetEntity)
         health = health * .5
     end
     
-    local amountHealed = targetEntity:AddHealth(health, false, (targetEntity:GetMaxHealth() - targetEntity:GetHealth() ~= 0))
-
+    local amountHealed = targetEntity:AddHealth(health)
+    
+    // Do not count amount self healed.
+    if targetEntity ~= player then
+        player:AddContinuousScore("HealSpray", amountHealed, kAmountHealedForPoints, kHealScoreAdded)
+    end
+    
     if targetEntity.OnHealSpray then
         targetEntity:OnHealSpray(player)
     end         
@@ -231,16 +241,20 @@ local function GetEntitiesInCylinder(self, player, viewCoords, range, width)
     
     for _, entity in ipairs( GetEntitiesWithMixinWithinRange("Live", startPoint, range) ) do
     
-        relativePos = entity:GetOrigin() - startPoint
-        local yDistance = viewCoords.yAxis:DotProduct(relativePos)
-        local xDistance = viewCoords.xAxis:DotProduct(relativePos)
-        local zDistance = viewCoords.zAxis:DotProduct(relativePos)
+        if entity:GetIsAlive() then
+    
+            relativePos = entity:GetOrigin() - startPoint
+            local yDistance = viewCoords.yAxis:DotProduct(relativePos)
+            local xDistance = viewCoords.xAxis:DotProduct(relativePos)
+            local zDistance = viewCoords.zAxis:DotProduct(relativePos)
 
-        local xyDistance = math.sqrt(yDistance * yDistance + xDistance * xDistance)
+            local xyDistance = math.sqrt(yDistance * yDistance + xDistance * xDistance)
 
-        // could perform a LOS check here or simply keeo the code a bit more tolerant. healspray is kinda gas and it would require complex calculations to make this check be exact
-        if xyDistance <= width and zDistance >= 0 then
-            table.insert(ents, entity)
+            // could perform a LOS check here or simply keeo the code a bit more tolerant. healspray is kinda gas and it would require complex calculations to make this check be exact
+            if xyDistance <= width and zDistance >= 0 then
+                table.insert(ents, entity)
+            end
+            
         end
     
     end

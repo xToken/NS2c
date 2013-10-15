@@ -25,15 +25,36 @@ Bomb.kMapName            = "bomb"
 Bomb.kModelName          = PrecacheAsset("models/alien/gorge/bilebomb.model")
 
 // The max amount of time a Bomb can last for
-Bomb.kLifetime = 6
-
-local kBileBombDotIntervall = 0.4
+Bomb.kClearOnImpact = true
+Bomb.kClearOnEnemyImpact = true
+local kBombLifetime = 6
 
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
+
+-- Blow up after a time.
+local function UpdateLifetime(self)
+
+    // Grenades are created in predict movement, so in order to get the correct
+    // lifetime, we start counting our lifetime from the first UpdateLifetime rather than when
+    // we were created
+    if not self.endOfLife then
+        self.endOfLife = Shared.GetTime() + kBombLifetime
+    end
+
+    if self.endOfLife <= Shared.GetTime() then
+    
+        self:Detonate(nil)
+        return false
+        
+    end
+    
+    return true
+    
+end
 
 function Bomb:OnCreate()
 
@@ -44,16 +65,9 @@ function Bomb:OnCreate()
     InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
     
-    self.radius = 0.2
-    
-end
-
-function Bomb:OnInitialized()
-
-    Projectile.OnInitialized(self)
-    
     if Server then
-        self:AddTimedCallback(Bomb.TimeUp, Bomb.kLifetime)
+        self:AddTimedCallback(UpdateLifetime, 0.1)
+        self.endOfLife = nil
     end
 
 end
@@ -70,11 +84,21 @@ function Bomb:GetDamageType()
     return kBileBombDamageType
 end
 
+function Bomb:ProcessHit(targetHit, surface)
+
+    if Server then
+        self:Detonate(targetHit, surface)
+    else
+        return true
+    end
+    
+end
+
 if Server then
 
-    function Bomb:ProcessHit(targetHit, surface)
+    function Bomb:Detonate(targetHit, surface)
 
-        if (not self:GetOwner() or targetHit ~= self:GetOwner()) and not self:GetIsDestroyed() then
+        if not self:GetIsDestroyed() then
 
             local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kBileBombSplashRadius)
             
@@ -94,13 +118,6 @@ if Server then
 
         end
 
-    end
-    
-    function Bomb:TimeUp(currentRate)
-        if not self:GetIsDestroyed() then
-            DestroyEntity(self)
-        end
-        return false
     end
 
 end

@@ -17,19 +17,17 @@ Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
-Script.Load("lua/HasUmbraMixin.lua")
+Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/InfestationMixin.lua")
 
 class 'Hive' (CommandStructure)
 
-local networkVars = 
-{
-}
+local networkVars = { }
 
 AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(HiveVisionMixin, networkVars)
-AddMixinNetworkVars(HasUmbraMixin, networkVars)
+AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(InfestationMixin, networkVars)
 
 kResearchToHiveType =
@@ -88,7 +86,7 @@ function Hive:OnCreate()
     
     InitMixin(self, CloakableMixin)
     InitMixin(self, DissolveMixin)
-    InitMixin(self, HasUmbraMixin)
+    InitMixin(self, UmbraMixin)
         
     if Server then
         
@@ -101,18 +99,19 @@ function Hive:OnCreate()
         self.timeWaveEnds = 0
         
     end
-
+    
 end
 
 function Hive:OnInitialized()
 
-    CommandStructure.OnInitialized(self)
-    
-    self:SetModel(Hive.kModelName, kAnimationGraph)
     InitMixin(self, InfestationMixin)
     
+    CommandStructure.OnInitialized(self)
+
     // Pre-compute list of egg spawn points.
     if Server then
+        
+        self:SetModel(Hive.kModelName, kAnimationGraph)
         
         // This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
@@ -150,8 +149,11 @@ if Client then
     
 end
 
-function Hive:GetShowOrderLine()
-    return true
+function Hive:SetIncludeRelevancyMask(includeMask)
+
+    includeMask = bit.bor(includeMask, kRelevantToTeam2Commander)    
+    CommandStructure.SetIncludeRelevancyMask(self, includeMask)    
+
 end
 
 function Hive:OnCollision(entity)
@@ -210,11 +212,11 @@ function Hive:GetCanResearchOverride(techId)
 
 end
 
-local function GetLifeFormButtons(self)
-    return nil
+function Hive:OnManufactured(createdEntity)
 end
 
-function Hive:OnManufactured(createdEntity)
+function Hive:GetAutoBuildScalar()
+    return 1
 end
 
 function Hive:GetShowUnitStatusForOverride(forEntity)
@@ -243,17 +245,12 @@ function Hive:OnSighted(sighted)
 
 end
 
-local kHiveHealthbarOffset = Vector(0, .8, 0)
 function Hive:GetHealthbarOffset()
-    return kHiveHealthbarOffset
+    return 0.8
 end 
 
-// Don't show objective after we become cloaked
-function Hive:OnCloak()
-    local attached = self:GetAttached()
-    if attached then
-        attached.showObjective = false
-    end
+function Hive:OverrideVisionRadius()
+    return 20
 end
 
 Shared.LinkClassToMap("Hive", Hive.kMapName, networkVars)

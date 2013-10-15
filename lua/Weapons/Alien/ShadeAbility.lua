@@ -13,10 +13,6 @@ function ShadeStructureAbility:GetPrimaryAttackDelay()
     return 0
 end
 
-function ShadeStructureAbility:GetIconOffsetY(secondary)
-    return kAbilityOffset.Hydra
-end
-
 function ShadeStructureAbility:GetGhostModelName(ability)
     return Shade.kModelName
 end

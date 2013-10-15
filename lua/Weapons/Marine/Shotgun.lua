@@ -7,7 +7,6 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-Script.Load("lua/Balance.lua")
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
 
 class 'Shotgun' (ClipWeapon)
@@ -49,7 +48,7 @@ local kSpreadVectors =
 }
 
 Shotgun.kModelName = PrecacheAsset("models/marine/shotgun/shotgun.model")
-local kViewModelName = PrecacheAsset("models/marine/shotgun/shotgun_view.model")
+local kViewModels = GenerateMarineViewModelPaths("shotgun")
 local kAnimationGraph = PrecacheAsset("models/marine/shotgun/shotgun_view.animation_graph")
 
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/shotgun/muzzle_flash.cinematic")
@@ -58,18 +57,7 @@ local kMuzzleAttachPoint = "fxnode_shotgunmuzzle"
 function Shotgun:OnCreate()
 
     ClipWeapon.OnCreate(self)
-    
     self.emptyPoseParam = 0
-
-end
-
-if Client then
-
-    function Shotgun:OnInitialized()
-    
-        ClipWeapon.OnInitialized(self)
-    
-    end
 
 end
 
@@ -77,8 +65,8 @@ function Shotgun:GetAnimationGraphName()
     return kAnimationGraph
 end
 
-function Shotgun:GetViewModelName()
-    return kViewModelName
+function Shotgun:GetViewModelName(sex, variant)
+    return kViewModels[sex][variant]
 end
 
 function Shotgun:GetDeathIconIndex()
@@ -91,6 +79,10 @@ end
 
 function Shotgun:GetNumStartClips()
     return 2
+end
+
+function Shotgun:GetBaseRateofFire()
+    return kShotgunBaseRateOfFire
 end
 
 function Shotgun:GetClipSize()
@@ -175,9 +167,10 @@ end
 function Shotgun:OnTag(tagName)
 
     PROFILE("Shotgun:OnTag")
-
-    continueReloading = false
+    
+    local continueReloading = false
     if self:GetIsReloading() and tagName == "reload_end" then
+    
         continueReloading = true
     end
     
@@ -225,6 +218,7 @@ function Shotgun:FirePrimary(player)
     
     local numberBullets = self:GetBulletsPerShot()
     local startPoint = player:GetEyePos()
+    local bulletSize = self:GetBulletSize()
     
     self:TriggerEffects("shotgun_attack")
     
@@ -240,10 +234,14 @@ function Shotgun:FirePrimary(player)
         startPoint = player:GetEyePos() + viewCoords.xAxis * kSpreadVectors[bullet].x * kStartOffset + viewCoords.yAxis * kSpreadVectors[bullet].y * kStartOffset
         
         local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
-        if not trace.entity then
-            local extents = GetDirectedExtentsForDiameter(viewCoords.zAxis, self:GetBulletSize())
-            trace = Shared.TraceBox(extents, startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
-        end        
+        if not trace.entity and Server then
+        
+            -- Limit the box trace to the point where the ray hit as an optimization.
+            local boxTraceEndPoint = trace.fraction ~= 1 and trace.endPoint or endPoint
+            local extents = GetDirectedExtentsForDiameter(spreadDirection, bulletSize)
+            trace = Shared.TraceBox(extents, startPoint, boxTraceEndPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
+            
+        end
         
         local damage = 0
 

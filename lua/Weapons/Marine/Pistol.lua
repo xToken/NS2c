@@ -14,7 +14,8 @@ class 'Pistol' (ClipWeapon)
 Pistol.kMapName = "pistol"
 
 Pistol.kModelName = PrecacheAsset("models/marine/pistol/pistol.model")
-local kViewModelName = PrecacheAsset("models/marine/pistol/pistol_view.model")
+local kViewModels = GenerateMarineViewModelPaths("pistol")
+
 local kAnimationGraph = PrecacheAsset("models/marine/pistol/pistol_view.animation_graph")
 
 local kClipSize = 10
@@ -172,6 +173,10 @@ function Pistol:GetHasSecondary(player)
     return false
 end
 
+function Pistol:GetViewModelName(sex, variant)
+    return kViewModels[sex][variant]
+end
+
 function Pistol:GetIsPrimaryAttackAllowed(player)
 
     if GetHasAttackDelay(self, player) then
@@ -179,10 +184,6 @@ function Pistol:GetIsPrimaryAttackAllowed(player)
     end
     return ClipWeapon.GetIsPrimaryAttackAllowed(self, player)
 	
-end
-
-function Pistol:GetViewModelName()
-    return kViewModelName
 end
 
 function Pistol:GetDeathIconIndex()
@@ -224,14 +225,6 @@ end
 
 function Pistol:GetPrimaryIsBlocking()
     return true
-end
-
-function Pistol:GetBlendTime()
-    return 0
-end
-
-function Pistol:GetSwingAmount()
-    return 15
 end
 
 function Pistol:GetMaxAmmo()
