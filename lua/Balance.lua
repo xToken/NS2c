@@ -182,7 +182,7 @@ kPistolFireDelay = 0.08
 kPistolClipWeight = 0.0033
 
 kWelderDamage = 2
-kWelderDamageType = kDamageType.Normal
+kWelderDamageType = kDamageType.Flame
 kWelderFireDelay = 0.4
 kWelderWeight = 0.005
 kWelderRate = 60
@@ -245,7 +245,7 @@ kMinesWeight = 0.05
 kNumHandGrenades = 2
 kHandGrenadesRange = 4
 kHandGrenadesDamage = 80
-kHandGrenadesDamageType = kDamageType.Normal
+kHandGrenadesDamageType = kDamageType.Structural
 kHandGrenadesLifetime = 1
 kHandGrenadesWeight = 0.005
 
@@ -390,9 +390,8 @@ kSwipeRange = 1.3
 kSwipeMeleeBaseWidth = 0.9
 kSwipeMeleeBaseHeight = 1
 
-kStartBlinkEnergyCost = 8
-kBlinkPulseEnergyCost = 4
-kBlinkCooldown = 0.05
+kStartBlinkEnergyCost = 9
+kBlinkPulseEnergyCost = 2
 
 kMetabolizeEnergyCost = 25
 kMetabolizeEnergyGain = 35

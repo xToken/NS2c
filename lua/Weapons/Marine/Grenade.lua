@@ -40,11 +40,8 @@ function Grenade:OnCreate()
     InitMixin(self, ModelMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
-	
-
-    if Server then    
-        self:AddTimedCallback(Grenade.Detonate, kGrenadeLifetime)        
-    end
+	  
+    self:AddTimedCallback(Grenade.Detonate, kGrenadeLifetime)
     
 end
 
@@ -67,13 +64,8 @@ end
 function Grenade:ProcessHit(targetHit, surface)
 
     if targetHit and GetAreEnemies(self, targetHit) then
-    
-        if Server then
-            self:Detonate(targetHit)
-        else
-            return true
-        end    
-    
+        self:Detonate(targetHit)
+        return true
     end
 
     if Server then
@@ -88,13 +80,14 @@ function Grenade:ProcessHit(targetHit, surface)
     
 end
 
-if Server then
+function Grenade:Detonate(targetHit)
+
+    // Do damage to nearby targets.
     
-    function Grenade:Detonate(targetHit)
+    if Server then
     
-        // Do damage to nearby targets.
         local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kGrenadeLauncherGrenadeDamageRadius)
-        
+    
         // Remove grenade and add firing player.
         table.removevalue(hitEntities, self)
         
@@ -114,11 +107,14 @@ if Server then
         
         self:TriggerEffects("grenade_explode", params)
         
-        CreateExplosionDecals(self)
-        TriggerCameraShake(self, kGrenadeMinShakeIntensity, kGrenadeMaxShakeIntensity, kGrenadeCameraShakeDistance)
-        
         DestroyEntity(self)
-        
+                
+    elseif Client then
+    
+        CreateExplosionDecals(self)
+    
+        TriggerCameraShake(self, kGrenadeMinShakeIntensity, kGrenadeMaxShakeIntensity, kGrenadeCameraShakeDistance)
+    
     end
     
 end

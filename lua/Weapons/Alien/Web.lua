@@ -197,8 +197,8 @@ function Web:GetSendDeathMessageOverride()
     return false
 end
 
-function Web:ComputeDamageOverride(attacker, damage, damageType, doer) 
-    if doer:GetClassName() == "Grenade" or doer:GetClassName() == "HandGrenade" or doer:GetClassName() == "Welder" then
+function Web:ComputeDamageOverride(attacker, damage, damageType, hitPoint) 
+    if damageType == kDamageType.Flame or damageType == kDamageType.Structural then
         return damage
     end
     return 0
