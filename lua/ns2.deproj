@@ -277,6 +277,9 @@
     <filename>GUIInsight_PlayerFrames.lua</filename>
   </file>
   <file>
+    <filename>GUIInsight_TopBar.lua</filename>
+  </file>
+  <file>
     <filename>menu\GUIMainMenu.lua</filename>
   </file>
   <file>

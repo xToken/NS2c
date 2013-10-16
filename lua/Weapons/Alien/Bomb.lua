@@ -18,6 +18,7 @@ Script.Load("lua/DamageMixin.lua")
 Script.Load("lua/Weapons/PredictedProjectile.lua")
 
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/decals/bilebomb_decal.surface_shader")
+Shared.RegisterDecalMaterial("cinematics/vfx_materials/decals/bilebomb_decal.material")
 
 class 'Bomb' (PredictedProjectile)
 
@@ -35,27 +36,6 @@ AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 
--- Blow up after a time.
-local function UpdateLifetime(self)
-
-    // Grenades are created in predict movement, so in order to get the correct
-    // lifetime, we start counting our lifetime from the first UpdateLifetime rather than when
-    // we were created
-    if not self.endOfLife then
-        self.endOfLife = Shared.GetTime() + kBombLifetime
-    end
-
-    if self.endOfLife <= Shared.GetTime() then
-    
-        self:Detonate(nil)
-        return false
-        
-    end
-    
-    return true
-    
-end
-
 function Bomb:OnCreate()
 
     PredictedProjectile.OnCreate(self)
@@ -65,10 +45,7 @@ function Bomb:OnCreate()
     InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
     
-    if Server then
-        self:AddTimedCallback(UpdateLifetime, 0.1)
-        self.endOfLife = nil
-    end
+    self:AddTimedCallback(Bomb.Detonate, kBombLifetime)
 
 end
 
@@ -85,39 +62,32 @@ function Bomb:GetDamageType()
 end
 
 function Bomb:ProcessHit(targetHit, surface)
-
-    if Server then
-        self:Detonate(targetHit, surface)
-    else
-        return true
-    end
-    
+    self:Detonate(targetHit, surface)
+    return true    
 end
 
-if Server then
+function Bomb:Detonate(targetHit, surface)
 
-    function Bomb:Detonate(targetHit, surface)
-
-        if not self:GetIsDestroyed() then
-
-            local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kBileBombSplashRadius)
-            
-            // full damage on direct impact
-            if targetHit then
-                table.removevalue(hitEntities, targetHit)
-                self:DoDamage(kBileBombDamage, targetHit, targetHit:GetOrigin(), GetNormalizedVector(targetHit:GetOrigin() - self:GetOrigin()), "none")
-            end
-            
-            RadiusDamage(hitEntities, self:GetOrigin(), kBileBombSplashRadius, kBileBombDamage, self)
-            
-            self:TriggerEffects("bilebomb_hit")
-            
-            DestroyEntity(self)
-            
-            CreateExplosionDecals(self, "bilebomb_decal")
-
+    if Server then
+    
+        local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kBileBombSplashRadius)
+        
+        // full damage on direct impact
+        if targetHit then
+            table.removevalue(hitEntities, targetHit)
+            self:DoDamage(kBileBombDamage, targetHit, targetHit:GetOrigin(), GetNormalizedVector(targetHit:GetOrigin() - self:GetOrigin()), "none")
         end
-
+        
+        RadiusDamage(hitEntities, self:GetOrigin(), kBileBombSplashRadius, kBileBombDamage, self)
+        
+        self:TriggerEffects("bilebomb_hit")
+        
+        DestroyEntity(self)
+        
+    elseif Client then
+    
+        CreateExplosionDecals(self, "bilebomb_decal")
+    
     end
 
 end
@@ -125,6 +95,5 @@ end
 function Bomb:GetNotifiyTarget()
     return false
 end
-
 
 Shared.LinkClassToMap("Bomb", Bomb.kMapName, networkVars)

@@ -26,27 +26,6 @@ AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 
--- Blow up after a time.
-local function UpdateLifetime(self)
-
-    // Grenades are created in predict movement, so in order to get the correct
-    // lifetime, we start counting our lifetime from the first UpdateLifetime rather than when
-    // we were created
-    if not self.endOfLife then
-        self.endOfLife = Shared.GetTime() + kHandGrenadesLifetime
-    end
-
-    if self.endOfLife <= Shared.GetTime() then
-    
-        self:Detonate(nil)
-        return false
-        
-    end
-    
-    return true
-    
-end
-
 function HandGrenade:OnCreate()
 
     PredictedProjectile.OnCreate(self)
@@ -56,10 +35,7 @@ function HandGrenade:OnCreate()
     InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
     
-    if Server then
-        self:AddTimedCallback(UpdateLifetime, 0.1)
-        self.endOfLife = nil
-    end
+    self:AddTimedCallback(HandGrenade.Detonate, kHandGrenadesLifetime)
     
 end
 
@@ -78,13 +54,8 @@ end
 function HandGrenade:ProcessHit(targetHit, surface)
 
     if targetHit and GetAreEnemies(self, targetHit) then
-    
-        if Server then
-            self:Detonate(targetHit)
-        else
-            return true
-        end    
-    
+        self:Detonate(targetHit)
+        return true
     end
 
     if Server then
@@ -99,18 +70,13 @@ function HandGrenade:ProcessHit(targetHit, surface)
     
 end
 
-if Server then
-    
-    function HandGrenade:Detonate(targetHit)       
-    
+function HandGrenade:Detonate(targetHit)       
+
+    if Server then
+        
         // Do damage to nearby targets.
-        local hitEntities
-        if GetGamerules():GetFriendlyFire() then
-            hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kHandGrenadesRange)
-        else
-            hitEntities = GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), kHandGrenadesRange)
-        end
-		
+        local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kHandGrenadesRange)
+        
         // Remove grenade and add firing player.
         table.removevalue(hitEntities, self)
         
@@ -138,15 +104,14 @@ if Server then
         
         self:TriggerEffects("grenade_explode", params)
         
-        CreateExplosionDecals(self)
-        TriggerCameraShake(self, kGrenadeMinShakeIntensity, kGrenadeMaxShakeIntensity, kGrenadeCameraShakeDistance)
-                
         DestroyEntity(self)
         
-    end
+    elseif Client then
     
-    function HandGrenade:GetCanDetonate()
-        return true
+        CreateExplosionDecals(self)
+
+        TriggerCameraShake(self, kGrenadeMinShakeIntensity, kGrenadeMaxShakeIntensity, kGrenadeCameraShakeDistance)
+    
     end
     
 end

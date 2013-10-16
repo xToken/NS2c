@@ -19,18 +19,13 @@ Script.Load("lua/Weapons/Alien/Ability.lua")
 class 'Blink' (Ability)
 Blink.kMapName = "blink"
 
-local kEtherealForce = 8
 local kMinBlinkEffectTime = 1
 
-local networkVars =
-{
-    lastblinktime = "time"
-}
+local networkVars = { }
 
 function Blink:OnCreate()
 
     Ability.OnCreate(self)
-    self.lastblinktime = 0
     self.lastblinkeffect = 0
     
 end
@@ -52,38 +47,17 @@ function Blink:GetSecondaryAttackRequiresPress()
 end
 
 function Blink:TriggerBlinkOutEffects(player)
-	if not Shared.GetIsRunningPrediction() then
-	    if self.lastblinkeffect + kMinBlinkEffectTime < Shared.GetTime() then
-	        self.lastblinkeffect = Shared.GetTime()
-	        player:TriggerEffects("blink_out")
-	    end
+	if not Shared.GetIsRunningPrediction() and self.lastblinkeffect + kMinBlinkEffectTime < Shared.GetTime() then
+	    self.lastblinkeffect = Shared.GetTime()
+	    player:TriggerEffects("blink_out")
 	end
 end
 
 function Blink:TriggerBlinkInEffects(player)
-	if not Shared.GetIsRunningPrediction() then
-	    if self.lastblinkeffect + kMinBlinkEffectTime < Shared.GetTime() then
-	        self.lastblinkeffect = Shared.GetTime()
-	        player:TriggerEffects("blink_in")
-	    end
+	if not Shared.GetIsRunningPrediction() and self.lastblinkeffect + kMinBlinkEffectTime < Shared.GetTime() then
+	    self.lastblinkeffect = Shared.GetTime()
+	    player:TriggerEffects("blink_in")	 
 	end
-end
-
-function Blink:GetIsBlinking()
-
-    local player = self:GetParent()
-    
-    if player then
-        return player:GetIsBlinking()
-    end
-    
-    return false
-    
-end
-
-// Cannot attack while blinking.
-function Blink:GetPrimaryAttackAllowed()
-    return not self:GetIsBlinking()
 end
 
 function Blink:GetSecondaryEnergyCost(player)
@@ -92,9 +66,8 @@ end
 
 function Blink:OnSecondaryAttack(player)
 
-    if self:GetBlinkAllowed() then
+    if not player:GetIsBlinking() and player:GetEnergy() >= self:GetSecondaryEnergyCost(player) then
         self:SetEthereal(player, true)
-        self.lastblinktime = Shared.GetTime()
     end
     
     Ability.OnSecondaryAttack(self, player)
@@ -103,7 +76,7 @@ end
 
 function Blink:OnSecondaryAttackEnd(player)
 
-    if player.ethereal then
+    if player:GetIsBlinking() then
         self:SetEthereal(player, false)
     end
     
@@ -114,38 +87,18 @@ end
 function Blink:SetEthereal(player, state)
 
     if player.ethereal ~= state then
-    
-        if state then
-            self:TriggerBlinkOutEffects(player)            
-        else
-            self:TriggerBlinkInEffects(player)     
-        end
         
         player.ethereal = state
         
         if player.ethereal then
             player:OnBlink()
+            player:DeductAbilityEnergy(self:GetSecondaryEnergyCost())
+            self:TriggerBlinkOutEffects(player)   
         else
-            player:OnBlinkEnd()  
+            player:OnBlinkEnd()
+            self:TriggerBlinkInEffects(player) 
         end
         
-    end
-    
-end
-
-function Blink:ProcessMoveOnWeapon(player, input)
-    if not player.ethereal then
-        return
-    end
-    
-    local time = Shared.GetTime()
-    local deltaTime = time - (self.lastBlinkTime or 0)
-    // Check time and energy
-    if deltaTime > kBlinkCooldown and player:GetEnergy() > kBlinkPulseEnergyCost then
-        // Blink.
-        player.lastBlinkTime = time
-        player:OnBlinking(input)
-        player:DeductAbilityEnergy(kBlinkPulseEnergyCost)
     end
     
 end
@@ -153,7 +106,7 @@ end
 function Blink:OnUpdateAnimationInput(modelMixin)
 
     local player = self:GetParent()
-    if self:GetIsBlinking() then
+    if player:GetIsBlinking() then
         modelMixin:SetAnimationInput("move", "blink")
     end
     

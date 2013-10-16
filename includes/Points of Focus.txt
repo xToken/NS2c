@@ -1,3 +1,4 @@
 Alien hive status updates - currently using networkmessages, move to teaminfo entity for propigation to clients.
 Replace Ghost - need a good 3rd for Shade.
+Tweak webs to not require livemixin, use other methods for removal.
 Health Circles?  Maybe finally?

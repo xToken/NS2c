@@ -2022,8 +2022,9 @@ local kExplosionDirections =
 function CreateExplosionDecals(triggeringEntity, effectName)
 
     effectName = effectName or "explosion_decal"
-
+    local player = Client.GetLocalPlayer()    
     local startPoint = triggeringEntity:GetOrigin() + Vector(0, 0.2, 0)
+    
     for i = 1, #kExplosionDirections do
     
         local direction = kExplosionDirections[i]
@@ -2035,11 +2036,29 @@ function CreateExplosionDecals(triggeringEntity, effectName)
             coords.yAxis = trace.normal
             coords.zAxis = trace.normal:GetPerpendicular()
             coords.xAxis = coords.zAxis:CrossProduct(coords.yAxis)
-
-            triggeringEntity:TriggerEffects(effectName, {effecthostcoords = coords})
-        
+            
+            //player:TriggerEffects(effectName, {effecthostcoords = coords})
+            
         end
     
+    end
+    
+end
+
+function TriggerCameraShake(triggerinEnt, minIntensity, maxIntensity, range)
+    
+    //Check if in range
+    local player = Client.GetLocalPlayer()    
+    if (player:GetOrigin() - triggerinEnt:GetOrigin()):GetLength() < range then
+    
+        local shakeIntensity = (player:GetOrigin() - triggerinEnt:GetOrigin()):GetLength() / (range*2)
+        shakeIntensity = 1 - Clamp(shakeIntensity, 0, 1)
+        shakeIntensity = minIntensity + shakeIntensity * (maxIntensity - minIntensity)
+        
+        if player and player.SetCameraShake then
+            player:SetCameraShake(shakeIntensity * 0.1, 5, 0.25)    
+        end
+        
     end
 
 end

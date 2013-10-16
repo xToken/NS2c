@@ -29,7 +29,7 @@ local kGameEndCheckInterval = 0.75
 local kPregameLength = 10
 local kTimeToReadyRoom = 8
 local kPauseToSocializeBeforeMapcycle = 30
-local kGameStartMessageInterval = 10
+local kGameStartMessageInterval = 30
 local kRequireMarineComm = true
 
 // How often to send the "No commander" message to players in seconds.

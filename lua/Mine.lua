@@ -96,10 +96,11 @@ local function Detonate(self, armFunc)
     
     self:TriggerEffects("mine_explode", params)
     
-    DestroyEntity(self)
+    //CreateExplosionDecals(self, nil, 2)
     
-    CreateExplosionDecals(self)
-    TriggerCameraShake(self, kMineMinShakeIntensity, kMineMaxShakeIntensity, kMineCameraShakeDistance)
+    //TriggerCameraShake(self, kMineMinShakeIntensity, kMineMaxShakeIntensity, kMineCameraShakeDistance)
+    
+    DestroyEntity(self)
     
     TEST_EVENT("Mine detonated")
     

@@ -374,32 +374,3 @@ function ScaleWithPlayerCount(value, numPlayers, scaleUp)
     return value * factor
 
 end
-
-function TriggerCameraShake(triggerinEnt, minIntensity, maxIntensity, range)
-
-    local players = GetEntitiesWithinRange("Player", triggerinEnt:GetOrigin(), range)
-    local owner = HasMixin(triggerinEnt, "Owner") and triggerinEnt:GetOwner()
-
-    if owner then
-    
-        table.removevalue(players, owner)
-        local shakeIntensity = (owner:GetOrigin() - triggerinEnt:GetOrigin()):GetLength() / (range*2)
-        shakeIntensity = 1 - Clamp(shakeIntensity, 0, 1)
-        shakeIntensity = minIntensity + shakeIntensity * (maxIntensity - minIntensity)
-        
-        owner:SetCameraShake(shakeIntensity)
-        
-    end
-    
-    for _, player in ipairs(players) do
-    
-        local shakeIntensity = (player:GetOrigin() - triggerinEnt:GetOrigin()):GetLength() / range
-        shakeIntensity = 1 - Clamp(shakeIntensity, 0, 1)
-        shakeIntensity = minIntensity + shakeIntensity * (maxIntensity - minIntensity)
-        
-        player:SetCameraShake(shakeIntensity)
-    
-    end
-
-end
-
