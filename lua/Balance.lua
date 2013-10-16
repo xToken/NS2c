@@ -390,9 +390,8 @@ kSwipeRange = 1.3
 kSwipeMeleeBaseWidth = 0.9
 kSwipeMeleeBaseHeight = 1
 
-kStartBlinkEnergyCost = 8
-kBlinkPulseEnergyCost = 4
-kBlinkCooldown = 0.05
+kStartBlinkEnergyCost = 9
+kBlinkPulseEnergyCost = 2
 
 kMetabolizeEnergyCost = 25
 kMetabolizeEnergyGain = 35

@@ -51,9 +51,8 @@ local kMaxSpeed = 4.5
 local kMaxBlinkSpeed = 16 // ns1 fade blink is (3x maxSpeed) + celerity
 local kWalkSpeed = 2
 local kCrouchedSpeed = 1.8
-local kBlinkImpulseForce = 5
-local kBlinkVerticleDampner = 4
-local kBlinkSpeedGracePeriod = 0.0
+local kBlinkImpulseForce = 85
+local kFadeBlinkAutoJumpGroundDistance = 0.25
 
 local networkVars =
 {
@@ -83,7 +82,7 @@ function Fade:OnCreate()
     self.etherealStartTime = 0
     self.etherealEndTime = 0
     self.ethereal = false
-    self.landedafterblink = 0
+    
 end
 
 function Fade:OnInitialized()
@@ -164,7 +163,7 @@ function Fade:GetMaxSpeed(possible)
         maxSpeed = kCrouchedSpeed
     end
         
-    return maxSpeed + self:GetMovementSpeedModifier() + (self:GetBlinkGracePeriod() * kMaxBlinkSpeed * kBlinkSpeedGracePeriod)
+    return maxSpeed + self:GetMovementSpeedModifier()
 end
 
 function Fade:GetMass()
@@ -175,56 +174,46 @@ function Fade:GetIsBlinking()
     return self.ethereal and self:GetIsAlive()
 end
 
-function Fade:GetBlinkGracePeriod()
-    return Clamp((self.landedafterblink + kBlinkSpeedGracePeriod) - Shared.GetTime(), 0, 1)
-end
-
-function Fade:OnGroundChanged()
-    if self.landedafterblink == 0 then
-        self.landedafterblink = Shared.GetTime()
-    end
-end
-
 function Fade:OnBlink()
     self:SetIsOnGround(false)
     self:SetIsJumping(true)
 end
 
-local function GetSign(number)
-    return number >= 0 and 1 or -1    
+function Fade:ModifyVelocity(input, velocity, deltaTime)
+
+    if self:GetIsBlinking() then
+    
+        // Blink impulse
+        local zAxis = self:GetViewCoords().zAxis
+        velocity:Add( zAxis * kBlinkImpulseForce * deltaTime )
+        
+        if self:GetIsOnGround() or self:GetIsCloseToGround(kFadeBlinkAutoJumpGroundDistance) then
+            self:GetJumpVelocity(input, velocity)
+        end
+        
+        // Cap groundspeed
+        local groundspeed = velocity:GetLengthXZ()
+        local maxspeed = kMaxBlinkSpeed + self:GetMovementSpeedModifier()
+        local oldYvelocity = Clamp(velocity.y, (-1 * maxspeed), maxspeed)
+        
+        if groundspeed > maxspeed then
+            velocity:Scale(maxspeed / groundspeed)
+        end
+        
+        velocity.y = oldYvelocity
+        
+        self:DeductAbilityEnergy(kBlinkPulseEnergyCost)
+        
+    end
+    
 end
 
-function Fade:OnBlinking(input)
-    local velocity = self:GetVelocity()
-       
-    // Blink impulse
-    local zAxis = self:GetViewCoords().zAxis
-    zAxis.y = math.pow(zAxis.y, kBlinkVerticleDampner) * GetSign(zAxis.y)
-    velocity:Add( zAxis * kBlinkImpulseForce )
-    
-    // Cap groundspeed
-    local groundspeed = velocity:GetLengthXZ()
-    local maxspeed = kMaxBlinkSpeed + self:GetMovementSpeedModifier()
-    
-    if groundspeed > maxspeed then
-        local oldYvelocity = velocity.y
-        velocity:Scale(maxspeed/groundspeed)
-        velocity.y = oldYvelocity
+function Fade:PostUpdateMove(input, runningPrediction)
+
+    if self:GetIsBlinking() then
+        self:SetIsJumping(true)
+        self:SetIsOnGround(false)
     end
-    
-    local pitchAngle = Clamp(self:GetViewCoords().zAxis.y, -0.5, 0.5)
-    if pitchAngle < 0.3 and pitchAngle >= -0.05 and math.abs(velocity.y) < 1 then
-        self:GetJumpVelocity(input, velocity)
-    end
-    
-    //Cap Y Velocity
-    velocity.y = Clamp(velocity.y, (-1 * (kMaxBlinkSpeed + self:GetMovementSpeedModifier())), kMaxBlinkSpeed + self:GetMovementSpeedModifier())    
-    
-    // Finish
-    self:SetVelocity(velocity)
-    self:SetIsJumping(true)
-    self:SetIsOnGround(false)
-    self.landedafterblink = 0
     
 end
 
