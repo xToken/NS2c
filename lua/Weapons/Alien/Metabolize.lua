@@ -58,7 +58,7 @@ end
 
 function Metabolize:OnPrimaryAttack(player)
 
-    if not self:GetIsBlinking() and player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(player) then
+    if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(player) then
         self.primaryAttacking = true    
     else
         self:OnPrimaryAttackEnd()
@@ -80,36 +80,25 @@ function Metabolize:OnHolster(player)
     
 end
 
-local function PerformMetabolize(self)
-
-    local player = self:GetParent()
-    if player then
-        player:AddHealth(kMetabolizeHealthGain, false, (player:GetMaxHealth() - player:GetHealth() ~= 0))
-        player:AddEnergy(kMetabolizeEnergyGain)
-    end
-    
+local function PerformMetabolize(self, player)
+    player:AddHealth(kMetabolizeHealthGain, false, (player:GetMaxHealth() - player:GetHealth() ~= 0))
+    player:AddEnergy(kMetabolizeEnergyGain)    
 end
 
 function Metabolize:OnTag(tagName)
 
     PROFILE("Metabolize:OnTag")
 
-    if self.primaryAttacking then
+    if tagName == "hit" and self.primaryAttacking then
     
-        if tagName == "start" then
-        
-            self.lastPrimaryAttackTime = Shared.GetTime()
-            local player = self:GetParent()
-            if player then
-                player:DeductAbilityEnergy(self:GetEnergyCost())
-                player:TriggerEffects("metabolize")
-            end
-            PerformMetabolize(self)
-            
-        elseif tagName == "attack_end" then
-            self.primaryAttacking = false
+        self.lastPrimaryAttackTime = Shared.GetTime()
+        local player = self:GetParent()
+        if player then
+            player:DeductAbilityEnergy(self:GetEnergyCost())
+            player:TriggerEffects("metabolize")
+            PerformMetabolize(self, player)
         end
-        
+        self.primaryAttacking = false
     end
     
 end

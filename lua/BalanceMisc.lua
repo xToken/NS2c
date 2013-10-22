@@ -27,9 +27,8 @@ kMaxGorgeOwnedStructures = 24
 kChamberLostNotification = 0    // Amount of Upgrade Chambers remaining for alerts to be sent
 kPingOfDeathDelay = 2
 kPingOfDeathDamagePercent = 12
-kResearchMod = 1
-kFootstepsThreshold = 3.5
-kIdleThreshold = 5
+kFootstepsThreshold = 3.5      //Speed in m/s
+kIdleThreshold = 5             //Speed in m/s
 
 kGhostStructureModifier = .75
 kEnergyUpdateRate = 0.25
@@ -44,31 +43,27 @@ kParasiteDuration = -1
 kParasitePlayerPointValue = 1
 kFallDamageMinimumVelocity = 12
 kFallDamageScalar = 11.88
-kKnockbackTime = 0.05
 
+kEnergyRecuperationRate = 8
+kEnergyAdrenalineRecuperationRate = 16.0
 kCeleritySpeedModifier = 1.67 //75 Units NS1
 kFocusAttackSlowdown = 0.5
 kCloakingMaxSpeed = 3.0
 kFocusAttackDamageMultipler = 2
 kBombardAttackDamageMultipler = 1.3
 kRedemptionEHPThreshold = 0.40
-kRedemptionChancePerLevel = 0.15
-kRedemptionCheckTime = 1
+kRedemptionTimeBase = 12.5
+kRedemptionTimeDecrease = 2.5
 kRedemptionCooldown = 20
-kRedploymentCooldownBase = 15
+kRedploymentCooldownBase = 20
+kRedploymentCooldownDecreasePerLevel = 3
 kAuraDetectionRange = 30
 kFuryHealthRegained = 10
 kFuryHealthPercentageRegained = 0.1
 kFuryEnergyRegained = 10
-kGhostMotionTrackingDodgePerLevel = 33
-kGhostObservatoryDodgePerLevel = 33
-kGhostMinimapDodgePerLevel = 33
-kGhostScanDodgePerLevel = 33
-kGhostCloakingPerLevel = 0.25
-
-// per second
-kAlienVisionCost = 0
-kAlienVisionEnergyRegenMod = 1
+kGhostDodgeCooldownBase = 6
+kGhostDodgeCooldownPerLevel = 1
+kGhostDodgeMaxHPPercent = 0.50
 
 kDefaultStructureCost = 10
 kStructureCircleRange = 4
@@ -97,6 +92,8 @@ kEnergizeUpdateRate = 1
 // NS1: 9 seconds for full refuel
 kJetpackUseFuelRate = 0.22
 kJetpackReplenishFuelRate = 0.10
+kJetpackFuelReplenishDelay = .2
+kJetpackTakeoffFuelUse = 0.08
 kJetpackWeight = 0.08
 
 //HA

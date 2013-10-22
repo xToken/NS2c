@@ -79,7 +79,7 @@ end
  * Map entities with a higher priority are loaded first.
  */
 local kMapEntityLoadPriorities = { }
-kMapEntityLoadPriorities[NS2Gamerules.kMapName] = 1
+kMapEntityLoadPriorities[DefaultNS2GamerulesMapName()] = 1
 local function GetMapEntityLoadPriority(mapName)
 
     local priority = 0
@@ -200,7 +200,13 @@ local function LoadServerMapEntity(mapName, groupName, values)
     // on the client.
     if GetCreateEntityOnStart(mapName, groupName, values) then
         
-        local entity = Server.CreateEntity(mapName, values)
+        local entity
+        if IsNS2GamerulesEntity(mapName) then
+            entity = DetermineAndCreateNS2Gamerules(values)
+        else
+            entity = Server.CreateEntity(mapName, values)
+        end
+        
         if entity then
         
             entity:SetMapEntity()

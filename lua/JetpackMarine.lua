@@ -30,8 +30,7 @@ elseif Client then
     Script.Load("lua/JetpackMarine_Client.lua")
 end
 
-local kJetpackFuelReplenishDelay = .15
-local kJetpackMinimumFuelForLaunch = .03
+local kJetpackMinimumFuelForLaunch = .1
 local kVerticleThrust = 19
 local kJumpForce = 5.75
 local kMaxCrouchSpeed = 4
@@ -198,6 +197,7 @@ function JetpackMarine:HandleJetpackStart()
     self.timeJetpackingChanged = Shared.GetTime()
     
     self.startedFromGround = self:GetIsOnGround()
+    self.jetpackFuelOnChange = self.jetpackFuelOnChange - kJetpackTakeoffFuelUse
     
     local jetpack = self:GetJetpack()    
     if jetpack then
@@ -304,15 +304,13 @@ function JetpackMarine:GetMaxSpeed(possible)
     
 end
 
-function JetpackMarine:AirAccelerate(velocity, time, wishdir, wishspeed, acceleration)
-    if not self:GetIsJetpacking() and wishspeed > Player.GetMaxAirVeer(self) then
-        wishspeed = Player.GetMaxAirVeer(self)
-    end
-    self:Accelerate(velocity, time, wishdir, wishspeed, acceleration)
+function JetpackMarine:ShouldClampAirVeer()
+    return not self:GetIsJetpacking()
 end
 
-function JetpackMarine:Accelerate(velocity, time, wishdir, wishspeed, acceleration)
-    Player.Accelerate(self, velocity, time, wishdir, wishspeed, acceleration)
+function JetpackMarine:ModifyVelocity(input, velocity, time)
+    
+    PROFILE("JetpackMarine:ModifyVelocity")
     
     // From testing in NS1: There is a hard cap on velocity of the jetpack marine,
     // probably to prevent air-strafing into crazy speeds
@@ -334,6 +332,7 @@ function JetpackMarine:Accelerate(velocity, time, wishdir, wishspeed, accelerati
         // to avoid having code from sticking the player to the ground
         self:SetIsOnGround(false)
     end
+    
 end
 
 function JetpackMarine:GetAcceleration()

@@ -38,8 +38,6 @@ Shared.PrecacheSurfaceShader("models/alien/fade/fade.surface_shader")
 
 if Server then
     Script.Load("lua/Fade_Server.lua")
-elseif Client then    
-    Script.Load("lua/Fade_Client.lua")
 end
 
 Fade.XZExtents = .4
@@ -177,9 +175,13 @@ end
 function Fade:OnBlink()
     self:SetIsOnGround(false)
     self:SetIsJumping(true)
+    self.ethereal = true
+    self:TriggerEffects("blink_out")
 end
 
 function Fade:ModifyVelocity(input, velocity, deltaTime)
+
+    PROFILE("Fade:ModifyVelocity")
 
     if self:GetIsBlinking() then
     
@@ -204,6 +206,10 @@ function Fade:ModifyVelocity(input, velocity, deltaTime)
         
         self:DeductAbilityEnergy(kBlinkPulseEnergyCost)
         
+        if self:GetEnergy() < kBlinkPulseEnergyCost then
+            self:OnBlinkEnd()
+        end
+        
     end
     
 end
@@ -221,6 +227,8 @@ function Fade:OnBlinkEnd()
     if self:GetIsOnGround() then
         self:SetIsJumping(false)
     end
+    self.ethereal = false
+    self:TriggerEffects("blink_in")
 end
 
 local kFadeEngageOffset = Vector(0, 0.6, 0)

@@ -913,16 +913,6 @@ local kGameEndMessage =
     win = "boolean"
 }
 
-local kHiveInfoMessage = 
-{
-    key              = "integer",
-    location         = string.format("string (%d)", kMaxHiveNameLength),
-    healthpercent    = "float",
-    buildprogress    = "float",
-    techId           = "enum kTechId",
-    timelastdamaged  = "time"
-}
-
 Shared.RegisterNetworkMessage("GameEnd", kGameEndMessage)
 
 Shared.RegisterNetworkMessage("EntityChanged", kEntityChangedMessage)
@@ -965,7 +955,6 @@ Shared.RegisterNetworkMessage( "TechNodeBase", kTechNodeBaseMessage )
 Shared.RegisterNetworkMessage( "ClearTechTree", {} )
 
 Shared.RegisterNetworkMessage( "MovementMode", kMovementMode )
-Shared.RegisterNetworkMessage( "HiveInfo", kHiveInfoMessage )
 
 local kRookieMessage =
 {
@@ -1054,6 +1043,14 @@ local kAutoConcedeWarning =
     team1Conceding = "boolean"
 }
 Shared.RegisterNetworkMessage("AutoConcedeWarning", kAutoConcedeWarning)
+
+local kPointsUpdateMessage =
+{
+    points = "integer",
+    res = "integer"
+}
+
+Shared.RegisterNetworkMessage("PointsUpdate", kPointsUpdateMessage)
 
 Shared.RegisterNetworkMessage("SpectatePlayer", { entityId = "entityid"})
 Shared.RegisterNetworkMessage("SwitchFromFirstPersonSpectate", { mode = "enum kSpectatorMode" })

@@ -143,10 +143,6 @@ function DropStructureAbility:GetEnergyCost(player)
     return kDropStructureEnergyCost
 end
 
-function DropStructureAbility:GetDamageType()
-    return kHealsprayDamageType
-end
-
 function DropStructureAbility:GetHUDSlot()
     return 2
 end

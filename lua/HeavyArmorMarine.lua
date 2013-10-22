@@ -66,12 +66,8 @@ function HeavyArmorMarine:GetInventorySpeedScalar()
     return 1 - self:GetWeaponsWeight() - kHeavyArmorWeight
 end
 
-function HeavyArmorMarine:GetCanBeWeldedOverride()
-    return self:GetArmor() < self:GetMaxArmor(), false
-end
-
-function HeavyArmorMarine:GetWeldPercentageOverride()
-    return self:GetArmor() / self:GetMaxArmor()
+function HeavyArmorMarine:GetReceivesVaporousDamage()
+    return false
 end
 
 function HeavyArmorMarine:GetMass()

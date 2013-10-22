@@ -367,7 +367,7 @@ function SiegeCannon:OnTag(tagName)
     elseif tagName == "target_start" and self.mode == SiegeCannon.kMode.Targeting then
         self:TriggerEffects("sc_charge")
     elseif tagName == "attack_end" then
-        if Server then
+        if Server and self.mode == SiegeCannon.kMode.Targeting then
             self:SetMode(SiegeCannon.kMode.Active)
         end
         self:TriggerEffects("sc_stop_effects")

@@ -1119,77 +1119,74 @@ local function HiveDamagePulsate(script, item)
 
 end
 
+local function CheckHiveStatusChanged(hive, icon)
+	if icon.healthpercent ~= hive:GetHealth() / hive:GetMaxHealth() or 
+        icon.buildprogress ~= ConditionalValue(hive:GetIsBuilt(), 1, hive:GetBuiltFraction()) or 
+        icon.location ~= hive:GetLocationName() or icon.lastupdate + 10 < Shared.GetTime() or icon.techId ~= hive:GetTechId() then
+		return true
+	else
+		return false
+	end
+end
+
 function GUIAlienHUD:UpdateHiveInformation(deltaTime)
-    local hivesinfo = PlayerUI_GetHiveInformation()
-    local hivenum = 1
-    if hivesinfo ~= nil then
-        for i = 1, #hivesinfo do
-            if i < kMaxHives then
-                local hiveinfo = hivesinfo[i]
-                if hiveinfo ~= nil then
-                    if self.hives[i].lasttime ~= hiveinfo.time then
-                
-                        local textureCoords = GetTextureCoordinatesForIcon(hiveinfo.techId, false)
-                        self.hives[i].locationtext:SetText(hiveinfo.location)
-                        self.hives[i].locationtext:SetIsVisible(true)
-                        self.hives[i].locationtext:SetColor(kHealthBarColor)
-                        self.hives[i].icon:SetTexturePixelCoordinates(unpack(textureCoords))
-                        self.hives[i].icon:SetIsVisible(true)
-                        self.hives[i].healthBar:SetSize(Vector(kHiveHealthSize.x, kHiveHealthSize.y * hiveinfo.healthpercent, 0))
-                        self.hives[i].healthBar:SetIsVisible(true)
-                        self.hives[i].builtBar:SetSize(Vector(kHiveBuiltSize.x, kHiveBuiltSize.y * hiveinfo.buildprogress, 0))
-                        
-                        local animSpeed = ConditionalValue(hiveinfo.healthpercent < self.hives[i].lasthealth, kAnimSpeedDown, kAnimSpeedUp)
-                        local pixelCoords = kHealthBarPixelCoords
-                        pixelCoords[3] = kHealthBarSize.x * hiveinfo.healthpercent + pixelCoords[1]
+    local hives = PlayerUI_GetHiveList()
+    for i = 1, kMaxHives do
+		local hive = hives[i]
+		if hive ~= nil then
+		
+			if CheckHiveStatusChanged(hive, self.hives[i]) then
+			
+			    local techId = hive:GetTechId()
+			    local locationname = hive:GetLocationName()
+				local textureCoords = GetTextureCoordinatesForIcon(techId, false)
+				local healthpercent = hive:GetHealth() / hive:GetMaxHealth()
+				local buildprogress = ConditionalValue(hive:GetIsBuilt(), 1, hive:GetBuiltFraction())
+				self.hives[i].locationtext:SetText(locationname)
+				self.hives[i].locationtext:SetIsVisible(true)
+				self.hives[i].locationtext:SetColor(kHealthBarColor)
+				self.hives[i].icon:SetTexturePixelCoordinates(unpack(textureCoords))
+				self.hives[i].icon:SetIsVisible(true)
+				self.hives[i].healthBar:SetSize(Vector(kHiveHealthSize.x, kHiveHealthSize.y * healthpercent, 0))
+				self.hives[i].healthBar:SetIsVisible(true)
+				self.hives[i].builtBar:SetSize(Vector(kHiveBuiltSize.x, kHiveBuiltSize.y * buildprogress, 0))
+				self.hives[i].builtBar:SetIsVisible(buildprogress < 1)
 
-                        if hiveinfo.healthpercent < kLowHiveHealth then
-                            self.hives[i].icon:SetColor(Color(1, 0, 0, 1))
-                            self.hives[i].locationtext:SetColor(Color(1, 0, 0, 1))
-                        end
-                        if hiveinfo.timelastdamaged > Shared.GetTime() - 5 then
-                            self.hives[i].hivedamageAnimPlaying = Client.GetTime() + 1
-                            self.hives[i].healthBar:SetColor(Color(1, 0, 0, 1), kHiveDamageAnimRate, "ANIM_HEALTH_PULSATE", AnimateQuadratic, HiveDamagePulsate )
-                        else
-                            self.hives[i].hivedamageAnimPlaying = 0
-                            self.hives[i].healthBar:SetColor(kHealthBarColor)
-                            self.hives[i].icon:SetColor(kHealthBarColor)
-                            self.hives[i].locationtext:SetColor(kHealthBarColor)
-                        end
+				if hive.lastHiveFlinchEffectTime ~= nil and hive.lastHiveFlinchEffectTime > Shared.GetTime() - 5 then
+					self.hives[i].hivedamageAnimPlaying = Shared.GetTime() + 1
+					self.hives[i].healthBar:SetColor(Color(1, 0, 0, 1), kHiveDamageAnimRate, "ANIM_HEALTH_PULSATE", AnimateQuadratic, HiveDamagePulsate )
+			    else
+			        self.hives[i].hivedamageAnimPlaying = 0
+			        self.hives[i].healthBar:DestroyAnimation("ANIM_HEALTH_PULSATE")
+					self.hives[i].healthBar:SetColor(kHealthBarColor)
+			    end
+			    
+				if healthpercent < kLowHiveHealth then
+				    self.hives[i].icon:SetColor(Color(1, 0, 0, 1))
+					self.hives[i].locationtext:SetColor(Color(1, 0, 0, 1))
+				else
+					self.hives[i].icon:SetColor(kHealthBarColor)
+					self.hives[i].locationtext:SetColor(kHealthBarColor)
+				end
 
-                        if hiveinfo.buildprogress == 1 then
-                            self.hives[i].builtBar:SetIsVisible(false)
-                        else
-                            self.hives[i].builtBar:SetIsVisible(true) 
-                        end
-                        self.hives[i].lasthealth = hiveinfo.healthpercent
-                        self.hives[i].techId = hiveinfo.techId
-                        self.hives[i].lastbuilt = hiveinfo.buildprogress
-                        self.hives[i].lasttime = hiveinfo.time
-                    elseif hiveinfo.time - Client.GetTime() < 5 or self.hives[i].hivedamageAnimPlaying ~= 0 then
-                        if self.hives[i].hivedamageAnimPlaying ~= nil and self.hives[i].hivedamageAnimPlaying < Client.GetTime() then
-                            self.hives[i].hivedamageAnimPlaying = 0
-                            self.hives[i].healthBar:DestroyAnimation("ANIM_HEALTH_PULSATE")
-                            self.hives[i].healthBar:SetColor(kHealthBarColor)
-                            self.hives[i].icon:SetColor(kHealthBarColor)
-                            self.hives[i].locationtext:SetColor(kHealthBarColor)
-                        end
-                    end
-                end
-            
-                hivenum = i + 1
-            end
-        end
-            
-        if self.lastHiveUpdate + kHiveUpdateInterval < Client.GetTime() then
-            for i = hivenum, kMaxHives do
-                self.hives[i].icon:SetIsVisible(false)
-                self.hives[i].healthBar:SetIsVisible(false)
-                self.hives[i].builtBar:SetIsVisible(false)
-                self.hives[i].locationtext:SetIsVisible(false)
-            end
-        end
-    end
+				self.hives[i].healthpercent = healthpercent
+				self.hives[i].buildprogress = buildprogress
+				self.hives[i].location = locationname
+				self.hives[i].techId = techId
+				self.hives[i].lastupdate = Shared.GetTime()
+				
+			end
+			
+		else
+		
+			self.hives[i].icon:SetIsVisible(false)
+            self.hives[i].healthBar:SetIsVisible(false)
+            self.hives[i].builtBar:SetIsVisible(false)
+            self.hives[i].locationtext:SetIsVisible(false)
+			
+		end
+	end
+	
 end
 
 function GUIAlienHUD:OnResolutionChanged(oldX, oldY, newX, newY)

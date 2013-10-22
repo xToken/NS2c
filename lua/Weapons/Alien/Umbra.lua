@@ -78,10 +78,6 @@ function Umbra:GetLastAttackTime()
     return self.lastPrimaryAttackTime
 end
 
-function Umbra:GetDeathIconIndex()
-    return kDeathMessageIcon.Bite
-end
-
 function Umbra:OnPrimaryAttack(player)
 
     if player:GetEnergy() >= self:GetEnergyCost()  and not self:GetHasAttackDelay(player) then

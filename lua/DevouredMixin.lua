@@ -28,6 +28,7 @@ function DevouredMixin:OnDevoured(onos)
     self.devoured = true
     self.lastdevoursound = 0
     self:SetPropagate(Entity.Propagate_Never)
+    //self:DestroyController()
     
     local activeWeapon = self:GetActiveWeapon()
     if activeWeapon then
@@ -43,8 +44,9 @@ end
 function DevouredMixin:OnDevouredEnd()
     if self:GetIsAlive() then
         self.devoured = false
-        self.devourer = nil
         self:SetPropagate(Entity.Propagate_Mask)
+        //One day I will get this to work for the cleanest handling :L
+        //self:CreateController(self:GetPlayerControllersGroup())
     end
 end
 
@@ -60,6 +62,7 @@ local function DevouredMixinUpdate(self, deltaTime)
             if coords ~= nil and coords.origin ~= nil then
                 self:SetCoords(coords)  
             end
+            self.lastorigin = onos:GetOrigin()
         end
     end
 end

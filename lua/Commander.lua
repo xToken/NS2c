@@ -194,25 +194,8 @@ end
 function Commander:UpdateViewAngles()
 end
 
-// Move commander without any collision detection
-function Commander:UpdatePosition(input, velocity, time)
-
-    PROFILE("Commander:UpdatePosition")
-
-    local offset = velocity * time
-    
-    if self.controller then
-    
-        self:UpdateControllerFromEntity()
-        
-        self.controller:SetPosition(self:GetOrigin() + offset)
-
-        self:UpdateOriginFromController()
-
-    end    
-
-    return velocity
-    
+function Commander:GetHasCollisionDetection()
+    return false
 end
 
 function Commander:GetNumPlayerAlerts()

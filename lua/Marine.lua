@@ -304,6 +304,10 @@ function Marine:GetMovePhysicsMask()
     return Player.GetMovePhysicsMask(self)
 end
 
+function Marine:GetHasCollisionDetection()
+    return not self:GetIsDevoured()
+end
+
 function Marine:GetArmorAmount(armorLevels)
 
     if not armorLevels then

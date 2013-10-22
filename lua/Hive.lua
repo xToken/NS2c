@@ -114,6 +114,7 @@ function Hive:OnInitialized()
     if Server then
         
         self:SetModel(Hive.kModelName, kAnimationGraph)
+        SetAlwaysRelevantToTeam(self, true)
         
         // This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then

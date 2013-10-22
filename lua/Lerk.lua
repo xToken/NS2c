@@ -70,7 +70,7 @@ local networkVars =
     wallGripRecheckDone = "private compensated boolean",
     // if wallChecking is enabled. Means that the next time you press use
     wallGripCheckEnabled = "private compensated boolean",
-    
+
     prevInputMove = "private boolean"
 }
 
@@ -300,7 +300,7 @@ end
 // Flapping while pressing forward and backward are the same.
 // Tilt view a bit when banking. Hold jump key to glide then look down to swoop down.
 // When gliding while looking up or horizontal, hover in mid-air.
-function Lerk:HandleJump(input, velocity)
+function Lerk:OverrideJump(input, velocity)
 
     if bit.band(input.commands, Move.Jump) ~= 0 and not self:GetIsJumpHandled() then
         if self:GetIsOnGround() and self:GetCanJump() then
@@ -397,9 +397,9 @@ function Lerk:CalcWallGripSpeedFraction()
     
 end
 
-function Lerk:UpdatePosition(input, velocity, time)
+function Lerk:ModifyVelocity(input, velocity, deltaTime)
 
-    PROFILE("Lerk:UpdatePosition")
+    PROFILE("Lerk:ModifyVelocity")
     
     local wasOnSurface = self:GetIsOnSurface()
     local moveDirection = GetNormalizedVector(velocity)
@@ -413,8 +413,6 @@ function Lerk:UpdatePosition(input, velocity, time)
     if self:GetIsWallGripping() then   
         velocity = velocity * self:CalcWallGripSpeedFraction()
     end
-    
-    Player.UpdatePosition(self, input, velocity, time)
     
     if not self:GetIsWallGripping() and not self.wallGripCheckEnabled then
         // if we bounced into something and we are not on the ground, we enable one
@@ -499,6 +497,12 @@ function Lerk:PreUpdateMove(input, runningPrediction)
         
     end
     
+end
+
+function Lerk:OnWorldCollision(normal)
+    if normal.y < 0.5 and not (self:GetCrouching() or self:GetCrouched()) and self.wallGripCheckEnabled then
+        wallGripTime = Shared.GetTime()
+    end
 end
 
 function Lerk:HandleAttacks(input)

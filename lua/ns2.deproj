@@ -232,9 +232,6 @@
     <filename>Fade.lua</filename>
   </file>
   <file>
-    <filename>Fade_Client.lua</filename>
-  </file>
-  <file>
     <filename>Fade_Server.lua</filename>
   </file>
   <file>
@@ -328,7 +325,13 @@
     <filename>GUIUtility.lua</filename>
   </file>
   <file>
+    <filename>Gamerules.lua</filename>
+  </file>
+  <file>
     <filename>GeneralEffects.lua</filename>
+  </file>
+  <file>
+    <filename>GhostMixin.lua</filename>
   </file>
   <file>
     <filename>GhostStructureMixin.lua</filename>
@@ -517,6 +520,12 @@
     <filename>NS2cGameStrings.lua</filename>
   </file>
   <file>
+    <filename>NS2cGamerules.lua</filename>
+  </file>
+  <file>
+    <filename>NS2rGamerules.lua</filename>
+  </file>
+  <file>
     <filename>NetworkMessages.lua</filename>
   </file>
   <file>
@@ -592,6 +601,9 @@
     <filename>RecycleMixin.lua</filename>
   </file>
   <file>
+    <filename>RedemptionMixin.lua</filename>
+  </file>
+  <file>
     <filename>RedeployMixin.lua</filename>
   </file>
   <file>
@@ -614,6 +626,9 @@
   </file>
   <file>
     <filename>ScenarioHandler.lua</filename>
+  </file>
+  <file>
+    <filename>ScoringMixin.lua</filename>
   </file>
   <file>
     <filename>ScriptActor.lua</filename>
@@ -692,6 +707,12 @@
   </file>
   <file>
     <filename>Weapons\Alien\SwipeBlink.lua</filename>
+  </file>
+  <file>
+    <filename>Team.lua</filename>
+  </file>
+  <file>
+    <filename>TeamDeathMessageMixin.lua</filename>
   </file>
   <file>
     <filename>TeamInfo.lua</filename>

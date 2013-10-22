@@ -2174,7 +2174,7 @@ end
  * no eggs, pass in 1 to find out how long it will take for the first egg to spawn in).
  */
 function CalcEggSpawnTime(numPlayers, eggNumber, numDeadPlayers)
-    return kEggSpawnTime
+    return kAlienEggSpawnTime
 
     //local clampedEggNumber = Clamp(eggNumber, 1, kAlienEggsPerHive)
     //local clampedNumPlayers = Clamp(numPlayers, 1, kMaxPlayers/2)

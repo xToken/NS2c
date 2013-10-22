@@ -64,28 +64,6 @@ function Alien:EvolveAllowed()
     return true
 end
 
-function Alien:CheckRedemption()
-
-    local hasupg, level = GetHasRedemptionUpgrade(self)
-    if hasupg and level > 0 and (self.lastredemptioncheck == nil or self.lastredemptioncheck + kRedemptionCheckTime < Shared.GetTime()) then
-        //local maxhp, maxap
-        local chance = math.random(0, 100) / 100
-        //maxhp = LookupTechData(self.gestationTypeTechId, kTechDataMaxHealth)
-        //maxap = LookupTechData(self.gestationTypeTechId, kTechDataMaxArmor)
-        if self:GetHealthScalar() <= kRedemptionEHPThreshold then
-            //Double Random Check to insure its actually random
-            if chance <= (kRedemptionChancePerLevel * level) and self.redemed + kRedemptionCooldown < Shared.GetTime() then
-                //Redemed
-                self:OnRedemed()
-                self:TeleportToHive()
-                self.redemed = Shared.GetTime()
-            end
-        end
-        self.lastredemptioncheck = Shared.GetTime()
-    end
-
-end
-
 function Alien:SetPrimalScream(duration)
     self.timeWhenPrimalScreamExpires = Shared.GetTime() + duration
     self:TriggerEffects("enzymed")
@@ -112,7 +90,6 @@ function Alien:OnProcessMove(input)
     Player.OnProcessMove(self, input)
     
 	if not self:GetIsDestroyed() then
-    	self:CheckRedemption()
     	self.primalScreamBoost = self.timeWhenPrimalScreamExpires > Shared.GetTime()  
     	self:UpdateAutoHeal()
 	end

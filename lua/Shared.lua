@@ -159,6 +159,9 @@ Script.Load("lua/GameInfo.lua")
 Script.Load("lua/AlienTeamInfo.lua")
 Script.Load("lua/PathingUtility.lua")
 
+//Load this last to hopefully attempt to support any latehook mods.
+Script.Load("lua/ModdedMixinUtility.lua")
+
 gHeightMap = gHeightMap // survive hotloading; will be nil the first time
 
 local function LoadHeightmap()

@@ -14,15 +14,6 @@ function OnCommandOnClientDisconnect(clientIndexString)
     Scoreboard_OnClientDisconnect(tonumber(clientIndexString))
 end
 
-// Called when player receives points from an action
-function OnCommandPoints(pointsString, resString)
-
-    local points = tonumber(pointsString)
-    local res = tonumber(resString)
-    ScoreDisplayUI_SetNewScore(points, res)
-    
-end
-
 function OnCommandSoundGeometry(enabled)
 
     enabled = enabled ~= "false"
@@ -227,7 +218,6 @@ local function OnCommandDebugNotifications()
 end
 
 Event.Hook("Console_clientdisconnect", OnCommandOnClientDisconnect)
-Event.Hook("Console_points", OnCommandPoints)
 Event.Hook("Console_soundgeometry", OnCommandSoundGeometry)
 Event.Hook("Console_oneffectdebug", OnCommandEffectDebug)
 Event.Hook("Console_debugtext", OnCommandDebugText)

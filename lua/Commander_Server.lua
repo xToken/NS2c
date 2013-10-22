@@ -572,7 +572,7 @@ function Commander:SetEntitiesHotkeyState(group, state)
 end
 
 // Send data to client because it changed
-function Commander:SendHotkeyGroup(number)
+/*function Commander:SendHotkeyGroup(number)
 
     local hotgroupCommand = string.format("hotgroup %d ", number)
     
@@ -587,7 +587,7 @@ function Commander:SendHotkeyGroup(number)
     
     return hotgroupCommand
     
-end
+end*/
 
 function Commander:GetIsInterestedInAlert(techId)
     return true

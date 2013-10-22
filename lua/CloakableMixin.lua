@@ -21,7 +21,7 @@ CloakableMixin.kUncloakRate = 12
 CloakableMixin.kTriggerCloakDuration = .6
 CloakableMixin.kTriggerUncloakDuration = 2.5
 
-local kPlayerMaxCloak = 0.75
+local kPlayerMaxCloak = 0.85
 
 local kEnemyUncloakDistanceSquared = 1.5 ^ 2
 
@@ -139,7 +139,8 @@ local function UpdateDesiredCloakFraction(self, deltaTime)
     end
     
     if newDesiredCloakFraction ~= nil then
-        self.desiredCloakFraction = Clamp(newDesiredCloakFraction, 0, self:isa("Player") and (kGhostCloakingPerLevel * self.cloakRate) or 1)
+        //self.desiredCloakFraction = Clamp(newDesiredCloakFraction, 0, self:isa("Player") and (kGhostCloakingPerLevel * self.cloakRate) or 1)
+        self.desiredCloakFraction = Clamp(newDesiredCloakFraction, 0, self:isa("Player") and kPlayerMaxCloak or 1)
     end
     
 end

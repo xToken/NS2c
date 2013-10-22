@@ -43,6 +43,8 @@ kLerkArmorFullyUpgradedAmount = 50
 kFadeArmorFullyUpgradedAmount = 250
 kOnosArmorFullyUpgradedAmount = 900
 
+//This handles old alien armor scaling in a more elegant way, and one that the player can see instantly.
+//This is additive, so anything above 0 will add the according amount of the classes base armor to its HP.
 kAlienHealthPerArmorHive1 = 0
 kAlienHealthPerArmorHive2 = 0
 kAlienHealthPerArmorHive3 = 1

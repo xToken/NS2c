@@ -167,12 +167,7 @@ function Rifle:GetViewModelName(sex, variant)
 end
 
 function Rifle:GetDeathIconIndex()
-
-    if self:GetSecondaryAttacking() then
-        return kDeathMessageIcon.RifleButt
-    end
     return kDeathMessageIcon.Rifle
-    
 end
 
 function Rifle:GetHUDSlot()

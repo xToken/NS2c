@@ -116,7 +116,6 @@ local kCrouchMaxSpeed = 2.2
 local kWalkMaxSpeed = 3.5
 local kRunMaxSpeed = 6
 local kJumpForce = 6.5
-local kDownSlopeFactor = math.tan( math.rad(60) ) // Stick to ground on down slopes up to 60 degrees
 
 //Other Vars
 local kMass = 90.7 // ~200 pounds (incl. armor, weapons)
@@ -1460,43 +1459,6 @@ function Player:GetJumpMode()
     return kJumpMode.Repeating
 end
 
-function Player:HandleJump(input, velocity)
-
-    if bit.band(input.commands, Move.Jump) ~= 0 and not self:GetIsJumpHandled() then
-    
-        if self:GetCanJump() then
-        
-            self:PreventMegaBunnyJumping(velocity)
-            self:GetJumpVelocity(input, velocity)
-            
-            if self.GetPlayJumpSound and self:GetPlayJumpSound() and self.TriggerJumpEffects then
-                self:TriggerJumpEffects()
-            end
-            
-            self:UpdateLastJumpTime()
-            self:SetIsOnGround(false)
-            self:SetIsJumping(true)
-            
-            if self.OnJump then
-                self:OnJump()
-            end
-            
-            if self:GetJumpMode() == kJumpMode.Repeating then
-                self:SetIsJumpHandled(false)
-            else
-                self:SetIsJumpHandled(true)
-            end
-            
-        elseif self:GetJumpMode() == kJumpMode.Default then
-        
-            self:SetIsJumpHandled(true)
-            
-        end
-        
-    end
-    
-end
-
 function Player:GetJumpForce()
     return kJumpForce
 end
@@ -1505,132 +1467,12 @@ function Player:GetJumpVelocity(input, velocity)
     velocity.y = self:GetJumpForce() - math.abs(self:GetGravityForce(input) * input.time)
 end
 
-local function DoStepMove(self, input, velocity, time)
-    
-    local oldOrigin = Vector(self:GetOrigin())
-    local oldVelocity = Vector(velocity)
-    local success = false
-    local stepAmount = 0
-    
-    // step up at first
-    self:PerformMovement(Vector(0, self:GetStepHeight(), 0), 1)
-    stepAmount = self:GetOrigin().y - oldOrigin.y
-    // do the normal move
-    local startOrigin = Vector(self:GetOrigin())
-    local completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(velocity * time, 3, velocity, true)
-    local horizMoveAmount = (startOrigin - self:GetOrigin()):GetLengthXZ()
-    
-    if completedMove then
-        // step down again
-        local completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(Vector(0, -stepAmount - horizMoveAmount * kDownSlopeFactor, 0), 1)
-        
-        local onGround, normal = self:GetIsCloseToGround(0.15)
-        
-        if onGround then
-            success = true
-        end
-
-    end    
-        
-    // not succesful. fall back to normal move
-    if not success then
-    
-        self:SetOrigin(oldOrigin)
-        VectorCopy(oldVelocity, velocity)
-        self:PerformMovement(velocity * time, 3, velocity, true)
-        
-    end
-
-    return success
-
-end
-
-function Player:UpdatePosition(input, velocity, time)
-
-    PROFILE("Player:UpdatePosition")
-    
-    if self.controller then
-    
-        local oldVelocity = Vector(velocity)
-        local stepAllowed = self.onGround and self:GetCanStep()
-        local didStep = false
-        local stepAmount = 0
-        local hitObstacle = false
-    
-        // check if we are allowed to step:
-        local completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(velocity * time * 2, 3, nil, false)
-  
-        if stepAllowed and hitEntities then
-        
-            for i = 1, #hitEntities do
-                if not self:GetCanStepOver(hitEntities[i]) then
-                
-                    hitObstacle = true
-                    stepAllowed = false
-                    break
-                    
-                end
-            end
-        
-        end
-        
-        if not stepAllowed then
-        
-            if hitObstacle then
-                velocity.y = oldVelocity.y
-            end
-            
-            self:PerformMovement(velocity * time, 3, velocity, true)
-            
-        else        
-            didStep, stepAmount = DoStepMove(self, input, velocity, time)            
-        end
-        
-        if self.OnPositionUpdated then
-            self:OnPositionUpdated(self:GetOrigin() - self.prevOrigin, stepAllowed, input, velocity)
-        end
-        
-    end
-    
-end
-
 function Player:GetGroundFriction()
     return kGroundFriction
 end
 
-function Player:Accelerate(velocity, time, wishdir, wishspeed, acceleration)
-    // Determine veer amount    
-    local currentspeed = velocity:DotProduct(wishdir)
-    
-    // See how much to add
-    local addSpeed = wishspeed - currentspeed
-
-    // If not adding any, done.
-    if addSpeed <= 0.0 then
-        return velocity
-    end
-    
-    // Determine acceleration speed after acceleration
-    local accelspeed = acceleration * wishspeed * time
-    
-    // Cap it
-    if accelspeed > addSpeed then
-        accelspeed = addSpeed
-    end
-    
-    wishdir:Scale(accelspeed)
-    
-    // Add to velocity
-    velocity:Add(wishdir)
-    
-    return velocity
-end
-
-function Player:AirAccelerate(velocity, time, wishdir, wishspeed, acceleration)
-    if wishspeed > self:GetMaxAirVeer() then
-        wishspeed = self:GetMaxAirVeer()
-    end
-    return self:Accelerate(velocity, time, wishdir, wishspeed, acceleration)
+function Player:ShouldClampAirVeer()
+    return true
 end
 
 function Player:PerformsVerticalMove()

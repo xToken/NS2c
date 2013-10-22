@@ -55,7 +55,26 @@ function SetAlwaysRelevantToCommander(unit, relevant)
     
     unit:SetIncludeRelevancyMask( includeMask )
     
-end    
+end
+
+function SetAlwaysRelevantToTeam(unit, relevant)
+    
+    local includeMask = 0
+    
+    if relevant then
+    
+        if not HasMixin(unit, "Team") then
+            includeMask = bit.bor(kRelevantToTeam1, kRelevantToTeam2)
+        elseif unit:GetTeamNumber() == 1 then
+            includeMask = kRelevantToTeam2
+        elseif unit:GetTeamNumber() == 2 then
+            includeMask = kRelevantToTeam2
+        end
+    end
+    
+    unit:SetIncludeRelevancyMask( includeMask )
+    
+end  
 
 function PushPlayersInRange(origin, range, impulseStrength, team)
 

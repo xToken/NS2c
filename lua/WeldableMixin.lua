@@ -30,10 +30,6 @@ function WeldableMixin:OnWeld(doer, elapsedTime, player)
     
         if self.OnWeldOverride then
             self:OnWeldOverride(doer, elapsedTime)
-		//NS2c
-        //elseif doer:isa("MAC") then
-        	//self:AddHealth(MAC.kRepairHealthPerSecond * elapsedTime)
-		//NS2c
         elseif doer:isa("Welder") then
             self:AddHealth(doer:GetRepairRate(self) * elapsedTime)
         end

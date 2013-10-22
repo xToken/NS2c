@@ -58,12 +58,6 @@ function Marine:ApplyCatPack()
     
 end
 
-function Marine:OnEntityChange(oldId, newId)
-
-    Player.OnEntityChange(self, oldId, newId)
- 
-end
-
 function Marine:InitWeapons()
 
     Player.InitWeapons(self)

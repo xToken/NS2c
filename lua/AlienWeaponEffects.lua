@@ -187,10 +187,7 @@ kAlienWeaponEffects =
             
             // TODO: Change to something else
             {cinematic = "cinematics/alien/gorge/bilebomb_impact.cinematic"},
-            
-            {sound = "", silenceupgrade = true, done = true},
-            {sound = "sound/ns2c.fev/ns2c/alien/fade/acidrocket_hit", done = true},
-            //{sound = "sound/NS2.fev/alien/gorge/bilebomb_hit", done = true},
+            {parented_sound = "sound/ns2c.fev/ns2c/alien/fade/acidrocket_hit", done = true},
         },
     },
     
@@ -227,7 +224,15 @@ kAlienWeaponEffects =
             {sound = "sound/ns2c.fev/ns2c/alien/gorge/web_clear"},
         },
     },
-
+	
+	ghost_dodge = 
+	{
+        dodge =
+        {
+            {sound = "sound/ns2c.fev/ns2c/alien/gorge/web_clear"},
+        },
+    },
+	
     spit_structure =
     {
         spitStructureEffects = 
@@ -309,14 +314,6 @@ kAlienWeaponEffects =
             //{player_cinematic = "cinematics/alien/fade/blink_out_silent.cinematic", done = true},
         },
     },
-    
-    blink_out_local =
-    {
-        blinkOutEffects =
-        {        
-            {viewmodel_cinematic = "cinematics/alien/fade/blink_view.cinematic", attach_point = ""},
-        },
-    },  
     
     // Sound Effects only
     gore_attack =

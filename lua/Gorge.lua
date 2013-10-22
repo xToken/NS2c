@@ -163,7 +163,7 @@ local function GetIsSlidingDesired(self, input)
         return false
     end
     
-    if self:GetCrouching() then
+    if self:GetCrouching() or self:GetCrouched() then
         return false
     end
     
@@ -253,6 +253,8 @@ function Gorge:OnUpdatePoseParameters(viewModel)
 end
 
 function Gorge:ModifyVelocity(input, velocity, deltaTime)
+    
+    PROFILE("Gorge:ModifyVelocity")
     
     // Give a little push forward to make sliding useful
     if self.startedSliding then

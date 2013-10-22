@@ -54,6 +54,7 @@ local kStopSpeed = 2.0 //NS1 appears to have used 100, roughly 1.8
 local kBackwardsMovementScalar = 1
 local kStepHeight = 0.5
 local kStopSpeedScalar = 2
+local kDownSlopeFactor = math.tan( math.rad(60) ) // Stick to ground on down slopes up to 60 degrees
 
 function CustomGroundMoveMixin:__initmixin()
     self.onGround = true
@@ -176,7 +177,10 @@ end
 
 function CustomGroundMoveMixin:GetCanStep()
     return true
-end 
+end
+
+function CustomGroundMoveMixin:OnWorldCollision(normal, impactForce)
+end
 
 function CustomGroundMoveMixin:GetIsCloseToGround(distance)
 
@@ -334,6 +338,152 @@ function CustomGroundMoveMixin:UpdateFallDamage(previousVelocity)
     end
 end
 
+function CustomGroundMoveMixin:Accelerate(velocity, time, wishdir, wishspeed, acceleration)
+    // Determine veer amount    
+    local currentspeed = velocity:DotProduct(wishdir)
+    
+    // See how much to add
+    local addSpeed = wishspeed - currentspeed
+
+    // If not adding any, done.
+    if addSpeed <= 0.0 then
+        return velocity
+    end
+    
+    // Determine acceleration speed after acceleration
+    local accelspeed = acceleration * wishspeed * time
+    
+    // Cap it
+    if accelspeed > addSpeed then
+        accelspeed = addSpeed
+    end
+    
+    wishdir:Scale(accelspeed)
+    
+    // Add to velocity
+    velocity:Add(wishdir)
+    
+    return velocity
+end
+
+function CustomGroundMoveMixin:ShouldClampAirVeer()
+    return true
+end
+
+function CustomGroundMoveMixin:AirAccelerate(velocity, time, wishdir, wishspeed, acceleration)
+    if wishspeed > self:GetMaxAirVeer() and self:ShouldClampAirVeer() then
+        wishspeed = self:GetMaxAirVeer()
+    end
+    return self:Accelerate(velocity, time, wishdir, wishspeed, acceleration)
+end
+
+local function DoStepMove(self, input, velocity, time)
+    
+    local oldOrigin = Vector(self:GetOrigin())
+    local oldVelocity = Vector(velocity)
+    local success = false
+    local stepAmount = 0
+    
+    // step up at first
+    self:PerformMovement(Vector(0, self:GetStepHeight(), 0), 1)
+    stepAmount = self:GetOrigin().y - oldOrigin.y
+    // do the normal move
+    local startOrigin = Vector(self:GetOrigin())
+    local completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(velocity * time, 3, velocity, true)
+    local horizMoveAmount = (startOrigin - self:GetOrigin()):GetLengthXZ()
+    
+    if completedMove then
+        // step down again
+        local completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(Vector(0, -stepAmount - horizMoveAmount * kDownSlopeFactor, 0), 1)
+        
+        local onGround, normal = self:GetIsCloseToGround(0.15)
+        
+        if onGround then
+            success = true
+        end
+
+    end    
+        
+    // not succesful. fall back to normal move
+    if not success then
+    
+        self:SetOrigin(oldOrigin)
+        VectorCopy(oldVelocity, velocity)
+        self:PerformMovement(velocity * time, 3, velocity, true)
+        
+    end
+
+    return success
+
+end
+
+function CustomGroundMoveMixin:GetHasCollisionDetection()
+    return true
+end
+
+local function CollisionEnabledPositionUpdate(self, input, velocity, time)
+    local oldVelocity = Vector(velocity)
+    local stepAllowed = self.onGround and self:GetCanStep()
+    local didStep = false
+    local stepAmount = 0
+    local hitObstacle = false
+
+    // check if we are allowed to step:
+    local completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(velocity * time * 2, 3, nil, false)
+
+    if stepAllowed and hitEntities then
+    
+        for i = 1, #hitEntities do
+            if not self:GetCanStepOver(hitEntities[i]) then
+            
+                hitObstacle = true
+                stepAllowed = false
+                break
+                
+            end
+        end
+    
+    end
+    
+    if not stepAllowed then
+    
+        if hitObstacle then
+            velocity.y = oldVelocity.y
+        end
+        
+        self:PerformMovement(velocity * time, 3, velocity, true)
+        
+    else        
+        didStep, stepAmount = DoStepMove(self, input, velocity, time)            
+    end
+    
+    if self.OnPositionUpdated then
+        self:OnPositionUpdated(self:GetOrigin() - self.prevOrigin, stepAllowed, input, velocity)
+    end
+end
+
+local function CollisionDisabledPositionUpdate(self, input, velocity, time)    
+    self:UpdateControllerFromEntity()
+    self.controller:SetPosition(self:GetOrigin() + (velocity * time))
+    self:UpdateOriginFromController()
+end
+
+function CustomGroundMoveMixin:UpdatePosition(input, velocity, time)
+
+    PROFILE("CustomGroundMoveMixin:UpdatePosition")
+    
+    if self.controller then
+    
+        if self:GetHasCollisionDetection() then
+            CollisionEnabledPositionUpdate(self, input, velocity, time)
+        else
+            CollisionDisabledPositionUpdate(self, input, velocity, time)
+        end
+        
+    end
+    
+end
+
 // Update origin and velocity from input.
 function CustomGroundMoveMixin:UpdateMove(input)
 
@@ -391,17 +541,17 @@ function CustomGroundMoveMixin:UpdateMove(input)
     
     // Apply second half of the gravity
     self:ApplyHalfGravity(input, velocity, time)
- 
-    self:UpdatePosition(input, velocity, time)
     
     if self.ModifyVelocity then
         self:ModifyVelocity(input, velocity, time)
     end
     
+    self:UpdatePosition(input, velocity, time)
+    
     if not self:GetWithinJumpWindow() then
         self:UpdateOnGroundState(previousVelocity)
     end
-    
+   
     // Store new velocity
     self:SetVelocity(velocity)
     
@@ -434,6 +584,47 @@ function CustomGroundMoveMixin:PreventMegaBunnyJumping(velocity)
             velocity:Scale(fraction)
         end
     end
+end
+
+function CustomGroundMoveMixin:HandleJump(input, velocity)
+
+    if bit.band(input.commands, Move.Jump) ~= 0 and not self:GetIsJumpHandled() then
+    
+        if self.OverrideJump then
+            self:OverrideJump(input, velocity)
+        else
+            if self:GetCanJump() then
+            
+                self:PreventMegaBunnyJumping(velocity)
+                self:GetJumpVelocity(input, velocity)
+                
+                if self.GetPlayJumpSound and self:GetPlayJumpSound() and self.TriggerJumpEffects then
+                    self:TriggerJumpEffects()
+                end
+                
+                self:UpdateLastJumpTime()
+                self:SetIsOnGround(false)
+                self:SetIsJumping(true)
+                
+                if self.OnJump then
+                    self:OnJump()
+                end
+                
+                if self:GetJumpMode() == kJumpMode.Repeating then
+                    self:SetIsJumpHandled(false)
+                else
+                    self:SetIsJumpHandled(true)
+                end
+                
+            elseif self:GetJumpMode() == kJumpMode.Default then
+            
+                self:SetIsJumpHandled(true)
+                
+            end
+        end
+        
+    end
+    
 end
 
 function CustomGroundMoveMixin:SplineFraction(value, scale)

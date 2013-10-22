@@ -45,6 +45,7 @@ local kExoHealViewMaterialName = "cinematics/vfx_materials/heal_exo_view.materia
 local kCrouchShrinkAmount = 0
 local kExtentsCrouchShrinkAmount = 0
 local kViewOffsetHeight = 2.3
+local kExoScale = 0.75
 
 local kThrustersCooldownTime = 0
 local kThrusterDuration = 5
@@ -150,6 +151,14 @@ function Exo:OnInitialized()
         
     end
     
+end
+
+function Exo:GetVariantModel()
+    local modelName = kDualModelName    
+    if self.layout == "RailgunRailgun" then
+        modelName = kDualRailgunModelName
+    end
+    return modelName
 end
 
 function Exo:GetPlayerControllersGroup()
@@ -408,6 +417,8 @@ end
 local kUpVector = Vector(0, 1, 0)
 function Exo:ModifyVelocity(input, velocity, deltaTime)
 
+    PROFILE("Exo:ModifyVelocity")
+    
     if self.thrustersActive then
     
         if self.thrusterMode == kExoThrusterMode.Vertical then   
@@ -475,6 +486,14 @@ function Exo:GetFuel()
     
     return self.fuelFraction
         
+end
+
+function Exo:OnAdjustModelCoords(modelCoords)
+    local coords = modelCoords
+    coords.xAxis = coords.xAxis * kExoScale
+    coords.yAxis = coords.yAxis * kExoScale
+    coords.zAxis = coords.zAxis * kExoScale
+    return coords
 end
 
 function Exo:OnUpdateAnimationInput(modelMixin)

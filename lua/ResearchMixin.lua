@@ -57,9 +57,7 @@ function ResearchMixin:UpdateResearch(deltaTime)
         if GetGamerules():GetAutobuild() then
             researchDuration = math.min(0.5, researchDuration)
         end
-        
-        researchDuration = researchDuration * kResearchMod
-        
+
         // avoid division with 0
         researchDuration = math.max(researchDuration, 0.01)
         

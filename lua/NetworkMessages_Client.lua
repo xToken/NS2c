@@ -140,21 +140,6 @@ function OnCommandWorldText(message)
     
 end
 
-function OnCommandRecieveHiveInfo(hiveinfo)
-
-    local player = Client.GetLocalPlayer()
-    if player:isa("Alien") then
-        hiveinfo.time = Shared.GetTime()
-        if player.hivesinfo == nil then
-            player.hivesinfo = { } 
-        end
-        if player.hivesinfo == { } or player.hivesinfo[hiveinfo.key] ~= hiveinfo then
-            player.hivesinfo[hiveinfo.key] = hiveinfo
-        end
-    end
-    
-end
-
 function OnCommandCommanderError(message)
 
     local messageStr = Locale.ResolveString(message.data)
@@ -257,6 +242,12 @@ local function OnCommandCameraShake(message)
 
 end
 
+local function OnMessagePointsUpdate(message)
+    ScoreDisplayUI_SetNewScore(message.points, message.res)
+end
+
+Client.HookNetworkMessage("PointsUpdate", OnMessagePointsUpdate)
+
 Client.HookNetworkMessage("AutoConcedeWarning", OnMessageAutoConcedeWarning)
 
 Client.HookNetworkMessage("Ping", OnCommandPing)
@@ -278,7 +269,6 @@ Client.HookNetworkMessage("DebugLine", OnCommandDebugLine)
 Client.HookNetworkMessage("DebugCapsule", OnCommandDebugCapsule)
 
 Client.HookNetworkMessage("WorldText", OnCommandWorldText)
-Client.HookNetworkMessage("HiveInfo", OnCommandRecieveHiveInfo)
 Client.HookNetworkMessage("CommanderError", OnCommandCommanderError)
 
 Client.HookNetworkMessage("VoteConcedeCast", OnVoteConcedeCast)

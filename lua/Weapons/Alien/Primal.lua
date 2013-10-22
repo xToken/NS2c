@@ -83,10 +83,6 @@ function Primal:GetLastAttackTime()
     return self.lastPrimaryAttackTime
 end
 
-function Primal:GetDeathIconIndex()
-    return kDeathMessageIcon.Bite
-end
-
 function Primal:OnPrimaryAttack(player)
 
     if player:GetEnergy() >= self:GetEnergyCost()  and not self:GetHasAttackDelay(player) then

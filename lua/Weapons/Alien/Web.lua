@@ -198,10 +198,10 @@ function Web:GetSendDeathMessageOverride()
 end
 
 function Web:ComputeDamageOverride(attacker, damage, damageType, hitPoint) 
-    if damageType == kDamageType.Flame or damageType == kDamageType.Structural then
-        return damage
+    if not (damageType == kDamageType.Flame or damageType == kDamageType.Structural) then
+        return 0
     end
-    return 0
+    return damage
 end
 
 if Client then

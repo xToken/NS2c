@@ -29,7 +29,7 @@ local networkVars =
     loopingSoundEntId = "entityid"
 }
 
-local kWeldRange = 1.4
+local kWeldRange = 2.0
 
 local kWelderEffectRate = 1.0
 
@@ -229,7 +229,7 @@ function Welder:PerformWeld(player)
             if target:GetHealthScalar() < 1 then
                 
                 local prevHealthScalar = target:GetHealthScalar()
-                target:OnWeld(self, kWelderFireDelay)
+                target:OnWeld(self, kWelderFireDelay, player)
                 success = prevHealthScalar ~= target:GetHealthScalar()
             
             end
@@ -250,6 +250,10 @@ end
 
 function Welder:GetShowDamageIndicator()
     return true
+end
+
+function Welder:GetDamageType()
+    return kWelderDamageType
 end
 
 function Welder:OnUpdateAnimationInput(modelMixin)

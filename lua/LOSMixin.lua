@@ -132,15 +132,15 @@ if Server then
             return false
         end
         
-        if entity:isa("Alien") then
+        //if entity:isa("Alien") then
             //Ghost adds a chance to 'evade' detection
-            local hasupg, level = GetHasGhostUpgrade(entity)
-            if hasupg and level > 0 then
-                if math.random(1, 100) <= (level * kGhostMinimapDodgePerLevel) then
-                    return false
-                end
-            end
-        end
+            //local hasupg, level = GetHasGhostUpgrade(entity)
+            //if hasupg and level > 0 then
+                //if math.random(1, 100) <= (level * kGhostMinimapDodgePerLevel) then
+                    //return false
+                //end
+            //end
+        //end
         
         // Check if this entity is beyond our vision radius.
         local maxDist = viewer:GetVisionRadius()
