@@ -21,6 +21,7 @@ Script.Load("lua/Weapons/Alien/Spikes.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/WallMovementMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/LerkVariantMixin.lua")
 
 class 'Lerk' (Alien)
 
@@ -75,11 +76,13 @@ local networkVars =
 }
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
+AddMixinNetworkVars(LerkVariantMixin, networkVars)
 
 function Lerk:OnCreate()
 
     InitMixin(self, CameraHolderMixin, { kFov = kLerkFov })
     InitMixin(self, WallMovementMixin)
+    InitMixin(self, LerkVariantMixin)
     
     Alien.OnCreate(self)
     
@@ -192,8 +195,7 @@ function Lerk:GetIsWallGripping()
     return self.wallGripTime ~= 0 
 end
 
-function Lerk:ReceivesFallDamage()
-    return false
+function Lerk:OnTakeFallDamage()
 end
 
 function Lerk:GetJumpMode()
@@ -500,7 +502,7 @@ function Lerk:PreUpdateMove(input, runningPrediction)
 end
 
 function Lerk:OnWorldCollision(normal)
-    if normal.y < 0.5 and not (self:GetCrouching() or self:GetCrouched()) and self.wallGripCheckEnabled then
+    if normal.y < 0.5 and not self:GetCrouching() and self.wallGripCheckEnabled then
         wallGripTime = Shared.GetTime()
     end
 end

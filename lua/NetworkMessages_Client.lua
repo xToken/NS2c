@@ -214,6 +214,11 @@ local function OnSetClientIndex(message)
 end
 Client.HookNetworkMessage("SetClientIndex", OnSetClientIndex)
 
+local function OnSetClientIndex(message)
+    Scoreboard_OnClientDisconnect(message.clientIndex)
+end
+Client.HookNetworkMessage("ClientDisconnect", OnSetClientIndex)
+
 local function OnSetServerHidden(message)
     Client.serverHidden = message.hidden
 end
@@ -223,6 +228,11 @@ local function OnSetClientTeamNumber(message)
     Client.localClientTeamNumber = message.teamNumber
 end
 Client.HookNetworkMessage("SetClientTeamNumber", OnSetClientTeamNumber)
+
+local function OnScoreUpdate(message)
+    ScoreDisplayUI_SetNewScore(message.points, message.res)
+end
+Client.HookNetworkMessage("ScoreUpdate", OnScoreUpdate)
 
 local function OnMessageAutoConcedeWarning(message)
 
@@ -241,12 +251,6 @@ local function OnCommandCameraShake(message)
     end
 
 end
-
-local function OnMessagePointsUpdate(message)
-    ScoreDisplayUI_SetNewScore(message.points, message.res)
-end
-
-Client.HookNetworkMessage("PointsUpdate", OnMessagePointsUpdate)
 
 Client.HookNetworkMessage("AutoConcedeWarning", OnMessageAutoConcedeWarning)
 

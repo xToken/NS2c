@@ -406,7 +406,7 @@ Server.HookNetworkMessage("SwitchFirstPersonSpectatePlayer", OnSwitchFirstPerson
 local function OnSetPlayerVariant(client, message)
 
     if client then
-
+    
         client.variantData = message
         
         local player = client:GetControllingPlayer()
@@ -419,7 +419,7 @@ local function OnSetPlayerVariant(client, message)
 end
 
 local function OnConnectMessage(client, message)
-    OnSetPlayerVariant( client, message )
+    OnSetPlayerVariant(client, message)
 end
 
 Server.HookNetworkMessage("SetPlayerVariant", OnSetPlayerVariant)

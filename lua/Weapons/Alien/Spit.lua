@@ -26,27 +26,6 @@ Spit.kRadius = 0.05
 
 AddMixinNetworkVars(TeamMixin, networkVars)
 
--- Disappear up after a time.
-local function UpdateLifetime(self)
-
-    // Grenades are created in predict movement, so in order to get the correct
-    // lifetime, we start counting our lifetime from the first UpdateLifetime rather than when
-    // we were created
-    if not self.endOfLife then
-        self.endOfLife = Shared.GetTime() + kSpitLifeTime
-    end
-
-    if self.endOfLife <= Shared.GetTime() then
-    
-        DestroyEntity(self)
-        return false
-        
-    end
-    
-    return true
-    
-end
-
 function Spit:OnCreate()
 
     PredictedProjectile.OnCreate(self)
@@ -55,25 +34,31 @@ function Spit:OnCreate()
     InitMixin(self, TeamMixin)
     
     if Server then
-        self:AddTimedCallback(UpdateLifetime, 0.1)
-        self.endOfLife = nil
+        self:AddTimedCallback(Spit.TimeUp, kSpitLifeTime)
     end
 
 end
 
+function Spit:TimeUp()
+
+    DestroyEntity(self)
+    return false
+    
+end
+
 function Spit:ProcessHit(targetHit, surface, normal)
 
-    if self:GetIsDestroyed() then
-        return true
-    end
-    if Server and self:GetOwner() ~= targetHit then
+    //TODO: create decal
+    
+    if Client or (Server and self:GetOwner() ~= targetHit) then
         self:DoDamage(kSpitDamage, targetHit, self:GetOrigin() + normal * kHitEffectOffset, self:GetCoords().zAxis, surface, false, false)
         if targetHit and targetHit:isa("Hive") and targetHit.OnSpitHit then
             targetHit:OnSpitHit()
         end
+	end
+
+    if Server then
         DestroyEntity(self) 
-    else
-        return true
     end
 
 end

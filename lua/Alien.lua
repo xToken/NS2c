@@ -391,6 +391,10 @@ function Alien:GetDeathMapName()
     return AlienSpectator.kMapName
 end
 
+function Alien:UpdateHealthAmount()
+    return
+end
+
 // Returns the name of the player's lifeform
 function Alien:GetPlayerStatusDesc()
 

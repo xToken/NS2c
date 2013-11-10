@@ -10,7 +10,7 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 //NS2c
-//Removed AlienComm references, added resources clear.
+//Removed AlienComm references.
 
 Script.Load("lua/Team.lua")
 Script.Load("lua/TeamDeathMessageMixin.lua")
@@ -49,13 +49,6 @@ function ReadyRoomTeam:GetRespawnMapName(player)
     end
     return mapName
     
-end
-
-function ReadyRoomTeam:ResetTeam()
-    local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
-    for p = 1, #players do
-        player:SetResources(0)
-    end
 end
 
 /**

@@ -10,10 +10,6 @@
 //NS2c
 //Changed debugspeed to not require cheats
 
-function OnCommandOnClientDisconnect(clientIndexString)
-    Scoreboard_OnClientDisconnect(tonumber(clientIndexString))
-end
-
 function OnCommandSoundGeometry(enabled)
 
     enabled = enabled ~= "false"
@@ -217,7 +213,6 @@ local function OnCommandDebugNotifications()
     
 end
 
-Event.Hook("Console_clientdisconnect", OnCommandOnClientDisconnect)
 Event.Hook("Console_soundgeometry", OnCommandSoundGeometry)
 Event.Hook("Console_oneffectdebug", OnCommandEffectDebug)
 Event.Hook("Console_debugtext", OnCommandDebugText)

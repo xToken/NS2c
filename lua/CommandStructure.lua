@@ -99,6 +99,10 @@ function CommandStructure:GetIsOccupied()
     return self.occupied
 end
 
+function CommandStructure:UpdateCommanderLogin()
+    return
+end
+
 function CommandStructure:GetEffectParams(tableParams)
     tableParams[kEffectFilterOccupied] = self.occupied
 end

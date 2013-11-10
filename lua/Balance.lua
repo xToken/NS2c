@@ -420,7 +420,7 @@ kDevourMeleeBaseHeight = 0.7
 
 kStompEnergyCost = 30
 kStompRange = 12
-kStunMarineTime = 2.5
+kStunMarineTime = 2.0
 kStompDamage = 20
 kStompDamageType = kDamageType.Normal
 kShockwaveRadius = 2.5
@@ -449,3 +449,15 @@ kAlienMinSpawnInterval = 6
 kAlienMaxSpawnInterval = 8
 kAlienEggSpawnTime = 6
 kAlienEggsPerHive = 10
+
+//Combat Times
+kAlienCombatBaseSpawnInterval = 8
+kAlienCombatSpawnIntervalPerPlayer = 0.166
+kAlienCombatMinSpawnInterval = 6
+kAlienCombatMaxSpawnInterval = 8
+kAlienRespawnsPerWave = 5
+kMarineCombatBaseSpawnInterval = 8
+kMarineCombatSpawnIntervalPerPlayer = 0.166
+kMarineCombatMinSpawnInterval = 6
+kMarineCombatMaxSpawnInterval = 8
+kMarineRespawnsPerWave = 5

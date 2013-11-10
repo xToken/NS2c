@@ -303,19 +303,20 @@ function Armory:OnUpdate(deltaTime)
     
 end
 
+function Armory:GetRequiresPower()
+    return false
+end
+
+function Armory:OnUse()
+    return false
+end
+
 function Armory:GetReceivesStructuralDamage()
     return true
 end
 
 function Armory:GetDamagedAlertId()
     return kTechId.MarineAlertStructureUnderAttack
-end
-
-function Armory:OnUpdateAnimationInput(modelMixin)
-
-    PROFILE("Armory:OnUpdateAnimationInput")
-	modelMixin:SetAnimationInput("powered", true)
-    
 end
 
 Shared.LinkClassToMap("Armory", Armory.kMapName, networkVars)

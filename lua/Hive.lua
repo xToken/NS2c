@@ -168,6 +168,9 @@ function Hive:OnCollision(entity)
     
 end
 
+function Hive:SetInfestationFullyGrown()
+end
+
 function GetIsHiveTypeResearch(techId)
     return techId == kTechId.UpgradeToCragHive or techId == kTechId.UpgradedToShadeHive or techId == kTechId.UpgradeToShiftHive or techId == kTechId.UpgradeToWhipHive
 end

@@ -125,6 +125,16 @@ local function RemoveGorgeStructureFromClient(self, techId, clientId)
     
 end
 
+local function ApplyGorgeStructureTheme(structure, player)
+
+    assert(player:isa("Gorge"))
+    
+    if structure.SetVariant then
+        structure:SetVariant(player:GetVariant())
+    end
+    
+end
+
 function AlienTeam:AddGorgeStructure(player, structure)
 
     if player ~= nil and structure ~= nil then
@@ -145,6 +155,8 @@ function AlienTeam:AddGorgeStructure(player, structure)
         
         table.insertunique(structureTypeTable[techId], structureId)
         
+		ApplyGorgeStructureTheme(structure, player)
+
         local numAllowedStructure = LookupTechData(techId, kTechDataMaxAmount, -1)
         if numAllowedStructure <= 0 then
             numAllowedStructure = kMaxGorgeOwnedStructures
@@ -177,7 +189,7 @@ end
 function AlienTeam:GetNumDroppedGorgeStructures(player, techId)
 
     local structureTypeTable = self:GetDroppedGorgeStructures(player, techId)
-    return (not structureTypeTable and 0) or #structureTypeTable
+    return (not structureTypeTable and 0) or table.count(structureTypeTable)
     
 end
 
@@ -238,6 +250,18 @@ function AlienTeam:GetOverflowResources()
     return self.overflowres
 end
 
+function AlienTeam:GetMaxBioMassLevel()
+    return 1
+end
+
+function AlienTeam:GetStartingResources()
+	return kAlienTeamInitialRes
+end
+
+function AlienTeam:GetBioMassLevel()
+    return 1
+end
+
 function AlienTeam:AddOverflowResources(extraRes)
     if extraRes > 0 then
         self.overflowres = self.overflowres + (math.floor(extraRes * 100) / 100)
@@ -273,7 +297,7 @@ function AlienTeam:Update(timePassed)
 
     PROFILE("AlienTeam:Update")
     
-    if GetGamerules():GetGameStarted() then
+    if GetGamerules():GetGameStarted() and CheckNS2GameMode() == kGameMode.Classic then
         CheckUnassignedHives(self)
         self:UpdateTeamAutoHeal(timePassed)
         self:UpdatePingOfDeath()
@@ -281,6 +305,7 @@ function AlienTeam:Update(timePassed)
     end
     
     PlayingTeam.Update(self, timePassed)
+    
     self:UpdateRespawn()
     
 end
@@ -301,7 +326,7 @@ function AlienTeam:UpdatePingOfDeath()
         for index, alien in ipairs(GetEntitiesForTeam("Alien", self:GetTeamNumber())) do
             if alien:GetIsAlive() then
                 local damage = math.max(0, alien:GetMaxHealth() * (kPingOfDeathDamagePercent / 100))
-                alien:TakeDamage(damage, alien, alien, alien:GetOrigin(), nil, 0, damage, kDamageType.Falling)
+                alien:TakeDamage(damage, alien, alien, alien:GetOrigin(), nil, 0, damage, kDamageType.Falling, true)
                 StartSoundEffectForPlayer(AlienTeam.kPingSound, alien)
             end
         end
@@ -627,6 +652,11 @@ function AlienTeam:GetSpectatorMapName()
     return AlienSpectator.kMapName
 end
 
+function AlienTeam:GetNumHives()
+    local hives = GetEntitiesForTeam("Hive", self:GetTeamNumber())
+    return table.count(hives)
+end
+
 function AlienTeam:AwardResources(resAward, pointOwner)
 
     resAward = resAward - pointOwner:AwardResForKill(resAward)
@@ -737,7 +767,7 @@ function AlienTeam:UpdateRespawn()
         self.timeLastSpawnCheck = Shared.GetTime()
     end
     //Dont check spawn every frame cause thats pretty dumb
-    if time > (self.timeLastSpawnCheck + AlienTeam.kSpawnScanInterval) then
+    if time > (self.timeLastSpawnCheck + AlienTeam.kSpawnScanInterval) and CheckNS2GameMode() == kGameMode.Classic then
         local hives = GetEntitiesForTeam("Hive", self:GetTeamNumber())
         for _, hive in ipairs(hives) do
             if hive:GetIsBuilt() and hive:GetIsAlive() then

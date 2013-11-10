@@ -223,7 +223,7 @@ local function GetCanSpawnEgg(self)
 
     local canSpawnEgg = false
     
-    if self:GetIsBuilt() then
+    if self:GetIsBuilt() and CheckNS2GameMode() == kGameMode.Classic then
     
         if Shared.GetTime() > (self.timeOfLastEgg + GetEggSpawnTime(self)) then    
             canSpawnEgg = true

@@ -602,9 +602,11 @@ local function OnUpdateClient(deltaTime)
     
         local marineVariant = Client.GetOptionInteger("marineVariant", kDefaultMarineVariant)
         local skulkVariant = Client.GetOptionInteger("skulkVariant", kDefaultSkulkVariant)
+        local gorgeVariant = Client.GetOptionInteger("gorgeVariant", kDefaultGorgeVariant)
+        local lerkVariant = Client.GetOptionInteger("lerkVariant", kDefaultLerkVariant)
         local isMale = Client.GetOptionString("sexType", "Male") == "Male"
         Client.SendNetworkMessage("ConnectMessage",
-                BuildConnectMessage(isMale, marineVariant, skulkVariant),
+                BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, lerkVariant),
                 true)
         optionsSent = true
         

@@ -759,7 +759,9 @@ function PlayerUI_GetCrosshairY()
 end
 
 function PlayerUI_GetCrosshairDamageIndicatorY()
+
     return 8 * 64
+    
 end
 
 /**
@@ -1697,6 +1699,7 @@ end
 function Player:GetDrawWorld(isLocal)
     return not self:GetIsLocalPlayer() or self:GetIsThirdPerson() or ((self.countingDown and not Shared.GetCheatsEnabled()) and self:GetTeamNumber() ~= kNeutralTeamType)
 end
+
 // Only called when not running prediction
 function Player:UpdateClientEffects(deltaTime, isLocal)
 

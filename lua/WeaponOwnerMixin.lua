@@ -24,7 +24,6 @@ WeaponOwnerMixin.expectedConstants =
     kStowedWeaponWeightScalar = "How much a stowed weapon influences the total weight."
 }
 
-// lets assume you can't carry more than 20 rifles in weight. Seems reasonable
 local kMaxWeaponsWeight = 0.3
 
 WeaponOwnerMixin.networkVars =

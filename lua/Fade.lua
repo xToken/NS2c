@@ -121,9 +121,9 @@ function Fade:ModifyCrouchAnimation(crouchAmount)
     return Clamp(crouchAmount * (1 - ( (self:GetVelocityLength() - kMaxSpeed) / (kMaxSpeed * 0.5))), 0, 1)
 end
 
-function Fade:GetExtentsCrouchShrinkAmount()
-    return ConditionalValue(self:GetIsOnGround(), Player.GetExtentsCrouchShrinkAmount(self), 0)
-end
+/*function Fade:GetExtentsCrouchShrinkAmount()
+    return ConditionalValue(self:GetIsOnGround() or not self:GetPreventCrouchExtents(), Player.GetExtentsCrouchShrinkAmount(self), 0)
+end*/
 
 function Fade:GetMaxViewOffsetHeight()
     return kViewOffsetHeight
@@ -141,8 +141,7 @@ function Fade:GetIsForwardOverrideDesired()
     return not self:GetIsBlinking() and not self:GetIsOnGround()
 end
 
-function Fade:ReceivesFallDamage()
-    return false
+function Fade:OnTakeFallDamage()
 end
 
 function Fade:GetMaxSpeed(possible)
@@ -157,7 +156,7 @@ function Fade:GetMaxSpeed(possible)
         maxSpeed = kWalkSpeed
     end
     
-    if self:GetCrouched() and self:GetIsOnSurface() and not self:GetLandedRecently() then
+    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnSurface() and not self:GetLandedRecently() then
         maxSpeed = kCrouchedSpeed
     end
         
@@ -179,6 +178,28 @@ function Fade:OnBlink()
     self:TriggerEffects("blink_out")
 end
 
+local function GetIsCloseToGround(self, distance)
+        
+    local onGround = false
+    local normal = Vector()
+    local completedMove, hitEntities = nil
+
+    if self.controller ~= nil then
+        // Try to move the controller downward a small amount to determine if
+        // we're on the ground.
+        local offset = Vector(0, -distance, 0)
+        // need to do multiple slides here to not get traped in V shaped spaces
+        completedMove, hitEntities, normal = self:PerformMovement(offset, 3, nil, false)
+        
+        if normal and normal.y >= 0.5 then
+            return true
+        end
+    end
+
+    return false
+    
+end
+
 function Fade:ModifyVelocity(input, velocity, deltaTime)
 
     PROFILE("Fade:ModifyVelocity")
@@ -189,7 +210,7 @@ function Fade:ModifyVelocity(input, velocity, deltaTime)
         local zAxis = self:GetViewCoords().zAxis
         velocity:Add( zAxis * kBlinkImpulseForce * deltaTime )
         
-        if self:GetIsOnGround() or self:GetIsCloseToGround(kFadeBlinkAutoJumpGroundDistance) then
+        if self:GetIsOnGround() or GetIsCloseToGround(self, kFadeBlinkAutoJumpGroundDistance) then
             self:GetJumpVelocity(input, velocity)
         end
         

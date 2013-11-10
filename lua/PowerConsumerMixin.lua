@@ -21,6 +21,10 @@ function PowerConsumerMixin:__initmixin()
 	self.deployonpower = false
 end
 
+function PowerConsumerMixin:GetRequiresPower()
+	return false
+end
+
 if Server then
     
     local function Deploy(self)
@@ -53,14 +57,5 @@ function PowerConsumerMixin:OnUpdateAnimationInput(modelMixin)
     PROFILE("PowerConsumerMixin:OnUpdateAnimationInput")
 	local powered = (self.GetRequiresPower and self:GetRequiresPower() and self:GetIsPowered()) or true
     modelMixin:SetAnimationInput("powered", powered)
-    
-end
-
-function PowerConsumerMixin:OnUpdateRender()
-
-	if self.lastpoweredeffecttime + kPoweredEffectsInterval < Shared.GetTime() and ((self.GetRequiresPower and self:GetRequiresPower() and self:GetIsPowered()) or true) then
-		self:TriggerEffects("power_surge")
-		self.lastpoweredeffecttime = Shared.GetTime()
-	end
     
 end

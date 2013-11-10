@@ -25,6 +25,7 @@ class 'BabblerEgg' (ScriptActor)
 BabblerEgg.kMapName = "babbleregg"
 
 BabblerEgg.kModelName = PrecacheAsset("models/alien/babbler/babbler_egg.model")
+BabblerEgg.kModelNameShadow = PrecacheAsset("models/alien/babbler/babbler_egg_shadow.model")
 local kAnimationGraph = PrecacheAsset("models/alien/babbler/babbler_egg.animation_graph")
 
 local networkVars = { }
@@ -69,6 +70,16 @@ function BabblerEgg:OnInitialized()
     
 end
 
+function BabblerEgg:SetVariant(gorgeVariant)
+
+    if gorgeVariant == kGorgeVariant.shadow then
+        self:SetModel(BabblerEgg.kModelNameShadow, kAnimationGraph)
+    else
+        self:SetModel(BabblerEgg.kModelName, kAnimationGraph)
+    end
+    
+end
+
 if Server then
 
     local kVerticalOffset = 0.3
@@ -81,22 +92,29 @@ if Server then
         Vector(0.3, kVerticalOffset, 0),
         Vector(-0.3, kVerticalOffset, 0),    
     }
-
-    function BabblerEgg:OnConstructionComplete()
-
-        // disables also collision
-        self:SetModel(nil)       
-        self:TriggerEffects("babbler_hatch")
     
+    function BabblerEgg:OnConstructionComplete()
+    
+        -- Disables also collision.
+        self:SetModel(nil)
+        self:TriggerEffects("babbler_hatch")
+        
+        local owner = self:GetOwner()
+        
         for i = 1, kNumBabblersPerEgg do
         
             local babbler = CreateEntity(Babbler.kMapName, self:GetOrigin() + kBabblerSpawnPoints[i], self:GetTeamNumber())
-            babbler:SetOwner(self:GetOwner())
+            babbler:SetOwner(owner)
             babbler:SetSilenced(self.silenced)
-            table.insert(self.trackingBabblerId, babbler:GetId() )
-        
+            
+            if owner and owner:isa("Gorge") then
+                babbler:SetVariant(owner:GetVariant())
+            end
+            
+            table.insert(self.trackingBabblerId, babbler:GetId())
+            
         end
-    
+        
     end
     
     function BabblerEgg:GetCanTakeDamage()

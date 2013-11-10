@@ -127,6 +127,7 @@ function Skulk:OnInitialized()
     end
     
     self.leaping = false
+    self.timeOfLeap = 0
     
 end
 
@@ -164,33 +165,37 @@ end
 
 // required to trigger wall walking animation
 function Skulk:GetIsJumping()
-    return CustomGroundMoveMixin.GetIsJumping(self) and not self.wallWalking
+    return CoreMoveMixin.GetIsJumping(self) and not self.wallWalking
 end
 
-function Skulk:OnLeap()
+function Skulk:ModifyVelocity(input, velocity, deltaTime)
 
-    local velocity = self:GetVelocity()
-    //local minSpeed = math.max(0, kMinLeapVelocity - velocity:GetLengthXZ() - kLeapVerticalForce) * self:GetMovementSpeedModifier()
+    PROFILE("Skulk:ModifyVelocity")
 
-    local forwardVec = self:GetViewAngles():GetCoords().zAxis
-    local newVelocity = velocity + (GetNormalizedVector(forwardVec) * (kLeapForce))
-    
-    local moveSpeed = newVelocity:GetLengthXZ()
-    if moveSpeed > kMaxLeapSpeed + self:GetMovementSpeedModifier() then
-        newVelocity:Scale((kMaxLeapSpeed + self:GetMovementSpeedModifier()) / moveSpeed)
+    if not self:GetIsLeaping() and self.timeOfLeap ~= 0 then
+
+        local forwardVec = self:GetViewAngles():GetCoords().zAxis
+        velocity:Add(GetNormalizedVector(forwardVec) * (kLeapForce))
+        
+        local moveSpeed = velocity:GetLengthXZ()
+        if moveSpeed > kMaxLeapSpeed + self:GetMovementSpeedModifier() then
+            velocity:Scale((kMaxLeapSpeed + self:GetMovementSpeedModifier()) / moveSpeed)
+        end
+        
+        if self:GetIsOnGround() then
+            velocity.y = self:GetJumpForce()
+        end
+
+        self.wallWalkingEnabled = false
+        self:SetIsOnGround(false)
+        self.leaping = true
+        
     end
     
-    if self:GetIsOnGround() then
-        newVelocity.y = self:GetJumpForce()
-    end
-    
-    self:SetVelocity(newVelocity)
-    
-    self.leaping = true
-    self.wallWalkingEnabled = false
-    self:SetIsOnGround(false)
+end
+
+function Skulk:OnLeap()    
     self.timeOfLeap = Shared.GetTime()
-    
 end
 
 function Skulk:GetCanCrouch()
@@ -202,7 +207,7 @@ function Skulk:GetRecentlyWallJumped()
 end
 
 function Skulk:GetCanWallJump()
-    return not self:GetRecentlyWallJumped() and not (self:GetCrouching() or self:GetCrouched()) and (self:GetIsWallWalking() or (not self:GetIsOnGround() and self:GetAverageWallWalkingNormal(kJumpWallRange, kJumpWallFeelerSize) ~= nil))
+    return not self:GetRecentlyWallJumped() and not self:GetCrouching() and (self:GetIsWallWalking() or (not self:GetIsOnGround() and self:GetAverageWallWalkingNormal(kJumpWallRange, kJumpWallFeelerSize) ~= nil))
 end
 
 function Skulk:GetViewModelName()
@@ -221,8 +226,7 @@ function Skulk:GetIsLeaping()
     return self.leaping
 end
 
-function Skulk:ReceivesFallDamage()
-    return false
+function Skulk:OnTakeFallDamage()
 end
 
 // Skulks do not respect ladders due to their wall walking superiority.
@@ -231,7 +235,7 @@ function Skulk:GetIsOnLadder()
 end
 
 function Skulk:GetIsWallWalkingPossible() 
-    return not (self:GetCrouching() or self:GetCrouched())
+    return not self:GetCrouching()
 end
 
 local function PredictGoal(self, velocity)
@@ -242,7 +246,7 @@ local function PredictGoal(self, velocity)
         local movementDir = GetNormalizedVector(velocity)
         local completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(movementDir * 2.5, 3, nil, false)
 
-        if averageSurfaceNormal then        
+        if averageSurfaceNormal and (not hitEntities or #hitEntities == 0) then        
             goal = averageSurfaceNormal    
         end
 
@@ -310,7 +314,7 @@ function Skulk:PreUpdateMove(input, runningPrediction)
 
     PROFILE("Skulk:PreUpdateMove")
     
-    if self:GetCrouching() or self:GetCrouched() then
+    if self:GetCrouching() then
         self.wallWalking = false
     end
 
@@ -338,6 +342,7 @@ function Skulk:PreUpdateMove(input, runningPrediction)
     
     if self.leaping and (self:GetIsOnGround() or self.wallWalking) and (Shared.GetTime() > self.timeOfLeap + kLeapTime) then
         self.leaping = false
+        self.timeOfLeap = 0
     end
     
     self.currentWallWalkingAngles = self:GetAnglesFromWallNormal(PredictGoal(self, self:GetVelocity()) or Vector.yAxis) or self.currentWallWalkingAngles
@@ -378,12 +383,15 @@ function Skulk:GetMass()
     return kMass
 end
 
-function Skulk:GetGravityAllowed()
-    return Player.GetGravityAllowed(self) and not self:GetIsWallWalking()
+function Skulk:AdjustGravityForce(input, gforce)
+    if self:GetIsOnLadder() or self:GetIsOnGround() or self:GetIsWallWalking() then
+        gforce = 0
+    end
+    return gforce
 end
 
 function Skulk:GetIsOnSurface()
-    return Alien.GetIsOnSurface(self) or (self:GetIsWallWalking() and not (self:GetCrouching() or self:GetCrouched()))
+    return Alien.GetIsOnSurface(self) or (self:GetIsWallWalking() and not self:GetCrouching())
 end
 
 function Skulk:GetIsForwardOverrideDesired()
@@ -425,7 +433,8 @@ end
 
 function Skulk:OnJump()
     self.wallWalking = false
-    self.wallWalkingEnabled = false    
+    self.wallWalkingEnabled = false
+    Player.OnJump(self)
 end
 
 function Skulk:GetBaseAttackSpeed()

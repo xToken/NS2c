@@ -217,7 +217,7 @@ function Welder:PerformWeld(player)
     local attackDirection = player:GetViewCoords().zAxis
     local success = false
     // prioritize friendlies
-    local didHit, target, endPoint, direction, surface = CheckMeleeCapsule(self, player, 0, self:GetRange(), nil, true, 1, PrioritizeDamagedFriends)
+    local didHit, target, endPoint, direction, surface = CheckMeleeCapsule(self, player, 0, self:GetRange(), nil, true, 1, PrioritizeDamagedFriends, nil, PhysicsMask.Flame)
     
     if didHit and target and HasMixin(target, "Live") then
         
@@ -294,7 +294,7 @@ function Welder:OnUpdateRender()
         
             local viewCoords = parent:GetViewCoords()
         
-            local trace = Shared.TraceRay(viewCoords.origin, viewCoords.origin + viewCoords.zAxis * self:GetRange(), CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterTwo(self, parent))
+            local trace = Shared.TraceRay(viewCoords.origin, viewCoords.origin + viewCoords.zAxis * self:GetRange(), CollisionRep.Damage, PhysicsMask.Flame, EntityFilterTwo(self, parent))
             if trace.fraction ~= 1 then
             
                 local coords = Coords.GetTranslation(trace.endPoint - viewCoords.zAxis * .1)

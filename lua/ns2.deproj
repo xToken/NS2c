@@ -163,13 +163,13 @@
     <filename>ConstructMixin.lua</filename>
   </file>
   <file>
+    <filename>Mixins\CoreMoveMixin.lua</filename>
+  </file>
+  <file>
     <filename>Crag.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\CragAbility.lua</filename>
-  </file>
-  <file>
-    <filename>Mixins\CustomGroundMoveMixin.lua</filename>
   </file>
   <file>
     <filename>DSPEffects.lua</filename>
@@ -292,6 +292,9 @@
     <filename>GUIMarineStatus.lua</filename>
   </file>
   <file>
+    <filename>GUIMinimapFrame.lua</filename>
+  </file>
+  <file>
     <filename>GUIMotionTrackingDisplay.lua</filename>
   </file>
   <file>
@@ -323,9 +326,6 @@
   </file>
   <file>
     <filename>GUIUtility.lua</filename>
-  </file>
-  <file>
-    <filename>Gamerules.lua</filename>
   </file>
   <file>
     <filename>GeneralEffects.lua</filename>
@@ -505,6 +505,9 @@
     <filename>Weapons\Marine\Minigun.lua</filename>
   </file>
   <file>
+    <filename>ModdedMixinUtility.lua</filename>
+  </file>
+  <file>
     <filename>NS2ConsoleCommands_Server.lua</filename>
   </file>
   <file>
@@ -518,12 +521,6 @@
   </file>
   <file>
     <filename>NS2cGameStrings.lua</filename>
-  </file>
-  <file>
-    <filename>NS2cGamerules.lua</filename>
-  </file>
-  <file>
-    <filename>NS2rGamerules.lua</filename>
   </file>
   <file>
     <filename>NetworkMessages.lua</filename>
@@ -568,6 +565,9 @@
     <filename>PlayerEffects.lua</filename>
   </file>
   <file>
+    <filename>PlayerRanking.lua</filename>
+  </file>
+  <file>
     <filename>Player_Client.lua</filename>
   </file>
   <file>
@@ -578,6 +578,9 @@
   </file>
   <file>
     <filename>PointGiverMixin.lua</filename>
+  </file>
+  <file>
+    <filename>PowerConsumerMixin.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\Primal.lua</filename>
@@ -626,9 +629,6 @@
   </file>
   <file>
     <filename>ScenarioHandler.lua</filename>
-  </file>
-  <file>
-    <filename>ScoringMixin.lua</filename>
   </file>
   <file>
     <filename>ScriptActor.lua</filename>

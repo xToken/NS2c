@@ -52,6 +52,19 @@ MarineCommander.kSelectSound = PrecacheAsset("sound/NS2.fev/marine/commander/sel
 
 local kHoverSound = PrecacheAsset("sound/NS2.fev/marine/commander/hover")
 
+function MarineCommander:OnCreate()
+
+    Commander.OnCreate(self)
+    
+    if Server then 
+        
+        local mask = bit.bor(kRelevantToReadyRoom, kRelevantToTeam1Unit, kRelevantToTeam1Commander)        
+        self:SetExcludeRelevancyMask(mask)    
+    
+    end
+
+end
+
 function MarineCommander:GetSelectionSound()
     return MarineCommander.kSelectSound
 end

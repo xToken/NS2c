@@ -42,42 +42,30 @@ function SiegeCannon:AcquireTarget()
     finaltarget = self.targetSelector:AcquireTarget()
     
     if finaltarget ~= nil and self:ValidateTargetPosition(finaltarget:GetOrigin()) then
-    
         self:GiveOrder(kTechId.Attack, finaltarget:GetId(), nil)
         self:SetMode(SiegeCannon.kMode.Targeting)
         self.targetPosition = finaltarget:GetOrigin()
-        self:SetTargetDirection(self.targetPosition)
-        
-    else
-    
-        self:ClearOrders()
-        self:SetMode(SiegeCannon.kMode.Active)
-        self.targetPosition = nil
-        
+        self:SetTargetDirection(self.targetPosition)        
     end
     
 end
 
 function SiegeCannon:SetMode(mode)
     
-    if self.mode ~= mode then
-    
-        local triggerEffectName = "sc_" .. string.lower(EnumToString(SiegeCannon.kMode, mode))        
-        self:TriggerEffects(triggerEffectName)
-        
+    if self.mode ~= mode then        
         self.mode = mode
-
     end
     
 end
 
 function SiegeCannon:OnPowerOn()
     self:SetMode(SiegeCannon.kMode.Active)
+    self.targetPosition = nil
     self:TriggerEffects("sc_deploying")
 end
 
 function SiegeCannon:OnPowerOff()
     self:SetMode(SiegeCannon.kMode.Inactive)
-    self:ClearOrders()
+    self.targetPosition = nil
     self:TriggerEffects("sc_inactive")
 end

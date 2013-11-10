@@ -92,12 +92,14 @@ function ParseSelectUnitMessage(message)
     return message.teamNumber, Shared.GetEntity(message.unitId), message.selected, message.keepSelection
 end
 
-function BuildConnectMessage(isMale, marineVariant, skulkVariant)
+function BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, lerkVariant)
 
     local t = { }
     t.isMale = isMale
     t.marineVariant = marineVariant
     t.skulkVariant = skulkVariant
+    t.gorgeVariant = gorgeVariant
+    t.lerkVariant = lerkVariant
     return t
     
 end
@@ -107,6 +109,8 @@ local kConnectMessage =
     isMale = "boolean",
     marineVariant = "enum kMarineVariant",
     skulkVariant = "enum kSkulkVariant",
+    gorgeVariant = "enum kGorgeVariant",
+    lerkVariant = "enum kLerkVariant",
 }
 Shared.RegisterNetworkMessage("ConnectMessage", kConnectMessage)
 
@@ -1044,18 +1048,18 @@ local kAutoConcedeWarning =
 }
 Shared.RegisterNetworkMessage("AutoConcedeWarning", kAutoConcedeWarning)
 
-local kPointsUpdateMessage =
+local kScoreUpdate =
 {
-    points = "integer",
-    res = "integer"
+    points = "integer (0 to " .. kMaxScore .. ")",
+    res = "integer (0 to " .. kMaxResources .. ")"
 }
-
-Shared.RegisterNetworkMessage("PointsUpdate", kPointsUpdateMessage)
+Shared.RegisterNetworkMessage("ScoreUpdate", kScoreUpdate)
 
 Shared.RegisterNetworkMessage("SpectatePlayer", { entityId = "entityid"})
 Shared.RegisterNetworkMessage("SwitchFromFirstPersonSpectate", { mode = "enum kSpectatorMode" })
 Shared.RegisterNetworkMessage("SwitchFirstPersonSpectatePlayer", { forward = "boolean" })
 Shared.RegisterNetworkMessage("SetClientIndex", { clientIndex = "integer" })
+Shared.RegisterNetworkMessage("ClientDisconnect", { clientIndex = "integer" })
 Shared.RegisterNetworkMessage("ServerHidden", { hidden = "boolean" })
 Shared.RegisterNetworkMessage("SetClientTeamNumber", { teamNumber = string.format("integer (-1 to %d)", kRandomTeamType) })
 Shared.RegisterNetworkMessage("WaitingForAutoTeamBalance", { waiting = "boolean" })

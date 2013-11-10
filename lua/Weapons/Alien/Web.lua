@@ -78,8 +78,10 @@ end
 function Web:OnInitialized()
 
     self:SetModel(Web.kModelName, kAnimationGraph)
-    self:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup)
     
+    self:SetPhysicsType(PhysicsType.Kinematic)
+    self:SetPhysicsGroup(PhysicsGroup.WebsGroup)  
+  
 end
 
 /*

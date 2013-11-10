@@ -1,4 +1,4 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
 // lua\Weapons\Alien\SwipeBlink.lua
 //
@@ -86,17 +86,10 @@ function SwipeBlink:OnPrimaryAttack(player)
     
 end
 
-// Claw attack, or blink if we're in that mode
-function SwipeBlink:PerformPrimaryAttack(player)
-
-    self.primaryAttacking = true    
-    return true
-    
-end
-
 function SwipeBlink:OnPrimaryAttackEnd()
     
     Blink.OnPrimaryAttackEnd(self)
+    
     self.primaryAttacking = false
     
 end
@@ -116,19 +109,16 @@ end
 function SwipeBlink:OnTag(tagName)
 
     PROFILE("SwipeBlink:OnTag")
-
-    if self.primaryAttacking and tagName == "start" then
     
-        local player = self:GetParent()
+    if self.primaryAttacking and tagName == "hit" then
+
+		local player = self:GetParent()
         if player then
             self.lastPrimaryAttackTime = Shared.GetTime()
             player:DeductAbilityEnergy(self:GetEnergyCost())
-            self:TriggerEffects("swipe_attack")
+            player:TriggerEffects("swipe_attack")
         end
-        
-    end
-    
-    if tagName == "hit" then
+
         self:PerformMeleeAttack()
     end
 
@@ -138,7 +128,7 @@ function SwipeBlink:PerformMeleeAttack()
 
     local player = self:GetParent()
     if player then
-        local didHit, hitObject, endPoint, surface = AttackMeleeCapsule(self, player, kSwipeDamage, self:GetRange(), nil, false, EntityFilterOneAndIsa(player, "Babbler"))
+        AttackMeleeCapsule(self, player, kSwipeDamage, self:GetRange(), nil, false, EntityFilterOneAndIsa(player, "Babbler"))
     end
     
 end

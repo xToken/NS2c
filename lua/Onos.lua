@@ -44,7 +44,9 @@ local kMass = 453 // Half a ton
 local kViewOffsetHeight = 2.5
 local kMomentumEffectTriggerDiff = 3
 local kMaxSpeed = 4.5
-local kMaxChargeSpeed = 10
+local kMaxChargeSpeed = 7
+local kBonusChargeSpeed = 3
+local kChargeAddSpeedTime = 2
 local kMaxWalkSpeed = 2
 local kChargeEnergyCost = 30
 local kChargeDelay = 0.1
@@ -70,7 +72,6 @@ function Onos:OnCreate()
     self.charging = true
     self.timeLastCharge = 0
     self.timeLastChargeEnd = 0
-    self.chargeSpeed = 0
     
     if Client then
         self:SetUpdates(true)
@@ -121,7 +122,6 @@ function Onos:EndCharge()
     //TriggerMomentumChangeEffects(self, surface, moveDirection, normal)
     
     self.charging = false
-    self.chargeSpeed = 0
     self.timeLastChargeEnd = Shared.GetTime()
 
 end
@@ -173,22 +173,13 @@ function Onos:EvolveAllowed()
     return true
 end
 
-function Onos:PostUpdateMove(input, runningPrediction)
-
-    if self.charging then
-    
-        local xzSpeed = self:GetVelocity():GetLengthXZ()
-        if xzSpeed > self.chargeSpeed then
-            self.chargeSpeed = xzSpeed
-        end    
-    
-    end
-
+function Onos:ChargeAmount()
+    return math.max((Shared.GetTime() - self.timeLastCharge) / kChargeAddSpeedTime, 1)
 end
 
 function Onos:TriggerCharge(move)
     
-    if not self.charging and self.timeLastChargeEnd + kChargeDelay < Shared.GetTime() and not self:GetCrouching() and not self:GetCrouched() and self:GetHasOneHive() and self:GetEnergy() > kStartChargeEnergyCost then
+    if not self.charging and self.timeLastChargeEnd + kChargeDelay < Shared.GetTime() and not self:GetCrouching() and self:GetHasOneHive() and self:GetEnergy() > kStartChargeEnergyCost then
 
         self.charging = true
         self.timeLastCharge = Shared.GetTime()
@@ -258,10 +249,10 @@ function Onos:GetMaxSpeed(possible)
     local maxSpeed = kMaxSpeed
     
     if self.charging then
-        maxSpeed = kMaxChargeSpeed
+        maxSpeed = kMaxSpeed + (kBonusChargeSpeed * self:ChargeAmount())
     end
     
-    if self:GetCrouched() and self:GetIsOnSurface() and not self:GetLandedRecently() then
+    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnSurface() and not self:GetLandedRecently() then
         maxSpeed = kMaxWalkSpeed
     end
 

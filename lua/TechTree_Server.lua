@@ -460,6 +460,11 @@ function TechTree:GetTechSpecial(techId)
     
 end
 
+          
+function BioMassTechToLevel(techId)
+    return -1
+end
+              
 function TechTree:GetSpecialTechSupported(techId, structureTechIdList, techIdCount)
 
     local supportingIds = nil

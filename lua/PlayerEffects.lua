@@ -28,32 +28,11 @@ kPlayerEffectData =
         }    
     },
 
-    // when hit by emp blast
-
-
-    celerity_start =
-    {
-        celerityStartEffects =
-        {
-            {sound = "", silenceupgrade = true, done = true}, 
-            {sound = "sound/NS2.fev/alien/common/celerity_start", done = true} 
-        }
-    },
-    
-    celerity_end =
-    {
-        celerityEndEffects =
-        {
-            {sound = "", silenceupgrade = true, done = true}, 
-            {sound = "sound/NS2.fev/alien/common/celerity_end", done = true} 
-        }
-    },
-
     flap = 
     {
         flapSoundEffects =
         {
-            {sound = "", silenceupgrade = true, done = true}, 
+            {player_sound = "", silenceupgrade = true, done = true}, 
             {player_sound = "sound/NS2.fev/alien/lerk/flap", classname = "Lerk", done = true} 
         }
     },
@@ -73,20 +52,12 @@ kPlayerEffectData =
             {private_sound = "sound/NS2.fev/alien/skulk/jump_good", classname = "Skulk", done = true},
         }
     },
-    
-    strafe_jump =
-    {
-        effects =
-        {
-            {player_sound = "sound/NS2.fev/marine/common/sprint_start", done = true},
-        }
-    },
         
     jump =
     {
         jumpSoundEffects =
         {
-            {sound = "", silenceupgrade = true, done = true},        
+            {player_sound = "", silenceupgrade = true, done = true},        
 
             {player_sound = "sound/ns2c.fev/ns2c/alien/skulk/step", classname = "Skulk", done = true},
             //{player_sound = "sound/NS2.fev/alien/skulk/jump", classname = "Skulk", done = true},
@@ -102,7 +73,7 @@ kPlayerEffectData =
     {
         footstepSoundEffects =
         {
-            {sound = "", silenceupgrade = true, done = true},
+            {player_sound = "", silenceupgrade = true, done = true},
             // Use private_sounds (ie, don't send network message) because this is generated on the client
             // when animation plays and conserves bandwidth
             // TODO: Add looping metal layer ("sound/NS2.fev/materials/metal/skulk_layer")
@@ -251,7 +222,7 @@ kPlayerEffectData =
     {
         landSoundEffects = 
         {
-            {sound = "", silenceupgrade = true, done = true},  
+            {player_sound = "", silenceupgrade = true, done = true},  
         
             //{player_sound = "sound/NS2.fev/alien/skulk/land", classname = "Skulk", done = true},
             {player_sound = "sound/NS2.fev/alien/lerk/land", classname = "Lerk", done = true},

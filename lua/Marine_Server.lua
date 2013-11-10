@@ -236,14 +236,14 @@ function Marine:OnKill(attacker, doer, point, direction)
     if attacker ~= self then
         self:GetTeam():TriggerAlert(kTechId.MarineAlertSoldierLost, self)
     end
-    
-    if attacker and attacker:GetTeamNumber() ~= self:GetTeamNumber() and attacker:GetTeamNumber() == kAlienTeamType and attacker:isa("Alien") then
-        local hasupg, level = GetHasFuryUpgrade(attacker)
+	
+	if attacker and attacker:isa("Alien") and attacker:GetTeamNumber() ~= self:GetTeamNumber() then
+		local hasupg, level = GetHasFuryUpgrade(attacker)
         if hasupg and level > 0 and attacker:GetIsAlive() then
             attacker:AddHealth((((1 / 3) * level) * kFuryHealthRegained) + ((((1 / 3) * level) * kFuryHealthPercentageRegained) * (attacker:GetMaxHealth())), true, (attacker:GetMaxHealth() - attacker:GetHealth() ~= 0))
             attacker:AddEnergy((((1 / 3) * level) * kFuryEnergyRegained), true, (self:GetMaxHealth() - self:GetHealth() ~= 0))
         end
-    end
+	end
     
     // Note: Flashlight is powered by Marine's beating heart. Eco friendly.
     self:SetFlashlightOn(false)

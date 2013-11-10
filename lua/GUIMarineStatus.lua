@@ -122,7 +122,7 @@ function GUIMarineStatus:Initialize()
     
     self.armorText = self.script:CreateAnimatedTextItem()
     self.armorText:SetNumberTextAccuracy(1)
-    self.armorText:SetText(tostring(self.lastHealth))
+    self.armorText:SetText(tostring(self.lastArmor))
     self.armorText:SetFontName(GUIMarineStatus.kFontName)
     self.armorText:SetTextAlignmentX(GUIItem.Align_Min)
     self.armorText:SetTextAlignmentY(GUIItem.Align_Center)
@@ -322,7 +322,7 @@ function GUIMarineStatus:Update(deltaTime, parameters)
         if currentHealth < self.lastHealth then
             self.healthText:DestroyAnimation("ANIM_TEXT")
             self.healthText:SetText(tostring(math.ceil(currentHealth)))
-            self.healthBar:DestroyAnimation("ANIM_HEALTH_SIZE")
+            self.healthBar:DestroyAnimations()
             self.healthBar:SetSize(healthBarSize)
             self.healthBar:SetTexturePixelCoordinates(unpack(pixelCoords))
         else

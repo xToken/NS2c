@@ -96,21 +96,6 @@ local function GetHealOrigin(self, player)
     
 end
 
-function HealSprayMixin:GetEffectParams(tableParams)
-
-    Ability.GetEffectParams(self, tableParams)
-    
-    // Override host coords for spray to be where heal origin is
-    local player = self:GetParent()
-    if player then
-    
-        local newCoords = Coords.GetLookIn(GetHealOrigin(self, player), player:GetViewCoords().zAxis)
-        tableParams[kEffectHostCoords] = newCoords
-        
-    end
-    
-end
-
 function HealSprayMixin:GetDamageType()
     return kHealsprayDamageType
 end
@@ -205,7 +190,7 @@ local function GetEntitiesWithCapsule(self, player)
                     local dotProduct = trace.normal:DotProduct(fireDirection) * -1
 
                     if dotProduct > 0.6 then
-                        self:TriggerEffects("healspray_collide",  {effecthostcoords = Coords.GetTranslation(lineTrace.endPoint)})
+                        player:TriggerEffects("healspray_collide",  {effecthostcoords = Coords.GetTranslation(lineTrace.endPoint)})
                         break
                     else                    
                         fireDirection = fireDirection + trace.normal * dotProduct
@@ -330,7 +315,7 @@ function HealSprayMixin:OnTag(tagName)
                 player:DeductAbilityEnergy(self:GetSecondaryEnergyCost(player))
             end
             
-            self:TriggerEffects("heal_spray")
+            player:TriggerEffects("heal_spray")
             self.lastSecondaryAttackTime = Shared.GetTime()
         
         end
