@@ -256,9 +256,10 @@ function Observatory:TriggerDistressBeacon()
         
             TriggerMarineBeaconEffects(self)
             
-            local location = GetLocationForPoint(self:GetDistressOrigin())
+            local location = GetLocationForPoint(origin)
             local locationName = location and location:GetName() or ""
             local locationId = Shared.GetStringIndex(locationName)
+            self.locationId = locationId
             SendTeamMessage(self:GetTeam(), kTeamMessageTypes.Beacon, locationId)
             
         end
@@ -275,32 +276,28 @@ function Observatory:CancelDistressBeacon()
 
     self.distressBeaconTime = nil
     self.distressorigin = nil
+    self.locationId = nil
     self.distressBeaconSoundMarine:Stop()
     self.distressBeaconSoundAlien:Stop()
 
 end
 
-local function GetIsPlayerNearby(self, player, toOrigin)
-    return (player:GetOrigin() - toOrigin):GetLength() < Observatory.kDistressBeaconRange
+local function GetIsPlayerInRoom(self, player)
+    return Shared.GetStringIndex(player:GetLocationName()) == self.locationId
 end
 
 local function GetPlayersToBeacon(self, toOrigin)
 
     local players = { }
-    //local clients = { }
+	local locationName = self:GetLocationName()
+
     for index, player in ipairs(self:GetTeam():GetPlayers()) do
-        local uniqueclient = true
         // Don't affect Commanders
         if not player:isa("Commander") then
-            //for index, client in ipairs(clients) do
-                //if client == Server.GetOwner(player) then
-                    //uniqueclient = false
-                //end
-            //end
+
             // Don't respawn players that are already nearby.
-            if not GetIsPlayerNearby(self, player, toOrigin) and (not HasMixin(self, "Devourable") or not self:GetIsDevoured()) and uniqueclient and (not player.GetIsRagdoll or not player:GetIsRagdoll()) then
+            if not GetIsPlayerInRoom(self, player, locationName) and (not HasMixin(self, "Devourable") or not self:GetIsDevoured()) and (not player.GetIsRagdoll or not player:GetIsRagdoll()) then
                 table.insert(players, player)
-                //table.insert(clients, Server.GetOwner(player))
             end
         end
     end
@@ -377,7 +374,8 @@ function Observatory:PerformDistressBeacon()
     //for index, ip in ipairs(GetEntitiesForTeamWithinRange("InfantryPortal", self:GetTeamNumber(), distressOrigin, kInfantryPortalAttachRange + 1)) do
         //ip:FinishSpawn()
     //end
-    self.distressorigin = nil   
+    self.distressorigin = nil
+    self.locationId = nil
     // Play mega-spawn sound in world.
     if anyPlayerWasBeaconed then
         self:TriggerEffects("distress_beacon_complete")

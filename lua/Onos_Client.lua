@@ -31,6 +31,10 @@ function Onos:UpdateClientEffects(deltaTime, isLocal)
     
 end
 
+function Onos:GetHealthbarOffset()
+    return 1.8
+end
+
 function Onos:PlayFootstepEffects(scalar)
 
     if not Shared.GetIsRunningPrediction() then

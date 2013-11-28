@@ -17,6 +17,7 @@ local kBackgroundHeight = 32
 local kBackgroundColor = Color(0, 0, 0, 0)
 local kFontNames = { marine = "fonts/AgencyFB_small.fnt", alien = "fonts/AgencyFB_small.fnt" }
 local kScreenOffset = 40
+local kScreenOffsetX = 38
 
 local kSustainTime = 4
 local kPlayerSustainTime = 4
@@ -178,7 +179,7 @@ function GUIDeathMessages:AddMessage(killerColor, killerName, targetColor, targe
     insertMessage["BackgroundWidth"] = textWidth + GUIScale(iconWidth)
     insertMessage["Background"]:SetSize(Vector(insertMessage["BackgroundWidth"], kBackgroundHeight, 0))
     insertMessage["Background"]:SetAnchor(GUIItem.Right, GUIItem.Top)
-    insertMessage["BackgroundXOffset"] = -textWidth - iconWidth - GUIScale(kScreenOffset)
+    insertMessage["BackgroundXOffset"] = -textWidth - iconWidth - GUIScale(kScreenOffset) - kScreenOffsetX
     insertMessage["Background"]:SetPosition(Vector(insertMessage["BackgroundXOffset"], 0, 0))
     insertMessage["Background"]:SetColor(kBackgroundColor)
     insertMessage.sustainTime = ConditionalValue( targetIsPlayer==1, kPlayerSustainTime, kSustainTime )
