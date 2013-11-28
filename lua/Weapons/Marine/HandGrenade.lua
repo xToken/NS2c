@@ -10,7 +10,7 @@ Script.Load("lua/Weapons/PredictedProjectile.lua")
 class 'HandGrenade' (PredictedProjectile)
 
 HandGrenade.kMapName = "handgrenade"
-HandGrenade.kModelName = PrecacheAsset("models/marine/grenades/gr_cluster.model")
+HandGrenade.kModelName = PrecacheAsset("models/marine/grenades/gr_cluster_world.model")
 
 // prevents collision with friendly players in range to spawnpoint
 HandGrenade.kDisableCollisionRange = 10

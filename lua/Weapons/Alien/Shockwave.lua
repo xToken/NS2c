@@ -212,6 +212,10 @@ function Shockwave:Detonate()
 
 end
 
+function Shockwave:GetDamageType()
+    return kStompDamageType
+end
+
 function Shockwave:GetDeathIconIndex()
     return kDeathMessageIcon.Stomp
 end

@@ -164,6 +164,10 @@ function PlayingTeam:OnInitialized()
 
 end
 
+function PlayingTeam:GetStartingResources()
+	return 0
+end
+
 function PlayingTeam:ResetTeam()
 
     local initialTechPoint = self:GetInitialTechPoint()
@@ -178,11 +182,7 @@ function PlayingTeam:ResetTeam()
     
         local player = players[p]
         player:OnInitialSpawn(initialTechPoint:GetOrigin())
-        if self:GetTeamNumber() == kAlienTeamType then
-            player:SetResources(kAlienTeamInitialRes)
-        else
-            player:SetResources(0)
-        end
+		player:SetResources(self:GetStartingResources())
     end
     
     return commandStructure
@@ -576,12 +576,14 @@ function PlayingTeam:SpawnInitialStructures(techPoint)
 
     assert(techPoint ~= nil)
     
-    // Spawn tower at nearest unoccupied resource point.
-    local tower = SpawnResourceTower(self, techPoint)
-    if not tower then
-        Print("Warning: Failed to spawn a resource tower for tech point in location: " .. techPoint:GetLocationName())
-    end
+    if CheckNS2GameMode() == kGameMode.Classic then
+        // Spawn tower at nearest unoccupied resource point.
+        local tower = SpawnResourceTower(self, techPoint)
+        if not tower then
+            Print("Warning: Failed to spawn a resource tower for tech point in location: " .. techPoint:GetLocationName())
+        end
     
+    end
     // Spawn hive/command station at team location.
     local commandStructure = SpawnCommandStructure(techPoint, self:GetTeamNumber())
     
@@ -768,7 +770,7 @@ end
 
 function PlayingTeam:UpdateResourceTowers()
 
-    if self.timeSinceLastRTUpdate + kResourceTowerResourceInterval < Shared.GetTime() then
+    if self.timeSinceLastRTUpdate + kResourceTowerResourceInterval < Shared.GetTime() and CheckNS2GameMode() == kGameMode.Classic then
     
         self.timeSinceLastRTUpdate = Shared.GetTime()
         
@@ -819,7 +821,7 @@ function PlayingTeam:UpdateTechTree()
     PROFILE("PlayingTeam:UpdateTechTree")
     
     // Compute tech tree availability only so often because it's very slooow
-    if self.techTree and (self.timeOfLastTechTreeUpdate == nil or Shared.GetTime() > self.timeOfLastTechTreeUpdate + PlayingTeam.kTechTreeUpdateTime) then
+    if self.techTree and (self.timeOfLastTechTreeUpdate == nil or Shared.GetTime() > self.timeOfLastTechTreeUpdate + PlayingTeam.kTechTreeUpdateTime) and CheckNS2GameMode() == kGameMode.Classic then
 
         self.techTree:Update(self.entityTechIds, self.techIdCount)
         
@@ -978,43 +980,44 @@ function PlayingTeam:UpdateVotes()
 
     PROFILE("PlayingTeam:UpdateVotes")
     
-    // Update with latest team size
-    self.ejectCommVoteManager:SetNumPlayers(self:GetNumPlayers())
-    self.concedeVoteManager:SetNumPlayers(self:GetNumPlayers())
-    self.selectupgradechamber:SetNumPlayers(self:GetNumPlayers())
-    
-    // Eject commander if enough votes cast
-    if self.ejectCommVoteManager:GetVotePassed() then
-
-        local targetCommander = GetPlayerFromUserId(self.ejectCommVoteManager:GetTarget())
+    if CheckNS2GameMode() == kGameMode.Classic then
+        // Update with latest team size
+        self.ejectCommVoteManager:SetNumPlayers(self:GetNumPlayers())
+        self.concedeVoteManager:SetNumPlayers(self:GetNumPlayers())
+        self.selectupgradechamber:SetNumPlayers(self:GetNumPlayers())
         
-        if targetCommander and targetCommander.Eject then
-            targetCommander:Eject()
+        // Eject commander if enough votes cast
+        if self.ejectCommVoteManager:GetVotePassed() then
+
+            local targetCommander = GetPlayerFromUserId(self.ejectCommVoteManager:GetTarget())
+            
+            if targetCommander and targetCommander.Eject then
+                targetCommander:Eject()
+            end
+            
+            self.ejectCommVoteManager:Reset()
+            
+        elseif self.ejectCommVoteManager:GetVoteElapsed(Shared.GetTime()) then
+            self.ejectCommVoteManager:Reset()
         end
         
-        self.ejectCommVoteManager:Reset()
+        // Upgrade chambers
+        if self.selectupgradechamber:GetVotePassed() or self.selectupgradechamber:GetVoteElapsed(Shared.GetTime()) then
+            CompleteUpgradeChamberVote(self)
+            self.selectupgradechamber:Reset()
+        end
         
-    elseif self.ejectCommVoteManager:GetVoteElapsed(Shared.GetTime()) then
-        self.ejectCommVoteManager:Reset()
-    end
-    
-    // Upgrade chambers
-    if self.selectupgradechamber:GetVotePassed() or self.selectupgradechamber:GetVoteElapsed(Shared.GetTime()) then
-        CompleteUpgradeChamberVote(self)
-        self.selectupgradechamber:Reset()
-    end
-    
-    -- Give up when enough votes
-    if self.concedeVoteManager:GetVotePassed() then
-    
-        self.concedeVoteManager:Reset()
-        self.conceded = true
-        Server.SendNetworkMessage("TeamConceded", { teamNumber = self:GetTeamNumber() })
+        -- Give up when enough votes
+        if self.concedeVoteManager:GetVotePassed() then
         
-    elseif self.concedeVoteManager:GetVoteElapsed(Shared.GetTime()) then
-        self.concedeVoteManager:Reset()
+            self.concedeVoteManager:Reset()
+            self.conceded = true
+            Server.SendNetworkMessage("TeamConceded", { teamNumber = self:GetTeamNumber() })
+            
+        elseif self.concedeVoteManager:GetVoteElapsed(Shared.GetTime()) then
+            self.concedeVoteManager:Reset()
+        end
     end
-
     
 end
 

@@ -54,7 +54,7 @@ end
 
 local function VoteChamber(player, techId)
 
-    if player then
+    if player and CheckNS2GameMode() == kGameMode.Classic then
         local teamInfo = GetTeamInfoEntity(player:GetTeamNumber())
         if ((teamInfo and teamInfo.GetActiveUnassignedHiveCount) and teamInfo:GetActiveUnassignedHiveCount() or 0) > 0 and GetGamerules():GetGameStarted() then
             GetGamerules():CastVoteByPlayer(techId, player)
@@ -179,8 +179,13 @@ for _, soundData in pairs(kSoundData) do
     
         PrecacheAsset(soundData.Sound)
         
-        soundData.SoundFemale = soundData.Sound .. "_female"
-        PrecacheAsset(soundData.SoundFemale)
+        -- Do not look for female versions of alien sounds.
+        if string.find(soundData.Sound, "sound/NS2.fev/alien/", 1) == nil then
+        
+            soundData.SoundFemale = soundData.Sound .. "_female"
+            PrecacheAsset(soundData.SoundFemale)
+            
+        end
         
     end
     

@@ -22,12 +22,12 @@ local kRange = 100
 // 4 degrees in NS1
 local kSpread = ClipWeapon.kCone3Degrees
 
-//local kSingleShotSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/lmg_fire")
-//local kEndSound = PrecacheAsset("sound/NS2.fev/marine/rifle/end")
+local kSingleShotSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/lmg_fire")
+local kEndSound = PrecacheAsset("sound/NS2.fev/marine/rifle/end")
 
-local kSingleShotSound = PrecacheAsset("sound/NS2.fev/marine/rifle/fire_single_3")
-local kLoopingSound = PrecacheAsset("sound/NS2.fev/marine/rifle/fire_loop_1_upgrade_3")
-local kEndSound = PrecacheAsset("sound/NS2.fev/marine/rifle/end_upgrade_3")
+//local kSingleShotSound = PrecacheAsset("sound/NS2.fev/marine/rifle/fire_single_3")
+//local kLoopingSound = PrecacheAsset("sound/NS2.fev/marine/rifle/fire_loop_1_upgrade_3")
+//local kEndSound = PrecacheAsset("sound/NS2.fev/marine/rifle/end_upgrade_3")
 local kLoopingShellCinematic = PrecacheAsset("cinematics/marine/rifle/shell_looping.cinematic")
 local kLoopingShellCinematicFirstPerson = PrecacheAsset("cinematics/marine/rifle/shell_looping_1p.cinematic")
 local kShellEjectAttachPoint = "fxnode_riflecasing"
@@ -167,12 +167,7 @@ function Rifle:GetViewModelName(sex, variant)
 end
 
 function Rifle:GetDeathIconIndex()
-
-    if self:GetSecondaryAttacking() then
-        return kDeathMessageIcon.RifleButt
-    end
     return kDeathMessageIcon.Rifle
-    
 end
 
 function Rifle:GetHUDSlot()
@@ -257,9 +252,9 @@ end
 if Client then
 
     function Rifle:OnClientPrimaryAttackStart()
-        //Shared.StopSound(self, kSingleShotSound)
-        //Shared.PlaySound(self, kSingleShotSound)        
-		Shared.PlaySound(self, kLoopingSound)
+        Shared.StopSound(self, kSingleShotSound)
+        Shared.PlaySound(self, kSingleShotSound)        
+		//Shared.PlaySound(self, kLoopingSound)
         
         local player = self:GetParent()
         
@@ -302,10 +297,10 @@ if Client then
         
     end
     
-    /*function Rifle:OnClientPrimaryAttacking()
+    function Rifle:OnClientPrimaryAttacking()
         Shared.StopSound(self, kSingleShotSound)
         Shared.PlaySound(self, kSingleShotSound)
-    end*/
+    end
 
 	// needed for first person muzzle effect since it is attached to the view model entity: view model entity gets cleaned up when the player changes (for example becoming a commander and logging out again) 
     // this results in viewmodel getting destroyed / recreated -> cinematic object gets destroyed which would result in an invalid handle.
@@ -320,8 +315,8 @@ if Client then
     function Rifle:OnClientPrimaryAttackEnd()
     
         // Just assume the looping sound is playing.
-        //Shared.StopSound(self, kSingleShotSound)
-		Shared.StopSound(self, kLoopingSound)
+        Shared.StopSound(self, kSingleShotSound)
+		//Shared.StopSound(self, kLoopingSound)
         Shared.PlaySound(self, kEndSound)
 		if self.muzzleCinematic then
             self.muzzleCinematic:SetIsVisible(false)
@@ -334,7 +329,7 @@ if Client then
     end
     
     function Rifle:GetPrimaryEffectRate()
-        return 0.09
+        return 0.07
     end
     
     function Rifle:GetBarrelPoint()

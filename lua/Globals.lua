@@ -164,7 +164,7 @@ kMinimapBlipType = enum( { 'Undefined', 'TechPoint', 'ResourcePoint', 'Scan', 'E
                            'Hive', 'Harvester', 'Hydra', 'Egg', 'Embryo', 'Crag', 'Whip', 'Shade', 'Shift', 'Shell', 'Veil', 'Spur', 'TunnelEntrance',
                            'Marine', 'JetpackMarine', 'HeavyArmorMarine', 'Skulk', 'Lerk', 'Onos', 'Fade', 'Gorge',
                            'Door', 'PowerPoint', 'DestroyedPowerPoint',
-                           'SiegeCannon', 'Drifter', 'MAC', 'Infestation', 'InfestationDying', 'MoveOrder', 'AttackOrder', 'BuildOrder', 'SensorBlip', 'SentryBattery' } )
+                           'SiegeCannon', 'Drifter', 'MAC', 'Infestation', 'InfestationDying', 'MoveOrder', 'AttackOrder', 'BuildOrder', 'SensorBlip', 'SentryBattery', 'Exo' } )
 
 // Friendly IDs
 // 0 = friendly
@@ -196,6 +196,9 @@ kLightMode = enum( {'Normal', 'NoPower', 'LowPower', 'Damaged'} )
 
 // Game state
 kGameState = enum( {'NotStarted', 'PreGame', 'Countdown', 'Started', 'Team1Won', 'Team2Won', 'Draw'} )
+
+// Game modes for different ingame goals.
+kGameMode = enum( { 'Classic', 'Combat' } )
 
 // Don't allow commander to build structures this close to attach points or other structures
 kBlockAttachStructuresRadius = 3
@@ -375,17 +378,21 @@ function GetHasDLC(productId, client)
     if productId == nil then
         return true
     end
-
-    if Client then    
-        assert( client == nil )
-        return Client.GetIsDlcAuthorized(productId)    
+    
+    if Client then
+    
+        assert(client == nil)
+        return Client.GetIsDlcAuthorized(productId)
+        
     elseif Server and client then
-        assert( client ~= nil )
+    
+        assert(client ~= nil)
         return Server.GetIsDlcAuthorized(client, productId)
+        
     else
         return false
     end
-
+    
 end
 
 kSpecialEditionProductId = 4930
@@ -399,24 +406,40 @@ kShadowProductId = 250893
 
 // TODO we can really just get rid of the enum. use array-of-structures pattern, and use #kMarineVariants to network vars
 
-kMarineVariant = enum({"green", "special", "deluxe", "assault", "eliteassault"})
+kMarineVariant = enum({ "green", "special", "deluxe", "assault", "eliteassault" })
 kMarineVariantData =
 {
-    [kMarineVariant.green]        =  { productId = nil                      , displayName = "Green"         , modelFilePart = ""              , viewModelFilePart = ""              }  , 
-    [kMarineVariant.special]      =  { productId = kSpecialEditionProductId , displayName = "Black"         , modelFilePart = "_special"      , viewModelFilePart = "_special"      }  , 
-    [kMarineVariant.deluxe]       =  { productId = kDeluxeEditionProductId  , displayName = "Deluxe"        , modelFilePart = "_special_v1"   , viewModelFilePart = "_deluxe"       }  , 
-    [kMarineVariant.assault]      =  { productId = kAssaultMarineProductId  , displayName = "Assault"       , modelFilePart = "_assault"      , viewModelFilePart = "_assault"      }  , 
-    [kMarineVariant.eliteassault] =  { productId = kShadowProductId         , displayName = "Elite Assault" , modelFilePart = "_eliteassault" , viewModelFilePart = "_eliteassault" }  , 
+    [kMarineVariant.green] = { productId = nil, displayName = "Green", modelFilePart = "", viewModelFilePart = "" },
+    [kMarineVariant.special] = { productId = kSpecialEditionProductId, displayName = "Black", modelFilePart = "_special", viewModelFilePart = "_special" },
+    [kMarineVariant.deluxe] = { productId = kDeluxeEditionProductId, displayName = "Deluxe", modelFilePart = "_special_v1", viewModelFilePart = "_deluxe" },
+    [kMarineVariant.assault] = { productId = kAssaultMarineProductId, displayName = "Assault", modelFilePart = "_assault", viewModelFilePart = "_assault" },
+    [kMarineVariant.eliteassault] = { productId = kShadowProductId, displayName = "Elite Assault", modelFilePart = "_eliteassault", viewModelFilePart = "_eliteassault" },
 }
 kDefaultMarineVariant = kMarineVariant.green
 
-kSkulkVariant = enum({"normal", "shadow"})
-kSkulkVariantData = 
+kSkulkVariant = enum({ "normal", "shadow" })
+kSkulkVariantData =
 {
-    [kSkulkVariant.normal] =  { productId = nil              , displayName = "Normal" , modelFilePart = ""        , viewModelFilePart = "" } , 
-    [kSkulkVariant.shadow] =  { productId = kShadowProductId , displayName = "Shadow" , modelFilePart = "_shadow" , viewModelFilePart = "" } , 
+    [kSkulkVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
+    [kSkulkVariant.shadow] = { productId = kShadowProductId, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" },
 }
 kDefaultSkulkVariant = kSkulkVariant.normal
+
+kGorgeVariant = enum({ "normal", "shadow" })
+kGorgeVariantData =
+{
+    [kGorgeVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
+    [kGorgeVariant.shadow] = { productId = kShadowProductId, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" }
+}
+kDefaultGorgeVariant = kGorgeVariant.normal
+
+kLerkVariant = enum({ "normal", "shadow" })
+kLerkVariantData =
+{
+    [kLerkVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
+    [kLerkVariant.shadow] = { productId = kShadowProductId, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" }
+}
+kDefaultLerkVariant = kLerkVariant.normal
 
 function FindVariant( data, displayName )
 
@@ -434,7 +457,7 @@ function GetVariantName( data, var )
 end
 
 function GetHasVariant(data, var, client)
-    return GetHasDLC( data[var].productId, client )
+    return GetHasDLC(data[var].productId, client)
 end
 
 kShoulderPad2ProductId =

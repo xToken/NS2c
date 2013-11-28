@@ -163,13 +163,13 @@
     <filename>ConstructMixin.lua</filename>
   </file>
   <file>
+    <filename>Mixins\CoreMoveMixin.lua</filename>
+  </file>
+  <file>
     <filename>Crag.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\CragAbility.lua</filename>
-  </file>
-  <file>
-    <filename>Mixins\CustomGroundMoveMixin.lua</filename>
   </file>
   <file>
     <filename>DSPEffects.lua</filename>
@@ -232,9 +232,6 @@
     <filename>Fade.lua</filename>
   </file>
   <file>
-    <filename>Fade_Client.lua</filename>
-  </file>
-  <file>
     <filename>Fade_Server.lua</filename>
   </file>
   <file>
@@ -295,6 +292,9 @@
     <filename>GUIMarineStatus.lua</filename>
   </file>
   <file>
+    <filename>GUIMinimapFrame.lua</filename>
+  </file>
+  <file>
     <filename>GUIMotionTrackingDisplay.lua</filename>
   </file>
   <file>
@@ -329,6 +329,9 @@
   </file>
   <file>
     <filename>GeneralEffects.lua</filename>
+  </file>
+  <file>
+    <filename>GhostMixin.lua</filename>
   </file>
   <file>
     <filename>GhostStructureMixin.lua</filename>
@@ -502,6 +505,9 @@
     <filename>Weapons\Marine\Minigun.lua</filename>
   </file>
   <file>
+    <filename>ModdedMixinUtility.lua</filename>
+  </file>
+  <file>
     <filename>NS2ConsoleCommands_Server.lua</filename>
   </file>
   <file>
@@ -559,6 +565,9 @@
     <filename>PlayerEffects.lua</filename>
   </file>
   <file>
+    <filename>PlayerRanking.lua</filename>
+  </file>
+  <file>
     <filename>Player_Client.lua</filename>
   </file>
   <file>
@@ -569,6 +578,9 @@
   </file>
   <file>
     <filename>PointGiverMixin.lua</filename>
+  </file>
+  <file>
+    <filename>PowerConsumerMixin.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\Primal.lua</filename>
@@ -590,6 +602,9 @@
   </file>
   <file>
     <filename>RecycleMixin.lua</filename>
+  </file>
+  <file>
+    <filename>RedemptionMixin.lua</filename>
   </file>
   <file>
     <filename>RedeployMixin.lua</filename>
@@ -692,6 +707,12 @@
   </file>
   <file>
     <filename>Weapons\Alien\SwipeBlink.lua</filename>
+  </file>
+  <file>
+    <filename>Team.lua</filename>
+  </file>
+  <file>
+    <filename>TeamDeathMessageMixin.lua</filename>
   </file>
   <file>
     <filename>TeamInfo.lua</filename>

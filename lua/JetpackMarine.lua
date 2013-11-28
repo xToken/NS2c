@@ -30,12 +30,11 @@ elseif Client then
     Script.Load("lua/JetpackMarine_Client.lua")
 end
 
-local kJetpackFuelReplenishDelay = .15
-local kJetpackMinimumFuelForLaunch = .03
 local kVerticleThrust = 19
 local kJumpForce = 5.75
+local kJetpackingJumpForce = 5.0
 local kMaxCrouchSpeed = 4
-local kJetpackAcceleration = 3.2 // Horizontal acceleration
+local kJetpackAcceleration = 4 // Horizontal acceleration, NS1 - 200 fps = ~45, 125 = ~28
 local kFlyMaxSpeed = 13.0 // NS1 jetpack is 2.9x running speed (walk: 192, jetpack: 576)
 local kJetpackTakeOffTime = .01
 local kAnimLandSuffix = "_jetpack_land"
@@ -171,8 +170,7 @@ function JetpackMarine:OnEntityChange(oldId, newId)
 
 end
 
-function JetpackMarine:ReceivesFallDamage()
-    return false
+function JetpackMarine:OnTakeFallDamage()
 end
 
 function JetpackMarine:HasJetpackDelay()
@@ -187,9 +185,9 @@ function JetpackMarine:OnGroundOverride(onGround)
     end
 end
 
-function JetpackMarine:GetExtentsCrouchShrinkAmount()
-    return ConditionalValue(self:GetIsOnGround(), Player.GetExtentsCrouchShrinkAmount(self), 0)
-end
+/*function JetpackMarine:GetExtentsCrouchShrinkAmount()
+    return ConditionalValue(self:GetIsOnGround() or not self:GetPreventCrouchExtents(), Player.GetExtentsCrouchShrinkAmount(self), 0)
+end*/
 
 function JetpackMarine:HandleJetpackStart()
 
@@ -198,6 +196,7 @@ function JetpackMarine:HandleJetpackStart()
     self.timeJetpackingChanged = Shared.GetTime()
     
     self.startedFromGround = self:GetIsOnGround()
+    self.jetpackFuelOnChange = self.jetpackFuelOnChange - kJetpackTakeoffFuelUse
     
     local jetpack = self:GetJetpack()    
     if jetpack then
@@ -255,7 +254,7 @@ function JetpackMarine:UpdateJetpack(input)
     self:UpdateJetpackMode()
     
     // handle jetpack start, ensure minimum wait time to deal with sound errors
-    if not self.jetpacking and (Shared.GetTime() - self.timeJetpackingChanged > 0.02) and jumpPressed and self:GetFuel() >= kJetpackMinimumFuelForLaunch then
+    if not self.jetpacking and (Shared.GetTime() - self.timeJetpackingChanged > 0.02) and jumpPressed and self:GetFuel() >= kJetpackTakeoffFuelUse then
     
         self:HandleJetpackStart()
         
@@ -304,15 +303,13 @@ function JetpackMarine:GetMaxSpeed(possible)
     
 end
 
-function JetpackMarine:AirAccelerate(velocity, time, wishdir, wishspeed, acceleration)
-    if not self:GetIsJetpacking() and wishspeed > Player.GetMaxAirVeer(self) then
-        wishspeed = Player.GetMaxAirVeer(self)
-    end
-    self:Accelerate(velocity, time, wishdir, wishspeed, acceleration)
+function JetpackMarine:GetMaxAirVeer()
+    return self:GetIsJetpacking() and 20 or Player.GetMaxAirVeer(self)
 end
 
-function JetpackMarine:Accelerate(velocity, time, wishdir, wishspeed, acceleration)
-    Player.Accelerate(self, velocity, time, wishdir, wishspeed, acceleration)
+function JetpackMarine:ModifyVelocity(input, velocity, time)
+    
+    PROFILE("JetpackMarine:ModifyVelocity")
     
     // From testing in NS1: There is a hard cap on velocity of the jetpack marine,
     // probably to prevent air-strafing into crazy speeds
@@ -334,6 +331,7 @@ function JetpackMarine:Accelerate(velocity, time, wishdir, wishspeed, accelerati
         // to avoid having code from sticking the player to the ground
         self:SetIsOnGround(false)
     end
+    
 end
 
 function JetpackMarine:GetAcceleration()
@@ -389,9 +387,11 @@ end
 
 function JetpackMarine:ProcessMoveOnModel(input)
 
-    local jetpack = self:GetJetpack()
-    if jetpack then
-        jetpack:ProcessMoveOnModel(input)
+    if not self:GetIsDestroyed() then
+        local jetpack = self:GetJetpack()
+        if jetpack then
+            jetpack:ProcessMoveOnModel(input)
+        end
     end
     
 end

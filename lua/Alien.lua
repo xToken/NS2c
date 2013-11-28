@@ -27,6 +27,8 @@ Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/BabblerClingMixin.lua")
 Script.Load("lua/EmpowerMixin.lua")
 Script.Load("lua/RedeployMixin.lua")
+Script.Load("lua/RedemptionMixin.lua")
+Script.Load("lua/GhostMixin.lua")
 Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 
@@ -51,10 +53,6 @@ Shared.PrecacheSurfaceShader("models/alien/alien.surface_shader")
 Alien.kNotEnoughResourcesSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/more")
 Alien.kTeleportSound = PrecacheAsset("sound/NS2.fev/alien/structures/generic_spawn_large")
 
-local kEnergyRecuperationRate = 8
-local kCustomBlipDuration = 10
-local kEnergyAdrenalineRecuperationRate = 16.0
-
 local networkVars = 
 {
     // The alien energy used for all alien weapons and abilities (instead of ammo) are calculated
@@ -70,7 +68,6 @@ local networkVars =
 	hatched = "private boolean",
     
     darkVisionSpectatorOn = "private boolean"
-
 }
 
 AddMixinNetworkVars(CloakableMixin, networkVars)
@@ -82,6 +79,7 @@ AddMixinNetworkVars(BabblerClingMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(EmpowerMixin, networkVars)
 AddMixinNetworkVars(RedeployMixin, networkVars)
+AddMixinNetworkVars(GhostMixin, networkVars)
 AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(IdleMixin, networkVars)
 
@@ -101,7 +99,9 @@ function Alien:OnCreate()
 	InitMixin(self, UmbraMixin)
     InitMixin(self, EmpowerMixin)
 	InitMixin(self, RedeployMixin)
-
+	InitMixin(self, RedemptionMixin)
+	InitMixin(self, GhostMixin)
+	
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
     
     self.timeLastMomentumEffect = 0
@@ -120,8 +120,6 @@ function Alien:OnCreate()
     self.twoHives = false
     self.threeHives = false
     self.primalScreamBoost = false
-    self.redemed = 0
-    self.hivesinfo = { }
     
     if Server then
         self.timeWhenPrimalScreamExpires = 0
@@ -191,7 +189,6 @@ end
 function Alien:GetCanRepairOverride(target)
     return false
 end
-
 
 // player for local player
 function Alien:TriggerHatchEffects()
@@ -342,7 +339,8 @@ local function GetIsUnderShade(self)
 end
 
 function Alien:GetIsCamouflaged()
-    return GetHasGhostUpgrade(self) and not self:GetIsInCombat() and not GetIsUnderShade(self)
+    //return GetHasGhostUpgrade(self) and not self:GetIsInCombat() and not GetIsUnderShade(self)
+    return false
 end
 
 function Alien:GetNotEnoughResourcesSound()
@@ -391,6 +389,10 @@ end
 
 function Alien:GetDeathMapName()
     return AlienSpectator.kMapName
+end
+
+function Alien:UpdateHealthAmount()
+    return
 end
 
 // Returns the name of the player's lifeform

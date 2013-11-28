@@ -124,6 +124,7 @@ function SiegeCannon:OnInitialized()
     self:SetModel(SiegeCannon.kModelName, kAnimationGraph)
     
     if Server then
+	
         // TargetSelectors require the TargetCacheMixin for cleanup.
         InitMixin(self, TargetCacheMixin)
         
@@ -142,9 +143,9 @@ function SiegeCannon:OnInitialized()
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end
+		
     elseif Client then
     
-        self.lastModeClient = self.mode
         InitMixin(self, UnitStatusMixin)
     
     end
@@ -212,7 +213,7 @@ function SiegeCannon:GetTechButtons(techId)
 end
 
 function SiegeCannon:GetInAttackMode()
-    return self.mode == SiegeCannon.kMode.Active
+    return self.mode == SiegeCannon.kMode.Active and self:GetIsPowered()
 end
 
 function SiegeCannon:GetCanGiveDamageOverride()
@@ -304,7 +305,7 @@ function SiegeCannon:UpdateAngles(deltaTime)
         
         self.barrelYawDegrees = Slerp(self.barrelYawDegrees, self.desiredYawDegrees, kBarrelMoveRate * deltaTime)
         
-    elseif self.mode == SiegeCannon.kMode.Active then
+    else
     
         self.desiredYawDegrees = 0
         self.desiredPitchDegrees = 0 
@@ -327,7 +328,7 @@ end
 
 local function PerformAttack(self)
 
-    if self.targetPosition then
+    if self.targetPosition and self.mode == SiegeCannon.kMode.Targeting then
     
         self:TriggerEffects("sc_firing")    
         // Play big hit sound at origin
@@ -367,7 +368,7 @@ function SiegeCannon:OnTag(tagName)
     elseif tagName == "target_start" and self.mode == SiegeCannon.kMode.Targeting then
         self:TriggerEffects("sc_charge")
     elseif tagName == "attack_end" then
-        if Server then
+        if Server and self.mode == SiegeCannon.kMode.Targeting then
             self:SetMode(SiegeCannon.kMode.Active)
         end
         self:TriggerEffects("sc_stop_effects")
@@ -393,7 +394,6 @@ function SiegeCannon:OnKill(attacker, doer, point, direction)
 
     if Server then
         self:ClearTargetDirection()
-        self:ClearOrders()
     end 
   
 end

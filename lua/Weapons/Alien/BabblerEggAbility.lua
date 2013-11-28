@@ -15,7 +15,19 @@ function BabblerEggAbility:GetEnergyCost(player)
 end
 
 function BabblerEggAbility:GetGhostModelName(ability)
+
+    local player = ability:GetParent()
+    if player and player:isa("Gorge") then
+    
+        local variant = player:GetVariant()
+        if variant == kGorgeVariant.shadow then
+            return BabblerEgg.kModelNameShadow
+        end
+        
+    end
+    
     return BabblerEgg.kModelName
+    
 end
 
 function BabblerEggAbility:GetDropStructureId()

@@ -17,6 +17,7 @@ Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/BuildingMixin.lua")
 Script.Load("lua/Weapons/PredictedProjectile.lua")
+Script.Load("lua/GorgeVariantMixin.lua")
 
 class 'Gorge' (Alien)
 
@@ -60,11 +61,13 @@ local networkVars =
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
+AddMixinNetworkVars(GorgeVariantMixin, networkVars)
 
 function Gorge:OnCreate()
 
     InitMixin(self, CameraHolderMixin, { kFov = kGorgeFov })
     InitMixin(self, BuildingMixin)
+	InitMixin(self, GorgeVariantMixin)
     
     Alien.OnCreate(self)
     
@@ -254,6 +257,8 @@ end
 
 function Gorge:ModifyVelocity(input, velocity, deltaTime)
     
+    PROFILE("Gorge:ModifyVelocity")
+    
     // Give a little push forward to make sliding useful
     if self.startedSliding then
     
@@ -269,12 +274,12 @@ function Gorge:ModifyVelocity(input, velocity, deltaTime)
             velocity:Add(impulse)
         
         end
-        
+        self.prevY = nil
         self.startedSliding = false
 
     end
     
-    if self:GetIsBellySliding() then
+    if self:GetIsBellySliding() and self:GetIsOnGround() then
     
         local currentSpeed = velocity:GetLengthXZ()
         local prevY = velocity.y
@@ -288,8 +293,23 @@ function Gorge:ModifyVelocity(input, velocity, deltaTime)
         velocity:Add(addVelocity) 
         velocity:Normalize()
         velocity:Scale(currentSpeed)
+        
+        local yTravel = self:GetOrigin().y - (self.prevY or 0)
+        currentSpeed = velocity:GetLengthXZ() + yTravel * -4
+        
+        if currentSpeed < kMaxSlideSpeed or yTravel > 0 then
+        
+            local directionXZ = GetNormalizedVectorXZ(velocity)
+            directionXZ:Scale(currentSpeed)
+
+            velocity.x = directionXZ.x
+            velocity.z = directionXZ.z
+            
+        end
+        
         velocity.y = prevY
-    
+        self.verticalVelocity = yTravel / input.time      
+        self.prevY = self:GetOrigin().y
     end
     
 end
@@ -302,7 +322,7 @@ function Gorge:GetMaxSpeed(possible)
     
     local maxSpeed = kMaxSpeed
     
-    if self:GetCrouched() and self:GetIsOnSurface() and not self:GetLandedRecently() then
+    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnSurface() and not self:GetLandedRecently() then
         maxSpeed = kMaxWalkSpeed
     end
     
@@ -353,41 +373,6 @@ function Gorge:GetDesiredAngles()
 
 end
 
-function Gorge:PreUpdateMove(input, runningPrediction)
-
-    self.prevY = self:GetOrigin().y
-
-end
-
-function Gorge:PostUpdateMove(input, runningPrediction)
-
-    if self:GetIsBellySliding() and self:GetIsOnGround() then
-    
-        local velocity = self:GetVelocity()
-    
-        local yTravel = self:GetOrigin().y - self.prevY
-        local xzSpeed = velocity:GetLengthXZ()
-        
-        xzSpeed = xzSpeed + yTravel * -4
-        
-        if xzSpeed < kMaxSlideSpeed or yTravel > 0 then
-        
-            local directionXZ = GetNormalizedVectorXZ(velocity)
-            directionXZ:Scale(xzSpeed)
-
-            velocity.x = directionXZ.x
-            velocity.z = directionXZ.z
-            
-            self:SetVelocity(velocity)
-            
-        end
-
-        self.verticalVelocity = yTravel / input.time
-    
-    end
-
-end
-
 if Client then
 
     function Gorge:GetShowGhostModel()
@@ -399,8 +384,17 @@ if Client then
         
         return false
         
-    end    
-
+    end
+    
+    function Gorge:GetGhostModelOverride()
+    
+        local weapon = self:GetActiveWeapon()
+        if weapon and weapon:isa("DropStructureAbility") and weapon.GetGhostModelName then
+            return weapon:GetGhostModelName(self)
+        end
+        
+    end
+    
     function Gorge:GetGhostModelTechId()
     
         local weapon = self:GetActiveWeapon()
@@ -409,14 +403,14 @@ if Client then
         end
         
     end
-
+    
     function Gorge:GetGhostModelCoords()
     
         local weapon = self:GetActiveWeapon()
         if weapon and weapon:isa("DropStructureAbility") then
             return weapon:GetGhostModelCoords()
         end
-
+        
     end
     
     function Gorge:GetLastClickedPosition()

@@ -14,7 +14,8 @@
 // used as fallback
 kDefaultBuildTime = 60
 
-// Resource Costs/Build/Research Times
+//MARINES
+
 kCommandStationCost = 20
 kExtractorCost = 15
 kInfantryPortalCost = 20
@@ -38,17 +39,17 @@ kExosuitDropCost = 20
 kTurretFactoryCost = 10
 kAmmoPackCost = 1
 kMedPackCost = 2
-kCatPackCost = 3
-kObservatoryScanCost = 20
+kCatPackCost = 2
 kObservatoryDistressBeaconCost = 15
+kObservatoryScanCost = 20 //Energy
 
 kJetpackTechResearchCost = 45
-kJetpackTechResearchTime = 75
+kJetpackTechResearchTime = 135
 
 kHeavyArmorTechResearchCost = 40
 kHeavyArmorTechResearchTime = 110
 
-kExosuitTechResearchCost = 45
+kExosuitTechResearchCost = 35
 kExosuitTechResearchTime = 120
 
 kWeapons1ResearchCost = 20
@@ -97,14 +98,7 @@ kSiegeCannonBuildTime  = 10
 kObservatoryBuildTime = 15
 kPhaseGateBuildTime = 12
 
-
-
-
-
-
-
-
-
+//ALIENS
 
 kHiveCost = 40
 kHarvesterCost = 15
@@ -150,6 +144,8 @@ kFadeGestateTime = 25
 kOnosGestateTime = 35
 kUpgradeGestationTime = 2
 kReplaceUpgradeGestationTime = 6
+
+//General
 
 kMarineTeamIntialRes = 100
 kMaxTeamResources = 999
@@ -236,7 +232,6 @@ kRailgunWeight = 0.06
 kMineDamage = 125
 kMineDamageType = kDamageType.Normal
 kMineActiveTime = 4
-kMineAlertTime = 8
 kMineDetonateRange = 3
 kMineTriggerRange = 1.0
 kMineCount = 3
@@ -308,7 +303,7 @@ kBabblerPheromoneEnergyCost = 7
 kBabblerDamage = 10
 
 kBabblerCost = 0
-kBabblerEggBuildTime = 25
+kBabblerEggBuildTime = 15
 kNumBabblerEggsPerGorge = 2
 kNumBabblersPerEgg = 5
 
@@ -390,7 +385,7 @@ kSwipeRange = 1.3
 kSwipeMeleeBaseWidth = 0.9
 kSwipeMeleeBaseHeight = 1
 
-kStartBlinkEnergyCost = 9
+kStartBlinkEnergyCost = 6
 kBlinkPulseEnergyCost = 2
 
 kMetabolizeEnergyCost = 25
@@ -425,8 +420,9 @@ kDevourMeleeBaseHeight = 0.7
 
 kStompEnergyCost = 30
 kStompRange = 12
-kStunMarineTime = 2.5
+kStunMarineTime = 2.0
 kStompDamage = 20
+kStompDamageType = kDamageType.Normal
 kShockwaveRadius = 2.5
 
 kSmashDamage = 90
@@ -443,15 +439,25 @@ kStartChargeEnergyCost = 8
 kHydraDamage = 20 // From NS1
 kHydraAttackDamageType = kDamageType.Normal
 
-kWhipDamage = 50
-kWhipAttackDamageType = kDamageType.Normal
 kEmpoweredROFIncrease = 0.25
 
 // SPAWN TIMES
 kMarineRespawnTime = 10
-kEggSpawnTime = 6
 kAlienBaseSpawnInterval = 8
 kAlienSpawnIntervalPerPlayer = 0.166
 kAlienMinSpawnInterval = 6
 kAlienMaxSpawnInterval = 8
+kAlienEggSpawnTime = 6
 kAlienEggsPerHive = 10
+
+//Combat Times
+kAlienCombatBaseSpawnInterval = 8
+kAlienCombatSpawnIntervalPerPlayer = 0.166
+kAlienCombatMinSpawnInterval = 6
+kAlienCombatMaxSpawnInterval = 8
+kAlienRespawnsPerWave = 5
+kMarineCombatBaseSpawnInterval = 8
+kMarineCombatSpawnIntervalPerPlayer = 0.166
+kMarineCombatMinSpawnInterval = 6
+kMarineCombatMaxSpawnInterval = 8
+kMarineRespawnsPerWave = 5

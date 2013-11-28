@@ -49,6 +49,14 @@ function LerkBiteMixin:GetSecondaryTechId()
     return kTechId.LerkBite
 end
 
+function LerkBiteMixin:GetDeathIconIndex()
+    return kDeathMessageIcon.Bite
+end
+
+function LerkBiteMixin:GetDamageType()
+    return kLerkBiteDamageType
+end
+
 function LerkBiteMixin:OnSecondaryAttack(player)
 
     if player:GetEnergy() >= self:GetSecondaryEnergyCost(player) and not self.primaryAttacking and not self:GetHasSecondaryAttackDelay(player) then

@@ -370,10 +370,6 @@ function Player:CopyPlayerDataFrom(player)
     
     self.timeOfDeath = player.timeOfDeath
     self.timeOfLastUse = player.timeOfLastUse
-    self.crouching = player.crouching
-    self.crouched = player.crouched
-    self.crouchfraction = crouchfraction
-    self.timeOfCrouchChange = player.timeOfCrouchChange   
     self.timeOfLastPoseUpdate = player.timeOfLastPoseUpdate
 
     self.timeLastBuyMenu = player.timeLastBuyMenu

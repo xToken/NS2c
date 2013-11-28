@@ -310,10 +310,7 @@ local function UpdateButton(button, index)
         
     end
     
-    
 end
-
-
 
 function GUIGorgeBuildMenu:Update(deltaTime)
 
@@ -322,10 +319,6 @@ function GUIGorgeBuildMenu:Update(deltaTime)
     for index, button in ipairs(self.buttons) do
         
         UpdateButton(button, index)
-        
-        if self:_GetIsMouseOver(button.graphicItem) then
-            self:_HandleMouseOver(button.graphicItem)
-        end
        
     end
 

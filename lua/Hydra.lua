@@ -273,17 +273,4 @@ function Hydra:GetEngagementPointOverride()
     return self:GetOrigin() + Vector(0, 0.4, 0)
 end
 
-function Hydra:OnUpdateRender()
-
-    local showDecal = self:GetIsVisible() and not self:GetIsCloaked()
-
-    if not self.decal and showDecal then
-        self.decal = CreateSimpleInfestationDecal(0.9, self:GetCoords())
-    elseif self.decal and not showDecal then
-        Client.DestroyRenderDecal(self.decal)
-        self.decal = nil
-    end
-
-end
-
 Shared.LinkClassToMap("Hydra", Hydra.kMapName, networkVars)

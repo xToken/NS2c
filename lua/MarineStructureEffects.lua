@@ -166,7 +166,7 @@ kMarineStructureEffects =
             // "trail" like a tracer
             //{sound = "sound/NS2.fev/marine/structures/arc/fire"},
             {sound = "sound/ns2c.fev/ns2c/marine/siegecannon/fire"},
-            {cinematic = "cinematics/marine/arc/fire.cinematic", attach_point = "fxnode_arcmuzzle"},
+            {parented_cinematic = "cinematics/marine/arc/fire.cinematic", attach_point = "fxnode_arcmuzzle"},
         },
     },
     

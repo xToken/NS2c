@@ -90,6 +90,7 @@ AddMixinNetworkVars(IdleMixin, networkVars)
 function Shade:OnCreate()
 
     ScriptActor.OnCreate(self)
+    
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ModelMixin)
     InitMixin(self, LiveMixin)
@@ -112,6 +113,7 @@ function Shade:OnCreate()
     InitMixin(self, UmbraMixin)
     
     if Server then
+    
         //InitMixin(self, TriggerMixin, {kPhysicsGroup = PhysicsGroup.TriggerGroup, kFilterMask = PhysicsMask.AllButTriggers} )    
     elseif Client then
         InitMixin(self, CommanderGlowMixin)            

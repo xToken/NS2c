@@ -143,10 +143,6 @@ function DropStructureAbility:GetEnergyCost(player)
     return kDropStructureEnergyCost
 end
 
-function DropStructureAbility:GetDamageType()
-    return kHealsprayDamageType
-end
-
 function DropStructureAbility:GetHUDSlot()
     return 2
 end
@@ -481,6 +477,16 @@ function DropStructureAbility:GetGhostModelTechId(ModelCheck)
         return self:GetActiveStructure():GetDropStructureId(ModelCheck)
     end
 
+end
+
+function DropStructureAbility:GetGhostModelName(player)
+
+    if self.activeStructure ~= nil and self:GetActiveStructure().GetGhostModelName then
+        return self:GetActiveStructure():GetGhostModelName(self)
+    end
+    
+    return nil
+    
 end
 
 if Client then

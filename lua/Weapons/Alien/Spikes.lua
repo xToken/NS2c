@@ -128,6 +128,14 @@ function Spikes:GetDeathIconIndex()
     end
 end
 
+function Spikes:GetDamageType()
+    if self.primaryAttacking then
+        return kSpikeDamageType
+    else
+        return kLerkBiteDamageType
+    end
+end
+
 function Spikes:OnPrimaryAttack(player)
     if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(player) then
         self.primaryAttacking = true

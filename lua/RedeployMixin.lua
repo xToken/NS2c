@@ -3,9 +3,6 @@
 //    
 //    Created by:   Dragon
 
-/**
- * RedeployMixin speeds up attack speed on nearby players.
- */
 RedeployMixin = CreateMixin(RedeployMixin)
 RedeployMixin.type = "Redeploy"
 
@@ -72,7 +69,7 @@ function RedeployMixin:Redeploy(level)
 					StartSoundEffectAtOrigin(Alien.kTeleportSound, self:GetOrigin())
 					StartSoundEffectAtOrigin(Alien.kTeleportSound, spawnPoint)
 					SpawnPlayerAtPoint(self, spawnPoint)
-					self.nextredeploy = Shared.GetTime() + (kRedploymentCooldownBase / level)
+					self.nextredeploy = Shared.GetTime() + (kRedploymentCooldownBase - (kRedploymentCooldownDecreasePerLevel * level))
 					success = true
 					break
 				end

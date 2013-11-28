@@ -38,8 +38,14 @@ function Scan:OnInitialized()
 
     CommanderAbility.OnInitialized(self)
     
-    if Server and not HasMixin(self, "MapBlip") then
-        InitMixin(self, MapBlipMixin)
+    if Server then
+    
+        DestroyEntitiesWithinRange("Scan", self:GetOrigin(), Scan.kScanDistance * 0.5, EntityFilterOne(self)) 
+    
+        if not HasMixin(self, "MapBlip") then
+            InitMixin(self, MapBlipMixin)
+        end
+        
     end
     
 end
@@ -72,13 +78,13 @@ if Server then
         
             //Ghost adds a chance to 'evade' detection
             local visible = true
-            if enemy:isa("Alien") then
-                local hasupg, level = GetHasGhostUpgrade(enemy)
-                if hasupg and level > 0 then
-                    local hide = math.random(1, 100) <= (level * kGhostScanDodgePerLevel)
-                    visible = not hide
-                end
-            end
+            //if enemy:isa("Alien") then
+                //local hasupg, level = GetHasGhostUpgrade(enemy)
+                //if hasupg and level > 0 then
+                    //local hide = math.random(1, 100) <= (level * kGhostScanDodgePerLevel)
+                    //visible = not hide
+                //end
+            //end
                 
             enemy:SetIsSighted(visible)
             

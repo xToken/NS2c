@@ -1,19 +1,29 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//
-// lua\NS2Gamerules.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
-//NS2c
-//Removed alien comm references, adjusted resource clearing/setting
+//Dragon
+// This file now only exists to support multiple gamerules
 
 Script.Load("lua/Gamerules.lua")
 Script.Load("lua/dkjson.lua")
 Script.Load("lua/ServerSponitor.lua")
 Script.Load("lua/PlayerRanking.lua")
+
+local mapMode
+
+function CheckNS2GameMode()
+    if mapMode == nil then
+        if Shared.GetMapName():find("co_") then
+            mapMode = kGameMode.Combat
+        else
+            mapMode = kGameMode.Classic
+        end
+    end
+    return mapMode
+end
+
+//Replacing this for better efficiency, but dont feel like replacing entire gamerules file.
+function Gamerules:OnClientDisconnect(client)
+    // Tell all other clients that the player has disconnected
+    Server.SendNetworkMessage("ClientDisconnect", { clientIndex = client:GetId() }, true)
+end
 
 if Client then
     Script.Load("lua/NS2ConsoleCommands_Client.lua")
@@ -540,7 +550,7 @@ if Server then
         
         // Send scoreboard update, ignoring other scoreboard updates (clearscores resets everything)
         for index, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
-            Server.SendCommand(player, "onresetgame")
+            //Server.SendCommand(player, "onresetgame")
             //player:SetScoreboardChanged(false)
         end
         
@@ -701,7 +711,7 @@ if Server then
                 end
             
             end
-            self.timeToSendHealth = Shared.GetTime() + 0.25
+            self.timeToSendHealth = Shared.GetTime() + 0.5
             
         end
         

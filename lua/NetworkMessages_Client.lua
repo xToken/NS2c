@@ -140,21 +140,6 @@ function OnCommandWorldText(message)
     
 end
 
-function OnCommandRecieveHiveInfo(hiveinfo)
-
-    local player = Client.GetLocalPlayer()
-    if player:isa("Alien") then
-        hiveinfo.time = Shared.GetTime()
-        if player.hivesinfo == nil then
-            player.hivesinfo = { } 
-        end
-        if player.hivesinfo == { } or player.hivesinfo[hiveinfo.key] ~= hiveinfo then
-            player.hivesinfo[hiveinfo.key] = hiveinfo
-        end
-    end
-    
-end
-
 function OnCommandCommanderError(message)
 
     local messageStr = Locale.ResolveString(message.data)
@@ -229,6 +214,11 @@ local function OnSetClientIndex(message)
 end
 Client.HookNetworkMessage("SetClientIndex", OnSetClientIndex)
 
+local function OnSetClientIndex(message)
+    Scoreboard_OnClientDisconnect(message.clientIndex)
+end
+Client.HookNetworkMessage("ClientDisconnect", OnSetClientIndex)
+
 local function OnSetServerHidden(message)
     Client.serverHidden = message.hidden
 end
@@ -238,6 +228,11 @@ local function OnSetClientTeamNumber(message)
     Client.localClientTeamNumber = message.teamNumber
 end
 Client.HookNetworkMessage("SetClientTeamNumber", OnSetClientTeamNumber)
+
+local function OnScoreUpdate(message)
+    ScoreDisplayUI_SetNewScore(message.points, message.res)
+end
+Client.HookNetworkMessage("ScoreUpdate", OnScoreUpdate)
 
 local function OnMessageAutoConcedeWarning(message)
 
@@ -278,7 +273,6 @@ Client.HookNetworkMessage("DebugLine", OnCommandDebugLine)
 Client.HookNetworkMessage("DebugCapsule", OnCommandDebugCapsule)
 
 Client.HookNetworkMessage("WorldText", OnCommandWorldText)
-Client.HookNetworkMessage("HiveInfo", OnCommandRecieveHiveInfo)
 Client.HookNetworkMessage("CommanderError", OnCommandCommanderError)
 
 Client.HookNetworkMessage("VoteConcedeCast", OnVoteConcedeCast)

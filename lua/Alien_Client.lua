@@ -33,24 +33,15 @@ function PlayerUI_GetActiveHiveCount()
 
 end
 
-function PlayerUI_GetHiveInformation()
-    
-    local player = Client.GetLocalPlayer()
-    
-    if player and player.hivesinfo ~= nil and player.hivesinfo ~= { } then
-        for i = 1, #player.hivesinfo do
-            local hiveinfo = player.hivesinfo[i]
-            if hiveinfo ~= nil then
-                if Shared.GetTime() - hiveinfo.time > 4 then
-                    table.removevalue(player.hivesinfo, hiveinfo)
-                end
-            end
-        end
-        return player.hivesinfo
+function PlayerUI_GetHiveList()
+    local hiveinfo = { }
+	
+	//Hives always relevant to aliens now, so just look them all up...
+	for _, ent in ientitylist(Shared.GetEntitiesWithClassname("Hive")) do
+        table.insert(hiveinfo, ent)
     end
     
-    return nil
-
+	return hiveinfo
 end
 
 function AlienUI_GetHasMovementSpecial()

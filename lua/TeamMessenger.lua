@@ -153,6 +153,9 @@ if Client then
                 else
                     displayText = Locale.ResolveString(displayText)
                 end
+                if messageType == kTeamMessageTypes.UnassignedHive then
+                    displayText = string.format(displayText, BindingsUI_GetInputValue("RequestMenu"))
+                end
                 
                 assert(type(displayText) == "string")
                 player:SetTeamMessage(string.upper(displayText))

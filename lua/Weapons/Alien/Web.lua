@@ -78,8 +78,10 @@ end
 function Web:OnInitialized()
 
     self:SetModel(Web.kModelName, kAnimationGraph)
-    self:SetPhysicsGroup(PhysicsGroup.SmallStructuresGroup)
     
+    self:SetPhysicsType(PhysicsType.Kinematic)
+    self:SetPhysicsGroup(PhysicsGroup.WebsGroup)  
+  
 end
 
 /*
@@ -198,10 +200,10 @@ function Web:GetSendDeathMessageOverride()
 end
 
 function Web:ComputeDamageOverride(attacker, damage, damageType, hitPoint) 
-    if damageType == kDamageType.Flame or damageType == kDamageType.Structural then
-        return damage
+    if not (damageType == kDamageType.Flame or damageType == kDamageType.Structural) then
+        return 0
     end
-    return 0
+    return damage
 end
 
 if Client then

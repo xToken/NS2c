@@ -98,7 +98,7 @@ function CommandStructure:LoginPlayer(player)
     
     // Must reset offset angles once player becomes commander
     commanderPlayer:SetOffsetAngles(Angles(0, 0, 0))
-
+    
     self:OnCommanderLogin()
     
     return commanderPlayer

@@ -1570,36 +1570,79 @@ local function InitOptions(optionElements)
     local minimapZoom = Client.GetOptionFloat("minimap-zoom", 0.75)
     local marineVariant = Client.GetOptionInteger("marineVariant", -1)
     local skulkVariant = Client.GetOptionInteger("skulkVariant", -1)
+    local gorgeVariant = Client.GetOptionInteger("gorgeVariant", -1)
+    local lerkVariant = Client.GetOptionInteger("lerkVariant", -1)
     
     // if not set explicitly, always use the highest available tier
     if marineVariant == -1 then
-
-        for variant = 1,GetEnumCount(kMarineVariant) do
-        DebugPrint("checking variant "..GetVariantName(kMarineVariantData, variant))
-            if GetHasVariant( kMarineVariantData, variant ) then
+    
+        for variant = 1, GetEnumCount(kMarineVariant) do
+        
+            if GetHasVariant(kMarineVariantData, variant) then
+            
                 marineVariant = variant
                 // do not break - use the highest one they have
+                
             end
+            
         end
         
     end
-
+    
     if skulkVariant == -1 then
-
-        for variant = 1,GetEnumCount(kSkulkVariant),1 do
-            if GetHasVariant( kSkulkVariantData, variant ) then
+    
+        for variant = 1, GetEnumCount(kSkulkVariant), 1 do
+        
+            if GetHasVariant(kSkulkVariantData, variant) then
+            
                 skulkVariant = variant
                 // do not break - use the highest one they have
+                
             end
+            
         end
         
     end
-
-    assert( marineVariant ~= -1 )
-    assert( skulkVariant ~= -1 )
-
+    
+    if gorgeVariant == -1 then
+    
+        for variant = 1, GetEnumCount(kGorgeVariant), 1 do
+        
+            if GetHasVariant(kGorgeVariantData, variant) then
+            
+                gorgeVariant = variant
+                // do not break - use the highest one they have
+                
+            end
+            
+        end
+        
+    end
+    
+    if lerkVariant == -1 then
+    
+        for variant = 1, GetEnumCount(kLerkVariant), 1 do
+        
+            if GetHasVariant(kLerkVariantData, variant) then
+            
+                lerkVariant = variant
+                // do not break - use the highest one they have
+                
+            end
+            
+        end
+        
+    end
+    
+    assert(marineVariant ~= -1)
+    assert(skulkVariant ~= -1)
+    assert(gorgeVariant ~= -1)
+    assert(lerkVariant ~= -1)
+    
     Client.SetOptionInteger("marineVariant", marineVariant)
     Client.SetOptionInteger("skulkVariant", skulkVariant)
+    Client.SetOptionInteger("gorgeVariant", gorgeVariant)
+    Client.SetOptionInteger("lerkVariant", lerkVariant)
     
     local sexType = Client.GetOptionString("sexType", "Male")
     Client.SetOptionString("sexType", sexType)
@@ -1674,14 +1717,15 @@ local function InitOptions(optionElements)
     optionElements.Reflections:SetOptionActive( BoolToIndex(reflections) )
     optionElements.FOVAdjustment:SetValue(fovAdjustment)
     optionElements.MinimapZoom:SetValue(minimapZoom)
-    optionElements.MarineVariantName:SetValue(GetVariantName(kMarineVariantData,marineVariant))
-    optionElements.SkulkVariantName:SetValue(GetVariantName(kSkulkVariantData,skulkVariant))
+    optionElements.MarineVariantName:SetValue(GetVariantName(kMarineVariantData, marineVariant))
+    optionElements.SkulkVariantName:SetValue(GetVariantName(kSkulkVariantData, skulkVariant))
+    optionElements.GorgeVariantName:SetValue(GetVariantName(kGorgeVariantData, gorgeVariant))
+    optionElements.LerkVariantName:SetValue(GetVariantName(kLerkVariantData, lerkVariant))
     optionElements.SexType:SetValue(sexType)
     optionElements.DecalLifeTime:SetValue(decalLifeTime)
     optionElements.CameraAnimation:SetValue(cameraAnimation)
     optionElements.PhysicsGpuAcceleration:SetValue(physicsGpuAcceleration)
     optionElements.ParticleQuality:SetOptionActive( table.find(kParticleQualityModes, particleQuality) ) 
-    
     
     optionElements.SoundInputDevice:SetOptionActive(soundInputDevice)
     optionElements.SoundOutputDevice:SetOptionActive(soundOutputDevice)
@@ -1783,18 +1827,24 @@ function OnDisplayChanged(oldDisplay, newDisplay)
 end
 
 
-local function SendPlayerVariantUpdate(marineVariant, sexType, skulkVariant)
+local function SendPlayerVariantUpdate(marineVariant, sexType, skulkVariant, gorgeVariant, lerkVariant)
 
-    assert( marineVariant ~= -1 )
-    assert( marineVariant ~= nil )
-    assert( skulkVariant ~= -1 )
-    assert( skulkVariant ~= nil )
-
+    assert(marineVariant ~= -1)
+    assert(marineVariant ~= nil)
+    assert(skulkVariant ~= -1)
+    assert(skulkVariant ~= nil)
+    assert(gorgeVariant ~= -1)
+    assert(gorgeVariant ~= nil)
+    assert(lerkVariant ~= -1)
+    assert(lerkVariant ~= nil)
+    
     if MainMenu_IsInGame() then
         Client.SendNetworkMessage("SetPlayerVariant",
                 {
                     marineVariant = marineVariant,
                     skulkVariant = skulkVariant,
+                    gorgeVariant = gorgeVariant,
+                    lerkVariant = lerkVariant,
                     isMale = string.lower(sexType) == "male",
                 },
                 true)
@@ -1836,6 +1886,8 @@ local function SaveOptions(mainMenu)
     
     local marineVariantName     = mainMenu.optionElements.MarineVariantName:GetValue()
     local skulkVariantName      = mainMenu.optionElements.SkulkVariantName:GetValue()
+    local gorgeVariantName      = mainMenu.optionElements.GorgeVariantName:GetValue() or ""
+    local lerkVariantName       = mainMenu.optionElements.LerkVariantName:GetValue() or ""
     local sexType               = mainMenu.optionElements.SexType:GetValue()
     local cameraAnimation       = mainMenu.optionElements.CameraAnimation:GetActiveOptionIndex() > 1
 	local physicsGpuAcceleration = mainMenu.optionElements.PhysicsGpuAcceleration:GetActiveOptionIndex() > 1
@@ -1853,14 +1905,18 @@ local function SaveOptions(mainMenu)
     Client.SetOptionBoolean("CameraAnimation", cameraAnimation)
     Client.SetOptionBoolean(kPhysicsGpuAccelerationKey, physicsGpuAcceleration)
 	Client.SetOptionBoolean( "AdvancedMovement", advancedmovement)
-    Client.SetOptionInteger("marineVariant", FindVariant( kMarineVariantData, marineVariantName ) )
-    Client.SetOptionInteger("skulkVariant", FindVariant( kSkulkVariantData, skulkVariantName ) )
+    Client.SetOptionInteger("marineVariant", FindVariant(kMarineVariantData, marineVariantName))
+    Client.SetOptionInteger("skulkVariant", FindVariant(kSkulkVariantData, skulkVariantName))
+    Client.SetOptionInteger("gorgeVariant", FindVariant(kGorgeVariantData, gorgeVariantName))
+    Client.SetOptionInteger("lerkVariant", FindVariant(kLerkVariantData, lerkVariantName))
     Client.SetOptionString("sexType", sexType)
     
     SendPlayerVariantUpdate(
-            FindVariant( kMarineVariantData, marineVariantName ),
+            FindVariant(kMarineVariantData, marineVariantName),
             sexType,
-            FindVariant( kSkulkVariantData, skulkVariantName ) )
+            FindVariant(kSkulkVariantData, skulkVariantName),
+            FindVariant(kGorgeVariantData, gorgeVariantName),
+            FindVariant(kLerkVariantData, lerkVariantName))
     
     Client.SetOptionFloat("input/mouse/acceleration-amount", accelerationAmount)
     
@@ -2056,22 +2112,46 @@ function GUIMainMenu:CreateOptionWindow()
         languages[i] = kLocales[i].label
     end
     
-    local marineVariantNames = {}
-    local skulkVariantNames = {}
-
+    local marineVariantNames = { }
+    local skulkVariantNames = { }
+    local gorgeVariantNames = { }
+    local lerkVariantNames = { }
+    
     //DebugPrint("we have "..GetEnumCount(kMarineVariant).." marine variants")
     //DebugPrint("we have "..GetEnumCount(kSkulkVariant).." skulk variants")
-
-    for key,value in pairs(kMarineVariantData) do
-        if GetHasVariant( kMarineVariantData, key ) then
-            table.insert( marineVariantNames, value.displayName )
+    //DebugPrint("we have "..GetEnumCount(kGorgeVariant).." gorge variants")
+    //DebugPrint("we have "..GetEnumCount(kLerkVariant).." lerk variants")
+    
+    for key, value in pairs(kMarineVariantData) do
+    
+        if GetHasVariant(kMarineVariantData, key) then
+            table.insert(marineVariantNames, value.displayName)
         end
+        
     end
-
-    for key,value in pairs(kSkulkVariantData) do
-        if GetHasVariant( kSkulkVariantData, key ) then
-            table.insert( skulkVariantNames, value.displayName )
+    
+    for key, value in pairs(kSkulkVariantData) do
+    
+        if GetHasVariant(kSkulkVariantData, key) then
+            table.insert(skulkVariantNames, value.displayName)
         end
+        
+    end
+    
+    for key, value in pairs(kGorgeVariantData) do
+    
+        if GetHasVariant(kGorgeVariantData, key) then
+            table.insert(gorgeVariantNames, value.displayName)
+        end
+        
+    end
+    
+    for key, value in pairs(kLerkVariantData) do
+    
+        if GetHasVariant(kLerkVariantData, key) then
+            table.insert(lerkVariantNames, value.displayName)
+        end
+        
     end
     
     local sexTypes = { "Male", "Female" }
@@ -2171,7 +2251,18 @@ function GUIMainMenu:CreateOptionWindow()
                 type = "select",
                 values = skulkVariantNames,
             },
-            
+            {
+                name = "GorgeVariantName",
+                label = "GORGE TYPE",
+                type = "select",
+                values = gorgeVariantNames,
+            },
+            {
+                name = "LerkVariantName",
+                label = "LERK TYPE",
+                type = "select",
+                values = lerkVariantNames,
+            },
             
             {
                 name    = "CameraAnimation",

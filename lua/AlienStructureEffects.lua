@@ -77,9 +77,6 @@ kAlienStructureEffects =
             {sound = "sound/NS2.fev/alien/structures/hive_death", classname = "Hive"},
             {sound = "sound/NS2.fev/alien/structures/death_grenade", doer = "Grenade", isalien = true, done = true},
             {sound = "sound/NS2.fev/alien/structures/death_axe", doer = "Axe", isalien = true, done = true},            
-            {sound = "sound/NS2.fev/alien/structures/death_grenade", classname = "Structure", doer = "Grenade", isalien = true, done = true},
-            {sound = "sound/NS2.fev/alien/structures/death_axe", classname = "Structure", doer = "Axe", isalien = true, done = true},            
-            {sound = "sound/NS2.fev/alien/structures/death_small", classname = "Structure", isalien = true, done = true},
             {sound = "sound/NS2.fev/alien/structures/death_small", classname = "Web", done = true},
             
             {sound = "sound/NS2.fev/alien/structures/death_small", classname = "Crag", done = true},
@@ -142,21 +139,7 @@ kAlienStructureEffects =
         },
     },
     
-    whip_attack =
-    {
-        whipAttackEffects =
-        {
-            {sound = "sound/NS2.fev/alien/structures/whip/hit"},
-        },
-    },
-    
-    whip_attack_start =
-    {
-        whipAttackEffects =
-        {
-            {sound = "sound/NS2.fev/alien/structures/whip/swing"},
-        },
-    },
+
 
     babbler_jump =
     {

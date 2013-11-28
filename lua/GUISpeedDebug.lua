@@ -121,7 +121,7 @@ function GUISpeedDebug:Update(deltaTime)
 
         self.momentumFraction:SetSize(Vector(gMomentumBarWidth * bonusSpeedFraction, 30, 0))
         self.xzSpeed:SetText( string.format( "current speed: %s  vertical speed: %s %s", ToString(RoundVelocity(speed)), ToString(RoundVelocity(velocity.y)), input ) )
-        self.OnSurface:SetText( string.format( "OnSurface : %s", ToString(player:GetIsOnSurface()) ) )
+        self.OnSurface:SetText( string.format( "OnSurface : %s : Crouching : %s", ToString(player:GetIsOnSurface()), ToString(player:GetCrouching()) ) )
         self.OnGround:SetText( string.format( "OnGround : %s", ToString(player:GetIsOnGround()) ) )
         self.Friction:SetText( string.format( "Friction : %s", ToString(player:GetGroundFriction()) ) )
         self.MaxSpeed:SetText( string.format( "MaxSpeed : %s : Weapon weight : %s", ToString(player:GetMaxSpeed()), ToString(player:GetWeaponsWeight() or 0) ) )

@@ -67,7 +67,11 @@ end
 
 function Mine:GetReceivesStructuralDamage()
     return true
-end    
+end
+
+function Mine:GetDamageType()
+    return kMineDamageType
+end
 
 local function SineFalloff(distanceFraction)
     local piFraction = Clamp(distanceFraction, 0, 1) * math.pi / 2

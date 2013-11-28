@@ -288,8 +288,8 @@ function Marine:GetCanSeeDamagedIcon(ofEntity)
     return HasMixin(ofEntity, "Weldable")
 end
 
-function Marine:GetSlowOnLand()
-    return math.abs(self:GetVelocity().y) > self:GetMaxSpeed()
+function Marine:GetSlowOnLand(velocity)
+    return math.abs(velocity.y) > (self:GetMaxSpeed() + 0.2)
 end
 
 function Marine:GetPlayerControllersGroup()
@@ -302,6 +302,14 @@ function Marine:GetMovePhysicsMask()
         return PhysicsMask.All
     end
     return Player.GetMovePhysicsMask(self)
+end
+
+function Marine:GetHasCollisionDetection()
+    return not self:GetIsDevoured()
+end
+
+function Marine:GetShowSensorBlip()
+    return not self:GetIsDevoured()
 end
 
 function Marine:GetArmorAmount(armorLevels)
@@ -448,7 +456,7 @@ function Marine:GetMaxSpeed(possible)
         maxSpeed = kWalkMaxSpeed
     end
     
-    if self:GetCrouched() and self:GetIsOnSurface() and not self:GetLandedRecently() then
+    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnSurface() and not self:GetLandedRecently() then
         maxSpeed = kCrouchMaxSpeed
     end
 
@@ -680,10 +688,6 @@ function Marine:OnUpdateAnimationInput(modelMixin)
     modelMixin:SetAnimationInput("attack_speed", self:GetCatalystFireModifier())
 	modelMixin:SetAnimationInput("catalyst_speed", self:GetCatalystFireModifier())
     
-end
-
-function Marine:ReceivesFallDamage()
-    return not self:GetIsDevoured()
 end
 
 function Marine:OnProcessMove(input)
