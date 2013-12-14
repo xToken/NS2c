@@ -311,6 +311,10 @@ function Armory:OnUse()
     return false
 end
 
+function Armory:GetHealthbarOffset()
+    return 1.4
+end 
+
 function Armory:GetReceivesStructuralDamage()
     return true
 end
@@ -354,6 +358,10 @@ function ArmoryAddon:OnCreate()
     
 end
 
+function ArmoryAddon:GetHealthbarOffset()
+    return 1.7
+end 
+
 function ArmoryAddon:OnInitialized()
 
     ScriptActor.OnInitialized(self)
@@ -390,9 +398,5 @@ function ArmoryAddon:OnGetIsVisible(visibleTable, viewerTeamNumber)
     end
     
 end
-
-function Armory:GetHealthbarOffset()
-    return 1.5
-end 
 
 Shared.LinkClassToMap("ArmoryAddon", ArmoryAddon.kMapName, addonNetworkVars)

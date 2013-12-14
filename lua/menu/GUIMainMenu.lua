@@ -1432,6 +1432,14 @@ local function InitKeyBindings(keyInputs)
     
 end
 
+local function InitKeyBindingsCom(keyInputsCom)
+
+    local bindingsTableCom = BindingsUI_GetComBindingsTable()
+    for c = 1, #bindingsTableCom do
+        keyInputsCom[c]:SetValue(bindingsTableCom[c].current)
+    end  
+    
+end
 local function CheckForConflictedKeys(keyInputs)
 
     // Reset back to non-conflicted state.
@@ -1463,6 +1471,34 @@ local function CheckForConflictedKeys(keyInputs)
     
 end
 
+local function CheckForConflictedKeysCom(keyInputsCom)
+    
+    for l = 1, #keyInputsCom do
+        keyInputsCom[l]:SetCSSClass("option_input")
+    end
+        // Check for conflicts.
+    for l1 = 1, #keyInputsCom do
+    
+        for l2 = 1, #keyInputsCom do
+        
+            if l1 ~= l2 then
+            
+                local boundKeyCom1 = Client.GetOptionString("input/" .. keyInputsCom[l1].inputName, "")
+                local boundKeyCom2 = Client.GetOptionString("input/" .. keyInputsCom[l2].inputName, "")
+                if boundKeyCom1 == boundKeyCom2 then
+                
+                    keyInputsCom[l1]:SetCSSClass("option_input_conflict")
+                    keyInputsCom[l2]:SetCSSClass("option_input_conflict")
+                    
+                end
+                
+            end
+            
+        end
+        
+    end
+    
+end
 local function CreateKeyBindingsForm(mainMenu, content)
 
     local keyBindingsForm = CreateMenuElement(content, "Form", false)
@@ -1526,6 +1562,86 @@ local function CreateKeyBindingsForm(mainMenu, content)
     
 end
 
+local function CreateKeyBindingsFormCom(mainMenu, content)
+
+    local VoiceChat = Client.GetOptionString("input/VoiceChat", "LeftAlt")
+    local ShowMap = Client.GetOptionString("input/ShowMap", "C")
+    local TextChat = Client.GetOptionString("input/TextChat", "Y")
+    local TeamChat = Client.GetOptionString("input/TeamChat", "Return")
+
+    local VoiceChatCom = Client.GetOptionString("input/VoiceChatCom", "")
+    local ShowMapCom = Client.GetOptionString("input/ShowMapCom", "")
+    local TextChatCom = Client.GetOptionString("input/TextChatCom", "")
+    local TeamChatCom = Client.GetOptionString("input/TeamChatCom", "")
+
+	if VoiceChatCom == "" then
+		Client.SetOptionString("input/VoiceChatCom", VoiceChat)
+	end
+	if ShowMapCom == "" then
+		Client.SetOptionString("input/ShowMapCom", ShowMap)
+	end
+	if TextChatCom == "" then
+		Client.SetOptionString("input/TextChatCom", TextChat)
+	end
+	if TeamChatCom == "" then
+		Client.SetOptionString("input/TeamChatCom", TeamChat)
+	end
+
+    local keyBindingsFormCom = CreateMenuElement(content, "Form", false)
+    
+    local bindingsTableCom = BindingsUI_GetComBindingsTable()
+    mainMenu.keyInputsCom = { }
+    local rowHeight = 50
+    
+    for b = 1, #bindingsTableCom do
+    
+        local bindingCom = bindingsTableCom[b]
+        
+        local keyInputCom = keyBindingsFormCom:CreateFormElement(Form.kElementType.FormButton, "INPUT" .. b, bindingCom.current)
+        keyInputCom:SetCSSClass("option_input")
+        keyInputCom:AddEventCallbacks( { OnBlur = function(self) keyInputCom.ignoreFirstKey = nil end } )
+        
+        function keyInputCom:OnSendKey(key, down)
+        
+            if not down then
+            
+                // We want to ignore the click that gave this input focus.
+                if keyInputCom.ignoreFirstKey == true then
+                
+                    local keyStringCom = Client.ConvertKeyCodeToString(key)
+                    keyInputCom:SetValue(keyStringCom)
+                    
+                    Client.SetOptionString("input/" .. keyInputCom.inputName, keyStringCom)
+                    
+                    CheckForConflictedKeysCom(mainMenu.keyInputsCom)
+                    
+                end
+                keyInputCom.ignoreFirstKey = true
+                
+            end
+            
+        end
+        local keyInputTextCom = CreateMenuElement(keyBindingsFormCom, "Font", false)
+        keyInputTextCom:SetText(string.upper(bindingCom.detail) ..  ":")
+        keyInputTextCom:SetCSSClass("option_label")
+        
+        local y = rowHeight * (b  - 1)
+        
+        keyInputCom:SetTopOffset(y)
+        keyInputTextCom:SetTopOffset(y)
+        
+        keyInputCom.inputName = bindingCom.name
+        table.insert(mainMenu.keyInputsCom, keyInputCom)
+        
+    end
+    InitKeyBindingsCom(mainMenu.keyInputsCom)
+    CheckForConflictedKeysCom(mainMenu.keyInputsCom)
+    
+    keyBindingsFormCom:SetCSSClass("keybindings")
+    
+    return keyBindingsFormCom
+    
+end
 local function InitOptions(optionElements)
         
     local function BoolToIndex(value)
@@ -1572,6 +1688,8 @@ local function InitOptions(optionElements)
     local skulkVariant = Client.GetOptionInteger("skulkVariant", -1)
     local gorgeVariant = Client.GetOptionInteger("gorgeVariant", -1)
     local lerkVariant = Client.GetOptionInteger("lerkVariant", -1)
+    
+    local hudmode = Client.GetOptionInteger("hudmode", kHUDMode.Full)
     
     // if not set explicitly, always use the highest available tier
     if marineVariant == -1 then
@@ -1643,6 +1761,8 @@ local function InitOptions(optionElements)
     Client.SetOptionInteger("skulkVariant", skulkVariant)
     Client.SetOptionInteger("gorgeVariant", gorgeVariant)
     Client.SetOptionInteger("lerkVariant", lerkVariant)
+    
+    Client.SetOptionInteger("hudmode", hudmode)
     
     local sexType = Client.GetOptionString("sexType", "Male")
     Client.SetOptionString("sexType", sexType)
@@ -1732,6 +1852,7 @@ local function InitOptions(optionElements)
     optionElements.SoundVolume:SetValue(soundVol)
     optionElements.MusicVolume:SetValue(musicVol)
     optionElements.VoiceVolume:SetValue(voiceVol)
+    optionElements.hudmode:SetValue(hudmode == 1 and "FULL" or "MINIMAL")
     
     optionElements.RecordingGain:SetValue(recordingGain)
     
@@ -1888,6 +2009,7 @@ local function SaveOptions(mainMenu)
     local skulkVariantName      = mainMenu.optionElements.SkulkVariantName:GetValue()
     local gorgeVariantName      = mainMenu.optionElements.GorgeVariantName:GetValue() or ""
     local lerkVariantName       = mainMenu.optionElements.LerkVariantName:GetValue() or ""
+    local hudmode               = mainMenu.optionElements.hudmode:GetValue()
     local sexType               = mainMenu.optionElements.SexType:GetValue()
     local cameraAnimation       = mainMenu.optionElements.CameraAnimation:GetActiveOptionIndex() > 1
 	local physicsGpuAcceleration = mainMenu.optionElements.PhysicsGpuAcceleration:GetActiveOptionIndex() > 1
@@ -1909,6 +2031,7 @@ local function SaveOptions(mainMenu)
     Client.SetOptionInteger("skulkVariant", FindVariant(kSkulkVariantData, skulkVariantName))
     Client.SetOptionInteger("gorgeVariant", FindVariant(kGorgeVariantData, gorgeVariantName))
     Client.SetOptionInteger("lerkVariant", FindVariant(kLerkVariantData, lerkVariantName))
+    Client.SetOptionInteger("hudmode", hudmode == "FULL" and kHUDMode.Full or kHUDMode.Minimal)
     Client.SetOptionString("sexType", sexType)
     
     SendPlayerVariantUpdate(
@@ -1953,6 +2076,13 @@ local function SaveOptions(mainMenu)
     end
     Client.ReloadKeyOptions()
     
+    for l = 1, #mainMenu.keyInputsCom do
+    
+    local keyInputCom = mainMenu.keyInputsCom[l]
+        Client.SetOptionString("input/" .. keyInputCom.inputName, keyInputCom:GetValue())
+        
+    end
+    Client.ReloadKeyOptions()
 
 end
 
@@ -2071,6 +2201,7 @@ function GUIMainMenu:CreateOptionWindow()
     
         InitOptions(self.optionElements)
         InitKeyBindings(self.keyInputs)
+		InitKeyBindingsCom(self.keyInputsCom)
         
     end
     self.optionWindow:AddEventCallbacks({ OnHide = InitOptionWindow })
@@ -2371,7 +2502,14 @@ function GUIMainMenu:CreateOptionWindow()
                 label  = "WAIT FOR VERTICAL SYNC",
                 type   = "select",
                 values = { "DISABLED", "DOUBLE BUFFERED", "TRIPLE BUFFERED" }
-            },
+            },            
+            {
+                name    = "hudmode",
+                label   = "HUD QUALITY",
+                type    = "select",
+                values  = { "FULL", "MINIMAL" },
+                callback = autoApplyCallback
+            },            
             {
                 name    = "Detail",
                 label   = "TEXTURE QUALITY",
@@ -2462,6 +2600,7 @@ function GUIMainMenu:CreateOptionWindow()
     
     local generalForm     = GUIMainMenu.CreateOptionsForm(self, content, generalOptions, self.optionElements)
     local keyBindingsForm = CreateKeyBindingsForm(self, content)
+    local keyBindingsFormCom = CreateKeyBindingsFormCom(self, content)
     local graphicsForm    = GUIMainMenu.CreateOptionsForm(self, content, graphicsOptions, self.optionElements)
     local soundForm       = GUIMainMenu.CreateOptionsForm(self, content, soundOptions, self.optionElements)
     
@@ -2472,6 +2611,7 @@ function GUIMainMenu:CreateOptionWindow()
         {
             { label = "GENERAL",  form = generalForm, scroll=true  },
             { label = "BINDINGS", form = keyBindingsForm, scroll=true },
+			{ label = "COMMANDER", form = keyBindingsFormCom, scroll=true },
             { label = "GRAPHICS", form = graphicsForm, scroll=true },
             { label = "SOUND",    form = soundForm },
         }

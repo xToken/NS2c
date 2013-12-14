@@ -9,6 +9,7 @@
 
 //NS2c
 //Removed some uneeded effects and other functions that were moved to player_client
+Shared.PrecacheSurfaceShader("cinematics/vfx_materials/marine_highlight.surface_shader")
 local kSensorBlipSize = 25
 
 function Marine:GetHealthbarOffset()

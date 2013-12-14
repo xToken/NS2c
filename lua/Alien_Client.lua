@@ -388,13 +388,14 @@ function Alien:UpdateClientEffects(deltaTime, isLocal)
             darkVisionFadeAmount = math.max(1 - (Shared.GetTime() - self.darkVisionEndTime) / darkVisionFadeTime, 0)
         end
         
-        if self:GetScreenEffects().darkVision then
+        local useShader = self:GetScreenEffects().darkVision 
         
-            self:GetScreenEffects().darkVision:SetActive(alienVisionEnabled)
-            
-            self:GetScreenEffects().darkVision:SetParameter("startTime", self.darkVisionTime)
-            self:GetScreenEffects().darkVision:SetParameter("time", Shared.GetTime())
-            self:GetScreenEffects().darkVision:SetParameter("amount", darkVisionFadeAmount)
+        if useShader then
+        
+            useShader:SetActive(alienVisionEnabled)            
+            useShader:SetParameter("startTime", self.darkVisionTime)
+            useShader:SetParameter("time", Shared.GetTime())
+            useShader:SetParameter("amount", darkVisionFadeAmount)
             
         end
         

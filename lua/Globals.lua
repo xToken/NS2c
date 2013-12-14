@@ -469,3 +469,5 @@ function GetHasShoulderPad(index, client)
     return GetHasDLC( kShoulderPad2ProductId[index], client )
 end
 
+kHUDMode = enum({ "Full", "Minimal" })
+

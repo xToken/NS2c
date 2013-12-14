@@ -28,6 +28,7 @@ kChamberLostNotification = 0    // Amount of Upgrade Chambers remaining for aler
 kPingOfDeathDelay = 2
 kPingOfDeathDamagePercent = 12
 kFootstepsThreshold = 3.5      //Speed in m/s
+kMinFootstepTime = 0.2         //Minimum time between footstep sounds, seems to be some extra tags in anim graphs :S
 kIdleThreshold = 5             //Speed in m/s
 
 kGhostStructureModifier = .75

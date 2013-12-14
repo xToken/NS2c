@@ -962,11 +962,13 @@ local function OnUpdateRender()
         gRenderCamera:SetCullingMode(cullingMode)
         Client.SetRenderCamera(gRenderCamera)
         
-        HiveVision_SetEnabled( GetIsAlienUnit(player) )
-        HiveVision_SyncCamera( gRenderCamera, player:isa("Commander") )
+        local outlinePlayers = player:isa("Spectator") and player:GetOutlinePlayers()
+
+        HiveVision_SetEnabled( GetIsAlienUnit(player) or outlinePlayers )
+        HiveVision_SyncCamera( gRenderCamera, player:isa("Commander") or outlinePlayers )
         
-        EquipmentOutline_SetEnabled( GetIsMarineUnit(player) )
-        EquipmentOutline_SyncCamera( gRenderCamera, player:isa("Commander") )
+        EquipmentOutline_SetEnabled( GetIsMarineUnit(player) or outlinePlayers )
+        EquipmentOutline_SyncCamera( gRenderCamera, player:isa("Commander") or outlinePlayers )
         
         if player:GetShowAtmosphericLight() then
             EnableAtmosphericDensity()

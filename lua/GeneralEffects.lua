@@ -8,6 +8,15 @@
 
 kGeneralEffectData = 
 {
+    teleport_trigger = 
+    {
+        teleportEffect =
+        {
+            {cinematic = "cinematics/marine/infantryportal/player_spawn.cinematic"},
+            {sound = "sound/NS2.fev/marine/structures/infantry_portal_player_spawn"},
+        },
+    },
+
     pickup =
     {
         effects =

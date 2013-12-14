@@ -163,6 +163,10 @@ function Skulk:GetExtentsCrouchShrinkAmount()
     return 0
 end
 
+function Skulk:GetMinFootstepTime()
+    return 0.05
+end
+
 // required to trigger wall walking animation
 function Skulk:GetIsJumping()
     return CoreMoveMixin.GetIsJumping(self) and not self.wallWalking

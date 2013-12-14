@@ -12,6 +12,8 @@
 // Temporary to scale the commander UIs.
 kCommanderGUIsGlobalScale = 0.75
 
+kTransparentTexture = "ui/transparent.dds"
+
 local kScreenScaleAspect = 1280
 
 local function ScreenSmallAspect()

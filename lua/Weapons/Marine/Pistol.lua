@@ -223,10 +223,6 @@ function Pistol:GetBulletDamage(target, endPoint)
     return ConditionalValue(self.altMode, kPistolAltDamage, kPistolDamage)
 end
 
-function Pistol:GetPrimaryIsBlocking()
-    return true
-end
-
 function Pistol:GetMaxAmmo()
     return 3 * self:GetClipSize()
 end

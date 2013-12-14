@@ -388,6 +388,30 @@ if Server then
 
 end
 
+local function SharedUpdate(self)
+
+    if self:GetIsPhaseReady() and GetIsUnitActive(self) then
+        //Auto phase the bots :s
+        for _, marine in ipairs(GetEntitiesForTeamWithinRange("Marine", self:GetTeamNumber(), self:GetOrigin(), 0.5)) do
+            local client = Server.GetOwner(marine)
+            if client and client:GetIsVirtual() and self:Phase(marine) then                
+                break
+            end
+        end
+    
+    end
+
+end
+
+// for non players
+if Server then
+
+    function PhaseGate:OnUpdate(deltaTime)    
+        SharedUpdate(self)
+    end
+
+end
+
 function PhaseGate:GetConnectionStartPoint()
     return self:GetOrigin()
 end

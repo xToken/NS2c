@@ -391,10 +391,10 @@ if Server then
     
     
     local function OnCommandDisableRanking()
-    
-        gRankingDisabled = not gRankingDisabled
-        Print("player ranking %s", ToString(not gRankingDisabled))
-        
+        if Shared.GetCheatsEnabled() then
+            gRankingDisabled = not gRankingDisabled
+            Print("player ranking %s", ToString(not gRankingDisabled))
+        end
     end
     
     Event.Hook("Console_disableranking", OnCommandDisableRanking)

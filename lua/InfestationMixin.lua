@@ -753,7 +753,7 @@ if Client then
 			if numModels > 0 then
 
 				modelArray = Client.CreateRenderModelArray(RenderScene.Zone_Default, numModels)
-				modelArray:SetCastsShadows(false)
+				modelArray:SetCastsShadows(true)
 				modelArray:InstanceMaterials()
 				modelArray:SetModel(modelName)
 				modelArray:SetModels( coordsArray )
