@@ -85,12 +85,13 @@ local function CreateSpitProjectile(self, player)
 
     if not Predict then
         
-        local viewAngles = player:GetViewAngles()
-        local viewCoords = viewAngles:GetCoords()
-        local startPoint = player:GetEyePos() + viewCoords.zAxis * 0.3
-        local startVelocity = viewCoords.zAxis * kSpitSpeed
+        local eyePos = player:GetEyePos()        
+        local viewCoords = player:GetViewCoords()
         
-        local spit = player:CreatePredictedProjectile("Spit", startPoint, startVelocity, 0, 0, 0, true)
+        local startPointTrace = Shared.TraceCapsule(eyePos, eyePos + viewCoords.zAxis * 1.5, Spit.kRadius, 0, CollisionRep.Damage, PhysicsMask.PredictedProjectileGroup, EntityFilterOneAndIsa(player, "Babbler"))
+        local startPoint = startPointTrace.endPoint
+        
+        local spit = player:CreatePredictedProjectile("Spit", startPoint, viewCoords.zAxis * kSpitSpeed, 0, 0, 0, true)
     
     end
 

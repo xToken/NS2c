@@ -15,7 +15,32 @@ class 'Rifle' (ClipWeapon)
 Rifle.kMapName = "rifle"
 
 Rifle.kModelName = PrecacheAsset("models/marine/rifle/rifle.model")
-local kViewModels = GenerateMarineViewModelPaths("rifle")
+
+local kDefaultVariantData = kMarineVariantData[ kDefaultMarineVariant ]
+
+//DINGUS
+function GenerateMarineRifleViewModelPaths()
+
+    local viewModels = { male = { }, female = { } }
+    
+    local function MakePath( prefix, suffix )
+        return "models/marine/".."rifle".."/"..prefix.."rifle".."_view"..suffix..".model"
+    end
+    
+    for variant, data in pairs(kMarineVariantData) do
+        viewModels.male[variant] = PrecacheAssetSafe( MakePath("", data.viewModelFilePart), MakePath("", kDefaultVariantData.viewModelFilePart) )
+    end
+    
+    for variant, data in pairs(kMarineVariantData) do
+        viewModels.female[variant] = PrecacheAssetSafe( MakePath("", data.viewModelFilePart), MakePath("", kDefaultVariantData.viewModelFilePart) )
+    end
+    
+    return viewModels
+    
+end
+
+local kViewModels = GenerateMarineRifleViewModelPaths()
+
 local kAnimationGraph = PrecacheAsset("models/marine/rifle/rifle_view.animation_graph")
 
 local kRange = 100

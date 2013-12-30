@@ -126,6 +126,11 @@ local function UpdateGestation(self)
             if self.resOnGestationComplete then
                 newPlayer:AddResources(self.resOnGestationComplete)
             end
+            
+            local newUpgrades = newPlayer:GetUpgrades()
+            if #newUpgrades > 0 then            
+                newPlayer.lastUpgradeList = newPlayer:GetUpgrades()
+            end
 
             // Notify team
 

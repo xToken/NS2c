@@ -173,9 +173,6 @@ kDamageEffects =
             {sound = "sound/NS2.fev/alien/skulk/bite_hit_metal", doer = "BiteLeap", world_space = true, done = true},
             
             {sound = "sound/NS2.fev/alien/skulk/parasite_hit", doer = "Parasite", classname = "Marine", world_space = true, done = true},
-            
-            {sound = "sound/NS2.fev/alien/gorge/spit_hit", doer = "Spit", classname = "Marine", world_space = true, done = true},        
-            
 
             {sound = "sound/NS2.fev/alien/common/spike_hit_marine", surface = "armor", doer = "LerkBite", alt_mode = true, done = true},
             {sound = "sound/NS2.fev/alien/lerk/spikes_pierce", surface = "flesh", doer = "LerkBite", alt_mode = true, done = true},
@@ -233,6 +230,16 @@ kDamageEffects =
         }
     },
     
+    // note: disabled spit decals
+    spit_hit =
+    {
+        effects =
+        {
+            {sound = "sound/NS2.fev/alien/gorge/spit_hit", world_space = true},
+            {cinematic = "cinematics/alien/gorge/spit_impact.cinematic", done = true},
+        }    
+    },
+    
     damage_decal =
     {
         damageDecals = 
@@ -263,7 +270,6 @@ kDamageEffects =
             {decal = "cinematics/vfx_materials/decals/railgun_hole_02.material", scale = 0.3, doer = "Railgun", done = true},
             
             // surface alien weapons
-            {decal = "cinematics/vfx_materials/decals/spit_decal.material", scale = 0.25, doer = "Spit", done = true},
             {decal = "cinematics/vfx_materials/decals/bite_02.material", scale = 0.5, doer = "Spores", alt_mode = true, done = true},
             {decal = "cinematics/vfx_materials/decals/bite_02.material", scale = 0.5, doer = "Umbra", alt_mode = true, done = true},
             {decal = "cinematics/vfx_materials/decals/bite_02.material", scale = 0.5, doer = "Primal", alt_mode = true,  done = true},
@@ -302,7 +308,6 @@ kDamageEffects =
             {player_cinematic = "cinematics/materials/%s/bite.cinematic", doer = "BiteLeap", done = true},             
             {player_cinematic = "cinematics/alien/skulk/parasite_hit_marine.cinematic", doer = "Parasite", classname = "Marine", done = true}, // TODO: remove sound from cinematic
             {player_cinematic = "cinematics/alien/skulk/parasite_hit.cinematic", doer = "Parasite", done = true}, // TODO: remove sound from cinematic
-            {player_cinematic = "cinematics/alien/gorge/spit_impact.cinematic", doer = "Spit", done = true}, // TODO: remove sound from cinematic
             {player_cinematic = "cinematics/materials/%s/sting.cinematic", doer = "Hydra", done = true},
             {player_cinematic = "cinematics/materials/%s/scrape.cinematic", doer = "SwipeBlink", done = true},
             {player_cinematic = "cinematics/materials/%s/gore.cinematic", doer = "Gore", done = true},

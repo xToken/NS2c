@@ -80,6 +80,10 @@ PrecacheAsset("models/marine/rifle/rifle_view_shell.model")
 PrecacheAsset("models/marine/rifle/rifle_shell.model")
 PrecacheAsset("models/marine/arms_lab/arms_lab_holo.model")
 PrecacheAsset("models/effects/frag_metal_01.model")
+PrecacheAsset("cinematics/vfx_materials/vfx_circuit_01.dds")
+PrecacheAsset("materials/effects/nanoclone.dds")
+PrecacheAsset("cinematics/vfx_materials/bugs.dds")
+PrecacheAsset("cinematics/vfx_materials/refract_water_01_normal.dds")
 
 local networkVars =
 {      

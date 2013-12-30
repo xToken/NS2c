@@ -47,14 +47,13 @@ function Spit:TimeUp()
 end
 
 function Spit:ProcessHit(targetHit, surface, normal)
-
-    //TODO: create decal
     
-    if Client or (Server and self:GetOwner() ~= targetHit) then
+    if Server and self:GetOwner() ~= targetHit then
         self:DoDamage(kSpitDamage, targetHit, self:GetOrigin() + normal * kHitEffectOffset, self:GetCoords().zAxis, surface, false, false)
         if targetHit and targetHit:isa("Hive") and targetHit.OnSpitHit then
             targetHit:OnSpitHit()
         end
+		GetEffectManager():TriggerEffects("spit_hit", { effecthostcoords = self:GetCoords() })
 	end
 
     if Server then

@@ -64,7 +64,7 @@ function PlayerRanking:StartGame()
 end
 
 function PlayerRanking:GetTrackServer()
-    return Server.GetNumActiveMods() == 0 and not GetServerContainsBots()
+    return Server.GetNumActiveMods() == 0 and not GetServerContainsBots() and not Shared.GetCheatsEnabled()
 end
 
 function PlayerRanking:GetGameMode()

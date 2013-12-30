@@ -244,14 +244,16 @@ end
 
 local function PredictGoal(self, velocity)
 
+    PROFILE("Skulk:PredictGoal")
+
     local goal = self.wallWalkingNormalGoal
     if velocity:GetLength() > 1 and not self:GetIsOnSurface() then
 
         local movementDir = GetNormalizedVector(velocity)
-        local completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(movementDir * 2.5, 3, nil, false)
+        local trace = Shared.TraceCapsule(self:GetOrigin(), movementDir * 2.5, Skulk.kXExtents, 0, CollisionRep.Move, PhysicsMask.Movement, EntityFilterOne(self))
 
-        if averageSurfaceNormal and (not hitEntities or #hitEntities == 0) then        
-            goal = averageSurfaceNormal    
+        if trace.fraction < 1 and not trace.entity then
+            goal = trace.normal    
         end
 
     end
@@ -349,7 +351,7 @@ function Skulk:PreUpdateMove(input, runningPrediction)
         self.timeOfLeap = 0
     end
     
-    self.currentWallWalkingAngles = self:GetAnglesFromWallNormal(PredictGoal(self, self:GetVelocity()) or Vector.yAxis) or self.currentWallWalkingAngles
+    self.currentWallWalkingAngles = self:GetAnglesFromWallNormal(self.wallWalkingNormalGoal or Vector.yAxis) or self.currentWallWalkingAngles
 
 end
 

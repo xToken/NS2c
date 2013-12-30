@@ -4,6 +4,7 @@ Script.Load("lua/GUIUtility.lua")
 Script.Load("lua/Table.lua")
 Script.Load("lua/BindingsDialog.lua")
 Script.Load("lua/NS2Utility.lua")
+Script.Load("lua/SabotCoreClient.lua")
 
 local kModeText =
 {

@@ -371,6 +371,8 @@ end
 
 function CloakableMixin:OnCapsuleTraceHit(entity)
 
+    PROFILE("CloakableMixin:OnCapsuleTraceHit")
+
     if GetAreEnemies(self, entity) then
     
         if self.fullyCloaked then

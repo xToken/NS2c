@@ -401,6 +401,8 @@ function Player:CopyPlayerDataFrom(player)
     self.mutedClients = player.mutedClients
     self.hotGroupNumber = player.hotGroupNumber
     
+    self.lastUpgradeList = player.lastUpgradeList
+    
 end
 
 /**

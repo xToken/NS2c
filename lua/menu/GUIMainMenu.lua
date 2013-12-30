@@ -20,6 +20,8 @@ Script.Load("lua/menu/Ticker.lua")
 Script.Load("lua/ServerBrowser.lua")
 Script.Load("lua/menu/Form.lua")
 Script.Load("lua/menu/ServerList.lua")
+//Script.Load("lua/menu/GatherList.lua")
+//Script.Load("lua/menu/GatherChat.lua")
 Script.Load("lua/menu/ServerTabs.lua")
 Script.Load("lua/menu/PlayerEntry.lua")
 Script.Load("lua/dkjson.lua")
@@ -32,6 +34,7 @@ Script.Load("lua/menu/GUIMainMenu_PlayNow.lua")
 Script.Load("lua/menu/GUIMainMenu_Mods.lua")
 Script.Load("lua/menu/GUIMainMenu_Training.lua")
 Script.Load("lua/menu/GUIMainMenu_Web.lua")
+//Script.Load("lua/menu/GUIMainMenu_Gather.lua")
 
 // Min and maximum values for the mouse sensitivity slider
 local kMinSensitivity = 1
@@ -246,8 +249,20 @@ function GUIMainMenu:Initialize()
                 self:ActivatePlayWindow()
             end
         })
-        
-        self.optionLink = self:CreateMainLink("OPTIONS", "options_ingame", "05")
+
+		
+        /*
+        self.gatherLink = self:CreateMainLink("GATHER", "gather_ingame", "05")
+        self.gatherLink:AddEventCallbacks(
+        {
+            OnClick = function()
+                self:ActivateGatherWindow()
+            end
+        })
+        */
+
+		
+        self.optionLink = self:CreateMainLink("OPTIONS", "options_ingame", "06")
         self.optionLink:AddEventCallbacks(
         {
             OnClick = function(self)
@@ -261,7 +276,7 @@ function GUIMainMenu:Initialize()
             end
         })
         
-        self.trainingLink = self:CreateMainLink("TRAINING", "tutorial_ingame", "06")
+        self.trainingLink = self:CreateMainLink("TRAINING", "tutorial_ingame", "07")
         self.trainingLink:AddEventCallbacks(
         {
             OnClick = function(self)
@@ -276,7 +291,7 @@ function GUIMainMenu:Initialize()
         })
         
         // Create "disconnect" button
-        self.disconnectLink = self:CreateMainLink("DISCONNECT", "disconnect_ingame", "07")
+        self.disconnectLink = self:CreateMainLink("DISCONNECT", "disconnect_ingame", "08")
         self.disconnectLink:AddEventCallbacks(
         {
             OnClick = function(self)
@@ -299,8 +314,16 @@ function GUIMainMenu:Initialize()
                 self:OnPlayClicked()
             end
         })
-        
-        self.trainingLink = self:CreateMainLink("TRAINING", "tutorial", "02")
+        /*
+        self.gatherLink = self:CreateMainLink("GATHER", "gather", "02")
+        self.gatherLink:AddEventCallbacks(
+        {
+            OnClick = function()
+                self:ActivateGatherWindow()
+            end
+        })
+        */
+        self.trainingLink = self:CreateMainLink("TRAINING", "tutorial", "03")
         self.trainingLink:AddEventCallbacks(
         {
             OnClick = function(self)
@@ -314,7 +337,7 @@ function GUIMainMenu:Initialize()
             end
         })
         
-        self.optionLink = self:CreateMainLink("OPTIONS", "options", "03")
+        self.optionLink = self:CreateMainLink("OPTIONS", "options", "04")
         self.optionLink:AddEventCallbacks(
         {
             OnClick = function(self)
@@ -328,7 +351,7 @@ function GUIMainMenu:Initialize()
             end
         })
         
-        self.modsLink = self:CreateMainLink("MODS", "mods", "04")
+        self.modsLink = self:CreateMainLink("MODS", "mods", "05")
         self.modsLink:AddEventCallbacks(
         {
             OnClick = function(self)
@@ -342,7 +365,7 @@ function GUIMainMenu:Initialize()
             end
         })
 
-        self.creditsLink = self:CreateMainLink("CREDITS", "credits", "05" )
+        self.creditsLink = self:CreateMainLink("CREDITS", "credits", "06" )
         self.creditsLink:AddEventCallbacks(
         {
             OnClick = function()
@@ -354,7 +377,7 @@ function GUIMainMenu:Initialize()
             end
         })
         
-        self.quitLink = self:CreateMainLink("EXIT", "exit", "06")
+        self.quitLink = self:CreateMainLink("EXIT", "exit", "07")
         self.quitLink:AddEventCallbacks(
         {
             OnClick = function(self)
@@ -367,6 +390,57 @@ function GUIMainMenu:Initialize()
     gMainMenu = self
 
     self:MaybeCreateFirstRunWindow()
+    
+    local VoiceChat = Client.GetOptionString("input/VoiceChat", "LeftAlt")
+    local ShowMap = Client.GetOptionString("input/ShowMap", "C")
+    local TextChat = Client.GetOptionString("input/TextChat", "Y")
+    local TeamChat = Client.GetOptionString("input/TeamChat", "Return")
+
+    local VoiceChatCom = Client.GetOptionString("input/VoiceChatCom", "")
+    local ShowMapCom = Client.GetOptionString("input/ShowMapCom", "")
+    local TextChatCom = Client.GetOptionString("input/TextChatCom", "")
+    local TeamChatCom = Client.GetOptionString("input/TeamChatCom", "")
+
+	if VoiceChatCom == "" then
+		Client.SetOptionString("input/VoiceChatCom", VoiceChat)
+	end
+	if ShowMapCom == "" then
+		Client.SetOptionString("input/ShowMapCom", ShowMap)
+	end
+	if TextChatCom == "" then
+		Client.SetOptionString("input/TextChatCom", TextChat)
+	end
+	if TeamChatCom == "" then
+		Client.SetOptionString("input/TeamChatCom", TeamChat)
+	end
+	
+	local gPlayerData = {}
+	local kPlayerRankingRequestUrl = "http://sabot.herokuapp.com/api/get/playerData/"
+
+	    local function PlayerDataResponse(steamId)
+            return function (playerData)
+        
+                PROFILE("PlayerRanking:PlayerDataResponse")
+                
+                local obj, pos, err = json.decode(playerData, 1, nil)
+                
+                if obj then
+                
+                    gPlayerData[steamId..""] = obj
+                
+                    // its possible that the server does not send all data we want, need to check for nil here to not cause any script errors later:            
+                    obj.skill = obj.skill or 0
+                    obj.level = obj.level or 0
+
+                    Client.SetOptionFloat("player-skill", tonumber(obj.skill))
+                    Client.SetOptionInteger("player-ranking", obj.level)
+                
+                end
+            end
+       end
+       
+    local requestUrl = kPlayerRankingRequestUrl .. Client.GetSteamId()
+    Shared.SendHTTPRequest(requestUrl, "GET", { }, PlayerDataResponse(Client.GetSteamId()))    
     
 end
 
@@ -469,6 +543,22 @@ function GUIMainMenu:CreateProfile()
     
     self.playerName = CreateMenuElement(self.profileBackground, "Font")
     self.playerName:SetCSSClass("profile")
+    
+    self.rankLevel = CreateMenuElement(self.profileBackground, "Link")
+    self.rankLevel:SetCSSClass("rank_level")
+    
+    self.skillLevel = CreateMenuElement(self.profileBackground, "Link")
+    self.skillLevel:SetCSSClass("skill_level")
+
+    local eventCallbacks =
+    {
+        OnClick = function (self, buttonPressed)
+            Client.ShowWebpage("http://hive.naturalselection2.com/profile/".. Client.GetSteamId())
+        end
+    }
+    
+    self.rankLevel:AddEventCallbacks(eventCallbacks)
+    self.skillLevel:AddEventCallbacks(eventCallbacks)
     
 end  
 
@@ -1471,7 +1561,8 @@ local function CheckForConflictedKeys(keyInputs)
     
 end
 
-local function CheckForConflictedKeysCom(keyInputsCom)
+//We don't want to check for conflicts as they can conflict without causing major problems, and will by default
+/*local function CheckForConflictedKeysCom(keyInputsCom)
     
     for l = 1, #keyInputsCom do
         keyInputsCom[l]:SetCSSClass("option_input")
@@ -1498,7 +1589,7 @@ local function CheckForConflictedKeysCom(keyInputsCom)
         
     end
     
-end
+end*/
 local function CreateKeyBindingsForm(mainMenu, content)
 
     local keyBindingsForm = CreateMenuElement(content, "Form", false)
@@ -1564,29 +1655,6 @@ end
 
 local function CreateKeyBindingsFormCom(mainMenu, content)
 
-    local VoiceChat = Client.GetOptionString("input/VoiceChat", "LeftAlt")
-    local ShowMap = Client.GetOptionString("input/ShowMap", "C")
-    local TextChat = Client.GetOptionString("input/TextChat", "Y")
-    local TeamChat = Client.GetOptionString("input/TeamChat", "Return")
-
-    local VoiceChatCom = Client.GetOptionString("input/VoiceChatCom", "")
-    local ShowMapCom = Client.GetOptionString("input/ShowMapCom", "")
-    local TextChatCom = Client.GetOptionString("input/TextChatCom", "")
-    local TeamChatCom = Client.GetOptionString("input/TeamChatCom", "")
-
-	if VoiceChatCom == "" then
-		Client.SetOptionString("input/VoiceChatCom", VoiceChat)
-	end
-	if ShowMapCom == "" then
-		Client.SetOptionString("input/ShowMapCom", ShowMap)
-	end
-	if TextChatCom == "" then
-		Client.SetOptionString("input/TextChatCom", TextChat)
-	end
-	if TeamChatCom == "" then
-		Client.SetOptionString("input/TeamChatCom", TeamChat)
-	end
-
     local keyBindingsFormCom = CreateMenuElement(content, "Form", false)
     
     local bindingsTableCom = BindingsUI_GetComBindingsTable()
@@ -1613,7 +1681,7 @@ local function CreateKeyBindingsFormCom(mainMenu, content)
                     
                     Client.SetOptionString("input/" .. keyInputCom.inputName, keyStringCom)
                     
-                    CheckForConflictedKeysCom(mainMenu.keyInputsCom)
+                    //CheckForConflictedKeysCom(mainMenu.keyInputsCom)
                     
                 end
                 keyInputCom.ignoreFirstKey = true
@@ -1635,7 +1703,7 @@ local function CreateKeyBindingsFormCom(mainMenu, content)
         
     end
     InitKeyBindingsCom(mainMenu.keyInputsCom)
-    CheckForConflictedKeysCom(mainMenu.keyInputsCom)
+    //CheckForConflictedKeysCom(mainMenu.keyInputsCom)
     
     keyBindingsFormCom:SetCSSClass("keybindings")
     
@@ -1673,7 +1741,6 @@ local function InitOptions(optionElements)
     local windowModeOptionIndex = table.find(windowModes, windowMode) or 1
     
     local displayBuffering      = Client.GetOptionInteger("graphics/display/display-buffering", 0)
-    local textureStreaming      = Client.GetOptionBoolean("graphics/texture-streaming", false)
     local ambientOcclusion      = Client.GetOptionString("graphics/display/ambient-occlusion", kAmbientOcclusionModes[1])
     local reflections           = Client.GetOptionBoolean("graphics/reflections", false)
     local particleQuality       = Client.GetOptionString("graphics/display/particles", "low")
@@ -1832,7 +1899,6 @@ local function InitOptions(optionElements)
     optionElements.AnisotropicFiltering:SetOptionActive( BoolToIndex(anisotropicFiltering) )
     optionElements.AntiAliasing:SetOptionActive( BoolToIndex(antiAliasing) )
     optionElements.Detail:SetOptionActive(visualDetailIdx)
-    optionElements.TextureStreaming:SetOptionActive( BoolToIndex(textureStreaming) )
     optionElements.AmbientOcclusion:SetOptionActive( table.find(kAmbientOcclusionModes, ambientOcclusion) )
     optionElements.Reflections:SetOptionActive( BoolToIndex(reflections) )
     optionElements.FOVAdjustment:SetValue(fovAdjustment)
@@ -1862,7 +1928,6 @@ local function SaveSecondaryGraphicsOptions(mainMenu)
     // These are options that are pretty quick to change, unlike screen resolution etc.
     // Have this separate, since graphics options are auto-applied
 
-    local textureStreaming      = mainMenu.optionElements.TextureStreaming:GetActiveOptionIndex() > 1
     local ambientOcclusionIdx   = mainMenu.optionElements.AmbientOcclusion:GetActiveOptionIndex()
     local visualDetailIdx       = mainMenu.optionElements.Detail:GetActiveOptionIndex()
     local infestationIdx        = mainMenu.optionElements.Infestation:GetActiveOptionIndex()
@@ -1876,7 +1941,6 @@ local function SaveSecondaryGraphicsOptions(mainMenu)
     local renderDeviceIdx       = mainMenu.optionElements.RenderDevice:GetActiveOptionIndex()
 
     Client.SetOptionBoolean("graphics/reflections", reflections)
-    Client.SetOptionBoolean("graphics/texture-streaming", textureStreaming)
     Client.SetOptionString("graphics/display/ambient-occlusion", kAmbientOcclusionModes[ambientOcclusionIdx] )
     Client.SetOptionString("graphics/display/particles", kParticleQualityModes[particleQualityIdx] )
     Client.SetOptionString("graphics/infestation", kInfestationModes[infestationIdx] )
@@ -2586,13 +2650,6 @@ function GUIMainMenu:CreateOptionWindow()
                 values  = { "OFF", "ON" },
                 callback = autoApplyCallback
             },
-            {
-                name    = "TextureStreaming",
-                label   = "TEXTURE STREAMING",
-                type    = "select",
-                values  = { "OFF", "ON" },
-                callback = autoApplyCallback
-            },
         }
         
     // save our option elements for future reference
@@ -2709,7 +2766,9 @@ function GUIMainMenu:Update(deltaTime)
     
         if self.menuBackground:GetIsVisible() then
             self.playerName:SetText(OptionsDialogUI_GetNickname())
-        end
+            self.rankLevel:SetText("Level " .. ToString(Client.GetOptionInteger("player-ranking", 0)))
+            self.skillLevel:SetText("Skill " .. ToString(math.round(Client.GetOptionFloat("player-skill", 0))))
+		end
         
         if self.modsWindow and self.modsWindow:GetIsVisible() then
             self:UpdateModsWindow(self)
@@ -2812,7 +2871,9 @@ function GUIMainMenu:Update(deltaTime)
             end
         
         end
-        
+        /*
+        self:UpdateGatherList(deltaTime)
+        */
     end
     
 end
@@ -3153,6 +3214,15 @@ function GUIMainMenu:ActivatePlayWindow()
 
 end
 
+function GUIMainMenu:ActivateGatherWindow()
+
+    if not self.gatherWindow then
+        self:CreateGatherWindow()
+    end
+    self:TriggerOpenAnimation(self.gatherWindow)
+    self:HideMenu()
+
+end
 //----------------------------------------
 //  
 //----------------------------------------

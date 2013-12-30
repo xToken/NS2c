@@ -152,7 +152,7 @@ function Spectator:OnCreate()
         self.mapButtonPressed = false
         self.mapMode = kSpectatorMapMode.Small
         self.showInsight = true
-        self.showPlayerOutline = false
+        self.showPlayerOutline = true
         
     end
     

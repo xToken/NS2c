@@ -2353,7 +2353,9 @@ function Player:OnCountDownEnd()
         
     end
     
-    //Client.PlayMusic("sound/NS2.fev/round_start")
+    if gRoundStartMusic then
+    	Client.PlayMusic(gRoundStartMusic)
+	end
     
 end
 

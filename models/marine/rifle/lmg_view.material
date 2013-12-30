@@ -1,0 +1,5 @@
+shader = "shaders/ViewModel_emissive.surface_shader"
+albedoMap = "models/marine/rifle/lmg_view.dds"
+normalMap = "models/marine/rifle/lmg_view_normal.dds"
+emissiveMap = "models/marine/rifle/lmg_view_glow.dds"
+specularMap = "models/marine/rifle/lmg_view_spec.dds"
