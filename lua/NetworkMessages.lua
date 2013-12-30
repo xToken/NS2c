@@ -17,6 +17,7 @@ Script.Load("lua/TechTreeConstants.lua")
 Script.Load("lua/VoiceOver.lua")
 Script.Load("lua/InsightNetworkMessages.lua")
 Script.Load("lua/SharedDecal.lua")
+Script.Load("lua/Balance.lua")
 
 local kCameraShakeMessage =
 {
@@ -355,7 +356,7 @@ local kScoresMessage =
     kills = string.format("integer (0 to %d)", kMaxKills),
     assists = string.format("integer (0 to %d)", kMaxKills),
     deaths = string.format("integer (0 to %d)", kMaxDeaths),
-    resources = string.format("integer (0 to %d)", kMaxResources),
+    resources = string.format("integer (0 to %d)", kMaxPersonalResources),
     isCommander = "boolean",
     isRookie = "boolean",
     status = "enum kPlayerStatus",
@@ -1051,7 +1052,8 @@ Shared.RegisterNetworkMessage("AutoConcedeWarning", kAutoConcedeWarning)
 local kScoreUpdate =
 {
     points = "integer (0 to " .. kMaxScore .. ")",
-    res = "integer (0 to " .. kMaxResources .. ")"
+    res = "integer (0 to " .. kMaxPersonalResources .. ")",
+    wasKill = "boolean"
 }
 Shared.RegisterNetworkMessage("ScoreUpdate", kScoreUpdate)
 

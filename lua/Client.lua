@@ -16,6 +16,7 @@ Script.Load("lua/PreLoadMod.lua")
 
 Script.Load("lua/ClientResources.lua")
 Script.Load("lua/Shared.lua")
+Script.Load("lua/PrecacheList.lua")
 Script.Load("lua/Effect.lua")
 Script.Load("lua/AmbientSound.lua")
 Script.Load("lua/GhostModelUI.lua")
@@ -51,6 +52,7 @@ Script.Load("lua/ConsoleCommands_Client.lua")
 Script.Load("lua/NetworkMessages_Client.lua")
 
 Script.Load("lua/HiveVision.lua")
+Script.Load("lua/SabotCoreClient.lua")
 
 // Precache the common surface shaders.
 Shared.PrecacheSurfaceShader("shaders/Model.surface_shader")
@@ -243,8 +245,15 @@ end
  */
 function OnMapLoadEntity(className, groupName, values)
 
+    // set custom round start music if defined
+    if className == "ns2_gamerules" then
+    
+        if values.roundStartMusic ~= nil and string.len(values.roundStartMusic) > 0 then
+            gRoundStartMusic = values.roundStartMusic
+        end
+    
     // Create render objects.
-    if className == "color_grading" then
+    elseif className == "color_grading" then
     
         // Disabled temporarily because it's crashing
         Print("color_grading map entity ignored (temporarily disabled)")
@@ -962,11 +971,13 @@ local function OnUpdateRender()
         gRenderCamera:SetCullingMode(cullingMode)
         Client.SetRenderCamera(gRenderCamera)
         
-        HiveVision_SetEnabled( GetIsAlienUnit(player) )
-        HiveVision_SyncCamera( gRenderCamera, player:isa("Commander") )
+        local outlinePlayers = player:isa("Spectator") and player:GetOutlinePlayers()
+
+        HiveVision_SetEnabled( GetIsAlienUnit(player) or outlinePlayers )
+        HiveVision_SyncCamera( gRenderCamera, player:isa("Commander") or outlinePlayers )
         
-        EquipmentOutline_SetEnabled( GetIsMarineUnit(player) )
-        EquipmentOutline_SyncCamera( gRenderCamera, player:isa("Commander") )
+        EquipmentOutline_SetEnabled( GetIsMarineUnit(player) or outlinePlayers )
+        EquipmentOutline_SyncCamera( gRenderCamera, player:isa("Commander") or outlinePlayers )
         
         if player:GetShowAtmosphericLight() then
             EnableAtmosphericDensity()

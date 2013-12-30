@@ -10,7 +10,7 @@
 
 Script.Load("lua/Babbler.lua")
 Script.Load("lua/TeamMixin.lua")
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
@@ -31,7 +31,7 @@ local kAnimationGraph = PrecacheAsset("models/alien/babbler/babbler_egg.animatio
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
@@ -41,7 +41,7 @@ function BabblerEgg:OnCreate()
     ScriptActor.OnCreate(self)
 
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     
     InitMixin(self, LiveMixin)
     InitMixin(self, TeamMixin)

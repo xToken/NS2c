@@ -25,7 +25,7 @@ kVoiceId = enum ({
 
 local kAlienTauntSounds =
 {
-    [kTechId.Skulk] = "sound/NS2.fev/alien/skulk/taunt",
+    [kTechId.Skulk] = "sound/NS2.fev/alien/voiceovers/chuckle",
     [kTechId.Gorge] = "sound/NS2.fev/alien/gorge/taunt",
     [kTechId.Lerk] = "sound/NS2.fev/alien/lerk/taunt",
     [kTechId.Fade] = "sound/NS2.fev/alien/fade/taunt",

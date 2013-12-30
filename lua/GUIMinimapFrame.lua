@@ -124,7 +124,7 @@ function GUIMinimapFrame:SendKeyEvent(key, down)
     local handledInput = false
     local choosingSpawn = isRespawning and self.background:GetIsVisible()
     
-    if isRespawning and GetIsBinding(key, "ShowMap") then
+    if isRespawning and GetIsBinding(key, "ShowMap") and not ChatUI_EnteringChatMessage() then
     
         if not down then
     

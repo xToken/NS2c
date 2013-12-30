@@ -144,22 +144,35 @@ if Client then
         local player = Client.GetLocalPlayer()
         if player and HasMixin(player, "TeamMessage") then
         
-            local displayText = kTeamMessages[messageType].text[player:GetTeamType()]
-            
-            if displayText then
-            
-                if type(displayText) == "function" then
-                    displayText = displayText(messageData)
-                else
-                    displayText = Locale.ResolveString(displayText)
-                end
-                if messageType == kTeamMessageTypes.UnassignedHive then
-                    displayText = string.format(displayText, BindingsUI_GetInputValue("RequestMenu"))
-                end
-                
-                assert(type(displayText) == "string")
-                player:SetTeamMessage(string.upper(displayText))
-                
+			if Client.GetOptionInteger("hudmode", kHUDMode.Full) == kHUDMode.Full then
+	            local displayText = kTeamMessages[messageType].text[player:GetTeamType()]
+	            
+	            if displayText then
+	            
+	                if type(displayText) == "function" then
+	                    displayText = displayText(messageData)
+	                else
+	                    displayText = Locale.ResolveString(displayText)
+	                end
+	                if messageType == kTeamMessageTypes.UnassignedHive then
+	                    displayText = string.format(displayText, BindingsUI_GetInputValue("RequestMenu"))
+	                end
+	                
+	                assert(type(displayText) == "string")
+	                player:SetTeamMessage(string.upper(displayText))
+	                
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	            end
             end
             
         end

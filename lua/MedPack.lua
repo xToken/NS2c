@@ -10,7 +10,6 @@
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/DropPack.lua")
 Script.Load("lua/PickupableMixin.lua")
-Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 
 class 'MedPack' (DropPack)

@@ -109,7 +109,7 @@ local function CreateSpinEffect(self)
         self.fakeMarineModel:SetModel(Shared.GetModelIndex(kHoloMarineModel))
         
         local coords = self:GetCoords()
-        coords.origin = coords.origin + Vector(0, 0.5, 0)
+        coords.origin = coords.origin + Vector(0, 0.4, 0)
         
         self.fakeMarineModel:SetCoords(coords)
         self.fakeMarineModel:InstanceMaterials()

@@ -67,6 +67,9 @@
     <filename>Weapons\Marine\Axe.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Alien\BabblerAbility.lua</filename>
+  </file>
+  <file>
     <filename>BabblerEgg.lua</filename>
   </file>
   <file>

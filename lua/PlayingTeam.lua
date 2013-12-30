@@ -650,7 +650,7 @@ function PlayingTeam:RespawnPlayer(player, origin, angles)
         local spawnOrigin = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, initialTechPoint:GetOrigin(), 2, 15, EntityFilterAll())
         
         if not spawnOrigin then
-            spawnOrigin = initialTechPoint:GetOrigin() + Vector(0.01, 0.2, 0)
+            spawnOrigin = initialTechPoint:GetOrigin() + Vector(2, 0.2, 2)
         end
         
         // Orient player towards tech point

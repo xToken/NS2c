@@ -230,7 +230,7 @@ end
 Client.HookNetworkMessage("SetClientTeamNumber", OnSetClientTeamNumber)
 
 local function OnScoreUpdate(message)
-    ScoreDisplayUI_SetNewScore(message.points, message.res)
+    ScoreDisplayUI_SetNewScore(message.points, message.res, message.wasKill)
 end
 Client.HookNetworkMessage("ScoreUpdate", OnScoreUpdate)
 

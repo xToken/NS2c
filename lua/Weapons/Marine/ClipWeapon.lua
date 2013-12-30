@@ -27,8 +27,6 @@ ClipWeapon.kMapName = "clipweapon"
 
 local networkVars =
 {
-    blockingPrimary = "compensated boolean",
-    blockingSecondary = "compensated boolean",
     timeAttackStarted = "time",
     deployed = "boolean",
     
@@ -62,11 +60,9 @@ function ClipWeapon:OnCreate()
     
     self.primaryAttacking = false
     self.secondaryAttacking = false
-    self.blockingPrimary = false
-    self.blockingSecondary = false
     self.timeAttackStarted = 0
     self.deployed = false
-
+	self.shooting = false
     InitMixin(self, BulletsMixin)
     InitMixin(self, PickupableWeaponMixin)
     
@@ -77,8 +73,12 @@ local function CancelReload(self)
     if self:GetIsReloading() then
     
         self.reloading = false
-        self:TriggerEffects("reload_cancel")
-        
+        if Client then
+            self:TriggerEffects("reload_cancel")
+        end
+        if Server then
+            self:TriggerEffects("reload_cancel")
+        end
     end
     
 end
@@ -286,10 +286,6 @@ function ClipWeapon:GetPrimaryAttackRequiresPress()
     return false
 end
 
-function ClipWeapon:GetForcePrimaryAttackAnimation()
-    return true
-end
-
 function ClipWeapon:GetIsPrimaryAttackAllowed(player)
 
     if not player then
@@ -298,8 +294,6 @@ function ClipWeapon:GetIsPrimaryAttackAllowed(player)
 
     local attackAllowed = (not self:GetPrimaryAttackRequiresPress() or not player:GetPrimaryAttackLastFrame())
     attackAllowed = attackAllowed and (not self:GetIsReloading() or self:GetPrimaryCanInterruptReload())
-    attackAllowed = attackAllowed and not self.blockingSecondary
-    attackAllowed = attackAllowed and (not self:GetPrimaryIsBlocking() or not self.blockingPrimary)
     attackAllowed = attackAllowed and not (player.GetIsDevoured and player:GetIsDevoured()) 
     attackAllowed = attackAllowed and not (player.GetIsWebbed and player:GetIsWebbed())
     return self:GetIsDeployed() and attackAllowed and not player:GetIsStunned()
@@ -316,10 +310,6 @@ function ClipWeapon:OnPrimaryAttack(player)
             
             self.primaryAttacking = true
             self.timeAttackStarted = Shared.GetTime()
-            
-            if self:GetPrimaryIsBlocking() then
-                self.blockingPrimary = true
-            end
             
         elseif self.ammo > 0 then
         
@@ -348,6 +338,8 @@ function ClipWeapon:OnPrimaryAttackEnd(player)
         
     end
     
+    self.shooting = false
+    
 end
 
 function ClipWeapon:CreatePrimaryAttackEffect(player)
@@ -360,8 +352,7 @@ end
 function ClipWeapon:OnSecondaryAttack(player)
 
     local attackAllowed = (not self:GetIsReloading() or self:GetSecondaryCanInterruptReload()) and (not self:GetSecondaryAttackRequiresPress() or not player:GetSecondaryAttackLastFrame())
-    attackAllowed = attackAllowed and (not self:GetPrimaryIsBlocking() or not self.blockingPrimary) and not self.blockingSecondary
-    
+        
     if self:GetIsDeployed() and attackAllowed and not self.primaryAttacking then
     
         self.secondaryAttacking = true
@@ -370,7 +361,6 @@ function ClipWeapon:OnSecondaryAttack(player)
         
         Weapon.OnSecondaryAttack(self, player)
         
-        self.blockingSecondary = true
         self.timeAttackStarted = Shared.GetTime()
         
     else
@@ -389,25 +379,11 @@ function ClipWeapon:OnSecondaryAttackEnd(player)
 end
 
 function ClipWeapon:GetPrimaryAttacking()
-
-    if self:GetPrimaryIsBlocking() then
-        return self.blockingPrimary
-    else
-        return self.primaryAttacking
-    end
-    
+    return self.primaryAttacking
 end
 
 function ClipWeapon:GetSecondaryAttacking()
-    return self.blockingSecondary
-end
-
-/**
- * By default, primary attack does not block anything else.
- * Child classes can override this behavior by returning true here.
- */
-function ClipWeapon:GetPrimaryIsBlocking()
-    return false
+    return self.secondaryAttacking
 end
 
 function ClipWeapon:GetBulletSize()
@@ -511,9 +487,7 @@ function ClipWeapon:CanReload()
 
     return self.ammo > 0 and
            self.clip < self:GetClipSize() and
-           not self.reloading and
-           not self.blockingPrimary and
-           not self.blockingSecondary
+           not self.reloading
     
 end
 
@@ -544,9 +518,8 @@ function ClipWeapon:OnHolster(player)
     CancelReload(self)
     
     self.deployed = false
-    self.blockingPrimary = false
-    self.blockingSecondary = false
     self.reloading = false
+    self.shooting = false
     
 end
 
@@ -577,6 +550,8 @@ function ClipWeapon:OnTag(tagName)
             
             Weapon.OnPrimaryAttack(self, player)
             
+            self.shooting = true
+            
             //DebugFireRate(self)
             
         end
@@ -589,14 +564,9 @@ function ClipWeapon:OnTag(tagName)
     elseif tagName == "reload_end" then
         self.reloading = false
 		self.reloaded = false
-		self.blockingPrimary = false
         if self.mapName ~= "shotgun" and self.mapName ~= "grenadelauncher" then
             FillClip(self)
         end
-    elseif tagName == "attack_end" then
-        self.blockingPrimary = false
-    elseif tagName == "alt_attack_end" then
-        self.blockingSecondary = false
     elseif tagName == "shoot_empty" then
         self:TriggerEffects("clipweapon_empty")
     end

@@ -168,7 +168,7 @@ if Server then
                 local damageFraction = Clamp(damageDone / totalDamageDone, 0, 1)                
                 local scoreReward = points >= 1 and math.max(1, math.round(points * damageFraction)) or 0    
          
-                currentAttacker:AddScore(scoreReward, resReward * damageFraction)
+                currentAttacker:AddScore(scoreReward, resReward * damageFraction, attacker == currentAttacker)
                 
                 if self:isa("Player") and currentAttacker ~= attacker then
                     currentAttacker:AddAssistKill()

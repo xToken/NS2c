@@ -1,0 +1,2 @@
+Base 'goldsource' style movement - Maesse
+NS1 LMG remake model, font and sounds - Evil_Ice

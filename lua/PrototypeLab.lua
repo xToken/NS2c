@@ -10,7 +10,7 @@
 //NS2c
 //Removed concept of logging in a related netvars/functions.
 
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
@@ -46,7 +46,7 @@ PrototypeLab.kModelName = PrecacheAsset("models/marine/prototype_lab/prototype_l
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
@@ -54,7 +54,7 @@ AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ResearchMixin, networkVars)
-AddMixinNetworkVars(RecycleMixin, networkVars)
+AddMixinNetworkVars(RecycleMixin, networkVars) 
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
@@ -67,7 +67,7 @@ function PrototypeLab:OnCreate()
     ScriptActor.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, LiveMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, FlinchMixin)

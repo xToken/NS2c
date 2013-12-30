@@ -2,7 +2,7 @@
 // lua\TurretFactory.lua
 //
 
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
@@ -44,7 +44,7 @@ TurretFactory.kActiveEffect = PrecacheAsset("cinematics/marine/roboticsfactory/a
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
@@ -67,7 +67,7 @@ function TurretFactory:OnCreate()
     ScriptActor.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, LiveMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, FlinchMixin)

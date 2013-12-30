@@ -90,7 +90,7 @@ kDefaultPlayerName = "NSPlayer"
 kDefaultWaypointGroup = "GroundWaypoints"
 kAirWaypointsGroup = "AirWaypoints"
 
-kMaxResources = 999
+kMaxResources = 200
 
 // Max number of entities allowed in radius. Don't allow creating any more entities if this number is rearched.
 // Don't include players in count.
@@ -125,7 +125,7 @@ kHitEffectSurface = enum( { "metal", "door", "electronic", "organic", "rock", "t
 kHitEffectRelevancyDistance = 40
 kHitEffectMaxPosition = 1638 // used for precision in hiteffect message
 kTracerSpeed = 115
-kMaxHitEffectsPerSecond = 200
+kMaxHitEffectsPerSecond = 100
 
 kMainMenuFlash = "ui/main_menu.swf"
 
@@ -154,7 +154,7 @@ kDeathMessageIcon = enum( { 'None',
                             'HeavyMachineGun', 'Metabolize', 'LerkBite', 'Umbra', 
                             'Xenocide', 'Blink', 'Leap', 'Stomp',
                             'Consumed', 'GL', 'Recycled', 'Babbler', 'Railgun', 'BabblerAbility', 'GorgeTunnel', 'Devour',
-							'HandGrenade', 'GasGrenade', 'PulseGrenade', 'StabBlink',
+							'HandGrenade', 'GasGrenade', 'PulseGrenade', 'Stab', 'WhipBomb',
                             } )
 
 kMinimapBlipType = enum( { 'Undefined', 'TechPoint', 'ResourcePoint', 'Scan', 'EtherealGate', 'HighlightWorld',
@@ -468,4 +468,6 @@ kShoulderPad2ProductId =
 function GetHasShoulderPad(index, client)
     return GetHasDLC( kShoulderPad2ProductId[index], client )
 end
+
+kHUDMode = enum({ "Full", "Minimal" })
 

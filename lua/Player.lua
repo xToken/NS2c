@@ -305,6 +305,7 @@ function Player:OnCreate()
     
     self.stepStartTime = 0
     self.stepAmount = 0
+    self.lastfootstep = 0
     
     self.isMoveBlocked = false
     self.isRookie = false
@@ -2030,6 +2031,10 @@ function Player:GetArmorAmount()
     return self:GetMaxArmor()
 end
 
+function Player:GetMinFootstepTime()
+    return kMinFootstepTime
+end
+
 function Player:TriggerFootstep()
     
 	self.leftFoot = not self.leftFoot
@@ -2037,6 +2042,7 @@ function Player:TriggerFootstep()
 	local viewVec = self:GetViewAngles():GetCoords().zAxis
 	local forward = self:GetVelocity():DotProduct(viewVec) > -0.1
 	local crouch = self:GetCrouching() and self:GetCrouchAmount() == 1
+	self.lastfootstep = Shared.GetTime() + self:GetMinFootstepTime()
 	self:TriggerEffects("footstep", {surface = self:GetMaterialBelowPlayer(), left = self.leftFoot, sprinting = true, forward = forward, crouch = crouch})
 	
 end
@@ -2046,6 +2052,7 @@ kStepTagNames["step"] = true
 kStepTagNames["step_run"] = true
 kStepTagNames["step_sprint"] = true
 kStepTagNames["step_crouch"] = true
+
 function Player:OnTag(tagName)
 
     PROFILE("Player:OnTag")
@@ -2056,7 +2063,7 @@ function Player:OnTag(tagName)
     end
     
     // Play footstep when foot hits the ground.
-    if self:GetPlayFootsteps() and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] then
+    if self:GetPlayFootsteps() and not Predict and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] and self.lastfootstep < Shared.GetTime() then
         self:TriggerFootstep()
     end
     

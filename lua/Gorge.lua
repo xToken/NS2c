@@ -274,7 +274,7 @@ function Gorge:ModifyVelocity(input, velocity, deltaTime)
             velocity:Add(impulse)
         
         end
-        self.prevY = nil
+
         self.startedSliding = false
 
     end
@@ -294,7 +294,7 @@ function Gorge:ModifyVelocity(input, velocity, deltaTime)
         velocity:Normalize()
         velocity:Scale(currentSpeed)
         
-        local yTravel = self:GetOrigin().y - (self.prevY or 0)
+        local yTravel = self:GetOrigin().y - self.prevY
         currentSpeed = velocity:GetLengthXZ() + yTravel * -4
         
         if currentSpeed < kMaxSlideSpeed or yTravel > 0 then
@@ -308,8 +308,7 @@ function Gorge:ModifyVelocity(input, velocity, deltaTime)
         end
         
         velocity.y = prevY
-        self.verticalVelocity = yTravel / input.time      
-        self.prevY = self:GetOrigin().y
+        self.verticalVelocity = yTravel / input.time
     end
     
 end
@@ -344,6 +343,12 @@ function Gorge:OnUpdateAnimationInput(modelMixin)
         modelMixin:SetAnimationInput("move", "belly")
     end
     
+end
+
+function Gorge:PreUpdateMove(input, runningPrediction)
+
+    self.prevY = self:GetOrigin().y
+
 end
 
 function Gorge:GetCanCloakOverride()

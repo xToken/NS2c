@@ -12,7 +12,7 @@
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/TriggerMixin.lua")
 Script.Load("lua/LiveMixin.lua")
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/DamageMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
@@ -38,7 +38,7 @@ local kMineMaxShakeIntensity = 0.13
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 
@@ -47,7 +47,7 @@ function Mine:OnCreate()
     ScriptActor.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, LiveMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, TeamMixin)

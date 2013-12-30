@@ -24,7 +24,7 @@
 //NS2c
 //Changes to have passive SOF, removal of active abilities.
 
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -69,7 +69,7 @@ Shade.kHiveSightRange = 25
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(UpgradableMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
@@ -92,7 +92,7 @@ function Shade:OnCreate()
     ScriptActor.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, LiveMixin)
     InitMixin(self, UpgradableMixin)
     InitMixin(self, GameEffectsMixin)

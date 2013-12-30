@@ -31,6 +31,7 @@ Script.Load("lua/DevouredMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/Weapons/PredictedProjectile.lua")
 Script.Load("lua/MarineVariantMixin.lua")
+Script.Load("lua/MarineOutlineMixin.lua")
 
 if Client then
     Script.Load("lua/TeamMessageMixin.lua")
@@ -71,6 +72,18 @@ local kMaxWebbedMoveSpeed = 0.5
 local kDoubleJumpMinHeightChange = 0.4
 local kArmorWeldRate = 25
 local kWalkBackwardSpeedScalar = 0.4
+
+PrecacheAsset("models/marine/rifle/rifle_shell_01.dds")
+PrecacheAsset("models/marine/rifle/rifle_shell_01_normal.dds")
+PrecacheAsset("models/marine/rifle/rifle_shell_01_spec.dds")
+PrecacheAsset("models/marine/rifle/rifle_view_shell.model")
+PrecacheAsset("models/marine/rifle/rifle_shell.model")
+PrecacheAsset("models/marine/arms_lab/arms_lab_holo.model")
+PrecacheAsset("models/effects/frag_metal_01.model")
+PrecacheAsset("cinematics/vfx_materials/vfx_circuit_01.dds")
+PrecacheAsset("materials/effects/nanoclone.dds")
+PrecacheAsset("cinematics/vfx_materials/bugs.dds")
+PrecacheAsset("cinematics/vfx_materials/refract_water_01_normal.dds")
 
 local networkVars =
 {      
@@ -188,6 +201,7 @@ function Marine:OnInitialized()
     elseif Client then
     
         InitMixin(self, HiveVisionMixin)
+        InitMixin(self, MarineOutlineMixin)
         
         self:AddHelpWidget("GUIMarineHealthRequestHelp", 2)
         //self:AddHelpWidget("GUIMarineFlashlightHelp", 2)

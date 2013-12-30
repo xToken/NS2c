@@ -43,6 +43,7 @@ Script.Load("lua/NetworkMessages_Server.lua")
 Script.Load("lua/dkjson.lua")
 
 Script.Load("lua/NetworkDebug.lua")
+Script.Load("lua/SabotCoreServer.lua")
 
 Server.readyRoomSpawnList = table.array(32)
 

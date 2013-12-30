@@ -32,7 +32,7 @@ end
 
 local kVerticleThrust = 19
 local kJumpForce = 5.75
-local kJetpackingJumpForce = 5.0
+local kJetpackingJumpForce = 4.5
 local kMaxCrouchSpeed = 4
 local kJetpackAcceleration = 4 // Horizontal acceleration, NS1 - 200 fps = ~45, 125 = ~28
 local kFlyMaxSpeed = 13.0 // NS1 jetpack is 2.9x running speed (walk: 192, jetpack: 576)

@@ -62,7 +62,7 @@ if Client then
 end
 
 function ReadyRoomPlayer:GetHealthbarOffset()
-    return 0.8
+    return 0.85
 end
 
 Shared.LinkClassToMap("ReadyRoomPlayer", ReadyRoomPlayer.kMapName, networkVars)

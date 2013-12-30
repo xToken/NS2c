@@ -21,7 +21,7 @@ function Hive:OnUpdate(deltaTime)
     
     local isVisible = not self:GetIsCloaked() and self:GetIsAlive()
     
-    self:AttachEffect(effectName, coords, Cinematic.Repeat_Loop)
+    self:AttachEffect(effectName, coords, Cinematic.Repeat_Endless)
     self:SetEffectVisible(effectName, isVisible)
     // Disable other stuff :P
     self:SetEffectVisible(Hive.kSpecksEffect, isVisible)

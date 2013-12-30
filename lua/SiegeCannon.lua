@@ -3,7 +3,7 @@
 //Adjusted sieges to be constructed and require nearby TF
 
 Script.Load("lua/ScriptActor.lua")
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
@@ -63,7 +63,7 @@ local networkVars =
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(UpgradableMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
@@ -85,7 +85,7 @@ function SiegeCannon:OnCreate()
     ScriptActor.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, LiveMixin)
     InitMixin(self, RagdollMixin)
     InitMixin(self, UpgradableMixin)

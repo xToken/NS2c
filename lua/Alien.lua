@@ -52,6 +52,8 @@ Shared.PrecacheSurfaceShader("models/alien/alien.surface_shader")
 
 Alien.kNotEnoughResourcesSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/more")
 Alien.kTeleportSound = PrecacheAsset("sound/NS2.fev/alien/structures/generic_spawn_large")
+PrecacheAsset("models/alien/infestation/infestation2.model")
+PrecacheAsset("cinematics/vfx_materials/vfx_neuron_03.dds")
 
 local networkVars = 
 {

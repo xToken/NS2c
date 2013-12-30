@@ -39,6 +39,10 @@ GUIResourceDisplay.kFontSize = 16
 GUIResourceDisplay.kIconTextXOffset = 5
 GUIResourceDisplay.kIconXOffset = 30
 
+GUIResourceDisplay.kEggsIcon = { Width = 0, Height = 0, X = 0, Y = 0, Coords = { X1 = 80 * 6, Y1 = 80 * 3, X2 = 80 * 7, Y2 = 80 * 4 } }
+GUIResourceDisplay.kEggsIcon.Width = GUIScale(57)
+GUIResourceDisplay.kEggsIcon.Height = GUIScale(57)
+
 local kFontName = "fonts/AgencyFB_small.fnt"
 local kFontScale = GUIScale(Vector(1,1,1))
 
@@ -46,7 +50,7 @@ local kColorWhite = Color(1, 1, 1, 1)
 local kColorRed = Color(1, 0, 0, 1)
 
 local kBackgroundNoiseTexture =  "ui/alien_commander_bg_smoke.dds"
-local kSmokeyBackgroundSize = GUIScale(Vector(300, 96, 0))
+local kSmokeyBackgroundSize = GUIScale(Vector(375, 100, 0))
 
 function GUIResourceDisplay:Initialize(settingsTable)
 
@@ -105,6 +109,26 @@ function GUIResourceDisplay:Initialize(settingsTable)
     self.towerText:SetScale(kFontScale)
     self.towerIcon:AddChild(self.towerText)
     
+	self.eggsIcon = GUIManager:CreateGraphicItem()
+    self.eggsIcon:SetSize(Vector(GUIResourceDisplay.kEggsIcon.Width, GUIResourceDisplay.kEggsIcon.Height, 0))
+    self.eggsIcon:SetAnchor(GUIItem.Right, GUIItem.Center)
+    local eggsIconX = GUIResourceDisplay.kEggsIcon.X + GUIResourceDisplay.kEggsIcon.Width + GUIResourceDisplay.kIconXOffset
+    local eggsIconY = GUIResourceDisplay.kEggsIcon.Y + -GUIResourceDisplay.kEggsIcon.Height / 2
+    self.eggsIcon:SetPosition(Vector(eggsIconX, eggsIconY, 0))
+    self.eggsIcon:SetTexture("ui/alien_buildmenu_profile.dds")
+    GUISetTextureCoordinatesTable(self.eggsIcon, GUIResourceDisplay.kEggsIcon.Coords)
+    self.background:AddChild(self.eggsIcon)
+    
+    self.eggsText = GUIManager:CreateTextItem()
+    self.eggsText:SetAnchor(GUIItem.Right, GUIItem.Center)
+    self.eggsText:SetTextAlignmentX(GUIItem.Align_Min)
+    self.eggsText:SetTextAlignmentY(GUIItem.Align_Center)
+    self.eggsText:SetPosition(Vector(GUIResourceDisplay.kIconTextXOffset, 0, 0))
+    self.eggsText:SetColor(Color(1, 1, 1, 1))
+    self.eggsText:SetFontName(kFontName)
+    self.eggsText:SetScale(kFontScale)
+    self.eggsIcon:AddChild(self.eggsText)
+
 end
 
 function GUIResourceDisplay:Uninitialize()
@@ -144,4 +168,15 @@ function GUIResourceDisplay:Update(deltaTime)
     local numHarvesters = CommanderUI_GetTeamHarvesterCount()
     self.towerText:SetText(ToString(numHarvesters))
     
+	local eggCount = AlienUI_GetEggCount()   
+    self.eggsText:SetText(ToString(eggCount))
+    
+    local hasEggs = eggCount > 0
+    self.eggsText:SetColor(hasEggs and kWhite or kRed)
+    self.eggsIcon:SetColor(hasEggs and kWhite or kRed)
+    
+	if PlayerUI_GetTeamType() ~= kAlienTeamType then
+		self.eggsIcon:SetIsVisible(false)
+		self.eggsText:SetIsVisible(false)
+	end
 end

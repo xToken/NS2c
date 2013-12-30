@@ -20,6 +20,8 @@ Script.Load("lua/menu/Ticker.lua")
 Script.Load("lua/ServerBrowser.lua")
 Script.Load("lua/menu/Form.lua")
 Script.Load("lua/menu/ServerList.lua")
+//Script.Load("lua/menu/GatherList.lua")
+//Script.Load("lua/menu/GatherChat.lua")
 Script.Load("lua/menu/ServerTabs.lua")
 Script.Load("lua/menu/PlayerEntry.lua")
 Script.Load("lua/dkjson.lua")
@@ -32,6 +34,7 @@ Script.Load("lua/menu/GUIMainMenu_PlayNow.lua")
 Script.Load("lua/menu/GUIMainMenu_Mods.lua")
 Script.Load("lua/menu/GUIMainMenu_Training.lua")
 Script.Load("lua/menu/GUIMainMenu_Web.lua")
+//Script.Load("lua/menu/GUIMainMenu_Gather.lua")
 
 // Min and maximum values for the mouse sensitivity slider
 local kMinSensitivity = 1
@@ -246,8 +249,20 @@ function GUIMainMenu:Initialize()
                 self:ActivatePlayWindow()
             end
         })
-        
-        self.optionLink = self:CreateMainLink("OPTIONS", "options_ingame", "05")
+
+		
+        /*
+        self.gatherLink = self:CreateMainLink("GATHER", "gather_ingame", "05")
+        self.gatherLink:AddEventCallbacks(
+        {
+            OnClick = function()
+                self:ActivateGatherWindow()
+            end
+        })
+        */
+
+		
+        self.optionLink = self:CreateMainLink("OPTIONS", "options_ingame", "06")
         self.optionLink:AddEventCallbacks(
         {
             OnClick = function(self)
@@ -261,7 +276,7 @@ function GUIMainMenu:Initialize()
             end
         })
         
-        self.trainingLink = self:CreateMainLink("TRAINING", "tutorial_ingame", "06")
+        self.trainingLink = self:CreateMainLink("TRAINING", "tutorial_ingame", "07")
         self.trainingLink:AddEventCallbacks(
         {
             OnClick = function(self)
@@ -276,7 +291,7 @@ function GUIMainMenu:Initialize()
         })
         
         // Create "disconnect" button
-        self.disconnectLink = self:CreateMainLink("DISCONNECT", "disconnect_ingame", "07")
+        self.disconnectLink = self:CreateMainLink("DISCONNECT", "disconnect_ingame", "08")
         self.disconnectLink:AddEventCallbacks(
         {
             OnClick = function(self)
@@ -299,8 +314,16 @@ function GUIMainMenu:Initialize()
                 self:OnPlayClicked()
             end
         })
-        
-        self.trainingLink = self:CreateMainLink("TRAINING", "tutorial", "02")
+        /*
+        self.gatherLink = self:CreateMainLink("GATHER", "gather", "02")
+        self.gatherLink:AddEventCallbacks(
+        {
+            OnClick = function()
+                self:ActivateGatherWindow()
+            end
+        })
+        */
+        self.trainingLink = self:CreateMainLink("TRAINING", "tutorial", "03")
         self.trainingLink:AddEventCallbacks(
         {
             OnClick = function(self)
@@ -314,7 +337,7 @@ function GUIMainMenu:Initialize()
             end
         })
         
-        self.optionLink = self:CreateMainLink("OPTIONS", "options", "03")
+        self.optionLink = self:CreateMainLink("OPTIONS", "options", "04")
         self.optionLink:AddEventCallbacks(
         {
             OnClick = function(self)
@@ -328,7 +351,7 @@ function GUIMainMenu:Initialize()
             end
         })
         
-        self.modsLink = self:CreateMainLink("MODS", "mods", "04")
+        self.modsLink = self:CreateMainLink("MODS", "mods", "05")
         self.modsLink:AddEventCallbacks(
         {
             OnClick = function(self)
@@ -342,7 +365,7 @@ function GUIMainMenu:Initialize()
             end
         })
 
-        self.creditsLink = self:CreateMainLink("CREDITS", "credits", "05" )
+        self.creditsLink = self:CreateMainLink("CREDITS", "credits", "06" )
         self.creditsLink:AddEventCallbacks(
         {
             OnClick = function()
@@ -354,7 +377,7 @@ function GUIMainMenu:Initialize()
             end
         })
         
-        self.quitLink = self:CreateMainLink("EXIT", "exit", "06")
+        self.quitLink = self:CreateMainLink("EXIT", "exit", "07")
         self.quitLink:AddEventCallbacks(
         {
             OnClick = function(self)
@@ -367,6 +390,57 @@ function GUIMainMenu:Initialize()
     gMainMenu = self
 
     self:MaybeCreateFirstRunWindow()
+    
+    local VoiceChat = Client.GetOptionString("input/VoiceChat", "LeftAlt")
+    local ShowMap = Client.GetOptionString("input/ShowMap", "C")
+    local TextChat = Client.GetOptionString("input/TextChat", "Y")
+    local TeamChat = Client.GetOptionString("input/TeamChat", "Return")
+
+    local VoiceChatCom = Client.GetOptionString("input/VoiceChatCom", "")
+    local ShowMapCom = Client.GetOptionString("input/ShowMapCom", "")
+    local TextChatCom = Client.GetOptionString("input/TextChatCom", "")
+    local TeamChatCom = Client.GetOptionString("input/TeamChatCom", "")
+
+	if VoiceChatCom == "" then
+		Client.SetOptionString("input/VoiceChatCom", VoiceChat)
+	end
+	if ShowMapCom == "" then
+		Client.SetOptionString("input/ShowMapCom", ShowMap)
+	end
+	if TextChatCom == "" then
+		Client.SetOptionString("input/TextChatCom", TextChat)
+	end
+	if TeamChatCom == "" then
+		Client.SetOptionString("input/TeamChatCom", TeamChat)
+	end
+	
+	local gPlayerData = {}
+	local kPlayerRankingRequestUrl = "http://sabot.herokuapp.com/api/get/playerData/"
+
+	    local function PlayerDataResponse(steamId)
+            return function (playerData)
+        
+                PROFILE("PlayerRanking:PlayerDataResponse")
+                
+                local obj, pos, err = json.decode(playerData, 1, nil)
+                
+                if obj then
+                
+                    gPlayerData[steamId..""] = obj
+                
+                    // its possible that the server does not send all data we want, need to check for nil here to not cause any script errors later:            
+                    obj.skill = obj.skill or 0
+                    obj.level = obj.level or 0
+
+                    Client.SetOptionFloat("player-skill", tonumber(obj.skill))
+                    Client.SetOptionInteger("player-ranking", obj.level)
+                
+                end
+            end
+       end
+       
+    local requestUrl = kPlayerRankingRequestUrl .. Client.GetSteamId()
+    Shared.SendHTTPRequest(requestUrl, "GET", { }, PlayerDataResponse(Client.GetSteamId()))    
     
 end
 
@@ -469,6 +543,22 @@ function GUIMainMenu:CreateProfile()
     
     self.playerName = CreateMenuElement(self.profileBackground, "Font")
     self.playerName:SetCSSClass("profile")
+    
+    self.rankLevel = CreateMenuElement(self.profileBackground, "Link")
+    self.rankLevel:SetCSSClass("rank_level")
+    
+    self.skillLevel = CreateMenuElement(self.profileBackground, "Link")
+    self.skillLevel:SetCSSClass("skill_level")
+
+    local eventCallbacks =
+    {
+        OnClick = function (self, buttonPressed)
+            Client.ShowWebpage("http://hive.naturalselection2.com/profile/".. Client.GetSteamId())
+        end
+    }
+    
+    self.rankLevel:AddEventCallbacks(eventCallbacks)
+    self.skillLevel:AddEventCallbacks(eventCallbacks)
     
 end  
 
@@ -1432,6 +1522,14 @@ local function InitKeyBindings(keyInputs)
     
 end
 
+local function InitKeyBindingsCom(keyInputsCom)
+
+    local bindingsTableCom = BindingsUI_GetComBindingsTable()
+    for c = 1, #bindingsTableCom do
+        keyInputsCom[c]:SetValue(bindingsTableCom[c].current)
+    end  
+    
+end
 local function CheckForConflictedKeys(keyInputs)
 
     // Reset back to non-conflicted state.
@@ -1463,6 +1561,35 @@ local function CheckForConflictedKeys(keyInputs)
     
 end
 
+//We don't want to check for conflicts as they can conflict without causing major problems, and will by default
+/*local function CheckForConflictedKeysCom(keyInputsCom)
+    
+    for l = 1, #keyInputsCom do
+        keyInputsCom[l]:SetCSSClass("option_input")
+    end
+        // Check for conflicts.
+    for l1 = 1, #keyInputsCom do
+    
+        for l2 = 1, #keyInputsCom do
+        
+            if l1 ~= l2 then
+            
+                local boundKeyCom1 = Client.GetOptionString("input/" .. keyInputsCom[l1].inputName, "")
+                local boundKeyCom2 = Client.GetOptionString("input/" .. keyInputsCom[l2].inputName, "")
+                if boundKeyCom1 == boundKeyCom2 then
+                
+                    keyInputsCom[l1]:SetCSSClass("option_input_conflict")
+                    keyInputsCom[l2]:SetCSSClass("option_input_conflict")
+                    
+                end
+                
+            end
+            
+        end
+        
+    end
+    
+end*/
 local function CreateKeyBindingsForm(mainMenu, content)
 
     local keyBindingsForm = CreateMenuElement(content, "Form", false)
@@ -1526,6 +1653,63 @@ local function CreateKeyBindingsForm(mainMenu, content)
     
 end
 
+local function CreateKeyBindingsFormCom(mainMenu, content)
+
+    local keyBindingsFormCom = CreateMenuElement(content, "Form", false)
+    
+    local bindingsTableCom = BindingsUI_GetComBindingsTable()
+    mainMenu.keyInputsCom = { }
+    local rowHeight = 50
+    
+    for b = 1, #bindingsTableCom do
+    
+        local bindingCom = bindingsTableCom[b]
+        
+        local keyInputCom = keyBindingsFormCom:CreateFormElement(Form.kElementType.FormButton, "INPUT" .. b, bindingCom.current)
+        keyInputCom:SetCSSClass("option_input")
+        keyInputCom:AddEventCallbacks( { OnBlur = function(self) keyInputCom.ignoreFirstKey = nil end } )
+        
+        function keyInputCom:OnSendKey(key, down)
+        
+            if not down then
+            
+                // We want to ignore the click that gave this input focus.
+                if keyInputCom.ignoreFirstKey == true then
+                
+                    local keyStringCom = Client.ConvertKeyCodeToString(key)
+                    keyInputCom:SetValue(keyStringCom)
+                    
+                    Client.SetOptionString("input/" .. keyInputCom.inputName, keyStringCom)
+                    
+                    //CheckForConflictedKeysCom(mainMenu.keyInputsCom)
+                    
+                end
+                keyInputCom.ignoreFirstKey = true
+                
+            end
+            
+        end
+        local keyInputTextCom = CreateMenuElement(keyBindingsFormCom, "Font", false)
+        keyInputTextCom:SetText(string.upper(bindingCom.detail) ..  ":")
+        keyInputTextCom:SetCSSClass("option_label")
+        
+        local y = rowHeight * (b  - 1)
+        
+        keyInputCom:SetTopOffset(y)
+        keyInputTextCom:SetTopOffset(y)
+        
+        keyInputCom.inputName = bindingCom.name
+        table.insert(mainMenu.keyInputsCom, keyInputCom)
+        
+    end
+    InitKeyBindingsCom(mainMenu.keyInputsCom)
+    //CheckForConflictedKeysCom(mainMenu.keyInputsCom)
+    
+    keyBindingsFormCom:SetCSSClass("keybindings")
+    
+    return keyBindingsFormCom
+    
+end
 local function InitOptions(optionElements)
         
     local function BoolToIndex(value)
@@ -1557,7 +1741,6 @@ local function InitOptions(optionElements)
     local windowModeOptionIndex = table.find(windowModes, windowMode) or 1
     
     local displayBuffering      = Client.GetOptionInteger("graphics/display/display-buffering", 0)
-    local textureStreaming      = Client.GetOptionBoolean("graphics/texture-streaming", false)
     local ambientOcclusion      = Client.GetOptionString("graphics/display/ambient-occlusion", kAmbientOcclusionModes[1])
     local reflections           = Client.GetOptionBoolean("graphics/reflections", false)
     local particleQuality       = Client.GetOptionString("graphics/display/particles", "low")
@@ -1572,6 +1755,8 @@ local function InitOptions(optionElements)
     local skulkVariant = Client.GetOptionInteger("skulkVariant", -1)
     local gorgeVariant = Client.GetOptionInteger("gorgeVariant", -1)
     local lerkVariant = Client.GetOptionInteger("lerkVariant", -1)
+    
+    local hudmode = Client.GetOptionInteger("hudmode", kHUDMode.Full)
     
     // if not set explicitly, always use the highest available tier
     if marineVariant == -1 then
@@ -1644,6 +1829,8 @@ local function InitOptions(optionElements)
     Client.SetOptionInteger("gorgeVariant", gorgeVariant)
     Client.SetOptionInteger("lerkVariant", lerkVariant)
     
+    Client.SetOptionInteger("hudmode", hudmode)
+    
     local sexType = Client.GetOptionString("sexType", "Male")
     Client.SetOptionString("sexType", sexType)
     
@@ -1712,7 +1899,6 @@ local function InitOptions(optionElements)
     optionElements.AnisotropicFiltering:SetOptionActive( BoolToIndex(anisotropicFiltering) )
     optionElements.AntiAliasing:SetOptionActive( BoolToIndex(antiAliasing) )
     optionElements.Detail:SetOptionActive(visualDetailIdx)
-    optionElements.TextureStreaming:SetOptionActive( BoolToIndex(textureStreaming) )
     optionElements.AmbientOcclusion:SetOptionActive( table.find(kAmbientOcclusionModes, ambientOcclusion) )
     optionElements.Reflections:SetOptionActive( BoolToIndex(reflections) )
     optionElements.FOVAdjustment:SetValue(fovAdjustment)
@@ -1732,6 +1918,7 @@ local function InitOptions(optionElements)
     optionElements.SoundVolume:SetValue(soundVol)
     optionElements.MusicVolume:SetValue(musicVol)
     optionElements.VoiceVolume:SetValue(voiceVol)
+    optionElements.hudmode:SetValue(hudmode == 1 and "FULL" or "MINIMAL")
     
     optionElements.RecordingGain:SetValue(recordingGain)
     
@@ -1741,7 +1928,6 @@ local function SaveSecondaryGraphicsOptions(mainMenu)
     // These are options that are pretty quick to change, unlike screen resolution etc.
     // Have this separate, since graphics options are auto-applied
 
-    local textureStreaming      = mainMenu.optionElements.TextureStreaming:GetActiveOptionIndex() > 1
     local ambientOcclusionIdx   = mainMenu.optionElements.AmbientOcclusion:GetActiveOptionIndex()
     local visualDetailIdx       = mainMenu.optionElements.Detail:GetActiveOptionIndex()
     local infestationIdx        = mainMenu.optionElements.Infestation:GetActiveOptionIndex()
@@ -1755,7 +1941,6 @@ local function SaveSecondaryGraphicsOptions(mainMenu)
     local renderDeviceIdx       = mainMenu.optionElements.RenderDevice:GetActiveOptionIndex()
 
     Client.SetOptionBoolean("graphics/reflections", reflections)
-    Client.SetOptionBoolean("graphics/texture-streaming", textureStreaming)
     Client.SetOptionString("graphics/display/ambient-occlusion", kAmbientOcclusionModes[ambientOcclusionIdx] )
     Client.SetOptionString("graphics/display/particles", kParticleQualityModes[particleQualityIdx] )
     Client.SetOptionString("graphics/infestation", kInfestationModes[infestationIdx] )
@@ -1888,6 +2073,7 @@ local function SaveOptions(mainMenu)
     local skulkVariantName      = mainMenu.optionElements.SkulkVariantName:GetValue()
     local gorgeVariantName      = mainMenu.optionElements.GorgeVariantName:GetValue() or ""
     local lerkVariantName       = mainMenu.optionElements.LerkVariantName:GetValue() or ""
+    local hudmode               = mainMenu.optionElements.hudmode:GetValue()
     local sexType               = mainMenu.optionElements.SexType:GetValue()
     local cameraAnimation       = mainMenu.optionElements.CameraAnimation:GetActiveOptionIndex() > 1
 	local physicsGpuAcceleration = mainMenu.optionElements.PhysicsGpuAcceleration:GetActiveOptionIndex() > 1
@@ -1909,6 +2095,7 @@ local function SaveOptions(mainMenu)
     Client.SetOptionInteger("skulkVariant", FindVariant(kSkulkVariantData, skulkVariantName))
     Client.SetOptionInteger("gorgeVariant", FindVariant(kGorgeVariantData, gorgeVariantName))
     Client.SetOptionInteger("lerkVariant", FindVariant(kLerkVariantData, lerkVariantName))
+    Client.SetOptionInteger("hudmode", hudmode == "FULL" and kHUDMode.Full or kHUDMode.Minimal)
     Client.SetOptionString("sexType", sexType)
     
     SendPlayerVariantUpdate(
@@ -1953,6 +2140,13 @@ local function SaveOptions(mainMenu)
     end
     Client.ReloadKeyOptions()
     
+    for l = 1, #mainMenu.keyInputsCom do
+    
+    local keyInputCom = mainMenu.keyInputsCom[l]
+        Client.SetOptionString("input/" .. keyInputCom.inputName, keyInputCom:GetValue())
+        
+    end
+    Client.ReloadKeyOptions()
 
 end
 
@@ -2071,6 +2265,7 @@ function GUIMainMenu:CreateOptionWindow()
     
         InitOptions(self.optionElements)
         InitKeyBindings(self.keyInputs)
+		InitKeyBindingsCom(self.keyInputsCom)
         
     end
     self.optionWindow:AddEventCallbacks({ OnHide = InitOptionWindow })
@@ -2371,7 +2566,14 @@ function GUIMainMenu:CreateOptionWindow()
                 label  = "WAIT FOR VERTICAL SYNC",
                 type   = "select",
                 values = { "DISABLED", "DOUBLE BUFFERED", "TRIPLE BUFFERED" }
-            },
+            },            
+            {
+                name    = "hudmode",
+                label   = "HUD QUALITY",
+                type    = "select",
+                values  = { "FULL", "MINIMAL" },
+                callback = autoApplyCallback
+            },            
             {
                 name    = "Detail",
                 label   = "TEXTURE QUALITY",
@@ -2448,13 +2650,6 @@ function GUIMainMenu:CreateOptionWindow()
                 values  = { "OFF", "ON" },
                 callback = autoApplyCallback
             },
-            {
-                name    = "TextureStreaming",
-                label   = "TEXTURE STREAMING",
-                type    = "select",
-                values  = { "OFF", "ON" },
-                callback = autoApplyCallback
-            },
         }
         
     // save our option elements for future reference
@@ -2462,6 +2657,7 @@ function GUIMainMenu:CreateOptionWindow()
     
     local generalForm     = GUIMainMenu.CreateOptionsForm(self, content, generalOptions, self.optionElements)
     local keyBindingsForm = CreateKeyBindingsForm(self, content)
+    local keyBindingsFormCom = CreateKeyBindingsFormCom(self, content)
     local graphicsForm    = GUIMainMenu.CreateOptionsForm(self, content, graphicsOptions, self.optionElements)
     local soundForm       = GUIMainMenu.CreateOptionsForm(self, content, soundOptions, self.optionElements)
     
@@ -2472,6 +2668,7 @@ function GUIMainMenu:CreateOptionWindow()
         {
             { label = "GENERAL",  form = generalForm, scroll=true  },
             { label = "BINDINGS", form = keyBindingsForm, scroll=true },
+			{ label = "COMMANDER", form = keyBindingsFormCom, scroll=true },
             { label = "GRAPHICS", form = graphicsForm, scroll=true },
             { label = "SOUND",    form = soundForm },
         }
@@ -2569,7 +2766,9 @@ function GUIMainMenu:Update(deltaTime)
     
         if self.menuBackground:GetIsVisible() then
             self.playerName:SetText(OptionsDialogUI_GetNickname())
-        end
+            self.rankLevel:SetText("Level " .. ToString(Client.GetOptionInteger("player-ranking", 0)))
+            self.skillLevel:SetText("Skill " .. ToString(math.round(Client.GetOptionFloat("player-skill", 0))))
+		end
         
         if self.modsWindow and self.modsWindow:GetIsVisible() then
             self:UpdateModsWindow(self)
@@ -2672,7 +2871,9 @@ function GUIMainMenu:Update(deltaTime)
             end
         
         end
-        
+        /*
+        self:UpdateGatherList(deltaTime)
+        */
     end
     
 end
@@ -3013,6 +3214,15 @@ function GUIMainMenu:ActivatePlayWindow()
 
 end
 
+function GUIMainMenu:ActivateGatherWindow()
+
+    if not self.gatherWindow then
+        self:CreateGatherWindow()
+    end
+    self:TriggerOpenAnimation(self.gatherWindow)
+    self:HideMenu()
+
+end
 //----------------------------------------
 //  
 //----------------------------------------

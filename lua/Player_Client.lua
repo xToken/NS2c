@@ -44,24 +44,14 @@ local kLowHealthPulseSpeed = 10
 
 // These screen effects are only used on the local player so create them statically.
 local screenEffects = { }
-screenEffects.fadeBlink = Client.CreateScreenEffect("shaders/FadeBlink.screenfx")
-screenEffects.fadeBlink:SetActive(false)
-screenEffects.lowHealth = Client.CreateScreenEffect("shaders/LowHealth.screenfx")
-screenEffects.lowHealth:SetActive(false)
 screenEffects.darkVision = Client.CreateScreenEffect("shaders/DarkVision.screenfx")
 screenEffects.darkVision:SetActive(false)
-screenEffects.blur = Client.CreateScreenEffect("shaders/Blur.screenfx")
-screenEffects.blur:SetActive(false)
 screenEffects.phase = Client.CreateScreenEffect("shaders/Phase.screenfx")
 screenEffects.phase:SetActive(false)
-screenEffects.gorgetunnel = Client.CreateScreenEffect("shaders/GorgeTunnel.screenfx")
-screenEffects.gorgetunnel:SetActive(false)
 screenEffects.cloaked = Client.CreateScreenEffect("shaders/Cloaked.screenfx")
 screenEffects.cloaked:SetActive(false)
 screenEffects.disorient = Client.CreateScreenEffect("shaders/Disorient.screenfx")
 screenEffects.disorient:SetActive(false)
-screenEffects.celerityFX = Client.CreateScreenEffect("shaders/Celerity.screenfx")
-screenEffects.celerityFX:SetActive(false)
 screenEffects.spectatorTint = Client.CreateScreenEffect("shaders/SpectatorTint.screenfx")
 screenEffects.spectatorTint:SetActive(false)
 
@@ -472,7 +462,8 @@ function PlayerUI_GetUnitStatusInfo()
                         TeamType = kNeutralTeamType,
                         ForceName = unit:isa("Player") and not GetAreEnemies(player, unit),
                         BadgeTextures = badgeTextures,
-                        HasWelder = hasWelder
+                        HasWelder = hasWelder,
+                        IsPlayer = unit:isa("Player")
                     
                     }
                     
@@ -1616,24 +1607,28 @@ function Player:SendKeyEvent(key, down)
             self.timeOfLastHealRequest = Shared.GetTime()
         end
         
-        if GetIsBinding(key, "ShowMap") then
+        if GetIsBinding(key, "ShowMap") and not self:isa("Commander") then
             self:OnShowMap(down)
         end
-        
+        if GetIsBinding(key, "ShowMapCom") and self:isa("Commander") then
+            self:OnShowMap(down)
+        end
         if down then
         
             if GetIsBinding(key, "ReadyRoom") then
                 Shared.ConsoleCommand("rr")
-            elseif GetIsBinding(key, "TextChat") then
-            
+            elseif GetIsBinding(key, "TextChat") and not self:isa("Commander") then
                 ChatUI_EnterChatMessage(false)
                 return true
-                
-            elseif GetIsBinding(key, "TeamChat") then
-            
-                ChatUI_EnterChatMessage(true)
+            elseif GetIsBinding(key, "TextChatCom") and self:isa("Commander") then		
+                ChatUI_EnterChatMessage(false)
+                return true   				
+            elseif GetIsBinding(key, "TeamChat") and not self:isa("Commander") then		
+                ChatUI_EnterChatMessage(true) 
                 return true
-                
+            elseif GetIsBinding(key, "TeamChatCom") and self:isa("Commander") then			
+                ChatUI_EnterChatMessage(true)
+                return true   
             end
             
         end
@@ -2358,7 +2353,9 @@ function Player:OnCountDownEnd()
         
     end
     
-    //Client.PlayMusic("sound/NS2.fev/round_start")
+    if gRoundStartMusic then
+    	Client.PlayMusic(gRoundStartMusic)
+	end
     
 end
 
