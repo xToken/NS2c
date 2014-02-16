@@ -193,6 +193,7 @@ function JetpackMarine:HandleJetpackStart()
     self.jetpackFuelOnChange = self:GetFuel()
     self.jetpacking = true
     self.timeJetpackingChanged = Shared.GetTime()
+    self:ClearSlow()
     
     self.startedFromGround = self:GetIsOnSurface()
     self.jetpackFuelOnChange = self.jetpackFuelOnChange - kJetpackTakeoffFuelUse
@@ -237,6 +238,10 @@ function JetpackMarine:GetWeaponName()
         return nil
     end
     
+end
+
+function JetpackMarine:GetSlowOnLand(velocity)
+    return Marine.GetSlowOnLand(self, velocity) and not self:GetIsJetpacking()
 end
 
 function JetpackMarine:GetMaxBackwardSpeedScalar()

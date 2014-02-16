@@ -20,7 +20,7 @@ kExosuitHealth = 100     kExosuitArmor = 70     kExosuitPointValue = 2
 kSkulkHealth = 70	    kSkulkArmor = 10	    kSkulkPointValue = 2
 kGorgeHealth = 150	    kGorgeArmor = 70	    kGorgePointValue = 2
 kLerkHealth = 125	    kLerkArmor = 30	        kLerkPointValue = 2
-kFadeHealth = 250	    kFadeArmor = 150	    kFadePointValue = 2
+kFadeHealth = 300	    kFadeArmor = 150	    kFadePointValue = 2
 kOnosHealth = 950	    kOnosArmor = 700	    kOnosPointValue = 2
 
 kEmbryoHealth = 200     kEmbryoArmor = 150      kEggPointValue = 0

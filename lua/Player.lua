@@ -630,9 +630,7 @@ function Player:GetSlowSpeedModifier()
 end
 
 function Player:GetController()
-
     return self.controller
-    
 end
 
 function Player:WeaponUpdate()
@@ -1717,6 +1715,10 @@ end
 // Also reduce velocity by this amount
 function Player:AddSlowScalar(scalar)
     self.slowAmount = Clamp(self.slowAmount + scalar, 0, kMaxPlayerSlow)
+end
+
+function Player:ClearSlow()
+    self.slowAmount = 0
 end
 
 function Player:GetMaterialBelowPlayer()

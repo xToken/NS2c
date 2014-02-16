@@ -404,7 +404,7 @@ if Client then
     
         local weapon = self:GetActiveWeapon()
         if weapon and weapon:isa("DropStructureAbility") then
-            return weapon:GetGhostModelTechId(true)
+            return weapon:GetGhostModelTechId()
         end
         
     end

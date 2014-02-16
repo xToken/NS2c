@@ -469,12 +469,12 @@ function DropStructureAbility:GetTakesSecondary()
     return LookupTechData(self:GetActiveStructure().GetDropStructureId(), kTechDataSpecifyOrientation, false)
 end
 
-function DropStructureAbility:GetGhostModelTechId(ModelCheck)
+function DropStructureAbility:GetGhostModelTechId()
 
     if self.activeStructure == nil then
         return nil
     else
-        return self:GetActiveStructure():GetDropStructureId(ModelCheck)
+        return self:GetActiveStructure():GetDropStructureId()
     end
 
 end
