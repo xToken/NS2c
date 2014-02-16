@@ -21,6 +21,10 @@ function CragStructureAbility:GetDropStructureId()
     return kTechId.Crag
 end
 
+function CragStructureAbility:GetIsPositionValid(displayOrigin, player, normal, lastClickedPosition, entity)
+    return entity == nil
+end
+
 function CragStructureAbility:GetRequiredTechId()
     return kTechId.CragHive
 end

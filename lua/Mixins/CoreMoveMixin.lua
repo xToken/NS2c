@@ -17,9 +17,9 @@ CoreMoveMixin.expectedCallbacks =
     GetMaxSpeed = "Returns MaxSpeed of moveable entity.",
 	GetAcceleration = "Gets the acceleration amount for this entity.",
 	GetGroundFriction = "Gets the base ground friction applied to entity.",
+	GetCanJump = "If entity is able to jump.",
 	GetJumpVelocity = "Gets the jumping velocity increase for this entity.",
 	PerformsVerticalMove = "If pitch should be considered when calculating velocity.",
-	GetMaxAirVeer = "Maximum amount of velocity change midair.",
 	GetCrouchShrinkAmount = "Amount the entity shrinks when crouching.",
 	GetCanCrouch = "If the entity can crouch.",
 	GetSlowOnLand = "If the entity should be slowed on land.",
@@ -48,7 +48,6 @@ CoreMoveMixin.optionalCallbacks =
 CoreMoveMixin.networkVars =
 {
     onGround = "compensated boolean",
-    timeLastOnGround = "private time",
     timeTouchedGround = "private time",
     jumpHandled = "private compensated boolean",
     timeOfLastJump = "private time",
@@ -61,22 +60,23 @@ CoreMoveMixin.networkVars =
 
 local kNetPrecision = 1/128
 local kMaxDeltaTime = 0.07
-local kOnGroundDistance = 0.1
+local kOnGroundDistance = 0.03
 local kMaxSpeedClampPerJump = 3.0
 local kBunnyJumpMaxSpeedFactor = 1.7
+local kAirSpeedMultipler = 3.0
+local kMaxAirVeer = 0.7
 local kCrouchAnimationTime = 0.4
-local kCrouchSpeedScalar = 0.6
 local kSlowOnLandScalar = 0.33
 local kLandGraceTime = 0.1
-local kMinimumJumpTime = 0.05
+local kMinimumJumpTime = 0.02
 local kStopSpeed = 2.0
+local kStopSpeedScalar = 2.5
 local kStepHeight = 0.5
-local kStopSpeedScalar = 2
+local kMaxMoveTraces = 3
 local kDownSlopeFactor = math.tan( math.rad(45) ) // Stick to ground on down slopes up to 45 degrees
 
 function CoreMoveMixin:__initmixin()
     self.onGround = true
-    self.timeLastOnGround = 0
     self.timeTouchedGround = 0
     self.onLadder = false
     self.jumping = false
@@ -156,6 +156,13 @@ end
 
 function CoreMoveMixin:SetIsOnGround(onGround)
     self.onGround = onGround
+    if self.OnGroundChanged then
+        self:OnGroundChanged(onGround)
+    end
+end
+
+function CoreMoveMixin:GetMaxAirVeer()
+    return kMaxAirVeer
 end
 
 local function SplineFraction(value, scale)
@@ -207,7 +214,7 @@ local function GetIsCloseToGround(self, distance)
         // we're on the ground.
         local offset = Vector(0, -distance, 0)
         // need to do multiple slides here to not get traped in V shaped spaces
-        completedMove, hitEntities, normal = self:PerformMovement(offset, 3, nil, false)
+        completedMove, hitEntities, normal = self:PerformMovement(offset, kMaxMoveTraces, nil, false)
         
         if normal and normal.y >= 0.5 then
             return true
@@ -216,6 +223,10 @@ local function GetIsCloseToGround(self, distance)
 
     return false
     
+end
+
+function CoreMoveMixin:GetIsCloseToGround(distance)
+    return GetIsCloseToGround(self, distance)
 end
 
 local function UpdateJumpLand(self, velocity)
@@ -245,20 +256,21 @@ local function UpdateOnGroundState(self, previousVelocity, velocity)
     
     local onGround = false
     onGround = GetIsCloseToGround(self, self.GetDistanceToGround and self:GetDistanceToGround() or kOnGroundDistance)
-    if onGround then
-        self.timeLastOnGround = Shared.GetTime()
-        if not self.onGround then
+       
+    if onGround ~= self.onGround then
+    
+        if onGround then
             self.timeTouchedGround = Shared.GetTime()
             self.lastimpact = math.min(math.abs(previousVelocity.y / 10), 1)
-            UpdateJumpLand(self, velocity)
+            UpdateJumpLand(self, previousVelocity)
             UpdateFallDamage(self, previousVelocity)
         end
-    end
-    if onGround ~= self.onGround then
+        
         self.onGround = onGround
 		if self.OnGroundChanged then
-			self:OnGroundChanged()
+			self:OnGroundChanged(onGround)
 		end
+		
     end
     
 end
@@ -305,6 +317,10 @@ local function GetWishVelocity(self, input)
     return moveVelocity
 end
 
+function CoreMoveMixin:GetWishVelocity(input)
+    return GetWishVelocity(self, input)
+end
+
 local function ApplyFriction(self, input, velocity, time)
 
     if self:GetIsOnSurface() or self:GetIsOnLadder() then
@@ -322,10 +338,13 @@ local function ApplyFriction(self, input, velocity, time)
         end
         
         local stopspeed = self:GetStopSpeed()
+        
         // Try bleeding at accelerated value when no inputs
         if input.move.x == 0 and input.move.y == 0 and input.move.z == 0 then
             stopspeed = stopspeed * kStopSpeedScalar
         end
+
+
         // Bleed off some speed, but if we have less than the bleed
 		//  threshhold, bleed the theshold amount.
         local control = (speed < stopspeed) and stopspeed or speed
@@ -378,10 +397,34 @@ local function Accelerate(self, velocity, time, wishdir, wishspeed, acceleration
 end
 
 local function AirAccelerate(self, velocity, time, wishdir, wishspeed, acceleration)
+    //Clamp veer
     if wishspeed > self:GetMaxAirVeer() then
         wishspeed = self:GetMaxAirVeer()
     end
-    return Accelerate(self, velocity, time, wishdir, wishspeed, acceleration)
+
+    // Determine veer amount    
+    local currentspeed = velocity:DotProduct(wishdir)
+    
+    // See how much to add
+    local addSpeed = wishspeed - currentspeed
+
+    // If not adding any, done.
+    if addSpeed <= 0.0 then
+        return velocity
+    end
+    
+    // Determine acceleration speed after acceleration
+    local accelspeed = acceleration * wishspeed * time
+    
+    // Cap it
+    if accelspeed > addSpeed then
+        accelspeed = addSpeed
+    end
+    
+    // Add to velocity
+    velocity:Add(wishdir * accelspeed)
+    
+    return velocity
 end
 
 local function DoStepMove(self, input, velocity, time)
@@ -396,19 +439,25 @@ local function DoStepMove(self, input, velocity, time)
     stepAmount = self:GetOrigin().y - oldOrigin.y
     // do the normal move
     local startOrigin = Vector(self:GetOrigin())
-    local completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(velocity * time, 3, velocity, true)
+    local completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(velocity * time, kMaxMoveTraces, velocity, true)
     local horizMoveAmount = (startOrigin - self:GetOrigin()):GetLengthXZ()
     
     if completedMove then
         // step down again
-        local completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(Vector(0, -stepAmount - horizMoveAmount * kDownSlopeFactor, 0), 1)
+        local completedMove2, hitEntities2, averageSurfaceNormal2 = self:PerformMovement(Vector(0, -stepAmount - horizMoveAmount * kDownSlopeFactor, 0), 1)
         
-        local onGround, normal = GetIsCloseToGround(self, 0.15)
-        
-        if onGround then
+        if averageSurfaceNormal2 and averageSurfaceNormal2.y >= 0.5 then
             success = true
+        else
+            
+            local onGround = GetIsCloseToGround(self, self.GetDistanceToGround and self:GetDistanceToGround() or kOnGroundDistance)
+            
+            if onGround then
+                success = true
+            end
+            
         end
-
+        
     end    
         
     // not succesful. fall back to normal move
@@ -416,7 +465,7 @@ local function DoStepMove(self, input, velocity, time)
     
         self:SetOrigin(oldOrigin)
         VectorCopy(oldVelocity, velocity)
-        self:PerformMovement(velocity * time, 3, velocity, true)
+        self:PerformMovement(velocity * time, kMaxMoveTraces, velocity, true)
         
     end
 
@@ -432,7 +481,7 @@ local function CollisionEnabledPositionUpdate(self, input, velocity, time)
     local hitObstacle = false
 
     // check if we are allowed to step:
-    local completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(velocity * time * 2, 3, nil, false)
+    local completedMove, hitEntities, averageSurfaceNormal = self:PerformMovement(velocity * time * 2, 1, nil, false)
 
     if stepAllowed and hitEntities then
     
@@ -454,7 +503,7 @@ local function CollisionEnabledPositionUpdate(self, input, velocity, time)
             velocity.y = oldVelocity.y
         end
         
-        self:PerformMovement(velocity * time, 3, velocity, true)
+        self:PerformMovement(velocity * time, kMaxMoveTraces, velocity, true)
         
     else        
         didStep, stepAmount = DoStepMove(self, input, velocity, time)            
@@ -478,9 +527,13 @@ function CoreMoveMixin:SetIsOnLadder(onLadder, ladderEntity)
     self.onLadder = onLadder
 end
 
-local function PreventMegaBunnyJumping(self, velocity)
+local function PreventMegaBunnyJumping(self, onground, velocity)
     local maxscaledspeed = kBunnyJumpMaxSpeedFactor * self:GetMaxSpeed()
     
+	if not onground then
+		maxscaledspeed = kAirSpeedMultipler * self:GetMaxSpeed()
+	end
+	
     if maxscaledspeed > 0.0 then
        local spd = velocity:GetLength()
         
@@ -491,20 +544,6 @@ local function PreventMegaBunnyJumping(self, velocity)
     end
 end
 
-local function CheckSpaceAboveForJump(self)
-
-    local startPoint = self:GetOrigin() + Vector(0, self:GetExtents().y, 0)
-    local endPoint = startPoint + Vector(0, 0.5, 0)
-    local trace = Shared.TraceCapsule(startPoint, endPoint, 0.1, self:GetExtents().y, CollisionRep.Move, PhysicsMask.Movement, EntityFilterOne(self))
-    
-    return trace.fraction == 1
-    
-end
-
-local function GetCanJump(self)
-    return self:GetIsOnGround() and CheckSpaceAboveForJump(self)
-end
-
 local function HandleJump(self, input, velocity)
 
     if bit.band(input.commands, Move.Jump) ~= 0 and not self:GetIsJumpHandled() then
@@ -512,18 +551,19 @@ local function HandleJump(self, input, velocity)
         if self.OverrideJump then
             self:OverrideJump(input, velocity)
         else
-            if GetCanJump(self) then
+            if self:GetCanJump(self) then
             
-                PreventMegaBunnyJumping(self, velocity)
+                PreventMegaBunnyJumping(self, true, velocity)
                 self:GetJumpVelocity(input, velocity)
                 
-                self:UpdateLastJumpTime()
                 self:SetIsOnGround(false)
                 self:SetIsJumping(true)
                 
-                if self.OnJump then
+                if self.OnJump and not self:GetWithinJumpWindow() then
                     self:OnJump()
                 end
+                
+                self:UpdateLastJumpTime()
                 
                 if self:GetJumpMode() == kJumpMode.Repeating then
                     self:SetIsJumpHandled(false)
@@ -629,9 +669,9 @@ function CoreMoveMixin:UpdateMove(input)
     
     // Accelerate
     if self:GetIsOnSurface() then
-        Accelerate(self, velocity, time, wishdir, wishspeed, self:GetAcceleration())
+        Accelerate(self, velocity, time, wishdir, wishspeed, self:GetAcceleration(true))
     else
-        AirAccelerate(self, velocity, time, wishdir, wishspeed, self:GetAcceleration())
+        AirAccelerate(self, velocity, time, wishdir, wishspeed, self:GetAcceleration(false))
     end
     
     // Apply second half of the gravity
@@ -641,11 +681,14 @@ function CoreMoveMixin:UpdateMove(input)
         self:ModifyVelocity(input, velocity, time)
     end
     
+    // Clamp AirMove Speed
+    if not self:GetIsOnSurface() then
+        PreventMegaBunnyJumping(self, false, velocity)
+    end
+    
     UpdatePosition(self, input, velocity, time)
     
-    if not self:GetWithinJumpWindow() then //Accounts for high moverates
-        UpdateOnGroundState(self, previousVelocity, velocity)
-    end
+    UpdateOnGroundState(self, previousVelocity, velocity)
    
     // Store new velocity
     self:SetVelocity(velocity)

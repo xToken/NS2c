@@ -346,7 +346,7 @@ function Skulk:PreUpdateMove(input, runningPrediction)
         self.wallWalkingNormalGoal = Vector.yAxis
     end
     
-    if self.leaping and (self:GetIsOnGround() or self.wallWalking) and (Shared.GetTime() > self.timeOfLeap + kLeapTime) then
+    if self.leaping and self:GetIsOnSurface() and (Shared.GetTime() > self.timeOfLeap + kLeapTime) then
         self.leaping = false
         self.timeOfLeap = 0
     end
@@ -390,7 +390,7 @@ function Skulk:GetMass()
 end
 
 function Skulk:AdjustGravityForce(input, gforce)
-    if self:GetIsOnLadder() or self:GetIsOnGround() or self:GetIsWallWalking() then
+    if self:GetIsOnLadder() or self:GetIsOnSurface() then
         gforce = 0
     end
     return gforce
@@ -437,10 +437,11 @@ function Skulk:GetJumpVelocity(input, velocity)
     end
 end
 
-function Skulk:OnJump()
-    self.wallWalking = false
-    self.wallWalkingEnabled = false
-    Player.OnJump(self)
+function Skulk:OnGroundChanged(onGround)
+    if not onGround then
+        self.wallWalking = false
+        self.wallWalkingEnabled = false
+    end
 end
 
 function Skulk:GetBaseAttackSpeed()

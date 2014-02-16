@@ -39,6 +39,8 @@ kAlienFontColor = Color(0.901, 0.623, 0.215, 1)
 kNeutralFontName = "fonts/AgencyFB_large.fnt"
 kNeutralFontColor = Color(0.7, 0.7, 0.7, 1)
 
+kSteamFriendColor = Color(1, 1, 1, 1)
+
 // Move hit effect slightly off surface we hit so particles don't penetrate. In meters.
 kHitEffectOffset = 0.13
 // max distance of blood from impact point to nearby geometry
@@ -112,7 +114,7 @@ kMaxKills = 254
 kMaxDeaths = 254
 kMaxPing = 999
 
-kMaxChatLength = 80
+kMaxChatLength = 120
 kMaxHiveNameLength = 30
 kMaxHotkeyGroups = 9
 
@@ -125,7 +127,7 @@ kHitEffectSurface = enum( { "metal", "door", "electronic", "organic", "rock", "t
 kHitEffectRelevancyDistance = 40
 kHitEffectMaxPosition = 1638 // used for precision in hiteffect message
 kTracerSpeed = 115
-kMaxHitEffectsPerSecond = 100
+kMaxHitEffectsPerSecond = 25
 
 kMainMenuFlash = "ui/main_menu.swf"
 
@@ -171,7 +173,7 @@ kMinimapBlipType = enum( { 'Undefined', 'TechPoint', 'ResourcePoint', 'Scan', 'E
 // 1 = enemy
 // 2 = neutral
 // for spectators is used Marine and Alien
-kMinimapBlipTeam = enum( {'Friendly', 'Enemy', 'Neutral', 'Alien', 'Marine' } )
+kMinimapBlipTeam = enum( {'Friendly', 'Enemy', 'Neutral', 'Alien', 'Marine', 'FriendAlien', 'FriendMarine', 'InactiveAlien', 'InactiveMarine' } )
 
 // How long commander alerts should last (from NS1)
 kAlertExpireTime = 20
@@ -271,6 +273,7 @@ kMaxPlayerAlerts = 127
 
 // Max distance to propagate entities with
 kMaxRelevancyDistance = 40
+kClassicMoveRate = 60
 
 kEpsilon = 0.0001
 
@@ -372,26 +375,42 @@ kIconColors =
 //----------------------------------------
 //  DLC stuff
 //----------------------------------------
-
+// checks if client has the DLC, if a table is passed, the function returns true when the client owns at least one of the productIds
 function GetHasDLC(productId, client)
 
-    if productId == nil then
+    if productId == nil or productId == 0 then
         return true
     end
     
-    if Client then
+    local checkIds = {}
     
-        assert(client == nil)
-        return Client.GetIsDlcAuthorized(productId)
-        
-    elseif Server and client then
-    
-        assert(client ~= nil)
-        return Server.GetIsDlcAuthorized(client, productId)
-        
+    if type(productId) == "table" then
+        checkIds = productId
     else
-        return false
+        checkIds = { productId }
+    end  
+    
+    for i = 1, #checkIds do
+    
+        if Client then
+        
+            assert(client == nil)
+            if Client.GetIsDlcAuthorized(checkIds[i]) then
+                return true
+            end
+            
+        elseif Server and client then
+        
+            assert(client ~= nil)
+            if Server.GetIsDlcAuthorized(client, checkIds[i]) then
+                return true 
+            end    
+
+        end
+    
     end
+    
+    return false
     
 end
 
@@ -400,6 +419,14 @@ kDeluxeEditionProductId = 4932
 kShoulderPadProductId = 250891
 kAssaultMarineProductId = 250892
 kShadowProductId = 250893
+
+kNoShoulerPad = 0
+
+kShoulderPadGlobeProductId = 280763
+kShoulderPadGodarProductId = 274150
+kShoulderPadSaunaProductId = 280761
+kShoulderPadSnailsProductId = 280762
+kShoulderPadTitusProductId = 280760
 
 // DLC player variants
 // "code" is the key
@@ -453,7 +480,10 @@ function FindVariant( data, displayName )
 end
 
 function GetVariantName( data, var )
-    return data[var].displayName
+    if data[var] then
+        return data[var].displayName
+    end
+    return ""        
 end
 
 function GetHasVariant(data, var, client)
@@ -462,11 +492,41 @@ end
 
 kShoulderPad2ProductId =
 {
+    kNoShoulerPad,
     kShoulderPadProductId,
     kShadowProductId,
+    kShoulderPadGlobeProductId,
+    { kShoulderPadGodarProductId, kShoulderPadGlobeProductId },
+    { kShoulderPadSaunaProductId, kShoulderPadGlobeProductId },
+    { kShoulderPadSnailsProductId, kShoulderPadGlobeProductId },
+    { kShoulderPadTitusProductId, kShoulderPadGlobeProductId }
 }
 function GetHasShoulderPad(index, client)
     return GetHasDLC( kShoulderPad2ProductId[index], client )
+end
+
+kShoulderPadNames =
+{
+    "None",
+    "Reinforced",
+    "Shadow",
+    "Globe",
+    "Godar",
+    "Saunamen",
+    "Snails",
+    "Titus",
+}
+
+function GetShoulderPadIndexByName(padName)
+
+    for index, name in ipairs(kShoulderPadNames) do
+        if name == padName then
+            return index
+        end    
+    end
+    
+    return 1
+
 end
 
 kHUDMode = enum({ "Full", "Minimal" })

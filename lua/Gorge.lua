@@ -156,8 +156,8 @@ function Gorge:GetGroundFriction()
     return ConditionalValue(self:GetIsBellySliding(), kSlidingGroundFriction, Player.GetGroundFriction(self))
 end
 
-function Gorge:GetAcceleration()
-    return ConditionalValue(self:GetIsBellySliding(), kSlidingAcceleration, Player.GetAcceleration(self))
+function Gorge:GetAcceleration(OnGround)
+    return ConditionalValue(self:GetIsBellySliding() and OnGround, kSlidingAcceleration, Player.GetAcceleration(self, OnGround))
 end
 
 local function GetIsSlidingDesired(self, input)
@@ -198,7 +198,7 @@ local function UpdateGorgeSliding(self, input)
     PROFILE("Gorge:UpdateGorgeSliding")
     
     local slidingDesired = GetIsSlidingDesired(self, input)
-    if slidingDesired and not self.sliding and self.timeSlideEnd + kSlideCoolDown < Shared.GetTime() and self:GetIsOnGround() and self:GetEnergy() >= kBellySlideCost then
+    if slidingDesired and not self.sliding and self.timeSlideEnd + kSlideCoolDown < Shared.GetTime() and self:GetIsOnSurface() and self:GetEnergy() >= kBellySlideCost then
     
         self.sliding = true
         self.startedSliding = true
@@ -262,7 +262,7 @@ function Gorge:ModifyVelocity(input, velocity, deltaTime)
     // Give a little push forward to make sliding useful
     if self.startedSliding then
     
-        if self:GetIsOnGround() then
+        if self:GetIsOnSurface() then
     
             local pushDirection = GetNormalizedVectorXZ(self:GetViewCoords().zAxis)
             
@@ -279,7 +279,7 @@ function Gorge:ModifyVelocity(input, velocity, deltaTime)
 
     end
     
-    if self:GetIsBellySliding() and self:GetIsOnGround() then
+    if self:GetIsBellySliding() and self:GetIsOnSurface() then
     
         local currentSpeed = velocity:GetLengthXZ()
         local prevY = velocity.y

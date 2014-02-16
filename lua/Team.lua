@@ -57,8 +57,6 @@ function Team:AddPlayer(player)
 
     if player ~= nil and player:isa("Player") then
     
-        // Update scores when switching teams.
-        player:SetRequestsScores(true)
         local id = player:GetId()
         return table.insertunique(self.playerIds, id)
         
@@ -247,13 +245,13 @@ end
 /** 
  * Play sound for every player on the team.
  */
-function Team:PlayPrivateTeamSound(soundName, origin, commandersOnly, excludePlayer, ignoreDistance)
+function Team:PlayPrivateTeamSound(soundName, origin, commandersOnly, excludePlayer, ignoreDistance, triggeringPlayer)
 
     ignoreDistance = ignoreDistance or false
     
     local function PlayPrivateSound(player)
     
-        if not commandersOnly or player:isa("Commander") then
+        if ( not commandersOnly or player:isa("Commander") ) and (not triggeringPlayer or not triggeringPlayer:isa("Player") or GetGamerules():GetCanPlayerHearPlayer(player, triggeringPlayer)) then
             if excludePlayer ~= player then
                 // Play alerts for commander at commander origin, so they always hear them
                 if not origin or player:isa("Commander") then

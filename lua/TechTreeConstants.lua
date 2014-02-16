@@ -56,7 +56,7 @@ kTechId = createTechIdEnum({
     /////////////
     
     // Marine classes + spectators
-    'Marine', 'HeavyArmorMarine', 'MarineCommander', 'JetpackMarine', 'Spectator', 'AlienSpectator', 'Exo',
+    'Marine', 'HeavyArmorMarine', 'MarineCommander', 'JetpackMarine', 'Spectator', 'AlienSpectator', 'Exo', "AllMarines",
     
     // Marine alerts (specified alert sound and text in techdata if any)
     'MarineAlertAcknowledge', 'MarineAlertNeedMedpack', 'MarineAlertNeedAmmo', 'MarineAlertNeedOrder', 'MarineAlertHostiles', 'MarineCommanderEjected', 'MACAlertConstructionComplete',    

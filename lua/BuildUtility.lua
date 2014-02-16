@@ -11,9 +11,9 @@
 
 local gDebugBuildUtility = false
 
-local function CheckBuildTechAvailable(techId, teamNumber)
+local function CheckBuildTechAvailable(techId, player)
 
-    local techTree = GetTechTree(teamNumber)
+    local techTree = player:GetTechTree()
     local techNode = techTree:GetTechNode(techId)
     assert(techNode)
     return techNode:GetAvailable()
@@ -116,13 +116,7 @@ local function CheckBuildEntityRequirements(techId, position, player, ignoreEnti
     local legalBuild = true
     local errorString = ""
     
-    local techTree = nil
-    if Client then
-        techTree = GetTechTree()
-    else
-        techTree = player:GetTechTree()
-    end
-    
+    local techTree = player:GetTechTree()    
     local techNode = techTree:GetTechNode(techId)
     local attachClass = LookupTechData(techId, kStructureAttachClass)                
     
@@ -292,7 +286,7 @@ function GetIsBuildLegal(techId, position, angle, snapRadius, player, ignoreEnti
     
     if legalBuild and (not ignoreChecks or ignoreChecks["TechAvailable"] ~= true) then
     
-        legalBuild = legalBuild and CheckBuildTechAvailable(techId, teamNumber)
+        legalBuild = legalBuild and CheckBuildTechAvailable(techId, player)
         
         if not legalBuild then
             errorString = "COMMANDERERROR_TECH_NOT_AVAILABLE"

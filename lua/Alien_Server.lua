@@ -10,8 +10,6 @@
 //NS2c
 //Changed ability unlock detection, upgrade chamber detection and added redemption and hive teleport
 
-Script.Load("lua/AlienUpgradeManager.lua")
-
 local function GetRelocationHive(usedhive, origin, teamnumber)
     local hives = GetEntitiesForTeam("Hive", teamnumber)
     local selectedhivedist = 0
@@ -64,11 +62,6 @@ function Alien:EvolveAllowed()
     return true
 end
 
-function Alien:SetPrimalScream(duration)
-    self.timeWhenPrimalScreamExpires = Shared.GetTime() + duration
-    self:TriggerEffects("enzymed")
-end
-
 function Alien:Reset()
 
     Player.Reset(self)
@@ -90,7 +83,6 @@ function Alien:OnProcessMove(input)
     Player.OnProcessMove(self, input)
     
 	if not self:GetIsDestroyed() then
-    	self.primalScreamBoost = self.timeWhenPrimalScreamExpires > Shared.GetTime()  
     	self:UpdateAutoHeal()
 	end
     
@@ -104,18 +96,20 @@ function Alien:UpdateAutoHeal()
 
     PROFILE("Alien:UpdateAutoHeal")
     
-    local hasupg, level = GetHasRegenerationUpgrade(self)
-    if hasupg and level > 0 then
-        if self:GetIsHealable() and self.timeLastAlienAutoHeal + kAlienRegenerationTime <= Shared.GetTime() then
-            local healRate = ((kAlienRegenerationPercentage / 3) * level)
-            self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), true, (self:GetMaxHealth() - self:GetHealth() ~= 0), true)    
-            self.timeLastAlienAutoHeal = Shared.GetTime()
-        end
-    else
-        if self:GetIsHealable() and self.timeLastAlienAutoHeal + kAlienInnateRegenerationTime <= Shared.GetTime() then
-            local healRate = kAlienInnateRegenerationPercentage
-            self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), false, (self:GetMaxHealth() - self:GetHealth() ~= 0), true)    
-            self.timeLastAlienAutoHeal = Shared.GetTime()
+    if (self.timeLastAlienAutoHeal + kAlienRegenerationTime <= Shared.GetTime() or self.timeLastAlienAutoHeal + kAlienInnateRegenerationTime <= Shared.GetTime()) and self:GetIsHealable() then
+        local hasupg, level = GetHasRegenerationUpgrade(self)
+        if hasupg and level > 0 then
+            if self.timeLastAlienAutoHeal + kAlienRegenerationTime <= Shared.GetTime() then
+                local healRate = ((kAlienRegenerationPercentage / 3) * level)
+                self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), true, (self:GetMaxHealth() - self:GetHealth() ~= 0), true)    
+                self.timeLastAlienAutoHeal = Shared.GetTime()
+            end
+        else
+            if self.timeLastAlienAutoHeal + kAlienInnateRegenerationTime <= Shared.GetTime() then
+                local healRate = kAlienInnateRegenerationPercentage
+                self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), false, (self:GetMaxHealth() - self:GetHealth() ~= 0), true)    
+                self.timeLastAlienAutoHeal = Shared.GetTime()
+            end
         end
     end
 
@@ -153,6 +147,12 @@ function Alien:GetDamagedAlertId()
     return kTechId.AlienAlertLifeformUnderAttack
 end
 
+function Alien:OnRestoreUpgrades()
+    player = Player.OnRestoreUpgrades(self)
+    player:SetHatched()
+    return player
+end
+
 // Morph into new class or buy upgrade.
 function Alien:ProcessBuyAction(techIds)
 
@@ -167,46 +167,61 @@ function Alien:ProcessBuyAction(techIds)
 	    local armorScalar = self:GetMaxArmor() == 0 and 1 or self:GetArmor() / self:GetMaxArmor()
 	    local totalCosts = 0
 	    
-	    local upgradeIds = {}
+	    local newupgradeIds = { }
 	    local lifeFormTechId = nil
 	    for _, techId in ipairs(techIds) do
-	        
-	        if LookupTechData(techId, kTechDataGestationName) then
+	        if LookupTechData(techId, kTechDataGestateName) then
 	            lifeFormTechId = techId
 	        else
-	            table.insertunique(upgradeIds, techId)
-	
-	
+	            table.insertunique(newupgradeIds, techId)
 	        end
-	        
 	    end
 	
 	    local oldLifeFormTechId = self:GetTechId()
+	    local oldUpgrades = self:GetUpgrades()
+	    local newresources = self:GetPersonalResources()
+	    local approvedUpgrades = { }
 	    
-	    local upgradesAllowed = true
-	    local upgradeManager = AlienUpgradeManager()
-	    upgradeManager:Populate(self)
 	    // add this first because it will allow switching existing upgrades
-	    if lifeFormTechId then
-	        upgradeManager:AddUpgrade(lifeFormTechId)
+	    if lifeFormTechId and BuyMenus_GetUpgradeCost(lifeFormTechId) <= newresources then
+	        //Shared.Message("Purchasing lifeform " .. EnumToString(kTechId, lifeFormTechId) .. ".")
+	        table.insert(approvedUpgrades, lifeFormTechId)
+	        newresources = newresources - BuyMenus_GetUpgradeCost(lifeFormTechId)
 	    end
-	    for _, newUpgradeId in ipairs(techIds) do
-	
-	        if newUpgradeId ~= kTechId.None and not upgradeManager:AddUpgrade(newUpgradeId, true) then
-	            upgradesAllowed = false 
-	            break
+	    // add old upgrades back in first.
+	    // these are free.
+	    for _, UpgradeId in ipairs(oldUpgrades) do
+	        //Shared.Message("Checking old upgrade " .. EnumToString(kTechId, UpgradeId) .. " - " .. ToString(GetTechAvailable(UpgradeId, self)) .. " - " .. ToString(GetIsAlienUpgradeAllowed(self, UpgradeId, approvedUpgrades)) .. " - " .. ToString(not table.contains(newupgradeIds, UpgradeId)) .. "." )
+	        if UpgradeId ~= kTechId.None and GetTechAvailable(UpgradeId, self) and GetIsAlienUpgradeAllowed(self, UpgradeId, approvedUpgrades) and not table.contains(newupgradeIds, UpgradeId) then
+	            //Shared.Message("Adding old upgrade " .. EnumToString(kTechId, UpgradeId) .. ".")
+	            table.insert(approvedUpgrades, UpgradeId)
 	        end
-	        
+	    end
+	    //Add in new upgrades, these cost money
+	    for _, UpgradeId in ipairs(newupgradeIds) do
+	        //Shared.Message("Checking new upgrade " .. EnumToString(kTechId, UpgradeId) .. " - " .. ToString(GetTechAvailable(UpgradeId, self)) .. " - " .. ToString(GetIsAlienUpgradeAllowed(self, UpgradeId, approvedUpgrades)) .. "." )
+	        if UpgradeId ~= kTechId.None and GetTechAvailable(UpgradeId, self) and GetIsAlienUpgradeAllowed(self, UpgradeId, approvedUpgrades) and BuyMenus_GetUpgradeCost(UpgradeId) <= newresources then
+	            //Special case here
+	            //We rebuy an upgrade if we already have it and want to unevolve it.
+	            if table.contains(oldUpgrades, UpgradeId) then
+	                //Shared.Message("Repurchased upgrade " .. EnumToString(kTechId, UpgradeId) .. " , skipping.")
+	            else
+	                table.insert(approvedUpgrades, UpgradeId)
+	                //Shared.Message("Adding new upgrade " .. EnumToString(kTechId, UpgradeId) .. ".")
+	                newresources = newresources - BuyMenus_GetUpgradeCost(UpgradeId)
+	            end
+	        end
 	    end
 	    
-	    upgradesAllowed = upgradesAllowed and self:EvolveAllowed()
-	     
-	    if upgradesAllowed then
+	    if lifeFormTechId == nil then
+	        lifeFormTechId = oldLifeFormTechId
+	    end
+
+	    if self:EvolveAllowed() then
 	    
 	        // Check for room
 	        local eggExtents = LookupTechData(kTechId.Embryo, kTechDataMaxExtents)
-	        local newLifeFormTechId = upgradeManager:GetLifeFormTechId()
-	        local newAlienExtents = LookupTechData(newLifeFormTechId, kTechDataMaxExtents)
+	        local newAlienExtents = LookupTechData(lifeFormTechId, kTechDataMaxExtents)
 	        local physicsMask = PhysicsMask.Evolve
 	        local position = self:GetOrigin()
 	        -- Add a bit to the extents when looking for a clear space to spawn.
@@ -229,12 +244,7 @@ function Alien:ProcessBuyAction(techIds)
 	                    position = spawnPoint
 	                    evolveAllowed = true
 	                    break
-	
-	
-	
-	
-	
-	                    
+
 	                end
 	                
 	            end
@@ -246,30 +256,7 @@ function Alien:ProcessBuyAction(techIds)
 	            local newPlayer = self:Replace(Embryo.kMapName)
 	            position.y = position.y + Embryo.kEvolveSpawnOffset
 	            newPlayer:SetOrigin(position)
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	            
+
 	            // Clear angles, in case we were wall-walking or doing some crazy alien thing
 	            local angles = Angles(self:GetViewAngles())
 	            angles.roll = 0.0
@@ -280,8 +267,8 @@ function Alien:ProcessBuyAction(techIds)
 	            newPlayer:SetVelocity(Vector(0, 0, 0))                
 	            newPlayer:DropToFloor()
 	            
-	            newPlayer:SetResources(upgradeManager:GetAvailableResources())
-	            newPlayer:SetGestationData(upgradeManager:GetUpgrades(), self:GetTechId(), healthScalar, armorScalar)
+	            newPlayer:SetResources(newresources)
+	            newPlayer:SetGestationData(approvedUpgrades, self:GetTechId(), healthScalar, armorScalar)
 	            
 	            success = true
 	            
@@ -363,6 +350,17 @@ end
 
 function Alien:UpdateActiveAbilities(hives)
 
+    if self:GetHasUpgrade(kTechId.ThreeHives) then
+        hives = 3
+    elseif self:GetHasUpgrade(kTechId.TwoHives) then
+        hives = 2
+    end
+    
+    if GetGamerules():GetAllTech() then
+        //Meh
+        hives = 3
+    end
+    
     if hives >= 1 then
         UnlockAbility(self, self:GetTierOneTechId())
         self.oneHive = true
@@ -390,10 +388,17 @@ function Alien:UpdateActiveAbilities(hives)
 end
 
 function Alien:OnKill(attacker, doer, point, direction)
+
     Player.OnKill(self, attacker, doer, point, direction)
+    
     self.oneHive = false
     self.twoHives = false
     self.threeHives = false
+    
+    if self:GetGameMode() == kGameMode.Combat then
+        //Refund lifeform costs.
+        self:AddResources(LookupTechData(self:GetTechId(), kTechDataCombatCost, 0))
+    end
     
 end
 

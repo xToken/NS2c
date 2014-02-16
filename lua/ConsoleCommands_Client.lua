@@ -9,9 +9,6 @@
 
 //NS2c
 //Changed debugspeed to not require cheats
-function OnCommandOnClientDisconnect(clientIndexString)
-    Scoreboard_OnClientDisconnect(tonumber(clientIndexString))
-end
 
 function OnCommandSoundGeometry(enabled)
 
@@ -137,7 +134,9 @@ function OnCommandSetMouseSensitivity(sensitivity)
 end
 
 // Save this setting if we set it via a console command
-function OnCommandSetName(nickname)
+function OnCommandSetName(...)
+
+    local nickname = StringConcatArgs(...)
 
     if type(nickname) ~= "string" then
         return
@@ -220,6 +219,18 @@ local function OnCommandDebugNotifications()
     
 end
 
+local function OnCommandDumpTechTree()
+    local player = Client.GetLocalPlayer()
+    if player ~= nil then
+        local techTree = player:GetTechTree()
+        if techTree ~= nil then
+            for index, techNode in pairs(techTree.nodeList) do
+                techNode:DumpNode()
+            end
+        end
+    end
+end
+
 Event.Hook("Console_soundgeometry", OnCommandSoundGeometry)
 Event.Hook("Console_oneffectdebug", OnCommandEffectDebug)
 Event.Hook("Console_debugtext", OnCommandDebugText)
@@ -246,6 +257,7 @@ Event.Hook("Console_pathingfill", OnCommandPathingFill)
 Event.Hook("Console_cfindref", OnCommandFindRef)
 Event.Hook("Console_debugspeed", OnCommandDebugSpeed)
 Event.Hook("Console_debugnotifications", OnCommandDebugNotifications)
+Event.Hook("Console_dumptechtree", OnCommandDumpTechTree)
 
 local function OnUpdateClient()
 

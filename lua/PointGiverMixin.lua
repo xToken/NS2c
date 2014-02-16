@@ -34,6 +34,10 @@ end
 
 function PointGiverMixin:GetPointValue()
 
+    if self.isHallucination then
+        return 0
+    end    
+
     local numUpgrades = HasMixin(self, "Upgradable") and #self:GetUpgrades() or 0
     local points = LookupTechData(self:GetTechId(), kTechDataPointValue, 0) + numUpgrades * kPointsPerUpgrade
     
@@ -155,6 +159,10 @@ if Server then
 
     function PointGiverMixin:PreOnKill(attacker, doer, point, direction)
     
+        if self.isHallucination then
+            return
+        end    
+    
         local totalDamageDone = self:GetMaxHealth() + self:GetMaxArmor() * 2        
         local points = self:GetPointValue()
         local resReward = self:isa("Player") and kPersonalResPerKill or 0
@@ -172,6 +180,10 @@ if Server then
                 
                 if self:isa("Player") and currentAttacker ~= attacker then
                     currentAttacker:AddAssistKill()
+                    if currentAttacker:GetGameMode() == kGameMode.Combat then
+                        // add assist XP
+                        currentAttacker:AddExperience(kCombatExperienceBaseAward * damageFraction * kCombatFriendlyAssistScalar)
+                    end
                 end
                 
             end
@@ -183,9 +195,29 @@ if Server then
             if attacker:isa("Player") then
                 attacker:AddKill()
                 if Server then
-                    local awardTeam = attacker:GetTeam()
-                    if awardTeam.AwardResources and awardTeam ~= self:GetTeam() then
-                        awardTeam:AwardResources(self:GetResourceValue(attacker), attacker)
+                    if self:GetGameMode() == kGameMode.Classic then
+                        local awardTeam = attacker:GetTeam()
+                        if awardTeam.AwardResources and awardTeam ~= self:GetTeam() then
+                            awardTeam:AwardResources(self:GetResourceValue(attacker), attacker)
+                        end
+                    elseif self:GetGameMode() == kGameMode.Combat then
+                        //Combat, trigger XP gain
+                        //Using assists for shared XP, not local range.
+                        /*local players = GetEntitiesForTeamWithinRange("Player", attacker:GetTeamNumber(), attacker:GetOrigin(), kCombatFriendlyAwardRange)
+                        local pcount = #players
+                        local pexp = kCombatExperienceBaseAward
+                        for _, player in ipairs(players) do
+                            if player ~= attacker then
+                                local distance = (attacker:GetOrigin() - self:GetOrigin()):GetLength()
+                                local xp = math.cos((distance / kCombatFriendlyAwardRange) * (math.pi / 2))
+                                if (xp * pcount) > (kCombatExperienceBaseAward / 2) then
+                                    xp = kCombatExperienceBaseAward / (2 * pcount)
+                                end
+                                player:AddExperience(xp)
+                                pexp = pexp - xp
+                            end
+                        end*/
+                        attacker:AddExperience(kCombatExperienceBaseAward)
                     end
                 end
             end

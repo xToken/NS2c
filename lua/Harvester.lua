@@ -92,19 +92,19 @@ function Harvester:GetCanBeUsed(player, useSuccessTable)
     end  
 end
 
-function Harvester:GetMaxRadius()
+function Harvester:OverrideGetMaxRadius()
     return kHarvesterInfestationRadius
 end
 
-function Harvester:GetGrowthRate()
-    return kHarvesterInfestationGrowthRate
-end
-
-function Harvester:GetMinRadius()
+function Harvester:OverrideGetMinRadius()
     return kHarvesterMinInfestationRadius
 end
 
-function Harvester:GetInfestationDensity()
+function Harvester:OverrideGetGrowthRate()
+    return kHarvesterInfestationGrowthRate
+end
+
+function Harvester:OverrideGetInfestationDensity()
     return kHarvesterInfestationBlobDensity
 end
 

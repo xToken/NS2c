@@ -140,6 +140,8 @@ local kHiveHealthBarPos = Vector(-43, -63, 0)
 local kHiveBuiltSize = Vector(10, 70, 0)
 local kHiveBuiltBarPos = Vector(-85, -63, 0)
 local kHiveTextPos = Vector(-115, 5, 0)
+local kExperienceTextPos = Vector(780, -15, 0)
+local kLevelTextPos = Vector(600, -15, 0)
 
 local kUpgradesTexture = "ui/buildmenu.dds"
 local kStatusTexture = "ui/alien_HUD_status.dds"
@@ -254,6 +256,31 @@ function GUIAlienHUD:Initialize()
         self.hives[i].techId = kTechId.Hive
     end
     
+    self.levelText = self:CreateAnimatedTextItem()
+    self.levelText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
+    self.levelText:SetTextAlignmentX(GUIItem.Align_Max)
+    self.levelText:SetTextAlignmentY(GUIItem.Align_Max)
+    self.levelText:SetColor(kAlienFontColor)
+    self.levelText:SetFontIsBold(false)
+    self.levelText:SetBlendTechnique(GUIItem.Add)
+    self.levelText:SetFontName(kArmorFontName)
+    self.levelText:SetText("Level 1")
+    self.resourceBackground:AddChild(self.levelText)
+    
+    self.experienceText = self:CreateAnimatedTextItem()
+    self.experienceText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
+    self.experienceText:SetTextAlignmentX(GUIItem.Align_Max)
+    self.experienceText:SetTextAlignmentY(GUIItem.Align_Max)
+    self.experienceText:SetColor(kAlienFontColor)
+    self.experienceText:SetFontIsBold(false)
+    self.experienceText:SetBlendTechnique(GUIItem.Add)
+    self.experienceText:SetFontName(kArmorFontName)
+    self.experienceText:SetText("100 XP")
+    self.resourceBackground:AddChild(self.experienceText)
+    
+    self.lastxp = 0
+    self.lastlevel = 0
+    
     self:Reset()
     
 end
@@ -318,6 +345,14 @@ function GUIAlienHUD:Reset()
         self.hives[i].locationtext:SetPosition(Vector(kHiveTextPos.x, (kHiveTextPos.y - yPOS), 0))
         self.hives[i].locationtext:SetScale(GetScaledVector())
     end
+        
+    self.levelText:SetScale(Vector(1,1,1) * self.scale * 1.2)
+    self.levelText:SetScale(GetScaledVector())
+    self.levelText:SetPosition(kLevelTextPos)
+    
+    self.experienceText:SetScale(Vector(1,1,1) * self.scale * 1.2)
+    self.experienceText:SetScale(GetScaledVector())
+    self.experienceText:SetPosition(kExperienceTextPos)
 
 end
 
@@ -862,14 +897,14 @@ function GUIAlienHUD:Update(deltaTime)
     
     UpdateNotifications(self, deltaTime)
 
-    if PlayerUI_GetIsPlaying() then
+    if PlayerUI_GetIsPlaying() and PlayerUI_GetGameMode() == kGameMode.Classic and BuyMenus_GetTechAvailable(kTechId.Hive) then
         for i = 1, #kAlienUpgradeChambers do
             local chambers, hastech, upgrade, upgrades
             chambers = AlienUI_GetChamberCount(kAlienUpgradeChambers[i])
-            hastech = AlienBuy_GetHasTech(kAlienUpgradeRequirements[i])
-            upgrades = AlienUI_GetUpgradesForCategory(kAlienUpgradeRequirements[i])
+            hastech = BuyMenus_GetTechAvailable(kAlienUpgradeChambers[i])
+            upgrades = AlienBuy_GetUpgradesForChamber(kAlienUpgradeChambers[i])
             for j = 1, #upgrades do
-                if AlienBuy_GetUpgradePurchased(upgrades[j]) then
+                if BuyMenus_GetUpgradePurchased(upgrades[j]) then
                     upgrade = upgrades[j]
                 end
             end
@@ -880,6 +915,25 @@ function GUIAlienHUD:Update(deltaTime)
     end
     
     self.inventoryDisplay:Update(deltaTime, { PlayerUI_GetActiveWeaponTechId(), PlayerUI_GetInventoryTechIds() })
+    
+    if PlayerUI_GetGameMode() == kGameMode.Classic then
+    
+        self.experienceText:SetIsVisible(false)
+        self.levelText:SetIsVisible(false)
+        
+    elseif PlayerUI_GetGameMode() == kGameMode.Combat then
+    
+        self.experienceText:SetIsVisible(true)
+        self.levelText:SetIsVisible(true)
+        
+        local level = PlayerUI_GetCurrentLevel()
+        local xp = PlayerUI_GetCurrentXP()
+        local nxp = PlayerUI_GetNextLevelXP()
+        
+        self.experienceText:SetText(ToString(math.floor(xp)) .. " XP / " .. ToString(math.floor(nxp)) .. " XP")
+        self.levelText:SetText("Level " .. ToString(math.floor(level)))
+        
+    end
     
 end
 
@@ -1090,10 +1144,10 @@ end
 function GUIAlienHUD:ShowUpgradeIcon(techId, count, hastech, upgrade)
     local textureCoords
     if upgrade ~= nil then
-	    textureCoords = GetTextureCoordinatesForIcon(upgrade, false)
+        textureCoords = GetTextureCoordinatesForIcon(upgrade, false)
     else
         textureCoords = GetTextureCoordinatesForIcon(techId, false)
-	end
+    end
     for i = 1, 3 do
         if count == 0 and not hastech then 
             self.upgrades[techId][i]:SetIsVisible(false)
@@ -1103,7 +1157,7 @@ function GUIAlienHUD:ShowUpgradeIcon(techId, count, hastech, upgrade)
         self.upgrades[techId][i]:SetColor(ConditionalValue(i <= count, kAlienFontColor, Color(1, 0, 0, 1)))
         self.upgrades[techId][i]:SetTexturePixelCoordinates(unpack(textureCoords))
     end
-	self.upgrades[techId][4] = count
+    self.upgrades[techId][4] = count
     self.upgrades[techId][5] = hastech
     self.upgrades[techId][6] = upgrade
 end

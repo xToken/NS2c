@@ -20,7 +20,7 @@ kExosuitHealth = 100     kExosuitArmor = 70     kExosuitPointValue = 2
 kSkulkHealth = 70	    kSkulkArmor = 10	    kSkulkPointValue = 2
 kGorgeHealth = 150	    kGorgeArmor = 70	    kGorgePointValue = 2
 kLerkHealth = 125	    kLerkArmor = 30	        kLerkPointValue = 2
-kFadeHealth = 300	    kFadeArmor = 150	    kFadePointValue = 2
+kFadeHealth = 250	    kFadeArmor = 150	    kFadePointValue = 2
 kOnosHealth = 950	    kOnosArmor = 700	    kOnosPointValue = 2
 
 kEmbryoHealth = 200     kEmbryoArmor = 150      kEggPointValue = 0
@@ -40,7 +40,7 @@ kRepairMarineArmorPointValue = 1
 kSkulkArmorFullyUpgradedAmount = 30
 kGorgeArmorFullyUpgradedAmount = 120
 kLerkArmorFullyUpgradedAmount = 50
-kFadeArmorFullyUpgradedAmount = 250
+kFadeArmorFullyUpgradedAmount = 220
 kOnosArmorFullyUpgradedAmount = 900
 
 //This handles old alien armor scaling in a more elegant way, and one that the player can see instantly.
@@ -78,6 +78,3 @@ kShadeHealth = 800	kShadeArmor = 0	kShadePointValue = 10
 kWhipHealth  = 1100	kWhipArmor = 0	kWhipPointValue = 10
 kHydraHealth = 1000	kHydraArmor = 0	kHydraPointValue = 10
 kWebHealth = 1     kWebArmor = 0   kWebPointValue = 0
-
-//GTFO DOOR
-kDoorHealth = 2000	kDoorArmor = 1000	kDoorPointValue = 15

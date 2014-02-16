@@ -117,6 +117,7 @@ Script.Load("lua/Babbler.lua")
 Script.Load("lua/BabblerEgg.lua")
 
 // Base players
+Script.Load("lua/PlayerInfoEntity.lua")
 Script.Load("lua/ReadyRoomPlayer.lua")
 Script.Load("lua/Spectator.lua")
 Script.Load("lua/FilmSpectator.lua")

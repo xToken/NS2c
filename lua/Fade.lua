@@ -46,7 +46,6 @@ Fade.YExtents = .85
 local kViewOffsetHeight = 1.7
 local kMass = 76 // 50 // ~350 pounds
 local kMaxSpeed = 4.5
-local kMaxBlinkSpeed = 16 // ns1 fade blink is (3x maxSpeed) + celerity
 local kWalkSpeed = 2
 local kCrouchedSpeed = 1.8
 local kBlinkImpulseForce = 85
@@ -54,10 +53,6 @@ local kFadeBlinkAutoJumpGroundDistance = 0.25
 
 local networkVars =
 {
-    etherealStartTime = "private time",
-    etherealEndTime = "private time",
-    
-    // True when we're moving quickly "through the ether"
     ethereal = "boolean"
 }
 
@@ -77,8 +72,6 @@ function Fade:OnCreate()
         self.isBlinking = false
     end
     
-    self.etherealStartTime = 0
-    self.etherealEndTime = 0
     self.ethereal = false
     
 end
@@ -122,7 +115,7 @@ function Fade:ModifyCrouchAnimation(crouchAmount)
 end
 
 /*function Fade:GetExtentsCrouchShrinkAmount()
-    return ConditionalValue(self:GetIsOnGround() or not self:GetPreventCrouchExtents(), Player.GetExtentsCrouchShrinkAmount(self), 0)
+    return ConditionalValue(self:GetIsOnSurface() or not self:GetPreventCrouchExtents(), Player.GetExtentsCrouchShrinkAmount(self), 0)
 end*/
 
 function Fade:GetMaxViewOffsetHeight()
@@ -133,12 +126,12 @@ function Fade:GetViewModelName()
     return kViewModelName
 end
 
-function Fade:GetPlayerControllersGroup()
+function Fade:GetControllerPhysicsGroup()
     return PhysicsGroup.BigPlayerControllersGroup
 end
 
 function Fade:GetIsForwardOverrideDesired()
-    return not self:GetIsBlinking() and not self:GetIsOnGround()
+    return not self:GetIsBlinking() and not self:GetIsOnSurface()
 end
 
 function Fade:OnTakeFallDamage()
@@ -178,28 +171,6 @@ function Fade:OnBlink()
     self:TriggerEffects("blink_out")
 end
 
-local function GetIsCloseToGround(self, distance)
-        
-    local onGround = false
-    local normal = Vector()
-    local completedMove, hitEntities = nil
-
-    if self.controller ~= nil then
-        // Try to move the controller downward a small amount to determine if
-        // we're on the ground.
-        local offset = Vector(0, -distance, 0)
-        // need to do multiple slides here to not get traped in V shaped spaces
-        completedMove, hitEntities, normal = self:PerformMovement(offset, 3, nil, false)
-        
-        if normal and normal.y >= 0.5 then
-            return true
-        end
-    end
-
-    return false
-    
-end
-
 function Fade:ModifyVelocity(input, velocity, deltaTime)
 
     PROFILE("Fade:ModifyVelocity")
@@ -210,20 +181,9 @@ function Fade:ModifyVelocity(input, velocity, deltaTime)
         local zAxis = self:GetViewCoords().zAxis
         velocity:Add( zAxis * kBlinkImpulseForce * deltaTime )
         
-        if self:GetIsOnGround() or GetIsCloseToGround(self, kFadeBlinkAutoJumpGroundDistance) then
+        if self:GetIsOnSurface() or self:GetIsCloseToGround(kFadeBlinkAutoJumpGroundDistance) then
             self:GetJumpVelocity(input, velocity)
         end
-        
-        // Cap groundspeed
-        local groundspeed = velocity:GetLengthXZ()
-        local maxspeed = kMaxBlinkSpeed + self:GetMovementSpeedModifier()
-        local oldYvelocity = Clamp(velocity.y, (-1 * maxspeed), maxspeed)
-        
-        if groundspeed > maxspeed then
-            velocity:Scale(maxspeed / groundspeed)
-        end
-        
-        velocity.y = oldYvelocity
         
         self:DeductAbilityEnergy(kBlinkPulseEnergyCost)
         
@@ -245,7 +205,7 @@ function Fade:PostUpdateMove(input, runningPrediction)
 end
 
 function Fade:OnBlinkEnd()
-    if self:GetIsOnGround() then
+    if self:GetIsOnSurface() then
         self:SetIsJumping(false)
     end
     self.ethereal = false

@@ -15,21 +15,34 @@ Script.Load("lua/Gamerules.lua")
 // TODO: Move this into NS specific player class
 function Player:OnClientConnect(client)
 
-    self:SetRequestsScores(true)   
     self.clientIndex = client:GetId()
     self.client = client
     
+end
+
+function Player:GetSteamId()
+    if self.client:GetIsVirtual() then
+        return 0
+    end
+    return self.client:GetUserId()
 end
 
 function Player:GetClient()
     return self.client
 end
 
+function Player:SetPlayerInfo(playerInfo)
+
+    self.playerInfo = playerInfo
+    self.playerInfo:SetScorePlayer(self)
+    
+end
+
 function Player:Reset()
 
     ScriptActor.Reset(self)
-    
     self:SetCameraDistance(0)
+    self:ResetLevel()
     
 end
 
@@ -65,9 +78,7 @@ function Player:SetName(name)
     if newName ~= self.name then
     
         self.name = newName
-        
-        self:SetScoreboardChanged(true)
-        
+
     end
     
 end
@@ -96,7 +107,7 @@ end
 
 // Not authoritative, only visual and information. TeamResources is stored in the team.
 function Player:SetTeamResources(teamResources)
-    self.teamResources = math.max(math.min(teamResources, kMaxResources), 0)
+    self.teamResources = math.min(teamResources, kMaxTeamResources)
 end
 
 function Player:GetSendTechTreeBase()
@@ -105,14 +116,6 @@ end
 
 function Player:ClearSendTechTreeBase()
     self.sendTechTreeBase = false
-end
-
-function Player:GetRequestsScores()
-    return self.requestsScores
-end
-
-function Player:SetRequestsScores(state)
-    self.requestsScores = state
 end
 
 // Call to give player default weapons, abilities, equipment, etc. Usually called after CreateEntity() and OnInitialized()
@@ -160,7 +163,7 @@ function Player:OnKill(killer, doer, point, direction)
     end
 
     // Save death to server log
-    if killer == self then        
+    if killer == self or killer == nil then      
         PrintToLog("%s committed suicide", self:GetName())
     elseif killerName ~= nil then
         PrintToLog("%s was killed by %s", self:GetName(), killerName)
@@ -246,8 +249,7 @@ end
 function Player:OnTeamChange()
 
     self:UpdateIncludeRelevancyMask()
-    self:SetScoreboardChanged(true)
-    
+
 end
 
 function Player:UpdateIncludeRelevancyMask()
@@ -272,10 +274,6 @@ function Player:SetResources(amount)
     self.resources = Clamp(amount, 0, kMaxPersonalResources)
     
     local newVisibleResources = math.floor(self.resources)
-    
-    if oldVisibleResources ~= newVisibleResources then
-        self:SetScoreboardChanged(true)
-    end
     
 end
 
@@ -329,6 +327,17 @@ function Player:GetRespawnQueueEntryTime()
     return self.respawnQueueEntryTime
 end
 
+function Player:OnRestoreUpgrades()
+    //Request upgrades back from tree.
+    RetrieveCombatPlayersUpgradeTable(self)
+    self:UpdateArmorAmount()
+    return self
+end
+
+function Player:OnGiveUpgrade(upgradeId)
+    StoreCombatPlayersUpgradeTable(self)
+end
+
 // For children classes to override if they need to adjust data
 // before the copy happens.
 function Player:PreCopyPlayerData()
@@ -367,6 +376,7 @@ function Player:CopyPlayerDataFrom(player)
     self.gameStarted = player.gameStarted
     self.countingDown = player.countingDown
     self.frozen = player.frozen
+    self.level = player.level
     
     self.timeOfDeath = player.timeOfDeath
     self.timeOfLastUse = player.timeOfLastUse
@@ -387,14 +397,7 @@ function Player:CopyPlayerDataFrom(player)
     
     // Don't lose purchased upgrades when becoming commander
     if self:GetTeamNumber() == kAlienTeamType or self:GetTeamNumber() == kMarineTeamType then
-    
-        self.upgrade1 = player.upgrade1
-        self.upgrade2 = player.upgrade2
-        self.upgrade3 = player.upgrade3
-        self.upgrade4 = player.upgrade4
-        self.upgrade5 = player.upgrade5
-        self.upgrade6 = player.upgrade6
-        
+        self:CopyUpgradesFromOldPlayer(player)
     end
     
     // Remember this player's muted clients.
@@ -505,15 +508,15 @@ function Player:Replace(mapName, newTeamNumber, preserveWeapons, atOrigin, extra
     
     // Notify others of the change     
     self:SendEntityChanged(player:GetId())
-    
-    // Update scoreboard because of new entity and potentially new team
-    player:SetScoreboardChanged(true)
-    
+
     // This player is no longer controlled by a client.
     self.client = nil
     
     // Remove any spectators currently spectating this player.
     self:RemoveSpectators(player)
+    
+    player:SetPlayerInfo(self.playerInfo)
+    self.playerInfo = nil
     
     // Only destroy the old player if it is not a ragdoll.
     // Ragdolls will eventually destroy themselve.
@@ -547,49 +550,6 @@ end
  * A table of tech Ids is passed in.
  */
 function Player:ProcessBuyAction(techIds)
-
-    ASSERT(type(techIds) == "table")
-    ASSERT(table.count(techIds) > 0)
-    
-    local techTree = self:GetTechTree()
-    local buyAllowed = true
-    local totalCost = 0
-    local validBuyIds = { }
-    
-    for i, techId in ipairs(techIds) do
-    
-        local techNode = techTree:GetTechNode(techId)
-        if(techNode ~= nil and techNode.available) and not self:GetHasUpgrade(techId) then
-        
-            local cost = GetCostForTech(techId)
-            if cost ~= nil then
-                totalCost = totalCost + cost
-                table.insert(validBuyIds, techId)
-            end
-        
-        else
-        
-            buyAllowed = false
-            break
-        
-        end
-        
-    end
-    
-    if totalCost <= self:GetResources() then
-    
-        if self:AttemptToBuy(validBuyIds) then
-            self:AddResources(-totalCost)
-            return true
-        end
-        
-    else
-        Print("not enough resources sound server")
-        Server.PlayPrivateSound(self, self:GetNotEnoughResourcesSound(), self, 1.0, Vector(0, 0, 0))        
-    end
-
-    return false
-    
 end
 
 // Creates an item by mapname and spawns it at our feet.
@@ -642,34 +602,16 @@ end
 
 // To be overridden by children
 function Player:AttemptToBuy(techIds)
-    return false
+    return self, false
 end
 
-function Player:UpdateMisc(input)
-
-    // Set near death mask so we can add sound/visual effects.
-    //self:SetGameEffectMask(kGameEffect.NearDeath, self:GetHealth() < 0.2 * self:GetMaxHealth())
-    
-    if self:GetTeamType() == kMarineTeamType then
-    
-        self.weaponUpgradeLevel = 0
-        
-        if GetHasTech(self, kTechId.Weapons3, true) then
-            self.weaponUpgradeLevel = 3
-        elseif GetHasTech(self, kTechId.Weapons2, true) then
-            self.weaponUpgradeLevel = 2
-        elseif GetHasTech(self, kTechId.Weapons1, true) then
-            self.weaponUpgradeLevel = 1
-        end
-        
-    end
-    
+function Player:UpdateMisc(input)    
 end
 
 function Player:GetTechTree()
 
     local techTree = nil
-    
+
     local team = self:GetTeam()
     if team ~= nil and team:isa("PlayingTeam") then
         techTree = team:GetTechTree()
@@ -696,7 +638,7 @@ function Player:TriggerAlert(techId, entity)
 
     assert(entity ~= nil)
     
-    if self:GetIsInterestedInAlert(techId) then
+    if self:GetIsInterestedInAlert(techId) and (not entity:isa("Player") or GetGamerules():GetCanPlayerHearPlayer(self, entity)) then
     
         local entityId = entity:GetId()
         local time = Shared.GetTime()
@@ -728,10 +670,7 @@ function Player:SetRookieMode(rookieMode)
      if self.isRookie ~= rookieMode then
     
         self.isRookie = rookieMode
-        
-        // rookie status sent along with scores
-        self:SetScoreboardChanged(true)
-        
+
     end
     
 end

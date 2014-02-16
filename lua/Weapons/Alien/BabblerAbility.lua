@@ -125,12 +125,12 @@ local function CreateBabblerPheromone(self, player)
         end
     end
     
-    if not Predict then
+    if Server or (Client and Client.GetIsControllingPlayer()) then
     
         local viewAngles = player:GetViewAngles()
         local velocity = player:GetVelocity()
         local viewCoords = viewAngles:GetCoords()
-        local startPoint = player:GetEyePos() + viewCoords.zAxis * 0.3
+        local startPoint = player:GetEyePos() + viewCoords.zAxis * 1.5
         local startVelocity = velocity * kPlayerVelocityFraction + viewCoords.zAxis * kProjectileVelocity
 
         local babble = player:CreatePredictedProjectile("BabblerPheromone", startPoint, startVelocity, 0.7, nil, 8, true)

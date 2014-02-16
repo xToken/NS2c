@@ -164,7 +164,7 @@ end
 
 function ClipWeapon:GetAmmoFraction()
 
-    local maxAmmo = self:GetMaxAmmo()
+    local maxAmmo = self:GetMaxAmmo() + self:GetClipSize()
     if maxAmmo > 0 then
         return Clamp((self.clip + self.ammo) / maxAmmo, 0, 1)
     end
@@ -270,7 +270,7 @@ function ClipWeapon:GiveAmmo(numClips, includeClip)
 end
 
 function ClipWeapon:GiveReserveAmmo(bullets)
-    local bulletsToAmmo = math.min(bullets, self:GetMaxAmmo() - self:GetAmmo())
+    local bulletsToAmmo = math.min(bullets, self:GetMaxAmmo() - self:GetAmmo())  
     self.ammo = self.ammo + bulletsToAmmo
     local player = self:GetParent()
     if player then
@@ -559,6 +559,7 @@ function ClipWeapon:OnTag(tagName)
     elseif tagName == "reload" then
         
 		self.reloaded = true
+		self.shooting = false
     elseif tagName == "deploy_end" then
         self.deployed = true
     elseif tagName == "reload_end" then

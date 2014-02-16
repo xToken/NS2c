@@ -94,7 +94,7 @@ kMouseActions.ButtonDown[InputKey.MouseButton0] = function(player, mouseX, mouse
         CommanderGhostStructureLeftMouseButtonDown(mouseX, mouseY)
     else
     
-        local techNode = GetTechNode(player.currentTechId)
+        local techNode = GetTechNode(player, player.currentTechId)
         
         if player.currentTechId == nil or techNode == nil or not techNode:GetRequiresTarget() then
             ClickSelect(player, mouseX, mouseY, player.ctrlDown, player.shiftDown)
@@ -130,7 +130,7 @@ kMouseActions.DoubleClick[InputKey.MouseButton0] = function(player, mouseX, mous
     // Only allowed when there is not a ghost structure.
     if not GetCommanderGhostStructureEnabled() then
     
-        local techNode = GetTechNode(player.currentTechId)
+        local techNode = GetTechNode(player, player.currentTechId)
         if player.currentTechId == nil or techNode == nil or not techNode:GetRequiresTarget() then
         
             // Double clicking on an entity will simulate a control click.

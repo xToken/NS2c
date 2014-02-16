@@ -9,6 +9,11 @@
 
 //NS2c
 //Removed some uneeded effects and other functions that were moved to player_client
+
+Marine.kBuyMenuTexture = "ui/marine_buymenu.dds"
+Marine.kBuyMenuUpgradesTexture = "ui/marine_buymenu_upgrades.dds"
+Marine.kBuyMenuiconsTexture = "ui/marine_buy_icons.dds"
+
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/marine_highlight.surface_shader")
 local kSensorBlipSize = 25
 
@@ -20,8 +25,10 @@ function MarineUI_GetHasObservatory()
 
     local player = Client.GetLocalPlayer()
     
-    if player then    
-        return GetHasTech(player, kTechId.Observatory) 
+    if player and player:GetGameMode() == kGameMode.Classic then    
+        return GetHasTech(player, kTechId.Observatory)
+    elseif player and player:GetGameMode() == kGameMode.Combat then    
+        return true
     end
     
     return false
@@ -32,22 +39,36 @@ function MarineUI_GetHasArmsLab()
 
     local player = Client.GetLocalPlayer()
     
-    if player then
+    if player and player:GetGameMode() == kGameMode.Classic then
         return GetHasTech(player, kTechId.ArmsLab)
+    elseif player and player:GetGameMode() == kGameMode.Combat then    
+        return true
     end
     
     return false
     
 end
 
+function MarineUI_GetPersonalUpgrades()
+
+    local upgrades = { }
+    local player = Client.GetLocalPlayer()
+    local techTree = player:GetTechTree()
+    
+    if techTree then
+    
+        for _, upgradeId in ipairs(techTree:GetAddOnsForTechId(kTechId.AllMarines)) do
+            table.insert(upgrades, upgradeId)
+        end
+    
+    end
+    
+    return upgrades
+
+end
+
 function Marine:UnitStatusPercentage()
     return self.unitStatusPercentage
-end
-
-local function TriggerSpitHitEffect(coords)
-end
-
-local function UpdatePoisonedEffect(self)
 end
 
 function Marine:UpdateClientEffects(deltaTime, isLocal)
@@ -62,6 +83,14 @@ function Marine:UpdateClientEffects(deltaTime, isLocal)
         if marineHUD then
             marineHUD:SetIsVisible(self:GetIsAlive())
         end
+        
+        if self.buyMenu then
+        
+            if not self:GetIsAlive() then
+                self:CloseMenu()
+            end
+            
+        end  
         
     end
     
@@ -125,29 +154,26 @@ function Marine:GetAndClearNotification()
 
 end
 
-gCurrentHostStructureId = Entity.invalidId
-
-function MarineUI_SetHostStructure(structure)
-
-    if structure then
-        gCurrentHostStructureId = structure:GetId()
-    end    
-
-end
-
-function MarineUI_GetCurrentHostStructure()
-
-    if gCurrentHostStructureId and gCurrentHostStructureId ~= Entity.invalidId then
-        return Shared.GetEntity(gCurrentHostStructureId)
-    end
-
-    return nil    
-
-end
-
 // Bring up buy menu
-function Marine:BuyMenu(structure)
+function Marine:Buy()
     
+    // Don't allow display in the ready room
+    if self:GetTeamNumber() ~= 0 and Client.GetLocalPlayer() == self and self:GetGameMode() == kGameMode.Combat then
+    
+        if not self.buyMenu then
+        
+            self.buyMenu = GetGUIManager():CreateGUIScript("GUIMarineBuyMenu")
+            MouseTracker_SetIsVisible(true, "ui/Cursor_MenuDefault.dds", true)
+            self:TriggerEffects("marine_buy_menu_open")
+            
+            TEST_EVENT("Marine buy menu displayed")
+            
+                
+        else
+            self:CloseMenu()
+        end
+        
+    end
     
 end
 
@@ -213,7 +239,6 @@ end
 
 function Marine:OnOrderSelfComplete(orderType)
     self:TriggerEffects("complete_order")
-
 end
 
 function Marine:UpdateGhostModel()

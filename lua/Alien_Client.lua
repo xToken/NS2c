@@ -60,7 +60,7 @@ end
 function AlienUI_GetChamberCount(techId)
     local player = Client.GetLocalPlayer()
     if player ~= nil then
-        return GetChambers(techId, player:GetTeamNumber())
+        return GetChambers(techId, player)
      end
      return 0
 end
@@ -110,52 +110,6 @@ function AlienUI_GetInUmbra()
         return player:GetHasUmbra()
     end
 
-    return false
-
-end
-
-function AlienUI_GetAvailableUpgrades()
-
-    local techTree = GetTechTree()
-
-    local upgrades = {}
-    local localPlayer = Client.GetLocalPlayer()
-    
-    if techTree and localPlayer then
-
-        for _, upgradeId in ipairs(techTree:GetAddOnsForTechId(kTechId.AllAliens)) do
-        
-            local upgradeNode = techTree:GetTechNode(upgradeId)
-            local hiveType = GetHiveTypeForUpgrade(upgradeId)
-
-            if upgradeNode:GetAvailable() and not localPlayer:GetHasUpgrade(upgradeId) then
-            
-                if not upgrades[hiveType] then
-                    upgrades[hiveType] = {}
-                end
-            
-                table.insert(upgrades[hiveType], upgradeNode:GetTechId())
-            end
-        
-        end
-    
-    end
-    
-    return upgrades
-
-end
-
-function AlienUI_HasSameTypeUpgrade(selectedIds, techId)
-
-    local desiredHiveType = GetHiveTypeForUpgrade(techId)
-    for _, selectedId in ipairs(selectedIds) do
-    
-        if GetHiveTypeForUpgrade(selectedId) == desiredHiveType then
-            return true
-        end
-    
-    end
-    
     return false
 
 end
@@ -515,46 +469,6 @@ end
 
 function Alien:GetFirstPersonHitEffectName()
     return kAlienFirstPersonHitEffectName
-end 
-
-function AlienUI_GetPersonalUpgrades()
-
-    local upgrades = {}
-    
-    local techTree = GetTechTree()
-    
-    if techTree then
-    
-        for _, upgradeId in ipairs(techTree:GetAddOnsForTechId(kTechId.AllAliens)) do
-            table.insert(upgrades, {TechId = upgradeId, Category = GetHiveTypeForUpgrade(upgradeId)})
-        end
-    
-    end
-    
-    return upgrades
-
-end
-
-function AlienUI_GetUpgradesForCategory(category)
-
-    local upgrades = {}
-    
-    local techTree = GetTechTree()
-    
-    if techTree then
-    
-        for _, upgradeId in ipairs(techTree:GetAddOnsForTechId(kTechId.AllAliens)) do
-        
-            if GetHiveTypeForUpgrade(upgradeId) == category then        
-                table.insert(upgrades, upgradeId)
-            end
-            
-        end
-    
-    end
-    
-    return upgrades
-
 end
 
 // create some blood on the ground below

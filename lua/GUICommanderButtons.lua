@@ -906,7 +906,8 @@ end
 
 function GUICommanderButtons:ConvertTechIdToTabIndex(techId)
 
-    local techTree = GetTechTree()
+    local player = Client.GetLocalPlayer()
+    local techTree = player:GetTechTree()
     local techText = techTree:GetDescriptionText(techId)
     for t = 1, #self.tabs do
     
@@ -924,7 +925,8 @@ end
 
 function GUICommanderButtons:IsTabSelected(techId)
 
-    local techTree = GetTechTree()
+    local player = Client.GetLocalPlayer()
+    local techTree = player:GetTechTree()
     local techText = techTree:GetDescriptionText(techId)
     
     if self.lastPressedTab then
@@ -946,7 +948,8 @@ end
 
 function GUICommanderButtons:IsTab(techId)
 
-    local techTree = GetTechTree()
+    local player = Client.GetLocalPlayer()
+    local techTree = player:GetTechTree()
     local techText = techTree:GetDescriptionText(techId)
     
     for t = 1, #self.tabs do

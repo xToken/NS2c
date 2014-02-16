@@ -25,6 +25,10 @@ function WhipStructureAbility:GetRequiredTechId()
     return kTechId.WhipHive
 end
 
+function WhipStructureAbility:GetIsPositionValid(displayOrigin, player, normal, lastClickedPosition, entity)
+    return entity == nil
+end
+
 function WhipStructureAbility:GetSuffixName()
     return "whip"
 end

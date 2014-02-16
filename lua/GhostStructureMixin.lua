@@ -47,7 +47,7 @@ local function ClearGhostStructure(self)
     self.isGhostStructure = false
     self:TriggerEffects("ghoststructure_destroy")
     local cost = LookupTechData(self:GetTechId(), kTechDataCostKey, 0)
-    local refund = math.round(cost * kGhostStructureModifier)
+    local refund = math.round(cost * kGhostStructureRefundModifier)
     self:GetTeam():AddTeamResources(refund)
     self:GetTeam():PrintWorldTextForTeamInRange(kWorldTextMessageType.Resources, refund, self:GetOrigin() + kWorldMessageResourceOffset, kResourceMessageRange)
     DestroyEntity(self)

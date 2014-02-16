@@ -13,6 +13,10 @@ function HiveStructureAbility:GetEnergyCost(player)
     return 0
 end
 
+function HiveStructureAbility:GetDropRange()
+    return kGorgeCreateHiveDistance
+end
+
 function HiveStructureAbility:GetPrimaryAttackDelay()
     return 0
 end

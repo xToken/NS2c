@@ -15,7 +15,8 @@ local kHealthIndicatorModelName = PrecacheAsset("models/marine/armory/health_ind
 
 function GetResearchPercentage(techId)
 
-    local techNode = GetTechTree():GetTechNode(techId)
+    local player = Client.GetLocalPlayer()
+    local techNode = player:GetTechTree():GetTechNode(techId)
     
     if(techNode ~= nil) then
     
@@ -31,55 +32,6 @@ function GetResearchPercentage(techId)
     
 end
 
-function Armory_Debug()
-
-    // Draw armory points
-    
-    local indexToUseOrigin = {
-        Vector(Armory.kResupplyUseRange, 0, 0), 
-        Vector(0, 0, Armory.kResupplyUseRange),
-        Vector(-Armory.kResupplyUseRange, 0, 0),
-        Vector(0, 0, -Armory.kResupplyUseRange)
-    }
-    
-    local indexToColor = {
-        Vector(1, 0, 0),
-        Vector(0, 1, 0),
-        Vector(0, 0, 1),
-        Vector(1, 1, 1)
-    }
-    
-    function isaArmory(entity) return entity:isa("Armory") end
-    
-    for index, armory in ientitylist(Shared.GetEntitiesWithClassname("Armory")) do
-    
-        local startPoint = armory:GetOrigin()
-        
-        for loop = 1, 4 do
-            
-            local endPoint = startPoint + indexToUseOrigin[loop]
-            local color = indexToColor[loop]
-            DebugLine(startPoint, endPoint, .2, color.x, color.y, color.z, 1)
-            
-        end
-        
-    end
-    
-end
-
-function Armory:OnInitClient()
-
-    if not self.clientConstructionComplete then
-        self.clientConstructionComplete = self.constructionComplete
-    end    
-
-
-end
-
-function Armory:GetWarmupCompleted()
-    return not self.timeConstructionCompleted or (self.timeConstructionCompleted + 0.7 < Shared.GetTime())
-end
-
 function Armory:SetOpacity(amount, identifier)
 
     for i = 0, self:GetNumChildren() - 1 do
@@ -89,15 +41,6 @@ function Armory:SetOpacity(amount, identifier)
             child:SetOpacity(amount, identifier)
         end
     
-    end
-    
-end
-
-function Armory:UpdateArmoryWarmUp()
-
-    if self.clientConstructionComplete ~= self.constructionComplete and self.constructionComplete then
-        self.clientConstructionComplete = self.constructionComplete
-        self.timeConstructionCompleted = Shared.GetTime()
     end
     
 end

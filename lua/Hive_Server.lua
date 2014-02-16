@@ -134,10 +134,10 @@ local function EmptySpawnWave(self)
         local player = Shared.GetEntity(self.queuedplayer)
         if player then
             player:SetEggId(Entity.invalidId)
-            player:SetWaveSpawnEndTime(0)
             //Correctly sets time back so that players position in the queue isnt completely botched 
             //only would miss next spawn by 1 if another player is already queued and in progress at another hive.
             team:PutPlayerInRespawnQueue(player, self.timeWaveEnds - kAlienMinSpawnInterval)
+            Server.SendNetworkMessage(Server.GetOwner(player), "SetTimeWaveSpawnEnds", { time = 3 }, true)
         end
         
     end
@@ -223,7 +223,7 @@ local function GetCanSpawnEgg(self)
 
     local canSpawnEgg = false
     
-    if self:GetIsBuilt() and CheckNS2GameMode() == kGameMode.Classic then
+    if self:GetIsBuilt() then
     
         if Shared.GetTime() > (self.timeOfLastEgg + GetEggSpawnTime(self)) then    
             canSpawnEgg = true
@@ -327,7 +327,9 @@ function Hive:OnUpdate(deltaTime)
     
     CommandStructure.OnUpdate(self, deltaTime)
     
-    UpdateEggs(self)
+    if GetServerGameMode() == kGameMode.Classic then
+        UpdateEggs(self)
+    end
     
     UpdateHealing(self)
     
@@ -476,27 +478,35 @@ end
 
 function Hive:OnTakeDamage(damage, attacker, doer, point)
 
-    local time = Shared.GetTime()
-    if self:GetIsAlive() and self.lastHiveFlinchEffectTime == nil or (time > (self.lastHiveFlinchEffectTime + 1)) then
+	if damage > 0 then
+	    local time = Shared.GetTime()
+	    if self:GetIsAlive() and self.lastHiveFlinchEffectTime == nil or (time > (self.lastHiveFlinchEffectTime + 1)) then
+	
+	        // Play freaky sound for team mates
+	        local team = self:GetTeam()
+	        team:PlayPrivateTeamSound(Hive.kWoundAlienSound, self:GetModelOrigin())
+	        
+	        // ...and a different sound for enemies
+	        local enemyTeamNumber = GetEnemyTeamNumber(team:GetTeamNumber())
+	        local enemyTeam = GetGamerules():GetTeam(enemyTeamNumber)
+	        if enemyTeam ~= nil then
+	            enemyTeam:PlayPrivateTeamSound(Hive.kWoundSound, self:GetModelOrigin())
+	        end
+	        
+	        // Trigger alert for Commander
+	        team:TriggerAlert(kTechId.AlienAlertHiveUnderAttack, self)
+	        
+	        self.lastHiveFlinchEffectTime = time
+	        
+	    end
+	    
+	    if GetAreEnemies(self, attacker) and damage > 0 and GetServerGameMode() == kGameMode.Combat then
+	    
+	        attacker:AddExperience(damage / self:GetMaxHealth() * kCombatObjectiveExperienceScalar)
+	        
+	    end
+	end
 
-        // Play freaky sound for team mates
-        local team = self:GetTeam()
-        team:PlayPrivateTeamSound(Hive.kWoundAlienSound, self:GetModelOrigin())
-        
-        // ...and a different sound for enemies
-        local enemyTeamNumber = GetEnemyTeamNumber(team:GetTeamNumber())
-        local enemyTeam = GetGamerules():GetTeam(enemyTeamNumber)
-        if enemyTeam ~= nil then
-            enemyTeam:PlayPrivateTeamSound(Hive.kWoundSound, self:GetModelOrigin())
-        end
-        
-        // Trigger alert for Commander
-        team:TriggerAlert(kTechId.AlienAlertHiveUnderAttack, self)
-        
-        self.lastHiveFlinchEffectTime = time
-        
-    end
-    
 end
 
 function Hive:OnTeleportEnd()

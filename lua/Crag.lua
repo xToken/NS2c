@@ -198,22 +198,6 @@ function Crag:TryHeal(target)
     
 end
 
-function Crag:GetMaxRadius()
-    return kInfestationRadius
-end
-
-function Crag:GetGrowthRate()
-    return kInfestationGrowthRate
-end
-
-function Crag:GetMinRadius()
-    return kMinInfestationRadius
-end
-
-function Crag:GetInfestationDensity()
-    return kInfestationBlobDensity
-end
-
 function Crag:GetReceivesStructuralDamage()
     return true
 end

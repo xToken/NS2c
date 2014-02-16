@@ -107,11 +107,9 @@ local function UpdateGestation(self)
             local upgradesGiven = 0
             
             for index, upgradeId in ipairs(self.evolvingUpgrades) do
-
                 if newPlayer:GiveUpgrade(upgradeId) then
                     upgradesGiven = upgradesGiven + 1
                 end
-                
             end
             
             local healthScalar = self:GetHealth() / self:GetMaxHealth()
@@ -311,7 +309,7 @@ function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorSca
     local lifeformTime = ConditionalValue(self.gestationTypeTechId ~= previousTechId, self:GetGestationTime(self.gestationTypeTechId), 0)
     
     local newUpgradesAmount = 0
-    local replacementUpgradesAmount = 0 
+    local replacementUpgrades = { }
     local currentUpgrades = self:GetUpgrades()
     
     for _, upgradeId in ipairs(self.evolvingUpgrades) do
@@ -321,17 +319,21 @@ function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorSca
         end
         local currentChamberId = GetChamberTypeForUpgrade(upgradeId)
         for _, cId in ipairs(currentUpgrades) do
-            if GetChamberTypeForUpgrade(cId) == currentChamberId then
-                replacementUpgradesAmount = replacementUpgradesAmount + 1
+            if GetChamberTypeForUpgrade(cId) == currentChamberId and not table.contains(self.evolvingUpgrades, cId) and not table.contains(replacementUpgrades, cId) then
+                table.insert(replacementUpgrades, cId)
             end
         end
         
     end
     
-    self.gestationTime = ConditionalValue(Shared.GetDevMode(), 2, lifeformTime + (newUpgradesAmount * kUpgradeGestationTime) + (replacementUpgradesAmount * kReplaceUpgradeGestationTime))
+    self.gestationTime = ConditionalValue(Shared.GetDevMode(), 2, lifeformTime + (newUpgradesAmount * kUpgradeGestationTime) + (#replacementUpgrades * kReplaceUpgradeGestationTime))
     
     if Embryo.gFastEvolveCheat then
         self.gestationTime = 5
+    end
+    
+    if self:GetGameMode() == kGameMode.Combat then
+        self.gestationTime = self.gestationTime * kCombatModeGestationTimeScalar
     end
     
     self.evolveTime = 0

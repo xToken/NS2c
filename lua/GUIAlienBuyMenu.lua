@@ -187,25 +187,62 @@ end
 
 function GUIAlienBuyMenu:_InitializeSlots()
 
-    self.slots = {}
+    if PlayerUI_GetGameMode() == kGameMode.Combat then
     
-    CreateSlot(self, kTechId.CragHive)
-    CreateSlot(self, kTechId.ShiftHive)
-    CreateSlot(self, kTechId.ShadeHive)
-    CreateSlot(self, kTechId.WhipHive)
-    
-    local anglePerSlot = (math.pi * 0.75) / (#self.slots - 1)
-    
-    for i = 1, #self.slots do
-    
-        local angle = (i- 1) * anglePerSlot + math.pi * 0.125
-        local distance = GUIAlienBuyMenu.kSlotDistance
+        self.slots = {}
         
-        self.slots[i].Graphic:SetPosition( Vector( math.cos(angle) * distance - GUIAlienBuyMenu.kSlotSize * .5, math.sin(angle) * distance - GUIAlienBuyMenu.kSlotSize * .5, 0) )
-        self.slots[i].Angle = angle
+        CreateSlot(self, kTechId.Carapace)
+        CreateSlot(self, kTechId.Regeneration)
+        CreateSlot(self, kTechId.Redemption)
+        
+        CreateSlot(self, kTechId.Celerity)
+        CreateSlot(self, kTechId.Adrenaline)
+        CreateSlot(self, kTechId.Redeployment)
+        
+        CreateSlot(self, kTechId.Silence)
+        CreateSlot(self, kTechId.Ghost)
+        CreateSlot(self, kTechId.Aura)
+        
+        CreateSlot(self, kTechId.Focus)
+        CreateSlot(self, kTechId.Fury)
+        CreateSlot(self, kTechId.Bombard)
+        
+        CreateSlot(self, kTechId.TwoHives)
+        CreateSlot(self, kTechId.ThreeHives)
+        
+        local anglePerSlot = (math.pi * 1.2) / (#self.slots - 1)
+        
+        for i = 1, #self.slots do
+        
+            local angle = (i- 1) * anglePerSlot - math.pi * 0.1
+            local distance = GUIAlienBuyMenu.kSlotDistance
+            
+            self.slots[i].Graphic:SetPosition( Vector( math.cos(angle) * distance - GUIAlienBuyMenu.kSlotSize * .5, math.sin(angle) * distance - GUIAlienBuyMenu.kSlotSize * .5, 0) )
+            self.slots[i].Angle = angle
+        
+        end
+        
+    elseif PlayerUI_GetGameMode() == kGameMode.Classic then
     
+        self.slots = {}
+        
+        CreateSlot(self, kTechId.Crag)
+        CreateSlot(self, kTechId.Shift)
+        CreateSlot(self, kTechId.Shade)
+        CreateSlot(self, kTechId.Whip)
+        
+        local anglePerSlot = (math.pi * 0.75) / (#self.slots - 1)
+        
+        for i = 1, #self.slots do
+        
+            local angle = (i- 1) * anglePerSlot + math.pi * 0.125
+            local distance = GUIAlienBuyMenu.kSlotDistance
+            
+            self.slots[i].Graphic:SetPosition( Vector( math.cos(angle) * distance - GUIAlienBuyMenu.kSlotSize * .5, math.sin(angle) * distance - GUIAlienBuyMenu.kSlotSize * .5, 0) )
+            self.slots[i].Angle = angle
+        
+        end
     end
-    
 
 end
 
@@ -332,7 +369,7 @@ function GUIAlienBuyMenu:_InitializeAlienButtons()
         alienGraphicItem:SetAnchor(GUIItem.Middle, GUIItem.Center)
         alienGraphicItem:SetPosition(Vector(-GUIAlienBuyMenu.kAlienButtonSize / 2, -ARAdjustedHeight / 2, 0))
         alienGraphicItem:SetTexture("ui/" .. alienType.Name .. ".dds")
-        alienGraphicItem:SetIsVisible(AlienBuy_IsAlienResearched(alienType.Index))
+        alienGraphicItem:SetIsVisible(true)
         
         // Create the text that indicates how many players are playing as a specific alien type.
         local playersText = GUIManager:CreateTextItem()
@@ -411,6 +448,7 @@ function GUIAlienBuyMenu:_InitializeCurrentAlienDisplay()
     self.currentAlienDisplay.TitleShadow:SetTextAlignmentY(GUIItem.Align_Min)
     self.currentAlienDisplay.TitleShadow:SetText(string.upper(GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].Name))
     self.currentAlienDisplay.TitleShadow:SetColor(Color(0, 0, 0, 1))
+	self.currentAlienDisplay.TitleShadow:SetLayer(kGUILayerPlayerHUDForeground3)
     self.background:AddChild(self.currentAlienDisplay.TitleShadow)
     
     self.currentAlienDisplay.Title = GUIManager:CreateTextItem()
@@ -421,6 +459,7 @@ function GUIAlienBuyMenu:_InitializeCurrentAlienDisplay()
     self.currentAlienDisplay.Title:SetTextAlignmentY(GUIItem.Align_Min)
     self.currentAlienDisplay.Title:SetText(string.upper(GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].Name))
     self.currentAlienDisplay.Title:SetColor(ColorIntToColor(kAlienTeamColor))
+	self.currentAlienDisplay.Title:SetLayer(kGUILayerPlayerHUDForeground3)
     self.currentAlienDisplay.TitleShadow:AddChild(self.currentAlienDisplay.Title)
 
 end
@@ -547,12 +586,12 @@ function GUIAlienBuyMenu:_UninitializeMouseOverInfo()
 
 end
 
-local function GetHasAnyCategoryUpgrade(cathegory)
+local function GetHasAnyCategoryUpgrade(category)
 
-    local upgrades = AlienUI_GetUpgradesForCategory(cathegory)
+    local upgrades = AlienBuy_GetUpgradesForChamber(category)
 
     for i = 1, #upgrades do
-        if AlienBuy_GetTechAvailable(upgrades[i]) then
+        if BuyMenus_GetTechAvailable(upgrades[i]) then
             return true
         end        
     end
@@ -566,11 +605,11 @@ function GUIAlienBuyMenu:_InitializeUpgradeButtons()
     // There are purchased and unpurchased buttons. Both are managed in this list.
     self.upgradeButtons = { }
     
-    local upgrades = AlienUI_GetPersonalUpgrades()
+    local upgrades = AlienBuy_GetPersonalUpgrades()
     
     for i = 1, #self.slots do
     
-        local upgrades = AlienUI_GetUpgradesForCategory(self.slots[i].Category)
+        local upgrades = AlienBuy_GetUpgradesForChamber(self.slots[i].Category)
         local offsetAngle = self.slots[i].Angle
         local anglePerUpgrade = math.pi * 0.25 / 3.25
         local category = self.slots[i].Category
@@ -600,7 +639,7 @@ function GUIAlienBuyMenu:_InitializeUpgradeButtons()
             
             buttonIcon:SetPosition(unselectedPosition)
             
-            local purchased = AlienBuy_GetUpgradePurchased(techId)
+            local purchased = BuyMenus_GetUpgradePurchased(techId)
             if purchased then
                 table.insertunique(self.upgradeList, techId)
             end
@@ -609,10 +648,9 @@ function GUIAlienBuyMenu:_InitializeUpgradeButtons()
             table.insert(self.upgradeButtons, { Background = nil, Icon = buttonIcon, TechId = techId, Category = category,
                                                 Selected = purchased, SelectedMovePercent = 0, Cost = 0, Purchased = purchased, Index = nil, 
                                                 UnselectedPosition = unselectedPosition, SelectedPosition = self.slots[i].Graphic:GetPosition()  })
-        
-        
+
         end
-    
+        
     end
 
 end
@@ -947,33 +985,27 @@ function GUIAlienBuyMenu:_UninitializeCorners()
 
 end
 
-local function GetUpgradeCostForLifeForm(player, alienType, upgradeId)
+local function GetUpgradeCost(player, upgradeId)
 
     if player then
     
-        local alienTechNode = GetAlienTechNode(alienType, true)
-        if alienTechNode then
-
-            if player:GetTechId() == alienTechNode:GetTechId() and player:GetHasUpgrade(upgradeId) then
-                return 0
-            end    
-        
-            return LookupTechData(alienTechNode:GetTechId(), kTechDataUpgradeCost, 0)
-            
+        if player:GetHasUpgrade(upgradeId) then
+            return 0
         end
-    
+        
+        return LookupTechData(upgradeId, kTechDataCostKey, 0)
     end
     
     return 0
 
 end
 
-local function GetSelectedUpgradesCost(self, alienType)
+local function GetSelectedUpgradesCost(self)
 
     local cost = 0
     for i, currentButton in ipairs(self.upgradeButtons) do
     
-        local upgradeCost = GetUpgradeCostForLifeForm(Client.GetLocalPlayer(), alienType, currentButton.TechId)
+        local upgradeCost = GetUpgradeCost(Client.GetLocalPlayer(), currentButton.TechId)
     
         if currentButton.Selected then
             cost = cost + upgradeCost
@@ -983,6 +1015,27 @@ local function GetSelectedUpgradesCost(self, alienType)
     
     return cost
     
+end
+
+local function GetListOfNewlySelectedUpgrades(self)
+
+    local list = { }
+    local player = Client.GetLocalPlayer()
+    
+    if player then
+    
+        for i, currentButton in ipairs(self.upgradeButtons) do
+        
+            if currentButton.Selected and not player:GetHasUpgrade(currentButton.TechId) then
+                table.insert(list, currentButton.TechId)
+            end
+            
+        end
+    
+    end
+    
+    return numSelected 
+
 end
 
 local function GetNumberOfNewlySelectedUpgrades(self)
@@ -1023,8 +1076,8 @@ end
 
 local function GetCanAffordAlienTypeAndUpgrades(self, alienType)
 
-    local alienCost = AlienBuy_GetAlienCost(alienType, false)
-    local upgradesCost = GetSelectedUpgradesCost(self, alienType)
+    local alienCost = AlienBuy_GetAlienCost(alienType)
+    local upgradesCost = GetSelectedUpgradesCost(self)
     // Cannot buy the current alien without upgrades.
     if alienType == AlienBuy_GetCurrentAlien() then
         alienCost = 0
@@ -1044,7 +1097,7 @@ end
 local function UpdateEvolveButton(self)
 
     local researched, researchProgress, researching = self:_GetAlienTypeResearchInfo(GUIAlienBuyMenu.kAlienTypes[self.selectedAlienType].Index)
-    local selectedUpgradesCost = GetSelectedUpgradesCost(self, self.selectedAlienType)
+    local selectedUpgradesCost = GetSelectedUpgradesCost(self)
     local numberOfSelectedUpgrades = GetNumberOfNewlySelectedUpgrades(self)
     local evolveButtonTextureCoords = GUIAlienBuyMenu.kEvolveButtonTextureCoordinates
     local hasGameStarted = PlayerUI_GetHasGameStarted()
@@ -1063,7 +1116,7 @@ local function UpdateEvolveButton(self)
             // If cannot afford selected alien type and/or upgrades, cannot evolve.
             evolveButtonTextureCoords = GUIAlienBuyMenu.kEvolveButtonNeedResourcesTextureCoordinates
             evolveText = Locale.ResolveString("ABM_NEED")
-            evolveCost = AlienBuy_GetAlienCost(self.selectedAlienType, false) + selectedUpgradesCost
+            evolveCost = AlienBuy_GetAlienCost(self.selectedAlienType) + selectedUpgradesCost
             
         else
         
@@ -1072,7 +1125,7 @@ local function UpdateEvolveButton(self)
             
             // Cannot buy the current alien.
             if self.selectedAlienType ~= AlienBuy_GetCurrentAlien() then
-                totalCost = totalCost + AlienBuy_GetAlienCost(self.selectedAlienType, false)
+                totalCost = totalCost + AlienBuy_GetAlienCost(self.selectedAlienType)
             end
             
             evolveText = Locale.ResolveString("ABM_EVOLVE_FOR")
@@ -1180,7 +1233,7 @@ end
 
 function GUIAlienBuyMenu:_GetCanAffordAlienType(alienType)
 
-    local alienCost = AlienBuy_GetAlienCost(alienType, false)
+    local alienCost = AlienBuy_GetAlienCost(alienType)
     // Cannot buy the current alien without upgrades.
     if alienType == AlienBuy_GetCurrentAlien() then
         return false
@@ -1191,10 +1244,7 @@ function GUIAlienBuyMenu:_GetCanAffordAlienType(alienType)
 end
 
 function GUIAlienBuyMenu:_GetAlienTypeResearchInfo(alienType)
-    local researched = AlienBuy_IsAlienResearched(alienType)
-    local researchProgress = AlienBuy_GetAlienResearchProgress(alienType)
-    local researching = researchProgress > 0 and researchProgress < 1
-    return researched, researchProgress, researching
+    return true, 1, false
 end
 
 function GUIAlienBuyMenu:_GetNumberOfAliensAvailable()
@@ -1267,18 +1317,18 @@ function GUIAlienBuyMenu:_UpdateAlienButtons()
 end
 
 local kDefaultColor = Color(kIconColors[kAlienTeamType])
-local kNotAvailableColor = Color(0.0, 0.0, 0.0, 1)
-local kNotAllowedColor = Color(1, 0,0,1)
+local kNotAvailableColor = Color(0.5, 0.5, 0.5, 1)
+local kNotAllowedColor = Color(1, 0, 0, 1)
 local kPurchasedColor = Color(1, 0.6, 0, 1)
 
 function GUIAlienBuyMenu:_UpdateUpgrades(deltaTime)
 
     for i, slot in ipairs(self.slots) do
 
-        if GetHasAnyCategoryUpgrade(slot.Category) then
-            slot.Graphic:SetTexture(GUIAlienBuyMenu.kSlotTexture)    
-        else
+        if not BuyMenus_GetTechAvailable(slot.Category) and not BuyMenus_GetHasTech(slot.Category) then
             slot.Graphic:SetTexture(GUIAlienBuyMenu.kSlotLockedTexture)
+        else
+            slot.Graphic:SetTexture(GUIAlienBuyMenu.kSlotTexture)
         end   
     
     end
@@ -1290,7 +1340,8 @@ function GUIAlienBuyMenu:_UpdateUpgrades(deltaTime)
         if currentButton.Purchased then
             useColor = kPurchasedColor
 
-        elseif not AlienBuy_GetTechAvailable(currentButton.TechId) then           
+        elseif not BuyMenus_GetTechAvailable(currentButton.TechId) then
+   
             useColor = kNotAvailableColor
             
             // unselect button if tech becomes unavailable
@@ -1318,7 +1369,7 @@ function GUIAlienBuyMenu:_UpdateUpgrades(deltaTime)
             //local health = LookupTechData(currentButton.TechId, kTechDataMaxHealth)
             //local armor = LookupTechData(currentButton.TechId, kTechDataMaxArmor)
 
-            self:_ShowMouseOverInfo(currentUpgradeInfoText, tooltipText, GetUpgradeCostForLifeForm(Client.GetLocalPlayer(), self.selectedAlienType, currentButton.TechId))
+            self:_ShowMouseOverInfo(currentUpgradeInfoText, tooltipText, GetUpgradeCost(Client.GetLocalPlayer(), currentButton.TechId))
            
         end
 
@@ -1442,15 +1493,18 @@ function GUIAlienBuyMenu:SendKeyEvent(key, down)
             if allowedToEvolve and self:_GetIsMouseOver(self.evolveButtonBackground) then
             
                 local purchases = { }
+                local player = Client.GetLocalPlayer()
                 // Buy the selected alien if we have a different one selected.
                 if self.selectedAlienType ~= AlienBuy_GetCurrentAlien() then
                     table.insert(purchases, { Type = "Alien", Alien = self.selectedAlienType })
                 end
                 
                 // Buy all selected upgrades.
-                for i, currentButton in ipairs(self.upgradeButtons) do
+                for i, currentButton in ipairs(self.upgradeButtons)  do
                 
-                    if currentButton.Selected then
+                    if currentButton.Selected and not player:GetHasUpgrade(currentButton.TechId) then
+                        table.insert(purchases, { Type = "Upgrade", Alien = self.selectedAlienType, UpgradeIndex = currentButton.Index, TechId = currentButton.TechId })
+                    elseif not currentButton.Selected and player:GetHasUpgrade(currentButton.TechId) then
                         table.insert(purchases, { Type = "Upgrade", Alien = self.selectedAlienType, UpgradeIndex = currentButton.Index, TechId = currentButton.TechId })
                     end
                     
@@ -1486,7 +1540,7 @@ function GUIAlienBuyMenu:SendKeyEvent(key, down)
 
                         self.selectedAlienType = buttonItem.TypeData.Index
                         
-                        if self.selectedAlienType ~= AlienBuy_GetCurrentAlien() then 
+                        if self.selectedAlienType ~= AlienBuy_GetCurrentAlien() and PlayerUI_GetGameMode() == kGameMode.Classic then 
                             self:_DeselectAllUpgrades()
                         end
                         
@@ -1557,9 +1611,7 @@ function GUIAlienBuyMenu:_DeselectAllUpgrades()
 end
 
 function GUIAlienBuyMenu:GetCanSelect(upgradeButton)
-
-    return AlienBuy_GetTechAvailable(upgradeButton.TechId) and AlienBuy_GetIsUpgradeAllowed(upgradeButton.TechId, self.upgradeList)
-    
+    return BuyMenus_GetTechAvailable(upgradeButton.TechId) and AlienBuy_GetIsUpgradeAllowed(upgradeButton.TechId, self.upgradeList)
 end
 
 function GUIAlienBuyMenu:_HandleUpgradeClicked(mouseX, mouseY)
@@ -1570,6 +1622,9 @@ function GUIAlienBuyMenu:_HandleUpgradeClicked(mouseX, mouseY)
         // Can't select if it has been purchased already.
         
         local allowedToUnselect = currentButton.Selected or currentButton.Purchased
+        if PlayerUI_GetGameMode() == kGameMode.Combat then
+            allowedToUnselect = not currentButton.Purchased
+        end
         local allowedToPuchase = not currentButton.Selected and self:GetCanSelect(currentButton)
                 
         if (allowedToUnselect or allowedToPuchase) and self:_GetIsMouseOver(currentButton.Icon) then

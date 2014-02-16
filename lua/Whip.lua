@@ -129,22 +129,6 @@ function Whip:GetDamagedAlertId()
     return kTechId.AlienAlertStructureUnderAttack
 end
 
-function Whip:GetMaxRadius()
-    return kInfestationRadius
-end
-
-function Whip:GetGrowthRate()
-    return kInfestationGrowthRate
-end
-
-function Whip:GetMinRadius()
-    return kMinInfestationRadius
-end
-
-function Whip:GetInfestationDensity()
-    return kInfestationBlobDensity
-end 
-
 function Whip:GetCanSleep()
     return true
 end

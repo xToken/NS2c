@@ -134,7 +134,7 @@ function Lerk:GetDesiredAngles()
 
     local desiredAngles = Alien.GetDesiredAngles(self)
 
-    if not self:GetIsOnGround() and self.gliding then
+    if not self:GetIsOnSurface() and self.gliding then
         desiredAngles.pitch = self.viewPitch
     end 
    
@@ -208,7 +208,7 @@ function Lerk:GetMaxSpeed(possible)
 
     local speed = kMaxWalkSpeed
     
-    if not self:GetIsOnGround() then
+    if not self:GetIsOnSurface() then
         speed = kMaxSpeed
     end
     
@@ -247,12 +247,12 @@ local function UpdateFlap(self, input, velocity)
     if flapPressed ~= self.flapPressed then
 
         self.flapPressed = flapPressed
-        self.glideAllowed = not self:GetIsOnGround()
+        self.glideAllowed = not self:GetIsOnSurface()
 
         if flapPressed and self:GetEnergy() > kLerkFlapEnergyCost and not self.gliding then
         
             // take off
-            if self:GetIsOnGround() or input.move:GetLength() == 0 then
+            if self:GetIsOnSurface() or input.move:GetLength() == 0 then
                 velocity.y = velocity.y * 0.5 + 5
 
             else
@@ -293,7 +293,7 @@ local function UpdateFlap(self, input, velocity)
  
             self:DeductAbilityEnergy(kLerkFlapEnergyCost)
             self.lastTimeFlapped = Shared.GetTime()
-            self.onGround = false
+            self:SetIsOnGround(false)
             self:TriggerEffects("flap")
 
         end
@@ -333,7 +333,7 @@ local function UpdateGlide(self, input, velocity, deltaTime)
         local redirectVelocity = wishDir * useSpeed
         VectorCopy(redirectVelocity, velocity)
         
-        self.gliding = not self:GetIsOnGround()
+        self.gliding = not self:GetIsOnSurface()
 
     else
         self.gliding = false
@@ -344,7 +344,7 @@ end
 // jetpack and exo do the same, move to utility function
 local function UpdateAirStrafe(self, input, velocity, deltaTime)
 
-    if not self:GetIsOnGround() and not self.gliding then
+    if not self:GetIsOnSurface() and not self.gliding then
     
         // do XZ acceleration
         local wishDir = self:GetViewCoords():TransformVector(input.move) 
@@ -379,7 +379,7 @@ end
 // Glide if jump held down.
 function Lerk:AdjustGravityForce(input, gravity)
 
-    if self:GetIsOnGround() then
+    if self:GetIsOnSurface() then
         gravity = 0
     elseif bit.band(input.commands, Move.Crouch) ~= 0 then
         // Swoop

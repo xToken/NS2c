@@ -76,6 +76,10 @@ function SwipeBlink:GetLastAttackTime()
     return self.lastPrimaryAttackTime
 end
 
+function SwipeBlink:GetKnockbackForce()
+    return kSwipeKnockbackForce
+end
+
 function SwipeBlink:OnPrimaryAttack(player)
 
     if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(player) then

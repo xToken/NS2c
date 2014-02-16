@@ -70,13 +70,13 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
             damage, armorUsed, healthUsed = GetDamageByType(target, attacker, doer, damage, damageType, point, blockfocus)
 
             // check once the damage
-            if damage > 0 then
+            if not direction then
+                direction = Vector(0, 0, 1)
+            end
             
-                if not direction then
-                    direction = Vector(0, 0, 1)
-                end
-                
-                killedFromDamage, damageDone = target:TakeDamage(damage, attacker, doer, point, direction, armorUsed, healthUsed, damageType)
+            killedFromDamage, damageDone = target:TakeDamage(damage, attacker, doer, point, direction, armorUsed, healthUsed, damageType)
+            
+            if damage > 0 then    
                                 
                 // Many types of damage events are server-only, such as grenades.
                 // Send the player a message so they get feedback about what damage they've done.
@@ -102,6 +102,11 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                     // This makes the cross hair turn red. Show it when hitting anything
                     if not doer.GetShowHitIndicator or doer:GetShowHitIndicator() then
                         attacker.giveDamageTime = Shared.GetTime()
+                    end
+                    
+                    //Apply knockback if weapon causes it
+                    if doer.GetKnockbackForce and not killedFromDamage then
+                        ApplyPlayerKnockback(attacker, target, doer:GetKnockbackForce())
                     end
                     
                 end

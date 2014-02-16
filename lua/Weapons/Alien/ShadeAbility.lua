@@ -25,6 +25,10 @@ function ShadeStructureAbility:GetRequiredTechId()
     return kTechId.ShadeHive
 end
 
+function ShadeStructureAbility:GetIsPositionValid(displayOrigin, player, normal, lastClickedPosition, entity)
+    return entity == nil
+end
+
 function ShadeStructureAbility:GetSuffixName()
     return "shade"
 end

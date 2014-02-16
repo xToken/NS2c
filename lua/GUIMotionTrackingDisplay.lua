@@ -44,7 +44,7 @@ function GUIMotionTrackingDisplay:Update(deltaTime)
     local players = {}
     local player = Client.GetLocalPlayer()
     
-    if player and GetHasTech(self, kTechId.MotionTracking) then
+    if player and GetHasTech(player, kTechId.MotionTracking) then
     
         local viewDirection = player:GetViewCoords().zAxis
         local eyePos = player:GetEyePos()

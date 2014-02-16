@@ -182,9 +182,8 @@ function Egg:RequeuePlayer()
             end
             
             player:SetEggId(Entity.invalidId)
-            player:SetWaveSpawnEndTime(0)
             team:PutPlayerInRespawnQueue(player, Shared.GetTime() - kAlienMinSpawnInterval)
-            
+            Server.SendNetworkMessage(Server.GetOwner(player), "SetTimeWaveSpawnEnds", { time = 3 }, true)
         end
         
     end
@@ -296,11 +295,6 @@ function Egg:SpawnPlayer(overrideplayer)
     end
     
     if queuedPlayer ~= nil then
-    
-        local queuedPlayer = player
-        if not queuedPlayer then
-            queuedPlayer = Shared.GetEntity(self.queuedPlayerId)
-        end
     
         // Spawn player on top of egg
         local spawnOrigin = Vector(self:GetOrigin())

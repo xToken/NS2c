@@ -28,7 +28,6 @@ Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
 Script.Load("lua/WeldableMixin.lua")
-Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/PowerConsumerMixin.lua")
@@ -84,7 +83,6 @@ AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(RecycleMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
-AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(GhostStructureMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
@@ -166,7 +164,6 @@ function InfantryPortal:OnCreate()
     InitMixin(self, CombatMixin)
     InitMixin(self, RagdollMixin)
     InitMixin(self, ObstacleMixin)
-    InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
     InitMixin(self, GhostStructureMixin)
     InitMixin(self, DetectableMixin)
@@ -352,8 +349,6 @@ local function SpawnPlayer(self)
             self.queuedPlayerId = Entity.invalidId
             self.queuedPlayerStartTime = nil
             
-            player:ProcessRallyOrder(self)
-            
             self:TriggerEffects("infantry_portal_spawn")            
             
             return true
@@ -465,15 +460,6 @@ function InfantryPortal:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("InfantryPortal:OnUpdateAnimationInput")
     modelMixin:SetAnimationInput("spawning", self.queuedPlayerId ~= Entity.invalidId)
-    
-end
-
-function InfantryPortal:OnOverrideOrder(order)
-
-    // Convert default to set rally point.
-    if order:GetType() == kTechId.Default then
-        order:SetType(kTechId.SetRally)
-    end
     
 end
 

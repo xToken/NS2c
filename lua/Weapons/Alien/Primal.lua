@@ -39,8 +39,8 @@ local function TriggerPrimal(self, lerk)
             if player ~= lerk then
                 player:AddEnergy(kPrimalScreamEnergyGain)
             end
-            if player.SetPrimalScream then
-                player:SetPrimalScream(kPrimalScreamDuration)
+            if player.PrimalScream then
+                player:PrimalScream(kPrimalScreamDuration)
                 player:TriggerEffects("primal")
             end            
         end

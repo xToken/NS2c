@@ -163,22 +163,6 @@ function Shade:GetShowOrderLine()
     return true
 end
 
-function Shade:GetMaxRadius()
-    return kInfestationRadius
-end
-
-function Shade:GetGrowthRate()
-    return kInfestationGrowthRate
-end
-
-function Shade:GetMinRadius()
-    return kMinInfestationRadius
-end
-
-function Shade:GetInfestationDensity()
-    return kInfestationBlobDensity
-end
-
 function Shade:GetDamagedAlertId()
     return kTechId.AlienAlertStructureUnderAttack
 end

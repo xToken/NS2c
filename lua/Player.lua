@@ -28,7 +28,6 @@ Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/TeamMixin.lua")
-Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/MobileTargetMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/BadgeMixin.lua")
@@ -46,23 +45,11 @@ Player.kMapName = "player"
 
 if Server then
     Script.Load("lua/Player_Server.lua")
-end
-
-if Client then
+elseif Predict then
+    Script.Load("lua/Player_Predict.lua")
+elseif Client then
     Script.Load("lua/Player_Client.lua")
     Script.Load("lua/Chat.lua")
-end
-
-if Predict then
-
-function Player:OnUpdatePlayer(deltaTime)    
-    // do nothing
-end
-
-function Player:UpdateMisc(input)
-    // do nothing
-end
-
 end
 
 Player.kNotEnoughResourcesSound     = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/more")
@@ -108,16 +95,24 @@ local kStowedWeaponWeightScalar = 1
 local kThinkInterval = .2
 
 //Movement Code Vars
-local kMaxAirVeer = 1.2
+//NS1
+//Should all of these be impacted by units change?  I would think so, but quite clearly not...
+//Gravity - 800 - 15.1
+//Stopspeed - 100 - 1.8
+//Friction - 4 - 0.07
+//Accel - 10 - 0.2
+//Air Accel - 10 - 0.2
+
 local kGoldSrcAcceleration = 10
 local kGoldSrcAirAcceleration = 50
-local kGroundFriction = 4
-local kClimbFriction = 5
+local kGroundFriction = 5
+local kClimbFriction = 6
 local kCrouchMaxSpeed = 2.2
 local kWalkMaxSpeed = 3.5
 local kRunMaxSpeed = 6
 local kBackwardsMovementScalar = 1
 local kJumpForce = 6.5
+local kMaxPlayerSlow = 0.8
 
 //Other Vars
 local kMass = 90.7 // ~200 pounds (incl. armor, weapons)
@@ -159,12 +154,14 @@ local networkVars =
     fullPrecisionOrigin = "private vector", 
     
     // Controlling client index. -1 for not being controlled by a live player (ragdoll, fake player)
-    clientIndex = "integer",
+    clientIndex = "integer (-1 to 4000)",
+    
+    gamemode = "enum kGameMode",
     
     viewModelId = "private entityid",
     
     resources = "private float (0 to " .. kMaxResources .. " by 0.1)",
-    teamResources = "private float (0 to " .. kMaxResources .. " by 0.1)",
+    teamResources = "private float (0 to " .. kMaxTeamResources .. " by 1)",
     gameStarted = "private boolean",
     countingDown = "private boolean",
     frozen = "private boolean",
@@ -200,12 +197,14 @@ local networkVars =
     forwardModifier = "boolean",
     giveDamageTime = "private time",
     
+    level = "float (0 to " .. kCombatMaxLevel .. " by 0.001)",
+    
     pushImpulse = "private vector",
     pushTime = "private time",
     
     isMoveBlocked = "private boolean",
     
-    communicationStatus = "enum kPlayerCommunicationStatus"    
+    communicationStatus = "enum kPlayerCommunicationStatus"
 }
 
 ------------
@@ -270,6 +269,7 @@ function Player:OnCreate()
         self.giveDamageTime = 0
         self.sendTechTreeBase = false
         self.waitingForAutoTeamBalance = false
+        self.gamemode = GetServerGameMode()
         
     end
     
@@ -293,7 +293,6 @@ function Player:OnCreate()
     self.primaryAttackLastFrame = false
     self.secondaryAttackLastFrame = false
     
-    self.requestsScores = false
     self.viewModelId = Entity.invalidId
     
     self.usingStructure = nil
@@ -302,7 +301,7 @@ function Player:OnCreate()
     self.timeOfDeath = nil
     
     self.resources = 0
-    
+    self.level = 1
     self.stepStartTime = 0
     self.stepAmount = 0
     self.lastfootstep = 0
@@ -311,13 +310,7 @@ function Player:OnCreate()
     self.isRookie = false
     
     self.moveButtonPressed = false
-    
-    // Create the controller for doing collision detection.
-    // Just use default values for the capsule size for now. Player will update to correct
-    // values when they are known.
-    local controllerGroup = self:GetPlayerControllersGroup()
-    self:CreateController(controllerGroup)
-    
+
     // Make the player kinematic so that bullets and other things collide with it.
     self:SetPhysicsGroup(PhysicsGroup.PlayerGroup)
     
@@ -365,7 +358,6 @@ function Player:OnInitialized()
         
     end
 
-    self:SetScoreboardChanged(true)
     self:SetViewOffsetHeight(self:GetMaxViewOffsetHeight())
     self:UpdateControllerFromEntity()
     
@@ -390,6 +382,20 @@ function Player:OnInitialized()
     
     self.communicationStatus = kPlayerCommunicationStatus.None
     
+end
+
+function Player:GetIsSteamFriend()
+
+    if self.isSteamFriend == nil and self.clientIndex > 0 then
+    
+        local steamId = GetSteamIdForClientIndex(self.clientIndex)
+        if steamId then
+            self.isSteamFriend = Client.GetIsSteamFriend(steamId)
+        end
+    
+    end
+
+    return self.isSteamFriend
 end
 
 /**
@@ -429,6 +435,14 @@ function Player:OnDestroy()
         
     elseif Server then
         self:RemoveSpectators(nil)
+        
+        if self.playerInfo then
+        
+            DestroyEntity(self.playerInfo)
+            self.playerInfo = nil
+            
+        end
+        
     end
     
 end
@@ -463,6 +477,14 @@ function Player:GetReceivesVaporousDamage()
     return true
 end
 
+function Player:GetGameMode()
+    return self.gamemode
+end
+
+function Player:SetGameMode(newmode)
+    self.gamemode = newmode
+end
+
 // Special unique client-identifier 
 function Player:GetClientIndex()
     return self.clientIndex
@@ -471,6 +493,52 @@ end
 function Player:AddPushImpulse(vector)
     self.pushImpulse = Vector(vector)
     self.pushTime = Shared.GetTime()
+end
+
+function Player:GetPlayerLevel()
+    return math.floor(self.level)
+end
+
+function Player:GetPlayerExperience()
+    local levelprogress = self.level - math.floor(self.level)
+    local lastlevelxp = CalculateLevelXP(math.floor(self.level))
+    local nextlevelxp = CalculateLevelXP(math.floor(self.level) + 1)
+    return lastlevelxp + math.floor((nextlevelxp - lastlevelxp) * levelprogress)
+end
+
+function Player:AddExperience(xp)
+    if self.level >= kCombatMaxLevel then
+        return
+    end
+    local oldlevel = math.floor(self.level)
+    local xpbalance = self.level - oldlevel
+    local lastlevelxp = CalculateLevelXP(oldlevel)
+    local nextlevelxp = CalculateLevelXP(oldlevel + 1)
+    local xptolevel = (1 - (self.level - oldlevel)) * (nextlevelxp - lastlevelxp)
+    local xpaddition = xp / (nextlevelxp - lastlevelxp)
+    local xpbalance = math.floor(xp - xptolevel)
+    //Shared.Message(string.format("XP Added %s : Old Level %s : New Level %s : LastXPBreak %s : NextXPBreak %s : OldXPTowardsLevel %s : NewXPTowardsLevel %s : XPToLevel %s : XPBalance %s.", 
+    //            xp, self.level, self.level + xpaddition, lastlevelxp, nextlevelxp, self.level - oldlevel, xpaddition, xptolevel, xpbalance))
+    if xp >= xptolevel and self.level < kCombatMaxLevel then
+        //Trigger levelup!
+        self:Levelup()
+    else
+        self.level = math.min(self.level + xpaddition, kCombatMaxLevel)
+    end
+    if xpbalance > 0 and self.level < kCombatMaxLevel then
+        self:AddExperience(xpbalance)
+    end
+end
+
+function Player:ResetLevel()
+    self.level = 1
+end
+
+function Player:Levelup()
+    //Trigger effects, give player resources (points)
+    self.level = math.min(math.floor(self.level) + 1, kCombatMaxLevel)
+    self:AddResources(kCombatResourcesPerLevel)
+    self:TriggerEffects("res_received")
 end
 
 function Player:OverrideInput(input)
@@ -919,16 +987,12 @@ function Player:AddResources(amount)
     local oldRes = self.resources
     self:SetResources(self:GetResources() + resReward)
     
-    if oldRes ~= self.resources then
-        self:SetScoreboardChanged(true)
-    end
-    
     return resReward
     
 end
 
 function Player:AddTeamResources(amount)
-    self.teamResources = math.max(math.min(self.teamResources + amount, kMaxResources), 0)
+    self.teamResources = math.min(self.teamResources + amount, kMaxTeamResources)
 end
 
 function Player:GetDisplayResources()
@@ -1250,6 +1314,26 @@ function Player:OnProcessIntermediate(input)
     
 end
 
+function Player:GetHasController()
+
+    if (Client or Predict) and self.isHallucination then
+        return false
+    end    
+
+    return HasMixin(self, "Live") and self:GetIsAlive()
+    
+end
+
+function Player:GetHasOutterController()
+
+    if (Client or Predict) and self.isHallucination then
+        return false
+    end
+
+    return HasMixin(self, "Live") and self:GetIsAlive()
+    
+end
+
 // You can't modify a compensated field for another (relevant) entity during OnProcessMove(). The
 // "local" player doesn't undergo lag compensation it's only all of the other players and entities.
 // For example, if health was compensated, you can't modify it when a player was shot -
@@ -1292,8 +1376,6 @@ function Player:OnProcessMove(input)
     
     if self:GetIsAlive() then
     
-        ASSERT(self.controller ~= nil)
-        
         self:UpdateMove(input)
 
 		self:UpdateMaxMoveSpeed(input.time)
@@ -1402,7 +1484,7 @@ function Player:GetControllerSize()
     return GetTraceCapsuleFromExtents(self:GetExtents())
 end
 
-function Player:GetPlayerControllersGroup()
+function Player:GetControllerPhysicsGroup()
     return PhysicsGroup.PlayerControllersGroup
 end
 
@@ -1428,7 +1510,7 @@ end
 
 
 function Player:GetCanStep()
-    return self:GetIsOnGround()
+    return self:GetIsOnSurface()
 end
 
 function Player:OnTakeFallDamage(damage)
@@ -1446,7 +1528,7 @@ local function CheckSpaceAboveForJump(self)
 end
 
 function Player:GetCanJump()
-    return self:GetIsOnGround() and CheckSpaceAboveForJump(self)
+    return self:GetIsOnSurface() and CheckSpaceAboveForJump(self)
 end
 
 function Player:GetCanCrouch()
@@ -1462,7 +1544,9 @@ function Player:GetJumpForce()
 end
 
 function Player:GetJumpVelocity(input, velocity)
-    velocity.y = self:GetJumpForce() - math.abs(self:GetGravityForce(input) * input.time)
+    velocity.y = self:GetJumpForce()// - math.abs(self:GetGravityForce(input) * input.time)
+    //This shouldnt be needed because we jump before any gravity is applied, therefore an entire frames worth of gravity
+    //will be deducted correctly.
 end
 
 function Player:GetGroundFriction()
@@ -1482,14 +1566,14 @@ function Player:PerformsVerticalMove()
 end
 
 function Player:AdjustGravityForce(input, gforce)
-    if self:GetIsOnLadder() or self:GetIsOnGround() then
+    if self:GetIsOnLadder() or self:GetIsOnSurface() then
         gforce = 0
     end
     return gforce
 end
 
-function Player:GetAcceleration()
-    return ConditionalValue(self:GetIsOnSurface(), kGoldSrcAcceleration, kGoldSrcAirAcceleration)
+function Player:GetAcceleration(OnGround)
+    return ConditionalValue(OnGround, kGoldSrcAcceleration, kGoldSrcAirAcceleration)
 end
 
 function Player:GetMaxSpeed(possible)
@@ -1508,10 +1592,6 @@ function Player:GetMaxSpeed(possible)
     end
       
     return maxSpeed
-end
-
-function Player:GetMaxAirVeer()
-    return kMaxAirVeer
 end
 
 function Player:GetIsForwardOverrideDesired()
@@ -1618,8 +1698,8 @@ function Player:GetPlayIdleSound()
     return self:GetIsAlive() and (self:GetVelocityLength() / self:GetMaxSpeed()) > 0.5
 end
 
-function Player:GetPlayLandSound(landIntesity)
-    return landIntesity > 0.3
+function Player:GetPlayLandSound(landIntensity)
+    return landIntensity > 0.3
 end
 
 function Player:OnJump()
@@ -1636,7 +1716,7 @@ end
 // Never more than 1 second of recovery time
 // Also reduce velocity by this amount
 function Player:AddSlowScalar(scalar)
-    self.slowAmount = Clamp(self.slowAmount + scalar, 0, 1)
+    self.slowAmount = Clamp(self.slowAmount + scalar, 0, kMaxPlayerSlow)
 end
 
 function Player:GetMaterialBelowPlayer()
@@ -1726,6 +1806,10 @@ function Player:GetIsAbleToUse()
     return self:GetIsAlive()
 end
 
+function Player:GetCanBeKnocked()
+    return self:GetIsAlive()
+end
+
 function Player:HandleButtons(input)
 
     PROFILE("Player:HandleButtons")
@@ -1735,7 +1819,7 @@ function Player:HandleButtons(input)
         // The following inputs are disabled when the player cannot control themself.
         input.commands = bit.band(input.commands, bit.bnot(bit.bor(Move.Use, Move.Buy, Move.Jump,
                                                                    Move.PrimaryAttack, Move.SecondaryAttack,
-                                                                   Move.NextWeapon, Move.PrevWeapon, Move.Reload,
+                                                                   Move.SelectNextWeapon, Move.SelectPrevWeapon, Move.Reload,
                                                                    Move.Taunt, Move.Weapon1, Move.Weapon2,
                                                                    Move.Weapon3, Move.Weapon4, Move.Weapon5, Move.Crouch, Move.Drop, Move.MovementModifier)))
                                                                    
@@ -1796,11 +1880,11 @@ function Player:HandleButtons(input)
     // Weapon switch
     if not self:GetIsCommander() and not self:GetIsUsing() then
     
-        if bit.band(input.commands, Move.NextWeapon) ~= 0 then
+        if bit.band(input.commands, Move.SelectNextWeapon) ~= 0 then
             self:SelectNextWeapon()
         end
         
-        if bit.band(input.commands, Move.PrevWeapon) ~= 0 then
+        if bit.band(input.commands, Move.SelectPrevWeapon) ~= 0 then
             self:SelectPrevWeapon()
         end
     
@@ -1891,11 +1975,6 @@ end
 
 function Player:GetScoreboardChanged()
     return self.scoreboardChanged
-end
-
-// Set to true when score, name, kills, team, etc. changes so it's propagated to players
-function Player:SetScoreboardChanged(state)
-    self.scoreboardChanged = state
 end
 
 function Player:SpaceClearForEntity(position, printResults)
@@ -1990,7 +2069,11 @@ end
 
 // Overwrite how players interact with doors
 function Player:OnOverrideDoorInteraction(inEntity)
-    return true, 6
+    if self:GetVelocityLength() > 8 then
+        return true, 10
+    else
+        return true, 6
+    end
 end
 
 function Player:SetIsUsing (isUsing)
@@ -2178,16 +2261,6 @@ function Player:OnAdjustModelCoords(modelCoords)
       
     return modelCoords
     
-end
-
-function Player:GetWeaponUpgradeLevel()
-
-    if not self.weaponUpgradeLevel then
-        return 0
-    end
-
-    return self.weaponUpgradeLevel    
-
 end
 
 function Player:GetIsRookie()

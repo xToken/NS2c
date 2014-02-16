@@ -208,9 +208,7 @@ function Ability:GetEffectParams(tableParams)
     if player and tableParams[kEffectFilterSilenceUpgrade] == nil then
         local hasupg, level = GetHasSilenceUpgrade(player)
         if hasupg then
-            if level == 3 then
-                tableParams[kEffectFilterSilenceUpgrade] = true
-            end
+            tableParams[kEffectFilterSilenceUpgrade] = level == 3
             tableParams[kEffectParamVolume] = 1 - Clamp(level / 3, 0, 1)
         end
     end

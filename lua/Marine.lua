@@ -69,7 +69,6 @@ local kWalkMaxSpeed = 2.2
 local kCrouchMaxSpeed = 1.6
 local kRunMaxSpeed = 4.9
 local kMaxWebbedMoveSpeed = 0.5
-local kDoubleJumpMinHeightChange = 0.4
 local kArmorWeldRate = 25
 local kWalkBackwardSpeedScalar = 0.4
 
@@ -94,7 +93,6 @@ local networkVars =
     
     flashlightLastFrame = "private boolean",
     catpackboost = "private boolean",
-    weaponUpgradeLevel = "integer (0 to 3)",
     
     unitStatusPercentage = "private integer (0 to 100)"
 }
@@ -241,7 +239,7 @@ function Marine:GetArmorLevel()
     local armorLevel = 0
     local techTree = self:GetTechTree()
 
-    if techTree then
+    if techTree and self:GetGameMode() == kGameMode.Classic then
     
         local armor3Node = techTree:GetTechNode(kTechId.Armor3)
         local armor2Node = techTree:GetTechNode(kTechId.Armor2)
@@ -252,6 +250,16 @@ function Marine:GetArmorLevel()
         elseif armor2Node and armor2Node:GetResearched()  then
             armorLevel = 2
         elseif armor1Node and armor1Node:GetResearched()  then
+            armorLevel = 1
+        end
+        
+    elseif self:GetGameMode() == kGameMode.Combat then
+    
+        if self:GetHasUpgrade(kTechId.Armor3) then
+            armorLevel = 3
+        elseif self:GetHasUpgrade(kTechId.Armor2) then
+            armorLevel = 2
+        elseif self:GetHasUpgrade(kTechId.Armor1) then
             armorLevel = 1
         end
         
@@ -266,7 +274,7 @@ function Marine:GetWeaponLevel()
     local weaponLevel = 0
     local techTree = self:GetTechTree()
 
-    if techTree then
+    if techTree and self:GetGameMode() == kGameMode.Classic then
         
             local weapon3Node = techTree:GetTechNode(kTechId.Weapons3)
             local weapon2Node = techTree:GetTechNode(kTechId.Weapons2)
@@ -280,6 +288,16 @@ function Marine:GetWeaponLevel()
                 weaponLevel = 1
             end
             
+    elseif self:GetGameMode() == kGameMode.Combat then
+    
+        if self:GetHasUpgrade(kTechId.Weapons3) then
+            weaponLevel = 3
+        elseif self:GetHasUpgrade(kTechId.Weapons2) then
+            weaponLevel = 2
+        elseif self:GetHasUpgrade(kTechId.Weapons1) then
+            weaponLevel = 1
+        end
+     
     end
 
     return weaponLevel
@@ -303,10 +321,10 @@ function Marine:GetCanSeeDamagedIcon(ofEntity)
 end
 
 function Marine:GetSlowOnLand(velocity)
-    return math.abs(velocity.y) > (self:GetMaxSpeed() + 0.2)
+    return math.abs(velocity.y) > self:GetMaxSpeed()
 end
 
-function Marine:GetPlayerControllersGroup()
+function Marine:GetControllerPhysicsGroup()
     return PhysicsGroup.BigPlayerControllersGroup
 end
 
@@ -329,17 +347,7 @@ end
 function Marine:GetArmorAmount(armorLevels)
 
     if not armorLevels then
-    
-        armorLevels = 0
-    
-        if GetHasTech(self, kTechId.Armor3, true) then
-            armorLevels = 3
-        elseif GetHasTech(self, kTechId.Armor2, true) then
-            armorLevels = 2
-        elseif GetHasTech(self, kTechId.Armor1, true) then
-            armorLevels = 1
-        end
-    
+        armorLevels = self:GetArmorLevel()
     end
     
     return kMarineArmor + armorLevels * kArmorPerUpgradeLevel
@@ -351,13 +359,6 @@ function Marine:OnDestroy()
     Player.OnDestroy(self)
     
     if Client then
-
-        if self.ruptureMaterial then
-        
-            Client.DestroyRenderMaterial(self.ruptureMaterial)
-            self.ruptureMaterial = nil
-            
-        end
         
         if self.flashlight ~= nil then
             Client.DestroyRenderLight(self.flashlight)
@@ -416,7 +417,6 @@ function Marine:HandleButtons(input)
                         end
                         
                         self:AddWeapon(nearbyDroppedWeapon, true)
-		                self:SetScoreboardChanged(true)
 		                StartSoundEffectAtOrigin(Marine.kGunPickupSound, self:GetOrigin())
                         self.timeOfLastPickUpWeapon = Shared.GetTime()
                         
@@ -482,8 +482,8 @@ function Marine:GetMaxSpeed(possible)
     return adjustedMaxSpeed
 end
 
-function Marine:GetAcceleration()
-    return Player.GetAcceleration(self) * self:GetSlowSpeedModifier()
+function Marine:GetAcceleration(OnGround)
+    return Player.GetAcceleration(self, OnGround) * self:GetSlowSpeedModifier()
 end
 
 function Marine:GetFootstepSpeedScalar()
@@ -569,7 +569,7 @@ function Marine:GetCanDropWeapon(weapon, ignoreDropTimeLimit)
         weapon = self:GetActiveWeapon()
     end
     
-    if weapon ~= nil and weapon.GetIsDroppable and weapon:GetIsDroppable() then
+    if weapon ~= nil and weapon.GetIsDroppable and weapon:GetIsDroppable() and self:GetGameMode() == kGameMode.Classic then
     
         // Don't drop weapons too fast.
         if ignoreDropTimeLimit or (Shared.GetTime() > (self.timeOfLastDrop + kDropWeaponTimeLimit)) then
@@ -704,17 +704,61 @@ function Marine:OnUpdateAnimationInput(modelMixin)
     
 end
 
+function Marine:UpdateCombatTimers()
+
+    PROFILE("Marine:UpdateCombatTimers")
+    
+    local time = Shared.GetTime()
+    
+    if self.lastcombatcheck == nil or self.lastcombatcheck + kMarineCombatPowerUpTime < time then
+        //Resupply
+        if self.hasresupply and (self.lastcombatresupply == nil or self.lastcombatresupply + kMarineCombatResupplyTime < time) then
+            local weapon = self:GetActiveWeapon()
+            if self:GetHealth() < self:GetMaxHealth() then
+                //Give MedPack
+                self:AddHealth(kHealthPerMedpack, false, true)
+                StartSoundEffectAtOrigin(MedPack.kHealthSound, self:GetOrigin())
+                self.lastcombatresupply = time
+            elseif weapon ~= nil and weapon.GetAmmoFraction and weapon:GetAmmoFraction() < 1 then
+                //Give Ammo
+                if weapon:GiveAmmo(kClipsPerAmmoPack, false) then
+                    StartSoundEffectAtOrigin(AmmoPack.kPickupSound, self:GetOrigin())
+                end
+                self.lastcombatresupply = time
+            end
+        end
+        //Scan
+        if self.hasscan and (self.lastcombatscan == nil or self.lastcombatscan + kMarineCombatScanTime < time) then
+            // look for cloaked aliens nearby?
+            // o wait no cloaking in classic lol.. wtf
+            local aliens = GetEntitiesForTeamWithinRange("Player", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), kMarineCombatScanCheckRadius)
+            if #aliens > 0 then
+                //Just trigger on this for now...
+                CreateEntity(Scan.kMapName, self:GetOrigin(), self:GetTeamNumber())        
+                // create custom sound for marine commander
+                StartSoundEffectForPlayer(Observatory.kCommanderScanSound, self)
+            end
+            self.lastcombatscan = time
+        end
+        self.lastcombatcheck = time
+    end
+    
+end
+
 function Marine:OnProcessMove(input)
 
-    if Server then
+    if Server and self:GetIsAlive() then
     
     	self.catpackboost = Shared.GetTime() - self.timeCatpackboost < kCatPackDuration
         if self.unitStatusPercentage ~= 0 and self.timeLastUnitPercentageUpdate + 2 < Shared.GetTime() then
             self.unitStatusPercentage = 0
         end
         
+        if self:GetGameMode() == kGameMode.Combat then
+            self:UpdateCombatTimers()
+        end
+        
 	end
-
 
     Player.OnProcessMove(self, input)
 

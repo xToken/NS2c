@@ -144,6 +144,9 @@ function PlayerRanking:EndGame(winningTeam)
 
     if self.gameStarted and self:GetTrackServer() then
     
+        local allSkill, marineSkill, alienSkill = self:GetAveragePlayerSkill()
+        local isGatherGame = Server.GetIsGatherReady()
+    
         local gameTime = math.max(0, Shared.GetTime() - self.gameStartTime)
         // dont send data of games lasting shorter than a minute. Those are most likely over because of players leaving the server / team.
         if gameTime > kMinMatchTime then
@@ -164,7 +167,7 @@ function PlayerRanking:EndGame(winningTeam)
             Print("%s", ToString(gameInfo))
 
             for steamIdString, playerData in pairs(self.capturedPlayerData) do   
-                self:InsertPlayerData(gameInfo.players, playerData, winningTeam, gameTime)
+                self:InsertPlayerData(gameInfo.players, playerData, winningTeam, gameTime, marineSkill, alienSkill, isGatherGame)
             end
 			
 			//NS2c - Dont want to mess up their stats
@@ -189,7 +192,7 @@ local function GetPlayerIsValidForRanking(recordedData, gameTime)
 
 end
 
-function PlayerRanking:InsertPlayerData(playerTable, recordedData, winningTeam, gameTime)
+function PlayerRanking:InsertPlayerData(playerTable, recordedData, winningTeam, gameTime, marineSkill, alienSkill, isGatherGame)
 
     PROFILE("PlayerRanking:InsertPlayerData")
 
@@ -209,6 +212,10 @@ function PlayerRanking:InsertPlayerData(playerTable, recordedData, winningTeam, 
             score = recordedData.score,
             isWinner = winningTeam:GetTeamNumber() == recordedData.teamNumber,
             isCommander = (recordedData.commanderTime / gameTime) > 0.75,
+            marineTeamSkill = marineSkill,
+            alienTeamSkill = alienSkill,
+            gatherGame = isGatherGame,
+            commanderTime = recordedData.commanderTime
         }
         
         Print("PlayerRanking: dumping player data ------------------")

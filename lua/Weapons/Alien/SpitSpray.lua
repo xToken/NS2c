@@ -17,7 +17,7 @@ class 'SpitSpray' (Ability)
 
 SpitSpray.kMapName = "spitspray"
 
-local kSpitSpeed = 40
+local kSpitSpeed = 20
 
 local kAnimationGraph = PrecacheAsset("models/alien/gorge/gorge_view.animation_graph")
 

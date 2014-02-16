@@ -19,13 +19,24 @@ function MarineBuy_GetWeaponDescription(techId)
         gWeaponDescription[kTechId.Axe] = "WEAPON_DESC_AXE"
         gWeaponDescription[kTechId.Pistol] = "WEAPON_DESC_PISTOL"
         gWeaponDescription[kTechId.Rifle] = "WEAPON_DESC_RIFLE"
-        gWeaponDescription[kTechId.Shotgun] = "WEAPON_DESC_SHOTGUN"
-		gWeaponDescription[kTechId.HeavyMachineGun] = "WEAPON_DESC_HEAVYMACHINEGUN"
-        gWeaponDescription[kTechId.GrenadeLauncher] = "WEAPON_DESC_GRENADELAUNCHER"
+        gWeaponDescription[kTechId.Shotgun] = kNS2cLocalizedStrings.WEAPON_DESC_SHOTGUN
+		gWeaponDescription[kTechId.HeavyMachineGun] = kNS2cLocalizedStrings.WEAPON_DESC_HEAVYMACHINEGUN
+        gWeaponDescription[kTechId.GrenadeLauncher] = kNS2cLocalizedStrings.WEAPON_DESC_GRENADELAUNCHER
         gWeaponDescription[kTechId.Welder] = "WEAPON_DESC_WELDER"
         gWeaponDescription[kTechId.Mines] = "WEAPON_DESC_MINE"
-        gWeaponDescription[kTechId.Jetpack] = "WEAPON_DESC_JETPACK"
-        gWeaponDescription[kTechId.HeavyArmorMarine] = "WEAPON_DESC_HEAVY_ARMOR"
+        gWeaponDescription[kTechId.HandGrenades] = kNS2cLocalizedStrings.WEAPON_DESC_HANDGRENADES
+        gWeaponDescription[kTechId.Jetpack] = kNS2cLocalizedStrings.WEAPON_DESC_JETPACK
+        gWeaponDescription[kTechId.HeavyArmor] = kNS2cLocalizedStrings.WEAPON_DESC_HEAVY_ARMOR
+        gWeaponDescription[kTechId.Weapons1] = kNS2cLocalizedStrings.WEAPON_DESC_WEAPONS1
+        gWeaponDescription[kTechId.Weapons2] = kNS2cLocalizedStrings.WEAPON_DESC_WEAPONS2
+        gWeaponDescription[kTechId.Weapons3] = kNS2cLocalizedStrings.WEAPON_DESC_WEAPONS3
+        gWeaponDescription[kTechId.Armor1] = kNS2cLocalizedStrings.WEAPON_DESC_ARMOR1
+        gWeaponDescription[kTechId.Armor2] = kNS2cLocalizedStrings.WEAPON_DESC_ARMOR2
+        gWeaponDescription[kTechId.Armor3] = kNS2cLocalizedStrings.WEAPON_DESC_ARMOR3
+        gWeaponDescription[kTechId.MedPack] = kNS2cLocalizedStrings.WEAPON_DESC_RESUPPLY
+        gWeaponDescription[kTechId.Scan] = kNS2cLocalizedStrings.WEAPON_DESC_SCAN
+        gWeaponDescription[kTechId.CatPack] = kNS2cLocalizedStrings.WEAPON_DESC_CATPACK
+        gWeaponDescription[kTechId.MotionTracking] = kNS2cLocalizedStrings.WEAPON_DESC_MOTIONTRACKING
         
     end
     
@@ -35,63 +46,6 @@ function MarineBuy_GetWeaponDescription(techId)
     end
     
     return Locale.ResolveString(description)
-    
-end
-
-function GetCurrentPrimaryWeaponTechId()
-
-    local weapons = Client.GetLocalPlayer():GetHUDOrderedWeaponList()
-    if table.count(weapons) > 0 then
-    
-        // Main weapon is our primary weapon - in the first slot
-        return weapons[1]:GetTechId()
-        
-    end
-    
-    Print("GetCurrentPrimaryWeaponTechId(): Couldn't find current primary weapon.")
-    
-    return kTechId.None
-
-end
-
-/**
- * Get weapon id for current weapon (nebulously defined since there are 3 potentials?)
- */
-function MarineBuy_GetCurrentWeapon()
-    return TechIdToWeaponIndex(GetCurrentPrimaryWeaponTechId())
-end
-
-/**
- * Return information about the available weapons in a linear array
- * Name - string (for tooltips?)
- * normal tex x - int
- * normal tex y - int
- */
-function MarineBuy_GetEquippedWeapons()
-
-    local t = {}
-    
-    local player = Client.GetLocalPlayer()
-    local items = GetChildEntities(player, "ScriptActor")
-
-    for index, item in ipairs(items) do
-    
-        local techId = item:GetTechId()
-        
-        if techId ~= kTechId.Pistol and techId ~= kTechId.Axe then
-        
-            local itemName = GetDisplayNameForTechId(techId)
-            table.insert(t, itemName)    
-            
-            local index = TechIdToWeaponIndex(techId)
-            table.insert(t, 0)
-            table.insert(t, index - 1)
-            
-        end
-
-    end
-    
-    return t
     
 end
 
@@ -120,72 +74,6 @@ local kMarineBuyMenuSounds = { Open = "sound/NS2.fev/common/open",
 
 for i, soundAsset in pairs(kMarineBuyMenuSounds) do
     Client.PrecacheLocalSound(soundAsset)
-end
-
-local gDisplayTechs = nil
-local function GetDisplayTechId(techId)
-
-    if not gDisplayTechs then
-    
-        gDisplayTechs = {}
-        gDisplayTechs[kTechId.Axe] = true
-        gDisplayTechs[kTechId.Pistol] = true
-        gDisplayTechs[kTechId.Rifle] = true
-        gDisplayTechs[kTechId.Shotgun] = true
-		gDisplayTechs[kTechId.HeavyMachineGun] = true
-        gDisplayTechs[kTechId.GrenadeLauncher] = true
-        gDisplayTechs[kTechId.Welder] = true
-        gDisplayTechs[kTechId.Mines] = true
-        gDisplayTechs[kTechId.Jetpack] = true
-        gDisplayTechs[kTechId.HeavyArmorMarine] = true
-    
-    end
-
-    return gDisplayTechs[techId]
-
-end
-
-function MarineBuy_GetEquipped()
-
-    local equipped = {}
-    
-    local player = Client.GetLocalPlayer()
-    local items = GetChildEntities(player, "ScriptActor")
-
-    for index, item in ipairs(items) do
-    
-        local techId = item:GetTechId()
-        if GetDisplayTechId(techId) then
-            table.insertunique(equipped, techId)
-        end
-        
-    end
-    
-    if player and player:isa("JetpackMarine") then
-        table.insertunique(equipped, kTechId.Jetpack)
-    end    
-    
-    return equipped
-
-end
-
-// called by GUIMarineBuyMenu
-
-function MarineBuy_IsResearched(techId)
-
-    local techNode = GetTechTree():GetTechNode(techId)
-    
-    if techNode ~= nil then
-        return techNode:GetAvailable(Client.GetLocalPlayer(), techId, 0)
-    end
-    
-    return true
-end
-
-
-function MarineBuy_GetHas(techId)
-    //TODO: check if local player already has the item / upgrades    
-    return false
 end
 
 function MarineBuy_OnMouseOver()
@@ -253,28 +141,4 @@ function MarineBuy_GetDisplayName(techId)
     else
         return ""
     end
-end
-
-function MarineBuy_GetCosts(techId)
-    if techId ~= nil then
-        return LookupTechData(techId, kTechDataCostKey, 0)
-    else
-        return 0
-    end
-end
-
-function MarineBuy_GetResearchProgress(techId)
-
-    local techTree = GetTechTree()
-    local techNode = nil
-    
-    if techTree ~= nil then
-        techNode = techTree:GetTechNode(techId)
-    end
-    
-    if techNode  ~= nil then
-        return techNode:GetPrereqResearchProgress()
-    end
-    
-    return 0    
 end

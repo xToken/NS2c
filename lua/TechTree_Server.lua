@@ -8,6 +8,9 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 // Send the entirety of every the tech node on team change or join. Returns true if it sent anything
+
+local kUpgradeTables = { }
+
 function TechTree:SendTechTreeBase(player)
 
     local sent = false
@@ -663,22 +666,72 @@ end
 // Utility functions
 function GetHasTech(callingEntity, techId, silenceError)
 
-    if callingEntity ~= nil and HasMixin(callingEntity, "Team") then
+    if callingEntity ~= nil then
     
-        local team = GetGamerules():GetTeam(callingEntity:GetTeamNumber())
-        
-        if team ~= nil and team:isa("PlayingTeam") then
-        
-            local techTree = team:GetTechTree()
+        if HasMixin(callingEntity, "Team") then
+    
+            local team = GetGamerules():GetTeam(callingEntity:GetTeamNumber())
             
-            if techTree ~= nil then
-                return techTree:GetHasTech(techId, silenceError)
+            if team ~= nil and team:isa("PlayingTeam") then
+            
+                local techTree = team:GetTechTree()
+                
+                if techTree ~= nil then
+                    return techTree:GetHasTech(techId, silenceError)
+                end
+                
             end
-            
         end
         
     end
     
     return false
     
+end
+
+function RetrieveCombatPlayersUpgradeTable(player)
+    if GetServerGameMode() == kGameMode.Combat and player ~= nil and player.clientIndex ~= -1 then
+        if kUpgradeTables[player.clientIndex] == nil then
+            kUpgradeTables[player.clientIndex] = { upgrades = { }, team = player:GetTeamNumber() }
+            player:ResetLevel()
+            player:SetResources(0)
+        end
+        if kUpgradeTables[player.clientIndex].team ~= player:GetTeamNumber() then
+            return
+        end
+        local upgrades = kUpgradeTables[player.clientIndex].upgrades or { }
+        if #upgrades > 0 then
+            //Shared.Message("Restoring " .. #upgrades .. " upgrades.")
+            for i = 1 , #upgrades do
+                player:GiveUpgrade(upgrades[i])
+            end
+        end
+    end
+end
+
+function StoreCombatPlayersUpgradeTable(player)
+    if GetServerGameMode() == kGameMode.Combat and player ~= nil and player.clientIndex ~= -1 then
+        kUpgradeTables[player.clientIndex] = { upgrades = { }, team = player:GetTeamNumber() }
+        local upgrades = player:GetUpgrades()
+        if #upgrades > 0 then
+            for i = 1 , #upgrades do
+                table.insert(kUpgradeTables[player.clientIndex].upgrades, upgrades[i])
+            end
+        end
+    end
+end
+
+function CheckCombatPlayersUpgradeTable(player)
+    if GetServerGameMode() == kGameMode.Combat and player ~= nil and player.clientIndex ~= -1 then
+        if kUpgradeTables[player.clientIndex] ~= nil and kUpgradeTables[player.clientIndex].team ~= player:GetTeamNumber() and (player:GetTeamNumber() == kMarineTeamType or player:GetTeamNumber() == kAlienTeamType) then
+            kUpgradeTables[player.clientIndex] = { upgrades = { }, team = player:GetTeamNumber() }
+            player:ResetLevel()
+            player:SetResources(0)
+            return
+        end
+    end
+end
+
+function ClearCombatPlayersUpgradeTables()
+    kUpgradeTables = { }
 end

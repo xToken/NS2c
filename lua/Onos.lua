@@ -54,7 +54,7 @@ local kDefaultAttackSpeed = 1.1
 
 local networkVars =
 {
-    charging = "private boolean"
+    charging = "private compensated boolean"
 }
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
@@ -161,7 +161,7 @@ function Onos:OnRedemed()
     ClearDevourState(self)
 end
 
-function Onos:GetPlayerControllersGroup()
+function Onos:GetControllerPhysicsGroup()
     return PhysicsGroup.BigPlayerControllersGroup
 end
 

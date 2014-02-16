@@ -28,6 +28,10 @@ function HydraStructureAbility:GetRequiredTechId()
     return kTechId.None
 end
 
+function HydraStructureAbility:GetIsPositionValid(displayOrigin, player, normal, lastClickedPosition, entity)
+    return entity == nil
+end
+
 function HydraStructureAbility:GetSuffixName()
     return "hydra"
 end

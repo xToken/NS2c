@@ -74,12 +74,12 @@ end
 
 function AcidRocket:FireRocketProjectile(player)
 
-    if not Predict then
+    if Server or (Client and Client.GetIsControllingPlayer()) then
         
         local viewAngles = player:GetViewAngles()
         local velocity = player:GetVelocity()
         local viewCoords = viewAngles:GetCoords()
-        local startPoint = player:GetEyePos() + viewCoords.zAxis * 0.3
+        local startPoint = player:GetEyePos() + viewCoords.zAxis * 1.5
         local startVelocity = velocity * kPlayerVelocityFraction + viewCoords.zAxis * kRocketVelocity
         
         local rocket = player:CreatePredictedProjectile("Rocket", startPoint, startVelocity, nil, nil, 5, true)

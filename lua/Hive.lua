@@ -179,7 +179,7 @@ end
 function GetHiveTypeResearchAllowed(self, techId)
     
     local hiveTypeTechId = kResearchToHiveType[techId]
-    return not GetHasTech(self, hiveTypeTechId) and not GetIsTechResearching(self, techId)
+    return not GetHasTech(self, hiveTypeTechId)
 
 end
 
@@ -191,19 +191,19 @@ function Hive:GetGrowthRate()
     return kHiveInfestationRadius
 end
 
-function Hive:GetMaxRadius()
+function Hive:OverrideGetMaxRadius()
     return kHiveInfestationRadius
 end
 
-function Hive:GetMinRadius()
+function Hive:OverrideGetMinRadius()
     return kHiveMinInfestationRadius
 end
 
-function Hive:GetGrowthRate()
+function Hive:OverrideGetGrowthRate()
     return kHiveInfestationGrowthRate
 end
 
-function Hive:GetInfestationDensity()
+function Hive:OverrideGetInfestationDensity()
     return kHiveInfestationBlobDensity
 end
 

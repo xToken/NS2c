@@ -44,6 +44,10 @@ local function JoinTeamTwo(player)
     return JoinTeam(player, kTeam2Index)
 end
 
+local function JoinTeamRandom(player)
+	return JoinRandomTeam(player)
+end
+
 local function ReadyRoom(player)
 
     if not player:isa("ReadyRoomPlayer") then
@@ -70,6 +74,13 @@ local function OnCommandJoinTeamTwo(client)
 
     local player = client:GetControllingPlayer()
     JoinTeamTwo(player)
+    
+end
+
+local function OnCommandJoinTeamRandom(client)
+
+    local player = client:GetControllingPlayer()
+    JoinTeamRandom(player)
     
 end
 
@@ -407,7 +418,7 @@ local function OnCommandGive(client, itemName)
 
     local player = client:GetControllingPlayer()
     if itemName == "hmg" then itemName = "heavymachinegun" end // lol
-    if(Shared.GetCheatsEnabled() and itemName ~= nil) then
+    if(Shared.GetCheatsEnabled() and itemName ~= nil and itemName ~= "alien") then
         player:GiveItem(itemName)
         //player:SetActiveWeapon(itemName)
     end
@@ -417,7 +428,7 @@ end
 local function OnCommandSpawn(client, itemName, teamnum, useLastPos)
 
     local player = client:GetControllingPlayer()
-    if(Shared.GetCheatsEnabled() and itemName ~= nil) then
+    if(Shared.GetCheatsEnabled() and itemName ~= nil and itemName ~= "alien") then
     
         // trace along players zAxis and spawn the item there
         local startPoint = player:GetEyePos()
@@ -482,6 +493,18 @@ local function OnCommandShoot(client, projectileName, velocity)
     
     end
 
+end
+
+local function techIdStringToTechId(techIdString)
+
+    local techId = tonumber(techIdString)
+    
+    if type(techId) ~= "number" then
+        techId = StringToEnum(kTechId, techIdString)
+    end        
+    
+    return techId
+    
 end
 
 local function OnCommandGiveUpgrade(client, techIdString)
@@ -696,8 +719,8 @@ local function OnCommandPrimal(client)
     if Shared.GetCheatsEnabled() then
     
         local player = client:GetControllingPlayer()
-        if player and player.SetPrimalScream then
-            player:SetPrimalScream(10)
+        if player and player.PrimalScream then
+            player:PrimalScream(10)
         end
         
     end
@@ -723,18 +746,6 @@ local function OnCommandOrderSelf(client)
         GetGamerules():SetOrderSelf(not GetGamerules():GetOrderSelf())
         Print("Order self is now %s.", ToString(GetGamerules():GetOrderSelf()))
     end
-    
-end
-
-local function techIdStringToTechId(techIdString)
-
-    local techId = tonumber(techIdString)
-    
-    if type(techId) ~= "number" then
-        techId = StringToEnum(kTechId, techIdString)
-    end        
-    
-    return techId
     
 end
 
@@ -1191,13 +1202,27 @@ end
 local function OnCommandEvolveLastUpgrades(client)
 
     local player = client:GetControllingPlayer()
-    if player and player:isa("Alien") and player:GetIsAlive() and not player:isa("Embryo") then
+    if player and player:isa("Alien") and player:GetIsAlive() and not player:isa("Embryo") and GetServerGameMode() == kGameMode.Classic then
     
         local upgrades = player.lastUpgradeList
         if upgrades and #upgrades > 0 then
             player:ProcessBuyAction(upgrades)
         end
     
+    end
+
+end
+
+local function OnCommandGiveXP(client, xp)
+
+    local player = client:GetControllingPlayer()
+    if player and GetServerGameMode() == kGameMode.Combat and Shared.GetCheatsEnabled() then
+        if tonumber(xp) == nil then
+            local lastlevelxp = CalculateLevelXP(player:GetPlayerLevel())
+            local nextlevelxp = CalculateLevelXP(player:GetPlayerLevel() + 1)
+            xp = nextlevelxp - lastlevelxp
+        end
+        player:AddExperience(tonumber(xp))
     end
 
 end
@@ -1209,6 +1234,7 @@ Event.Hook("Console_changegcsettingserver", OnCommandChangeGCSettingServer)
 // NS2 game mode console commands
 Event.Hook("Console_jointeamone", OnCommandJoinTeamOne)
 Event.Hook("Console_jointeamtwo", OnCommandJoinTeamTwo)
+Event.Hook("Console_jointeamthree", OnCommandJoinTeamRandom)
 Event.Hook("Console_readyroom", OnCommandReadyRoom)
 Event.Hook("Console_spectate", OnCommandSpectate)
 Event.Hook("Console_film", OnCommandFilm)
@@ -1216,6 +1242,7 @@ Event.Hook("Console_film", OnCommandFilm)
 // Shortcuts because we type them so much
 Event.Hook("Console_j1", OnCommandJoinTeamOne)
 Event.Hook("Console_j2", OnCommandJoinTeamTwo)
+Event.Hook("Console_j3", OnCommandJoinTeamRandom)
 Event.Hook("Console_rr", OnCommandReadyRoom)
 
 Event.Hook("Console_endgame", OnCommandEndGame)
@@ -1227,6 +1254,7 @@ Event.Hook("Console_selectallplayers", OnCommandSelectAllPlayers)
 // Cheats
 Event.Hook("Console_tres", OnCommandTeamResources)
 Event.Hook("Console_pres", OnCommandResources)
+Event.Hook("Console_addxp", OnCommandGiveXP)
 Event.Hook("Console_allfree", OnCommandAllFree)
 Event.Hook("Console_autobuild", OnCommandAutobuild)
 Event.Hook("Console_energy", OnCommandEnergy)

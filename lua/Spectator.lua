@@ -20,6 +20,7 @@ Script.Load("lua/OverheadSpectatorMode.lua")
 Script.Load("lua/FollowingSpectatorMode.lua")
 Script.Load("lua/FirstPersonSpectatorMode.lua")
 Script.Load("lua/MinimapMoveMixin.lua")
+Script.Load("lua/ScoringMixin.lua")
 
 class 'Spectator' (Player)
 
@@ -51,6 +52,7 @@ AddMixinNetworkVars(MinimapMoveMixin, networkVars)
 AddMixinNetworkVars(FreeLookMoveMixin, networkVars)
 AddMixinNetworkVars(FollowMoveMixin, networkVars)
 AddMixinNetworkVars(OverheadMoveMixin, networkVars)
+AddMixinNetworkVars(ScoringMixin, networkVars)
 
 /**
  * Return the next mode according to the order of
@@ -139,6 +141,7 @@ function Spectator:OnCreate()
     InitMixin(self, FollowMoveMixin)
     InitMixin(self, OverheadMoveMixin)
     InitMixin(self, MinimapMoveMixin)
+    InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
     
     // Default all move mixins to off.
     self:SetFreeLookMoveEnabled(false)
@@ -152,7 +155,6 @@ function Spectator:OnCreate()
         self.mapButtonPressed = false
         self.mapMode = kSpectatorMapMode.Small
         self.showInsight = true
-        self.showPlayerOutline = true
         
     end
     
@@ -278,16 +280,6 @@ function Spectator:OnProcessMove(input)
     elseif Client then
     
         self:UpdateCrossHairTarget()
-
-        if self:GetTeamType() == kNeutralTeamType then
-        
-            local toggleOutlinePressed = bit.band(input.commands, Move.ToggleFlashlight) ~= 0
-            if not self.toggleOutlineLastFrame and toggleOutlinePressed then            
-                self.showPlayerOutline = not self.showPlayerOutline                
-            end
-            self.toggleOutlineLastFrame = toggleOutlinePressed
-
-        end
         
         // Toggle the insight GUI.
         if self:GetTeamNumber() == kSpectatorIndex then
@@ -447,10 +439,6 @@ end
 
 function Spectator:AdjustGravityForce(input, gravity)
     return 0
-end
-
-function Spectator:GetOutlinePlayers()
-    return self:GetTeamType() == kNeutralTeamType and self.showPlayerOutline
 end
 
 /**
