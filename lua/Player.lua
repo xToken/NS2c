@@ -53,7 +53,7 @@ elseif Client then
 end
 
 Player.kNotEnoughResourcesSound     = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/more")
-Player.kGravity = -15
+Player.kGravity = -18
 Player.kXZExtents = 0.35
 Player.kYExtents = 0.9
 Player.kWalkMaxSpeed = 4
@@ -108,10 +108,11 @@ local kGoldSrcAirAcceleration = 50
 local kGroundFriction = 5
 local kClimbFriction = 6
 local kCrouchMaxSpeed = 2.2
+local kCrouchTime = 0.4
 local kWalkMaxSpeed = 3.5
 local kRunMaxSpeed = 6
 local kBackwardsMovementScalar = 1
-local kJumpForce = 6.5
+local kJumpForce = 6.6
 local kMaxPlayerSlow = 0.8
 
 //Other Vars
@@ -2197,6 +2198,10 @@ function Player:OnUpdateCamera(deltaTime)
     local offset = -self:GetCrouchShrinkAmount() * self:GetCrouchAmount()
     self:SetCameraYOffset(offset)
     
+end
+
+function Player:GetCrouchTime()
+    return kCrouchTime
 end
 
 function Player:BlockMove()

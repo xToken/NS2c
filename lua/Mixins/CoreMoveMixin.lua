@@ -21,6 +21,7 @@ CoreMoveMixin.expectedCallbacks =
 	GetJumpVelocity = "Gets the jumping velocity increase for this entity.",
 	PerformsVerticalMove = "If pitch should be considered when calculating velocity.",
 	GetCrouchShrinkAmount = "Amount the entity shrinks when crouching.",
+    GetCrouchTime = "Time taken for this entity to fully crouch.",
 	GetCanCrouch = "If the entity can crouch.",
 	GetSlowOnLand = "If the entity should be slowed on land.",
 	GetClimbFrictionForce = "Friction when climbing ladder.",
@@ -65,7 +66,6 @@ local kMaxSpeedClampPerJump = 3.0
 local kBunnyJumpMaxSpeedFactor = 1.7
 local kAirSpeedMultipler = 3.0
 local kMaxAirVeer = 0.7
-local kCrouchAnimationTime = 0.4
 local kSlowOnLandScalar = 0.33
 local kLandGraceTime = 0.1
 local kMinimumJumpTime = 0.02
@@ -173,20 +173,23 @@ local function SplineFraction(value, scale)
     return 3.0 * valueSq - 2.0 * valueSq * value
 end
 
-function CoreMoveMixin:GetCrouchAmount()  
+function CoreMoveMixin:GetCrouchAmount() 
     local crouchScalar = ConditionalValue(self.crouching, 1, 0)
     if self.lastcrouchamountcalc == Shared.GetTime() then
         return self.lastcrouchamount
     end
     if self.timeOfCrouchChange > 0 then
-		local crouchtime = Shared.GetTime() - self.timeOfCrouchChange
-        if(self.crouching) then
-            crouchScalar = SplineFraction(crouchtime / kCrouchAnimationTime, 1.0)
-        else
-            if crouchtime >= (kCrouchAnimationTime * 0.5) then
-                crouchScalar = 0
+        local crouchspeed = self:GetCrouchTime()
+        if crouchspeed > 0 then
+            local crouchtime = Shared.GetTime() - self.timeOfCrouchChange
+            if(self.crouching) then
+                crouchScalar = SplineFraction(crouchtime / crouchspeed, 1.0)
             else
-                crouchScalar = SplineFraction(1.0 - (crouchtime / (kCrouchAnimationTime * 0.5)), 1.0)
+                if crouchtime >= (crouchspeed * 0.5) then
+                    crouchScalar = 0
+                else
+                    crouchScalar = SplineFraction(1.0 - (crouchtime / (crouchspeed * 0.5)), 1.0)
+                end
             end
         end
     end
@@ -261,6 +264,7 @@ local function UpdateOnGroundState(self, previousVelocity, velocity)
     
         if onGround then
             self.timeTouchedGround = Shared.GetTime()
+            //Shared.Message("Time airborn " .. (self.timeTouchedGround - self:GetLastJumpTime()) .. ".")
             self.lastimpact = math.min(math.abs(previousVelocity.y / 10), 1)
             UpdateJumpLand(self, previousVelocity)
             UpdateFallDamage(self, previousVelocity)
@@ -586,7 +590,7 @@ local function UpdateCrouchState(self, input, time)
 	local crouchDesired = bit.band(input.commands, Move.Crouch) ~= 0	
     if crouchDesired == self.crouching then
 		//If enough time has passed, clear time.
-		if self.timeOfCrouchChange > 0 and self.timeOfCrouchChange + kCrouchAnimationTime < Shared.GetTime() then
+		if self.timeOfCrouchChange > 0 and self.timeOfCrouchChange + self:GetCrouchTime() < Shared.GetTime() then
 			self.timeOfCrouchChange = 0
 		end
         return

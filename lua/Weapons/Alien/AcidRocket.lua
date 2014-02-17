@@ -79,7 +79,7 @@ function AcidRocket:FireRocketProjectile(player)
         local viewAngles = player:GetViewAngles()
         local velocity = player:GetVelocity()
         local viewCoords = viewAngles:GetCoords()
-        local startPoint = player:GetEyePos() + viewCoords.zAxis * 1.5
+        local startPoint = player:GetEyePos() + viewCoords.zAxis
         local startVelocity = velocity * kPlayerVelocityFraction + viewCoords.zAxis * kRocketVelocity
         
         local rocket = player:CreatePredictedProjectile("Rocket", startPoint, startVelocity, nil, nil, 5, true)

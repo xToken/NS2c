@@ -123,7 +123,7 @@ function BileBomb:FireBombProjectile(player)
         local viewAngles = player:GetViewAngles()
         local velocity = player:GetVelocity()
         local viewCoords = viewAngles:GetCoords()
-        local startPoint = player:GetEyePos() + viewCoords.zAxis * 1.5
+        local startPoint = player:GetEyePos() + viewCoords.zAxis
         local startVelocity = velocity * kPlayerVelocityFraction + viewCoords.zAxis * kBombVelocity
         
         local bomb = player:CreatePredictedProjectile("Bomb", startPoint, startVelocity, nil, nil, 13, true)

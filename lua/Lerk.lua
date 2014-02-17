@@ -46,7 +46,7 @@ local kWallGripSlideTime = 0.7
 local kWallGripRange = 0.05
 local kWallGripFeelerSize = 0.25
 local kViewOffsetHeight = 0.5
-local kJumpForce = 4
+local kJumpForce = 4.2
 local kFlapImpulse = 4.7
 local kMass = 54
 local kSwoopGravityScalar = -25.0
@@ -173,6 +173,10 @@ function Lerk:GetMaxViewOffsetHeight()
 end
 
 function Lerk:GetCrouchShrinkAmount()
+    return 0
+end
+
+function Lerk:GetCrouchTime()
     return 0
 end
 

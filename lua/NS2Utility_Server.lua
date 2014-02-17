@@ -435,7 +435,7 @@ function ApplyPlayerKnockback(attacker, victim, force)
             Velocity = Velocity + (PushVec * math.max(0, 2.2 - PushVec:GetLength() ) * force)
             victim:SetVelocity(Velocity)
             
-            Server.SendNetworkMessage(victim, "ViewPunch", {punchangle = Vector(0.14, 0, -0.4)}, true)
+            Server.SendNetworkMessage(victim, "ViewPunch", {punchangle = Vector(kMeleeViewPunchYaw, 0, kMeleeViewPunchPitch)}, true)
             
         end
     

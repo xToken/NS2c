@@ -140,6 +140,10 @@ function Gorge:GetCrouchShrinkAmount()
     return 0
 end
 
+function Gorge:GetCrouchTime()
+    return 0
+end
+
 function Gorge:GetExtentsCrouchShrinkAmount()
     return 0
 end

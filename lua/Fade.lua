@@ -45,7 +45,7 @@ Fade.YExtents = .85
 
 local kViewOffsetHeight = 1.7
 local kMass = 76 // 50 // ~350 pounds
-local kMaxSpeed = 4.5
+local kMaxSpeed = 4.8
 local kWalkSpeed = 2
 local kCrouchedSpeed = 1.8
 local kBlinkImpulseForce = 85
@@ -185,9 +185,9 @@ function Fade:ModifyVelocity(input, velocity, deltaTime)
             self:GetJumpVelocity(input, velocity)
         end
         
-        self:DeductAbilityEnergy(kBlinkPulseEnergyCost)
+        self:DeductAbilityEnergy(kBlinkEnergyCostPerSecond * deltaTime)
         
-        if self:GetEnergy() < kBlinkPulseEnergyCost then
+        if self:GetEnergy() < kStartBlinkEnergyCost then
             self:OnBlinkEnd()
         end
         

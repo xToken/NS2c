@@ -389,8 +389,8 @@ kSwipeMeleeBaseWidth = 0.9
 kSwipeMeleeBaseHeight = 1
 kSwipeKnockbackForce = 4
 
-kStartBlinkEnergyCost = 6
-kBlinkPulseEnergyCost = 2
+kStartBlinkEnergyCost = 2
+kBlinkEnergyCostPerSecond = 58
 
 kMetabolizeEnergyCost = 25
 kMetabolizeEnergyGain = 35
@@ -445,6 +445,8 @@ kHydraDamage = 20 // From NS1
 kHydraAttackDamageType = kDamageType.Normal
 
 kEmpoweredROFIncrease = 0.25
+kMeleeViewPunchPitch = -0.3
+kMeleeViewPunchYaw = 0.14
 
 // SPAWN TIMES
 kMarineRespawnTime = 10

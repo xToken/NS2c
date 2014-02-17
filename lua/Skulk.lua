@@ -155,6 +155,10 @@ function Skulk:GetCrouchShrinkAmount()
     return 0
 end
 
+function Skulk:GetCrouchTime()
+    return 0
+end
+
 function Skulk:GetGroundFriction()
     return ConditionalValue(self:GetIsWallWalking(), Player.GetGroundFriction(self) + 3, Player.GetGroundFriction(self))
 end
@@ -202,8 +206,9 @@ function Skulk:OnLeap()
     self.timeOfLeap = Shared.GetTime()
 end
 
+//Skulks can crouch, but only use it to trigger wall uncling..
 function Skulk:GetCanCrouch()
-    return false
+    return true
 end
 
 function Skulk:GetRecentlyWallJumped()

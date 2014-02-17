@@ -89,7 +89,7 @@ kEnergizeUpdateRate = 1
 // Jetpack
 // NS1: 6.5 seconds of fuel
 // NS1: 9 seconds for full refuel
-kJetpackUseFuelRate = 0.13
+kJetpackUseFuelRate = 0.14
 kJetpackReplenishFuelRate = 0.12
 kJetpackFuelReplenishDelay = .1
 kJetpackTakeoffFuelUse = 0.06

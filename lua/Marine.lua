@@ -67,7 +67,7 @@ local kFlashlightSoundName = PrecacheAsset("sound/NS2.fev/common/light")
 
 local kWalkMaxSpeed = 2.2
 local kCrouchMaxSpeed = 1.6
-local kRunMaxSpeed = 4.9
+local kRunMaxSpeed = 5.2
 local kMaxWebbedMoveSpeed = 0.5
 local kArmorWeldRate = 25
 local kWalkBackwardSpeedScalar = 0.4
