@@ -319,13 +319,13 @@ local function OnVoiceMessage(client, message)
 
 end
 
-local function OnMovementChanged(client, movement)
+local function OnMovementChanged(client, message)
 
     if client then
         
         local player = client:GetControllingPlayer()
         if player then
-            player:UpdateMovementMode(movement.movement)
+            player:UpdateMovementMode(message.movement)
         end
     
     end

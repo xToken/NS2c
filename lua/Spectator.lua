@@ -190,6 +190,10 @@ function Spectator:OnInitialized()
     
 end
 
+function Spectator:GetUsesGoldSourceMovement()
+    return false
+end
+
 function Spectator:OnDestroy()
 
     Player.OnDestroy(self)
@@ -198,10 +202,6 @@ function Spectator:OnDestroy()
         self.modeInstance:Uninitialize(self)
     end
     
-end
-
-function Spectator:GetIsForwardOverrideDesired()
-    return false
 end
 
 function Spectator:OnClientUpdated(client)
@@ -437,8 +437,8 @@ function Spectator:GetCanDieOverride()
     return false
 end
 
-function Spectator:AdjustGravityForce(input, gravity)
-    return 0
+function Spectator:ModifyGravityForce(gravityTable)
+    gravityTable.gravity = 0
 end
 
 /**

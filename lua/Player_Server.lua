@@ -390,6 +390,7 @@ function Player:CopyPlayerDataFrom(player)
     self.jumpHandled = player.jumpHandled
     self.timeOfLastJump = player.timeOfLastJump
     self.darwinMode = player.darwinMode
+    self.movementmode = player.movementmode
     
     self.requestsScores = player.requestsScores
     self.isRookie = player.isRookie

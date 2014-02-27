@@ -1188,6 +1188,7 @@ local function OnLoadComplete()
     // Set default player name to one set in Steam, or one we've used and saved previously
     local playerName = Client.GetOptionString(kNicknameOptionsKey, Client.GetUserName())
     Client.SendNetworkMessage("SetName", { name = playerName }, true)
+    Client.SendNetworkMessage("MovementMode", {movement = Client.GetOptionBoolean("AdvancedMovement", false)}, true)
 	
 	Lights_UpdateLightMode()
 	

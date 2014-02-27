@@ -326,6 +326,7 @@ if Client then
         Shared.StopSound(self, kSingleShotSound)
 		//Shared.StopSound(self, kLoopingSound)
         Shared.PlaySound(self, kEndSound)
+        
 		if self.muzzleCinematic then
             self.muzzleCinematic:SetIsVisible(false)
         end

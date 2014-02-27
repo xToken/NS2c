@@ -312,6 +312,10 @@ function Marine:GetCanJump()
     return Player.GetCanJump(self) and not self:GetIsStunned()
 end
 
+function Marine:GetDeflectMove()
+    return true
+end
+
 function Marine:GetCanRepairOverride(target)
     return self:GetWeapon(Welder.kMapName) and HasMixin(target, "Weldable") and ( (target:isa("Marine") and target:GetArmor() < target:GetMaxArmor()) or (not target:isa("Marine") and target:GetHealthScalar() < 0.9) )
 end
@@ -320,8 +324,8 @@ function Marine:GetCanSeeDamagedIcon(ofEntity)
     return HasMixin(ofEntity, "Weldable")
 end
 
-function Marine:GetSlowOnLand(velocity)
-    return math.abs(velocity.y) > self:GetMaxSpeed()
+function Marine:GetSlowOnLand(impactForce)
+    return math.abs(impactForce - 3) > self:GetMaxSpeed()
 end
 
 function Marine:GetControllerPhysicsGroup()
@@ -466,11 +470,11 @@ function Marine:GetMaxSpeed(possible)
     //Walking
     local maxSpeed = kRunMaxSpeed
     
-    if self.movementModiferState and self:GetIsOnSurface() then
+    if self.movementModiferState and self:GetIsOnGround() then
         maxSpeed = kWalkMaxSpeed
     end
     
-    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnSurface() and not self:GetLandedRecently() then
+    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnGround() and not self:GetLandedRecently() then
         maxSpeed = kCrouchMaxSpeed
     end
 

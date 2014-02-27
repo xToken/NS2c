@@ -116,18 +116,19 @@ function GetDamageMultiplier()
     
 end
 
-kDamageType = enum( {'Normal', 'Light', 'Heavy', 'Puncture', 'Structural', 'Gas', 'StructuresOnly', 'Falling', 'Flame', 'Biological' } )
+kDamageType = enum( {'Normal', 'Light', 'Heavy', 'Puncture', 'Structural', 'Gas', 'StructuresOnly', 'Falling', 'Flame', 'Biological', 'Corrode' } )
 
 // Describe damage types for tooltips
 kDamageTypeDesc = {
     "",
-    "Light damage: reduced vs. armor",
-    "Heavy damage: extra vs. armor",
-    "Puncture damage: extra vs. players",
-    "Structural damage: Double vs. structures",
-    "Gas damage: affects breathing targets only",
-    "Structures only: Doesn't damage players or AI units",
-    "Falling damage: Ignores armor for humans, no damage for aliens"
+    "Light damage: reduced vs. armor.",
+    "Heavy damage: extra vs. armor.",
+    "Puncture damage: extra vs. players.",
+    "Structural damage: Double vs. structures.",
+    "Gas damage: affects breathing targets only.",
+    "Structures only: Doesn't damage players or AI units.",
+    "Falling damage: Ignores armor for humans, no damage for aliens.",
+    "Corrode: Only affects armor."
 }
 
 kBaseArmorUseFraction = 0.7

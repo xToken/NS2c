@@ -34,8 +34,8 @@ end
 
 local kVerticleThrust = 28
 local kLateralForce = 30
-local kJumpForce = 5.7
 local kJetpackTakeOffTime = .01
+local kJetpackAutoJumpGroundDistance = 0.05
 local kAnimLandSuffix = "_jetpack_land"
 
 local networkVars =
@@ -176,16 +176,12 @@ function JetpackMarine:HasJetpackDelay()
     return false
 end
 
-function JetpackMarine:OnGroundOverride(onGround)
-    if self:GetIsJetpacking() and self.timeJetpackingChanged ~= Shared.GetTime() then
-        return false
-    else
-        return onGround
-    end
+function JetpackMarine:OverrideUpdateOnGround(onGround)
+    return onGround and not self:GetIsJetpacking()
 end
 
 /*function JetpackMarine:GetExtentsCrouchShrinkAmount()
-    return ConditionalValue(self:GetIsOnSurface() or not self:GetPreventCrouchExtents(), Player.GetExtentsCrouchShrinkAmount(self), 0)
+    return ConditionalValue(self:GetIsOnGround() or not self:GetPreventCrouchExtents(), Player.GetExtentsCrouchShrinkAmount(self), 0)
 end*/
 
 function JetpackMarine:HandleJetpackStart()
@@ -195,7 +191,7 @@ function JetpackMarine:HandleJetpackStart()
     self.timeJetpackingChanged = Shared.GetTime()
     self:ClearSlow()
     
-    self.startedFromGround = self:GetIsOnSurface()
+    self.startedFromGround = self:GetIsOnGround()
     self.jetpackFuelOnChange = self.jetpackFuelOnChange - kJetpackTakeoffFuelUse
     
     local jetpack = self:GetJetpack()    
@@ -240,12 +236,12 @@ function JetpackMarine:GetWeaponName()
     
 end
 
-function JetpackMarine:GetSlowOnLand(velocity)
-    return Marine.GetSlowOnLand(self, velocity) and not self:GetIsJetpacking()
+function JetpackMarine:GetSlowOnLand(impactForce)
+    return Marine.GetSlowOnLand(self, impactForce) and not self:GetIsJetpacking()
 end
 
 function JetpackMarine:GetMaxBackwardSpeedScalar()
-    if not self:GetIsOnSurface() then
+    if not self:GetIsOnGround() then
         return 1
     end
     return Marine.GetMaxBackwardSpeedScalar(self)
@@ -258,7 +254,7 @@ function JetpackMarine:UpdateJetpack(input)
     self:UpdateJetpackMode()
     
     // handle jetpack start, ensure minimum wait time to deal with sound errors
-    if not self.jetpacking and (Shared.GetTime() - self.timeJetpackingChanged > 0.02) and jumpPressed and self:GetFuel() >= kJetpackTakeoffFuelUse then
+    if not self.jetpacking and (Shared.GetTime() - self.timeJetpackingChanged > 0.1) and jumpPressed and self:GetFuel() >= kJetpackTakeoffFuelUse then
     
         self:HandleJetpackStart()
         
@@ -269,7 +265,7 @@ function JetpackMarine:UpdateJetpack(input)
     end
     
     // handle jetpack stop, ensure minimum flight time to deal with sound errors
-    if self.jetpacking and (Shared.GetTime() - self.timeJetpackingChanged) > 0.02 and (self:GetFuel() <= 0.01 or not jumpPressed) then
+    if self.jetpacking and (Shared.GetTime() - self.timeJetpackingChanged) > 0.1 and (self:GetFuel() <= 0.01 or not jumpPressed) then
         self:HandleJetPackEnd()
     end
     
@@ -285,7 +281,7 @@ function JetpackMarine:UpdateJetpack(input)
 end
 
 function JetpackMarine:GetJumpForce()
-    return kJumpForce
+    return Player.GetJumpForce(self) * 0.7
 end
 
 function JetpackMarine:HandleButtons(input)
@@ -303,15 +299,23 @@ function JetpackMarine:ModifyVelocity(input, velocity, time)
 
     // Add thrust from the jetpack
     if self:GetIsJetpacking() then
+    
         local wishvel = GetNormalizedVector(self:GetWishVelocity(input)) //Scale back to 0
         local WeightScalar = 0.6 + (0.4) * ((self:GetMaxSpeed() - 2.8)/(4.9 - 2.8))
         velocity.y = velocity.y + (kVerticleThrust * time * WeightScalar)
+        
+        if self:GetIsOnGround() or self:GetIsCloseToGround(kJetpackAutoJumpGroundDistance) then
+            self:GetJumpVelocity(input, velocity)
+        end
+        
         velocity.x = velocity.x + (wishvel.x * kLateralForce * time)
         velocity.z = velocity.z + (wishvel.z * kLateralForce * time)
         // Since the upwards velocity may be very small, manually set onGround to false
         // to avoid having code from sticking the player to the ground
         self:SetIsOnGround(false)
+        
     end
+
 end
 
 function JetpackMarine:GetAcceleration(OnGround)
@@ -325,7 +329,7 @@ function JetpackMarine:GetAcceleration(OnGround)
 end
 
 function JetpackMarine:GetIsStunAllowed()
-    return self:GetIsOnSurface()
+    return self:GetIsOnGround()
 end
 
 function JetpackMarine:UpdateJetpackMode()
@@ -334,7 +338,7 @@ function JetpackMarine:UpdateJetpackMode()
 
     if self:GetIsJetpacking() then
     
-        if ((Shared.GetTime() - self.timeJetpackingChanged) < kJetpackTakeOffTime) and (( Shared.GetTime() - self.timeJetpackingChanged > 1.5 ) or self:GetIsOnSurface() ) then
+        if ((Shared.GetTime() - self.timeJetpackingChanged) < kJetpackTakeOffTime) and (( Shared.GetTime() - self.timeJetpackingChanged > 1.5 ) or self:GetIsOnGround() ) then
 
             newMode = JetpackMarine.kJetpackMode.TakeOff
 
@@ -357,10 +361,6 @@ end
 
 function JetpackMarine:GetIsJetpacking()
     return self.jetpacking and (self:GetFuel()> 0) and not self:GetIsStunned() and not self:GetIsWebbed()
-end
-
-function JetpackMarine:GetIsForwardOverrideDesired()
-    return not self.jetpacking and not self:GetIsOnSurface()
 end
 
 function JetpackMarine:ProcessMoveOnModel(input)
@@ -387,7 +387,7 @@ function JetpackMarine:OnTag(tagName)
 end
 
 function JetpackMarine:FallingAfterJetpacking()
-    return (self.timeJetpackingChanged + 1.5 > Shared.GetTime()) and not self:GetIsOnSurface()
+    return (self.timeJetpackingChanged + 1.5 > Shared.GetTime()) and not self:GetIsOnGround()
 end
 
 function JetpackMarine:OnUpdateAnimationInput(modelMixin)

@@ -1879,7 +1879,7 @@ end
 
 function UpdateMovementMode()
 
-    if Client and Client.GetLocalPlayer() and Client.GetLocalPlayer().forwardModifier ~= Client.GetOptionBoolean("AdvancedMovement", false) then
+    if Client and Client.GetLocalPlayer() and Client.GetLocalPlayer().movementmode ~= Client.GetOptionBoolean("AdvancedMovement", false) then
         Client.SendNetworkMessage("MovementMode", {movement = Client.GetOptionBoolean("AdvancedMovement", false)}, true)
     end
 

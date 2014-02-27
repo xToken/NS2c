@@ -242,6 +242,7 @@ function Observatory:TriggerDistressBeacon()
 
             // Beam all faraway players back in a few seconds!
             self.distressBeaconTime = Shared.GetTime() + Observatory.kDistressBeaconTime
+            self.distressorigin = origin
             
             if Server then
             
@@ -347,6 +348,7 @@ function Observatory:PerformDistressBeacon()
     
     //local distressOrigin = self:GetDistressOrigin()
     local distressOrigin = self.distressorigin
+    
     for index, player in ipairs(GetPlayersToBeacon(self, distressOrigin)) do
         local success = false
         if player:GetIsAlive() then

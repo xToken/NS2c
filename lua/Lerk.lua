@@ -120,6 +120,10 @@ function Lerk:GetAngleSmoothRate()
     return 6
 end
 
+function Lerk:GetCollisionSlowdownFraction()
+    return 0.1
+end
+
 function Lerk:GetRollSmoothRate()
     return 3
 end    
@@ -134,11 +138,11 @@ function Lerk:GetDesiredAngles()
 
     local desiredAngles = Alien.GetDesiredAngles(self)
 
-    if not self:GetIsOnSurface() and self.gliding then
+    if not self:GetIsOnGround() and self.gliding then
         desiredAngles.pitch = self.viewPitch
     end 
    
-    if not self:GetIsOnSurface() then    
+    if not self:GetIsOnGround() then    
         desiredAngles.roll = Clamp( RadianDiff( self:GetAngles().yaw, self.viewYaw ), -kMaxGlideRoll, kMaxGlideRoll)    
     end
     
@@ -212,11 +216,11 @@ function Lerk:GetMaxSpeed(possible)
 
     local speed = kMaxWalkSpeed
     
-    if not self:GetIsOnSurface() then
+    if not self:GetIsOnGround() then
         speed = kMaxSpeed
     end
     
-    if self.movementModiferState and self:GetIsOnSurface() then
+    if self.movementModiferState and self:GetIsOnGround() then
         maxSpeed = kWalkSpeed
     end
     
@@ -225,11 +229,7 @@ function Lerk:GetMaxSpeed(possible)
 end
 
 function Lerk:GetCanCrouch()
-    return false
-end
-
-function Lerk:GetIsForwardOverrideDesired()
-    return false
+    return true
 end
 
 function Lerk:GetMass()
@@ -238,6 +238,10 @@ end
 
 function Lerk:GetTimeOfLastFlap()
     return self.lastTimeFlapped
+end
+
+function Lerk:OverrideUpdateOnGround(onGround)
+    return (onGround or self:GetIsWallGripping())
 end
 
 function Lerk:OnWorldCollision(normal)
@@ -251,12 +255,12 @@ local function UpdateFlap(self, input, velocity)
     if flapPressed ~= self.flapPressed then
 
         self.flapPressed = flapPressed
-        self.glideAllowed = not self:GetIsOnSurface()
+        self.glideAllowed = not self:GetIsOnGround()
 
         if flapPressed and self:GetEnergy() > kLerkFlapEnergyCost and not self.gliding then
         
             // take off
-            if self:GetIsOnSurface() or input.move:GetLength() == 0 then
+            if self:GetIsOnGround() or input.move:GetLength() == 0 then
                 velocity.y = velocity.y * 0.5 + 5
 
             else
@@ -337,7 +341,7 @@ local function UpdateGlide(self, input, velocity, deltaTime)
         local redirectVelocity = wishDir * useSpeed
         VectorCopy(redirectVelocity, velocity)
         
-        self.gliding = not self:GetIsOnSurface()
+        self.gliding = not self:GetIsOnGround()
 
     else
         self.gliding = false
@@ -348,7 +352,7 @@ end
 // jetpack and exo do the same, move to utility function
 local function UpdateAirStrafe(self, input, velocity, deltaTime)
 
-    if not self:GetIsOnSurface() and not self.gliding then
+    if not self:GetIsOnGround() and not self.gliding then
     
         // do XZ acceleration
         local wishDir = self:GetViewCoords():TransformVector(input.move) 
@@ -380,20 +384,22 @@ function Lerk:ModifyVelocity(input, velocity, deltaTime)
 
 end
 
-// Glide if jump held down.
-function Lerk:AdjustGravityForce(input, gravity)
+function Lerk:GetSimpleAcceleration(onGround)
+    return ConditionalValue(onGround, Player.GetSimpleAcceleration(self, onGround), 0)
+end
 
-    if self:GetIsOnSurface() then
-        gravity = 0
-    elseif bit.band(input.commands, Move.Crouch) ~= 0 then
+// Glide if jump held down.
+function Lerk:ModifyGravityForce(gravityTable)
+
+    if self:GetIsOnGround() then
+        gravityTable.gravity = 0
+    elseif self:GetCrouching() then
         // Swoop
-        gravity = kSwoopGravityScalar
+        gravityTable.gravity = kSwoopGravityScalar
     else
         // Fall very slowly by default
-        gravity = kRegularGravityScalar
+        gravityTable.gravity = kRegularGravityScalar
     end
-    
-    return gravity
     
 end
 

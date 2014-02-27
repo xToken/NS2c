@@ -155,8 +155,8 @@ function Commander:GetCanCrouch()
     return false
 end
 
-function Commander:AdjustGravityForce(input, gravity)
-    return 0
+function Commander:ModifyGravityForce(gravityTable)
+    gravityTable.gravity = 0
 end
 
 function Commander:GetTechAllowed(techId, techNode, self)
@@ -498,7 +498,7 @@ function Commander:GetHostCommandStructure()
     return Shared.GetEntity(self.commandStationId)
 end
 
-function Commander:GetIsForwardOverrideDesired()
+function Commander:GetUsesGoldSourceMovement()
     return false
 end
 

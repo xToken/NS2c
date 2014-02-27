@@ -20,6 +20,7 @@ Script.Load("lua/PhysicsGroups.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
 Script.Load("lua/Mixins/CoreMoveMixin.lua")
+Script.Load("lua/Mixins/WaterModSupport.lua")
 Script.Load("lua/WeaponOwnerMixin.lua")
 Script.Load("lua/DoorMixin.lua")
 Script.Load("lua/Mixins/ControllerMixin.lua")
@@ -53,10 +54,12 @@ elseif Client then
 end
 
 Player.kNotEnoughResourcesSound     = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/more")
-Player.kGravity = -18
+//Player.kGravity = -17.7
+Player.kGravity = -21.5
 Player.kXZExtents = 0.35
 Player.kYExtents = 0.9
 Player.kWalkMaxSpeed = 4
+Player.kPushDuration = 0.5
 Player.kOnGroundDistance = 0.1
 
 // Private
@@ -109,10 +112,13 @@ local kGroundFriction = 5
 local kClimbFriction = 6
 local kCrouchMaxSpeed = 2.2
 local kCrouchTime = 0.4
+local kAirGroundTransistionTime = 0.2
 local kWalkMaxSpeed = 3.5
 local kRunMaxSpeed = 6
 local kBackwardsMovementScalar = 1
-local kJumpForce = 6.6
+//local kJumpForce = 6.6
+// use 8.42 for gravity -23
+local kJumpForce = 8.22
 local kMaxPlayerSlow = 0.8
 
 //Other Vars
@@ -195,7 +201,7 @@ local networkVars =
     // Reduce max player velocity in some cases (marine jumping)
     slowAmount = "float (0 to 1 by 0.01)",
     movementModiferState = "boolean",
-    forwardModifier = "boolean",
+    movementmode = "boolean",
     giveDamageTime = "private time",
     
     level = "float (0 to " .. kCombatMaxLevel .. " by 0.001)",
@@ -241,6 +247,7 @@ function Player:OnCreate()
     InitMixin(self, BaseModelMixin)
 	InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
     InitMixin(self, CoreMoveMixin)
+	InitMixin(self, GroundMoveMixin)
     InitMixin(self, ModelMixin)
     InitMixin(self, ControllerMixin)
     InitMixin(self, WeaponOwnerMixin, { kStowedWeaponWeightScalar = kStowedWeaponWeightScalar })
@@ -284,7 +291,7 @@ function Player:OnCreate()
     
     self.clientIndex = -1
 	//NS2c Additions
-    self.forwardModifier = false
+    self.movementmode = false
     self.movementModiferState = false
     
     self.timeLastMenu = 0
@@ -1034,7 +1041,14 @@ function Player:GetVerticleMove()
 end
 
 function Player:UpdateMovementMode(movementmode)
-    self.forwardModifier = movementmode
+    self.movementmode = movementmode
+end
+
+function Player:ModifyVelocity(input, velocity, deltaTime)
+end
+
+function Player:HasAdvancedMovement()
+    return self.movementmode
 end
 
 function Player:GetCanClimb()
@@ -1209,14 +1223,10 @@ function Player:TriggerLandEffects()
     end
 end
 
-function Player:OnJumpLand(landIntensity)
-    if self:GetPlayLandSound(landIntensity) then
+function Player:OnJumpLand(impactForce)
+    if self:GetPlayLandSound(impactForce) then
         self:TriggerLandEffects()
     end
-end
-
-function Player:GetIsOnSurface()
-    return self:GetIsOnGround()
 end
 
 local kDoublePI = math.pi * 2
@@ -1428,7 +1438,7 @@ function Player:OnUpdate(deltaTime)
 
 end
 
-function Player:GetSlowOnLand(velocity)
+function Player:GetSlowOnLand(impactForce)
     return false
 end
 
@@ -1509,7 +1519,7 @@ end
 
 
 function Player:GetCanStep()
-    return self:GetIsOnSurface()
+    return self:GetIsOnGround()
 end
 
 function Player:OnTakeFallDamage(damage)
@@ -1527,7 +1537,7 @@ local function CheckSpaceAboveForJump(self)
 end
 
 function Player:GetCanJump()
-    return self:GetIsOnSurface() and CheckSpaceAboveForJump(self)
+    return self:GetIsOnGround() and CheckSpaceAboveForJump(self)
 end
 
 function Player:GetCanCrouch()
@@ -1535,7 +1545,11 @@ function Player:GetCanCrouch()
 end
 
 function Player:GetJumpMode()
-    return kJumpMode.Repeating
+    if not self:HasAdvancedMovement() then
+        return kJumpMode.Queued
+    else
+        return kJumpMode.Repeating
+    end
 end
 
 function Player:GetJumpForce()
@@ -1556,23 +1570,54 @@ function Player:GetClimbFrictionForce()
     return kClimbFriction
 end
 
+function Player:GetAirControl()
+    return 11 * self:GetSlowSpeedModifier()
+end
+
+function Player:GetSimpleAcceleration(onGround)
+    return ConditionalValue(onGround, 13 * self:GetSlowSpeedModifier(), 6 * self:GetSlowSpeedModifier())
+end
+
+function Player:GetGroundTransistionTime()
+    return kAirGroundTransistionTime
+end
+
+function Player:GetSimpleFriction(onGround)
+    if onGround then
+        return 9
+    else
+        return 0
+    end
+end
+
+function Player:GetAirFriction()
+    return 0
+end
+
+function Player:GetClampedMaxSpeed()
+    return 30
+end
+
 function Player:GetMaxBackwardSpeedScalar()
     return kBackwardsMovementScalar
 end
 
-function Player:PerformsVerticalMove()
+function Player:GetPerformsVerticalMove()
     return self.GetIsOnLadder and self:GetIsOnLadder()
 end
 
-function Player:AdjustGravityForce(input, gforce)
-    if self:GetIsOnLadder() or self:GetIsOnSurface() then
-        gforce = 0
+function Player:ModifyGravityForce(gravityTable)
+    if self:GetIsOnLadder() or self:GetIsOnGround() then
+        gravityTable.gravity = 0
     end
-    return gforce
 end
 
 function Player:GetAcceleration(OnGround)
     return ConditionalValue(OnGround, kGoldSrcAcceleration, kGoldSrcAirAcceleration)
+end
+
+function Player:GetUsesGoldSourceMovement()
+    return true
 end
 
 function Player:GetMaxSpeed(possible)
@@ -1582,19 +1627,15 @@ function Player:GetMaxSpeed(possible)
     
     local maxSpeed = kRunMaxSpeed
     
-    if self.movementModiferState and self:GetIsOnSurface() then
+    if self.movementModiferState and self:GetIsOnGround() then
         maxSpeed = kWalkMaxSpeed
     end
     
-    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnSurface() and not self:GetLandedRecently() then
+    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnGround() and not self:GetLandedRecently() then
         maxSpeed = kCrouchMaxSpeed
     end
       
     return maxSpeed
-end
-
-function Player:GetIsForwardOverrideDesired()
-    return not self:GetIsOnGround()
 end
 
 /**
@@ -1619,7 +1660,7 @@ function Player:SetOrigin(origin)
 end
 
 function Player:GetPlayFootsteps()
-    return self:GetVelocityLength() > kFootstepsThreshold and self:GetIsOnSurface() and self:GetIsAlive() and not self:GetIsDestroyed()  
+    return self:GetVelocityLength() > kFootstepsThreshold and self:GetIsOnGround() and self:GetIsAlive() and not self:GetIsDestroyed()  
 end
 
 function Player:GetMovementModifierState()
@@ -1697,8 +1738,8 @@ function Player:GetPlayIdleSound()
     return self:GetIsAlive() and (self:GetVelocityLength() / self:GetMaxSpeed()) > 0.5
 end
 
-function Player:GetPlayLandSound(landIntensity)
-    return landIntensity > 0.3
+function Player:GetPlayLandSound(impactForce)
+    return impactForce > 3
 end
 
 function Player:OnJump()

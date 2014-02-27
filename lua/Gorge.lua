@@ -41,9 +41,9 @@ local kSlidingGroundFriction = 0.2
 local kSlidingAcceleration = 0
 local kStartSlideSpeed = 7
 local kViewOffsetHeight = 0.6
-local kMaxSpeed = 3.8
-local kMaxSlideSpeed = 8
-local kMaxWalkSpeed = 1.8
+local kMaxSpeed = 4.2
+local kMaxSlideSpeed = 9
+local kMaxWalkSpeed = 2.0
 local kBellySlideCost = 30
 local kSlidingMoveInputScalar = 0.1
 local kSlideCoolDown = 1.5
@@ -202,11 +202,12 @@ local function UpdateGorgeSliding(self, input)
     PROFILE("Gorge:UpdateGorgeSliding")
     
     local slidingDesired = GetIsSlidingDesired(self, input)
-    if slidingDesired and not self.sliding and self.timeSlideEnd + kSlideCoolDown < Shared.GetTime() and self:GetIsOnSurface() and self:GetEnergy() >= kBellySlideCost then
+    
+    if slidingDesired and not self.sliding and self.timeSlideEnd + kSlideCoolDown < Shared.GetTime() and self:GetIsOnGround() and self:GetEnergy() >= kBellySlideCost then
     
         self.sliding = true
         self.startedSliding = true
-        
+        self.prevY = nil
         self:DeductAbilityEnergy(kBellySlideCost)
         self:TriggerUncloak()
         self:PrimaryAttackEnd()
@@ -218,6 +219,7 @@ local function UpdateGorgeSliding(self, input)
     
         self.sliding = false
         self.timeSlideEnd = Shared.GetTime()
+        self.prevY = nil
     
     end
 
@@ -266,7 +268,7 @@ function Gorge:ModifyVelocity(input, velocity, deltaTime)
     // Give a little push forward to make sliding useful
     if self.startedSliding then
     
-        if self:GetIsOnSurface() then
+        if self:GetIsOnGround() then
     
             local pushDirection = GetNormalizedVectorXZ(self:GetViewCoords().zAxis)
             
@@ -278,12 +280,13 @@ function Gorge:ModifyVelocity(input, velocity, deltaTime)
             velocity:Add(impulse)
         
         end
-
+        
+        self.prevY = nil
         self.startedSliding = false
 
     end
     
-    if self:GetIsBellySliding() and self:GetIsOnSurface() then
+    if self:GetIsBellySliding() and self:GetIsOnGround() then
     
         local currentSpeed = velocity:GetLengthXZ()
         local prevY = velocity.y
@@ -298,7 +301,7 @@ function Gorge:ModifyVelocity(input, velocity, deltaTime)
         velocity:Normalize()
         velocity:Scale(currentSpeed)
         
-        local yTravel = self:GetOrigin().y - self.prevY
+        local yTravel = self:GetOrigin().y - (self.prevY or self:GetOrigin().y)
         currentSpeed = velocity:GetLengthXZ() + yTravel * -4
         
         if currentSpeed < kMaxSlideSpeed or yTravel > 0 then
@@ -313,6 +316,7 @@ function Gorge:ModifyVelocity(input, velocity, deltaTime)
         
         velocity.y = prevY
         self.verticalVelocity = yTravel / input.time
+        self.prevY = self:GetOrigin().y
     end
     
 end
@@ -325,7 +329,7 @@ function Gorge:GetMaxSpeed(possible)
     
     local maxSpeed = kMaxSpeed
     
-    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnSurface() and not self:GetLandedRecently() then
+    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnGround() and not self:GetLandedRecently() then
         maxSpeed = kMaxWalkSpeed
     end
     
@@ -349,12 +353,6 @@ function Gorge:OnUpdateAnimationInput(modelMixin)
     
 end
 
-function Gorge:PreUpdateMove(input, runningPrediction)
-
-    self.prevY = self:GetOrigin().y
-
-end
-
 function Gorge:GetCanCloakOverride()
     return not self:GetIsBellySliding()
 end
@@ -366,6 +364,25 @@ end
 function Gorge:GetPitchRollRate()
     return 3
 end
+
+function Gorge:GetSimpleAcceleration(onGround)
+    return ConditionalValue(onGround, self:GetIsBellySliding() and 0 or 8, 9)
+end
+
+function Gorge:GetAirControl()
+    return 5
+end
+
+function Gorge:GetSimpleFriction(onGround)
+    if onGround then
+        if self:GetIsBellySliding() then
+            return 0.16
+        end
+        return 7
+    else
+        return 0.8
+    end
+end 
 
 local kMaxSlideRoll = math.rad(20)
 

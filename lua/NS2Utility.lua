@@ -1516,7 +1516,7 @@ function SetPlayerPoseParameters(player, viewModel, headAngles)
     
     local velocity = player:GetVelocityFromPolar()
     // Not all players will contrain their movement to the X/Z plane only.
-    if player.PerformsVerticalMove and player:PerformsVerticalMove() then
+    if player.GetPerformsVerticalMove and player:GetPerformsVerticalMove() then
         velocity.y = 0
     end
     

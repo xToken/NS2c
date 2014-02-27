@@ -2321,6 +2321,13 @@ local function StoreCameraAnimationOption(formElement)
     Client.SetOptionBoolean("CameraAnimation", formElement:GetActiveOptionIndex() > 1)
 end
 
+local function StoreAdvancedMovementOption(formElement)
+    Client.SetOptionBoolean("AdvancedMovement", formElement:GetActiveOptionIndex() > 1)
+    if UpdateMovementMode then
+        UpdateMovementMode()
+    end
+end
+
 local function StorePhysicsGpuAccelerationOption(formElement)
 	Client.SetOptionBoolean(kPhysicsGpuAccelerationKey, formElement:GetActiveOptionIndex() > 1)
 end
@@ -2331,14 +2338,6 @@ local function OnLightQualityChanged(formElement)
 	
 	if Lights_UpdateLightMode then
         Lights_UpdateLightMode()
-    end
-    
-    if Client.GetIsConnected() then
-    
-        for _, onos in ientitylist(Shared.GetEntitiesWithClassname("Onos")) do            
-            onos:RecalculateShakeLightList()        
-        end
-    
     end
     
     Render_SyncRenderOptions()

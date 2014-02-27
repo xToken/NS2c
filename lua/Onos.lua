@@ -45,7 +45,7 @@ local kViewOffsetHeight = 2.5
 local kMomentumEffectTriggerDiff = 3
 local kMaxSpeed = 4.5
 local kMaxChargeSpeed = 7
-local kBonusChargeSpeed = 3
+local kBonusChargeSpeed = 4
 local kChargeAddSpeedTime = 2
 local kMaxWalkSpeed = 2
 local kChargeEnergyCost = 30
@@ -145,6 +145,32 @@ function Onos:GetAngleSmoothRate()
     return 3
 end
 
+/*Vanilla Values
+function Onos:GetSimpleAcceleration(onGround)
+    return ConditionalValue(onGround, 3.3, Player.GetSimpleAcceleration(self, onGround))
+end
+
+function Onos:GetAirControl()
+    return 0.2
+end
+
+function Onos:GetSimpleFriction(onGround)
+    if onGround then
+        local hasupg, level = GetHasCelerityUpgrade(self)
+        return 3 - (hasupg and level or 0) * 0.1
+    else
+        return 0.28
+    end
+end*/
+
+function Onos:GetSimpleFriction(onGround)
+    if onGround then
+        return Player.GetSimpleFriction(self, onGround)
+    else
+        return 0.28
+    end
+end
+
 local function ClearDevourState(self)
     local devourWeapon = self:GetWeapon("devour")
     if devourWeapon and devourWeapon:IsDevouringPlayer() then
@@ -174,7 +200,7 @@ function Onos:EvolveAllowed()
 end
 
 function Onos:ChargeAmount()
-    return math.max((Shared.GetTime() - self.timeLastCharge) / kChargeAddSpeedTime, 1)
+    return Clamp((Shared.GetTime() - self.timeLastCharge) / kChargeAddSpeedTime, 0, 1)
 end
 
 function Onos:TriggerCharge(move)
@@ -249,10 +275,10 @@ function Onos:GetMaxSpeed(possible)
     local maxSpeed = kMaxSpeed
     
     if self.charging then
-        maxSpeed = kMaxSpeed + (kBonusChargeSpeed * self:ChargeAmount())
+        maxSpeed = kMaxChargeSpeed + (kBonusChargeSpeed * self:ChargeAmount())
     end
     
-    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnSurface() and not self:GetLandedRecently() then
+    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnGround() and not self:GetLandedRecently() then
         maxSpeed = kMaxWalkSpeed
     end
 

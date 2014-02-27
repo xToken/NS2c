@@ -853,6 +853,9 @@
     <filename>VoteManager.lua</filename>
   </file>
   <file>
+    <filename>Mixins\WaterModSupport.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Weapon.lua</filename>
   </file>
   <file>

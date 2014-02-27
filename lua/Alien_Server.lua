@@ -227,7 +227,7 @@ function Alien:ProcessBuyAction(techIds)
 	        -- Add a bit to the extents when looking for a clear space to spawn.
 	        local spawnBufferExtents = Vector(0.1, 0.1, 0.1)
 	        
-	        local evolveAllowed = self:GetIsOnSurface()
+	        local evolveAllowed = self:GetIsOnGround()
 	        evolveAllowed = evolveAllowed and GetHasRoomForCapsule(eggExtents + spawnBufferExtents, position + Vector(0, eggExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
 	        evolveAllowed = evolveAllowed and GetHasRoomForCapsule(newAlienExtents + spawnBufferExtents, position + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, physicsMask, self)
 	        

@@ -897,7 +897,7 @@ function GUIAlienHUD:Update(deltaTime)
     
     UpdateNotifications(self, deltaTime)
 
-    if PlayerUI_GetIsPlaying() and PlayerUI_GetGameMode() == kGameMode.Classic and BuyMenus_GetTechAvailable(kTechId.Hive) then
+    if PlayerUI_GetIsPlaying() and PlayerUI_GetGameMode() == kGameMode.Classic then
         for i = 1, #kAlienUpgradeChambers do
             local chambers, hastech, upgrade, upgrades
             chambers = AlienUI_GetChamberCount(kAlienUpgradeChambers[i])
@@ -910,6 +910,14 @@ function GUIAlienHUD:Update(deltaTime)
             end
             if self.upgrades[kAlienUpgradeChambers[i]][4] ~= chambers or self.upgrades[kAlienUpgradeChambers[i]][5] ~= hastech or self.upgrades[kAlienUpgradeChambers[i]][6] ~= upgrade then
                 self:ShowUpgradeIcon(kAlienUpgradeChambers[i], chambers, hastech, upgrade)
+            end
+        end
+    end
+    if not BuyMenus_GetTechAvailable(kTechId.Hive) then
+        upgrades = AlienBuy_GetUpgradesForChamber(kAlienUpgradeChambers[i])
+        for j = 1, #upgrades do
+            for i = 1, 3 do
+                self.upgrades[upgrades[j]][i]:SetIsVisible(false)
             end
         end
     end
