@@ -244,6 +244,10 @@ local function DropStructure(self, player, origin, direction, structureAbility, 
                 structure:SetOwner(player)
                 player:GetTeam():AddGorgeStructure(player, structure)
                 
+                if onEntity and HasMixin(onEntity, "StructureFall") and HasMixin(structure, "StructureFall") then
+                    onEntity:ConnectToStructure(structure)
+                end
+                
                 // Check for space
                 if structure:SpaceClearForEntity(coords.origin) then
                 

@@ -17,7 +17,6 @@
 
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
-Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
@@ -28,7 +27,6 @@ Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/ConstructMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
-
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/SleeperMixin.lua")
@@ -67,7 +65,6 @@ local networkVars =
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
-AddMixinNetworkVars(UpgradableMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
@@ -90,7 +87,6 @@ function Crag:OnCreate()
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ClientModelMixin)
     InitMixin(self, LiveMixin)
-    InitMixin(self, UpgradableMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
@@ -107,14 +103,11 @@ function Crag:OnCreate()
     
     self.healingActive = false
     
-    self:SetUpdates(true)
-    
-    if Server then
-
-    elseif Client then    
+    if Client then    
         InitMixin(self, CommanderGlowMixin)    
     end
     
+    self:SetUpdates(false)
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)

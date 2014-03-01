@@ -888,4 +888,7 @@
   <file>
     <filename>Weapons\Alien\XenocideLeap.lua</filename>
   </file>
+  <file>
+    <filename>StructureFallMixin.lua</filename>
+  </file>
 </project>

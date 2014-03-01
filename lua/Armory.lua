@@ -113,6 +113,7 @@ function Armory:OnCreate()
         InitMixin(self, CommanderGlowMixin)
     end
 
+    self:SetUpdates(false)
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup)

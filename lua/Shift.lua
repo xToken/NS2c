@@ -19,7 +19,6 @@
 
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
-Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
@@ -65,7 +64,6 @@ local networkVars = { }
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
-AddMixinNetworkVars(UpgradableMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
@@ -88,7 +86,6 @@ function Shift:OnCreate()
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ClientModelMixin)
     InitMixin(self, LiveMixin)
-    InitMixin(self, UpgradableMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
@@ -106,9 +103,10 @@ function Shift:OnCreate()
 	InitMixin(self, DissolveMixin)
     
     if Client then
-        InitMixin(self, CommanderGlowMixin)    
+        InitMixin(self, CommanderGlowMixin)
     end
     
+    self:SetUpdates(false)
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
