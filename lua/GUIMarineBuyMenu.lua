@@ -26,6 +26,7 @@ GUIMarineBuyMenu.kButtonTexture = "ui/marine_buymenu_button.dds"
 GUIMarineBuyMenu.kMenuSelectionTexture = "ui/marine_buymenu_selector.dds"
 GUIMarineBuyMenu.kScanLineTexture = "ui/menu/scanLine_big.dds"
 GUIMarineBuyMenu.kArrowTexture = "ui/menu/arrow_horiz.dds"
+GUIMarineBuyMenu.kSmallIcons = "ui/buildmenu.dds"
 
 GUIMarineBuyMenu.kFont = "fonts/AgencyFB_small.fnt"
 GUIMarineBuyMenu.kFont2 = "fonts/AgencyFB_small.fnt"
@@ -55,16 +56,24 @@ local function GetBigIconPixelCoords(techId, researched)
     if not gBigIconIndex then
     
         gBigIconIndex = {}
-        gBigIconIndex[kTechId.Axe] = 0
-        gBigIconIndex[kTechId.Pistol] = 1
-        gBigIconIndex[kTechId.Rifle] = 2
+        gBigIconIndex[kTechId.Weapons1] = 0
+        gBigIconIndex[kTechId.Weapons2] = 1
+        gBigIconIndex[kTechId.Weapons3] = 2
         gBigIconIndex[kTechId.Shotgun] = 3
         gBigIconIndex[kTechId.GrenadeLauncher] = 4
+        gBigIconIndex[kTechId.HeavyMachineGun] = 5
         gBigIconIndex[kTechId.Jetpack] = 6
         gBigIconIndex[kTechId.HeavyArmor] = 7
         gBigIconIndex[kTechId.Welder] = 8
         gBigIconIndex[kTechId.Mines] = 9
-        gBigIconIndex[kTechId.HandGrenades] = 4
+        gBigIconIndex[kTechId.Armor1] = 10
+        gBigIconIndex[kTechId.Armor2] = 11
+        gBigIconIndex[kTechId.Armor3] = 12
+        gBigIconIndex[kTechId.HandGrenades] = 13
+        gBigIconIndex[kTechId.MedPack] = 14
+        gBigIconIndex[kTechId.CatPack] = 15
+        gBigIconIndex[kTechId.Scan] = 16
+        gBigIconIndex[kTechId.MotionTracking] = 17
     
     end
     
@@ -91,45 +100,12 @@ local function GetBigIconPixelCoords(techId, researched)
 end
 
 // Small Item Icons
-GUIMarineBuyMenu.kSmallIconSize = GUIScale( Vector(100, 50, 0) )
-GUIMarineBuyMenu.kMenuIconSize = GUIScale( Vector(190, 80, 0) )
-GUIMarineBuyMenu.kSelectorSize = GUIScale( Vector(215, 110, 0) )
+GUIMarineBuyMenu.kMenuIconSize = GUIScale( Vector(71, 71, 0) )
+GUIMarineBuyMenu.kSelectorSize = GUIScale( Vector(75, 75, 0) )
 GUIMarineBuyMenu.kIconTopOffset = 10
 GUIMarineBuyMenu.kItemIconYOffset = {}
 
 GUIMarineBuyMenu.kEquippedIconTopOffset = 58
-
-local smallIconHeight = 64
-local smallIconWidth = 128
-local gSmallIconIndex = nil
-local function GetSmallIconPixelCoordinates(itemTechId)
-
-    if not gSmallIconIndex then
-    
-        gSmallIconIndex = {}
-        gSmallIconIndex[kTechId.Axe] = 4
-        gSmallIconIndex[kTechId.Pistol] = 3
-        gSmallIconIndex[kTechId.Rifle] = 1
-        gSmallIconIndex[kTechId.Shotgun] = 5
-        gSmallIconIndex[kTechId.GrenadeLauncher] = 8
-        gSmallIconIndex[kTechId.Jetpack] = 24
-        gSmallIconIndex[kTechId.HeavyArmor] = 25
-        gSmallIconIndex[kTechId.Welder] = 10
-        gSmallIconIndex[kTechId.LayMines] = 21
-    
-    end
-    
-    local index = gSmallIconIndex[itemTechId]
-    if not index then
-        index = 0
-    end
-    
-    local y1 = index * smallIconHeight
-    local y2 = (index + 1) * smallIconHeight
-    
-    return 0, y1, smallIconWidth, y2
-
-end
                             
 GUIMarineBuyMenu.kTextColor = Color(kMarineFontColor)
 
@@ -139,7 +115,7 @@ GUIMarineBuyMenu.kPadding = GUIScale(8)
 GUIMarineBuyMenu.kEquippedWidth = GUIScale(128)
 
 GUIMarineBuyMenu.kBackgroundWidth = GUIScale(600)
-GUIMarineBuyMenu.kBackgroundHeight = GUIScale(520)
+GUIMarineBuyMenu.kBackgroundHeight = GUIScale(720)
 // We want the background graphic to look centered around the circle even though there is the part coming off to the right.
 GUIMarineBuyMenu.kBackgroundXOffset = GUIScale(0)
 
@@ -170,19 +146,6 @@ GUIMarineBuyMenu.kItemNameOffsetY = GUIScale(256)
 GUIMarineBuyMenu.kItemDescriptionOffsetY = GUIScale(300)
 GUIMarineBuyMenu.kItemDescriptionSize = GUIScale( Vector(450, 180, 0) )
 
-function GUIMarineBuyMenu:SetHostStructure(hostStructure)
-
-    self.hostStructure = hostStructure
-    self:_InitializeItemButtons()
-    if hostStructure:isa("Armory") then
-        self.selectedItem = kTechId.Shotgun //PlayerUI_GetActiveWeaponTechId()
-    else
-        self.selectedItem = kTechId.Jetpack
-    end
-    
-end
-
-
 function GUIMarineBuyMenu:OnClose()
 
     // Check if GUIMarineBuyMenu is what is causing itself to close.
@@ -200,15 +163,13 @@ function GUIMarineBuyMenu:Initialize()
     self.mouseOverStates = { }
     self.equipped = { }
     
-    self.selectedItem = kTechId.Shotgun
-    
     self:_InitializeBackground()
     self:_InitializeContent()
     self:_InitializeResourceDisplay()
     self:_InitializeCloseButton()
-    self:_InitializeEquipped()    
-
-    // note: items buttons get initialized through SetHostStructure()
+    //self:_InitializeEquipped()    
+    self:_InitializeItemButtons()
+    
     MarineBuy_OnOpen()
     
 end
@@ -321,45 +282,10 @@ function GUIMarineBuyMenu:_UninitializeBackground()
     
 end
 
-function GUIMarineBuyMenu:_InitializeEquipped()
-
-    self.equippedBg = GetGUIManager():CreateGraphicItem()
-    self.equippedBg:SetAnchor(GUIItem.Right, GUIItem.Top)
-    self.equippedBg:SetPosition(Vector( GUIMarineBuyMenu.kPadding, -GUIMarineBuyMenu.kResourceDisplayHeight, 0))
-    self.equippedBg:SetSize(Vector(GUIMarineBuyMenu.kEquippedWidth, GUIMarineBuyMenu.kBackgroundHeight + GUIMarineBuyMenu.kResourceDisplayHeight, 0))
-    self.equippedBg:SetColor(Color(0,0,0,0))
-    self.content:AddChild(self.equippedBg)
-    
-    self.equippedTitle = GetGUIManager():CreateTextItem()
-    self.equippedTitle:SetFontName(GUIMarineBuyMenu.kFont)
-    self.equippedTitle:SetFontIsBold(true)
-    self.equippedTitle:SetAnchor(GUIItem.Middle, GUIItem.Top)
-    self.equippedTitle:SetTextAlignmentX(GUIItem.Align_Center)
-    self.equippedTitle:SetTextAlignmentY(GUIItem.Align_Center)
-    self.equippedTitle:SetColor(kEquippedColor)
-    self.equippedTitle:SetPosition(Vector(0, GUIMarineBuyMenu.kResourceDisplayHeight / 2, 0))
-    self.equippedTitle:SetText(Locale.ResolveString("EQUIPPED"))
-    self.equippedBg:AddChild(self.equippedTitle)
-    
-    self.equipped = { }
-    
-    local equippedTechIds = MarineBuy_GetEquipped()
-    local selectorPosX = -GUIMarineBuyMenu.kSelectorSize.x + GUIMarineBuyMenu.kPadding
-    
-    for k, itemTechId in ipairs(equippedTechIds) do
-    
-        local graphicItem = GUIManager:CreateGraphicItem()
-        graphicItem:SetSize(GUIMarineBuyMenu.kSmallIconSize)
-        graphicItem:SetAnchor(GUIItem.Middle, GUIItem.Top)
-        graphicItem:SetPosition(Vector(-GUIMarineBuyMenu.kSmallIconSize.x/ 2, GUIMarineBuyMenu.kEquippedIconTopOffset + (GUIMarineBuyMenu.kSmallIconSize.y) * k - GUIMarineBuyMenu.kSmallIconSize.y, 0))
-        graphicItem:SetTexture(kInventoryIconsTexture)
-        graphicItem:SetTexturePixelCoordinates(GetSmallIconPixelCoordinates(itemTechId))
-        
-        self.equippedBg:AddChild(graphicItem)
-        table.insert(self.equipped, { Graphic = graphicItem, TechId = itemTechId } )
-    
+function GetIndexOf(table, value)
+    for k,v in pairs(table) do 
+        if v == value then return k end
     end
-    
 end
 
 function GUIMarineBuyMenu:_InitializeItemButtons()
@@ -390,18 +316,30 @@ function GUIMarineBuyMenu:_InitializeItemButtons()
     
     self.itemButtons = { }
     
-    local itemTechIdList = self.hostStructure:GetItemList()
+    local itemTechIdList = MarineUI_GetPersonalUpgrades()
+    local itemcolumns = { a = {kTechId.MedPack, kTechId.CatPack, kTechId.Scan, kTechId.MotionTracking, kTechId.Welder, kTechId.Mines, kTechId.HandGrenades, kTechId.Shotgun, kTechId.HeavyMachineGun, kTechId.GrenadeLauncher },
+                          b = {kTechId.Weapons1, kTechId.Weapons2, kTechId.Weapons3, kTechId.Armor1, kTechId.Armor2, kTechId.Armor3, kTechId.Jetpack, kTechId.HeavyArmor } }
+                        
     local selectorPosX = -GUIMarineBuyMenu.kSelectorSize.x + GUIMarineBuyMenu.kPadding
     local fontScaleVector = Vector(0.8, 0.8, 0)
     
     for k, itemTechId in ipairs(itemTechIdList) do
     
+        local xPos, yPos
+        if table.contains(itemcolumns.a, itemTechId) then
+            xPos = -GUIMarineBuyMenu.kMenuIconSize.x
+            yPos = GUIMarineBuyMenu.kIconTopOffset + (GUIMarineBuyMenu.kMenuIconSize.y) * GetIndexOf(itemcolumns.a, itemTechId) - GUIMarineBuyMenu.kMenuIconSize.y
+        elseif table.contains(itemcolumns.b, itemTechId) then
+            xPos = 0
+            yPos = GUIMarineBuyMenu.kIconTopOffset + (GUIMarineBuyMenu.kMenuIconSize.y) * GetIndexOf(itemcolumns.b, itemTechId) - GUIMarineBuyMenu.kMenuIconSize.y
+        end
+        
         local graphicItem = GUIManager:CreateGraphicItem()
         graphicItem:SetSize(GUIMarineBuyMenu.kMenuIconSize)
         graphicItem:SetAnchor(GUIItem.Middle, GUIItem.Top)
-        graphicItem:SetPosition(Vector(-GUIMarineBuyMenu.kMenuIconSize.x/ 2, GUIMarineBuyMenu.kIconTopOffset + (GUIMarineBuyMenu.kMenuIconSize.y) * k - GUIMarineBuyMenu.kMenuIconSize.y, 0))
-        graphicItem:SetTexture(kInventoryIconsTexture)
-        graphicItem:SetTexturePixelCoordinates(GetSmallIconPixelCoordinates(itemTechId))
+        graphicItem:SetPosition(Vector(xPos, yPos, 0))
+        graphicItem:SetTexture(GUIMarineBuyMenu.kSmallIcons)
+        graphicItem:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(itemTechId, false)))
         
         local graphicItemActive = GUIManager:CreateGraphicItem()
         graphicItemActive:SetSize(GUIMarineBuyMenu.kSelectorSize)
@@ -456,25 +394,6 @@ function GUIMarineBuyMenu:_InitializeItemButtons()
 
 end
 
-local gResearchToWeaponIds = nil
-local function GetItemTechId(researchTechId)
-
-    if not gResearchToWeaponIds then
-    
-        gResearchToWeaponIds = { }
-        gResearchToWeaponIds[kTechId.ShotgunTech] = kTechId.Shotgun
-        gResearchToWeaponIds[kTechId.GrenadeLauncherTech] = kTechId.GrenadeLauncher
-        gResearchToWeaponIds[kTechId.WelderTech] = kTechId.Welder
-        gResearchToWeaponIds[kTechId.MinesTech] = kTechId.LayMines
-        gResearchToWeaponIds[kTechId.JetpackTech] = kTechId.Jetpack
-        gResearchToWeaponIds[kTechId.HeavyArmorTech] = kTechId.HeavyArmor
-    
-    end
-    
-    return gResearchToWeaponIds[researchTechId]
-    
-end
-
 function GUIMarineBuyMenu:_UpdateItemButtons(deltaTime)
 
     for i, item in ipairs(self.itemButtons) do
@@ -490,23 +409,14 @@ function GUIMarineBuyMenu:_UpdateItemButtons(deltaTime)
         
         local useColor = Color(1, 1, 1, 1)
         
-        // set grey if not researched
-        if not MarineBuy_IsResearched(item.TechId) then
+        // set grey if not unlocked
+        if not BuyMenus_GetUpgradeAvailable(item.TechId) then
             useColor = Color(0.5, 0.5, 0.5, 0.4)
         // set red if can't afford
-        elseif PlayerUI_GetPlayerResources() < MarineBuy_GetCosts(item.TechId) then
+        elseif PlayerUI_GetPlayerResources() < BuyMenus_GetUpgradeCost(item.TechId) then
            useColor = Color(1, 0, 0, 1)
-        // set normal visible
-        else
-
-            local newResearchedId = GetItemTechId( PlayerUI_GetRecentPurchaseable() )
-            if newResearchedId == item.TechId then
-            
-                local anim = math.cos(Shared.GetTime() * 9) * 0.4 + 0.6
-                useColor = Color(1, 1, anim, 1)
-                
-            end
-           
+        elseif PlayerUI_GetHasItem(item.TechId) then
+            useColor = Color(0, 216/255, 1, 1)
         end
         
         item.Button:SetColor(useColor)
@@ -575,17 +485,19 @@ function GUIMarineBuyMenu:_UpdateContent(deltaTime)
     
     if techId then
     
-        local researched, researchProgress, researching = self:_GetResearchInfo(techId)
-        
-        local itemCost = MarineBuy_GetCosts(techId)
+        local unlocked = self:_GetIsUnlocked(techId)
+        local alreadyhas = PlayerUI_GetHasItem(techId)        
+        local itemCost = BuyMenus_GetUpgradeCost(techId)
         local canAfford = PlayerUI_GetPlayerResources() >= itemCost
 
         local color = Color(1, 1, 1, 1)
-        if not canAfford and researched then
+        if not canAfford and unlocked then
             color = Color(1, 0, 0, 1)
-        elseif not researched then
+        elseif not unlocked then
             // Make it clear that we can't buy this
-            color = Color(0.5, 0.5, 0.5, .6)
+            color = Color(0.5, 0.5, 0.5, 1)
+        elseif alreadyhas then
+            color = Color(0, 216/255, 1, 1)
         end
     
         self.itemName:SetColor(color)
@@ -593,7 +505,7 @@ function GUIMarineBuyMenu:_UpdateContent(deltaTime)
         self.itemDescription:SetColor(color)
 
         self.itemName:SetText(MarineBuy_GetDisplayName(techId))
-        self.portrait:SetTexturePixelCoordinates(GetBigIconPixelCoords(techId, researched))
+        self.portrait:SetTexturePixelCoordinates(GetBigIconPixelCoords(techId, unlocked))
         self.itemDescription:SetText(MarineBuy_GetWeaponDescription(techId))
         self.itemDescription:SetTextClipped(true, GUIMarineBuyMenu.kItemDescriptionSize.x - 2* GUIMarineBuyMenu.kPadding, GUIMarineBuyMenu.kItemDescriptionSize.y - GUIMarineBuyMenu.kPadding)
 
@@ -716,21 +628,11 @@ function GUIMarineBuyMenu:_UninitializeCloseButton()
 
 end
 
-function GUIMarineBuyMenu:_GetResearchInfo(techId)
+function GUIMarineBuyMenu:_GetIsUnlocked(techId)
 
-    local researched = MarineBuy_IsResearched(techId)
-    local researchProgress = 0
-    local researching = false
+    local unlocked = BuyMenus_GetUpgradeAvailable(techId)
     
-    if not researched then    
-        researchProgress = MarineBuy_GetResearchProgress(techId)        
-    end
-    
-    if not (researchProgress == 0) then
-        researching = true
-    end
-    
-    return researched, researchProgress, researching
+    return unlocked
 end
 
 local function HandleItemClicked(self, mouseX, mouseY)
@@ -740,15 +642,17 @@ local function HandleItemClicked(self, mouseX, mouseY)
         local item = self.itemButtons[i]
         if GetIsMouseOver(self, item.Button) then
         
-            local researched, researchProgress, researching = self:_GetResearchInfo(item.TechId)
-            local itemCost = MarineBuy_GetCosts(item.TechId)
+            local unlocked = self:_GetIsUnlocked(item.TechId)
+            local itemCost = BuyMenus_GetUpgradeCost(item.TechId)
             local canAfford = PlayerUI_GetPlayerResources() >= itemCost
             local hasItem = PlayerUI_GetHasItem(item.TechId)
             
-            if researched and canAfford and not hasItem then
+            if unlocked and canAfford and not hasItem then
             
                 MarineBuy_PurchaseItem(item.TechId)
-                MarineBuy_OnClose()
+                if PlayerUI_GetPlayerResources() - itemCost == 0 then
+                    MarineBuy_OnClose()
+                end
                 
                 return true, true
                 

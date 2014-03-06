@@ -111,17 +111,6 @@ function GUIPlayerResource:Initialize(style)
     self.pResDescription:SetText(Locale.ResolveString("RESOURCES"))
     self.background:AddChild(self.pResDescription)
     
-    self.ResGainedText = self.script:CreateAnimatedTextItem()
-    self.ResGainedText:SetAnchor(GUIItem.Left, GUIItem.Top)
-    self.ResGainedText:SetTextAlignmentX(GUIItem.Align_Max)
-    self.ResGainedText:SetTextAlignmentY(GUIItem.Align_Max)
-    self.ResGainedText:SetColor(style.textColor)
-    self.ResGainedText:SetFontIsBold(false)
-    self.ResGainedText:SetBlendTechnique(GUIItem.Add)
-    self.ResGainedText:SetFontName(GUIPlayerResource.kResGainedFontName)
-    self.ResGainedText:SetText("+")
-    self.background:AddChild(self.ResGainedText)
-    
     // Team display.
     self.teamText = self.script:CreateAnimatedTextItem()
     self.teamText:SetAnchor(GUIItem.Left, GUIItem.Top)
@@ -159,10 +148,13 @@ function GUIPlayerResource:Reset(scale)
     self.teamText:SetScale(Vector(1,1,1) * self.scale * 1.2)
     self.teamText:SetScale(GetScaledVector())
     self.teamText:SetPosition(GUIPlayerResource.kTeamTextPos)
-    
-    self.ResGainedText:SetUniformScale(self.scale)
-    self.ResGainedText:SetPosition(GUIPlayerResource.kResGainedTextPos)
 
+end
+
+function GUIPlayerResource:SetVisibleState(visible)
+    self.rtCount:SetIsVisible(visible)
+    self.personalText:SetIsVisible(visible)
+    self.teamText:SetIsVisible(visible)
 end
 
 function GUIPlayerResource:Update(deltaTime, parameters)
@@ -189,10 +181,6 @@ function GUIPlayerResource:Update(deltaTime, parameters)
     self.teamText:SetText(string.format(Locale.ResolveString("TEAM_RES"), tRes))
     
     if pRes > self.lastPersonalResources then
-
-        self.ResGainedText:DestroyAnimations()
-        self.ResGainedText:SetColor(self.style.textColor)
-        self.ResGainedText:FadeOut(2)
         
         self.lastPersonalResources = pRes
         self.pulseLeft = 1
@@ -208,8 +196,6 @@ function GUIPlayerResource:Update(deltaTime, parameters)
         
     end
     
-    
-
 end
 
 function GUIPlayerResource:OnAnimationCompleted(animatedItem, animationName, itemHandle)

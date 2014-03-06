@@ -450,8 +450,8 @@ end
 function GUIGorgeBuildMenu:OverrideInput(input)
 
     // Assume the user wants to switch the top-level weapons
-    if HasMoveCommand( input.commands, Move.NextWeapon )
-    or HasMoveCommand( input.commands, Move.PrevWeapon ) then
+    if HasMoveCommand( input.commands, Move.SelectNextWeapon )
+    or HasMoveCommand( input.commands, Move.SelectPrevWeapon ) then
 
         GorgeBuild_OnClose()
         GorgeBuild_Close()

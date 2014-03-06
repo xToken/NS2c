@@ -222,7 +222,8 @@ end
 function CommanderUI_MenuButtonRequiresTarget(index)
 
     local techId = GetTechIdFromButtonIndex(index)
-    local techTree = GetTechTree()
+	local player = Client.GetLocalPlayer()
+    local techTree = player:GetTechTree()
     local requiresTarget = false
     
     if(tech ~= 0 and techTree) then
@@ -535,7 +536,7 @@ function CommanderUI_ActionCancelled()
 end
 
 function CommanderUI_GetUIClickable()
-    return not GetIsCommanderMarqueeSelectorDown()
+    return not GetIsCommanderMarqueeSelectorDown() and not MainMenu_GetIsOpened()
 end
 
 function GetTechIdFromButtonIndex(index)
@@ -897,32 +898,34 @@ function Commander:UpdateClientEffects(deltaTime, isLocal)
         local xScalar, yScalar = Client.GetCursorPos()
         local x = xScalar * Client.GetScreenWidth()
         local y = yScalar * Client.GetScreenHeight()
-        
-        if not GetCommanderGhostStructureEnabled() and not CommanderUI_GetMouseIsOverUI() then
-        
-            local oldEntityIdUnderCursor = self.entityIdUnderCursor
-            self.entityIdUnderCursor = self:GetUnitIdUnderCursor(CreatePickRay(self, x, y))
-            
-            if self.entityIdUnderCursor ~= Entity.invalidId and oldEntityIdUnderCursor ~= self.entityIdUnderCursor then
-                Shared.PlayPrivateSound(self, self:GetHoverSound(), self, 1.0, self:GetOrigin())
-            end
-            
-        else
-            self.entityIdUnderCursor = Entity.invalidId
-        end
-        
-        UpdateGhostStructureVisuals(self)
-        
-        self:UpdateGhostGuides()
-        
-        UpdateCircleUnderCursor(self)
-        
-        self:UpdateCursor()
+		if not MainMenu_GetIsOpened() then
+			
+			if not GetCommanderGhostStructureEnabled() and not CommanderUI_GetMouseIsOverUI() then
+			
+				local oldEntityIdUnderCursor = self.entityIdUnderCursor
+				self.entityIdUnderCursor = self:GetUnitIdUnderCursor(CreatePickRay(self, x, y))
+				
+				if self.entityIdUnderCursor ~= Entity.invalidId and oldEntityIdUnderCursor ~= self.entityIdUnderCursor then
+					Shared.PlayPrivateSound(self, self:GetHoverSound(), self, 1.0, self:GetOrigin())
+				end
+				
+			else
+				self.entityIdUnderCursor = Entity.invalidId
+			end
+			
+			UpdateGhostStructureVisuals(self)
+			
+			self:UpdateGhostGuides()
+			
+			UpdateCircleUnderCursor(self)
+			
+			self:UpdateCursor()
 
-        self.lastMouseX = x
-        self.lastMouseY = y
-        
-    end
+			self.lastMouseX = x
+			self.lastMouseY = y
+			
+		end
+	end
     
 end
 
@@ -991,7 +994,8 @@ function Commander:UpdateCursor()
     // Or if we're targeting an ability
     elseif self.currentTechId ~= nil and self.currentTechId ~= kTechId.None then
     
-        local techNode = GetTechNode(self.currentTechId)
+        local player = Client.GetLocalPlayer()
+        local techNode = GetTechNode(player, self.currentTechId)
         
         if techNode ~= nil and techNode:GetRequiresTarget() then
         
@@ -1059,7 +1063,8 @@ end
 function Commander:SetCurrentTech(techId)
 
     // Change menu if it is a menu.
-    local techNode = GetTechNode(techId)
+    local player = Client.GetLocalPlayer()
+    local techNode = GetTechNode(player, techId)
     local isMenu = false
     local requiresTarget = false
     

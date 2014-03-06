@@ -34,9 +34,6 @@
     <filename>AlienTechMap.lua</filename>
   </file>
   <file>
-    <filename>AlienUpgrades_Client.lua</filename>
-  </file>
-  <file>
     <filename>AlienWeaponEffects.lua</filename>
   </file>
   <file>
@@ -139,13 +136,25 @@
     <filename>Commander.lua</filename>
   </file>
   <file>
+    <filename>bots\CommanderBot.lua</filename>
+  </file>
+  <file>
+    <filename>bots\CommanderBrain.lua</filename>
+  </file>
+  <file>
     <filename>CommanderHelp.lua</filename>
+  </file>
+  <file>
+    <filename>CommanderTutorialUtility.lua</filename>
   </file>
   <file>
     <filename>Commander_Buttons.lua</filename>
   </file>
   <file>
     <filename>Commander_Client.lua</filename>
+  </file>
+  <file>
+    <filename>Commander_GhostStructure.lua</filename>
   </file>
   <file>
     <filename>Commander_MouseActions.lua</filename>
@@ -155,6 +164,9 @@
   </file>
   <file>
     <filename>Commander_Server.lua</filename>
+  </file>
+  <file>
+    <filename>bots\CommonActions.lua</filename>
   </file>
   <file>
     <filename>ConsoleCommands_Client.lua</filename>
@@ -202,6 +214,9 @@
     <filename>DevouredMixin.lua</filename>
   </file>
   <file>
+    <filename>Door.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Alien\DropStructureAbility.lua</filename>
   </file>
   <file>
@@ -215,6 +230,9 @@
   </file>
   <file>
     <filename>EmpowerMixin.lua</filename>
+  </file>
+  <file>
+    <filename>EnergizeMixin.lua</filename>
   </file>
   <file>
     <filename>EnergyMixin.lua</filename>
@@ -235,6 +253,9 @@
     <filename>Fade.lua</filename>
   </file>
   <file>
+    <filename>bots\FadeBrain_Data.lua</filename>
+  </file>
+  <file>
     <filename>Fade_Server.lua</filename>
   </file>
   <file>
@@ -245,6 +266,9 @@
   </file>
   <file>
     <filename>GUIAlienHUD.lua</filename>
+  </file>
+  <file>
+    <filename>GUIAlienSpectatorHUD.lua</filename>
   </file>
   <file>
     <filename>GUIAuraDisplay.lua</filename>
@@ -292,6 +316,9 @@
     <filename>GUIMarineHud.lua</filename>
   </file>
   <file>
+    <filename>GUIMarineSpectatorHUD.lua</filename>
+  </file>
+  <file>
     <filename>GUIMarineStatus.lua</filename>
   </file>
   <file>
@@ -317,6 +344,9 @@
   </file>
   <file>
     <filename>GUIResourceDisplay.lua</filename>
+  </file>
+  <file>
+    <filename>GUIRifleDisplay.lua</filename>
   </file>
   <file>
     <filename>GUISelectionPanel.lua</filename>
@@ -347,6 +377,9 @@
   </file>
   <file>
     <filename>Gorge.lua</filename>
+  </file>
+  <file>
+    <filename>bots\GorgeBrain_Data.lua</filename>
   </file>
   <file>
     <filename>Gorge_Server.lua</filename>
@@ -415,6 +448,9 @@
     <filename>InfestationMixin.lua</filename>
   </file>
   <file>
+    <filename>InputHandler.lua</filename>
+  </file>
+  <file>
     <filename>InsightNetworkMessages.lua</filename>
   </file>
   <file>
@@ -442,6 +478,9 @@
     <filename>Weapons\Alien\LerkBiteMixin.lua</filename>
   </file>
   <file>
+    <filename>bots\LerkBrain_Data.lua</filename>
+  </file>
+  <file>
     <filename>Lerk_Server.lua</filename>
   </file>
   <file>
@@ -460,10 +499,16 @@
     <filename>MarineActionFinderMixin.lua</filename>
   </file>
   <file>
+    <filename>bots\MarineBrain_Data.lua</filename>
+  </file>
+  <file>
     <filename>MarineBuy_Client.lua</filename>
   </file>
   <file>
     <filename>MarineCommander.lua</filename>
+  </file>
+  <file>
+    <filename>bots\MarineCommanderBrain_Data.lua</filename>
   </file>
   <file>
     <filename>MarineCommanderTutorial.lua</filename>
@@ -473,6 +518,9 @@
   </file>
   <file>
     <filename>MarineCommander_Server.lua</filename>
+  </file>
+  <file>
+    <filename>MarineSpectator.lua</filename>
   </file>
   <file>
     <filename>MarineStructureEffects.lua</filename>
@@ -523,6 +571,9 @@
     <filename>NS2Utility_Server.lua</filename>
   </file>
   <file>
+    <filename>NS2cConfig.lua</filename>
+  </file>
+  <file>
     <filename>NS2cGameStrings.lua</filename>
   </file>
   <file>
@@ -530,6 +581,9 @@
   </file>
   <file>
     <filename>NetworkMessages_Client.lua</filename>
+  </file>
+  <file>
+    <filename>NetworkMessages_Predict.lua</filename>
   </file>
   <file>
     <filename>NetworkMessages_Server.lua</filename>
@@ -541,10 +595,16 @@
     <filename>Onos.lua</filename>
   </file>
   <file>
+    <filename>bots\OnosBrain_Data.lua</filename>
+  </file>
+  <file>
     <filename>Onos_Client.lua</filename>
   </file>
   <file>
     <filename>Onos_Server.lua</filename>
+  </file>
+  <file>
+    <filename>Order.lua</filename>
   </file>
   <file>
     <filename>OrdersMixin.lua</filename>
@@ -568,10 +628,16 @@
     <filename>PlayerEffects.lua</filename>
   </file>
   <file>
+    <filename>PlayerInfoEntity.lua</filename>
+  </file>
+  <file>
     <filename>PlayerRanking.lua</filename>
   </file>
   <file>
     <filename>Player_Client.lua</filename>
+  </file>
+  <file>
+    <filename>Player_Predict.lua</filename>
   </file>
   <file>
     <filename>Player_Server.lua</filename>
@@ -586,7 +652,13 @@
     <filename>PowerConsumerMixin.lua</filename>
   </file>
   <file>
+    <filename>Predict.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Alien\Primal.lua</filename>
+  </file>
+  <file>
+    <filename>PrimalScreamMixin.lua</filename>
   </file>
   <file>
     <filename>PropDynamic.lua</filename>
@@ -632,6 +704,9 @@
   </file>
   <file>
     <filename>ScenarioHandler.lua</filename>
+  </file>
+  <file>
+    <filename>Scoreboard.lua</filename>
   </file>
   <file>
     <filename>ScriptActor.lua</filename>
@@ -730,10 +805,16 @@
     <filename>TechPoint.lua</filename>
   </file>
   <file>
+    <filename>TechTree.lua</filename>
+  </file>
+  <file>
     <filename>TechTreeButtons.lua</filename>
   </file>
   <file>
     <filename>TechTreeConstants.lua</filename>
+  </file>
+  <file>
+    <filename>TechTree_Client.lua</filename>
   </file>
   <file>
     <filename>TechTree_Server.lua</filename>
@@ -763,10 +844,16 @@
     <filename>UnitStatusMixin.lua</filename>
   </file>
   <file>
+    <filename>UpgradableMixin.lua</filename>
+  </file>
+  <file>
     <filename>VoiceOver.lua</filename>
   </file>
   <file>
     <filename>VoteManager.lua</filename>
+  </file>
+  <file>
+    <filename>Mixins\WaterModSupport.lua</filename>
   </file>
   <file>
     <filename>Weapons\Weapon.lua</filename>
@@ -800,5 +887,8 @@
   </file>
   <file>
     <filename>Weapons\Alien\XenocideLeap.lua</filename>
+  </file>
+  <file>
+    <filename>StructureFallMixin.lua</filename>
   </file>
 </project>

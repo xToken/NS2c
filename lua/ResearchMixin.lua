@@ -47,9 +47,21 @@ function ResearchMixin:__initmixin()
     
 end
 
+local function GetTechTree(self)
+    if Client then
+        local localPlayer = Client.GetLocalPlayer()
+        return localPlayer:GetTechTree()
+    elseif Server then
+        return self:GetTeam():GetTechTree()
+    elseif Predict then
+        local localPlayer = Predict.GetLocalPlayer()
+        return localPlayer:GetTechTree()
+    end
+end
+
 function ResearchMixin:UpdateResearch(deltaTime)
 
-    local researchNode = self:GetTeam():GetTechTree():GetTechNode(self.researchingId)
+    local researchNode = GetTechTree(self):GetTechNode(self.researchingId)
     if researchNode then
     
         local researchDuration = LookupTechData(researchNode:GetTechId(), kTechDataResearchTimeKey, 0.01)
@@ -70,7 +82,7 @@ function ResearchMixin:UpdateResearch(deltaTime)
 
             researchNode:SetResearchProgress(self.researchProgress)
             
-            local techTree = self:GetTeam():GetTechTree()
+            local techTree = GetTechTree(self)
             techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", self.researchProgress))
             
             // Update research progress
@@ -191,7 +203,7 @@ function ResearchMixin:GetIsManufacturing()
 
     if self:GetIsResearching() then
     
-        local researchNode = GetTechTree(self:GetTeamNumber()):GetTechNode(self.researchingId)
+        local researchNode = GetTechTree(self):GetTechNode(self.researchingId)
         return researchNode ~= nil and (researchNode:GetIsManufacture() or researchNode:GetIsEnergyManufacture() or researchNode:GetIsPlasmaManufacture())
     
     end
@@ -204,7 +216,7 @@ function ResearchMixin:GetIsUpgrading()
 
     if self:GetIsResearching() then
     
-        local researchNode = GetTechTree(self:GetTeamNumber()):GetTechNode(self.researchingId)
+        local researchNode = GetTechTree(self):GetTechNode(self.researchingId)
         return researchNode ~= nil and researchNode:GetIsUpgrade()
     
     end
@@ -320,7 +332,7 @@ function ResearchMixin:TechResearched(structure, researchId)
 
     if structure and structure:GetId() == self:GetId() then
     
-        local researchNode = self:GetTeam():GetTechTree():GetTechNode(researchId)
+        local researchNode = GetTechTree(self):GetTechNode(researchId)
         if researchNode and (researchNode:GetIsEnergyManufacture() or researchNode:GetIsManufacture() or researchNode:GetIsPlasmaManufacture()) then
         
             // Handle manufacture actions

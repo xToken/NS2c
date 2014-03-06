@@ -14,6 +14,22 @@
 Script.Load("lua/Table.lua")
 Script.Load("lua/Utility.lua")
 
+function UpdateHallucinationLifeTime(self)
+    
+    if self.isHallucination or self:isa("Hallucination") then
+    
+        if self.creationTime + kHallucinationLifeTime < Shared.GetTime() then
+            
+            self:TriggerEffects("death_hallucination")
+            // don't do any ragdolls or death messages in this case, timing out of a hallucination is nothing the enemy team has to know
+            DestroyEntity(self)
+            
+        end
+    
+    end
+    
+end
+
 function DestroyEntitiesWithinRange(className, origin, range, filterFunc)
 
     for index, entity in ipairs(GetEntitiesWithinRange(className, origin, range)) do
@@ -379,6 +395,7 @@ function GetPlayerFromUserId(userId)
     return nil
     
 end
+
 function ScaleWithPlayerCount(value, numPlayers, scaleUp)
 
     // 6 is supposed to be ideal, in this case the value wont be modified
@@ -393,3 +410,35 @@ function ScaleWithPlayerCount(value, numPlayers, scaleUp)
     return value * factor
 
 end
+
+function ApplyPlayerKnockback(attacker, victim, force)
+    
+    if attacker and attacker:isa("Player") and victim and victim:isa("Player") then
+        
+        if victim.GetCanBeKnocked and victim:GetCanBeKnocked() and GetAreEnemies(attacker, victim) then
+        
+            local PushVec = Vector()
+            local Velocity = victim:GetVelocity()
+            
+            PushVec = victim:GetOrigin() - attacker:GetOrigin()
+            
+            if victim:isa("HeavyArmorMarine") then
+                force = force * 0.5
+            end
+            
+            if not victim:GetIsOnGround() then
+                force = force * 0.5
+            elseif victim:GetCrouching() then
+                force = force * 0.33
+            end
+            
+            Velocity = Velocity + (PushVec * math.max(0, 2.2 - PushVec:GetLength() ) * force)
+            victim:SetVelocity(Velocity)
+            
+            Server.SendNetworkMessage(victim, "ViewPunch", {punchangle = Vector(kMeleeViewPunchYaw, 0, kMeleeViewPunchPitch)}, true)
+            
+        end
+    
+    end
+
+end 

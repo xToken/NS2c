@@ -16,15 +16,15 @@ local kShowOnTeam = { }
 kShowOnTeam["all"] = { GUIFeedback = true, GUIScoreboard = true, GUIDeathMessages = true, GUIChat = true,
                        GUIVoiceChat = true, GUIMinimapFrame = true, GUIMapAnnotations = true,
                        GUICommunicationStatusIcons = true, GUIUnitStatus = true, GUIDeathScreen = true,
-                       GUITipVideo = true, GUISensorBlips = true, GUIVoteMenu = true, GUIStartVoteMenu = true }
+                       GUITipVideo = true, GUISensorBlips = true, GUIVoteMenu = true, GUIStartVoteMenu = true }//, GUIGatherOverlay = true }
 
 kShowOnTeam[kTeamReadyRoom] = { GUIReadyRoomOrders = true }
-kShowOnTeam[kTeam1Index] = { }
+kShowOnTeam[kTeam1Index] = { GUIMarineSpectatorHUD = true }
 kShowOnTeam[kTeam2Index] = { GUIAlienSpectatorHUD = true }
 kShowOnTeam[kSpectatorIndex] = { GUIGameEnd = true, GUISpectator = true }
 
 local kBothAlienAndMarine = { GUICrosshair = true, GUINotifications = true, GUIDamageIndicators = true, GUIGameEnd = true, GUIWorldText = true,
-                              GUIPing = true, GUIWaitingForAutoTeamBalance = true, GUITechMap = true }
+                              GUIPing = true, GUIWaitingForAutoTeamBalance = true }
                               
 for n, e in pairs(kBothAlienAndMarine) do
 
@@ -50,7 +50,7 @@ kShowAsClass["Alien"] = { GUIObjectiveDisplay = true, GUIProgressBar = true, GUI
 kShowAsClass["AlienSpectator"] = { GUIRequestMenu = true }
 kShowAsClass["Commander"] = { GUICommanderOrders = true }
 kShowAsClass["MarineCommander"] = { GUICommanderTutorial = true, GUISensorBlips = true, GUIDistressBeacon = true }
-kShowAsClass["AlienCommander"] = { GUICommanderTutorial = true, GUIEggDisplay = true, GUICommanderPheromoneDisplay = true, GUIBioMassDisplay = true }
+kShowAsClass["AlienCommander"] = { GUICommanderTutorial = true }
 kShowAsClass["ReadyRoomPlayer"] = { }
 kShowAsClass["TeamSpectator"] = { }
 kShowAsClass["Spectator"] = { }
@@ -249,3 +249,39 @@ local function PrintUIScripts()
     
 end
 Event.Hook("Console_print_client_ui", PrintUIScripts)
+
+function PreLoadGUIScripts()
+
+    for team, uiScripts in pairs(kShowOnTeam) do
+    
+        for name, enabled in pairs(uiScripts) do
+            
+            if enabled then
+                Script.Load("lua/" .. name .. ".lua")
+            end
+            
+        end 
+
+    end   
+
+    for name, enabled in pairs(kBothAlienAndMarine) do
+        
+        if enabled then
+            Script.Load("lua/" .. name .. ".lua")
+        end
+        
+    end
+    
+    for class, uiScripts in pairs(kShowAsClass) do
+
+        for name, enabled in pairs(uiScripts) do
+            
+            if enabled then
+                Script.Load("lua/" .. name .. ".lua")
+            end
+            
+        end
+    
+    end
+
+end

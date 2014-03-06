@@ -37,6 +37,10 @@ function StructureAbility:GetIsPositionValid(displayOrigin, player, normal, last
     return validBuild, coords
 end
 
+function StructureAbility:AllowBackfacing()
+    return false
+end
+
 function StructureAbility:GetDropRange()
     return kGorgeCreateDistance
 end

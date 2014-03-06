@@ -41,6 +41,8 @@ local kRangeFinderDistance = 20
 local kCtDownLength = kCountDownLength
 local kLowHealthWarning = 0.35
 local kLowHealthPulseSpeed = 10
+local kTechTree = TechTree()
+kTechTree:Initialize() 
 
 // These screen effects are only used on the local player so create them statically.
 local screenEffects = { }
@@ -122,6 +124,23 @@ function PlayerUI_GetIsDead()
     end
     
     return isDead
+    
+end
+
+local timeWaveSpawnEnds = 0
+local function OnSetTimeWaveSpawnEnds(message)
+    timeWaveSpawnEnds = message.time
+end
+
+Client.HookNetworkMessage("SetTimeWaveSpawnEnds", OnSetTimeWaveSpawnEnds)
+
+function PlayerUI_GetWaveSpawnTime()
+
+    if timeWaveSpawnEnds > 0 then
+        return timeWaveSpawnEnds - Shared.GetTime()
+    end
+    
+    return 0
     
 end
 
@@ -446,6 +465,11 @@ function PlayerUI_GetUnitStatusInfo()
                         hasWelder = unit:GetHasWelder(player)
                     end
                     
+                    local abilityFraction = 0
+                    if player:isa("Commander") then        
+                        abilityFraction = unit:GetAbilityFraction()
+                    end
+                    
                     local unitState = {
                         
                         Position = origin,
@@ -463,7 +487,9 @@ function PlayerUI_GetUnitStatusInfo()
                         ForceName = unit:isa("Player") and not GetAreEnemies(player, unit),
                         BadgeTextures = badgeTextures,
                         HasWelder = hasWelder,
-                        IsPlayer = unit:isa("Player")
+                        IsPlayer = unit:isa("Player"),
+                        IsSteamFriend = unit:isa("Player") and unit:GetIsSteamFriend() or false,
+                        AbilityFraction = abilityFraction
                     
                     }
                     
@@ -915,7 +941,8 @@ end
 
 function PlayerUI_GetTooltipDataFromTechId(techId, hotkeyIndex)
 
-    local techTree = GetTechTree()
+    local player = Client.GetLocalPlayer()
+    local techTree = player:GetTechTree()
 
     if techTree then
     
@@ -1412,7 +1439,14 @@ function Player:GetName(forEntity)
     // There are cases where the player name will be nil such as right before
     // this Player is destroyed on the Client (due to the scoreboard removal message
     // being received on the Client before the entity removed message). Play it safe.
-    return Scoreboard_GetPlayerData(self:GetClientIndex(), "Name") or "No Name"
+    
+    local clientIndex = self:GetClientIndex()
+    
+    if self.isHallucination then
+        clientIndex = self:GetHallucinatedClientIndex()
+    end
+    
+    return Scoreboard_GetPlayerData(clientIndex, "Name") or "No Name"
     
 end
 
@@ -1601,7 +1635,7 @@ function Player:SendKeyEvent(key, down)
         
     end
     
-    if not ChatUI_EnteringChatMessage() then
+    if not ChatUI_EnteringChatMessage() and not MainMenu_GetIsOpened() then
     
         if GetIsBinding(key, "RequestHealth") then
             self.timeOfLastHealRequest = Shared.GetTime()
@@ -1613,6 +1647,11 @@ function Player:SendKeyEvent(key, down)
         if GetIsBinding(key, "ShowMapCom") and self:isa("Commander") then
             self:OnShowMap(down)
         end
+
+        if GetIsBinding(key, "LastUpgrades") then
+			Shared.ConsoleCommand("evolvelastupgrades")	
+		end
+		
         if down then
         
             if GetIsBinding(key, "ReadyRoom") then
@@ -1840,7 +1879,7 @@ end
 
 function UpdateMovementMode()
 
-    if Client and Client.GetLocalPlayer() and Client.GetLocalPlayer().forwardModifier ~= Client.GetOptionBoolean("AdvancedMovement", false) then
+    if Client and Client.GetLocalPlayer() and Client.GetLocalPlayer().movementmode ~= Client.GetOptionBoolean("AdvancedMovement", false) then
         Client.SendNetworkMessage("MovementMode", {movement = Client.GetOptionBoolean("AdvancedMovement", false)}, true)
     end
 
@@ -2489,46 +2528,19 @@ function PlayerUI_GetRecentNotification()
     return notification
 end
 
-local kGrenades =
-{
-    kTechId.HandGrenades,
-}
-
 function PlayerUI_GetIsTechMapVisible()
-
-    local script = ClientUI.GetScript("GUITechMap")
-    return script ~= nil and script:GetIsVisible()
-
+    return false
 end
 
 function PlayerUI_GetHasItem(techId)
 
     local hasItem = false
-    local isaGrenade = table.contains(kGrenades, techId)
 
     if techId and techId ~= kTechId.None then
     
         local player = Client.GetLocalPlayer()
         if player then
-        
-            local items = GetChildEntities(player, "ScriptActor")
-
-            for index, item in ipairs(items) do
-            
-                if item:GetTechId() == techId then
-                
-                    hasItem = true
-                    break
-                    
-                elseif isaGrenade and table.contains(kGrenades, item:GetTechId()) then
-                
-                    hasItem = true
-                    break
-                
-                end
-
-            end
-        
+            return player:GetHasUpgrade(techId)       
         end
     
     end
@@ -2559,52 +2571,66 @@ end
 
 // returns true/false
 function PlayerUI_GetHasMotionTracking()
-    if Client.GetLocalPlayer().gameStarted then
-        local techTree = GetTechTree()
-        if techTree then
-            local mtracking = techTree:GetTechNode(kTechId.MotionTracking)
-            if mtracking and mtracking:GetResearched() then
-                return true
+
+    local player = Client.GetLocalPlayer()
+    if player.gameStarted then
+        if player:GetGameMode() == kGameMode.Classic then
+            local techTree = player:GetTechTree()
+            if techTree then
+                local mtracking = techTree:GetTechNode(kTechId.MotionTracking)
+                if mtracking and mtracking:GetResearched() then
+                    return true
+                end
+                return false
             end
-            return false
+        end
+        if player:GetGameMode() == kGameMode.Combat then
+            return player:GetHasUpgrade(kTechId.MotionTracking)
         end
     end
+    
 end
 
 // returns 0 - 3
 function PlayerUI_GetArmorLevel(researched)
     local armorLevel = 0
-    
-    if Client.GetLocalPlayer().gameStarted then
-    
-        local techTree = GetTechTree()
-    
-        if techTree then
+    local player = Client.GetLocalPlayer()
+    if player.gameStarted then
         
-            local armor3Node = techTree:GetTechNode(kTechId.Armor3)
-            local armor2Node = techTree:GetTechNode(kTechId.Armor2)
-            local armor1Node = techTree:GetTechNode(kTechId.Armor1)
-            
-            if researched then
+        armorLevel = player:GetArmorLevel()
         
-                if armor3Node and armor3Node:GetResearched() then
-                    armorLevel = 3
-                elseif armor2Node and armor2Node:GetResearched()  then
-                    armorLevel = 2
-                elseif armor1Node and armor1Node:GetResearched()  then
-                    armorLevel = 1
+        if player:GetGameMode() == kGameMode.Classic then
+        
+            local techTree = player:GetTechTree()
+        
+            if techTree then
+            
+                local armor3Node = techTree:GetTechNode(kTechId.Armor3)
+                local armor2Node = techTree:GetTechNode(kTechId.Armor2)
+                local armor1Node = techTree:GetTechNode(kTechId.Armor1)
+                
+                if researched then
+            
+                    if armor3Node and armor3Node:GetResearched() then
+                        armorLevel = 3
+                    elseif armor2Node and armor2Node:GetResearched()  then
+                        armorLevel = 2
+                    elseif armor1Node and armor1Node:GetResearched()  then
+                        armorLevel = 1
+                    end
+                
+                else
+                
+                    if armor3Node and armor3Node:GetHasTech() then
+                        armorLevel = 3
+                    elseif armor2Node and armor2Node:GetHasTech()  then
+                        armorLevel = 2
+                    elseif armor1Node and armor1Node:GetHasTech()  then
+                        armorLevel = 1
+                    end
+                
                 end
-            
-            else
-            
-                if armor3Node and armor3Node:GetHasTech() then
-                    armorLevel = 3
-                elseif armor2Node and armor2Node:GetHasTech()  then
-                    armorLevel = 2
-                elseif armor1Node and armor1Node:GetHasTech()  then
-                    armorLevel = 1
-                end
-            
+                
             end
             
         end
@@ -2616,41 +2642,47 @@ end
 
 function PlayerUI_GetWeaponLevel(researched)
     local weaponLevel = 0
+    local player = Client.GetLocalPlayer()
+    if player.gameStarted then
     
-    if Client.GetLocalPlayer().gameStarted then
+        weaponLevel = player:GetWeaponLevel()
+        
+        if player:GetGameMode() == kGameMode.Classic then
     
-        local techTree = GetTechTree()
-    
-        if techTree then
+            local techTree = player:GetTechTree()
         
-            local weapon3Node = techTree:GetTechNode(kTechId.Weapons3)
-            local weapon2Node = techTree:GetTechNode(kTechId.Weapons2)
-            local weapon1Node = techTree:GetTechNode(kTechId.Weapons1)
-        
-            if researched then
-        
-                if weapon3Node and weapon3Node:GetResearched() then
-                    weaponLevel = 3
-                elseif weapon2Node and weapon2Node:GetResearched()  then
-                    weaponLevel = 2
-                elseif weapon1Node and weapon1Node:GetResearched()  then
-                    weaponLevel = 1
-                end
+            if techTree then
             
-            else
+                local weapon3Node = techTree:GetTechNode(kTechId.Weapons3)
+                local weapon2Node = techTree:GetTechNode(kTechId.Weapons2)
+                local weapon1Node = techTree:GetTechNode(kTechId.Weapons1)
             
-                if weapon3Node and weapon3Node:GetHasTech() then
-                    weaponLevel = 3
-                elseif weapon2Node and weapon2Node:GetHasTech()  then
-                    weaponLevel = 2
-                elseif weapon1Node and weapon1Node:GetHasTech()  then
-                    weaponLevel = 1
+                if researched then
+            
+                    if weapon3Node and weapon3Node:GetResearched() then
+                        weaponLevel = 3
+                    elseif weapon2Node and weapon2Node:GetResearched()  then
+                        weaponLevel = 2
+                    elseif weapon1Node and weapon1Node:GetResearched()  then
+                        weaponLevel = 1
+                    end
+                
+                else
+                
+                    if weapon3Node and weapon3Node:GetHasTech() then
+                        weaponLevel = 3
+                    elseif weapon2Node and weapon2Node:GetHasTech()  then
+                        weaponLevel = 2
+                    elseif weapon1Node and weapon1Node:GetHasTech()  then
+                        weaponLevel = 1
+                    end
+                    
                 end
                 
-            end
+            end  
             
-        end  
-    
+        end
+        
     end
     
     return weaponLevel
@@ -2671,14 +2703,31 @@ end
 function PlayerUI_GetLocationName()
 
     local locationName = ""
-    
+
     local player = Client.GetLocalPlayer()
+
+    playerLocation = GetLocationForPoint(player:GetOrigin())
+
     if player ~= nil and player:GetIsPlaying() then
-        locationName = player:GetLocationName()
+
+        if playerLocation ~= nil then
+
+            locationName = playerLocation.name
+
+        elseif playerLocation == nil and locationName ~= nil then
+
+            locationName = player:GetLocationName()
+
+        elseif locationName == nil then
+
+            locationName = ""
+
+        end
+
     end
-    
+
     return locationName
-    
+
 end
 
 function PlayerUI_GetOrigin()
@@ -3064,6 +3113,10 @@ end
  */
 local kMinimapBlipTeamAlien = kMinimapBlipTeam.Alien
 local kMinimapBlipTeamMarine = kMinimapBlipTeam.Marine
+local kMinimapBlipTeamFriendAlien = kMinimapBlipTeam.FriendAlien
+local kMinimapBlipTeamFriendMarine = kMinimapBlipTeam.FriendMarine
+local kMinimapBlipTeamInactiveAlien = kMinimapBlipTeam.InactiveAlien
+local kMinimapBlipTeamInactiveMarine = kMinimapBlipTeam.InactiveMarine
 local kMinimapBlipTeamFriendly = kMinimapBlipTeam.Friendly
 local kMinimapBlipTeamEnemy = kMinimapBlipTeam.Enemy
 local kMinimapBlipTeamNeutral = kMinimapBlipTeam.Neutral
@@ -3089,22 +3142,55 @@ function PlayerUI_GetStaticMapBlips()
         local GetMapBlipRotation = MapBlip.GetRotation
         local GetMapBlipType = MapBlip.GetType
         local GetMapBlipIsInCombat = MapBlip.GetIsInCombat
+        local GetIsSteamFriend = Client.GetIsSteamFriend
+        local ClientIndexToSteamId = GetSteamIdForClientIndex
+        local GetIsMapBlipActive = MapBlip.GetIsActive
         
         for index = 0, mapBlipList:GetSize() - 1 do
         
             local blip = GetEntityAtIndex(mapBlipList, index)
             if blip ~= nil and blip.ownerEntityId ~= playerId then
-            
+      
                 local blipTeam = kMinimapBlipTeamNeutral
                 local blipTeamNumber = GetMapBlipTeamNumber(blip)
+                local isSteamFriend = false
                 
-                if blipTeamNumber == kMarineTeamType then
-                    blipTeam = kMinimapBlipTeamMarine
-                elseif blipTeamNumber== kAlienTeamType then
-                    blipTeam = kMinimapBlipTeamAlien
+                if blip.clientIndex and blip.clientIndex > 0 and blipTeamNumber ~= GetEnemyTeamNumber(playerTeam) then
+
+                    local steamId = ClientIndexToSteamId(blip.clientIndex)
+                    if steamId then
+                        isSteamFriend = false //GetIsSteamFriend(steamId)
+                    end
+                    
                 end
                 
-                local i = numBlips * 8
+                if not GetIsMapBlipActive(blip) then
+
+                    if blipTeamNumber == kMarineTeamType then
+                        blipTeam = kMinimapBlipTeamInactiveMarine
+                    elseif blipTeamNumber== kAlienTeamType then
+                        blipTeam = kMinimapBlipTeamInactiveAlien
+                    end
+
+                elseif isSteamFriend then
+                
+                    if blipTeamNumber == kMarineTeamType then
+                        blipTeam = kMinimapBlipTeamFriendMarine
+                    elseif blipTeamNumber== kAlienTeamType then
+                        blipTeam = kMinimapBlipTeamFriendAlien
+                    end
+                
+                else
+
+                    if blipTeamNumber == kMarineTeamType then
+                        blipTeam = kMinimapBlipTeamMarine
+                    elseif blipTeamNumber== kAlienTeamType then
+                        blipTeam = kMinimapBlipTeamAlien
+                    end
+                    
+                end  
+                
+                local i = numBlips * 10
                 local blipOrig = GetMapBlipOrigin(blip)
                 blipsData[i + 1] = blipOrig.x
                 blipsData[i + 2] = blipOrig.z
@@ -3114,6 +3200,8 @@ function PlayerUI_GetStaticMapBlips()
                 blipsData[i + 6] = GetMapBlipType(blip)
                 blipsData[i + 7] = blipTeam
                 blipsData[i + 8] = GetMapBlipIsInCombat(blip)
+                blipsData[i + 9] = isSteamFriend
+                blipsData[i + 10] = blip.isHallucination == true
                 
                 numBlips = numBlips + 1
                 
@@ -3125,7 +3213,7 @@ function PlayerUI_GetStaticMapBlips()
         
             local blipOrigin = blip:GetOrigin()
             
-            local i = numBlips * 8
+            local i = numBlips * 10
             
             blipsData[i + 1] = blipOrigin.x
             blipsData[i + 2] = blipOrigin.z
@@ -3135,6 +3223,8 @@ function PlayerUI_GetStaticMapBlips()
             blipsData[i + 6] = kMinimapBlipType.SensorBlip
             blipsData[i + 7] = kMinimapBlipTeamEnemy
             blipsData[i + 8] = false
+            blipsData[i + 9] = false
+            blipsData[i + 10] = false
             
             numBlips = numBlips + 1
             
@@ -3154,7 +3244,7 @@ function PlayerUI_GetStaticMapBlips()
                 blipType = kMinimapBlipType.AttackOrder
             end
             
-            local i = numBlips * 8
+            local i = numBlips * 10
             
             blipsData[i + 1] = blipOrigin.x
             blipsData[i + 2] = blipOrigin.z
@@ -3164,15 +3254,17 @@ function PlayerUI_GetStaticMapBlips()
             blipsData[i + 6] = blipType
             blipsData[i + 7] = kMinimapBlipTeamFriendly
             blipsData[i + 8] = false
+            blipsData[i + 9] = false
+            blipsData[i + 10] = false
             
             numBlips = numBlips + 1
             
         end
         
-        /*local highlightPos = GetHighlightPosition()
+        local highlightPos = GetHighlightPosition()
         if highlightPos then
 
-                local i = numBlips * 8
+                local i = numBlips * 10
 
                 blipsData[i + 1] = highlightPos.x
                 blipsData[i + 2] = highlightPos.z
@@ -3182,13 +3274,15 @@ function PlayerUI_GetStaticMapBlips()
                 blipsData[i + 6] = kMinimapBlipType.HighlightWorld
                 blipsData[i + 7] = kMinimapBlipTeam.Friendly
                 blipsData[i + 8] = false
+                blipsData[i + 9] = false
+                blipsData[i + 10] = false
                 
                 numBlips = numBlips + 1
             
-        end*/
+        end
         
     end
-    
+
     return blipsData
     
 end
@@ -3279,6 +3373,56 @@ function PlayerUI_GetShowGiveDamageIndicator()
     end
     
     return false, 0
+    
+end
+
+function PlayerUI_GetGameMode()
+
+    local player = Client.GetLocalPlayer()
+    if player then
+        return player:GetGameMode()
+    end
+    return kGameMode.Classic
+    
+end
+
+function PlayerUI_GetCurrentLevel()
+
+    local player = Client.GetLocalPlayer()
+    if player then
+        return player:GetPlayerLevel()
+    end
+    return 1
+    
+end
+
+function PlayerUI_GetCurrentXP()
+
+    local player = Client.GetLocalPlayer()
+    if player then
+        return player:GetPlayerExperience()
+    end
+    return 1
+    
+end
+
+function PlayerUI_GetNextLevelXP()
+
+    local player = Client.GetLocalPlayer()
+    if player then
+        return CalculateLevelXP(player:GetPlayerLevel() + 1)
+    end
+    return 1
+    
+end
+
+function PlayerUI_GetCurrentLevelBaseXP()
+
+    local player = Client.GetLocalPlayer()
+    if player then
+        return CalculateLevelXP(player:GetPlayerLevel())
+    end
+    return 1
     
 end
 
@@ -3501,6 +3645,10 @@ function Player:OnUpdatePlayer(deltaTime)
     
     self:UpdateCommunicationStatus()
     
+    if self.isHallucination then
+        self:DestroyController()
+    end    
+    
 end
 
 // The client is authoritative over our rookie state. It could be changed because
@@ -3665,4 +3813,12 @@ end
 
 function Player:GetShowAtmosphericLight()
     return true
+end
+
+function Player:GetTechTree()   
+    return kTechTree
+end
+
+function Player:ClearTechTree()
+    kTechTree:Initialize()    
 end

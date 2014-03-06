@@ -5,6 +5,7 @@ Script.Load("lua/Table.lua")
 Script.Load("lua/BindingsDialog.lua")
 Script.Load("lua/NS2Utility.lua")
 Script.Load("lua/SabotCoreClient.lua")
+Script.Load("lua/PrecacheList.lua")
 
 local kModeText =
 {
@@ -466,6 +467,9 @@ function OnLoadComplete(main)
         // Translate string to account for findings
         tipNextHint:SetText(" " .. SubstituteBindStrings(Locale.ResolveString("LOADING_TIP_NEXT")) .. " " )
         
+        if Client.GetOptionBoolean("precacheExtra", false) == true then
+			PrecacheFileList()
+		end
     end
     
     // Create a box to show the mods that the server is running

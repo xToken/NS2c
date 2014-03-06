@@ -161,7 +161,7 @@ function Exo:GetVariantModel()
     return modelName
 end
 
-function Exo:GetPlayerControllersGroup()
+function Exo:GetControllerPhysicsGroup()
     return PhysicsGroup.BigPlayerControllersGroup
 end
 
@@ -242,17 +242,7 @@ end
 function Exo:GetArmorAmount(armorLevels)
 
     if not armorLevels then
-    
-        armorLevels = 0
-    
-        if GetHasTech(self, kTechId.Armor3, true) then
-            armorLevels = 3
-        elseif GetHasTech(self, kTechId.Armor2, true) then
-            armorLevels = 2
-        elseif GetHasTech(self, kTechId.Armor1, true) then
-            armorLevels = 1
-        end
-    
+        armorLevels = self:GetArmorLevel()
     end
     
     return kExosuitArmor + armorLevels * kExosuitArmorPerUpgradeLevel

@@ -72,19 +72,19 @@ function EnergyMixin:GetEnergyFraction()
     return self:GetEnergy() / self:GetMaxEnergy()
 end
 
-local function GetEnergyUpdateRate(self)
+local function GetEnergyRegenRate(self)
 
     if self.OverrideGetEnergyUpdateRate then
         return self:OverrideGetEnergyUpdateRate()
     end
     
-    return kEnergyUpdateRate
+    return kEnergyRegenRate
     
 end
 
 function EnergyMixin:Update()
     if GetGamerules():GetGameStarted() and self:GetCanUpdateEnergy() then      
-        self:AddEnergy(GetEnergyUpdateRate(self))
+        self:AddEnergy(GetEnergyRegenRate(self))
     end
     return self:GetIsAlive()
 end

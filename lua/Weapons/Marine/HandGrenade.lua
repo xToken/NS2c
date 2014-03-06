@@ -16,6 +16,7 @@ HandGrenade.kModelName = PrecacheAsset("models/marine/grenades/gr_cluster_world.
 HandGrenade.kDisableCollisionRange = 10
 HandGrenade.kClearOnImpact = false
 HandGrenade.kClearOnEnemyImpact = true
+HandGrenade.kRadius = 0.1
 
 local kGrenadeCameraShakeDistance = 15
 local kGrenadeMinShakeIntensity = 0.01

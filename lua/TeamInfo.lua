@@ -28,8 +28,8 @@ kMaxTotalPersonalResources = 100000
 
 local networkVars =
 {
-    teamResources =  "float (0 to " .. kMaxResources .. " by 0.1 [ 4 ])",
-    totalTeamResources = "float (0 to " .. kMaxTotalTeamResources .. " by 1 [ 1 ])",
+    teamResources =  "float (0 to " .. kMaxTeamResources .. " by 1)",
+    totalTeamResources = "float (0 to " .. kMaxTotalTeamResources .. " by 1)",
     personalResources = "float (0 to " .. kMaxTotalPersonalResources .. " by 0.1) [ 4 ]",
     numResourceTowers = "integer (0 to 99)",
     numCapturedResPoints = "integer (0 to 99)",
@@ -183,7 +183,7 @@ local function UpdateInfo(self)
     if self.team then
     
         self:SetTeamNumber(self.team:GetTeamNumber())
-        self.teamResources = self.team:GetTeamResources()
+        self.teamResources = Clamp(self.team:GetTeamResources() or 0, 0, kMaxTeamResources)
         self.playerCount = Clamp(self.team:GetNumPlayers(), 0, 31)
         self.totalTeamResources = self.team:GetTotalTeamResources()
         self.personalResources = 0

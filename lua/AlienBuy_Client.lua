@@ -11,7 +11,6 @@
 //Removed concept of hypermutation, added classic techids and data
 
 Script.Load("lua/InterfaceSounds_Client.lua")
-Script.Load("lua/AlienUpgrades_Client.lua")
 Script.Load("lua/Skulk.lua")
 Script.Load("lua/Gorge.lua")
 Script.Load("lua/Lerk.lua")
@@ -73,298 +72,65 @@ function AlienBuy_GetClassStats(idx)
     local techId = IndexToAlienTechId(idx)
     
     if techId == kTechId.Fade then
-        return {"Fade", kFadeHealth, kFadeArmor, kFadeCost}
+        return {"Fade", kFadeHealth, kFadeArmor, LookupTechData(techId, kTechDataCostKey, 0)}
     elseif techId == kTechId.Gorge then
-        return {"Gorge", kGorgeHealth, kGorgeArmor, kGorgeCost}
+        return {"Gorge", kGorgeHealth, kGorgeArmor, LookupTechData(techId, kTechDataCostKey, 0)}
     elseif techId == kTechId.Lerk then
-        return {"Lerk", kLerkHealth, kLerkArmor, kLerkCost}
+        return {"Lerk", kLerkHealth, kLerkArmor, LookupTechData(techId, kTechDataCostKey, 0)}
     elseif techId == kTechId.Onos then
-        return {"Onos", kOnosHealth, kOnosArmor, kOnosCost}
+        return {"Onos", kOnosHealth, kOnosArmor, LookupTechData(techId, kTechDataCostKey, 0)}
     else
-        return {"Skulk", kSkulkHealth, kSkulkArmor, kSkulkCost}
+        return {"Skulk", kSkulkHealth, kSkulkArmor, LookupTechData(techId, kTechDataCostKey, 0)}
     end   
     
 end
 
-// iconx, icony, name, tooltip, research, cost
-function GetUnpurchasedUpgradeInfoArray(techIdTable)
-
-    local t = {}
-    
-    local player = Client.GetLocalPlayer()
-    
-    if player then
-    
-        for index, techId in ipairs(techIdTable) do
-        
-            if not player:GetIsUpgradeForbidden(techId) then
-        
-                local iconX, iconY = GetMaterialXYOffset(techId, false)
-                
-                if iconX and iconY then
-
-                    local techTree = GetTechTree(player:GetTeamNumber())
-                
-                    table.insert(t, iconX)
-                    table.insert(t, iconY)                    
-                    table.insert(t, GetDisplayNameForTechId(techId, string.format("<name not found - %s>", EnumToString(kTechId, techId))))                    
-                    table.insert(t, GetTooltipInfoText(techId))                 
-                    table.insert(t, GetTechTree():GetResearchProgressForNode(techId))
-                    table.insert(t, LookupTechData(techId, kTechDataCostKey, 0))
-                    table.insert(t, techId)
-                    if techTree then
-                        table.insert(t, techTree:GetIsTechAvailable(techId))
-                    else
-                        table.insert(t, false)
-                    end
-                end
-            
-            end
-            
-        end
-    
-    end
-    
-    return t
-    
-end
-
-function AlienBuy_GetTechAvailable(techId)
-
-    local techNode = GetTechTree():GetTechNode(techId)
-    
-    if techNode ~= nil then
-        return techNode:GetAvailable(Client.GetLocalPlayer(), techId, false)
-    end
-    
-    return true
-
-end
-
-function AlienBuy_GetHasTech(techId)
-    return GetHasTech(Client.GetLocalPlayer(), techId)
-end
-
 function AlienBuy_GetIsUpgradeAllowed(techId, upgradeList)
-
-    local player = Client.GetLocalPlayer()
-    return GetIsUpgradeAllowed(player, techId, upgradeList)
-
+    return GetIsAlienUpgradeAllowed(Client.GetLocalPlayer(), techId, upgradeList)
 end
 
-function AlienBuy_GetUpgradePurchased(techId)
+function AlienBuy_GetPersonalUpgrades()
 
+    local upgrades = {}
     local player = Client.GetLocalPlayer()
-    if player then
-        return player:GetHasUpgrade(techId)
+    local techTree = player:GetTechTree()
+    
+    if techTree then
+    
+        for _, upgradeId in ipairs(techTree:GetAddOnsForTechId(kTechId.AllAliens)) do
+            table.insert(upgrades, {TechId = upgradeId, Category = GetChamberTypeForUpgrade(upgradeId)})
+        end
+    
     end
+    
+    return upgrades
 
 end
 
-function GetPurchaseableTechIds(techId)
+function AlienBuy_GetUpgradesForChamber(category)
 
-    // Get list of potential upgrades for lifeform. These are tech nodes with
-    // "addOnTechId" set to this tech id.
-    local addOnUpgrades = {}
-    
+    local upgrades = {}
     local player = Client.GetLocalPlayer()
-    local techTree = GetTechTree()
+    local techTree = player:GetTechTree()
     
-    if techTree ~= nil then
-    
-        // Use upgrades for our lifeform, plus global upgrades 
-        addOnUpgrades = techTree:GetAddOnsForTechId(techId)
-        
-        table.copy(techTree:GetAddOnsForTechId(kTechId.AllAliens), addOnUpgrades, true)        
-        
-        // If we've already purchased it, or if it's not available, remove it. Iterate through a different
-        // table as we'll be changing it as we go.
-        local addOnCopy = {}
-        table.copy(addOnUpgrades, addOnCopy)
-
-        for key, value in pairs(addOnCopy) do
-        
-            local techNode = techTree:GetTechNode(value)
-            local canPurchase = (techNode and techNode:GetIsBuy() and techNode:GetAvailable())
+    if techTree then
+        if player:GetGameMode() == kGameMode.Classic then
+            for _, upgradeId in ipairs(techTree:GetAddOnsForTechId(kTechId.AllAliens)) do
             
-            if not canPurchase then
-            
-                table.removevalue(addOnUpgrades, value)
+                if GetChamberTypeForUpgrade(upgradeId) == category then        
+                    table.insert(upgrades, upgradeId)
+                end
                 
             end
-            
-        end
-        
-    end
-    
-    return addOnUpgrades
-    
-end
-
-function GetUnpurchasedTechIds(techId)
-
-    // Get list of potential upgrades for lifeform. These are tech nodes with
-    // "addOnTechId" set to this tech id.
-    local addOnUpgrades = {}
-    
-    local player = Client.GetLocalPlayer()
-    local techTree = GetTechTree()
-    
-    if techTree ~= nil then
-    
-        // Use upgrades for our lifeform, plus global upgrades 
-        addOnUpgrades = techTree:GetAddOnsForTechId(techId)
-        
-        table.copy(techTree:GetAddOnsForTechId(kTechId.AllAliens), addOnUpgrades, true)        
-        
-        // If we've already purchased it, or if it's not available, remove it. Iterate through a different
-        // table as we'll be changing it as we go.
-        local addOnCopy = {}
-        table.copy(addOnUpgrades, addOnCopy)
-
-        for key, value in pairs(addOnCopy) do
-        
-            local hasTech = player:GetHasUpgrade(value)
-            local techNode = techTree:GetTechNode(value)
-            local canPurchase = (techNode and techNode:GetIsBuy() and techNode:GetAvailable())
-            
-            if hasTech or not canPurchase then
-            
-                table.removevalue(addOnUpgrades, value)
-                
-            end
-            
-        end
-        
-    end
-    
-    return addOnUpgrades
-    
-end
-
-/**
- * Return 1-d array of all unpurchased upgrades for this class index
- * Format is x icon offset, y icon offset, name, tooltip,
- * research pct [0.0 - 1.0], and cost
- */
-function AlienBuy_GetUnpurchasedUpgrades(idx)
-    if idx == nil then
-        Print("AlienBuy_GetUnpurchasedUpgrades(nil) called")
-        return {}
-    end
-    
-    return GetUnpurchasedUpgradeInfoArray(GetUnpurchasedTechIds(IndexToAlienTechId(idx)))   
-end
-
-function GetPurchasedUpgradeInfoArray(techIdTable)
-
-    local t = {}
-    
-    local player = Client.GetLocalPlayer()
-    
-    for index, techId in ipairs(techIdTable) do
-
-        local iconX, iconY = GetMaterialXYOffset(techId, false)
-        if iconX and iconY then
-
-            local techTree = GetTechTree(player:GetTeamNumber())
-        
-            table.insert(t, iconX)
-            table.insert(t, iconY)
-            table.insert(t, GetDisplayNameForTechId(techId, string.format("<not found - %s>", EnumToString(kTechId, techId))))
-            table.insert(t, GetTooltipInfoText(techId))
-            table.insert(t, techId)
-            table.insert(t, GetIsTechAvailable(player:GetTeamNumber(), techId))
-
-            if techTree then
-                table.insert(t, techTree:GetIsTechAvailable(techId))
-            else
-                table.insert(t, false)
-            end
-            
         else
-        
-            Print("GetPurchasedUpgradeInfoArray():GetAlienUpgradeIconXY(%s): Couldn't find upgrade icon.", ToString(techId))
-            
+            //Combat tracks the category as the actual upgrade, since each upgrade has its own slot
+            table.insert(upgrades, category)
         end
+       
     end
     
-    return t
-    
-end
+    return upgrades
 
-/**
- * Filter out tech Ids that don't apply to this specific Alien or all Aliens.
- */
-local function FilterInvalidUpgradesForPlayer(player, forAlienTechId)
-
-    local techIdTable = player:GetUpgrades()
-    local techTree = GetTechTree()
-    // We can't check if there is no tech tree, assume everything is ok.
-    if not techTree then
-        return techIdTable
-    end
-    
-    local validAddons = techTree:GetAddOnsForTechId(forAlienTechId)
-    table.copy(techTree:GetAddOnsForTechId(kTechId.AllAliens), validAddons, true)  
-
-    local validIds = { }
-    for index, upgradeTechId in ipairs(techIdTable) do
-    
-        if table.contains(validAddons, upgradeTechId) then
-            table.insert(validIds, upgradeTechId)
-        end
-    
-    end
-    
-    return validIds
-
-end
-
-/**
- * Return 1-d array of all purchased upgrades for this class index
- * Format is x icon offset, y icon offset, and name
- */
-function AlienBuy_GetPurchasedUpgrades(idx)
-
-    local player = Client.GetLocalPlayer()
-    return GetPurchasedUpgradeInfoArray(FilterInvalidUpgradesForPlayer(player, IndexToAlienTechId(idx)))
-    
-end
-
-local function PurchaseTechs(purchaseIds)
-
-    assert(purchaseIds)
-    assert(table.count(purchaseIds) > 0)
-    
-    local player = Client.GetLocalPlayer()
-    
-    local validPurchaseIds = { }
-    
-    for i = 1, #purchaseIds do
-    
-        local purchaseId = purchaseIds[i]
-        local techNode = GetTechTree():GetTechNode(purchaseId)
-        
-        if techNode ~= nil then
-        
-            if techNode:GetAvailable() then
-                table.insert(validPurchaseIds, purchaseId)
-            end
-            
-        else
-        
-            Shared.Message("PurchaseTechs(): Couldn't find tech node " .. purchaseId)
-            return
-            
-        end
-        
-    end
-    
-    if #validPurchaseIds > 0 then
-        Client.SendNetworkMessage("Buy", BuildBuyMessage(validPurchaseIds), true)
-    end
-    
 end
 
 /**
@@ -389,70 +155,16 @@ function AlienBuy_Purchase(purchaseTable)
     
     end
     
-    PurchaseTechs(purchaseTechIds)
+    //Second part validation for the client?  Buy menu might as well be assumed to be valid, will get validatied by server in the end anyways so just wasting time.
+    if #purchaseTechIds > 0 then
+        Client.SendNetworkMessage("Buy", BuildBuyMessage(purchaseTechIds), true)
+    end
 
 end
 
-function GetAlienTechNode(idx, isAlienIndex)
-
-    local techNode = nil
-    
-    local techId = idx
-    
-    if isAlienIndex then
-        techId = IndexToAlienTechId(idx)
-    end
-    
-    local techTree = GetTechTree()
-    
-    if techTree ~= nil then
-        techNode = techTree:GetTechNode(techId)
-    end
-    
-    return techNode
-    
-end
-
-/**
- * Return true if alien type is researched, false otherwise
- */
-function AlienBuy_IsAlienResearched(alienType)
-    local techNode = GetAlienTechNode(alienType, true)
-    return (techNode ~= nil) and techNode:GetAvailable()    
-end
-
-/**
- * Return the research progress (0-1) of the passed in alien type.
- * Returns 0 if the passed in alien type didn't have a tech node.
- */
-function AlienBuy_GetAlienResearchProgress(alienType)
-
-    local techNode = GetAlienTechNode(alienType, true)
-    if techNode then
-        return techNode:GetPrereqResearchProgress()
-    end
-    return 0
-    
-end
-
-/**
- * Return cost for the base alien type
- */
-function AlienBuy_GetAlienCost(alienType)
-
-    local cost = nil
-    
-    local techNode = GetAlienTechNode(alienType, true)
-    if techNode ~= nil then
-        cost = techNode:GetCost()
-    end
-    
-    if cost == nil then
-        cost = 0
-    end
-    
-    return cost
-    
+function AlienBuy_GetAlienCost(index)
+    local techId = IndexToAlienTechId(index)
+    return BuyMenus_GetUpgradeCost(techId)
 end
 
 /**

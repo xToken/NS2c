@@ -14,6 +14,10 @@ kCommanderGUIsGlobalScale = 0.75
 
 kTransparentTexture = "ui/transparent.dds"
 
+kYellow = Color(1, 1, 0)
+kGreen = Color(0, 1, 0)
+kRed = Color(1, 0 ,0)
+
 local kScreenScaleAspect = 1280
 
 local function ScreenSmallAspect()

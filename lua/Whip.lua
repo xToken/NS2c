@@ -93,6 +93,7 @@ function Whip:OnCreate()
         InitMixin(self, CommanderGlowMixin)    
     end
     
+	self:SetUpdates(false)
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
@@ -105,7 +106,6 @@ function Whip:OnInitialized()
 
     self:SetModel(Whip.kModelName, Whip.kAnimationGraph)
     InitMixin(self, InfestationMixin)
-    self:SetUpdates(true)
     
     if Server then
         
@@ -128,22 +128,6 @@ end
 function Whip:GetDamagedAlertId()
     return kTechId.AlienAlertStructureUnderAttack
 end
-
-function Whip:GetMaxRadius()
-    return kInfestationRadius
-end
-
-function Whip:GetGrowthRate()
-    return kInfestationGrowthRate
-end
-
-function Whip:GetMinRadius()
-    return kMinInfestationRadius
-end
-
-function Whip:GetInfestationDensity()
-    return kInfestationBlobDensity
-end 
 
 function Whip:GetCanSleep()
     return true

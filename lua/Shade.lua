@@ -26,7 +26,6 @@
 
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
-Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
@@ -71,7 +70,6 @@ local networkVars = { }
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
-AddMixinNetworkVars(UpgradableMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
@@ -94,7 +92,6 @@ function Shade:OnCreate()
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ClientModelMixin)
     InitMixin(self, LiveMixin)
-    InitMixin(self, UpgradableMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
@@ -113,12 +110,12 @@ function Shade:OnCreate()
     InitMixin(self, UmbraMixin)
     
     if Server then
-    
         //InitMixin(self, TriggerMixin, {kPhysicsGroup = PhysicsGroup.TriggerGroup, kFilterMask = PhysicsMask.AllButTriggers} )    
     elseif Client then
         InitMixin(self, CommanderGlowMixin)            
     end
     
+    self:SetUpdates(false)
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
@@ -161,22 +158,6 @@ end
 
 function Shade:GetShowOrderLine()
     return true
-end
-
-function Shade:GetMaxRadius()
-    return kInfestationRadius
-end
-
-function Shade:GetGrowthRate()
-    return kInfestationGrowthRate
-end
-
-function Shade:GetMinRadius()
-    return kMinInfestationRadius
-end
-
-function Shade:GetInfestationDensity()
-    return kInfestationBlobDensity
 end
 
 function Shade:GetDamagedAlertId()

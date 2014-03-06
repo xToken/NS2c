@@ -11,63 +11,6 @@
 Script.Load("lua/GUIUtility.lua")
 
 kAlienTechMapYStart = 1
-local function CheckHasTech(techId)
-
-    local techTree = GetTechTree()
-    return techTree ~= nil and techTree:GetHasTech(techId)
-
-end
-
-local function SetShellIcon(icon)
-
-    if CheckHasTech(kTechId.ThreeShells) then
-        icon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.ThreeShells)))
-    elseif CheckHasTech(kTechId.TwoShells) then
-        icon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.TwoShells)))
-    else
-        icon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.Shell)))
-    end    
-
-end
-
-local function SetVeilIcon(icon)
-
-    if CheckHasTech(kTechId.ThreeVeils) then
-        icon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.ThreeVeils)))
-    elseif CheckHasTech(kTechId.TwoVeils) then
-        icon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.TwoVeils)))
-    else
-        icon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.Veil)))
-    end
-    
-end
-
-local function SetSpurIcon(icon)    
-
-    if CheckHasTech(kTechId.ThreeSpurs) then
-        icon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.ThreeSpurs)))
-    elseif CheckHasTech(kTechId.TwoSpurs) then
-        icon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.TwoSpurs)))
-    else
-        icon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(kTechId.Spur)))
-    end 
-
-end
-
-local function UpdateBioMassText(icon, techId, text)
-
-    if text then
-        
-        local player = Client.GetLocalPlayer()
-        local teamNum = player and player:GetTeamNumber() or 0
-        local teamInfo = GetTeamInfoEntity(teamNum)
-        local bioMass = (teamInfo and teamInfo.GetBioMassLevel) and teamInfo:GetBioMassLevel() or 0
-        
-        text:SetText(ToString(bioMass))        
-        
-    end
-
-end
 
 kAlienTechMap =
 {

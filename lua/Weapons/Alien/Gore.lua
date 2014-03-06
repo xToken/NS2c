@@ -72,6 +72,10 @@ function Gore:GetMeleeBase()
     return kGoreMeleeBaseWidth, kGoreMeleeBaseHeight
 end
 
+function Gore:GetKnockbackForce()
+    return kGoreKnockbackForce
+end
+
 function Gore:OnTag(tagName)
 
     PROFILE("Gore:OnTag")
@@ -82,7 +86,6 @@ function Gore:OnTag(tagName)
         if player then
         
             self.lastPrimaryAttackTime = Shared.GetTime()
-            //local didHit, impactPoint, target = self:Attack(player)
             local didHit, target, endPoint = AttackMeleeCapsule(self, player, kGoreDamage, self:GetRange(), nil, false, EntityFilterOneAndIsa(player, "Babbler"))
             self.lastPrimaryAttackTime = Shared.GetTime()
             self:TriggerEffects("gore_attack")

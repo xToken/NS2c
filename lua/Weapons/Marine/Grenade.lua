@@ -17,8 +17,8 @@ class 'Grenade' (PredictedProjectile)
 Grenade.kMapName = "grenade"
 Grenade.kModelName = PrecacheAsset("models/marine/rifle/rifle_grenade.model")
 
-Grenade.kRadius = 0.17
-Grenade.kMinLifeTime = 0.15
+Grenade.kRadius = 0.1
+Grenade.kMinLifeTime = 0.0
 Grenade.kClearOnImpact = false
 Grenade.kClearOnEnemyImpact = true
 

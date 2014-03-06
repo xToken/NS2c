@@ -1,29 +1,9 @@
 //Dragon
-// This file now only exists to support multiple gamerules
 
 Script.Load("lua/Gamerules.lua")
 Script.Load("lua/dkjson.lua")
 Script.Load("lua/ServerSponitor.lua")
 Script.Load("lua/PlayerRanking.lua")
-
-local mapMode
-
-function CheckNS2GameMode()
-    if mapMode == nil then
-        if Shared.GetMapName():find("co_") then
-            mapMode = kGameMode.Combat
-        else
-            mapMode = kGameMode.Classic
-        end
-    end
-    return mapMode
-end
-
-//Replacing this for better efficiency, but dont feel like replacing entire gamerules file.
-function Gamerules:OnClientDisconnect(client)
-    // Tell all other clients that the player has disconnected
-    Server.SendNetworkMessage("ClientDisconnect", { clientIndex = client:GetId() }, true)
-end
 
 if Client then
     Script.Load("lua/NS2ConsoleCommands_Client.lua")
@@ -285,9 +265,6 @@ if Server then
                         entity.sendTechTreeBase = true           
                         
                     end
-                   
-                    // Send scoreboard changes to everyone    
-                    entity:SetScoreboardChanged(true)
                 
                 end
                 
@@ -426,7 +403,7 @@ if Server then
             // at the start of the next game, including the NS2Gamerules. This is how a map transition would have to work anyway.
             // Do not destroy any entity that has a parent. The entity will be destroyed when the parent is destroyed or
             // when the owner manually destroyes the entity.
-            local shieldTypes = { "GameInfo", "MapBlip", "NS2Gamerules" }
+            local shieldTypes = { "GameInfo", "MapBlip", "NS2Gamerules", "PlayerInfoEntity" }
             local allowDestruction = true
             for i = 1, #shieldTypes do
                 allowDestruction = allowDestruction and not entity:isa(shieldTypes[i])
@@ -463,7 +440,7 @@ if Server then
         end
         
         local resourcePoints = Shared.GetEntitiesWithClassname("ResourcePoint")
-        if resourcePoints:GetSize() < 2 then
+        if resourcePoints:GetSize() < 2 and GetServerGameMode() == kGameMode.Classic then
             Print("Warning -- Found only %d %s entities.", resourcePoints:GetSize(), ResourcePoint.kPointMapName)
         end
         
@@ -542,17 +519,17 @@ if Server then
         // Create living map entities fresh
         CreateLiveMapEntities()
         
+        ClearCombatPlayersUpgradeTables()
         self.forceGameStart = false
         self.losingTeam = nil
         self.preventGameEnd = nil
+        self.sentCombatGameStartMessage = false
+        self.sentCombat5MinuteWarning = false
+        self.sentCombat1MinuteWarning = false
+        self.sentCombat30SecondWarning = false
+        self.sentCombatGameOver = false
         // Reset banned players for new game
         self.bannedPlayers = {}
-        
-        // Send scoreboard update, ignoring other scoreboard updates (clearscores resets everything)
-        for index, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
-            //Server.SendCommand(player, "onresetgame")
-            //player:SetScoreboardChanged(false)
-        end
         
         self.team1:OnResetComplete()
         self.team2:OnResetComplete()
@@ -588,79 +565,6 @@ if Server then
             self.initialHiveTechId = techId
         end
         
-    end
-    
-    function NS2Gamerules:UpdateScores()
-
-        if (self.timeToSendScores == nil or Shared.GetTime() > self.timeToSendScores) then
-        
-            local allPlayers = Shared.GetEntitiesWithClassname("Player")
-
-            // If any player scoreboard info has changed, send those updates to everyone
-            for index, fromPlayer in ientitylist(allPlayers) do
-            
-                // Send full update if any part of it changed
-                if(fromPlayer:GetScoreboardChanged()) then
-                
-                    // If any value has changed then we also want to update the internal score
-                    // so we can update steams player info.
-                    local client = Server.GetOwner(fromPlayer)
-                    if client ~= nil then
-                    
-                        local playerScore = 0
-                        if HasMixin(fromPlayer, "Scoring") then
-                            playerScore = fromPlayer:GetScore()
-                        end
-                        Server.UpdatePlayerInfo(client, fromPlayer:GetName(), playerScore)
-                        
-                        if(fromPlayer:GetName() ~= "") then
-                        
-                            // Now send scoreboard info to everyone, including fromPlayer     
-                            for index, sendToPlayer in ientitylist(allPlayers) do
-                                // Build the message per player as some info is not synced for players
-                                // on the other team.
-                                local scoresMessage = BuildScoresMessage(fromPlayer, sendToPlayer)
-                                Server.SendNetworkMessage(sendToPlayer, "Scores", scoresMessage, true)
-                            end
-                            
-                            fromPlayer:SetScoreboardChanged(false)
-                            
-                        else
-                            Print("Player name empty, can't send scoreboard update.")
-                        end
-
-                    end
-                    
-                end
-                
-            end
-            
-            // When players connect to server, they send up a request for scores (as they 
-            // may not have finished connecting when the scores where previously sent)    
-            for index, requestingPlayer in ientitylist(allPlayers) do
-
-                // Check for empty name string because player isn't connected yet
-                if(requestingPlayer:GetRequestsScores() and requestingPlayer:GetName() ~= "") then
-                
-                    // Send player all scores
-                    for index, fromPlayer in ientitylist(allPlayers) do
-                    
-                        local scoresMessage = BuildScoresMessage(fromPlayer, requestingPlayer)
-                        Server.SendNetworkMessage(requestingPlayer, "Scores", scoresMessage, true)
-   
-                    end
-                    
-                    requestingPlayer:SetRequestsScores(false)
-                    
-                end
-                
-            end
-                
-            // Time to send next score
-            self.timeToSendScores = Shared.GetTime() + kScoreboardUpdateInterval
-            
-        end
-
     end
 
     // Batch together string with pings of every player to update scoreboard. This is a separate
@@ -832,11 +736,15 @@ if Server then
     
     function NS2Gamerules:UpdateMapCycle()
     
-        if self.timeToCycleMap ~= nil and Shared.GetTime() >= self.timeToCycleMap then
+        if not Server.GetIsGatherReady() then
+    
+            if self.timeToCycleMap ~= nil and Shared.GetTime() >= self.timeToCycleMap then
 
-            MapCycle_CycleMap()               
-            self.timeToCycleMap = nil
-            
+                MapCycle_CycleMap()               
+                self.timeToCycleMap = nil
+                
+            end
+        
         end
         
     end
@@ -978,6 +886,41 @@ if Server then
         
     end
     
+    local function CheckCombatTimer(self)
+        if self:GetGameState() == kGameState.Started then
+            local time = Shared.GetTime()
+            if not self.sentCombatGameStartMessage then
+                local message = string.format(kNS2cLocalizedStrings.COMBAT_ROUND_TIMER, string.format("%s Minutes", kCombatRoundTimelength), ConditionalValue(kCombatDefaultWinner == 1, "Marines", "Aliens"))
+                Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Combat", -1, kTeamReadyRoom, kNeutralTeamType, message), true)
+                self.sentCombatGameStartMessage = true
+            end
+            if self.gameStartTime + (kCombatRoundTimelength * 60) <= (time + 300) and not self.sentCombat5MinuteWarning then
+                local message = string.format(kNS2cLocalizedStrings.COMBAT_ROUND_TIMER, "5 Minutes", ConditionalValue(kCombatDefaultWinner == 1, "Marines", "Aliens"))
+                Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Combat", -1, kTeamReadyRoom, kNeutralTeamType, message), true)
+                self.sentCombat5MinuteWarning = true
+            end
+            if self.gameStartTime + (kCombatRoundTimelength * 60) <= (time + 60) and not self.sentCombat1MinuteWarning then
+                local message = string.format(kNS2cLocalizedStrings.COMBAT_ROUND_TIMER, "1 Minute", ConditionalValue(kCombatDefaultWinner == 1, "Marines", "Aliens"))
+                Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Combat", -1, kTeamReadyRoom, kNeutralTeamType, message), true)
+                self.sentCombat1MinuteWarning = true
+            end
+            if self.gameStartTime + (kCombatRoundTimelength * 60) <= (time + 30) and not self.sentCombat30SecondWarning then
+                local message = string.format(kNS2cLocalizedStrings.COMBAT_ROUND_TIMER, "30 Seconds", ConditionalValue(kCombatDefaultWinner == 1, "Marines", "Aliens"))
+                Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Combat", -1, kTeamReadyRoom, kNeutralTeamType, message), true)
+                self.sentCombat30SecondWarning = true
+            end
+            if self.gameStartTime + (kCombatRoundTimelength * 60) <= time and not self.sentCombatGameOver then
+                //Game over sherlock
+                if kCombatDefaultWinner == 1 then
+                    self:EndGame(self.team1)
+                elseif kCombatDefaultWinner == 2 then
+                    self:EndGame(self.team2)
+                end
+                self.sentCombatGameOver = true
+            end
+        end
+    end
+    
     function NS2Gamerules:OnUpdate(timePassed)
     
         PROFILE("NS2Gamerules:OnUpdate")
@@ -1016,18 +959,23 @@ if Server then
                 self.team2:Update(timePassed)
                 self.spectatorTeam:Update(timePassed)
                 
-                // Send scores every so often
-                self:UpdateScores()
                 self:UpdatePings()
                 self:UpdateHealth()
                 self:UpdateTechPoints()
                 
-                CheckForNoCommander(self, self.team1, "MarineCommander")
-                CheckForNoCommander(self, self.team2, "Gorge")
+                if GetServerGameMode() == kGameMode.Classic then
+                    CheckForNoCommander(self, self.team1, "MarineCommander")
+                    CheckForNoCommander(self, self.team2, "Gorge")
+                end
+                
+                if GetServerGameMode() == kGameMode.Combat then
+                    CheckCombatTimer(self)
+                end
                 
             end
 
             self.sponitor:Update(timePassed)
+            //self.gameInfo:SetIsGatherReady(Server.GetIsGatherReady())
             
         end
         
@@ -1287,15 +1235,14 @@ if Server then
                 // Give new players starting resources. Mark players as "having played" the game (so they don't get starting res if
                 // they join a team again, etc.)
                 local success, played = GetUserPlayedInGame(self, newPlayer)
-                if success and not played then
-					if newTeamNumber == kAlienTeamType then
-                    	newPlayer:SetResources(kAlienTeamInitialRes)
-					else
-						newPlayer:SetResources(0)
-					end
+                if success and not played and team.GetStartingResources then
+                    newPlayer:SetResources(team:GetStartingResources())
                 end
                 
             end
+            
+            //Restore Combat Upgrades
+            newPlayer = newPlayer:OnRestoreUpgrades()
             
             if self:GetGameStarted() then
                 SetUserPlayedInGame(self, newPlayer)
@@ -1313,7 +1260,15 @@ if Server then
                 
                 if newPlayer.OnJoinTeam then
                     newPlayer:OnJoinTeam()
-                end    
+                end
+                
+                if player:GetGameMode() == kGameMode.Combat then
+                    if oldTeam ~= nil and (oldTeam.GetIsAlienTeam and oldTeam:GetIsAlienTeam()) then
+                        //Refund lifeform costs.
+                        newPlayer:AddResources(LookupTechData(player:GetTechId(), kTechDataCombatCost, 0))
+                    end
+                    CheckCombatPlayersUpgradeTable(newPlayer)
+                end
                 
                 Server.SendNetworkMessage(newPlayerClient, "SetClientTeamNumber", { teamNumber = newPlayer:GetTeamNumber() }, true)
                 
@@ -1365,8 +1320,9 @@ if Server then
             local team1Players = self.team1:GetNumPlayers()
 			local team1Commander = self.team1:GetCommander()
             local team2Players = self.team2:GetNumPlayers()
+            local combatmode = GetServerGameMode() == kGameMode.Combat
             
-            if (team1Players > 0 and team2Players > 0 and (team1Commander or not kRequireMarineComm)) or (Shared.GetCheatsEnabled() and (team1Players > 0 or team2Players > 0)) and (not self.tournamentMode or self.teamsReady) then
+            if (team1Players > 0 and team2Players > 0 and (team1Commander or not kRequireMarineComm or combatmode)) or (Shared.GetCheatsEnabled() and (team1Players > 0 or team2Players > 0)) and (not self.tournamentMode or self.teamsReady) then
             
                 if self:GetGameState() == kGameState.NotStarted then
                     self:SetGameState(kGameState.PreGame)
@@ -1380,8 +1336,11 @@ if Server then
                 
                 if not self.nextGameStartMessageTime or Shared.GetTime() > self.nextGameStartMessageTime then
                 
-                    SendTeamMessage(self.team1, kTeamMessageTypes.GameStartCommanders)
-                    SendTeamMessage(self.team2, kTeamMessageTypes.GameStartCommanders)
+                    if GetServerGameMode() == kGameMode.Classic then
+                        SendTeamMessage(self.team1, kTeamMessageTypes.GameStartCommanders)
+                        SendTeamMessage(self.team2, kTeamMessageTypes.GameStartCommanders)
+                    end
+                    
                     self.nextGameStartMessageTime = Shared.GetTime() + kGameStartMessageInterval
                     
                 end

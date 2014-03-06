@@ -67,6 +67,12 @@ function CommandStation:GetKillOrigin()
     return self:GetOrigin() + Vector(0, 1.5, 0)
 end
 
+function CommandStation:OnTakeDamage(damage, attacker, doer, point)
+    if GetAreEnemies(self, attacker) and damage > 0 and GetServerGameMode() == kGameMode.Combat then
+        attacker:AddExperience(damage / self:GetMaxHealth() * kCombatObjectiveExperienceScalar)
+    end
+end
+
 function CommandStation:OnConstructionComplete()
     self:TriggerEffects("deploy")    
 end

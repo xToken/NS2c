@@ -13,6 +13,8 @@ class 'GrenadeLauncher' (ClipWeapon)
 
 GrenadeLauncher.kMapName = "grenadelauncher"
 
+local kGrenadeSpeed = 25
+
 local networkVars =
 {
     // Only used on the view model, so it can be private.
@@ -156,24 +158,18 @@ local function ShootGrenade(self, player)
 
         local viewAngles = player:GetViewAngles()
         local viewCoords = viewAngles:GetCoords()
+        local eyePos = player:GetEyePos()
+
+        local startPointTrace = Shared.TraceCapsule(eyePos, eyePos + viewCoords.zAxis, 0.2, 0, CollisionRep.Move, PhysicsMask.PredictedProjectileGroup, EntityFilterTwo(self, player))
+        local startPoint = startPointTrace.endPoint
         
-        // Make sure start point isn't on the other side of a wall or object
-        local startPoint = player:GetEyePos() - (viewCoords.zAxis * 0.2)
-        local trace = Shared.TraceRay(startPoint, startPoint + viewCoords.zAxis * 25, CollisionRep.Default, PhysicsMask.Bullets, EntityFilterAll())
+        local direction = viewCoords.zAxis
         
-        // make sure the grenades flies to the crosshairs target
-        local grenadeStartPoint = player:GetEyePos() + viewCoords.zAxis * 0.65 - viewCoords.xAxis * 0.35 - viewCoords.yAxis * 0.25
+        if startPointTrace.fraction ~= 1 then
+            direction = GetNormalizedVector(direction:GetProjection(startPointTrace.normal))
+        end
         
-        // if we would hit something use the trace endpoint, otherwise use the players view direction (for long range shots)
-        local grenadeDirection = ConditionalValue(trace.fraction ~= 1, trace.endPoint - grenadeStartPoint, viewCoords.zAxis)
-        grenadeDirection:Normalize()
-        
-        // Inherit player velocity?
-        local startVelocity = grenadeDirection * 20
-                
-        startVelocity.y = startVelocity.y + 3
-        
-        local grenade = player:CreatePredictedProjectile("Grenade", grenadeStartPoint, startVelocity, 0.6)
+        local grenade = player:CreatePredictedProjectile("Grenade", startPoint, direction * kGrenadeSpeed, 0.7, 0.45)
     
     end
     

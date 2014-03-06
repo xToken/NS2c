@@ -58,10 +58,12 @@ function MarineTeam:Initialize(teamName, teamNumber)
 end
 
 function MarineTeam:OnInitialized()
-
     PlayingTeam.OnInitialized(self)
-    self:AddTeamResources(kMarineTeamIntialRes)
     
+    if GetServerGameMode() == kGameMode.Classic then
+        self:AddTeamResources(kMarineTeamIntialRes)
+    end
+     
 end
 
 function MarineTeam:GetHasAbilityToRespawn()
@@ -69,7 +71,7 @@ function MarineTeam:GetHasAbilityToRespawn()
     // Any active IPs on team? There could be a case where everyone has died and no active
     // IPs but builder bots are mid-construction so a marine team could theoretically keep
     // playing but ignoring that case for now
-    local spawnclassname = ConditionalValue(CheckNS2GameMode() == kGameMode.Classic, "InfantryPortal", "CommandStation")
+    local spawnclassname = ConditionalValue(GetServerGameMode() == kGameMode.Classic, "InfantryPortal", "CommandStation")
     local spawningStructures = GetEntitiesForTeam(spawnclassname, self:GetTeamNumber())
     
     for index, current in ipairs(spawningStructures) do
@@ -132,7 +134,7 @@ local function CheckForNoIPs(self)
 
 	PROFILE("MarineTeam:CheckForNoIPs")
 
-    if Shared.GetTime() - self.lastTimeNoIPsMessageSent >= kSendNoIPsMessageRate and CheckNS2GameMode() == kGameMode.Classic then
+    if Shared.GetTime() - self.lastTimeNoIPsMessageSent >= kSendNoIPsMessageRate then
     
         self.lastTimeNoIPsMessageSent = Shared.GetTime()
         if Shared.GetEntitiesWithClassname("InfantryPortal"):GetSize() == 0 then
@@ -177,91 +179,122 @@ function MarineTeam:Update(timePassed)
     self:UpdateGameMasks(timePassed)
     self:UpdateDroppedWeapons()
     
-    if GetGamerules():GetGameStarted() then
-        CheckForNoIPs(self)
-    end
-    
-    local armorLevel = GetArmorLevel(self)
-    for index, player in ipairs(GetEntitiesForTeam("Player", self:GetTeamNumber())) do
-        player:UpdateArmorAmount(armorLevel)
+    if GetServerGameMode() == kGameMode.Classic then
+        if GetGamerules():GetGameStarted() then
+            CheckForNoIPs(self)
+        end
+        local armorLevel = GetArmorLevel(self)
+        for index, player in ipairs(GetEntitiesForTeam("Player", self:GetTeamNumber())) do
+            player:UpdateArmorAmount(armorLevel)
+        end 
     end
     
 end
 
-function MarineTeam:InitTechTree()
+function MarineTeam:InitTechTree(techTree)
    
-   PlayingTeam.InitTechTree(self)
+    PlayingTeam.InitTechTree(self, techTree)
     
- // Misc
-    self.techTree:AddUpgradeNode(kTechId.Recycle, kTechId.None, kTechId.None)
-    self.techTree:AddOrder(kTechId.Defend)
-    self.techTree:AddSpecial(kTechId.TwoCommandStations)
-    self.techTree:AddSpecial(kTechId.ThreeCommandStations)
+    // Misc
+    techTree:AddUpgradeNode(kTechId.Recycle, kTechId.None, kTechId.None)
+    techTree:AddOrder(kTechId.Defend)
+    techTree:AddSpecial(kTechId.TwoCommandStations)
+    techTree:AddSpecial(kTechId.ThreeCommandStations)
+    
+        // Door actions
+    techTree:AddBuildNode(kTechId.Door, kTechId.None, kTechId.None)
+    techTree:AddActivation(kTechId.DoorOpen)
+    techTree:AddActivation(kTechId.DoorClose)
+    techTree:AddActivation(kTechId.DoorLock)
+    techTree:AddActivation(kTechId.DoorUnlock)
+    
+    if GetServerGameMode() == kGameMode.Classic then
+    
+        // Marine builds
+        techTree:AddBuildNode(kTechId.CommandStation,            kTechId.None,                kTechId.None)
+        techTree:AddBuildNode(kTechId.Extractor,                 kTechId.None,                kTechId.None)
+        techTree:AddBuildNode(kTechId.InfantryPortal,            kTechId.None,                kTechId.None)
+        techTree:AddBuildNode(kTechId.Sentry,                    kTechId.TurretFactory,       kTechId.None)
+        techTree:AddBuildNode(kTechId.Armory,                    kTechId.None,                kTechId.None)  
+        techTree:AddBuildNode(kTechId.ArmsLab,                   kTechId.Armory,              kTechId.None)  
+        techTree:AddUpgradeNode(kTechId.AdvancedArmory,          kTechId.Armory,              kTechId.None)
+        techTree:AddBuildNode(kTechId.Observatory,               kTechId.InfantryPortal,      kTechId.None)      
+        techTree:AddBuildNode(kTechId.PhaseGate,                 kTechId.PhaseTech,           kTechId.None)
+        techTree:AddBuildNode(kTechId.TurretFactory,             kTechId.Armory,              kTechId.None)  
+        techTree:AddBuildNode(kTechId.AdvancedTurretFactory,     kTechId.Armory,              kTechId.TurretFactory)
+        techTree:AddTechInheritance(kTechId.TurretFactory,       kTechId.AdvancedTurretFactory)
+        techTree:AddBuildNode(kTechId.SiegeCannon,               kTechId.AdvancedTurretFactory,  kTechId.None)       
+        techTree:AddBuildNode(kTechId.PrototypeLab,              kTechId.AdvancedArmory,              kTechId.ArmsLab)        
+        techTree:AddUpgradeNode(kTechId.Electrify,               kTechId.Extractor,               kTechId.None)
+        
+        // Marine Upgrades
+        techTree:AddResearchNode(kTechId.PhaseTech,                    kTechId.Observatory,        kTechId.None)
+        techTree:AddUpgradeNode(kTechId.AdvancedArmoryUpgrade,     kTechId.Armory,        kTechId.InfantryPortal)
+        techTree:AddResearchNode(kTechId.HandGrenadesTech,           kTechId.Armory, kTechId.None)
+        techTree:AddUpgradeNode(kTechId.UpgradeTurretFactory,           kTechId.Armory,              kTechId.TurretFactory) 
+        techTree:AddResearchNode(kTechId.Armor1,                   kTechId.ArmsLab,              kTechId.None)
+        techTree:AddResearchNode(kTechId.Weapons1,                 kTechId.ArmsLab,               kTechId.None)
+        techTree:AddResearchNode(kTechId.Armor2,                   kTechId.Armor1,              kTechId.None)
+        techTree:AddResearchNode(kTechId.Weapons2,                 kTechId.Weapons1,            kTechId.None)
+        techTree:AddResearchNode(kTechId.Armor3,                   kTechId.Armor2,              kTechId.None)
+        techTree:AddResearchNode(kTechId.Weapons3,                 kTechId.Weapons2,            kTechId.None)
+        techTree:AddResearchNode(kTechId.CatPackTech,              kTechId.None,              kTechId.None)
+        techTree:AddResearchNode(kTechId.JetpackTech,              kTechId.PrototypeLab, kTechId.AdvancedArmory)
+        techTree:AddResearchNode(kTechId.HeavyArmorTech,           kTechId.PrototypeLab, kTechId.AdvancedArmory)
+        //techTree:AddResearchNode(kTechId.ExosuitTech,              kTechId.PrototypeLab, kTechId.AdvancedArmory)
+        techTree:AddResearchNode(kTechId.MotionTracking,           kTechId.Observatory, kTechId.None)
+    
+        // Assists
+        techTree:AddTargetedActivation(kTechId.MedPack,             kTechId.None,                kTechId.None)
+        techTree:AddTargetedActivation(kTechId.AmmoPack,            kTechId.None,                kTechId.None)
+        techTree:AddTargetedActivation(kTechId.CatPack,            kTechId.CatPackTech,                kTechId.None)
+        techTree:AddActivation(kTechId.DistressBeacon,           kTechId.Observatory)    
+        techTree:AddTargetedEnergyActivation(kTechId.Scan,             kTechId.Observatory,         kTechId.None)
 
-    // Marine builds
-    self.techTree:AddBuildNode(kTechId.CommandStation,            kTechId.None,                kTechId.None)
-    self.techTree:AddBuildNode(kTechId.Extractor,                 kTechId.None,                kTechId.None)
-    self.techTree:AddBuildNode(kTechId.InfantryPortal,            kTechId.None,                kTechId.None)
-    self.techTree:AddBuildNode(kTechId.Sentry,                    kTechId.TurretFactory,       kTechId.None)
-    self.techTree:AddBuildNode(kTechId.Armory,                    kTechId.None,                kTechId.None)  
-    self.techTree:AddBuildNode(kTechId.ArmsLab,                   kTechId.Armory,              kTechId.None)  
-    self.techTree:AddUpgradeNode(kTechId.AdvancedArmory,          kTechId.Armory,              kTechId.None)
-    self.techTree:AddBuildNode(kTechId.Observatory,               kTechId.InfantryPortal,      kTechId.None)      
-    self.techTree:AddBuildNode(kTechId.PhaseGate,                 kTechId.PhaseTech,           kTechId.None)
-    self.techTree:AddBuildNode(kTechId.TurretFactory,             kTechId.Armory,              kTechId.None)  
-    self.techTree:AddBuildNode(kTechId.AdvancedTurretFactory,     kTechId.Armory,              kTechId.TurretFactory)
-    self.techTree:AddTechInheritance(kTechId.TurretFactory,       kTechId.AdvancedTurretFactory)
-    self.techTree:AddBuildNode(kTechId.SiegeCannon,               kTechId.AdvancedTurretFactory,  kTechId.None)       
-    self.techTree:AddBuildNode(kTechId.PrototypeLab,              kTechId.AdvancedArmory,              kTechId.ArmsLab)        
-    self.techTree:AddUpgradeNode(kTechId.Electrify,               kTechId.Extractor,               kTechId.None)
+        // Weapons
+        techTree:AddTargetedActivation(kTechId.Axe,                         kTechId.None,                kTechId.None)
+        techTree:AddTargetedActivation(kTechId.Pistol,                      kTechId.None,                kTechId.None)
+        techTree:AddTargetedActivation(kTechId.Rifle,                       kTechId.None,                kTechId.None)
+        techTree:AddTargetedActivation(kTechId.Shotgun,                    kTechId.Armory,         kTechId.None)
+        techTree:AddTargetedActivation(kTechId.GrenadeLauncher,                    kTechId.AdvancedArmory,             kTechId.None)
+        techTree:AddTargetedActivation(kTechId.HeavyMachineGun,                    kTechId.AdvancedArmory,             kTechId.None)
+        techTree:AddTargetedActivation(kTechId.Mines,          kTechId.Armory,        kTechId.None)
+        techTree:AddTargetedActivation(kTechId.Welder,         kTechId.Armory,        kTechId.None)
+        techTree:AddTargetedActivation(kTechId.Jetpack,        kTechId.JetpackTech, kTechId.PrototypeLab)
+        techTree:AddTargetedActivation(kTechId.HeavyArmor,     kTechId.HeavyArmorTech, kTechId.PrototypeLab)
+        //techTree:AddTargetedActivation(kTechId.Exosuit,        kTechId.ExosuitTech, kTechId.PrototypeLab)
+        
+    end
     
-    // Marine Upgrades
-    self.techTree:AddResearchNode(kTechId.PhaseTech,                    kTechId.Observatory,        kTechId.None)
-    self.techTree:AddUpgradeNode(kTechId.AdvancedArmoryUpgrade,     kTechId.Armory,        kTechId.InfantryPortal)
-    self.techTree:AddResearchNode(kTechId.HandGrenadesTech,           kTechId.Armory, kTechId.None)
-    self.techTree:AddUpgradeNode(kTechId.UpgradeTurretFactory,           kTechId.Armory,              kTechId.TurretFactory) 
-    self.techTree:AddResearchNode(kTechId.Armor1,                   kTechId.ArmsLab,              kTechId.None)
-    self.techTree:AddResearchNode(kTechId.Weapons1,                 kTechId.ArmsLab,               kTechId.None)
-    self.techTree:AddResearchNode(kTechId.Armor2,                   kTechId.Armor1,              kTechId.None)
-    self.techTree:AddResearchNode(kTechId.Weapons2,                 kTechId.Weapons1,            kTechId.None)
-    self.techTree:AddResearchNode(kTechId.Armor3,                   kTechId.Armor2,              kTechId.None)
-    self.techTree:AddResearchNode(kTechId.Weapons3,                 kTechId.Weapons2,            kTechId.None)
-    self.techTree:AddResearchNode(kTechId.CatPackTech,              kTechId.None,              kTechId.None)
-    self.techTree:AddResearchNode(kTechId.JetpackTech,              kTechId.PrototypeLab, kTechId.AdvancedArmory)
-    self.techTree:AddResearchNode(kTechId.HeavyArmorTech,           kTechId.PrototypeLab, kTechId.AdvancedArmory)
-    //self.techTree:AddResearchNode(kTechId.ExosuitTech,              kTechId.PrototypeLab, kTechId.AdvancedArmory)
-    self.techTree:AddResearchNode(kTechId.MotionTracking,           kTechId.Observatory, kTechId.None)
-
-    // Door actions
-    self.techTree:AddBuildNode(kTechId.Door, kTechId.None, kTechId.None)
-    self.techTree:AddActivation(kTechId.DoorOpen)
-    self.techTree:AddActivation(kTechId.DoorClose)
-    self.techTree:AddActivation(kTechId.DoorLock)
-    self.techTree:AddActivation(kTechId.DoorUnlock)
+    if GetServerGameMode() == kGameMode.Combat then
     
-    // Assists
-    self.techTree:AddTargetedActivation(kTechId.MedPack,             kTechId.None,                kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.AmmoPack,            kTechId.None,                kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.CatPack,            kTechId.CatPackTech,                kTechId.None)
-    self.techTree:AddActivation(kTechId.DistressBeacon,           kTechId.Observatory)    
-    self.techTree:AddTargetedEnergyActivation(kTechId.Scan,             kTechId.Observatory,         kTechId.None)
-
-    // Weapons
-    self.techTree:AddTargetedActivation(kTechId.Axe,                         kTechId.None,                kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.Pistol,                      kTechId.None,                kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.Rifle,                       kTechId.None,                kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.Shotgun,                    kTechId.Armory,         kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.GrenadeLauncher,                    kTechId.AdvancedArmory,             kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.HeavyMachineGun,                    kTechId.AdvancedArmory,             kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.Mines,          kTechId.Armory,        kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.Welder,         kTechId.Armory,        kTechId.None)
-    self.techTree:AddTargetedActivation(kTechId.Jetpack,        kTechId.JetpackTech, kTechId.PrototypeLab)
-    self.techTree:AddTargetedActivation(kTechId.HeavyArmor,     kTechId.HeavyArmorTech, kTechId.PrototypeLab)
-    //self.techTree:AddTargetedActivation(kTechId.Exosuit,        kTechId.ExosuitTech, kTechId.PrototypeLab)
+        techTree:AddBuyNode(kTechId.Armor1,                   kTechId.None,               kTechId.None, kTechId.AllMarines)  
+        techTree:AddBuyNode(kTechId.Weapons1,                 kTechId.None,               kTechId.None, kTechId.AllMarines)  
+        techTree:AddBuyNode(kTechId.Armor2,                   kTechId.Armor1,             kTechId.None, kTechId.AllMarines)  
+        techTree:AddBuyNode(kTechId.Weapons2,                 kTechId.Weapons1,           kTechId.None, kTechId.AllMarines)  
+        techTree:AddBuyNode(kTechId.Armor3,                   kTechId.Armor2,             kTechId.None, kTechId.AllMarines)  
+        techTree:AddBuyNode(kTechId.Weapons3,                 kTechId.Weapons2,           kTechId.None, kTechId.AllMarines)  
+        techTree:AddBuyNode(kTechId.MotionTracking,           kTechId.None,               kTechId.None, kTechId.AllMarines)  
+    	
+    	//Weapons
+    	techTree:AddBuyNode(kTechId.Shotgun,                  kTechId.Weapons1,           kTechId.None, kTechId.AllMarines)  
+        techTree:AddBuyNode(kTechId.GrenadeLauncher,          kTechId.Shotgun,            kTechId.None, kTechId.AllMarines)  
+        techTree:AddBuyNode(kTechId.HeavyMachineGun,          kTechId.Shotgun,            kTechId.None, kTechId.AllMarines)  
+        techTree:AddBuyNode(kTechId.Mines,                    kTechId.None,               kTechId.None, kTechId.AllMarines)  
+        techTree:AddBuyNode(kTechId.Welder,                   kTechId.None,               kTechId.None, kTechId.AllMarines)  
+        techTree:AddBuyNode(kTechId.HandGrenades,             kTechId.None,               kTechId.None, kTechId.AllMarines)  
+        techTree:AddBuyNode(kTechId.Jetpack,                  kTechId.Armor2,             kTechId.None, kTechId.AllMarines)  
+        techTree:AddBuyNode(kTechId.HeavyArmor,               kTechId.Armor2,             kTechId.None, kTechId.AllMarines)  
+        
+        techTree:AddBuyNode(kTechId.MedPack,                  kTechId.None,               kTechId.None, kTechId.AllMarines)  
+        techTree:AddBuyNode(kTechId.CatPack,                  kTechId.None,               kTechId.None, kTechId.AllMarines)  
+        techTree:AddBuyNode(kTechId.Scan,                     kTechId.None,               kTechId.None, kTechId.AllMarines)  
+        
+    end
     
-    self.techTree:AddMenu(kTechId.WeaponsMenu)
+    techTree:AddMenu(kTechId.WeaponsMenu)
     
-    self.techTree:SetComplete()
+    techTree:SetComplete()
 
 end
 
@@ -269,9 +302,48 @@ function MarineTeam:AwardResources(resAward, pointOwner)
      self:AddTeamResources(resAward)
 end
 
+function MarineTeam:GetWaveSpawnTime()
+    return kMarineCombatMinSpawnInterval + (kMarineCombatSpawnIntervalPerPlayer * self:GetNumPlayersInQueue())
+end
+
+function MarineTeam:GetRespawnsPerWave()
+    return kMarineRespawnsPerWave
+end
+
+local function SpawnArmory(self, techPoint)
+
+    local techPointOrigin = techPoint:GetOrigin() + Vector(0, 2, 0)
+    
+    local spawnPoint = nil
+
+    for i = 1, 50 do
+    
+        local origin = CalculateRandomSpawn(nil, techPointOrigin, kTechId.Armory, true, kArmoryMinSpawnDistance * 1, kArmoryMaxSpawnDistance, 3)
+        
+        if origin then
+            spawnPoint = origin - Vector(0, 0.1, 0)
+        end
+        
+    end
+    
+    if spawnPoint then
+    
+        local armory = CreateEntity(Armory.kMapName, spawnPoint, self:GetTeamNumber())
+        
+        SetRandomOrientation(armory)
+        armory:SetConstructionComplete()
+        
+    end
+    
+end
+
 function MarineTeam:SpawnInitialStructures(techPoint)
 
     local tower, commandStation = PlayingTeam.SpawnInitialStructures(self, techPoint)
+    
+    if GetServerGameMode() == kGameMode.Combat then
+        SpawnArmory(self, techPoint)
+    end
     
     if Shared.GetCheatsEnabled() and MarineTeam.gSandboxMode then
 

@@ -9,7 +9,7 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/ScriptActor.lua")
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/PickupableMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
@@ -26,7 +26,7 @@ Exosuit.kThinkInterval = .5
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 
@@ -35,7 +35,7 @@ function Exosuit:OnCreate ()
     ScriptActor.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, SelectableMixin)
     

@@ -14,7 +14,7 @@ Script.Load("lua/LiveMixin.lua")
 
 local kHealthMessage =
 {
-    clientIndex = "integer",
+    clientIndex = "integer (-1 to 4000)",
     health = string.format("integer (0 to %s)", LiveMixin.kMaxHealth),
     maxHealth = string.format("integer (0 to %s)", LiveMixin.kMaxHealth),
     armor = string.format("integer (0 to %s)", LiveMixin.kMaxArmor),

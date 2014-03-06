@@ -26,6 +26,7 @@ local kPlayerMaxCloak = 0.85
 local kEnemyUncloakDistanceSquared = 1.5 ^ 2
 
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/cloaked.surface_shader")
+Shared.PrecacheSurfaceShader("cinematics/vfx_materials/distort.surface_shader")
 
 local Client_GetLocalPlayer
 
@@ -241,9 +242,9 @@ elseif Client then
         // Only draw models when mostly uncloaked
         local albedoVisibility = 1 - Clamp(self.cloakFraction * 5, 0, 1)
         
-        if player and ((player.GetDarkVisionEnabled and player:GetDarkVisionEnabled()) or player:isa("AlienCommander") )then
-            albedoVisibility = 1
-        end
+        //if player and ((player.GetDarkVisionEnabled and player:GetDarkVisionEnabled()) or player:isa("AlienCommander") )then
+            //albedoVisibility = 1
+        //end
     
         // cloaked aliens off infestation are not 100% hidden             
         local opacity = albedoVisibility
@@ -263,7 +264,7 @@ elseif Client then
     function CloakableMixin:_UpdatePlayerModelRender(model)
     
         local player = Client_GetLocalPlayer()
-        local hideFromEnemy = GetAreEnemies(self, player) and self:GetCloakFraction() == 1
+        local hideFromEnemy = GetAreEnemies(self, player)
         
         local useMaterial = (self.cloakingDesired or self:GetCloakFraction() ~= 0) and not hideFromEnemy
     
@@ -285,33 +286,41 @@ elseif Client then
             end
             
             // Main material parameter that affects our appearance
-            self.cloakedMaterial:SetParameter("cloakAmount", self.cloakFraction)
-            self.cloakedMaterial:SetParameter("distortAmount", distortAmount)         
-            
-            // Boost emissive for friendly units, so we can see each other
-            local friendly = not GetAreEnemies(self, player) and 1 or 0
-            // Boost is 0 to 1
-            self.cloakedMaterial:SetParameter("friendly", friendly)      
+            self.cloakedMaterial:SetParameter("cloakAmount", self.cloakFraction)          
 
-        end          
+        end
+
+        local showDistort = self.cloakFraction ~= 0 and self.cloakFraction ~= 1
+
+        if showDistort and not self.distortMaterial then
+
+            self.distortMaterial = AddMaterial(model, "cinematics/vfx_materials/distort.material")
+
+        elseif not showDistort and self.distortMaterial then
+        
+            RemoveMaterial(model, self.distortMaterial)
+            self.distortMaterial = nil
+        
+        end
+        
+        if self.distortMaterial then        
+            self.distortMaterial:SetParameter("distortAmount", self.cloakFraction)        
+        end
 
     end
     
     function CloakableMixin:_UpdateViewModelRender()
     
+        // always show view model distort effect
         local viewModelEnt = self:GetViewModelEntity()
         if viewModelEnt and viewModelEnt:GetRenderModel() then
         
             // Show view model as enemies see us, so we know how cloaked we are
-            if not self.cloakedViewMaterial then
-                self.cloakedViewMaterial = AddMaterial(viewModelEnt:GetRenderModel(), "cinematics/vfx_materials/cloaked.material")
+            if not self.distortViewMaterial then
+                self.distortViewMaterial = AddMaterial(viewModelEnt:GetRenderModel(), "cinematics/vfx_materials/distort.material")
             end
             
-            self.cloakedViewMaterial:SetParameter("cloakAmount", self.cloakFraction)
-            self.cloakedViewMaterial:SetParameter("distortAmount", self.cloakFraction)
-            
-            // Don't boost emissive for view model though, so we can see what it looks like
-            self.cloakedViewMaterial:SetParameter("friendly", 0)
+            self.distortViewMaterial:SetParameter("distortAmount", self.cloakFraction)
             
         end
         
@@ -361,11 +370,15 @@ end
 
 function CloakableMixin:OnTakeDamage(damage, attacker, doer, point)
 
-    if self.fullyCloaked then
-        TEST_EVENT("Uncloaked from taking damage")
-    end
+    if damage > 0 then
+
+        if self.fullyCloaked then
+            TEST_EVENT("Uncloaked from taking damage")
+        end
+        
+        self:TriggerUncloak()
     
-    self:TriggerUncloak()
+    end
     
 end
 

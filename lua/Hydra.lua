@@ -27,7 +27,6 @@ Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/SleeperMixin.lua")
 Script.Load("lua/TargetCacheMixin.lua")
-Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DamageMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
@@ -80,7 +79,6 @@ AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
-AddMixinNetworkVars(OrdersMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(UmbraMixin, networkVars)
 AddMixinNetworkVars(InfestationMixin, networkVars)
@@ -105,7 +103,6 @@ function Hydra:OnCreate()
     InitMixin(self, CombatMixin)
     InitMixin(self, RagdollMixin)
     InitMixin(self, DamageMixin)
-    InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kAIMoveOrderCompleteDistance })
     InitMixin(self, DissolveMixin)
     InitMixin(self, UmbraMixin)
     
@@ -179,22 +176,6 @@ end
 
 function Hydra:GetCanDie(byDeathTrigger)
     return not byDeathTrigger
-end
-
-function Hydra:GetMaxRadius()
-    return kInfestationRadius
-end
-
-function Hydra:GetGrowthRate()
-    return kInfestationGrowthRate
-end
-
-function Hydra:GetMinRadius()
-    return kMinInfestationRadius
-end
-
-function Hydra:GetInfestationDensity()
-    return kInfestationBlobDensity
 end
 
 function Hydra:GetCanAutoBuild()

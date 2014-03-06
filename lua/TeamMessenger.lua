@@ -15,7 +15,7 @@ kTeamMessageTypes = enum({ 'GameStarted', 'PowerLost', 'PowerRestored', 'Eject',
                            'HiveConstructed', 'HiveLowHealth', 'HiveKilled',
                            'CommandStationUnderAttack', 'IPUnderAttack', 'HiveUnderAttack', 'HiveInDanger',
                            'PowerPointUnderAttack', 'Beacon', 'NoCommander', 'TeamsUnbalanced',
-                           'TeamsBalanced', 'GameStartCommanders', 'UnassignedHive'})
+                           'TeamsBalanced', 'GameStartCommanders', 'UnassignedHive' })
 
 local kTeamMessages = { }
 
@@ -160,18 +160,7 @@ if Client then
 	                
 	                assert(type(displayText) == "string")
 	                player:SetTeamMessage(string.upper(displayText))
-	                
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
 	            end
             end
             

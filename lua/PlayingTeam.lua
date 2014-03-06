@@ -27,9 +27,6 @@ PlayingTeam.kTechTreeUpdateTime = 1
 PlayingTeam.kBaseAlertInterval = 15
 PlayingTeam.kRepeatAlertInterval = 15
 
-// How often to update clear and update game effects
-PlayingTeam.kUpdateGameEffectsInterval = .3
-
 PlayingTeam.kResearchDisplayTime = 40
 
 /**
@@ -139,7 +136,8 @@ function PlayingTeam:OnInitialized()
 
     Team.OnInitialized(self)
     
-    self:InitTechTree()
+    self.techTree = TechTree()
+    self:InitTechTree(self.techTree)
     self.requiredTechIds = self.techTree:GetRequiredTechIds()
     self.timeOfLastTechTreeUpdate = nil
     
@@ -179,7 +177,6 @@ function PlayingTeam:ResetTeam()
     
     local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
     for p = 1, #players do
-    
         local player = players[p]
         player:OnInitialSpawn(initialTechPoint:GetOrigin())
 		player:SetResources(self:GetStartingResources())
@@ -229,36 +226,34 @@ function PlayingTeam:GetInitialTechPoint()
     return Shared.GetEntity(self.initialTechPointId)
 end
 
-function PlayingTeam:InitTechTree()
-   
-    self.techTree = TechTree()
+function PlayingTeam:InitTechTree(techTree)
     
-    self.techTree:Initialize()
+    techTree:Initialize()
     
-    self.techTree:SetTeamNumber(self:GetTeamNumber())
+    techTree:SetTeamNumber(self:GetTeamNumber())
     
     // Menus
-    self.techTree:AddMenu(kTechId.BuildMenu)
-    self.techTree:AddMenu(kTechId.AdvancedMenu)
-    self.techTree:AddMenu(kTechId.AssistMenu)
+    techTree:AddMenu(kTechId.BuildMenu)
+    techTree:AddMenu(kTechId.AdvancedMenu)
+    techTree:AddMenu(kTechId.AssistMenu)
     
     // Orders
-    self.techTree:AddOrder(kTechId.Default)
-    self.techTree:AddOrder(kTechId.Move)
-    self.techTree:AddOrder(kTechId.Patrol)
-    self.techTree:AddOrder(kTechId.Attack)
-    self.techTree:AddOrder(kTechId.Build)
-    self.techTree:AddOrder(kTechId.Construct)
-    self.techTree:AddOrder(kTechId.AutoConstruct)
+    techTree:AddOrder(kTechId.Default)
+    techTree:AddOrder(kTechId.Move)
+    techTree:AddOrder(kTechId.Patrol)
+    techTree:AddOrder(kTechId.Attack)
+    techTree:AddOrder(kTechId.Build)
+    techTree:AddOrder(kTechId.Construct)
+    techTree:AddOrder(kTechId.AutoConstruct)
     
-    self.techTree:AddAction(kTechId.Cancel)
+    techTree:AddAction(kTechId.Cancel)
     
-    self.techTree:AddOrder(kTechId.Weld)   
+    techTree:AddOrder(kTechId.Weld)   
     
-    self.techTree:AddAction(kTechId.Stop)
+    techTree:AddAction(kTechId.Stop)
     
-    self.techTree:AddOrder(kTechId.SetRally)
-    self.techTree:AddOrder(kTechId.SetTarget)
+    techTree:AddOrder(kTechId.SetRally)
+    techTree:AddOrder(kTechId.SetTarget)
     
 end
 
@@ -421,7 +416,7 @@ function PlayingTeam:TriggerAlert(techId, entity, force)
                 
                 local ignoreDistance = LookupTechData(techId, kTechDataAlertIgnoreDistance, false)
                 
-                self:PlayPrivateTeamSound(soundName, location, commandersOnly, ignoreSourcePlayer, ignoreDistance)
+                self:PlayPrivateTeamSound(soundName, location, commandersOnly, ignoreSourcePlayer, ignoreDistance, entity)
                 
                 if not ignoreInterval then
                 
@@ -497,9 +492,14 @@ function PlayingTeam:GetHasTeamLost()
         local abilityToRespawn = self:GetHasAbilityToRespawn()
         local numAliveCommandStructures = self:GetNumAliveCommandStructures()
         
-        if not abilityToRespawn and not activePlayers or self:GetNumPlayers() == 0 or self:GetHasConceded() then
-            return true
-            
+        if GetServerGameMode() == kGameMode.Classic then        
+            if not abilityToRespawn and not activePlayers or self:GetNumPlayers() == 0 or self:GetHasConceded() then
+                return true
+            end
+        end
+        
+        if GetServerGameMode() == kGameMode.Combat then
+            return numAliveCommandStructures == 0
         end
         
     end
@@ -576,7 +576,7 @@ function PlayingTeam:SpawnInitialStructures(techPoint)
 
     assert(techPoint ~= nil)
     
-    if CheckNS2GameMode() == kGameMode.Classic then
+    if GetServerGameMode() == kGameMode.Classic then
         // Spawn tower at nearest unoccupied resource point.
         local tower = SpawnResourceTower(self, techPoint)
         if not tower then
@@ -745,16 +745,22 @@ function PlayingTeam:Update(timePassed)
     
     self:UpdateTechTree()
     
-    self:UpdateGameEffects(timePassed)
-    
     self:UpdateVotes()
+            
+    if GetServerGameMode() == kGameMode.Combat and self:GetHasAbilityToRespawn() then
+        self:UpdateWaveRespawn()
+    end
     
     if GetGamerules():GetGameStarted() then
+        
+        if GetServerGameMode() == kGameMode.Classic then
+            self:UpdateResourceTowers()
+        end
 
-        self:UpdateResourceTowers()
-
-        if #gServerBots > 0 then
+        if #gServerBots > 0 or #GetEntitiesWithMixinForTeam("PlayerHallucination", self:GetTeamNumber()) > 0 then
             self:GetTeamBrain():Update(timePassed)
+        elseif self.brain then        
+            self.brain = nil        
         end
 
     else
@@ -770,7 +776,7 @@ end
 
 function PlayingTeam:UpdateResourceTowers()
 
-    if self.timeSinceLastRTUpdate + kResourceTowerResourceInterval < Shared.GetTime() and CheckNS2GameMode() == kGameMode.Classic then
+    if self.timeSinceLastRTUpdate + kResourceTowerResourceInterval < Shared.GetTime() then
     
         self.timeSinceLastRTUpdate = Shared.GetTime()
         
@@ -801,6 +807,77 @@ function PlayingTeam:UpdateResourceTowers()
 
 end
 
+function PlayingTeam:UpdateWaveRespawn()
+
+    local time = Shared.GetTime()
+    
+    if self.timeLastWaveSpawnCheck == nil then
+        self.timeLastWaveSpawnCheck = time
+        self.lastWaveSpawn = time
+        self.spawnsthiswave = 0
+    end
+
+    if self.timeLastWaveSpawnCheck + 1 < time then
+    
+        if self.lastWaveSpawn + self:GetWaveSpawnTime() < time then
+        
+            //for i = 0, self:GetWaveSpawnCount() do
+            local player = self:GetOldestQueuedPlayer()
+            local commandStructures = GetEntitiesForTeam("CommandStructure", self:GetTeamNumber())
+            if player and player:isa("Spectator") and #commandStructures > 0 then
+                self:RemovePlayerFromRespawnQueue(player)
+                local techId = kTechId.Skulk
+                if player:GetTeam():GetIsMarineTeam() then
+                    techId = kTechId.Marine
+                end
+                local extents = HasMixin(self, "Extents") and self:GetExtents() or LookupTechData(techId, kTechDataMaxExtents)
+                local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)
+                local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, commandStructures[1]:GetOrigin(), 2, 15, EntityFilterAll())
+                if spawnPoint then
+                    local success, newplayer = self:ReplaceRespawnPlayer(player, spawnPoint, player:GetAngles())   
+                    if not success then
+                        //self:PutPlayerInRespawnQueue(player, time - self:GetWaveSpawnTime())
+                    else
+                        newplayer:SetCameraDistance(0)
+                        newplayer = newplayer:OnRestoreUpgrades()
+                        self.spawnsthiswave = self.spawnsthiswave + 1
+                    end
+                end
+            end
+            //end
+            self.lastWaveSpawn = self.lastWaveSpawn + 0.1
+            
+        else
+        
+            self.timeLastWaveSpawnCheck = time
+            //Update players of their pending doom
+            local pcount = 0
+            local tmod = 1
+            for i, player in ipairs(self:GetSortedRespawnQueue()) do
+                if not player.hasbeennotified then
+                    Server.SendNetworkMessage(Server.GetOwner(player), "SetTimeWaveSpawnEnds", { time = (self.lastWaveSpawn + 1 + (self:GetWaveSpawnTime() * tmod)) }, true)
+                    player.hasbeennotified = true
+                end
+                pcount = pcount + 1
+                if pcount >= self:GetRespawnsPerWave() then
+                    tmod = tmod + 1
+                    pcount = 0
+                end
+            end
+            
+        end
+        if self:GetNumPlayersInQueue() == 0 or self.spawnsthiswave >= self:GetRespawnsPerWave() then
+        
+            //NO MORE YAY!
+            self.spawnsthiswave = 0
+            self.lastWaveSpawn = time
+            self.timeLastWaveSpawnCheck = time
+            
+        end
+    end
+    
+end
+
 function PlayingTeam:PrintWorldTextForTeamInRange(messageType, data, position, range)
 
     local playersInRange = GetEntitiesForTeamWithinRange("Player", self:GetTeamNumber(), position, range)
@@ -821,7 +898,7 @@ function PlayingTeam:UpdateTechTree()
     PROFILE("PlayingTeam:UpdateTechTree")
     
     // Compute tech tree availability only so often because it's very slooow
-    if self.techTree and (self.timeOfLastTechTreeUpdate == nil or Shared.GetTime() > self.timeOfLastTechTreeUpdate + PlayingTeam.kTechTreeUpdateTime) and CheckNS2GameMode() == kGameMode.Classic then
+    if self.techTree and (self.timeOfLastTechTreeUpdate == nil or Shared.GetTime() > self.timeOfLastTechTreeUpdate + PlayingTeam.kTechTreeUpdateTime) then
 
         self.techTree:Update(self.entityTechIds, self.techIdCount)
         
@@ -843,7 +920,6 @@ function PlayingTeam:UpdateTechTree()
             if player:GetSendTechTreeBase() then
             
                 self.techTree:SendTechTreeBase(player)
-                
                 player:ClearSendTechTreeBase()
                 
             end
@@ -862,14 +938,6 @@ function PlayingTeam:UpdateTechTree()
 end
 
 function PlayingTeam:OnTechTreeUpdated()
-end
-
-// Update from alien team instead of in alien buildings think because we need to clear
-// game effect flag too.
-function PlayingTeam:UpdateGameEffects(timePassed)
-
-    PROFILE("PlayingTeam:UpdateGameEffects")  
-
 end
 
 function PlayingTeam:UpdateTeamSpecificGameEffects()
@@ -948,7 +1016,7 @@ function PlayingTeam:VoteToEjectCommander(votingPlayer, targetCommander)
 
             local netmsg = {
                 voterName = votingPlayer:GetName(),
-                votesMoreNeeded = vote:GetNumVotesNeeded()-vote:GetNumVotesCast()
+                votesMoreNeeded = (vote:GetNumVotesNeeded() - vote:GetNumVotesCast()) or 0
             }
 
             local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
@@ -980,7 +1048,7 @@ function PlayingTeam:UpdateVotes()
 
     PROFILE("PlayingTeam:UpdateVotes")
     
-    if CheckNS2GameMode() == kGameMode.Classic then
+    if GetServerGameMode() == kGameMode.Classic then
         // Update with latest team size
         self.ejectCommVoteManager:SetNumPlayers(self:GetNumPlayers())
         self.concedeVoteManager:SetNumPlayers(self:GetNumPlayers())

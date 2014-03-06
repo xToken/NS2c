@@ -11,6 +11,7 @@
 //Added HA pickup, fury kill rewards and removed old blinds.  Made some vars local.
 
 local kDieSoundName = PrecacheAsset("sound/NS2.fev/marine/common/death")
+local kSpendResourcesSoundName = PrecacheAsset("sound/NS2.fev/marine/common/player_spend_nanites")
 local kPlayerPhaseDelay = 2
 
 local function UpdateUnitStatusPercentage(self, target)
@@ -36,17 +37,6 @@ function Marine:SetUnitStatusPercentage(percentage)
     self.timeLastUnitPercentageUpdate = Shared.GetTime()
 end
 
-function Marine:OnTakeDamage(damage, attacker, doer, point)
-    
-    if damage > 50 and (not self.timeLastDamageKnockback or self.timeLastDamageKnockback + 1 < Shared.GetTime()) then    
-    
-        self:AddPushImpulse(GetNormalizedVectorXZ(self:GetOrigin() - point) * damage * 0.025)
-        self.timeLastDamageKnockback = Shared.GetTime()
-        
-    end
-    
-end
-
 function Marine:GetDamagedAlertId()
     return kTechId.MarineAlertSoldierUnderAttack
 end
@@ -62,7 +52,7 @@ function Marine:InitWeapons()
 
     Player.InitWeapons(self)
     
-    self:GiveItem(Rifle.kMapName)
+    self:GiveItem(Rifle.kMapName)    
     self:GiveItem(Pistol.kMapName)
     self:GiveItem(Axe.kMapName)
     self:GiveItem(Builder.kMapName)
@@ -71,56 +61,6 @@ function Marine:InitWeapons()
     end
 	self:SetQuickSwitchTarget(Pistol.kMapName)
     self:SetActiveWeapon(Rifle.kMapName)
-
-end
-
-local function GetHostSupportsTechId(forPlayer, host, techId)
-
-    if Shared.GetCheatsEnabled() then
-        return true
-    end
-    
-    local techFound = false
-    
-    if host.GetItemList then
-    
-        for index, supportedTechId in ipairs(host:GetItemList(forPlayer)) do
-        
-            if supportedTechId == techId then
-            
-                techFound = true
-                break
-                
-            end
-            
-        end
-        
-    end
-    
-    return techFound
-    
-end
-
-function GetHostStructureFor(entity, techId)
-
-    local hostStructures = {}
-    table.copy(GetEntitiesForTeamWithinRange("Armory", entity:GetTeamNumber(), entity:GetOrigin(), Armory.kResupplyUseRange), hostStructures, true)
-    table.copy(GetEntitiesForTeamWithinRange("PrototypeLab", entity:GetTeamNumber(), entity:GetOrigin(), PrototypeLab.kResupplyUseRange), hostStructures, true)
-    
-    if table.count(hostStructures) > 0 then
-    
-        for index, host in ipairs(hostStructures) do
-        
-            // check at first if the structure is hostign the techId:
-            if GetHostSupportsTechId(entity,host, techId) then
-                return host
-            end
-        
-        end
-            
-    end
-    
-    return nil
 
 end
 
@@ -159,8 +99,164 @@ function Marine:OnOverrideOrder(order)
     
 end
 
-function Marine:AttemptToBuy(techIds)
-    return false 
+local function DestroyMarineWeaponInSlot(self, slot)
+    local hasWeapon = self:GetWeaponInHUDSlot(slot)
+    if hasWeapon then
+        self:RemoveWeapon(hasWeapon)
+        DestroyEntity(hasWeapon)
+        return true
+    end
+    return false
+end
+
+
+function Marine:OnRestoreUpgrades()
+
+    local player = Player.OnRestoreUpgrades(self)
+    
+    if not player:isa("JetpackMarine") and player:GetHasUpgrade(kTechId.Jetpack) then
+        //I believe these trigger a Replace, so want to make sure this doesnt loop, but also doesnt get messy.
+        player = self:GiveJetpack()
+        player:UpdateArmorAmount()
+    elseif not player:isa("HeavyArmorMarine") and player:GetHasUpgrade(kTechId.HeavyArmor) then
+        player = self:GiveHeavyArmor()
+        player:UpdateArmorAmount()
+    end
+    
+    if player:GetHasUpgrade(kTechId.Mines) then
+        player:GiveItem(Mines.kMapName)
+    end
+    if player:GetHasUpgrade(kTechId.Welder) then
+        player:GiveItem(Welder.kMapName)
+    elseif player:GetHasUpgrade(kTechId.HandGrenades) then
+        player:GiveItem(HandGrenades.kMapName)
+    end
+
+    if player:GetHasUpgrade(kTechId.HeavyMachineGun) then
+        DestroyMarineWeaponInSlot(player, 1)
+        player:GiveItem(HeavyMachineGun.kMapName)
+    elseif player:GetHasUpgrade(kTechId.GrenadeLauncher) then
+        DestroyMarineWeaponInSlot(player, 1)
+        player:GiveItem(GrenadeLauncher.kMapName)
+    elseif player:GetHasUpgrade(kTechId.Shotgun) then
+        DestroyMarineWeaponInSlot(player, 1)
+        player:GiveItem(Shotgun.kMapName)
+    end
+    
+    if player:GetHasUpgrade(kTechId.MedPack) then
+        player.hasresupply = true
+    elseif player:GetHasUpgrade(kTechId.CatPack) then
+        player.hascatpacks = true
+    elseif player:GetHasUpgrade(kTechId.Scan) then
+        player.hasscan = true
+    end
+    
+    return player
+    
+end
+
+function Marine:OnGiveUpgrade(upgradeId)
+
+    Player.OnGiveUpgrade(self, upgradeId)
+    
+    if upgradeId == kTechId.MedPack then
+        self.hasresupply = true
+    elseif upgradeId == kTechId.CatPack then
+        self.hascatpacks = true
+    elseif upgradeId == kTechId.Scan then
+        self.hasscan = true
+    end
+    
+    if upgradeId == kTechId.Armor1 or upgradeId == kTechId.Armor2 or upgradeId == kTechId.Armor3 then
+        self:UpdateArmorAmount()
+    end
+    
+end
+
+function Marine:ProcessBuyAction(techIds)
+
+    ASSERT(type(techIds) == "table")
+    ASSERT(table.count(techIds) > 0)
+    
+    local techTree = self:GetTechTree()
+    local buyAllowed = true
+    local totalCost = 0
+    local validBuyIds = { }
+    
+    for i, techId in ipairs(techIds) do
+    
+        local techNode = self:GetTechTree():GetTechNode(techId)
+        if techNode ~= nil then
+            local prereq1 = techNode:GetPrereq1()
+            local prereq2 = techNode:GetPrereq2()
+        
+            buyAllowed = (prereq1 == kTechId.None or self:GetHasUpgrade(prereq1)) and (prereq2 == kTechId.None or self:GetHasUpgrade(prereq2))
+            local cost = LookupTechData(techId, kTechDataCostKey, 0)
+            if cost ~= nil and buyAllowed then
+                totalCost = totalCost + cost
+                table.insert(validBuyIds, techId)
+            else
+                buyAllowed = false
+                break
+            end
+        end
+        
+    end
+    
+    if totalCost <= self:GetResources() and buyAllowed then
+    
+        local newPlayer, valid = self:AttemptToBuy(validBuyIds)
+        if valid then
+            newPlayer:AddResources(-totalCost)
+            
+            Shared.PlayPrivateSound(self, kSpendResourcesSoundName, nil, 1.0, newPlayer:GetOrigin())
+            return true
+        end
+        
+    else
+        Server.PlayPrivateSound(self, self:GetNotEnoughResourcesSound(), self, 1.0, self:GetOrigin())        
+    end
+
+    return false
+    
+end
+
+local kWeaponTable = {kTechId.HeavyMachineGun, kTechId.GrenadeLauncher, kTechId.Shotgun, kTechId.Welder, kTechId.Mines, kTechId.HandGrenades }
+
+function Marine:AttemptToBuy(validBuyIds)
+    //Marines buy upgrades one at a time.
+    
+    local player = self
+    local success = true
+    
+    for i, techId in ipairs(validBuyIds) do
+    
+        if techId == kTechId.Jetpack and not player:isa("JetpackMarine") then
+            player = player:GiveJetpack()
+            player:UpdateArmorAmount()
+        elseif techId == kTechId.HeavyArmor and not player:isa("HeavyArmorMarine") then
+            player = player:GiveHeavyArmor()
+            player:UpdateArmorAmount()
+        elseif table.contains(kWeaponTable, techId) then
+            //GUNZ
+            if techId == kTechId.HeavyMachineGun or techId == kTechId.GrenadeLauncher or techId == kTechId.Shotgun then
+                DestroyMarineWeaponInSlot(player, 1)
+            end
+            if techId == kTechId.HandGrenades and self:GetHasUpgrade(kTechId.Welder) then
+                //Nope
+            elseif player:GiveItem(LookupTechData(techId, kTechDataMapName)) then
+                StartSoundEffectAtOrigin(Marine.kGunPickupSound, player:GetOrigin())                    
+            end
+        else
+            //Normal upgrade
+        end
+
+        player:GiveUpgrade(techId)
+    
+    end
+    
+    return player, success
+    
 end
 
 // special threatment for mines and welders
@@ -225,7 +321,9 @@ end
 function Marine:OnKill(attacker, doer, point, direction)
 
     // Drop all weapons which cost resources
-    self:DropAllWeapons()
+    if GetServerGameMode() == kGameMode.Classic then
+        self:DropAllWeapons()
+    end
     
     // Destroy remaining weapons
     self:DestroyWeapons()
@@ -263,6 +361,30 @@ function Marine:GetOriginOnDeath()
     return self.originOnDeath
 end
 
+function Marine:OnTakeDamage(damage, attacker, doer, point)
+	if damage > 0 then
+	    self:CheckCatalyst()
+	end	
+end
+
+function Marine:CheckCatalyst()
+    //hascatpacks
+    local time = Shared.GetTime()
+    if self.hascatpacks and (self.lastcombatcatpack == nil or self.lastcombatcatpack + kMarineCombatCatalystTime < time) then
+        StartSoundEffectAtOrigin(CatPack.kPickupSound, self:GetOrigin())
+        self:ApplyCatPack()
+        self.lastcombatcatpack = time
+    end
+end
+
+function Marine:OnPrimaryAttack()
+    self:CheckCatalyst()
+end
+
+function Marine:OnSecondaryAttack()
+    self:CheckCatalyst()
+end
+
 function Marine:GiveJetpack()
 
     local activeWeapon = self:GetActiveWeapon()
@@ -277,6 +399,7 @@ function Marine:GiveJetpack()
     
     jetpackMarine:SetActiveWeapon(activeWeaponMapName)
     jetpackMarine:SetHealth(health)
+    return jetpackMarine
     
 end
 
@@ -294,6 +417,7 @@ function Marine:GiveHeavyArmor()
         
     HAMarine:SetActiveWeapon(activeWeaponMapName)
     HAMarine:SetHealth(health)
+    return HAMarine
     
 end
 
@@ -303,5 +427,6 @@ function Marine:GiveExo(type)
     self:DropAllWeapons()
     local ExoMarine = self:Replace(Exo.kMapName, self:GetTeamNumber(), false, Vector(self:GetOrigin()), { layout = type })
     ExoMarine:SetHealth(health)
+    return ExoMarine
     
 end

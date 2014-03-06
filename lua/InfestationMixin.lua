@@ -39,13 +39,13 @@ InfestationMixin.expectedMixins =
     Live = "InfestationMixin makes only sense if this entity can take damage (has LiveMixin).",
 }
 
-InfestationMixin.expectedCallbacks =
+InfestationMixin.optionalCallbacks =
 {
     // Returns integer for infestation patch size
-    GetMaxRadius = "",
-    GetGrowthRate = "",
-    GetInfestationDensity = "",
-    GetMinRadius = ""
+    OverrideGetMaxRadius = "",
+    OverrideGetMinRadius = "",
+    OverrideGetGrowthRate = "",
+    OverrideGetInfestationDensity = ""
 }
 
 InfestationMixin.networkVars =
@@ -62,9 +62,36 @@ function InfestationMixin:OnConstructionComplete()
 	self.timeCycleStarted = Shared.GetTime()
 end
 
+function InfestationMixin:GetMaxRadius()
+    if self.OverrideGetMaxRadius then
+        return self:OverrideGetMaxRadius()
+    end
+    return kInfestationRadius
+end
+
+function InfestationMixin:GetMinRadius()
+    if self.OverrideGetMinRadius then
+        return self:OverrideGetMinRadius()
+    end
+    return kMinInfestationRadius
+end
+
+function InfestationMixin:GetGrowthRate()
+    if self.OverrideGetGrowthRate then
+        return self:OverrideGetGrowthRate()
+    end
+    return kInfestationGrowthRate
+end
+
+function InfestationMixin:GetInfestationDensity()
+    if self.OverrideGetInfestationDensity then
+        return self:OverrideGetInfestationDensity()
+    end
+    return kInfestationBlobDensity
+end
+
 function InfestationMixin:__initmixin()
     
- 
     self.timeCycleEnded = 0
     self.timeCycleStarted = 0
 	

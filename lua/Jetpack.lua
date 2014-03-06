@@ -10,7 +10,7 @@
 //Changed pickup sound, altered so HA cannot have jp also.
 
 Script.Load("lua/ScriptActor.lua")
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/PickupableMixin.lua")
 Script.Load("lua/JetpackOnBack.lua")
@@ -35,7 +35,7 @@ Jetpack.kAnimFly = "jetpack"
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 
@@ -44,7 +44,7 @@ function Jetpack:OnCreate ()
     ScriptActor.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, SelectableMixin)
     
@@ -105,7 +105,7 @@ if Server then
         if self:GetIsValidRecipient(player) then
         
             player:GiveJetpack()
-            self:TriggerEffects("pickup")
+            player:TriggerEffects("pickup")
             DestroyEntity(self)
             
         end

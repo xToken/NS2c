@@ -2,7 +2,7 @@
 // lua\HeavyArmor.lua
 
 Script.Load("lua/ScriptActor.lua")
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/PickupableMixin.lua")
 
@@ -19,7 +19,7 @@ HeavyArmor.kThinkInterval = .5
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 
 function HeavyArmor:OnCreate ()
@@ -27,7 +27,7 @@ function HeavyArmor:OnCreate ()
     ScriptActor.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, TeamMixin)
     
     InitMixin(self, PickupableMixin, { kRecipientType = "Marine" })
@@ -82,9 +82,9 @@ if Server then
     
         if self:GetIsValidRecipient(player) then
         
-            DestroyEntity(self)
-            StartSoundEffectAtOrigin(HeavyArmor.kPickupSound, player:GetOrigin())
             player:GiveHeavyArmor()
+            StartSoundEffectAtOrigin(HeavyArmor.kPickupSound, player:GetOrigin())
+            DestroyEntity(self)
             
         end
         

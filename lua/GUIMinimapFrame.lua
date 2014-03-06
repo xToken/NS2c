@@ -14,6 +14,10 @@ class 'GUIMinimapFrame' (GUIMinimap)
 
 local desiredSpawnPosition = nil
 local isRespawning = false
+local function OnSetIsRespawning(message)
+    isRespawning = message.isRespawning
+end
+Client.HookNetworkMessage("SetIsRespawning", OnSetIsRespawning)
 
 function GetPlayerIsSpawning()
     return isRespawning
@@ -122,9 +126,9 @@ end
 function GUIMinimapFrame:SendKeyEvent(key, down)
 
     local handledInput = false
-    local choosingSpawn = isRespawning and self.background:GetIsVisible()
+    local choosingSpawn = false
     
-    if isRespawning and GetIsBinding(key, "ShowMap") and not ChatUI_EnteringChatMessage() then
+    if false and GetIsBinding(key, "ShowMap") and not ChatUI_EnteringChatMessage() then
     
         if not down then
     
@@ -172,7 +176,7 @@ function GUIMinimapFrame:Update(deltaTime)
 
     PROFILE("GUIMinimapFrame:Update")
     
-    local showMouse = self.background:GetIsVisible() and isRespawning
+    local showMouse = false
     if showMouse ~= self.showingMouse then
     
         MouseTracker_SetIsVisible(showMouse, "ui/Cursor_MenuDefault.dds", true)
@@ -180,7 +184,7 @@ function GUIMinimapFrame:Update(deltaTime)
         
     end
 
-    self.chooseSpawnText:SetIsVisible(not self.background:GetIsVisible() and isRespawning)
+    self.chooseSpawnText:SetIsVisible(false)
     
     self.minimapFrame:SetIsVisible(PlayerUI_GetTeamType() == kMarineTeamType and self.comMode == GUIMinimapFrame.kModeMini)
     self.smokeyBackground:SetIsVisible(PlayerUI_GetTeamType() == kAlienTeamType and self.comMode == GUIMinimapFrame.kModeMini)

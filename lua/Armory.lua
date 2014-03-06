@@ -9,7 +9,7 @@
 //NS2c
 //Removed unneeded mixins and adjusted weapon techids
 
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
@@ -63,18 +63,10 @@ end
 
 Shared.PrecacheSurfaceShader("models/marine/armory/health_indicator.surface_shader")
     
-local networkVars =
-{
-    // How far out the arms are for animation (0-1)
-    loggedInEast     = "boolean",
-    loggedInNorth    = "boolean",
-    loggedInSouth    = "boolean",
-    loggedInWest     = "boolean",
-    deployed         = "boolean"
-}
+local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
@@ -97,7 +89,7 @@ function Armory:OnCreate()
     ScriptActor.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, LiveMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, TeamMixin)
@@ -121,31 +113,15 @@ function Armory:OnCreate()
         InitMixin(self, CommanderGlowMixin)
     end
 
+    self:SetUpdates(false)
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup)
-    
-    // False if the player that's logged into a side is only nearby, true if
-    // the pressed their key to open the menu to buy something. A player
-    // must use the armory once "logged in" to be able to buy anything.
-    self.loginEastAmount = 0
-    self.loginNorthAmount = 0
-    self.loginWestAmount = 0
-    self.loginSouthAmount = 0
-    
-    self.timeScannedEast = 0
-    self.timeScannedNorth = 0
-    self.timeScannedWest = 0
-    self.timeScannedSouth = 0
-    
-    self.deployed = false
     
 end
 
 // Check if friendly players are nearby and facing armory and heal/resupply them
 local function LoginAndResupply(self)
-
-    self:UpdateLoggedIn()
     
     // Make sure players are still close enough, alive, marines, etc.
     // Give health and ammo to nearby players.
@@ -183,7 +159,6 @@ function Armory:OnInitialized()
         
     elseif Client then
     
-        self:OnInitClient()        
         InitMixin(self, UnitStatusMixin)
         
     end
@@ -194,24 +169,6 @@ end
 
 function Armory:GetCanBeUsedConstructed(byPlayer)
     return false
-end
-
-function Armory:GetTechIfResearched(buildId, researchId)
-
-    local techTree = nil
-    if Server then
-        techTree = self:GetTeam():GetTechTree()
-    else
-        techTree = GetTechTree()
-    end
-    ASSERT(techTree ~= nil)
-    
-    // If we don't have the research, return it, otherwise return buildId
-    local researchNode = techTree:GetTechNode(researchId)
-    ASSERT(researchNode ~= nil)
-    ASSERT(researchNode:GetIsResearch())
-    return ConditionalValue(researchNode:GetResearched(), buildId, researchId)
-    
 end
 
 function Armory:GetTechButtons(techId)
@@ -228,79 +185,6 @@ function Armory:GetTechButtons(techId)
 
     return techButtons
 
-end
-
-function Armory:OnUpdatePoseParameters()
-
-    if GetIsUnitActive(self) and self.deployed then
-        
-        if self.loginNorthAmount then
-            self:SetPoseParam("log_n", self.loginNorthAmount)
-        end
-        
-        if self.loginSouthAmount then
-            self:SetPoseParam("log_s", self.loginSouthAmount)
-        end
-        
-        if self.loginEastAmount then
-            self:SetPoseParam("log_e", self.loginEastAmount)
-        end
-        
-        if self.loginWestAmount then
-            self:SetPoseParam("log_w", self.loginWestAmount)
-        end
-        
-        if self.scannedParamValue then
-        
-            for extension, value in pairs(self.scannedParamValue) do
-                self:SetPoseParam("scan_" .. extension, value)
-            end
-            
-        end
-        
-    end
-    
-end
-
-local function UpdateArmoryAnim(self, extension, loggedIn, scanTime, timePassed)
-
-    local loggedInName = "log_" .. extension
-    local loggedInParamValue = ConditionalValue(loggedIn, 1, 0)
-
-    if extension == "n" then
-        self.loginNorthAmount = Clamp(Slerp(self.loginNorthAmount, loggedInParamValue, timePassed * 2), 0, 1)
-    elseif extension == "s" then
-        self.loginSouthAmount = Clamp(Slerp(self.loginSouthAmount, loggedInParamValue, timePassed * 2), 0, 1)
-    elseif extension == "e" then
-        self.loginEastAmount = Clamp(Slerp(self.loginEastAmount, loggedInParamValue, timePassed * 2), 0, 1)
-    elseif extension == "w" then
-        self.loginWestAmount = Clamp(Slerp(self.loginWestAmount, loggedInParamValue, timePassed * 2), 0, 1)
-    end
-    
-    local scannedName = "scan_" .. extension
-    self.scannedParamValue = self.scannedParamValue or { }
-    self.scannedParamValue[extension] = ConditionalValue(scanTime == 0 or (Shared.GetTime() > scanTime + 3), 0, 1)
-    
-end
-
-function Armory:OnUpdate(deltaTime)
-
-    if Client then
-        self:UpdateArmoryWarmUp()
-    end
-    
-    if GetIsUnitActive(self) and self.deployed then
-    
-        // Set pose parameters according to if we're logged in or not
-        UpdateArmoryAnim(self, "e", self.loggedInEast, self.timeScannedEast, deltaTime)
-        UpdateArmoryAnim(self, "n", self.loggedInNorth, self.timeScannedNorth, deltaTime)
-        UpdateArmoryAnim(self, "w", self.loggedInWest, self.timeScannedWest, deltaTime)
-        UpdateArmoryAnim(self, "s", self.loggedInSouth, self.timeScannedSouth, deltaTime)
-        
-    end
-    
-    ScriptActor.OnUpdate(self, deltaTime)
-    
 end
 
 function Armory:GetRequiresPower()
@@ -321,6 +205,16 @@ end
 
 function Armory:GetDamagedAlertId()
     return kTechId.MarineAlertStructureUnderAttack
+end
+
+function Armory:OnUpdatePoseParameters()
+    if not self.setpose then
+        self:SetPoseParam("log_n", 0)
+        self:SetPoseParam("log_s", 0)
+        self:SetPoseParam("log_e", 0)
+        self:SetPoseParam("log_w", 0)
+        self.setpose = true
+    end    
 end
 
 Shared.LinkClassToMap("Armory", Armory.kMapName, networkVars)

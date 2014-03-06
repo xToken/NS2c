@@ -15,22 +15,23 @@ function WebsAbility:GetEnergyCost(player)
 end
 
 function WebsAbility:GetGhostModelName(ability)
-    return Web.kModelName
+    return Bomb.kModelName
 end
 
 function WebsAbility:GetDropRange()
     return kMaxWebBuildRange
 end
 
-function WebsAbility:GetDropStructureId(ModelCheck)
-    if ModelCheck then
-        return kTechId.WebStalk
-    end
+function WebsAbility:GetDropStructureId()
     return kTechId.Web
 end
 
 function WebsAbility:GetRequiredTechId()
     return kTechId.ThreeHives
+end
+
+function WebsAbility:AllowBackfacing()
+    return true
 end
 
 function WebsAbility:GetSuffixName()
@@ -75,4 +76,9 @@ end
 function WebsAbility:IsAllowed(player)
     local structures = GetEntitiesForTeamWithinRange(self:GetDropClassName(), player:GetTeamNumber(), player:GetEyePos(), kMaxAlienStructureRange)
     return GetHasTech(player, self:GetRequiredTechId()) and #structures < kMaxAlienStructuresofType
+end
+
+local kWebOffset = 0.1
+function WebsAbility:ModifyCoords(coords)
+    coords.origin = coords.origin + coords.yAxis * kWebOffset
 end

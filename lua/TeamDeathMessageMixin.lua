@@ -77,7 +77,13 @@ function TeamDeathMessageMixin:GetDeathMessage(killer, doerIconIndex, targetEnti
     local targetIsPlayer = targetEntity:isa("Player")
     local targetIndex = -1
     if targetIsPlayer then
-        targetIndex = targetEntity:GetClientIndex()
+    
+        if targetEntity.isHallucination then
+            targetIndex = targetEntity:GetHallucinatedClientIndex()
+        else
+            targetIndex = targetEntity:GetClientIndex()
+        end
+        
     else
         targetIndex = targetEntity:GetTechId()
     end

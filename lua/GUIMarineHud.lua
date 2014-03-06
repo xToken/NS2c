@@ -112,6 +112,9 @@ GUIMarineHUD.kLocationTextOffset = Vector(280, 5, 0)
 GUIMarineHUD.kTeamResourcesTextSize = 22
 GUIMarineHUD.kTeamResourcesTextOffset = Vector(410, 280, 0)
 
+GUIMarineHUD.kExperienceTextPos = Vector(780, -17, 0)
+GUIMarineHUD.kLevelTextPos = Vector(560, -18, 0)
+
 // the hud will not show more notifications than at this intervall to prevent too much spam
 GUIMarineHUD.kNotificationUpdateIntervall = 0.2
 
@@ -234,6 +237,31 @@ function GUIMarineHUD:Initialize()
     self.mtracking:SetAnchor(GUIItem.Right, GUIItem.Center)
     self.background:AddChild(self.mtracking)
     
+    self.levelText = self:CreateAnimatedTextItem()
+    self.levelText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
+    self.levelText:SetTextAlignmentX(GUIItem.Align_Max)
+    self.levelText:SetTextAlignmentY(GUIItem.Align_Max)
+    self.levelText:SetColor(GUIMarineStatus.kArmorBarColor)
+    self.levelText:SetFontIsBold(false)
+    self.levelText:SetBlendTechnique(GUIItem.Add)
+    self.levelText:SetFontName(GUIMarineStatus.kFontName)
+    self.levelText:SetText("Level 1")
+    self.background:AddChild(self.levelText)
+    
+    self.experienceText = self:CreateAnimatedTextItem()
+    self.experienceText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
+    self.experienceText:SetTextAlignmentX(GUIItem.Align_Max)
+    self.experienceText:SetTextAlignmentY(GUIItem.Align_Max)
+    self.experienceText:SetColor(GUIMarineStatus.kArmorBarColor)
+    self.experienceText:SetFontIsBold(false)
+    self.experienceText:SetBlendTechnique(GUIItem.Add)
+    self.experienceText:SetFontName(GUIMarineStatus.kFontName)
+    self.experienceText:SetText("100 XP")
+    self.background:AddChild(self.experienceText)
+    
+    self.lastxp = 0
+    self.lastlevel = 0
+    
     self.statusDisplay = CreateStatusDisplay(self, kGUILayerPlayerHUDForeground1, self.background)
     self.eventDisplay = CreateEventDisplay(self, kGUILayerPlayerHUDForeground1, self.background, true)
     
@@ -241,7 +269,7 @@ function GUIMarineHUD:Initialize()
     style.textColor = kBrightColor
     style.textureSet = "marine"
     style.displayTeamRes = true
-
+    self.resourceDisplay = CreatePlayerResourceDisplay(self, kGUILayerPlayerHUDForeground1, self.background, style)
     self.fuelDisplay = CreateFuelDisplay(self, kGUILayerPlayerHUDForeground1, self.background)
     self.inventoryDisplay = CreateInventoryDisplay(self, kGUILayerPlayerHUDForeground1, self.background)
     
@@ -339,7 +367,12 @@ function GUIMarineHUD:Uninitialize()
         self.eventDisplay:Destroy()   
         self.eventDisplay = nil 
     end
-
+    
+    if self.resourceDisplay then
+        self.resourceDisplay:Destroy()
+        self.resourceDisplay = nil
+    end
+    
     if self.fuelDisplay then
         self.fuelDisplay:Destroy()
         self.fuelDisplay = nil
@@ -402,13 +435,12 @@ function GUIMarineHUD:Reset()
     
     self.statusDisplay:Reset(self.scale)
     self.eventDisplay:Reset(self.scale)
-    //self.resourceDisplay:Reset(self.scale)
+    self.resourceDisplay:Reset(self.scale)
     self.inventoryDisplay:Reset(self.scale)
     
     self.armorLevel:SetPosition(GUIMarineHUD.kUpgradePos * self.scale)
     self.armorLevel:SetSize(GUIMarineHUD.kUpgradeSize * self.scale)
     self.armorLevel:SetIsVisible(false)    
-    
     
     self.weaponLevel:SetPosition(Vector(GUIMarineHUD.kUpgradePos.x, GUIMarineHUD.kUpgradePos.y + GUIMarineHUD.kUpgradeSize.y + 8, 0) * self.scale)
     self.weaponLevel:SetSize(GUIMarineHUD.kUpgradeSize * self.scale)
@@ -417,6 +449,14 @@ function GUIMarineHUD:Reset()
     self.mtracking:SetPosition(Vector(GUIMarineHUD.kUpgradePos.x, GUIMarineHUD.kUpgradePos.y + GUIMarineHUD.kUpgradeSize.y + GUIMarineHUD.kUpgradeSize.y + 16, 0) * self.scale)
     self.mtracking:SetSize(GUIMarineHUD.kUpgradeSize * self.scale)
     self.mtracking:SetIsVisible(false)
+        
+    self.levelText:SetScale(Vector(1,1,1) * self.scale * 1.2)
+    self.levelText:SetScale(GetScaledVector() * 0.8)
+    self.levelText:SetPosition(GUIMarineHUD.kLevelTextPos)
+    
+    self.experienceText:SetScale(Vector(1,1,1) * self.scale * 1.2)
+    self.experienceText:SetScale(GetScaledVector() * 0.8)
+    self.experienceText:SetPosition(GUIMarineHUD.kExperienceTextPos)
     
     if self.minimapEnabled then    
         self:ResetMinimap()       
@@ -521,7 +561,15 @@ function GUIMarineHUD:Update(deltaTime)
     
     // Update health / armor bar
     self.statusDisplay:Update(deltaTime, { PlayerUI_GetPlayerHealth(), PlayerUI_GetPlayerMaxHealth(), PlayerUI_GetPlayerArmor(), PlayerUI_GetPlayerMaxArmor(), PlayerUI_GetPlayerParasiteState() } )
-
+    
+    // Update resource display
+    if PlayerUI_GetGameMode() == kGameMode.Combat then
+        self.resourceDisplay:SetVisibleState(true)
+        self.resourceDisplay:Update(deltaTime, { PlayerUI_GetTeamResources(), PlayerUI_GetPersonalResources(), CommanderUI_GetTeamHarvesterCount() } )
+    elseif PlayerUI_GetGameMode() == kGameMode.Classic then
+        self.resourceDisplay:SetVisibleState(false)
+    end
+    
     // Update notifications and events
     if self.lastNotificationUpdate + GUIMarineHUD.kNotificationUpdateIntervall < Client.GetTime() then
     
@@ -662,6 +710,25 @@ function GUIMarineHUD:Update(deltaTime)
         useObsColor = Color(1, 0, 0, 1)
     end
     self.mtracking:SetColor(useObsColor)
+    
+    if PlayerUI_GetGameMode() == kGameMode.Classic then
+    
+        self.experienceText:SetIsVisible(false)
+        self.levelText:SetIsVisible(false)
+        
+    elseif PlayerUI_GetGameMode() == kGameMode.Combat then
+    
+        self.experienceText:SetIsVisible(true)
+        self.levelText:SetIsVisible(true)
+        
+        local level = PlayerUI_GetCurrentLevel()
+        local xp = PlayerUI_GetCurrentXP()
+        local nxp = PlayerUI_GetNextLevelXP()
+        
+        self.experienceText:SetText(ToString(math.floor(xp)) .. " XP / " .. ToString(math.floor(nxp)) .. " XP")
+        self.levelText:SetText("Level " .. ToString(math.floor(level)))
+        
+    end
     
     // Updates animations
     GUIAnimatedScript.Update(self, deltaTime)

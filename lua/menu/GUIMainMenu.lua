@@ -1,8 +1,8 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
+// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =====
 //
 // lua\menu\GUIMainMenu.lua
 //
-//    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at) and
+//    Created by:   Andreas Urwalek (andi@unknownworld.com) and
 //                  Brian Cronin (brianc@unknownworlds.com)
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
@@ -20,8 +20,7 @@ Script.Load("lua/menu/Ticker.lua")
 Script.Load("lua/ServerBrowser.lua")
 Script.Load("lua/menu/Form.lua")
 Script.Load("lua/menu/ServerList.lua")
-//Script.Load("lua/menu/GatherList.lua")
-//Script.Load("lua/menu/GatherChat.lua")
+Script.Load("lua/menu/GatherFrame.lua")
 Script.Load("lua/menu/ServerTabs.lua")
 Script.Load("lua/menu/PlayerEntry.lua")
 Script.Load("lua/dkjson.lua")
@@ -34,7 +33,7 @@ Script.Load("lua/menu/GUIMainMenu_PlayNow.lua")
 Script.Load("lua/menu/GUIMainMenu_Mods.lua")
 Script.Load("lua/menu/GUIMainMenu_Training.lua")
 Script.Load("lua/menu/GUIMainMenu_Web.lua")
-//Script.Load("lua/menu/GUIMainMenu_Gather.lua")
+Script.Load("lua/menu/GUIMainMenu_Gather.lua")
 
 // Min and maximum values for the mouse sensitivity slider
 local kMinSensitivity = 1
@@ -115,6 +114,8 @@ function GUIMainMenu:TriggerOpenAnimation(window)
 
     end
 
+	MainMenu_OnPlayButtonClicked()
+
 end
     
 
@@ -156,6 +157,8 @@ function GUIMainMenu:Initialize()
         self.newsScript = GetGUIManager():CreateGUIScript("menu/GUIMainMenuNews")
     end
     
+	self.optionTooltip = GetGUIManager():CreateGUIScript("menu/GUIHoverTooltip")
+	
     self.openedWindows = 0
     self.numMods = 0
     
@@ -194,7 +197,14 @@ function GUIMainMenu:Initialize()
     self:CreatePasswordPromptWindow()
     self:CreateAutoJoinWindow()
     self:CreateAlertWindow()
-    
+	self:CreatePlayWindow()    
+	self.playWindow:SetIsVisible(false)
+	
+	if not MainMenu_IsInGame() then
+		self:CreateOptionWindow()
+		self.optionWindow:SetIsVisible(false)
+	end
+	
     self.scanLine = CreateMenuElement(self.mainWindow, "Image")
     self.scanLine:SetCSSClass("scanline")
 
@@ -242,7 +252,7 @@ function GUIMainMenu:Initialize()
             end
         })
         
-        self.playLink = self:CreateMainLink("PLAY", "play_ingame", "04")
+        self.playLink = self:CreateMainLink("SERVER BROWSER", "play_ingame", "04")
         self.playLink:AddEventCallbacks(
         {
             OnClick = function()
@@ -250,17 +260,13 @@ function GUIMainMenu:Initialize()
             end
         })
 
-		
-        /*
-        self.gatherLink = self:CreateMainLink("GATHER", "gather_ingame", "05")
+        self.gatherLink = self:CreateMainLink("ORGANIZED PLAY", "gather_ingame", "05")
         self.gatherLink:AddEventCallbacks(
         {
             OnClick = function()
                 self:ActivateGatherWindow()
             end
         })
-        */
-
 		
         self.optionLink = self:CreateMainLink("OPTIONS", "options_ingame", "06")
         self.optionLink:AddEventCallbacks(
@@ -307,22 +313,22 @@ function GUIMainMenu:Initialize()
         
     else
     
-        self.playLink = self:CreateMainLink("PLAY", "play", "01")
+        self.playLink = self:CreateMainLink("SERVER BROWSER", "play", "01")
         self.playLink:AddEventCallbacks(
         {
             OnClick = function()
                 self:OnPlayClicked()
             end
         })
-        /*
-        self.gatherLink = self:CreateMainLink("GATHER", "gather", "02")
+
+        self.gatherLink = self:CreateMainLink("ORGANIZED PLAY", "gather", "02")
         self.gatherLink:AddEventCallbacks(
         {
             OnClick = function()
                 self:ActivateGatherWindow()
             end
         })
-        */
+
         self.trainingLink = self:CreateMainLink("TRAINING", "tutorial", "03")
         self.trainingLink:AddEventCallbacks(
         {
@@ -343,7 +349,7 @@ function GUIMainMenu:Initialize()
             OnClick = function(self)
             
                 if not self.scriptHandle.optionWindow then
-                    self.scriptHandle:CreateOptionWindow()
+					self.scriptHandle:CreateOptionWindow()
                 end
                 TriggerOpenAnimation(self.scriptHandle.optionWindow)
                 self.scriptHandle:HideMenu()
@@ -371,7 +377,11 @@ function GUIMainMenu:Initialize()
             OnClick = function()
 
                 self:HideMenu()
-                self.creditsScript = GetGUIManager():CreateGUIScript("menu/GUICredits")
+                if not self.creditsScript then
+                    self.creditsScript = GetGUIManager():CreateGUIScript("menu/GUICredits")
+                end
+				MainMenu_OnPlayButtonClicked()
+                self.creditsScript:SetPlayAnimation("show")
                 self.creditsScript.closeEvent:AddHandler( self, function() self:ShowMenu() end)
 
             end
@@ -381,7 +391,13 @@ function GUIMainMenu:Initialize()
         self.quitLink:AddEventCallbacks(
         {
             OnClick = function(self)
+            
                 Client.Exit()
+                
+                if Sabot.GetIsInGather() then
+                    Sabot.QuitGather()
+                end
+                
             end
         })
         
@@ -389,7 +405,7 @@ function GUIMainMenu:Initialize()
     
     gMainMenu = self
 
-    self:MaybeCreateFirstRunWindow()
+    self:MaybeCreateFirstRunWindow("gameLaunched")
     
     local VoiceChat = Client.GetOptionString("input/VoiceChat", "LeftAlt")
     local ShowMap = Client.GetOptionString("input/ShowMap", "C")
@@ -413,7 +429,7 @@ function GUIMainMenu:Initialize()
 	if TeamChatCom == "" then
 		Client.SetOptionString("input/TeamChatCom", TeamChat)
 	end
-	
+
 	local gPlayerData = {}
 	local kPlayerRankingRequestUrl = "http://sabot.herokuapp.com/api/get/playerData/"
 
@@ -503,6 +519,13 @@ function GUIMainMenu:Uninitialize()
         
     end
     
+    if self.optionsTooltip then
+    
+        GetGUIManager():DestroyGUIScript(self.optionTooltip)
+        self.optionTooltip = nil
+        
+    end
+    
     GUIAnimatedScript.Uninitialize(self)
     
 end
@@ -541,24 +564,25 @@ function GUIMainMenu:CreateProfile()
     self.avatar:SetCSSClass("avatar")
     self.avatar:SetBackgroundTexture("*avatar")
     
-    self.playerName = CreateMenuElement(self.profileBackground, "Font")
+    self.playerName = CreateMenuElement(self.profileBackground, "Link")
     self.playerName:SetCSSClass("profile")
-    
+
     self.rankLevel = CreateMenuElement(self.profileBackground, "Link")
     self.rankLevel:SetCSSClass("rank_level")
     
-    self.skillLevel = CreateMenuElement(self.profileBackground, "Link")
-    self.skillLevel:SetCSSClass("skill_level")
-
     local eventCallbacks =
     {
         OnClick = function (self, buttonPressed)
             Client.ShowWebpage("http://hive.naturalselection2.com/profile/".. Client.GetSteamId())
-        end
+		end,
+		
+		OnMouseIn = function (self, buttonPressed)
+            MainMenu_OnMouseIn()
+        end,
     }
     
+    self.playerName:AddEventCallbacks(eventCallbacks)
     self.rankLevel:AddEventCallbacks(eventCallbacks)
-    self.skillLevel:AddEventCallbacks(eventCallbacks)
     
 end  
 
@@ -587,10 +611,12 @@ local function AddFavoritesToServerList(serverList)
         serverEntry.requiresPassword = currentFavorite.requiresPassword or false
         serverEntry.playerSkill = currentFavorite.playerSkill or 0
         serverEntry.rookieFriendly = currentFavorite.rookieFriendly or false
+		serverEntry.gatherServer = currentFavorite.gatherServer or false
         serverEntry.friendsOnServer = false
         serverEntry.lanServer = false
         serverEntry.tickrate = 30
         serverEntry.serverId = -f
+		serverEntry.numRS = currentFavorite.numRS or 0
         serverEntry.modded = currentFavorite.modded or false
         serverEntry.favorite = currentFavorite.favorite
         serverEntry.history = currentFavorite.history
@@ -628,17 +654,24 @@ local function JoinServer(self)
 
     local selectedServer = MainMenu_GetSelectedServer()
 
-    if selectedServer ~= nil then
+    if selectedServer ~= nil then 
 
-        if selectedServer >= 0 and MainMenu_GetSelectedIsFull() then
+        if selectedServer >= 0 and MainMenu_GetSelectedIsFull() and MainMenu_ForceJoin ~= true then
         
             self.autoJoinWindow:SetIsVisible(true)
             self.autoJoinText:SetText(ToString(MainMenu_GetSelectedServerName()))
             
         else
+			MainMenu_JoinSelected()
+		end
+		if selectedServer >= 0 and MainMenu_ForceJoin() == true then
             MainMenu_JoinSelected()
-        end
-        
+		end
+		if selectedServer >= 0 and MainMenu_GetSelectedIsFullWithNoRS() == true then
+			self.forceJoin:SetIsVisible(false)
+		else
+			self.forceJoin:SetIsVisible(true)
+		end
     end
     
 end
@@ -700,14 +733,22 @@ function GUIMainMenu:CreateAutoJoinWindow()
     self.autoJoinWindow:SetCSSClass("autojoin_window")
     self.autoJoinWindow:DisableCloseButton()
     
+    self.forceJoin = CreateMenuElement(self.autoJoinWindow, "MenuButton")
+    self.forceJoin:SetCSSClass("forcejoin")
+    self.forceJoin:SetText("ATTEMPT TO JOIN")
+	
     local cancel = CreateMenuElement(self.autoJoinWindow, "MenuButton")
-    cancel:SetCSSClass("bottomcenter")
+    cancel:SetCSSClass("autojoin_cancel")
     cancel:SetText("CANCEL")
     
     local text = CreateMenuElement(self.autoJoinWindow, "Font")
     text:SetCSSClass("auto_join_text")
     text:SetText("WAITING FOR SLOT...")
     
+	local autoJoinTooltip = CreateMenuElement(self.autoJoinWindow, "Font")
+    autoJoinTooltip:SetCSSClass("auto_join_text_tooltip")
+    autoJoinTooltip:SetText(" YOU CAN ATTEMPT TO JOIN IF YOU HAVE A RESERVED SLOT")
+	
     self.autoJoinText = CreateMenuElement(self.autoJoinWindow, "Font")
     self.autoJoinText:SetCSSClass("auto_join_text_servername")
     self.autoJoinText:SetText("")
@@ -715,6 +756,12 @@ function GUIMainMenu:CreateAutoJoinWindow()
     self.blinkingArrowTwo = CreateMenuElement(self.autoJoinWindow, "Image")
     self.blinkingArrowTwo:SetCSSClass("blinking_arrow_two")
 
+    self.forceJoin:AddEventCallbacks( {OnClick = 
+	function(self) 
+		self.scriptHandle:ProcessJoinServer() 
+		MainMenu_ForceJoin(true)
+	end } )
+	
     cancel:AddEventCallbacks({ OnClick =
     function (self)    
         self:GetParent():SetIsVisible(false)        
@@ -887,7 +934,7 @@ local function CreateFilterForm(self)
     local description = CreateMenuElement(self.filterHasPlayers, "Font")
     description:SetText("FILTER EMPTY")
     description:SetCSSClass("filter_description")
-    
+
     self.filterFull = self.filterForm:CreateFormElement(Form.kElementType.Checkbox, "FILTER FULL")
     self.filterFull:SetCSSClass("filter_full")
     self.filterFull:AddSetValueCallback(function(self)
@@ -940,7 +987,7 @@ local function CreateFilterForm(self)
     self.filterTickrate:SetValue(tonumber(Client.GetOptionString("filter_tickrate", "0")) or 0)
     self.filterPlayerSkill:SetValue(tonumber(Client.GetOptionString("filter_playerskill", "1")) or 1)
     self.filterHasPlayers:SetValue(Client.GetOptionString("filter_hasplayers", "false"))
-    self.filterFull:SetValue(Client.GetOptionString("filter_full", "false"))
+	self.filterFull:SetValue(Client.GetOptionString("filter_full", "false"))
     self.filterMaxPing:SetValue(tonumber(Client.GetOptionString("filter_maxping", "1")) or 1)
     self.filterPassworded:SetValue(Client.GetOptionString("filter_passworded", "true"))
     
@@ -1379,8 +1426,11 @@ GUIMainMenu.CreateOptionsForm = function(mainMenu, content, options, optionEleme
     
         local option = options[i]
         local input
+		local input_display
         local defaultInputClass = "option_input"
-        
+		
+		local y = rowHeight * (i - 1)
+		
         if option.type == "select" then
             input = form:CreateFormElement(Form.kElementType.DropDown, option.name, option.value)
             if option.values then
@@ -1388,12 +1438,57 @@ GUIMainMenu.CreateOptionsForm = function(mainMenu, content, options, optionEleme
             end                
         elseif option.type == "slider" then
             input = form:CreateFormElement(Form.kElementType.SlideBar, option.name, option.value)
+			input_display = form:CreateFormElement(Form.kElementType.TextInput, option.name, option.value)
+			input_display:SetNumbersOnly(true)	
+			input_display:SetXAlignment(GUIItem.Align_Min)
+			input_display:SetMarginLeft(5)
+			if option.formName and option.formName == "sound" then
+				input_display:SetCSSClass("display_sound_input")
+			else
+				input_display:SetCSSClass("display_input")
+			end
+			input_display:SetTopOffset(y)
+			input_display:SetValue(ToString( input:GetValue() ))
+			input_display:AddEventCallbacks({ 
+				
+			OnEnter = function(self)
+				if option.name == "Sensitivity" then
+					input:SetValue((input_display:GetValue() - kMinSensitivity) / (kMaxSensitivity - kMinSensitivity))
+				elseif option.name == "AccelerationAmount" then
+					input:SetValue(input_display:GetValue())
+				elseif option.name == "FOVAdjustment" then
+					input:SetValue(input_display:GetValue() / 20)
+				else
+					input:SetValue(input_display:GetValue())
+				end
+			end,
+			OnBlur = function(self)
+				if option.name == "Sensitivity" then
+					input:SetValue((input_display:GetValue() - kMinSensitivity) / (kMaxSensitivity - kMinSensitivity))
+				elseif option.name == "AccelerationAmount" then
+					input:SetValue(input_display:GetValue())
+				elseif option.name == "FOVAdjustment" then
+					input:SetValue(input_display:GetValue() / 20)
+				else
+					input:SetValue(input_display:GetValue())
+				end
+			end,
+			})
             // HACK: Really should use input:AddSetValueCallback, but the slider bar bypasses that.
             if option.sliderCallback then
                 input:Register(
                     {OnSlide =
                         function(value, interest)
                             option.sliderCallback(mainMenu)
+							if option.name == "Sensitivity" then
+								input_display:SetValue(ToString(string.sub(OptionsDialogUI_GetMouseSensitivity(), 0, 4)))
+							elseif option.name == "AccelerationAmount" then
+								input_display:SetValue(ToString(string.sub(input:GetValue(), 0, 4)))
+							elseif option.name == "FOVAdjustment" then
+								input_display:SetValue(ToString(string.format("%.0f", input:GetValue() * 20)))
+							else
+								input_display:SetValue(ToString(string.sub(input:GetValue(),0, 4)))
+							end
                         end
                     }, SLIDE_HORIZONTAL)
             end
@@ -1409,9 +1504,6 @@ GUIMainMenu.CreateOptionsForm = function(mainMenu, content, options, optionEleme
         if option.callback then
             input:AddSetValueCallback(option.callback)
         end
-        
-        local y = rowHeight * (i - 1)
-        
         local inputClass = defaultInputClass
         if option.inputClass then
             inputClass = option.inputClass
@@ -1424,13 +1516,40 @@ GUIMainMenu.CreateOptionsForm = function(mainMenu, content, options, optionEleme
         label:SetCSSClass("option_label")
         label:SetText(option.label .. ":")
         label:SetTopOffset(y)
-        label:SetIgnoreEvents(true)
+        label:SetIgnoreEvents(false)
+        label:AddEventCallbacks({ 
+				
+        OnMouseOver = function(self)
+            if gMainMenu ~= nil then
+                local text = option.tooltip
+                if text ~= nil then
 
+					if option.name == "LightQuality" then
+						gMainMenu.optionTooltip.tooltip:SetPosition(Vector(15, -10, 0))
+					else
+						gMainMenu.optionTooltip.tooltip:SetPosition(Vector(15, 0, 0))
+					end
+					
+					gMainMenu.optionTooltip.tooltip:SetText(text)
+                else
+                    gMainMenu.optionTooltip.tooltip:SetText("")
+                end
+            end    
+        end,
+        
+        OnMouseOut = function(self)
+            if gMainMenu ~= nil then
+                gMainMenu.optionTooltip.tooltip:SetText("")
+            end
+        end,
+        })
+        
         optionElements[option.name] = input
 
     end
     
     form:SetCSSClass("options")
+
     return form
 
 end
@@ -1517,7 +1636,13 @@ local function InitKeyBindings(keyInputs)
 
     local bindingsTable = BindingsUI_GetBindingsTable()
     for b = 1, #bindingsTable do
-        keyInputs[b]:SetValue(bindingsTable[b].current)
+    
+        if bindingsTable[b].current == "None" then
+            keyInputs[b]:SetValue("")
+        else
+            keyInputs[b]:SetValue(bindingsTable[b].current)
+        end
+        
     end
     
 end
@@ -1546,7 +1671,7 @@ local function CheckForConflictedKeys(keyInputs)
             
                 local boundKey1 = Client.GetOptionString("input/" .. keyInputs[k1].inputName, "")
                 local boundKey2 = Client.GetOptionString("input/" .. keyInputs[k2].inputName, "")
-                if boundKey1 == boundKey2 then
+                if (boundKey1 ~= "None" and boundKey2 ~= "None") and boundKey1 == boundKey2 then
                 
                     keyInputs[k1]:SetCSSClass("option_input_conflict")
                     keyInputs[k2]:SetCSSClass("option_input_conflict")
@@ -1561,35 +1686,6 @@ local function CheckForConflictedKeys(keyInputs)
     
 end
 
-//We don't want to check for conflicts as they can conflict without causing major problems, and will by default
-/*local function CheckForConflictedKeysCom(keyInputsCom)
-    
-    for l = 1, #keyInputsCom do
-        keyInputsCom[l]:SetCSSClass("option_input")
-    end
-        // Check for conflicts.
-    for l1 = 1, #keyInputsCom do
-    
-        for l2 = 1, #keyInputsCom do
-        
-            if l1 ~= l2 then
-            
-                local boundKeyCom1 = Client.GetOptionString("input/" .. keyInputsCom[l1].inputName, "")
-                local boundKeyCom2 = Client.GetOptionString("input/" .. keyInputsCom[l2].inputName, "")
-                if boundKeyCom1 == boundKeyCom2 then
-                
-                    keyInputsCom[l1]:SetCSSClass("option_input_conflict")
-                    keyInputsCom[l2]:SetCSSClass("option_input_conflict")
-                    
-                end
-                
-            end
-            
-        end
-        
-    end
-    
-end*/
 local function CreateKeyBindingsForm(mainMenu, content)
 
     local keyBindingsForm = CreateMenuElement(content, "Form", false)
@@ -1610,7 +1706,7 @@ local function CreateKeyBindingsForm(mainMenu, content)
         
         function keyInput:OnSendKey(key, down)
         
-            if not down then
+           if not down and key ~= InputKey.Escape then
             
                 // We want to ignore the click that gave this input focus.
                 if keyInput.ignoreFirstKey == true then
@@ -1622,13 +1718,35 @@ local function CreateKeyBindingsForm(mainMenu, content)
                     
                     CheckForConflictedKeys(mainMenu.keyInputs)
                     
+                    GetWindowManager():ClearActiveElement(self)
+                    
+                    keyInput.ignoreFirstKey = false
+                    
+                else
+                    keyInput.ignoreFirstKey = true
                 end
-                keyInput.ignoreFirstKey = true
                 
             end
             
         end
         
+        function keyInput:OnMouseWheel(up)
+            if up then
+                self:OnSendKey(InputKey.MouseWheelUp, false)
+            else
+                self:OnSendKey(InputKey.MouseWheelDown, false)
+            end
+        end
+        
+        local clearKeyInput = CreateMenuElement(keyBindingsForm, "MenuButton", false)
+        clearKeyInput:SetCSSClass("clear_keybind")
+        clearKeyInput:SetText("x")
+		
+        function clearKeyInput:OnClick()
+            Client.SetOptionString("input/" .. keyInput.inputName, "None")
+            keyInput:SetValue("")
+        end
+
         local keyInputText = CreateMenuElement(keyBindingsForm, "Font", false)
         keyInputText:SetText(string.upper(binding.detail) ..  ":")
         keyInputText:SetCSSClass("option_label")
@@ -1637,6 +1755,7 @@ local function CreateKeyBindingsForm(mainMenu, content)
         
         keyInput:SetTopOffset(y)
         keyInputText:SetTopOffset(y)
+        clearKeyInput:SetTopOffset(y)
         
         keyInput.inputName = binding.name
         table.insert(mainMenu.keyInputs, keyInput)
@@ -1710,6 +1829,7 @@ local function CreateKeyBindingsFormCom(mainMenu, content)
     return keyBindingsFormCom
     
 end
+
 local function InitOptions(optionElements)
         
     local function BoolToIndex(value)
@@ -1758,6 +1878,15 @@ local function InitOptions(optionElements)
     
     local hudmode = Client.GetOptionInteger("hudmode", kHUDMode.Full)
     
+	local precacheExtra = Client.GetOptionBoolean("precacheExtra", false)
+	
+	local lightQuality = Client.GetOptionInteger("graphics/lightQuality", 2)
+	
+	local shoulderPadIndex = Client.GetOptionInteger("shoulderPad", 1)
+	if not GetHasShoulderPad(shoulderPadIndex) then
+	    shoulderPadIndex = 1
+	end
+	
     // if not set explicitly, always use the highest available tier
     if marineVariant == -1 then
     
@@ -1824,6 +1953,7 @@ local function InitOptions(optionElements)
     assert(gorgeVariant ~= -1)
     assert(lerkVariant ~= -1)
     
+	Client.SetOptionInteger("shoulderPad", shoulderPadIndex)
     Client.SetOptionInteger("marineVariant", marineVariant)
     Client.SetOptionInteger("skulkVariant", skulkVariant)
     Client.SetOptionInteger("gorgeVariant", gorgeVariant)
@@ -1903,6 +2033,7 @@ local function InitOptions(optionElements)
     optionElements.Reflections:SetOptionActive( BoolToIndex(reflections) )
     optionElements.FOVAdjustment:SetValue(fovAdjustment)
     optionElements.MinimapZoom:SetValue(minimapZoom)
+	optionElements.shoulderPad:SetValue(kShoulderPadNames[shoulderPadIndex])
     optionElements.MarineVariantName:SetValue(GetVariantName(kMarineVariantData, marineVariant))
     optionElements.SkulkVariantName:SetValue(GetVariantName(kSkulkVariantData, skulkVariant))
     optionElements.GorgeVariantName:SetValue(GetVariantName(kGorgeVariantData, gorgeVariant))
@@ -1918,8 +2049,10 @@ local function InitOptions(optionElements)
     optionElements.SoundVolume:SetValue(soundVol)
     optionElements.MusicVolume:SetValue(musicVol)
     optionElements.VoiceVolume:SetValue(voiceVol)
-    optionElements.hudmode:SetValue(hudmode == 1 and "FULL" or "MINIMAL")
-    
+    optionElements.hudmode:SetValue(hudmode == 1 and "HIGH" or "LOW")
+	optionElements.PrecacheExtra:SetOptionActive( BoolToIndex(precacheExtra) )
+	optionElements.LightQuality:SetOptionActive( lightQuality )
+	
     optionElements.RecordingGain:SetValue(recordingGain)
     
 end
@@ -1939,6 +2072,7 @@ local function SaveSecondaryGraphicsOptions(mainMenu)
     local particleQualityIdx    = mainMenu.optionElements.ParticleQuality:GetActiveOptionIndex()
     local reflections           = mainMenu.optionElements.Reflections:GetActiveOptionIndex() > 1
     local renderDeviceIdx       = mainMenu.optionElements.RenderDevice:GetActiveOptionIndex()
+    local lightQuality          = mainMenu.optionElements.LightQuality:GetActiveOptionIndex()
 
     Client.SetOptionBoolean("graphics/reflections", reflections)
     Client.SetOptionString("graphics/display/ambient-occlusion", kAmbientOcclusionModes[ambientOcclusionIdx] )
@@ -1951,7 +2085,8 @@ local function SaveSecondaryGraphicsOptions(mainMenu)
     Client.SetOptionBoolean ( kAnisotropicFilteringOptionsKey, anisotropicFiltering )
     Client.SetOptionBoolean ( kAntiAliasingOptionsKey, antiAliasing )
     Client.SetOptionString("graphics/device", kRenderDevices[renderDeviceIdx] )
-
+	Client.SetOptionInteger("graphics/lightQuality", lightQuality)
+	
 end
 
 local function SyncSecondaryGraphicsOptions()
@@ -1987,6 +2122,18 @@ local function OnRecordingGainChanged(mainMenu)
     Client.SetOptionFloat("recordingGain", recordingGain)
 end
 
+local function OnSensitivityChanged(mainMenu)
+    local value = mainMenu.optionElements.Sensitivity:GetValue()
+	if value >= 0 then
+		OptionsDialogUI_SetMouseSensitivity(value * (kMaxSensitivity - kMinSensitivity) + kMinSensitivity)
+	end
+end
+
+local function OnAccelerationAmountChanged(mainMenu)
+    local value = mainMenu.optionElements.AccelerationAmount:GetValue()
+	Client.SetOptionFloat("input/mouse/acceleration-amount", value * (kMaxAcceleration - kMinAcceleration) + kMinAcceleration )
+end
+
 local function OnFOVAdjustChanged(mainMenu)
     local value = mainMenu.optionElements.FOVAdjustment:GetValue()
     Client.SetOptionFloat("graphics/display/fov-adjustment", value)
@@ -2011,8 +2158,7 @@ function OnDisplayChanged(oldDisplay, newDisplay)
     
 end
 
-
-local function SendPlayerVariantUpdate(marineVariant, sexType, skulkVariant, gorgeVariant, lerkVariant)
+local function SendPlayerVariantUpdate(marineVariant, sexType, skulkVariant, gorgeVariant, lerkVariant, shoulderPadIndex)
 
     assert(marineVariant ~= -1)
     assert(marineVariant ~= nil)
@@ -2031,6 +2177,7 @@ local function SendPlayerVariantUpdate(marineVariant, sexType, skulkVariant, gor
                     gorgeVariant = gorgeVariant,
                     lerkVariant = lerkVariant,
                     isMale = string.lower(sexType) == "male",
+                    shoulderPadIndex = shoulderPadIndex
                 },
                 true)
     end
@@ -2069,6 +2216,7 @@ local function SaveOptions(mainMenu)
     local musicVol              = mainMenu.optionElements.MusicVolume:GetValue() * 100
     local voiceVol              = mainMenu.optionElements.VoiceVolume:GetValue() * 100
     
+	local shoulderPadName       = mainMenu.optionElements.shoulderPad:GetValue()
     local marineVariantName     = mainMenu.optionElements.MarineVariantName:GetValue()
     local skulkVariantName      = mainMenu.optionElements.SkulkVariantName:GetValue()
     local gorgeVariantName      = mainMenu.optionElements.GorgeVariantName:GetValue() or ""
@@ -2076,10 +2224,14 @@ local function SaveOptions(mainMenu)
     local hudmode               = mainMenu.optionElements.hudmode:GetValue()
     local sexType               = mainMenu.optionElements.SexType:GetValue()
     local cameraAnimation       = mainMenu.optionElements.CameraAnimation:GetActiveOptionIndex() > 1
-	local physicsGpuAcceleration = mainMenu.optionElements.PhysicsGpuAcceleration:GetActiveOptionIndex() > 1
+    local physicsGpuAcceleration = mainMenu.optionElements.PhysicsGpuAcceleration:GetActiveOptionIndex() > 1
     local advancedmovement      = mainMenu.optionElements.AdvancedMovement:GetActiveOptionIndex() > 1
     local particleQuality       = mainMenu.optionElements.ParticleQuality:GetActiveOptionIndex()
     
+	local precacheExtra         = mainMenu.optionElements.PrecacheExtra:GetActiveOptionIndex() > 1
+	
+	local lightQuality          = mainMenu.optionElements.LightQuality:GetActiveOptionIndex()
+
     Client.SetOptionString("locale", locale)
     
     Client.SetOptionBoolean("input/mouse/rawinput", rawInput)
@@ -2090,23 +2242,33 @@ local function SaveOptions(mainMenu)
     Client.SetOptionBoolean(kRookieOptionsKey, rookieMode)
     Client.SetOptionBoolean("CameraAnimation", cameraAnimation)
     Client.SetOptionBoolean(kPhysicsGpuAccelerationKey, physicsGpuAcceleration)
+	Client.SetOptionInteger("shoulderPad", GetShoulderPadIndexByName(shoulderPadName))
 	Client.SetOptionBoolean( "AdvancedMovement", advancedmovement)
     Client.SetOptionInteger("marineVariant", FindVariant(kMarineVariantData, marineVariantName))
     Client.SetOptionInteger("skulkVariant", FindVariant(kSkulkVariantData, skulkVariantName))
     Client.SetOptionInteger("gorgeVariant", FindVariant(kGorgeVariantData, gorgeVariantName))
     Client.SetOptionInteger("lerkVariant", FindVariant(kLerkVariantData, lerkVariantName))
-    Client.SetOptionInteger("hudmode", hudmode == "FULL" and kHUDMode.Full or kHUDMode.Minimal)
+    Client.SetOptionInteger("hudmode", hudmode == "HIGH" and kHUDMode.Full or kHUDMode.Minimal)
     Client.SetOptionString("sexType", sexType)
+	Client.SetOptionBoolean("precacheExtra", precacheExtra)
+	Client.SetOptionInteger("graphics/lightQuality", lightQuality)
     
     SendPlayerVariantUpdate(
             FindVariant(kMarineVariantData, marineVariantName),
             sexType,
             FindVariant(kSkulkVariantData, skulkVariantName),
             FindVariant(kGorgeVariantData, gorgeVariantName),
-            FindVariant(kLerkVariantData, lerkVariantName))
+            FindVariant(kLerkVariantData, lerkVariantName), 
+            GetShoulderPadIndexByName(shoulderPadName))
     
     Client.SetOptionFloat("input/mouse/acceleration-amount", accelerationAmount)
     
+	if string.len(TrimName(nickName)) < 1 then
+		nickName = Client.GetOptionString( kNicknameOptionsKey, Client.GetUserName() )
+		mainMenu.optionElements.NickName:SetValue(nickName)
+		MainMenu_SetAlertMessage("Invalid Nickname")
+	end
+	
     // Some redundancy with ApplySecondaryGraphicsOptions here, no harm.
     OptionsDialogUI_SetValues(
         nickName,
@@ -2124,6 +2286,7 @@ local function SaveOptions(mainMenu)
         antiAliasing,
         invMouse,
         voiceVol)
+        
     SaveSecondaryGraphicsOptions(mainMenu)
     Client.SetOptionInteger("graphics/display/display-buffering", displayBuffering)
     
@@ -2135,7 +2298,11 @@ local function SaveOptions(mainMenu)
     for k = 1, #mainMenu.keyInputs do
     
         local keyInput = mainMenu.keyInputs[k]
-        Client.SetOptionString("input/" .. keyInput.inputName, keyInput:GetValue())
+        local value = keyInput:GetValue()
+        if value == "" then
+            value = "None"
+        end
+        Client.SetOptionString("input/" .. keyInput.inputName, value)
         
     end
     Client.ReloadKeyOptions()
@@ -2154,15 +2321,27 @@ local function StoreCameraAnimationOption(formElement)
     Client.SetOptionBoolean("CameraAnimation", formElement:GetActiveOptionIndex() > 1)
 end
 
-local function StorePhysicsGpuAccelerationOption(formElement)
-    Client.SetOptionBoolean(kPhysicsGpuAccelerationKey, formElement:GetActiveOptionIndex() > 1)
-end
-
 local function StoreAdvancedMovementOption(formElement)
     Client.SetOptionBoolean("AdvancedMovement", formElement:GetActiveOptionIndex() > 1)
     if UpdateMovementMode then
         UpdateMovementMode()
     end
+end
+
+local function StorePhysicsGpuAccelerationOption(formElement)
+	Client.SetOptionBoolean(kPhysicsGpuAccelerationKey, formElement:GetActiveOptionIndex() > 1)
+end
+
+local function OnLightQualityChanged(formElement)
+
+	Client.SetOptionInteger("graphics/lightQuality", formElement:GetActiveOptionIndex())
+	
+	if Lights_UpdateLightMode then
+        Lights_UpdateLightMode()
+    end
+    
+    Render_SyncRenderOptions()
+    
 end
 
 local function OnDecalLifeTimeChanged(mainMenu)
@@ -2307,6 +2486,7 @@ function GUIMainMenu:CreateOptionWindow()
         languages[i] = kLocales[i].label
     end
     
+    local shoulderPadNames = { }
     local marineVariantNames = { }
     local skulkVariantNames = { }
     local gorgeVariantNames = { }
@@ -2316,7 +2496,14 @@ function GUIMainMenu:CreateOptionWindow()
     //DebugPrint("we have "..GetEnumCount(kSkulkVariant).." skulk variants")
     //DebugPrint("we have "..GetEnumCount(kGorgeVariant).." gorge variants")
     //DebugPrint("we have "..GetEnumCount(kLerkVariant).." lerk variants")
+
+    for index, name in pairs(kShoulderPadNames) do
     
+        if GetHasShoulderPad(index) then
+            table.insert(shoulderPadNames, name)
+        end
+    
+    end
     for key, value in pairs(kMarineVariantData) do
     
         if GetHasVariant(kMarineVariantData, key) then
@@ -2367,6 +2554,7 @@ function GUIMainMenu:CreateOptionWindow()
                 name    = "Sensitivity",
                 label   = "MOUSE SENSITIVITY",
                 type    = "slider",
+				sliderCallback = OnSensitivityChanged,
             },
             {
                 name    = "InvertedMouse",
@@ -2384,6 +2572,7 @@ function GUIMainMenu:CreateOptionWindow()
                 name    = "AccelerationAmount",
                 label   = "ACCELERATION AMOUNT",
                 type    = "slider",
+				sliderCallback = OnAccelerationAmountChanged,
             },
             {
                 name    = "RawInput",
@@ -2394,18 +2583,21 @@ function GUIMainMenu:CreateOptionWindow()
             {
                 name    = "ShowHints",
                 label   = "SHOW HINTS",
+                tooltip = Locale.ResolveString("OPTION_SHOW_HINTS"),
                 type    = "select",
                 values  = { "NO", "YES" }
             },  
             {
                 name    = "ShowCommanderHelp",
                 label   = "COMMANDER HELP",
+                tooltip = Locale.ResolveString("OPTION_SHOW_COMMANDER_HELP"),
                 type    = "select",
                 values  = { "OFF", "ON" }
             },  
             {
                 name    = "DrawDamage",
                 label   = "DRAW DAMAGE",
+                tooltip = Locale.ResolveString("OPTION_DRAW_DAMAGE"),
                 type    = "select",
                 values  = { "NO", "YES" }
             },  
@@ -2427,7 +2619,12 @@ function GUIMainMenu:CreateOptionWindow()
                 type    = "slider",
                 sliderCallback = OnMinimapZoomChanged,
             },
-            
+            {
+                name    = "shoulderPad",
+                label   = "SHOULDER PAD",
+                type    = "select",
+                values  = shoulderPadNames
+            },
             {
                 name    = "MarineVariantName",
                 label   = "MARINE ARMOR",
@@ -2441,48 +2638,62 @@ function GUIMainMenu:CreateOptionWindow()
                 values  = sexTypes
             },
             {
-                name = "SkulkVariantName",
-                label = "SKULK TYPE",
-                type = "select",
-                values = skulkVariantNames,
+                name    = "SkulkVariantName",
+                label   = "SKULK TYPE",
+                type    = "select",
+                values  = skulkVariantNames,
             },
             {
-                name = "GorgeVariantName",
-                label = "GORGE TYPE",
-                type = "select",
-                values = gorgeVariantNames,
+                name    = "GorgeVariantName",
+                label   = "GORGE TYPE",
+                type    = "select",
+                values  = gorgeVariantNames,
             },
             {
-                name = "LerkVariantName",
-                label = "LERK TYPE",
-                type = "select",
-                values = lerkVariantNames,
+                name    = "LerkVariantName",
+                label   = "LERK TYPE",
+                type    = "select",
+                values  = lerkVariantNames,
             },
             
             {
                 name    = "CameraAnimation",
                 label   = "CAMERA ANIMATION",
+				tooltip = Locale.ResolveString("OPTION_CAMERA_ANIMATION"),
                 type    = "select",
                 values  = { "OFF", "ON" },
                 callback = StoreCameraAnimationOption
             }, 
-            
             {
                 name    = "AdvancedMovement",
                 label   = "ADVANCED MOVEMENT",
+				tooltip = "Enables/Disables forward movement override which attemps to make airstrafing easier for new players.",
                 type    = "select",
                 values  = { "OFF", "ON" },
                 callback = StoreAdvancedMovementOption
             },
-
 			{
+                name    = "hudmode",
+                label   = "HUD DETAIL",
+                tooltip = Locale.ResolveString("OPTION_HUDQUALITY"),
+                type    = "select",
+                values  = { "HIGH", "LOW" },
+                callback = autoApplyCallback
+            },   
+            {
                 name    = "PhysicsGpuAcceleration",
                 label   = "PHYSX GPU ACCELERATION",
                 type    = "select",
                 values  = { "OFF", "ON" },
                 callback = StorePhysicsGpuAccelerationOption
             },
-            
+			{
+                name    = "PrecacheExtra",
+                label   = "EXTRA PRECACHING",
+                tooltip = Locale.ResolveString("OPTION_EXTRA_PRECACHING"),
+                type    = "select",
+                values  = { "OFF", "ON" },
+            },
         }
 
     local soundOptions =
@@ -2506,29 +2717,34 @@ function GUIMainMenu:CreateOptionWindow()
                 label   = "SOUND VOLUME",
                 type    = "slider",
                 sliderCallback = OnSoundVolumeChanged,
+				formName = "sound",
             },
             { 
                 name    = "MusicVolume",
                 label   = "MUSIC VOLUME",
                 type    = "slider",
                 sliderCallback = OnMusicVolumeChanged,
+				formName = "sound",
             },
             { 
                 name    = "VoiceVolume",
                 label   = "VOICE VOLUME",
                 type    = "slider",
                 sliderCallback = OnVoiceVolumeChanged,
+				formName = "sound",
             },
             {
                 name    = "RecordingGain",
                 label   = "MICROPHONE GAIN",
                 type    = "slider",
                 sliderCallback = OnRecordingGainChanged,
+				formName = "sound",
             },
             {
                 name    = "RecordingVolume",
                 label   = "MICROPHONE LEVEL",
                 type    = "progress",
+				formName = "sound",
             }
         }        
         
@@ -2540,12 +2756,14 @@ function GUIMainMenu:CreateOptionWindow()
                 name   = "RenderDevice",
                 label  = "DEVICE",
                 type   = "select",
+				tooltip = Locale.ResolveString("OPTION_DEVICE"),
                 values = kRenderDeviceDisplayNames,
                 callback = function(formElement) SaveSecondaryGraphicsOptions(self) self:UpdateRestartMessage() end,
             },  
             {
                 name   = "Display",
                 label  = "DISPLAY",
+                tooltip = Locale.ResolveString("OPTION_DISPLAY"),
                 type   = "select",
                 values = displays,
             },      
@@ -2564,19 +2782,14 @@ function GUIMainMenu:CreateOptionWindow()
             {   
                 name   = "DisplayBuffering",            
                 label  = "WAIT FOR VERTICAL SYNC",
+                tooltip = Locale.ResolveString("OPTION_VYSNC"),
                 type   = "select",
                 values = { "DISABLED", "DOUBLE BUFFERED", "TRIPLE BUFFERED" }
-            },            
-            {
-                name    = "hudmode",
-                label   = "HUD QUALITY",
-                type    = "select",
-                values  = { "FULL", "MINIMAL" },
-                callback = autoApplyCallback
-            },            
+            },                       
             {
                 name    = "Detail",
                 label   = "TEXTURE QUALITY",
+				tooltip = Locale.ResolveString("OPTION_TEXTUREQUALITY"),
                 type    = "select",
                 values  = { "LOW", "MEDIUM", "HIGH" },
                 callback = autoApplyCallback
@@ -2587,23 +2800,26 @@ function GUIMainMenu:CreateOptionWindow()
                 type    = "select",
                 values  = { "LOW", "HIGH" },
                 callback = autoApplyCallback
-            },            
+            },   
             {
-                name    = "DecalLifeTime",
-                label   = "DECAL LIFE TIME",
-                type    = "slider",
-                sliderCallback = OnDecalLifeTimeChanged,
-            },    
-            {
-                name    = "Infestation",
-                label   = "INFESTATION",
+                name    = "Shadows",
+                label   = "SHADOWS",
                 type    = "select",
-                values  = { "MINIMAL", "RICH" },
+                values  = { "OFF", "ON" },
                 callback = autoApplyCallback
+            },
+            {
+                name    = "LightQuality",
+                label   = "LIGHT QUALITY",
+                tooltip = Locale.ResolveString("OPTION_LIGHT_QUALITY"),
+                type    = "select",
+                values  = { "LOW", "HIGH" },
+                callback = OnLightQualityChanged
             },
             {
                 name    = "AntiAliasing",
                 label   = "ANTI-ALIASING",
+                tooltip = Locale.ResolveString("OPTION_ANTI_ALIASING"),
                 type    = "select",
                 values  = { "OFF", "ON" },
                 callback = autoApplyCallback
@@ -2625,6 +2841,7 @@ function GUIMainMenu:CreateOptionWindow()
             {   
                 name    = "AnisotropicFiltering",
                 label   = "ANISOTROPIC FILTERING",
+                tooltip = Locale.ResolveString("OPTION_AF"),
                 type    = "select",
                 values  = { "OFF", "ON" },
                 callback = autoApplyCallback
@@ -2644,8 +2861,14 @@ function GUIMainMenu:CreateOptionWindow()
                 callback = autoApplyCallback
             },
             {
-                name    = "Shadows",
-                label   = "SHADOWS",
+                name    = "DecalLifeTime",
+                label   = "DECAL LIFE TIME",
+                type    = "slider",
+                sliderCallback = OnDecalLifeTimeChanged,
+            },  
+            {
+                name    = "Infestation",
+                label   = "INFESTATION",
                 type    = "select",
                 values  = { "OFF", "ON" },
                 callback = autoApplyCallback
@@ -2722,7 +2945,7 @@ function GUIMainMenu:Update(deltaTime)
     PROFILE("GUIMainMenu:Update")
     
     if self:GetIsVisible() then
-    
+
         local currentTime = Client.GetTime()
         
         // Refresh the mod list once every 5 seconds.
@@ -2751,6 +2974,8 @@ function GUIMainMenu:Update(deltaTime)
                 self.alertText:SetText(setAlertText)
                 self.alertWindow:SetIsVisible(true)
                 
+				MainMenu_OnTooltip()
+				
             end
             
         end
@@ -2761,13 +2986,20 @@ function GUIMainMenu:Update(deltaTime)
         if self.soundForm and self.soundForm:GetIsVisible() then
             if self.optionElements.RecordingVolume then
                 self.optionElements.RecordingVolume:SetValue(Client.GetRecordingVolume())
+				if Client.GetRecordingVolume() >= 1 then
+					self.optionElements.RecordingVolume:SetColor(Color(0.6, 0, 0, 1))
+				elseif Client.GetRecordingVolume() > 0.5 and Client.GetRecordingVolume() < 1 then
+					self.optionElements.RecordingVolume:SetColor(Color(0.7, 0.7, 0, 1))
+				else
+					self.optionElements.RecordingVolume:SetColor(Color(0.47, 0.67, 0.67, 1))
+				end
+				
             end
         end
-    
+
         if self.menuBackground:GetIsVisible() then
             self.playerName:SetText(OptionsDialogUI_GetNickname())
             self.rankLevel:SetText("Level " .. ToString(Client.GetOptionInteger("player-ranking", 0)))
-            self.skillLevel:SetText("Skill " .. ToString(math.round(Client.GetOptionFloat("player-skill", 0))))
 		end
         
         if self.modsWindow and self.modsWindow:GetIsVisible() then
@@ -2871,9 +3103,6 @@ function GUIMainMenu:Update(deltaTime)
             end
         
         end
-        /*
-        self:UpdateGatherList(deltaTime)
-        */
     end
     
 end
@@ -2896,8 +3125,12 @@ function GUIMainMenu:ShowMenu()
     
     //self.logo:SetIsVisible(true)
     
-    if self.newsScript then
-        self.newsScript:SetIsVisible(true)
+    if not MainMenu_IsInGame() and self.newsScript and self.newsScript.isVisible == false then
+        self.newsScript:SetPlayAnimation("show")  
+	end
+	
+    if self.optionTooltip then
+        self.optionTooltip:SetPlayAnimation("hide")  
     end
     
 end
@@ -2919,6 +3152,7 @@ function GUIMainMenu:HideMenu()
         self.modsLink:SetIsVisible(false)
     end
     self.playLink:SetIsVisible(false)
+	self.gatherLink:SetIsVisible(false)
     self.trainingLink:SetIsVisible(false)
     self.optionLink:SetIsVisible(false)
     if self.quitLink then
@@ -2929,10 +3163,16 @@ function GUIMainMenu:HideMenu()
     end
     
     //self.logo:SetIsVisible(false)
-    if self.newsScript then
-        self.newsScript:SetIsVisible(false)
+    if not MainMenu_IsInGame() and self.newsScript.isVisible == true then
+        self.newsScript:SetPlayAnimation("hide")    
     end
-    
+    if self.firstRunWindow then
+        self.firstRunWindow:SetIsVisible(false)
+    end
+	if self.tutorialNagWindow then
+        self.tutorialNagWindow:SetIsVisible(false)
+    end
+
 end
 
 function GUIMainMenu:OnAnimationsEnd(item)
@@ -2951,6 +3191,12 @@ function GUIMainMenu:OnAnimationCompleted(animatedItem, animationName, itemHandl
     
         if self.modsLink then
             table.insert(animBackgroundLink, self.modsLink)
+        end
+		if self.gatherLink then
+            table.insert(animBackgroundLink, self.gatherLink)
+        end
+        if self.creditsLink then
+            table.insert(animBackgroundLink, self.creditsLink)
         end
         if self.quitLink then
             table.insert(animBackgroundLink, self.quitLink)
@@ -3007,6 +3253,7 @@ function GUIMainMenu:OnAnimationCompleted(animatedItem, animationName, itemHandl
                 self.modsLink:SetIsVisible(true)
             end
             self.playLink:SetIsVisible(true)
+			self.gatherLink:SetIsVisible(true)
             self.trainingLink:SetIsVisible(true)
             self.optionLink:SetIsVisible(true)
             if self.quitLink then
@@ -3110,7 +3357,7 @@ function GUIMainMenu:UpdateRestartMessage()
         
     if needsRestart then
         self.warningLabel:SetText("Game restart required")
-        self.warningLabel:SetIsVisible(true)        
+        self.warningLabel:SetIsVisible(true)    
     else
         self.warningLabel:SetIsVisible(false)        
     end
@@ -3162,14 +3409,19 @@ end
 //----------------------------------------
 //  
 //----------------------------------------
-function GUIMainMenu:MaybeCreateFirstRunWindow()
+function GUIMainMenu:MaybeCreateFirstRunWindow(type)
 
     local lastLoadedBuild = Client.GetOptionInteger("lastLoadedBuild", 0)
 
     if lastLoadedBuild == Shared.GetBuildNumber() then
         return
     end
-
+	
+	if self.firstRunWindow ~= nil then
+		self:DestroyWindow( self.firstRunWindow )
+		self.firstRunWindow = nil
+	end
+	
     self.firstRunWindow = self:CreateWindow()  
     self.firstRunWindow:SetWindowName("HINT")
     self.firstRunWindow:SetInitialVisible(true)
@@ -3180,27 +3432,34 @@ function GUIMainMenu:MaybeCreateFirstRunWindow()
     self.firstRunWindow:SetCSSClass("first_run_window")
     self.firstRunWindow:DisableCloseButton()
     self.firstRunWindow:SetLayer(kGUILayerMainMenuDialogs)
-    
+	
     local hint = CreateMenuElement(self.firstRunWindow, "Font")
-    hint:SetCSSClass("first_run_msg")
-    hint:SetText(Locale.ResolveString("OPTIMIZE_FIRST_TIME"))
-    hint:SetTextClipped( true, 380, 300 )
+	local okButton = CreateMenuElement(self.firstRunWindow, "MenuButton")
+	local skipButton = CreateMenuElement(self.firstRunWindow, "MenuButton")
+	
+	skipButton:SetCSSClass("first_run_skip")
+	hint:SetTextClipped( true, 380, 300 )
+	hint:SetCSSClass("first_run_msg")
+	okButton:SetCSSClass("first_run_ok")
+	
+	if type == "gameLaunched" then
 
-    local okButton = CreateMenuElement(self.firstRunWindow, "MenuButton")
-    okButton:SetCSSClass("first_run_ok")
-    okButton:SetText(Locale.ResolveString("OPTIMIZE_CONFIRM"))
-    okButton:AddEventCallbacks({ OnClick = function()
-            Client.SetOptionBoolean("immediateDisconnect", true)
-            Shared.ConsoleCommand("map ns2_descent")
-        end})
+		hint:SetText(Locale.ResolveString("OPTIMIZE_FIRST_TIME"))
+		
+		okButton:SetText(Locale.ResolveString("OPTIMIZE_CONFIRM"))
+		okButton:AddEventCallbacks({ OnClick = function()
+				Client.SetOptionBoolean("immediateDisconnect", true)
+				Shared.ConsoleCommand("map ns2_descent")
+			end})
 
-    local skipButton = CreateMenuElement(self.firstRunWindow, "MenuButton")
-    skipButton:SetCSSClass("first_run_skip")
-    skipButton:SetText(Locale.ResolveString("OPTIMIZE_SKIP"))
-    skipButton:AddEventCallbacks({OnClick = function()
-            self:DestroyWindow( self.firstRunWindow )
-            self.firstRunWindow = nil
-        end})
+		skipButton:SetText(Locale.ResolveString("OPTIMIZE_SKIP"))
+		skipButton:AddEventCallbacks({OnClick = function()
+				self:DestroyWindow( self.firstRunWindow )
+				self.firstRunWindow = nil
+			end})
+	end
+	
+	MainMenu_OnTooltip()
 
 end
 
@@ -3231,13 +3490,14 @@ function GUIMainMenu:OnPlayClicked()
     local isRookie = Client.GetOptionBoolean( kRookieOptionsKey, true )
     local doneTutorial = Client.GetOptionBoolean( "playedTutorial", false )
     local stopNagging = Client.GetOptionBoolean( "disableTutorialNag", false )
-
+	local lastLoadedBuild = Client.GetOptionInteger("lastLoadedBuild", 0)
+	
     // TEMP TMEP
     /*
     isRookie = true
     DebugPrint(ToString(isRookie).." "..ToString(doneTutorial).." "..ToString(stopNagging))
     */
-
+	
     if not isRookie or doneTutorial or stopNagging then
         self:ActivatePlayWindow()
         return

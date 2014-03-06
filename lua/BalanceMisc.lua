@@ -31,8 +31,8 @@ kFootstepsThreshold = 3.5      //Speed in m/s
 kMinFootstepTime = 0.2         //Minimum time between footstep sounds, seems to be some extra tags in anim graphs :S
 kIdleThreshold = 5             //Speed in m/s
 
-kGhostStructureModifier = .75
-kEnergyUpdateRate = 0.25
+kGhostStructureRefundModifier = .75
+kEnergyRegenRate = 0.25
 kDropWeaponTimeLimit = 1
 kPickupWeaponTimeLimit = 2
 kItemStayTime = 30    // NS1
@@ -83,18 +83,16 @@ kDistressBeaconTime = 3
 
 //Shift Energize
 kEnergizeRange = 15
-kEnergizeEnergyIncrease = 0.25
-kStructureEnergyPerEnergize = 0.15
 kPlayerEnergyPerEnergize = 6
 kEnergizeUpdateRate = 1
 
 // Jetpack
 // NS1: 6.5 seconds of fuel
 // NS1: 9 seconds for full refuel
-kJetpackUseFuelRate = 0.22
+kJetpackUseFuelRate = 0.14
 kJetpackReplenishFuelRate = 0.12
 kJetpackFuelReplenishDelay = .1
-kJetpackTakeoffFuelUse = 0.07
+kJetpackTakeoffFuelUse = 0.06
 kJetpackWeight = 0.08
 
 //HA
@@ -126,7 +124,6 @@ kCatPackDuration = 6
 //Armory
 kArmoryHealAmount = 15
 
+//Misc? 0_o
 kKillDelay = 3
-
 kAbilityMaxEnergy = 100
-kDoorWeldTime = 999

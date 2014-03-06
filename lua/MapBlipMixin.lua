@@ -28,6 +28,11 @@ MapBlipMixin.expectedCallbacks =
     SetCoords = "Sets both both location and angles"
 }
 
+MapBlipMixin.optionalCallbacks =
+{
+    GetDestroyMapBlipOnKill = "Return true to destroy map blip when units is killed."
+}
+
 // What entities have become dirty.
 // Flushed in the UpdateServer hook by MapBlipMixin.OnUpdateServer
 local mapBlipMixinDirtyTable = { }
@@ -56,7 +61,9 @@ end
 
 local function CreateMapBlip(self, blipType, blipTeam, isInCombat)
 
-    local mapBlip = Server.CreateEntity(MapBlip.kMapName)
+    local mapName = self:isa("Player") and PlayerMapBlip.kMapName or MapBlip.kMapName
+
+    local mapBlip = Server.CreateEntity(mapName)
     // This may fail if there are too many entities.
     if mapBlip then
     
@@ -103,6 +110,18 @@ function MapBlipMixin:OnLeaveCombat()
 end
 
 function MapBlipMixin:MarkBlipDirty()
+    mapBlipMixinDirtyTable[self:GetId()] = true
+end
+
+function MapBlipMixin:OnConstructionComplete()
+    mapBlipMixinDirtyTable[self:GetId()] = true
+end
+
+function MapBlipMixin:OnPowerOn()
+    mapBlipMixinDirtyTable[self:GetId()] = true
+end
+
+function MapBlipMixin:OnPowerOff()
     mapBlipMixinDirtyTable[self:GetId()] = true
 end
 
@@ -166,7 +185,11 @@ function MapBlipMixin:DestroyBlip()
 end
 
 function MapBlipMixin:OnKill()
-    self:DestroyBlip()
+
+    if not self.GetDestroyMapBlipOnKill or self:GetDestroyMapBlipOnKill() then
+        self:DestroyBlip()
+    end
+    
 end
 
 function MapBlipMixin:OnDestroy()

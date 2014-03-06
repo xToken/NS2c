@@ -30,7 +30,13 @@ function Mines:OnCreate()
     
     InitMixin(self, PickupableWeaponMixin)
     
-    self.minesLeft = kMineCount
+    if Server then
+        self.minesLeft = kMineCount
+        if GetServerGameMode() == kGameMode.Combat then
+            self.minesLeft = kCombatMineCount
+        end
+    end
+    
 	self.droppingMine = false
     
 end

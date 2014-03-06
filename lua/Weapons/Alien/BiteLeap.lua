@@ -104,6 +104,10 @@ function BiteLeap:GetAbilityUsesFocus()
     return true
 end
 
+function BiteLeap:GetKnockbackForce()
+    return kBiteKnockbackForce
+end
+
 function BiteLeap:GetMeleeBase()
     // Width of box, height of box
     return kBiteMeleeBaseWidth, kBiteMeleeBaseHeight

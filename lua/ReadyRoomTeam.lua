@@ -42,6 +42,14 @@ function ReadyRoomTeam:GetRespawnMapName(player)
         mapName = player:GetPreviousMapName()
         
     end
+	
+	//Double Check
+	if (mapName == MarineCommander.kMapName) 
+       or (mapName == Spectator.kMapName) 
+       or (mapName == AlienSpectator.kMapName) 
+       or (mapName ==  MarineSpectator.kMapName) then 
+		mapName = ReadyRoomPlayer.kMapName
+	end
     
     // need to set embryos to ready room players, otherwise they wont be able to move
     if mapName == Embryo.kMapName then

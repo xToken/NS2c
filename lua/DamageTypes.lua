@@ -61,7 +61,7 @@ function GetUpgradedDamage(attacker, target, doer, damage, damageType, hitPoint,
     if attacker ~= nil then
     
         // Damage upgrades only affect weapons, not ARCs, Sentries, MACs, Mines, etc.
-        if doer:isa("Weapon") or doer:isa("Grenade") then
+        if doer:isa("Weapon") or doer:isa("Grenade")  and attacker:isa("Player") and attacker:GetGameMode() == kGameMode.Classic then
             if(GetHasTech(attacker, kTechId.Weapons3, true)) then
                 damageScalar = kWeapons3DamageScalar
             elseif(GetHasTech(attacker, kTechId.Weapons2, true)) then
@@ -70,23 +70,34 @@ function GetUpgradedDamage(attacker, target, doer, damage, damageType, hitPoint,
                 damageScalar = kWeapons1DamageScalar
             end
         end
-        if attacker.GetIsPrimaled and attacker:GetIsPrimaled() then
+        
+        if doer:isa("Weapon") or doer:isa("Grenade")  and attacker:isa("Player") and attacker:GetGameMode() == kGameMode.Combat then
+            if attacker:GetHasUpgrade(kTechId.Weapons3) then
+                damageScalar = kWeapons3DamageScalar
+            elseif attacker:GetHasUpgrade(kTechId.Weapons2) then
+                damageScalar = kWeapons2DamageScalar
+            elseif attacker:GetHasUpgrade(kTechId.Weapons1) then
+                damageScalar = kWeapons1DamageScalar
+            end
+        end
+        
+        if attacker.GetHasPrimalScream and attacker:GetHasPrimalScream() then
             damageScalar = kPrimalScreamDamageModifier
         end
-    end
-    
-    if attacker and attacker:isa("Alien") then
-        if target.GetReceivesStructuralDamage and target:GetReceivesStructuralDamage(damageType) then
-            local hasupg, level = GetHasBombardUpgrade(attacker)
-            if level > 0 and hasupg then
-                damageScalar = 1 + (((kBombardAttackDamageMultipler - 1)/3) * level)
+        
+        if attacker:isa("Alien") then
+            if target.GetReceivesStructuralDamage and target:GetReceivesStructuralDamage(damageType) then
+                local hasupg, level = GetHasBombardUpgrade(attacker)
+                if level > 0 and hasupg then
+                    damageScalar = 1 + (((kBombardAttackDamageMultipler - 1)/3) * level)
+                end
+            elseif not blockfocus then
+                local focuslevel = CheckWeaponForFocus(doer, attacker)
+                if focuslevel > 0 then
+                    damageScalar = 1 + (((kFocusAttackDamageMultipler - 1)/3) * focuslevel)
+                end
+                
             end
-        elseif not blockfocus then
-            local focuslevel = CheckWeaponForFocus(doer, attacker)
-            if focuslevel > 0 then
-                damageScalar = 1 + (((kFocusAttackDamageMultipler - 1)/3) * focuslevel)
-            end
-            
         end
         
     end
@@ -105,18 +116,19 @@ function GetDamageMultiplier()
     
 end
 
-kDamageType = enum( {'Normal', 'Light', 'Heavy', 'Puncture', 'Structural', 'Gas', 'StructuresOnly', 'Falling', 'Flame', 'Biological' } )
+kDamageType = enum( {'Normal', 'Light', 'Heavy', 'Puncture', 'Structural', 'Gas', 'StructuresOnly', 'Falling', 'Flame', 'Biological', 'Corrode' } )
 
 // Describe damage types for tooltips
 kDamageTypeDesc = {
     "",
-    "Light damage: reduced vs. armor",
-    "Heavy damage: extra vs. armor",
-    "Puncture damage: extra vs. players",
-    "Structural damage: Double vs. structures",
-    "Gas damage: affects breathing targets only",
-    "Structures only: Doesn't damage players or AI units",
-    "Falling damage: Ignores armor for humans, no damage for aliens"
+    "Light damage: reduced vs. armor.",
+    "Heavy damage: extra vs. armor.",
+    "Puncture damage: extra vs. players.",
+    "Structural damage: Double vs. structures.",
+    "Gas damage: affects breathing targets only.",
+    "Structures only: Doesn't damage players or AI units.",
+    "Falling damage: Ignores armor for humans, no damage for aliens.",
+    "Corrode: Only affects armor."
 }
 
 kBaseArmorUseFraction = 0.7

@@ -29,6 +29,10 @@ function ShiftStructureAbility:GetRequiredTechId()
     return kTechId.ShiftHive
 end
 
+function ShiftStructureAbility:GetIsPositionValid(displayOrigin, player, normal, lastClickedPosition, entity)
+    return entity == nil
+end
+
 function ShiftStructureAbility:GetSuffixName()
     return "shift"
 end

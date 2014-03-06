@@ -178,3 +178,23 @@ function UnitStatusMixin:GetHasWelder(forEntity)
     return not GetAreEnemies(forEntity, self) and HasMixin(self, "WeaponOwner") and self:GetWeapon(Welder.kMapName) ~= nil
 
 end
+
+function UnitStatusMixin:GetAbilityFraction(forEntity)
+
+    if HasMixin(self, "WeaponOwner") then
+
+        if GetAreEnemies(forEntity, self) then
+            return 0
+        end
+
+        local primaryWeapon = self:GetWeaponInHUDSlot(1)
+        if primaryWeapon and primaryWeapon:isa("ClipWeapon") then
+            // always show at least 1% so commander would see a black bar
+            return math.max(0.01, primaryWeapon:GetAmmoFraction())
+        end
+        
+    end
+
+    return 0    
+
+end

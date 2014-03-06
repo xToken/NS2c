@@ -26,6 +26,7 @@ Script.Load("lua/VotingKickPlayer.lua")
 Script.Load("lua/VotingChangeMap.lua")
 Script.Load("lua/VotingResetGame.lua")
 Script.Load("lua/VotingRandomizeRR.lua")
+Script.Load("lua/VotingForceEvenTeams.lua")
 Script.Load("lua/Badges_Server.lua")
 
 Script.Load("lua/ServerConfig.lua")
@@ -39,7 +40,8 @@ Script.Load("lua/Mantis.lua")
 
 Script.Load("lua/ConsoleCommands_Server.lua")
 Script.Load("lua/NetworkMessages_Server.lua")
-
+Script.Load("lua/NS2cConfig.lua")
+    
 Script.Load("lua/dkjson.lua")
 
 Script.Load("lua/NetworkDebug.lua")
@@ -383,21 +385,6 @@ local function OnMapPostLoad()
     CheckForDuplicateLocations()
     
     GetGamerules():OnMapPostLoad()
-    
-end
-
-function GetTechTree(teamNumber)
-
-    if GetGamerules() then
-    
-        local team = GetGamerules():GetTeam(teamNumber)
-        if team and team.GetTechTree then
-            return team:GetTechTree()
-        end
-        
-    end
-    
-    return nil
     
 end
 

@@ -10,7 +10,7 @@
 //Removed concept of 'power'
 
 Script.Load("lua/ScriptActor.lua")
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/Mixins/SignalEmitterMixin.lua")
 Script.Load("lua/PowerConsumerMixin.lua")
 
@@ -19,14 +19,14 @@ class 'PropDynamic' (ScriptActor)
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 
 function PropDynamic:OnCreate()
 
     ScriptActor.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, SignalEmitterMixin)
     InitMixin(self, PowerConsumerMixin)
     

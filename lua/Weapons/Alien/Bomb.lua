@@ -28,6 +28,8 @@ Bomb.kModelName          = PrecacheAsset("models/alien/gorge/bilebomb.model")
 // The max amount of time a Bomb can last for
 Bomb.kClearOnImpact = true
 Bomb.kClearOnEnemyImpact = true
+Bomb.kRadius = 0.2
+
 local kBombLifetime = 6
 
 local networkVars = { }

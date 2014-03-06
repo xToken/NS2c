@@ -19,7 +19,6 @@ XenocideLeap.kMapName = "xenocide"
 local kDetonateTime = 2.5
 local kXenocideSoundName = PrecacheAsset("sound/NS2.fev/alien/common/xenocide_start")
 
-
 local networkVars = { }
         
 local function TriggerXenocide(self, player)

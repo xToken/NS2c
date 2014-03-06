@@ -51,7 +51,6 @@ Observatory.kCommanderScanSound = PrecacheAsset("sound/NS2.fev/marine/commander/
 
 local kDistressBeaconSoundDistance = 100
 local kDistressBeaconSoundMarine = PrecacheAsset("sound/NS2.fev/marine/common/distress_beacon_marine")
-local kDistressBeaconSoundAlien = PrecacheAsset("sound/NS2.fev/marine/common/distress_beacon_alien")
 
 Observatory.kDistressBeaconTime = kDistressBeaconTime
 Observatory.kDistressBeaconRange = kDistressBeaconRange
@@ -88,15 +87,9 @@ function Observatory:OnCreate()
     
     if Server then
     
-        self.distressBeaconSoundMarine = Server.CreateEntity(SoundEffect.kMapName)
-        self.distressBeaconSoundMarine:SetAsset(kDistressBeaconSoundMarine)
-        self.distressBeaconSoundMarine:SetRelevancyDistance(Math.infinity)
-        self.distressBeaconSoundMarine:SetExcludeRelevancyMask(kRelevantToTeam1)
-
-        self.distressBeaconSoundAlien = Server.CreateEntity(SoundEffect.kMapName)
-        self.distressBeaconSoundAlien:SetAsset(kDistressBeaconSoundAlien)
-        self.distressBeaconSoundAlien:SetRelevancyDistance(Math.infinity)
-        self.distressBeaconSoundAlien:SetExcludeRelevancyMask(kRelevantToTeam2)
+        self.distressBeaconSound = Server.CreateEntity(SoundEffect.kMapName)
+        self.distressBeaconSound:SetAsset(kDistressBeaconSoundMarine)
+        self.distressBeaconSound:SetRelevancyDistance(Math.infinity)
         
     end
     
@@ -168,11 +161,9 @@ function Observatory:OnDestroy()
     
     if Server then
     
-        DestroyEntity(self.distressBeaconSoundMarine)
-        self.distressBeaconSoundMarine = nil
-        
-        DestroyEntity(self.distressBeaconSoundAlien)
-        self.distressBeaconSoundAlien = nil
+        DestroyEntity(self.distressBeaconSound)
+        self.distressBeaconSound = nil
+
         
     end
     
@@ -241,30 +232,32 @@ function Observatory:TriggerDistressBeacon()
     
     if not self:GetIsBeaconing() then
 
-        self.distressBeaconSoundMarine:Start()
-        self.distressBeaconSoundAlien:Start()
-        
+        self.distressBeaconSound:Start()
+
         local origin = self:GetDistressOrigin()
-        self.distressorigin = origin
-        self.distressBeaconSoundMarine:SetOrigin(origin)
-        self.distressBeaconSoundAlien:SetOrigin(origin)
         
-        // Beam all faraway players back in a few seconds!
-        self.distressBeaconTime = Shared.GetTime() + Observatory.kDistressBeaconTime
+        if origin then
         
-        if Server then
-        
-            TriggerMarineBeaconEffects(self)
+            self.distressBeaconSound:SetOrigin(origin)
+
+            // Beam all faraway players back in a few seconds!
+            self.distressBeaconTime = Shared.GetTime() + Observatory.kDistressBeaconTime
+            self.distressorigin = origin
             
-            local location = GetLocationForPoint(origin)
-            local locationName = location and location:GetName() or ""
-            local locationId = Shared.GetStringIndex(locationName)
-            self.locationId = locationId
-            SendTeamMessage(self:GetTeam(), kTeamMessageTypes.Beacon, locationId)
+            if Server then
             
+                TriggerMarineBeaconEffects(self)
+                
+                local location = GetLocationForPoint(self:GetDistressOrigin())
+                local locationName = location and location:GetName() or ""
+                local locationId = Shared.GetStringIndex(locationName)
+                SendTeamMessage(self:GetTeam(), kTeamMessageTypes.Beacon, locationId)
+                
+            end
+            
+            success = true
+        
         end
-        
-        success = true
     
     end
     
@@ -277,8 +270,7 @@ function Observatory:CancelDistressBeacon()
     self.distressBeaconTime = nil
     self.distressorigin = nil
     self.locationId = nil
-    self.distressBeaconSoundMarine:Stop()
-    self.distressBeaconSoundAlien:Stop()
+    self.distressBeaconSound:Stop()
 
 end
 
@@ -350,13 +342,13 @@ end
 
 function Observatory:PerformDistressBeacon()
 
-    self.distressBeaconSoundMarine:Stop()
-    self.distressBeaconSoundAlien:Stop()
+    self.distressBeaconSound:Stop()
     
     local anyPlayerWasBeaconed = false
     
     //local distressOrigin = self:GetDistressOrigin()
     local distressOrigin = self.distressorigin
+    
     for index, player in ipairs(GetPlayersToBeacon(self, distressOrigin)) do
         local success = false
         if player:GetIsAlive() then
@@ -479,7 +471,7 @@ if Server then
 
         if self.phaseTechResearched then
 
-            local techTree = GetTechTree(self:GetTeamNumber())
+            local techTree = self:GetTeam():GetTechTree()
             if techTree then
                 local researchNode = techTree:GetTechNode(kTechId.PhaseTech)
                 researchNode:SetResearched(true)

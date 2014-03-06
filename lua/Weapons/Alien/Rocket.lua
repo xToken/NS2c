@@ -11,9 +11,11 @@ class 'Rocket' (PredictedProjectile)
 Rocket.kMapName            = "rocket"
 Rocket.kModelName          = PrecacheAsset("models/alien/gorge/bilebomb.model")
 
-// The max amount of time a Bomb can last for
+// The max amount of time a Rocket can last for
 Rocket.kClearOnImpact = true
 Rocket.kClearOnEnemyImpact = true
+Rocket.kRadius = 0.15
+
 local kRocketLifetime = 6
 
 local networkVars = { }
@@ -25,8 +27,8 @@ AddMixinNetworkVars(TeamMixin, networkVars)
 -- Blow up after a time.
 local function UpdateLifetime(self)
 
-    // Grenades are created in predict movement, so in order to get the correct
-    // lifetime, we start counting our lifetime from the first UpdateLifetime rather than when
+    // in order to get the correct lifetime, 
+	// we start counting our lifetime from the first UpdateLifetime rather than when
     // we were created
     if not self.endOfLife then
         self.endOfLife = Shared.GetTime() + kRocketLifetime
@@ -73,11 +75,11 @@ end
 
 function Rocket:ProcessHit(targetHit, surface)
 
-    if Server then
+    if Server and self:GetOwner() ~= targetHit then
         self:Detonate(targetHit, surface)
-    else
-        return true
+        return true        
     end
+    return false
     
 end
 

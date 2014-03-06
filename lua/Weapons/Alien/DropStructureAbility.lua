@@ -244,6 +244,10 @@ local function DropStructure(self, player, origin, direction, structureAbility, 
                 structure:SetOwner(player)
                 player:GetTeam():AddGorgeStructure(player, structure)
                 
+                if onEntity and HasMixin(onEntity, "StructureFall") and HasMixin(structure, "StructureFall") then
+                    onEntity:ConnectToStructure(structure)
+                end
+                
                 // Check for space
                 if structure:SpaceClearForEntity(coords.origin) then
                 
@@ -469,12 +473,12 @@ function DropStructureAbility:GetTakesSecondary()
     return LookupTechData(self:GetActiveStructure().GetDropStructureId(), kTechDataSpecifyOrientation, false)
 end
 
-function DropStructureAbility:GetGhostModelTechId(ModelCheck)
+function DropStructureAbility:GetGhostModelTechId()
 
     if self.activeStructure == nil then
         return nil
     else
-        return self:GetActiveStructure():GetDropStructureId(ModelCheck)
+        return self:GetActiveStructure():GetDropStructureId()
     end
 
 end

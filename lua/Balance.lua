@@ -70,13 +70,13 @@ kAdvancedArmoryUpgradeCost = 30
 kAdvancedArmoryResearchTime = 180
 
 kCatPackTechResearchCost = 10
-kCatPackTechResearchTime = 15
+kCatPackTechResearchTime = 25
 
 kPhaseTechResearchCost = 15
 kPhaseTechResearchTime = 45
 
 kUpgradeTurretFactoryCost = 15
-kUpgradeTurretFactoryTime = 30
+kUpgradeTurretFactoryTime = 45
 
 kMotionTrackingResearchCost = 35
 kMotionTrackingResearchTime = 100
@@ -93,8 +93,8 @@ kExtractorBuildTime = 15
 kInfantryPortalBuildTime = 10
 kCommandStationBuildTime = 15
 kTurretFactoryBuildTime = 15
-kSentryBuildTime = 7
-kSiegeCannonBuildTime  = 10
+kSentryBuildTime = 9
+kSiegeCannonBuildTime  = 11
 kObservatoryBuildTime = 15
 kPhaseGateBuildTime = 12
 
@@ -143,13 +143,13 @@ kLerkGestateTime = 15
 kFadeGestateTime = 25
 kOnosGestateTime = 35
 kUpgradeGestationTime = 2
-kReplaceUpgradeGestationTime = 6
+kReplaceUpgradeGestationTime = 4
 
 //General
 
 kMarineTeamIntialRes = 100
 kMaxTeamResources = 999
-kAlienTeamInitialRes = 25
+kAlienInitialPersonalRes = 25
 kMaxPersonalResources = 100
 kResourceTowerResourceInterval = 4
 kResourcePerTick = 1
@@ -235,6 +235,7 @@ kMineActiveTime = 4
 kMineDetonateRange = 3
 kMineTriggerRange = 1.0
 kMineCount = 3
+kCombatMineCount = 1
 kMinesWeight = 0.05
 
 kNumHandGrenades = 2
@@ -282,6 +283,7 @@ kBiteDelay = 0.4
 kBiteRange = 1.1
 kBiteMeleeBaseWidth = 0.7
 kBiteMeleeBaseHeight = 0.9
+kBiteKnockbackForce = 3
 
 kLeapEnergyCost = 45
 
@@ -316,8 +318,9 @@ kHealsprayFireDelay = 0.8
 kHealsprayEnergyCost = 15
 kHealsprayRadius = 3.5
 
-kDropStructureEnergyCost = 5
-kGorgeCreateDistance = 3
+kDropStructureEnergyCost = 10
+kGorgeCreateDistance = 6
+kGorgeCreateHiveDistance = 3
 
 kBileBombDamage = 200
 kBileBombDamageType = kDamageType.StructuresOnly
@@ -384,9 +387,10 @@ kSwipeDelay = 0.48
 kSwipeRange = 1.3
 kSwipeMeleeBaseWidth = 0.9
 kSwipeMeleeBaseHeight = 1
+kSwipeKnockbackForce = 4
 
-kStartBlinkEnergyCost = 6
-kBlinkPulseEnergyCost = 2
+kStartBlinkEnergyCost = 2
+kBlinkEnergyCostPerSecond = 58
 
 kMetabolizeEnergyCost = 25
 kMetabolizeEnergyGain = 35
@@ -406,6 +410,7 @@ kGoreDelay = 0.45
 kGoreRange = 1.7
 kGoreMeleeBaseWidth = 1.1
 kGoreMeleeBaseHeight = 1.2
+kGoreKnockbackForce = 5
 
 kDevourInitialDamage = 10
 kDevourDamage = 10
@@ -440,6 +445,8 @@ kHydraDamage = 20 // From NS1
 kHydraAttackDamageType = kDamageType.Normal
 
 kEmpoweredROFIncrease = 0.25
+kMeleeViewPunchPitch = -0.3
+kMeleeViewPunchYaw = 0.14
 
 // SPAWN TIMES
 kMarineRespawnTime = 10
@@ -450,14 +457,50 @@ kAlienMaxSpawnInterval = 8
 kAlienEggSpawnTime = 6
 kAlienEggsPerHive = 10
 
-//Combat Times
-kAlienCombatBaseSpawnInterval = 8
-kAlienCombatSpawnIntervalPerPlayer = 0.166
-kAlienCombatMinSpawnInterval = 6
-kAlienCombatMaxSpawnInterval = 8
-kAlienRespawnsPerWave = 5
-kMarineCombatBaseSpawnInterval = 8
+
+
+//Combat Stuff
+kCombatLevelsToExperience = {0, 100, 225, 375, 525, 675, 825, 1000, 1200, 1500, 1900, 2500, 0 } //0 for last level, to show nothing further.
+kCombatBaseExperience = 100
+kCombatLevelExperienceModifier = 0.5
+kCombatObjectiveExperienceScalar = 600
+kCombatExperienceBaseAward = 60
+kCombatExperienceCrowdAward = 10
+kCombatFriendlyAssistScalar = 0.8
+kCombatFriendlyAwardRange = 9.5
+kCombatMaxLevel = 12
+kCombatResourcesPerLevel = 1
+kCombatRoundTimelength = 25
+kCombatDefaultWinner = 2
+
+//Marine
 kMarineCombatSpawnIntervalPerPlayer = 0.166
-kMarineCombatMinSpawnInterval = 6
-kMarineCombatMaxSpawnInterval = 8
-kMarineRespawnsPerWave = 5
+kMarineCombatMinSpawnInterval = 8
+kMarineCombatMaxSpawnInterval = 10
+kMarineRespawnsPerWave = 6
+kCombatMarineBaseUpgradeCost = 1
+kCombatMarineJetpackCost = 2
+kCombatMarineHeavyArmorCost = 2
+kArmoryMinSpawnDistance = 4
+kArmoryMaxSpawnDistance = 15
+kMarineCombatPowerUpTime = 1
+kMarineCombatScanTime = 10
+kMarineCombatScanCheckRadius = 10
+kMarineCombatResupplyTime = 6
+kMarineCombatCatalystTime = 12
+
+//Alien Stuff
+kAlienCombatSpawnIntervalPerPlayer = 0.166
+kAlienCombatMinSpawnInterval = 8
+kAlienCombatMaxSpawnInterval = 10
+kAlienRespawnsPerWave = 6
+kCombatModeGestationTimeScalar = 0.4
+kCombatAlienUpgradeCost = 1
+kCombatAlienFocusCost = 1 // This was 2 in NS1, but focus is somewhat weaker here.. maybe
+kCombatAlienTwoHivesCost = 2
+kCombatAlienThreeHivesCost = 2
+kCombatAlienGorgeCost = 1
+kCombatAlienSupportStructureCost = 1
+kCombatAlienLerkCost = 2
+kCombatAlienFadeCost = 3
+kCombatAlienOnosCost = 4

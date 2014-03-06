@@ -46,7 +46,7 @@ local kWallGripSlideTime = 0.7
 local kWallGripRange = 0.05
 local kWallGripFeelerSize = 0.25
 local kViewOffsetHeight = 0.5
-local kJumpForce = 4
+local kJumpForce = 4.2
 local kFlapImpulse = 4.7
 local kMass = 54
 local kSwoopGravityScalar = -25.0
@@ -120,6 +120,10 @@ function Lerk:GetAngleSmoothRate()
     return 6
 end
 
+function Lerk:GetCollisionSlowdownFraction()
+    return 0.1
+end
+
 function Lerk:GetRollSmoothRate()
     return 3
 end    
@@ -138,7 +142,7 @@ function Lerk:GetDesiredAngles()
         desiredAngles.pitch = self.viewPitch
     end 
    
-    if not self:GetIsOnSurface() then    
+    if not self:GetIsOnGround() then    
         desiredAngles.roll = Clamp( RadianDiff( self:GetAngles().yaw, self.viewYaw ), -kMaxGlideRoll, kMaxGlideRoll)    
     end
     
@@ -173,6 +177,10 @@ function Lerk:GetMaxViewOffsetHeight()
 end
 
 function Lerk:GetCrouchShrinkAmount()
+    return 0
+end
+
+function Lerk:GetCrouchTime()
     return 0
 end
 
@@ -212,7 +220,7 @@ function Lerk:GetMaxSpeed(possible)
         speed = kMaxSpeed
     end
     
-    if self.movementModiferState and self:GetIsOnSurface() then
+    if self.movementModiferState and self:GetIsOnGround() then
         maxSpeed = kWalkSpeed
     end
     
@@ -221,11 +229,7 @@ function Lerk:GetMaxSpeed(possible)
 end
 
 function Lerk:GetCanCrouch()
-    return false
-end
-
-function Lerk:GetIsForwardOverrideDesired()
-    return false
+    return true
 end
 
 function Lerk:GetMass()
@@ -234,6 +238,10 @@ end
 
 function Lerk:GetTimeOfLastFlap()
     return self.lastTimeFlapped
+end
+
+function Lerk:OverrideUpdateOnGround(onGround)
+    return (onGround or self:GetIsWallGripping())
 end
 
 function Lerk:OnWorldCollision(normal)
@@ -293,7 +301,7 @@ local function UpdateFlap(self, input, velocity)
  
             self:DeductAbilityEnergy(kLerkFlapEnergyCost)
             self.lastTimeFlapped = Shared.GetTime()
-            self.onGround = false
+            self:SetIsOnGround(false)
             self:TriggerEffects("flap")
 
         end
@@ -376,20 +384,22 @@ function Lerk:ModifyVelocity(input, velocity, deltaTime)
 
 end
 
+function Lerk:GetSimpleAcceleration(onGround)
+    return ConditionalValue(onGround, Player.GetSimpleAcceleration(self, onGround), 0)
+end
+
 // Glide if jump held down.
-function Lerk:AdjustGravityForce(input, gravity)
+function Lerk:ModifyGravityForce(gravityTable)
 
     if self:GetIsOnGround() then
-        gravity = 0
-    elseif bit.band(input.commands, Move.Crouch) ~= 0 then
+        gravityTable.gravity = 0
+    elseif self:GetCrouching() then
         // Swoop
-        gravity = kSwoopGravityScalar
+        gravityTable.gravity = kSwoopGravityScalar
     else
         // Fall very slowly by default
-        gravity = kRegularGravityScalar
+        gravityTable.gravity = kRegularGravityScalar
     end
-    
-    return gravity
     
 end
 

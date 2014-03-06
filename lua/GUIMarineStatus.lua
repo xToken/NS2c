@@ -60,6 +60,7 @@ GUIMarineStatus.kScanLinesForeGroundPos = Vector(-80, -30, 0)
 GUIMarineStatus.kHealthTextPos = Vector(-20, 36, 0)
 GUIMarineStatus.kArmorTextPos = Vector(-20, 96, 0)
 GUIMarineStatus.kAmmoTextPos = Vector(-140, -45, 0)
+GUIMarineStatus.kAmmoTextCombatPos = Vector(-140, -85, 0)
 
 GUIMarineStatus.kFontName = "fonts/AgencyFB_large_bold.fnt"
 
@@ -308,6 +309,19 @@ function GUIMarineStatus:Update(deltaTime, parameters)
         self.ammoText:SetColor(Color(1, 0, 0, 1)) 
     else
         self.ammoText:SetColor(GUIMarineStatus.kArmorBarColor) 
+    end
+    
+    local gamemode = PlayerUI_GetGameMode()
+    
+    if gamemode ~= self.lastgamemode then
+        self.ammoText:SetUniformScale(self.scale)
+        self.ammoText:SetScale(GetScaledVector())
+        if gamemode == kGameMode.Combat then
+            self.ammoText:SetPosition(GUIMarineStatus.kAmmoTextCombatPos)
+        elseif gamemode == kGameMode.Classic then
+            self.ammoText:SetPosition(GUIMarineStatus.kAmmoTextPos)
+        end
+        self.lastgamemode = gamemode
     end
     
     local currentHealth, maxHealth, currentArmor, maxArmor, parasiteState = unpack(parameters)

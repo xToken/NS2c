@@ -93,7 +93,7 @@ function ParseSelectUnitMessage(message)
     return message.teamNumber, Shared.GetEntity(message.unitId), message.selected, message.keepSelection
 end
 
-function BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, lerkVariant)
+function BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, lerkVariant, shoulderPadIndex)
 
     local t = { }
     t.isMale = isMale
@@ -101,6 +101,7 @@ function BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, 
     t.skulkVariant = skulkVariant
     t.gorgeVariant = gorgeVariant
     t.lerkVariant = lerkVariant
+    t.shoulderPadIndex = shoulderPadIndex
     return t
     
 end
@@ -112,6 +113,7 @@ local kConnectMessage =
     skulkVariant = "enum kSkulkVariant",
     gorgeVariant = "enum kGorgeVariant",
     lerkVariant = "enum kLerkVariant",
+    shoulderPadIndex = string.format("integer (0 to %d)",  #kShoulderPad2ProductId),
 }
 Shared.RegisterNetworkMessage("ConnectMessage", kConnectMessage)
 
@@ -137,6 +139,7 @@ local kVoiceOverMessage =
 
 Shared.RegisterNetworkMessage( "VoiceMessage", kVoiceOverMessage )
 
+local kMaxDamagePerHit = 511
 local kHitEffectMessage =
 {
     // TODO: figure out a reasonable precision for the position
@@ -149,8 +152,8 @@ local kHitEffectMessage =
     showtracer = "boolean",
     altMode = "boolean",
     flinch_severe = "boolean",
-	damage = "integer (0 to 5000)",
-    direction = string.format("integer(1 to %d)", kNumIndexedVectors)
+	damage = string.format("integer (0 to %d)", kMaxDamagePerHit),
+    direction = string.format("integer(1 to %d)", kNumIndexedVectors),
 }
 
 function BuildHitEffectMessage(position, doer, surface, target, showtracer, altMode, flinch_severe, damage, direction)
@@ -164,7 +167,7 @@ function BuildHitEffectMessage(position, doer, surface, target, showtracer, altM
     t.targetId = (target and target:GetId()) or Entity.invalidId
     t.showtracer = showtracer == true
     t.altMode = altMode == true
-    t.damage = damage
+    t.damage = math.min(damage, kMaxDamagePerHit)
     t.direction = direction or 1
     t.flinch_severe = flinch_severe == true
     return t
@@ -253,8 +256,8 @@ local kTechNodeUpdateMessage =
 {
     techId                  = "enum kTechId",
     available               = "boolean",
-    researchProgress        = "float",
-    prereqResearchProgress  = "float",
+    researchProgress        = "float (0 to 1 by 0.01)",
+    prereqResearchProgress  = "float (0 to 1 by 0.01)",
     researched              = "boolean",
     researching             = "boolean",
     hasTech                 = "boolean"
@@ -283,7 +286,7 @@ local kMaxPing = 999
 
 local kPingMessage = 
 {
-    clientIndex = "integer",
+    clientIndex = "integer (-1 to 4000)",
     ping = "integer (0 to " .. kMaxPing .. ")"
 }
 
@@ -344,62 +347,6 @@ function BuildCommanderErrorMessage(data, position)
 end
 
 Shared.RegisterNetworkMessage("CommanderError", kCommanderErrorMessage)
-
-// Scores 
-local kScoresMessage = 
-{
-    clientId = "integer",
-    entityId = "entityid",
-    playerName = string.format("string (%d)", kMaxNameLength),
-    teamNumber = string.format("integer (-1 to %d)", kRandomTeamType),
-    score = string.format("integer (0 to %d)", kMaxScore),
-    kills = string.format("integer (0 to %d)", kMaxKills),
-    assists = string.format("integer (0 to %d)", kMaxKills),
-    deaths = string.format("integer (0 to %d)", kMaxDeaths),
-    resources = string.format("integer (0 to %d)", kMaxPersonalResources),
-    isCommander = "boolean",
-    isRookie = "boolean",
-    status = "enum kPlayerStatus",
-    isSpectator = "boolean",
-}
-
-function BuildScoresMessage(scorePlayer, sendToPlayer)
-
-    local isEnemy = scorePlayer:GetTeamNumber() == GetEnemyTeamNumber(sendToPlayer:GetTeamNumber())
-    
-    local t = {}
-
-    t.clientId = scorePlayer:GetClientIndex()
-    t.entityId = scorePlayer:GetId()
-    t.playerName = string.sub(scorePlayer:GetName(), 0, kMaxNameLength)
-    t.teamNumber = scorePlayer:GetTeamNumber()
-    t.score = 0
-    t.kills = 0
-    t.assists = 0
-    t.deaths = 0
-    
-    if HasMixin(scorePlayer, "Scoring") then
-    
-        t.score = scorePlayer:GetScore()
-        t.kills = scorePlayer:GetKills()
-        t.assists = scorePlayer:GetAssistKills()
-        t.deaths = scorePlayer:GetDeaths()
-        
-    end
-
-    t.resources = ConditionalValue(isEnemy, 0, math.floor(scorePlayer:GetResources()))
-    t.isCommander = ConditionalValue(isEnemy, false, scorePlayer:isa("Commander"))
-    t.isRookie = ConditionalValue(isEnemy, false, scorePlayer:GetIsRookie())
-    t.status = ConditionalValue(isEnemy, kPlayerStatus.Hidden, scorePlayer:GetPlayerStatusDesc())
-    t.isSpectator = ConditionalValue(isEnemy, false, scorePlayer:isa("Spectator"))
-
-    t.reinforcedTierNum = scorePlayer.reinforcedTierNum
-    
-    return t
-    
-end
-
-Shared.RegisterNetworkMessage("Scores", kScoresMessage)
 
 // For idle workers
 local kSelectAndGotoMessage = 
@@ -616,7 +563,7 @@ end
 
 local kMutePlayerMessage = 
 {
-    muteClientIndex = "integer",
+    muteClientIndex = "integer (-1 to 4000)",
     setMute = "boolean"
 }
 
@@ -739,10 +686,10 @@ local kTechNodeBaseMessage =
     
     // 0-1 research progress. This is non-authoritative and set/duplicated from Structure:SetResearchProgress()
     // so player buy menus can display progress.
-    researchProgress    = "float",
+    researchProgress    = "float (0 to 1 by 0.01)",
     
     // 0-1 research progress of the prerequisites of this node.
-    prereqResearchProgress = "float",
+    prereqResearchProgress = "float (0 to 1 by 0.01)",
 
     // True after being researched.
     researched          = "boolean",
@@ -918,6 +865,12 @@ local kGameEndMessage =
     win = "boolean"
 }
 
+local kViewPunchMessage =
+{
+    punchangle = "vector"
+}
+
+Shared.RegisterNetworkMessage("ViewPunch", kViewPunchMessage)
 Shared.RegisterNetworkMessage("GameEnd", kGameEndMessage)
 
 Shared.RegisterNetworkMessage("EntityChanged", kEntityChangedMessage)
@@ -1003,12 +956,17 @@ local kBuyMessage =
 
 function BuildBuyMessage(techIds)
 
-    assert(#techIds <= table.countkeys(kBuyMessage))
-    
     local buyMessage = { techId1 = kTechId.None, techId2 = kTechId.None, techId3 = kTechId.None,
                          techId4 = kTechId.None, techId5 = kTechId.None, techId6 = kTechId.None,
                          techId7 = kTechId.None, techId8 = kTechId.None }
-    
+
+    if #techIds > table.countkeys(kBuyMessage) then
+        Shared.Message("Attempted to purchase too many upgrades at once, can only purchase 8 upgrades at once.")
+        Shared.ConsoleCommand("output " .. "Attempted to purchase too many upgrades at once, can only purchase 8 upgrades at once.")
+        //Tell client they tried to buy toooo much at once.
+        return buyMessage
+    end
+
     for t = 1, #techIds do
         buyMessage["techId" .. t] = techIds[t]
     end
@@ -1060,12 +1018,12 @@ Shared.RegisterNetworkMessage("ScoreUpdate", kScoreUpdate)
 Shared.RegisterNetworkMessage("SpectatePlayer", { entityId = "entityid"})
 Shared.RegisterNetworkMessage("SwitchFromFirstPersonSpectate", { mode = "enum kSpectatorMode" })
 Shared.RegisterNetworkMessage("SwitchFirstPersonSpectatePlayer", { forward = "boolean" })
-Shared.RegisterNetworkMessage("SetClientIndex", { clientIndex = "integer" })
-Shared.RegisterNetworkMessage("ClientDisconnect", { clientIndex = "integer" })
+Shared.RegisterNetworkMessage("SetClientIndex", { clientIndex = "integer (-1 to 4000)" })
 Shared.RegisterNetworkMessage("ServerHidden", { hidden = "boolean" })
 Shared.RegisterNetworkMessage("SetClientTeamNumber", { teamNumber = string.format("integer (-1 to %d)", kRandomTeamType) })
 Shared.RegisterNetworkMessage("WaitingForAutoTeamBalance", { waiting = "boolean" })
 Shared.RegisterNetworkMessage("SetTimeWaveSpawnEnds", { time = "time" })
+Shared.RegisterNetworkMessage("SetIsRespawning", { isRespawning = "boolean" })
 
 local kTeamNumDef = "integer (" .. kTeamInvalid .. " to " .. kSpectatorIndex .. ")"
 Shared.RegisterNetworkMessage("DeathMessage", { killerIsPlayer = "boolean", killerId = "integer", killerTeamNumber = kTeamNumDef, iconIndex = "enum kDeathMessageIcon", targetIsPlayer = "boolean", targetId = "integer", targetTeamNumber = kTeamNumDef })

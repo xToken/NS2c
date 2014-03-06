@@ -96,7 +96,7 @@ local function GetShowResearch(techId)
     local localPlayer = GetCallingCommander()
     
     if localPlayer then        
-        return not GetIsTechResearched(localPlayer:GetTeamNumber(), techId) and not GetIsTechResearching(localPlayer, techId)        
+        return not GetIsTechResearched(localPlayer, techId) and not GetIsTechResearching(localPlayer, techId)        
     end
 
 end
@@ -507,7 +507,7 @@ function CommanderHelp_GetWorldButtons()
             local techId = entry[1]
             local helpFunc = entry[2]
         
-            if GetCostForTech(techId) <= localPlayer:GetTeamResources() and GetIsTechAvailable(teamNumber, techId) then
+            if GetCostForTech(techId) <= localPlayer:GetTeamResources() and GetIsTechAvailable(localPlayer, techId) then
         
                 local resultList = helpFunc()
                 for j = 1, #resultList do

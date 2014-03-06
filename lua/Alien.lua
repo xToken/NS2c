@@ -26,6 +26,7 @@ Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/BabblerClingMixin.lua")
 Script.Load("lua/EmpowerMixin.lua")
+Script.Load("lua/PrimalScreamMixin.lua")
 Script.Load("lua/RedeployMixin.lua")
 Script.Load("lua/RedemptionMixin.lua")
 Script.Load("lua/GhostMixin.lua")
@@ -66,7 +67,6 @@ local networkVars =
     twoHives = "private boolean",
     threeHives = "private boolean",
     
-    primalScreamBoost = "compensated boolean",
 	hatched = "private boolean",
     
     darkVisionSpectatorOn = "private boolean"
@@ -80,6 +80,7 @@ AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(BabblerClingMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(EmpowerMixin, networkVars)
+AddMixinNetworkVars(PrimalScreamMixin, networkVars)
 AddMixinNetworkVars(RedeployMixin, networkVars)
 AddMixinNetworkVars(GhostMixin, networkVars)
 AddMixinNetworkVars(UmbraMixin, networkVars)
@@ -100,6 +101,7 @@ function Alien:OnCreate()
     InitMixin(self, BabblerClingMixin)
 	InitMixin(self, UmbraMixin)
     InitMixin(self, EmpowerMixin)
+    InitMixin(self, PrimalScreamMixin)
 	InitMixin(self, RedeployMixin)
 	InitMixin(self, RedemptionMixin)
 	InitMixin(self, GhostMixin)
@@ -121,10 +123,8 @@ function Alien:OnCreate()
     self.oneHive = false
     self.twoHives = false
     self.threeHives = false
-    self.primalScreamBoost = false
     
     if Server then
-        self.timeWhenPrimalScreamExpires = 0
         self.timeLastAlienAutoHeal = 0
     elseif Client then
         InitMixin(self, TeamMessageMixin, { kGUIScriptName = "GUIAlienTeamMessage" })
@@ -449,10 +449,6 @@ function Alien:GetEffectParams(tableParams)
     end
 end
 
-function Alien:GetIsPrimaled()
-    return self.primalScreamBoost
-end
-
 function Alien:OnHiveTeleport()
 end
 
@@ -462,7 +458,7 @@ end
 
 function Alien:GetAttackSpeedModifiers()
     local as = 1
-    if self:GetIsPrimaled() then
+    if self:GetHasPrimalScream() then
         as = as + kPrimalScreamROFIncrease
     end
     if self:GetIsEmpowered() then
