@@ -181,7 +181,6 @@ function Embryo:OnInitialized()
         else
             Client.SetPitch(0.8)
         end
-
         
     end
     
@@ -244,8 +243,9 @@ function Embryo:GetDesiredAngles()
     return self.originalAngles
 end
 
+local kEngageOffset = Vector(0, 0.3, 0)
 function Embryo:GetEngagementPointOverride()
-    return self:GetOrigin() + Vector(0, 0.3, 0)
+    return self:GetOrigin() + kEngageOffset
 end
 
 function Embryo:GetGestationTechId()

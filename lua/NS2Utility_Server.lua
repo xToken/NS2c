@@ -90,18 +90,6 @@ function SetAlwaysRelevantToTeam(unit, relevant)
     
     unit:SetIncludeRelevancyMask( includeMask )
     
-end  
-
-function PushPlayersInRange(origin, range, impulseStrength, team)
-
-    local players = GetEntitiesForTeamWithinRange("Player", team, origin, range)
-    
-    for _, player in ipairs(players) do
-    
-        player:AddPushImpulse(GetNormalizedVector( player:GetOrigin() - origin)  * impulseStrength)
-    
-    end
-
 end
 
 local gLastHitEffectCounterReset = 0

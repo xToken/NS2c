@@ -703,17 +703,6 @@ local function OnCommandWeldDoors(client)
     
 end
 
-local function OnCommandPush(client)
-
-    if Shared.GetCheatsEnabled() then
-        local player = client:GetControllingPlayer()
-        if player then
-            player:AddPushImpulse(Vector(50,10,0))
-        end
-    end
-    
-end
-
 local function OnCommandPrimal(client)
 
     if Shared.GetCheatsEnabled() then
@@ -1288,8 +1277,8 @@ Event.Hook("Console_onos", OnCommandChangeClass("onos", kTeam2Index))
 Event.Hook("Console_marine", OnCommandChangeClass("marine", kTeam1Index))
 Event.Hook("Console_heavyarmor", OnCommandChangeClass("heavyarmormarine", kTeam1Index))
 Event.Hook("Console_jetpack", OnCommandChangeClass("jetpackmarine", kTeam1Index))
-Event.Hook("Console_mexo", OnCommandChangeClass("exo", kTeam1Index, { layout = "MinigunMinigun" }))
-Event.Hook("Console_rexo", OnCommandChangeClass("exo", kTeam1Index, { layout = "RailgunRailgun" }))
+Event.Hook("Console_mexo", OnCommandChangeClass("exo", kTeam1Index, { layout = "Minigun" }))
+Event.Hook("Console_rexo", OnCommandChangeClass("exo", kTeam1Index, { layout = "Railgun" }))
 Event.Hook("Console_sandbox", OnCommandSandbox)
 
 Event.Hook("Console_command", OnCommandCommand)
@@ -1297,7 +1286,6 @@ Event.Hook("Console_catpack", OnCommandCatPack)
 Event.Hook("Console_alltech", OnCommandAllTech)
 Event.Hook("Console_fastevolve", OnCommandFastEvolve)
 Event.Hook("Console_location", OnCommandLocation)
-Event.Hook("Console_push", OnCommandPush)
 Event.Hook("Console_primal",OnCommandPrimal)
 Event.Hook("Console_umbra", OnCommandUmbra)
 Event.Hook("Console_deploycannons", OnCommandDeployCannons)

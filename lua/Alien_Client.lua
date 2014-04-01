@@ -23,7 +23,7 @@ local kRegenerationViewCinematic = PrecacheAsset("cinematics/alien/regeneration_
 local kFirstPersonDeathEffect = PrecacheAsset("cinematics/alien/death_1p_alien.cinematic")
 local kAlienFirstPersonHitEffectName = PrecacheAsset("cinematics/alien/hit_1p.cinematic")
 
-function PlayerUI_GetActiveHiveCount()
+function AlienUI_GetActiveHiveCount()
 
     for _, ent in ientitylist(Shared.GetEntitiesWithClassname("AlienTeamInfo")) do
         return ent:GetActiveHiveCount()
@@ -33,7 +33,7 @@ function PlayerUI_GetActiveHiveCount()
 
 end
 
-function PlayerUI_GetHiveList()
+function AlienUI_GetHiveList()
     local hiveinfo = { }
 	
 	//Hives always relevant to aliens now, so just look them all up...
@@ -132,7 +132,7 @@ end
  * totalPower, minimumPower, tex x offset, tex y offset, 
  * visibility (boolean), command name
  */
-function PlayerUI_GetAbilityData()
+function AlienUI_GetAbilityData()
 
     local data = {}
     local player = Client.GetLocalPlayer()
@@ -151,7 +151,7 @@ end
  * totalPower, minimumPower, tex x offset, tex y offset, 
  * visibility (boolean)
  */
-function PlayerUI_GetSecondaryAbilityData()
+function AlienUI_GetSecondaryAbilityData()
 
     local data = {}
     local player = Client.GetLocalPlayer()
@@ -165,16 +165,8 @@ function PlayerUI_GetSecondaryAbilityData()
     
 end
 
-/**
- * Return boolean value indicating if inactive powers should be visible
- */
-function PlayerUI_GetInactiveVisible()
-    local player = Client.GetLocalPlayer()
-    return player:isa("Alien") and player:GetInactiveVisible()
-end
-
 // Loop through child weapons that aren't active and add all their data into one array
-function PlayerUI_GetInactiveAbilities()
+function AlienUI_GetInactiveAbilities()
 
     local data = {}
     
@@ -206,7 +198,7 @@ function PlayerUI_GetInactiveAbilities()
     
 end
 
-function PlayerUI_GetPlayerEnergy()
+function AlienUI_GetPlayerEnergy()
 
     local player = Client.GetLocalPlayer()
     if player and player.GetEnergy then
@@ -216,7 +208,7 @@ function PlayerUI_GetPlayerEnergy()
     
 end
 
-function PlayerUI_GetPlayerMaxEnergy()
+function AlienUI_GetPlayerMaxEnergy()
 
     local player = Client.GetLocalPlayer()
     if player and player.GetMaxEnergy then
@@ -463,9 +455,9 @@ function Alien:OnCountDownEnd()
     
 end
 
-function Alien:GetPlayFootsteps()
+/*function Alien:GetPlayFootsteps()
     return Player.GetPlayFootsteps(self) and not GetHasSilenceUpgrade(self)
-end
+end*/
 
 function Alien:GetFirstPersonHitEffectName()
     return kAlienFirstPersonHitEffectName

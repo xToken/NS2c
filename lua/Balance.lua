@@ -33,6 +33,7 @@ kMinesDropCost = 10
 kShotgunDropCost = 10
 kHeavyMachineGunCost = 15
 kGrenadeLauncherDropCost = 15
+kFlamethrowerCost = 18
 kJetpackDropCost = 12
 kHeavyArmorDropCost = 15
 kExosuitDropCost = 20
@@ -219,15 +220,23 @@ kHeavyMachineGunROF = 0.05
 kHeavyMachineGunReloadTime = 6.3
 kHeavyMachineGunClipWeight = 0.01
 
+kFlamethrowerWeight = 0.1
+kFlamethrowerClipSize = 15
+kFlamethrowerRange = 9
+kFlamethrowerDamage = 12
+kFlamethrowerDamageType = kDamageType.Puncture
+kFlamethrowerGunClipWeight = 0.01
+
 kMinigunDamage = 8
 kMinigunDamageType = kDamageType.Puncture
 kMinigunClipSize = 100
 kMinigunWeight = 0.06
 
-kRailgunDamage = 125
+kRailgunDamage = 175
 kRailgunDamageType = kDamageType.StructuresOnly
-kRailgunClipSize = 25
+kRailgunClipSize = 5
 kRailgunWeight = 0.06
+kRailgunSplashRadius = 6
 
 kMineDamage = 125
 kMineDamageType = kDamageType.Normal
@@ -496,7 +505,7 @@ kAlienCombatMaxSpawnInterval = 10
 kAlienRespawnsPerWave = 6
 kCombatModeGestationTimeScalar = 0.4
 kCombatAlienUpgradeCost = 1
-kCombatAlienFocusCost = 1 // This was 2 in NS1, but focus is somewhat weaker here.. maybe
+kCombatAlienFocusCost = 2 // This was 2 in NS1, but focus is somewhat weaker here.. maybe
 kCombatAlienTwoHivesCost = 2
 kCombatAlienThreeHivesCost = 2
 kCombatAlienGorgeCost = 1

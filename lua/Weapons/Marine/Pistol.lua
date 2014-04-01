@@ -26,7 +26,7 @@ local kLaserAttachPoint = "fxnode_laser"
 
 local networkVars =
 {
-    altMode = "boolean",
+    timeAttackStarted = "time",
     emptyPoseParam = "private float (0 to 1 by 0.01)"
 }
 
@@ -40,8 +40,7 @@ end
 function Pistol:OnCreate()
 
     ClipWeapon.OnCreate(self)
-    
-    self.altMode = false
+    self.timeAttackStarted = 0
     self.emptyPoseParam = 0
 
 end
@@ -192,7 +191,7 @@ end
 
 // When in alt-fire mode, keep very accurate
 function Pistol:GetInaccuracyScalar(player)
-    return ClipWeapon.GetInaccuracyScalar(self, player) * ConditionalValue(self.altMode, .5, 1)
+    return 1
 end
 
 function Pistol:GetHUDSlot()
@@ -216,11 +215,11 @@ function Pistol:GetClipSize()
 end
 
 function Pistol:GetSpread()
-    return ConditionalValue(self.altMode, kAltSpread, kSpread)
+    return kSpread
 end
 
 function Pistol:GetBulletDamage(target, endPoint)
-    return ConditionalValue(self.altMode, kPistolAltDamage, kPistolDamage)
+    return kPistolDamage
 end
 
 function Pistol:GetMaxAmmo()
@@ -228,7 +227,7 @@ function Pistol:GetMaxAmmo()
 end
 
 function Pistol:GetIsLaserActive()
-    return self.altMode and self:GetIsActive()
+    return false
 end
 
 function Pistol:OnProcessMove(input)
@@ -244,30 +243,10 @@ function Pistol:UpdateViewModelPoseParameters(viewModel)
     viewModel:SetPoseParam("empty", self.emptyPoseParam)
 end
 
-function Pistol:OnTag(tagName)
-
-    PROFILE("Pistol:OnTag")
-
-    ClipWeapon.OnTag(self, tagName)
-    
-    if tagName == "alt_mode" then
-        self.altMode = not self.altMode
-    end
-    
-end
-
-function Pistol:OnUpdateAnimationInput(modelMixin)
-
-    ClipWeapon.OnUpdateAnimationInput(self, modelMixin)
-
-    modelMixin:SetAnimationInput("altMode", self.altMode)
-    
-end
-
 function Pistol:FirePrimary(player)
 
     ClipWeapon.FirePrimary(self, player)
-    
+    self.timeAttackStarted = Shared.GetTime()
     self:TriggerEffects("pistol_attack")
     
     TEST_EVENT("Pistol primary attack")

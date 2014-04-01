@@ -412,9 +412,6 @@
     <filename>HeavyArmorMarine.lua</filename>
   </file>
   <file>
-    <filename>HeavyArmorMarine_Server.lua</filename>
-  </file>
-  <file>
     <filename>Weapons\Marine\HeavyMachineGun.lua</filename>
   </file>
   <file>
@@ -461,9 +458,6 @@
   </file>
   <file>
     <filename>JetpackMarine.lua</filename>
-  </file>
-  <file>
-    <filename>JetpackMarine_Server.lua</filename>
   </file>
   <file>
     <filename>LOSMixin.lua</filename>
@@ -890,5 +884,14 @@
   </file>
   <file>
     <filename>StructureFallMixin.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Marine\Flamethrower.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Marine\Flamethrower_Client.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Marine\Claw.lua</filename>
   </file>
 </project>

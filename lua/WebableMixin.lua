@@ -31,15 +31,28 @@ end
 
 function WebableMixin:GetIsWebbed()
     return self.webbed
-end    
+end
+
+local function CheckWebbed(self)
+    local wasWebbed = self.webbed
+    self.webbed = self.timeWebEnds > Shared.GetTime()
+    if wasWebbed and not self.webbed and self.OnWebbedEnd then
+        self:OnWebbedEnd()
+    end
+    return self.webbed
+end
 
 function WebableMixin:SetWebbed(duration)
     
     if Server then
     
         self.timeWebEnds = Shared.GetTime() + duration
-        if not self.webbed and self.OnWebbed then
-            self:OnWebbed()
+        
+        if not self.webbed then
+            if self.OnWebbed then
+                self:OnWebbed()
+            end
+            self:AddTimedCallback(CheckWebbed, 0.25)
         end
 
         self.webbed = true
@@ -53,35 +66,10 @@ function WebableMixin:SetWebbed(duration)
     
 end
 
-if Server then
-
-    local function SharedUpdate(self, deltaTime)
-    
-        local wasWebbed = self.webbed
-        self.webbed = self.timeWebEnds > Shared.GetTime()
-        
-        if wasWebbed and not self.webbed and self.OnWebbedEnd then
-            self:OnWebbedEnd()
-        end
-        
-    end
-
-    function WebableMixin:OnUpdate(deltaTime)
-        SharedUpdate(self, deltatime)
-    end
-    
-    function WebableMixin:OnProcessMove(input)
-        SharedUpdate(self, input.time)
-    end
-
-end
-
 function WebableMixin:OnUpdateAnimationInput(modelMixin)
     modelMixin:SetAnimationInput("webbed", self.webbed)
 end
 
 function WebableMixin:OnUpdateRender()
-
     // TODO: custom material?
-
 end

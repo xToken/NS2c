@@ -34,7 +34,6 @@ function BileBomb:OnCreate()
     Ability.OnCreate(self)
     
     self.primaryAttacking = false
-    self.timeLastBileBomb = 0
     
     InitMixin(self, HealSprayMixin)
     
@@ -71,7 +70,6 @@ function BileBomb:OnTag(tagName)
             end
             
             player:DeductAbilityEnergy(self:GetEnergyCost())            
-            self.timeLastBileBomb = Shared.GetTime()
             
             self:TriggerEffects("bilebomb_attack")
             
@@ -92,10 +90,8 @@ end
 
 function BileBomb:OnPrimaryAttack(player)
 
-    if player:GetEnergy() >= self:GetEnergyCost() then
-    
+    if player:GetEnergy() >= self:GetEnergyCost() then  
         self.primaryAttacking = true
-        
     else
         self.primaryAttacking = false
     end  
@@ -108,10 +104,6 @@ function BileBomb:OnPrimaryAttackEnd(player)
     
     self.primaryAttacking = false
     
-end
-
-function BileBomb:GetTimeLastBomb()
-    return self.timeLastBileBomb
 end
 
 function BileBomb:FireBombProjectile(player)

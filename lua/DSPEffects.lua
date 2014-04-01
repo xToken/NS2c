@@ -136,6 +136,5 @@ end
 Event.Hook("Console_mcg", OnAdjustMasterCompressorMakeUpGain)
 
 function UpdateDSPEffects()
-
     PROFILE("DSPEffects:UpdateDSPEffects")
 end

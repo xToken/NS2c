@@ -46,7 +46,7 @@ kFallDamageMinimumVelocity = 12
 kFallDamageScalar = 11.88
 
 kEnergyRecuperationRate = 8
-kEnergyAdrenalineRecuperationRate = 16.0
+kEnergyAdrenalineRecuperationRate = 8
 kCeleritySpeedModifier = 1.67 //75 Units NS1
 kFocusAttackSlowdown = 0.5
 kCloakingMaxSpeed = 3.0
@@ -85,6 +85,10 @@ kDistressBeaconTime = 3
 kEnergizeRange = 15
 kPlayerEnergyPerEnergize = 6
 kEnergizeUpdateRate = 1
+
+//Whip Empower
+kEmpowerRange = 6
+kEmpowerUpdateRate = 1
 
 // Jetpack
 // NS1: 6.5 seconds of fuel

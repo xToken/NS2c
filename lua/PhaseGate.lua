@@ -122,7 +122,7 @@ local networkVars =
     phase = "boolean",
     deployed = "boolean",
     destLocationId = "entityid",
-    timeOfLastPhase = "compensated time",
+    timeOfLastPhase = "time",
     destinationEndpoint = "position"
 }
 

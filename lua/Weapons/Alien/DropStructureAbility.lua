@@ -35,8 +35,7 @@ DropStructureAbility.kSupportedStructures = { CragStructureAbility, ShiftStructu
 local networkVars =
 {
     numWebsLeft = string.format("private integer (0 to %d)", kMaxStructuresPerType),
-    numBabblersLeft = string.format("private integer (0 to %d)", kMaxStructuresPerType),
-    lastPrimaryAttackTime = "time"
+    numBabblersLeft = string.format("private integer (0 to %d)", kMaxStructuresPerType)
 }
 
 function DropStructureAbility:GetAnimationGraphName()
@@ -61,7 +60,6 @@ function DropStructureAbility:OnCreate()
     self.mouseDown = false
     self.activeStructure = nil
 	self.lastClickedPosition = nil
-    self.lastPrimaryAttackTime = 0
     self.numBabblersLeft = 0
     self.numWebsLeft = 0
     if Server then

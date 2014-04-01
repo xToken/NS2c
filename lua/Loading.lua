@@ -95,7 +95,15 @@ local function UpdateServerInformation()
                 numMountedMods = numMountedMods + 1
                 local title = Client.GetModTitle(i)
                 local state  = Client.GetModState(i)
-                msg2 = msg2 .. string.format("\n      %s", title)
+                local downloading, bytesDownloaded, totalBytes = Client.GetModDownloadProgress(i)
+                local percent = "100%"
+                if downloading then
+                    percent = "0%"
+                    if totalBytes > 0 then
+                        percent = string.format("%d%%", math.floor((bytesDownloaded / totalBytes) * 100))
+                    end
+                end
+                msg2 = msg2 .. string.format("\n      %s %s %s", title, state, percent)
                 
             end
         end

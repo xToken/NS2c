@@ -365,6 +365,7 @@ function Gorge:GetPitchRollRate()
     return 3
 end
 
+//Vanilla NS2
 function Gorge:GetSimpleAcceleration(onGround)
     return ConditionalValue(onGround, self:GetIsBellySliding() and 0 or 8, 9)
 end
@@ -382,7 +383,8 @@ function Gorge:GetSimpleFriction(onGround)
     else
         return 0.8
     end
-end 
+end
+//End Vanilla NS2
 
 local kMaxSlideRoll = math.rad(20)
 
@@ -467,8 +469,9 @@ function Gorge:GetCanAttack()
     return Alien.GetCanAttack(self) and not self:GetIsBellySliding()
 end
 
+local kEngageOffset = Vector(0, 0.28, 0)
 function Gorge:GetEngagementPointOverride()
-    return self:GetOrigin() + Vector(0, 0.28, 0)
+    return self:GetOrigin() + kEngageOffset
 end
 
 Shared.LinkClassToMap("Gorge", Gorge.kMapName, networkVars, true)

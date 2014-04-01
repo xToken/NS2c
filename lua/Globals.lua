@@ -25,7 +25,7 @@ kRandomTeamType = 3
 kJumpMode = { Repeating = 2, Queued = 1, Default = 0 }
 
 // after 5 minutes players are allowed to give up a round
-kMinTimeBeforeConcede = 10 * 60
+kMinTimeBeforeConcede = 5 * 60
 kPercentNeededForVoteConcede = 0.75
 kPercentNeededForUpgradeChamberVote = 0.55
 

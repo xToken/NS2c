@@ -947,18 +947,12 @@ local kBuyMessage =
     techId1 = "enum kTechId",
     techId2 = "enum kTechId",
     techId3 = "enum kTechId",
-    techId4 = "enum kTechId",
-    techId5 = "enum kTechId",
-    techId6 = "enum kTechId",
-    techId7 = "enum kTechId",
-    techId8 = "enum kTechId"
+    techId4 = "enum kTechId"
 }
 
 function BuildBuyMessage(techIds)
 
-    local buyMessage = { techId1 = kTechId.None, techId2 = kTechId.None, techId3 = kTechId.None,
-                         techId4 = kTechId.None, techId5 = kTechId.None, techId6 = kTechId.None,
-                         techId7 = kTechId.None, techId8 = kTechId.None }
+    local buyMessage = { techId1 = kTechId.None, techId2 = kTechId.None, techId3 = kTechId.None, techId4 = kTechId.None }
 
     if #techIds > table.countkeys(kBuyMessage) then
         Shared.Message("Attempted to purchase too many upgrades at once, can only purchase 8 upgrades at once.")

@@ -15,11 +15,6 @@ Marine.kBuyMenuUpgradesTexture = "ui/marine_buymenu_upgrades.dds"
 Marine.kBuyMenuiconsTexture = "ui/marine_buy_icons.dds"
 
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/marine_highlight.surface_shader")
-local kSensorBlipSize = 25
-
-function Marine:GetHealthbarOffset()
-    return 1.2
-end
 
 function MarineUI_GetHasObservatory()
 
@@ -69,6 +64,10 @@ end
 
 function Marine:UnitStatusPercentage()
     return self.unitStatusPercentage
+end
+
+function Marine:GetHealthbarOffset()
+    return 1.2
 end
 
 function Marine:UpdateClientEffects(deltaTime, isLocal)

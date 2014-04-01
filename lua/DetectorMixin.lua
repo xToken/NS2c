@@ -27,18 +27,10 @@ DetectorMixin.expectedCallbacks =
 }
 
 local function IsValidDetection(detectable)
+
     if detectable:GetMapName() == "egg" then
         return false
     end
-    
-    //Ghost adds a chance to 'evade' detection
-    //if detectable:isa("Alien") then
-        //local hasupg, level = GetHasGhostUpgrade(detectable)
-        //if hasupg and level > 0 then
-            //local hide = math.random(1, 100) <= (level * kGhostObservatoryDodgePerLevel)
-            //return hide
-        //end
-    //end
     
     return true
 end

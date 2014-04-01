@@ -475,7 +475,7 @@ end
 
 function GUIAlienHUD:CreateEnergyBall()
 
-    self.energyBarPercentage = PlayerUI_GetPlayerEnergy() / PlayerUI_GetPlayerMaxEnergy()
+    self.energyBarPercentage = AlienUI_GetPlayerEnergy() / AlienUI_GetPlayerMaxEnergy()
     
     self.hasAdrenaline = AlienUI_GetHasAdrenaline()
     
@@ -784,7 +784,7 @@ local function UpdateEnergyBall(self, deltaTime)
     
     end
     
-    local energyBarPercentageGoal = PlayerUI_GetPlayerEnergy() / PlayerUI_GetPlayerMaxEnergy()
+    local energyBarPercentageGoal = AlienUI_GetPlayerEnergy() / AlienUI_GetPlayerMaxEnergy()
     self.energyBarPercentage = Slerp(self.energyBarPercentage, energyBarPercentageGoal, deltaTime * kBarMoveRate)
     
     self.energyBall:SetPercentage(self.energyBarPercentage)
@@ -800,7 +800,7 @@ local function UpdateEnergyBall(self, deltaTime)
         if techId then
         
             local energyCost = AlienUI_GetMovementSpecialEnergyCost()
-            local color = PlayerUI_GetPlayerEnergy() >= energyCost and Color(kArmorCircleColor) or Color(1, 0, 0, 1)
+            local color = AlienUI_GetPlayerEnergy() >= energyCost and Color(kArmorCircleColor) or Color(1, 0, 0, 1)
         
             self.movementSpecialIcon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId)))
             self.movementSpecialIcon:SetIsVisible(true)
@@ -814,10 +814,10 @@ local function UpdateEnergyBall(self, deltaTime)
     
     local currentAlpha = self.energyBall:GetLeftSide():GetColor().a
     local useColor = Color(230/255, 171/255, 46/255, 1)
-    local energizeLevel = PlayerUI_GetEnergizeLevel()
+    local energized = PlayerUI_GetEnergized()
 
-    if energizeLevel > 0 then
-        useColor = GetEnergizeColor(energizeLevel)
+    if energized then
+        useColor = GetEnergizeColor(1)
     end
     
     useColor.a = currentAlpha
@@ -949,7 +949,7 @@ function GUIAlienHUD:UpdateAbilities(deltaTime)
 
     local activeHudSlot = 0
     
-    local abilityData = PlayerUI_GetAbilityData()
+    local abilityData = AlienUI_GetAbilityData()
     local currentIndex = 1
     
     if table.count(abilityData) > 0 then
@@ -999,7 +999,7 @@ function GUIAlienHUD:UpdateAbilities(deltaTime)
     self.lastActiveHudSlot = activeHudSlot
     
     // Secondary ability.
-    abilityData = PlayerUI_GetSecondaryAbilityData()
+    abilityData = AlienUI_GetSecondaryAbilityData()
     currentIndex = 1
     if table.count(abilityData) > 0 then
     
@@ -1040,7 +1040,7 @@ end
 function GUIAlienHUD:UpdateInactiveAbilities(deltaTime, activeHudSlot)
 
     local numberElementsPerAbility = 2
-    local abilityData = PlayerUI_GetInactiveAbilities()
+    local abilityData = AlienUI_GetInactiveAbilities()
     local numberAbilities = table.count(abilityData) / numberElementsPerAbility
     local currentIndex = 1
     
@@ -1192,7 +1192,7 @@ local function CheckHiveStatusChanged(hive, icon)
 end
 
 function GUIAlienHUD:UpdateHiveInformation(deltaTime)
-    local hives = PlayerUI_GetHiveList()
+    local hives = AlienUI_GetHiveList()
     for i = 1, kMaxHives do
 		local hive = hives[i]
 		if hive ~= nil then

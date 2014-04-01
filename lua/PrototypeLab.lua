@@ -91,7 +91,7 @@ function PrototypeLab:OnCreate()
         InitMixin(self, CommanderGlowMixin)
     end
     
-    self:SetUpdates(false)
+    self:SetUpdates(true)
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup)

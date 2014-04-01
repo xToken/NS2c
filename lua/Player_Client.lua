@@ -1473,16 +1473,16 @@ function PlayerUI_GetNumClingedBabblers()
 
 end
 
-function PlayerUI_GetEnergizeLevel()
+function PlayerUI_GetEnergized()
 
-    local energizeLevel = 0
+    local energized = false
     
     local player = Client.GetLocalPlayer()
     if player and HasMixin(player, "Energize") then
-        energizeLevel = player:GetEnergizeLevel()
+        energized = player:GetEnergized()
     end
     
-    return energizeLevel
+    return energized
     
 end
 

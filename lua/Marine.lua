@@ -202,8 +202,7 @@ function Marine:OnInitialized()
         InitMixin(self, MarineOutlineMixin)
         
         self:AddHelpWidget("GUIMarineHealthRequestHelp", 2)
-        //self:AddHelpWidget("GUIMarineFlashlightHelp", 2)
-        //self:AddHelpWidget("GUIBuyShotgunHelp", 2)
+        self:AddHelpWidget("GUIMarineFlashlightHelp", 2)
         self:AddHelpWidget("GUIMarineWeldHelp", 2)
         self:AddHelpWidget("GUIMapHelp", 1)
         
@@ -664,10 +663,6 @@ end
 function Marine:OnStun()
 end
 
-function Marine:GetCanChangeViewAngles()
-    return not self:GetIsStunned()
-end    
-
 function Marine:OnUseTarget(target)
 
     local activeWeapon = self:GetActiveWeapon()
@@ -738,8 +733,7 @@ function Marine:UpdateCombatTimers()
             local aliens = GetEntitiesForTeamWithinRange("Player", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), kMarineCombatScanCheckRadius)
             if #aliens > 0 then
                 //Just trigger on this for now...
-                CreateEntity(Scan.kMapName, self:GetOrigin(), self:GetTeamNumber())        
-                // create custom sound for marine commander
+                CreateEntity(Scan.kMapName, self:GetOrigin(), self:GetTeamNumber())
                 StartSoundEffectForPlayer(Observatory.kCommanderScanSound, self)
             end
             self.lastcombatscan = time

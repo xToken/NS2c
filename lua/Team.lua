@@ -299,7 +299,7 @@ end
 /**
  * Queues a player to be spawned.
  */
-function Team:PutPlayerInRespawnQueue(player)
+function Team:PutPlayerInRespawnQueue(player, time)
 
     assert(player)
     
@@ -316,18 +316,8 @@ function Team:PutPlayerInRespawnQueue(player)
         TEST_EVENT("Auto-team balance, in queue")
         
     else
-    
-        local extraTime = 0
-        if player.spawnBlockTime then
-            extraTime = math.max(0, player.spawnBlockTime - Shared.GetTime())
-        end
-        
-        if player.spawnReductionTime then
-            extraTime = extraTime - player.spawnReductionTime
-            player.spawnReductionTime = nil
-        end
-    
-        player:SetRespawnQueueEntryTime(Shared.GetTime() + extraTime)
+  
+        player:SetRespawnQueueEntryTime(time or Shared.GetTime())
         table.insertunique(self.respawnQueue, player:GetId())
         
         if self.OnRespawnQueueChanged then

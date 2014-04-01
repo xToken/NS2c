@@ -32,7 +32,7 @@ end
 //kJetpackLateralScalar = 12
 //kJetpackForce = 1250
 
-local kVerticleThrust = 28
+local kVerticleThrust = 25
 local kLateralForce = 30
 local kJetpackTakeOffTime = .01
 local kJetpackAutoJumpGroundDistance = 0.05

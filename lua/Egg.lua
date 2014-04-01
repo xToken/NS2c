@@ -383,8 +383,9 @@ function Egg:GetHealthbarOffset()
     return 0.4
 end
 
+local kEngageOffset = Vector(0, 0.3, 0)
 function Egg:GetEngagementPointOverride()
-    return self:GetOrigin() + Vector(0, 0.3, 0)
+    return self:GetOrigin() + kEngageOffset
 end
 
 function Egg:InternalGetCanBeUsed(player)

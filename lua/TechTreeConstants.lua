@@ -81,7 +81,7 @@ kTechId = createTechIdEnum({
     'PhaseTech', 'Jetpack', 'JetpackTech','HeavyArmorTech', 'HeavyArmor', 'ExosuitTech', 'Exosuit',
     
     // Weapons 
-    'Rifle', 'Pistol', 'Shotgun', 'GrenadeLauncher', 'Axe', 'Mines', 'Minigun', 'Railgun', 'Welder', 'HeavyMachineGun', 'HandGrenades',
+    'Rifle', 'Pistol', 'Shotgun', 'GrenadeLauncher', 'Axe', 'Mines', 'Minigun', 'Railgun', 'Claw', 'Welder', 'HeavyMachineGun', 'HandGrenades', 'Flamethrower',
     
     // Marine upgrades
     'Weapons1', 'Weapons2', 'Weapons3', 'Armor1', 'Armor2', 'Armor3', 'MotionTracking', 

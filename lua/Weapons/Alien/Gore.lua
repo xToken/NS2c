@@ -59,11 +59,6 @@ function Gore:GetHUDSlot()
     return 1
 end
 
-function Gore:OnHolster(player)
-    Ability.OnHolster(self, player)
-    self.primaryAttacking = false
-end
-
 function Gore:GetRange()
     return kGoreRange
 end
@@ -85,7 +80,6 @@ function Gore:OnTag(tagName)
         local player = self:GetParent()
         if player then
         
-            self.lastPrimaryAttackTime = Shared.GetTime()
             local didHit, target, endPoint = AttackMeleeCapsule(self, player, kGoreDamage, self:GetRange(), nil, false, EntityFilterOneAndIsa(player, "Babbler"))
             self.lastPrimaryAttackTime = Shared.GetTime()
             self:TriggerEffects("gore_attack")

@@ -31,7 +31,8 @@ class 'ResourceTower' (ScriptActor)
 
 ResourceTower.kMapName = "resourcetower"
 
-local networkVars = {
+local networkVars = 
+{
     attachedId = "entityid",
 }
 
@@ -98,8 +99,9 @@ function ResourceTower:GetCanSleep()
     return true
 end
 
+local kEngageOffset = Vector(0, 0.8, 0)
 function ResourceTower:GetEngagementPointOverride()
-    return self:GetOrigin() + Vector(0, 0.8, 0)
+    return self:GetOrigin() + kEngageOffset
 end
 
 Shared.LinkClassToMap("ResourceTower", ResourceTower.kMapName, networkVars, true)

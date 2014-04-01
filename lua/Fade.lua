@@ -53,7 +53,7 @@ local kFadeBlinkAutoJumpGroundDistance = 0.25
 
 local networkVars =
 {
-    ethereal = "boolean"
+    ethereal = "compensated boolean"
 }
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
@@ -67,11 +67,7 @@ function Fade:OnCreate()
     
     InitMixin(self, DissolveMixin)
     InitMixin(self, PredictedProjectileShooterMixin)
-    
-    if Server then
-        self.isBlinking = false
-    end
-    
+
     self.ethereal = false
     
 end
@@ -131,6 +127,7 @@ function Fade:GetControllerPhysicsGroup()
 end
 
 function Fade:OnTakeFallDamage()
+//Fades take no falling damage
 end
 
 function Fade:GetMaxSpeed(possible)
@@ -156,6 +153,7 @@ function Fade:GetCollisionSlowdownFraction()
     return 0.05
 end
 
+//Vanilla NS2
 function Fade:GetSimpleAcceleration(onGround)
     return ConditionalValue(onGround, 11, Player.GetSimpleAcceleration(self, onGround))
 end
@@ -175,6 +173,7 @@ function Fade:GetSimpleFriction(onGround)
         return 0.17 - (hasupg and level or 0) * 0.01
     end
 end 
+//End Vanilla NS2
 
 function Fade:GetMass()
     return kMass 
@@ -232,13 +231,9 @@ function Fade:OnBlinkEnd()
     self:TriggerEffects("blink_in")
 end
 
-local kFadeEngageOffset = Vector(0, 0.6, 0)
+local kEngageOffset = Vector(0, 0.8, 0)
 function Fade:GetEngagementPointOverride()
-    return self:GetOrigin() + kFadeEngageOffset
-end
-
-function Fade:GetEngagementPointOverride()
-    return self:GetOrigin() + Vector(0, 0.8, 0)
+    return self:GetOrigin() + kEngageOffset
 end
 
 Shared.LinkClassToMap("Fade", Fade.kMapName, networkVars, true)

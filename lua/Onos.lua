@@ -210,7 +210,7 @@ function Onos:TriggerCharge(move)
         self.charging = true
         self.timeLastCharge = Shared.GetTime()
         
-        if Server and not GetHasSilenceUpgrade(self) then
+        if Server then
         
             StartSoundEffectAtOrigin(kChargeStart, self:GetOrigin())
             self:TriggerEffects("onos_charge")

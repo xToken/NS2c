@@ -666,24 +666,6 @@ function AlienTeam:OnUpgradeChamberDestroyed(upgradeChamber)
     
 end
 
-function AlienTeam:OnResearchComplete(structure, researchId)
-
-    PlayingTeam.OnResearchComplete(self, structure, researchId)
-    
-    local checkForGainedResearch = { [kTechId.UpgradeRegenerationShell] = kTechId.Regeneration,
-                                     [kTechId.UpgradeCarapaceShell] = kTechId.Carapace,
-                                     [kTechId.UpgradeCeleritySpur] = kTechId.Celerity,
-                                     [kTechId.UpgradeHyperMutationSpur] = kTechId.HyperMutation,
-                                     [kTechId.UpgradeSilenceVeil] = kTechId.Silence,
-                                     [kTechId.UpgradeAuraVeil] = kTechId.Aura }
-    
-    local gainedResearch = checkForGainedResearch[researchId]
-    if gainedResearch then
-        SendTeamMessage(self, kTeamMessageTypes.ResearchComplete, gainedResearch)
-    end
-    
-end
-
 function AlienTeam:GetSpectatorMapName()
     return AlienSpectator.kMapName
 end

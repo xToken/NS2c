@@ -22,12 +22,12 @@ ElectrifyMixin.expectedMixins =
 ElectrifyMixin.networkVars =
 {
     isElectrified = "boolean",
-	lastDamagetick = "compensated time"
+	lastDamagetime = "time"
 }
 
 function ElectrifyMixin:__initmixin()
     self.isElectrified = false
-    self.lastDamagetick = 0    
+    self.lastDamagetime = 0    
     self.lastElectrifiedTime = 0
     self.lastEnergyRegen = 0
     if Client then
@@ -38,7 +38,7 @@ end
 local function ClearElectrify(self)
 
     self.isElectrified = false
-    self.lastDamagetick = 0    
+    self.lastDamagetime = 0    
     self.lastElectrifiedTime = 0
     self.lastEnergyRegen = 0
     if Client then
@@ -58,7 +58,7 @@ function ElectrifyMixin:GetIsElectrified()
 end
 
 function ElectrifyMixin:GetCanRegainEnergy()
-	return self.lastDamagetick + kElectrifyCooldownTime < Shared.GetTime()
+	return self.lastDamagetime + kElectrifyCooldownTime < Shared.GetTime()
 end
 
 function ElectrifyMixin:OnResearchComplete(researchId)
@@ -77,7 +77,7 @@ local function UpdateClientElectrifyEffects(self)
     assert(Client)
     
     if self:GetIsElectrified() and self:GetIsAlive() then
-        if self:GetEnergy() > kElectrifyEnergyCost then
+        if self:GetEnergy() >= kElectrifyEnergyCost then
             if not self.effecton then
                 self:_RemoveEffect()
             end
@@ -96,22 +96,20 @@ local function UpdateClientElectrifyEffects(self)
     
 end
 
-local function SharedUpdate(self, deltaTime)
-    if Client and not Shared.GetIsRunningPrediction() then
+if Client then
+
+    function ElectrifyMixin:OnUpdateRender()
+
+        PROFILE("ElectrifyMixin:OnUpdateRender")
+        
         UpdateClientElectrifyEffects(self)
         if self.lasteffectupdate + 10 < Shared.GetTime() then
             self.lasteffectupdate = Shared.GetTime()
             self:_RemoveEffect() 
         end
+        
     end
-end
 
-function ElectrifyMixin:OnUpdate(deltaTime)
-    SharedUpdate(self, deltaTime)
-end
-
-function ElectrifyMixin:OnProcessMove(input)
-    SharedUpdate(self, input.time)
 end
 
 function ElectrifyMixin:Update()
@@ -134,7 +132,7 @@ function ElectrifyMixin:Update()
         if damagedentities > 0 then
             self.lastElectrifiedTime = Shared.GetTime()
             StartSoundEffectAtOrigin(kElectrifiedSound, self:GetOrigin())
-            self.lastDamagetick = Shared.GetTime()
+            self.lastDamagetime = Shared.GetTime()
         end
     end
        

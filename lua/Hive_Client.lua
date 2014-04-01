@@ -57,8 +57,3 @@ function Hive:OnUpdateRender()
     end
     
 end
-
-function Hive:GetInfestationNumBlobSplats()
-    return 5
-end
-

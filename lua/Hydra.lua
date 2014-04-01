@@ -250,8 +250,9 @@ function Hydra:OnUpdateAnimationInput(modelMixin)
     
 end
 
+local kEngageOffset = Vector(0, 0.4, 0)
 function Hydra:GetEngagementPointOverride()
-    return self:GetOrigin() + Vector(0, 0.4, 0)
+    return self:GetOrigin() + kEngageOffset
 end
 
 Shared.LinkClassToMap("Hydra", Hydra.kMapName, networkVars)
