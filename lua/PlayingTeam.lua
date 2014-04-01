@@ -627,6 +627,7 @@ function PlayingTeam:ReplaceRespawnPlayer(player, origin, angles, mapName)
     end
     
     newPlayer:ClearGameEffects()
+    
     if HasMixin(newPlayer, "Upgradable") then
         newPlayer:ClearUpgrades()
     end
@@ -824,7 +825,7 @@ function PlayingTeam:UpdateWaveRespawn()
             //for i = 0, self:GetWaveSpawnCount() do
             local player = self:GetOldestQueuedPlayer()
             local commandStructures = GetEntitiesForTeam("CommandStructure", self:GetTeamNumber())
-            if player and player:isa("Spectator") and #commandStructures > 0 then
+            if player and #commandStructures > 0 then
                 self:RemovePlayerFromRespawnQueue(player)
                 local techId = kTechId.Skulk
                 if player:GetTeam():GetIsMarineTeam() then
@@ -836,7 +837,7 @@ function PlayingTeam:UpdateWaveRespawn()
                 if spawnPoint then
                     local success, newplayer = self:ReplaceRespawnPlayer(player, spawnPoint, player:GetAngles())   
                     if not success then
-                        //self:PutPlayerInRespawnQueue(player, time - self:GetWaveSpawnTime())
+                        self:PutPlayerInRespawnQueue(player, time - self:GetWaveSpawnTime())
                     else
                         newplayer:SetCameraDistance(0)
                         newplayer = newplayer:OnRestoreUpgrades()

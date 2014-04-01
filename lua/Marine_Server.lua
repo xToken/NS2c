@@ -109,7 +109,6 @@ local function DestroyMarineWeaponInSlot(self, slot)
     return false
 end
 
-
 function Marine:OnRestoreUpgrades()
 
     local player = Player.OnRestoreUpgrades(self)

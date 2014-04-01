@@ -29,7 +29,6 @@ Script.Load("lua/ConstructMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
-Script.Load("lua/SleeperMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
 Script.Load("lua/TargetCacheMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
@@ -107,7 +106,7 @@ function Crag:OnCreate()
         InitMixin(self, CommanderGlowMixin)    
     end
     
-    self:SetUpdates(false)
+    self:SetUpdates(true)
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
@@ -154,13 +153,14 @@ function Crag:HealInRange()
         local entsHealed = 0
         for _, entity in ipairs(healtargets) do
        
-            if entity ~= self and (entity.lasthealed == nil or entity.lasthealed + Crag.kHealInterval < Shared.GetTime())  then
+            if entity ~= self and (entity.lasthealed == nil or entity.lasthealed + Crag.kHealInterval <= Shared.GetTime())  then
                 local healAmount = self:TryHeal(entity)
                 if healAmount > 0 then
                     entity.lasthealed = Shared.GetTime()
                     entsHealed = entsHealed + 1
                 end
             end
+            
             if entsHealed >= Crag.kMaxTargets then
                 break
             end
@@ -227,7 +227,7 @@ if Server then
     
         local team = self:GetTeam()
         if team and team.OnUpgradeChamberConstructed then
-			self:AddTimedCallback(Crag.HealInRange, Crag.kHealInterval)
+			self:AddTimedCallback(Crag.HealInRange, Crag.kHealInterval + 0.1)
             team:OnUpgradeChamberConstructed(self)
         end
         

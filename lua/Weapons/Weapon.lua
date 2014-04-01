@@ -260,8 +260,6 @@ local function SharedUpdate(self)
     // Handle dropping on the client
     if Client then
         self:UpdateDropped()
-
-
     end
     
 end

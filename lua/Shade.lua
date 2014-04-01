@@ -1,26 +1,3 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Shade.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// Alien structure that provides cloaking abilities and confuse and deceive capabilities.
-//
-// Disorient (Passive) - Enemy structures and players flicker in and out when in range of Shade, 
-// making it hard for Commander and team-mates to be able to support each other. Extreme reverb 
-// sounds for enemies (and slight reverb sounds for friendlies) enhance the effect.
-//
-// Cloak (Triggered) - Instantly cloaks self and all enemy structures and aliens in range
-// for a short time. Mutes or changes sounds too? Cleverly used, this would ideally allow a 
-// team to get a stealth hive built. Allow players to stay cloaked for awhile, until they attack
-// (even if they move out of range - great for getting by sentries).
-//
-// Hallucination - Allow Commander to create fake Fade, Onos, Hive (and possibly 
-// ammo/medpacks). They can be pathed around and used to create tactical distractions or divert 
-// forces elsewhere.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
 //NS2c
 //Changes to have passive SOF, removal of active abilities.
 
@@ -35,7 +12,6 @@ Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/ConstructMixin.lua")
-Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
@@ -43,7 +19,6 @@ Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
-Script.Load("lua/TriggerMixin.lua")
 Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/DetectorMixin.lua")
@@ -77,7 +52,6 @@ AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
-AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
@@ -101,7 +75,6 @@ function Shade:OnCreate()
     InitMixin(self, LOSMixin)
     InitMixin(self, DetectableMixin)
     InitMixin(self, ConstructMixin)
-    InitMixin(self, ResearchMixin)
     InitMixin(self, RagdollMixin)
     InitMixin(self, ObstacleMixin)
     InitMixin(self, DissolveMixin)
@@ -110,12 +83,12 @@ function Shade:OnCreate()
     InitMixin(self, UmbraMixin)
     
     if Server then
-        //InitMixin(self, TriggerMixin, {kPhysicsGroup = PhysicsGroup.TriggerGroup, kFilterMask = PhysicsMask.AllButTriggers} )    
+  
     elseif Client then
         InitMixin(self, CommanderGlowMixin)            
     end
     
-    self:SetUpdates(false)
+    self:SetUpdates(true)
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)

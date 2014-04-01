@@ -134,7 +134,8 @@ if Server then
     
     function BabblerEgg:SetOwner(owner)
     
-        if GetHasSilenceUpgrade(owner) then
+        local hasupg, level = GetHasSilenceUpgrade(owner)
+        if hasupg and level == 3 then
             self.silenced = true
         end
     

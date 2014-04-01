@@ -10,11 +10,7 @@
 //NS2c
 //Tweaked egg spawns and respawn queues which are hive specific.
 
-// Send out an impulse to maintain infestations every 10 seconds.
-local kImpulseInterval = 10
-
 local kHiveDyingThreshold = 0.3
-
 local kCheckLowHealthRate = 12
 
 // A little bigger than we might expect because the hive origin isn't on the ground

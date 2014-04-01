@@ -54,15 +54,12 @@ function HiveStructureAbility:CreateStructure(coords, player, lastClickedPositio
 end
 
 function HiveStructureAbility:IsAllowed(player)
-    if Server then
-        local BuildingHives = 0
-        for index, hive in ipairs(GetEntitiesForTeam("Hive", player:GetTeamNumber())) do
-            if not hive:GetIsBuilt() then
-                BuildingHives = BuildingHives + 1
-            end
+    //Hives always relevant for players now :S
+    local BuildingHives = 0
+    for index, hive in ipairs(GetEntitiesForTeam("Hive", player:GetTeamNumber())) do
+        if not hive:GetIsBuilt() then
+            BuildingHives = BuildingHives + 1
         end
-        return BuildingHives < kMaxBuildingHives
-    else
-        return true
     end
+    return BuildingHives < kMaxBuildingHives
 end

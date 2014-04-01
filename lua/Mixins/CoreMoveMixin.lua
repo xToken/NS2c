@@ -52,16 +52,15 @@ CoreMoveMixin.optionalCallbacks =
 
 CoreMoveMixin.networkVars =
 {
-    onGround = "compensated boolean",
+    onGround = "private compensated boolean",
     isOnEntity = "private compensated boolean",
-    timeGroundAllowed = "private time",
-    timeGroundTouched = "private time",
+    timeGroundTouched = "private compensated time",
     jumpHandled = "private compensated boolean",
-    timeOfLastJump = "private time",
-    jumping = "compensated boolean",
-    onLadder = "compensated boolean",
-    crouching = "compensated boolean",
-    timeOfCrouchChange = "compensated time"
+    timeOfLastJump = "private compensated time",
+    jumping = "private compensated boolean",
+    onLadder = "private compensated boolean",
+    crouching = "private compensated boolean",
+    timeOfCrouchChange = "private compensated time"
 }
 
 local kNetPrecision = 1/128
@@ -86,9 +85,9 @@ local kSimpleStopSpeed = 4
 local kForwardMove = Vector(0, 0, 1)
 
 function CoreMoveMixin:__initmixin()
-    self.onGround = true
+
+    self.onGround = false
     self.isOnEntity = false
-    self.timeGroundAllowed = 0
     self.timeGroundTouched = 0
     self.onLadder = false
     self.jumping = false
@@ -97,6 +96,7 @@ function CoreMoveMixin:__initmixin()
     self.crouching = false
     self.timeOfCrouchChange = 0
     self.lastimpact = 0
+    
 end
 
 //Property Accessors.
@@ -172,15 +172,6 @@ function CoreMoveMixin:GetMaxAirVeer()
     return kMaxAirVeer
 end
 
-function CoreMoveMixin:DisableGroundMove(time)
-    self.timeGroundAllowed = Shared.GetTime() + time
-    self:SetIsOnGround(false)
-end
-
-function CoreMoveMixin:EnableGroundMove()
-    self.timeGroundAllowed = 0
-end
-
 function CoreMoveMixin:GetCrouching()
     return self.crouching
 end
@@ -230,9 +221,10 @@ local function GetIsCloseToGround(self, distance)
     local completedMove, hitEntities = nil
     
     if self.controller == nil then
+    
         onGround = true
     
-    elseif self.timeGroundAllowed <= Shared.GetTime() then
+    else
     
         // Try to move the controller downward a small amount to determine if
         // we're on the ground.

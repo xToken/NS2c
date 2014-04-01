@@ -29,6 +29,33 @@ if Client then
     Shared.PrecacheSurfaceShader("cinematics/vfx_materials/ghoststructure.surface_shader")
 end
 
+local function ClearGhostStructure(self)
+
+    self.isGhostStructure = false
+    self:TriggerEffects("ghoststructure_destroy")
+    local cost = LookupTechData(self:GetTechId(), kTechDataCostKey, 0)
+    local refund = math.round(cost * kGhostStructureRefundModifier)
+    self:GetTeam():AddTeamResources(refund)
+    self:GetTeam():PrintWorldTextForTeamInRange(kWorldTextMessageType.Resources, refund, self:GetOrigin() + kWorldMessageResourceOffset, kResourceMessageRange)
+    DestroyEntity(self)
+    
+end
+
+local function CheckNearbyEnemies(self)
+
+    if self:GetIsGhostStructure() then
+        local enemies = GetEntitiesForTeamWithinRange("Player", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin() + Vector(0, 0.3, 0), GhostStructureMixin.kGhostStructureCancelRange)
+        for _, enemy in ipairs (enemies) do
+            if enemy:GetIsAlive() then
+                ClearGhostStructure(self)
+                break
+            end
+        end
+    end
+    return self:GetIsGhostStructure()
+    
+end
+
 function GhostStructureMixin:__initmixin()
 
     // init the entity in ghost structure mode
@@ -40,18 +67,6 @@ end
 
 function GhostStructureMixin:GetIsGhostStructure()
     return self.isGhostStructure
-end
-
-local function ClearGhostStructure(self)
-
-    self.isGhostStructure = false
-    self:TriggerEffects("ghoststructure_destroy")
-    local cost = LookupTechData(self:GetTechId(), kTechDataCostKey, 0)
-    local refund = math.round(cost * kGhostStructureRefundModifier)
-    self:GetTeam():AddTeamResources(refund)
-    self:GetTeam():PrintWorldTextForTeamInRange(kWorldTextMessageType.Resources, refund, self:GetOrigin() + kWorldMessageResourceOffset, kResourceMessageRange)
-    DestroyEntity(self)
-    
 end
 
 function GhostStructureMixin:PerformAction(techNode, position)
@@ -83,61 +98,35 @@ if Server then
 
 end
 
-local function SharedUpdate(self, deltaTime)
+function GhostStructureMixin:OnUpdateRender()
 
-    if Server and self:GetIsGhostStructure() then
+    PROFILE("GhostStructureMixin:OnUpdateRender")
     
-        // check for enemies in range and destroy the structure, return resources to team
-        local enemies = GetEntitiesForTeamWithinRange("Player", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin() + Vector(0, 0.3, 0), GhostStructureMixin.kGhostStructureCancelRange)
-        
-        for _, enemy in ipairs (enemies) do
-        
-            if enemy:GetIsAlive() then
-            
-                ClearGhostStructure(self)
-                break
-                
-            end
-            
-        end
-        
-    elseif Client then
+    local model = nil
+    if HasMixin(self, "Model") then
+        model = self:GetRenderModel()
+    end
     
-        local model = nil
-        if HasMixin(self, "Model") then
-            model = self:GetRenderModel()
-        end
-        
-        if model then
+    if model then
 
-            if self:GetIsGhostStructure() then
-            
-                self:SetOpacity(0, "ghostStructure")
-            
-                if not self.ghostStructureMaterial then
-                    self.ghostStructureMaterial = AddMaterial(model, "cinematics/vfx_materials/ghoststructure.material") 
-                end
+        if self:GetIsGhostStructure() then
         
-            else
-            
-                self:SetOpacity(1, "ghostStructure")
-            
-                if RemoveMaterial(model, self.ghostStructureMaterial) then
-                    self.ghostStructureMaterial = nil
-                end
-
+            self:SetOpacity(0, "ghostStructure")
+        
+            if not self.ghostStructureMaterial then
+                self.ghostStructureMaterial = AddMaterial(model, "cinematics/vfx_materials/ghoststructure.material") 
             end
-            
+    
+        else
+        
+            self:SetOpacity(1, "ghostStructure")
+        
+            if RemoveMaterial(model, self.ghostStructureMaterial) then
+                self.ghostStructureMaterial = nil
+            end
+
         end
         
     end
     
-end
-
-function GhostStructureMixin:OnUpdate(deltaTime)
-    SharedUpdate(self, deltaTime)
-end
-
-function GhostStructureMixin:OnProcessMove(input)
-    SharedUpdate(self, input.time)
 end

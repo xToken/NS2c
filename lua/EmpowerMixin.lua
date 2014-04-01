@@ -11,7 +11,7 @@ EmpowerMixin.type = "Empower"
 
 EmpowerMixin.expectedMixins =
 {
-    GameEffects = "Required to track energize state",
+    GameEffects = "Required to track empowered state",
 }
 
 EmpowerMixin.networkVars =
@@ -20,26 +20,25 @@ EmpowerMixin.networkVars =
 }
 
 function EmpowerMixin:__initmixin()
-
     self.empowered = false
-    if Server then
-        self.empowerGiveTime = 0
-    end
-end
-
-local function CheckEmpower(self)
-	self.empowered = self.empowerGiveTime - Shared.GetTime() > 0
-	return self.empowered
+    self.lastEmpoweredTime = 0
 end
 
 if Server then
 
+    local function CheckEmpower(self)
+        self.empowered = self.lastEmpoweredTime + kEmpowerUpdateRate > Shared.GetTime()
+        return self.empowered
+    end
+
     function EmpowerMixin:Empower()
-        if not self.empowered then
-			self:AddTimedCallback(CheckEmpower, 2)
+    
+        if not self:GetIsEmpowered() then
+			self:AddTimedCallback(CheckEmpower, kEmpowerUpdateRate)
+			self.empowered = true
 		end
-        self.empowered = true
-        self.empowerGiveTime = Shared.GetTime() + 2
+		self.lastEmpoweredTime = Shared.GetTime()
+		
     end
 
 end

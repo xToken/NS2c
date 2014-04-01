@@ -23,7 +23,6 @@ Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/ConstructMixin.lua")
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
-Script.Load("lua/SleeperMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
@@ -41,9 +40,6 @@ Whip.kMapName = "whip"
 
 Whip.kModelName = PrecacheAsset("models/alien/whip/whip.model")
 Whip.kAnimationGraph = PrecacheAsset("models/alien/whip/whip.animation_graph")
-
-local kEmpowerRange = 6
-local kEmpowerThinkTime = 2
 
 Whip.kWhipBallParam = "ball"
 
@@ -93,7 +89,7 @@ function Whip:OnCreate()
         InitMixin(self, CommanderGlowMixin)    
     end
     
-	self:SetUpdates(false)
+	self:SetUpdates(true)
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
@@ -127,14 +123,6 @@ end
 
 function Whip:GetDamagedAlertId()
     return kTechId.AlienAlertStructureUnderAttack
-end
-
-function Whip:GetCanSleep()
-    return true
-end
-
-function Whip:GetMinimumAwakeTime()
-    return 10
 end
 
 function Whip:GetDeathIconIndex()
@@ -201,7 +189,7 @@ if Server then
     
         local team = self:GetTeam()
         if team and team.OnUpgradeChamberConstructed then
-			self:AddTimedCallback(Whip.EmpowerInRange, kEmpowerThinkTime)
+			self:AddTimedCallback(Whip.EmpowerInRange, kEmpowerUpdateRate)
             team:OnUpgradeChamberConstructed(self)
         end
         

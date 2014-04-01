@@ -410,13 +410,13 @@ function GUIMarineBuyMenu:_UpdateItemButtons(deltaTime)
         local useColor = Color(1, 1, 1, 1)
         
         // set grey if not unlocked
-        if not BuyMenus_GetUpgradeAvailable(item.TechId) then
+        if PlayerUI_GetHasItem(item.TechId) then
+            useColor = Color(0, 216/255, 1, 1)
+        elseif not BuyMenus_GetUpgradeAvailable(item.TechId) then
             useColor = Color(0.5, 0.5, 0.5, 0.4)
         // set red if can't afford
         elseif PlayerUI_GetPlayerResources() < BuyMenus_GetUpgradeCost(item.TechId) then
            useColor = Color(1, 0, 0, 1)
-        elseif PlayerUI_GetHasItem(item.TechId) then
-            useColor = Color(0, 216/255, 1, 1)
         end
         
         item.Button:SetColor(useColor)

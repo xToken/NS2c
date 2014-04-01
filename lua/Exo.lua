@@ -26,11 +26,11 @@ local networkVars =
 
 Exo.kMapName = "exo"
 
-local kDualModelName = PrecacheAsset("models/marine/exosuit/exosuit_mm.model")
-local kDualAnimationGraph = PrecacheAsset("models/marine/exosuit/exosuit_mm.animation_graph")
+local kModelName = PrecacheAsset("models/marine/exosuit/exosuit_cm.model")
+local kAnimationGraph = PrecacheAsset("models/marine/exosuit/exosuit_cm.animation_graph")
 
-local kDualRailgunModelName = PrecacheAsset("models/marine/exosuit/exosuit_rr.model")
-local kDualRailgunAnimationGraph = PrecacheAsset("models/marine/exosuit/exosuit_rr.animation_graph")
+local kRailgunModelName = PrecacheAsset("models/marine/exosuit/exosuit_cr.model")
+local kRailgunAnimationGraph = PrecacheAsset("models/marine/exosuit/exosuit_cr.animation_graph")
 
 Shared.PrecacheSurfaceShader("shaders/ExoScreen.surface_shader")
 
@@ -45,7 +45,7 @@ local kExoHealViewMaterialName = "cinematics/vfx_materials/heal_exo_view.materia
 local kCrouchShrinkAmount = 0
 local kExtentsCrouchShrinkAmount = 0
 local kViewOffsetHeight = 2.3
-local kExoScale = 0.75
+local kExoScale = 0.85
 
 local kThrustersCooldownTime = 0
 local kThrusterDuration = 5
@@ -100,13 +100,13 @@ function Exo:OnInitialized()
     // will already have the correct model at this point.
     if Server then
     
-        local modelName = kDualModelName
-        local graphName = kDualAnimationGraph
-        self.hasDualGuns = true
+        local modelName = kModelName
+        local graphName = kAnimationGraph
+        self.hasDualGuns = false
         
-        if self.layout == "RailgunRailgun" then
-            modelName = kDualRailgunModelName
-            graphName = kDualRailgunAnimationGraph
+        if self.layout == "Railgun" then
+            modelName = kRailgunModelName
+            graphName = kRailgunAnimationGraph
         end
         
         // SetModel must be called before Player.OnInitialized is called so the attach points in
@@ -154,9 +154,9 @@ function Exo:OnInitialized()
 end
 
 function Exo:GetVariantModel()
-    local modelName = kDualModelName    
-    if self.layout == "RailgunRailgun" then
-        modelName = kDualRailgunModelName
+    local modelName = kModelName    
+    if self.layout == "Railgun" then
+        modelName = kRailgunModelName
     end
     return modelName
 end
@@ -184,14 +184,14 @@ function Exo:InitWeapons()
     
     local weaponHolder = self:GiveItem(ExoWeaponHolder.kMapName, false)
     
-    if self.layout == "MinigunMinigun" then
-        weaponHolder:SetWeapons(Minigun.kMapName, Minigun.kMapName)
-    elseif self.layout == "RailgunRailgun" then
-        weaponHolder:SetWeapons(Railgun.kMapName, Railgun.kMapName)
+    if self.layout == "Minigun" then
+        weaponHolder:SetWeapons(Claw.kMapName, Minigun.kMapName)
+    elseif self.layout == "Railgun" then
+        weaponHolder:SetWeapons(Claw.kMapName, Railgun.kMapName)
     else
     
         Print("Warning: incorrect layout set for exosuit")
-        weaponHolder:SetWeapons(Minigun.kMapName, Minigun.kMapName)
+        weaponHolder:SetWeapons(Claw.kMapName, Minigun.kMapName)
         
     end
     
@@ -312,7 +312,7 @@ end
 
 function Exo:OnProcessMove(input)
 
-    Player.OnProcessMove(self, input)
+    Marine.OnProcessMove(self, input)
     
     if Client and not Shared.GetIsRunningPrediction() then
         UpdateIdle2DSound(self, input.yaw, input.pitch, input.time)
@@ -325,7 +325,7 @@ if Server then
     
     function Exo:OnKill(attacker, doer, point, direction)
     
-        Player.OnKill(self, attacker, doer, point, direction)
+        Marine.OnKill(self, attacker, doer, point, direction)
         
         local activeWeapon = self:GetActiveWeapon()
         if activeWeapon and activeWeapon.OnParentKilled then
@@ -346,7 +346,7 @@ function Exo:OnTag(tagName)
 
     PROFILE("Exo:OnTag")
 
-    Player.OnTag(self, tagName)
+    Marine.OnTag(self, tagName)
     
     if tagName == "deploy_end" then
         self.deployed = true
@@ -356,7 +356,7 @@ end
 
 function Exo:HandleButtons(input)
 
-    Player.HandleButtons(self, input)
+    Marine.HandleButtons(self, input)
     
     self:UpdateThrusters(input)
     
@@ -446,7 +446,7 @@ if Client then
 
     function Exo:OnUpdate(deltaTime)
 
-        Player.OnUpdate(self, deltaTime)
+        Marine.OnUpdate(self, deltaTime)
         UpdateThrusterEffects(self)
 
     end
@@ -490,7 +490,7 @@ function Exo:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Exo:OnUpdateAnimationInput")
     
-    Player.OnUpdateAnimationInput(self, modelMixin)
+    Marine.OnUpdateAnimationInput(self, modelMixin)
     
     if self.thrustersActive then    
         modelMixin:SetAnimationInput("move", "jump")

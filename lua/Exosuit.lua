@@ -21,8 +21,6 @@ Exosuit.kMapName = "exosuit"
 Exosuit.kModelName = PrecacheAsset("models/marine/exosuit/exosuit_cm.model")
 local kAnimationGraph = PrecacheAsset("models/marine/exosuit/exosuit_spawn_only.animation_graph")
 
-Exosuit.kThinkInterval = .5
-
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)

@@ -171,7 +171,7 @@ kTechIdToMaterialOffset[kTechId.UpgradeTurretFactory] = 83
 //kTechIdToMaterialOffset[kTechId.DualMinigunTech] = 84
 kTechIdToMaterialOffset[kTechId.HeavyArmorTech] = 84
 kTechIdToMaterialOffset[kTechId.Shotgun] = 85
-//kTechIdToMaterialOffset[kTechId.Flamethrower] = 86
+kTechIdToMaterialOffset[kTechId.Flamethrower] = 86
 kTechIdToMaterialOffset[kTechId.GrenadeLauncher] = 87
 kTechIdToMaterialOffset[kTechId.Welder] = 88
 

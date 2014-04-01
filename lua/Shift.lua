@@ -1,18 +1,3 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Shift.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// Alien structure that allows commander to outmaneuver and redeploy forces. 
-//
-// Recall - Ability that lets players jump to nearest structure (or hive) under attack (cooldown 
-// of a few seconds)
-// Energize - Passive ability that gives energy to nearby players
-// Echo - Targeted ability that lets Commander move a structure or drifter elsewhere on the map
-// (even a hive or harvester!). 
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 //NS2c
 //Changed to remove some abilities, also to cleanup needless code.
@@ -28,7 +13,6 @@ Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/ConstructMixin.lua")
-Script.Load("lua/ResearchMixin.lua")
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/RagdollMixin.lua")
 Script.Load("lua/ObstacleMixin.lua")
@@ -71,7 +55,6 @@ AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
-AddMixinNetworkVars(ResearchMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
 AddMixinNetworkVars(UmbraMixin, networkVars)
@@ -95,7 +78,6 @@ function Shift:OnCreate()
     InitMixin(self, LOSMixin)
     InitMixin(self, DetectableMixin)
     InitMixin(self, ConstructMixin)
-    InitMixin(self, ResearchMixin)
     InitMixin(self, RagdollMixin)
     InitMixin(self, ObstacleMixin)
     InitMixin(self, CombatMixin)
@@ -106,7 +88,7 @@ function Shift:OnCreate()
         InitMixin(self, CommanderGlowMixin)
     end
     
-    self:SetUpdates(false)
+    self:SetUpdates(true)
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
@@ -160,7 +142,7 @@ function Shift:EnergizeInRange()
         for _, entity in ipairs(energizeAbles) do
         
             if entity ~= self then
-                entity:Energize(self)
+                entity:Energize()
             end
             
         end
@@ -184,22 +166,26 @@ function Shift:GetShowOrderLine()
 end
 
 function Shift:OnUse(player, elapsedTime, useSuccessTable)
+
     local hasupg, level = GetHasRedeploymentUpgrade(player)
 	local completedelay = (Shared.GetTime() - (self.constructioncomplete or 0)) > kShiftUseDelay
     if hasupg and level > 0 and self:GetIsBuilt() and self:GetTeamNumber() == player:GetTeamNumber() and HasMixin(player, "Redeploy") and completedelay then
         player:Redeploy(level)
     end
+    
 end
 
 if Server then
     
     function Shift:OnConstructionComplete()
+    
         local team = self:GetTeam()
         if team and team.OnUpgradeChamberConstructed then
 			self:AddTimedCallback(Shift.EnergizeInRange, kEnergizeUpdateRate)
             team:OnUpgradeChamberConstructed(self)
         end
 		self.constructioncomplete = Shared.GetTime()
+		
     end
     
     function Shift:OnKill(attacker, doer, point, direction)

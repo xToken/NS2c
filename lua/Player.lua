@@ -55,7 +55,7 @@ end
 
 Player.kNotEnoughResourcesSound     = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/more")
 //Player.kGravity = -17.7
-Player.kGravity = -21.5
+Player.kGravity = -17.7
 Player.kXZExtents = 0.35
 Player.kYExtents = 0.9
 Player.kWalkMaxSpeed = 4
@@ -118,7 +118,7 @@ local kRunMaxSpeed = 6
 local kBackwardsMovementScalar = 1
 //local kJumpForce = 6.6
 // use 8.42 for gravity -23
-local kJumpForce = 8.22
+local kJumpForce = 6.6
 local kMaxPlayerSlow = 0.8
 
 //Other Vars
@@ -130,11 +130,10 @@ local kCrouchShrinkAmount = 0.6
 local kExtentsCrouchShrinkAmount = 0.4
 local kMinSlowSpeedScalar = .2
 local kBodyYawTurnThreshold = Math.Radians(5)
-local kTurnDelaySpeed = 8
-local kTurnRunDelaySpeed = 2.5
+local kTurnRunDelaySpeed = 5
 // Controls how fast the body_yaw pose parameter used for turning while standing
 // still blends back to default when the player starts moving.
-local kTurnMoveYawBlendToMovingSpeed = 5
+local kTurnMoveYawBlendToMovingSpeed = 8
 local kUnstickDistance = .1
 local kUnstickOffsets =
 {
@@ -205,9 +204,6 @@ local networkVars =
     giveDamageTime = "private time",
     
     level = "float (0 to " .. kCombatMaxLevel .. " by 0.001)",
-    
-    pushImpulse = "private vector",
-    pushTime = "private time",
     
     isMoveBlocked = "private boolean",
     
@@ -324,13 +320,6 @@ function Player:OnCreate()
     
     self.isUsing = false
     self.slowAmount = 0
-    
-    self.lastButtonReleased = TAP_NONE
-    self.timeLastButtonReleased = 0
-    self.previousMove = Vector(0, 0, 0)
-    
-    self.pushImpulse = Vector(0, 0, 0)
-    self.pushTime = 0
     
 end
 
@@ -496,11 +485,6 @@ end
 // Special unique client-identifier 
 function Player:GetClientIndex()
     return self.clientIndex
-end
-
-function Player:AddPushImpulse(vector)
-    self.pushImpulse = Vector(vector)
-    self.pushTime = Shared.GetTime()
 end
 
 function Player:GetPlayerLevel()

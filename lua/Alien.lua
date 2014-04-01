@@ -107,9 +107,7 @@ function Alien:OnCreate()
 	InitMixin(self, GhostMixin)
 	
     InitMixin(self, ScoringMixin, { kMaxScore = kMaxScore })
-    
-    self.timeLastMomentumEffect = 0
- 
+
     self.timeAbilityEnergyChange = Shared.GetTime()
     self.abilityEnergyOnChange = self:GetMaxEnergy()
     self.lastEnergyRate = self:GetRecuperationRate()
@@ -291,12 +289,11 @@ end
 
 function Alien:GetRecuperationRate()
 
-    local scalar = 1
     local hasupg, level = GetHasAdrenalineUpgrade(self)
     if hasupg and level > 0 then
-        return scalar * (kEnergyAdrenalineRecuperationRate / 3) * level
+        return kEnergyRecuperationRate + ((kEnergyAdrenalineRecuperationRate / 3) * level)
     else    
-        return scalar * kEnergyRecuperationRate
+        return kEnergyRecuperationRate
     end
     
 end
@@ -437,6 +434,7 @@ end
 function Alien:GetMovementSpeedModifier()
     return self:GetCelerityScalar()
 end
+
 function Alien:GetEffectParams(tableParams)
     if tableParams[kEffectFilterSilenceUpgrade] == nil then
         local hasupg, level = GetHasSilenceUpgrade(self)

@@ -27,14 +27,13 @@ ClipWeapon.kMapName = "clipweapon"
 
 local networkVars =
 {
-    timeAttackStarted = "time",
     deployed = "boolean",
     
     ammo = "integer (0 to 511)",
     clip = "integer (0 to 200)",
     
-    reloading = "compensated boolean",
-	reloaded = "compensated boolean"
+    reloading = "boolean",
+	reloaded = "boolean"
 }
 
 // Weapon spread - from NS1/Half-life
@@ -60,7 +59,6 @@ function ClipWeapon:OnCreate()
     
     self.primaryAttacking = false
     self.secondaryAttacking = false
-    self.timeAttackStarted = 0
     self.deployed = false
 	self.shooting = false
     InitMixin(self, BulletsMixin)
@@ -309,7 +307,6 @@ function ClipWeapon:OnPrimaryAttack(player)
             CancelReload(self)
             
             self.primaryAttacking = true
-            self.timeAttackStarted = Shared.GetTime()
             
         elseif self.ammo > 0 then
         
@@ -334,7 +331,6 @@ function ClipWeapon:OnPrimaryAttackEnd(player)
         Weapon.OnPrimaryAttackEnd(self, player)
         
         self.primaryAttacking = false
-        self.timeAttackEnded = Shared.GetTime()
         
     end
     
@@ -361,8 +357,6 @@ function ClipWeapon:OnSecondaryAttack(player)
         
         Weapon.OnSecondaryAttack(self, player)
         
-        self.timeAttackStarted = Shared.GetTime()
-        
     else
         self:OnSecondaryAttackEnd(player)
     end
@@ -374,7 +368,6 @@ function ClipWeapon:OnSecondaryAttackEnd(player)
     Weapon.OnSecondaryAttackEnd(self, player)
     
     self.secondaryAttacking = false
-    self.timeAttackEnded = Shared.GetTime()
 
 end
 

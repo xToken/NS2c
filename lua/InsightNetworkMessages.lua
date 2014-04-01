@@ -86,19 +86,19 @@ end
 
 Shared.RegisterNetworkMessage( "TechPoints", kTechPointsMessage )
 
-
+local kMaxResChange = 50
 local kRecycleMessage =
 {
-    resLost = "float",
+    resLost = string.format("integer (0 to %s)", kMaxResChange),
     techId = "enum kTechId",
-    resGained = "integer"
+    resGained = string.format("integer (0 to %s)", kMaxResChange),
 }
 
 function BuildRecycleMessage(resLost, techId, resGained)
 
     local t = {}
 
-    t.resLost = resLost
+    t.resLost = math.floor(resLost)
     t.techId = techId
     t.resGained = resGained
 

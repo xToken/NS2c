@@ -14,8 +14,6 @@ HeavyArmor.kModelName = PrecacheAsset("models/marine/heavyarmor/heavyarmor_drop.
 
 HeavyArmor.kPickupSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/heavyarmor_pickup")
 
-HeavyArmor.kThinkInterval = .5
-
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)

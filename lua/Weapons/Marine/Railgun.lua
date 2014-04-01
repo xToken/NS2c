@@ -15,7 +15,7 @@ class 'Railgun' (ClipWeapon)
 
 Railgun.kMapName = "railgun"
 
-local kRailgunRange = 400
+local kRailgunRange = 100
 local kRailgunSpread = Math.Radians(0)
 local kBulletSize = 0.03
 
@@ -54,7 +54,7 @@ function Railgun:GetNumStartClips()
 end
 
 function Railgun:GetMaxAmmo()
-    return 1 * self:GetClipSize()
+    return 2 * self:GetClipSize()
 end
 
 function Railgun:GetClipSize()
@@ -147,34 +147,17 @@ local function ExecuteShot(self, startPoint, endPoint, player)
     
     if trace.fraction < 1 then
     
-        // do a max of 10 capsule traces, should be sufficient
-        local hitEntities = {}
-        for i = 1, 20 do
+        local endPoint = trace.endPoint
+        local target = trace.entity
         
-            local capsuleTrace = Shared.TraceBox(extents, startPoint, trace.endPoint, CollisionRep.Damage, PhysicsMask.Bullets, filter)
-            if capsuleTrace.entity then
-            
-                if not table.find(hitEntities, capsuleTrace.entity) then
-                
-                    table.insert(hitEntities, capsuleTrace.entity)
-                    self:DoDamage(damage, capsuleTrace.entity, capsuleTrace.endPoint + hitPointOffset, direction, capsuleTrace.surface, false, false)
-                
-                end
-                
-            end    
-                
-            if (capsuleTrace.endPoint - trace.endPoint):GetLength() <= extents.x then
-                break
-            end
-            
-            // use new start point
-            startPoint = Vector(capsuleTrace.endPoint) + direction * extents.x * 3
-        
-        end
+        local hitEntities = GetEntitiesWithMixinWithinRange("Live", endPoint, kRailgunSplashRadius)
+
+        // Do damage to every target in range
+        RadiusDamage(hitEntities, endPoint, kRailgunSplashRadius, kRailgunDamage, self, true)
         
         // for tracer
         local effectFrequency = self:GetTracerEffectFrequency()
-        local showTracer = ConditionalValue(GetIsVortexed(player), false, math.random() < effectFrequency)
+        local showTracer = math.random() < effectFrequency
         self:DoDamage(0, nil, trace.endPoint + hitPointOffset, direction, trace.surface, false, showTracer)
         
         if Client and showTracer then

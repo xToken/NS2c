@@ -48,7 +48,8 @@ local function FireSpikes(self)
     local viewCoords = player:GetViewCoords()
     
     self.spiked = true
-    self.silenced = GetHasSilenceUpgrade(player)
+    local hasupg, level = GetHasSilenceUpgrade(player)
+    self.silenced = hasupg and level == 3
     
     for spike = 1, numSpikes do
 

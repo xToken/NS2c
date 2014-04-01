@@ -74,7 +74,6 @@ end
 
 function Alien:OnProcessMove(input)
     
-   
     // need to clear this value or spectators would see the hatch effect every time they cycle through players
     if self.hatched and self.creationTime + 3 < Shared.GetTime() then
         self.hatched = false

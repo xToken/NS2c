@@ -63,9 +63,6 @@ local kUpdateRate = 0.25
 InfantryPortal.kTransponderPointValue = 15
 InfantryPortal.kLoginAttachPoint = "keypad"
 
-local kPushRange = 1.5
-local kPushImpulseStrength = 20
-
 local networkVars =
 {
     queuedPlayerId = "entityid"
@@ -175,7 +172,7 @@ function InfantryPortal:OnCreate()
     end
     
     self.queuedPlayerId = Entity.invalidId
-    
+    self:SetUpdates(true)
     self:SetLagCompensated(true)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)

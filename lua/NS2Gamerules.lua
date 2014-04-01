@@ -619,7 +619,7 @@ if Server then
                 end
             
             end
-            self.timeToSendHealth = Shared.GetTime() + 0.5
+            self.timeToSendHealth = Shared.GetTime() + 1
             
         end
         

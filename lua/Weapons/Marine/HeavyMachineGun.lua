@@ -47,14 +47,6 @@ function HeavyMachineGun:OnInitialized()
     
 end
 
-function HeavyMachineGun:OnHolsterClient()
-    ClipWeapon.OnHolsterClient(self)
-end
-
-function HeavyMachineGun:OnDestroy()
-    ClipWeapon.OnDestroy(self)
-end
-
 local function CancelReload(self)
     self.reloading = false
     self:TriggerEffects("reload_cancel")
