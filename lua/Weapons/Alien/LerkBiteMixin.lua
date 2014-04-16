@@ -80,6 +80,10 @@ function LerkBiteMixin:GeMeleeBase()
     return kLerkBiteMeleeBaseWidth, kLerkBiteMeleeBaseHeight
 end
 
+LerkBite = { }
+function LerkBite:OnTag(tagName)
+end
+
 function LerkBiteMixin:OnTag(tagName)
 
     PROFILE("LerkBiteMixin:OnTag")

@@ -101,7 +101,7 @@ kTechId = createTechIdEnum({
 
     // upgradeable alien abilities (need to be unlocked)
     'BileBomb', 'Leap', 'Blink', 'Stomp', 'Spikes', 'Umbra', 'Metabolize', 'Xenocide', 'AcidRocket', 'WebStalk', 'Charge', 'PrimalScream',
-    'Babbler', 'BabblerEgg',
+    'Babbler', 'BabblerEgg', 'Stab',
     
     // Alien structures 
     'Hive', 'CragHive', 'ShadeHive', 'ShiftHive', 'WhipHive','Harvester', 'Egg', 'Embryo', 'Hydra',

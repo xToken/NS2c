@@ -56,6 +56,12 @@ screenEffects.disorient = Client.CreateScreenEffect("shaders/Disorient.screenfx"
 screenEffects.disorient:SetActive(false)
 screenEffects.spectatorTint = Client.CreateScreenEffect("shaders/SpectatorTint.screenfx")
 screenEffects.spectatorTint:SetActive(false)
+screenEffects.lowHealth = Client.CreateScreenEffect("shaders/LowHealth.screenfx")
+screenEffects.lowHealth:SetActive(false)
+screenEffects.blur = Client.CreateScreenEffect("shaders/Blur.screenfx")
+screenEffects.blur:SetActive(false)
+
+Player.screenEffects = screenEffects
 
 local function GetHealthCircleName(self)
 

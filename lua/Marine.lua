@@ -324,7 +324,7 @@ function Marine:GetCanSeeDamagedIcon(ofEntity)
 end
 
 function Marine:GetSlowOnLand(impactForce)
-    return math.abs(impactForce - 3) > self:GetMaxSpeed()
+    return math.abs(impactForce) > self:GetMaxSpeed()
 end
 
 function Marine:GetControllerPhysicsGroup()

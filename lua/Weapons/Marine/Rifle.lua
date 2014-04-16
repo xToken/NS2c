@@ -222,6 +222,9 @@ end
 function Rifle:OnSecondaryAttack(player)
 end
 
+function Rifle:PerformMeleeAttack()
+end
+
 function Rifle:SetGunLoopParam(viewModel, paramName, rateOfChange)
 
     local current = viewModel:GetPoseParam(paramName)
@@ -327,14 +330,16 @@ if Client then
 		//Shared.StopSound(self, kLoopingSound)
         Shared.PlaySound(self, kEndSound)
         
-		if self.muzzleCinematic then
-            self.muzzleCinematic:SetIsVisible(false)
+        local player = self:GetParent()
+        if player and player:GetIsAlive() then
+            if self.muzzleCinematic then
+                self.muzzleCinematic:SetIsVisible(false)
+            end
+            
+            if self.shellsCinematic then
+                self.shellsCinematic:SetIsActive(false)
+            end
         end
-        
-        if self.shellsCinematic then
-            self.shellsCinematic:SetIsActive(false)
-        end
-        
     end
     
     function Rifle:GetPrimaryEffectRate()
