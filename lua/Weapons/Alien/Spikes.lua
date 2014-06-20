@@ -27,7 +27,7 @@ end
 
 local networkVars =
 {
-    lastPrimaryAttackTime = "time",
+    lastPrimaryAttackTime = "private time",
     silenced = "boolean"
 }
 

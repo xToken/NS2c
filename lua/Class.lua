@@ -84,7 +84,10 @@ end
 
 function Class_Reload(className, networkVars)
 
+    _Gcopy = CopyClassTable()
+    
     assert(className and _G[className] and _Gcopy[className])
+    
     local methods = _G[className] // this has already been updated for <className>, but needs to be copied to child classes which dont re-implement the function
     local originalMethods = _Gcopy[className]
     local childClasses = Script.GetDerivedClasses(className)

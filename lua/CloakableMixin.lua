@@ -186,8 +186,6 @@ local function UpdateCloakState(self, deltaTime)
     
 end
 
-
-
 function CloakableMixin:OnUpdate(deltaTime)
     UpdateCloakState(self, deltaTime)
 end

@@ -54,6 +54,8 @@ Script.Load("lua/NetworkMessages_Client.lua")
 Script.Load("lua/HiveVision.lua")
 Script.Load("lua/SabotCoreClient.lua")
 
+Script.Load("lua/Mixins/ClientBindings.lua")
+
 // Precache the common surface shaders.
 Shared.PrecacheSurfaceShader("shaders/Model.surface_shader")
 Shared.PrecacheSurfaceShader("shaders/Emissive.surface_shader")
@@ -632,9 +634,10 @@ local function OnUpdateClient(deltaTime)
         local lerkVariant = Client.GetOptionInteger("lerkVariant", kDefaultLerkVariant)
         local isMale = Client.GetOptionString("sexType", "Male") == "Male"
         local shoulderPadIndex = Client.GetOptionInteger("shoulderPad", 1) // 1 means no shoulder pad selected
-        
+        local exoVariant = Client.GetOptionInteger("exoVariant", kDefaultExoVariant)
+		local rifleVariant = Client.GetOptionInteger("rifleVariant", kDefaultRifleVariant)
         Client.SendNetworkMessage("ConnectMessage",
-                BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, lerkVariant, shoulderPadIndex),
+                BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, lerkVariant, shoulderPadIndex, exoVariant, rifleVariant),
                 true)
         optionsSent = true
         

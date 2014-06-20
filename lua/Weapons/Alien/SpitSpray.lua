@@ -34,7 +34,7 @@ end
 
 local networkVars =
 {
-    lastPrimaryAttackTime = "time"
+    lastPrimaryAttackTime = "private time"
 }
 
 AddMixinNetworkVars(HealSprayMixin, networkVars)

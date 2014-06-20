@@ -27,7 +27,7 @@ UmbraMixin.expectedMixins =
 
 UmbraMixin.networkVars =
 {
-    umbratime = "private time"
+    hasumbra = "boolean"
 }
 
 function UmbraMixin:__initmixin()
@@ -35,17 +35,26 @@ function UmbraMixin:__initmixin()
 end
 
 function UmbraMixin:GetHasUmbra()
-    return self.umbratime > Shared.GetTime()
+    return hasumbra
 end
 
 if Server then
 
-    function UmbraMixin:SetHasUmbra(state, umbraTime, force)
+    local function CheckUmbra(self)
+        self.hasumbra = self.umbratime > Shared.GetTime()
+        return self.hasumbra
+    end
+
+    function UmbraMixin:SetHasUmbra()
     
         if HasMixin(self, "Live") and not self:GetIsAlive() then
             return
         end
-        self.umbratime = umbraTime
+        if not self:GetHasUmbra() then
+            self:AddTimedCallback(CheckUmbra, kUmbraUpdateRate)
+        end
+        self.umbratime = Shared.GetTime() + kUmbraUpdateRate
+        
     end
     
 end

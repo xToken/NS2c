@@ -109,7 +109,16 @@
     <filename>CatPack.lua</filename>
   </file>
   <file>
+    <filename>Class.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Marine\Claw.lua</filename>
+  </file>
+  <file>
     <filename>Client.lua</filename>
+  </file>
+  <file>
+    <filename>Mixins\ClientBindings.lua</filename>
   </file>
   <file>
     <filename>ClientUI.lua</filename>
@@ -226,6 +235,9 @@
     <filename>ElectrifyMixin.lua</filename>
   </file>
   <file>
+    <filename>Mixins\Elixer_Utility.lua</filename>
+  </file>
+  <file>
     <filename>Embryo.lua</filename>
   </file>
   <file>
@@ -259,6 +271,15 @@
     <filename>Fade_Server.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Marine\Flame.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Marine\Flamethrower.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Marine\Flamethrower_Client.lua</filename>
+  </file>
+  <file>
     <filename>GUIActionIcon.lua</filename>
   </file>
   <file>
@@ -272,6 +293,9 @@
   </file>
   <file>
     <filename>GUIAuraDisplay.lua</filename>
+  </file>
+  <file>
+    <filename>GUIBioMassDisplay.lua</filename>
   </file>
   <file>
     <filename>GUICommanderButtons.lua</filename>
@@ -553,6 +577,12 @@
     <filename>ModdedMixinUtility.lua</filename>
   </file>
   <file>
+    <filename>Mixins\ModdedMixinUtility.lua</filename>
+  </file>
+  <file>
+    <filename>Mixins\NS2+Support.lua</filename>
+  </file>
+  <file>
     <filename>NS2ConsoleCommands_Server.lua</filename>
   </file>
   <file>
@@ -569,6 +599,9 @@
   </file>
   <file>
     <filename>NS2cGameStrings.lua</filename>
+  </file>
+  <file>
+    <filename>NS2cTechIDs.lua</filename>
   </file>
   <file>
     <filename>NetworkMessages.lua</filename>
@@ -602,6 +635,9 @@
   </file>
   <file>
     <filename>OrdersMixin.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\Parasite.lua</filename>
   </file>
   <file>
     <filename>ParasiteMixin.lua</filename>
@@ -778,6 +814,9 @@
     <filename>Weapons\Alien\StructureAbility.lua</filename>
   </file>
   <file>
+    <filename>StructureFallMixin.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Alien\SwipeBlink.lua</filename>
   </file>
   <file>
@@ -881,17 +920,5 @@
   </file>
   <file>
     <filename>Weapons\Alien\XenocideLeap.lua</filename>
-  </file>
-  <file>
-    <filename>StructureFallMixin.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Marine\Flamethrower.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Marine\Flamethrower_Client.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Marine\Claw.lua</filename>
   </file>
 </project>

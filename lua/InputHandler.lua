@@ -56,6 +56,7 @@ local _keyBinding =
     SelectPrevWeapon = InputKey.MouseWheelDown,
     QuickSwitch = InputKey.V,
 	LastUpgrades = InputKey.None,
+	ToggleMinimapNames = InputKey.None,
     ScrollForward = InputKey.Up,
     ScrollBackward = InputKey.Down,
     ScrollLeft = InputKey.Left,

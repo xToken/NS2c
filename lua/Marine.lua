@@ -645,6 +645,9 @@ function Marine:GetWeldPercentageOverride()
     return self:GetArmor() / self:GetMaxArmor()
 end
 
+function Marine:UpdateSprintingState()
+end
+
 function Marine:OnWeldOverride(doer, elapsedTime)
 
     if self:GetArmor() < self:GetMaxArmor() then

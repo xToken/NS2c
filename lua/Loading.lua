@@ -50,6 +50,7 @@ local modsTextShadow = nil
 local tipIndex = 0
 local timeOfLastTip = nil
 local timeOfLastSpace = nil
+local precached = false
 
 // background slideshow
 local backgrounds = nil
@@ -103,12 +104,11 @@ local function UpdateServerInformation()
                         percent = string.format("%d%%", math.floor((bytesDownloaded / totalBytes) * 100))
                     end
                 end
-                msg2 = msg2 .. string.format("\n      %s %s %s", title, state, percent)
-                
+                msg2 = msg2 .. string.format("\n      %s  %s", title, percent)
             end
         end
     end
-    
+
     local text = ""
     
     if msg1 ~= "" then
@@ -203,6 +203,13 @@ function OnUpdateRender()
             lastFadeEndTime = time - 2*kBgStayTime
         end
     end
+	
+	if not mainLoading and precached ~= true then
+        if Client.GetOptionBoolean("precacheExtra", false) == true then
+			PrecacheFileList()
+			precached = true
+		end
+	end
         
     // Update background image slideshow
     if backgrounds ~= nil then
@@ -382,7 +389,7 @@ function OnLoadComplete(main)
         loadscreen = GUI.CreateItem()
         loadscreen:SetSize( bgSize )
 		loadscreen:SetPosition( bgPos )
-        loadscreen:SetTexture( "screens/loadingscreen.jpg" )
+        loadscreen:SetTexture( "screens/IntroScreen.jpg" )
     end
     
     local spinnerSize   = GUIScale(256)
@@ -474,10 +481,7 @@ function OnLoadComplete(main)
     
         // Translate string to account for findings
         tipNextHint:SetText(" " .. SubstituteBindStrings(Locale.ResolveString("LOADING_TIP_NEXT")) .. " " )
-        
-        if Client.GetOptionBoolean("precacheExtra", false) == true then
-			PrecacheFileList()
-		end
+
     end
     
     // Create a box to show the mods that the server is running

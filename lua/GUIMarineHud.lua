@@ -269,7 +269,11 @@ function GUIMarineHUD:Initialize()
     style.textColor = kBrightColor
     style.textureSet = "marine"
     style.displayTeamRes = true
-    self.resourceDisplay = CreatePlayerResourceDisplay(self, kGUILayerPlayerHUDForeground1, self.background, style)
+    
+    if PlayerUI_GetGameMode() == kGameMode.Combat then    
+        self.resourceDisplay = CreatePlayerResourceDisplay(self, kGUILayerPlayerHUDForeground1, self.background, style)
+    end
+    
     self.fuelDisplay = CreateFuelDisplay(self, kGUILayerPlayerHUDForeground1, self.background)
     self.inventoryDisplay = CreateInventoryDisplay(self, kGUILayerPlayerHUDForeground1, self.background)
     
@@ -435,7 +439,11 @@ function GUIMarineHUD:Reset()
     
     self.statusDisplay:Reset(self.scale)
     self.eventDisplay:Reset(self.scale)
-    self.resourceDisplay:Reset(self.scale)
+    
+    if self.resourceDisplay then
+        self.resourceDisplay:Reset(self.scale)
+    end
+    
     self.inventoryDisplay:Reset(self.scale)
     
     self.armorLevel:SetPosition(GUIMarineHUD.kUpgradePos * self.scale)
@@ -564,10 +572,21 @@ function GUIMarineHUD:Update(deltaTime)
     
     // Update resource display
     if PlayerUI_GetGameMode() == kGameMode.Combat then
+    
+        if not self.resourceDisplay then
+            self.resourceDisplay = CreatePlayerResourceDisplay(self, kGUILayerPlayerHUDForeground1, self.background, style)
+        end
+        
         self.resourceDisplay:SetVisibleState(true)
         self.resourceDisplay:Update(deltaTime, { PlayerUI_GetTeamResources(), PlayerUI_GetPersonalResources(), CommanderUI_GetTeamHarvesterCount() } )
+        
     elseif PlayerUI_GetGameMode() == kGameMode.Classic then
-        self.resourceDisplay:SetVisibleState(false)
+    
+        if self.resourceDisplay then
+            self.resourceDisplay:Destroy()
+            self.resourceDisplay = nil
+        end
+        
     end
     
     // Update notifications and events
@@ -670,7 +689,6 @@ function GUIMarineHUD:Update(deltaTime)
     local weaponLevel = 0
     local motiontracking = false
     
-
     armorLevel = PlayerUI_GetArmorLevel()
     weaponLevel = PlayerUI_GetWeaponLevel()
     motiontracking = PlayerUI_GetHasMotionTracking()

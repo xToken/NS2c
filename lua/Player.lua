@@ -20,7 +20,6 @@ Script.Load("lua/PhysicsGroups.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
 Script.Load("lua/Mixins/CoreMoveMixin.lua")
-Script.Load("lua/Mixins/WaterModSupport.lua")
 Script.Load("lua/WeaponOwnerMixin.lua")
 Script.Load("lua/DoorMixin.lua")
 Script.Load("lua/Mixins/ControllerMixin.lua")
@@ -1967,7 +1966,7 @@ function Player:GetViewModelEntity()
     if not Client or self:GetIsLocalPlayer() then  
     
         result = Shared.GetEntity(self.viewModelId)
-        ASSERT(not result or result:isa("ViewModel"), "%s: viewmodel is a %s!", self, result);
+        ASSERT(not result or result:isa("ViewModel"), "%s: viewmodel is a %s!", self, result)
         
     end
     

@@ -96,7 +96,7 @@ local kDeployTime = 3.5
 local networkVars =
 {    
     // So we can update angles and pose parameters smoothly on client
-    targetDirection = "vector",  
+    targetDirection = "interpolated vector",  
     
     confused = "boolean",
     

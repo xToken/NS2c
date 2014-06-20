@@ -65,7 +65,7 @@ local networkVars =
 {
     alerting = "boolean",
     attacking = "boolean",
-    hydraParentId = "entityid"
+    hydraParentId = "private entityid"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)

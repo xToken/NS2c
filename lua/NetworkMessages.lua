@@ -93,7 +93,7 @@ function ParseSelectUnitMessage(message)
     return message.teamNumber, Shared.GetEntity(message.unitId), message.selected, message.keepSelection
 end
 
-function BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, lerkVariant, shoulderPadIndex)
+function BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, lerkVariant, shoulderPadIndex, exoVariant, rifleVariant)
 
     local t = { }
     t.isMale = isMale
@@ -102,6 +102,8 @@ function BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, 
     t.gorgeVariant = gorgeVariant
     t.lerkVariant = lerkVariant
     t.shoulderPadIndex = shoulderPadIndex
+	t.exoVariant = exoVariant
+	t.rifleVariant = rifleVariant
     return t
     
 end
@@ -114,6 +116,8 @@ local kConnectMessage =
     gorgeVariant = "enum kGorgeVariant",
     lerkVariant = "enum kLerkVariant",
     shoulderPadIndex = string.format("integer (0 to %d)",  #kShoulderPad2ProductId),
+	exoVariant = "enum kExoVariant",
+	rifleVariant = "enum kRifleVariant"
 }
 Shared.RegisterNetworkMessage("ConnectMessage", kConnectMessage)
 

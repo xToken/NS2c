@@ -132,19 +132,11 @@ end
 
 Event.Hook("Console_slot9", slot9)
 
-local function slot0()
+local function slot10()
 	UpdateGUIMenu(0)
 end
 
-Event.Hook("Console_slot0", slot0)
-
-local bindings = LoadConfigFile("ConsoleBindings.json") or { }
-
-Shared.ConsoleCommand("bind Num6 slot6")
-Shared.ConsoleCommand("bind Num7 slot7")
-Shared.ConsoleCommand("bind Num8 slot8")
-Shared.ConsoleCommand("bind Num9 slot9")
-Shared.ConsoleCommand("bind Num0 slot0")
+Event.Hook("Console_slot10", slot10)
 
 class 'GUIGorgeBuildMenu' (GUIAnimatedScript)
 

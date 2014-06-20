@@ -72,21 +72,6 @@ function Alien:Reset()
     
 end
 
-function Alien:OnProcessMove(input)
-    
-    // need to clear this value or spectators would see the hatch effect every time they cycle through players
-    if self.hatched and self.creationTime + 3 < Shared.GetTime() then
-        self.hatched = false
-    end
-    
-    Player.OnProcessMove(self, input)
-    
-	if not self:GetIsDestroyed() then
-    	self:UpdateAutoHeal()
-	end
-    
-end
-
 function Alien:GetIsHealableOverride()
   return self:GetIsAlive() and (self:GetHealth() < self:GetMaxHealth() or self:GetArmor() < self:GetMaxArmor())
 end
@@ -97,21 +82,18 @@ function Alien:UpdateAutoHeal()
     
     if (self.timeLastAlienAutoHeal + kAlienRegenerationTime <= Shared.GetTime() or self.timeLastAlienAutoHeal + kAlienInnateRegenerationTime <= Shared.GetTime()) and self:GetIsHealable() then
         local hasupg, level = GetHasRegenerationUpgrade(self)
+        local isTime = self.timeLastAlienAutoHeal + kAlienInnateRegenerationTime <= Shared.GetTime()
+        local heal = math.max(1, self:GetMaxHealth() * kAlienInnateRegenerationPercentage)
         if hasupg and level > 0 then
-            if self.timeLastAlienAutoHeal + kAlienRegenerationTime <= Shared.GetTime() then
-                local healRate = ((kAlienRegenerationPercentage / 3) * level)
-                self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), true, (self:GetMaxHealth() - self:GetHealth() ~= 0), true)    
-                self.timeLastAlienAutoHeal = Shared.GetTime()
-            end
-        else
-            if self.timeLastAlienAutoHeal + kAlienInnateRegenerationTime <= Shared.GetTime() then
-                local healRate = kAlienInnateRegenerationPercentage
-                self:AddHealth(math.max(1, self:GetMaxHealth() * healRate), false, (self:GetMaxHealth() - self:GetHealth() ~= 0), true)    
-                self.timeLastAlienAutoHeal = Shared.GetTime()
-            end
+            isTime = self.timeLastAlienAutoHeal + kAlienRegenerationTime <= Shared.GetTime()
+            heal = math.max(1, self:GetMaxHealth() * ((kAlienRegenerationPercentage / 3) * level))
         end
+        self:AddHealth(heal, true, (self:GetMaxHealth() - self:GetHealth() ~= 0), true)    
+        self.timeLastAlienAutoHeal = Shared.GetTime()
     end
-
+    
+    return self:GetIsAlive()
+    
 end
 
 function Alien:OnHiveConstructed(newHive, activeHiveCount)

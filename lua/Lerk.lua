@@ -62,7 +62,7 @@ local networkVars =
 {
     gliding = "private compensated boolean",   
     glideAllowed = "private compensated boolean",  
-    lastTimeFlapped = "compensated time",
+    lastTimeFlapped = "time",
     // Wall grip. time == 0 no grip, > 0 when grip started.
     wallGripTime = "private compensated time",
     // the normal that the model will use. Calculated the same way as the skulk

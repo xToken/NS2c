@@ -25,7 +25,7 @@ local kAnimationGraph = PrecacheAsset("models/alien/gorge/web.animation_graph")
 
 local networkVars =
 {
-    length = "float (0 to " .. kMaxWebLength .. " by 0.05 [] )",
+    length = "private float (0 to " .. kMaxWebLength .. " by 0.05 [] )",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)

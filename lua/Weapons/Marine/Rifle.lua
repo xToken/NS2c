@@ -57,6 +57,8 @@ local kLoopingShellCinematic = PrecacheAsset("cinematics/marine/rifle/shell_loop
 local kLoopingShellCinematicFirstPerson = PrecacheAsset("cinematics/marine/rifle/shell_looping_1p.cinematic")
 local kShellEjectAttachPoint = "fxnode_riflecasing"
 
+local networkVars = { }
+
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/rifle/muzzle_flash.cinematic")
 local kMuzzleAttachPoint = "fxnode_riflemuzzle"
 
@@ -371,4 +373,4 @@ if Client then
     end
 end
 
-Shared.LinkClassToMap("Rifle", Rifle.kMapName, { })
+Shared.LinkClassToMap("Rifle", Rifle.kMapName, networkVars)

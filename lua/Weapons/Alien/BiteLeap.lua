@@ -36,7 +36,7 @@ end
 
 local networkVars =
 {
-    lastPrimaryAttackTime = "time"
+    lastPrimaryAttackTime = "private time"
 }
 
 function BiteLeap:OnCreate()

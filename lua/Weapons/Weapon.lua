@@ -32,7 +32,7 @@ local networkVars =
     isHolstered = "boolean",
     primaryAttacking = "compensated boolean",
     secondaryAttacking = "compensated boolean",
-    weaponWorldState = "boolean"
+    weaponWorldState = "private boolean"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -112,6 +112,9 @@ function Weapon:OnParentChanged(oldParent, newParent)
 end
 
 function Weapon:OnUpdateWeapon(player)
+end
+
+function Weapon:UpdateWeaponSkins(client)
 end
 
 function Weapon:GetViewModelName()
@@ -298,7 +301,10 @@ function Weapon:OnUpdateRender()
         ammoDisplayUI:SetGlobal("weaponClip", parent:GetWeaponClip())
         ammoDisplayUI:SetGlobal("weaponAmmo", parent:GetWeaponAmmo())
         ammoDisplayUI:SetGlobal("weaponAuxClip", parent:GetAuxWeaponClip())
-        
+		if settings.variant then
+			ammoDisplayUI:SetGlobal("weaponVariant", settings.variant)
+		end
+		
     elseif self.ammoDisplayUI then
     
         Client.DestroyGUIView(self.ammoDisplayUI)

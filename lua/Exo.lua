@@ -19,8 +19,8 @@ local networkVars =
 {
     idleSound2DId = "private entityid",
     thrustersActive = "compensated boolean",
-    timeThrustersEnded = "private compensated time",
-    timeThrustersStarted = "private compensated time",
+    timeThrustersEnded = "private time",
+    timeThrustersStarted = "private time",
     thrusterMode = "enum kExoThrusterMode"
 }
 

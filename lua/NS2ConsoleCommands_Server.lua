@@ -722,7 +722,7 @@ local function OnCommandUmbra(client)
     
         local player = client:GetControllingPlayer()
         if player and HasMixin(player, "Umbra") then
-            player:SetHasUmbra(true, 5)
+            player:SetHasUmbra()
         end
         
     end

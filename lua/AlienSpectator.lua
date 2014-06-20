@@ -44,6 +44,13 @@ local function UpdateWaveTime(self)
     
 end
 
+local function UpdateWaitingtoSpawn(self)
+    if not self.waitingToSpawnMessageSent then
+        SendPlayersMessage({ self }, kTeamMessageTypes.SpawningWait)
+        self.waitingToSpawnMessageSent = true    
+    end
+end
+
 function AlienSpectator:OnCreate()
 
     TeamSpectator.OnCreate(self)
@@ -67,6 +74,7 @@ function AlienSpectator:OnInitialized()
     
         self.evolveTechIds = { kTechId.Skulk }
         self:AddTimedCallback(UpdateWaveTime, 0.1)
+        self:AddTimedCallback(UpdateWaitingtoSpawn, 0.1)
         
     end
     
@@ -100,23 +108,6 @@ end
 
 function AlienSpectator:GetEggId()
     return self.eggId
-end
-
-function AlienSpectator:OnProcessMove(input)
-
-    TeamSpectator.OnProcessMove(self, input)
-    
-    if Server then
-
-        if not self.waitingToSpawnMessageSent then
-        
-            SendPlayersMessage({ self }, kTeamMessageTypes.SpawningWait)
-            self.waitingToSpawnMessageSent = true
-            
-        end
-        
-    end
-    
 end
 
 // Same as Skulk so his view height is right when spawning in

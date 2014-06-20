@@ -154,3 +154,20 @@ function HeavyMachineGunAmmo:GetWeaponClassName()
 end    
 
 Shared.LinkClassToMap("HeavyMachineGunAmmo", HeavyMachineGunAmmo.kMapName)
+
+class 'FlamethrowerAmmo' (WeaponAmmoPack)
+FlamethrowerAmmo.kMapName = "flamethrowerammo"
+FlamethrowerAmmo.kModelName = PrecacheAsset("models/marine/flamethrower/flamethrowerammo.model")
+/*
+function FlamethrowerAmmo:OnInitialized()
+
+    WeaponAmmoPack.OnInitialized(self)    
+    self:SetModel(FlamethrowerAmmo.kModelName)
+
+end
+*/
+function FlamethrowerAmmo:GetWeaponClassName()
+    return "Flamethrower"
+end
+
+Shared.LinkClassToMap("FlamethrowerAmmo", FlamethrowerAmmo.kMapName)

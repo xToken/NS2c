@@ -35,9 +35,6 @@ function Commander:GetClassHasEnergy(className, energyAmount)
 
 end
 
-function Commander:CheckStructureEnergy()
-end
-
 function Commander:TriggerNotification(locationId, techId)
 
     local message = BuildCommanderNotificationMessage(locationId, techId)

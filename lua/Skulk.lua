@@ -80,7 +80,7 @@ local networkVars =
     wallWalking = "compensated boolean",
     timeLastWallWalkCheck = "private compensated time",
     leaping = "compensated boolean",
-    timeOfLeap = "private compensated time",
+    timeOfLeap = "private time",
     // wallwalking is enabled only after we bump into something that changes our velocity
     // it disables when we are on ground or after we jump or leap
     wallWalkingEnabled = "private compensated boolean"

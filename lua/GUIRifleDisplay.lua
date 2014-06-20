@@ -15,6 +15,7 @@ Script.Load("lua/Utility.lua")
 weaponClip     = 0
 weaponAmmo     = 0
 weaponAuxClip  = 0
+weaponVariant  = 1
 
 FontScaleVector = Vector(1, 1, 1) * 1.85
 FontScaleReserveVector = Vector(1, 1, 1) * 0.95

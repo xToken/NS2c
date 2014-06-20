@@ -54,7 +54,7 @@ local kDefaultAttackSpeed = 1.1
 
 local networkVars =
 {
-    charging = "private compensated boolean"
+    charging = "compensated boolean"
 }
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)

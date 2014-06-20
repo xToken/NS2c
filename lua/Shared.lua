@@ -36,6 +36,7 @@ Script.Load("lua/Entity.lua")
 Script.Load("lua/Effects.lua")
 Script.Load("lua/NetworkMessages.lua")
 Script.Load("lua/TechTreeConstants.lua")
+Script.Load("lua/NS2cTechIDs.lua")
 Script.Load("lua/TechData.lua")
 Script.Load("lua/TechNode.lua")
 Script.Load("lua/TechTree.lua")
@@ -165,7 +166,9 @@ Script.Load("lua/AlienTeamInfo.lua")
 Script.Load("lua/PathingUtility.lua")
 
 //Load this last to hopefully attempt to support any latehook mods.
-Script.Load("lua/ModdedMixinUtility.lua")
+Script.Load("lua/Mixins/ModdedMixinUtility.lua")
+Script.Load("lua/Mixins/WaterModSupport.lua")
+Script.Load("lua/Mixins/NS2+Support.lua")
 
 gHeightMap = gHeightMap // survive hotloading; will be nil the first time
 

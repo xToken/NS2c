@@ -10,7 +10,7 @@ Metabolize.kMapName = "metabolize"
 
 local networkVars =
 {
-    lastPrimaryAttackTime = "time"
+    lastPrimaryAttackTime = "private time"
 }
 
 local kAnimationGraph = PrecacheAsset("models/alien/fade/fade_view.animation_graph")

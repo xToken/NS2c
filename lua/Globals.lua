@@ -419,6 +419,7 @@ kDeluxeEditionProductId = 4932
 kShoulderPadProductId = 250891
 kAssaultMarineProductId = 250892
 kShadowProductId = 250893
+kKodiakProductId = 296360
 
 kNoShoulerPad = 0
 
@@ -433,22 +434,24 @@ kShoulderPadTitusProductId = 280760
 
 // TODO we can really just get rid of the enum. use array-of-structures pattern, and use #kMarineVariants to network vars
 
-kMarineVariant = enum({ "green", "special", "deluxe", "assault", "eliteassault" })
+kMarineVariant = enum({ "green", "special", "deluxe", "assault", "eliteassault"/*, "kodiak"*/ })
 kMarineVariantData =
 {
-    [kMarineVariant.green] = { productId = nil, displayName = "Green", modelFilePart = "", viewModelFilePart = "" },
+    [kMarineVariant.green] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
     [kMarineVariant.special] = { productId = kSpecialEditionProductId, displayName = "Black", modelFilePart = "_special", viewModelFilePart = "_special" },
     [kMarineVariant.deluxe] = { productId = kDeluxeEditionProductId, displayName = "Deluxe", modelFilePart = "_special_v1", viewModelFilePart = "_deluxe" },
     [kMarineVariant.assault] = { productId = kAssaultMarineProductId, displayName = "Assault", modelFilePart = "_assault", viewModelFilePart = "_assault" },
     [kMarineVariant.eliteassault] = { productId = kShadowProductId, displayName = "Elite Assault", modelFilePart = "_eliteassault", viewModelFilePart = "_eliteassault" },
+	//[kMarineVariant.kodiak] = { productId = kKodiakProductId, displayName = "Kodiak", modelFilePart = "_kodiak", viewModelFilePart = "_kodiak" },
 }
 kDefaultMarineVariant = kMarineVariant.green
 
-kSkulkVariant = enum({ "normal", "shadow" })
+kSkulkVariant = enum({ "normal", "shadow", "kodiak" })
 kSkulkVariantData =
 {
     [kSkulkVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
     [kSkulkVariant.shadow] = { productId = kShadowProductId, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" },
+	[kSkulkVariant.kodiak] = { productId = kKodiakProductId, displayName = "Kodiak", modelFilePart = "_kodiak", viewModelFilePart = "" },
 }
 kDefaultSkulkVariant = kSkulkVariant.normal
 
@@ -468,6 +471,22 @@ kLerkVariantData =
 }
 kDefaultLerkVariant = kLerkVariant.normal
 
+kExoVariant = enum({ "normal", "kodiak" })
+kExoVariantData =
+{
+    [kExoVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
+    [kExoVariant.kodiak] = { productId = kKodiakProductId, displayName = "Kodiak", modelFilePart = "", viewModelFilePart = "" }
+}
+kDefaultExoVariant = kExoVariant.normal
+
+kRifleVariant = enum({ "normal", "kodiak" })
+kRifleVariantData =
+{
+    [kRifleVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
+    [kRifleVariant.kodiak] = { productId = kKodiakProductId, displayName = "Kodiak", modelFilePart = "_kodiak", viewModelFilePart = "" }
+}
+kDefaultRifleVariant = kRifleVariant.normal
+
 function FindVariant( data, displayName )
 
     for var, data in pairs(data) do
@@ -486,6 +505,13 @@ function GetVariantName( data, var )
     return ""        
 end
 
+function GetVariantModel( data, var )
+    if data[var] then
+        return data[var].modelFilePart .. ".model"
+    end
+    return ""        
+end
+
 function GetHasVariant(data, var, client)
     return GetHasDLC(data[var].productId, client)
 end
@@ -499,7 +525,8 @@ kShoulderPad2ProductId =
     { kShoulderPadGodarProductId, kShoulderPadGlobeProductId },
     { kShoulderPadSaunaProductId, kShoulderPadGlobeProductId },
     { kShoulderPadSnailsProductId, kShoulderPadGlobeProductId },
-    { kShoulderPadTitusProductId, kShoulderPadGlobeProductId }
+    { kShoulderPadTitusProductId, kShoulderPadGlobeProductId },
+	kKodiakProductId,
 }
 function GetHasShoulderPad(index, client)
     return GetHasDLC( kShoulderPad2ProductId[index], client )
@@ -515,6 +542,8 @@ kShoulderPadNames =
     "Saunamen",
     "Snails",
     "Titus",
+	"Kodiak",
+	
 }
 
 function GetShoulderPadIndexByName(padName)

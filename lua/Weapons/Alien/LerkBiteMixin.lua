@@ -21,7 +21,7 @@ LerkBiteMixin.overrideFunctions =
 
 LerkBiteMixin.networkVars =
 {
-    lastSecondaryAttackTime = "time"
+    lastSecondaryAttackTime = "private time"
 }
 
 function LerkBiteMixin:__initmixin()

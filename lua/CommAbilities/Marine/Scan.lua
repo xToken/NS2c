@@ -75,16 +75,6 @@ if Server then
         local enemies = GetEntitiesWithMixinForTeamWithinRange("LOS", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), Scan.kScanDistance)
         
         for _, enemy in ipairs(enemies) do
-        
-            //Ghost adds a chance to 'evade' detection
-            local visible = true
-            //if enemy:isa("Alien") then
-                //local hasupg, level = GetHasGhostUpgrade(enemy)
-                //if hasupg and level > 0 then
-                    //local hide = math.random(1, 100) <= (level * kGhostScanDodgePerLevel)
-                    //visible = not hide
-                //end
-            //end
                 
             enemy:SetIsSighted(visible)
             

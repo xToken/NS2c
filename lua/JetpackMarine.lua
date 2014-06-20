@@ -46,9 +46,9 @@ local networkVars =
     // If jetpack is currently active and affecting our movement. If active, use loss rate, if inactive use gain rate
     jetpacking = "compensated boolean",
     // when we last changed state of jetpack
-    timeJetpackingChanged = "time",
+    timeJetpackingChanged = "private time",
     // amount of fuel when we last changed jetpacking state
-    jetpackFuelOnChange = "float (0 to 1 by 0.01)",
+    jetpackFuelOnChange = "private float (0 to 1 by 0.01)",
     
     startedFromGround = "boolean",
     

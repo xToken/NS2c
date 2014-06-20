@@ -368,6 +368,7 @@ kUmbraBlockRate = 3
 kUmbraDamageReduction = 0.35
 kUmbraRetainTime = 0.1
 kUmbraAttackDelay = 1.0
+kUmbraUpdateRate = 1
 
 kSpikeMaxDamage = 8
 kSpikeMinDamage = 5

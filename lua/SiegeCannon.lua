@@ -49,13 +49,15 @@ if Server then
     Script.Load("lua/SiegeCannon_Server.lua")
 end
 
+//"compensated interpolated float (-3.14159265 to 3.14159265 by 0.003)",
+
 local networkVars =
 {
     // ARCs can only fire when deployed and can only move when not deployed
     mode = "enum SiegeCannon.kMode",
     
-    barrelYawDegrees = "compensated float",
-    barrelPitchDegrees = "compensated float",
+    barrelYawDegrees = "compensated interpolated float",
+    barrelPitchDegrees = "compensated interpolated float",
     
     // So we can update angles and pose parameters smoothly on client
     targetDirection = "vector",

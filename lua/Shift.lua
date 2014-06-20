@@ -175,6 +175,17 @@ function Shift:OnUse(player, elapsedTime, useSuccessTable)
     
 end
 
+local function UpdateShiftButtons()
+end
+
+local function Blank()
+end
+
+function Shift:OnUpdate()
+    UpdateShiftButtons()
+    Shift.OnUpdate = Blank
+end
+
 if Server then
     
     function Shift:OnConstructionComplete()

@@ -24,6 +24,7 @@ Script.Load("lua/menu/GatherFrame.lua")
 Script.Load("lua/menu/ServerTabs.lua")
 Script.Load("lua/menu/PlayerEntry.lua")
 Script.Load("lua/dkjson.lua")
+Script.Load("lua/menu/MenuPoses.lua")
 
 local kMainMenuLinkColor = Color(137 / 255, 137 / 255, 137 / 255, 1)
 
@@ -34,9 +35,10 @@ Script.Load("lua/menu/GUIMainMenu_Mods.lua")
 Script.Load("lua/menu/GUIMainMenu_Training.lua")
 Script.Load("lua/menu/GUIMainMenu_Web.lua")
 Script.Load("lua/menu/GUIMainMenu_Gather.lua")
+Script.Load("lua/menu/GUIMainMenu_Customize.lua")
 
 // Min and maximum values for the mouse sensitivity slider
-local kMinSensitivity = 1
+local kMinSensitivity = 0.01
 local kMaxSensitivity = 20
 
 local kMinAcceleration = 1
@@ -140,6 +142,7 @@ function GUIMainMenu:Initialize()
     
     if MainMenu_IsInGame() then
         self.tvGlareImage:SetCSSClass("tvglare_dark")
+		self.tvGlareImage:SetIsVisible(false)
     else
         self.tvGlareImage:SetCSSClass("tvglare")
     end    
@@ -181,6 +184,7 @@ function GUIMainMenu:Initialize()
             if MainMenu_IsInGame() then
             
                 MainMenu_ReturnToGame()
+				ClientUI.EvaluateUIVisibility(Client.GetLocalPlayer())
                 return true
                 
             else
@@ -282,17 +286,20 @@ function GUIMainMenu:Initialize()
             end
         })
         
-        self.trainingLink = self:CreateMainLink("TRAINING", "tutorial_ingame", "07")
+        self.trainingLink = self:CreateMainLink("CUSTOMIZE PLAYER", "tutorial_ingame", "07")
         self.trainingLink:AddEventCallbacks(
         {
             OnClick = function(self)
             
-                if not self.scriptHandle.trainingWindow then
+				/*if not self.scriptHandle.trainingWindow then
                     self.scriptHandle:CreateTrainingWindow()
                 end
                 TriggerOpenAnimation(self.scriptHandle.trainingWindow)
-                self.scriptHandle:HideMenu()
-                
+                self.scriptHandle:HideMenu()*/
+
+				self.scriptHandle:ActivateCustomizeWindow()
+				self.scriptHandle.screenFade = GetGUIManager():CreateGUIScript("GUIScreenFade")
+				self.scriptHandle.screenFade:Reset()
             end
         })
         
@@ -1377,7 +1384,7 @@ local function CreateServer(self)
     
     local modIndex      = self.createServerForm.modIds[formData.Map_index]
     local password      = formData.Password
-    local port          = 27015
+    local port          = tonumber(formData.Port)
     local maxPlayers    = formData.PlayerLimit
     local serverName    = formData.ServerName
     
@@ -1452,25 +1459,53 @@ GUIMainMenu.CreateOptionsForm = function(mainMenu, content, options, optionEleme
 			input_display:AddEventCallbacks({ 
 				
 			OnEnter = function(self)
-				if option.name == "Sensitivity" then
-					input:SetValue((input_display:GetValue() - kMinSensitivity) / (kMaxSensitivity - kMinSensitivity))
-				elseif option.name == "AccelerationAmount" then
-					input:SetValue(input_display:GetValue())
-				elseif option.name == "FOVAdjustment" then
-					input:SetValue(input_display:GetValue() / 20)
-				else
-					input:SetValue(input_display:GetValue())
+				if input_display:GetValue() ~= "" and input_display:GetValue() ~= "." then
+					if option.name == "Sensitivity" then
+						input:SetValue((input_display:GetValue() - kMinSensitivity) / (kMaxSensitivity - kMinSensitivity))
+					elseif option.name == "AccelerationAmount" then
+						input:SetValue(input_display:GetValue())
+					elseif option.name == "FOVAdjustment" then
+						input:SetValue(input_display:GetValue() / 20)
+					else
+						input:SetValue(input_display:GetValue())
+					end
 				end
+				if input_display:GetValue() == "" or input_display:GetValue() == "." then
+					if option.name == "Sensitivity" then
+						input_display:SetValue(ToString(string.sub(OptionsDialogUI_GetMouseSensitivity(), 0, 4)))
+					elseif option.name == "AccelerationAmount" then
+						input_display:SetValue(ToString(string.sub(input:GetValue(), 0, 4)))
+					elseif option.name == "FOVAdjustment" then
+						input_display:SetValue(ToString(string.format("%.0f", input:GetValue() * 20)))
+					else
+						input_display:SetValue(ToString(string.sub(input:GetValue(),0, 4)))
+					end
+				end
+			
 			end,
 			OnBlur = function(self)
-				if option.name == "Sensitivity" then
-					input:SetValue((input_display:GetValue() - kMinSensitivity) / (kMaxSensitivity - kMinSensitivity))
-				elseif option.name == "AccelerationAmount" then
-					input:SetValue(input_display:GetValue())
-				elseif option.name == "FOVAdjustment" then
-					input:SetValue(input_display:GetValue() / 20)
-				else
-					input:SetValue(input_display:GetValue())
+				if input_display:GetValue() ~= "" and input_display:GetValue() ~= "." then
+					if option.name == "Sensitivity" then
+						input:SetValue((input_display:GetValue() - kMinSensitivity) / (kMaxSensitivity - kMinSensitivity))
+					elseif option.name == "AccelerationAmount" then
+						input:SetValue(input_display:GetValue())
+					elseif option.name == "FOVAdjustment" then
+						input:SetValue(input_display:GetValue() / 20)
+					else
+						input:SetValue(input_display:GetValue())
+					end
+				end
+				
+				if input_display:GetValue() == "" or input_display:GetValue() == "." then
+					if option.name == "Sensitivity" then
+						input_display:SetValue(ToString(string.sub(OptionsDialogUI_GetMouseSensitivity(), 0, 4)))
+					elseif option.name == "AccelerationAmount" then
+						input_display:SetValue(ToString(string.sub(input:GetValue(), 0, 4)))
+					elseif option.name == "FOVAdjustment" then
+						input_display:SetValue(ToString(string.format("%.0f", input:GetValue() * 20)))
+					else
+						input_display:SetValue(ToString(string.sub(input:GetValue(),0, 4)))
+					end
 				end
 			end,
 			})
@@ -1497,6 +1532,12 @@ GUIMainMenu.CreateOptionsForm = function(mainMenu, content, options, optionEleme
         elseif option.type == "checkbox" then
             input = form:CreateFormElement(Form.kElementType.Checkbox, option.name, option.value)
             defaultInputClass = "option_checkbox"
+        elseif option.type == "numberBox" then
+            input = form:CreateFormElement(Form.kElementType.TextInput, option.name, option.value)
+			input:SetNumbersOnly(true)
+			if option.length then
+				input:SetMaxLength(option.length)
+			end
         else
             input = form:CreateFormElement(Form.kElementType.TextInput, option.name, option.value)
         end
@@ -1512,37 +1553,39 @@ GUIMainMenu.CreateOptionsForm = function(mainMenu, content, options, optionEleme
         input:SetCSSClass(inputClass)
         input:SetTopOffset(y)
 
+		for index, child in ipairs(input:GetChildren()) do
+		child:AddEventCallbacks({ 
+			OnMouseOver = function(self)
+				if gMainMenu ~= nil then
+					local text = option.tooltip
+					if text ~= nil then
+
+						if option.name == "LightQuality" then
+							gMainMenu.optionTooltip.tooltip:SetPosition(Vector(15, -10, 0))
+						else
+							gMainMenu.optionTooltip.tooltip:SetPosition(Vector(15, 0, 0))
+						end
+						
+						gMainMenu.optionTooltip.tooltip:SetText(text)
+					else
+						gMainMenu.optionTooltip.tooltip:SetText("")
+					end
+				end    
+			end,
+			
+			OnMouseOut = function(self)
+				if gMainMenu ~= nil then
+					gMainMenu.optionTooltip.tooltip:SetText("")
+				end
+			end,
+			})
+		end
+
         local label = CreateMenuElement(form, "Font", false)
         label:SetCSSClass("option_label")
         label:SetText(option.label .. ":")
         label:SetTopOffset(y)
         label:SetIgnoreEvents(false)
-        label:AddEventCallbacks({ 
-				
-        OnMouseOver = function(self)
-            if gMainMenu ~= nil then
-                local text = option.tooltip
-                if text ~= nil then
-
-					if option.name == "LightQuality" then
-						gMainMenu.optionTooltip.tooltip:SetPosition(Vector(15, -10, 0))
-					else
-						gMainMenu.optionTooltip.tooltip:SetPosition(Vector(15, 0, 0))
-					end
-					
-					gMainMenu.optionTooltip.tooltip:SetText(text)
-                else
-                    gMainMenu.optionTooltip.tooltip:SetText("")
-                end
-            end    
-        end,
-        
-        OnMouseOut = function(self)
-            if gMainMenu ~= nil then
-                gMainMenu.optionTooltip.tooltip:SetText("")
-            end
-        end,
-        })
         
         optionElements[option.name] = input
 
@@ -1581,6 +1624,13 @@ function GUIMainMenu:CreateHostGameWindow()
                 name   = "Password",            
                 label  = "PASSWORD [OPTIONAL]",
                 value  = Client.GetOptionString("serverPassword", "")
+            },
+			{
+                name    = "Port",
+                label   = "PORT [OPTIONAL]",
+				type  	= "numberBox",
+				length 	= 5,
+                value   = Client.GetOptionString("listenPort", "27015")
             },
             {
                 name    = "Map",
@@ -1629,6 +1679,47 @@ function GUIMainMenu:CreateHostGameWindow()
                 mapList:SetOptions( mapNames )
             end
         })
+    
+end
+
+function SendPlayerVariantUpdate()
+
+    local marineVariant = Client.GetOptionInteger("marineVariant", -1)
+    local skulkVariant = Client.GetOptionInteger("skulkVariant", -1)
+    local gorgeVariant = Client.GetOptionInteger("gorgeVariant", -1)
+    local lerkVariant = Client.GetOptionInteger("lerkVariant", -1)
+	local sexType = Client.GetOptionString("sexType", "Male")
+	local shoulderPadIndex = Client.GetOptionInteger("shoulderPad", 1)
+	local exoVariant = Client.GetOptionInteger("exoVariant", -1)
+	local rifleVariant = Client.GetOptionInteger("rifleVariant", -1)
+	
+    assert(marineVariant ~= -1)
+    assert(marineVariant ~= nil)
+    assert(skulkVariant ~= -1)
+    assert(skulkVariant ~= nil)
+    assert(gorgeVariant ~= -1)
+    assert(gorgeVariant ~= nil)
+    assert(lerkVariant ~= -1)
+    assert(lerkVariant ~= nil)
+	assert(exoVariant ~= -1)
+    assert(exoVariant ~= nil)
+	assert(rifleVariant ~= -1)
+	assert(rifleVariant ~= nil)
+	
+    if MainMenu_IsInGame() then
+        Client.SendNetworkMessage("SetPlayerVariant",
+            {
+                marineVariant = marineVariant,
+                skulkVariant = skulkVariant,
+                gorgeVariant = gorgeVariant,
+                lerkVariant = lerkVariant,
+                isMale = string.lower(sexType) == "male",
+                shoulderPadIndex = shoulderPadIndex,
+				exoVariant = exoVariant,
+				rifleVariant = rifleVariant,
+            },
+            true)
+    end
     
 end
 
@@ -1871,10 +1962,6 @@ local function InitOptions(optionElements)
     local decalLifeTime         = Client.GetOptionFloat("graphics/decallifetime", 0.2)
     
     local minimapZoom = Client.GetOptionFloat("minimap-zoom", 0.75)
-    local marineVariant = Client.GetOptionInteger("marineVariant", -1)
-    local skulkVariant = Client.GetOptionInteger("skulkVariant", -1)
-    local gorgeVariant = Client.GetOptionInteger("gorgeVariant", -1)
-    local lerkVariant = Client.GetOptionInteger("lerkVariant", -1)
     
     local hudmode = Client.GetOptionInteger("hudmode", kHUDMode.Full)
     
@@ -1882,88 +1969,6 @@ local function InitOptions(optionElements)
 	
 	local lightQuality = Client.GetOptionInteger("graphics/lightQuality", 2)
 	
-	local shoulderPadIndex = Client.GetOptionInteger("shoulderPad", 1)
-	if not GetHasShoulderPad(shoulderPadIndex) then
-	    shoulderPadIndex = 1
-	end
-	
-    // if not set explicitly, always use the highest available tier
-    if marineVariant == -1 then
-    
-        for variant = 1, GetEnumCount(kMarineVariant) do
-        
-            if GetHasVariant(kMarineVariantData, variant) then
-            
-                marineVariant = variant
-                // do not break - use the highest one they have
-                
-            end
-            
-        end
-        
-    end
-    
-    if skulkVariant == -1 then
-    
-        for variant = 1, GetEnumCount(kSkulkVariant), 1 do
-        
-            if GetHasVariant(kSkulkVariantData, variant) then
-            
-                skulkVariant = variant
-                // do not break - use the highest one they have
-                
-            end
-            
-        end
-        
-    end
-    
-    if gorgeVariant == -1 then
-    
-        for variant = 1, GetEnumCount(kGorgeVariant), 1 do
-        
-            if GetHasVariant(kGorgeVariantData, variant) then
-            
-                gorgeVariant = variant
-                // do not break - use the highest one they have
-                
-            end
-            
-        end
-        
-    end
-    
-    if lerkVariant == -1 then
-    
-        for variant = 1, GetEnumCount(kLerkVariant), 1 do
-        
-            if GetHasVariant(kLerkVariantData, variant) then
-            
-                lerkVariant = variant
-                // do not break - use the highest one they have
-                
-            end
-            
-        end
-        
-    end
-    
-    assert(marineVariant ~= -1)
-    assert(skulkVariant ~= -1)
-    assert(gorgeVariant ~= -1)
-    assert(lerkVariant ~= -1)
-    
-	Client.SetOptionInteger("shoulderPad", shoulderPadIndex)
-    Client.SetOptionInteger("marineVariant", marineVariant)
-    Client.SetOptionInteger("skulkVariant", skulkVariant)
-    Client.SetOptionInteger("gorgeVariant", gorgeVariant)
-    Client.SetOptionInteger("lerkVariant", lerkVariant)
-    
-    Client.SetOptionInteger("hudmode", hudmode)
-    
-    local sexType = Client.GetOptionString("sexType", "Male")
-    Client.SetOptionString("sexType", sexType)
-    
     // support legacy values    
     if ambientOcclusion == "false" then
         ambientOcclusion = "off"
@@ -2033,12 +2038,6 @@ local function InitOptions(optionElements)
     optionElements.Reflections:SetOptionActive( BoolToIndex(reflections) )
     optionElements.FOVAdjustment:SetValue(fovAdjustment)
     optionElements.MinimapZoom:SetValue(minimapZoom)
-	optionElements.shoulderPad:SetValue(kShoulderPadNames[shoulderPadIndex])
-    optionElements.MarineVariantName:SetValue(GetVariantName(kMarineVariantData, marineVariant))
-    optionElements.SkulkVariantName:SetValue(GetVariantName(kSkulkVariantData, skulkVariant))
-    optionElements.GorgeVariantName:SetValue(GetVariantName(kGorgeVariantData, gorgeVariant))
-    optionElements.LerkVariantName:SetValue(GetVariantName(kLerkVariantData, lerkVariant))
-    optionElements.SexType:SetValue(sexType)
     optionElements.DecalLifeTime:SetValue(decalLifeTime)
     optionElements.CameraAnimation:SetValue(cameraAnimation)
     optionElements.PhysicsGpuAcceleration:SetValue(physicsGpuAcceleration)
@@ -2158,32 +2157,6 @@ function OnDisplayChanged(oldDisplay, newDisplay)
     
 end
 
-local function SendPlayerVariantUpdate(marineVariant, sexType, skulkVariant, gorgeVariant, lerkVariant, shoulderPadIndex)
-
-    assert(marineVariant ~= -1)
-    assert(marineVariant ~= nil)
-    assert(skulkVariant ~= -1)
-    assert(skulkVariant ~= nil)
-    assert(gorgeVariant ~= -1)
-    assert(gorgeVariant ~= nil)
-    assert(lerkVariant ~= -1)
-    assert(lerkVariant ~= nil)
-    
-    if MainMenu_IsInGame() then
-        Client.SendNetworkMessage("SetPlayerVariant",
-                {
-                    marineVariant = marineVariant,
-                    skulkVariant = skulkVariant,
-                    gorgeVariant = gorgeVariant,
-                    lerkVariant = lerkVariant,
-                    isMale = string.lower(sexType) == "male",
-                    shoulderPadIndex = shoulderPadIndex
-                },
-                true)
-    end
-    
-end
-
 local function SaveOptions(mainMenu)
 
     local nickName              = mainMenu.optionElements.NickName:GetValue()
@@ -2197,7 +2170,7 @@ local function SaveOptions(mainMenu)
     local showCommanderHelp     = mainMenu.optionElements.ShowCommanderHelp:GetActiveOptionIndex() > 1
     local drawDamage            = mainMenu.optionElements.DrawDamage:GetActiveOptionIndex() > 1
     local rookieMode            = mainMenu.optionElements.RookieMode:GetActiveOptionIndex() > 1
-    
+	
     local display               = mainMenu.optionElements.Display:GetActiveOptionIndex() - 1
     local screenResIdx          = mainMenu.optionElements.Resolution:GetActiveOptionIndex()
     local visualDetailIdx       = mainMenu.optionElements.Detail:GetActiveOptionIndex()
@@ -2215,14 +2188,8 @@ local function SaveOptions(mainMenu)
     local soundVol              = mainMenu.optionElements.SoundVolume:GetValue() * 100
     local musicVol              = mainMenu.optionElements.MusicVolume:GetValue() * 100
     local voiceVol              = mainMenu.optionElements.VoiceVolume:GetValue() * 100
-    
-	local shoulderPadName       = mainMenu.optionElements.shoulderPad:GetValue()
-    local marineVariantName     = mainMenu.optionElements.MarineVariantName:GetValue()
-    local skulkVariantName      = mainMenu.optionElements.SkulkVariantName:GetValue()
-    local gorgeVariantName      = mainMenu.optionElements.GorgeVariantName:GetValue() or ""
-    local lerkVariantName       = mainMenu.optionElements.LerkVariantName:GetValue() or ""
+
     local hudmode               = mainMenu.optionElements.hudmode:GetValue()
-    local sexType               = mainMenu.optionElements.SexType:GetValue()
     local cameraAnimation       = mainMenu.optionElements.CameraAnimation:GetActiveOptionIndex() > 1
     local physicsGpuAcceleration = mainMenu.optionElements.PhysicsGpuAcceleration:GetActiveOptionIndex() > 1
     local advancedmovement      = mainMenu.optionElements.AdvancedMovement:GetActiveOptionIndex() > 1
@@ -2242,25 +2209,10 @@ local function SaveOptions(mainMenu)
     Client.SetOptionBoolean(kRookieOptionsKey, rookieMode)
     Client.SetOptionBoolean("CameraAnimation", cameraAnimation)
     Client.SetOptionBoolean(kPhysicsGpuAccelerationKey, physicsGpuAcceleration)
-	Client.SetOptionInteger("shoulderPad", GetShoulderPadIndexByName(shoulderPadName))
 	Client.SetOptionBoolean( "AdvancedMovement", advancedmovement)
-    Client.SetOptionInteger("marineVariant", FindVariant(kMarineVariantData, marineVariantName))
-    Client.SetOptionInteger("skulkVariant", FindVariant(kSkulkVariantData, skulkVariantName))
-    Client.SetOptionInteger("gorgeVariant", FindVariant(kGorgeVariantData, gorgeVariantName))
-    Client.SetOptionInteger("lerkVariant", FindVariant(kLerkVariantData, lerkVariantName))
     Client.SetOptionInteger("hudmode", hudmode == "HIGH" and kHUDMode.Full or kHUDMode.Minimal)
-    Client.SetOptionString("sexType", sexType)
 	Client.SetOptionBoolean("precacheExtra", precacheExtra)
 	Client.SetOptionInteger("graphics/lightQuality", lightQuality)
-    
-    SendPlayerVariantUpdate(
-            FindVariant(kMarineVariantData, marineVariantName),
-            sexType,
-            FindVariant(kSkulkVariantData, skulkVariantName),
-            FindVariant(kGorgeVariantData, gorgeVariantName),
-            FindVariant(kLerkVariantData, lerkVariantName), 
-            GetShoulderPadIndexByName(shoulderPadName))
-    
     Client.SetOptionFloat("input/mouse/acceleration-amount", accelerationAmount)
     
 	if string.len(TrimName(nickName)) < 1 then
@@ -2485,59 +2437,7 @@ function GUIMainMenu:CreateOptionWindow()
     for i = 1,#kLocales do
         languages[i] = kLocales[i].label
     end
-    
-    local shoulderPadNames = { }
-    local marineVariantNames = { }
-    local skulkVariantNames = { }
-    local gorgeVariantNames = { }
-    local lerkVariantNames = { }
-    
-    //DebugPrint("we have "..GetEnumCount(kMarineVariant).." marine variants")
-    //DebugPrint("we have "..GetEnumCount(kSkulkVariant).." skulk variants")
-    //DebugPrint("we have "..GetEnumCount(kGorgeVariant).." gorge variants")
-    //DebugPrint("we have "..GetEnumCount(kLerkVariant).." lerk variants")
-
-    for index, name in pairs(kShoulderPadNames) do
-    
-        if GetHasShoulderPad(index) then
-            table.insert(shoulderPadNames, name)
-        end
-    
-    end
-    for key, value in pairs(kMarineVariantData) do
-    
-        if GetHasVariant(kMarineVariantData, key) then
-            table.insert(marineVariantNames, value.displayName)
-        end
-        
-    end
-    
-    for key, value in pairs(kSkulkVariantData) do
-    
-        if GetHasVariant(kSkulkVariantData, key) then
-            table.insert(skulkVariantNames, value.displayName)
-        end
-        
-    end
-    
-    for key, value in pairs(kGorgeVariantData) do
-    
-        if GetHasVariant(kGorgeVariantData, key) then
-            table.insert(gorgeVariantNames, value.displayName)
-        end
-        
-    end
-    
-    for key, value in pairs(kLerkVariantData) do
-    
-        if GetHasVariant(kLerkVariantData, key) then
-            table.insert(lerkVariantNames, value.displayName)
-        end
-        
-    end
-    
-    local sexTypes = { "Male", "Female" }
-    
+	
     local generalOptions =
         {
             { 
@@ -2619,43 +2519,6 @@ function GUIMainMenu:CreateOptionWindow()
                 type    = "slider",
                 sliderCallback = OnMinimapZoomChanged,
             },
-            {
-                name    = "shoulderPad",
-                label   = "SHOULDER PAD",
-                type    = "select",
-                values  = shoulderPadNames
-            },
-            {
-                name    = "MarineVariantName",
-                label   = "MARINE ARMOR",
-                type    = "select",
-                values  = marineVariantNames
-            },
-            {
-                name    = "SexType",
-                label   = "MARINE GENDER",
-                type    = "select",
-                values  = sexTypes
-            },
-            {
-                name    = "SkulkVariantName",
-                label   = "SKULK TYPE",
-                type    = "select",
-                values  = skulkVariantNames,
-            },
-            {
-                name    = "GorgeVariantName",
-                label   = "GORGE TYPE",
-                type    = "select",
-                values  = gorgeVariantNames,
-            },
-            {
-                name    = "LerkVariantName",
-                label   = "LERK TYPE",
-                type    = "select",
-                values  = lerkVariantNames,
-            },
-            
             {
                 name    = "CameraAnimation",
                 label   = "CAMERA ANIMATION",
@@ -3103,6 +2966,14 @@ function GUIMainMenu:Update(deltaTime)
             end
         
         end
+
+		local lastModel = Client.GetOptionString("currentModel", "")
+		if self.customizeFrame and self.customizeFrame:GetIsVisible() and MainMenu_IsInGame() then
+			MenuPoses_Update(deltaTime)
+			MenuPoses_SetViewModel(false)
+			MenuPoses_SetModelAngle(self.sliderAngleBar:GetValue() or 0)
+		end
+		
     end
     
 end
@@ -3482,6 +3353,16 @@ function GUIMainMenu:ActivateGatherWindow()
     self:HideMenu()
 
 end
+
+function GUIMainMenu:ActivateCustomizeWindow()
+
+    if not self.customizeWindow then
+        self:CreateCustomizeWindow()
+    end
+    self:TriggerOpenAnimation(self.customizeFrame)
+    self:HideMenu()
+
+end
 //----------------------------------------
 //  
 //----------------------------------------
@@ -3548,7 +3429,6 @@ function GUIMainMenu:OnPlayClicked()
         end})
 
 end
-
 
 Event.Hook("SoundDeviceListChanged", OnSoundDeviceListChanged)
 Event.Hook("OptionsChanged", OnOptionsChanged)

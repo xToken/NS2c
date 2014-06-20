@@ -52,14 +52,14 @@ end
 
 function Order:Initialize(orderType, orderParam, position, orientation)
 
+    if not rawget( kTechId, orderType ) then
+        DebugPrint("Warning - Order:Initialize() was called with a nil orderType")
+        DebugPrint(Script.CallStack())
+        orderType = kTechId.None
+    end
+    
     self.orderType = orderType
     self.orderParam = orderParam
-        
-    if orderParam == nil then
-        //This annoys me, dump info to help trace back why it happens.
-        DebugPrint("Warning - Order:Initialize() was called with a nil targetId")
-        DebugPrint(Script.CallStack())
-    end
     
     if orientation then
         self.orderOrientation = orientation
@@ -95,6 +95,11 @@ function Order:GetType()
 end
 
 function Order:SetType(orderType)
+    if not rawget( kTechId, orderType ) then
+        DebugPrint("Warning - Order:Initialize() was called with a nil orderType")
+        DebugPrint(Script.CallStack())
+        orderType = kTechId.None
+    end
     self.orderType = orderType
 end
 

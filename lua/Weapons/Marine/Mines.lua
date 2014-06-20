@@ -18,7 +18,7 @@ local kPlacementDistance = 2
 
 local networkVars =
 {
-    minesLeft = string.format("integer (0 to %d)", kMineCount),
+    minesLeft = string.format("private integer (0 to %d)", kMineCount),
 	droppingMine = "boolean"
 }
 
