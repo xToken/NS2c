@@ -132,11 +132,11 @@ end
 
 Event.Hook("Console_slot9", slot9)
 
-local function slot10()
+local function slot0()
 	UpdateGUIMenu(0)
 end
 
-Event.Hook("Console_slot10", slot10)
+Event.Hook("Console_slot0", slot0)
 
 class 'GUIGorgeBuildMenu' (GUIAnimatedScript)
 

@@ -98,7 +98,7 @@ local function UpdateServerInformation()
                 local state  = Client.GetModState(i)
                 local downloading, bytesDownloaded, totalBytes = Client.GetModDownloadProgress(i)
                 local percent = "100%"
-                if downloading then
+                if state ~= "Available" then
                     percent = "0%"
                     if totalBytes > 0 then
                         percent = string.format("%d%%", math.floor((bytesDownloaded / totalBytes) * 100))

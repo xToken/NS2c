@@ -6,17 +6,31 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-local kTechIdTable = 
-{
+//NS2c
+//Added in techIds required by classic
+
+local gTechIdToString = {}
+
+local function createTechIdEnum(table)
+
+    for i = 1, #table do    
+        gTechIdToString[table[i]] = i  
+    end
+    
+    return enum(table)
+
+end
+
+kTechId = createTechIdEnum({
     
     'None', 'PingLocation',
     
     'VoteConcedeRound',
     
-    'SpawnMarine', 'SpawnAlien', 'CollectResources', 'TransformResources', 'Research',
+    'SpawnMarine', 'SpawnAlien', 'CollectResources', 'Research',
     
     // General orders and actions ("Default" is right-click)
-    'Default', 'Move', 'Patrol', 'Attack', 'Build', 'Construct', 'AutoConstruct', 'Grow', 'Cancel', 'Recycle', 'Weld', 'AutoWeld', 'Stop', 'SetRally', 'SetTarget', 'Follow', 'HoldPosition', 'FollowAlien',
+    'Default', 'Move', 'Patrol', 'Attack', 'Build', 'Construct', 'AutoConstruct', 'Cancel', 'Recycle', 'Weld', 'AutoWeld', 'Stop', 'SetRally', 'SetTarget', 'Follow',
     // special mac order (follows the target, welds the target as priority and others in range)
     'FollowAndWeld',
     
@@ -26,8 +40,8 @@ local kTechIdTable =
     // Commander menus for selected units
     'RootMenu', 'BuildMenu', 'AdvancedMenu', 'AssistMenu', 'MarkersMenu', 'UpgradesMenu', 'WeaponsMenu',
     
-    // Robotics factory menus
-    'RoboticsFactoryARCUpgradesMenu', 'RoboticsFactoryMACUpgradesMenu', 'UpgradeRoboticsFactory',
+    // Turret factory menus
+    'UpgradeTurretFactory',
 
     'ReadyRoomPlayer', 
     
@@ -35,14 +49,14 @@ local kTechIdTable =
     'Door', 'DoorOpen', 'DoorClose', 'DoorLock', 'DoorUnlock',
 
     // Misc
-    'ResourcePoint', 'TechPoint', 'SocketPowerNode', 'Mine',
+    'ResourcePoint', 'TechPoint', 'Mine', 'Web',
     
     /////////////
     // Marines //
     /////////////
     
     // Marine classes + spectators
-    'Marine', 'Exo', 'MarineCommander', 'JetpackMarine', 'Spectator', 'AlienSpectator',
+    'Marine', 'HeavyArmorMarine', 'MarineCommander', 'JetpackMarine', 'Spectator', 'AlienSpectator', 'Exo', "AllMarines",
     
     // Marine alerts (specified alert sound and text in techdata if any)
     'MarineAlertAcknowledge', 'MarineAlertNeedMedpack', 'MarineAlertNeedAmmo', 'MarineAlertNeedOrder', 'MarineAlertHostiles', 'MarineCommanderEjected', 'MACAlertConstructionComplete',    
@@ -59,135 +73,51 @@ local kTechIdTable =
     'TwoCommandStations', 'ThreeCommandStations',
 
     // Marine tech 
-    'CommandStation', 'MAC', 'Armory', 'InfantryPortal', 'Extractor', 'ExtractorArmor', 'Sentry', 'ARC',
-    'PowerPoint', 'AdvancedArmoryUpgrade', 'Observatory', 'Detector', 'DistressBeacon', 'PhaseGate', 'RoboticsFactory', 'ARCRoboticsFactory', 'ArmsLab',
-    'SentryBattery', 'PrototypeLab', 'AdvancedArmory',
-    
-    // Weapon tech
-    'AdvancedWeaponry', 'ShotgunTech', 'HeavyRifleTech', 'DetonationTimeTech', 'FlamethrowerRangeTech', 'GrenadeLauncherTech', 'FlamethrowerTech', 'FlamethrowerAltTech', 'WelderTech', 'MinesTech',
-    'GrenadeTech', 'ClusterGrenade', 'ClusterGrenadeProjectile', 'GasGrenade', 'GasGrenadeProjectile', 'PulseGrenade', 'PulseGrenadeProjectile',
-    'DropWelder', 'DropMines', 'DropShotgun', 'DropGrenadeLauncher', 'DropFlamethrower',
-    
-    // Marine buys
-    'FlamethrowerAlt',
+    'CommandStation', 'Armory', 'InfantryPortal', 'Extractor', 'Sentry', 'SiegeCannon',
+    'Scan', 'AmmoPack', 'MedPack', 'CatPack', 'CatPackTech', 'AdvancedArmoryUpgrade', 'Observatory', 'Detector', 'DistressBeacon', 'PhaseGate', 'TurretFactory', 'AdvancedTurretFactory', 'ArmsLab',
+    'PrototypeLab', 'AdvancedArmory', 'HandGrenadesTech', 'Electrify', 
     
     // Research 
-    'PhaseTech', 'MACSpeedTech', 'MACEMPTech', 'ARCArmorTech', 'ARCSplashTech', 'JetpackTech', 'ExosuitTech',
-    'DualMinigunTech', 'DualMinigunExosuit', 'UpgradeToDualMinigun',
-    'ClawRailgunTech', 'ClawRailgunExosuit',
-    'DualRailgunTech', 'DualRailgunExosuit', 'UpgradeToDualRailgun',
-    'DropJetpack', 'DropExosuit',
-    
-    // MAC (build bot) abilities
-    'MACEMP', 'Welding',
+    'PhaseTech', 'Jetpack', 'JetpackTech','HeavyArmorTech', 'HeavyArmor', 'ExosuitTech', 'Exosuit',
     
     // Weapons 
-    'Rifle', 'Pistol', 'Shotgun', 'HeavyRifle', 'Claw', 'Minigun', 'Railgun', 'GrenadeLauncher', 'Flamethrower', 'Axe', 'LayMines', 'Welder',
-    
-    // Armor
-    'Jetpack', 'JetpackFuelTech', 'JetpackArmorTech', 'Exosuit', 'ExosuitLockdownTech', 'ExosuitUpgradeTech',
+    'Rifle', 'Pistol', 'Shotgun', 'GrenadeLauncher', 'Axe', 'Mines', 'Minigun', 'Railgun', 'Claw', 'Welder', 'HeavyMachineGun', 'HandGrenades', 'Flamethrower',
     
     // Marine upgrades
-    'Weapons1', 'Weapons2', 'Weapons3', 'CatPackTech',
-    'Armor1', 'Armor2', 'Armor3', 'NanoArmor',
-    
-    // Activations
-    'ARCDeploy', 'ARCUndeploy',
-    
-    // Marine Commander abilities
-    'NanoShieldTech', 'NanoShield', 'PowerSurge', 'Scan', 'AmmoPack', 'MedPack', 'CatPack',
+    'Weapons1', 'Weapons2', 'Weapons3', 'Armor1', 'Armor2', 'Armor3', 'MotionTracking', 
     
     ////////////
     // Aliens //
     ////////////
-    
-    // bio mass levels
-    'Biomass', 'BioMassOne', 'BioMassTwo', 'BioMassThree', 'BioMassFour', 'BioMassFive', 'BioMassSix', 'BioMassSeven', 'BioMassEight', 'BioMassNine',
-    // those are available at the hive
-    'ResearchBioMassOne', 'ResearchBioMassTwo', 'ResearchBioMassThree', 'ResearchBioMassFour',
-
-    'DrifterEgg', 'Drifter', 
 
     // Alien lifeforms 
-    'Skulk', 'Gorge', 'Lerk', 'Fade', 'Onos', "AlienCommander", "AllAliens", "Hallucination", "DestroyHallucination",
+    'Skulk', 'Gorge', 'Lerk', 'Fade', 'Onos', "AllAliens",
     
     // Special tech
-    'TwoHives', 'ThreeHives', 'UpgradeToCragHive', 'UpgradeToShadeHive', 'UpgradeToShiftHive',
+    'TwoHives', 'ThreeHives', 'UpgradeToCragHive', 'UpgradeToShadeHive', 'UpgradeToShiftHive', 'UpgradeToWhipHive',
     
-    'HydraSpike',
+    // Alien abilities (not all are needed, only ones with damage types)
+    'Bite', 'LerkBite', 'Parasite',  'Spit', 'BuildAbility', 'Spray', 'Spores', 'HydraSpike', 'Swipe', 'Gore', 'Smash', 'Devour', 'BabblerAbility',
 
-    'LifeFormMenu', 'SkulkMenu', 'GorgeMenu', 'LerkMenu', 'FadeMenu', 'OnosMenu',
-
+    // upgradeable alien abilities (need to be unlocked)
+    'BileBomb', 'Leap', 'Blink', 'Stomp', 'Spikes', 'Umbra', 'Metabolize', 'Xenocide', 'AcidRocket', 'WebStalk', 'Charge', 'PrimalScream',
+    'Babbler', 'BabblerEgg',
+    
     // Alien structures 
-    'Hive', 'HiveHeal', 'CragHive', 'ShadeHive', 'ShiftHive','Harvester', 'Egg', 'Embryo', 'Hydra', 'Cyst', 'Clog', 'GorgeTunnel',
+    'Hive', 'CragHive', 'ShadeHive', 'ShiftHive', 'WhipHive','Harvester', 'Egg', 'Embryo', 'Hydra',
     'GorgeEgg', 'LerkEgg', 'FadeEgg', 'OnosEgg',
     
-    // Infestation upgrades
-    'MucousMembrane',
-    
-    // personal upgrade levels
-    'Shell', 'TwoShells', 'ThreeShells', 'SecondShell', 'ThirdShell', 'FullShell',
-    'Veil', 'TwoVeils', 'ThreeVeils', 'SecondVeil', 'ThirdVeil', 'FullVeil',
-    'Spur', 'TwoSpurs', 'ThreeSpurs', 'SecondSpur', 'ThirdSpur', 'FullSpur',
-
     // Upgrade buildings and abilities (structure, upgraded structure, passive, triggered, targeted)
-    'Crag', 'TwoCrags', 'CragHeal',
-    'Whip', 'TwoWhips', 'EvolveBombard', 'WhipBombard', 'WhipBombardCancel', 'WhipBomb', 'Slap',
-    'Shift', 'TwoShifts', 'SelectShift', 'EvolveEcho', 'ShiftHatch', 'ShiftEcho', 'ShiftEnergize', 
-    'Shade', 'TwoShades', 'EvolveHallucinations', 'ShadeDisorient', 'ShadeCloak', 'ShadePhantomMenu', 'ShadePhantomStructuresMenu',
-    'UpgradeCeleritySpur', 'CeleritySpur', 'UpgradeAdrenalineSpur', 'AdrenalineSpur', 'UpgradeHyperMutationSpur', 'HyperMutationSpur',
-    'UpgradeSilenceVeil', 'SilenceVeil', 'UpgradeCamouflageVeil', 'CamouflageVeil', 'UpgradeAuraVeil', 'AuraVeil', 'UpgradeFeintVeil', 'FeintVeil',
-    'UpgradeRegenerationShell', 'RegenerationShell', 'UpgradeCarapaceShell', 'CarapaceShell',
-    'DrifterCamouflage', 'DrifterCelerity', 'DrifterRegeneration',
-    
-    'DefensivePosture', 'OffensivePosture', 'AlienMuscles', 'AlienBrain',
-    
-    'UpgradeSkulk', 'UpgradeGorge', 'UpgradeLerk', 'UpgradeFade', 'UpgradeOnos',
-    
-    'ContaminationTech', 'RuptureTech', 'BoneWallTech',
-    
-    // Skulk abilities    
-    'Bite', 'Sneak', 'Parasite', 'Leap', 'Xenocide',
-    
-    // gorge abilities
-    'Spit', 'Spray', 'BellySlide', 'BabblerTech', 'BuildAbility', 'BabblerAbility', 'Babbler', 'BabblerEgg', 'GorgeTunnelTech', 'BileBomb',  'WebTech', 'Web', 'HydraTech',
-
-    // lerk abilities
-    'LerkBite', 'Cling', 'Spikes', 'Umbra', 'Spores',
-
-    // fade abilities   
-    'Swipe', 'Blink', 'ShadowStep', 'Vortex', 'Stab', 
-    
-    // onos abilities
-    'Gore', 'Smash', 'Charge', 'BoneShield', 'Stomp', 'Shockwave', 
-    
-    // echo menu
-    'TeleportHydra', 'TeleportWhip', 'TeleportTunnel', 'TeleportCrag', 'TeleportShade', 'TeleportShift', 'TeleportVeil', 'TeleportSpur', 'TeleportShell', 'TeleportHive', 'TeleportEgg', 'TeleportHarvester',
-    
-    // Whip movement
-    'WhipRoot', 'WhipUnroot',
-    
+    'Crag', 'CragHeal', 'Shift', 'ShiftTeleport', 'Shade', 'ShadeDisorient', 'Whip',
+  
     // Alien abilities and upgrades
-    'Carapace', 'Regeneration', 'Aura', 'Silence', 'Feint', 'Camouflage', 'Phantom', 'Celerity', 'Adrenaline', 'HyperMutation',  
+    'Carapace', 'Regeneration', 'Redemption', 'Silence', 'Celerity', 'Adrenaline', 'Focus', 'Camouflage', 'Aura', 'Silence2', 'Fury', 'Bombard', 'Redeployment', 'Ghost', 
     
     // Alien alerts
-    'AlienAlertNeedHarvester', 'AlienAlertNeedMist', 'AlienAlertNeedDrifter', 'AlienAlertNeedHealing', 'AlienAlertStructureUnderAttack', 'AlienAlertHiveUnderAttack', 'AlienAlertHiveDying', 'AlienAlertHarvesterUnderAttack',
+    'AlienAlertNeedHealing', 'AlienAlertStructureUnderAttack', 'AlienAlertHiveUnderAttack', 'AlienAlertHiveDying', 'AlienAlertHarvesterUnderAttack',
     'AlienAlertLifeformUnderAttack', 'AlienAlertGorgeBuiltHarvester', 'AlienCommanderEjected',
-    'AlienAlertOrderComplete',
-    'AlienAlertNotEnoughResources', 'AlienAlertResearchComplete', 'AlienAlertManufactureComplete', 'AlienAlertUpgradeComplete', 'AlienAlertHiveComplete',
-    
-    // Pheromones
-    'ThreatMarker', 'LargeThreatMarker', 'NeedHealingMarker', 'WeakMarker', 'ExpandingMarker',
-    
-    // Infestation
-    'Infestation',
-    
-    // Commander abilities
-    'NutrientMist', 'Rupture', 'BoneWall', 'Contamination', 'SelectDrifter', 'HealWave', 'CragUmbra', 'ShadeInk', 'EnzymeCloud', 'Hallucinate', 'SelectHallucinations', 'Storm',
-    
-    // Alien Commander hallucinations
-    'HallucinateDrifter', 'HallucinateSkulk', 'HallucinateGorge', 'HallucinateLerk', 'HallucinateFade', 'HallucinateOnos',
-    'HallucinateHive', 'HallucinateWhip', 'HallucinateShade', 'HallucinateCrag', 'HallucinateShift', 'HallucinateHarvester', 'HallucinateHydra',
+    'AlienAlertOrderComplete', 'AlienAlertEnemyApproaches',
+    'AlienAlertNotEnoughResources', 'AlienAlertResearchComplete', 'AlienAlertManufactureComplete', 'AlienAlertUpgradeComplete', 'AlienAlertHiveComplete', 'AlienAlertHiveSpecialComplete', 
     
     // Voting commands
     'VoteDownCommander1', 'VoteDownCommander2', 'VoteDownCommander3',
@@ -199,25 +129,15 @@ local kTechIdTable =
     // Maximum index
     'Max'
     
-}
-
-// Increase techNode network precision if more needed
-kTechIdMax  = math.pow( 2, math.ceil( math.log( #kTechIdTable )/math.log(2) ) ) - 1 -- use all the bits
-   
-for i=#kTechIdTable+1, kTechIdMax do
-	kTechIdTable[i] = 'unused'..i
-end
-
-
-
-kTechId = enum( kTechIdTable )
+    })
     
 function StringToTechId(string)
-    return rawget(kTechId, string) or kTechId.None
-end     
+    return gTechIdToString[string] or kTechId.None
+end    
 
+// Increase techNode network precision if more needed
+kTechIdMax  = kTechId.Max
 
-   
 // Tech types
 kTechType = enum({ 'Invalid', 'Order', 'Research', 'Upgrade', 'Action', 'Buy', 'Build', 'EnergyBuild', 'Manufacture', 'Activation', 'Menu', 'EnergyManufacture', 'PlasmaManufacture', 'Special', 'Passive' })
 
@@ -225,4 +145,3 @@ kTechType = enum({ 'Invalid', 'Order', 'Research', 'Upgrade', 'Action', 'Buy', '
 kRecycleCancelButtonIndex   = 12
 kMarineUpgradeButtonIndex   = 5
 kAlienBackButtonIndex       = 8
-

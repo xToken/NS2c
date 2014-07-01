@@ -54,8 +54,6 @@ Script.Load("lua/NetworkMessages_Client.lua")
 Script.Load("lua/HiveVision.lua")
 Script.Load("lua/SabotCoreClient.lua")
 
-Script.Load("lua/Mixins/ClientBindings.lua")
-
 // Precache the common surface shaders.
 Shared.PrecacheSurfaceShader("shaders/Model.surface_shader")
 Shared.PrecacheSurfaceShader("shaders/Emissive.surface_shader")

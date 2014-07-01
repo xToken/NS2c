@@ -65,7 +65,7 @@ InfantryPortal.kLoginAttachPoint = "keypad"
 
 local networkVars =
 {
-    queuedPlayerId = "private entityid"
+    queuedPlayerId = "entityid"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)

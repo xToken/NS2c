@@ -32,7 +32,7 @@ local networkVars =
     isHolstered = "boolean",
     primaryAttacking = "compensated boolean",
     secondaryAttacking = "compensated boolean",
-    weaponWorldState = "private boolean"
+    weaponWorldState = "boolean"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)

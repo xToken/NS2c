@@ -25,7 +25,7 @@ local kAlienPingSound = PrecacheAsset("sound/NS2.fev/alien/commander/ping")
 
 local kDefaultFirstPersonEffectName = PrecacheAsset("cinematics/marine/hit_1p.cinematic")
 local kFirstPersonHealthCircle = PrecacheAsset("models/misc/marine-build/marine-build.model")
-local kFirstPersonMarineHealthCPlircle = PrecacheAsset("models/misc/marine-build/marine-build.model")
+local kFirstPersonMarineHealthCircle = PrecacheAsset("models/misc/marine-build/marine-build.model")
 local kFirstPersonAlienHealthCircle = PrecacheAsset("models/misc/marine-build/marine-build.model")
 local kFirstPersonDeathEffect = PrecacheAsset("cinematics/death_1p.cinematic")
 local kDeadSound = PrecacheAsset("sound/NS2.fev/common/dead")
@@ -1700,8 +1700,8 @@ function Player:SendKeyEvent(key, down)
             return true
         end
         
-        if GetIsBinding(key, "Weapon10") then
-            Shared.ConsoleCommand("slot10")
+        if GetIsBinding(key, "Weapon0") then
+            Shared.ConsoleCommand("slot0")
             return true
         end
         

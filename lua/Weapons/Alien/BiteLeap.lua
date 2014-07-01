@@ -126,8 +126,6 @@ function BiteLeap:OnTag(tagName)
             local didHit, target, endPoint = AttackMeleeCapsule(self, player, kBiteDamage, self:GetRange(), nil, false, EntityFilterOneAndIsa(player, "Babbler"))
             
             self.lastPrimaryAttackTime = Shared.GetTime()
-            self:TriggerEffects("bite_attack")
-            player:DeductAbilityEnergy(self:GetEnergyCost())
             
             if Client and didHit then
                 self:TriggerFirstPersonHitEffects(player, target)  
@@ -135,9 +133,15 @@ function BiteLeap:OnTag(tagName)
             
             if target and HasMixin(target, "Live") and not target:GetIsAlive() then
                 self:TriggerEffects("bite_kill", {silenceupgrade = false})
-            elseif target and GetReceivesStructuralDamage(target) then
-                self:TriggerEffects("bite_structure", {isalien = GetIsAlienUnit(target), silenceupgrade = false})
+            //elseif target and GetReceivesStructuralDamage(target) then
+                //if Server then
+                    //self:TriggerEffects("bite_structure", {effecthostcoords = Coords.GetTranslation(endPoint), isalien = GetIsAlienUnit(target), silenceupgrade = false})
+                //end
+			else
+				self:TriggerEffects("bite_attack")
             end
+            
+			player:DeductAbilityEnergy(self:GetEnergyCost())
             
         end
         

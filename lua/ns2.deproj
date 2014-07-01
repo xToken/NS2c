@@ -88,6 +88,9 @@
     <filename>Weapons\Alien\BileBomb.lua</filename>
   </file>
   <file>
+    <filename>BindingsDialog.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Alien\BiteLeap.lua</filename>
   </file>
   <file>
@@ -109,16 +112,10 @@
     <filename>CatPack.lua</filename>
   </file>
   <file>
-    <filename>Class.lua</filename>
-  </file>
-  <file>
     <filename>Weapons\Marine\Claw.lua</filename>
   </file>
   <file>
     <filename>Client.lua</filename>
-  </file>
-  <file>
-    <filename>Mixins\ClientBindings.lua</filename>
   </file>
   <file>
     <filename>ClientUI.lua</filename>
@@ -235,9 +232,6 @@
     <filename>ElectrifyMixin.lua</filename>
   </file>
   <file>
-    <filename>Mixins\Elixer_Utility.lua</filename>
-  </file>
-  <file>
     <filename>Embryo.lua</filename>
   </file>
   <file>
@@ -293,9 +287,6 @@
   </file>
   <file>
     <filename>GUIAuraDisplay.lua</filename>
-  </file>
-  <file>
-    <filename>GUIBioMassDisplay.lua</filename>
   </file>
   <file>
     <filename>GUICommanderButtons.lua</filename>
@@ -389,6 +380,9 @@
   </file>
   <file>
     <filename>GhostMixin.lua</filename>
+  </file>
+  <file>
+    <filename>Hud\Commander\GhostModel.lua</filename>
   </file>
   <file>
     <filename>GhostStructureMixin.lua</filename>
@@ -580,9 +574,6 @@
     <filename>Mixins\ModdedMixinUtility.lua</filename>
   </file>
   <file>
-    <filename>Mixins\NS2+Support.lua</filename>
-  </file>
-  <file>
     <filename>NS2ConsoleCommands_Server.lua</filename>
   </file>
   <file>
@@ -599,9 +590,6 @@
   </file>
   <file>
     <filename>NS2cGameStrings.lua</filename>
-  </file>
-  <file>
-    <filename>NS2cTechIDs.lua</filename>
   </file>
   <file>
     <filename>NetworkMessages.lua</filename>

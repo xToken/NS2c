@@ -84,7 +84,7 @@ if Server then
             end
             
             if HasMixin(enemy, "Detectable") then
-                enemy:SetDetected(visible, true)
+                enemy:SetDetected(true)
             end
             
         end
