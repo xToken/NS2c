@@ -83,7 +83,7 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                 // We use messages to handle multiple-hits per frame, such as splash damage from grenades.
                 if Server and attacker:isa("Player") then
                 
-                    local showNumbers = GetAreEnemies(attacker,target) and target:GetIsAlive() and damageDone > 0 and Shared.GetCheatsEnabled()
+                    local showNumbers = GetAreEnemies(attacker,target) and (target:GetIsAlive() or killedFromDamage) and damageDone > 0 and Shared.GetCheatsEnabled()
                     if showNumbers then
                     
                         local msg = BuildDamageMessage(target, damageDone, point)
@@ -99,8 +99,8 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                         
                     end
                     
-                    // This makes the cross hair turn red. Show it when hitting anything
-                    if not doer.GetShowHitIndicator or doer:GetShowHitIndicator() then
+                    // This makes the cross hair turn red. Show it when hitting enemies only
+                    if (not doer.GetShowHitIndicator or doer:GetShowHitIndicator()) and GetAreEnemies(attacker, target) then
                         attacker.giveDamageTime = Shared.GetTime()
                     end
                     

@@ -293,14 +293,14 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
     else
         player.Frame:SetColor(Color(1,1,1,1))    
     end
-    
+       
     local resourcesStr = string.format("%d Res", playerRecord.Resources)
     local KDRStr = string.format("%s / %s", playerRecord.Kills, playerRecord.Deaths)
     local currentPosition = Vector(player["Background"]:GetPosition())
     local newStatus = playerRecord.Status
     local teamNumber = team["TeamNumber"]
     local teamColor = team["Color"]
-
+    
     currentPosition.y = yPosition
     player["Background"]:SetPosition(currentPosition)
     player["Detail"]:SetText(resourcesStr)
@@ -309,7 +309,8 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
     -- Name
     local name = player["Name"]
     name:SetText(playerName)
-
+    name:SetColor(kWhite)
+    
     -- Health bar
     local healthBar = player["HealthBar"]
     local barSize = 0
@@ -349,18 +350,42 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
         end
 
     end
+    
+    if playerRecord.Tech then
+        local currentTech = GetTechIdsFromBitMask(playerRecord.Tech)
+        
+        // Parasite should be in the last position of the array if it exists
+        // If it does, make player name yellow and remove it from the table
+        if currentTech[#currentTech] == kTechId.Parasite then
+            name:SetColor(kCommanderColorFloat)
+            table.remove(currentTech, #currentTech)
+        end
+        
+        for i = 1, 3 do
+            if #currentTech >= i then
+                player["Upgrades"][i]:SetTexture("ui/buildmenu.dds")
+                player["Upgrades"][i]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(tonumber(currentTech[i]))))
+                player["Upgrades"][i]:SetColor(ConditionalValue(playerRecord.EntityTeamNumber == kTeam1Index, Color(0.8, 0.95, 1, 1), Color(1, 0.792, 0.227)))
+            else
+                player["Upgrades"][i]:SetTexture("ui/transparent.dds")
+            end
+        end
+    end
 
     if newStatus ~= player.status then
     
         local oldStatus = player.status
-        -- Alerts for Fade, Onos, Exo deaths
+        -- Alerts for Lerk, Fade, Onos, Exo deaths
         if newStatus == Locale.ResolveString("STATUS_DEAD") then
         
             if player.Name:GetText() == playerName then
 
                 local texture = nil
                 local textureCoordinates = nil
-                if oldStatus == Locale.ResolveString("STATUS_FADE") then
+                if oldStatus == Locale.ResolveString("STATUS_LERK") then
+                    texture = "ui/Lerk.dds"
+                    textureCoordinates = {0, 0, 284, 253}
+                elseif oldStatus == Locale.ResolveString("STATUS_FADE") then
                     texture = "ui/Fade.dds"
                     textureCoordinates = {0, 0, 188, 220}
                 elseif oldStatus == Locale.ResolveString("STATUS_ONOS") then
@@ -494,6 +519,21 @@ function GUIInsight_PlayerFrames:CreateMarineBackground()
     healthBar:SetTexturePixelCoordinates(unpack({0,64,32,0}))
     background:AddChild(healthBar)
     
+    -- 3 Upgrade slots
+    local upgrades = { }
+    local pos = 0
+    
+    for i = 1, 3 do
+        upgrades[i] = GUIManager:CreateGraphicItem()
+        upgrades[i]:SetSize(GUIScale(Vector(48, 48, 0)))
+        upgrades[i]:SetAnchor(GUIItem.Right, GUIItem.Top)
+        upgrades[i]:SetTexture("ui/transparent.dds")
+        upgrades[i]:SetTexturePixelCoordinates(unpack({0,0,256,92}))
+        upgrades[i]:SetPosition(GUIScale(Vector(pos, -8, 0)))
+        pos = pos + 40
+        background:AddChild(upgrades[i])
+    end
+    
     local frame = GUIManager:CreateGraphicItem()
     frame:SetSize(kPlayersPanelSize)
     frame:SetAnchor(GUIItem.Left, GUIItem.Top)
@@ -501,7 +541,7 @@ function GUIInsight_PlayerFrames:CreateMarineBackground()
     frame:SetTexturePixelCoordinates(unpack(leftFrameCoords))
     background:AddChild(frame)
     
-    return { Background = background, Frame = frame, Name = nameItem, Type = typeIcon, Detail = detailItem, KDR = KDRitem, HealthBar = healthBar }
+    return { Background = background, Frame = frame, Name = nameItem, Type = typeIcon, Detail = detailItem, KDR = KDRitem, HealthBar = healthBar, Upgrades = upgrades }
 
 end
 
@@ -565,6 +605,21 @@ function GUIInsight_PlayerFrames:CreateAlienBackground()
     healthBar:SetTexturePixelCoordinates(unpack({32,64,0,0}))
     background:AddChild(healthBar)
     
+    -- 3 Upgrade slots
+    local upgrades = { }
+    local pos = -144
+    
+    for i = 1, 3 do
+        upgrades[i] = GUIManager:CreateGraphicItem()
+        upgrades[i]:SetSize(GUIScale(Vector(48, 48, 0)))
+        upgrades[i]:SetAnchor(GUIItem.Right, GUIItem.Top)
+        upgrades[i]:SetTexture("ui/transparent.dds")
+        upgrades[i]:SetTexturePixelCoordinates(unpack({0,0,256,92}))
+        upgrades[i]:SetPosition(GUIScale(Vector(pos, -8, 0)))
+        pos = pos - 40
+        background:AddChild(upgrades[i])
+    end
+    
     local frame = GUIManager:CreateGraphicItem()
     frame:SetSize(kPlayersPanelSize)
     frame:SetAnchor(GUIItem.Left, GUIItem.Top)
@@ -572,6 +627,6 @@ function GUIInsight_PlayerFrames:CreateAlienBackground()
     frame:SetTexturePixelCoordinates(unpack(rightFrameCoords))
     background:AddChild(frame)
     
-    return { Background = background, Frame = frame, Name = nameItem, Type = typeIcon, Detail = detailItem, KDR = KDRitem, HealthBar = healthBar }
+    return { Background = background, Frame = frame, Name = nameItem, Type = typeIcon, Detail = detailItem, KDR = KDRitem, HealthBar = healthBar, Upgrades = upgrades }
 
 end

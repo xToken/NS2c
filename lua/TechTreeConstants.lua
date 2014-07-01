@@ -145,4 +145,3 @@ kTechType = enum({ 'Invalid', 'Order', 'Research', 'Upgrade', 'Action', 'Buy', '
 kRecycleCancelButtonIndex   = 12
 kMarineUpgradeButtonIndex   = 5
 kAlienBackButtonIndex       = 8
-

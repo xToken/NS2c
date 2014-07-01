@@ -128,7 +128,8 @@ kDamageTypeDesc = {
     "Gas damage: affects breathing targets only.",
     "Structures only: Doesn't damage players or AI units.",
     "Falling damage: Ignores armor for humans, no damage for aliens.",
-    "Corrode: Only affects armor."
+    "Corrode: Only affects armor.",
+    "Flame: FU Mendasp."
 }
 
 kBaseArmorUseFraction = 0.7

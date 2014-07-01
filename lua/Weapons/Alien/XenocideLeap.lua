@@ -142,11 +142,11 @@ function XenocideLeap:OnProcessMove(input)
 				player:SetBypassRagdoll(true)
                 player:Kill()
 				
-                self.XenocideSoundName:Stop()
-                self.XenocideSoundName = nil
-
+				if self.XenocideSoundName then
+					self.XenocideSoundName:Stop()
+					self.XenocideSoundName = nil
+				end
             end
-
         		if Server and not player:GetIsAlive() and self.XenocideSoundName and self.XenocideSoundName:GetIsPlaying() == true then
 					self.XenocideSoundName:Stop()
 					self.XenocideSoundName = nil					

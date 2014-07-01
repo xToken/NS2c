@@ -26,7 +26,7 @@ local kLaserAttachPoint = "fxnode_laser"
 
 local networkVars =
 {
-    timeAttackStarted = "time",
+    timeAttackStarted = "private time",
     emptyPoseParam = "private float (0 to 1 by 0.01)"
 }
 

@@ -33,9 +33,11 @@ end
 
 function Player:SetPlayerInfo(playerInfo)
 
-    self.playerInfo = playerInfo
-    self.playerInfo:SetScorePlayer(self)
-    
+	if playerInfo ~= nil then
+		self.playerInfo = playerInfo
+		self.playerInfo:SetScorePlayer(self)
+    end
+	
 end
 
 function Player:Reset()
@@ -687,4 +689,13 @@ function Player:SetCameraShake(intensity)
     local message = BuildCameraShakeMessage(intensity)
     Server.SendNetworkMessage(self, "CameraShake", message, false)
 
+end
+
+function Player:UpdateWeaponSkin(client)
+
+    local weapon = self:GetWeapon(Rifle.kMapName)
+    if weapon then
+        weapon:UpdateWeaponSkins(client)
+    end
+    
 end

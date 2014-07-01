@@ -13,6 +13,7 @@ Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/PickupableMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
+Script.Load("lua/ExoVariantMixin.lua")
 
 class 'Exosuit' (ScriptActor)
 
@@ -27,6 +28,7 @@ AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
+AddMixinNetworkVars(ExoVariantMixin, networkVars)
 
 function Exosuit:OnCreate ()
 
@@ -36,6 +38,7 @@ function Exosuit:OnCreate ()
     InitMixin(self, ClientModelMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, SelectableMixin)
+	InitMixin(self, ExoVariantMixin)
     
     InitMixin(self, PickupableMixin, { kRecipientType = "Marine" })
     

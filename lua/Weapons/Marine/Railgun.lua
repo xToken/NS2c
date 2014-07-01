@@ -24,7 +24,7 @@ Shared.PrecacheSurfaceShader("cinematics/vfx_materials/decals/railgun_hole.surfa
 
 local networkVars =
 {
-    timeOfLastShot = "time"
+    timeOfLastShot = "private time"
 }
 
 AddMixinNetworkVars(ExoWeaponSlotMixin, networkVars)

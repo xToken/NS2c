@@ -199,7 +199,7 @@ kOnosBrainActions =
                     isAvailable = techNode:GetAvailable(player, techId, false)
                 end                    
                 
-                if not player:GetHasUpgrade(techId) and isAvailable and GetCanAffordUpdate(player, techId) and 
+                if not player:GetHasUpgrade(techId) and isAvailable and GetCanAffordUpgrade(player, techId) and 
                    GetIsAlienUpgradeAllowed(player, techId, existingUpgrades) and
                    GetIsAlienUpgradeAllowed(player, techId, desiredUpgrades) then
                     table.insert(desiredUpgrades, techId)

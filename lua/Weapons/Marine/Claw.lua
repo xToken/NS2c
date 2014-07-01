@@ -36,4 +36,7 @@ function Claw:GetWeight()
     return kClawWeight
 end
 
+function Claw:OnTag()
+end
+
 Shared.LinkClassToMap("Claw", Claw.kMapName, networkVars)

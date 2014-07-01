@@ -141,11 +141,8 @@ function MapBlipMixin:GetMapBlipInfo()
     local success = false
     local blipType = kMinimapBlipType.Undefined
     local blipTeam = -1
-    local isAttacked = false
-    
-    if HasMixin(self, "Combat") then
-        isAttacked = self:GetIsInCombat()
-    end
+	local isAttacked = HasMixin(self, "Combat") and self:GetIsInCombat()
+	local isParasited = HasMixin(self, "ParasiteAble") and self:GetIsParasited()
     
     // World entities
     if self:isa("Door") then
@@ -169,7 +166,7 @@ function MapBlipMixin:GetMapBlipInfo()
         success = true
     end
     
-    return success, blipType, blipTeam, isAttacked
+    return success, blipType, blipTeam, isAttacked, isParasited
     
 end
 

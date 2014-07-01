@@ -38,7 +38,7 @@ kAlienWeaponEffects =
     {
         biteHitSound =
         {
-            {player_sound = "sound/NS2.fev/alien/skulk/bite_hit_structure", world_space = true, isalien = false, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_structure", world_space = true, isalien = false, done = true},
         },
     },
     

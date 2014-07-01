@@ -76,7 +76,7 @@ function UmbraCloud:OnUpdate(deltaTime)
     if Server then 
         if time > self.nextUpdateTime and time < self.endOfUmbraTime then
             self.nextUpdateTime = time + kThinkTime
-            self:SetHasUmbra(self.nextUpdateTime)
+            self:UpdateUmbraEntities()
         end
         
         if  time > self.destroyTime then
@@ -102,7 +102,7 @@ end
 
 if Server then
 
-   function UmbraCloud:SetHasUmbra(time)
+   function UmbraCloud:UpdateUmbraEntities()
 
         local friendlies = GetEntitiesForTeam("Player", self:GetTeamNumber())
         local filterNonDoors = EntityFilterAllButIsa("Door")
@@ -114,7 +114,7 @@ if Server then
                 local trace = Shared.TraceRay(self:GetOrigin(), attackPoint, CollisionRep.Damage, PhysicsMask.Bullets, filterNonDoors)
                 if trace.fraction == 1.0 or trace.entity == entity then
                     if HasMixin(entity, "Umbra") then
-                        entity:SetHasUmbra(true, time + 0.1)
+                        entity:SetHasUmbra()
                     end
                 end
                 

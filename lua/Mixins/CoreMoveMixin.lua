@@ -52,15 +52,15 @@ CoreMoveMixin.optionalCallbacks =
 
 CoreMoveMixin.networkVars =
 {
-    onGround = "private compensated boolean",
+    onGround = "compensated boolean",
     isOnEntity = "private compensated boolean",
-    timeGroundTouched = "private compensated time",
+    timeGroundTouched = "private time",
     jumpHandled = "private compensated boolean",
-    timeOfLastJump = "private compensated time",
-    jumping = "private compensated boolean",
-    onLadder = "private compensated boolean",
-    crouching = "private compensated boolean",
-    timeOfCrouchChange = "private compensated time"
+    timeOfLastJump = "private time",
+    jumping = "compensated boolean",
+    onLadder = "compensated boolean",
+    crouching = "compensated boolean",
+    timeOfCrouchChange = "time"
 }
 
 local kNetPrecision = 1/128

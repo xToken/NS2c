@@ -15,7 +15,7 @@ local kDevourSoundTime = 4
 
 local networkVars =
 {
-    lastPrimaryAttackTime = "time",
+    lastPrimaryAttackTime = "private time",
     devouring = "private entityid"
 }
 

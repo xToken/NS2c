@@ -24,7 +24,7 @@ local kAnimationGraph = PrecacheAsset("models/alien/onos/onos_view.animation_gra
 
 local networkVars =
 {
-    lastPrimaryAttackTime = "time"
+    lastPrimaryAttackTime = "private time"
 }
 
 AddMixinNetworkVars(StompMixin, networkVars)

@@ -98,11 +98,15 @@ local function RemoveScripts(forPlayer)
             for t = 1, #kTeamTypes do
             
                 local teamType = kTeamTypes[t]
-                if CheckPlayerIsOnTeam(forPlayer, teamType) then
+                if CheckPlayerIsOnTeam(forPlayer, teamType) or MainMenu_GetIsOpened() then
                 
                     if kShowOnTeam[teamType][name] then
                     
                         shouldExist = true
+						if MainMenu_GetIsOpened() and teamType ~= "all" then
+							shouldExist = false
+						end
+
                         break
                         
                     end
@@ -116,15 +120,17 @@ local function RemoveScripts(forPlayer)
             
                 for class, scriptTable in pairs(kShowAsClass) do
                 
-                    if forPlayer:isa(class) then
+                    if forPlayer:isa(class) or MainMenu_GetIsOpened() then
                     
                         if scriptTable[name] then
                         
                             // Most scripts are not allowed in the Ready Room regardless of player class.
                             shouldExist = true
                             if CheckPlayerIsOnTeam(forPlayer, kTeamReadyRoom) then
-                                shouldExist = (kShowOnTeam[kTeamReadyRoom][name] or kShowOnTeam["all"][name])
-                            end
+                                shouldExist = kShowOnTeam[kTeamReadyRoom][name] and not MainMenu_GetIsOpened() or kShowOnTeam["all"][name]
+                            elseif MainMenu_GetIsOpened() and not kShowOnTeam["all"][name] then
+								shouldExist = false
+							end
                             
                             break
                             
@@ -178,7 +184,7 @@ local function AddScripts(forPlayer)
             
                 for name, exists in pairs(kShowOnTeam[teamType]) do
                 
-                    if exists and scripts[name] == nil then
+                    if exists and scripts[name] == nil and not MainMenu_GetIsOpened() then
                     
                         scripts[name] = GetGUIManager():CreateGUIScript(name)
                         NotifyListenersOfScriptCreation(name, scripts[name])
@@ -193,14 +199,16 @@ local function AddScripts(forPlayer)
         
         for class, scriptTable in pairs(kShowAsClass) do
         
-            if forPlayer:isa(class) then
+            if forPlayer:isa(class) and not MainMenu_GetIsOpened() then
             
                 for name, exists in pairs(scriptTable) do
                 
                     // Most scripts are not allowed in the Ready Room regardless of player class.
                     local allowed = exists
                     if CheckPlayerIsOnTeam(forPlayer, kTeamReadyRoom) then
-                        allowed = allowed and (kShowOnTeam[kTeamReadyRoom][name] or kShowOnTeam["all"][name])
+                        allowed = allowed and (not MainMenu_GetIsOpened() and kShowOnTeam[kTeamReadyRoom][name]) or kShowOnTeam["all"][name]
+                    elseif MainMenu_GetIsOpened() and not kShowOnTeam["all"][name] then
+						shouldExist = false
                     end
                     
                     if allowed and scripts[name] == nil then

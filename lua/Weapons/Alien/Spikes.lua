@@ -13,6 +13,8 @@ local kMarineHitEffect = PrecacheAsset("cinematics/alien/lerk/bite_view_marine.c
 
 class 'Spikes' (Ability)
 
+SpikesMixin = Spikes
+
 Spikes.kMapName = "spikes"
 
 local kAnimationGraph = PrecacheAsset("models/alien/lerk/lerk_view.animation_graph")
@@ -25,7 +27,7 @@ end
 
 local networkVars =
 {
-    lastPrimaryAttackTime = "time",
+    lastPrimaryAttackTime = "private time",
     silenced = "boolean"
 }
 

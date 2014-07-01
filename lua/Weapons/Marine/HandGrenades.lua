@@ -65,7 +65,7 @@ end
 
 local networkVars =
 {
-    grenadesLeft = "integer (0 to ".. kNumHandGrenades ..")",
+    grenadesLeft = "private integer (0 to ".. kNumHandGrenades ..")",
 }
 
 function HandGrenades:OnCreate()

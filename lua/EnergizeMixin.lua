@@ -12,7 +12,7 @@ EnergizeMixin.expectedMixins =
 
 EnergizeMixin.networkVars =
 {
-    energized = "private boolean"
+    energized = "boolean"
 }
 
 function EnergizeMixin:__initmixin()
@@ -29,6 +29,9 @@ if Server then
 
     function EnergizeMixin:Energize()
     
+        if HasMixin(self, "Live") and not self:GetIsAlive() then
+            return
+        end
         if not self:GetEnergized() then
 			self:AddTimedCallback(CheckEnergized, kEnergizeUpdateRate)
             self:AddEnergy(kPlayerEnergyPerEnergize)

@@ -88,6 +88,9 @@
     <filename>Weapons\Alien\BileBomb.lua</filename>
   </file>
   <file>
+    <filename>BindingsDialog.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Alien\BiteLeap.lua</filename>
   </file>
   <file>
@@ -107,6 +110,9 @@
   </file>
   <file>
     <filename>CatPack.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Marine\Claw.lua</filename>
   </file>
   <file>
     <filename>Client.lua</filename>
@@ -259,6 +265,15 @@
     <filename>Fade_Server.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Marine\Flame.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Marine\Flamethrower.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Marine\Flamethrower_Client.lua</filename>
+  </file>
+  <file>
     <filename>GUIActionIcon.lua</filename>
   </file>
   <file>
@@ -365,6 +380,9 @@
   </file>
   <file>
     <filename>GhostMixin.lua</filename>
+  </file>
+  <file>
+    <filename>Hud\Commander\GhostModel.lua</filename>
   </file>
   <file>
     <filename>GhostStructureMixin.lua</filename>
@@ -553,6 +571,9 @@
     <filename>ModdedMixinUtility.lua</filename>
   </file>
   <file>
+    <filename>Mixins\ModdedMixinUtility.lua</filename>
+  </file>
+  <file>
     <filename>NS2ConsoleCommands_Server.lua</filename>
   </file>
   <file>
@@ -602,6 +623,9 @@
   </file>
   <file>
     <filename>OrdersMixin.lua</filename>
+  </file>
+  <file>
+    <filename>Weapons\Alien\Parasite.lua</filename>
   </file>
   <file>
     <filename>ParasiteMixin.lua</filename>
@@ -778,6 +802,9 @@
     <filename>Weapons\Alien\StructureAbility.lua</filename>
   </file>
   <file>
+    <filename>StructureFallMixin.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Alien\SwipeBlink.lua</filename>
   </file>
   <file>
@@ -881,17 +908,5 @@
   </file>
   <file>
     <filename>Weapons\Alien\XenocideLeap.lua</filename>
-  </file>
-  <file>
-    <filename>StructureFallMixin.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Marine\Flamethrower.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Marine\Flamethrower_Client.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Marine\Claw.lua</filename>
   </file>
 </project>

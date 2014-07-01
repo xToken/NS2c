@@ -57,6 +57,8 @@ local kLoopingShellCinematic = PrecacheAsset("cinematics/marine/rifle/shell_loop
 local kLoopingShellCinematicFirstPerson = PrecacheAsset("cinematics/marine/rifle/shell_looping_1p.cinematic")
 local kShellEjectAttachPoint = "fxnode_riflecasing"
 
+local networkVars = { }
+
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/rifle/muzzle_flash.cinematic")
 local kMuzzleAttachPoint = "fxnode_riflemuzzle"
 
@@ -222,6 +224,9 @@ end
 function Rifle:OnSecondaryAttack(player)
 end
 
+function Rifle:PerformMeleeAttack()
+end
+
 function Rifle:SetGunLoopParam(viewModel, paramName, rateOfChange)
 
     local current = viewModel:GetPoseParam(paramName)
@@ -327,14 +332,16 @@ if Client then
 		//Shared.StopSound(self, kLoopingSound)
         Shared.PlaySound(self, kEndSound)
         
-		if self.muzzleCinematic then
-            self.muzzleCinematic:SetIsVisible(false)
+        local player = self:GetParent()
+        if player and player:GetIsAlive() then
+            if self.muzzleCinematic then
+                self.muzzleCinematic:SetIsVisible(false)
+            end
+            
+            if self.shellsCinematic then
+                self.shellsCinematic:SetIsActive(false)
+            end
         end
-        
-        if self.shellsCinematic then
-            self.shellsCinematic:SetIsActive(false)
-        end
-        
     end
     
     function Rifle:GetPrimaryEffectRate()
@@ -366,4 +373,4 @@ if Client then
     end
 end
 
-Shared.LinkClassToMap("Rifle", Rifle.kMapName, { })
+Shared.LinkClassToMap("Rifle", Rifle.kMapName, networkVars)

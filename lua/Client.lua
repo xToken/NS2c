@@ -632,9 +632,10 @@ local function OnUpdateClient(deltaTime)
         local lerkVariant = Client.GetOptionInteger("lerkVariant", kDefaultLerkVariant)
         local isMale = Client.GetOptionString("sexType", "Male") == "Male"
         local shoulderPadIndex = Client.GetOptionInteger("shoulderPad", 1) // 1 means no shoulder pad selected
-        
+        local exoVariant = Client.GetOptionInteger("exoVariant", kDefaultExoVariant)
+		local rifleVariant = Client.GetOptionInteger("rifleVariant", kDefaultRifleVariant)
         Client.SendNetworkMessage("ConnectMessage",
-                BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, lerkVariant, shoulderPadIndex),
+                BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, lerkVariant, shoulderPadIndex, exoVariant, rifleVariant),
                 true)
         optionsSent = true
         

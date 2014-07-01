@@ -342,7 +342,17 @@ local function SpawnPlayer(self)
         if success then
         
             player:SetCameraDistance(0)
-        
+            
+            if HasMixin( player, "Controller" ) and HasMixin( player, "AFKMixin" ) then
+				
+				if player:GetAFKTime() > self:GetSpawnTime() - 1 then
+				    
+				    player:SetVelocity( Vector( GetSign( math.random() - 0.5) * 2.25, 3, GetSign( math.random() - 0.5 ) * 2.25 ) )
+				    
+				end
+				
+			end
+            
             self.queuedPlayerId = Entity.invalidId
             self.queuedPlayerStartTime = nil
             

@@ -17,7 +17,7 @@ local kAnimationGraph = PrecacheAsset("models/alien/fade/fade_view.animation_gra
 
 AcidRocket.networkVars =
 {
-    lastPrimaryAttackTime = "time"
+    lastPrimaryAttackTime = "private time"
 }
 
 function AcidRocket:OnCreate()

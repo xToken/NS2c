@@ -12,7 +12,7 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 //NS2c
-//Adjusted blink impact and energy usage, also removed visual effects
+//Adjusted blink impact and energy usage
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 
@@ -36,6 +36,22 @@ function Blink:GetSecondaryAttackRequiresPress()
     return true
 end
 
+local function TriggerBlinkOutEffects(self, player)
+
+    // Play particle effect at vanishing position.
+    if not Shared.GetIsRunningPrediction() then
+
+    end
+    
+end
+
+local function TriggerBlinkInEffects(self, player)
+
+    if not Shared.GetIsRunningPrediction() then
+
+    end
+    
+end
 function Blink:GetSecondaryEnergyCost(player)
     return kStartBlinkEnergyCost
 end
@@ -67,8 +83,12 @@ function Blink:SetEthereal(player, state)
         if state then
             player:OnBlink()
             player:DeductAbilityEnergy(self:GetSecondaryEnergyCost())
+			TriggerBlinkOutEffects(self, player)
         else
-            player:OnBlinkEnd()
+			TriggerBlinkInEffects(self, player)
+			if player.OnBlinkEnd then
+            	player:OnBlinkEnd()
+			end
         end
         
     end

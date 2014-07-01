@@ -78,12 +78,9 @@ Commander.kSelectMode = enum( {'None', 'SelectedGroup', 'JumpedToGroup'} )
 
 local networkVars =
 {
-    timeScoreboardPressed   = "float",
     numPlayerAlerts         = string.format("integer (0 to %d)", kMaxPlayerAlerts),
-    commanderCancel         = "boolean",
-    commandStationId        = "entityid",
-    // Set to a number after a hotgroup is selected, so we know to jump to it next time we try to select it
-    positionBeforeJump      = "vector",
+    commanderCancel         = "private boolean",
+    commandStationId        = "entityid"
 }
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
@@ -131,10 +128,8 @@ function Commander:OnInitialized()
         
     end
 
-    self.timeScoreboardPressed = 0
     self.focusGroupIndex = 1
     self.numPlayerAlerts = 0
-    self.positionBeforeJump = Vector(0, 0, 0)
     self.selectMode = Commander.kSelectMode.None
     self.commandStationId = Entity.invalidId
     
@@ -424,23 +419,7 @@ function Commander:OnProcessMove(input)
 
     Player.OnProcessMove(self, input)
     
-    if Server then
-        
-        if not self.timeLastEnergyCheck then
-        
-            self.timeLastEnergyCheck = Shared.GetTime()
-            self:CheckStructureEnergy()
-            
-        end
-        
-        if self.timeLastEnergyCheck + 0.5 < Shared.GetTime() then
-        
-            self.timeLastEnergyCheck = Shared.GetTime()
-            self:CheckStructureEnergy()
-            
-        end
-        
-    elseif Client then
+    if Client then
         
         // This flag must be cleared inside OnProcessMove. See explaination in Commander:OverrideInput().
         self.setScrollPosition = false

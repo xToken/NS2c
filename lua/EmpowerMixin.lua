@@ -16,7 +16,7 @@ EmpowerMixin.expectedMixins =
 
 EmpowerMixin.networkVars =
 {
-    empowered = "private boolean"
+    empowered = "boolean"
 }
 
 function EmpowerMixin:__initmixin()
@@ -33,6 +33,9 @@ if Server then
 
     function EmpowerMixin:Empower()
     
+        if HasMixin(self, "Live") and not self:GetIsAlive() then
+            return
+        end
         if not self:GetIsEmpowered() then
 			self:AddTimedCallback(CheckEmpower, kEmpowerUpdateRate)
 			self.empowered = true

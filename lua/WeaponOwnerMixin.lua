@@ -30,9 +30,9 @@ WeaponOwnerMixin.networkVars =
 {
     processMove = "boolean",
     activeWeaponId = "entityid",
-    timeOfLastWeaponSwitch = "time",
-    weaponsWeight = "float (0 to " .. kMaxWeaponsWeight .. " by 0.001)",
-    quickSwitchSlot = "integer (0 to 10)"
+    timeOfLastWeaponSwitch = "private time",
+    weaponsWeight = "private float (0 to " .. kMaxWeaponsWeight .. " by 0.001)",
+    quickSwitchSlot = "private integer (0 to 10)"
 }
 
 function WeaponOwnerMixin:__initmixin()

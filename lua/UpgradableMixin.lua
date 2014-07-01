@@ -231,7 +231,7 @@ function BuyMenus_GetHasTech(techId)
     return GetHasTech(Client.GetLocalPlayer(), techId)
 end
 
-function GetCanAffordUpdate(player, techId)
+function GetCanAffordUpgrade(player, techId)
     local cost = LookupTechData(techId, kTechDataCostKey, 0)
     if player:GetPersonalResources() >= cost then
         return true
@@ -240,5 +240,5 @@ function GetCanAffordUpdate(player, techId)
 end
 
 function BuyMenus_GetCanAffordUpgrade(techId)
-    return GetCanAffordUpdate(Client.GetLocalPlayer(), techId)
+    return GetCanAffordUpgrade(Client.GetLocalPlayer(), techId)
 end

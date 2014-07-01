@@ -60,8 +60,8 @@ local networkVars =
 {
     // The alien energy used for all alien weapons and abilities (instead of ammo) are calculated
     // from when it last changed with a constant regen added
-    timeAbilityEnergyChanged = "time",
-    abilityEnergyOnChange = "float (0 to " .. math.ceil(kAbilityMaxEnergy) .. " by 0.05 [] )",
+    timeAbilityEnergyChanged = "private time",
+    abilityEnergyOnChange = "private float (0 to " .. math.ceil(kAbilityMaxEnergy) .. " by 0.05 [] )",
     
     oneHive = "private boolean",
     twoHives = "private boolean",
@@ -162,7 +162,13 @@ function Alien:OnInitialized()
             return false
         end
         
+        local function UpdateHatched(self)
+            self.hatched = false
+        end
+        
         self:AddTimedCallback(UpdateAlienSpecificVariables, 0.1)
+        self:AddTimedCallback(UpdateHatched, 3)
+        self:AddTimedCallback(Alien.UpdateAutoHeal, 0.05)
   
     elseif Client then
     
