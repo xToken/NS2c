@@ -47,8 +47,9 @@ elseif Client then
     Script.Load("lua/Marine_Client.lua")
 end
 
-Shared.PrecacheSurfaceShader("models/marine/marine.surface_shader")
-Shared.PrecacheSurfaceShader("models/marine/marine_noemissive.surface_shader")
+PrecacheAsset("models/marine/marine.surface_shader")
+PrecacheAsset("models/marine/marine_noemissive.surface_shader")
+
 
 Marine.kGunPickupSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/pickup")
 Marine.kMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_graph")

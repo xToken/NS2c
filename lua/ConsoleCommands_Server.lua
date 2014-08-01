@@ -17,7 +17,7 @@ function OnCommandSay(client, ...)
     if client == nil then
     
         local chatMessage = StringConcatArgs(...)
-        chatMessage = string.sub(chatMessage, 1, kMaxChatLength)
+        chatMessage = string.UTF8Sub(chatMessage, 1, kMaxChatLength)
         if string.len(chatMessage) > 0 then
         
             Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Admin", -1, kTeamReadyRoom, kNeutralTeamType, chatMessage), true)

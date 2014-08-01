@@ -13,17 +13,17 @@ ClientUI = { }
 // Below are the rules for what scripts should be active when the local player is on certain teams.
 local kTeamTypes = { "all", kTeamReadyRoom, kTeam1Index, kTeam2Index, kSpectatorIndex }
 local kShowOnTeam = { }
-kShowOnTeam["all"] = { GUIFeedback = true, GUIScoreboard = true, GUIDeathMessages = true, GUIChat = true,
-                       GUIVoiceChat = true, GUIMinimapFrame = true, GUIMapAnnotations = true,
+kShowOnTeam["all"] = { GUIGameEnd = true, GUIFeedback = true, GUIScoreboard = true, GUIDeathMessages = true,
+                       GUIChat = true, GUIVoiceChat = true, GUIMinimapFrame = true, GUIMapAnnotations = true,
                        GUICommunicationStatusIcons = true, GUIUnitStatus = true, GUIDeathScreen = true,
                        GUITipVideo = true, GUISensorBlips = true, GUIVoteMenu = true, GUIStartVoteMenu = true }//, GUIGatherOverlay = true }
 
 kShowOnTeam[kTeamReadyRoom] = { GUIReadyRoomOrders = true }
 kShowOnTeam[kTeam1Index] = { GUIMarineSpectatorHUD = true }
 kShowOnTeam[kTeam2Index] = { GUIAlienSpectatorHUD = true }
-kShowOnTeam[kSpectatorIndex] = { GUIGameEnd = true, GUISpectator = true }
+kShowOnTeam[kSpectatorIndex] = { GUISpectator = true }
 
-local kBothAlienAndMarine = { GUICrosshair = true, GUINotifications = true, GUIDamageIndicators = true, GUIGameEnd = true, GUIWorldText = true,
+local kBothAlienAndMarine = { GUICrosshair = true, GUINotifications = true, GUIDamageIndicators = true, GUIWorldText = true,
                               GUIPing = true, GUIWaitingForAutoTeamBalance = true }
                               
 for n, e in pairs(kBothAlienAndMarine) do
@@ -54,6 +54,52 @@ kShowAsClass["AlienCommander"] = { GUICommanderTutorial = true }
 kShowAsClass["ReadyRoomPlayer"] = { }
 kShowAsClass["TeamSpectator"] = { }
 kShowAsClass["Spectator"] = { }
+
+
+// Any lua file loaded on demand should be listed here to avoid being loaded after game has started
+local kMiscPreloads = {
+    'Babbler',
+    'GUIActionIcon',
+    'GUIAlienBuyMenu',
+    'GUIAlienTeamMessage',
+    'GUIAnimatedScript',
+    'GUIBabblerMoveIndicator',
+    'GUIBorderBackground',
+    'GUICommanderAlerts',
+    'GUICommanderButtons',
+    'GUICommanderButtonsAliens',
+    'GUICommanderLogout',
+    'GUICommanderManager',
+    'GUICommanderTooltip',
+    'GUIDial',
+    'GUIEvolveHelp',
+    'GUIFadeBlinkHelp',
+    'GUIFadeShadowStepHelp',
+    'GUIGorgeHealHelp',
+    'GUIHotkeyIcons',
+    'GUIIncrementBar',
+    'GUIList',
+    'GUIMarineBuyMenu',
+    'GUIMarineTeamMessage',
+    'GUIMinimapButtons',
+    'GUIParticleSystem',
+    'GUIProduction',
+    'GUIResourceDisplay',
+    'GUIScript',
+    'GUISelectionPanel',
+    'GUISkulkParasiteHelp',
+    'GUIXenocideFeedback',
+    'Hud/Commander/AlienGhostModel',
+    'Hud/Commander/CystGhostModel',
+    'Hud/Commander/GhostModel',
+    'Hud/Commander/TeleportAlienGhostModel',
+    'menu/GUIHoverTooltip',
+    'tweener/Tweener',
+    'GUICommanderButtonsMarines',
+    'GUICommanderButtons',
+    'Hud/Commander/MarineGhostModel'
+
+}
 
 function AddClientUIScriptForClass(className, scriptName)
 
@@ -103,9 +149,9 @@ local function RemoveScripts(forPlayer)
                     if kShowOnTeam[teamType][name] then
                     
                         shouldExist = true
-						if MainMenu_GetIsOpened() and teamType ~= "all" then
-							shouldExist = false
-						end
+                        if MainMenu_GetIsOpened() and teamType ~= "all" then
+                            shouldExist = false
+                        end
 
                         break
                         
@@ -129,8 +175,8 @@ local function RemoveScripts(forPlayer)
                             if CheckPlayerIsOnTeam(forPlayer, kTeamReadyRoom) then
                                 shouldExist = kShowOnTeam[kTeamReadyRoom][name] and not MainMenu_GetIsOpened() or kShowOnTeam["all"][name]
                             elseif MainMenu_GetIsOpened() and not kShowOnTeam["all"][name] then
-								shouldExist = false
-							end
+                                shouldExist = false
+                            end
                             
                             break
                             
@@ -208,7 +254,7 @@ local function AddScripts(forPlayer)
                     if CheckPlayerIsOnTeam(forPlayer, kTeamReadyRoom) then
                         allowed = allowed and (not MainMenu_GetIsOpened() and kShowOnTeam[kTeamReadyRoom][name]) or kShowOnTeam["all"][name]
                     elseif MainMenu_GetIsOpened() and not kShowOnTeam["all"][name] then
-						shouldExist = false
+                        shouldExist = false
                     end
                     
                     if allowed and scripts[name] == nil then
@@ -290,6 +336,19 @@ function PreLoadGUIScripts()
             
         end
     
+    end
+    
+    local showSorted = false
+    table.sort(kMiscPreloads)
+    local duplicateSet = {}
+    for _, name in ipairs(kMiscPreloads) do
+        if showSorted then
+            if not duplicateSet[name] then
+                Print("    '%s',", name)
+                duplicateSet[name] = true
+            end
+        end
+        Script.Load("lua/" .. name .. ".lua")
     end
 
 end

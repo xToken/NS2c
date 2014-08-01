@@ -30,7 +30,7 @@ Embryo.kSkinOffset = Vector(0, 0.02, 0)
 
 local networkVars =
 {
-    evolvePercentage = "private float",
+    evolvePercentage = "float",
     gestationTypeTechId = "enum kTechId"
 }
 
@@ -250,6 +250,13 @@ end
 
 function Embryo:GetGestationTechId()
     return self.gestationTypeTechId
+end
+
+function Embryo:GetEggTypeDisplayName()
+
+    local eggTechId = self.gestationTypeTechId and kGestationTechIdToEggTechId[ self.gestationTypeTechId ]
+    return eggTechId and GetDisplayNameForTechId(eggTechId)
+    
 end
 
 function Embryo:GetShowCrossHairText(toPlayer)

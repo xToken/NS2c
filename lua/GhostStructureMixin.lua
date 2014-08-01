@@ -25,8 +25,10 @@ GhostStructureMixin.networkVars =
     isGhostStructure = "boolean"
 }
 
+local kGhoststructureMaterial = PrecacheAsset("cinematics/vfx_materials/ghoststructure.material") 
+
 if Client then
-    Shared.PrecacheSurfaceShader("cinematics/vfx_materials/ghoststructure.surface_shader")
+    PrecacheAsset("cinematics/vfx_materials/ghoststructure.surface_shader")
 end
 
 local function ClearGhostStructure(self)
@@ -114,7 +116,7 @@ function GhostStructureMixin:OnUpdateRender()
             self:SetOpacity(0, "ghostStructure")
         
             if not self.ghostStructureMaterial then
-                self.ghostStructureMaterial = AddMaterial(model, "cinematics/vfx_materials/ghoststructure.material") 
+                self.ghostStructureMaterial = AddMaterial(model, kGhoststructureMaterial) 
             end
     
         else

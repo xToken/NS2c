@@ -34,7 +34,7 @@ Fade.kModelName = PrecacheAsset("models/alien/fade/fade.model")
 local kViewModelName = PrecacheAsset("models/alien/fade/fade_view.model")
 local kFadeAnimationGraph = PrecacheAsset("models/alien/fade/fade.animation_graph")
 
-Shared.PrecacheSurfaceShader("models/alien/fade/fade.surface_shader")
+PrecacheAsset("models/alien/fade/fade.surface_shader")
 
 if Server then
     Script.Load("lua/Fade_Server.lua")

@@ -15,7 +15,7 @@
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/LeapMixin.lua")
 
-Shared.PrecacheSurfaceShader("materials/effects/mesh_effects/view_blood.surface_shader")
+PrecacheAsset("materials/effects/mesh_effects/view_blood.surface_shader")
 
 local kStructureHitEffect = PrecacheAsset("cinematics/alien/skulk/bite_view_structure.cinematic")
 local kMarineHitEffect = PrecacheAsset("cinematics/alien/skulk/bite_view_marine.cinematic")
@@ -25,12 +25,13 @@ class 'BiteLeap' (Ability)
 BiteLeap.kMapName = "bite"
 
 local kAnimationGraph = PrecacheAsset("models/alien/skulk/skulk_view.animation_graph")
+local kViewBloodMaterial = PrecacheAsset("materials/effects/mesh_effects/view_blood.material")
 local attackEffectMaterial = nil
 
 if Client then
 
     attackEffectMaterial = Client.CreateRenderMaterial()
-    attackEffectMaterial:SetMaterial("materials/effects/mesh_effects/view_blood.material")
+    attackEffectMaterial:SetMaterial(kViewBloodMaterial)
     
 end
 

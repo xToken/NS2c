@@ -94,10 +94,6 @@ local function OnCommandAnimInputs(entId)
     
 end
 
-local displayFPS = false
-local function OnCommandDisplayFPS()
-    displayFPS = not displayFPS
-end
 
 local function OnCommandSetSoundVolume(volume)
 
@@ -137,20 +133,17 @@ end
 function OnCommandSetName(...)
 
     local nickname = StringConcatArgs(...)
-
-    if type(nickname) ~= "string" then
+    nickname = TrimName(nickname)
+    
+    if string.len(nickname) < 1 or not string.IsValidNickname(nickname) then
+        Print( "You have to enter a valid nickname or use the Options Menu!")
         return
     end
     
     local player = Client.GetLocalPlayer()
-    nickname = TrimName(nickname)
-    
-    if player ~= nil then
-    
-        if nickname == player:GetName() or nickname == kDefaultPlayerName or string.len(nickname) < 0 then
-            return
-        end
-        
+
+    if not player or nickname == player:GetName() or nickname == kDefaultPlayerName then
+        return
     end
     
     Client.SetOptionString(kNicknameOptionsKey, nickname)
@@ -237,7 +230,6 @@ Event.Hook("Console_debugtext", OnCommandDebugText)
 Event.Hook("Console_locate", OnCommandLocate)
 Event.Hook("Console_distance", OnCommandDistance)
 Event.Hook("Console_animinputs", OnCommandAnimInputs)
-Event.Hook("Console_fps", OnCommandDisplayFPS)
 Event.Hook("Console_name", OnCommandSetName)
 Event.Hook("Console_cleardebuglines", OnCommandClearDebugLines)
 Event.Hook("Console_guiinfo", OnCommandGUIInfo)

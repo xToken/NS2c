@@ -18,11 +18,11 @@
 
 class 'GhostModel'
 
-Shared.PrecacheSurfaceShader("cinematics/vfx_materials/placement_valid.surface_shader")
-local kMaterialValid = "cinematics/vfx_materials/placement_valid.material"
-local kMaterialInvalid = "cinematics/vfx_materials/placement_invalid.material"
+PrecacheAsset("cinematics/vfx_materials/placement_valid.surface_shader")
+local kMaterialValid = PrecacheAsset("cinematics/vfx_materials/placement_valid.material")
+local kMaterialInvalid = PrecacheAsset("cinematics/vfx_materials/placement_invalid.material")
 
-local kArrowTexture = "ui/marinewaypoint_arrow.dds"
+local kArrowTexture = PrecacheAsset("ui/marinewaypoint_arrow.dds")
 local kArrowSize = Vector(24, 24, 0)
 
 local kCircleModelMarine = PrecacheAsset("models/misc/circle/circle.model")
@@ -179,7 +179,7 @@ function GhostModel:Update()
             local radius = LookupTechData(player.currentTechId, kVisualRange, nil)
             
             if radius then
-            
+
                 local ringCoords = CopyCoords(modelCoords)
                 ringCoords:Scale(radius*2)
                 // Raise a bit to avoid Z-Fighting
@@ -187,6 +187,8 @@ function GhostModel:Update()
                 
                 self.circleRangeModel:SetCoords(ringCoords)
                 
+            else
+                self.circleRangeModel:SetIsVisible(false)
             end
             
         end

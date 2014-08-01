@@ -15,12 +15,12 @@ Script.Load("lua/GUIIncrementBar.lua")
 
 class 'GUISelectionPanel' (GUIScript)
 
-GUISelectionPanel.kFontName = "fonts/AgencyFB_large.fnt"
+GUISelectionPanel.kFontName = Fonts.kAgencyFB_Large
 GUISelectionPanel.kFontScale = Vector(1, 1, 0) * kCommanderGUIsGlobalScale * 0.8
 GUISelectionPanel.kStatusFontScale = GUISelectionPanel.kFontScale * 0.8
 
 
-GUISelectionPanel.kStatusFontName = "fonts/AgencyFB_small.fnt"
+GUISelectionPanel.kStatusFontName = Fonts.kAgencyFB_Small
 GUISelectionPanel.StatuskFontScale = Vector(1, 1, 0) * kCommanderGUIsGlobalScale
 
 GUISelectionPanel.kFontColor = Color(0.8, 0.8, 1)

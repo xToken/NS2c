@@ -64,7 +64,7 @@ function GUIMinimapFrame:Initialize()
     self.chooseSpawnText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
     self.chooseSpawnText:SetTextAlignmentX(GUIItem.Align_Center)
     self.chooseSpawnText:SetTextAlignmentY(GUIItem.Align_Max)
-    self.chooseSpawnText:SetFontName("fonts/AgencyFB_large.fnt")
+    self.chooseSpawnText:SetFontName(Fonts.kAgencyFB_Large)
     self.chooseSpawnText:SetPosition(Vector(0, GUIScale(-128), 0))
     
     self.chooseSpawnText:SetIsVisible(false)

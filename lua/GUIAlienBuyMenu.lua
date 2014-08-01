@@ -23,8 +23,8 @@ GUIAlienBuyMenu.kSlotTexture = PrecacheAsset("ui/alien_buyslot.dds")
 GUIAlienBuyMenu.kSlotLockedTexture = PrecacheAsset("ui/alien_buyslot_locked.dds")
 GUIAlienBuyMenu.kAbilityIcons = "ui/buildmenu.dds"
 
-local kLargeFont = "fonts/AgencyFB_large.fnt"
-local kFont = "fonts/AgencyFB_small.fnt"
+local kLargeFont = Fonts.kAgencyFB_Large
+local kFont = Fonts.kAgencyFB_Small
 
 GUIAlienBuyMenu.kAlienTypes = { { Name = Locale.ResolveString("FADE"), Width = GUIScale(188), Height = GUIScale(220), XPos = 4, Index = 1 },
                                 { Name = Locale.ResolveString("GORGE"), Width = GUIScale(200), Height = GUIScale(167), XPos = 2, Index = 2 },

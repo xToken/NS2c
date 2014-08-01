@@ -30,7 +30,7 @@ local kAnimationGraph = PrecacheAsset("models/marine/command_station/command_sta
 
 CommandStation.kUnderAttackSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/command_station_under_attack")
 
-Shared.PrecacheSurfaceShader("models/marine/command_station/command_station_display.surface_shader")
+PrecacheAsset("models/marine/command_station/command_station_display.surface_shader")
 
 if Server then
     Script.Load("lua/CommandStation_Server.lua")

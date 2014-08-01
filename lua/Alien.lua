@@ -33,7 +33,7 @@ Script.Load("lua/GhostMixin.lua")
 Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 
-Shared.PrecacheSurfaceShader("cinematics/vfx_materials/decals/alien_blood.surface_shader")
+PrecacheAsset("cinematics/vfx_materials/decals/alien_blood.surface_shader")
 
 if Client then
     Script.Load("lua/TeamMessageMixin.lua")
@@ -49,7 +49,7 @@ elseif Client then
     Script.Load("lua/Alien_Client.lua")
 end
 
-Shared.PrecacheSurfaceShader("models/alien/alien.surface_shader")
+PrecacheAsset("models/alien/alien.surface_shader")
 
 Alien.kNotEnoughResourcesSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/more")
 Alien.kTeleportSound = PrecacheAsset("sound/NS2.fev/alien/structures/generic_spawn_large")
@@ -131,10 +131,14 @@ function Alien:OnCreate()
 end
 
 function Alien:OnJoinTeam()
-
-    self.oneHive = false
-    self.twoHives = false
-    self.threeHives = false
+    
+    Player.OnJoinTeam( self )
+    
+    if self:GetTeamNumber() ~= kNeutralTeamType then
+        self.oneHive = false
+        self.twoHives = false
+        self.threeHives = false
+    end
 
 end
 

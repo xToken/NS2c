@@ -11,7 +11,7 @@
 class 'GUIAlienSpectatorHUD' (GUIScript)
 
 local kFontScale = GUIScale(Vector(1, 1, 0))
-local kTextFontName = "fonts/AgencyFB_large.fnt"
+local kTextFontName = Fonts.kAgencyFB_Large
 local kFontColor = Color(1, 1, 1, 1)
 
 local kEggSize = GUIScale(Vector(192, 96, 0) * 0.5)

@@ -271,6 +271,10 @@ function Commander:SendKeyEvent(key, down)
 
     local success = CheckKeyEventForCommanderPing(key, down)
     
+    if not self.timeLastHotkeyGroupPressed then
+        self.timeLastHotkeyGroupPressed = 0
+    end
+    
     // When exit hit cancel current action, bring up menu otherwise
     if down and key == InputKey.Escape and self.currentTechId ~= kTechId.None then
     
@@ -285,6 +289,12 @@ function Commander:SendKeyEvent(key, down)
     
     if key == InputKey.LeftShift or key == InputKey.RightShift then
         self.shiftDown = down
+    end
+    
+    if GetIsBinding(key, "PreviousLocationCom") then
+        local origin = self:GetPreviousOverheadLocation()
+        self:SetWorldScrollPreviousPosition(origin.x + 4, origin.z)
+        success = true
     end
     
     if down then
@@ -311,7 +321,7 @@ function Commander:SendKeyEvent(key, down)
         end
 
         local selected, hotgroup = self:GetHotGroupSelected(hotkeyGroup)        
-        if selected and hotkeyGroup ~= 0 and not self.ctrlDown then
+        if selected and hotkeyGroup ~= 0 and not self.ctrlDown and (Shared.GetTime() - self.timeLastHotkeyGroupPressed < 0.5) then
         
             local position = hotgroup[1]:GetOrigin()
             self:SetWorldScrollPosition(position.x, position.z)
@@ -326,6 +336,8 @@ function Commander:SendKeyEvent(key, down)
             else
                 self:CreateHotkeyGroup(hotkeyGroup)
             end
+            
+            self.timeLastHotkeyGroupPressed = Shared.GetTime()
             
             self.lastHotkeyGroupPressed = hotkeyGroup
             

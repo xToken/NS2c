@@ -5,7 +5,9 @@
 //    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+
 Script.Load("lua/Utility.lua")
+Script.Load("lua/GUIAssets.lua")
 
 kMaxPlayerSkill = 1000
 kMaxPlayerLevel = 100
@@ -30,13 +32,13 @@ kPercentNeededForVoteConcede = 0.75
 kPercentNeededForUpgradeChamberVote = 0.55
 
 // Team colors
-kMarineFontName = "fonts/AgencyFB_large.fnt"
+kMarineFontName = Fonts.kAgencyFB_Large
 kMarineFontColor = Color(0.756, 0.952, 0.988, 1)
 
-kAlienFontName = "fonts/AgencyFB_large.fnt"
+kAlienFontName = Fonts.kAgencyFB_Large
 kAlienFontColor = Color(0.901, 0.623, 0.215, 1)
 
-kNeutralFontName = "fonts/AgencyFB_large.fnt"
+kNeutralFontName = Fonts.kAgencyFB_Large
 kNeutralFontColor = Color(0.7, 0.7, 0.7, 1)
 
 kSteamFriendColor = Color(1, 1, 1, 1)
@@ -281,7 +283,7 @@ kEpsilon = 0.0001
 kCommanderDropSpawnHeight = 0.08
 kCommanderEquipmentDropSpawnHeight = 0.5
 
-kInventoryIconsTexture = "ui/inventory_icons.dds"
+kInventoryIconsTexture = Textures.kInventoryIcons
 kInventoryIconTextureWidth = 128
 kInventoryIconTextureHeight = 64
 
@@ -327,8 +329,6 @@ kPlayerMoveOrderCompleteDistance = 1.5
 // Statistics
 kStatisticsURL = "http://sponitor2.herokuapp.com/api/send"
 
-kCatalyzURL = "https://catalyz.herokuapp.com/v1"
-
 kResourceType = enum( {'Team', 'Personal', 'Energy', 'Ammo'} )
 
 kNameTagFontColors = { [kMarineTeamType] = kMarineFontColor,
@@ -342,10 +342,18 @@ kNameTagFontNames = { [kMarineTeamType] = kMarineFontName,
 kHealthBarColors = { [kMarineTeamType] = Color(0.725, 0.921, 0.949, 1),
                      [kAlienTeamType] = Color(0.776, 0.364, 0.031, 1),
                      [kNeutralTeamType] = Color(1, 1, 1, 1) }
+
+kHealthBarBgColors = { [kMarineTeamType] = Color(0.725 * 0.5, 0.921 * 0.5, 0.949 * 0.5, 1),
+                     [kAlienTeamType] = Color(0.776 * 0.5, 0.364 * 0.5, 0.031 * 0.5, 1),
+                     [kNeutralTeamType] = Color(1 * 0.5, 1 * 0.5, 1 * 0.5, 1) }
                      
 kArmorBarColors = { [kMarineTeamType] = Color(0.078, 0.878, 0.984, 1),
                     [kAlienTeamType] = Color(0.576, 0.194, 0.011, 1),
                     [kNeutralTeamType] = Color(0.5, 0.5, 0.5, 1) }
+                     
+kArmorBarBgColors = { [kMarineTeamType] = Color(0.078 * 0.5, 0.878 * 0.5, 0.984 * 0.5, 1),
+                    [kAlienTeamType] = Color(0.576 * 0.5, 0.194 * 0.5, 0.011 * 0.5, 1),
+                    [kNeutralTeamType] = Color(0.5 * 0.5, 0.5 * 0.5, 0.5 * 0.5, 1) }
 
 // used for specific effects
 kUseInterval = 0.1

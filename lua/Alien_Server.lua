@@ -66,9 +66,11 @@ function Alien:Reset()
 
     Player.Reset(self)
     
-    self.oneHive = true
-    self.twoHives = false
-    self.threeHives = false
+    if self:GetTeamNumber() ~= kNeutralTeamType then
+        self.oneHive = false
+        self.twoHives = false
+        self.threeHives = false
+    end
     
 end
 

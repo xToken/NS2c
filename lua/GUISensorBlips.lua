@@ -17,7 +17,7 @@ class 'GUISensorBlips' (GUIScript)
 GUISensorBlips.kMarineBlipImageName = "ui/sensor.dds"
 GUISensorBlips.kAlienBlipImageName = "ui/aliensensor.dds"
 
-GUISensorBlips.kFontName = "fonts/Arial_15.fnt"
+GUISensorBlips.kFontName = Fonts.kArial_15 
 GUISensorBlips.kFontSize = GUIScale(30)
 
 GUISensorBlips.kDefaultBlipSize = 20

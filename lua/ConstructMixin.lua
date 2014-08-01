@@ -10,10 +10,12 @@
 //Added in alien build effects, removed healspray building.
 //Forced grow pose parm to 1
 
-Shared.PrecacheSurfaceShader("cinematics/vfx_materials/build.surface_shader")
+PrecacheAsset("cinematics/vfx_materials/build.surface_shader")
 
 ConstructMixin = CreateMixin( ConstructMixin )
 ConstructMixin.type = "Construct"
+
+local kBuildMaterial = PrecacheAsset("cinematics/vfx_materials/build.material")
 
 local kBuildEffectsInterval = 1
 
@@ -78,7 +80,7 @@ local function CreateBuildEffect(self)
     if not self.buildMaterial and model then
     
         local material = Client.CreateRenderMaterial()
-        material:SetMaterial("cinematics/vfx_materials/build.material")
+        material:SetMaterial(kBuildMaterial)
         model:AddMaterial(material)
         self.buildMaterial = material
         

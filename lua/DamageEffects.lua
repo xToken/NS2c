@@ -33,12 +33,12 @@ kDamageEffects =
     
     damage_sound_target_local =
     {
-        damageSounds =
+        damageLocalSounds =
         {
-            {sound = "sound/NS2.fev/alien/common/getting_shot", doer = "ClipWeapon", isalien = true, world_space = true},
-            {sound = "sound/NS2.fev/alien/common/getting_shot", doer = "Minigun", isalien = true, world_space = true},
-            {sound = "sound/NS2.fev/alien/common/getting_shot", doer = "Railgun", isalien = true, world_space = true},
-            {sound = "sound/NS2.fev/alien/common/getting_shot", doer = "Sentry", isalien = true, world_space = true},
+            {private_sound = "sound/NS2.fev/alien/common/getting_shot", doer = "ClipWeapon", done = true},
+            {private_sound = "sound/NS2.fev/alien/common/getting_shot", doer = "Minigun", done = true},
+            {private_sound = "sound/NS2.fev/alien/common/getting_shot", doer = "Railgun", done = true},
+            {private_sound = "sound/NS2.fev/alien/common/getting_shot", doer = "Sentry", done = true},
         }
     
     },

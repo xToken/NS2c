@@ -16,6 +16,7 @@ Script.Load("lua/PreLoadMod.lua")
 
 Script.Load("lua/ClientResources.lua")
 Script.Load("lua/Shared.lua")
+Script.Load("lua/GUIAssets.lua")
 Script.Load("lua/Effect.lua")
 Script.Load("lua/AmbientSound.lua")
 Script.Load("lua/GhostModelUI.lua")
@@ -55,14 +56,14 @@ Script.Load("lua/HiveVision.lua")
 Script.Load("lua/SabotCoreClient.lua")
 
 // Precache the common surface shaders.
-Shared.PrecacheSurfaceShader("shaders/Model.surface_shader")
-Shared.PrecacheSurfaceShader("shaders/Emissive.surface_shader")
-Shared.PrecacheSurfaceShader("shaders/Model_emissive.surface_shader")
-Shared.PrecacheSurfaceShader("shaders/Model_alpha.surface_shader")
-Shared.PrecacheSurfaceShader("shaders/ViewModel.surface_shader")
-Shared.PrecacheSurfaceShader("shaders/ViewModel_emissive.surface_shader")
-Shared.PrecacheSurfaceShader("shaders/Decal.surface_shader")
-Shared.PrecacheSurfaceShader("shaders/Decal_emissive.surface_shader")
+PrecacheAsset("shaders/Model.surface_shader")
+PrecacheAsset("shaders/Emissive.surface_shader")
+PrecacheAsset("shaders/Model_emissive.surface_shader")
+PrecacheAsset("shaders/Model_alpha.surface_shader")
+PrecacheAsset("shaders/ViewModel.surface_shader")
+PrecacheAsset("shaders/ViewModel_emissive.surface_shader")
+PrecacheAsset("shaders/Decal.surface_shader")
+PrecacheAsset("shaders/Decal_emissive.surface_shader")
 
 Client.propList = { }
 Client.lightList = { }
@@ -1181,6 +1182,7 @@ local function OnLoadComplete()
 	
     Render_SyncRenderOptions()
     Input_SyncInputOptions()
+    HitSounds_SyncOptions()
     OptionsDialogUI_SyncSoundVolumes()
 
     HiveVision_Initialize()
@@ -1229,8 +1231,6 @@ local function OnLoadComplete()
         Shared.Message("Map doesn't support low lights option, defaulting to regular lights.")
         //Shared.ConsoleCommand("output " .. "Map doesn't support low lights option, defaulting to regular lights.")
     end
-    
-    Shared.ConsoleCommand(string.format("mr %f", kClassicMoveRate))
     
 end
 

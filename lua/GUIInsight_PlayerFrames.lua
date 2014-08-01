@@ -15,8 +15,8 @@ class 'GUIInsight_PlayerFrames' (GUIScript)
 
 local isVisible
 
-local kNameFontName = "fonts/insight.fnt"
-local kInfoFontName = "fonts/insight.fnt"
+local kNameFontName = Fonts.kInsight
+local kInfoFontName = Fonts.kInsight
 local kMarineTexture = "ui/marine_sheet.dds"
 local kAlienTexture = "ui/alien_sheet.dds"
 local kBackgroundTexture = "ui/player.dds"

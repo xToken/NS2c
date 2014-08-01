@@ -18,13 +18,16 @@ kYellow = Color(1, 1, 0)
 kGreen = Color(0, 1, 0)
 kRed = Color(1, 0 ,0)
 
+// this file is also used by GUIViews, which lack PrecacheAsset
+PrecacheAsset = PrecacheAsset or function(name) return name end 
+
 local kScreenScaleAspect = 1280
 
 local function ScreenSmallAspect()
 
-	local screenWidth = Client.GetScreenWidth()
-	local screenHeight = Client.GetScreenHeight()
-	return ConditionalValue(screenWidth > screenHeight, screenHeight, screenWidth)
+    local screenWidth = Client.GetScreenWidth()
+    local screenHeight = Client.GetScreenHeight()
+    return ConditionalValue(screenWidth > screenHeight, screenHeight, screenWidth)
 
 end
 
@@ -106,12 +109,12 @@ end
 // For use in the GUIItem:SetTexturePixelCoordinates call.
 function GUIGetSprite(col, row, width, height)
 
-	assert(type(col) == 'number')
-	assert(type(row) == 'number')
-	assert(type(width) == 'number')
-	assert(type(height) == 'number')
+    assert(type(col) == 'number')
+    assert(type(row) == 'number')
+    assert(type(width) == 'number')
+    assert(type(height) == 'number')
     
-	return ((width * col) - width), ((height * row) - height), (width + (( width * col ) - width)), (height + (( height * row ) - height))
+    return ((width * col) - width), ((height * row) - height), (width + (( width * col ) - width)), (height + (( height * row ) - height))
     
 end
 
@@ -126,8 +129,8 @@ function GetScaledVector()
     return GUIScale(Vector(1, 1, 1))
 end
 
-local kMarineKeyIconsTextureName = "ui/key_mouse_marine.dds"
-local kAlienKeyIconsTextureName = "ui/key_mouse_alien.dds"
+local kMarineKeyIconsTextureName = PrecacheAsset("ui/key_mouse_marine.dds")
+local kAlienKeyIconsTextureName = PrecacheAsset("ui/key_mouse_alien.dds")
 local kBackgroundSmallCoords = { 7, 0, 38, 31 }
 local kBackgroundBigCoords = { 53, 0, 116, 31 }
 local kLeftClickCoords = { 11, 35, 33, 65 }
@@ -180,7 +183,7 @@ function GUICreateButtonIcon(forAction, alienStyle)
     keyText:SetColor(fontColor)
     keyText:SetFontIsBold(true)
     keyText:SetText(forKey)
-    keyText:SetFontName("fonts/AgencyFB_small.fnt")
+    keyText:SetFontName(Fonts.kAgencyFB_Small)
     keyText:SetInheritsParentAlpha(true)
     keyBackground:AddChild(keyText)
     

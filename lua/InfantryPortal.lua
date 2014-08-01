@@ -42,10 +42,10 @@ local kSpinEffect = PrecacheAsset("cinematics/marine/infantryportal/spin.cinemat
 local kAnimationGraph = PrecacheAsset("models/marine/infantry_portal/infantry_portal.animation_graph")
 local kHoloMarineModel = PrecacheAsset("models/marine/male/male_spawn.model")
 
-local kHoloMarineMaterialname = "cinematics/vfx_materials/marine_ip_spawn.material"
+local kHoloMarineMaterialname = PrecacheAsset("cinematics/vfx_materials/marine_ip_spawn.material")
 
 if Client then
-    Shared.PrecacheSurfaceShader("cinematics/vfx_materials/marine_ip_spawn.surface_shader")
+    PrecacheAsset("cinematics/vfx_materials/marine_ip_spawn.surface_shader")
 end
 
 InfantryPortal.kMapName = "infantryportal"

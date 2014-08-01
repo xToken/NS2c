@@ -25,8 +25,10 @@ local kPlayerMaxCloak = 0.85
 
 local kEnemyUncloakDistanceSquared = 1.5 ^ 2
 
-Shared.PrecacheSurfaceShader("cinematics/vfx_materials/cloaked.surface_shader")
-Shared.PrecacheSurfaceShader("cinematics/vfx_materials/distort.surface_shader")
+PrecacheAsset("cinematics/vfx_materials/cloaked.surface_shader")
+PrecacheAsset("cinematics/vfx_materials/distort.surface_shader")
+local kCloakedMaterial = PrecacheAsset("cinematics/vfx_materials/cloaked.material")
+local kDistortMaterial = PrecacheAsset("cinematics/vfx_materials/distort.material")
 
 local Client_GetLocalPlayer
 
@@ -267,7 +269,7 @@ elseif Client then
         local useMaterial = (self.cloakingDesired or self:GetCloakFraction() ~= 0) and not hideFromEnemy
     
         if not self.cloakedMaterial and useMaterial then
-            self.cloakedMaterial = AddMaterial(model, "cinematics/vfx_materials/cloaked.material")
+            self.cloakedMaterial = AddMaterial(model, kCloakedMaterial)
         elseif self.cloakedMaterial and not useMaterial then
         
             RemoveMaterial(model, self.cloakedMaterial)
@@ -292,7 +294,7 @@ elseif Client then
 
         if showDistort and not self.distortMaterial then
 
-            self.distortMaterial = AddMaterial(model, "cinematics/vfx_materials/distort.material")
+            self.distortMaterial = AddMaterial(model, kDistortMaterial )
 
         elseif not showDistort and self.distortMaterial then
         
@@ -315,7 +317,7 @@ elseif Client then
         
             // Show view model as enemies see us, so we know how cloaked we are
             if not self.distortViewMaterial then
-                self.distortViewMaterial = AddMaterial(viewModelEnt:GetRenderModel(), "cinematics/vfx_materials/distort.material")
+                self.distortViewMaterial = AddMaterial(viewModelEnt:GetRenderModel(), kDistortMaterial)
             end
             
             self.distortViewMaterial:SetParameter("distortAmount", self.cloakFraction)

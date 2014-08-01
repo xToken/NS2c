@@ -16,8 +16,8 @@ DetectableMixin.type = "Detectable"
 // Flushed in the UpdateServer hook by DetectableMixin.OnUpdateServer
 local DetectableMixinDirtyTable = { }
 
-Shared.PrecacheSurfaceShader("cinematics/vfx_materials/detected.surface_shader")
-local kDetectedMaterialName = "cinematics/vfx_materials/detected.material"
+PrecacheAsset("cinematics/vfx_materials/detected.surface_shader")
+local kDetectedMaterialName = PrecacheAsset("cinematics/vfx_materials/detected.material")
 local kDetectEffectInterval = 3
 
 local function UpdateSensorBlip(self)

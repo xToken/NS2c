@@ -30,7 +30,8 @@ MapBlipMixin.expectedCallbacks =
 
 MapBlipMixin.optionalCallbacks =
 {
-    GetDestroyMapBlipOnKill = "Return true to destroy map blip when units is killed."
+    GetDestroyMapBlipOnKill = "Return true to destroy map blip when units is killed.",
+    OnGetMapBlipInfo = "Override for getting the Map Blip Info",
 }
 
 // What entities have become dirty.
@@ -138,12 +139,16 @@ end
 
 function MapBlipMixin:GetMapBlipInfo()
 
+    if self.OnGetMapBlipInfo then
+        return self:OnGetMapBlipInfo()
+    end
+
     local success = false
     local blipType = kMinimapBlipType.Undefined
     local blipTeam = -1
-	local isAttacked = HasMixin(self, "Combat") and self:GetIsInCombat()
-	local isParasited = HasMixin(self, "ParasiteAble") and self:GetIsParasited()
-    
+    local isAttacked = HasMixin(self, "Combat") and self:GetIsInCombat()
+    local isParasited = HasMixin(self, "ParasiteAble") and self:GetIsParasited()
+
     // World entities
     if self:isa("Door") then
         blipType = kMinimapBlipType.Door
@@ -154,8 +159,10 @@ function MapBlipMixin:GetMapBlipInfo()
     // Everything else that is supported by kMinimapBlipType.
     elseif self:GetIsVisible() then
     
-        if kMinimapBlipType[self:GetClassName()] ~= nil then
+        if rawget( kMinimapBlipType, self:GetClassName() ) ~= nil then
             blipType = kMinimapBlipType[self:GetClassName()]
+        else
+            Shared.Message( "Element '"..tostring(self:GetClassName()).."' doesn't exist in the kMinimapBlipType enum" )
         end
         
         blipTeam = HasMixin(self, "Team") and self:GetTeamNumber() or kTeamReadyRoom  

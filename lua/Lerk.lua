@@ -31,7 +31,7 @@ Lerk.kModelName = PrecacheAsset("models/alien/lerk/lerk.model")
 local kViewModelName = PrecacheAsset("models/alien/lerk/lerk_view.model")
 local kLerkAnimationGraph = PrecacheAsset("models/alien/lerk/lerk.animation_graph")
 
-Shared.PrecacheSurfaceShader("models/alien/lerk/lerk.surface_shader")
+PrecacheAsset("models/alien/lerk/lerk.surface_shader")
 
 if Client then
     Script.Load("lua/Lerk_Client.lua")
