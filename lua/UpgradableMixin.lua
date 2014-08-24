@@ -67,7 +67,7 @@ function UpgradableMixin:GetUpgradeList()
     for i = 1 , kMaxUpgrades do
     
         local upgrade = self["upgrade" .. i]
-        local techTree = self:GetTechTree()
+        local techTree = GetTechTree(self:GetTeamNumber())
         
         if self:GetGameMode() == kGameMode.Combat then
             if upgrade ~= kTechId.None and GetUpgradeAvailable(upgrade, self) then
@@ -190,7 +190,7 @@ function BuyMenus_GetUpgradeCost(techId)
 end
 
 function GetUpgradeAvailable(techId, player)
-    local techNode = player:GetTechTree():GetTechNode(techId)
+    local techNode = GetTechTree(player:GetTeamNumber()):GetTechNode(techId)
     if techNode ~= nil then
         local prereq1 = techNode:GetPrereq1()
         local prereq2 = techNode:GetPrereq2()
@@ -216,7 +216,7 @@ function GetTechAvailable(techId, player)
     if player:GetGameMode() == kGameMode.Combat then
         return GetUpgradeAvailable(techId, player)
     end
-    local techNode = player:GetTechTree():GetTechNode(techId)
+    local techNode = GetTechTree(player:GetTeamNumber()):GetTechNode(techId)
     if techNode ~= nil then
         return techNode:GetAvailable(player, techId, false)
     end

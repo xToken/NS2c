@@ -17,7 +17,7 @@ function OnCommandSay(client, ...)
     if client == nil then
     
         local chatMessage = StringConcatArgs(...)
-        chatMessage = string.sub(chatMessage, 1, kMaxChatLength)
+        chatMessage = string.UTF8Sub(chatMessage, 1, kMaxChatLength)
         if string.len(chatMessage) > 0 then
         
             Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Admin", -1, kTeamReadyRoom, kNeutralTeamType, chatMessage), true)
@@ -45,7 +45,7 @@ function OnCommandKill(client)
             end
 			client.timeLastKillCommand = Shared.GetTime()
             player:AddTimedCallback(OnKillPlayer, kKillDelay)
-            Server.SendNetworkMessage(client, "Chat", BuildChatMessage(false, "Notification", -1, kTeamReadyRoom, kNeutralTeamType, "You will sucide in 3 seconds."), true)
+            Server.SendNetworkMessage(client, "Chat", BuildChatMessage(true, "Notification", -1, kTeamReadyRoom, kNeutralTeamType, "You will sucide in 3 seconds."), true)
         end
         
     end

@@ -469,7 +469,7 @@ if Server then
 
     function Observatory:OnConstructionComplete()
 
-        if self.phaseTechResearched then
+        if self.phaseTechResearched and self:GetTeam() then
 
             local techTree = self:GetTeam():GetTechTree()
             if techTree then

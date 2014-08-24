@@ -8,12 +8,13 @@
 
 Script.Load("lua/Weapons/PredictedProjectile.lua")
 Script.Load("lua/DamageMixin.lua")
+Script.Load("lua/SharedDecal.lua")
 
-Shared.PrecacheSurfaceShader("materials/infestation/spit_decal.surface_shader")
+PrecacheAsset("materials/infestation/spit_decal.surface_shader")
 
 class 'Spit' (PredictedProjectile)
 
-Spit.kMapName            = "spit"
+Spit.kMapName = "spit"
 Spit.kClearOnImpact = true
 Spit.kClearOnEnemyImpact = true
 
@@ -46,7 +47,15 @@ function Spit:TimeUp()
     
 end
 
-function Spit:ProcessHit(targetHit, surface, normal)
+function Spit:GetDeathIconIndex()
+    return kDeathMessageIcon.Spit
+end
+
+function Spit:GetWeaponTechId()
+    return kTechId.Spit
+end
+
+function Spit:ProcessHit(targetHit, surface, normal, hitPoint)
     
     if Server and self:GetOwner() ~= targetHit then
         self:DoDamage(kSpitDamage, targetHit, self:GetOrigin() + normal * kHitEffectOffset, self:GetCoords().zAxis, surface, false, false)
@@ -62,9 +71,6 @@ function Spit:ProcessHit(targetHit, surface, normal)
 
 end
 
-function Spit:GetDeathIconIndex()
-    return kDeathMessageIcon.Spit
-end
 
 function Spit:GetAbilityUsesFocus()
     return true

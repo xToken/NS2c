@@ -246,7 +246,7 @@ kLerkBrainActions =
             
             for i = 1, #kUpgrades do
                 local techId = kUpgrades[i]
-                local techNode = player:GetTechTree():GetTechNode(techId)
+                local techNode = GetTechTree(player:GetTeamNumber()):GetTechNode(techId)
 
                 local isAvailable = false
                 if techNode ~= nil then

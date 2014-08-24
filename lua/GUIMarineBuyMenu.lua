@@ -28,10 +28,10 @@ GUIMarineBuyMenu.kScanLineTexture = "ui/menu/scanLine_big.dds"
 GUIMarineBuyMenu.kArrowTexture = "ui/menu/arrow_horiz.dds"
 GUIMarineBuyMenu.kSmallIcons = "ui/buildmenu.dds"
 
-GUIMarineBuyMenu.kFont = "fonts/AgencyFB_small.fnt"
-GUIMarineBuyMenu.kFont2 = "fonts/AgencyFB_small.fnt"
+GUIMarineBuyMenu.kFont = Fonts.kAgencyFB_Small
+GUIMarineBuyMenu.kFont2 = Fonts.kAgencyFB_Small
 
-GUIMarineBuyMenu.kDescriptionFontName = "fonts/AgencyFB_small.fnt"
+GUIMarineBuyMenu.kDescriptionFontName = Fonts.kAgencyFB_Small
 GUIMarineBuyMenu.kDescriptionFontSize = GUIScale(20)
 
 GUIMarineBuyMenu.kScanLineHeight = GUIScale(256)

@@ -78,11 +78,15 @@ function Hive:UpdateResearch()
 
     if kResearchTypeToHiveType[researchId] then
     
-        local hiveTypeTechId = kResearchTypeToHiveType[researchId]
-        local techTree = self:GetTeam():GetTechTree()    
-        local researchNode = techTree:GetTechNode(hiveTypeTechId)    
-        researchNode:SetResearchProgress(self.researchProgress)
-        techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", self.researchProgress)) 
+        local team = self:GetTeam()
+        
+        if team then
+            local hiveTypeTechId = kResearchTypeToHiveType[researchId]
+            local techTree = team:GetTechTree()    
+            local researchNode = techTree:GetTechNode(hiveTypeTechId)    
+            researchNode:SetResearchProgress(self.researchProgress)
+            techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", self.researchProgress)) 
+        end
         
     end
 

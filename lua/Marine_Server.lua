@@ -177,14 +177,14 @@ function Marine:ProcessBuyAction(techIds)
     ASSERT(type(techIds) == "table")
     ASSERT(table.count(techIds) > 0)
     
-    local techTree = self:GetTechTree()
+    local techTree = GetTechTree(self:GetTeamNumber())
     local buyAllowed = true
     local totalCost = 0
     local validBuyIds = { }
     
     for i, techId in ipairs(techIds) do
     
-        local techNode = self:GetTechTree():GetTechNode(techId)
+        local techNode = techTree:GetTechNode(techId)
         if techNode ~= nil then
             local prereq1 = techNode:GetPrereq1()
             local prereq2 = techNode:GetPrereq2()

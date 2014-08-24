@@ -19,15 +19,15 @@ local kTeamResourceIconCoords = {192, 363, 240, 411}
 local kResourceTowerIconCoords = {240, 363, 280, 411}
 local kBuildMenuTexture = "ui/buildmenu.dds"
 
-local kTimeFontName = "fonts/AgencyFB_medium.fnt"
+local kTimeFontName = Fonts.kAgencyFB_Medium
 local kTimeFontScale = GUIScale(Vector(1, 1, 0))
-local kMarineFontName = "fonts/AgencyFB_medium.fnt"
-local kAlienFontName = "fonts/AgencyFB_medium.fnt"
+local kMarineFontName = Fonts.kAgencyFB_Medium
+local kAlienFontName = Fonts.kAgencyFB_Medium
 local kTeamFontScale = GUIScale(Vector(1, 1, 0))
 
 local kScoreFontScale = GUIScale(Vector(1.2, 1.2, 0))
 
-local kInfoFontName = "fonts/AgencyFB_small.fnt"
+local kInfoFontName = Fonts.kAgencyFB_Small
 local kInfoFontScale = GUIScale(Vector(1, 1, 0))
 
 local kBackgroundSize = GUIScale(Vector(400, 35, 0))
@@ -296,13 +296,17 @@ end
 function GUIInsight_TopBar:Update(deltaTime)
 
     local startTime = PlayerUI_GetGameStartTime()
-
+        
     if startTime ~= 0 then
-        startTime = Shared.GetTime() - startTime
+        startTime = math.floor(Shared.GetTime()) - PlayerUI_GetGameStartTime()
     end
 
-    local minutes = math.floor(startTime/60)
-    local seconds = startTime - minutes*60
+    local seconds = math.round(startTime)
+    local minutes = math.floor(seconds / 60)
+    local hours = math.floor(minutes / 60)
+    minutes = minutes - hours * 60
+    seconds = seconds - minutes * 60 - hours * 3600
+    
     local gameTimeText = string.format("%d:%02d", minutes, seconds)
 
     gameTime:SetText(gameTimeText)

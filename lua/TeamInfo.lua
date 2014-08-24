@@ -28,8 +28,8 @@ kMaxTotalPersonalResources = 100000
 
 local networkVars =
 {
-    teamResources =  "float (0 to " .. kMaxTeamResources .. " by 1)",
-    totalTeamResources = "float (0 to " .. kMaxTotalTeamResources .. " by 1)",
+    teamResources =  "float (0 to " .. kMaxTeamResources .. " by 0.1 [ 4 ])",
+    totalTeamResources = "float (0 to " .. kMaxTotalTeamResources .. " by 1 [ 1 ])",
     personalResources = "float (0 to " .. kMaxTotalPersonalResources .. " by 0.1) [ 4 ]",
     numResourceTowers = "integer (0 to 99)",
     numCapturedResPoints = "integer (0 to 99)",
@@ -40,6 +40,7 @@ local networkVars =
     techActiveMask = "integer",
     techOwnedMask = "integer",
     playerCount = "integer (0 to " .. kMaxPlayers - 1 .. ")",
+	spawnQueueTotal = "integer (0 to 64)",  //max val should be ref'd from somewhere
     kills = "integer (0 to 9999)"
 }
 
@@ -146,6 +147,7 @@ function TeamInfo:OnCreate()
         self.techActiveMask = 0
         self.techOwnedMask = 0
         self.playerCount = 0
+		self.spawnQueueTotal = 0
         self.kills = 0
         
     end
@@ -170,12 +172,17 @@ if Server then
         self.techActiveMask = 0
         self.techOwnedMask = 0
         self.playerCount = 0
+        self.spawnQueueTotal = 0
         self.workerCount = 0
         self.kills = 0
     
     end
 
 
+end
+
+function TeamInfo:GetSpawnQueueTotal()
+    return self.spawnQueueTotal
 end
 
 local function UpdateInfo(self)
@@ -234,6 +241,7 @@ local function UpdateInfo(self)
             self.lastCommPingTime = team:GetCommanderPingTime()
             self.lastCommPingPosition = team:GetCommanderPingPosition() or Vector(0,0,0)
                        
+			self.spawnQueueTotal = team:GetTotalInRespawnQueue()
         end
         
     end

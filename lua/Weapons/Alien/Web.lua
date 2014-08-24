@@ -20,12 +20,13 @@ class 'Web' (Entity)
 
 Web.kMapName = "web"
 
+Web.kRootModelName = PrecacheAsset("models/alien/gorge/web_helper.model")
 Web.kModelName = PrecacheAsset("models/alien/gorge/web.model")
 local kAnimationGraph = PrecacheAsset("models/alien/gorge/web.animation_graph")
 
 local networkVars =
 {
-    length = "private float (0 to " .. kMaxWebLength .. " by 0.05 [] )",
+    length = "float (0 to " .. kMaxWebLength .. " by 0.05 [] )",
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -34,8 +35,8 @@ AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(TechMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 
-Shared.PrecacheSurfaceShader("models/alien/gorge/web.surface_shader")
-local kWebMaterial = "models/alien/gorge/web.material"
+PrecacheAsset("models/alien/gorge/web.surface_shader")
+local kWebMaterial = PrecacheAsset("models/alien/gorge/web.material")
 local kWebWidth = 0.1
 
 function EntityFilterNonWebables()

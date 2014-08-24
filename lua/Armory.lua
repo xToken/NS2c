@@ -60,7 +60,7 @@ elseif Client then
     Script.Load("lua/Armory_Client.lua")
 end
 
-Shared.PrecacheSurfaceShader("models/marine/armory/health_indicator.surface_shader")
+PrecacheAsset("models/marine/armory/health_indicator.surface_shader")
     
 local networkVars = { }
 

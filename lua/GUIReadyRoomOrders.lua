@@ -20,7 +20,7 @@ local kCirclePixelCoords = { 0, 128, 512, 640 }
 
 local kTexture = "ui/readyroomorders.dds"
 
-local kFontName = "fonts/AgencyFB_small.fnt"
+local kFontName = Fonts.kAgencyFB_Small
 local kFontScale = GUIScale(Vector(1, 1, 0)) 
 
 local kHoverAnimDistance = GUIScale(8)
@@ -33,7 +33,7 @@ local kTeamColors =
     [kTeam2Index] = Color(kAlienTeamColorFloat)
 }
 
-local kWelcomeFontName = "fonts/AgencyFB_medium.fnt"
+local kWelcomeFontName = Fonts.kAgencyFB_Medium
 local kFadeInColor = Color(1, 1, 1, 1)
 local kFadeOutColor = Color(1, 1, 1, 0)
 // How long it takes for the welcome text to fade in and out.

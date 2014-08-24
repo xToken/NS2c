@@ -485,6 +485,8 @@ end
 
 function PlayingTeam:GetHasTeamLost()
 
+    PROFILE("PlayingTeam:GetHasTeamLost")
+
     if GetGamerules():GetGameStarted() and not Shared.GetCheatsEnabled() then
     
         // Team can't respawn or last Command Station or Hive destroyed
@@ -506,12 +508,6 @@ function PlayingTeam:GetHasTeamLost()
     
     return false
     
-end
-
-// TODO: Returns true if team has acheived alternate victory condition - hive releases bio-plague and marines teleport
-// away and nuke station from orbit!
-function PlayingTeam:GetHasTeamWon()
-    return false
 end
 
 local function SpawnResourceTower(self, techPoint)
@@ -627,12 +623,19 @@ function PlayingTeam:ReplaceRespawnPlayer(player, origin, angles, mapName)
     end
     
     newPlayer:ClearGameEffects()
-    
     if HasMixin(newPlayer, "Upgradable") then
         newPlayer:ClearUpgrades()
     end
     
     return (newPlayer ~= nil), newPlayer
+    
+end
+
+function PlayingTeam:ReplaceRespawnAllPlayers()
+
+    self:ForEachPlayer( function(player) 
+        self:ReplaceRespawnPlayer(player, nil, nil)
+    end)
     
 end
 
@@ -666,6 +669,12 @@ function PlayingTeam:RespawnPlayer(player, origin, angles)
     return success
     
 end
+
+//Up to implementing child classes to override and calculate reutrn value
+function PlayingTeam:GetTotalInRespawnQueue()
+    return 0
+end
+
 
 function PlayingTeam:TechAdded(entity)
 
@@ -921,6 +930,7 @@ function PlayingTeam:UpdateTechTree()
             if player:GetSendTechTreeBase() then
             
                 self.techTree:SendTechTreeBase(player)
+                
                 player:ClearSendTechTreeBase()
                 
             end
@@ -939,9 +949,6 @@ function PlayingTeam:UpdateTechTree()
 end
 
 function PlayingTeam:OnTechTreeUpdated()
-end
-
-function PlayingTeam:UpdateTeamSpecificGameEffects()
 end
 
 function PlayingTeam:VoteToGiveUp(votingPlayer)

@@ -17,7 +17,7 @@ class 'BabblerPheromone' (PredictedProjectile)
 BabblerPheromone.kMapName = "babblerpheromone"
 BabblerPheromone.kModelName = PrecacheAsset("models/alien/babbler/babbler_ball.model")
 
-Shared.PrecacheSurfaceShader("models/alien/babbler/babbler_ball.surface_shader")
+PrecacheAsset("models/alien/babbler/babbler_ball.surface_shader")
 
 local kBabblerSearchRange = 20
 local kBabblerPheromoneDuration = 5

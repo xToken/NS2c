@@ -9,6 +9,7 @@
 
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
 Script.Load("lua/Weapons/ClientWeaponEffectsMixin.lua")
+Script.Load("lua/IdleAnimationMixin.lua")
 
 class 'Rifle' (ClipWeapon)
 
@@ -24,6 +25,9 @@ function GenerateMarineRifleViewModelPaths()
     local viewModels = { male = { }, female = { } }
     
     local function MakePath( prefix, suffix )
+        if suffix == "_kodiak" then
+            suffix = ""
+        end
         return "models/marine/".."rifle".."/"..prefix.."rifle".."_view"..suffix..".model"
     end
     
@@ -60,6 +64,7 @@ local kShellEjectAttachPoint = "fxnode_riflecasing"
 local networkVars = { }
 
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/rifle/muzzle_flash.cinematic")
+local kIdleAnimations = {"idle", "idle_brush", "idle_lower"}
 local kMuzzleAttachPoint = "fxnode_riflemuzzle"
 
 local function DestroyMuzzleEffect(self)
@@ -142,6 +147,7 @@ function Rifle:OnCreate()
     
     if Client then
         InitMixin(self, ClientWeaponEffectsMixin)
+        InitMixin(self, IdleAnimationMixin)
     end
     
 end
@@ -219,6 +225,10 @@ end
 
 function Rifle:GetWeight()
     return kRifleWeight + ((math.ceil(self.ammo / self:GetClipSize()) + math.ceil(self.clip / self:GetClipSize())) * kRifleClipWeight)
+end
+
+function Rifle:GetIdleAnimations()
+    return kIdleAnimations
 end
 
 function Rifle:OnSecondaryAttack(player)

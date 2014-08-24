@@ -12,7 +12,8 @@
 ParasiteMixin = CreateMixin( ParasiteMixin )
 ParasiteMixin.type = "ParasiteAble"
 
-Shared.PrecacheSurfaceShader("cinematics/vfx_materials/parasited.surface_shader")
+PrecacheAsset("cinematics/vfx_materials/parasited.surface_shader")
+local kParasitedMaterial = PrecacheAsset("cinematics/vfx_materials/parasited.material")
 
 ParasiteMixin.expectedMixins =
 {
@@ -114,13 +115,13 @@ local function SharedUpdate(self)
             self.parasited = false
         end
        
-    /*elseif Client and not Shared.GetIsRunningPrediction() then
+    elseif Client and not Shared.GetIsRunningPrediction() then
     
         if self:GetIsParasited() and self:GetIsAlive() and self:isa("Player") then
             self:_CreateParasiteEffect()
         else
             self:_RemoveParasiteEffect() 
-        end*/
+        end
         
     end
     
@@ -187,11 +188,17 @@ if Client then
     end
 
     function ParasiteMixin:_CreateParasiteEffect()
-   
+        
+        --check if model has changed in which case we have to reapply the parasite state
+        local modelName = self.GetModelName and self:GetModelName()        
+        if modelName and modelName ~= self.parasiteModelName then
+            self:_RemoveParasiteEffect()
+        end
+        
         if not self.parasiteMaterial then
         
             local material = Client.CreateRenderMaterial()
-            material:SetMaterial("cinematics/vfx_materials/parasited.material")
+            material:SetMaterial(kParasitedMaterial)
 
             local showViewMaterial = not self.GetShowParasiteView or self:GetShowParasiteView()
             local viewMaterial = nil
@@ -199,7 +206,7 @@ if Client then
             if showViewMaterial then
 
                 viewMaterial = Client.CreateRenderMaterial()
-                viewMaterial:SetMaterial("cinematics/vfx_materials/parasited.material")
+                viewMaterial:SetMaterial(kParasitedMaterial)
             
             end
             
@@ -208,6 +215,7 @@ if Client then
             self.parasiteViewMaterial = viewMaterial
             AddEffect(self, material, viewMaterial, self.parasiteEntities)
             
+            self.parasiteModelName = modelName
         end    
         
     end

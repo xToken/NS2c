@@ -128,22 +128,26 @@ local function OnCommandEndGame(client)
     
 end
 
-local function OnCommandTeamResources(client)
+local function OnCommandTeamResources(client, value)
 
+    value = value and tonumber(value) or kMaxTeamResources
+    
     local player = client:GetControllingPlayer()
     
     if Shared.GetCheatsEnabled() then
-        player:GetTeam():AddTeamResources(100)
+        player:GetTeam():SetTeamResources(value)
     end
     
 end
 
-local function OnCommandResources(client)
+local function OnCommandResources(client, value)
+    
+    value = value and tonumber(value) or kMaxPersonalResources
 
     local player = client:GetControllingPlayer()
     
     if Shared.GetCheatsEnabled() then
-        player:AddResources(100)
+        player:SetResources(value)
     end
     
 end
@@ -467,7 +471,8 @@ local function OnCommandTrace(client)
     local endPoint = startPoint + player:GetViewCoords().zAxis * 100
     local trace = Shared.TraceRay(startPoint, endPoint,  CollisionRep.Default, PhysicsMask.Bullets, EntityFilterAll())
     local hitPos = trace.endPoint
-
+    
+    Print("Surface: " .. ToString(trace.surface))
     Print("Vector("..hitPos.x..", "..hitPos.y..", "..hitPos.z.."),")
     
 end
@@ -517,7 +522,7 @@ local function OnCommandGiveUpgrade(client, techIdString)
         
             local player = client:GetControllingPlayer()
         
-            if not player:GetTechTree():GiveUpgrade(techId) then
+            if not GetTechTree(player:GetTeamNumber()):GiveUpgrade(techId) then
             
                 if not player:GiveUpgrade(techId) then
                     Print("Error: GiveUpgrade(%s) not researched and not an upgraded", EnumToString(kTechId, techId))
@@ -939,7 +944,7 @@ local function OnCommandHasTech(client, cmd)
             local player = client:GetControllingPlayer()
             if player then
             
-                local techTree = player:GetTechTree()                
+                local techTree = GetTechTree(player:GetTeamNumber())                
                 if techTree then
                     local hasText = ConditionalValue(techTree:GetHasTech(techId), "has", "doesn't have")
                     Print("Your team %s \"%s\" tech.", hasText, cmd)

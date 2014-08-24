@@ -13,7 +13,7 @@ local gDebugBuildUtility = false
 
 local function CheckBuildTechAvailable(techId, player)
 
-    local techTree = player:GetTechTree()
+    local techTree = GetTechTree(player:GetTeamNumber())
     local techNode = techTree:GetTechNode(techId)
     assert(techNode)
     return techNode:GetAvailable()
@@ -116,7 +116,7 @@ local function CheckBuildEntityRequirements(techId, position, player, ignoreEnti
     local legalBuild = true
     local errorString = ""
     
-    local techTree = player:GetTechTree()    
+    local techTree = GetTechTree(player:GetTeamNumber())    
     local techNode = techTree:GetTechNode(techId)
     local attachClass = LookupTechData(techId, kStructureAttachClass)                
     

@@ -127,7 +127,7 @@ function Spikes:GetDeathIconIndex()
     if self.primaryAttacking then
         return kDeathMessageIcon.Spikes
     else
-        return kDeathMessageIcon.Bite
+        return kDeathMessageIcon.LerkBite
     end
 end
 

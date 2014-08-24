@@ -143,7 +143,7 @@ function UnitStatusMixin:GetUnitName(forEntity)
         
             local description = GetDisplayName(self)
             if HasMixin(self, "Construct") and not self:GetIsBuilt() then
-                description = "Unbuilt " .. description
+                description = string.format(Locale.ResolveString("UNBUILT_STRUCTURE"), description)
             end
         
             return description

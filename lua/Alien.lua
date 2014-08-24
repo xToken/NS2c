@@ -33,7 +33,7 @@ Script.Load("lua/GhostMixin.lua")
 Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 
-Shared.PrecacheSurfaceShader("cinematics/vfx_materials/decals/alien_blood.surface_shader")
+PrecacheAsset("cinematics/vfx_materials/decals/alien_blood.surface_shader")
 
 if Client then
     Script.Load("lua/TeamMessageMixin.lua")
@@ -49,7 +49,7 @@ elseif Client then
     Script.Load("lua/Alien_Client.lua")
 end
 
-Shared.PrecacheSurfaceShader("models/alien/alien.surface_shader")
+PrecacheAsset("models/alien/alien.surface_shader")
 
 Alien.kNotEnoughResourcesSound = PrecacheAsset("sound/NS2.fev/alien/voiceovers/more")
 Alien.kTeleportSound = PrecacheAsset("sound/NS2.fev/alien/structures/generic_spawn_large")
@@ -60,8 +60,8 @@ local networkVars =
 {
     // The alien energy used for all alien weapons and abilities (instead of ammo) are calculated
     // from when it last changed with a constant regen added
-    timeAbilityEnergyChanged = "private time",
-    abilityEnergyOnChange = "private float (0 to " .. math.ceil(kAbilityMaxEnergy) .. " by 0.05 [] )",
+    timeAbilityEnergyChanged = "time",
+    abilityEnergyOnChange = "float (0 to " .. math.ceil(kAbilityMaxEnergy) .. " by 0.05 [] )",
     
     oneHive = "private boolean",
     twoHives = "private boolean",
@@ -131,10 +131,14 @@ function Alien:OnCreate()
 end
 
 function Alien:OnJoinTeam()
-
-    self.oneHive = false
-    self.twoHives = false
-    self.threeHives = false
+    
+    Player.OnJoinTeam( self )
+    
+    if self:GetTeamNumber() ~= kNeutralTeamType then
+        self.oneHive = false
+        self.twoHives = false
+        self.threeHives = false
+    end
 
 end
 
@@ -195,6 +199,7 @@ end
 function Alien:GetCanRepairOverride(target)
     return false
 end
+
 
 // player for local player
 function Alien:TriggerHatchEffects()
@@ -409,7 +414,19 @@ function Alien:GetPlayerStatusDesc()
         status = kPlayerStatus.Dead
     else
         if (self:isa("Embryo")) then
-            status = kPlayerStatus.Embryo
+            if self.gestationTypeTechId == kTechId.Skulk then
+                status = kPlayerStatus.SkulkEgg
+            elseif self.gestationTypeTechId == kTechId.Gorge then
+                status = kPlayerStatus.GorgeEgg
+            elseif self.gestationTypeTechId == kTechId.Lerk then
+                status = kPlayerStatus.LerkEgg
+            elseif self.gestationTypeTechId == kTechId.Fade then
+                status = kPlayerStatus.FadeEgg
+            elseif self.gestationTypeTechId == kTechId.Onos then
+                status = kPlayerStatus.OnosEgg
+            else
+                status = kPlayerStatus.Embryo
+            end
         else
             status = kPlayerStatus[self:GetClassName()]
         end

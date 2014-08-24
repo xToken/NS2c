@@ -18,6 +18,8 @@ function Weapon:OnInitialized()
 end
 
 function Weapon:Dropped(prevOwner)
+    
+    local slot = self:GetHUDSlot()
 
     self.prevOwnerId = prevOwner:GetId()
     
@@ -31,9 +33,13 @@ function Weapon:Dropped(prevOwner)
     if self.physicsModel then
     
         local viewCoords = prevOwner:GetViewCoords()
-        // DL: Temporarily disabled. Currently this is applying way too much impulse. 
-        // Even when scaled down, it doesn't look quite right due to the simulation being ran on the server.
-        // self.physicsModel:AddImpulse(self:GetOrigin(), viewCoords.zAxis)
+        local impulse = 0.075
+        if slot == 2 then
+            impulse = 0.0075
+        elseif slot == 3 then
+            impulse = 0.005
+        end
+        self.physicsModel:AddImpulse(self:GetOrigin(), (viewCoords.zAxis * impulse))
         self.physicsModel:SetAngularVelocity(Vector(5,0,0))
         
     end
@@ -57,36 +63,13 @@ function Weapon:SetWeaponWorldState(state, preventExpiration)
                 self.physicsModel:SetCCDEnabled(true)
             end
             
-			if not preventExpiration then
-			
-            	self.weaponWorldStateTime = Shared.GetTime()
-            	self.preventExpiration = nil
-            	
-            	local function DestroyWorldWeapon()
-                
-                    // We need to make sure this callback is still valid. It is possible
-                    // for this weapon to be dropped and picked up before this callback fires off
-                    // and then be dropped again, in which case this callback should be ignored and
-                    // the next callback will destroy the weapon.
-                    
-                    // $AU: i would suggest to not use TimedCallbacks here. I noticed sometimes weapons won't disappear (not commander dropped, marine dropped),
-                    // and also the callback table gets blown up when you spam drop/pickup constantly.
-                    
-                    local enoughTimePassed = (Shared.GetTime() - self.weaponWorldStateTime) >= kItemStayTime
-                    if self.preventExpiration == nil and self:GetWeaponWorldState() and enoughTimePassed then
-                        DestroyEntity(self)
-                    end
-                    
-                end
-                
-                self:AddTimedCallback(DestroyWorldWeapon, kItemStayTime)
-
-            else
+            if not preventExpiration then
             
-                self.preventExpiration = true
-
-			end
-
+                self.weaponWorldStateTime = Shared.GetTime()
+                self.expireTime = Shared.GetTime() + kItemStayTime
+                
+            end
+            
             self:SetIsVisible(true)
             
         else

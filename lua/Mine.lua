@@ -18,6 +18,7 @@ Script.Load("lua/DamageMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/OwnerMixin.lua")
 Script.Load("lua/SleeperMixin.lua")
+Script.Load("lua/MarineOutlineMixin.lua")
 
 class 'Mine' (ScriptActor)
 
@@ -52,6 +53,10 @@ function Mine:OnCreate()
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
+
+	if Client then
+        InitMixin(self, MarineOutlineMixin)
+    end
 
     if Server then
     

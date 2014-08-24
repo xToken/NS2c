@@ -31,12 +31,12 @@ local kArmorIconTextureCoordinates = {32, 32, 64, 64}
 local kBackgroundNoiseTexture = PrecacheAsset("ui/alien_commander_bg_smoke.dds")
 local kBabblerTexture = PrecacheAsset("ui/babbler.dds")
 
-local kHealthFontName = "fonts/Stamp_large.fnt"
-local kArmorFontName = "fonts/Stamp_medium.fnt"
-local kAbilityNumFontName = "fonts/Kartika_small.fnt"
-local kHiveLocationFontName = "fonts/AgencyFB_tiny.fnt"
+local kHealthFontName = Fonts.kStamp_Large
+local kArmorFontName = Fonts.kStamp_Medium
+local kAbilityNumFontName = Fonts.kKartika_Small
+local kHiveLocationFontName = Fonts.kAgencyFB_Tiny
 
-local kUmbraTextFontName = "fonts/Stamp_large.fnt"
+local kUmbraTextFontName = Fonts.kStamp_Large
 local kUmbraTextYOffset = -52
 local kHealthArmorIconSize = 16
 

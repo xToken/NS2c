@@ -87,7 +87,7 @@ function GUICommanderTooltip:Initialize()
     
     self:InitializeBackground()
     
-    local fontName = "fonts/AgencyFB_small.fnt"
+    local fontName = Fonts.kAgencyFB_Small
     
     self.text = GUIManager:CreateTextItem()
     self.text:SetFontSize(GUICommanderTooltip.kTextFontSize)

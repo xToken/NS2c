@@ -11,6 +11,7 @@
 //Moved balance vars to balance.lua
 
 Script.Load("lua/Weapons/Weapon.lua")
+Script.Load("lua/IdleAnimationMixin.lua")
 
 class 'Axe' (Weapon)
 
@@ -22,6 +23,18 @@ local kViewModels = GenerateMarineViewModelPaths("axe")
 local kAnimationGraph = PrecacheAsset("models/marine/axe/axe_view.animation_graph")
 
 local networkVars = { }
+
+local kAxeIdleAnimations = {"idle", "idle_toss", "idle_toss"}
+
+function Axe:OnCreate()
+
+    Weapon.OnCreate(self)
+    
+    if Client then
+        InitMixin(self, IdleAnimationMixin)
+    end
+    
+end
 
 function Axe:OnInitialized()
 
@@ -62,6 +75,10 @@ end
 function Axe:GetMeleeBase()
     // Width of box, height of box
     return kAxeMeleeBaseWidth, kAxeMeleeBaseHeight
+end
+
+function Axe:GetIdleAnimations()
+    return kAxeIdleAnimations
 end
 
 function Axe:OnDraw(player, previousWeaponMapName)
@@ -112,6 +129,11 @@ function Axe:OnTag(tagName)
         if player then
             AttackMeleeCapsule(self, player, kAxeDamage, self:GetRange())
         end
+
+	elseif tagName == "idle_toss_start" then
+        self:TriggerEffects("axe_idle_toss")
+    elseif tagName == "idle_fiddle_start" then
+        self:TriggerEffects("axe_idle_fiddle")
     end
     
 end

@@ -14,6 +14,8 @@
 Script.Load("lua/Table.lua")
 Script.Load("lua/Utility.lua")
 
+local kInfestationDecalSimpleMaterial = PrecacheAsset("materials/infestation/infestation_decal_simple.material")
+
 function GetHallucinationLifeTimeFraction(self)
 
     local fraction = 1
@@ -122,10 +124,10 @@ if Client then
         if not size then
             size = 1.5
         end
-    
+
         local decal = Client.CreateRenderDecal()
         local infestationMaterial = Client.CreateRenderMaterial()
-        infestationMaterial:SetMaterial("materials/infestation/infestation_decal_simple.material")
+        infestationMaterial:SetMaterial(kInfestationDecalSimpleMaterial)
         infestationMaterial:SetParameter("scale", size)
         decal:SetMaterial(infestationMaterial)        
         decal:SetExtents(Vector(size, size, size))
@@ -137,6 +139,29 @@ if Client then
         return decal
         
     end
+
+end
+
+function GetIsTechUseable(techId, teamNum)
+
+    local useAble = false
+    local techTree = GetTechTree(teamNum)
+    if techTree then
+    
+        local techNode = techTree:GetTechNode(techId)
+        if techNode then
+        
+            useAble = techNode:GetAvailable()
+
+            if techNode:GetIsResearch() then
+                useAble = techNode:GetResearched() and techNode:GetHasTech()
+            end
+        
+        end
+    
+    end
+    
+    return useAble == true
 
 end
 
@@ -244,10 +269,6 @@ function GetCommanderForTeam(teamNumber)
 
 end
 
-function GetPowerPointForLocation(locationName)   
-    return nil
-end
-
 function UpdateMenuTechId(teamNumber, selected)
 
     local commander = GetCommanderForTeam(teamNumber)
@@ -344,6 +365,15 @@ function GetCommanderLogoutAllowed()
     return true 
 end
 
+function GetIsCloseToMenuStructure(player)
+    
+    local ptlabs = GetEntitiesForTeamWithinRange("PrototypeLab", player:GetTeamNumber(), player:GetOrigin(), PrototypeLab.kResupplyUseRange)
+    local armories = GetEntitiesForTeamWithinRange("Armory", player:GetTeamNumber(), player:GetOrigin(), Armory.kResupplyUseRange)
+    
+    return (ptlabs and #ptlabs > 0) or (armories and #armories > 0)
+
+end
+
 function GetPlayerCanUseEntity(player, target)
 
     local useSuccessTable = { useSuccess = false }
@@ -364,7 +394,7 @@ function UpgradeBaseHivetoChamberSpecific(player, chambertechId, team)
     local teamnum
     if player then
         teamnum = player:GetTeamNumber()
-        techTree = player:GetTechTree()
+        techTree = GetTechTree(teamnum)
         if techTree:GetTechNode(chambertechId):GetAvailable() then
             return true
         end
@@ -1195,7 +1225,8 @@ function GetCanSeeEntity(seeingEntity, targetEntity, considerObstacles)
         
             local filter = EntityFilterAllButIsa("Door") // EntityFilterAll()
             if considerObstacles then
-                filter = EntityFilterTwo(seeingEntity, targetEntity)
+                // Weapons don't block FOV
+                filter = EntityFilterTwoAndIsa(seeingEntity, targetEntity, "Weapon")
             end
         
             // See if there's something blocking our view of the entity.
@@ -1204,9 +1235,9 @@ function GetCanSeeEntity(seeingEntity, targetEntity, considerObstacles)
             if trace.fraction == 1 then
                 seen = true
             end
-            
+
         end
-        
+
     end
     
     return seen
@@ -1398,82 +1429,78 @@ local kMinCommanderLightIntensityScalar = 0.3
 
 local function UpdateRedLightsforPowerPointWorker(self)
 
-	for renderLight,_ in pairs(self.activeLights) do
+    for renderLight,_ in pairs(self.activeLights) do
 
-		//Max redness already.
-		local angleRad = 1 * math.pi / 2
-		// and scalar goes 0->1
-		local scalar = math.sin(angleRad)
-		
-		local showCommanderLight = false
+        //Max redness already.
+        local angleRad = 1 * math.pi / 2
+        // and scalar goes 0->1
+        local scalar = math.sin(angleRad)
+        
+        local showCommanderLight = false
 
-		local player = Client.GetLocalPlayer()
-		if player and player:isa("Commander") then
-			showCommanderLight = true
-		end
-		
-		if showCommanderLight then
-			scalar = math.max(kMinCommanderLightIntensityScalar, scalar)
-		end
-		
-		intensity = scalar * renderLight.originalIntensity
+        local player = Client.GetLocalPlayer()
+        if player and player:isa("Commander") then
+            showCommanderLight = true
+        end
+        
+        if showCommanderLight then
+            scalar = math.max(kMinCommanderLightIntensityScalar, scalar)
+        end
+        
+        intensity = scalar * renderLight.originalIntensity
 
-		intensity = intensity * self:CheckFlicker(renderLight,PowerPoint.kAuxFlickerChance, scalar)
-		
-		if showCommanderLight then
-			color = PowerPoint.kDisabledCommanderColor
-		else
-			color = PowerPoint.kDisabledColor
-		end
-		
-		SetLight(renderLight, intensity, color)
+        intensity = intensity * self:CheckFlicker(renderLight,PowerPoint.kAuxFlickerChance, scalar)
+        
+        if showCommanderLight then
+            color = PowerPoint.kDisabledCommanderColor
+        else
+            color = PowerPoint.kDisabledColor
+        end
+        
+        SetLight(renderLight, intensity, color)
 
-	end
-	
+    end
+    
 end
 
 local gLowLights
 function Lights_UpdateLightMode()
 
-	//Dont attempt to load lowlights for main menu 'map'
-	if Client.fullyLoaded then
+    //Dont attempt to load lowlights for main menu 'map'
+    if Client.fullyLoaded then
 
-		local LoadData
-		local useLowLights = Client.GetOptionInteger("graphics/lightQuality", 2) == 1
-		
-		if Client.lowLightList == nil then
-		    Client.lowLightList = { }
-		end
-		
-		if useLowLights and #Client.lowLightList > 0 then
-			LoadData = Client.lowLightList
-		else
-			LoadData = Client.originalLights
-		end
+        local LoadData
+        local useLowLights = Client.GetOptionInteger("graphics/lightQuality", 2) == 1
+        
+        if useLowLights and #Client.lowLightList > 0 then
+            LoadData = Client.lowLightList
+        else
+            LoadData = Client.originalLights
+        end
 
-		if LoadData and useLowLights ~= gLowLights then
+        if LoadData and useLowLights ~= gLowLights then
 
-			ClearLights()
-			gLowLights = useLowLights
+            ClearLights()
+            gLowLights = useLowLights
 
-			for i, object in ipairs(LoadData) do
-				LoadMapEntity(object.className, object.groupName, object.values)
-			end
+            for i, object in ipairs(LoadData) do
+                LoadMapEntity(object.className, object.groupName, object.values)
+            end
 
-			lightLocationCache = { }
+            lightLocationCache = { }
 
-			local powerPoints = Shared.GetEntitiesWithClassname("PowerPoint")
-			for index, powerPoint in ientitylist(powerPoints) do
-			
-			    if powerPoint.lightHandler then			
-				    powerPoint.lightHandler:Reset()
-				end
-				
-			end
+            local powerPoints = Shared.GetEntitiesWithClassname("PowerPoint")
+            for index, powerPoint in ientitylist(powerPoints) do
+            
+                if powerPoint.lightHandler then            
+                    powerPoint.lightHandler:Reset()
+                end
+                
+            end
 
-		end
+        end
 
-	end
+    end
 
 end
 
@@ -1676,7 +1703,7 @@ function GetMinimapNormCoordsFromPlayable(map, playableX, playableY)
 end
 
 // If we hit something, create an effect (sparks, blood, etc)
-function TriggerHitEffects(doer, target, origin, surface, melee, extraEffectParams)
+/*function TriggerHitEffects(doer, target, origin, surface, melee, extraEffectParams)
 
     local tableParams = {}
     
@@ -1713,7 +1740,7 @@ function TriggerHitEffects(doer, target, origin, surface, melee, extraEffectPara
     
     GetEffectManager():TriggerEffects("damage", tableParams, doer)
     
-end
+end*/
 
 // Get nearest valid target for commander ability activation, of specified team number nearest specified position.
 // Returns nil if none exists in range.
@@ -2049,6 +2076,25 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
             endPoint = trace.endPoint
             surface = trace.surface
             
+            surface = GetIsAlienUnit(target) and "organic" or "metal"
+            if GetAreEnemies(player, target) then
+                if target:isa("Alien") then
+                    surface = "organic"
+                elseif target:isa("Marine") then
+                    surface = "flesh"
+                else
+                
+                    if HasMixin(target, "Team") then
+                        if target:GetTeamType() == kAlienTeamType then
+                            surface = "organic"
+                        else
+                            surface = "metal"
+                        end
+                        
+                    end
+                
+                end
+            end
         end
         
     end
@@ -2206,6 +2252,7 @@ function BuildClassToGrid()
     ClassToGrid["DoorWelded"] = { 5, 1 }
     ClassToGrid["Grenade"] = { 6, 1 }
     ClassToGrid["PowerPoint"] = { 7, 1 }
+    ClassToGrid["UnsocketedPowerPoint"] = { 8, 8 }
     
     ClassToGrid["Scan"] = { 6, 8 }
     ClassToGrid["HighlightWorld"] = { 4, 6 }
@@ -2254,6 +2301,7 @@ function BuildClassToGrid()
     ClassToGrid["Hydra"] = { 6, 6 }
     ClassToGrid["Egg"] = { 7, 6 }
     ClassToGrid["Embryo"] = { 7, 6 }
+    ClassToGrid["BoneWall"] = { 8, 3 }
     
     ClassToGrid["Shell"] = { 8, 6 }
     ClassToGrid["Spur"] = { 7, 7 }
@@ -2792,15 +2840,33 @@ function UpdateAlienStructureMove(self, deltaTime)
         
             self:MoveToTarget(PhysicsMask.AIMovement, currentOrder:GetLocation(), speed, deltaTime)
             
+            if not self.distanceMoved then
+                self.distanceMoved = 0
+            end
+            
+            self.distanceMoved = self.distanceMoved + speed * deltaTime
+            
+            if self.distanceMoved > 1 then
+            
+                if HasMixin(self, "StaticTarget") then
+                    self:StaticTargetMoved()
+                end
+                
+                self.distanceMoved = 0
+                
+            end
+            
             if self:IsTargetReached(currentOrder:GetLocation(), kAIMoveOrderCompleteDistance) then
                 self:CompletedCurrentOrder()
                 self.moving = false
+                self.distanceMoved = 0
             else
                 self.moving = true            
             end
             
         else
             self.moving = false
+            self.distanceMoved = 0
         end
 
         if HasMixin(self, "Obstacle") then

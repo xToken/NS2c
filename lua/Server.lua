@@ -61,11 +61,13 @@ Server.mapLiveEntities = table.array(32)
 // in the correct order (Structure assumes that Gamerules exists upon loading for example).
 Server.mapPostLoadEntities = table.array(32)
 
+Server.teamSpawnOverride = {}
+
 // Recent chat messages are stored on the server.
 Server.recentChatMessages = CreateRingBuffer(20)
 local chatMessageCount = 0
 
-local reservedSlots = Server.GetConfigSetting("reserved_slots")
+local reservedSlots = Server.GetReservedSlotsConfig()
 if reservedSlots and reservedSlots.amount > 0 then
     SetReservedSlotAmount(reservedSlots.amount)
 end
@@ -388,6 +390,21 @@ local function OnMapPostLoad()
     
 end
 
+function GetTechTree(teamNumber)
+
+    if GetGamerules() then
+    
+        local team = GetGamerules():GetTeam(teamNumber)
+        if team and team.GetTechTree then
+            return team:GetTechTree()
+        end
+        
+    end
+    
+    return nil
+    
+end
+
 /**
  * Called by the engine to test if a player (represented by the entity they are
  * controlling) can hear another player for the purposes of voice chat.
@@ -402,7 +419,7 @@ end
  */
 local function OnCheckConnectionAllowed(userId)
 
-    local reservedSlots = Server.GetConfigSetting("reserved_slots")
+    local reservedSlots = Server.GetReservedSlotsConfig()
     
     if not reservedSlots or not reservedSlots.amount or not reservedSlots.ids then
         return true

@@ -8,6 +8,7 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
+Script.Load("lua/IdleAnimationMixin.lua")
 
 class 'Pistol' (ClipWeapon)
 
@@ -21,6 +22,7 @@ local kAnimationGraph = PrecacheAsset("models/marine/pistol/pistol_view.animatio
 local kClipSize = 10
 local kSpread = ClipWeapon.kCone0Degrees
 local kAltSpread = ClipWeapon.kCone0Degrees
+local kIdleAnimations = {"idle", "idle_spin", "idle_gangster"}
 
 local kLaserAttachPoint = "fxnode_laser"
 
@@ -42,6 +44,10 @@ function Pistol:OnCreate()
     ClipWeapon.OnCreate(self)
     self.timeAttackStarted = 0
     self.emptyPoseParam = 0
+    
+    if Client then
+        InitMixin(self, IdleAnimationMixin)
+    end
 
 end
 
@@ -230,6 +236,10 @@ function Pistol:GetIsLaserActive()
     return false
 end
 
+function Pistol:GetIdleAnimations()
+    return kIdleAnimations
+end
+
 function Pistol:OnProcessMove(input)
     ClipWeapon.OnProcessMove(self, input)
     if self.clip ~= 0 then
@@ -241,6 +251,22 @@ end
 
 function Pistol:UpdateViewModelPoseParameters(viewModel)
     viewModel:SetPoseParam("empty", self.emptyPoseParam)
+end
+
+function Pistol:OnTag(tagName)
+
+    PROFILE("Pistol:OnTag")
+
+    ClipWeapon.OnTag(self, tagName)
+    
+    if tagName == "alt_mode" then
+        self.altMode = not self.altMode
+    elseif tagName == "idle_spin_start" then
+        self:TriggerEffects("pistol_idle_spin")
+    elseif tagName == "idle_gangster_start" then
+        self:TriggerEffects("pistol_idle_gangster")
+    end
+    
 end
 
 function Pistol:FirePrimary(player)

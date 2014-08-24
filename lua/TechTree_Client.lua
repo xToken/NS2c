@@ -9,7 +9,7 @@
 
 function GetHasTech(player, techId, silentError)
 
-    local techTree = player:GetTechTree()
+    local techTree = GetTechTree()
     if(techTree ~= nil) then
         return techTree:GetHasTech(techId, silentError)
     else
@@ -22,7 +22,7 @@ end
 
 function GetTechNode(player, techId)
 
-    local techTree = player:GetTechTree()
+    local techTree = GetTechTree()
     if(techTree) then
         return techTree:GetTechNode(techId)
     end
@@ -32,7 +32,7 @@ end
 
 function GetIsTechAvailable(player, techId)
 
-    local techTree = player:GetTechTree()
+    local techTree = GetTechTree()
     if techTree then
     
         local techNode = techTree:GetTechNode(techId)
@@ -48,7 +48,7 @@ end
 
 function GetIsTechResearched(player, techId)
 
-    local techTree = player:GetTechTree()
+    local techTree = GetTechTree()
     if techTree then
     
         local techNode = techTree:GetTechNode(techId)

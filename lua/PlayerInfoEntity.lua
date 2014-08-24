@@ -28,7 +28,7 @@ local networkVars =
     clientId = "integer (-1 to 4000)",
     steamId = "integer",
     playerId = "entityid",
-    playerName = string.format("string (%d)", kMaxNameLength),
+    playerName = string.format("string (%d)", kMaxNameLength * 4 ),
     teamNumber = string.format("integer (-1 to %d)", kRandomTeamType),
     score = string.format("integer (0 to %d)", kMaxScore),
     kills = string.format("integer (0 to %d)", kMaxKills),
@@ -94,7 +94,7 @@ function PlayerInfoEntity:UpdateScore()
             self.clientId = scorePlayer:GetClientIndex()
             self.steamId = scorePlayer:GetSteamId()
             self.entityId = scorePlayer:GetId()
-            self.playerName = string.sub(scorePlayer:GetName(), 0, kMaxNameLength)
+            self.playerName = string.UTF8Sub(scorePlayer:GetName(), 0, kMaxNameLength)
             self.teamNumber = scorePlayer:GetTeamNumber()
             
             if HasMixin(scorePlayer, "Scoring") then

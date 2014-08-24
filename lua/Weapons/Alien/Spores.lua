@@ -78,6 +78,16 @@ function Spores:GetLastAttackTime()
     return self.lastPrimaryAttackTime
 end
 
+function Spores:GetDeathIconIndex()
+
+    if self.secondaryAttacking then
+        return kDeathMessageIcon.LerkBite
+    else
+        return kDeathMessageIcon.SporeCloud
+    end
+    
+end
+
 function Spores:OnPrimaryAttack(player)
 
     if player:GetEnergy() >= self:GetEnergyCost()  and not self:GetHasAttackDelay(player) and player:GetHasOneHive() then

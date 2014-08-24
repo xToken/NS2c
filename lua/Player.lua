@@ -1388,6 +1388,9 @@ function Player:OnProcessMove(input)
     
     self:EndUse(input.time)
     
+    if Server then
+        HitSound_DispatchHits()
+    end
 end
 
 function Player:OnProcessSpectate(deltaTime)
@@ -2271,6 +2274,10 @@ function Player:OnInitialSpawn(techPointOrigin)
     angles.pitch = 0.0
     self:SetAngles(angles)
     
+end
+
+function Player:OnJoinTeam()
+    self.sendTechTreeBase = true
 end
 
 // This causes problems when doing a trace ray against CollisionRep.Move.

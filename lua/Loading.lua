@@ -9,19 +9,19 @@ Script.Load("lua/PrecacheList.lua")
 
 local kModeText =
 {
-    ["starting local server"]   = { text = "STARTING LOCAL SERVER" },
-    ["attempting connection"]   = { text = "ATTEMPTING CONNECTION" },
-    ["authenticating"]          = { text = "AUTHENTICATING" },
-    ["connection"]              = { text = "CONNECTING" },
-    ["loading"]                 = { text = "LOADING" },
-    ["waiting"]                 = { text = "WAITING FOR SERVER" },
-    ["precaching"]              = { text = "PRECACHING", display = "count" },
-    ["initializing_game"]       = { text = "INITIALIZING GAME" },
-    ["loading_map"]             = { text = "LOADING MAP" },
-    ["loading_assets"]          = { text = "LOADING ASSETS" },
-    ["downloading_mods"]        = { text = "DOWNLOADING MODS" },
-    ["checking_consistency"]    = { text = "CHECKING CONSISTENCY" },
-    ["compiling_shaders"]       = { text = "LOADING SHADERS", display = "count" }
+    ["starting local server"]   = { text = Locale.ResolveString("STARTING_LOCAL_SERVER") },
+    ["attempting connection"]   = { text = Locale.ResolveString("ATTEMPTING_CONNECTION") },
+    ["authenticating"]          = { text = Locale.ResolveString("AUTHENTICATING") },
+    ["connection"]              = { text = Locale.ResolveString("CONNECTING") },
+    ["loading"]                 = { text = Locale.ResolveString("LOADING_2") },
+    ["waiting"]                 = { text = Locale.ResolveString("WAITING_FOR_SERVER") },
+    ["precaching"]              = { text = Locale.ResolveString("PRECACHING") },
+    ["initializing_game"]       = { text = Locale.ResolveString("INITIALIZING_GAME") },
+    ["loading_map"]             = { text = Locale.ResolveString("LOADING_MAP") },
+    ["loading_assets"]          = { text = Locale.ResolveString("LOADING_ASSETS") },
+    ["downloading_mods"]        = { text = Locale.ResolveString("DOWNLOADING_MODS") },
+    ["checking_consistency"]    = { text = Locale.ResolveString("CHECKING_CONSISTENCY") },
+    ["compiling_shaders"]       = { text = Locale.ResolveString("LOADING_SHADERS"), display = "count" }
 }
 
 local kTipStrings =
@@ -81,10 +81,10 @@ local function UpdateServerInformation()
     local numMods = Client.GetNumMods()
     
     local msg1 = ""
-    local msg2 = "SERVER MODIFICATIONS:\n"
+    local msg2 = Locale.ResolveString("LOADING_MODLIST")
         
     if Client.GetConnectedServerIsSecure() then
-        msg1 = "NOTE: THIS SERVER IS VAC SECURED\nCHEATING WILL RESULT IN A PERMANENT BAN"  
+        msg1 = Locale.ResolveString("LOADING_VAC")  
     end
 
     local numMountedMods = 0
@@ -162,7 +162,7 @@ function OnUpdateRender()
                 text = text .. string.format(" (%d%%)", math.ceil((count / total) * 100))
             end
         else            
-            text = "LOADING"
+            text = Locale.ResolveString("LOADING_2")
         end
         
         if mode == "loading" then
@@ -203,14 +203,16 @@ function OnUpdateRender()
             lastFadeEndTime = time - 2*kBgStayTime
         end
     end
-	
-	if not mainLoading and precached ~= true then
+    
+  /* Should not be needed anymore
+    if not mainLoading and precached ~= true then
         if Client.GetOptionBoolean("precacheExtra", false) == true then
-			PrecacheFileList()
-			precached = true
-		end
-	end
-        
+            PrecacheFileList()
+            precached = true
+        end
+    end
+  */
+  
     // Update background image slideshow
     if backgrounds ~= nil then
     
@@ -380,15 +382,15 @@ function OnLoadComplete(main)
     end
     
     if mainLoading then
-	//letterbox for non16:9 resolutions
-	local backgroundAspect = 9.0/16.0
+    //letterbox for non16:9 resolutions
+    local backgroundAspect = 9.0/16.0
     local xSize = Client.GetScreenWidth()
-	local ySize = xSize * backgroundAspect
-	bgPos = Vector(0, (Client.GetScreenHeight() - ySize) / 2, 0 ) 
+    local ySize = xSize * backgroundAspect
+    bgPos = Vector(0, (Client.GetScreenHeight() - ySize) / 2, 0 ) 
         bgSize = Vector( xSize, ySize, 0 )
         loadscreen = GUI.CreateItem()
         loadscreen:SetSize( bgSize )
-		loadscreen:SetPosition( bgPos )
+        loadscreen:SetPosition( bgPos )
         loadscreen:SetTexture( "screens/IntroScreen.jpg" )
     end
     
@@ -411,7 +413,7 @@ function OnLoadComplete(main)
     statusTextShadow:SetPosition( Vector( Client.GetScreenWidth() - spinnerSize - spinnerOffset - statusOffset+shadowOffset, Client.GetScreenHeight() - spinnerSize / 2 - spinnerOffset+shadowOffset, 0 ) )
     statusTextShadow:SetTextAlignmentX(GUIItem.Align_Max)
     statusTextShadow:SetTextAlignmentY(GUIItem.Align_Center)
-    statusTextShadow:SetFontName("fonts/AgencyFB_large.fnt")
+    statusTextShadow:SetFontName(Fonts.kAgencyFB_Large)
     statusTextShadow:SetColor(Color(0,0,0,1))
     statusTextShadow:SetLayer(3)
         
@@ -420,7 +422,7 @@ function OnLoadComplete(main)
     statusText:SetPosition( Vector( Client.GetScreenWidth() - spinnerSize - spinnerOffset - statusOffset, Client.GetScreenHeight() - spinnerSize / 2 - spinnerOffset, 0 ) )
     statusText:SetTextAlignmentX(GUIItem.Align_Max)
     statusText:SetTextAlignmentY(GUIItem.Align_Center)
-    statusText:SetFontName("fonts/AgencyFB_large.fnt")
+    statusText:SetFontName(Fonts.kAgencyFB_Large)
     statusText:SetLayer(3)
 
     dotsTextShadow = GUI.CreateItem()
@@ -428,7 +430,7 @@ function OnLoadComplete(main)
     dotsTextShadow:SetPosition( Vector( Client.GetScreenWidth() - spinnerSize - spinnerOffset - statusOffset+shadowOffset, Client.GetScreenHeight() - spinnerSize / 2 - spinnerOffset+shadowOffset, 0 ) )
     dotsTextShadow:SetTextAlignmentX(GUIItem.Align_Min)
     dotsTextShadow:SetTextAlignmentY(GUIItem.Align_Center)
-    dotsTextShadow:SetFontName("fonts/AgencyFB_large.fnt")
+    dotsTextShadow:SetFontName(Fonts.kAgencyFB_Large)
     dotsTextShadow:SetColor(Color(0,0,0,1))
     dotsTextShadow:SetLayer(3)
     
@@ -437,7 +439,7 @@ function OnLoadComplete(main)
     dotsText:SetPosition( Vector( Client.GetScreenWidth() - spinnerSize - spinnerOffset - statusOffset, Client.GetScreenHeight() - spinnerSize / 2 - spinnerOffset, 0 ) )
     dotsText:SetTextAlignmentX(GUIItem.Align_Min)
     dotsText:SetTextAlignmentY(GUIItem.Align_Center)
-    dotsText:SetFontName("fonts/AgencyFB_large.fnt")
+    dotsText:SetFontName(Fonts.kAgencyFB_Large)
     dotsText:SetLayer(3)
     
     if not mainLoading then
@@ -453,7 +455,7 @@ function OnLoadComplete(main)
         tipText:SetPosition(Vector(Client.GetScreenWidth() / 2, Client.GetScreenHeight() - 41, 0))
         tipText:SetTextAlignmentX(GUIItem.Align_Center)
         tipText:SetTextAlignmentY(GUIItem.Align_Center)
-        tipText:SetFontName("fonts/AgencyFB_small.fnt")
+        tipText:SetFontName(Fonts.kAgencyFB_Small)
         tipText:SetLayer(3)
         
         // Only show tip if show hints is on
@@ -474,7 +476,7 @@ function OnLoadComplete(main)
         tipNextHint:SetPosition(Vector(Client.GetScreenWidth() / 2, Client.GetScreenHeight() - 15, 0))
         tipNextHint:SetTextAlignmentX(GUIItem.Align_Center)
         tipNextHint:SetTextAlignmentY(GUIItem.Align_Center)
-        tipNextHint:SetFontName("fonts/AgencyFB_small.fnt")
+        tipNextHint:SetFontName(Fonts.kAgencyFB_Small)
         tipNextHint:SetColor(Color(1, 1, 0, 1))
         tipNextHint:SetIsVisible( Client.GetOptionBoolean("showHints", true) )
         tipNextHint:SetLayer(3)
@@ -488,14 +490,14 @@ function OnLoadComplete(main)
     modsText = GUI.CreateItem()
     modsText:SetOptionFlag(GUIItem.ManageRender)
     modsText:SetPosition(Vector(Client.GetScreenWidth() * 0.15, Client.GetScreenHeight() * 0.18, 0))
-    modsText:SetFontName("fonts/AgencyFB_small.fnt")
+    modsText:SetFontName(Fonts.kAgencyFB_Small)
     modsText:SetLayer(3)
     modsText:SetIsVisible(false)
     
     modsTextShadow = GUI.CreateItem()
     modsTextShadow:SetOptionFlag(GUIItem.ManageRender)
     modsTextShadow:SetPosition(Vector(Client.GetScreenWidth() * 0.15 + 1, Client.GetScreenHeight() * 0.18 + 1, 0))
-    modsTextShadow:SetFontName("fonts/AgencyFB_small.fnt")
+    modsTextShadow:SetFontName(Fonts.kAgencyFB_Small)
     modsTextShadow:SetLayer(2)
     modsTextShadow:SetIsVisible(false)
     modsTextShadow:SetColor(Color(0, 0, 0, 1))

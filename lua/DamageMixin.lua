@@ -31,7 +31,7 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
 
     // attacker is always a player, doer is 'self'
     local attacker = nil
-
+	local weapon = nil
     if target and target:isa("Ragdoll") then
         return false
     end
@@ -42,9 +42,22 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
 
         if self:GetParent() and self:GetParent():isa("Player") then
             attacker = self:GetParent()
+            parentVortexed = GetIsVortexed(attacker)
+            
+            if attacker:isa("Alien") and ( self.secondaryAttacking or self.shootingSpikes) then
+                weapon = attacker:GetActiveWeapon():GetSecondaryTechId()
+            else
+                weapon = self:GetTechId()
+            end
+            
         elseif HasMixin(self, "Owner") and self:GetOwner() and self:GetOwner():isa("Player") then
+            
             attacker = self:GetOwner()
-        end  
+            
+            if self.GetWeaponTechId then
+                weapon = self:GetWeaponTechId()
+            end
+        end
 
     end
     
@@ -83,20 +96,18 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                 // We use messages to handle multiple-hits per frame, such as splash damage from grenades.
                 if Server and attacker:isa("Player") then
                 
-                    local showNumbers = GetAreEnemies(attacker,target) and (target:GetIsAlive() or killedFromDamage) and damageDone > 0 and Shared.GetCheatsEnabled()
-                    if showNumbers then
-                    
-                        local msg = BuildDamageMessage(target, damageDone, point)
-                        Server.SendNetworkMessage(attacker, "Damage", msg, false)
+                    if GetAreEnemies( attacker, target ) then
                         
-                        for _, spectator in ientitylist(Shared.GetEntitiesWithClassname("Spectator")) do
+                        local amount = (target:GetIsAlive() or killedFromDamage) and damageDone or 0 // actual damage done
+                        local overkill = healthUsed + armorUsed * 2 // the full amount of potential damage, including overkill
                         
-                            if attacker == Server.GetOwner(spectator):GetSpectatingPlayer() then
-                                Server.SendNetworkMessage(spectator, "Damage", msg, false)
-                            end
-                            
+                        if HitSound_IsEnabledForWeapon( weapon ) then
+                            // Damage message will be sent at the end of OnProcessMove by the HitSound system
+                            HitSound_RecordHit( attacker, target, amount, point, overkill, weapon )                            
+                        else
+                            SendDamageMessage( attacker, target, amount, point, overkill )
                         end
-                        
+                    
                     end
                     
                     // This makes the cross hair turn red. Show it when hitting enemies only

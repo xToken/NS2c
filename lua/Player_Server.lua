@@ -14,16 +14,9 @@ Script.Load("lua/Gamerules.lua")
 // Called when player first connects to server
 // TODO: Move this into NS specific player class
 function Player:OnClientConnect(client)
-
-    self.clientIndex = client:GetId()
-    self.client = client
-    
 end
 
 function Player:GetSteamId()
-    if self.client:GetIsVirtual() then
-        return 0
-    end
     return self.client:GetUserId()
 end
 
@@ -70,7 +63,7 @@ function Player:SetName(name)
     newName = string.gsub(newName, "[\a\b\f\n\r\t\v]", "")
     
     // Make sure it's not too long
-    newName = string.sub(newName, 0, kMaxNameLength)
+    newName = string.UTF8Sub(newName, 0, kMaxNameLength)
     
     local currentName = self:GetName()
     if currentName ~= newName or string.lower(newName) ~= string.lower(currentName) then
@@ -153,19 +146,24 @@ end
  */
 function Player:OnKill(killer, doer, point, direction)
 
+    local isSuicide = not doer and not killer // xenocide is not a suicide
+    local killedByDeathTrigger = doer and doer:isa("DeathTrigger") or killer and killer:isa("DeathTrigger")
+
     // Determine the killer's player name.
     local killerName = nil
-    if killer ~= nil and not killer:isa("Player") then
-    
-        local realKiller = (killer.GetOwner and killer:GetOwner()) or nil
-        if realKiller and realKiller:isa("Player") then
-            killerName = realKiller:GetName()
+    if killer then
+        if killer:isa("Player") then
+            killerName = killer:GetName()
+        else
+            local realKiller = killer.GetOwner and killer:GetOwner() or nil
+            if realKiller and realKiller:isa("Player") then
+                killerName = realKiller:GetName()
+            end
         end
-        
     end
 
     // Save death to server log
-    if killer == self or killer == nil then      
+    if isSuicide or killedByDeathTrigger then
         PrintToLog("%s committed suicide", self:GetName())
     elseif killerName ~= nil then
         PrintToLog("%s was killed by %s", self:GetName(), killerName)
@@ -192,6 +190,13 @@ function Player:OnKill(killer, doer, point, direction)
     
     DestroyViewModel(self)
     
+    // Save position of last death only if we didn't die to a DeathTrigger
+    if not killedByDeathTrigger then
+        self.lastDeathPos = self:GetOrigin()
+    end
+    
+    self.lastClass = self:GetMapName()
+    
 end
 
 function Player:SetControllerClient(client)
@@ -199,6 +204,8 @@ function Player:SetControllerClient(client)
     if client ~= nil then
     
         client:SetControllingPlayer(self)
+        self.clientIndex = client:GetId()
+        self.client = client
         self:UpdateClientRelevancyMask()
         self:OnClientUpdated(client)
         
@@ -270,12 +277,21 @@ function Player:UpdateIncludeRelevancyMask()
 end
 
 function Player:SetResources(amount)
-
-    local oldVisibleResources = math.floor(self.resources)
-    
     self.resources = Clamp(amount, 0, kMaxPersonalResources)
+end
+
+function Player:AddResources(amount)
+
+    local resReward = 0
+
+    if Shared.GetCheatsEnabled() or ( amount <= 0 or not self.blockPersonalResources ) then
+
+        resReward = math.min(amount, kMaxPersonalResources - self:GetResources())
+        self:SetResources(self:GetResources() + resReward)
     
-    local newVisibleResources = math.floor(self.resources)
+    end
+    
+    return resReward
     
 end
 
@@ -347,6 +363,11 @@ function Player:PreCopyPlayerData()
 end
 
 function Player:CopyPlayerDataFrom(player)
+    
+    self.lastDeathPos = player.lastDeathPos
+    self.lastWeaponList = player.lastWeaponList
+    self.lastClass = player.lastClass
+    self.lastExoLayout = player.lastExoLayout
 
     // This is stuff from the former LiveScriptActor.
     self.gameEffectsFlags = player.gameEffectsFlags
@@ -409,6 +430,8 @@ function Player:CopyPlayerDataFrom(player)
     
     self.lastUpgradeList = player.lastUpgradeList
     
+    self.sendTechTreeBase = player.sendTechTreeBase 
+     
 end
 
 /**
@@ -612,16 +635,9 @@ function Player:UpdateMisc(input)
 end
 
 function Player:GetTechTree()
-
-    local techTree = nil
-
-    local team = self:GetTeam()
-    if team ~= nil and team:isa("PlayingTeam") then
-        techTree = team:GetTechTree()
-    end
-    
-    return techTree
-
+    Print("Shouldn't be calling this anymore...")
+    Print(debug.traceback())
+    return GetTechTree(self:GetTeamNumber())
 end
 
 function Player:GetPreviousMapName()

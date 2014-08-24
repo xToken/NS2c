@@ -556,7 +556,7 @@ end
  */
 function OrdersMixin:OnPerformAction(techNode, position)
 
-    if techNode:GetTechId() == kTechId.Stop then
+    if not self.ignoreOrders and techNode:GetTechId() == kTechId.Stop then
         self:ClearOrders()
     end
     

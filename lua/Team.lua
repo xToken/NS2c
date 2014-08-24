@@ -55,7 +55,7 @@ end
  */
 function Team:AddPlayer(player)
 
-    if player ~= nil and player:isa("Player") then
+    if player and player:isa("Player") then
     
         local id = player:GetId()
         return table.insertunique(self.playerIds, id)
@@ -147,19 +147,13 @@ function Team:GetNumPlayers()
     local numPlayers = 0
     local numRookies = 0
     
-    // Player may have been deleted this tick, so check id to make sure player count is correct)
-    for index, playerId in ipairs(self.playerIds) do
-    
-        local player = Shared.GetEntity(playerId)
-        // Verify the player has a Client attached to it (we don't want to count ragdolls as team players for example.
-        if player ~= nil and player:GetId() ~= Entity.invalidId and Server.GetOwner(player) ~= nil then
-            numPlayers = numPlayers + 1
-            if player:GetIsRookie() then
-                numRookies = numRookies + 1
-            end
-        end
-        
-    end
+	local function CountPlayers( player )
+		numPlayers = numPlayers + 1
+		if player:GetIsRookie() then
+			numRookies = numRookies + 1
+		end
+	end
+	self:ForEachPlayer( CountPlayers )
     
     return numPlayers, numRookies
     
@@ -173,38 +167,27 @@ function Team:GetNumDeadPlayers()
 
     local numPlayers = 0
     
-    // Player may have been deleted this tick, so check id to make sure player count is correct)
-    for index, playerId in ipairs(self.playerIds) do
-
-        local player = Shared.GetEntity(playerId)
-        if player ~= nil and player:GetId() ~= Entity.invalidId and player:GetIsAlive() == false then
-        
-            numPlayers = numPlayers + 1
-            
-        end
-        
-    end
+	local function CountDeadPlayer( player )
+		if not player:GetIsAlive() then
+			 numPlayers = numPlayers + 1
+		end
+	end
+	
+	self:ForEachPlayer( CountDeadPlayer )
     
-    return numPlayers
-    
+    return numPlayers    
 end
 
 function Team:GetPlayers()
 
-    local playerList = {}
-    for index, playerId in ipairs(self.playerIds) do
-
-        local player = Shared.GetEntity(playerId)
-        if player ~= nil and player:GetId() ~= Entity.invalidId then
-        
-            table.insert(playerList, player)
-            
-        end
-        
-    end
-    
+	local playerList = {}
+	local function CollectPlayers( player )
+		table.insert(playerList, player)
+	end
+	self:ForEachPlayer( CollectPlayers )
+	
     return playerList
-    
+	
 end
 
 function Team:GetTeamNumber()
@@ -378,15 +361,16 @@ function Team:GetOldestQueuedPlayer()
     local playerToSpawn = nil
     local earliestTime = -1
     
-    for i, playerId in ipairs(self.respawnQueue) do
-    
-        local player = Shared.GetEntity(playerId)
+    for i = 1, #self.respawnQueue do
+		
+		local playerid = self.respawnQueue[i]
+        local player = Shared.GetEntity(playerid)
         
-        if player ~= nil and player.GetRespawnQueueEntryTime then
+        if player and player.GetRespawnQueueEntryTime then
         
             local currentPlayerTime = player:GetRespawnQueueEntryTime()
             
-            if currentPlayerTime ~= nil and (earliestTime == -1 or currentPlayerTime < earliestTime) then
+            if currentPlayerTime and (earliestTime == -1 or currentPlayerTime < earliestTime) then
             
                 playerToSpawn = player
                 earliestTime = currentPlayerTime
@@ -452,32 +436,23 @@ function Team:TechRemoved(entity)
 end
 
 function Team:GetIsPlayerOnTeam(player)
-    return table.find(self.playerIds, player:GetId()) ~= nil    
-end
-
-function Team:ReplaceRespawnAllPlayers()
-
-    local playerIds = table.duplicate(self.playerIds)
-
-    for i, playerIndex in ipairs(playerIds) do
-    
-        local player = Shared.GetEntity(playerIndex)
-        self:ReplaceRespawnPlayer(player, nil, nil)
-
-    end
-    
+    return table.find(self.playerIds, player:GetId())    
 end
 
 // For every player on team, call functor(player)
 function Team:ForEachPlayer(functor)
 
-    for i, playerIndex in ipairs(self.playerIds) do
-    
-        local player = Shared.GetEntity(playerIndex)
-        if player ~= nil and player:isa("Player") then
-            functor(player)
+    for _, playerId in ipairs(self.playerIds) do
+		
+        local player = Shared.GetEntity(playerId)
+		--only players with a client are "real" player, this sorts out ragdolls etc.
+		local client = player and Server.GetOwner(player)
+        if client and player:isa("Player") then
+            if functor(player) == false then
+                break
+            end
         else
-            Print("Team:ForEachPlayer(): Couldn't find player for index %d", playerIndex)
+            Print("Team:ForEachPlayer(): Couldn't find player for index %d", playerId)
         end
         
     end
@@ -490,8 +465,9 @@ function Team:GetHasActivePlayers()
     local currentTeam = self
 
     local function HasActivePlayers(player)
-        if(player:GetIsAlive() and (player:GetTeam() == currentTeam)) then
+        if player:GetIsAlive() then
             hasActivePlayers = true
+            return false
         end
     end
 
@@ -530,10 +506,6 @@ function Team:GetHasTeamLost()
     return false    
 end
 
-function Team:GetHasTeamWon()
-    return false    
-end
-
 function Team:RespawnPlayer(player, origin, angles)
 
     assert(self:GetIsPlayerOnTeam(player), "Player isn't on team!")
@@ -560,7 +532,7 @@ function Team:RespawnPlayer(player, origin, angles)
     end
     
     // Move origin up and drop it to floor to prevent stuck issues with floating errors or slightly misplaced spawns
-    if origin ~= nil then
+    if origin then
     
         SpawnPlayerAtPoint(player, origin, angles)
         
@@ -569,7 +541,7 @@ function Team:RespawnPlayer(player, origin, angles)
         return true
         
     else
-        Print("Team:RespawnPlayer(player, %s, %s) - Must specify origin.", ToString(origin), ToString(angles))
+        DebugPrint("Team:RespawnPlayer(player, %s, %s) - Must specify origin.", ToString(origin), ToString(angles))
     end
     
     return false
@@ -578,11 +550,11 @@ end
 
 function Team:BroadcastMessage(message)
 
-    function sendMessage(player)
+    local function SendMessage(player)
         Server.Broadcast(player, message)
     end
     
-    self:ForEachPlayer( sendMessage )
+    self:ForEachPlayer(SendMessage)
     
 end
 

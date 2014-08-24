@@ -43,7 +43,7 @@ GUIResourceDisplay.kEggsIcon = { Width = 0, Height = 0, X = 0, Y = 0, Coords = {
 GUIResourceDisplay.kEggsIcon.Width = GUIScale(57)
 GUIResourceDisplay.kEggsIcon.Height = GUIScale(57)
 
-local kFontName = "fonts/AgencyFB_small.fnt"
+local kFontName = Fonts.kAgencyFB_Small
 local kFontScale = GUIScale(Vector(1,1,1))
 
 local kColorWhite = Color(1, 1, 1, 1)

@@ -15,8 +15,7 @@ local kHealthIndicatorModelName = PrecacheAsset("models/marine/armory/health_ind
 
 function GetResearchPercentage(techId)
 
-    local player = Client.GetLocalPlayer()
-    local techNode = player:GetTechTree():GetTechNode(techId)
+    local techNode = GetTechTree():GetTechNode(techId)
     
     if(techNode ~= nil) then
     

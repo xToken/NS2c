@@ -76,7 +76,7 @@ if Server then
         
         for _, enemy in ipairs(enemies) do
                 
-            enemy:SetIsSighted(visible)
+            enemy:SetIsSighted(true)
             
             // Allow entities to respond
             if enemy.OnScan then

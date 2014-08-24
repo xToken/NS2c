@@ -29,8 +29,8 @@ kAlienWeaponEffects =
     {
         biteKillSound =
         {
-            {player_sound = "", silenceupgrade = true, done = true},
-            {player_sound = "sound/NS2.fev/alien/skulk/bite_kill", attach_point = "Bip01_Head", done = true},
+            {sound = "", silenceupgrade = true, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_kill", attach_point = "Bip01_Head", done = true},
         }
     },
     
@@ -46,7 +46,7 @@ kAlienWeaponEffects =
     {
         biteAttackSounds =
         {
-            {player_sound = "", silenceupgrade = true, done = true},
+            {sound = "", silenceupgrade = true, done = true},
             
             {player_sound = "sound/NS2.fev/alien/skulk/bite_structure", attach_point = "Bip01_Head", surface = "structure", done = true},
             {player_sound = "sound/NS2.fev/alien/skulk/bite", attach_point = "Bip01_Head"},
@@ -57,7 +57,7 @@ kAlienWeaponEffects =
     {
         lerkBiteAttackSounds =
         {
-            {player_sound = "", silenceupgrade = true, done = true},
+            {sound = "", silenceupgrade = true, done = true},
             
             //{player_sound = "sound/ns2c.fev/ns2c/alien/lerk/bite", attach_point = "Bip01_Head", surface = "structure", done = true},
             {player_sound = "sound/ns2c.fev/ns2c/alien/lerk/bite2", attach_point = "Bip01_Head"},
@@ -71,7 +71,8 @@ kAlienWeaponEffects =
         biteAltAttackEffects = 
         {
             // TODO: Take volume or hasLeap
-            {player_sound = "", silenceupgrade = true, done = true},
+            {sound = "", silenceupgrade = true, done = true},
+            
             {player_sound = "sound/NS2.fev/alien/skulk/bite_alt"},
             
         },
@@ -92,7 +93,7 @@ kAlienWeaponEffects =
             {player_cinematic = "cinematics/alien/skulk/parasite_fire.cinematic"},
             {viewmodel_cinematic = "cinematics/alien/skulk/parasite_view.cinematic", attach_point = "CamBone"},
             
-            {player_sound = "", silenceupgrade = true, done = true},
+            {sound = "", silenceupgrade = true, done = true},
             {player_sound = "sound/NS2.fev/alien/skulk/parasite"},
          },
     },
@@ -110,7 +111,7 @@ kAlienWeaponEffects =
     {
         spitFireEffects = 
         {   
-            {player_sound = "", silenceupgrade = true, done = true}, 
+            {sound = "", silenceupgrade = true, done = true}, 
             {player_sound = "sound/NS2.fev/alien/gorge/spit"},
         },
     },
@@ -119,7 +120,7 @@ kAlienWeaponEffects =
     {
         babblerabilityAttackEffects = 
         {   
-            {player_sound = "", silenceupgrade = true, done = true}, 
+            {sound = "", silenceupgrade = true, done = true}, 
             {player_sound = "sound/NS2.fev/alien/gorge/babbler_ball_spit", world_space = true},
         },
     },
@@ -139,7 +140,7 @@ kAlienWeaponEffects =
             // Use player_cinematic because at world position, not attach_point
             {player_cinematic = "cinematics/alien/gorge/healthspray.cinematic"},
             {viewmodel_cinematic = "cinematics/alien/gorge/healthspray_view.cinematic", attach_point = "gorge_view_root"},
-            {player_sound = "", silenceupgrade = true, done = true}, 
+            {sound = "", silenceupgrade = true, done = true}, 
             {player_sound = "sound/NS2.fev/alien/gorge/heal_spray"}
         },
     },
@@ -159,7 +160,7 @@ kAlienWeaponEffects =
     {
         bilebombFireEffects = 
         {   
-            {player_sound = "", silenceupgrade = true, done = true}, 
+            {sound = "", silenceupgrade = true, done = true}, 
             {player_sound = "sound/NS2.fev/alien/gorge/bilebomb"},
         },
     },
@@ -271,7 +272,7 @@ kAlienWeaponEffects =
     {
         swipeAttackSounds =
         {
-            {player_sound = "", silenceupgrade = true, done = true}, 
+            {sound = "", silenceupgrade = true, done = true}, 
             {player_sound = "sound/NS2.fev/alien/fade/swipe_structure", surface = "structure", done = true},
             {player_sound = "sound/NS2.fev/alien/fade/swipe"},
         },
@@ -281,7 +282,7 @@ kAlienWeaponEffects =
     {
         metabolizeEffects =
         {
-            {player_sound = "", silenceupgrade = true, done = true}, 
+            {sound = "", silenceupgrade = true, done = true}, 
             {player_sound = "sound/ns2c.fev/ns2c/alien/fade/metabolize"},
             //{player_sound = "sound/NS2.fev/alien/fade/stab"},
         },
@@ -310,7 +311,7 @@ kAlienWeaponEffects =
     {
         goreAttackEffects =
         {
-            {player_sound = "", silenceupgrade = true, done = true},
+            {sound = "", silenceupgrade = true, done = true},
             {player_sound = "sound/NS2.fev/alien/onos/gore"},
         },
     },
@@ -319,7 +320,7 @@ kAlienWeaponEffects =
     {
         smashAttackEffects =
         {
-            {player_sound = "", silenceupgrade = true, done = true},
+            {sound = "", silenceupgrade = true, done = true},
             {player_sound = "sound/NS2.fev/alien/onos/gore"},
         },
     },    
@@ -337,7 +338,7 @@ kAlienWeaponEffects =
         stompAttackEffects =
         {
             {cinematic = "cinematics/alien/onos/stomp.cinematic"},
-            {player_sound = "", silenceupgrade = true, done = true},
+            {sound = "", silenceupgrade = true, done = true},
             {player_sound = "sound/NS2.fev/alien/onos/stomp"},
         },
     },  
@@ -347,7 +348,7 @@ kAlienWeaponEffects =
         stompAttackEffects =
         {
             {cinematic = "cinematics/alien/onos/stomp_hit.cinematic"},
-            {player_sound = "", silenceupgrade = true, done = true},
+            {sound = "", silenceupgrade = true, done = true},
             {player_sound = "sound/NS2.fev/alien/onos/stomp"},
         },
     },
@@ -365,7 +366,7 @@ kAlienWeaponEffects =
     {
         DevourAttack =
         {
-            {player_sound = "", silenceupgrade = true, done = true},
+            {sound = "", silenceupgrade = true, done = true},
             {player_sound = "sound/ns2c.fev/ns2c/alien/onos/devour_fire"},
         },
     },
@@ -374,7 +375,7 @@ kAlienWeaponEffects =
     {
         DevourHit =
         {
-            {player_sound = "", silenceupgrade = true, done = true},
+            {sound = "", silenceupgrade = true, done = true},
             {player_sound = "sound/ns2c.fev/ns2c/alien/onos/devour_hit"},
         },
     },
@@ -392,7 +393,7 @@ kAlienWeaponEffects =
         primalScreamEffects =
         {
             {cinematic = "cinematics/alien/onos/stomp_hit.cinematic"},
-            {player_sound = "", silenceupgrade = true, done = true},
+            {sound = "", silenceupgrade = true, done = true},
             {player_sound = "sound/ns2c.fev/ns2c/alien/lerk/primal_scream"},
         },    
     

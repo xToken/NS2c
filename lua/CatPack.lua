@@ -25,10 +25,6 @@ function CatPack:OnInitialized()
     self:SetModel(CatPack.kModelName)
     
     InitMixin(self, PickupableMixin, { kRecipientType = "Marine" })
-    
-    if Server then
-        self:_CheckForPickup()
-    end
 
 end
 

@@ -14,7 +14,7 @@ Script.Load("lua/GUIAnimatedScript.lua")
 local kMouseOverSound = "sound/NS2.fev/alien/common/alien_menu/hover"
 local kSelectSound = "sound/NS2.fev/alien/common/alien_menu/evolve"
 local kCloseSound = "sound/NS2.fev/alien/common/alien_menu/sell_upgrade"
-local kFontName = "fonts/AgencyFB_small.fnt"
+local kFontName = Fonts.kAgencyFB_Small
 Client.PrecacheLocalSound(kMouseOverSound)
 Client.PrecacheLocalSound(kSelectSound)
 Client.PrecacheLocalSound(kCloseSound)

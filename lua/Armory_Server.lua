@@ -181,10 +181,13 @@ function Armory:UpdateResearch()
 
     if researchId == kTechId.AdvancedArmoryUpgrade then
     
-        local techTree = self:GetTeam():GetTechTree()    
-        local researchNode = techTree:GetTechNode(kTechId.AdvancedArmory)    
-        researchNode:SetResearchProgress(self.researchProgress)
-        techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", self.researchProgress)) 
+        local team = self:GetTeam()
+        if team then
+            local techTree = team:GetTechTree()    
+            local researchNode = techTree:GetTechNode(kTechId.AdvancedArmory)    
+            researchNode:SetResearchProgress(self.researchProgress)
+            techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", self.researchProgress)) 
+        end
         
     end
 

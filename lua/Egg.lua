@@ -299,7 +299,12 @@ function Egg:SpawnPlayer(overrideplayer)
         // Spawn player on top of egg
         local spawnOrigin = Vector(self:GetOrigin())
         // Move down to the ground.
-        spawnOrigin.y = spawnOrigin.y - (self:GetExtents().y / 2)
+        local _, normal = GetSurfaceAndNormalUnderEntity(self)
+        if normal.y < 1 then
+            spawnOrigin.y = spawnOrigin.y - (self:GetExtents().y / 2) + 1
+        else
+            spawnOrigin.y = spawnOrigin.y - (self:GetExtents().y / 2)
+        end
 
         local gestationClass = self:GetClassToGestate()
         

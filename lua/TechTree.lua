@@ -324,7 +324,7 @@ end
 
 function GetIsTechResearching(player, techId)
 
-    local techTree = player:GetTechTree()
+    local techTree = GetTechTree(player:GetTeamNumber())
 
     if techTree then
         local techNode = techTree:GetTechNode(techId)
@@ -337,7 +337,7 @@ end
 
 function GetIsTechUnlocked(player, techId)
 
-    local techTree = player:GetTechTree()
+    local techTree = GetTechTree(player:GetTeamNumber())
     local isUnlocked = false
     
     if techTree then

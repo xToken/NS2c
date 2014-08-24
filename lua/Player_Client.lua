@@ -41,8 +41,6 @@ local kRangeFinderDistance = 20
 local kCtDownLength = kCountDownLength
 local kLowHealthWarning = 0.35
 local kLowHealthPulseSpeed = 10
-local kTechTree = TechTree()
-kTechTree:Initialize() 
 
 // These screen effects are only used on the local player so create them statically.
 local screenEffects = { }
@@ -507,6 +505,49 @@ function PlayerUI_GetUnitStatusInfo()
                     if unit.GetTeamType then
                         unitState.TeamType = unit:GetTeamType()
                     end
+
+                    if unit:isa("Player") and unit:isa("Marine") and HasMixin(unit, "WeaponOwner") and not GetAreEnemies(player, unit) then
+                        local primaryWeapon = unit:GetWeaponInHUDSlot(1)
+                        if primaryWeapon and primaryWeapon:isa("ClipWeapon") then
+                            unitState.PrimaryWeapon = primaryWeapon:GetTechId()
+                        end
+                    end
+                    
+                    if unit:isa("InfantryPortal") and unit.timeSpinStarted then
+                        if unit.queuedPlayerId ~= Entity.invalidId then
+                            local playerName = ""
+                            for _, playerInfo in ientitylist(Shared.GetEntitiesWithClassname("PlayerInfoEntity")) do
+                                if playerInfo.playerId == unit.queuedPlayerId then
+                                    playerName = playerInfo.playerName
+                                    break
+                                end
+                            end
+
+                            unitState.SpawnerName = playerName
+                            unitState.SpawnFraction = Clamp((Shared.GetTime() - unit.timeSpinStarted) / kMarineRespawnTime, 0, 1)
+                        end
+                    elseif unit:isa("Embryo") then
+                        unitState.EvolvePercentage = unit.evolvePercentage / 100
+                        unitState.EvolveClass = unit:GetEggTypeDisplayName()
+                    elseif unit:isa("Egg") and unit.researchProgress > 0 and unit.researchProgress < 1 then
+                        unitState.EvolvePercentage = unit.researchProgress
+                    elseif unit.GetDestinationLocationName then
+                        unitState.Destination = unit:GetDestinationLocationName()
+                    elseif unit:isa("Weapon") then
+                        -- Make super sure that we're hiding this
+                        unitState.IsCrossHairTarget = false
+                        unitState.Name = ""
+                        unitState.HealthFraction = 0
+                        unitState.ArmorFraction = 0
+                        unitState.Hint = ""
+                        -- Only show the AbilityFraction for Marine Commanders
+                        if player:isa("MarineCommander") and unit.weaponWorldState == true and unit.GetExpireTimeFraction then
+                            unitState.IsCrossHairTarget = true
+                            unitState.AbilityFraction = unit:GetExpireTimeFraction()
+                            unitState.IsWorldWeapon = true
+                        end
+                    end
+                    
                     
                     table.insert(unitStates, unitState)
                 
@@ -948,8 +989,7 @@ end
 
 function PlayerUI_GetTooltipDataFromTechId(techId, hotkeyIndex)
 
-    local player = Client.GetLocalPlayer()
-    local techTree = player:GetTechTree()
+    local techTree = GetTechTree()
 
     if techTree then
     
@@ -1262,6 +1302,33 @@ function PlayerUI_GetGameStartTime()
     
     return 0
     
+end
+
+function PlayerUI_GetGameLengthTime()
+
+    local state
+    local entityList = Shared.GetEntitiesWithClassname("GameInfo")
+
+    if entityList:GetSize() > 0 then
+
+        local gameInfo = entityList:GetEntityAtIndex(0)
+
+        state = gameInfo:GetState()
+
+        if state ~= kGameState.PreGame and
+        state ~= kGameState.Countdown
+        then
+            if state ~= kGameState.Started then
+                return gameInfo.prevTimeLength or 0, state
+            else
+                return math.max( 0, math.floor(Shared.GetTime()) - gameInfo:GetStartTime() ), state
+            end
+        end
+
+    end
+
+    return 0, state
+
 end
 
 function PlayerUI_GetNumCommandStructures()
@@ -2608,7 +2675,7 @@ function PlayerUI_GetHasMotionTracking()
     local player = Client.GetLocalPlayer()
     if player.gameStarted then
         if player:GetGameMode() == kGameMode.Classic then
-            local techTree = player:GetTechTree()
+            local techTree = GetTechTree()
             if techTree then
                 local mtracking = techTree:GetTechNode(kTechId.MotionTracking)
                 if mtracking and mtracking:GetResearched() then
@@ -2634,7 +2701,7 @@ function PlayerUI_GetArmorLevel(researched)
         
         if player:GetGameMode() == kGameMode.Classic then
         
-            local techTree = player:GetTechTree()
+            local techTree = GetTechTree()
         
             if techTree then
             
@@ -2682,7 +2749,7 @@ function PlayerUI_GetWeaponLevel(researched)
         
         if player:GetGameMode() == kGameMode.Classic then
     
-            local techTree = player:GetTechTree()
+            local techTree = GetTechTree()
         
             if techTree then
             
@@ -3008,6 +3075,18 @@ function PlayerUI_GetTeamType()
     end
     
     return kNeutralTeamType
+
+end
+
+function PlayerUI_GetTeamNumber()
+
+    local player = Client.GetLocalPlayer()
+    
+    if player and HasMixin(player, "Team") then    
+        return player:GetTeamNumber()    
+    end
+    
+    return kTeamReadyRoom
 
 end
 
@@ -3850,12 +3929,4 @@ end
 
 function Player:GetShowAtmosphericLight()
     return true
-end
-
-function Player:GetTechTree()   
-    return kTechTree
-end
-
-function Player:ClearTechTree()
-    kTechTree:Initialize()    
 end

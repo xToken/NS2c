@@ -712,6 +712,7 @@ local function GetAttackUrgency(bot, mem)
             [kMinimapBlipType.Hydra] = numOthers >= 2  and 0.1 or 2.0,
             [kMinimapBlipType.Whip] = numOthers >= 2   and 0.1 or 3.0,
             [kMinimapBlipType.Skulk] = numOthers >= 2  and 0.1 or 4.0,
+            [kMinimapBlipType.Gorge] =  numOthers >= 2  and 0.1 or 3.0,
             [kMinimapBlipType.Lerk] = numOthers >= 2   and 0.1 or 5.0,
             [kMinimapBlipType.Fade] = numOthers >= 3   and 0.1 or 6.0,
             [kMinimapBlipType.Onos] =  numOthers >= 4  and 0.1 or 7.0,

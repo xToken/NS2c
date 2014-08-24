@@ -14,7 +14,8 @@ Marine.kBuyMenuTexture = "ui/marine_buymenu.dds"
 Marine.kBuyMenuUpgradesTexture = "ui/marine_buymenu_upgrades.dds"
 Marine.kBuyMenuiconsTexture = "ui/marine_buy_icons.dds"
 
-Shared.PrecacheSurfaceShader("cinematics/vfx_materials/marine_highlight.surface_shader")
+PrecacheAsset("cinematics/vfx_materials/marine_highlight.surface_shader")
+local kHighlightMaterial = PrecacheAsset("cinematics/vfx_materials/marine_highlight.material")
 
 function MarineUI_GetHasObservatory()
 
@@ -47,8 +48,7 @@ end
 function MarineUI_GetPersonalUpgrades()
 
     local upgrades = { }
-    local player = Client.GetLocalPlayer()
-    local techTree = player:GetTechTree()
+    local techTree = GetTechTree()
     
     if techTree then
     

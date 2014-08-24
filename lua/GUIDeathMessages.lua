@@ -11,42 +11,79 @@
 //NS2c
 //Tweaked player kill feed to be in a diff location on aliens
 
-class 'GUIDeathMessages' (GUIScript)
+class 'GUIDeathMessages' (GUIAnimatedScript)
 
-local kBackgroundHeight = 32
-local kBackgroundColor = Color(0, 0, 0, 0)
-local kFontNames = { marine = "fonts/AgencyFB_small.fnt", alien = "fonts/AgencyFB_small.fnt" }
-local kScreenOffset = 40
-local kScreenOffsetX = 38
+local kKillHighlight = PrecacheAsset("ui/killfeed_highlight.dds")
+local kKillLeftBorderCoords = { 0, 0, 15, 64 }
+local kKillMiddleBorderCoords = { 16, 0, 112, 64 }
+local kKillRightBorderCoords = { 113, 0, 128, 64 }
+local kFontName = Fonts.kAgencyFB_Small
+local kBackgroundHeight = GUIScale(32)
+local kScreenOffset = GUIScale(40)
+local kScreenOffsetX = GUIScale(38)
 
 local kSustainTime = 4
 local kPlayerSustainTime = 4
 local kFadeOutTime = 1
 
 function GUIDeathMessages:Initialize()
+    
+    GUIAnimatedScript.Initialize(self)
+    
+    self.scale = 1
 
     self.messages = { }
     self.reuseMessages = { }
     
 end
 
+function GUIDeathMessages:Reset()
+    
+    GUIAnimatedScript.Reset(self)
+    
+    for i, message in ipairs(self.messages) do
+        message["Background"]:Destroy()
+    end
+    self.messages = { }
+    
+    for i, message in ipairs(self.reuseMessages) do
+        message["Background"]:Destroy()
+    end
+    self.reuseMessages = { }
+    
+end
+
+function GUIDeathMessages:OnResolutionChanged(oldX, oldY, newX, newY)
+
+    self:Reset()
+
+    kBackgroundHeight = GUIScale(32)
+    kScreenOffset = GUIScale(40)
+    kScreenOffsetX = GUIScale(38)
+
+end
+
 function GUIDeathMessages:Uninitialize()
+    
+    GUIAnimatedScript.Uninitialize(self)
 
     for i, message in ipairs(self.messages) do
-        GUI.DestroyItem(message["Background"])
+        message["Background"]:Destroy()
     end
     self.messages = nil
     
     for i, message in ipairs(self.reuseMessages) do
-        GUI.DestroyItem(message["Background"])
+        message["Background"]:Destroy()
     end
     self.reuseMessages = nil
     
 end
 
 function GUIDeathMessages:Update(deltaTime)
-
+    
     PROFILE("GUIDeathMessages:Update")
+    
+    GUIAnimatedScript.Update(self, deltaTime)
     
     local addDeathMessages = DeathMsgUI_GetMessages()
     local numberElementsPerMessage = 6 // FIXME - pretty error prone
@@ -89,6 +126,11 @@ function GUIDeathMessages:Update(deltaTime)
             currentColor = message["Target"]:GetColor()
             currentColor.a = alpha
             message["Target"]:SetColor(currentColor)
+            currentColor = message["Background"]:GetColor()
+            if currentColor.a > 0 then
+                currentColor.a = alpha
+            end
+            message["Background"]:SetColor(currentColor)
             
             if fadeFraction > 1.0 then
                 table.insert(removeMessages, message)
@@ -111,11 +153,10 @@ end
 
 function GUIDeathMessages:AddMessage(killerColor, killerName, targetColor, targetName, iconIndex, targetIsPlayer)
 
-    local style = PlayerUI_IsOnMarineTeam() and "marine" or "alien"
-    local xOffset = DeathMsgUI_GetTechOffsetX(0)
+    local xOffset = DeathMsgUI_GetTechOffsetX(iconIndex)
     local yOffset = DeathMsgUI_GetTechOffsetY(iconIndex)
-    local iconWidth = DeathMsgUI_GetTechWidth(0)
-    local iconHeight = DeathMsgUI_GetTechHeight(0)
+    local iconWidth = DeathMsgUI_GetTechWidth(iconIndex)
+    local iconHeight = DeathMsgUI_GetTechHeight(iconIndex)
     
     local insertMessage = { Background = nil, Killer = nil, Weapon = nil, Target = nil, Time = 0 }
     
@@ -130,58 +171,97 @@ function GUIDeathMessages:AddMessage(killerColor, killerName, targetColor, targe
     end
     
     if insertMessage["Killer"] == nil then
-        insertMessage["Killer"] = GUIManager:CreateTextItem()
+        insertMessage["Killer"] = self:CreateAnimatedTextItem()
     end
     
-    insertMessage["Killer"]:SetFontName(kFontNames[style])
+    insertMessage["Killer"]:SetFontName(kFontName)
     insertMessage["Killer"]:SetAnchor(GUIItem.Left, GUIItem.Center)
     insertMessage["Killer"]:SetTextAlignmentX(GUIItem.Align_Max)
     insertMessage["Killer"]:SetTextAlignmentY(GUIItem.Align_Center)
     insertMessage["Killer"]:SetColor(ColorIntToColor(killerColor))
     insertMessage["Killer"]:SetText(killerName)
+    insertMessage["Killer"]:SetUniformScale(self.scale)
+    insertMessage["Killer"]:SetScale(GetScaledVector()*self.scale)
     
     if insertMessage["Weapon"] == nil then
-        insertMessage["Weapon"] = GUIManager:CreateGraphicItem()
+        insertMessage["Weapon"] = self:CreateAnimatedGraphicItem()
     end
     
-    insertMessage["Weapon"]:SetSize(Vector(GUIScale(iconWidth), GUIScale(iconHeight), 0))
+    local scaledIconHeight = kBackgroundHeight
+    // Preserve aspect ratio
+    local scaledIconWidth = GUIScale(iconWidth)/(GUIScale(iconHeight)/scaledIconHeight)
+    
+    insertMessage["Weapon"]:SetSize(Vector(scaledIconWidth, scaledIconHeight, 0))
     insertMessage["Weapon"]:SetAnchor(GUIItem.Left, GUIItem.Center)
     insertMessage["Weapon"]:SetTexture(kInventoryIconsTexture)
     insertMessage["Weapon"]:SetTexturePixelCoordinates(xOffset, yOffset, xOffset + iconWidth, yOffset + iconHeight)
     insertMessage["Weapon"]:SetColor(Color(1, 1, 1, 1))
+    insertMessage["Weapon"]:SetUniformScale(self.scale)
+    insertMessage["Weapon"]:SetScale(GetScaledVector())
     
     if insertMessage["Target"] == nil then
-        insertMessage["Target"] = GUIManager:CreateTextItem()
+        insertMessage["Target"] = self:CreateAnimatedTextItem()
     end
     
-    insertMessage["Target"]:SetFontName(kFontNames[style])
+    insertMessage["Target"]:SetFontName(kFontName)
     insertMessage["Target"]:SetAnchor(GUIItem.Right, GUIItem.Center)
     insertMessage["Target"]:SetTextAlignmentX(GUIItem.Align_Min)
     insertMessage["Target"]:SetTextAlignmentY(GUIItem.Align_Center)
     insertMessage["Target"]:SetColor(ColorIntToColor(targetColor))
     insertMessage["Target"]:SetText(targetName)
+    insertMessage["Target"]:SetUniformScale(self.scale)
+    insertMessage["Target"]:SetScale(GetScaledVector()*self.scale)
     
-    local killerTextWidth = insertMessage["Killer"]:GetTextWidth(killerName)
-    local targetTextWidth = insertMessage["Target"]:GetTextWidth(targetName)
+    local killerTextWidth = GUIScale(insertMessage["Killer"]:GetTextWidth(killerName))*self.scale
+    local targetTextWidth = GUIScale(insertMessage["Target"]:GetTextWidth(targetName))*self.scale
     local textWidth = killerTextWidth + targetTextWidth
     
-    insertMessage["Weapon"]:SetPosition(Vector(textWidth / 2 , -GUIScale(iconHeight) / 2, 0))
+    insertMessage["Weapon"]:SetPosition(Vector(killerTextWidth, -scaledIconHeight / 2, 0))
     
     if insertMessage["Background"] == nil then
     
-        insertMessage["Background"] = GUIManager:CreateGraphicItem()
+        insertMessage["Background"] = self:CreateAnimatedGraphicItem()
+        insertMessage["Background"].left = self:CreateAnimatedGraphicItem()
+        insertMessage["Background"].left:SetAnchor(GUIItem.Left, GUIItem.Top)
+        insertMessage["Background"].right = self:CreateAnimatedGraphicItem()
+        // A sane person might ask why I align the right element to the left
+        // Well, there was an issue with scaling and it looked wrong in some resolutions
+        // Positioning it to the left and moving it the appropriate amount does the trick!
+        // Please, forgive me -Mendasp
+        insertMessage["Background"].right:SetAnchor(GUIItem.Left, GUIItem.Top)
+        insertMessage["Background"]:AddChild(insertMessage["Background"].right)
+        insertMessage["Background"]:AddChild(insertMessage["Background"].left)
         insertMessage["Weapon"]:AddChild(insertMessage["Killer"])
         insertMessage["Background"]:AddChild(insertMessage["Weapon"])
         insertMessage["Weapon"]:AddChild(insertMessage["Target"])
         
     end
     
-    insertMessage["BackgroundWidth"] = textWidth + GUIScale(iconWidth)
+    local player = Client.GetLocalPlayer()
+    local alpha = ConditionalValue(player and Client.GetIsControllingPlayer() and player:GetName() == killerName and targetIsPlayer and killerColor ~= targetColor, 1, 0)
+    local backgroundColor = ColorIntToColor(killerColor)
+    backgroundColor.a = alpha
+    
+    insertMessage["BackgroundWidth"] = textWidth + scaledIconWidth
     insertMessage["Background"]:SetSize(Vector(insertMessage["BackgroundWidth"], kBackgroundHeight, 0))
     insertMessage["Background"]:SetAnchor(GUIItem.Right, GUIItem.Top)
-    insertMessage["BackgroundXOffset"] = -textWidth - iconWidth - GUIScale(kScreenOffset) - kScreenOffsetX
+    insertMessage["BackgroundXOffset"] = -textWidth - scaledIconWidth - kScreenOffset - kScreenOffsetX
     insertMessage["Background"]:SetPosition(Vector(insertMessage["BackgroundXOffset"], 0, 0))
-    insertMessage["Background"]:SetColor(kBackgroundColor)
+    insertMessage["Background"]:SetColor(backgroundColor)
+    insertMessage["Background"]:SetTexture(kKillHighlight)
+    insertMessage["Background"]:SetTexturePixelCoordinates(unpack(kKillMiddleBorderCoords))
+    insertMessage["Background"].left:SetColor(backgroundColor)
+    insertMessage["Background"].left:SetTexture(kKillHighlight)
+    insertMessage["Background"].left:SetTexturePixelCoordinates(unpack(kKillLeftBorderCoords))
+    insertMessage["Background"].left:SetSize(Vector(GUIScale(8), kBackgroundHeight, 0))
+    insertMessage["Background"].left:SetInheritsParentAlpha(true)
+    insertMessage["Background"].left:SetPosition(Vector(-GUIScale(8), 0, 0))
+    insertMessage["Background"].right:SetColor(backgroundColor)
+    insertMessage["Background"].right:SetTexture(kKillHighlight)
+    insertMessage["Background"].right:SetTexturePixelCoordinates(unpack(kKillRightBorderCoords))
+    insertMessage["Background"].right:SetSize(Vector(GUIScale(8), kBackgroundHeight, 0))
+    insertMessage["Background"].right:SetPosition(Vector(textWidth + scaledIconWidth, 0, 0))
+    insertMessage["Background"].right:SetInheritsParentAlpha(true)
     insertMessage.sustainTime = ConditionalValue( targetIsPlayer==1, kPlayerSustainTime, kSustainTime )
     
     table.insert(self.messages, insertMessage)

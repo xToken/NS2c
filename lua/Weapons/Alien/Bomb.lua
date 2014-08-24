@@ -17,7 +17,7 @@ Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/DamageMixin.lua")
 Script.Load("lua/Weapons/PredictedProjectile.lua")
 
-Shared.PrecacheSurfaceShader("cinematics/vfx_materials/decals/bilebomb_decal.surface_shader")
+PrecacheAsset("cinematics/vfx_materials/decals/bilebomb_decal.surface_shader")
 Shared.RegisterDecalMaterial("cinematics/vfx_materials/decals/bilebomb_decal.material")
 
 class 'Bomb' (PredictedProjectile)

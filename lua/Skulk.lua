@@ -99,9 +99,7 @@ function Skulk:OnCreate()
     Alien.OnCreate(self)
 
     InitMixin(self, DissolveMixin)
-    
-    self.stickyForce = 0
-    
+
 end
 
 function Skulk:OnInitialized()

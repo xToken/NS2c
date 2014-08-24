@@ -145,7 +145,8 @@ if Client then
         if player and HasMixin(player, "TeamMessage") then
         
 			if Client.GetOptionInteger("hudmode", kHUDMode.Full) == kHUDMode.Full then
-	            local displayText = kTeamMessages[messageType].text[player:GetTeamType()]
+	            
+				local displayText = kTeamMessages[messageType].text[player:GetTeamType()]
 	            
 	            if displayText then
 	            
@@ -159,7 +160,7 @@ if Client then
 	                end
 	                
 	                assert(type(displayText) == "string")
-	                player:SetTeamMessage(string.upper(displayText))
+	                player:SetTeamMessage(string.UTF8Upper(displayText))
 
 	            end
             end

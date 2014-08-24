@@ -18,7 +18,7 @@ local kEnzymedThirdpersonMaterialName = "cinematics/vfx_materials/enzyme.materia
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/enzyme.surface_shader")
 
 local kEmpoweredEffectInterval = 2
-local kRegenerationViewCinematic = PrecacheAsset("cinematics/alien/regeneration_1p.cinematic")
+kRegenerationViewCinematic = PrecacheAsset("cinematics/alien/regeneration_1p.cinematic")
 
 local kFirstPersonDeathEffect = PrecacheAsset("cinematics/alien/death_1p_alien.cinematic")
 local kAlienFirstPersonHitEffectName = PrecacheAsset("cinematics/alien/hit_1p.cinematic")

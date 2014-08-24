@@ -19,6 +19,8 @@ for i = 1, 100 do math.random() end
 // NOTE: EventTester.lua needs to be loaded first.
 Script.Load("lua/EventTester.lua")
 
+Script.Load("lua/HotloadTools.lua")
+
 Script.Load("lua/JITConsoleCommands.lua")
 // Utility and constants
 Script.Load("lua/Globals.lua")
@@ -31,7 +33,6 @@ Script.Load("lua/NS2cGameStrings.lua")
 Script.Load("lua/MixinUtility.lua")
 Script.Load("lua/AnimatedModel.lua")
 Script.Load("lua/Vector.lua")
-Script.Load("lua/Table.lua")
 Script.Load("lua/Entity.lua")
 Script.Load("lua/Effects.lua")
 Script.Load("lua/NetworkMessages.lua")
@@ -163,6 +164,10 @@ Script.Load("lua/TeamInfo.lua")
 Script.Load("lua/GameInfo.lua")
 Script.Load("lua/AlienTeamInfo.lua")
 Script.Load("lua/PathingUtility.lua")
+Script.Load("lua/HotloadConsole.lua")
+Script.Load("lua/ServerPerformanceData.lua")
+
+Script.Load("lua/HitSounds.lua")
 
 //Load this last to hopefully attempt to support any latehook mods.
 Script.Load("lua/Mixins/ModdedMixinUtility.lua")
@@ -196,14 +201,14 @@ end
  */
 function OnPhysicsCollision(body1, body2)
 
-    local entity1 = body1:GetEntity()
-    local entity2 = body2:GetEntity()
+    local entity1 = body1 and body1:GetEntity()
+    local entity2 = body2 and body2:GetEntity()
     
-    if (entity1 ~= nil and entity1.OnCollision ~= nil) then
+    if entity1 and entity1.OnCollision then
         entity1:OnCollision(entity2)
     end
     
-    if (entity2 ~= nil and entity2.OnCollision ~= nil) then
+    if entity2 and entity2.OnCollision then
         entity2:OnCollision(entity1)
     end
 

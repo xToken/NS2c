@@ -13,7 +13,9 @@
 
 Script.Load("lua/Trigger.lua")
 
-Shared.PrecacheSurfaceShader("materials/power/powered_decal.surface_shader")
+PrecacheAsset("materials/power/powered_decal.surface_shader")
+local kPoweredDecalMaterial = PrecacheAsset("materials/power/powered_decal.material")
+// local kUnpoweredDecalMaterial = PrecacheAsset("materials/power/unpowered_decal.material")
 
 class 'Location' (Trigger)
 

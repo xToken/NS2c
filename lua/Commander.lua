@@ -45,8 +45,8 @@ Commander.kSentryOrientationModelName = PrecacheAsset("models/misc/sentry_arc/se
 Commander.kSentryRangeModelName = PrecacheAsset("models/misc/sentry_arc/sentry_line.model")
 Commander.kMarineCircleModelName = PrecacheAsset("models/misc/circle/circle.model")
 Commander.kAlienCircleModelName = PrecacheAsset("models/misc/circle/circle_alien.model")
-Commander.kMarineLineMaterialName = "ui/WaypointPath.material"
-Commander.kAlienLineMaterialName = "ui/WaypointPath_alien.material"
+Commander.kMarineLineMaterialName = PrecacheAsset("ui/WaypointPath.material")
+Commander.kAlienLineMaterialName = PrecacheAsset("ui/WaypointPath_alien.material")
 
 Commander.kSentryArcScale = 8
 
@@ -71,10 +71,14 @@ else
     Script.Load("lua/Commander_Client.lua")
 end
 
-Shared.PrecacheSurfaceShader("cinematics/vfx_materials/placement_valid.surface_shader")
-Shared.PrecacheSurfaceShader("cinematics/vfx_materials/placement_invalid.surface_shader")
+PrecacheAsset("cinematics/vfx_materials/placement_valid.surface_shader")
+PrecacheAsset("cinematics/vfx_materials/placement_invalid.surface_shader")
 
 Commander.kSelectMode = enum( {'None', 'SelectedGroup', 'JumpedToGroup'} )
+
+// adjust relevancy to see things in the corners of the overhead view
+local kCommanderRelevancyOriginOffset = Vector(25,0,0)
+local kCommanderRelevancyRangeOffset = 5
 
 local networkVars =
 {
@@ -126,6 +130,8 @@ function Commander:OnInitialized()
         // client has been replaced by commander
         self.timeToSendHotkeyGroups = Shared.GetTime() + 0.5
         
+        self:ConfigureRelevancy(kCommanderRelevancyOriginOffset, kCommanderRelevancyRangeOffset) 
+       
     end
 
     self.focusGroupIndex = 1
