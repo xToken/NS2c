@@ -92,8 +92,7 @@ end
 function AlienBuy_GetPersonalUpgrades()
 
     local upgrades = {}
-    local player = Client.GetLocalPlayer()
-    local techTree = player:GetTechTree()
+    local techTree = GetTechTree()
     
     if techTree then
     
@@ -110,8 +109,8 @@ end
 function AlienBuy_GetUpgradesForChamber(category)
 
     local upgrades = {}
+    local techTree = GetTechTree()
     local player = Client.GetLocalPlayer()
-    local techTree = player:GetTechTree()
     
     if techTree then
         if player:GetGameMode() == kGameMode.Classic then

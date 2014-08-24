@@ -17,6 +17,7 @@ class 'Shockwave' (ScriptActor)
 Shockwave.kMapName = "Shockwave"
 // Shockwave.kModelName = PrecacheAsset("models/marine/rifle/rifle_grenade.model") // for debugging
 Shockwave.kRadius = 0.06
+local kShockwaveCrackMaterial = PrecacheAsset("cinematics/vfx_materials/decals/shockwave_crack.material")
 
 local networkVars = { }
 
@@ -63,7 +64,7 @@ local function CreateEffect(self)
         coords.yAxis = coords.zAxis:CrossProduct(coords.xAxis)
 
         self:TriggerEffects("shockwave_trail", { effecthostcoords = coords })
-        Client.CreateTimeLimitedDecal("cinematics/vfx_materials/decals/shockwave_crack.material", coords * kRotationCoords[math.random(1, #kRotationCoords)], 2.7, 6)
+        Client.CreateTimeLimitedDecal(kShockwaveCrackMaterial, coords * kRotationCoords[math.random(1, #kRotationCoords)], 2.7, 6)
         
     end    
     
@@ -180,7 +181,9 @@ function Shockwave:Detonate()
     
     // never damage the owner
     local owner = self:GetOwner()
+	local onosViewPos
     if owner then
+		onosViewPos = owner:GetEyePos()
         table.removevalue(enemies, owner)
     end
     
@@ -189,7 +192,12 @@ function Shockwave:Detonate()
         for _, enemy in ipairs(enemies) do
         
             local enemyId = enemy:GetId()
-            if enemy:GetIsAlive() and not table.contains(self.damagedEntIds, enemyId) and math.abs(enemy:GetOrigin().y - groundTrace.endPoint.y) < 0.8 then
+			local ShouldStun = enemy:GetIsAlive() and not table.contains(self.damagedEntIds, enemyId)	//Sanity checks
+			ShouldStun = ShouldStun and math.abs(enemy:GetOrigin().y - groundTrace.endPoint.y) < 0.8	//Ground checks
+			if onosViewPos then
+				ShouldStun = ShouldStun and not GetWallBetween(onosViewPos, enemy:GetOrigin(), enemy)	//LOS checks
+			end
+            if ShouldStun then
                 
                 self:DoDamage(kStompDamage, enemy, enemy:GetOrigin(), GetNormalizedVector(enemy:GetOrigin() - groundTrace.endPoint), "none")
                 table.insert(self.damagedEntIds, enemyId)

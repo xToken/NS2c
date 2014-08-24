@@ -151,9 +151,6 @@
     <filename>CommanderHelp.lua</filename>
   </file>
   <file>
-    <filename>CommanderTutorialUtility.lua</filename>
-  </file>
-  <file>
     <filename>Commander_Buttons.lua</filename>
   </file>
   <file>
@@ -170,9 +167,6 @@
   </file>
   <file>
     <filename>Commander_Server.lua</filename>
-  </file>
-  <file>
-    <filename>bots\CommonActions.lua</filename>
   </file>
   <file>
     <filename>ConsoleCommands_Client.lua</filename>
@@ -244,6 +238,9 @@
     <filename>EnergyMixin.lua</filename>
   </file>
   <file>
+    <filename>EquipmentOutline.lua</filename>
+  </file>
+  <file>
     <filename>Exo.lua</filename>
   </file>
   <file>
@@ -269,9 +266,6 @@
   </file>
   <file>
     <filename>Weapons\Marine\Flamethrower.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Marine\Flamethrower_Client.lua</filename>
   </file>
   <file>
     <filename>GUIActionIcon.lua</filename>
@@ -433,6 +427,9 @@
     <filename>Weapons\Marine\HeavyMachineGun.lua</filename>
   </file>
   <file>
+    <filename>HitSounds.lua</filename>
+  </file>
+  <file>
     <filename>Hive.lua</filename>
   </file>
   <file>
@@ -452,6 +449,9 @@
   </file>
   <file>
     <filename>Hydra_Server.lua</filename>
+  </file>
+  <file>
+    <filename>IdleAnimationMixin.lua</filename>
   </file>
   <file>
     <filename>IdleMixin.lua</filename>
@@ -532,6 +532,9 @@
     <filename>MarineCommander_Server.lua</filename>
   </file>
   <file>
+    <filename>Hud\Commander\MarineGhostModel.lua</filename>
+  </file>
+  <file>
     <filename>MarineSpectator.lua</filename>
   </file>
   <file>
@@ -598,9 +601,6 @@
     <filename>NetworkMessages_Client.lua</filename>
   </file>
   <file>
-    <filename>NetworkMessages_Predict.lua</filename>
-  </file>
-  <file>
     <filename>NetworkMessages_Server.lua</filename>
   </file>
   <file>
@@ -617,9 +617,6 @@
   </file>
   <file>
     <filename>Onos_Server.lua</filename>
-  </file>
-  <file>
-    <filename>Order.lua</filename>
   </file>
   <file>
     <filename>OrdersMixin.lua</filename>
@@ -668,9 +665,6 @@
   </file>
   <file>
     <filename>PowerConsumerMixin.lua</filename>
-  </file>
-  <file>
-    <filename>Predict.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\Primal.lua</filename>

@@ -237,7 +237,7 @@ end
 function Marine:GetArmorLevel()
 
     local armorLevel = 0
-    local techTree = self:GetTechTree()
+    local techTree = GetTechTree(self:GetTeamNumber())
 
     if techTree and self:GetGameMode() == kGameMode.Classic then
     
@@ -272,7 +272,7 @@ end
 function Marine:GetWeaponLevel()
 
     local weaponLevel = 0
-    local techTree = self:GetTechTree()
+    local techTree = GetTechTree(self:GetTeamNumber())
 
     if techTree and self:GetGameMode() == kGameMode.Classic then
         

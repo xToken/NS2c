@@ -8,6 +8,7 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
+Script.Load("lua/IdleAnimationMixin.lua")
 
 class 'Shotgun' (ClipWeapon)
 
@@ -19,6 +20,7 @@ local networkVars =
 }
 
 // higher numbers reduces the spread
+local kIdleAnimations = {"idle", "idle_check", "idle_clean"}
 local kSpreadDistance = 11.3
 local kStartOffset = 0
 local kSpreadVectors =
@@ -58,6 +60,10 @@ function Shotgun:OnCreate()
 
     ClipWeapon.OnCreate(self)
     self.emptyPoseParam = 0
+    
+    if Client then
+        InitMixin(self, IdleAnimationMixin)
+    end
 
 end
 
@@ -176,10 +182,6 @@ function Shotgun:OnTag(tagName)
         
     end
     
-    if tagName == "end" then
-        self.primaryAttacking = false
-    end
-    
     ClipWeapon.OnTag(self, tagName)
     
     if tagName == "load_shell" then
@@ -201,6 +203,11 @@ function Shotgun:OnTag(tagName)
         
     end
     
+end
+
+// used for last effect
+function Shotgun:GetEffectParams(tableParams)
+    tableParams[kEffectFilterEmpty] = self.clip == 1
 end
 
 function Shotgun:FirePrimary(player)
@@ -291,8 +298,11 @@ end
 
 function Shotgun:GetAmmoPackMapName()
     return ShotgunAmmo.kMapName
-end    
+end
 
+function Shotgun:GetIdleAnimations()
+    return kIdleAnimations
+end
 
 if Client then
 

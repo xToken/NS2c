@@ -166,7 +166,7 @@ local function OnChatReceived(client, message)
         return
     end
     
-    chatMessage = string.sub(message.message, 1, kMaxChatLength)
+    chatMessage = string.UTF8Sub(message.message, 1, kMaxChatLength)
     if chatMessage and string.len(chatMessage) > 0 then
     
         local playerName, playerLocationId, playerTeamNumber, playerTeamType = GetChatPlayerData(client)
@@ -342,7 +342,7 @@ local function OnSetNameMessage(client, message)
         name = TrimName(name)
         
         // Treat "NsPlayer" as special.
-        if name ~= player:GetName() and name ~= kDefaultPlayerName and string.len(name) > 0 then
+        if name ~= player:GetName() and name ~= kDefaultPlayerName and string.IsValidNickname(name) then
         
             local prevName = player:GetName()
             player:SetName(name)

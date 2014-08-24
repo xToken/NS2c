@@ -28,6 +28,14 @@ Embryo.kEvolveSpawnOffset = 0.2
 
 Embryo.kSkinOffset = Vector(0, 0.02, 0)
 
+local kGestationTechIdToEggTechId =
+{
+    [kTechId.Gorge] = kTechId.GorgeEgg,
+    [kTechId.Lerk] = kTechId.LerkEgg,
+    [kTechId.Fade] = kTechId.FadeEgg,
+    [kTechId.Onos] = kTechId.OnosEgg,
+}
+
 local networkVars =
 {
     evolvePercentage = "float",

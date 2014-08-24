@@ -382,15 +382,15 @@ function OnLoadComplete(main)
     end
     
     if mainLoading then
-	//letterbox for non16:9 resolutions
-	local backgroundAspect = 9.0/16.0
+    //letterbox for non16:9 resolutions
+    local backgroundAspect = 9.0/16.0
     local xSize = Client.GetScreenWidth()
-	local ySize = xSize * backgroundAspect
-	bgPos = Vector(0, (Client.GetScreenHeight() - ySize) / 2, 0 ) 
+    local ySize = xSize * backgroundAspect
+    bgPos = Vector(0, (Client.GetScreenHeight() - ySize) / 2, 0 ) 
         bgSize = Vector( xSize, ySize, 0 )
         loadscreen = GUI.CreateItem()
         loadscreen:SetSize( bgSize )
-		loadscreen:SetPosition( bgPos )
+        loadscreen:SetPosition( bgPos )
         loadscreen:SetTexture( "screens/IntroScreen.jpg" )
     end
     

@@ -143,7 +143,7 @@ kGridHotkeys =
     
     if(index <= table.count(player.menuTechButtons)) then
     
-        local techTree = player:GetTechTree()
+        local techTree = GetTechTree()
         techId = player.menuTechButtons[index]        
         
         tooltipText = techTree:GetDescriptionText(techId)
@@ -195,7 +195,7 @@ function CommanderUI_MenuButtonStatus(index)
         
         if techId ~= kTechId.None then
         
-            local techNode = player:GetTechTree():GetTechNode(techId)
+            local techNode = GetTechTree():GetTechNode(techId)
             
             if techNode then
             
@@ -278,8 +278,7 @@ end
 
 local function GetIsMenu(techId)
 
-    local player = Client.GetLocalPlayer()
-    local techTree = player:GetTechTree()
+    local techTree = GetTechTree()
     if techTree then
     
         local techNode = techTree:GetTechNode(techId)
@@ -459,8 +458,7 @@ local function ComputeMenuTechAvailability(self)
     self.menuTechButtonsAllowed = { }
     self.menuTechButtonsAffordable = { }
     
-    local player = Client.GetLocalPlayer()
-    local techTree = player:GetTechTree()
+    local techTree = GetTechTree()
     
     for b = 1, #self.menuTechButtons do
     

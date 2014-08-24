@@ -113,10 +113,25 @@ end
 function RecycleMixin:OnResearch(researchId)
 
     if researchId == kTechId.Recycle then        
-        self:TriggerEffects("recycle_start")
+        self:TriggerEffects("recycle_start")        
+        if self.MarkBlipDirty then
+            self:MarkBlipDirty()
+        end
     end
     
 end
+
+
+function RecycleMixin:OnResearchCancel(researchId)
+
+    if researchId == kTechId.Recycle then
+        if self.MarkBlipDirty then
+            self:MarkBlipDirty()
+        end
+    end
+    
+end
+
 
 function RecycleMixin:OnUpdateRender()
 

@@ -93,6 +93,7 @@ function Commander:CopyPlayerDataFrom(player)
     end
     self.timeStartedCommanderMode = Shared.GetTime()
     
+	self.oneHive = player.oneHive
     self.twoHives = player.twoHives
     self.threeHives = player.threeHives
     
@@ -129,7 +130,7 @@ function Commander:AttemptToResearchOrUpgrade(techNode, entity)
     
         if (techNode:GetCanResearch() or techNode:GetIsManufacture()) and entity:GetCanResearch(techNode:GetTechId()) then
         
-            if self:GetTechTree():GetNumberOfQueuedResearch() == 0 then
+            if GetTechTree(self:GetTeamNumber()):GetNumberOfQueuedResearch() == 0 then
             
                 entity:SetResearching(techNode, self)
                 
@@ -137,7 +138,7 @@ function Commander:AttemptToResearchOrUpgrade(techNode, entity)
                     techNode:SetResearching()
                 end
                 
-                self:GetTechTree():SetTechNodeChanged(techNode, "researching")
+                GetTechTree(self:GetTeamNumber()):SetTechNodeChanged(techNode, "researching")
                 
                 return true
                 
@@ -416,7 +417,7 @@ function Commander:ProcessTechTreeAction(techId, pickVec, orientation, worldCoor
         return false
     end
     
-    local techNode = self:GetTechTree():GetTechNode(techId)
+    local techNode = GetTechTree(self:GetTeamNumber()):GetTechNode(techId)
     
     if techNode == nil then
         return false

@@ -48,8 +48,7 @@ end
 function MarineUI_GetPersonalUpgrades()
 
     local upgrades = { }
-    local player = Client.GetLocalPlayer()
-    local techTree = player:GetTechTree()
+    local techTree = GetTechTree()
     
     if techTree then
     

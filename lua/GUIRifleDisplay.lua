@@ -44,8 +44,7 @@ function GUIRifleDisplay:Initialize()
 
     // Slightly larger copy of the text for a glow effect
     self.ammoTextBg = GUIManager:CreateTextItem()
-    //self.ammoTextBg:SetFontName("fonts/MicrogrammaDMedExt_large.fnt")
-    self.ammoTextBg:SetFontName("fonts/LMGFont.fnt")
+    self.ammoTextBg:SetFontName(Fonts.kLMGFont)
     self.ammoTextBg:SetScale(FontScaleVector * 1.1)
     self.ammoTextBg:SetFontIsBold(true)
     self.ammoTextBg:SetTextAlignmentX(GUIItem.Align_Center)
@@ -55,8 +54,7 @@ function GUIRifleDisplay:Initialize()
 
     // Text displaying the amount of ammo in the clip
     self.ammoText = GUIManager:CreateTextItem()
-    //self.ammoText:SetFontName("fonts/MicrogrammaDMedExt_large.fnt")
-    self.ammoText:SetFontName("fonts/LMGFont.fnt")
+    self.ammoText:SetFontName(Fonts.kLMGFont)
     self.ammoText:SetScale(FontScaleVector)
     self.ammoText:SetFontIsBold(true)
     self.ammoText:SetTextAlignmentX(GUIItem.Align_Center)
@@ -66,7 +64,7 @@ function GUIRifleDisplay:Initialize()
     
         // Slightly larger copy of the text for a glow effect
     self.ammoTextReserveBg = GUIManager:CreateTextItem()
-    self.ammoTextReserveBg:SetFontName("fonts/LMGFont.fnt")
+    self.ammoTextReserveBg:SetFontName(Fonts.kLMGFont)
 	self.ammoTextReserveBg:SetScale(FontScaleReserveVector * 1.1)
     self.ammoTextReserveBg:SetTextAlignmentX(GUIItem.Align_Center)
     self.ammoTextReserveBg:SetTextAlignmentY(GUIItem.Align_Center)
@@ -75,7 +73,7 @@ function GUIRifleDisplay:Initialize()
 
     // Text displaying the amount of ammo in the clip
     self.ammoTextReserve = GUIManager:CreateTextItem()
-    self.ammoTextReserve:SetFontName("fonts/LMGFont.fnt")
+    self.ammoTextReserve:SetFontName(Fonts.kLMGFont)
     self.ammoTextReserve:SetScale(FontScaleReserveVector)
     self.ammoTextReserve:SetTextAlignmentX(GUIItem.Align_Center)
     self.ammoTextReserve:SetTextAlignmentY(GUIItem.Align_Center)

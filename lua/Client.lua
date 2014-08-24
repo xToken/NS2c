@@ -147,6 +147,18 @@ function GetRenderCameraCoords()
     
 end
 
+// Client tech tree
+local gTechTree = TechTree()
+gTechTree:Initialize() 
+
+function GetTechTree()
+    return gTechTree
+end
+
+function ClearTechTree()
+    gTechTree:Initialize()    
+end
+
 function SetLocalPlayerIsOverhead(isOverhead)
 
     Client.SetGroupIsVisible(kCommanderInvisibleGroupName, not isOverhead)
@@ -353,9 +365,9 @@ function OnMapLoadEntity(className, groupName, values)
         cinematic:SetRepeatStyle(repeatStyle)
         
         cinematic.commanderInvisible = values.commanderInvisible
-		cinematic.className = className
-		cinematic.coords = coords
-		
+        cinematic.className = className
+        cinematic.coords = coords
+        
         table.insert(Client.cinematics, cinematic)
         
     elseif className == "ambient_sound" then
@@ -634,7 +646,7 @@ local function OnUpdateClient(deltaTime)
         local isMale = Client.GetOptionString("sexType", "Male") == "Male"
         local shoulderPadIndex = Client.GetOptionInteger("shoulderPad", 1) // 1 means no shoulder pad selected
         local exoVariant = Client.GetOptionInteger("exoVariant", kDefaultExoVariant)
-		local rifleVariant = Client.GetOptionInteger("rifleVariant", kDefaultRifleVariant)
+        local rifleVariant = Client.GetOptionInteger("rifleVariant", kDefaultRifleVariant)
         Client.SendNetworkMessage("ConnectMessage",
                 BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, lerkVariant, shoulderPadIndex, exoVariant, rifleVariant),
                 true)
@@ -951,19 +963,19 @@ local function OnUpdateRender()
     
         local coords = player:GetCameraViewCoords()
         
-        UpdateFogAreaModifiers(coords.origin)
+        //UpdateFogAreaModifiers(coords.origin)
         
         camera:SetCoords(coords)
-		
+        
         local adjustValue   = Clamp( Client.GetOptionFloat("graphics/display/fov-adjustment",0), 0, 1 )
-		local adjustRadians = math.rad(
-			(1-adjustValue)*kMinFOVAdjustmentDegrees + adjustValue*kMaxFOVAdjustmentDegrees)
-		
-		// Don't adjust the FOV for the commander.
-		if player:isa("Commander") then
-		    adjustRadians = 0
-	    end
-			
+        local adjustRadians = math.rad(
+            (1-adjustValue)*kMinFOVAdjustmentDegrees + adjustValue*kMaxFOVAdjustmentDegrees)
+        
+        // Don't adjust the FOV for the commander.
+        if player:isa("Commander") then
+            adjustRadians = 0
+        end
+            
         camera:SetFov(player:GetRenderFov()+adjustRadians)
         
         // In commander mode use frustum culling since the occlusion geometry
@@ -1178,8 +1190,8 @@ end
 
 local function OnLoadComplete()
     
-	Client.fullyLoaded = true
-	
+    Client.fullyLoaded = true
+    
     Render_SyncRenderOptions()
     Input_SyncInputOptions()
     HitSounds_SyncOptions()
@@ -1224,12 +1236,12 @@ local function OnLoadComplete()
     
     PreLoadGUIScripts()
     
-	currentLoadingTime = Shared.GetSystemTimeReal() - startLoadingTime
-	Print("Loading took " .. ToString(currentLoadingTime) .. " seconds")
+    currentLoadingTime = Shared.GetSystemTimeReal() - startLoadingTime
+    Print("Loading took " .. ToString(currentLoadingTime) .. " seconds")
 
-    if #Client.lowLightList == 0 and Client.GetOptionInteger("graphics/lightQuality", 2) == 1 then
+    if Client.lowLightList and #Client.lowLightList == 0 and Client.GetOptionInteger("graphics/lightQuality", 2) == 1 then
         Shared.Message("Map doesn't support low lights option, defaulting to regular lights.")
-        //Shared.ConsoleCommand("output " .. "Map doesn't support low lights option, defaulting to regular lights.")
+        Shared.ConsoleCommand("output " .. "Map doesn't support low lights option, defaulting to regular lights.")
     end
     
 end
@@ -1321,7 +1333,7 @@ Event.Hook("LoadComplete", OnLoadComplete)
 
 Event.Hook("DebugState",
 function()
-	// Leaving this here for future debugging convenience.
+    // Leaving this here for future debugging convenience.
     local player = Client.GetLocalPlayer()
     if player then
         DebugPrint("active weapon id = %d", player.activeWeaponId )

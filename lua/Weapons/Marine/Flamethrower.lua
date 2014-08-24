@@ -8,6 +8,7 @@
 
 Script.Load("lua/Weapons/Weapon.lua")
 Script.Load("lua/PickupableWeaponMixin.lua")
+Script.Load("lua/IdleAnimationMixin.lua")
 
 class 'Flamethrower' (ClipWeapon)
 
@@ -24,8 +25,8 @@ local kAnimationGraph = PrecacheAsset("models/marine/flamethrower/flamethrower_v
 local kFireLoopingSound = PrecacheAsset("sound/NS2.fev/marine/flamethrower/attack_loop")
 
 local kRange = kFlamethrowerRange
-
 local kConeWidth = 0.08
+local kIdleAnimations = {"idle", "idle_fingers", "idle_clean"}
 
 local networkVars =
 { 
@@ -52,6 +53,7 @@ function Flamethrower:OnCreate()
     
         self:SetUpdates(true)
         self.lastAttackEffectTime = 0.0
+        InitMixin(self, IdleAnimationMixin)
         
     end
     
@@ -339,6 +341,10 @@ end
 
 function Flamethrower:GetNotifiyTarget()
     return false
+end
+
+function Flamethrower:GetIdleAnimations()
+    return kIdleAnimations
 end
 
 if Server then

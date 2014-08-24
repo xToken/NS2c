@@ -83,6 +83,16 @@ function Primal:GetLastAttackTime()
     return self.lastPrimaryAttackTime
 end
 
+function Primal:GetDeathIconIndex()
+
+    if self.secondaryAttacking then
+        return kDeathMessageIcon.LerkBite
+    else
+        return kDeathMessageIcon.Umbra
+    end
+    
+end
+
 function Primal:OnPrimaryAttack(player)
 
     if player:GetEnergy() >= self:GetEnergyCost()  and not self:GetHasAttackDelay(player) then

@@ -100,6 +100,42 @@ function MarineTeam:OnRespawnQueueChanged()
     
 end
 
+
+function MarineTeam:GetTotalInRespawnQueue()
+    
+    local queueSize = #self.respawnQueue
+    local numPlayers = 0
+    
+    for i = 1, #self.respawnQueue do
+        local player = Shared.GetEntity(self.respawnQueue[i])
+        if player then
+            numPlayers = numPlayers + 1
+        end
+    
+    end
+    
+    local allIPs = GetEntitiesForTeam( "InfantryPortal", self:GetTeamNumber() )
+    if #allIPs > 0 then
+        
+        for _, ip in ipairs( allIPs ) do
+        
+            if GetIsUnitActive( ip ) then
+                
+                if ip.queuedPlayerId ~= nil and ip.queuedPlayerId ~= Entity.invalidId then
+                    numPlayers = numPlayers + 1
+                end
+                
+            end
+        
+        end
+        
+    end
+    
+    return numPlayers
+    
+end
+
+
 // Clear distress flag for all players on team, unless affected by distress beaconing Observatory. 
 // This function is here to make sure case with multiple observatories and distress beacons is
 // handled properly.

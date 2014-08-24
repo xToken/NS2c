@@ -23,12 +23,13 @@ local kAnimationGraph = PrecacheAsset("models/alien/gorge/gorge_view.animation_g
 
 local kSpitViewEffect = PrecacheAsset("cinematics/alien/gorge/spit_1p.cinematic")
 local kSpitProjectileEffect = PrecacheAsset("cinematics/alien/gorge/spit_1p_projectile.cinematic")
+local kViewSpitMaterial = PrecacheAsset("materials/effects/mesh_effects/view_spit.material")
 local attackEffectMaterial = nil
 
 if Client then
 
     attackEffectMaterial = Client.CreateRenderMaterial()
-    attackEffectMaterial:SetMaterial("materials/effects/mesh_effects/view_spit.material")
+    attackEffectMaterial:SetMaterial(kViewSpitMaterial)
     
 end
 

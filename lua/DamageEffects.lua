@@ -164,6 +164,7 @@ kDamageEffects =
             {sound = "sound/NS2.fev/alien/structures/whip/hit", doer = "Whip", world_space = true, done = true},
             
             {sound = "sound/NS2.fev/alien/skulk/bite_hit_metal", surface = "metal", doer = "BiteLeap", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/skulk/bite_hit_thin_metal", surface = "thin_metal", doer = "BiteLeap", world_space = true, done = true},
             {sound = "sound/NS2.fev/alien/skulk/bite_hit_organic", surface = "organic", doer = "BiteLeap", world_space = true, done = true},
             {sound = "sound/NS2.fev/alien/skulk/bite_hit_organic", surface = "infestation", doer = "BiteLeap", world_space = true, done = true},
             {sound = "sound/NS2.fev/alien/skulk/bite_hit_rock", surface = "rock", doer = "BiteLeap", world_space = true, done = true},
@@ -182,6 +183,7 @@ kDamageEffects =
             {sound = "sound/NS2.fev/alien/lerk/spikes_pierce", surface = "flesh", doer = "LerkUmbra", alt_mode = true, done = true},
             
             {sound = "sound/NS2.fev/alien/skulk/bite_hit_metal", surface = "metal", doer = "LerkBite", world_space = true, done = true},
+			{sound = "sound/NS2.fev/alien/skulk/bite_hit_thin_metal", surface = "thin_metal", doer = "LerkBite", alt_mode = false, world_space = true, done = true},
             {sound = "sound/NS2.fev/alien/skulk/bite_hit_organic", surface = "organic", doer = "LerkBite", world_space = true, done = true},
             {sound = "sound/NS2.fev/alien/skulk/bite_hit_organic", surface = "infestation", doer = "LerkBite", world_space = true, done = true},
             {sound = "sound/NS2.fev/alien/skulk/bite_hit_rock", surface = "rock", doer = "LerkBite", world_space = true, done = true},
@@ -207,13 +209,15 @@ kDamageEffects =
             {sound = "sound/NS2.fev/materials/rock/ricochet", doer = "Hydra", done = true},
             
             {sound = "sound/NS2.fev/alien/onos/gore_hit_metal", surface = "metal", doer = "Gore", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/onos/gore_hit_thin_metal", surface = "thin_metal", doer = "Gore", world_space = true, done = true},
+            {sound = "sound/NS2.fev/alien/onos/gore_hit_thin_metal", surface = "electronic", doer = "Gore", world_space = true, done = true},
             {sound = "sound/NS2.fev/alien/onos/gore_hit_organic", surface = "organic", doer = "Gore", world_space = true, done = true},
             {sound = "sound/NS2.fev/alien/onos/gore_hit_organic", surface = "infestation", doer = "Gore", world_space = true, done = true},
             {sound = "sound/NS2.fev/alien/onos/gore_hit_thin_metal", surface = "glass", doer = "Gore", world_space = true, done = true},
             {sound = "sound/NS2.fev/materials/rock/ricochet", surface = "rock", doer = "Gore", world_space = true, done = true},
-            {sound = "sound/NS2.fev/alien/onos/gore_hit_thin_metal", surface = "thin_metal", doer = "Gore", world_space = true, done = true},
+
             {sound = "sound/NS2.fev/alien/onos/gore_hit_door", surface = "door", doer = "Gore", world_space = true, done = true},
-            {sound = "sound/NS2.fev/alien/onos/gore_hit_thin_metal", surface = "electronic", doer = "Gore", world_space = true, done = true},
+
             {sound = "sound/NS2.fev/alien/onos/gore_hit_marine", surface = "armor", doer = "Gore", world_space = true, done = true},
             {sound = "sound/NS2.fev/alien/onos/gore_hit_marine", surface = "flesh", doer = "Gore", world_space = true, done = true},
             {sound = "sound/NS2.fev/materials/membrane/ricochet", surface = "membrane", doer = "Gore", world_space = true, done = true},
@@ -277,6 +281,7 @@ kDamageEffects =
             {decal = "cinematics/vfx_materials/decals/bullet_hole_02.material", scale = 0.25, doer = "Spikes", done = true},
             
             {decal = "cinematics/vfx_materials/decals/clawmark_01.material", scale = 0.5, doer = "BiteLeap", done = true}, 
+			{decal = "cinematics/vfx_materials/decals/bite_02.material", scale = 0.5, doer = "LerkBite", done = true}, 
             
             {decal = {{.25, "cinematics/vfx_materials/decals/clawmark_01.material"},
                       {.25, "cinematics/vfx_materials/decals/clawmark_02.material"},

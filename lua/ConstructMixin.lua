@@ -149,7 +149,7 @@ if Server then
 
     function ConstructMixin:OnKill()
 
-        if not self:GetIsBuilt() then
+        if not self:GetIsBuilt() and self:GetTeam() then
         
             local techTree = self:GetTeam():GetTechTree()
             local techNode = techTree:GetTechNode(self:GetTechId())
@@ -244,7 +244,7 @@ function ConstructMixin:Construct(elapsedTime, builder)
             builder:OnConstructTarget(self)
         end
         
-        if Server then
+        if Server and self:GetTeam() then
 
             if not self.lastBuildFractionTechUpdate then
                 self.lastBuildFractionTechUpdate = self.buildFraction

@@ -16,6 +16,7 @@ class 'NS2Gamerules' (Gamerules)
 NS2Gamerules.kMapName = "ns2_gamerules"
 
 local kGameEndCheckInterval = 0.75
+local kDrawGameWindow = 0.75
 local kPregameLength = 10
 local kTimeToReadyRoom = 8
 local kPauseToSocializeBeforeMapcycle = 30
@@ -98,6 +99,19 @@ if Server then
         return MarineTeam()
         
     end
+    
+    function NS2Gamerules:ResetPlayerScores()
+    
+        self.clientpres = {}
+        for _, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
+            if player.ResetScores and player.client then
+                player:ResetScores()
+                self.clientpres[player:GetSteamId()] = {}
+                self.clientpres[player:GetSteamId()][player:GetTeamNumber()] = ConditionalValue(team == self.team1, kMarineInitialIndivRes, kAlienInitialIndivRes)
+            end
+        end
+
+    end
 
     function NS2Gamerules:SetGameState(state)
     
@@ -115,15 +129,13 @@ if Server then
             if self.gameState == kGameState.Started then
             
                 PostGameViz("Game started")
+                self:ResetPlayerScores()
                 self.gameStartTime = Shared.GetTime()
                 
                 self.gameInfo:SetStartTime(self.gameStartTime)
                 
                 SendTeamMessage(self.team1, kTeamMessageTypes.GameStarted)
                 SendTeamMessage(self.team2, kTeamMessageTypes.GameStarted)
-                
-                // Reset disconnected player resources when a game starts to prevent shenanigans.
-                self.disconnectedPlayerResources = { }
                 
             end
             
@@ -193,9 +205,8 @@ if Server then
         self:SetIsVisible(false)
         self:SetPropagate(Entity.Propagate_Never)
         
-        // Used to keep track of the amount of resources a player has when they
-        // reconnect so we can award them the res back if they reconnect soon.
-        self.disconnectedPlayerResources = { }
+        // Track how much pres clients have when they switch a team or disconnect
+        self.clientpres = {}
         
         self.justCreated = true
         
@@ -226,20 +237,23 @@ if Server then
     end
     
     function NS2Gamerules:OnClientDisconnect(client)
-    
+
         local player = client:GetControllingPlayer()
         
-        if player ~= nil then
+        if player then
         
             // When a player disconnects remove them from their team
-            local team = self:GetTeam(player:GetTeamNumber())
+            local teamNumber = player:GetTeamNumber()
+            local team = self:GetTeam(teamNumber)
             if team then
                 team:RemovePlayer(player)
             end
             
             player:RemoveSpectators(nil)
             
-            self.disconnectedPlayerResources[client:GetUserId()] = player:GetResources()
+            local clientUserId = client:GetUserId()
+            if not self.clientpres[clientUserId] then self.clientpres[clientUserId] = {} end
+            self.clientpres[clientUserId][teamNumber] = player:GetResources()
             
         end
         
@@ -259,13 +273,8 @@ if Server then
             
                 if entity:isa("Player") then
             
-                    if team:AddPlayer(entity) then
+                    team:AddPlayer(entity)
 
-                        // Tell team to send entire tech tree on team change
-                        entity.sendTechTreeBase = true           
-                        
-                    end
-                
                 end
                 
             end
@@ -380,10 +389,6 @@ if Server then
         // Destroy any map entities that are still around
         DestroyLiveMapEntities()
         
-        // Track which clients have joined teams so we don't 
-        // give them starting resources again if they switch teams
-        self.userIdsInGame = {}
-        
         self:SetGameState(kGameState.NotStarted)
         
         // Reset all players, delete other not map entities that were created during 
@@ -451,7 +456,50 @@ if Server then
         
         local team1TechPoint = nil
         local team2TechPoint = nil
-        if Server.spawnSelectionOverrides then
+        
+        if Server.teamSpawnOverride and #Server.teamSpawnOverride > 0 then
+           
+            for t = 1, #techPoints do
+
+                local techPointName = string.lower(techPoints[t]:GetLocationName())
+                local selectedSpawn = Server.teamSpawnOverride[1]
+                if techPointName == selectedSpawn.marineSpawn then
+                    team1TechPoint = techPoints[t]
+                elseif techPointName == selectedSpawn.alienSpawn then
+                    team2TechPoint = techPoints[t]
+                end
+                
+            end
+            
+            if not team1TechPoint or not team2TechPoint then
+                Shared.Message("Invalid spawns, defaulting to normal spawns")
+                if Server.spawnSelectionOverrides then
+        
+                    local selectedSpawn = self.techPointRandomizer:random(1, #Server.spawnSelectionOverrides)
+                    selectedSpawn = Server.spawnSelectionOverrides[selectedSpawn]
+                    
+                    for t = 1, #techPoints do
+                    
+                        local techPointName = string.lower(techPoints[t]:GetLocationName())
+                        if techPointName == selectedSpawn.marineSpawn then
+                            team1TechPoint = techPoints[t]
+                        elseif techPointName == selectedSpawn.alienSpawn then
+                            team2TechPoint = techPoints[t]
+                        end
+                        
+                    end
+                        
+                else
+                    
+                    // Reset teams (keep players on them)
+                    team1TechPoint = self:ChooseTechPoint(techPoints, kTeam1Index)
+                    team2TechPoint = self:ChooseTechPoint(techPoints, kTeam2Index)
+
+                end
+            
+            end
+            
+        elseif Server.spawnSelectionOverrides then
         
             local selectedSpawn = self.techPointRandomizer:random(1, #Server.spawnSelectionOverrides)
             selectedSpawn = Server.spawnSelectionOverrides[selectedSpawn]
@@ -472,7 +520,7 @@ if Server then
             // Reset teams (keep players on them)
             team1TechPoint = self:ChooseTechPoint(techPoints, kTeam1Index)
             team2TechPoint = self:ChooseTechPoint(techPoints, kTeam2Index)
-            
+
         end
         
         self.team1:ResetPreservePlayers(team1TechPoint)
@@ -530,6 +578,11 @@ if Server then
         self.sentCombatGameOver = false
         // Reset banned players for new game
         self.bannedPlayers = {}
+        
+        // Send scoreboard and tech node update, ignoring other scoreboard updates (clearscores resets everything)
+        for index, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
+            player.sendTechTreeBase = true
+        end
         
         self.team1:OnResetComplete()
         self.team2:OnResetComplete()
@@ -619,7 +672,7 @@ if Server then
                 end
             
             end
-            self.timeToSendHealth = Shared.GetTime() + 1
+            self.timeToSendHealth = Shared.GetTime() + 0.25
             
         end
         
@@ -649,7 +702,7 @@ if Server then
             
             end
             
-            self.timeToSendTechPoints = Shared.GetTime() + 1
+            self.timeToSendTechPoints = Shared.GetTime() + 0.5
             
         end
         
@@ -856,34 +909,81 @@ if Server then
         
     end
     
-	local kPlayerSkillUpdateRate = 10
-    local function UpdatePlayerSkill(self)
-    
-        self.lastTimeUpdatedPlayerSkill = self.lastTimeUpdatedPlayerSkill or 0
-        if Shared.GetTime() - self.lastTimeUpdatedPlayerSkill > kPlayerSkillUpdateRate then
-        
-            self.lastTimeUpdatedPlayerSkill = Shared.GetTime()
-            
-            -- Remove the player skill old tag.
-            local tags = { }
-            Server.GetTags(tags)
-            for t = 1, #tags do
-            
-                if string.find(tags[t], "P_S") then
-                    Server.RemoveTag(tags[t])
-                end
-                
+	local function RemoveTag(tagName)
+        local tags = { }
+        Server.GetTags(tags)
+
+        for t = 1, #tags do
+
+            if string.find(tags[t], tagName) then
+                Server.RemoveTag(tags[t])
             end
-            
-            local averageSkill, marineAverageSkill, alienAverageSKill = self.playerRanking:GetAveragePlayerSkill()
-            Server.AddTag("P_S" .. math.floor(averageSkill))
-            
-            self.gameInfo:SetAveragePlayerSkill(averageSkill)
-            
+
         end
+
+    end
+
+    local function UpdateTag(tagName, value)
+
+        RemoveTag(tagName)
+        Server.AddTag(string.format("%s%s", tagName, value))
+
+    end
+    
+    function NS2Gamerules:UpdatePlayerSkill()
         
+        local kTime = Shared.GetTime()
+        if not self.nextTimeUpdatePlayerSkill or kTime > self.nextTimeUpdatePlayerSkill then
+
+            self.nextTimeUpdatePlayerSkill = kTime + 10
+
+            local averageSkill = self.playerRanking:GetAveragePlayerSkill()
+            UpdateTag("P_S", math.floor(averageSkill))
+
+            self.gameInfo:SetAveragePlayerSkill(averageSkill)
+
+        end
+
         self.playerRanking:OnUpdate()
-        
+
+    end
+
+    local kTickCount = 0
+    local kTickTimeSum = 0
+    function NS2Gamerules:UpdatePerfTags(timePassed)
+
+        UpdateTag("tickrate_", math.floor(Server.GetFrameRate()))
+
+        kTickCount = kTickCount + 1
+        kTickTimeSum = kTickTimeSum + timePassed
+
+        local kTime = Shared.GetTime()
+        if not self.nextServerTickrateUpdate or self.nextServerTickrateUpdate < kTime then
+
+            kNextServerTickrateUpdate = Shared.GetTime() + 10
+            kTickCount = kTickCount / kTickTimeSum
+            kTickTimeSum = 1
+            --round it
+            local avgTickrate = string.format("%.0f", kTickCount)
+            UpdateTag("ServerTickrate", avgTickrate)
+            
+            self.nextServerTickrateUpdate = kTime + 10
+        end
+
+    end
+    
+    function NS2Gamerules:UpdateCustomNetworkSettings()
+	
+        local kTime = Shared.GetTime()
+        if not self.nextTimeUpdateCustomNetworkSettings or self.nextTimeCustomNetworkSettings < kTime then
+            if  Server.GetSendrate() ~= 20 or Server.GetTickrate() ~= 30 or Shared.GetSettingsVariable( "mr" ) ~= "30.000000" or Shared.GetSettingsVariable("interp") ~= "0.100000" then
+                UpdateTag("custom_network_settings", "")
+            else 
+                RemoveTag("custom_network_settings")
+            end
+            self.nextTimeUpdateNetworkSettingsModded = kTime + 10
+        end
+
     end
     
     local function CheckCombatTimer(self)
@@ -927,10 +1027,8 @@ if Server then
         
         GetEffectManager():OnUpdate(timePassed)
         
-        UpdatePlayerSkill(self)
-        
         if Server then
-        
+            
             if self.justCreated then
             
                 if not self.gameStarted then
@@ -971,6 +1069,10 @@ if Server then
                 if GetServerGameMode() == kGameMode.Combat then
                     CheckCombatTimer(self)
                 end
+
+				self:UpdatePlayerSkill()
+                self:UpdatePerfTags(timePassed)
+                self:UpdateCustomNetworkSettings()
                 
             end
 
@@ -986,42 +1088,48 @@ if Server then
      */
     function NS2Gamerules:EndGame(winningTeam)
     
-        if self:GetGameState() == kGameState.Started then
+        if self:GetGameState() == kGameState.Started then        
         
             if self.autoTeamBalanceEnabled then
                 TEST_EVENT("Auto-team balance, game ended")
             end
             
-            // Set losing team        
-            local losingTeam = nil
-            if winningTeam == self.team1 then
+            local winningTeamType = winningTeam and winningTeam.GetTeamType and winningTeam:GetTeamType() or kNeutralTeamType
             
-                self:SetGameState(kGameState.Team2Won)
-                losingTeam = self.team2            
-                PostGameViz("Alien win")
-                
-            else
-            
+            if winningTeamType == kMarineTeamType then
+
                 self:SetGameState(kGameState.Team1Won)
-                losingTeam = self.team1            
-                PostGameViz("Marine win")
+                PostGameViz("Marines Win!")
                 
+            elseif winningTeamType == kAlienTeamType then
+
+                self:SetGameState(kGameState.Team2Won)
+                PostGameViz("Aliens Win!")
+
+            else
+
+                self:SetGameState(kGameState.Draw)
+                PostGameViz("Draw Game!")
+
             end
             
-            winningTeam:ForEachPlayer(function(player) Server.SendNetworkMessage(player, "GameEnd", { win = true }, true) end)
-            losingTeam:ForEachPlayer(function(player) Server.SendNetworkMessage(player, "GameEnd", { win = false }, true) end)
-            self.spectatorTeam:ForEachPlayer(function(player) Server.SendNetworkMessage(player, "GameEnd", { win = losingTeam:GetTeamType() == kAlienTeamType }, true) end)
-            
-            self.losingTeam = losingTeam
+            Server.SendNetworkMessage( "GameEnd", { win = winningTeamType }, true)
             
             self.team1:ClearRespawnQueue()
             self.team2:ClearRespawnQueue()
+
+            // Clear out Draw Game window handling
+            self.team1Lost = nil
+            self.team2Lost = nil
+            self.timeDrawWindowEnds = nil
             
             // Automatically end any performance logging when the round has ended.
             Shared.ConsoleCommand("p_endlog")
 
-            self.sponitor:OnEndMatch(winningTeam)
-            self.playerRanking:EndGame(winningTeam)
+            if winningTeam then
+                self.sponitor:OnEndMatch(winningTeam)
+                self.playerRanking:EndGame(winningTeam)
+            end
             TournamentModeOnGameEnd()
 
         end
@@ -1040,19 +1148,7 @@ if Server then
     
     function NS2Gamerules:DrawGame()
 
-        if self:GetGameState() == kGameState.Started then
-        
-            self:SetGameState(kGameState.Draw)
-            
-            // Display "draw" message
-            local drawMessage = "The game was a draw!"
-            self.team1:BroadcastMessage(drawMessage)
-            self.team2:BroadcastMessage(drawMessage)
-            
-            self.team1:ClearRespawnQueue()
-            self.team2:ClearRespawnQueue()  
-            
-        end
+        self:EndGame()
         
     end
 
@@ -1115,43 +1211,6 @@ if Server then
         return not self:GetGameStarted() or Shared.GetCheatsEnabled() or (Shared.GetTime() < (self.gameStartTime + kFreeSpawnTime))
     end
     
-    // Returns bool for success and bool if we've played in the game already.
-    local function GetUserPlayedInGame(self, player)
-    
-        local success = false
-        local played = false
-        
-        local owner = Server.GetOwner(player)
-        if owner then
-        
-            local userId = tonumber(owner:GetUserId())
-            
-            // Could be invalid if we're still connecting to Steam
-            played = table.find(self.userIdsInGame, userId) ~= nil
-            success = true
-            
-        end
-        
-        return success, played
-        
-    end
-    
-    local function SetUserPlayedInGame(self, player)
-    
-        local owner = Server.GetOwner(player)
-        if owner then
-        
-            local userId = tonumber(owner:GetUserId())
-            
-            // Could be invalid if we're still connecting to Steam.
-            return table.insertunique(self.userIdsInGame, userId)
-            
-        end
-        
-        return false
-        
-    end
-    
     /**
      * Returns two return codes: success and the player on the new team. This player could be a new
      * player (the default respawn type for that team) or it will be the original player if the team 
@@ -1159,28 +1218,26 @@ if Server then
      * no matter what and to respawn immediately.
      */
     function NS2Gamerules:JoinTeam(player, newTeamNumber, force)
-    
-        local success = false
-        local oldPlayerWasSpectating = false
-        if player then
         
-            local ownerClient = Server.GetOwner(player)
-            oldPlayerWasSpectating = ownerClient ~= nil and ownerClient:GetSpectatingPlayer() ~= nil
-            
-        end
+        local client = Server.GetOwner(player)
+        if not client then return end
+        
+        local success = false
+        local oldPlayerWasSpectating = client and client:GetSpectatingPlayer()
+        local oldTeamNumber = player:GetTeamNumber()
         
         // Join new team
-        if player and player:GetTeamNumber() ~= newTeamNumber or force then        
+        if oldTeamNumber ~= newTeamNumber or force then        
             
             if player:isa("Commander") then
                 OnCommanderLogOut(player)
             end  
         
             local team = self:GetTeam(newTeamNumber)
-            local oldTeam = self:GetTeam(player:GetTeamNumber())
+            local oldTeam = self:GetTeam(oldTeamNumber)
             
             // Remove the player from the old queue if they happen to be in one
-            if oldTeam ~= nil then
+            if oldTeam then
                 oldTeam:RemovePlayerFromRespawnQueue(player)
             end
             
@@ -1206,6 +1263,13 @@ if Server then
                 
             end
             
+            local clientUserId = client:GetUserId()
+            //Save old pres 
+            if oldTeam == self.team1 or oldTeam == self.team2 then
+                if not self.clientpres[clientUserId] then self.clientpres[clientUserId] = {} end
+                self.clientpres[clientUserId][oldTeamNumber] = player:GetResources()
+            end
+            
             // Update frozen state of player based on the game state and player team.
             if team == self.team1 or team == self.team2 then
             
@@ -1215,54 +1279,41 @@ if Server then
                     newPlayer.frozen = true
                 end
                 
+                local pres = self.clientpres[clientUserId] and self.clientpres[clientUserId][newTeamNumber]
+                newPlayer:SetResources( pres or team:GetStartingResources())
+            
             else
             
                 // Ready room or spectator players should never be frozen
                 newPlayer.frozen = false
                 
             end
-            
-            local newPlayerClient = Server.GetOwner(newPlayer)
-            local clientUserId = newPlayerClient and newPlayerClient:GetUserId() or 0
-            local disconnectedPlayerRes = self.disconnectedPlayerResources[clientUserId]
-            if disconnectedPlayerRes then
-            
-                newPlayer:SetResources(disconnectedPlayerRes)
-                self.disconnectedPlayerResources[clientUserId] = nil
-                
-            else
-            
-                // Give new players starting resources. Mark players as "having played" the game (so they don't get starting res if
-                // they join a team again, etc.)
-                local success, played = GetUserPlayedInGame(self, newPlayer)
-                if success and not played and team.GetStartingResources then
-                    newPlayer:SetResources(team:GetStartingResources())
-                end
-                
-            end
-            
+                      
             //Restore Combat Upgrades
             newPlayer = newPlayer:OnRestoreUpgrades()
-            
-            if self:GetGameStarted() then
-                SetUserPlayedInGame(self, newPlayer)
-            end
             
             newPlayer:TriggerEffects("join_team")
             
             if success then
-            
+                
                 self.sponitor:OnJoinTeam(newPlayer, team)
                 
+                local newPlayerClient = Server.GetOwner(newPlayer)
                 if oldPlayerWasSpectating then
                     newPlayerClient:SetSpectatingPlayer(nil)
                 end
                 
                 if newPlayer.OnJoinTeam then
                     newPlayer:OnJoinTeam()
-                end
+                end    
                 
-                if player:GetGameMode() == kGameMode.Combat then
+                if newTeamNumber == kTeam1Index or newTeamNumber == kTeam2Index then
+                    newPlayer:SetEntranceTime()
+                elseif newPlayer:GetEntranceTime() then
+                    newPlayer:SetExitTime()
+                end
+
+				if player:GetGameMode() == kGameMode.Combat then
                     if oldTeam ~= nil and (oldTeam.GetIsAlienTeam and oldTeam:GetIsAlienTeam()) then
                         //Refund lifeform costs.
                         newPlayer:AddResources(LookupTechData(player:GetTechId(), kTechDataCombatCost, 0))
@@ -1271,6 +1322,10 @@ if Server then
                 end
                 
                 Server.SendNetworkMessage(newPlayerClient, "SetClientTeamNumber", { teamNumber = newPlayer:GetTeamNumber() }, true)
+                
+                if newTeamNumber == kSpectatorIndex then
+                    newPlayer:SetSpectatorMode(kSpectatorMode.Overhead)
+                end
                 
             end
 
@@ -1353,6 +1408,8 @@ if Server then
     
     local function CheckAutoConcede(self)
 
+        PROFILE("NS2Gamerules:CheckAutoConcede")
+                
         // This is an optional end condition based on the teams being unbalanced.
         local endGameOnUnbalancedAmount = Server.GetConfigSetting("end_round_on_team_unbalance")
         if endGameOnUnbalancedAmount and endGameOnUnbalancedAmount > 0 then
@@ -1411,49 +1468,71 @@ if Server then
     end
     
     function NS2Gamerules:CheckGameEnd()
-    
+
+        PROFILE("NS2Gamerules:CheckGameEnd")
+        
         if self:GetGameStarted() and self.timeGameEnded == nil and not Shared.GetCheatsEnabled() and not self.preventGameEnd then
-        
-            if self.timeLastGameEndCheck == nil or (Shared.GetTime() > self.timeLastGameEndCheck + kGameEndCheckInterval) then
+
+            local time = Shared.GetTime()
+            if not self.timeDrawWindowEnds or time < self.timeDrawWindowEnds then
+
+                local team1Lost = self.team1Lost or self.team1:GetHasTeamLost()
+                local team2Lost = self.team2Lost or self.team2:GetHasTeamLost()
+
+                if team1Lost or team2Lost then
             
-                local team1Lost = self.team1:GetHasTeamLost()
-                local team2Lost = self.team2:GetHasTeamLost()
-                local team1Won = self.team1:GetHasTeamWon()
-                local team2Won = self.team2:GetHasTeamWon()
-                
-                -- Check for auto-concede if neither team lost.
-                if not team1Lost and not team2Lost then
-                    team1Lost, team2Lost = CheckAutoConcede(self)
+                    -- After a team has entered a loss condition, they can not recover
+                    self.team1Lost = team1Lost
+                    self.team2Lost = team2Lost
+
+                    -- Continue checking for a draw for kDrawGameWindow seconds
+                    if not self.timeDrawWindowEnds then
+                        self.timeDrawWindowEnds = time + kDrawGameWindow
+                    end
+                    
+                else
+                    -- Check for auto-concede if neither team lost.
+                    if not self.timeNextAutoConcedeCheck or self.timeNextAutoConcedeCheck < time then
+                        
+                        team1Lost, team2Lost = CheckAutoConcede(self)
+                        if team2Lost then
+                            self:EndGame( self.team1 )
+                        elseif team1Lost then
+                            self:EndGame( self.team2 )
+                        end
+                        
+                        self.timeNextAutoConcedeCheck = time + kGameEndCheckInterval
+                    end
+                    
                 end
-                
-                if (team1Lost and team2Lost) or (team1Won and team2Won) then
+
+            else
+
+                if self.team2Lost and self.team1Lost then
+                    
+                    -- It's a draw
                     self:DrawGame()
-                elseif team1Lost or team2Won then
-                    self:EndGame(self.team2)
-                elseif team2Lost or team1Won then
-                    self:EndGame(self.team1)
+                    
+                elseif self.team2Lost then
+
+                    -- Still no draw after kDrawGameWindow, count the win
+                    self:EndGame( self.team1 )
+
+                elseif self.team1Lost then
+
+                    -- Still no draw after kDrawGameWindow, count the win
+                    self:EndGame( self.team2 )
+                    
                 end
-                
-                self.timeLastGameEndCheck = Shared.GetTime()
-                
+
             end
-            
+
         end
-        
+
     end
-    
+
     function NS2Gamerules:GetCountingDown()
         return self:GetGameState() == kGameState.Countdown
-    end
-    
-    local function ResetPlayerScores()
-    
-        for _, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do            
-            if player.ResetScores then
-                player:ResetScores()
-            end            
-        end
-    
     end
     
     local function StartCountdown(self)
@@ -1461,7 +1540,6 @@ if Server then
         self:ResetGame()
         
         self:SetGameState(kGameState.Countdown)
-        ResetPlayerScores()
         self.countdownTime = kCountDownLength
         
         self.lastCountdownPlayed = nil
@@ -1524,10 +1602,6 @@ if Server then
             
         end
         
-    end
-
-    function NS2Gamerules:GetLosingTeam()
-        return self.losingTeam
     end
 
     function NS2Gamerules:GetAllTech()
@@ -1593,6 +1667,10 @@ if Server then
     function NS2Gamerules:GetCanPlayerHearPlayer(listenerPlayer, speakerPlayer)
 
         local canHear = false
+        
+        if Server.GetConfigSetting("alltalk") or Server.GetConfigSetting("pregamealltalk") and not self:GetGameStarted() then
+            return true
+        end
         
         // Check if the listerner has the speaker muted.
         if listenerPlayer:GetClientMuted(speakerPlayer:GetClientIndex()) then

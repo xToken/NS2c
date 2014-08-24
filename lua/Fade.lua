@@ -50,10 +50,12 @@ local kWalkSpeed = 2
 local kCrouchedSpeed = 1.8
 local kBlinkImpulseForce = 85
 local kFadeBlinkAutoJumpGroundDistance = 0.25
+local kMetabolizeAnimationDelay = 0.65
 
 local networkVars =
 {
-    ethereal = "compensated boolean"
+    ethereal = "compensated boolean",
+    timeMetabolize = "private compensated time"
 }
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
@@ -69,6 +71,7 @@ function Fade:OnCreate()
     InitMixin(self, PredictedProjectileShooterMixin)
 
     self.ethereal = false
+    self.timeMetabolize = 0
     
 end
 
@@ -221,6 +224,27 @@ function Fade:PostUpdateMove(input, runningPrediction)
         self:SetIsOnGround(false)
     end
     
+end
+
+function Fade:GetHasMetabolizeAnimationDelay()
+    return self.timeMetabolize + kMetabolizeAnimationDelay > Shared.GetTime()
+end
+
+function Fade:OnUpdateAnimationInput(modelMixin)
+
+    if not self:GetHasMetabolizeAnimationDelay() then
+    
+        Alien.OnUpdateAnimationInput(self, modelMixin)
+        
+    else
+    
+        local weapon = self:GetActiveWeapon()
+        if weapon ~= nil and weapon.OnUpdateAnimationInput and weapon:GetMapName() == Metabolize.kMapName then
+            weapon:OnUpdateAnimationInput(modelMixin)
+        end
+        
+    end
+
 end
 
 function Fade:OnBlinkEnd()

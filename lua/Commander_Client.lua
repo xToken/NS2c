@@ -222,8 +222,7 @@ end
 function CommanderUI_MenuButtonRequiresTarget(index)
 
     local techId = GetTechIdFromButtonIndex(index)
-	local player = Client.GetLocalPlayer()
-    local techTree = player:GetTechTree()
+    local techTree = GetTechTree()
     local requiresTarget = false
     
     if(tech ~= 0 and techTree) then

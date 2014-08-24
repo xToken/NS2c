@@ -60,8 +60,8 @@ local networkVars =
 {
     // The alien energy used for all alien weapons and abilities (instead of ammo) are calculated
     // from when it last changed with a constant regen added
-    timeAbilityEnergyChanged = "private time",
-    abilityEnergyOnChange = "private float (0 to " .. math.ceil(kAbilityMaxEnergy) .. " by 0.05 [] )",
+    timeAbilityEnergyChanged = "time",
+    abilityEnergyOnChange = "float (0 to " .. math.ceil(kAbilityMaxEnergy) .. " by 0.05 [] )",
     
     oneHive = "private boolean",
     twoHives = "private boolean",
@@ -199,6 +199,7 @@ end
 function Alien:GetCanRepairOverride(target)
     return false
 end
+
 
 // player for local player
 function Alien:TriggerHatchEffects()
@@ -413,7 +414,19 @@ function Alien:GetPlayerStatusDesc()
         status = kPlayerStatus.Dead
     else
         if (self:isa("Embryo")) then
-            status = kPlayerStatus.Embryo
+            if self.gestationTypeTechId == kTechId.Skulk then
+                status = kPlayerStatus.SkulkEgg
+            elseif self.gestationTypeTechId == kTechId.Gorge then
+                status = kPlayerStatus.GorgeEgg
+            elseif self.gestationTypeTechId == kTechId.Lerk then
+                status = kPlayerStatus.LerkEgg
+            elseif self.gestationTypeTechId == kTechId.Fade then
+                status = kPlayerStatus.FadeEgg
+            elseif self.gestationTypeTechId == kTechId.Onos then
+                status = kPlayerStatus.OnosEgg
+            else
+                status = kPlayerStatus.Embryo
+            end
         else
             status = kPlayerStatus[self:GetClassName()]
         end

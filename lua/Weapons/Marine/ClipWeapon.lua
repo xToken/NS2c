@@ -32,8 +32,8 @@ local networkVars =
     ammo = "integer (0 to 511)",
     clip = "integer (0 to 200)",
     
-    reloading = "boolean",
-	reloaded = "boolean"
+    reloading = "compensated boolean",
+	reloaded = "compensated boolean"
 }
 
 // Weapon spread - from NS1/Half-life
@@ -98,6 +98,7 @@ local function FillClip(self)
     // Transfer bullets from our ammo pool to the weapon's clip
     self.clip = math.min(self.ammo, self:GetClipSize())
     self.ammo = self.ammo - self.clip
+
     local player = self:GetParent()
     if player then
         player:UpdateWeaponWeights()

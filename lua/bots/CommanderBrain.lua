@@ -35,7 +35,7 @@ end
 function CommanderBrain:GetDoableTechIds(com)
 
     local teamNum = self:GetExpectedTeamNumber()
-    local tree = com:GetTechTree()
+    local tree = GetTechTree(com:GetTeamNumber())
 
     local doables = {}
 
@@ -148,7 +148,7 @@ function CommanderBrain:ExecuteTechId( commander, techId, position, hostEntity )
             //ToString(position),
             //hostEntity == nil and "<no target>" or hostEntity:GetClassName())
 
-    local techNode = commander:GetTechTree():GetTechNode( techId )
+    local techNode = GetTechTree(commander:GetTeamNumber()):GetTechNode( techId )
 
     local allowed, canAfford = hostEntity:GetTechAllowed( techId, techNode, commander )
     assert( allowed and canAfford )

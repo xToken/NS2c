@@ -12,14 +12,13 @@
 UmbraMixin = CreateMixin( UmbraMixin )
 UmbraMixin.type = "Umbra"
 
-local kMaterialName = "cinematics/vfx_materials/umbra.material"
-local kViewMaterialName = "cinematics/vfx_materials/umbra_view.material"
+local kMaterialName = PrecacheAsset("cinematics/vfx_materials/umbra.material")
+local kViewMaterialName = PrecacheAsset("cinematics/vfx_materials/umbra_view.material")
 
-if Client then
-    Shared.PrecacheSurfaceShader("cinematics/vfx_materials/umbra.surface_shader")
-    Shared.PrecacheSurfaceShader("cinematics/vfx_materials/umbra_view.surface_shader")
-    Shared.PrecacheSurfaceShader("cinematics/vfx_materials/2em_1mask_1norm_scroll_refract_tint.surface_shader")
-end
+PrecacheAsset("cinematics/vfx_materials/umbra.surface_shader")
+PrecacheAsset("cinematics/vfx_materials/umbra_view.surface_shader")
+PrecacheAsset("cinematics/vfx_materials/2em_1mask_1norm_scroll_refract_tint.surface_shader")
+
 
 UmbraMixin.expectedMixins =
 {

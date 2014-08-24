@@ -302,7 +302,7 @@ kParasiteEnergyCost = 30
 
 kXenocideDamage = 200
 kXenocideDamageType = kDamageType.Normal
-kXenocideRange = 14
+kXenocideRange = 10
 kXenocideEnergyCost = 50
 
 kSpitDamage = 30

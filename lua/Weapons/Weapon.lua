@@ -10,6 +10,7 @@ Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/DamageMixin.lua")
+Script.Load("lua/UnitStatusMixin.lua")
 
 class 'Weapon' (ScriptActor)
 
@@ -32,7 +33,8 @@ local networkVars =
     isHolstered = "boolean",
     primaryAttacking = "compensated boolean",
     secondaryAttacking = "compensated boolean",
-    weaponWorldState = "boolean"
+    weaponWorldState = "boolean",
+    expireTime = "time (by 0.1)"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -47,6 +49,7 @@ function Weapon:OnCreate()
     InitMixin(self, ModelMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
+    InitMixin(self, UnitStatusMixin)
     
     self:SetPhysicsGroup(PhysicsGroup.WeaponGroup)
     
@@ -67,8 +70,6 @@ function Weapon:OnCreate()
 end
 
 function Weapon:OnDestroy()
-
-    ScriptActor.OnDestroy(self)
     
     // Force end events just in case the weapon goes out of relevancy on the client for example.
     self:TriggerEffects(self:GetPrimaryAttackPrefix() .. "_attack_end")
@@ -80,7 +81,8 @@ function Weapon:OnDestroy()
         self.ammoDisplayUI = nil
         
     end
-
+    
+    ScriptActor.OnDestroy(self)
 end
 
 function Weapon:GetAnimationGraphName()
@@ -272,6 +274,10 @@ function Weapon:OnUpdate(deltaTime)
     ScriptActor.OnUpdate(self, deltaTime)
     SharedUpdate(self)
     
+    if Server and self.weaponWorldState and self.weaponWorldStateTime and self.expireTime < Shared.GetTime() then
+        DestroyEntity(self)
+    end
+    
 end
 
 function Weapon:ProcessMoveOnWeapon(player, input)
@@ -301,10 +307,14 @@ function Weapon:OnUpdateRender()
         ammoDisplayUI:SetGlobal("weaponClip", parent:GetWeaponClip())
         ammoDisplayUI:SetGlobal("weaponAmmo", parent:GetWeaponAmmo())
         ammoDisplayUI:SetGlobal("weaponAuxClip", parent:GetAuxWeaponClip())
-		if settings.variant then
-			ammoDisplayUI:SetGlobal("weaponVariant", settings.variant)
-		end
-		
+        if settings.variant then
+            ammoDisplayUI:SetGlobal("weaponVariant", settings.variant)
+        end
+        self.ammoDisplayUI:SetGlobal("globalTime", Shared.GetTime())
+        -- For some reason I couldn't pass a bool here so... this is for modding anyways!
+        -- If you pass anything that's not "true" it will disable the low ammo warning
+        self.ammoDisplayUI:SetGlobal("lowAmmoWarning", "true")
+        
     elseif self.ammoDisplayUI then
     
         Client.DestroyGUIView(self.ammoDisplayUI)
@@ -359,6 +369,14 @@ function Weapon:OnCreateCollisionModel()
     local collisionModel = self:GetCollisionModel()
     collisionModel:RemoveCollisionRep(CollisionRep.Move)
     
+end
+
+function Weapon:GetExpireTimeFraction()
+    if self.expireTime then
+        return Clamp((self.expireTime - Shared.GetTime()) / kItemStayTime, 0, 1)
+    else
+        return 0
+    end
 end
 
 Shared.LinkClassToMap("Weapon", Weapon.kMapName, networkVars)

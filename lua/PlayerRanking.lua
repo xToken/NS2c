@@ -8,14 +8,14 @@
 
 local kPlayerRankingUrl = "http://sabot.herokuapp.com/api/post/matchEnd"
 local kPlayerRankingRequestUrl = "http://sabot.herokuapp.com/api/get/playerData/"
-// only track a player who was playing a round for mroe than 5 minutes
+--only track a player who was playing a round for more than 5 minutes
 local kMinPlayTime = 5 * 60
-// don't track games which are shorter than a minute
+--don't track games which are shorter than a minute
 local kMinMatchTime = 60
 
 local gRankingDisabled = false
 
-// client side utility functions
+--client side utility functions
 
 function PlayerRankingUI_GetRelativeSkillFraction()
 
@@ -55,20 +55,44 @@ end
 
 class 'PlayerRanking'
 
+local avgNumPlayersSum = 0
+local numPlayerCountSamples = 0
+
 function PlayerRanking:StartGame()
 
     self.gameStartTime = Shared.GetTime()
     self.gameStarted = true
     self.capturedPlayerData = {}
-
+    
+    avgNumPlayersSum = 0
+    numPlayerCountSamples = 0
 end
 
 function PlayerRanking:GetTrackServer()
-    return Server.GetNumActiveMods() == 0 and not GetServerContainsBots() and not Shared.GetCheatsEnabled()
+    return self:GetGamemode() == "ns2"
 end
 
-function PlayerRanking:GetGameMode()
-    return Server.GetNumActiveMods() == 0 and "ns2" or "mod"
+local kGamemode
+function PlayerRanking:GetGamemode()
+    if kGamemode then return kGamemode end
+
+    local gameSetup = io.open( "game_setup.xml", "r" )
+
+    if not gameSetup then
+        kGamemode = "ns2"
+
+        return "ns2"
+    end
+
+    local data = gameSetup:read( "*all" )
+
+    gameSetup:close()
+
+    local dataMatch = data:match( "<name>(.+)</name>" )
+
+    kGamemode = dataMatch or "ns2"
+
+    return kGamemode
 end    
 
 function PlayerRanking:OnUpdate()
@@ -90,7 +114,7 @@ function PlayerRanking:OnUpdate()
             
                 local steamId = client:GetUserId()
                 
-                if not self.capturedPlayerData[steamId..""] then
+                if not self.capturedPlayerData[tostring(steamId)] then
         
                     local playerData = 
                     {
@@ -105,13 +129,15 @@ function PlayerRanking:OnUpdate()
                         score = player:GetScore(),
                         teamNumber = player:GetTeamNumber(),
                         commanderTime = player:GetCommanderTime(),
+                        entranceTime = math.max( 0, ( player:GetEntranceTime() or Shared.GetTime() ) - self.gameStartTime),
+                        exitTime = math.max( 0, ( player:GetExitTime() or Shared.GetTime() ) - self.gameStartTime),
                     }
                     
-                    self.capturedPlayerData[steamId..""] = playerData
+                    self.capturedPlayerData[tostring(steamId)] = playerData
                     
                 else
                 
-                    local playerData = self.capturedPlayerData[steamId..""]
+                    local playerData = self.capturedPlayerData[tostring(steamId)]
                     playerData.steamId = steamId
                     playerData.nickname = player:GetName() or ""
                     playerData.playTime = player:GetPlayTime()
@@ -121,8 +147,10 @@ function PlayerRanking:OnUpdate()
                     playerData.deaths = player:GetDeaths()
                     playerData.assists = player:GetAssistKills()
                     playerData.score = player:GetScore()
-                    playerData.teamNumber = player:GetTeamNumber()
+                    playerData.teamNumber = player:GetTeamNumber() > 0 and player:GetTeamNumber() < 3 and player:GetTeamNumber() or playerData.teamNumber
                     playerData.commanderTime = player:GetCommanderTime()
+                    playerData.entranceTime = math.max( 0, ( player:GetEntranceTime() or Shared.GetTime() ) - self.gameStartTime)
+                    playerData.exitTime = math.max( 0, ( player:GetExitTime() or Shared.GetTime() ) - self.gameStartTime)
 
                 end
                 
@@ -158,13 +186,15 @@ function PlayerRanking:EndGame(winningTeam)
                 mapName = Shared.GetMapName(),
                 gameTime = gameTime,
                 tournamentMode = GetTournamentModeEnabled(),
-                gameMode = self:GetGameMode(),
+                gameMode = self:GetGamemode(),
+                avgPlayers = avgNumPlayersSum / numPlayerCountSamples,
+                winner = winningTeam:GetTeamNumber(),
                 players = {},
 
             }
             
-            Print("PlayerRanking: game info ------------------")
-            Print("%s", ToString(gameInfo))
+            DebugPrint("PlayerRanking: game info ------------------")
+            DebugPrint("%s", ToString(gameInfo))
 
             for steamIdString, playerData in pairs(self.capturedPlayerData) do   
                 self:InsertPlayerData(gameInfo.players, playerData, winningTeam, gameTime, marineSkill, alienSkill, isGatherGame)
@@ -206,6 +236,7 @@ function PlayerRanking:InsertPlayerData(playerTable, recordedData, winningTeam, 
             playTime = recordedData.playTime,
             marineTime = recordedData.marineTime,
             alienTime = recordedData.alienTime,
+            teamNumber = recordedData.teamNumber,
             kills = recordedData.kills,
             deaths = recordedData.deaths,
             assists = recordedData.assists,
@@ -215,11 +246,13 @@ function PlayerRanking:InsertPlayerData(playerTable, recordedData, winningTeam, 
             marineTeamSkill = marineSkill,
             alienTeamSkill = alienSkill,
             gatherGame = isGatherGame,
-            commanderTime = recordedData.commanderTime
+            commanderTime = recordedData.commanderTime,
+            entranceTime = recordedData.entranceTime,
+            exitTime = recordedData.exitTime,
         }
         
-        Print("PlayerRanking: dumping player data ------------------")
-        Print("%s", ToString(playerData))
+        DebugPrint("PlayerRanking: dumping player data ------------------")
+        DebugPrint("%s", ToString(playerData))
         
         table.insert(playerTable, playerData)
     
@@ -247,8 +280,7 @@ function PlayerRanking:GetAveragePlayerSkill()
 
             local client = Server.GetOwner(player)
             local skill = player:GetPlayerSkill()
-            
-            //DebugPrint("%s skill: %s", ToString(player:GetName()), ToString(skill))
+            // DebugPrint("%s skill: %s", ToString(player:GetName()), ToString(skill))
             
             if client and skill then // and not client:GetIsVirtual()
             
@@ -294,9 +326,9 @@ if Server then
             
             if obj then
             
-                gPlayerData[steamId..""] = obj
+                gPlayerData[tostring(steamId)] = obj
             
-                // its possible that the server does not send all data we want, need to check for nil here to not cause any script errors later:            
+                --its possible that the server does not send all data we want, need to check for nil here to not cause any script errors later:            
                 obj.kills = obj.kills or 0
                 obj.assists = obj.assists or 0
                 obj.deaths = obj.deaths or 0
@@ -307,7 +339,7 @@ if Server then
 
             end
             
-            //Print("player data of %s: %s", ToString(steamId), ToString(obj))
+            DebugPrint("player data of %s: %s", ToString(steamId), ToString(obj))
         
         end
     end
@@ -332,22 +364,42 @@ if Server then
         return false
     
     end
-
+    
+    local gConfigChecked
     local function UpdatePlayerStats()
     
         PROFILE("PlayerRanking:UpdatePlayerStats")
-            
+        
+        if not gConfigChecked and Server.GetConfigSetting then
+            gRankingDisabled = Server.GetConfigSetting("hiveranking") == false
+            gConfigChecked = true 
+        end
+        
+        if GetServerContainsBots() or Shared.GetCheatsEnabled() then
+            gRankingDisabled = true
+        end
+        
         if gRankingDisabled then
             return
         end 
-
+        
+        local gameRules = GetGamerules()
+        
+        if gameRules then
+            local team1PlayerNum = gameRules:GetTeam1():GetNumPlayers()
+            local team2PlayerNum = gameRules:GetTeam2():GetNumPlayers()
+            
+            avgNumPlayersSum = avgNumPlayersSum + team1PlayerNum + team2PlayerNum
+            numPlayerCountSamples = numPlayerCountSamples + 1
+        end
+        
         for _, player in ipairs(GetEntitiesWithMixin("Scoring")) do  
         
             local client = Server.GetOwner(player)
             if client and not client:GetIsVirtual() then
             
                 local steamId = client:GetUserId()
-                local playerData = gPlayerData[steamId..""]
+                local playerData = gPlayerData[tostring(steamId)]
             
                 if gSendRequestNow or not playerData then
 
@@ -363,12 +415,12 @@ if Server then
                         playerData.playTime = 0
                         playerData.level = 0
                         
-                        gPlayerData[steamId..""] = playerData
+                        gPlayerData[tostring(steamId)] = playerData
                     
                     end
             
-                    //DebugPrint("send player data request for %s", ToString(steamId))
-                    local requestUrl = kPlayerRankingRequestUrl .. steamId
+                    DebugPrint("send player data request for %s", ToString(steamId))
+                    local requestUrl = string.format("%s%s", kPlayerRankingRequestUrl, steamId)
                     Shared.SendHTTPRequest(requestUrl, "GET", { }, PlayerDataResponse(steamId))
                 
                 end
@@ -395,16 +447,4 @@ if Server then
     end
 
     Event.Hook("UpdateServer", UpdatePlayerStats)
-    
-    
-    local function OnCommandDisableRanking()
-        if Shared.GetCheatsEnabled() then
-            gRankingDisabled = not gRankingDisabled
-            Print("player ranking %s", ToString(not gRankingDisabled))
-        end
-    end
-    
-    Event.Hook("Console_disableranking", OnCommandDisableRanking)
-
 end
-

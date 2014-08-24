@@ -39,6 +39,7 @@ Script.Load("lua/IdleMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
 
 local kAnimationGraph = PrecacheAsset("models/marine/phase_gate/phase_gate.animation_graph")
+local kPhaseSound = PrecacheAsset("sound/NS2.fev/marine/structures/phase_gate_teleport")
 
 local kPhaseGatePushForce = 500
 
@@ -341,7 +342,9 @@ function PhaseGate:Phase(user)
         user:TriggerEffects("phase_gate_player_enter")        
         user:TriggerEffects("teleport")
         
-        local destinationCoords = Angles(0, destinationPhaseGate:GetAngles().yaw, 0):GetCoords()
+        StartSoundEffectAtOrigin(kPhaseSound, self:GetOrigin())
+
+		local destinationCoords = Angles(0, destinationPhaseGate:GetAngles().yaw, 0):GetCoords()
         destinationCoords.origin = self.destinationEndpoint
         
         TransformPlayerCoordsForPhaseGate(user, self:GetCoords(), destinationCoords)
@@ -350,6 +353,8 @@ function PhaseGate:Phase(user)
         // trigger exit effect at destination
         user:TriggerEffects("phase_gate_player_exit")
         
+        StartSoundEffectAtOrigin(kPhaseSound, destinationCoords.origin)
+
         self.timeOfLastPhase = Shared.GetTime()
         
         return true
@@ -462,36 +467,30 @@ function PhaseGate:GetHealthbarOffset()
     return 1.2
 end 
 
-local function GetDestinationLocationName(self)
+function PhaseGate:GetDestinationLocationName()
 
-    local locationEndId = self:GetDestLocationId()
-    local location = Shared.GetEntity(locationEndId)
-    
+    local location = Shared.GetEntity(self.destLocationId)   
     if location then
         return location:GetName()
     end
-
+    
 end
 
 function PhaseGate:GetIsDeployed()
     return self.deployed
 end
 
-function PhaseGate:GetUnitNameOverride(viewer)
-
-    local unitName = GetDisplayName(self)
-
-    if not GetAreEnemies(self, viewer) then
+function PhaseGate:OverrideHintString( hintString, forEntity )
     
-        local destinationName = GetDestinationLocationName(self)        
-        if destinationName then
-            unitName = unitName .. " to " .. destinationName
+    if not GetAreEnemies(self, forEntity) then
+        local locationName = self:GetDestinationLocationName()
+        if locationName and locationName~="" then
+            return string.format(Locale.ResolveString( "PHASE_GATE_HINT_TO_LOCATION" ), locationName )
         end
-
     end
 
-    return unitName
-
+    return hintString
+    
 end
 
 function CheckSpaceForPhaseGate(techId, origin, normal, commander)

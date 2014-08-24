@@ -38,19 +38,22 @@ function OnCommandDamage(damageTable)
     
 end
 
+function OnCommandHitSound(hitSoundTable)
+
+    local sound = ParseHitSoundMessage(hitSoundTable)
+    HitSounds_PlayHitsound( sound )
+    
+end
 function OnCommandClearTechTree()
-    local localPlayer = Client.GetLocalPlayer()
-    localPlayer:ClearTechTree()
+    ClearTechTree()
 end
 
 function OnCommandTechNodeBase(techNodeBaseTable)
-    local localPlayer = Client.GetLocalPlayer()
-    localPlayer:GetTechTree():CreateTechNodeFromNetwork(techNodeBaseTable)
+    GetTechTree():CreateTechNodeFromNetwork(techNodeBaseTable)
 end
 
 function OnCommandTechNodeUpdate(techNodeUpdateTable)
-    local localPlayer = Client.GetLocalPlayer()
-    localPlayer:GetTechTree():UpdateTechNodeFromNetwork(techNodeUpdateTable)
+    GetTechTree():UpdateTechNodeFromNetwork(techNodeUpdateTable)
 end
 
 function OnCommandOnResetGame()
@@ -218,6 +221,7 @@ Client.HookNetworkMessage("AutoConcedeWarning", OnMessageAutoConcedeWarning)
 Client.HookNetworkMessage("Ping", OnCommandPing)
 Client.HookNetworkMessage("HitEffect", OnCommandHitEffect)
 Client.HookNetworkMessage("Damage", OnCommandDamage)
+Client.HookNetworkMessage("HitSound", OnCommandHitSound)
 Client.HookNetworkMessage("JoinError", OnCommandJoinError)
 
 Client.HookNetworkMessage("ClearTechTree", OnCommandClearTechTree)

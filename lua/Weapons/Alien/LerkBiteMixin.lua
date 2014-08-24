@@ -50,7 +50,7 @@ function LerkBiteMixin:GetSecondaryTechId()
 end
 
 function LerkBiteMixin:GetDeathIconIndex()
-    return kDeathMessageIcon.Bite
+    return kDeathMessageIcon.LerkBite
 end
 
 function LerkBiteMixin:GetDamageType()

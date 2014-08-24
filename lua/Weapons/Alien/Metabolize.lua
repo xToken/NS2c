@@ -59,7 +59,8 @@ end
 function Metabolize:OnPrimaryAttack(player)
 
     if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(player) then
-        self.primaryAttacking = true    
+        self.primaryAttacking = true
+        player.timeMetabolize = Shared.GetTime()
     else
         self:OnPrimaryAttackEnd()
     end
@@ -88,17 +89,16 @@ end
 function Metabolize:OnTag(tagName)
 
     PROFILE("Metabolize:OnTag")
-
-    if tagName == "hit" and self.primaryAttacking then
     
-        self.lastPrimaryAttackTime = Shared.GetTime()
-        local player = self:GetParent()
-        if player then
+    local player = self:GetParent()
+    if player then
+        if tagName == "metabolize" and not self:GetHasAttackDelay(player) then
             player:DeductAbilityEnergy(self:GetEnergyCost())
             player:TriggerEffects("metabolize")
             PerformMetabolize(self, player)
+            self.lastPrimaryAttackTime = Shared.GetTime()
+            self.primaryAttacking = false
         end
-        self.primaryAttacking = false
     end
     
 end
@@ -111,7 +111,12 @@ function Metabolize:OnUpdateAnimationInput(modelMixin)
     
     modelMixin:SetAnimationInput("ability", "vortex")
     
+    local player = self:GetParent()
     local activityString = (self.primaryAttacking and "primary") or "none"
+    if player and player:GetHasMetabolizeAnimationDelay() then
+        activityString = "primary"
+    end
+    
     modelMixin:SetAnimationInput("activity", activityString)
     
 end

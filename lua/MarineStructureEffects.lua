@@ -22,6 +22,7 @@ kMarineStructureEffects =
     {
         ghostStructureDestroyEffects =
         {
+            {sound = "sound/NS2.fev/marine/structures/mac/build"},
             {cinematic = "cinematics/marine/ghoststructure_destroy.cinematic", done = true},
         }
     
@@ -291,7 +292,7 @@ kMarineStructureEffects =
             {stop_cinematic = "cinematics/marine/infantryportal/spin.cinematic", done = true},
         },
     },    
-    
+
     infantry_portal_spawn = 
     {
         ipSpawnEffect =
@@ -306,7 +307,7 @@ kMarineStructureEffects =
     {
         pgSpawnEffect =
         {
-            {player_sound = "sound/NS2.fev/marine/structures/phase_gate_teleport"},
+            //{player_sound = "sound/NS2.fev/marine/structures/phase_gate_teleport"},
             {player_cinematic = "cinematics/marine/infantryportal/player_spawn.cinematic"},            
         },
     }, 
@@ -316,7 +317,7 @@ kMarineStructureEffects =
     {
         pgSpawnEffect =
         {
-            {player_sound = "sound/NS2.fev/marine/structures/phase_gate_teleport"},
+            //{player_sound = "sound/NS2.fev/marine/structures/phase_gate_teleport"},
             {player_cinematic = "cinematics/marine/infantryportal/player_spawn.cinematic"},            
         },
     },

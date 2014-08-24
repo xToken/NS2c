@@ -9,8 +9,9 @@
 Script.Load("lua/Utility.lua")
 Script.Load("lua/GUIAssets.lua")
 
-kMaxPlayerSkill = 1000
-kMaxPlayerLevel = 100
+kDefaultPlayerSkill = 1000
+kMaxPlayerSkill = 3000
+kMaxPlayerLevel = 300
 
 kDecalMaxLifetime = 60
 
@@ -122,7 +123,7 @@ kMaxHotkeyGroups = 9
 
 // Surface list. Add more materials here to precache ricochets, bashes, footsteps, etc
 // Used with PrecacheMultipleAssets
-kSurfaceList = { "door", "electronic", "metal", "organic", "rock", "thin_metal", "membrane", "armor", "flesh", "glass" }
+kSurfaceList = { "door", "electronic", "metal", "organic", "rock", "thin_metal", "membrane", "armor", "flesh", "flame", "infestation", "glass" }
 
 // a longer surface list, for hiteffects only (used by hiteffects network message, don't remove any values)
 kHitEffectSurface = enum( { "metal", "door", "electronic", "organic", "rock", "thin_metal", "membrane", "armor", "flesh", "glass", "ethereal", "umbra" } )
@@ -133,7 +134,7 @@ kMaxHitEffectsPerSecond = 25
 
 kMainMenuFlash = "ui/main_menu.swf"
 
-kPlayerStatus = enum( { "Hidden", "Dead", "Evolving", "Embryo", "Commander", "Exo", "GrenadeLauncher", "Rifle", "Shotgun", "HeavyMachineGun", "Void", "Spectator", "Skulk", "Gorge", "Fade", "Lerk", "Onos" } )
+kPlayerStatus = enum( { "Hidden", "Dead", "Evolving", "Embryo", "Commander", "Exo", "GrenadeLauncher", "Rifle", "Shotgun", "HeavyMachineGun", "Void", "Spectator", "Skulk", "Gorge", "Fade", "Lerk", "Onos", "SkulkEgg", "GorgeEgg", "FadeEgg", "LerkEgg", "OnosEgg" } )
 kPlayerCommunicationStatus = enum( {'None', 'Voice', 'Typing', 'Menu'} )
 kSpectatorMode = enum( { 'FreeLook', 'Overhead', 'Following', 'FirstPerson' } )
 
@@ -158,17 +159,17 @@ kDeathMessageIcon = enum( { 'None',
                             'HeavyMachineGun', 'Metabolize', 'LerkBite', 'Umbra', 
                             'Xenocide', 'Blink', 'Leap', 'Stomp',
                             'Consumed', 'GL', 'Recycled', 'Babbler', 'Railgun', 'BabblerAbility', 'GorgeTunnel', 'Devour',
-							'HandGrenade', 'GasGrenade', 'PulseGrenade', 'Stab', 'WhipBomb',
+							'HandGrenade', 'GasGrenade', 'PulseGrenade', 'Stab', 'WhipBomb', 'Metabolize'
                             } )
 
 kMinimapBlipType = enum( { 'Undefined', 'TechPoint', 'ResourcePoint', 'Scan', 'EtherealGate', 'HighlightWorld',
                            'Sentry', 'CommandStation',
                            'Extractor', 'InfantryPortal', 'Armory', 'AdvancedArmory', 'PhaseGate', 'Observatory',
                            'TurretFactory', 'ArmsLab', 'PrototypeLab',
-                           'Hive', 'Harvester', 'Hydra', 'Egg', 'Embryo', 'Crag', 'Whip', 'Shade', 'Shift', 'Shell', 'Veil', 'Spur', 'TunnelEntrance',
+                           'Hive', 'Harvester', 'Hydra', 'Egg', 'Embryo', 'Crag', 'Whip', 'Shade', 'Shift', 'Shell', 'Veil', 'Spur', 'TunnelEntrance', 'BoneWall',
                            'Marine', 'JetpackMarine', 'HeavyArmorMarine', 'Skulk', 'Lerk', 'Onos', 'Fade', 'Gorge',
-                           'Door', 'PowerPoint', 'DestroyedPowerPoint',
-                           'SiegeCannon', 'Drifter', 'MAC', 'Infestation', 'InfestationDying', 'MoveOrder', 'AttackOrder', 'BuildOrder', 'SensorBlip', 'SentryBattery', 'Exo' } )
+                           'Door', 'PowerPoint', 'DestroyedPowerPoint', 'UnsocketedPowerPoint', 
+                           'BlueprintPowerPoint', 'SiegeCannon', 'Drifter', 'MAC', 'Infestation', 'InfestationDying', 'MoveOrder', 'AttackOrder', 'BuildOrder', 'SensorBlip', 'SentryBattery', 'Exo' } )
 
 // Friendly IDs
 // 0 = friendly
@@ -354,6 +355,14 @@ kArmorBarColors = { [kMarineTeamType] = Color(0.078, 0.878, 0.984, 1),
 kArmorBarBgColors = { [kMarineTeamType] = Color(0.078 * 0.5, 0.878 * 0.5, 0.984 * 0.5, 1),
                     [kAlienTeamType] = Color(0.576 * 0.5, 0.194 * 0.5, 0.011 * 0.5, 1),
                     [kNeutralTeamType] = Color(0.5 * 0.5, 0.5 * 0.5, 0.5 * 0.5, 1) }
+                    
+kAbilityBarColors = { [kMarineTeamType] = Color(0,1,1,1),
+                    [kAlienTeamType] = Color(1,1,0,1),
+                    [kNeutralTeamType] = Color(1, 1, 1, 1) }
+                     
+kAbilityBarBgColors = { [kMarineTeamType] = Color(0, 0.5, 0.5, 1),
+                    [kAlienTeamType] = Color(0.5, 0.5, 0, 1),
+                    [kNeutralTeamType] = Color(0.5, 0.5, 0.5, 1) }
 
 // used for specific effects
 kUseInterval = 0.1
@@ -442,7 +451,7 @@ kShoulderPadTitusProductId = 280760
 
 // TODO we can really just get rid of the enum. use array-of-structures pattern, and use #kMarineVariants to network vars
 
-kMarineVariant = enum({ "green", "special", "deluxe", "assault", "eliteassault"/*, "kodiak"*/ })
+kMarineVariant = enum({ "green", "special", "deluxe", "assault", "eliteassault", "kodiak" })
 kMarineVariantData =
 {
     [kMarineVariant.green] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
@@ -450,7 +459,7 @@ kMarineVariantData =
     [kMarineVariant.deluxe] = { productId = kDeluxeEditionProductId, displayName = "Deluxe", modelFilePart = "_special_v1", viewModelFilePart = "_deluxe" },
     [kMarineVariant.assault] = { productId = kAssaultMarineProductId, displayName = "Assault", modelFilePart = "_assault", viewModelFilePart = "_assault" },
     [kMarineVariant.eliteassault] = { productId = kShadowProductId, displayName = "Elite Assault", modelFilePart = "_eliteassault", viewModelFilePart = "_eliteassault" },
-	//[kMarineVariant.kodiak] = { productId = kKodiakProductId, displayName = "Kodiak", modelFilePart = "_kodiak", viewModelFilePart = "_kodiak" },
+    [kMarineVariant.kodiak] = { productId = kKodiakProductId, displayName = "Kodiak", modelFilePart = "_kodiak", viewModelFilePart = "_kodiak" },
 }
 kDefaultMarineVariant = kMarineVariant.green
 
@@ -459,7 +468,7 @@ kSkulkVariantData =
 {
     [kSkulkVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
     [kSkulkVariant.shadow] = { productId = kShadowProductId, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" },
-	[kSkulkVariant.kodiak] = { productId = kKodiakProductId, displayName = "Kodiak", modelFilePart = "_kodiak", viewModelFilePart = "" },
+    [kSkulkVariant.kodiak] = { productId = kKodiakProductId, displayName = "Kodiak", modelFilePart = "_kodiak", viewModelFilePart = "" },
 }
 kDefaultSkulkVariant = kSkulkVariant.normal
 
@@ -534,7 +543,7 @@ kShoulderPad2ProductId =
     { kShoulderPadSaunaProductId, kShoulderPadGlobeProductId },
     { kShoulderPadSnailsProductId, kShoulderPadGlobeProductId },
     { kShoulderPadTitusProductId, kShoulderPadGlobeProductId },
-	kKodiakProductId,
+    kKodiakProductId,
 }
 function GetHasShoulderPad(index, client)
     return GetHasDLC( kShoulderPad2ProductId[index], client )
@@ -550,8 +559,8 @@ kShoulderPadNames =
     "Saunamen",
     "Snails",
     "Titus",
-	"Kodiak",
-	
+    "Kodiak",
+    
 }
 
 function GetShoulderPadIndexByName(padName)

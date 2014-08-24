@@ -47,9 +47,9 @@ function ScenarioHandler:Init()
         OrientedEntityHandler():Init("SiegeCannon",kMarineTeamType),
         IgnoreEntityHandler():Init("Embryo"),
         IgnoreEntityHandler():Init("Egg", true), 
-         
+        
         OrientedEntityHandler():Init("CommandStation",kMarineTeamType),
-        //OrientedEntityHandler():Init("InfantryPortal",kMarineTeamType),
+        OrientedEntityHandler():Init("InfantryPortal",kMarineTeamType),
         OrientedEntityHandler():Init("ArmsLab",kMarineTeamType),
         OrientedEntityHandler():Init("Armory",kMarineTeamType),
         OrientedEntityHandler():Init("Sentry",kMarineTeamType),
@@ -57,6 +57,7 @@ function ScenarioHandler:Init()
         OrientedEntityHandler():Init("TurretFactory",kMarineTeamType),
         OrientedEntityHandler():Init("Observatory",kMarineTeamType),
         OrientedEntityHandler():Init("Extractor",kMarineTeamType),
+        OrientedEntityHandler():Init("PhaseGate",kMarineTeamType),
         
         OrientedEntityHandler():Init("Hive",kAlienTeamType),
         OrientedEntityHandler():Init("Whip",kAlienTeamType),
@@ -101,7 +102,7 @@ function ScenarioHandler:Save()
         local handler = self:LookupHandler(cname)
         local accepted = handler and handler:Accept(entity)
         if accepted then
-            Shared.Message(string.format("%s|%s", cname,handler:Save(entity)))
+            Shared.Message(string.format("%s|%s", cname, handler:Save(entity)))
         end
     end
     Shared.Message(ScenarioHandler.kEndTag)    
@@ -334,36 +335,45 @@ function OrientedEntityHandler:Load(args, classname)
     local angles = self:ReadAngles(args())
 
     // Log("For %s(%s), team %s at %s, %s", classname, kTechId[classname], self:GetTeamType(classname), origin, angles)
-    local result = self:Create(classname, origin)
-    if result then
+    local entity = self:Create(classname, origin)
     
-    result:SetAngles(angles)
-    // if we can complete the construction, do so
-    if HasMixin(result, "Construct") then
-        result:SetConstructionComplete()
-    end
-        
-    // fix to spread out the target acquisition for sentries; randomize lastTargetAcquisitionTime
-    if result:isa("Sentry") then
-        // buildtime means that we need to add a hefty offset to timeOLT
-        result.timeOfLastTargetAcquisition = Shared.GetTime() + 5 + math.random()
-    end
-
-    if result:isa("Drifter") or result:isa("MAC") then
-        // *sigh* - positioning an entity in its first OnUpdate? Really?
-        result.justSpawned = false
+    if entity then
+        entity:SetAngles(angles)
     end
     
-    end
-    
-    return result
+    return entity
 end
 
+function OrientedEntityHandler:Resolve(entity)
+    ScenarioEntityHandler.Resolve(self, entity)
+
+    // if we can complete the construction, do so
+    if HasMixin(entity, "Construct") then
+        entity:SetConstructionComplete()
+    end
+    
+    if HasMixin(entity, "Infestation") then
+        entity:SetInfestationFullyGrown()
+    end
+    
+    // fix to spread out the target acquisition for sentries; randomize lastTargetAcquisitionTime
+    if entity:isa("Sentry") then
+        // buildtime means that we need to add a hefty offset to timeOLT
+        entity.timeOfLastTargetAcquisition = Shared.GetTime() + 5 + math.random()
+    end
+
+    if entity:isa("Drifter") or entity:isa("MAC") then
+        // *sigh* - positioning an entity in its first OnUpdate? Really?
+        entity.justSpawned = false
+    end
+    
+end
 
 function OrientedEntityHandler:Create(entityClassName, position)
-    return CreateEntityForTeam( kTechId[entityClassName], position, self:GetTeamType(entityClassName), nil )
-end 
-//
+    // always nice to have exceptions to the rule...
+    local techId = entityClassName == "TunnelEntrance" and kTechId["GorgeTunnel"] or kTechId[entityClassName]
+    return CreateEntityForTeam( techId, position, self:GetTeamType(entityClassName), nil )
+end
 
 class "IgnoreEntityHandler" (ScenarioEntityHandler) 
 

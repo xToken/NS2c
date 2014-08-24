@@ -170,6 +170,7 @@ function CommandStructure:Logout()
         
         returnPlayer:UpdateArmorAmount()
         
+        returnPlayer.oneHive = commander.oneHive
         returnPlayer.twoHives = commander.twoHives
         returnPlayer.threeHives = commander.threeHives
         

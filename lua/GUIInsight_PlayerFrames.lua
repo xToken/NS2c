@@ -53,6 +53,8 @@ local rightGradientCoords = {256,184,0,276}
 local rightTopCoords = {256,0,512,64}
 local rightBottomCoords = {256,128,512,256}
 
+local keysDisableAutoFollow = { "Weapon1", "Weapon2", "Weapon3", "Jump", "MoveForward", "MoveLeft", "MoveBackward", "MoveRight"}
+
 local iconSize = Vector(32,32,0)
 local kIconCoords = {
     
@@ -69,6 +71,11 @@ local kIconCoords = {
     [Locale.ResolveString("STATUS_ONOS")] =              {            0, iconSize.y,   iconSize.x, 2*iconSize.y },
     [Locale.ResolveString("STATUS_EVOLVING")] =          {   iconSize.x, iconSize.y, 2*iconSize.x, 2*iconSize.y },
     [Locale.ResolveString("STATUS_EMBRYO")] =            {   iconSize.x, iconSize.y, 2*iconSize.x, 2*iconSize.y },
+    [Locale.ResolveString("SKULK_EGG")] =                {   iconSize.x, iconSize.y, 2*iconSize.x, 2*iconSize.y },
+    [Locale.ResolveString("GORGE_EGG")] =                {   iconSize.x, iconSize.y, 2*iconSize.x, 2*iconSize.y },
+    [Locale.ResolveString("LERK_EGG")] =                 {   iconSize.x, iconSize.y, 2*iconSize.x, 2*iconSize.y },
+    [Locale.ResolveString("FADE_EGG")] =                 {   iconSize.x, iconSize.y, 2*iconSize.x, 2*iconSize.y },
+    [Locale.ResolveString("ONOS_EGG")] =                 {   iconSize.x, iconSize.y, 2*iconSize.x, 2*iconSize.y },
     
     [Locale.ResolveString("STATUS_COMMANDER")] =         { 2*iconSize.x, iconSize.y, 3*iconSize.x, 2*iconSize.y },
     [Locale.ResolveString("STATUS_DEAD")] =              { 3*iconSize.x, iconSize.y, 4*iconSize.x, 2*iconSize.y }
@@ -78,7 +85,7 @@ local kIconCoords = {
 function GUIInsight_PlayerFrames:Initialize()
 
     isVisible = true
-    self.timeLastMouseOne = 0
+
     -- Teams table format: Team GUIItems, color, player GUIItem list, get scores function.
     self.teams = {
         -- Blue team.
@@ -288,7 +295,7 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
     
     player.EntityId = playerRecord.EntityId
     
-    if player.EntityId == Client.GetLocalPlayer().selectedId then
+    if player.EntityId == Client.GetLocalPlayer().followId then
         player.Frame:SetColor(Color(1,1,0,1))
     else
         player.Frame:SetColor(Color(1,1,1,1))    
@@ -314,7 +321,7 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
     -- Health bar
     local healthBar = player["HealthBar"]
     local barSize = 0
-    if newStatus == "Dead" then
+    if newStatus == Locale.ResolveString("STATUS_DEAD") then
 
         player["Background"]:SetColor(kDeadColor)
         healthBar:SetIsVisible(false)
@@ -326,7 +333,7 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
         
     else
     
-        if playerRecord.Health then           
+        if playerRecord.Health then
             local health = playerRecord.Health + playerRecord.Armor * kHealthPointsPerArmor
             local maxHealth = playerRecord.MaxHealth + playerRecord.MaxArmor * kHealthPointsPerArmor
             local healthFraction = health/maxHealth
@@ -354,8 +361,8 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
     if playerRecord.Tech then
         local currentTech = GetTechIdsFromBitMask(playerRecord.Tech)
         
-        // Parasite should be in the last position of the array if it exists
-        // If it does, make player name yellow and remove it from the table
+        -- Parasite should be in the last position of the array if it exists
+        -- If it does, make player name yellow and remove it from the table
         if currentTech[#currentTech] == kTechId.Parasite then
             name:SetColor(kCommanderColorFloat)
             table.remove(currentTech, #currentTech)
@@ -385,10 +392,19 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
                 if oldStatus == Locale.ResolveString("STATUS_LERK") then
                     texture = "ui/Lerk.dds"
                     textureCoordinates = {0, 0, 284, 253}
+                elseif oldStatus == Locale.ResolveString("LERK_EGG") then
+                    texture = "ui/Lerk.dds"
+                    textureCoordinates = {0, 0, 284, 253}
                 elseif oldStatus == Locale.ResolveString("STATUS_FADE") then
                     texture = "ui/Fade.dds"
                     textureCoordinates = {0, 0, 188, 220}
+                elseif oldStatus == Locale.ResolveString("FADE_EGG") then
+                    texture = "ui/Fade.dds"
+                    textureCoordinates = {0, 0, 188, 220}
                 elseif oldStatus == Locale.ResolveString("STATUS_ONOS") then
+                    texture = "ui/Onos.dds"
+                    textureCoordinates = {0, 0, 304, 326}
+                elseif oldStatus == Locale.ResolveString("ONOS_EGG") then
                     texture = "ui/Onos.dds"
                     textureCoordinates = {0, 0, 304, 326}
                 elseif oldStatus == Locale.ResolveString("STATUS_EXO") then
@@ -426,8 +442,22 @@ end
 
 function GUIInsight_PlayerFrames:SendKeyEvent( key, down )
 
-    if isVisible and key == InputKey.MouseButton0 then
-            
+    -- Clear the autofollow entity id when we switch modes
+    local player = Client.GetLocalPlayer()
+    local isKey = false
+    
+    for _, curKey in pairs(keysDisableAutoFollow) do
+        if GetIsBinding(key, curKey) and down then
+            player.followId = Entity.invalidId
+            return false
+        end
+    end
+
+    -- We check on mouseup, which is why we have to save the previous state of the key
+    -- The up event gets reported no matter what, so if you have the console open and you click,
+    -- it wouldn't report the down state, but it'd report the up one.
+    if isVisible and key == InputKey.MouseButton0 and down then
+        
         local cursor = MouseTracker_GetCursorPos()
         
         for index, team in ipairs(self.teams) do
@@ -437,21 +467,28 @@ function GUIInsight_PlayerFrames:SendKeyEvent( key, down )
                 local player = Client.GetLocalPlayer()
                 local index = math.floor( posY / (kPlayersPanelSize.y + kFrameYSpacing) ) + 1
                 local entityId = team.PlayerList[index].EntityId
-        
-                local time = Shared.GetTime()
-                local timeSinceLastPress = time - self.timeLastMouseOne
-                // TODO this should make you follow player in overhead
-                if timeSinceLastPress < 0.3 then
-                    return true
-                end
                 
-                if down and player.selectedId ~= entityId then
-                    Client.SendNetworkMessage("SpectatePlayer", {entityId = entityId}, true)
+                -- When clicking the same player, deselect so it stops following
+                if player.followId == entityId then
+                    entityId = Entity.invalidId
                 end
-                self.timeLastMouseOne = time
+
+                player.followId = entityId
+                break
             end
+            
+            local guiGraphs = GetGUIManager():GetGUIScriptSingle("GUIInsight_Graphs")
+            
+            -- Clicking outside of the frames while not having the graphs up should deselect too
+            if not inside and (guiGraphs and not guiGraphs:GetIsVisible() or not guiGraphs) then
+                player.followId = Entity.invalidId
+            end
+
+            Client.SendNetworkMessage("SpectatePlayer", {entityId = player.followId}, true)
         end
+        
     end
+    
     return false
 
 end
