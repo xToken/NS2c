@@ -213,7 +213,6 @@ function MarineTeam:Update(timePassed)
     
     // Update distress beacon mask
     self:UpdateGameMasks(timePassed)
-    self:UpdateDroppedWeapons()
     
     if GetServerGameMode() == kGameMode.Classic then
         if GetGamerules():GetGameStarted() then
@@ -399,17 +398,6 @@ end
 
 function MarineTeam:GetSpectatorMapName()
     return MarineSpectator.kMapName
-end
-
-function MarineTeam:UpdateDroppedWeapons()
-     if self.lastdeepweaponscan == nil or self.lastdeepweaponscan + kItemStayTime < Shared.GetTime() then
-        for index, weapon in ientitylist(Shared.GetEntitiesWithClassname("Weapon")) do
-            if weapon and weapon:GetWeaponWorldState() and weapon.preventExpiration == nil and (Shared.GetTime() - weapon.weaponWorldStateTime) >= kItemStayTime then
-                DestroyEntity(weapon)
-            end
-        end
-        self.lastdeepweaponscan = Shared.GetTime()
-     end
 end
 
 function MarineTeam:OnBought(techId)
