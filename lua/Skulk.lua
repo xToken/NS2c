@@ -499,6 +499,10 @@ function Skulk:GetBaseAttackSpeed()
     return kDefaultAttackSpeed
 end
 
+function Skulk:GetCanStep()
+    return not self:GetIsWallWalking()
+end
+
 function Skulk:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("Skulk:OnUpdateAnimationInput")

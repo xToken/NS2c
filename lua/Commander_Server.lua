@@ -530,6 +530,21 @@ function Commander:ProcessTechTreeAction(techId, pickVec, orientation, worldCoor
         
     end
     
+    if success then
+    
+        local cooldown = LookupTechData(techId, kTechDataCooldown, 0)
+        if cooldown ~= 0 then
+            self:SetTechCooldown(techId, cooldown, Shared.GetTime())
+        end
+                
+        // inform the team
+        self:GetTeam():OnCommanderAction(techId)
+    end
+    
+    // Tell client result of cast
+    local msg = BuildAbilityResultMessage(techId, success, Shared.GetTime())
+    Server.SendNetworkMessage(self, "AbilityResult", msg, false)
+    
     return success
     
 end

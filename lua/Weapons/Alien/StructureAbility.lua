@@ -88,7 +88,7 @@ function StructureAbility:GetDropMapName()
 end
 
 function StructureAbility:CreateStructure()
-	return false
+    return false
 end
 
 function StructureAbility:IsAllowed(player)

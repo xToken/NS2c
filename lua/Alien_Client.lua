@@ -12,9 +12,8 @@
 Script.Load("lua/MaterialUtility.lua")
 
 local kEnzymedViewMaterialName = "cinematics/vfx_materials/enzyme_view.material"
-Shared.PrecacheSurfaceShader("cinematics/vfx_materials/enzyme_view.surface_shader")
-
 local kEnzymedThirdpersonMaterialName = "cinematics/vfx_materials/enzyme.material"
+Shared.PrecacheSurfaceShader("cinematics/vfx_materials/enzyme_view.surface_shader")
 Shared.PrecacheSurfaceShader("cinematics/vfx_materials/enzyme.surface_shader")
 
 local kEmpoweredEffectInterval = 2
@@ -218,7 +217,7 @@ function AlienUI_GetPlayerMaxEnergy()
     
 end
 
-function Alien:UpdateEnzymeEffect(isLocal)
+function Alien:UpdateEmpoweredEffect(isLocal)
 
     if self.empoweredClient ~= self.empowered then
 
@@ -303,7 +302,7 @@ function Alien:UpdateClientEffects(deltaTime, isLocal)
         self:CloseMenu()
     end
     
-    self:UpdateEnzymeEffect(isLocal)
+    self:UpdateEmpoweredEffect(isLocal)
     
     if isLocal and self:GetIsAlive() then
     
@@ -356,14 +355,15 @@ function Alien:GetFirstPersonDeathEffect()
 end
 
 function Alien:UpdateRegenerationEffect()
-
-    if GetHasRegenerationUpgrade(self) and not ClientUI.GetScript("GUIRegenerationFeedback"):GetIsAnimating() then
+    
+    local GUIRegenerationFeedback = ClientUI.GetScript("GUIRegenerationFeedback")
+    if GUIRegenerationFeedback and GetHasRegenerationUpgrade(self) and GUIRegenerationFeedback:GetIsAnimating() then
     
         if self.lastHealth then
         
             if self.lastHealth < self:GetHealth() then
             
-                ClientUI.GetScript("GUIRegenerationFeedback"):TriggerRegenEffect()
+                GUIRegenerationFeedback:TriggerRegenEffect()
                 local cinematic = Client.CreateCinematic(RenderScene.Zone_ViewModel)
                 cinematic:SetCinematic(kRegenerationViewCinematic)
                 

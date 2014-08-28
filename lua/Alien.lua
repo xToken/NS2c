@@ -337,19 +337,7 @@ function Alien:HandleButtons(input)
     
 end
 
-local function GetIsUnderShade(self)
-    local shady = false
-    for _, shade in ipairs( GetEntitiesForTeamWithinRange("Shade", self:GetTeamNumber(), self:GetOrigin(), Shade.kCloakRadius) ) do
-        if shade:GetIsBuilt() and shade:GetIsAlive() then
-            shady = true
-            break
-        end
-    end
-    return shady
-end
-
 function Alien:GetIsCamouflaged()
-    //return GetHasGhostUpgrade(self) and not self:GetIsInCombat() and not GetIsUnderShade(self)
     return false
 end
 

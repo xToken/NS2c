@@ -1391,7 +1391,7 @@ end
 
 function ClearLights()
 
-	if Client.lightList ~= nil then
+    if Client.lightList ~= nil then
         for index, light in ipairs(Client.lightList) do
             Client.DestroyRenderLight(light)
         end
@@ -2339,7 +2339,7 @@ function GetSpriteGridByClass(class, classToGrid)
     if not classToGrid[class] then
         Print("No sprite defined for minimap icon %s", class)
         Print(debug.traceback())
-        return 8, 8
+        return 4, 8
     end
     
     return unpack(classToGrid[class])
@@ -2726,21 +2726,29 @@ function GetSelectablesOnScreen(commander, className, minPos, maxPos)
     if not maxPos then
         maxPos = Vector(Client.GetScreenWidth(), Client.GetScreenHeight(), 0)
     end
+    
+    -- Check own team first, if no entities are found, then let the marquee select enemies
+    local team = { commander:GetTeamNumber(), ConditionalValue(commander:GetTeamNumber() == kTeam1Index, kTeam2Index, kTeam1Index) }
+    local teamNumber = commander:GetTeamNumber()
+    local oppositeTeam = ConditionalValue(commander:GetTeamNumber() == kTeam1Index, kTeam2Index, kTeam1Index)
 
-    for _, selectable in ipairs(GetEntitiesWithMixinForTeam("Selectable", commander:GetTeamNumber())) do
+    for _, teamNumber in pairs(team) do
+        for _, selectable in ipairs(GetEntitiesWithMixinForTeam("Selectable", teamNumber)) do
 
-        if selectable:isa(className) then
+            if selectable:isa(className) then
 
-            local screenPos = Client.WorldToScreen(selectable:GetOrigin())
-            if screenPos.x >= minPos.x and screenPos.x <= maxPos.x and
-               screenPos.y >= minPos.y and screenPos.y <= maxPos.y then
-        
-                table.insert(selectables, selectable)
-        
+                local screenPos = Client.WorldToScreen(selectable:GetOrigin())
+                if screenPos.x >= minPos.x and screenPos.x <= maxPos.x and
+                   screenPos.y >= minPos.y and screenPos.y <= maxPos.y then
+            
+                    table.insert(selectables, selectable)
+            
+                end
+            
             end
-        
-        end
 
+        end
+        if #selectables > 0 then break end
     end
     
     return selectables

@@ -73,7 +73,10 @@ local defaults = {
     { "VoiceChatCom", "LeftAlt" },
     { "TextChatCom", "Return" },
     { "TeamChatCom", "Y" },
-    { "PreviousLocationCom", "" }
+    { "PreviousLocationCom", "" },
+    { "OverHeadZoomIncrease", "MouseWheelUp" },
+    { "OverHeadZoomDecrease", "MouseWheelDown" },
+    { "OverHeadZoomReset", "G" }
 }
 
 // Order, names, description of keys in menu
@@ -144,6 +147,9 @@ local globalComControlBindings = {
     "TextChatCom", "input", Locale.ResolveString("COMBINDINGS_PUBLIC_CHAT"), "Y",
     "TeamChatCom", "input", Locale.ResolveString("COMBINDINGS_TEAM_CHAT"), "Return",
     "PreviousLocationCom", "input", Locale.ResolveString("COMBINDINGS_GO_TO_PREVIOUS_LOCATION"), "",
+    "OverHeadZoomIncrease", "input", Locale.ResolveString("COMBINDINGS_OVERHEAD_ZOOM_INCREASE"), "MouseWheelUp",
+    "OverHeadZoomDecrease", "input", Locale.ResolveString("COMBINDINGS_OVERHEAD_ZOOM_DECREASE"), "MouseWheelDown",
+    "OverHeadZoomReset", "input", Locale.ResolveString("COMBINDINGS_OVERHEAD_ZOOM_RESET"), "G",
 }
 
 local specialKeys = {

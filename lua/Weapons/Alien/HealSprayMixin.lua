@@ -311,11 +311,14 @@ function HealSprayMixin:OnTag(tagName)
         if player and player:GetEnergy() >= self:GetSecondaryEnergyCost(player) then
             
             if Server then        
-                PerformHealSpray(self, player)            
-                player:DeductAbilityEnergy(self:GetSecondaryEnergyCost(player))
+                PerformHealSpray(self, player)
             end
+
+			player:DeductAbilityEnergy(self:GetSecondaryEnergyCost(player))
             
-            player:TriggerEffects("heal_spray")
+            local effectCoords = Coords.GetLookIn(GetHealOrigin(self, player), player:GetViewCoords().zAxis)
+            player:TriggerEffects("heal_spray", { effecthostcoords = effectCoords })
+            
             self.lastSecondaryAttackTime = Shared.GetTime()
         
         end
@@ -329,7 +332,7 @@ function HealSprayMixin:OnUpdateAnimationInput(modelMixin)
     PROFILE("HealSprayMixin:OnUpdateAnimationInput")
 
     local player = self:GetParent()
-    if player and self.secondaryAttacking and player:GetEnergy() >= self:GetSecondaryEnergyCost(player) then
+    if player and self.secondaryAttacking and player:GetEnergy() >= self:GetSecondaryEnergyCost(player) or Shared.GetTime() - self.lastSecondaryAttackTime < 0.5 then
         modelMixin:SetAnimationInput("activity", "secondary")
     end
     

@@ -36,6 +36,8 @@ Extractor.kModelName = PrecacheAsset("models/marine/extractor/extractor.model")
 
 local kAnimationGraph = PrecacheAsset("models/marine/extractor/extractor.animation_graph")
 
+Shared.PrecacheModel(Extractor.kModelName)
+
 local networkVars = { }
 
 AddMixinNetworkVars(ResearchMixin, networkVars)

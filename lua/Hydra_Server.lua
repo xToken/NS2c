@@ -83,10 +83,12 @@ function Hydra:AttackTarget()
 end
 
 function Hydra:OnOwnerChanged(oldOwner, newOwner)
+
     self.hydraParentId = Entity.invalidId
     if newOwner ~= nil then
-        self.hydraParentId = newOwner:GetId()    
-    end    
+        self.hydraParentId = newOwner:GetId()
+    end
+    
 end
 
 function Hydra:OnUpdate(deltaTime)
@@ -101,38 +103,32 @@ function Hydra:OnUpdate(deltaTime)
     
     if self.timeLastUpdate + Hydra.kUpdateInterval < Shared.GetTime() then
     
-        if GetIsUnitActive(self) then    
-        
+        if GetIsUnitActive(self) then
             self.target = self.targetSelector:AcquireTarget()
-            
-            self.attacking = self.target ~= nil
-            
-            if self.target then
-            
-                if self.timeOfNextFire == nil or Shared.GetTime() > self.timeOfNextFire then               
-                    self:AttackTarget()
-                end
-                
-            else
-            
-                // Play alert animation if marines nearby and we're not targeting (SiegeCannons?)
-                if self.timeLastAlertCheck == nil or Shared.GetTime() > self.timeLastAlertCheck + Hydra.kAlertCheckInterval then
+
+            -- Check for obstacles between the origin and barrel point of the hydra so it doesn't shoot while sticking through walls
+            self.attacking = self.target and not GetWallBetween(self:GetBarrelPoint(), self:GetOrigin(), self)
+
+            if self.attacking and (not self.timeOfNextFire or Shared.GetTime() > self.timeOfNextFire) then
+                self:AttackTarget()
+            elseif not self.target then
+                // Play alert animation if marines nearby and we're not targeting (ARCs?)
+                if not self.timeLastAlertCheck or Shared.GetTime() > self.timeLastAlertCheck + Hydra.kAlertCheckInterval then
                 
                     self.alerting = false
                     
                     if self:GetIsEnemyNearby() then
                     
-                        self.alerting = true                        
+                        self.alerting = true
                         self.timeLastAlertCheck = Shared.GetTime()
                         
                     end
                     
                 end
-                
             end
-            
+
         else
-            self.attacking = false        
+            self.attacking = false
         end
         
         self.timeLastUpdate = Shared.GetTime()
@@ -143,13 +139,13 @@ end
 
 function Hydra:GetIsEnemyNearby()
 
-    local enemyPlayers = GetEntitiesForTeam("ScriptActor", GetEnemyTeamNumber(self:GetTeamNumber()))
+    local enemyActors = GetEntitiesForTeam("ScriptActor", GetEnemyTeamNumber(self:GetTeamNumber()))
     
-    for index, player in ipairs(enemyPlayers) do                
+    for index, actors in ipairs(enemyActors) do                
     
-        if player:GetIsVisible() and not player:isa("Commander") then
+        if actors:GetIsVisible() and not actors:isa("Commander") then
         
-            local dist = self:GetDistanceToTarget(player)
+            local dist = self:GetDistanceToTarget(actors)
             if dist < Hydra.kRange then
                 return true
             end

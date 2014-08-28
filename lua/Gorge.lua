@@ -458,6 +458,15 @@ if Client then
         end
     
     end
+    
+    function Gorge:GetGhostModelScale()
+    
+        local weapon = self:GetActiveWeapon()
+        if weapon and weapon:isa("DropStructureAbility") then
+            return weapon:GetGhostModelScale()
+        end
+    
+    end
 
 end
 

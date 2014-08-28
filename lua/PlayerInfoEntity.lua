@@ -25,7 +25,7 @@ local networkVars =
     m_angles = "angles (by 10 [], by 10 [], by 10 [])",
     m_origin = "position (by 2000 [], by 2000 [], by 2000 [])",
 
-    clientId = "integer (-1 to 4000)",
+    clientId = "entityid",
     steamId = "integer",
     playerId = "entityid",
     playerName = string.format("string (%d)", kMaxNameLength * 4 ),

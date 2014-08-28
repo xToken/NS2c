@@ -39,7 +39,7 @@ AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(SelectableMixin, networkVars)
 
-function Jetpack:OnCreate ()
+function Jetpack:OnCreate()
 
     ScriptActor.OnCreate(self)
     

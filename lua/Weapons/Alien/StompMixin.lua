@@ -94,7 +94,6 @@ function StompMixin:OnTag(tagName)
         if player then
                 
             self:PerformStomp(player)
-
             self:TriggerEffects("stomp_attack", { effecthostcoords = player:GetCoords() })
             player:DeductAbilityEnergy(kStompEnergyCost)
             

@@ -69,6 +69,18 @@ function GUIMinimapFrame:Initialize()
     
     self.chooseSpawnText:SetIsVisible(false)
     
+    
+    self.spawnQueueText = GUIManager:CreateTextItem()
+    self.spawnQueueText:SetFontName(Fonts.kAgencyFB_Small)
+    self.spawnQueueText:SetFontIsBold(true)
+    self.spawnQueueText:SetAnchor(GUIItem.Left, GUIItem.Top)
+    self.spawnQueueText:SetTextAlignmentX(GUIItem.Align_Min)
+    self.spawnQueueText:SetTextAlignmentY(GUIItem.Align_Center)
+    self.spawnQueueText:SetPosition( Vector( 15, -4, 0) )
+    self.spawnQueueText:SetColor( Color(1,1,1,1) )
+    self.spawnQueueText:SetIsVisible(true)
+    self.minimapFrame:AddChild( self.spawnQueueText )
+    
     self.showingMouse = false
 
 end
@@ -80,6 +92,11 @@ function GUIMinimapFrame:Uninitialize()
     if self.chooseSpawnText then
         GUI.DestroyItem(self.chooseSpawnText)
         self.chooseSpawnText = nil
+    end
+    
+    if self.spawnQueueText then
+        GUI.DestroyItem(self.spawnQueueText)
+        self.spawnQueueText = nil
     end
     
     if self.showingMouse then
@@ -192,7 +209,14 @@ function GUIMinimapFrame:Update(deltaTime)
     if PlayerUI_IsOverhead() and self.comMode ~= GUIMinimapFrame.kModeBig then
         
         if PlayerUI_IsACommander() then
-        
+            
+            local teamInfo = GetTeamInfoEntity( PlayerUI_GetTeamNumber() )
+            if teamInfo and PlayerUI_GetTeamNumber() == kTeam1Index then
+                self.spawnQueueText:SetColor( kMarineFontColor )
+                //TODO Check number respawning and adjust color if above X threshold
+                self.spawnQueueText:SetText( "MARINES RESPAWNING: " .. tostring( teamInfo:GetSpawnQueueTotal() ) )
+            end
+            
             // Commander always sees the minimap.
             if not PlayerUI_IsCameraAnimated() then
                 self.background:SetIsVisible(true)

@@ -162,8 +162,21 @@ local kRed = Color(1,0,0,1)
 function GUIResourceDisplay:Update(deltaTime)
 
     PROFILE("GUIResourceDisplay:Update")
+    
+    local currentTeamRes = PlayerUI_GetTeamResources()
+    if not self.displayedTeamRes then
+        self.displayedTeamRes = currentTeamRes
+    else
 
-    self.teamText:SetText(ToString(PlayerUI_GetTeamResources()))
+        if self.displayedTeamRes > currentTeamRes then
+            self.displayedTeamRes = currentTeamRes
+        else
+            self.displayedTeamRes = Slerp(self.displayedTeamRes, currentTeamRes, deltaTime * 40)
+        end    
+            
+    end
+
+    self.teamText:SetText(ToString(math.round(self.displayedTeamRes)))
     
     local numHarvesters = CommanderUI_GetTeamHarvesterCount()
     self.towerText:SetText(ToString(numHarvesters))
@@ -175,8 +188,9 @@ function GUIResourceDisplay:Update(deltaTime)
     self.eggsText:SetColor(hasEggs and kWhite or kRed)
     self.eggsIcon:SetColor(hasEggs and kWhite or kRed)
     
-	if PlayerUI_GetTeamType() ~= kAlienTeamType then
-		self.eggsIcon:SetIsVisible(false)
-		self.eggsText:SetIsVisible(false)
-	end
+    if PlayerUI_GetTeamType() ~= kAlienTeamType then
+        self.eggsIcon:SetIsVisible(false)
+        self.eggsText:SetIsVisible(false)
+    end
+    
 end

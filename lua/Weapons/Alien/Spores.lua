@@ -17,13 +17,7 @@ class 'Spores' (Ability)
 Spores.kMapName = "spores"
 
 local kAnimationGraph = PrecacheAsset("models/alien/lerk/lerk_view.animation_graph")
-local attackEffectMaterial = nil
 local kRange = 20
-
-if Client then
-    attackEffectMaterial = Client.CreateRenderMaterial()
-    attackEffectMaterial:SetMaterial("materials/effects/mesh_effects/view_blood.material")
-end
 
 local networkVars =
 {
@@ -109,42 +103,6 @@ function Spores:OnPrimaryAttackEnd()
     Ability.OnPrimaryAttackEnd(self)
     self.primaryAttacking = false
     
-end
-
-if Client then
-
-    function Spores:TriggerFirstPersonHitEffects(player, target)
-
-        if player == Client.GetLocalPlayer() and target then
-            
-            local cinematicName = kStructureHitEffect
-            if target:isa("Marine") then
-                self:CreateBloodEffect(player)        
-                cinematicName = kMarineHitEffect
-            end
-        
-            local cinematic = Client.CreateCinematic(RenderScene.Zone_ViewModel)
-            cinematic:SetCinematic(cinematicName)
-        
-        
-        end
-
-    end
-
-    function Spores:CreateBloodEffect(player)
-    
-        if not Shared.GetIsRunningPrediction() then
-
-            local model = player:GetViewModelEntity():GetRenderModel()
-
-            model:RemoveMaterial(attackEffectMaterial)
-            model:AddMaterial(attackEffectMaterial)
-            attackEffectMaterial:SetParameter("attackTime", Shared.GetTime())
-
-        end
-        
-    end
-
 end
 
 function Spores:OnUpdateAnimationInput(modelMixin)

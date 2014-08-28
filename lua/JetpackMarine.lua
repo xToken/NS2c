@@ -129,11 +129,24 @@ function JetpackMarine:GetFuel()
 
     local dt = Shared.GetTime() - self.timeJetpackingChanged
     local rate = -kJetpackUseFuelRate
+    
     if not self.jetpacking then
         rate = kJetpackReplenishFuelRate
-        dt = math.max(0, dt - kJetpackFuelReplenishDelay)
+        dt = math.max(0, dt - JetpackMarine.kJetpackFuelReplenishDelay)
     end
-    return Clamp(self.jetpackFuelOnChange + rate * dt, 0, 1)
+    
+    if self:GetDarwinMode() then
+        return 1
+    else
+        return Clamp(self.jetpackFuelOnChange + rate * dt, 0, 1)
+    end
+    
+end
+
+function JetpackMarine:SetFuel(fuel)
+    
+    self.timeJetpackingChanged = Shared.GetTime()
+    self.jetpackFuelOnChange = Clamp(fuel, 0, 1)
     
 end
 
@@ -210,7 +223,6 @@ function JetpackMarine:HandleJetPackEnd()
         self.jetpackLoop:Stop()
     end
     self.jetpackFuelOnChange = self:GetFuel()
-    self.jetpacking = false
     self.timeJetpackingChanged = Shared.GetTime()
     self.jetpacking = false
     

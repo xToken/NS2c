@@ -158,8 +158,7 @@ local networkVars =
 {
     fullPrecisionOrigin = "private vector", 
     
-    // Controlling client index. -1 for not being controlled by a live player (ragdoll, fake player)
-    clientIndex = "integer (-1 to 4000)",
+    clientIndex = "entityid",
     
     gamemode = "enum kGameMode",
     
@@ -182,9 +181,6 @@ local networkVars =
     timeLastMenu = "private time",
     darwinMode = "private boolean",
     
-    // Set to true when jump key has been released after jump processed
-    // Used to require the key to pressed multiple times
-
     moveButtonPressed = "compensated boolean",
     
     primaryAttackLastFrame = "boolean",
@@ -453,6 +449,13 @@ function Player:OnEntityChange(oldEntityId, newEntityId)
             self:CloseMenu()
         end
 
+        -- If this is a player changing classes that we're already following, update the id
+        local player = Client.GetLocalPlayer()
+        if player.followId == oldEntityId then
+            Client.SendNetworkMessage("SpectatePlayer", {entityId = newEntityId}, true)
+            player.followId = newEntityId
+        end
+        
     end
 
 end
@@ -960,7 +963,7 @@ function Player:GetResources()
     if Shared.GetCheatsEnabled() and Player.kAllFreeCheat then
         return 100
     else
-        return self.resources
+        return Round(self.resources, 2)
     end
 
 end
@@ -981,17 +984,11 @@ function Player:AddResources(amount)
 end
 
 function Player:AddTeamResources(amount)
-    self.teamResources = math.min(self.teamResources + amount, kMaxTeamResources)
+    self.teamResources = math.max(math.min(self.teamResources + amount, kMaxTeamResources), 0)
 end
 
 function Player:GetDisplayResources()
-
-    local displayResources = self.resources
-    if(Client and self.resourceDisplay) then
-        displayResources = self.animatedResourcesDisplay:GetDisplayValue()
-    end
-    return math.floor(displayResources)
-    
+    return self:GetResources()    
 end
 
 function Player:GetPersonalResources()
@@ -999,7 +996,7 @@ function Player:GetPersonalResources()
     if Shared.GetCheatsEnabled() and Player.kAllFreeCheat then
         return 100
     else
-        return self.resources
+        return self:GetResources()
     end
     
 end
@@ -1368,7 +1365,13 @@ function Player:OnProcessMove(input)
     
     if self:GetIsAlive() then
     
-        self:UpdateMove(input)
+        local runningPrediction = Shared.GetIsRunningPrediction()
+
+        self:PreUpdateMove(input, runningPrediction)
+    
+        self:UpdateMove(input, runningPrediction)
+        
+        self:PostUpdateMove(input, runningPrediction)
 
 		self:UpdateMaxMoveSpeed(input.time)
 
@@ -1503,6 +1506,9 @@ function Player:DropToFloor()
 
 end
 
+function Player:GetCanStepOver(entity)
+    return not entity:isa("Player")
+end
 
 function Player:GetCanStep()
     return self:GetIsOnGround()

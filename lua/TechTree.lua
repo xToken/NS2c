@@ -258,7 +258,7 @@ end
 function TechTree:GetAddOnsForTechId(techId)
 
     local addons = { }
-
+    
     for index, techNode in pairs(self.nodeList) do
     
         if techNode ~= nil and techNode:isa("TechNode") then

@@ -164,6 +164,21 @@ if Server then
     end
     
 end
+
+function ConstructMixin:ModifyHeal(healTable)
+
+    if not self:GetIsBuilt() then
+    
+        local maxFraction = kStartHealthScalar + (1 - kStartHealthScalar) * self.buildFraction    
+        local maxHealth = self:GetMaxHealth() * maxFraction + self:GetMaxArmor() * maxFraction
+        local health = self:GetHealth() + self:GetArmor()
+        
+        healTable.health = Clamp(maxHealth - health, 0, healTable.health) 
+    
+    end
+
+end
+
 function ConstructMixin:ResetConstructionStatus()
 
     self.buildTime = 0
@@ -238,7 +253,7 @@ function ConstructMixin:Construct(elapsedTime, builder)
     local success = false
     local playAV = false
     
-    if not self.constructionComplete then
+    if not self.constructionComplete and (not HasMixin(self, "Live") or self:GetIsAlive()) then
         
         if builder and builder.OnConstructTarget then
             builder:OnConstructTarget(self)

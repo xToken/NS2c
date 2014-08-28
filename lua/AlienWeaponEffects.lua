@@ -280,12 +280,11 @@ kAlienWeaponEffects =
 
     metabolize = 
     {
-        metabolizeEffects =
+        metabolizeSounds = 
         {
-            {sound = "", silenceupgrade = true, done = true}, 
-            {player_sound = "sound/ns2c.fev/ns2c/alien/fade/metabolize"},
-            //{player_sound = "sound/NS2.fev/alien/fade/stab"},
-        },
+            {player_sound = "", silenceupgrade = true, done = true},
+            {player_sound = "sound/NS2.fev/alien/fade/metabolize"}
+        }
     },
     
     blink_in =

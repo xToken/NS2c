@@ -24,8 +24,20 @@ AlienSpectator.kMapName = "alienspectator"
 
 local networkVars =
 {
-    eggId = "private entityid"
+    eggId = "private entityid",
+    queuePosition = "private integer (-1 to 100)"
 }
+
+local function UpdateQueuePosition(self)
+
+    if self:GetIsDestroyed() then
+        return false
+    end
+    
+    self.queuePosition = self:GetTeam():GetPlayerPositionInRespawnQueue(self)
+    return true
+    
+end
 
 local function UpdateWaveTime(self)
 
@@ -68,13 +80,16 @@ function AlienSpectator:OnInitialized()
     self:SetTeamNumber(2)
     
     self.eggId = Entity.invalidId
+	self.queuePosition = 0
     self.movedToEgg = false
     
     if Server then
     
         self.evolveTechIds = { kTechId.Skulk }
+		self:AddTimedCallback(UpdateQueuePosition, 0.1)
         self:AddTimedCallback(UpdateWaveTime, 0.1)
         self:AddTimedCallback(UpdateWaitingtoSpawn, 0.1)
+		UpdateQueuePosition(self)
         
     end
     
@@ -110,6 +125,9 @@ function AlienSpectator:GetEggId()
     return self.eggId
 end
 
+function AlienSpectator:GetQueuePosition()
+    return self.queuePosition
+end
 // Same as Skulk so his view height is right when spawning in
 function AlienSpectator:GetMaxViewOffsetHeight()
     return Skulk.kViewOffsetHeight

@@ -17,7 +17,19 @@ function HydraStructureAbility:GetEnergyCost(player)
 end
 
 function HydraStructureAbility:GetGhostModelName(ability)
+
+    local player = ability:GetParent()
+    if player and player:isa("Gorge") then
+    
+        local variant = player:GetVariant()
+        if variant == kGorgeVariant.shadow then
+            return Hydra.kModelNameShadow
+        end
+        
+    end
+    
     return Hydra.kModelName
+    
 end
 
 function HydraStructureAbility:GetDropStructureId()

@@ -215,13 +215,13 @@ if Server then
 
     function Mine:OnKill(attacker, doer, point, direction)
     
-       if self.active then
+        ScriptActor.OnKill(self, attacker, doer, point, direction)
+
+		if self.active then
             Arm(self)
         else
             DestroyEntity(self)
         end
-        
-        ScriptActor.OnKill(self, attacker, doer, point, direction)
         
         TEST_EVENT("Mine killed by player")
         

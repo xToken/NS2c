@@ -65,9 +65,7 @@ function BileBomb:OnTag(tagName)
         
         if player then
         
-            if Server or (Client and Client.GetIsControllingPlayer()) then
-                self:FireBombProjectile(player)
-            end
+            self:FireBombProjectile(player)
             
             player:DeductAbilityEnergy(self:GetEnergyCost())            
             

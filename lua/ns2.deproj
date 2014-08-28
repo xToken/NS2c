@@ -112,9 +112,6 @@
     <filename>CatPack.lua</filename>
   </file>
   <file>
-    <filename>Weapons\Marine\Claw.lua</filename>
-  </file>
-  <file>
     <filename>Client.lua</filename>
   </file>
   <file>
@@ -187,6 +184,9 @@
     <filename>Weapons\Alien\CragAbility.lua</filename>
   </file>
   <file>
+    <filename>Mixins\CrouchCoreMoveMixin.lua</filename>
+  </file>
+  <file>
     <filename>DSPEffects.lua</filename>
   </file>
   <file>
@@ -241,15 +241,6 @@
     <filename>EquipmentOutline.lua</filename>
   </file>
   <file>
-    <filename>Exo.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Marine\ExoWeaponHolder.lua</filename>
-  </file>
-  <file>
-    <filename>Exosuit.lua</filename>
-  </file>
-  <file>
     <filename>Extractor.lua</filename>
   </file>
   <file>
@@ -260,12 +251,6 @@
   </file>
   <file>
     <filename>Fade_Server.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Marine\Flame.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Marine\Flamethrower.lua</filename>
   </file>
   <file>
     <filename>GUIActionIcon.lua</filename>
@@ -385,6 +370,9 @@
     <filename>Globals.lua</filename>
   </file>
   <file>
+    <filename>Mixins\GoldSourceCoreMoveMixin.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Alien\Gore.lua</filename>
   </file>
   <file>
@@ -478,6 +466,9 @@
     <filename>JetpackMarine.lua</filename>
   </file>
   <file>
+    <filename>Mixins\JumpCoreMoveMixin.lua</filename>
+  </file>
+  <file>
     <filename>LOSMixin.lua</filename>
   </file>
   <file>
@@ -566,9 +557,6 @@
   </file>
   <file>
     <filename>Weapons\Marine\Mines.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Marine\Minigun.lua</filename>
   </file>
   <file>
     <filename>ModdedMixinUtility.lua</filename>
@@ -677,9 +665,6 @@
   </file>
   <file>
     <filename>PrototypeLab.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Marine\Railgun.lua</filename>
   </file>
   <file>
     <filename>ReadyRoomPlayer.lua</filename>
@@ -860,6 +845,9 @@
   </file>
   <file>
     <filename>UpgradableMixin.lua</filename>
+  </file>
+  <file>
+    <filename>Mixins\VanillaNS2CoreMoveMixin.lua</filename>
   </file>
   <file>
     <filename>VoiceOver.lua</filename>

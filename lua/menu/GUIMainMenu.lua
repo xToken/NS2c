@@ -25,7 +25,7 @@ Script.Load("lua/menu/ServerTabs.lua")
 Script.Load("lua/menu/PlayerEntry.lua")
 Script.Load("lua/dkjson.lua")
 Script.Load("lua/menu/MenuPoses.lua")
-Script.Load("lua/Hitsounds.lua")
+Script.Load("lua/HitSounds.lua")
 
 local kMainMenuLinkColor = Color(137 / 255, 137 / 255, 137 / 255, 1)
 
@@ -212,33 +212,30 @@ function GUIMainMenu:Initialize()
     
     self.Links = {}
     self:CreateMainLinks()
-        
-    if not Client.GetOptionBoolean("never_show_optimize", false) then
-        self:MaybeCreateFirstRunWindow()
-    end
     
     local VoiceChat = Client.GetOptionString("input/VoiceChat", "LeftAlt")
     local ShowMap = Client.GetOptionString("input/ShowMap", "C")
     local TextChat = Client.GetOptionString("input/TextChat", "Y")
     local TeamChat = Client.GetOptionString("input/TeamChat", "Return")
+    local SelectNextWeapon = Client.GetOptionString("input/SelectNextWeapon", "MouseWheelUp")
+    local SelectPrevWeapon = Client.GetOptionString("input/SelectPrevWeapon", "MouseWheelDown")
+    local Drop = Client.GetOptionString("input/Drop", "G")
 
-    local VoiceChatCom = Client.GetOptionString("input/VoiceChatCom", "")
-    local ShowMapCom = Client.GetOptionString("input/ShowMapCom", "")
-    local TextChatCom = Client.GetOptionString("input/TextChatCom", "")
-    local TeamChatCom = Client.GetOptionString("input/TeamChatCom", "")
-
-    if VoiceChatCom == "" then
-        Client.SetOptionString("input/VoiceChatCom", VoiceChat)
-    end
-    if ShowMapCom == "" then
-        Client.SetOptionString("input/ShowMapCom", ShowMap)
-    end
-    if TextChatCom == "" then
-        Client.SetOptionString("input/TextChatCom", TextChat)
-    end
-    if TeamChatCom == "" then
-        Client.SetOptionString("input/TeamChatCom", TeamChat)
-    end
+    local VoiceChatCom = Client.GetOptionString("input/VoiceChatCom", VoiceChat)
+    local ShowMapCom = Client.GetOptionString("input/ShowMapCom", ShowMap)
+    local TextChatCom = Client.GetOptionString("input/TextChatCom", TextChat)
+    local TeamChatCom = Client.GetOptionString("input/TeamChatCom", TeamChat)
+    local OverHeadZoomIncrease = Client.GetOptionString("input/OverHeadZoomIncrease", SelectNextWeapon)
+    local OverHeadZoomDecrease = Client.GetOptionString("input/OverHeadZoomDecrease", SelectPrevWeapon)
+    local OverHeadZoomReset = Client.GetOptionString("input/OverHeadZoomReset", Drop)
+    
+    Client.SetOptionString("input/VoiceChatCom", VoiceChatCom)
+    Client.SetOptionString("input/ShowMapCom", ShowMapCom)
+    Client.SetOptionString("input/TextChatCom", TextChatCom)
+    Client.SetOptionString("input/TeamChatCom", TeamChatCom)
+    Client.SetOptionString("input/OverHeadZoomIncrease", OverHeadZoomIncrease)
+    Client.SetOptionString("input/OverHeadZoomDecrease", OverHeadZoomDecrease)
+    Client.SetOptionString("input/OverHeadZoomReset", OverHeadZoomReset)
 
     local gPlayerData = {}
     local kPlayerRankingRequestUrl = "http://sabot.herokuapp.com/api/get/playerData/"
@@ -392,7 +389,7 @@ function GUIMainMenu:CreateProfile()
     self.rankLevel = CreateMenuElement(self.profileBackground, "Link")
     self.rankLevel:SetCSSClass("rank_level")
     
-    local eventCallbacks =
+    eventCallbacks =
     {
         OnClick = function (self, buttonPressed)
             Client.ShowWebpage("http://hive.naturalselection2.com/profile/".. Client.GetSteamId())
@@ -437,6 +434,9 @@ local function AddFavoritesToServerList(serverList)
         serverEntry.friendsOnServer = false
         serverEntry.lanServer = false
         serverEntry.tickrate = 30
+        serverEntry.currentScore = 0
+        serverEntry.performanceScore = 0
+        serverEntry.performanceQuality = 0
         serverEntry.serverId = -f
         serverEntry.numRS = currentFavorite.numRS or 0
         serverEntry.modded = currentFavorite.modded or false
@@ -559,8 +559,7 @@ function GUIMainMenu:CreatePlayerCountAlertWindow()
     
     self.playerCountAlertText = CreateMenuElement(self.playerCountAlertWindow, "Font")
     self.playerCountAlertText:SetCSSClass("warning_alerttext")
-    self.playerCountAlertText:SetText( WordWrap(self.playerCountAlertText.text, Locale.ResolveString("PLAYER_COUNT_WARNING"), 0, 460) )
-    self.playerCountAlertText:SetTextClipped(true, 460, 170)
+    self.playerCountAlertText:SetText(WordWrap(self.playerCountAlertText.text, Locale.ResolveString("PLAYER_COUNT_WARNING"), 0, 460) )
     
     local okButton = CreateMenuElement(self.playerCountAlertWindow, "MenuButton")
     okButton:SetCSSClass("warning_alert_join")
@@ -613,7 +612,6 @@ function GUIMainMenu:CreateServerNetworkModedAlertWindow()
     self.playerCountAlertText = CreateMenuElement(self.serverNetworkModedAlertWindow, "Font")
     self.playerCountAlertText:SetCSSClass("warning_alerttext")
     self.playerCountAlertText:SetText(WordWrap(self.playerCountAlertText.text, Locale.ResolveString("SERVER_NETWOK_MODED_WARNING"), 0, 460))
-    self.playerCountAlertText:SetTextClipped(true, 460, 170)
     
     local okButton = CreateMenuElement(self.serverNetworkModedAlertWindow, "MenuButton")
     okButton:SetCSSClass("warning_alert_join")
@@ -809,7 +807,7 @@ local function CreateFilterForm(self)
         
     end)
     
-    local description = CreateMenuElement(self.filterMapName, "Font")
+    description = CreateMenuElement(self.filterMapName, "Font")
     description:SetText(Locale.ResolveString("SERVERBROWSER_MAPNAME"))
     description:SetCSSClass("filter_description")
     
@@ -859,7 +857,7 @@ local function CreateFilterForm(self)
         
     end)
 
-    local description = CreateMenuElement(self.filterHasPlayers, "Font")
+    description = CreateMenuElement(self.filterHasPlayers, "Font")
     description:SetText(Locale.ResolveString("SERVERBROWSER_FILTER_EMPTY"))
     description:SetCSSClass("filter_description")
 
@@ -872,7 +870,7 @@ local function CreateFilterForm(self)
         
     end)
     
-    local description = CreateMenuElement(self.filterFull, "Font")
+    description = CreateMenuElement(self.filterFull, "Font")
     description:SetText(Locale.ResolveString("SERVERBROWSER_FILTER_FULL"))
     description:SetCSSClass("filter_description")
     
@@ -885,7 +883,7 @@ local function CreateFilterForm(self)
         
     end)
     
-    local description = CreateMenuElement(self.filterPassworded, "Font")
+    description = CreateMenuElement(self.filterPassworded, "Font")
     description:SetText(Locale.ResolveString("SERVERBROWSER_PASSWORDED"))
     description:SetCSSClass("filter_description")
 
@@ -943,6 +941,27 @@ local function ModDetailsCallback(modId, title, description)
     downloadedModDetails[modId] = title
     currentlyDownloadingModDetails = nil
     
+end
+
+local function GetPerformanceTextFromIndex(serverIndex)
+    if gUsePerformanceBrowser then
+        local currentScore = Client.GetServerCurrentPerformanceScore(serverIndex)
+        local performanceScore = Client.GetServerPerformanceScore(serverIndex);
+        local performanceQuality = Client.GetServerPerformanceQuality(serverIndex);
+        local str = ServerPerformanceData.GetText(currentScore, performanceScore, performanceQuality, Client.GetServerTickRate())
+        return string.format("%s %s", Locale.ResolveString("SERVERBROWSER_SERVER_DETAILS_PERF"), str)
+    end
+    local performance = math.round(Clamp(GetServerTickRate(serverIndex) / 30, 0, 1) * 100)
+    return string.format("%s %s%%", Locale.ResolveString("SERVERBROWSER_SERVER_DETAILS_PERF"), ToString(performance))
+end
+  
+local function GetPerformanceText(serverData)
+    if gUsePerformanceBrowser then
+        local str = ServerPerformanceData.GetText(serverData.currentScore, serverData.performanceScore, serverData.performanceQuality, serverData.tickrate)
+        return string.format("%s %s", Locale.ResolveString("SERVERBROWSER_SERVER_DETAILS_PERF"), str)
+    end
+    local performance = math.round(Clamp(serverData.tickrate / 30, 0, 1) * 100)
+    return string.format("%s %s%%", Locale.ResolveString("SERVERBROWSER_SERVER_DETAILS_PERF"), ToString(performance))
 end
 
 function GUIMainMenu:CreateServerDetailsWindow()
@@ -1040,6 +1059,7 @@ function GUIMainMenu:CreateServerDetailsWindow()
             
             self.favoriteIcon:SetIsVisible(serverData.favorite)
             self.passwordedIcon:SetIsVisible(serverData.requiresPassword)
+            self.performance:SetText( GetPerformanceText( serverData ) )
         
         elseif serverIndex > 0 then  
             self:SetRefreshed()  
@@ -1066,8 +1086,7 @@ function GUIMainMenu:CreateServerDetailsWindow()
              self.gameMode:SetText(string.format("%s %s", Locale.ResolveString("SERVERBROWSER_SERVER_DETAILS_GAME"), FormatGameMode(Client.GetServerGameMode(self.serverIndex))))
              self.map:SetText(string.format("%s %s",Locale.ResolveString("SERVERBROWSER_SERVER_DETAILS_MAP"), GetTrimmedMapName(Client.GetServerMapName(self.serverIndex))))
              
-             local performance = math.round(Clamp(GetServerTickRate(self.serverIndex) / 30, 0, 1) * 100)
-             self.performance:SetText(string.format("%s %s%%", Locale.ResolveString("SERVERBROWSER_SERVER_DETAILS_PERF"), ToString(performance)))
+             self.performance:SetText( GetPerformanceTextFromIndex(self.serverIndex) )
              
              local modString = Client.GetServerKeyValue(self.serverIndex, "mods") -- "7c59c34 7b986f5 5f9ccf1 5fd7a38 5fdc381 6ec6bcd 676c71a 7619dc7"
              local modTitles = nil
@@ -1780,7 +1799,7 @@ local function CreateKeyBindingsFormCom(mainMenu, content)
         
         function keyInputCom:OnSendKey(key, down)
         
-            if not down then
+            if not down and key ~= InputKey.Escape then
             
                 -- We want to ignore the click that gave this input focus.
                 if keyInputCom.ignoreFirstKey == true then
@@ -1790,7 +1809,7 @@ local function CreateKeyBindingsFormCom(mainMenu, content)
                     
                     Client.SetOptionString("input/" .. keyInputCom.inputName, keyStringCom)
                     
-                    --CheckForConflictedKeysCom(mainMenu.keyInputsCom)
+                    CheckForConflictedKeys(mainMenu.keyInputsCom)
                     
                 end
                 keyInputCom.ignoreFirstKey = true
@@ -1798,21 +1817,40 @@ local function CreateKeyBindingsFormCom(mainMenu, content)
             end
             
         end
+        
+        function keyInputCom:OnMouseWheel(up)
+            if up then
+                self:OnSendKey(InputKey.MouseWheelUp, false)
+            else
+                self:OnSendKey(InputKey.MouseWheelDown, false)
+            end
+        end
+        
         local keyInputTextCom = CreateMenuElement(keyBindingsFormCom, "Font", false)
         keyInputTextCom:SetText(string.UTF8Upper(bindingCom.detail) ..  ":")
         keyInputTextCom:SetCSSClass("option_label")
+        
+        local clearKeyInput = CreateMenuElement(keyBindingsFormCom, "MenuButton", false)
+        clearKeyInput:SetCSSClass("clear_keybind")
+        clearKeyInput:SetText("x")
+        
+        function clearKeyInput:OnClick()
+            Client.SetOptionString("input/" .. keyInputCom.inputName, "None")
+            keyInputCom:SetValue("")
+        end
         
         local y = rowHeight * (b  - 1)
         
         keyInputCom:SetTopOffset(y)
         keyInputTextCom:SetTopOffset(y)
+        clearKeyInput:SetTopOffset(y)
         
         keyInputCom.inputName = bindingCom.name
         table.insert(mainMenu.keyInputsCom, keyInputCom)
         
     end
     InitKeyBindingsCom(mainMenu.keyInputsCom)
-    --CheckForConflictedKeysCom(mainMenu.keyInputsCom)
+    CheckForConflictedKeys(mainMenu.keyInputsCom)
     
     keyBindingsFormCom:SetCSSClass("keybindings")
     
@@ -1951,7 +1989,7 @@ local function InitOptions(optionElements)
     optionElements.SoundVolume:SetValue(soundVol)
     optionElements.MusicVolume:SetValue(musicVol)
     optionElements.VoiceVolume:SetValue(voiceVol)
-    optionElements.hudmode:SetValue(hudmode == 1 and "HIGH" or "LOW")
+    optionElements.hudmode:SetValue(hudmode == 1 and Locale.ResolveString("HIGH") or Locale.ResolveString("LOW"))
     optionElements.LightQuality:SetOptionActive( lightQuality )
     
     optionElements.RecordingGain:SetValue(recordingGain)
@@ -2127,7 +2165,7 @@ local function SaveOptions(mainMenu)
     Client.SetOptionBoolean("CameraAnimation", cameraAnimation)
     Client.SetOptionBoolean(kPhysicsGpuAccelerationKey, physicsGpuAcceleration)
 	Client.SetOptionBoolean( "AdvancedMovement", advancedmovement)
-    Client.SetOptionInteger("hudmode", hudmode == "HIGH" and kHUDMode.Full or kHUDMode.Minimal)
+    Client.SetOptionInteger("hudmode", hudmode == Locale.ResolveString("HIGH") and kHUDMode.Full or kHUDMode.Minimal)
     Client.SetOptionInteger("graphics/lightQuality", lightQuality)
     Client.SetOptionFloat("input/mouse/acceleration-amount", accelerationAmount)
     Client.SetOptionInteger("graphics/textureManagement", textureManagement)
@@ -3149,71 +3187,6 @@ local function OnOptionsChanged()
     
 end
 
-function GUIMainMenu:MaybeCreateFirstRunWindow()
-
-    local lastLoadedBuild = Client.GetOptionInteger("lastLoadedBuild", 0)
-
-    if lastLoadedBuild == Shared.GetBuildNumber() then
-        return
-    end
-    
-    if self.firstRunWindow ~= nil then
-        self:DestroyWindow( self.firstRunWindow )
-        self.firstRunWindow = nil
-    end
-    
-    self.firstRunWindow = self:CreateWindow()  
-    self.firstRunWindow:SetWindowName("HINT")
-    self.firstRunWindow:SetInitialVisible(true)
-    self.firstRunWindow:SetIsVisible(true)
-    self.firstRunWindow:DisableResizeTile()
-    self.firstRunWindow:DisableSlideBar()
-    self.firstRunWindow:DisableContentBox()
-    self.firstRunWindow:SetCSSClass("first_run_window")
-    self.firstRunWindow:DisableCloseButton()
-    self.firstRunWindow:SetLayer(kGUILayerMainMenuDialogs)
-    
-    self.neverShowOptimize = CreateMenuElement(self.firstRunWindow, "Checkbox")
-    self.neverShowOptimize:SetCSSClass("never_show_optimize")
-    self.neverShowOptimize:SetChecked(Client.GetOptionBoolean("never_show_optimize", false))
-    
-    self.neverShowOptimizeText = CreateMenuElement(self.firstRunWindow, "Font")
-    self.neverShowOptimizeText:SetCSSClass("never_show_optimize_text")
-    self.neverShowOptimizeText:SetText(Locale.ResolveString("NEVER_SHOW_AGAIN"))
-    
-    self.neverShowOptimize:AddSetValueCallback(function(self)
-
-        Client.SetOptionBoolean("never_show_optimize", true)
-        
-    end)
-    
-    local hint = CreateMenuElement(self.firstRunWindow, "Font")
-    local okButton = CreateMenuElement(self.firstRunWindow, "MenuButton")
-    local skipButton = CreateMenuElement(self.firstRunWindow, "MenuButton")
-    
-    skipButton:SetCSSClass("first_run_skip")
-    hint:SetTextClipped( true, 380, 300 )
-    hint:SetCSSClass("first_run_msg")
-    okButton:SetCSSClass("first_run_ok")
-
-    hint:SetText(Locale.ResolveString("OPTIMIZE_FIRST_TIME"))
-    
-    okButton:SetText(Locale.ResolveString("OPTIMIZE_CONFIRM"))
-    okButton:AddEventCallbacks({ OnClick = function()
-            Client.SetOptionBoolean("immediateDisconnect", true)
-            Shared.ConsoleCommand("map ns2_descent")
-        end})
-
-    skipButton:SetText(Locale.ResolveString("OPTIMIZE_SKIP"))
-    skipButton:AddEventCallbacks({OnClick = function()
-            self:DestroyWindow( self.firstRunWindow )
-            self.firstRunWindow = nil
-        end})
-    
-    MainMenu_OnTooltip()
-
-end
-
 function GUIMainMenu:ActivatePlayWindow(playNow)
 
     if not self.playWindow then
@@ -3295,7 +3268,7 @@ function GUIMainMenu:OnPlayClicked(playNow)
             self:ActivatePlayWindow(playNow)
         end})
 
-    local skipButton = CreateMenuElement(self.tutorialNagWindow, "MenuButton")
+    skipButton = CreateMenuElement(self.tutorialNagWindow, "MenuButton")
     skipButton:SetCSSClass("tutnag_stop")
     skipButton:SetText(Locale.ResolveString("TUTNAG_STOP"))
     skipButton:AddEventCallbacks({OnClick = function()

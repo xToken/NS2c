@@ -215,7 +215,6 @@ function OrdersMixin:GiveOrder(orderType, targetId, targetOrigin, orientation, c
     end
     
     local order = nil
-    
     order = CreateOrder(orderType, targetId, targetOrigin, orientation)
     order:SetOrigin(self:GetOrigin())
     

@@ -24,7 +24,7 @@ kIdleSoundNames["Whip"] = "sound/NS2.fev/alien/structures/whip/idle"
 kIdleSoundNames["Harvester"] = "sound/NS2.fev/alien/structures/harvester_active"
 kIdleSoundNames["Hydra"] = "sound/NS2.fev/alien/structures/hydra/idle"
     
-//kIdleSoundNames["Skulk"] = "sound/NS2.fev/alien/skulk/idle"
+kIdleSoundNames["Skulk"] = "sound/NS2.fev/alien/skulk/idle"
 kIdleSoundNames["Gorge"] = "sound/NS2.fev/alien/gorge/idle"
 kIdleSoundNames["Lerk"] = "sound/NS2.fev/alien/lerk/idle"
 kIdleSoundNames["Fade"] = "sound/NS2.fev/alien/skulk/idle"

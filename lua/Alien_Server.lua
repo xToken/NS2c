@@ -75,7 +75,7 @@ function Alien:Reset()
 end
 
 function Alien:GetIsHealableOverride()
-  return self:GetIsAlive() and (self:GetHealth() < self:GetMaxHealth() or self:GetArmor() < self:GetMaxArmor())
+  return self:GetIsAlive() and self:AmountDamaged() > 0
 end
 
 function Alien:UpdateAutoHeal()

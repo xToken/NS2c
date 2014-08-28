@@ -24,16 +24,16 @@ local networkVars = { }
 local function TriggerXenocide(self, player)
 
     if Server then
-	
+    
         if not self.XenocideSoundName then
             self.XenocideSoundName = Server.CreateEntity(SoundEffect.kMapName)
             self.XenocideSoundName:SetAsset(kXenocideSoundName)
             self.XenocideSoundName:SetParent(self)
             self.XenocideSoundName:Start()
-        else 	
-		    self.XenocideSoundName:Start()	
-		end
-		//StartSoundEffectOnEntity(kXenocideSoundName, player)
+        else     
+            self.XenocideSoundName:Start()    
+        end
+
         self.xenocideTimeLeft = kDetonateTime
         
     elseif Client and Client.GetLocalPlayer() == player then
@@ -63,7 +63,7 @@ end
 function XenocideLeap:OnDestroy()
 
     BiteLeap.OnDestroy(self)
-	
+    
     if Client then
         CleanUI(self)
     end
@@ -96,7 +96,7 @@ function XenocideLeap:OnPrimaryAttack(player)
 
             TriggerXenocide(self, player)
             self.xenociding = true
-			
+            
         else
         
             if self.xenocideTimeLeft and self.xenocideTimeLeft < kDetonateTime * 0.4 then        
@@ -141,16 +141,16 @@ function XenocideLeap:OnProcessMove(input)
 
 				player:SetBypassRagdoll(true)
                 player:Kill()
-				
-				if self.XenocideSoundName then
-					self.XenocideSoundName:Stop()
-					self.XenocideSoundName = nil
-				end
+                
+                if self.XenocideSoundName then
+                    self.XenocideSoundName:Stop()
+                    self.XenocideSoundName = nil
+                end
             end
-        		if Server and not player:GetIsAlive() and self.XenocideSoundName and self.XenocideSoundName:GetIsPlaying() == true then
-					self.XenocideSoundName:Stop()
-					self.XenocideSoundName = nil					
-				end    
+                if Server and not player:GetIsAlive() and self.XenocideSoundName and self.XenocideSoundName:GetIsPlaying() == true then
+                    self.XenocideSoundName:Stop()
+                    self.XenocideSoundName = nil                    
+                end    
 
         elseif Client and not player:GetIsAlive() and self.xenocideGui then
             CleanUI(self)

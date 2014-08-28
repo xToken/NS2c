@@ -376,7 +376,7 @@ function GUISelectionPanel:UpdateSingleSelection(entity)
     
     local selectedDescription = CommanderUI_GetSelectedDescriptor(entity)
     self.selectedName:SetIsVisible(true)
-    self.selectedName:SetText(string.upper(selectedDescription))
+    self.selectedName:SetText(string.UTF8Upper(selectedDescription))
     local selectedLocationText = CommanderUI_GetSelectedLocation(entity)
     self.selectedLocationName:SetIsVisible(false)
     self.selectedLocationName:SetText(string.upper(selectedLocationText))
@@ -399,7 +399,7 @@ function GUISelectionPanel:UpdateSingleSelection(entity)
         local pulseColor = Color(GUISelectionPanel.kStatusFontColor)
         pulseColor.a = 0.65 + (((math.sin(Shared.GetTime() * 10) + 1) / 2) * 0.35)
         self.statusText:SetColor(pulseColor)
-        self.statusText:SetText(string.upper(statusText))        
+        self.statusText:SetText(string.UTF8Upper(statusText))
         
         self.statusBar:SetSize(Vector(GUISelectionPanel.kStatusBarWidth * statusPercentage, GUISelectionPanel.kStatusBarHeight, 0))
         
@@ -474,6 +474,7 @@ function GUISelectionPanel:CreateMultiSelectionIcon()
 
 end
 
+/* this blocks queued orders currently
 function GUISelectionPanel:SendKeyEvent(key, down)
 
     if key == InputKey.LeftShift then
@@ -489,6 +490,7 @@ function GUISelectionPanel:SendKeyEvent(key, down)
     return false
 
 end
+*/
 
 function GUISelectionPanel:SetIconTextureCoordinates(selectedIcon, entity)
 

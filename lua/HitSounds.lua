@@ -88,6 +88,32 @@ if Server then
         
     end
     
+    -- Let mods determine the sound to be played in case they add their own weapons, etc
+    function HitSound_ChooseSound(hit)
+        local sound = 1
+        local attacker = Shared.GetEntity(hit.attacker)
+        if hit.weapon == kTechId.GrenadeLauncher then
+            // Grenade Launcher is not affected by weapon upgrades
+            local damageAmount = hit.overkill / kGrenadeLauncherGrenadeDamage
+            if kHitSoundHigh <= damageAmount then
+                sound = 3
+            elseif kHitSoundMid <= damageAmount then
+                sound = 2
+            end
+        elseif hit.weapon == kTechId.Shotgun then
+            // Shotgun hitsound is based on number of pellets that hit a single target
+            if kHitSoundHighShotgunHitCount <= hit.hitcount then
+                sound = 3
+            elseif kHitSoundMidShotgunHitCount <= hit.hitcount then
+                sound = 2
+            end
+        elseif hit.weapon == kTechId.LerkBite then
+            sound = 3
+        end
+        
+        return sound
+    end
+    
     function HitSound_DispatchHits()
         local hitsounds = {}
         local xenocounts = {}
@@ -100,33 +126,12 @@ if Server then
             
             if attacker and target and target:isa("Player") and not target:isa("Embryo") then
                 
-                sound = 1
-                if hit.weapon == kTechId.Railgun then
-                    // Railgun hitsound is based on charge amount
-                    local chargeAmount = ( ( hit.overkill / NS2Gamerules_GetUpgradedDamageScalar( attacker ) ) - kRailgunDamage ) / kRailgunChargeDamage
-                    if kHitSoundHigh <= chargeAmount then
-                        sound = 3
-                    elseif kHitSoundMid <= chargeAmount then
-                        sound = 2
-                    end
-                elseif hit.weapon == kTechId.GrenadeLauncher then
-                    // Grenade Launcher is not affected by weapon upgrades
-                    local damageAmount = hit.overkill / kGrenadeLauncherGrenadeDamage
-                    if kHitSoundHigh <= damageAmount then
-                        sound = 3
-                    elseif kHitSoundMid <= damageAmount then
-                        sound = 2
-                    end
-                elseif hit.weapon == kTechId.Xenocide then
+                sound = HitSound_ChooseSound(hit)
+                
+                // I suppose this doesn't make Xeno hitsounds super moddable, but...
+                if hit.weapon == kTechId.Xenocide then
                     // Xenocide hitsound is based on number of people hit
                     xenocounts[attacker] = ( xenocounts[attacker] or 0 ) + 1
-                elseif hit.weapon == kTechId.Shotgun then
-                    // Shotgun hitsound is based on number of pellets that hit a single target
-                    if kHitSoundHighShotgunHitCount <= hit.hitcount then
-                        sound = 3
-                    elseif kHitSoundMidShotgunHitCount <= hit.hitcount then
-                        sound = 2
-                    end
                 end
                 
                 // Prefer sending an event only for the best hit

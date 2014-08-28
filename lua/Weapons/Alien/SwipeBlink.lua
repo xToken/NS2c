@@ -116,25 +116,21 @@ function SwipeBlink:OnTag(tagName)
     
     if self.primaryAttacking and tagName == "hit" then
 
+		
 		local player = self:GetParent()
         if player then
-            self.lastPrimaryAttackTime = Shared.GetTime()
             player:DeductAbilityEnergy(self:GetEnergyCost())
             player:TriggerEffects("swipe_attack")
+			self:PerformMeleeAttack(player)
         end
-
-        self:PerformMeleeAttack()
+		self.lastPrimaryAttackTime = Shared.GetTime()
+        
     end
 
 end
 
-function SwipeBlink:PerformMeleeAttack()
-
-    local player = self:GetParent()
-    if player then
-        AttackMeleeCapsule(self, player, kSwipeDamage, self:GetRange(), nil, false, EntityFilterOneAndIsa(player, "Babbler"))
-    end
-    
+function SwipeBlink:PerformMeleeAttack(player)
+	AttackMeleeCapsule(self, player, kSwipeDamage, self:GetRange(), nil, false, EntityFilterOneAndIsa(player, "Babbler"))
 end
 
 function SwipeBlink:OnUpdateAnimationInput(modelMixin)

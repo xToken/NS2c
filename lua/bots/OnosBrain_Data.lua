@@ -268,6 +268,77 @@ kOnosBrainActions =
     //  
     //----------------------------------------
     function(bot, brain)
+        local name = "pheromone"
+        
+        local skulk = bot:GetPlayer()
+        local eyePos = skulk:GetEyePos()
+
+        local pheromones = EntityListToTable(Shared.GetEntitiesWithClassname("Pheromone"))            
+        local bestPheromoneLocation = nil
+        local bestValue = 0
+        
+        for p = 1, #pheromones do
+        
+            local currentPheromone = pheromones[p]
+            if currentPheromone then
+                local techId = currentPheromone:GetType()
+                            
+                if techId == kTechId.ExpandingMarker or techId == kTechId.ThreatMarker then
+                
+                    local location = currentPheromone:GetOrigin()
+                    local locationOnMesh = Pathing.GetClosestPoint(location)
+                    local distanceFromMesh = location:GetDistance(locationOnMesh)
+                    
+                    if distanceFromMesh > 0.001 and distanceFromMesh < 2 then
+                    
+                        local distance = eyePos:GetDistance(location)
+                        
+                        if currentPheromone.visitedBy == nil then
+                            currentPheromone.visitedBy = {}
+                        end
+                                        
+                        if not currentPheromone.visitedBy[bot] then
+                        
+                            if distance < 5 then 
+                                currentPheromone.visitedBy[bot] = true
+                            else   
+            
+                                // Value goes from 5 to 10
+                                local value = 5.0 + 5.0 / math.max(distance, 1.0) - #(currentPheromone.visitedBy)
+                        
+                                if value > bestValue then
+                                    bestPheromoneLocation = locationOnMesh
+                                    bestValue = value
+                                end
+                                
+                            end    
+                            
+                        end    
+                            
+                    end
+                    
+                end
+                        
+            end
+            
+        end
+        
+        local weight = EvalLPF( bestValue, {
+            { 0.0, 0.0 },
+            { 10.0, 1.0 }
+            })
+
+        return { name = name, weight = weight,
+            perform = function(move)
+                bot:GetMotion():SetDesiredMoveTarget(bestPheromoneLocation)
+                bot:GetMotion():SetDesiredViewTarget(nil)
+            end }
+    end,
+
+    //----------------------------------------
+    //  
+    //----------------------------------------
+    function(bot, brain)
         local name = "order"
 
         local skulk = bot:GetPlayer()

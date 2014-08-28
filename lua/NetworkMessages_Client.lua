@@ -44,6 +44,16 @@ function OnCommandHitSound(hitSoundTable)
     HitSounds_PlayHitsound( sound )
     
 end
+
+function OnCommandAbilityResult(msg)
+
+    // The server will send us this message to tell us an ability succeded.
+    player = Client.GetLocalPlayer()
+    if player:GetIsCommander() then
+        player:OnAbilityResultMessage(msg.techId, msg.success, msg.castTime)
+    end
+
+end
 function OnCommandClearTechTree()
     ClearTechTree()
 end
@@ -222,6 +232,7 @@ Client.HookNetworkMessage("Ping", OnCommandPing)
 Client.HookNetworkMessage("HitEffect", OnCommandHitEffect)
 Client.HookNetworkMessage("Damage", OnCommandDamage)
 Client.HookNetworkMessage("HitSound", OnCommandHitSound)
+Client.HookNetworkMessage("AbilityResult", OnCommandAbilityResult)
 Client.HookNetworkMessage("JoinError", OnCommandJoinError)
 
 Client.HookNetworkMessage("ClearTechTree", OnCommandClearTechTree)

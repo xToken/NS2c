@@ -262,11 +262,9 @@ function GetMaterialXYOffset(techId)
     local columns = 12
     index = kTechIdToMaterialOffset[techId]
     
-    if index == nil then
-        Print("Warning: %s did not define kTechIdToMaterialOffset ", EnumToString(kTechId, techId) )
-    end
-
-    if(index ~= nil) then
+    if not index then
+        DebugPrint("Warning: %s did not define kTechIdToMaterialOffset ", EnumToString(kTechId, techId) )
+    else
     
         local x = index % columns
         local y = math.floor(index / columns)

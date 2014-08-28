@@ -156,19 +156,18 @@ local function ShootGrenade(self, player)
 
     if Server or (Client and Client.GetIsControllingPlayer()) then
 
-        local viewAngles = player:GetViewAngles()
-        local viewCoords = viewAngles:GetCoords()
+        local viewCoords = player:GetViewCoords()
         local eyePos = player:GetEyePos()
 
         local startPointTrace = Shared.TraceCapsule(eyePos, eyePos + viewCoords.zAxis, 0.2, 0, CollisionRep.Move, PhysicsMask.PredictedProjectileGroup, EntityFilterTwo(self, player))
         local startPoint = startPointTrace.endPoint
-        
+
         local direction = viewCoords.zAxis
         
         if startPointTrace.fraction ~= 1 then
             direction = GetNormalizedVector(direction:GetProjection(startPointTrace.normal))
         end
-        
+
         local grenade = player:CreatePredictedProjectile("Grenade", startPoint, direction * kGrenadeSpeed, 0.7, 0.45)
     
     end

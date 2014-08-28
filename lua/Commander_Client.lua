@@ -292,7 +292,9 @@ function Commander:SendKeyEvent(key, down)
     
     if GetIsBinding(key, "PreviousLocationCom") then
         local origin = self:GetPreviousOverheadLocation()
-        self:SetWorldScrollPreviousPosition(origin.x + 4, origin.z)
+        if origin then
+            self:SetWorldScrollPreviousPosition(origin.x + 4, origin.z)
+        end
         success = true
     end
     
@@ -909,34 +911,34 @@ function Commander:UpdateClientEffects(deltaTime, isLocal)
         local xScalar, yScalar = Client.GetCursorPos()
         local x = xScalar * Client.GetScreenWidth()
         local y = yScalar * Client.GetScreenHeight()
-		if not MainMenu_GetIsOpened() then
-			
-			if not GetCommanderGhostStructureEnabled() and not CommanderUI_GetMouseIsOverUI() then
-			
-				local oldEntityIdUnderCursor = self.entityIdUnderCursor
-				self.entityIdUnderCursor = self:GetUnitIdUnderCursor(CreatePickRay(self, x, y))
-				
-				if self.entityIdUnderCursor ~= Entity.invalidId and oldEntityIdUnderCursor ~= self.entityIdUnderCursor then
-					Shared.PlayPrivateSound(self, self:GetHoverSound(), self, 1.0, self:GetOrigin())
-				end
-				
-			else
-				self.entityIdUnderCursor = Entity.invalidId
-			end
-			
-			UpdateGhostStructureVisuals(self)
-			
-			self:UpdateGhostGuides()
-			
-			UpdateCircleUnderCursor(self)
-			
-			self:UpdateCursor()
+        if not MainMenu_GetIsOpened() then
+            
+            if not GetCommanderGhostStructureEnabled() and not CommanderUI_GetMouseIsOverUI() then
+            
+                local oldEntityIdUnderCursor = self.entityIdUnderCursor
+                self.entityIdUnderCursor = self:GetUnitIdUnderCursor(CreatePickRay(self, x, y))
+                
+                if self.entityIdUnderCursor ~= Entity.invalidId and oldEntityIdUnderCursor ~= self.entityIdUnderCursor then
+                    Shared.PlayPrivateSound(self, self:GetHoverSound(), self, 1.0, self:GetOrigin())
+                end
+                
+            else
+                self.entityIdUnderCursor = Entity.invalidId
+            end
+            
+            UpdateGhostStructureVisuals(self)
+            
+            self:UpdateGhostGuides()
+            
+            UpdateCircleUnderCursor(self)
+            
+            self:UpdateCursor()
 
-			self.lastMouseX = x
-			self.lastMouseY = y
-			
-		end
-	end
+            self.lastMouseX = x
+            self.lastMouseY = y
+            
+        end
+    end
     
 end
 

@@ -22,22 +22,24 @@ local kAnimationGraph = PrecacheAsset("models/marine/welder/welder_view.animatio
 
 kWelderHUDSlot = 4
 
-local welderTraceExtents = Vector(0.4, 0.4, 0.4)
-
 local networkVars =
 {
     loopingSoundEntId = "entityid"
 }
 
-local kWeldRange = 2.0
+AddMixinNetworkVars(PickupableWeaponMixin, networkVars)
 
+local kWeldRange = 2.0
 local kWelderEffectRate = 1.0
 
 local kFireLoopingSound = PrecacheAsset("sound/NS2.fev/marine/welder/weld")
 
-AddMixinNetworkVars(PickupableWeaponMixin, networkVars)
+local kHealScoreAdded = 2
+// Every kAmountHealedForPoints points of damage healed, the player gets
+// kHealScoreAdded points to their score.
+local kAmountHealedForPoints = 600
 
-function Welder:OnCreate() 
+function Welder:OnCreate()
 
     Weapon.OnCreate(self)
 
@@ -229,9 +231,18 @@ function Welder:PerformWeld(player)
             if target:GetHealthScalar() < 1 then
                 
                 local prevHealthScalar = target:GetHealthScalar()
+                local prevHealth = target:GetHealth()
+                local prevArmor = target:GetArmor()
                 target:OnWeld(self, kWelderFireDelay, player)
                 success = prevHealthScalar ~= target:GetHealthScalar()
-            
+                
+                if success then
+                
+                    local addAmount = (target:GetHealth() - prevHealth) + (target:GetArmor() - prevArmor)
+                    player:AddContinuousScore("WeldHealth", addAmount, kAmountHealedForPoints, kHealScoreAdded)
+
+                end
+                
             end
             
             if HasMixin(target, "Construct") and target:GetCanConstruct(player) then
@@ -239,7 +250,7 @@ function Welder:PerformWeld(player)
             end
             
         end
-
+        
     end
     
     if success then    

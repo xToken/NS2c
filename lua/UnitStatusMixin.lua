@@ -191,6 +191,8 @@ function UnitStatusMixin:GetAbilityFraction(forEntity)
         if primaryWeapon and primaryWeapon:isa("ClipWeapon") then
             // always show at least 1% so commander would see a black bar
             return math.max(0.01, primaryWeapon:GetAmmoFraction())
+        elseif self:isa("Player") and self:isa("Alien") and not self:isa("Hallucination") and not self:isa("Embryo") then
+            return math.max(0.01, self:GetEnergy() / self:GetMaxEnergy())
         end
         
     end

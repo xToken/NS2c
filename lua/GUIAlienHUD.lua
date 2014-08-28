@@ -40,6 +40,8 @@ local kUmbraTextFontName = Fonts.kStamp_Large
 local kUmbraTextYOffset = -52
 local kHealthArmorIconSize = 16
 
+local kAdrenalineEnergyColor = Color(1, 121/255, 12/255, 1)
+
 local kHealthBackgroundWidth = 160
 local kHealthBackgroundHeight = 160
 local kHealthBackgroundOffset = Vector(20, -20, 0)
@@ -167,17 +169,15 @@ function GUIAlienHUD:Initialize()
 
     GUIAnimatedScript.Initialize(self)
     
-    self.scale = Client.GetScreenHeight() / kBaseScreenHeight    
-    self.lastUmbraState = false
-    
+    self.scale = Client.GetScreenHeight() / kBaseScreenHeight
+        
     // Stores all state related to fading balls.
     self.fadeValues = { }
     
     // Keep track of weapon changes.
     self.lastActiveHudSlot = 0
     
-    self:CreateUmbraText()
-	self:CreateHealthBall()
+    self:CreateHealthBall()
     self:CreateEnergyBall()
     
     self.resourceBackground = self:CreateAnimatedGraphicItem()
@@ -287,7 +287,6 @@ end
 
 function GUIAlienHUD:SetIsVisible(isVisible)
 
-    self.umbraText:SetIsVisible(isVisible)
     self.healthBall:SetIsVisible(isVisible)
     self.healthText:SetIsVisible(isVisible)
     self.armorBall:SetIsVisible(isVisible)
@@ -309,8 +308,6 @@ function GUIAlienHUD:Reset()
     self.resourceDisplay:Reset(self.scale)
     self.eventDisplay:Reset(self.scale)
     self.inventoryDisplay:Reset(self.scale)
-    self.umbraText:SetUniformScale(self.scale)
-    self.umbraText:SetPosition(Vector(0, GUIScale(kUmbraTextYOffset),0))
     
     for i = 1, #kAlienUpgradeChambers do
         for j = 1, 3 do
@@ -476,24 +473,10 @@ end
 function GUIAlienHUD:CreateEnergyBall()
 
     self.energyBarPercentage = AlienUI_GetPlayerEnergy() / AlienUI_GetPlayerMaxEnergy()
-    
-    self.hasAdrenaline = AlienUI_GetHasAdrenaline()
-    
-    if self.hasAdrenaline then
-                
-        energyBallSettings.ForegroundTextureX1 = kEnergyAdrenalineTextureX1
-        energyBallSettings.ForegroundTextureY1 = kEnergyAdrenalineTextureY1
-        energyBallSettings.ForegroundTextureX2 = kEnergyAdrenalineTextureX2
-        energyBallSettings.ForegroundTextureY2 = kEnergyAdrenalineTextureY2
-        
-    else
-
-        energyBallSettings.ForegroundTextureX1 = kEnergyTextureX1
-        energyBallSettings.ForegroundTextureY1 = kEnergyTextureY1
-        energyBallSettings.ForegroundTextureX2 = kEnergyTextureX2
-        energyBallSettings.ForegroundTextureY2 = kEnergyTextureY2
-
-    end
+    energyBallSettings.ForegroundTextureX1 = kEnergyTextureX1
+    energyBallSettings.ForegroundTextureY1 = kEnergyTextureY1
+    energyBallSettings.ForegroundTextureX2 = kEnergyTextureX2
+    energyBallSettings.ForegroundTextureY2 = kEnergyTextureY2
     
     self.energyBall = GUIDial()
     self.energyBall:Initialize(energyBallSettings)
@@ -504,10 +487,13 @@ function GUIAlienHUD:CreateEnergyBall()
     energyBallBackground:SetFloatParameter("correctionY", 1)
     energyBallBackground:SetLayer(kGUILayerPlayerHUDBackground)
     
+    self.energyBall:GetLeftSide():SetColor(Color(230/255, 171/255, 46/255, 1))
+    self.energyBall:GetRightSide():SetColor(Color(230/255, 171/255, 46/255, 1))
+    
     self.activeAbilityIcon = GUIManager:CreateGraphicItem()
-    self.activeAbilityIcon:SetSize(Vector(GUIScale(kInventoryIconTextureWidth), GUIScale(kInventoryIconTextureHeight), 0))
+    self.activeAbilityIcon:SetSize(Vector(GUIScale(kInventoryIconTextureWidth*0.75), GUIScale(kInventoryIconTextureHeight*0.75), 0))
     self.activeAbilityIcon:SetAnchor(GUIItem.Middle, GUIItem.Center)
-    self.activeAbilityIcon:SetPosition(Vector(-GUIScale(kInventoryIconTextureWidth) / 2, -GUIScale(kInventoryIconTextureHeight) / 2, 0))
+    self.activeAbilityIcon:SetPosition(Vector(-GUIScale(kInventoryIconTextureWidth*0.75) / 2, -GUIScale(kInventoryIconTextureHeight*0.75) / 2, 0))
     self.activeAbilityIcon:SetTexture(kInventoryIconsTexture)
     self.activeAbilityIcon:SetIsVisible(false)
     self.activeAbilityIcon:SetInheritsParentAlpha(true)
@@ -526,7 +512,6 @@ function GUIAlienHUD:CreateEnergyBall()
     self.secondaryAbilityBackground:SetAdditionalTexture("noise", kBackgroundNoiseTexture)
     self.secondaryAbilityBackground:SetFloatParameter("correctionX", 0.5)
     self.secondaryAbilityBackground:SetFloatParameter("correctionY", 0.5)
-    self.secondaryAbilityBackground:SetLayer(kGUILayerPlayerHUDBackground)
     self.activeAbilityIcon:AddChild(self.secondaryAbilityBackground)
     
     self.secondaryAbilityIcon = GUIManager:CreateGraphicItem()
@@ -537,105 +522,47 @@ function GUIAlienHUD:CreateEnergyBall()
     self.secondaryAbilityIcon:SetInheritsParentAlpha(true)
     self.secondaryAbilityBackground:AddChild(self.secondaryAbilityIcon)
     
+    self.movementSpecialIconBg = GUIManager:CreateGraphicItem()
+    self.movementSpecialIconBg:SetSize(Vector(kMovementSpecialIconSize, kMovementSpecialIconSize, 0))
+    self.movementSpecialIconBg:SetPosition(Vector(-kMovementSpecialIconSize * 0.5, kMovementSpecialIconSize * 0.25, 0))
+    self.movementSpecialIconBg:SetTexture("ui/buildmenu.dds")
+    self.movementSpecialIconBg:SetIsVisible(false)
+    self.movementSpecialIconBg:SetColor(Color(0,0,0,1))
+    self.energyBall:GetBackground():AddChild(self.movementSpecialIconBg)
+    
     self.movementSpecialIcon = GUIManager:CreateGraphicItem()
     self.movementSpecialIcon:SetSize(Vector(kMovementSpecialIconSize, kMovementSpecialIconSize, 0))
-    self.movementSpecialIcon:SetPosition(Vector(-kMovementSpecialIconSize * 0.5, kMovementSpecialIconSize * 0.25, 0))
+    self.movementSpecialIcon:SetPosition(Vector(-kMovementSpecialIconSize * 0.5, kMovementSpecialIconSize * 1.25, 0))
     self.movementSpecialIcon:SetTexture("ui/buildmenu.dds")
     self.movementSpecialIcon:SetIsVisible(false)
     self.energyBall:GetBackground():AddChild(self.movementSpecialIcon)
-
-end
-
-function GUIAlienHUD:CreateInactiveAbilityIcons()
-
-    self.inactiveAbilityIconList = { }
-    self.inactiveAbilitiesBar = GUI.CreateItem()
-    self.inactiveAbilitiesBar:SetSize(Vector(GUIScale(kInactiveAbilityBarWidth), GUIScale(kInactiveAbilityBarHeight), 0))
-    self.inactiveAbilitiesBar:SetAnchor(GUIItem.Right, GUIItem.Bottom)
-    self.inactiveAbilitiesBar:SetPosition(kInactiveAbilityBarOffset * GUIScale(1))
-    self.inactiveAbilitiesBar:SetColor(Color(0, 0, 0, 0))
     
-    local currentIcon = 0
-    while currentIcon < kMaxAlienAbilities do
+    self.adrenalineEnergy = GUIDial()
     
-        local iconBackground = GUIManager:CreateGraphicItem()
-        iconBackground:SetSize(Vector(GUIScale(kSecondaryAbilityIconSize), GUIScale(kSecondaryAbilityIconSize), 0))
-        iconBackground:SetAnchor(GUIItem.Left, GUIItem.Top)
-        iconBackground:SetTexture(kTextureName)
-        iconBackground:SetTexturePixelCoordinates(kHealthBackgroundTextureX1, kHealthBackgroundTextureY1,
-                                                  kHealthBackgroundTextureX2, kHealthBackgroundTextureY2)
-        iconBackground:SetIsVisible(false)
-        iconBackground:SetShader("shaders/GUISmokeHUD.surface_shader")
-        iconBackground:SetAdditionalTexture("noise", kBackgroundNoiseTexture)
-        iconBackground:SetFloatParameter("correctionX", 0.5)
-        iconBackground:SetFloatParameter("correctionY", 0.5)
-        iconBackground:SetLayer(kGUILayerPlayerHUDBackground)
-        
-        self.inactiveAbilitiesBar:AddChild(iconBackground)
-        
-        local inactiveIcon = GUIManager:CreateGraphicItem()
-        inactiveIcon:SetSize(Vector(GUIScale(kSecondaryAbilityIconSize), GUIScale(kSecondaryAbilityIconSize), 0))
-        inactiveIcon:SetAnchor(GUIItem.Left, GUIItem.Top)
-        inactiveIcon:SetPosition(Vector(0, 0, 0))
-        inactiveIcon:SetTexture(kInventoryIconsTexture)
-        inactiveIcon:SetInheritsParentAlpha(true)
-        iconBackground:AddChild(inactiveIcon)
-        
-        local numberIndicatorText = GUIManager:CreateTextItem()
-        numberIndicatorText:SetFontName(kAbilityNumFontName)
-        numberIndicatorText:SetScale(Vector(0.85, 0.85, 1))
-        numberIndicatorText:SetColor(kAlienFontColor)
-        numberIndicatorText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
-        numberIndicatorText:SetPosition(Vector(GUIScale(1), GUIScale(3), 0))
-        numberIndicatorText:SetTextAlignmentX(GUIItem.Align_Center)
-        numberIndicatorText:SetTextAlignmentY(GUIItem.Align_Max)
-        numberIndicatorText:SetText(tostring(currentIcon + 1))
-        numberIndicatorText:SetInheritsParentAlpha(true)
-        inactiveIcon:AddChild(numberIndicatorText)
-        
-        table.insert(self.inactiveAbilityIconList, { Background = iconBackground, Icon = inactiveIcon })
-        
-        currentIcon = currentIcon + 1
-        
-    end
+    local adrenalineBallSettings = { }
+    adrenalineBallSettings.BackgroundWidth = GUIScale(kEnergyBackgroundWidth)
+    adrenalineBallSettings.BackgroundHeight = GUIScale(kEnergyBackgroundHeight)
+    adrenalineBallSettings.BackgroundAnchorX = GUIItem.Right
+    adrenalineBallSettings.BackgroundAnchorY = GUIItem.Bottom
+    adrenalineBallSettings.BackgroundOffset = kEnergyBackgroundOffset * GUIScale(1)
+    adrenalineBallSettings.BackgroundTextureName = nil
+    adrenalineBallSettings.BackgroundTextureX1 = kHealthBackgroundTextureX1
+    adrenalineBallSettings.BackgroundTextureY1 = kHealthBackgroundTextureY1
+    adrenalineBallSettings.BackgroundTextureX2 = kHealthBackgroundTextureX2
+    adrenalineBallSettings.BackgroundTextureY2 = kHealthBackgroundTextureY2
+    adrenalineBallSettings.ForegroundTextureName = kTextureName
+    adrenalineBallSettings.ForegroundTextureWidth = 128
+    adrenalineBallSettings.ForegroundTextureHeight = 128
+    adrenalineBallSettings.ForegroundTextureX1 = kArmorTextureX1
+    adrenalineBallSettings.ForegroundTextureY1 = kArmorTextureY1
+    adrenalineBallSettings.ForegroundTextureX2 = kArmorTextureX2
+    adrenalineBallSettings.ForegroundTextureY2 = kArmorTextureY2
+    adrenalineBallSettings.InheritParentAlpha = false
     
-    // The first and third icon are raised up a bit.
-    self.inactiveAbilityIconList[1].Background:SetPosition(Vector(0, GUIScale(-20), 0))
-    self.inactiveAbilityIconList[2].Background:SetPosition(Vector(GUIScale(kDistanceBetweenAbilities), 0, 0))
-    self.inactiveAbilityIconList[3].Background:SetPosition(Vector(2 * GUIScale(kDistanceBetweenAbilities), GUIScale(-20), 0))
-    
-end
-
-function GUIAlienHUD:CreateUmbraText()
-
-    self.umbraText = self:CreateAnimatedTextItem()
-    self.umbraText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
-    self.umbraText:SetTextAlignmentX(GUIItem.Align_Center)
-    self.umbraText:SetTextAlignmentY(GUIItem.Align_Center)
-    self.umbraText:SetColor(Color(kAlienThemeColor.r, kAlienThemeColor.g, kAlienThemeColor.b, 0))
-    self.umbraText:SetFontIsBold(true)
-    self.umbraText:SetFontName(kUmbraTextFontName)
-    self.umbraText:SetText("UMBRA")
-    
-end
-
-function GUIAlienHUD:UpdateUmbraText(deltaTime)
-
-    local inUmbra = AlienUI_GetInUmbra()
-    
-    if inUmbra ~= self.lastUmbraState then
-    
-        self.umbraText:DestroyAnimations()
-    
-        if inUmbra then
-            self.umbraText:FadeIn(1)
-        else
-            self.umbraText:FadeOut(1)
-        end
-        
-        self.lastUmbraState = inUmbra
-        
-    end
+    self.adrenalineEnergy:Initialize(adrenalineBallSettings)
+    self.adrenalineEnergy:GetLeftSide():SetColor(kAdrenalineEnergyColor)
+    self.adrenalineEnergy:GetRightSide():SetColor(kAdrenalineEnergyColor) 
+    self.adrenalineEnergy:GetBackground():SetLayer(kGUILayerPlayerHUD)
     
 end
 
@@ -661,6 +588,13 @@ function GUIAlienHUD:Uninitialize()
     
         self.energyBall:Uninitialize()
         self.energyBall = nil
+        
+    end
+    
+    if self.adrenalineEnergy then
+    
+        self.adrenalineEnergy:Uninitialize()
+        self.adrenalineEnergy = nil
         
     end
     
@@ -770,27 +704,26 @@ local function UpdateEnergyBall(self, deltaTime)
 
     PROFILE("GUIAlienHUD:UpdateEnergyBall")
     
-    local player = Client.GetLocalPlayer()
-    if player:isa("Embryo") or player:isa("Egg") then
-        self.energyBall:GetBackground():SetIsVisible(false)
-        return
-    end
-    
-    if self.hasAdrenaline ~= AlienUI_GetHasAdrenaline() then
-        
-        self.energyBall:Uninitialize()
-        self.energyBall = nil
-        self:CreateEnergyBall()
-    
-    end
-    
-    local energyBarPercentageGoal = AlienUI_GetPlayerEnergy() / AlienUI_GetPlayerMaxEnergy()
-    self.energyBarPercentage = Slerp(self.energyBarPercentage, energyBarPercentageGoal, deltaTime * kBarMoveRate)
-    
-    self.energyBall:SetPercentage(self.energyBarPercentage)
+    local energy = AlienUI_GetPlayerEnergy()
+    local totalMaxEnergy = AlienUI_GetPlayerMaxEnergy()
+    local additionalMaxEnergy = 0
+    local normalMaxEnergy = totalMaxEnergy - additionalMaxEnergy
+
+    local normalEnergy = math.min(normalMaxEnergy, energy)
+    local additionalEnergy = math.max(0, energy - normalMaxEnergy)
+
+    local overflowFraction = (totalMaxEnergy - additionalMaxEnergy) / totalMaxEnergy
+    local normalEnergyFraction = normalEnergy / normalMaxEnergy
+    local overFlowEnergyFraction = additionalMaxEnergy > 0 and additionalEnergy / additionalMaxEnergy or 0
+
+    self.energyBall:SetPercentage(normalEnergyFraction * overflowFraction)
     self.energyBall:Update(deltaTime)
+  
+    self.adrenalineEnergy:SetRotation(- 2 * math.pi * normalEnergyFraction * overflowFraction)
+    self.adrenalineEnergy:SetPercentage(overFlowEnergyFraction * (1 - overflowFraction))
+    self.adrenalineEnergy:Update(deltaTime)
     
-    self:UpdateFading(self.energyBall:GetBackground(), self.energyBarPercentage, deltaTime)
+    //self:UpdateFading(self.energyBall:GetBackground(), energy / totalMaxEnergy, deltaTime)
     self:UpdateAbilities(deltaTime)
     
     local hasMovementSpecial = AlienUI_GetHasMovementSpecial()
@@ -800,9 +733,14 @@ local function UpdateEnergyBall(self, deltaTime)
         if techId then
         
             local energyCost = AlienUI_GetMovementSpecialEnergyCost()
-            local color = AlienUI_GetPlayerEnergy() >= energyCost and Color(kArmorCircleColor) or Color(1, 0, 0, 1)
-        
-            self.movementSpecialIcon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId)))
+            local msFraction = 1-AlienUI_GetMovementSpecialCooldown()
+            local color = PlayerUI_GetPlayerEnergy() >= energyCost and Color(kArmorCircleColor) or Color(1, 0, 0, 1)
+
+            local x1, y1, x2, y2 = unpack(GetTextureCoordinatesForIcon(techId))
+            self.movementSpecialIcon:SetTexturePixelCoordinates(x1, y2, x2, y2-(y2-y1)*msFraction)
+            self.movementSpecialIcon:SetSize(Vector(kMovementSpecialIconSize, -kMovementSpecialIconSize*msFraction, 0))
+            self.movementSpecialIconBg:SetTexturePixelCoordinates(x1, y1, x2, y2)
+            self.movementSpecialIconBg:SetIsVisible(true)
             self.movementSpecialIcon:SetIsVisible(true)
             self.movementSpecialIcon:SetColor(color)
             
@@ -810,20 +748,8 @@ local function UpdateEnergyBall(self, deltaTime)
         
     else
         self.movementSpecialIcon:SetIsVisible(false)
-    end  
-    
-    local currentAlpha = self.energyBall:GetLeftSide():GetColor().a
-    local useColor = Color(230/255, 171/255, 46/255, 1)
-    local energized = PlayerUI_GetEnergized()
-
-    if energized then
-        useColor = GetEnergizeColor(1)
-    end
-    
-    useColor.a = currentAlpha
-    
-    self.energyBall:GetLeftSide():SetColor(useColor)
-    self.energyBall:GetRightSide():SetColor(useColor)
+        self.movementSpecialIconBg:SetIsVisible(false)
+    end    
     
 end
 
@@ -965,7 +891,7 @@ function GUIAlienHUD:UpdateAbilities(deltaTime)
         local setColor = kNotEnoughEnergyColor
         
         if totalPower >= minimumPower then
-            setColor = Color(1, 1, 1, 1)
+            setColor = Color(230/255, 171/255, 46/255, 1)
         end
         
         local currentBackgroundColor = self.energyBall:GetBackground():GetColor()

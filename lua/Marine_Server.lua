@@ -52,7 +52,7 @@ function Marine:InitWeapons()
 
     Player.InitWeapons(self)
     
-    self:GiveItem(Rifle.kMapName)    
+    self:GiveItem(Rifle.kMapName)
     self:GiveItem(Pistol.kMapName)
     self:GiveItem(Axe.kMapName)
     self:GiveItem(Builder.kMapName)
@@ -417,15 +417,5 @@ function Marine:GiveHeavyArmor()
     HAMarine:SetActiveWeapon(activeWeaponMapName)
     HAMarine:SetHealth(health)
     return HAMarine
-    
-end
-
-function Marine:GiveExo(type)
-
-    local health = self:GetHealth()
-    self:DropAllWeapons()
-    local ExoMarine = self:Replace(Exo.kMapName, self:GetTeamNumber(), false, Vector(self:GetOrigin()), { layout = type })
-    ExoMarine:SetHealth(health)
-    return ExoMarine
     
 end

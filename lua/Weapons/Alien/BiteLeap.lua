@@ -133,16 +133,13 @@ function BiteLeap:OnTag(tagName)
             end
             
             if target and HasMixin(target, "Live") and not target:GetIsAlive() then
-                self:TriggerEffects("bite_kill", {silenceupgrade = false})
-            //elseif target and GetReceivesStructuralDamage(target) then
-                //if Server then
-                    //self:TriggerEffects("bite_structure", {effecthostcoords = Coords.GetTranslation(endPoint), isalien = GetIsAlienUnit(target), silenceupgrade = false})
-                //end
-			else
-				self:TriggerEffects("bite_attack")
+                self:TriggerEffects("bite_kill")
+            elseif Server and target and target.TriggerEffects and GetReceivesStructuralDamage(target) and (not HasMixin(target, "Live") or target:GetCanTakeDamage()) then
+                target:TriggerEffects("bite_structure", {effecthostcoords = Coords.GetTranslation(endPoint), isalien = GetIsAlienUnit(target)})
             end
             
-			player:DeductAbilityEnergy(self:GetEnergyCost())
+            player:DeductAbilityEnergy(self:GetEnergyCost())
+            self:TriggerEffects("bite_attack")
             
         end
         

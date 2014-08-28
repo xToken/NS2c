@@ -148,8 +148,6 @@ if Server then
                     self.timeToCycleMap = nil
                 end
                 
-                // Reset disconnected player resources when a game ends to prevent shenanigans.
-                self.disconnectedPlayerResources = { }
             end
             
         end
@@ -569,7 +567,6 @@ if Server then
         
         ClearCombatPlayersUpgradeTables()
         self.forceGameStart = false
-        self.losingTeam = nil
         self.preventGameEnd = nil
         self.sentCombatGameStartMessage = false
         self.sentCombat5MinuteWarning = false
@@ -973,7 +970,7 @@ if Server then
     end
     
     function NS2Gamerules:UpdateCustomNetworkSettings()
-	
+
         local kTime = Shared.GetTime()
         if not self.nextTimeUpdateCustomNetworkSettings or self.nextTimeCustomNetworkSettings < kTime then
             if  Server.GetSendrate() ~= 20 or Server.GetTickrate() ~= 30 or Shared.GetSettingsVariable( "mr" ) ~= "30.000000" or Shared.GetSettingsVariable("interp") ~= "0.100000" then

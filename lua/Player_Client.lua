@@ -541,7 +541,7 @@ function PlayerUI_GetUnitStatusInfo()
                         unitState.ArmorFraction = 0
                         unitState.Hint = ""
                         -- Only show the AbilityFraction for Marine Commanders
-                        if player:isa("MarineCommander") and unit.weaponWorldState == true and unit.GetExpireTimeFraction then
+                        if player:isa("MarineCommander") and unit.weaponWorldState == true and unit.GetExpireTimeFraction and not unit:isa("Rifle") and not unit:isa("Pistol") then
                             unitState.IsCrossHairTarget = true
                             unitState.AbilityFraction = unit:GetExpireTimeFraction()
                             unitState.IsWorldWeapon = true
@@ -1721,7 +1721,7 @@ function Player:SendKeyEvent(key, down)
         if GetIsBinding(key, "ShowMapCom") and self:isa("Commander") then
             self:OnShowMap(down)
         end
-		
+        
         if down then
         
             if GetIsBinding(key, "ReadyRoom") then
@@ -1729,20 +1729,20 @@ function Player:SendKeyEvent(key, down)
             elseif GetIsBinding(key, "TextChat") and not self:isa("Commander") then
                 ChatUI_EnterChatMessage(false)
                 return true
-            elseif GetIsBinding(key, "TextChatCom") and self:isa("Commander") then		
+            elseif GetIsBinding(key, "TextChatCom") and self:isa("Commander") then        
                 ChatUI_EnterChatMessage(false)
-                return true   				
-            elseif GetIsBinding(key, "TeamChat") and not self:isa("Commander") then		
+                return true                   
+            elseif GetIsBinding(key, "TeamChat") and not self:isa("Commander") then        
                 ChatUI_EnterChatMessage(true) 
                 return true
-            elseif GetIsBinding(key, "TeamChatCom") and self:isa("Commander") then			
+            elseif GetIsBinding(key, "TeamChatCom") and self:isa("Commander") then            
                 ChatUI_EnterChatMessage(true)
                 return true 
-			elseif GetIsBinding(key, "LastUpgrades") then
-				Shared.ConsoleCommand("evolvelastupgrades")	
-			elseif GetIsBinding(key, "ToggleMinimapNames") then
-				local newValue = not Client.GetOptionBoolean("minimapNames", true)
-				Client.SetOptionBoolean("minimapNames", newValue)
+            elseif GetIsBinding(key, "LastUpgrades") then
+                Shared.ConsoleCommand("evolvelastupgrades")    
+            elseif GetIsBinding(key, "ToggleMinimapNames") then
+                local newValue = not Client.GetOptionBoolean("minimapNames", true)
+                Client.SetOptionBoolean("minimapNames", newValue)
             end
             
         end

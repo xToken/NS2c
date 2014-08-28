@@ -45,9 +45,10 @@ function SpitSpray:OnCreate()
     Ability.OnCreate(self)
     
     self.primaryAttacking = false
-    
-    InitMixin(self, HealSprayMixin)
     self.lastPrimaryAttackTime = 0
+
+    InitMixin(self, HealSprayMixin)
+    
 end
 
 function SpitSpray:GetAnimationGraphName()
@@ -89,7 +90,7 @@ local function CreateSpitProjectile(self, player)
         local eyePos = player:GetEyePos()        
         local viewCoords = player:GetViewCoords()
         
-        local startPointTrace = Shared.TraceCapsule(eyePos, eyePos + viewCoords.zAxis, Spit.kRadius, 0, CollisionRep.Damage, PhysicsMask.PredictedProjectileGroup, EntityFilterOneAndIsa(player, "Babbler"))
+        local startPointTrace = Shared.TraceCapsule(eyePos, eyePos + viewCoords.zAxis * 1.5, Spit.kRadius, 0, CollisionRep.Damage, PhysicsMask.PredictedProjectileGroup, EntityFilterOneAndIsa(player, "Babbler"))
         local startPoint = startPointTrace.endPoint
         
         local spit = player:CreatePredictedProjectile("Spit", startPoint, viewCoords.zAxis * kSpitSpeed, 0, 0, 0, true)

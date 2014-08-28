@@ -26,16 +26,17 @@ end
 
 function Player:SetPlayerInfo(playerInfo)
 
-	if playerInfo ~= nil then
-		self.playerInfo = playerInfo
-		self.playerInfo:SetScorePlayer(self)
+    if playerInfo ~= nil then
+        self.playerInfo = playerInfo
+        self.playerInfo:SetScorePlayer(self)
     end
-	
+    
 end
 
 function Player:Reset()
 
     ScriptActor.Reset(self)
+    
     self:SetCameraDistance(0)
     self:ResetLevel()
     
@@ -102,7 +103,7 @@ end
 
 // Not authoritative, only visual and information. TeamResources is stored in the team.
 function Player:SetTeamResources(teamResources)
-    self.teamResources = math.min(teamResources, kMaxTeamResources)
+    self.teamResources = math.max(math.min(teamResources, kMaxTeamResources), 0)
 end
 
 function Player:GetSendTechTreeBase()
@@ -403,6 +404,8 @@ function Player:CopyPlayerDataFrom(player)
     
     self.timeOfDeath = player.timeOfDeath
     self.timeOfLastUse = player.timeOfLastUse
+    self.crouching = player.crouching
+    self.timeOfCrouchChange = player.timeOfCrouchChange   
     self.timeOfLastPoseUpdate = player.timeOfLastPoseUpdate
 
     self.timeLastBuyMenu = player.timeLastBuyMenu
@@ -430,8 +433,8 @@ function Player:CopyPlayerDataFrom(player)
     
     self.lastUpgradeList = player.lastUpgradeList
     
-    self.sendTechTreeBase = player.sendTechTreeBase 
-     
+    self.sendTechTreeBase = player.sendTechTreeBase
+    
 end
 
 /**

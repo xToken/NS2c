@@ -76,6 +76,9 @@ local _keyBinding =
     TextChatCom = InputKey.Y,
     TeamChatCom = InputKey.Return,
     ShowMapCom = InputKey.C,
+    OverHeadZoomIncrease = InputKey.MouseWheelUp,
+    OverHeadZoomDecrease = InputKey.MouseWheelDown,
+    OverHeadZoomReset = InputKey.G,
     PreviousLocationCom = InputKey.None,
     Q = InputKey.Q,
     W = InputKey.W,
@@ -382,14 +385,32 @@ local function GenerateMove()
             move.commands = bit.bor(move.commands, Move.ToggleSayings)
         end
 
-        // FPS action relevant to spectator
-        if _keyPressed[ _keyBinding.SelectNextWeapon ] then
-            move.commands = bit.bor(move.commands, Move.SelectNextWeapon)
-        end
+        // Ignore the normal keys when we are in overhead
+        if PlayerUI_IsOverhead() then
+            if _keyPressed[ _keyBinding.OverHeadZoomIncrease ] then
+                move.commands = bit.bor(move.commands, Move.SelectNextWeapon)
+            end
 
-        if _keyPressed[ _keyBinding.SelectPrevWeapon ] then    
-            move.commands = bit.bor(move.commands, Move.SelectPrevWeapon)
-        end    
+            if _keyPressed[ _keyBinding.OverHeadZoomDecrease ] then    
+                move.commands = bit.bor(move.commands, Move.SelectPrevWeapon)
+            end
+            
+            if _keyPressed[ _keyBinding.OverHeadZoomReset ] then    
+                move.commands = bit.bor(move.commands, Move.Drop)
+            end
+        else
+            if _keyPressed[ _keyBinding.SelectNextWeapon ] then
+                move.commands = bit.bor(move.commands, Move.SelectNextWeapon)
+            end
+
+            if _keyPressed[ _keyBinding.SelectPrevWeapon ] then    
+                move.commands = bit.bor(move.commands, Move.SelectPrevWeapon)
+            end
+            
+            if _keyPressed[ _keyBinding.Drop ] then
+                move.commands = bit.bor(move.commands, Move.Drop)
+            end
+        end
         
         if _keyPressed[ _keyBinding.Weapon1 ] then
             move.commands = bit.bor(move.commands, Move.Weapon1)
@@ -424,10 +445,6 @@ local function GenerateMove()
         end
         if _keyState[ _keyBinding.Reload ] then
             move.commands = bit.bor(move.commands, Move.Reload)
-        end
-            
-        if _keyPressed[ _keyBinding.Drop ] then
-            move.commands = bit.bor(move.commands, Move.Drop)
         end
       
         if _keyPressed[ _keyBinding.Taunt ] then

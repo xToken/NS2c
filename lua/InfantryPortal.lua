@@ -63,6 +63,9 @@ local kUpdateRate = 0.25
 InfantryPortal.kTransponderPointValue = 15
 InfantryPortal.kLoginAttachPoint = "keypad"
 
+local kPushRange = 3
+local kPushImpulseStrength = 40
+
 local networkVars =
 {
     queuedPlayerId = "entityid"
@@ -171,6 +174,10 @@ function InfantryPortal:OnCreate()
         InitMixin(self, CommanderGlowMixin)
     end
     
+    if Server then
+        self.timeLastPush = 0
+    end
+    
     self.queuedPlayerId = Entity.invalidId
     self:SetUpdates(true)
     self:SetLagCompensated(true)
@@ -186,13 +193,52 @@ local function StopSpinning(self)
     
 end
 
+local function PushPlayers(self)
+
+    for _, player in ipairs(GetEntitiesWithinRange("Player", self:GetOrigin(), 0.5)) do
+
+        if player:GetIsAlive() and HasMixin(player, "Controller") then
+
+            player:DisableGroundMove(0.1)
+            player:SetVelocity(Vector(GetSign(math.random() - 0.5) * 2, 3, GetSign(math.random() - 0.5) * 2))
+
+        end
+        
+    end
+
+end
+
 local function InfantryPortalUpdate(self)
 
     self:FillQueueIfFree()
     
     if GetIsUnitActive(self) then
+        
+        local remainingSpawnTime = self:GetSpawnTime()
+        if self.queuedPlayerId ~= Entity.invalidId then
+        
+            local queuedPlayer = Shared.GetEntity(self.queuedPlayerId)
+            if queuedPlayer then
+            
+                remainingSpawnTime = math.max(0, self.queuedPlayerStartTime + self:GetSpawnTime() - Shared.GetTime())
+            
+                if remainingSpawnTime < 0.3 and self.timeLastPush + 0.5 < Shared.GetTime() then
+                
+                    PushPlayers(self)
+                    self.timeLastPush = Shared.GetTime()
+                    
+                end
+                
+            else
+            
+                self.queuedPlayerId = nil
+                self.queuedPlayerStartTime = nil
+                
+            end
+
+        end
     
-        if self:SpawnTimeElapsed() then
+        if remainingSpawnTime == 0 then
             self:FinishSpawn()
         end
         
@@ -303,28 +349,6 @@ end
 
 function InfantryPortal:OnReplace(newStructure)
     newStructure.queuedPlayerId = self.queuedPlayerId
-end
-
-function InfantryPortal:SpawnTimeElapsed()
-
-    local elapsed = false
-    
-    if self.queuedPlayerId ~= Entity.invalidId then
-    
-        local queuedPlayer = Shared.GetEntity(self.queuedPlayerId)
-        if queuedPlayer then
-            elapsed = Shared.GetTime() >= (self.queuedPlayerStartTime + self:GetSpawnTime())
-        else
-        
-            self.queuedPlayerId = nil
-            self.queuedPlayerStartTime = nil
-            
-        end
-        
-    end
-    
-    return elapsed
-    
 end
 
 // Spawn player on top of IP. Returns true if it was able to, false if way was blocked.

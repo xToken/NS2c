@@ -311,11 +311,6 @@ if Locale then
         kPrettyInputNames["MouseButton1"] = Locale.ResolveString("RIGHT_MOUSE_BUTTON")
         kPrettyInputNames["LeftShift"] = Locale.ResolveString("LEFT_SHIFT")
         kPrettyInputNames["RightShift"] = Locale.ResolveString("RIGHT_SHIFT")
-        kPrettyInputNames["Weapon6"] = "6"
-        kPrettyInputNames["Weapon7"] = "7"
-        kPrettyInputNames["Weapon8"] = "8"
-        kPrettyInputNames["Weapon9"] = "9"
-        kPrettyInputNames["Weapon10"] = "0"
         
     end
     
@@ -326,9 +321,6 @@ if Locale then
         end
         
         local prettyInputName = BindingsUI_GetInputValue(inputName)
-        if prettyInputName == nil then
-            prettyInputName = inputName
-        end
         local foundPrettyInputName = kPrettyInputNames[prettyInputName]
         return foundPrettyInputName and foundPrettyInputName or prettyInputName
         

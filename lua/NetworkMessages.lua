@@ -266,6 +266,31 @@ function ParseHitSoundMessage(message)
 end
 
 Shared.RegisterNetworkMessage( "HitSound", kHitSoundMessage )
+
+
+/*
+For commander abilities, such as nanoshield
+*/
+
+local kAbilityResultMessage =
+{
+    techId = "enum kTechId",
+    success = "boolean",
+    castTime = "time",  // When the ability was cast and succeded. Used for cooldown enforcement.
+}
+
+function BuildAbilityResultMessage( techId, success, castTime )
+
+    local t = {}
+    t.techId = techId
+    t.success = success
+    t.castTime = castTime
+    return t
+
+end
+
+Shared.RegisterNetworkMessage( "AbilityResult", kAbilityResultMessage )
+
 // Tell players WHY they can't join a team
 local kJoinErrorMessage =
 {
@@ -329,7 +354,7 @@ local kMaxPing = 999
 
 local kPingMessage = 
 {
-    clientIndex = "integer (-1 to 4000)",
+    clientIndex = "entityid",
     ping = "integer (0 to " .. kMaxPing .. ")"
 }
 
@@ -607,7 +632,7 @@ end
 
 local kMutePlayerMessage = 
 {
-    muteClientIndex = "integer (-1 to 4000)",
+    muteClientIndex = "entityid",
     setMute = "boolean"
 }
 
@@ -999,8 +1024,8 @@ function BuildBuyMessage(techIds)
     local buyMessage = { techId1 = kTechId.None, techId2 = kTechId.None, techId3 = kTechId.None, techId4 = kTechId.None }
 
     if #techIds > table.countkeys(kBuyMessage) then
-        Shared.Message("Attempted to purchase too many upgrades at once, can only purchase 8 upgrades at once.")
-        Shared.ConsoleCommand("output " .. "Attempted to purchase too many upgrades at once, can only purchase 8 upgrades at once.")
+        Shared.Message("Attempted to purchase too many upgrades at once, can only purchase 4 upgrades at once.")
+        Shared.ConsoleCommand("output " .. "Attempted to purchase too many upgrades at once, can only purchase 4 upgrades at once.")
         //Tell client they tried to buy toooo much at once.
         return buyMessage
     end
@@ -1056,7 +1081,7 @@ Shared.RegisterNetworkMessage("ScoreUpdate", kScoreUpdate)
 Shared.RegisterNetworkMessage("SpectatePlayer", { entityId = "entityid"})
 Shared.RegisterNetworkMessage("SwitchFromFirstPersonSpectate", { mode = "enum kSpectatorMode" })
 Shared.RegisterNetworkMessage("SwitchFirstPersonSpectatePlayer", { forward = "boolean" })
-Shared.RegisterNetworkMessage("SetClientIndex", { clientIndex = "integer (-1 to 4000)" })
+Shared.RegisterNetworkMessage("SetClientIndex", { clientIndex = "entityid" })
 Shared.RegisterNetworkMessage("ServerHidden", { hidden = "boolean" })
 Shared.RegisterNetworkMessage("SetClientTeamNumber", { teamNumber = string.format("integer (-1 to %d)", kRandomTeamType) })
 Shared.RegisterNetworkMessage("WaitingForAutoTeamBalance", { waiting = "boolean" })

@@ -175,8 +175,8 @@ local function AddDeathMessage(killerIsPlayer, killerIndex, killerTeamNumber, ic
     local killerName = GetDeathMessageEntityName(killerIsPlayer, killerIndex)
     local targetName = GetDeathMessageEntityName(targetIsPlayer, targetIndex)
     
-	Print("%s killed %s with %s", killerName, targetName, EnumToString(kDeathMessageIcon, iconIndex))
-	
+    Print("%s killed %s with %s", killerName, targetName, EnumToString(kDeathMessageIcon, iconIndex))
+    
     if targetIsPlayer ~= 1 then
     
         if targetTeamNumber == kTeam1Index then

@@ -542,7 +542,7 @@ function ClipWeapon:OnTag(tagName)
             
             self:CreatePrimaryAttackEffect(player)
             
-            Weapon.OnPrimaryAttack(self, player)
+            //Weapon.OnPrimaryAttack(self, player)
             
             self.shooting = true
             
@@ -609,6 +609,7 @@ if Server then
             ammoPack:SetAmmoPackSize(self.ammo)
             self.ammo = 0
             
+            ammoPack.weapon = self:GetId()
         end
         
         self.droppedtime = Shared.GetTime()

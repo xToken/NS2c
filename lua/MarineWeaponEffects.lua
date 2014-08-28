@@ -128,31 +128,31 @@ kMarineWeaponEffects =
         },
     },
     
-	pistol_idle_spin = 
+    pistol_idle_spin = 
     {
         effects = 
         {
             { player_sound = "sound/NS2.fev/marine/pistol/idle_spin" },
         },
     },
-	
-	pistol_idle_gangster = 
+    
+    pistol_idle_gangster = 
     {
         effects = 
         {
             { player_sound = "sound/NS2.fev/marine/pistol/idle_gangster" },
         },
     },
-	
-	pistol_stop_idle_sounds = 
+    
+    pistol_stop_idle_sounds = 
     {
         axeIdleSounds = 
         {
             { stop_sound = "sound/NS2.fev/marine/pistol/idle_spin" },
-			{ stop_sound = "sound/NS2.fev/marine/pistol/idle_gangster" },
+            { stop_sound = "sound/NS2.fev/marine/pistol/idle_gangster" },
         },
     },
-	
+    
     axe_attack = 
     {
         axeAttackEffects = 
@@ -161,29 +161,29 @@ kMarineWeaponEffects =
             { player_sound = "sound/NS2.fev/marine/axe/attack" },
         },
     },
-	
-	axe_idle_toss = 
+    
+    axe_idle_toss = 
     {
         effects = 
         {
             { player_sound = "sound/NS2.fev/marine/axe/ide_throw" },
         },
     },
-	
-	axe_idle_fiddle = 
+    
+    axe_idle_fiddle = 
     {
         effects = 
         {
             { player_sound = "sound/NS2.fev/marine/axe/idle_fiddle" },
         },
     },
-	
-	axe_stop_idle_sounds = 
+    
+    axe_stop_idle_sounds = 
     {
         axeIdleSounds = 
         {
             { stop_sound = "sound/NS2.fev/marine/axe/ide_throw" },
-			{ stop_sound = "sound/NS2.fev/marine/axe/idle_fiddle" },
+            { stop_sound = "sound/NS2.fev/marine/axe/idle_fiddle" },
         },
     },
 

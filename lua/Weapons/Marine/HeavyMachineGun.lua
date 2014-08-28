@@ -253,7 +253,7 @@ if Client then
     end
 
     function HeavyMachineGun:GetPrimaryEffectRate()
-        return 0.06
+        return 0.07
     end
     
     function HeavyMachineGun:GetPreventCameraAnimation()

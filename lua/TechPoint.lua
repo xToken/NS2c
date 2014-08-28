@@ -35,7 +35,8 @@ local networkVars =
     smashed = "boolean",
     smashScouted = "boolean",
     occupiedTeam = string.format("integer (-1 to %d)", kSpectatorIndex),
-    attachedId = "entityid"
+    attachedId = "entityid",
+    extendAmount = "float (0 to 1 by 0.01)"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -62,6 +63,8 @@ function TechPoint:OnCreate()
     // The higher the chooseWeight, the more likely this point will be randomly chosen for a team.
     self.chooseWeight = 1
     
+    self.extendAmount = 0
+    
 end
 
 function TechPoint:GetCanBeUsed(player, useSuccessTable)
@@ -75,7 +78,9 @@ function TechPoint:OnInitialized()
     self:SetModel(TechPoint.kModelName, kGraphName)
     
     self:SetTechId(kTechId.TechPoint)
-
+    
+    self.extendAmount = math.min(1, math.max(0, self.extendAmount))
+    
     if Server then
     
         // 0 indicates all teams allowed for random selection process.
@@ -121,6 +126,10 @@ function TechPoint:SetSmashScouted()
         self.smashScouted = true
     end
     
+end
+
+function TechPoint:GetExtendAmount()
+    return self.extendAmount
 end
 
 if Server then

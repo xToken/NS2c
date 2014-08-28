@@ -11,6 +11,7 @@
 
 //NS2c
 //Added movementmode option
+Script.Load("lua/BadgeMixin.lua")   // really should be renamed
 
 function OnCommandCommMarqueeSelect(client, message)
     

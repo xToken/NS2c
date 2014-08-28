@@ -183,7 +183,7 @@ end
 function AlienTeam:GetNumDroppedGorgeStructures(player, techId)
 
     local structureTypeTable = self:GetDroppedGorgeStructures(player, techId)
-    return (not structureTypeTable and 0) or table.count(structureTypeTable)
+    return (not structureTypeTable and 0) or #structureTypeTable
     
 end
 

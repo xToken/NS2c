@@ -463,8 +463,6 @@ function GUIMarineBuyMenu:_InitializeContent()
     
     self.itemDescription = GetGUIManager():CreateTextItem()
     self.itemDescription:SetFontName(GUIMarineBuyMenu.kDescriptionFontName)
-    //self.itemDescription:SetFontIsBold(true)
-    self.itemDescription:SetFontSize(GUIMarineBuyMenu.kDescriptionFontSize)
     self.itemDescription:SetAnchor(GUIItem.Middle, GUIItem.Top)
     self.itemDescription:SetPosition(Vector(-GUIMarineBuyMenu.kItemDescriptionSize.x / 2, GUIMarineBuyMenu.kItemDescriptionOffsetY, 0))
     self.itemDescription:SetTextAlignmentX(GUIItem.Align_Min)

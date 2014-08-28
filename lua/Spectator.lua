@@ -98,6 +98,11 @@ local function UpdateSpectatorMode(self, input)
             self:SetSpectatorMode(NextSpectatorMode(self))
             self.timeFromLastAction = 0
             
+            if self:GetIsOverhead() then
+                self:ResetOverheadModeHeight()
+                self.selectedId = Entity.invalidId
+            end
+            
         elseif bit.band(input.commands, Move.Weapon1) ~= 0 then
         
             self:SetSpectatorMode(kSpectatorMode.FreeLook)
@@ -107,6 +112,7 @@ local function UpdateSpectatorMode(self, input)
         
             self:SetSpectatorMode(kSpectatorMode.Overhead)
             self.timeFromLastAction = 0
+            self:ResetOverheadModeHeight()
             
         elseif bit.band(input.commands, Move.Weapon3) ~= 0 then
         

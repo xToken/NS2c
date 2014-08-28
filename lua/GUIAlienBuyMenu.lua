@@ -446,9 +446,9 @@ function GUIAlienBuyMenu:_InitializeCurrentAlienDisplay()
     self.currentAlienDisplay.TitleShadow:SetFontName(kLargeFont)
     self.currentAlienDisplay.TitleShadow:SetTextAlignmentX(GUIItem.Align_Center)
     self.currentAlienDisplay.TitleShadow:SetTextAlignmentY(GUIItem.Align_Min)
-    self.currentAlienDisplay.TitleShadow:SetText(string.upper(GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].Name))
+    self.currentAlienDisplay.TitleShadow:SetText(string.UTF8Upper(Locale.ResolveString(GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].Name)))
     self.currentAlienDisplay.TitleShadow:SetColor(Color(0, 0, 0, 1))
-	self.currentAlienDisplay.TitleShadow:SetLayer(kGUILayerPlayerHUDForeground3)
+    self.currentAlienDisplay.TitleShadow:SetLayer(kGUILayerPlayerHUDForeground3)
     self.background:AddChild(self.currentAlienDisplay.TitleShadow)
     
     self.currentAlienDisplay.Title = GUIManager:CreateTextItem()
@@ -457,9 +457,9 @@ function GUIAlienBuyMenu:_InitializeCurrentAlienDisplay()
     self.currentAlienDisplay.Title:SetFontName(kLargeFont)
     self.currentAlienDisplay.Title:SetTextAlignmentX(GUIItem.Align_Center)
     self.currentAlienDisplay.Title:SetTextAlignmentY(GUIItem.Align_Min)
-    self.currentAlienDisplay.Title:SetText(string.upper(GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].Name))
+    self.currentAlienDisplay.Title:SetText(string.UTF8Upper(Locale.ResolveString(GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].Name)))
     self.currentAlienDisplay.Title:SetColor(ColorIntToColor(kAlienTeamColor))
-	self.currentAlienDisplay.Title:SetLayer(kGUILayerPlayerHUDForeground3)
+    self.currentAlienDisplay.Title:SetLayer(kGUILayerPlayerHUDForeground3)
     self.currentAlienDisplay.TitleShadow:AddChild(self.currentAlienDisplay.Title)
 
 end
@@ -481,7 +481,7 @@ function GUIAlienBuyMenu:_InitializeMouseOverInfo()
     self.mouseOverTitle:SetFontName(kLargeFont)
     self.mouseOverTitle:SetTextAlignmentX(GUIItem.Align_Min)
     self.mouseOverTitle:SetTextAlignmentY(GUIItem.Align_Min)
-    self.mouseOverTitle:SetText(string.upper(GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].Name))
+    self.mouseOverTitle:SetText(string.UTF8Upper(Locale.ResolveString(GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].Name)))
     self.mouseOverTitle:SetColor(ColorIntToColor(kAlienTeamColor))
     self.mouseOverTitle:SetIsVisible(false)
     self.background:AddChild(self.mouseOverTitle)
@@ -1184,8 +1184,8 @@ function GUIAlienBuyMenu:Update(deltaTime)
     self.currentAlienDisplay.Icon:SetSize(Vector(width, height, 0))
     self.currentAlienDisplay.Icon:SetPosition(Vector((-width / 2), -height / 2, 0))
     
-    self.currentAlienDisplay.TitleShadow:SetText(string.upper(GUIAlienBuyMenu.kAlienTypes[self.selectedAlienType].Name))
-    self.currentAlienDisplay.Title:SetText(string.upper(GUIAlienBuyMenu.kAlienTypes[self.selectedAlienType].Name))
+    self.currentAlienDisplay.TitleShadow:SetText(string.UTF8Upper(Locale.ResolveString(GUIAlienBuyMenu.kAlienTypes[self.selectedAlienType].Name)))
+    self.currentAlienDisplay.Title:SetText(string.UTF8Upper(Locale.ResolveString(GUIAlienBuyMenu.kAlienTypes[self.selectedAlienType].Name)))
     
     self:_UpdateAlienButtons()
     
@@ -1290,7 +1290,7 @@ function GUIAlienBuyMenu:_UpdateAlienButtons()
             if mouseOver then
             
                 local classStats = AlienBuy_GetClassStats(GUIAlienBuyMenu.kAlienTypes[alienButton.TypeData.Index].Index)
-                local mouseOverName = string.upper(GUIAlienBuyMenu.kAlienTypes[alienButton.TypeData.Index].Name)
+                local mouseOverName = string.UTF8Upper(Locale.ResolveString(GUIAlienBuyMenu.kAlienTypes[alienButton.TypeData.Index].Name))
                 local health = classStats[2]
                 local armor = classStats[3]
                 self:_ShowMouseOverInfo(mouseOverName, GetTooltipInfoText(IndexToAlienTechId(alienButton.TypeData.Index)), classStats[4], health, armor)

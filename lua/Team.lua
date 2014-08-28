@@ -148,9 +148,12 @@ function Team:GetNumPlayers()
     local numRookies = 0
     
 	local function CountPlayers( player )
-		numPlayers = numPlayers + 1
-		if player:GetIsRookie() then
-			numRookies = numRookies + 1
+		local client = Server.GetOwner(player)
+		if client then 
+			numPlayers = numPlayers + 1
+			if player:GetIsRookie() then
+				numRookies = numRookies + 1
+			end
 		end
 	end
 	self:ForEachPlayer( CountPlayers )
@@ -442,17 +445,15 @@ end
 // For every player on team, call functor(player)
 function Team:ForEachPlayer(functor)
 
-    for _, playerId in ipairs(self.playerIds) do
+    for i, playerId in ipairs(self.playerIds) do
 		
         local player = Shared.GetEntity(playerId)
-		--only players with a client are "real" player, this sorts out ragdolls etc.
-		local client = player and Server.GetOwner(player)
-        if client and player:isa("Player") then
+        if player and player:isa("Player") then
             if functor(player) == false then
                 break
             end
         else
-            Print("Team:ForEachPlayer(): Couldn't find player for index %d", playerId)
+            table.remove( self.playerIds, i )
         end
         
     end

@@ -168,7 +168,7 @@ end
 
 local function CheckForNoIPs(self)
 
-	PROFILE("MarineTeam:CheckForNoIPs")
+    PROFILE("MarineTeam:CheckForNoIPs")
 
     if Shared.GetTime() - self.lastTimeNoIPsMessageSent >= kSendNoIPsMessageRate then
     

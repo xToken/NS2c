@@ -633,9 +633,15 @@ end
 
 function PlayingTeam:ReplaceRespawnAllPlayers()
 
-    self:ForEachPlayer( function(player) 
+    local playerIds = table.duplicate(self.playerIds)
+
+    for i = 1, #playerIds do
+		
+		local playerId = playerIds[ i ]
+        local player = Shared.GetEntity(playerId)
         self:ReplaceRespawnPlayer(player, nil, nil)
-    end)
+
+    end
     
 end
 
@@ -772,6 +778,7 @@ function PlayingTeam:Update(timePassed)
         elseif self.brain then        
             self.brain = nil        
         end
+
 
     else
 

@@ -74,8 +74,14 @@ function DropStructureAbility:GetDeathIconIndex()
 end
 
 function DropStructureAbility:SetActiveStructure(structureNum)
+
     self.activeStructure = structureNum
-	self.lastClickedPosition = nil
+    self.lastClickedPosition = nil
+    
+end
+
+function DropStructureAbility:GetHasDropCooldown()
+    return self.timeLastDrop ~= nil and self.timeLastDrop + kDropCooldown > Shared.GetTime()
 end
 
 function DropStructureAbility:GetSecondaryTechId()
@@ -141,12 +147,12 @@ function DropStructureAbility:GetEnergyCost(player)
     return kDropStructureEnergyCost
 end
 
-function DropStructureAbility:GetHUDSlot()
-    return 2
+function DropStructureAbility:GetDamageType()
+    return kHealsprayDamageType
 end
 
-function DropStructureAbility:GetHasDropCooldown()
-    return self.timeLastDrop ~= nil and self.timeLastDrop + kDropCooldown > Shared.GetTime()
+function DropStructureAbility:GetHUDSlot()
+    return 2
 end
 
 function DropStructureAbility:GetHasSecondary(player)
@@ -417,6 +423,11 @@ function DropStructureAbility:OnDraw(player, previousWeaponMapName)
 
 end
 
+function DropStructureAbility:OnTag(tagName)
+    if tagName == "shoot" then
+        self.dropping = false
+    end
+end
 
 function DropStructureAbility:OnUpdateAnimationInput(modelMixin)
 
@@ -460,7 +471,7 @@ function DropStructureAbility:ProcessMoveOnWeapon(input)
 end
 
 function DropStructureAbility:GetShowGhostModel()
-    return self.activeStructure ~= nil and not self:GetHasDropCooldown() 
+    return self.activeStructure ~= nil and not self:GetHasDropCooldown()
 end
 
 function DropStructureAbility:GetGhostModelCoords()
@@ -492,6 +503,18 @@ function DropStructureAbility:GetGhostModelName(player)
     end
     
     return nil
+    
+end
+
+function DropStructureAbility:GetGhostModelScale()
+
+    if self.activeStructure ~= nil and self:GetActiveStructure().GetGhostModelName then
+        if self:GetActiveStructure():GetDropStructureId() == kTechId.Hydra then
+            return kHydraScale
+        end
+    end
+    
+    return 1
     
 end
 

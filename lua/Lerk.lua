@@ -388,6 +388,10 @@ function Lerk:GetSimpleAcceleration(onGround)
     return ConditionalValue(onGround, Player.GetSimpleAcceleration(self, onGround), 0)
 end
 
+function Lerk:GetCanStep()
+    return self:GetIsOnGround() and not self:GetIsWallGripping()
+end
+
 // Glide if jump held down.
 function Lerk:ModifyGravityForce(gravityTable)
 

@@ -8,6 +8,7 @@
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
+Script.Load("lua/TechMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/TriggerMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
@@ -29,11 +30,11 @@ local networkVars =
     length = "float (0 to " .. kMaxWebLength .. " by 0.05 [] )",
 }
 
+AddMixinNetworkVars(TechMixin, networkVars)
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
-AddMixinNetworkVars(LiveMixin, networkVars)
-AddMixinNetworkVars(TechMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
+AddMixinNetworkVars(LiveMixin, networkVars)
 
 PrecacheAsset("models/alien/gorge/web.surface_shader")
 local kWebMaterial = PrecacheAsset("models/alien/gorge/web.material")
@@ -51,12 +52,12 @@ function Web:OnCreate()
 
     Entity.OnCreate(self)
     
+    InitMixin(self, TechMixin)
     InitMixin(self, EffectsMixin)
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ModelMixin)
-    InitMixin(self, TechMixin)
-    InitMixin(self, LiveMixin)
     InitMixin(self, TeamMixin)
+    InitMixin(self, LiveMixin)
     
     if Server then
     

@@ -231,12 +231,6 @@ function Rifle:GetIdleAnimations()
     return kIdleAnimations
 end
 
-function Rifle:OnSecondaryAttack(player)
-end
-
-function Rifle:PerformMeleeAttack()
-end
-
 function Rifle:SetGunLoopParam(viewModel, paramName, rateOfChange)
 
     local current = viewModel:GetPoseParam(paramName)

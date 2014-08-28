@@ -129,6 +129,10 @@ function Fade:GetControllerPhysicsGroup()
     return PhysicsGroup.BigPlayerControllersGroup
 end
 
+function Fade:GetCanStep()
+    return not self:GetIsBlinking()
+end
+
 function Fade:OnTakeFallDamage()
 //Fades take no falling damage
 end

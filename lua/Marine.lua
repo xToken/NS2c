@@ -93,7 +93,7 @@ local networkVars =
     timeOfLastPickUpWeapon = "private time",
     
     flashlightLastFrame = "private boolean",
-    catpackboost = "private boolean",
+    catpackboost = "boolean",
     
     unitStatusPercentage = "private integer (0 to 100)"
 }

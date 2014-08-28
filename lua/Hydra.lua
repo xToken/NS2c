@@ -42,8 +42,8 @@ class 'Hydra' (ScriptActor)
 
 Hydra.kMapName = "hydra"
 
-Hydra.kModelName = PrecacheAsset("models/alien/offense_chamber/offense_chamber.model")
-//Hydra.kModelName = PrecacheAsset("models/alien/hydra/hydra.model")
+Hydra.kModelName = PrecacheAsset("models/alien/hydra/hydra.model")
+Hydra.kModelNameShadow = PrecacheAsset("models/alien/hydra/hydra_shadow.model")
 Hydra.kAnimationGraph = PrecacheAsset("models/alien/hydra/hydra.animation_graph")
 
 Hydra.kSpikeSpeed = 50
@@ -52,10 +52,9 @@ Hydra.kTargetVelocityFactor = 2.0 // Don't always hit very fast moving targets (
 Hydra.kRange = 17.78              // From NS1 (also "alert" range)
 Hydra.kDamage = kHydraDamage
 Hydra.kAlertCheckInterval = 2
-
 Hydra.kFov = 360
-
 kHydraDiggestDuration = 1
+kHydraScale = 1.6
 
 if Server then
     Script.Load("lua/Hydra_Server.lua")
@@ -65,7 +64,7 @@ local networkVars =
 {
     alerting = "boolean",
     attacking = "boolean",
-    hydraParentId = "private entityid"
+    hydraParentId = "entityid"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
@@ -174,6 +173,15 @@ function Hydra:OnDestroy()
     
 end
 
+function Hydra:SetVariant(gorgeVariant)
+
+    if gorgeVariant == kGorgeVariant.shadow then
+        self:SetModel(Hydra.kModelNameShadow, Hydra.kAnimationGraph)
+    else
+        self:SetModel(Hydra.kModelName, Hydra.kAnimationGraph)
+    end
+    
+end
 function Hydra:GetCanDie(byDeathTrigger)
     return not byDeathTrigger
 end
@@ -248,6 +256,14 @@ function Hydra:OnUpdateAnimationInput(modelMixin)
     modelMixin:SetAnimationInput("attacking", self.attacking)
     modelMixin:SetAnimationInput("alerting", self.alerting)
     
+end
+
+function Hydra:OnAdjustModelCoords(modelCoords)
+    local coords = modelCoords
+    coords.xAxis = coords.xAxis * kHydraScale
+    coords.yAxis = coords.yAxis * kHydraScale
+    coords.zAxis = coords.zAxis * kHydraScale
+    return coords
 end
 
 local kEngageOffset = Vector(0, 0.4, 0)
