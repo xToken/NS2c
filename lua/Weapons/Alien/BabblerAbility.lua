@@ -136,7 +136,7 @@ local function CreateBabblerPheromone(self, player)
         local babble = player:CreatePredictedProjectile("BabblerPheromone", startPoint, startVelocity, 0.7, nil, 8, true)
         
         local target, endPoint = FindTarget(self, player)
-        if target and (not HasMixin(target, "Live") or target:GetIsAlive()) and ( GetAreEnemies(self, target) or    
+        if babble and target and (not HasMixin(target, "Live") or target:GetIsAlive()) and ( GetAreEnemies(self, target) or    
             (GetAreFriends(self, target) and HasMixin(target, "BabblerCling")) ) then
         
             babble:SetOrigin(endPoint)

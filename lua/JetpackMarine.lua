@@ -41,7 +41,6 @@ local kAnimLandSuffix = "_jetpack_land"
 local networkVars =
 {
     // jetpack fuel is dervived from the three variables jetpacking, timeJetpackingChanged and jetpackFuelOnChange
-    // time since change has the kJetpackFuelReplenishDelay subtracted if not jetpacking
     // jpFuel = Clamp(jetpackFuelOnChange + time since change * gain/loss rate, 0, 1)
     // If jetpack is currently active and affecting our movement. If active, use loss rate, if inactive use gain rate
     jetpacking = "compensated boolean",
@@ -132,7 +131,6 @@ function JetpackMarine:GetFuel()
     
     if not self.jetpacking then
         rate = kJetpackReplenishFuelRate
-        dt = math.max(0, dt - JetpackMarine.kJetpackFuelReplenishDelay)
     end
     
     if self:GetDarwinMode() then

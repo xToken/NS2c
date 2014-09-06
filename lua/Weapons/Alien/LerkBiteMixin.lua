@@ -102,7 +102,7 @@ function LerkBiteMixin:OnTag(tagName)
             if didHit and target then
             
                 if Client then
-                    self:TriggerFirstPersonHitEffects(player, target)
+                    //self:TriggerFirstPersonHitEffects(player, target)
                 end
             
             end

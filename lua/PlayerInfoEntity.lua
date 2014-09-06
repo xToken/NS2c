@@ -74,7 +74,7 @@ if Client then
 end
 
 // Insight upgrades bitmask table
-local techUpgradesTable = { kTechId.Jetpack, kTechId.Welder, kTechId.HandGrenades, kTechId.Mines, 
+local techUpgradesTable = { kTechId.Jetpack, kTechId.HeavyArmor, kTechId.Welder, kTechId.HandGrenades, kTechId.Mines, 
     kTechId.Carapace, kTechId.Regeneration, kTechId.Redemption, 
     kTechId.Aura, kTechId.Silence, kTechId.Ghost,
     kTechId.Celerity, kTechId.Adrenaline, kTechId.Redeployment, 
