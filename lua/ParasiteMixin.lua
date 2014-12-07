@@ -187,14 +187,12 @@ if Client then
         
     end
 
+    function ParasiteMixin:OnModelChanged(index)
+        self:_RemoveParasiteEffect()
+    end
+
     function ParasiteMixin:_CreateParasiteEffect()
-        
-        --check if model has changed in which case we have to reapply the parasite state
-        local modelName = self.GetModelName and self:GetModelName()        
-        if modelName and modelName ~= self.parasiteModelName then
-            self:_RemoveParasiteEffect()
-        end
-        
+   
         if not self.parasiteMaterial then
         
             local material = Client.CreateRenderMaterial()
@@ -215,7 +213,6 @@ if Client then
             self.parasiteViewMaterial = viewMaterial
             AddEffect(self, material, viewMaterial, self.parasiteEntities)
             
-            self.parasiteModelName = modelName
         end    
         
     end

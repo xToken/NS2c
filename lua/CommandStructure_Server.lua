@@ -63,10 +63,10 @@ function CommandStructure:GetIsPlayerValidForCommander(player)
     return player ~= nil and not team:GetHasCommander() and player:GetIsAlive() and player:GetTeamNumber() == self:GetTeamNumber() 
 end
 
-function CommandStructure:OnCommanderLogin()
+function CommandStructure:OnCommanderLogin(commanderPlayer,forced)
 end
 
-function CommandStructure:LoginPlayer(player)
+function CommandStructure:LoginPlayer(player,forced)
 
     local commanderStartOrigin = Vector(player:GetOrigin())
     
@@ -99,7 +99,8 @@ function CommandStructure:LoginPlayer(player)
     // Must reset offset angles once player becomes commander
     commanderPlayer:SetOffsetAngles(Angles(0, 0, 0))
     
-    self:OnCommanderLogin()
+    // Callbacks (this also sets pres to 0)
+    self:OnCommanderLogin(commanderPlayer,forced)
     
     return commanderPlayer
     

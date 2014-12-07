@@ -408,15 +408,16 @@ function Commander:AddGhostGuide(origin, radius)
     // Insert point, circle
     
     if not guide then
-        guide = Client.CreateRenderModel(RenderScene.Zone_Default)
+        guide = Client.CreateRenderDecal()
+        guide.material = Client.CreateRenderMaterial()
     end
 
-    local modelName = ConditionalValue(self:GetTeamType() == kAlienTeamType, Commander.kAlienCircleModelName, Commander.kMarineCircleModelName)
-    guide:SetModel(modelName)
-    local coords = Coords.GetLookIn( origin + Vector(0, kZFightingConstant, 0), Vector(1, 0, 0) )
-    coords:Scale( radius * 2 )
+    local materialName = ConditionalValue(self:GetTeamType() == kAlienTeamType, Commander.kAlienCircleDecalName, Commander.kMarineCircleDecalName)
+    guide.material:SetMaterial(materialName)
+    guide:SetMaterial(guide.material)
+    local coords = Coords.GetTranslation(origin)
     guide:SetCoords( coords )
-    guide:SetIsVisible(true)
+    guide:SetExtents(Vector(1,1,1)*radius)
     
     table.insert(self.ghostGuides, {origin, guide})
 
@@ -505,10 +506,10 @@ function Commander:DestroyGhostGuides(reuse)
 
     for index, guide in ipairs(self.ghostGuides) do
         if not reuse then
-            Client.DestroyRenderModel(guide[2])
+            Client.DestroyRenderDecal(guide[2])
 
         else
-            guide[2]:SetIsVisible(false)
+            guide[2]:SetExtents(Vector(0,0,0))
             table.insert(self.reuseGhostGuides, guide[2])
         end
     end
@@ -516,7 +517,9 @@ function Commander:DestroyGhostGuides(reuse)
     if not reuse then
     
         for index, guide in ipairs(self.reuseGhostGuides) do
-            Client.DestroyRenderModel(guide[2])
+            Client.DestroyRenderMaterial(guide.material)
+            Client.DestroyRenderDecal(guide)
+            guide = nil
         end
 
         self.reuseGhostGuides = {}

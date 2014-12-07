@@ -193,7 +193,7 @@ function Lerk:GetJumpForce()
 end
 
 function Lerk:GetViewModelName()
-    return kViewModelName
+    return self:GetVariantViewModel(self:GetVariant())
 end
 
 function Lerk:GetIsWallGripping()

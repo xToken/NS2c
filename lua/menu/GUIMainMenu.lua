@@ -526,6 +526,7 @@ function GUIMainMenu:CreateAlertWindow()
     self.alertWindow:SetCSSClass("alert_window")
     self.alertWindow:DisableCloseButton()
     self.alertWindow:AddEventCallbacks( { OnBlur = function(self) self:SetIsVisible(false) end } )
+    self.alertWindow:SetLayer(kGUILayerMainMenuDialogs)
     
     self.alertText = CreateMenuElement(self.alertWindow, "Font")
     self.alertText:SetCSSClass("alerttext")
@@ -555,6 +556,8 @@ function GUIMainMenu:CreatePlayerCountAlertWindow()
     self.playerCountAlertWindow:DisableContentBox()
     self.playerCountAlertWindow:SetCSSClass("warning_alert_window")
     self.playerCountAlertWindow:DisableCloseButton()
+    self.playerCountAlertWindow:SetLayer(kGUILayerMainMenuDialogs)
+    
     self.playerCountAlertWindow:AddEventCallbacks( { OnBlur = function(self) self:SetIsVisible(false) end } )
     
     self.playerCountAlertText = CreateMenuElement(self.playerCountAlertWindow, "Font")
@@ -607,6 +610,8 @@ function GUIMainMenu:CreateServerNetworkModedAlertWindow()
     self.serverNetworkModedAlertWindow:DisableContentBox()
     self.serverNetworkModedAlertWindow:SetCSSClass("warning_alert_window")
     self.serverNetworkModedAlertWindow:DisableCloseButton()
+    self.serverNetworkModedAlertWindow:SetLayer(kGUILayerMainMenuDialogs)
+    
     self.serverNetworkModedAlertWindow:AddEventCallbacks( { OnBlur = function(self) self:SetIsVisible(false) end } )
     
     self.playerCountAlertText = CreateMenuElement(self.serverNetworkModedAlertWindow, "Font")
@@ -660,6 +665,7 @@ function GUIMainMenu:CreateAutoJoinWindow()
     self.autoJoinWindow:DisableContentBox()
     self.autoJoinWindow:SetCSSClass("autojoin_window")
     self.autoJoinWindow:DisableCloseButton()
+    self.autoJoinWindow:SetLayer(kGUILayerMainMenuDialogs)
     
     self.forceJoin = CreateMenuElement(self.autoJoinWindow, "MenuButton")
     self.forceJoin:SetCSSClass("forcejoin")
@@ -724,6 +730,7 @@ function GUIMainMenu:CreatePasswordPromptWindow()
     passwordPromptWindow:DisableContentBox()
     passwordPromptWindow:SetCSSClass("passwordprompt_window")
     passwordPromptWindow:DisableCloseButton()
+    passwordPromptWindow:SetLayer(kGUILayerMainMenuDialogs)
         
     self.passwordForm = CreateMenuElement(passwordPromptWindow, "Form", false)
     self.passwordForm:SetCSSClass("passwordprompt")
@@ -836,7 +843,7 @@ local function CreateFilterForm(self)
         
         local textValue = ""
         if value == 1.0 then
-            textValue = "unlimited"
+            textValue = Locale.ResolveString("FILTER_UNLIMTED")
         else        
             textValue = ToString(math.round(value * kFilterMaxPing))
         end
@@ -948,7 +955,7 @@ local function GetPerformanceTextFromIndex(serverIndex)
         local currentScore = Client.GetServerCurrentPerformanceScore(serverIndex)
         local performanceScore = Client.GetServerPerformanceScore(serverIndex);
         local performanceQuality = Client.GetServerPerformanceQuality(serverIndex);
-        local str = ServerPerformanceData.GetText(currentScore, performanceScore, performanceQuality, Client.GetServerTickRate())
+        local str = ServerPerformanceData.GetText(currentScore, performanceScore, performanceQuality, Client.GetServerTickRate(serverIndex))
         return string.format("%s %s", Locale.ResolveString("SERVERBROWSER_SERVER_DETAILS_PERF"), str)
     end
     local performance = math.round(Clamp(GetServerTickRate(serverIndex) / 30, 0, 1) * 100)
@@ -1599,47 +1606,6 @@ function GUIMainMenu:CreateHostGameWindow()
     
 end
 
-function SendPlayerVariantUpdate()
-
-    local marineVariant = Client.GetOptionInteger("marineVariant", -1)
-    local skulkVariant = Client.GetOptionInteger("skulkVariant", -1)
-    local gorgeVariant = Client.GetOptionInteger("gorgeVariant", -1)
-    local lerkVariant = Client.GetOptionInteger("lerkVariant", -1)
-    local sexType = Client.GetOptionString("sexType", "Male")
-    local shoulderPadIndex = Client.GetOptionInteger("shoulderPad", 1)
-    local exoVariant = Client.GetOptionInteger("exoVariant", -1)
-    local rifleVariant = Client.GetOptionInteger("rifleVariant", -1)
-    
-    assert(marineVariant ~= -1)
-    assert(marineVariant ~= nil)
-    assert(skulkVariant ~= -1)
-    assert(skulkVariant ~= nil)
-    assert(gorgeVariant ~= -1)
-    assert(gorgeVariant ~= nil)
-    assert(lerkVariant ~= -1)
-    assert(lerkVariant ~= nil)
-    assert(exoVariant ~= -1)
-    assert(exoVariant ~= nil)
-    assert(rifleVariant ~= -1)
-    assert(rifleVariant ~= nil)
-    
-    if MainMenu_IsInGame() then
-        Client.SendNetworkMessage("SetPlayerVariant",
-            {
-                marineVariant = marineVariant,
-                skulkVariant = skulkVariant,
-                gorgeVariant = gorgeVariant,
-                lerkVariant = lerkVariant,
-                isMale = string.lower(sexType) == "male",
-                shoulderPadIndex = shoulderPadIndex,
-                exoVariant = exoVariant,
-                rifleVariant = rifleVariant,
-            },
-            true)
-    end
-    
-end
-
 local function InitKeyBindings(keyInputs)
 
     local bindingsTable = BindingsUI_GetBindingsTable()
@@ -1659,7 +1625,11 @@ local function InitKeyBindingsCom(keyInputsCom)
 
     local bindingsTableCom = BindingsUI_GetComBindingsTable()
     for c = 1, #bindingsTableCom do
-        keyInputsCom[c]:SetValue(bindingsTableCom[c].current)
+        if bindingsTableCom[c].current == "None" then
+            keyInputsCom[c]:SetValue("")
+        else
+            keyInputsCom[c]:SetValue(bindingsTableCom[c].current)
+        end
     end  
     
 end
@@ -1754,6 +1724,7 @@ local function CreateKeyBindingsForm(mainMenu, content)
         function clearKeyInput:OnClick()
             Client.SetOptionString("input/" .. keyInput.inputName, "None")
             keyInput:SetValue("")
+            CheckForConflictedKeys(mainMenu.keyInputs)
         end
 
         local keyInputText = CreateMenuElement(keyBindingsForm, "Font", false)
@@ -1837,6 +1808,7 @@ local function CreateKeyBindingsFormCom(mainMenu, content)
         function clearKeyInput:OnClick()
             Client.SetOptionString("input/" .. keyInputCom.inputName, "None")
             keyInputCom:SetValue("")
+            CheckForConflictedKeys(mainMenu.keyInputsCom)
         end
         
         local y = rowHeight * (b  - 1)
@@ -1849,6 +1821,7 @@ local function CreateKeyBindingsFormCom(mainMenu, content)
         table.insert(mainMenu.keyInputsCom, keyInputCom)
         
     end
+
     InitKeyBindingsCom(mainMenu.keyInputsCom)
     CheckForConflictedKeys(mainMenu.keyInputsCom)
     
@@ -1939,6 +1912,7 @@ local function InitOptions(optionElements)
     local musicVol = Client.GetOptionInteger("musicVolume", 90) / 100
     local voiceVol = Client.GetOptionInteger("voiceVolume", 90) / 100
     local recordingGain = Client.GetOptionFloat("recordingGain", 0.5)
+    local recordingReleaseDelay = Client.GetOptionFloat("recordingReleaseDelay", 0.15)
     
     for i = 1, #kLocales do
     
@@ -1993,6 +1967,7 @@ local function InitOptions(optionElements)
     optionElements.LightQuality:SetOptionActive( lightQuality )
     
     optionElements.RecordingGain:SetValue(recordingGain)
+    optionElements.RecordingReleaseDelay:SetValue( recordingReleaseDelay )
     
 end
 
@@ -2057,6 +2032,11 @@ end
 local function OnVoiceVolumeChanged(mainMenu)
     local voiceVol = mainMenu.optionElements.VoiceVolume:GetValue() * 100
     OptionsDialogUI_SetVoiceVolume( voiceVol )
+end
+
+local function OnRecordingReleaseDelayChanged(mainMenu)
+    local value = mainMenu.optionElements.RecordingReleaseDelay:GetValue()
+    Client.SetOptionFloat("recordingReleaseDelay", value)
 end
 
 local function OnRecordingGainChanged(mainMenu)
@@ -2216,8 +2196,12 @@ local function SaveOptions(mainMenu)
     
     for l = 1, #mainMenu.keyInputsCom do
     
-    local keyInputCom = mainMenu.keyInputsCom[l]
-        Client.SetOptionString("input/" .. keyInputCom.inputName, keyInputCom:GetValue())
+        local keyInputCom = mainMenu.keyInputsCom[l]
+        local value = keyInputCom:GetValue()
+        if value == "" then
+            value = "None"
+        end
+        Client.SetOptionString("input/" .. keyInputCom.inputName, value)
         
     end
     Client.ReloadKeyOptions()
@@ -2576,6 +2560,14 @@ function GUIMainMenu:CreateOptionWindow()
                 formName = "sound",
             },
             {
+                name    = "RecordingReleaseDelay",
+                label   = Locale.ResolveString("MICROPHONE_RELEASE_DELAY"),
+                tooltip = Locale.ResolveString("MICROPHONE_RELEASE_DELAY_TTIP"),
+                type    = "slider",
+                sliderCallback = OnRecordingReleaseDelayChanged,
+                formName = "sound",
+            },
+            {
                 name    = "RecordingVolume",
                 label   = Locale.ResolveString("MICROPHONE_LEVEL"),
                 type    = "progress",
@@ -2846,7 +2838,7 @@ function GUIMainMenu:Update(deltaTime)
 
         if self.menuBackground:GetIsVisible() then
             self.playerName:SetText(OptionsDialogUI_GetNickname())
-            self.rankLevel:SetText("Level " .. ToString(Client.GetOptionInteger("player-ranking", 0)))
+            self.rankLevel:SetText(string.format( Locale.ResolveString("MENU_LEVEL"), Client.GetOptionInteger("player-ranking", 0)))
         end
         
         if self.modsWindow and self.modsWindow:GetIsVisible() then
@@ -2908,7 +2900,7 @@ function GUIMainMenu:Update(deltaTime)
         end
         
         if self.fpsDisplay then
-            self.fpsDisplay:SetText(string.format("FPS: %.0f", Client.GetFrameRate()))
+            self.fpsDisplay:SetText(string.format( Locale.ResolveString("MENU_FPS"), Client.GetFrameRate()))
         end
         
         if self.updateAutoJoin then
@@ -3360,7 +3352,8 @@ local LinkItems =
 
             if not self.scriptHandle.modsWindow then
                 self.scriptHandle:CreateModsWindow()
-            end
+            end            
+            self.scriptHandle.modsWindow.sorted = false
             self.scriptHandle:TriggerOpenAnimation(self.scriptHandle.modsWindow)
             self.scriptHandle:HideMenu()
 

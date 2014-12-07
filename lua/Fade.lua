@@ -25,6 +25,7 @@ Script.Load("lua/Alien.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/Weapons/PredictedProjectile.lua")
+Script.Load("lua/FadeVariantMixin.lua")
 
 class 'Fade' (Alien)
 
@@ -51,15 +52,18 @@ local kCrouchedSpeed = 1.8
 local kBlinkImpulseForce = 85
 local kFadeBlinkAutoJumpGroundDistance = 0.25
 local kMetabolizeAnimationDelay = 0.65
+local kBlinkMinEffectCooldown = 1
 
 local networkVars =
 {
     ethereal = "compensated boolean",
-    timeMetabolize = "private compensated time"
+    timeMetabolize = "private compensated time",
+    timeBlinked = "private compensated time"
 }
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
+AddMixinNetworkVars(FadeVariantMixin, networkVars)
 
 function Fade:OnCreate()
 
@@ -69,9 +73,10 @@ function Fade:OnCreate()
     
     InitMixin(self, DissolveMixin)
     InitMixin(self, PredictedProjectileShooterMixin)
-
+	InitMixin(self, FadeVariantMixin)
     self.ethereal = false
     self.timeMetabolize = 0
+    self.timeBlinked = 0
     
 end
 
@@ -122,7 +127,7 @@ function Fade:GetMaxViewOffsetHeight()
 end
 
 function Fade:GetViewModelName()
-    return kViewModelName
+    return self:GetVariantViewModel(self:GetVariant())
 end
 
 function Fade:GetControllerPhysicsGroup()
@@ -194,7 +199,10 @@ function Fade:OnBlink()
     self:SetIsOnGround(false)
     self:SetIsJumping(true)
     self.ethereal = true
-    self:TriggerEffects("blink_out")
+    if self.timeBlinked + kBlinkMinEffectCooldown < Shared.GetTime() then
+        self:TriggerEffects("blink_out")
+        self.timeBlinked = Shared.GetTime()
+    end
 end
 
 function Fade:ModifyVelocity(input, velocity, deltaTime)

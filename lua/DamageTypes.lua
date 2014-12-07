@@ -54,7 +54,7 @@ function GetReceivesBiologicalDamage(entity)
 end
 
 // Use this function to change damage according to current upgrades
-function GetUpgradedDamage(attacker, target, doer, damage, damageType, hitPoint, blockfocus)
+function GetUpgradedDamage(attacker, target, doer, damage, damageType, hitPoint)
 
     local damageScalar = 1
 
@@ -91,12 +91,11 @@ function GetUpgradedDamage(attacker, target, doer, damage, damageType, hitPoint,
                 if level > 0 and hasupg then
                     damageScalar = 1 + (((kBombardAttackDamageMultipler - 1)/3) * level)
                 end
-            elseif not blockfocus then
+            else
                 local focuslevel = CheckWeaponForFocus(doer, attacker)
                 if focuslevel > 0 then
                     damageScalar = 1 + (((kFocusAttackDamageMultipler - 1)/3) * focuslevel)
                 end
-                
             end
         end
         
@@ -175,9 +174,9 @@ local function HalfHealthPerArmor(target, attacker, doer, damage, armorFractionU
     return damage, kHeavyDamageArmorUseFraction, healthPerArmor * (kHeavyHealthPerArmor / kHealthPointsPerArmor)
 end
 
-local function ApplyAttackerModifiers(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType, hitPoint, blockfocus)
+local function ApplyAttackerModifiers(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType, hitPoint)
 
-    damage = GetUpgradedDamage(attacker, target, doer, damage, damageType, hitPoint, blockfocus)
+    damage = GetUpgradedDamage(attacker, target, doer, damage, damageType, hitPoint)
     damage = damage * GetDamageMultiplier()
     
     if attacker and attacker.ComputeDamageAttackerOverride then
@@ -353,7 +352,7 @@ local function BuildDamageTypeRules()
 end
 
 // applies all rules and returns damage, armorUsed, healthUsed
-function GetDamageByType(target, attacker, doer, damage, damageType, hitPoint, blockfocus)
+function GetDamageByType(target, attacker, doer, damage, damageType, hitPoint)
 
     assert(target)
     
@@ -373,7 +372,7 @@ function GetDamageByType(target, attacker, doer, damage, damageType, hitPoint, b
     
     // apply global rules at first
     for _, rule in ipairs(kDamageTypeGlobalRules) do
-        damage, armorFractionUsed, healthPerArmor = rule(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType, hitPoint, blockfocus)
+        damage, armorFractionUsed, healthPerArmor = rule(target, attacker, doer, damage, armorFractionUsed, healthPerArmor, damageType, hitPoint)
     end
     
     // apply damage type specific rules

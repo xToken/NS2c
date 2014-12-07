@@ -159,7 +159,7 @@ kDeathMessageIcon = enum( { 'None',
                             'HeavyMachineGun', 'Metabolize', 'LerkBite', 'Umbra', 
                             'Xenocide', 'Blink', 'Leap', 'Stomp',
                             'Consumed', 'GL', 'Recycled', 'Babbler', 'Railgun', 'BabblerAbility', 'GorgeTunnel', 'Devour',
-							'HandGrenade', 'GasGrenade', 'PulseGrenade', 'Stab', 'WhipBomb', 'Metabolize'
+							'HandGrenade', 'GasGrenade', 'PulseGrenade', 'Stab', 'WhipBomb', 'Metabolize', 'Crush'
                             } )
 
 kMinimapBlipType = enum( { 'Undefined', 'TechPoint', 'ResourcePoint', 'Scan', 'EtherealGate', 'HighlightWorld',
@@ -437,6 +437,7 @@ kShoulderPadProductId = 250891
 kAssaultMarineProductId = 250892
 kShadowProductId = 250893
 kKodiakProductId = 296360
+kReaperProductId = 310100 //temp for testing 310100
 
 kNoShoulerPad = 0
 
@@ -463,30 +464,49 @@ kMarineVariantData =
 }
 kDefaultMarineVariant = kMarineVariant.green
 
-kSkulkVariant = enum({ "normal", "shadow", "kodiak" })
+kSkulkVariant = enum({ "normal", "shadow", "kodiak", "reaper" })
 kSkulkVariantData =
 {
     [kSkulkVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
     [kSkulkVariant.shadow] = { productId = kShadowProductId, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" },
     [kSkulkVariant.kodiak] = { productId = kKodiakProductId, displayName = "Kodiak", modelFilePart = "_kodiak", viewModelFilePart = "" },
+    [kSkulkVariant.reaper] = { productId = kReaperProductId, displayName = "Reaper", modelFilePart = "_albino", viewModelFilePart = "_albino" },
 }
 kDefaultSkulkVariant = kSkulkVariant.normal
 
-kGorgeVariant = enum({ "normal", "shadow" })
+kGorgeVariant = enum({ "normal", "shadow", "reaper" })
 kGorgeVariantData =
 {
     [kGorgeVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
-    [kGorgeVariant.shadow] = { productId = kShadowProductId, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" }
+    [kGorgeVariant.shadow] = { productId = kShadowProductId, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" },
+    [kGorgeVariant.reaper] = { productId = kReaperProductId, displayName = "Reaper", modelFilePart = "_albino", viewModelFilePart = "_albino" },
 }
 kDefaultGorgeVariant = kGorgeVariant.normal
 
-kLerkVariant = enum({ "normal", "shadow" })
+kLerkVariant = enum({ "normal", "shadow", "reaper" })
 kLerkVariantData =
 {
     [kLerkVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
-    [kLerkVariant.shadow] = { productId = kShadowProductId, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" }
+    [kLerkVariant.shadow] = { productId = kShadowProductId, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" },
+    [kLerkVariant.reaper] = { productId = kReaperProductId, displayName = "Reaper", modelFilePart = "_albino", viewModelFilePart = "_albino" },
 }
 kDefaultLerkVariant = kLerkVariant.normal
+
+kFadeVariant = enum({ "normal", "reaper" })
+kFadeVariantData =
+{
+    [kFadeVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
+    [kFadeVariant.reaper] = { productId = kReaperProductId, displayName = "Reaper", modelFilePart = "_albino", viewModelFilePart = "_albino" },
+}
+kDefaultFadeVariant = kFadeVariant.normal
+
+kOnosVariant = enum({ "normal", "reaper" })
+kOnosVariantData =
+{
+    [kOnosVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
+    [kOnosVariant.reaper] = { productId = kReaperProductId, displayName = "Reaper", modelFilePart = "_albino", viewModelFilePart = "_albino" },
+}
+kDefaultOnosVariant = kOnosVariant.normal
 
 kExoVariant = enum({ "normal", "kodiak" })
 kExoVariantData =
@@ -500,7 +520,7 @@ kRifleVariant = enum({ "normal", "kodiak" })
 kRifleVariantData =
 {
     [kRifleVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
-    [kRifleVariant.kodiak] = { productId = kKodiakProductId, displayName = "Kodiak", modelFilePart = "_kodiak", viewModelFilePart = "" }
+    [kRifleVariant.kodiak] = { productId = kKodiakProductId, displayName = "Kodiak", modelFilePart = "", viewModelFilePart = "" }
 }
 kDefaultRifleVariant = kRifleVariant.normal
 
@@ -511,7 +531,7 @@ function FindVariant( data, displayName )
             return var
         end
     end
-    return nil
+    return 0
 
 end
 
@@ -544,6 +564,7 @@ kShoulderPad2ProductId =
     { kShoulderPadSnailsProductId, kShoulderPadGlobeProductId },
     { kShoulderPadTitusProductId, kShoulderPadGlobeProductId },
     kKodiakProductId,
+    kReaperProductId,
 }
 function GetHasShoulderPad(index, client)
     return GetHasDLC( kShoulderPad2ProductId[index], client )
@@ -560,6 +581,7 @@ kShoulderPadNames =
     "Snails",
     "Titus",
     "Kodiak",
+    "Reaper",
     
 }
 

@@ -14,7 +14,6 @@
 //NS2c
 //Removed unneeded mixins, changed healing to callback
 
-
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -227,7 +226,7 @@ if Server then
     
         local team = self:GetTeam()
         if team and team.OnUpgradeChamberConstructed then
-			self:AddTimedCallback(Crag.HealInRange, Crag.kHealInterval + 0.1)
+			self:AddTimedCallback(Crag.HealInRange, Crag.kHealInterval + 0.05)
             team:OnUpgradeChamberConstructed(self)
         end
         

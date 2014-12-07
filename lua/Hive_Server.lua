@@ -121,8 +121,8 @@ function Hive:SetFirstLogin()
     //self.isFirstLogin = true
 end
 
-function Hive:OnCommanderLogin()
-
+function Hive:OnCommanderLogin( commanderPlayer, forced )
+    CommandStructure.OnCommanderLogin( self, commanderPlayer, forced )
 end
 
 local function EmptySpawnWave(self)

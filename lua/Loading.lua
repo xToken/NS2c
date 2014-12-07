@@ -1,4 +1,3 @@
-
 Script.Load("lua/Utility.lua")
 Script.Load("lua/GUIUtility.lua")
 Script.Load("lua/Table.lua")
@@ -65,6 +64,12 @@ local bgPos
 
 local kBgFadeTime = 2.0
 local kBgStayTime = 3.0
+
+local mapBackgrounds = false
+local randomizer = nil
+
+local usedBGs = {}
+local loopTimes = 0
 
 local function GetMapName()
 
@@ -249,7 +254,23 @@ function OnUpdateRender()
                 if currentBgId < #backgrounds then
                     
                     // time to fade
-                    local nextBgId = math.min(currentBgId+1, #backgrounds)
+                    local nextBgId
+                    
+                    // We want to pick non-repeating backgrounds only when they are not map specific backgrounds
+                    if mapBackgrounds == true then
+                        nextBgId = math.min(currentBgId+1, #backgrounds)
+                    else
+                        local next = randomizer:random(1, #backgrounds)
+                        
+                        loopTimes = 0
+                        while usedBGs[next] == true and loopTimes < 50 do
+                            next = randomizer:random(1, #backgrounds)
+                            loopTimes = loopTimes + 1
+                        end
+                        
+                        nextBgId = next
+                        
+                    end
 
                     transition = {}
                     transition.startTime = time
@@ -257,6 +278,7 @@ function OnUpdateRender()
                     transition.from = currentBackground
                     transition.to = backgrounds[nextBgId]
                     currentBgId = nextBgId
+                    usedBGs[nextBgId] = true
                     currentBackground = backgrounds[currentBgId]
 
                 end
@@ -307,6 +329,7 @@ function InitBackgroundFileNames( out )
             local searchResult = {}
             Shared.GetMatchingFileNames( string.format("screens/%s/%d.jpg", mapname, i ), false, searchResult )
 
+            mapBackgrounds = true
             if #searchResult == 0 then
                 // found no more - must be done
                 break
@@ -323,6 +346,7 @@ function InitBackgroundFileNames( out )
     if #out == 0 then
         //Print("Found no map-specific ordered screenshots for %s. Using shots in 'screens' instead.", mapname)
         Shared.GetMatchingFileNames("screens/*.jpg", false, out )
+        mapBackgrounds = false
     end
 end
 
@@ -341,6 +365,10 @@ function InitializeBackgrounds()
 
     end
 
+    for i = 1, #backgroundFileNames do
+       usedBGs[i] = false
+    end
+    
 end
 
 
@@ -353,8 +381,9 @@ function OnLoadComplete(main)
     Client.SetMouseVisible(true)
     Client.SetMouseClipped(false)
 
-    local randomizer = Randomizer()
+    randomizer = Randomizer()
     randomizer:randomseed(Shared.GetSystemTime())
+    for i = 1, 100 do math.random() end
 
     local backgroundAspect = 16.0/9.0
 

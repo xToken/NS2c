@@ -1331,6 +1331,24 @@ function PlayerUI_GetGameLengthTime()
 
 end
 
+function PlayerUI_GetNumConnectingPlayers()
+    
+    local entityList = Shared.GetEntitiesWithClassname("GameInfo")
+
+    if entityList:GetSize() > 0 then
+
+        local gameInfo = entityList:GetEntityAtIndex(0)
+        
+        local numPlayersTotal = gameInfo:GetNumPlayersTotal()
+        local numPlayersInGame = #Scoreboard_GetPlayerList()
+        
+        return math.max( 0, numPlayersTotal - numPlayersInGame )
+        
+    end
+    
+    return 0
+end
+
 function PlayerUI_GetNumCommandStructures()
 
     local player = Client.GetLocalPlayer()
@@ -2015,6 +2033,7 @@ function Player:OnInitLocalClient()
     // Set commander geometry visible
     Client.SetGroupIsVisible(kCommanderInvisibleGroupName, true)
     
+    //Client.SetEnableFog(true)
     self.crossHairText = nil
     self.crossHairTextColor = kFriendlyColor
     
@@ -3918,14 +3937,11 @@ local function GetFirstPersonHitEffectName(doer)
 
 end
 
-/**
- * This is called from BaseModelMixin. This will force all player animations to process so we
- * get animation tags on the Client for other player models. These tags are needed to trigger
- * footstep sound effects.
- */
+/*
 function Player:GetClientSideAnimationEnabled()
     return true
 end
+*/
 
 function Player:GetShowAtmosphericLight()
     return true

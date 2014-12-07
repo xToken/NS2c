@@ -303,7 +303,7 @@ function Player:OnCreate()
     self.level = 1
     self.stepStartTime = 0
     self.stepAmount = 0
-    self.lastfootstep = 0
+    self.nextfootstep = 0
     
     self.isMoveBlocked = false
     self.isRookie = false
@@ -2161,7 +2161,7 @@ function Player:TriggerFootstep()
 	local viewVec = self:GetViewAngles():GetCoords().zAxis
 	local forward = self:GetVelocity():DotProduct(viewVec) > -0.1
 	local crouch = self:GetCrouching() and self:GetCrouchAmount() == 1
-	self.lastfootstep = Shared.GetTime() + self:GetMinFootstepTime()
+	self.nextfootstep = Shared.GetTime() + self:GetMinFootstepTime()
 	self:TriggerEffects("footstep", {surface = self:GetMaterialBelowPlayer(), left = self.leftFoot, sprinting = true, forward = forward, crouch = crouch})
 	
 end
@@ -2182,7 +2182,7 @@ function Player:OnTag(tagName)
     end
     
     // Play footstep when foot hits the ground.
-    if self:GetPlayFootsteps() and not Predict and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] and self.lastfootstep < Shared.GetTime() then
+    if self:GetPlayFootsteps() and not Predict and not Shared.GetIsRunningPrediction() and kStepTagNames[tagName] and self.nextfootstep < Shared.GetTime() then
         self:TriggerFootstep()
     end
     

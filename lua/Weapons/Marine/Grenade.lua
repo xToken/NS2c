@@ -7,7 +7,7 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Projectile.lua")
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/DamageMixin.lua")
 Script.Load("lua/Weapons/PredictedProjectile.lua")
@@ -29,7 +29,7 @@ local kGrenadeMaxShakeIntensity = 0.13
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 
 function Grenade:OnCreate()
@@ -37,7 +37,7 @@ function Grenade:OnCreate()
     PredictedProjectile.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
 

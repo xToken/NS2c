@@ -1310,6 +1310,22 @@ local function OnCommandGiveXP(client, xp)
 
 end
 
+local function OnCommandThrowCandy(client)
+    
+    -- need to protect on the serverside too so people don't just trigger mid-game
+    local player = client:GetControllingPlayer()
+    if player:GetIsCommander() then
+        return
+    end
+    
+    if player:GetTeamNumber() ~= kTeamReadyRoom and GetGamerules():GetGameState() ~= kGameState.NotStarted then
+        return
+    end
+    
+    FireBombProjectile(player)
+    
+end
+
 // 
 // hack; turn dev mode on, do a trace, turn dev mode off and dump the trace you got back
 // 
@@ -1447,6 +1463,8 @@ Event.Hook("Console_makeblackfemale", OnCommandBlackEditionFemale)
 Event.Hook("Console_makespecialfemale", OnCommandMakeSpecialEditionFemale)
 Event.Hook("Console_make", OnCommandMake)
 Event.Hook("Console_devour", OnCommandDevour)
+Event.Hook("Console_throwcandy", OnCommandThrowCandy)
+
 Event.Hook("Console_evolvelastupgrades", OnCommandEvolveLastUpgrades)
 
 Event.Hook("Console_debugcommander", OnCommandDebugCommander)

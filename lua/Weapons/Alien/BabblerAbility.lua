@@ -133,7 +133,7 @@ local function CreateBabblerPheromone(self, player)
         local startPoint = player:GetEyePos() + viewCoords.zAxis * 1.5
         local startVelocity = velocity * kPlayerVelocityFraction + viewCoords.zAxis * kProjectileVelocity
 
-        local babble = player:CreatePredictedProjectile("BabblerPheromone", startPoint, startVelocity, 0.7, nil, 8, true)
+        local babble = player:CreatePredictedProjectile("BabblerPheromone", startPoint, startVelocity, 0.7, 0, 8)
         
         local target, endPoint = FindTarget(self, player)
         if babble and target and (not HasMixin(target, "Live") or target:GetIsAlive()) and ( GetAreEnemies(self, target) or    

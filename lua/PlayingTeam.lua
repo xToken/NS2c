@@ -186,6 +186,10 @@ function PlayingTeam:ResetTeam()
     
 end
 
+function PlayingTeam:GetInfoEntity()
+    return Shared.GetEntity(self.teamInfoEntityId)
+end
+
 function PlayingTeam:OnResetComplete()
 end
 

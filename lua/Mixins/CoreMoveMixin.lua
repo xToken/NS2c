@@ -443,10 +443,12 @@ function CoreMoveMixin:UpdateMove(input, runningPrediction)
     local velocity = Vector(self:GetVelocity())
     
     // Modifiers
-    // Need to think about the positioning of these calls, its more important than instantly apparent..
-    // Having OnGround check right here allows you to never have ground friction run, which WOULD make jumping transitions smoother in theory..
-    // But there are tradeoffs - half a frame of gravity would be applied for anything that modifies your onground state IE Blinking.
-    // I think here is better in the end.    
+    // Need to think about the positioning of these calls, its more important than initially apparent..
+    // The initial OnGround check here can only account for the player leaving the ground.  Unless something horribly went wrong with the last calculations
+    // the cases where you would be airborne at the end of the last move and on the ground now are statiscally extremely unlikely.  This is needed however 
+    // to account for changes which would have you leave the ground.  Modifiers are applied before any gravity or friction, which does allow complete
+    // bypass of any ground friction by repeated jumping.
+  
     UpdateOnGroundState(self, velocity)
     
     self:HandleJump(input, velocity)

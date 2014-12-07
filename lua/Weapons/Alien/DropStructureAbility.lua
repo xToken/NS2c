@@ -369,10 +369,13 @@ function DropStructureAbility:GetPositionForStructure(startPosition, direction, 
     
     // If it hits something, position on this surface (must be the world or another structure)
     if trace.fraction < 1 then
-    	if trace.entity == nil then
-        	validPosition = true
-		end
+    
+        if trace.entity == nil then
+            validPosition = true
+        end
+        
         displayOrigin = trace.endPoint
+        
     end
     
     // Don't allow dropped structures to go too close to techpoints and resource nozzles
@@ -452,7 +455,7 @@ function DropStructureAbility:ProcessMoveOnWeapon(input)
         if Server then
 
             local team = player:GetTeam()
-            //local hiveCount = team:GetNumHives()
+            //local hiveCount = team:GetActiveHiveCount()
             local numAllowedWebs = LookupTechData(kTechId.Web, kTechDataMaxAmount, -1) 
             local numAllowedBabblers = LookupTechData(kTechId.BabblerEgg, kTechDataMaxAmount, -1) 
             

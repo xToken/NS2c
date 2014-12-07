@@ -2372,7 +2372,8 @@ function CheckWeaponForFocus(doer, player)
         return 0 
     end
     if doer and hasupg and level > 0 then
-        if (doer.GetAbilityUsesFocus and doer:GetAbilityUsesFocus() and doer.primaryAttacking) or (doer.GetSecondaryAbilityUsesFocus and doer:GetSecondaryAbilityUsesFocus() and doer.secondaryAttacking) then
+        if (doer.GetAbilityUsesFocus and doer:GetAbilityUsesFocus() and doer.primaryAttacking) or 
+            (doer.GetSecondaryAbilityUsesFocus and doer:GetSecondaryAbilityUsesFocus() and doer.secondaryAttacking) then
             return level    
         end
     end
@@ -2571,6 +2572,7 @@ function GetTexCoordsForTechId(techId)
         gTechIdPosition[kTechId.GrenadeLauncher] = kDeathMessageIcon.Grenade
         gTechIdPosition[kTechId.Welder] = kDeathMessageIcon.Welder
         gTechIdPosition[kTechId.Mines] = kDeathMessageIcon.Mine
+		// gTechIdPosition[kTechId.Crush] = kDeathMessageIcon.Crush
         
         // alien abilities
         gTechIdPosition[kTechId.Bite] = kDeathMessageIcon.Bite
@@ -2966,6 +2968,193 @@ function GetFileExists(path)
     local searchResult = {}
     Shared.GetMatchingFileNames( path, false, searchResult )
     return #searchResult > 0
+end
+
+function GetAndSetVariantOptions()
+
+    local variants = {}
+    
+    variants.marineVariant = Client.GetOptionInteger("marineVariant", -1)
+    variants.skulkVariant = Client.GetOptionInteger("skulkVariant", -1)
+    variants.gorgeVariant = Client.GetOptionInteger("gorgeVariant", -1)
+    variants.lerkVariant = Client.GetOptionInteger("lerkVariant", -1)
+    variants.fadeVariant = Client.GetOptionInteger("fadeVariant", -1)
+    variants.onosVariant = Client.GetOptionInteger("onosVariant", -1)
+    variants.sexType = Client.GetOptionString("sexType", "Male")
+    variants.shoulderPadIndex = Client.GetOptionInteger("shoulderPad", 1)
+    variants.exoVariant = Client.GetOptionInteger("exoVariant", -1)
+    variants.rifleVariant = Client.GetOptionInteger("rifleVariant", -1)
+    
+    if not GetHasShoulderPad(variants.shoulderPadIndex) then
+        variants.shoulderPadIndex = 1
+    end
+    
+    // if not set explicitly, always use the highest available tier
+    if variants.marineVariant == -1 then
+    
+        for variant = 1, GetEnumCount(kMarineVariant) do
+        
+            if GetHasVariant(kMarineVariantData, variant) then
+            
+                variants.marineVariant = variant
+                // do not break - use the highest one they have
+                
+            end
+            
+        end
+        
+    end
+    
+    if variants.skulkVariant == -1 then
+    
+        for variant = 1, GetEnumCount(kSkulkVariant), 1 do
+        
+            if GetHasVariant(kSkulkVariantData, variant) then
+            
+                variants.skulkVariant = variant
+                // do not break - use the highest one they have
+                
+            end
+            
+        end
+        
+    end
+    
+    if variants.gorgeVariant == -1 then
+    
+        for variant = 1, GetEnumCount(kGorgeVariant), 1 do
+        
+            if GetHasVariant(kGorgeVariantData, variant) then
+            
+                variants.gorgeVariant = variant
+                // do not break - use the highest one they have
+                
+            end
+            
+        end
+        
+    end
+    
+    if variants.lerkVariant == -1 then
+    
+        for variant = 1, GetEnumCount(kLerkVariant), 1 do
+        
+            if GetHasVariant(kLerkVariantData, variant) then
+            
+                variants.lerkVariant = variant
+                // do not break - use the highest one they have
+                
+            end
+            
+        end
+        
+    end
+    
+    if variants.fadeVariant == -1 then
+    
+        for variant = 1, GetEnumCount(kFadeVariant), 1 do
+        
+            if GetHasVariant(kFadeVariantData, variant) then
+            
+                variants.fadeVariant = variant
+                // do not break - use the highest one they have
+                
+            end
+            
+        end
+        
+    end
+    
+    if variants.onosVariant == -1 then
+    
+        for variant = 1, GetEnumCount(kOnosVariant), 1 do
+        
+            if GetHasVariant(kOnosVariantData, variant) then
+            
+                variants.onosVariant = variant
+                // do not break - use the highest one they have
+                
+            end
+            
+        end
+        
+    end
+    
+    if variants.exoVariant == -1 then
+    
+        for variant = 1, GetEnumCount(kExoVariant), 1 do
+        
+            if GetHasVariant(kExoVariantData, variant) then
+            
+                variants.exoVariant = variant
+                // do not break - use the highest one they have
+                
+            end
+            
+        end
+        
+    end
+    
+    if variants.rifleVariant == -1 then
+    
+        for variant = 1, GetEnumCount(kRifleVariant), 1 do
+        
+            if GetHasVariant(kRifleVariantData, variant) then
+            
+                variants.rifleVariant = variant
+                // do not break - use the highest one they have
+                
+            end
+            
+        end
+        
+    end
+    
+    assert(variants.marineVariant ~= -1 and variants.marineVariant ~= -1 ~= nil)
+    assert(variants.skulkVariant ~= -1 and variants.skulkVariant ~= -1 ~= nil)
+    assert(variants.gorgeVariant ~= -1 and variants.gorgeVariant ~= -1 ~= nil)
+    assert(variants.lerkVariant ~= -1 and variants.lerkVariant ~= -1 ~= nil)
+    assert(variants.fadeVariant ~= -1 and variants.fadeVariant ~= -1 ~= nil)
+    assert(variants.onosVariant ~= -1 and variants.onosVariant ~= -1 ~= nil)
+    assert(variants.exoVariant ~= -1 and variants.exoVariant ~= -1 ~= nil)
+    assert(variants.rifleVariant ~= -1 and variants.rifleVariant ~= -1 ~= nil)
+    
+    Client.SetOptionInteger("marineVariant", variants.marineVariant)
+    Client.SetOptionInteger("shoulderPad", variants.shoulderPadIndex)
+    Client.SetOptionInteger("skulkVariant", variants.skulkVariant)
+    Client.SetOptionInteger("gorgeVariant", variants.gorgeVariant)
+    Client.SetOptionInteger("lerkVariant", variants.lerkVariant)
+    Client.SetOptionInteger("fadeVariant", variants.fadeVariant)
+    Client.SetOptionInteger("onosVariant", variants.onosVariant)
+    Client.SetOptionInteger("exoVariant", variants.exoVariant)
+    Client.SetOptionInteger("rifleVariant", variants.rifleVariant)
+    Client.SetOptionString("sexType", variants.sexType)
+    
+    
+    return variants
+    
+end
+
+function SendPlayerVariantUpdate()
+
+    local options = GetAndSetVariantOptions()
+    if MainMenu_IsInGame() then
+        Client.SendNetworkMessage("SetPlayerVariant",
+            {
+                marineVariant = options.marineVariant,
+                skulkVariant = options.skulkVariant,
+                gorgeVariant = options.gorgeVariant,
+                lerkVariant = options.lerkVariant,
+                fadeVariant = options.fadeVariant,
+                onosVariant = options.onosVariant,
+                isMale = string.lower(options.sexType) == "male",
+                shoulderPadIndex = options.shoulderPadIndex,
+                exoVariant = options.exoVariant,
+                rifleVariant = options.rifleVariant,
+            },
+            true)
+    end
+    
 end
 
 //----------------------------------------

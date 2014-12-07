@@ -102,12 +102,9 @@ if Server then
     
     function NS2Gamerules:ResetPlayerScores()
     
-        self.clientpres = {}
         for _, player in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
             if player.ResetScores and player.client then
                 player:ResetScores()
-                self.clientpres[player:GetSteamId()] = {}
-                self.clientpres[player:GetSteamId()][player:GetTeamNumber()] = ConditionalValue(team == self.team1, kMarineInitialIndivRes, kAlienInitialIndivRes)
             end
         end
 
@@ -377,8 +374,8 @@ if Server then
         TournamentModeOnReset()
     
         // save commanders for later re-login
-        local team1CommanderClientIndex = self.team1:GetCommander() and self.team1:GetCommander().clientIndex or nil
-        //local team2CommanderClientIndex = self.team2:GetCommander() and self.team2:GetCommander().clientIndex or nil
+        local team1CommanderClient = self.team1:GetCommander() and self.team1:GetCommander():GetClient()
+        //local team2CommanderClient = self.team2:GetCommander() and self.team2:GetCommander():GetClient()
         
         // Cleanup any peeps currently in the commander seat by logging them out
         // have to do this before we start destroying stuff.
@@ -540,27 +537,25 @@ if Server then
         self.team1:ReplaceRespawnAllPlayers()
         self.team2:ReplaceRespawnAllPlayers()
         
+		self.clientpres = {}
+		
         // Create team specific entities
         local commandStructure1 = self.team1:ResetTeam()
         local commandStructure2 = self.team2:ResetTeam()
         
         // login the commanders again
-        local function LoginCommander(commandStructure, team, clientIndex)
-            if commandStructure and clientIndex then
-                for i,player in ipairs(team:GetPlayers()) do
-                    if player.clientIndex == clientIndex then
-                        // make up for not manually moving to CS and using it
-                        commandStructure.occupied = true
-                        player:SetOrigin(commandStructure:GetDefaultEntryOrigin())
-                        commandStructure:LoginPlayer(player)
-                        break
-                    end
-                end 
+        local function LoginCommander(commandStructure, client)
+			local player = client and client:GetControllingPlayer()
+            if commandStructure and player then
+				// make up for not manually moving to CS and using it
+				commandStructure.occupied = true
+				player:SetOrigin(commandStructure:GetDefaultEntryOrigin())
+				commandStructure:LoginPlayer(player,true)
             end
         end
         
-        LoginCommander(commandStructure1, self.team1, team1CommanderClientIndex)
-        //LoginCommander(commandStructure2, self.team2, team2CommanderClientIndex)
+        LoginCommander(commandStructure1, team1CommanderClient)
+        //LoginCommander(commandStructure2, team2CommanderClient)
         
         // Create living map entities fresh
         CreateLiveMapEntities()
@@ -926,6 +921,7 @@ if Server then
         Server.AddTag(string.format("%s%s", tagName, value))
 
     end
+
     
     function NS2Gamerules:UpdatePlayerSkill()
         
@@ -942,6 +938,20 @@ if Server then
         end
 
         self.playerRanking:OnUpdate()
+
+    end
+
+    function NS2Gamerules:UpdateNumPlayersForScoreboard()
+        
+        local kTime = Shared.GetTime()
+        if not self.nextTimeUpdateNumPlayersForScoreboard or self.nextTimeUpdateNumPlayersForScoreboard < kTime then
+            
+            local numPlayersTotal = Server.GetNumPlayersTotal and Server.GetNumPlayersTotal() or 0
+            
+            self.gameInfo:SetNumPlayersTotal( numPlayersTotal )
+                
+            self.nextTimeUpdateNumPlayersForScoreboard = kTime + 0.25
+        end
 
     end
 
@@ -1068,6 +1078,7 @@ if Server then
                 end
 
 				self:UpdatePlayerSkill()
+				self:UpdateNumPlayersForScoreboard()
                 self:UpdatePerfTags(timePassed)
                 self:UpdateCustomNetworkSettings()
                 

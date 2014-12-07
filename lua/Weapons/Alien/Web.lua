@@ -15,7 +15,7 @@ Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/OwnerMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/Mixins/BaseModelMixin.lua")
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 
 class 'Web' (Entity)
 
@@ -32,7 +32,7 @@ local networkVars =
 
 AddMixinNetworkVars(TechMixin, networkVars)
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 
@@ -55,7 +55,7 @@ function Web:OnCreate()
     InitMixin(self, TechMixin)
     InitMixin(self, EffectsMixin)
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, LiveMixin)
     

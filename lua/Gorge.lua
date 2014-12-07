@@ -149,7 +149,7 @@ function Gorge:GetExtentsCrouchShrinkAmount()
 end
 
 function Gorge:GetViewModelName()
-    return kViewModelName
+    return self:GetVariantViewModel(self:GetVariant())
 end
 
 function Gorge:GetIsBellySliding()

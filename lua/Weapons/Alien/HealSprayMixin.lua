@@ -129,7 +129,7 @@ local function HealEntity(self, player, targetEntity)
         health = kHealsprayDamage * kHealBuildingScalar
     // Don't heal self at full rate - don't want Gorges to be too powerful. Same as NS1.
     elseif targetEntity == player then
-        health = health * .5
+        health = health * 0.5
     end
     
     local amountHealed = targetEntity:AddHealth(health, true, false, true, player)
@@ -226,7 +226,7 @@ local function GetEntitiesInCylinder(self, player, viewCoords, range, width)
     
     for _, entity in ipairs( GetEntitiesWithMixinWithinRange("Live", startPoint, range) ) do
     
-        if entity:GetIsAlive() then
+        if entity:GetIsAlive() and not entity:isa("Weapon") then
     
             relativePos = entity:GetOrigin() - startPoint
             local yDistance = viewCoords.yAxis:DotProduct(relativePos)

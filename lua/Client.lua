@@ -639,16 +639,20 @@ local function OnUpdateClient(deltaTime)
     
     if not optionsSent then
     
-        local marineVariant = Client.GetOptionInteger("marineVariant", kDefaultMarineVariant)
-        local skulkVariant = Client.GetOptionInteger("skulkVariant", kDefaultSkulkVariant)
-        local gorgeVariant = Client.GetOptionInteger("gorgeVariant", kDefaultGorgeVariant)
-        local lerkVariant = Client.GetOptionInteger("lerkVariant", kDefaultLerkVariant)
-        local isMale = Client.GetOptionString("sexType", "Male") == "Male"
-        local shoulderPadIndex = Client.GetOptionInteger("shoulderPad", 1) // 1 means no shoulder pad selected
-        local exoVariant = Client.GetOptionInteger("exoVariant", kDefaultExoVariant)
-        local rifleVariant = Client.GetOptionInteger("rifleVariant", kDefaultRifleVariant)
+        local options = GetAndSetVariantOptions()
+        local isMale = options.sexType == "Male"
         Client.SendNetworkMessage("ConnectMessage",
-                BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, lerkVariant, shoulderPadIndex, exoVariant, rifleVariant),
+                BuildConnectMessage(
+                    isMale, 
+                    options.marineVariant, 
+                    options.skulkVariant, 
+                    options.gorgeVariant, 
+                    options.lerkVariant, 
+                    options.fadeVariant, 
+                    options.onosVariant, 
+                    options.shoulderPadIndex, 
+                    options.exoVariant, 
+                    options.rifleVariant),
                 true)
         optionsSent = true
         

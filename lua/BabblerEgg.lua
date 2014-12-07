@@ -56,14 +56,27 @@ function BabblerEgg:OnCreate()
         
     end
     
+    self:SetRelevancyDistance(kMaxRelevancyDistance)
+    
 end
 
 function BabblerEgg:OnInitialized()
 
     self:SetModel(BabblerEgg.kModelName, kAnimationGraph)
     
-    if Server then
-        InitMixin(self, MobileTargetMixin)        
+    if Server then    
+        InitMixin(self, MobileTargetMixin)     
+    
+        local mask = bit.bor(kRelevantToTeam1Unit, kRelevantToTeam2Unit, kRelevantToReadyRoom)
+        
+        if self:GetTeamNumber() == 1 then
+            mask = bit.bor(mask, kRelevantToTeam1Commander)
+        elseif self:GetTeamNumber() == 2 then
+            mask = bit.bor(mask, kRelevantToTeam2Commander)
+        end
+        
+        self:SetExcludeRelevancyMask(mask)
+    
     elseif Client then
         InitMixin(self, UnitStatusMixin)
     end

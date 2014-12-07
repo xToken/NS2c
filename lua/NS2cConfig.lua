@@ -69,3 +69,16 @@ end
 
 CreateServerAdminCommand("Console_sv_gamemode", UpdateGameMode, "Changes between Automatic based on MapName(0), Classic(1) or Combat(2) gamemodes.")
 //Event.Hook("Console_sv_gamemode", UpdateGameMode)
+
+//Testing Hacks :o
+function ClientModelMixin:__initmixin()
+
+    self.limitedModel = true
+    self.fullyUpdated = Client or Predict
+    
+    if Server then
+        self.forceModelUpdateUntilTime = 0
+        self:ForceUpdateUntil(Shared.GetTime() + 2)
+    end
+
+end

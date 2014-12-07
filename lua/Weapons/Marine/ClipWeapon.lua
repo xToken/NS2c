@@ -210,12 +210,6 @@ end
 function ClipWeapon:ProcessMoveOnWeapon(player, input)
 end
 
-function ClipWeapon:OnProcessMove(input)
-
-    Weapon.OnProcessMove(self, input)
-
-end
-
 function ClipWeapon:GetBulletDamage(target, endPoint)
 
     assert(false, "Need to override GetBulletDamage()")

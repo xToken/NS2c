@@ -18,7 +18,7 @@ end
 
 // damage type, doer and attacker don't need to be passed. that info is going to be fetched here. pass optional surface name
 // pass surface "none" for not hit/flinch effect
-function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode, showtracer, blockfocus)
+function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode, showtracer)
 
     // No prediction if the Client is spectating another player.
     if Client and not Client.GetIsControllingPlayer() then
@@ -80,7 +80,7 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
         
         if target and HasMixin(target, "Live") and damage > 0 then  
 
-            damage, armorUsed, healthUsed = GetDamageByType(target, attacker, doer, damage, damageType, point, blockfocus)
+            damage, armorUsed, healthUsed = GetDamageByType(target, attacker, doer, damage, damageType, point)
 
             // check once the damage
             if not direction then

@@ -45,6 +45,8 @@ Commander.kSentryOrientationModelName = PrecacheAsset("models/misc/sentry_arc/se
 Commander.kSentryRangeModelName = PrecacheAsset("models/misc/sentry_arc/sentry_line.model")
 Commander.kMarineCircleModelName = PrecacheAsset("models/misc/circle/circle.model")
 Commander.kAlienCircleModelName = PrecacheAsset("models/misc/circle/circle_alien.model")
+Commander.kMarineCircleDecalName = PrecacheAsset("models/misc/circle/circle.material")
+Commander.kAlienCircleDecalName = PrecacheAsset("models/misc/circle/circle_alien.material")
 Commander.kMarineLineMaterialName = PrecacheAsset("ui/WaypointPath.material")
 Commander.kAlienLineMaterialName = PrecacheAsset("ui/WaypointPath_alien.material")
 

@@ -223,7 +223,7 @@ function Skulk:GetCanWallJump()
 end
 
 function Skulk:GetViewModelName()
-    return kViewModelName
+    return self:GetVariantViewModel(self:GetVariant())
 end
 
 function Skulk:GetCanJump()

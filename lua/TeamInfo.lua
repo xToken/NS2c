@@ -135,20 +135,7 @@ function TeamInfo:OnCreate()
     
         self:SetUpdates(true)
         
-        self.teamResources = 0
-        self.personalResources = 0
-        self.numResourceTowers = 0
-        self.latestResearchId = 0
-        self.researchDisplayTime = 0
-        self.lastTechPriority = 0
-        self.lastCommPingTime = 0
-        self.lastCommPingPosition = Vector(0,0,0)
-        self.totalTeamResources = 0
-        self.techActiveMask = 0
-        self.techOwnedMask = 0
-        self.playerCount = 0
-		self.spawnQueueTotal = 0
-        self.kills = 0
+		self:Reset()
         
     end
     

@@ -712,7 +712,7 @@ end
 
 function Player:UpdateWeaponSkin(client)
 
-    local weapon = self:GetWeapon(Rifle.kMapName)
+    local weapon = self:GetActiveWeapon()
     if weapon then
         weapon:UpdateWeaponSkins(client)
     end

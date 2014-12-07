@@ -93,7 +93,7 @@ function ParseSelectUnitMessage(message)
     return message.teamNumber, Shared.GetEntity(message.unitId), message.selected, message.keepSelection
 end
 
-function BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, lerkVariant, shoulderPadIndex, exoVariant, rifleVariant)
+function BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, lerkVariant, fadeVariant, onosVariant, shoulderPadIndex, exoVariant, rifleVariant)
 
     local t = { }
     t.isMale = isMale
@@ -101,6 +101,8 @@ function BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, 
     t.skulkVariant = skulkVariant
     t.gorgeVariant = gorgeVariant
     t.lerkVariant = lerkVariant
+    t.fadeVariant = fadeVariant
+    t.onosVariant = onosVariant
     t.shoulderPadIndex = shoulderPadIndex
     t.exoVariant = exoVariant
     t.rifleVariant = rifleVariant
@@ -115,6 +117,8 @@ local kConnectMessage =
     skulkVariant = "enum kSkulkVariant",
     gorgeVariant = "enum kGorgeVariant",
     lerkVariant = "enum kLerkVariant",
+    fadeVariant = "enum kFadeVariant",
+    onosVariant = "enum kOnosVariant",
     shoulderPadIndex = string.format("integer (0 to %d)",  #kShoulderPad2ProductId),
     exoVariant = "enum kExoVariant",
     rifleVariant = "enum kRifleVariant"
@@ -247,6 +251,7 @@ function SendDamageMessage( attacker, target, amount, point, overkill )
 end
 
 Shared.RegisterNetworkMessage( "Damage", kDamageMessage )
+
 
 local kHitSoundMessage =
 {

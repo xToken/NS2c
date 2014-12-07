@@ -29,7 +29,7 @@ BabblerPheromone.kClearOnEnemyImpact = true
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 
 local function ClearAttachedBabblers(self)
@@ -51,7 +51,7 @@ function BabblerPheromone:OnCreate()
     PredictedProjectile.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, TeamMixin)
 
     if Server then

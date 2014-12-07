@@ -142,6 +142,7 @@ end
 function Spikes:OnPrimaryAttack(player)
     if player:GetEnergy() >= self:GetEnergyCost() and not self:GetHasAttackDelay(player) then
         self.primaryAttacking = true
+        self.secondaryAttacking = false
     else
         self.primaryAttacking = false
     end

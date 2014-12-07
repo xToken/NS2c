@@ -352,9 +352,6 @@
     <filename>GUISpeedDebug.lua</filename>
   </file>
   <file>
-    <filename>GUIUtility.lua</filename>
-  </file>
-  <file>
     <filename>GeneralEffects.lua</filename>
   </file>
   <file>
@@ -557,9 +554,6 @@
   </file>
   <file>
     <filename>Weapons\Marine\Mines.lua</filename>
-  </file>
-  <file>
-    <filename>ModdedMixinUtility.lua</filename>
   </file>
   <file>
     <filename>Mixins\ModdedMixinUtility.lua</filename>

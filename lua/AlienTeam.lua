@@ -670,11 +670,6 @@ function AlienTeam:GetSpectatorMapName()
     return AlienSpectator.kMapName
 end
 
-function AlienTeam:GetNumHives()
-    local hives = GetEntitiesForTeam("Hive", self:GetTeamNumber())
-    return table.count(hives)
-end
-
 function AlienTeam:AwardResources(resAward, pointOwner)
 
     resAward = resAward - pointOwner:AwardResForKill(resAward)
@@ -762,7 +757,8 @@ local function RespawnPlayer(self, hive)
                 if not success or newPlayer == nil then
                     //Not sure how this happens but i think its causing the spawn bug
                     //Requeue the player making sure to post date them correspondingly
-                    Print(ToString("FAILEGGSPAWN"))
+                    Shared.Message("Failed to spawn player late in spawn queue cycle - this is a more urgent bugfix!")
+                    Shared.Message(Script.CallStack())
                     self:PutPlayerInRespawnQueue(alien, spawntime - GetSpawnTime(self))   
                 end
             else
@@ -782,7 +778,7 @@ function AlienTeam:UpdateRespawn()
     if self.timeLastSpawnCheck == nil then
         self.timeLastSpawnCheck = Shared.GetTime()
     end
-    //Dont check spawn every frame cause thats pretty dumb
+    //Dont check spawn every frame cause thats pretty silly
     if time > (self.timeLastSpawnCheck + AlienTeam.kSpawnScanInterval) then
         local hives = GetEntitiesForTeam("Hive", self:GetTeamNumber())
         for _, hive in ipairs(hives) do

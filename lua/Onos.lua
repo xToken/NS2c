@@ -20,6 +20,7 @@ Script.Load("lua/Weapons/Alien/Devour.lua")
 Script.Load("lua/Alien.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
+Script.Load("lua/OnosVariantMixin.lua")
 
 class 'Onos' (Alien)
 
@@ -59,6 +60,7 @@ local networkVars =
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
+AddMixinNetworkVars(OnosVariantMixin, networkVars)
 
 function Onos:OnCreate()
 
@@ -67,6 +69,7 @@ function Onos:OnCreate()
     Alien.OnCreate(self)
     
     InitMixin(self, DissolveMixin)
+	InitMixin(self, OnosVariantMixin)
     
     self.altAttack = false
     self.charging = true
@@ -259,7 +262,7 @@ function Onos:GetArmorFullyUpgradedAmount()
 end
 
 function Onos:GetViewModelName()
-    return kViewModelName
+    return self:GetVariantViewModel(self:GetVariant())
 end
 
 function Onos:GetMaxViewOffsetHeight()

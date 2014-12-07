@@ -34,7 +34,7 @@ local kBombLifetime = 6
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 
 function Bomb:OnCreate()
@@ -42,7 +42,7 @@ function Bomb:OnCreate()
     PredictedProjectile.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
     

@@ -69,7 +69,7 @@ function PlayerRanking:StartGame()
 end
 
 function PlayerRanking:GetTrackServer()
-    return self:GetGamemode() == "ns2"
+    return self:GetGamemode() == "ns2" and avgNumPlayersSum / numPlayerCountSamples > 10
 end
 
 local kGamemode
@@ -282,7 +282,7 @@ function PlayerRanking:GetAveragePlayerSkill()
             local skill = player:GetPlayerSkill()
             // DebugPrint("%s skill: %s", ToString(player:GetName()), ToString(skill))
             
-            if client and skill then // and not client:GetIsVirtual()
+            if client and skill then
             
                 local teamType = HasMixin(player, "Team") and player:GetTeamType() or -1
                 if teamType == kMarineTeamType or teamType == kAlienTeamType then

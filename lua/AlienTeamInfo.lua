@@ -48,6 +48,8 @@ if Server then
 
 	function AlienTeamInfo:Reset()
     
+		TeamInfo.Reset( self ) 
+		
         self.numHives = 0
 	    self.eggCount = 0
 	    self.numUnassignedHives = 0

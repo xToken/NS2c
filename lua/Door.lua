@@ -1,4 +1,4 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+// ======= Copyright (c) 2003-2014, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
 // lua\Door.lua
 //
@@ -176,7 +176,7 @@ function Door:GetShowHealthFor(player)
 end
 
 function Door:GetReceivesStructuralDamage()
-    return true
+    return false
 end
 
 function Door:GetIsWeldedShut()
