@@ -221,6 +221,7 @@ function GUIDeathMessages:AddMessage(killerColor, killerName, targetColor, targe
     if insertMessage["Background"] == nil then
     
         insertMessage["Background"] = self:CreateAnimatedGraphicItem()
+        insertMessage["Background"]:SetLayer(kGUILayerPlayerHUD)
         insertMessage["Background"].left = self:CreateAnimatedGraphicItem()
         insertMessage["Background"].left:SetAnchor(GUIItem.Left, GUIItem.Top)
         insertMessage["Background"].right = self:CreateAnimatedGraphicItem()

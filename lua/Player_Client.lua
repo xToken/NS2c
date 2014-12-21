@@ -1,3 +1,4 @@
+--[[
 // ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
 // lua\Player_Client.lua
@@ -6,6 +7,7 @@
 //                  Max McGuire (max@unknownworlds.com)
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+]]
 
 //NS2c
 //Made most vars local, removal most screen effects and tweaked a couple GUI functions.
@@ -203,7 +205,7 @@ function PlayerUI_GetOrderInfo()
 
     local orderInfo = { }
     
-    // Hard-coded for testing
+    -- Hard-coded for testing
     local player = Client.GetLocalPlayer()
     if player then
     
@@ -256,7 +258,7 @@ end
 local function GetMostRelevantPheromone(toOrigin)
 
     local pheromones = GetEntitiesWithinRange("Pheromone", toOrigin, 100)
-    local bestPheromone = nil
+    local bestPheromone
     local bestDistSq = math.huge
     for p = 1, #pheromones do
     
@@ -327,7 +329,7 @@ end
 function PlayerUI_OnRequestSelected()
 
     local player = Client.GetLocalPlayer()
-    // Prevent the player from shooting after a request is selected.
+    -- Prevent the player from shooting after a request is selected.
     player.timeClosedMenu = Shared.GetTime()
     
 end
@@ -351,7 +353,7 @@ function PlayerUI_GetBuyMenuDisplaying()
 end
 
 local function LocalIsFriendlyCommander(player, unit)
-    return player:isa("MarineCommander") and ( unit:isa("Player") or (HasMixin(unit, "Selectable") and unit:GetIsSelected(player:GetTeamNumber())) )
+    return player:isa("Commander") and ( unit:isa("Player") or (HasMixin(unit, "Selectable") and unit:GetIsSelected(player:GetTeamNumber())) )
 end
 
 local kUnitStatusDisplayRange = 13
@@ -379,13 +381,13 @@ function PlayerUI_GetUnitStatusInfo()
     
         for index, unit in ipairs(GetEntitiesWithMixinWithinRange("UnitStatus", eyePos, range)) do
         
-            // checks here if the model was rendered previous frame as well
+            -- checks here if the model was rendered previous frame as well
             local status = unit:GetUnitStatus(player)
             if unit:GetShowUnitStatusFor(player) then       
 
-                // Get direction to blip. If off-screen, don't render. Bad values are generated if 
-                // Client.WorldToScreen is called on a point behind the camera.
-                local origin = nil
+                -- Get direction to blip. If off-screen, don't render. Bad values are generated if
+                -- Client.WorldToScreen is called on a point behind the camera.
+                local origin
                 local getEngagementPoint = unit.GetEngagementPoint
                 if getEngagementPoint then
                     origin = getEngagementPoint(unit)
@@ -397,7 +399,7 @@ function PlayerUI_GetUnitStatusInfo()
                 local normViewVec = player:GetViewAngles():GetCoords().zAxis
                
                 local dotProduct = normToEntityVec:DotProduct(normViewVec)
-                
+
                 if dotProduct > 0 then
 
                     local statusFraction = unit:GetUnitStatusFraction(player)
@@ -438,7 +440,7 @@ function PlayerUI_GetUnitStatusInfo()
                         
                     end
                     
-                    // Don't show tech points or nozzles if they are attached
+                    -- Don't show tech points or nozzles if they are attached
                     if (unit:GetMapName() == TechPoint.kMapName or unit:GetMapName() == ResourcePoint.kPointMapName) and unit.GetAttached and (unit:GetAttached() ~= nil) then
                         visibleToPlayer = false
                     end
@@ -470,7 +472,7 @@ function PlayerUI_GetUnitStatusInfo()
                     end
                     
                     local abilityFraction = 0
-                    if player:isa("Commander") then        
+                    if player:isa("Commander") then
                         abilityFraction = unit:GetAbilityFraction()
                     end
                     
@@ -494,7 +496,7 @@ function PlayerUI_GetUnitStatusInfo()
                         IsPlayer = unit:isa("Player"),
                         IsSteamFriend = unit:isa("Player") and unit:GetIsSteamFriend() or false,
                         AbilityFraction = abilityFraction,
-						IsParasited = HasMixin(unit, "ParasiteAble") and unit:GetIsParasited()
+                        IsParasited = HasMixin(unit, "ParasiteAble") and unit:GetIsParasited()
                     
                     }
                     
@@ -587,10 +589,11 @@ function PlayerUI_GetWaypointType()
 end
 
 local kAnimateFields = { x = true, y = true, scale = true, dist = true }
-/**
+
+--[[
  * Gives the UI the screen space coordinates of where to display
  * the final waypoint for when players have an order location.
- */
+]]
 function PlayerUI_GetFinalWaypointInScreenspace()
 
     local player = Client.GetLocalPlayer()
@@ -600,7 +603,7 @@ function PlayerUI_GetFinalWaypointInScreenspace()
     end
     
     local isCommander = player:isa("Commander")
-    local currentOrder = nil
+    local currentOrder
     
     if isCommander then
     
@@ -632,7 +635,7 @@ function PlayerUI_GetFinalWaypointInScreenspace()
     local playerEyePos = Vector(player:GetCameraViewCoords().origin)
     local playerForwardNorm = Vector(player:GetCameraViewCoords().zAxis)
     
-    // This method needs to use the previous updates player info.
+    -- This method needs to use the previous updates player info.
     if player.lastPlayerEyePos == nil then
     
         player.lastPlayerEyePos = Vector(playerEyePos)
@@ -640,7 +643,7 @@ function PlayerUI_GetFinalWaypointInScreenspace()
         
     end
     
-    local orderWayPoint = nil
+    local orderWayPoint
     if currentOrder:isa("Pheromone") then
         orderWayPoint = currentOrder:GetOrigin()
     else
@@ -659,7 +662,7 @@ function PlayerUI_GetFinalWaypointInScreenspace()
     local normViewVec = GetNormalizedVectorXZ(player.lastPlayerForwardNorm)
     local dotProduct = Math.DotProduct(normToEntityVec, normViewVec)
     
-    // Distance is used for scaling.
+    -- Distance is used for scaling.
     local nextWPDist = nextWPDir:GetLength()
     local nextWPMaxDist = 25
     local nextWPScale = isCommander and 0.3 or math.max(0.5, 1 - (nextWPDist / nextWPMaxDist))
@@ -679,7 +682,7 @@ function PlayerUI_GetFinalWaypointInScreenspace()
         
     end
     
-    // If the waypoint has changed, do a smooth transition.
+    -- If the waypoint has changed, do a smooth transition.
     if player.nextWPCurrWP ~= orderWayPoint then
     
         player.nextWPDoingTrans = true
@@ -687,10 +690,10 @@ function PlayerUI_GetFinalWaypointInScreenspace()
         
     end
     
-    local returnTable = nil
+    local returnTable
     local spaceToBorder = ConditionalValue(isCommander, 0, 0.18)
     
-    // If offscreen, fallback on compass method.
+    -- If offscreen, fallback on compass method.
     local minWidthBuff = Client.GetScreenWidth() * spaceToBorder
     local minHeightBuff = Client.GetScreenHeight() * spaceToBorder
     local maxWidthBuff = Client.GetScreenWidth() * (1 - spaceToBorder)
@@ -715,7 +718,7 @@ function PlayerUI_GetFinalWaypointInScreenspace()
         
         local showArrow = not isCommander and (finalScreenPos.x < minWidthBuff or finalScreenPos.x > maxWidthBuff or finalScreenPos.y < minHeightBuff or finalScreenPos.y > maxHeightBuff)
         
-        // Clamp to edge of screen with buffer
+        -- Clamp to edge of screen with buffer
         finalScreenPos.x = Clamp(finalScreenPos.x, minWidthBuff, maxWidthBuff)
         finalScreenPos.y = Clamp(finalScreenPos.y, minHeightBuff, maxHeightBuff)
         
@@ -766,7 +769,7 @@ function PlayerUI_GetFinalWaypointInScreenspace()
         player.nextWPLastVal[name] = field
     end
     
-    // Save current for next update.
+    -- Save current for next update.
     VectorCopy(playerEyePos, player.lastPlayerEyePos)
     VectorCopy(playerForwardNorm, player.lastPlayerForwardNorm)
     
@@ -774,18 +777,18 @@ function PlayerUI_GetFinalWaypointInScreenspace()
     
 end
 
-/**
+--[[
  * Get the X position of the crosshair image in the atlas. 
- */
+]]
 function PlayerUI_GetCrosshairX()
     return 0
 end
 
-/**
+--[[
  * Get the Y position of the crosshair image in the atlas.
  * Listed in this order:
- *   Rifle, Pistol, Axe, Shotgun, HMG, Rifle with GL,
- */
+ *   Rifle, Pistol, Axe, Shotgun, Minigun, Rifle with GL, Flamethrower
+]]
 function PlayerUI_GetCrosshairY()
 
     local player = Client.GetLocalPlayer()
@@ -795,7 +798,7 @@ function PlayerUI_GetCrosshairY()
         local weapon = player:GetActiveWeapon()
         if(weapon ~= nil) then
         
-            // Get class name and use to return index
+            -- Get class name and use to return index
             local index 
             local mapname = weapon:GetMapName()
             
@@ -805,12 +808,12 @@ function PlayerUI_GetCrosshairY()
                 index = 1
             elseif mapname == Shotgun.kMapName then
                 index = 3
-            // All alien crosshairs are the same for now
+            -- All alien crosshairs are the same for now
             elseif mapname == Spores.kMapName or mapname == Umbra.kMapName or mapname == Primal.kMapName or mapname == Spikes.kMapName or mapname == Parasite.kMapName or mapname == AcidRocket.kMapName then
                 index = 6
-            elseif(mapname == SpitSpray.kMapName or mapname == BabblerAbility.kMapName) then
+            elseif mapname == SpitSpray.kMapName or mapname == BabblerAbility.kMapName then
                 index = 7
-            // Blanks (with default damage indicator)
+            -- Blanks (with default damage indicator)
             else
                 index = 8
             end
@@ -829,9 +832,9 @@ function PlayerUI_GetCrosshairDamageIndicatorY()
     
 end
 
-/**
+--[[
  * Returns the player name under the crosshair for display (return "" to not display anything).
- */
+]]
 function PlayerUI_GetCrosshairText()
     
     local player = Client.GetLocalPlayer()
@@ -884,7 +887,7 @@ function PlayerUI_GetObjectiveInfo()
             
         end
         
-        // check command structures in range (enemy or friend) and return health % and name
+        -- check command structures in range (enemy or friend) and return health % and name
         local objectiveInfoEnts = EntityListToTable( Shared.GetEntitiesWithClassname("ObjectiveInfo") )
         local playersTeam = player:GetTeamNumber()
         
@@ -958,7 +961,7 @@ function PlayerUI_GetCrosshairBuildStatus()
 
 end
 
-// Returns the int color to draw the results of PlayerUI_GetCrosshairText() in. 
+-- Returns the int color to draw the results of PlayerUI_GetCrosshairText() in.
 function PlayerUI_GetCrosshairTextColor()
     local player = Client.GetLocalPlayer()
     if player then
@@ -967,20 +970,14 @@ function PlayerUI_GetCrosshairTextColor()
     return kFriendlyColor
 end
 
-/**
+--[[
  * Get the width of the crosshair image in the atlas, return 0 to hide
- */
+]]
 function PlayerUI_GetCrosshairWidth()
 
     local player = Client.GetLocalPlayer()
-    if player then
-
-        local weapon = player:GetActiveWeapon()
-    
-        //if (weapon ~= nil and player:isa("Marine") and not player:GetIsThirdPerson()) then
-    if (weapon ~= nil and not player:GetIsThirdPerson()) then
-            return 64
-        end
+    if player and player:GetActiveWeapon() and not player:GetIsThirdPerson() then
+        return 64
     end
     
     return 0
@@ -1028,37 +1025,31 @@ function PlayerUI_GetTooltipDataFromTechId(techId, hotkeyIndex)
 end
 
 
-/**
+--[[
  * Get the height of the crosshair image in the atlas, return 0 to hide
- */
+]]
 function PlayerUI_GetCrosshairHeight()
 
     local player = Client.GetLocalPlayer()
-    if(player ~= nil) then
-
-        local weapon = player:GetActiveWeapon()    
-        //if(weapon ~= nil and player:isa("Marine") and not player:GetIsThirdPerson()) then
-    if (weapon ~= nil and not player:GetIsThirdPerson()) then
-            return 64
-        end
-    
+    if player and player:GetActiveWeapon() and not player:GetIsThirdPerson() then
+        return 64
     end
     
     return 0
 
 end
 
-/**
+--[[
  * Returns nil or the commander name.
- */
+]]
 function PlayerUI_GetCommanderName()
 
     local player = Client.GetLocalPlayer()
-    local commanderName = nil
-    
+    local commanderName
+
     if player then
     
-        // we simply use the scoreboard ui here, since it holds all informations required client side
+        -- we simply use the scoreboard ui here, since it holds all informations required client side
         local commTable = ScoreboardUI_GetOrderedCommanderNames(player:GetTeamNumber())
         
         if table.count(commTable) > 0 then
@@ -1072,18 +1063,16 @@ function PlayerUI_GetCommanderName()
 end
 
 function PlayerUI_GetWeapon()
--- TODO : Return actual weapon name
+    -- TODO : Return actual weapon name
     local player = Client.GetLocalPlayer()
     if player then
         return player:GetActiveWeapon()
     end
-    return nil
-
 end
 
-/**
+--[[
  * Returns a list of techIds (weapons) the player is carrying.
- */
+]]
 function PlayerUI_GetInventoryTechIds()
 
     PROFILE("PlayerUI_GetInventoryTechIds")
@@ -1119,9 +1108,9 @@ function PlayerUI_IsCameraAnimated()
     
 end
 
-/**
+--[[
  * Returns the techId of the active weapon.
- */
+]]
 function PlayerUI_GetActiveWeaponTechId()
 
     PROFILE("PlayerUI_GetActiveWeaponTechId")
@@ -1148,13 +1137,7 @@ function PlayerUI_GetPlayerClassName()
 end
 
 function PlayerUI_GetPlayerClass()
-    
-    /*
-    local player = Client.GetLocalPlayer()
-    if player then
-        return player:GetClassName()
-    end
-    */
+
     return "Player"
 
 end
@@ -1264,9 +1247,9 @@ function PlayerUI_GetUnitStatusPercentage()
     
 end
 
-/**
+--[[
  * Returns the amount of team resources.
- */
+]]
 function PlayerUI_GetTeamResources()
 
     PROFILE("PlayerUI_GetTeamResources")
@@ -1280,7 +1263,7 @@ function PlayerUI_GetTeamResources()
     
 end
 
-// TODO: 
+--TODO:
 function PlayerUI_MarineAbilityIconsImage()
 end
 
@@ -1365,10 +1348,10 @@ function PlayerUI_GetNumCommandStructures()
     
 end
 
-/**
+--[[
  * Called by Flash to get the value to display for the personal resources on
  * the HUD.
- */
+]]
 function PlayerUI_GetPlayerResources()
 
     local player = Client.GetLocalPlayer()
@@ -1380,9 +1363,9 @@ function PlayerUI_GetPlayerResources()
     
 end
 
-/**
+--[[
  * Returns a float instead of integer to define a change of the value.
- */
+]]
 function PlayerUI_GetPersonalResources()
 
     PROFILE("PlayerUI_GetPersonalResources")
@@ -1402,7 +1385,7 @@ function PlayerUI_GetPlayerHealth()
     if player then
     
         local health = math.ceil(player:GetHealth())
-        // When alive, enforce at least 1 health for display.
+        -- When alive, enforce at least 1 health for display.
         if player:GetIsAlive() then
             health = math.max(1, health)
         end
@@ -1508,7 +1491,7 @@ function PlayerUI_GetIsBeaconing()
 
 end
 
-// For drawing health circles
+--For drawing health circles
 function GameUI_GetHealthStatus(entityId)
 
     local entity = Shared.GetEntity(entityId)
@@ -1528,10 +1511,12 @@ end
 
 function Player:GetName(forEntity)
 
-    // There are cases where the player name will be nil such as right before
-    // this Player is destroyed on the Client (due to the scoreboard removal message
-    // being received on the Client before the entity removed message). Play it safe.
-    
+    --[[
+    -- There are cases where the player name will be nil such as right before
+    -- this Player is destroyed on the Client (due to the scoreboard removal message
+    -- being received on the Client before the entity removed message). Play it safe.
+    ]]
+
     local clientIndex = self:GetClientIndex()
     
     if self.isHallucination then
@@ -1647,9 +1632,9 @@ function Player:UpdateCrossHairText(entity)
               self.crossHairText = entity:GetLocationName() .. " " .. self.crossHairText          
             end
             
-        end    
-                
-        // add build %
+        end
+        
+        --add build %
         if HasMixin(entity, "Construct") then
         
             if entity:GetIsBuilt() then
@@ -1689,10 +1674,10 @@ function Player:UpdateCrossHairText(entity)
 
 end
 
-// Updates visibilty, status and position of health circle when aiming at an entity with live mixin
+--Updates visibilty, status and position of health circle when aiming at an entity with live mixin
 function Player:UpdateCrossHairTarget()
  
-    //local entity = self:GetCrossHairTarget()
+    --local entity = self:GetCrossHairTarget()
     
     if GetShowHealthRings() == false then
         entity = nil
@@ -1713,12 +1698,12 @@ function Player:GetIsMinimapVisible()
     return self.minimapVisible or false
 end
 
-/**
+--[[
  * Use only client side (for bringing up menus for example). Key events, and their consequences, are not sent to the server.
- */
+]]
 function Player:SendKeyEvent(key, down)
 
-    // When exit hit, bring up menu.
+    --When exit hit, bring up menu.
     if down and key == InputKey.Escape and (Shared.GetTime() > (self.timeLastMenu + 0.3) and not ChatUI_EnteringChatMessage()) then
     
         ExitPressed()
@@ -1796,11 +1781,11 @@ function Player:SendKeyEvent(key, down)
     
 end
 
-// optionally return far plane distance, default value is 400
+--optionally return far plane distance, default value is 400
 function Player:GetCameraFarPlane()
 end
 
-// For debugging. Cheats only.
+--For debugging. Cheats only.
 function Player:ToggleTraceReticle()
     self.traceReticle = not self.traceReticle
 end
@@ -1830,7 +1815,7 @@ end
 
 function Player:UpdateScreenEffects(deltaTime)
 
-    // Show low health warning if below the threshold and not a spectator and not a commander.
+    -- Show low health warning if below the threshold and not a spectator and not a commander.
     local isSpectator = self:isa("Spectator") or self:isa("FilmSpectator")
     local isCommander = self:isa("Commander")
     local isEmbryo = self:isa("Embryo")
@@ -1838,12 +1823,12 @@ function Player:UpdateScreenEffects(deltaTime)
 
     screenEffects.spectatorTint:SetActive(not Client.GetIsControllingPlayer())
     
-    // If we're cloaked, change screen effect
+    -- If we're cloaked, change screen effect
     local cloakScreenEffectState = HasMixin(self, "Cloakable") and self:GetIsCloaked()    
     self:SetCloakShaderState(cloakScreenEffectState)    
     self:UpdateCloakSoundLoop(cloakScreenEffectState)
     
-    // Play disorient screen effect to show we're near a shade
+    -- Play disorient screen effect to show we're near a shades ink cloud
     self:UpdateDisorientFX()
     
 end
@@ -1852,7 +1837,7 @@ function Player:GetDrawWorld(isLocal)
     return not self:GetIsLocalPlayer() or self:GetIsThirdPerson() or ((self.countingDown and not Shared.GetCheatsEnabled()) and self:GetTeamNumber() ~= kNeutralTeamType)
 end
 
-// Only called when not running prediction
+-- Only called when not running prediction
 function Player:UpdateClientEffects(deltaTime, isLocal)
 
     if isLocal then
@@ -1894,7 +1879,7 @@ function PlayerUI_GetCommanderPingInfo(onMiniMap)
     local position = Vector(0,0,0)
     local distance = 0
     local player = Client.GetLocalPlayer()
-    local locationName = nil
+    local locationName
     
     if player then
     
@@ -1944,14 +1929,14 @@ function Player:AddAlert(techId, worldX, worldZ, entityId, entityTechId)
     assert(worldX)
     assert(worldZ)
     
-    // Create alert blip
+    -- Create alert blip
     local alertType = LookupTechData(techId, kTechDataAlertType, kAlertType.Info)
 
     table.insert(self.alertBlips, worldX)
     table.insert(self.alertBlips, worldZ)
     table.insert(self.alertBlips, alertType - 1)
     
-    // Create alert message => {text, icon x offset, icon y offset, -1, entity id}
+    -- Create alert message => {text, icon x offset, icon y offset, -1, entity id}
     local alertText = GetDisplayNameForAlert(techId, "")
     
     local xOffset, yOffset = GetMaterialXYOffset(entityTechId, GetIsMarineUnit(self))
@@ -2003,8 +1988,10 @@ function UpdateMovementMode()
 
 end
 
-// Called on the Client only, after OnInitialized(), for a ScriptActor that is controlled by the local player.
-// Ie, the local player is controlling this Marine and wants to intialize local UI, flash, etc.
+--[[
+-- Called on the Client only, after OnInitialized(), for a ScriptActor that is controlled by the local player.
+-- Ie, the local player is controlling this Marine and wants to intialize local UI, flash, etc.
+ ]]
 function Player:OnInitLocalClient()
 
     self.minimapVisible = false
@@ -2014,30 +2001,30 @@ function Player:OnInitLocalClient()
     
     DisableScreenEffects(self)
     
-    // Re-enable skybox rendering after commanding
+    -- Re-enable skybox rendering after commanding
     SetSkyboxDrawState(true)
     
-    // Show props normally
+    -- Show props normally
     SetCommanderPropState(false)
     
-    // Assume not in overhead mode.
+    -- Assume not in overhead mode.
     SetLocalPlayerIsOverhead(false)
     
-    // Turn on sound occlusion for non-commanders
+    -- Turn on sound occlusion for non-commanders
     Client.SetSoundGeometryEnabled(true)
     
     self.traceReticle = false
     
     self.damageIndicators = { }
     
-    // Set commander geometry visible
+    -- Set commander geometry visible
     Client.SetGroupIsVisible(kCommanderInvisibleGroupName, true)
     
-    //Client.SetEnableFog(true)
+    --Client.SetEnableFog(true)
     self.crossHairText = nil
     self.crossHairTextColor = kFriendlyColor
     
-    // reset mouse sens in case it hase been forgotten somewhere else
+    -- reset mouse sens in case it hase been forgotten somewhere else
     Client.SetMouseSensitivityScalar(1)
     
 end
@@ -2049,11 +2036,6 @@ function Player:OnVortexEndClient()
 end
 
 function Player:SetCloakShaderState(state)
-/*
-    if self:GetIsLocalPlayer() and screenEffects.cloaked then
-        screenEffects.cloaked:SetActive(state)
-    end
-*/ 
 end
 
 function Player:UpdateDisorientSoundLoop(state)
@@ -2061,7 +2043,7 @@ end
 
 function Player:UpdateCloakSoundLoop(state)
 
-    // Start or stop sound effects
+    -- Start or stop sound effects
     if state ~= self.playerCloakSoundLoopPlaying then
     
         self:TriggerEffects("cloak_loop", {active = state})
@@ -2094,11 +2076,11 @@ function Player:UpdateDisorientFX()
     
 end
 
-/**
+--[[
  * Clear screen effects on the player immediately upon being killed so
  * they don't have them enabled while spectating. This is required now
  * that the dead player entity exists alongside the new spectator player.
- */
+]]
 function Player:OnKillClient()
 
     DisableScreenEffects(self)
@@ -2157,15 +2139,15 @@ end
 
 function Player:DebugVisibility()
 
-    // For each visible entity on other team
+    -- For each visible entity on other team
     local entities = GetEntitiesMatchAnyTypesForTeam({"Player", "ScriptActor"}, GetEnemyTeamNumber(self:GetTeamNumber()))
     
     for entIndex, entity in ipairs(entities) do
     
-        // If so, remember that it's seen and break
+        -- If so, remember that it's seen and break
         local seen = GetCanSeeEntity(self, entity)            
         
-        // Draw red or green depending
+        -- Draw red or green depending
         DebugLine(self:GetEyePos(), entity:GetOrigin(), 1, ConditionalValue(seen, 0, 1), ConditionalValue(seen, 1, 0), 0, 1)
         
     end
@@ -2198,7 +2180,7 @@ function Player:CloseMenu()
         
         self:TriggerEffects("marine_buy_menu_close")
         
-        // Quick work-around to not fire weapon when closing menu.
+        -- Quick work-around to not fire weapon when closing menu.
         self.timeClosedMenu = Shared.GetTime()
         
         return true
@@ -2220,17 +2202,19 @@ end
 
 function Player:GetWeaponAmmo()
 
-    // We could do some checks to make sure we have a non-nil ClipWeapon,
-    // but this should never be called unless we do.
+    -- We could do some checks to make sure we have a non-nil ClipWeapon,
+    -- but this should never be called unless we do.
     local weapon = self:GetActiveWeapon()
     
-    if(weapon ~= nil and weapon:isa("ClipWeapon")) then
-        return weapon:GetAmmo()
-    elseif (weapon ~= nil and weapon:isa("Mines")) then
-        return weapon:GetMinesLeft()
-    elseif (weapon ~= nil and weapon:isa("HandGrenades")) then
-        return weapon:GetNadesLeft()
-    end
+	if weapon then
+	    if weapon:isa("ClipWeapon") then
+	        return weapon:GetAmmo()
+	    elseif weapon:isa("Mines") then
+	        return weapon:GetMinesLeft()
+	    elseif weapon:isa("HandGrenades") then
+	        return weapon:GetNadesLeft()
+	    end
+	end
     
     return 0
     
@@ -2238,11 +2222,11 @@ end
 
 function Player:GetWeaponClip()
 
-    // We could do some checks to make sure we have a non-nil ClipWeapon,
-    // but this should never be called unless we do.
+    -- We could do some checks to make sure we have a non-nil ClipWeapon,
+    -- but this should never be called unless we do.
     local weapon = self:GetActiveWeapon()
     
-    if weapon ~= nil then
+    if weapon then
         if weapon:isa("ClipWeapon") then
             return weapon:GetClip()
         elseif weapon:isa("Mines") or weapon:isa("HandGrenades") then
@@ -2256,11 +2240,11 @@ end
 
 function Player:GetWeaponClipSize()
 
-    // We could do some checks to make sure we have a non-nil ClipWeapon,
-    // but this should never be called unless we do.
+    -- We could do some checks to make sure we have a non-nil ClipWeapon,
+    -- but this should never be called unless we do.
     local weapon = self:GetActiveWeapon()
     
-    if weapon ~= nil then
+    if weapon then
         if weapon:isa("ClipWeapon") then
             return weapon:GetClipSize()
         elseif weapon:isa("Mines") then
@@ -2280,14 +2264,16 @@ function Player:GetAuxWeaponClip()
     // but this should never be called unless we do.
     local weapon = self:GetActiveWeapon()
     
-    if(weapon ~= nil and weapon:isa("ClipWeapon")) then
-        return weapon:GetAuxClip()
-    elseif (weapon ~= nil and weapon:isa("Mines")) then
-        return weapon:GetMinesLeft()
-    elseif (weapon ~= nil and weapon:isa("HandGrenades")) then
-        return weapon:GetNadesLeft()
+	if weapon then
+	    if weapon:isa("ClipWeapon") then
+	        return weapon:GetAuxClip()
+	    elseif weapon:isa("Mines") then
+	        return weapon:GetMinesLeft()
+	    elseif weapon:isa("HandGrenades") then
+	        return weapon:GetNadesLeft()
+	    end
     end
-    
+
     return 0
     
 end   
@@ -2363,14 +2349,14 @@ function Player:GetCameraViewCoordsOverride(cameraCoords)
         local activeWeapon = self:GetActiveWeapon()
         local animateCamera = activeWeapon and (not activeWeapon.GetPreventCameraAnimation or not activeWeapon:GetPreventCameraAnimation(self))
     
-        // clamp the yaw value to prevent sudden camera flip    
+        -- clamp the yaw value to prevent sudden camera flip
         local cameraAngles = Angles()
         cameraAngles:BuildFromCoords(cameraCoords)
         cameraAngles.pitch = Clamp(cameraAngles.pitch, -kMaxPitch, kMaxPitch)
 
         cameraCoords = cameraAngles:GetCoords(cameraCoords.origin)
 
-        // Add in camera movement from view model animation
+        -- Add in camera movement from view model animation
         if self:GetCameraDistance() == 0 then    
         
             local viewModel = self:GetViewModelEntity()
@@ -2379,8 +2365,8 @@ function Player:GetCameraViewCoordsOverride(cameraCoords)
                 local success, viewModelCameraCoords = viewModel:GetCameraCoords()
                 if success then
                 
-                    // If the view model coords has scaling in it that can affect
-                    // our later calculations, so remove it.
+                    -- If the view model coords has scaling in it that can affect
+                    -- our later calculations, so remove it.
                     viewModelCameraCoords.xAxis:Normalize()
                     viewModelCameraCoords.yAxis:Normalize()
                     viewModelCameraCoords.zAxis:Normalize()
@@ -2393,7 +2379,7 @@ function Player:GetCameraViewCoordsOverride(cameraCoords)
         
         end
 
-        // Allow weapon or ability to override camera (needed for Blink)
+        -- Allow weapon or ability to override camera (needed for Blink)
         if activeWeapon then
         
             local override, newCoords = activeWeapon:GetCameraCoords()
@@ -2404,14 +2390,14 @@ function Player:GetCameraViewCoordsOverride(cameraCoords)
             
         end
 
-        // Add in camera shake effect if any
+        -- Add in camera shake effect if any
         if(Shared.GetTime() < self.cameraShakeTime) then
         
-            // Camera shake knocks view up and down a bit
+            -- Camera shake knocks view up and down a bit
             local shakeAmount = math.sin( Shared.GetTime() * self.cameraShakeSpeed * 2 * math.pi ) * self.cameraShakeAmount
             local origin = Vector(cameraCoords.origin)
             
-            //cameraCoords.origin = cameraCoords.origin + self.shakeVec*shakeAmount
+            --cameraCoords.origin = cameraCoords.origin + self.shakeVec*shakeAmount
             local yaw = GetYawFromVector(cameraCoords.zAxis)
             local pitch = GetPitchFromVector(cameraCoords.zAxis) + shakeAmount
             
@@ -2426,7 +2412,7 @@ function Player:GetCameraViewCoordsOverride(cameraCoords)
 
     local resultingAngles = Angles()
     resultingAngles:BuildFromCoords(cameraCoords)
-    /*
+    --[[
     local fovScale = 1
     
     if self:GetNumModelCameras() > 0 then
@@ -2436,7 +2422,8 @@ function Player:GetCameraViewCoordsOverride(cameraCoords)
         fovScale = 65 / self:GetFov()
     end
 
-    self.pitchDiff = GetAnglesDifference(resultingAngles.pitch, initialAngles.pitch) * fovScale*/
+    self.pitchDiff = GetAnglesDifference(resultingAngles.pitch, initialAngles.pitch) * fovScale
+    ]]
   
     return cameraCoords
     
@@ -2464,9 +2451,9 @@ end
 
 function Player:GetCountDownCamerStartCoords()
 
-    local coords = nil
+    local coords
     
-    // find the closest command structure and a random start position, look at it at start
+    -- find the closest command structure and a random start position, look at it at start
     local commandStructures = GetEntitiesForTeam("CommandStructure", self:GetTeamNumber())
     
     if #commandStructures > 0 then
@@ -2499,6 +2486,8 @@ function Player:OnCountDown()
         end
         
     end
+	
+	Client.WindowNeedsAttention() -- the game is starting!
 
 end
 
@@ -2511,9 +2500,7 @@ function Player:OnCountDownEnd()
         
     end
     
-    if gRoundStartMusic then
-    	Client.PlayMusic(gRoundStartMusic)
-	end
+    Client.PlayMusic(gRoundStartMusic or "sound/NS2.fev/round_start")
     
 end
 
@@ -2536,14 +2523,14 @@ function Player:GetCameraViewCoordsCountdown(cameraCoords)
             zAxisDiff.y = 0
             local animationFraction = self:GetCountDownFraction()
             
-            //local viewDirection = self.countDownStartCameraCoords.zAxis + zAxisDiff * animationFraction
+            --local viewDirection = self.countDownStartCameraCoords.zAxis + zAxisDiff * animationFraction
             local viewDirection = self.countDownStartCameraCoords.zAxis + zAxisDiff * ( math.cos((animationFraction * (math.pi / 2)) + math.pi ) + 1)
 
             viewDirection:Normalize()
             
             cameraCoords = Coords.GetLookIn(self.countDownStartCameraCoords.origin + originDiff * animationFraction, viewDirection)
             
-            // correct the yAxis to prevent camera flipping
+            -- correct the yAxis to prevent camera flipping
             if cameraCoords.yAxis:DotProduct(Vector(0, 1, 0)) < 0 then
                 cameraCoords.yAxis = cameraCoords.zAxis:CrossProduct(-cameraCoords.xAxis)
                 cameraCoords.xAxis = viewDirection:CrossProduct(cameraCoords.yAxis)
@@ -2559,16 +2546,16 @@ end
 
 function Player:PlayerCameraCoordsAdjustment(cameraCoords)
 
-    // No adjustment by default. This function can be overridden to modify the camera
-    // coordinates right before rendering.
+    -- No adjustment by default. This function can be overridden to modify the camera
+    -- coordinates right before rendering.
     return cameraCoords
 
 end
 
-// Ignore camera shaking when done quickly in a row
+-- Ignore camera shaking when done quickly in a row
 function Player:SetCameraShake(amount, speed, time)
 
-    // Overrides existing shake if it has elapsed or if new shake amount is larger
+    -- Overrides existing shake if it has elapsed or if new shake amount is larger
     local success = false
     
     local currentTime = Shared.GetTime()
@@ -2579,7 +2566,7 @@ function Player:SetCameraShake(amount, speed, time)
         
             self.cameraShakeAmount = amount
 
-            // "bumps" per second
+            -- "bumps" per second
             self.cameraShakeSpeed = speed 
             
             self.cameraShakeTime = currentTime + time
@@ -2628,7 +2615,7 @@ function PlayerUI_GetIsConstructing()
     
 end
 
-// fetch the oldest notification
+-- fetch the oldest notification
 function PlayerUI_GetRecentNotification()
 
     if gDebugNotifications then
@@ -2637,7 +2624,7 @@ function PlayerUI_GetRecentNotification()
         end
     end
 
-    local notification = nil
+    local notification
     
     local player = Client.GetLocalPlayer()
     if player and player.GetAndClearNotification then
@@ -2710,7 +2697,7 @@ function PlayerUI_GetHasMotionTracking()
     
 end
 
-// returns 0 - 3
+-- returns 0 - 3
 function PlayerUI_GetArmorLevel(researched)
     local armorLevel = 0
     local player = Client.GetLocalPlayer()
@@ -2818,14 +2805,15 @@ function PlayerUI_GetHasWelder()
 
 end
 
-// Draw the current location on the HUD ("Marine Start", "Processing", etc.)
+-- Draw the current location on the HUD ("Marine Start", "Processing", etc.)
+
 function PlayerUI_GetLocationName()
 
     local locationName = ""
 
     local player = Client.GetLocalPlayer()
 
-    playerLocation = GetLocationForPoint(player:GetOrigin())
+    local playerLocation = GetLocationForPoint(player:GetOrigin())
 
     if player ~= nil and player:GetIsPlaying() then
 
@@ -3127,9 +3115,9 @@ function PlayerUI_GetTeamColor(teamNumber)
     
 end
 
-/**
+--[[
  * Returns all locations as a name and origin.
- */
+]]
 function PlayerUI_GetLocationData()
 
     local returnData = { }
@@ -3143,9 +3131,9 @@ function PlayerUI_GetLocationData()
 
 end
 
-/**
+--[[
  * Converts world coordinates into normalized map coordinates.
- */
+]]
 function PlayerUI_GetMapXY(worldX, worldZ)
 
     local player = Client.GetLocalPlayer()
@@ -3236,12 +3224,12 @@ function PlayerUI_GetSensorBlipInfo()
     
 end
 
-/**
+--[[
  * Returns a linear array of static blip data
  * X position, Y position, rotation, X texture offset, Y texture offset, kMinimapBlipType, kMinimapBlipTeam
  *
  * Eg { 0.5, 0.5, 1.32, 0, 0, 3, 1 }
- */
+]]
 local kMinimapBlipTeamAlien = kMinimapBlipTeam.Alien
 local kMinimapBlipTeamMarine = kMinimapBlipTeam.Marine
 local kMinimapBlipTeamFriendAlien = kMinimapBlipTeam.FriendAlien
@@ -3273,7 +3261,7 @@ function PlayerUI_GetStaticMapBlips()
         local GetMapBlipRotation = MapBlip.GetRotation
         local GetMapBlipType = MapBlip.GetType
         local GetMapBlipIsInCombat = MapBlip.GetIsInCombat
-		local GetMapBlipIsParasited = MapBlip.GetIsParasited
+        local GetMapBlipIsParasited = MapBlip.GetIsParasited
         local GetIsSteamFriend = Client.GetIsSteamFriend
         local ClientIndexToSteamId = GetSteamIdForClientIndex
         local GetIsMapBlipActive = MapBlip.GetIsActive
@@ -3286,7 +3274,7 @@ function PlayerUI_GetStaticMapBlips()
                 local blipTeam = kMinimapBlipTeamNeutral
                 local blipTeamNumber = GetMapBlipTeamNumber(blip)
                 local isSteamFriend = false
-				local clientIndex = 0
+                local clientIndex = 0
                 
                 if blip.clientIndex and blip.clientIndex > 0 and blipTeamNumber ~= GetEnemyTeamNumber(playerTeam) then
 
@@ -3295,7 +3283,7 @@ function PlayerUI_GetStaticMapBlips()
                         isSteamFriend = GetIsSteamFriend(steamId)
                     end
                     
-					clientIndex = blip.clientIndex
+                    clientIndex = blip.clientIndex
 
                 end
                 
@@ -3449,7 +3437,7 @@ function PlayerUI_GetUnitCount(name)
 
 end
 
-/**
+--[[
  * Damage indicators. Returns a array of damage indicators which are used to draw red arrows pointing towards
  * recent damage. Each damage indicator pair will consist of an alpha and a direction. The alpha is 0-1 and the
  * direction in radians is the angle at which to display it. 0 should face forward (top of the screen), pi 
@@ -3459,7 +3447,7 @@ end
  *  {alpha1, directionRadians1, alpha2, directonRadius2}
  *
  * It returns an empty table if the player has taken no damage recently. 
- */
+]]
 function PlayerUI_GetDamageIndicators()
 
     local drawIndicators = {}
@@ -3495,8 +3483,8 @@ function PlayerUI_GetDamageIndicators()
     
 end
 
-// Displays an image around the crosshair when the local player has given damage to something else.
-// Returns true if the indicator should be displayed and the time that has passed as a percentage.
+-- Displays an image around the crosshair when the local player has given damage to something else.
+-- Returns true if the indicator should be displayed and the time that has passed as a percentage.
 function PlayerUI_GetShowGiveDamageIndicator()
 
     local player = Client.GetLocalPlayer()
@@ -3688,7 +3676,7 @@ function Player:AddTakeDamageIndicator(damagePosition)
     
 end
 
-// child classes can override this
+-- child classes can override this
 function Player:GetShowDamageIndicator()
 
     local weapon = self:GetActiveWeapon()
@@ -3699,7 +3687,7 @@ function Player:GetShowDamageIndicator()
     
 end
 
-// child classes should override this
+-- child classes should override this
 function Player:OnGiveDamage()
 end
 
@@ -3707,7 +3695,7 @@ function Player:UpdateDamageIndicators()
 
     local indicesToRemove = {}
     
-    // Expire old damage indicators
+    -- Expire old damage indicators
     for index, indicatorTriple in ipairs(self.damageIndicators) do
     
         if Shared.GetTime() > (indicatorTriple[3] + kDamageIndicatorDrawTime) then
@@ -3722,11 +3710,11 @@ function Player:UpdateDamageIndicators()
         table.remove(self.damageIndicators, index)
     end
     
-    // update damage given
+    -- update damage given
     if self.giveDamageTimeClientCheck ~= self.giveDamageTime then
     
         self.giveDamageTimeClientCheck = self.giveDamageTime
-        // Must factor in ping time as this value is delayed.
+        -- Must factor in ping time as this value is delayed.
         self.giveDamageTimeClient = self.giveDamageTime + Client.GetPing()
         self.showDamage = self:GetShowDamageIndicator()
         if self.showDamage then
@@ -3751,7 +3739,7 @@ function Player:GetDamageIndicatorTime()
     
 end
 
-// Set after hotgroup updated over the network
+-- Set after hotgroup updated over the network
 function Player:SetHotgroup(number, entityList)
 
     Print("Player:SetHotgroup")
@@ -3786,16 +3774,16 @@ function Player:OnUpdatePlayer(deltaTime)
     
 end
 
-// The client is authoritative over our rookie state. It could be changed because
-// we've been playing long enough, or because the user changed it in their options.
+-- The client is authoritative over our rookie state. It could be changed because
+-- we've been playing long enough, or because the user changed it in their options.
 function Player:UpdateRookieMode()
 
-    // Only update for local player
+    -- Only update for local player
     if self:GetIsLocalPlayer() then
 
         local time = Client.GetTime()
         
-        // Doesn't need to be updated too often, and don't want to resend message multiple times while waiting for update
+        -- Doesn't need to be updated too often, and don't want to resend message multiple times while waiting for update
         if self.timeLastRookieModeUpdate == nil or (time > self.timeLastRookieModeUpdate + kRookieNetworkCheckInterval) then
         
             local name = self:GetName()
@@ -3806,7 +3794,7 @@ function Player:UpdateRookieMode()
 
                 Client.SendNetworkMessage("SetRookieMode", BuildRookieMessage(optionsRookieMode), true)
                 
-                // Set scoreboard for instant change
+                -- Set scoreboard for instant change
                 Scoreboard_SetRookieMode(self:GetName(), optionsRookieMode)
                 
             end
@@ -3829,13 +3817,13 @@ function Player:UpdateCommunicationStatus()
         
             local newCommStatus = kPlayerCommunicationStatus.None
 
-            // If voice comm being used
+            -- If voice comm being used
             if Client.IsVoiceRecordingActive() then
                 newCommStatus = kPlayerCommunicationStatus.Voice
-            // If we're typing
+            -- If we're typing
             elseif ChatUI_EnteringChatMessage() then
                 newCommStatus = kPlayerCommunicationStatus.Typing
-            // In menu
+            -- In menu
             elseif MainMenu_GetIsOpened() then
                 newCommStatus = kPlayerCommunicationStatus.Menu
             end
@@ -3898,19 +3886,19 @@ function Player:GetCustomSelectionText()
             
 end
 
-// Set light shake amount due to nearby roaming Onos
+-- Set light shake amount due to nearby roaming Onos
 function Player:SetLightShakeAmount(amount, duration, scalar)
 
     if scalar == nil then
         scalar = 1
     end
     
-    // So lights start moving in time with footsteps
+    -- So lights start moving in time with footsteps
     self:ResetShakingLights()
 
     self.lightShakeAmount = Clamp(amount, 0, 1)
     
-    // Save off original amount so we can have it fall off nicely
+    -- Save off original amount so we can have it fall off nicely
     self.savedLightShakeAmount = self.lightShakeAmount
     
     self.lightShakeEndTime = Shared.GetTime() + duration
@@ -3937,6 +3925,11 @@ local function GetFirstPersonHitEffectName(doer)
 
 end
 
+--[[
+ * This is called from BaseModelMixin. This will force all player animations to process so we
+ * get animation tags on the Client for other player models. These tags are needed to trigger
+ * footstep sound effects.
+]]
 /*
 function Player:GetClientSideAnimationEnabled()
     return true

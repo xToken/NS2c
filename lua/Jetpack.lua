@@ -99,14 +99,28 @@ function Jetpack:_GetNearbyRecipient()
 end
 
 if Server then
+    
+    function Jetpack:OnUseDeferred()
+        
+        local player = self.useRecipient 
+        self.useRecipient = nil
+        
+        if player and not player:GetIsDestroyed() and self:GetIsValidRecipient(player) then
+            
+            player:GiveJetpack()
+            self:TriggerEffects("pickup")
+            DestroyEntity(self)
+            
+        end
+    
+    end
 
     function Jetpack:OnUse(player, elapsedTime, useSuccessTable)
     
-        if self:GetIsValidRecipient(player) then
-        
-            player:GiveJetpack()
-            player:TriggerEffects("pickup")
-            DestroyEntity(self)
+        if self:GetIsValidRecipient( player ) and ( not self.useRecipient or self.useRecipient:GetIsDestroyed() ) then
+            
+            self.useRecipient = player
+            self:AddTimedCallback( self.OnUseDeferred, 0 )
             
         end
         

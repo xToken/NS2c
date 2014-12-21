@@ -82,7 +82,13 @@ function Metabolize:OnHolster(player)
 end
 
 local function PerformMetabolize(self, player)
-    player:AddHealth(kMetabolizeHealthGain, false, (player:GetMaxHealth() - player:GetHealth() ~= 0))
+    local healed = player:AddHealth(kMetabolizeHealthGain, false, (player:GetMaxHealth() - player:GetHealth() ~= 0))
+	if Client and healed > 0 then
+		local GUIRegenerationFeedback = ClientUI.GetScript("GUIRegenerationFeedback")
+		GUIRegenerationFeedback:TriggerRegenEffect()
+		local cinematic = Client.CreateCinematic(RenderScene.Zone_ViewModel)
+		cinematic:SetCinematic(kRegenerationViewCinematic)
+	end
     player:AddEnergy(kMetabolizeEnergyGain)    
 end
 

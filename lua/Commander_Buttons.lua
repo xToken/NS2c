@@ -12,11 +12,8 @@
 Script.Load("lua/Commander_Hotkeys.lua")
 Script.Load("lua/TechTreeButtons.lua")
 
-// Maps tech buttons to keys in "grid" system
+--Maps tech buttons to keys in "grid" system
 
-/**
- * Called by Flash when the user presses the "Logout" button.
- */
 function CommanderUI_Logout()
 
     local commanderPlayer = Client.GetLocalPlayer()
@@ -56,7 +53,7 @@ function CommanderUI_MenuButtonHeight()
     return 80
 end
 
-/*
+--[[
     Return linear array consisting of:    
     tooltipText (String)
     tooltipHotkey (String)
@@ -65,7 +62,7 @@ end
     tooltipEnables (String) - optional, specify "" or nil if not used
     tooltipInfo (String)
     tooltipType (Number) - 0 = team resources, 1 = individual resources, 2 = energy
-*/
+]]
 function CommanderUI_MenuButtonTooltip(index)
 
 local grid_1 = Client.GetOptionString("input/Grid1", "Q")
@@ -175,14 +172,14 @@ kGridHotkeys =
     
 end
 
-/** 
- * Returns the current status of the button. 
- * 0 = button or tech not found, or currently researching, don't display
- * 1 = available and ready, display as pressable
- * 2 = available but not currently, display in red
- * 3 = not available, display grayed out (also for invalid actions, ie Recycle)
- * 4 = normal color but not clickable
- */
+--[[
+    Returns the current status of the button. 
+    0 = button or tech not found, or currently researching, don't display
+    1 = available and ready, display as pressable
+    2 = available but not currently, display in red
+    3 = not available, display grayed out (also for invalid actions, ie Recycle)
+    4 = normal color but not clickable
+]]
 function CommanderUI_MenuButtonStatus(index)
 
     local player = Client.GetLocalPlayer()
@@ -282,7 +279,7 @@ local function GetIsMenu(techId)
     if techTree then
     
         local techNode = techTree:GetTechNode(techId)
-        return techNode ~= nil and techNode:GetIsMenu()
+        return techNode and techNode:GetIsMenu()
         
     end
     
@@ -352,9 +349,11 @@ function CommanderUI_MenuButtonYOffset(index)
     
 end
 
-// Look at current selection and our current menu (self.menuTechId) and build a list of tech
-// buttons that represents valid orders for the Commander. Store in self.menuTechButtons.
-// Allow nothing to be selected too.
+--[[
+    Look at current selection and our current menu (self.menuTechId) and build a list of tech
+    buttons that represents valid orders for the Commander. Store in self.menuTechButtons.
+    Allow nothing to be selected too.
+]]
 local function UpdateSharedTechButtons(self)
 
     self.menuTechButtons = { }
@@ -382,9 +381,10 @@ local function UpdateSharedTechButtons(self)
         
         end
         
-        // Now loop through tech button lists and use only the tech that doesn't conflict. These will generally be the same
-        // tech id, but could also be a techid that not all selected units have, so long as the others don't specify a button
-        // in the same position (ie, it is kTechId.None).
+        --[[ Now loop through tech button lists and use only the tech that doesn't conflict. These will generally be the same
+            tech id, but could also be a techid that not all selected units have, so long as the others don't specify a button
+            in the same position (ie, it is kTechId.None).
+        ]]
         local techButtonIndex = 1
         for techButtonIndex = 1, maxTechButtons do
 
@@ -545,7 +545,7 @@ end
 
 function Commander:UpdateMenu()
 
-    if self.menuTechId == nil then
+    if not self.menuTechId then
         self.menuTechId = kTechId.BuildMenu
     end
     

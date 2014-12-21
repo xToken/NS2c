@@ -11,7 +11,6 @@
 
 //NS2c
 //Added movementmode option
-Script.Load("lua/BadgeMixin.lua")   // really should be renamed
 
 function OnCommandCommMarqueeSelect(client, message)
     
@@ -83,8 +82,11 @@ function OnCommandGorgeBuildStructure(client, message)
     local origin, direction, structureIndex, lastClickedPosition = ParseGorgeBuildMessage(message)
     
     local dropStructureAbility = player:GetWeapon(DropStructureAbility.kMapName)
-    // The player may not have an active weapon if the message is sent
-    // after the player has gone back to the ready room for example.
+
+    --[[
+        The player may not have an active weapon if the message is sent
+        after the player has gone back to the ready room for example.
+    ]]
     if dropStructureAbility then
         dropStructureAbility:OnDropStructure(origin, direction, structureIndex, lastClickedPosition)
     end
@@ -132,7 +134,7 @@ local kMaxChatsInBucket = 5
 local function CheckChatAllowed(client)
 
     client.chatTokenBucket = client.chatTokenBucket or CreateTokenBucket(kChatsPerSecondAdded, kMaxChatsInBucket)
-    // Returns true if there was a token to remove.
+    -- Returns true if there was a token to remove.
     return client.chatTokenBucket:RemoveTokens(1)
     
 end
@@ -167,7 +169,7 @@ local function OnChatReceived(client, message)
         return
     end
     
-    chatMessage = string.UTF8Sub(message.message, 1, kMaxChatLength)
+    local chatMessage = string.UTF8Sub(message.message, 1, kMaxChatLength)
     if chatMessage and string.len(chatMessage) > 0 then
     
         local playerName, playerLocationId, playerTeamNumber, playerTeamType = GetChatPlayerData(client)
@@ -177,7 +179,7 @@ local function OnChatReceived(client, message)
             if message.teamOnly then
             
                 local players = GetEntitiesForTeam("Player", playerTeamNumber)
-                for index, player in ipairs(players) do
+                for _, player in ipairs(players) do
                     Server.SendNetworkMessage(player, "Chat", BuildChatMessage(true, playerName, playerLocationId, playerTeamNumber, playerTeamType, chatMessage), true)
                 end
                 
@@ -187,14 +189,14 @@ local function OnChatReceived(client, message)
             
             Shared.Message("Chat " .. (message.teamOnly and "Team - " or "All - ") .. playerName .. ": " .. chatMessage)
             
-            // We save a history of chat messages received on the Server.
+            -- We save a history of chat messages received on the Server.
             Server.AddChatToHistory(chatMessage, playerName, client:GetUserId(), playerTeamNumber, message.teamOnly)
             
         end
         
     end
     
-    // handle tournament mode commands
+    -- handle tournament mode commands
     if client then  
   
         local player = client:GetControllingPlayer()
@@ -265,15 +267,13 @@ local function OnMessageBuy(client, buyMessage)
     
 end
 
-// function made public so bots can emit voice msgs
+-- function made public so bots can emit voice msgs
 function CreateVoiceMessage(player, voiceId)
 
-    //----------------------------------------
-    //  Respect special reinforced reward VO
-    //----------------------------------------
-    local tier = kReinforcedTierData[ player.reinforcedTierNum ]
-    if tier ~= nil and tier.voiceOverMapping ~= nil and tier.voiceOverMapping[voiceId] ~= nil then
-        voiceId = tier.voiceOverMapping[voiceId]
+    --  Respect special reinforced reward VO
+    local client = player:GetClient()
+    if voiceId == kVoiceId.MarineTaunt and GetHasDLC( kShadowProductId, client ) then
+        voiceId = kVoiceId.MarineTauntExclusive
     end
 
     local soundData = GetVoiceSoundData(voiceId)
@@ -289,8 +289,8 @@ function CreateVoiceMessage(player, voiceId)
             soundName = soundData.Function(player) or soundName    
         end
         
-        // the request sounds always play for everyone since its something the player is doing actively
-        // the auto voice overs are triggered somewhere else server side and play for team only
+        -- the request sounds always play for everyone since its something the player is doing actively
+        -- the auto voice overs are triggered somewhere else server side and play for team only
         if soundName then
             StartSoundEffectOnEntity(soundName, player)
         end
@@ -342,7 +342,7 @@ local function OnSetNameMessage(client, message)
         
         name = TrimName(name)
         
-        // Treat "NsPlayer" as special.
+        -- Treat "NsPlayer" as special.
         if name ~= player:GetName() and name ~= kDefaultPlayerName and string.IsValidNickname(name) then
         
             local prevName = player:GetName()
@@ -366,7 +366,7 @@ local function onSpectatePlayer(client, message)
     local spectatorPlayer = client:GetControllingPlayer()
     if spectatorPlayer then
 
-        // This only works for players on the spectator team.
+        -- This only works for players on the spectator team.
         if spectatorPlayer:GetTeamNumber() == kSpectatorIndex then
             client:GetControllingPlayer():SelectEntity(message.entityId)
         end
@@ -381,7 +381,7 @@ local function OnSwitchFromFirstPersonSpectate(client, message)
     local spectatorPlayer = client:GetControllingPlayer()
     if client:GetSpectatingPlayer() and spectatorPlayer then
     
-        // This only works for players on the spectator team.
+        -- This only works for players on the spectator team.
         if spectatorPlayer:GetTeamNumber() == kSpectatorIndex then
             client:GetControllingPlayer():SetSpectatorMode(message.mode)
         end

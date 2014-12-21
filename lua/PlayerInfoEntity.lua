@@ -1,12 +1,14 @@
-// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\PlayerInfoEntity.lua    
-//    
-//    Created by:   Andreas Urwalek(andi@unknownworlds.com)    
-//
-//    Stores information of connected players.
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================  
+--[[
+    ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+
+    lua\PlayerInfoEntity.lua
+
+    Created by:   Andreas Urwalek(andi@unknownworlds.com)
+
+     Stores information of connected players.
+
+     ========= For more information, visit us at http://www.unknownworlds.com =====================
+]]
 
 local clientIndexToSteamId = {}
 local kPlayerInfoUpdateRate = 0.5
@@ -21,7 +23,7 @@ PlayerInfoEntity.kMapName = "playerinfo"
 
 local networkVars =
 {
-    // those are not necessary for this entity
+    -- those are not necessary for this entity
     m_angles = "angles (by 10 [], by 10 [], by 10 [])",
     m_origin = "position (by 2000 [], by 2000 [], by 2000 [])",
 
@@ -73,7 +75,7 @@ if Client then
     
 end
 
-// Insight upgrades bitmask table
+--Insight upgrades bitmask table
 local techUpgradesTable = { kTechId.Jetpack, kTechId.HeavyArmor, kTechId.Welder, kTechId.HandGrenades, kTechId.Mines, 
     kTechId.Carapace, kTechId.Regeneration, kTechId.Redemption, 
     kTechId.Aura, kTechId.Silence, kTechId.Ghost,
@@ -117,7 +119,7 @@ function PlayerInfoEntity:UpdateScore()
 
             self.reinforcedTierNum = scorePlayer.reinforcedTierNum
             
-            // Always reset this value so we don't have to check for previous tech to remove it, etc
+            --Always reset this value so we don't have to check for previous tech to remove it, etc
             self.currentTech = 0
             
             if scorePlayer:isa("Alien") then
@@ -139,7 +141,7 @@ function PlayerInfoEntity:UpdateScore()
                     self.currentTech = bit.bor(self.currentTech, techUpgradesBitmask[kTechId.HeavyArmor])
                 end
                 
-                // Mapname to TechId list of displayed weapons
+                --Mapname to TechId list of displayed weapons
                 local displayWeapons = { { Welder.kMapName, kTechId.Welder },
                 { HandGrenades.kMapName, kTechId.HandGrenades },
                 { Mines.kMapName, kTechId.Mines} }
@@ -186,7 +188,7 @@ function GetTechIdsFromBitMask(techTable)
         end
     end
     
-    // Sort the table by bitmask value so it keeps the order established in the original table
+    --Sort the table by bitmask value so it keeps the order established in the original table
     table.sort(techIds, function(a, b) return techUpgradesBitmask[a] < techUpgradesBitmask[b] end)
     
     return techIds

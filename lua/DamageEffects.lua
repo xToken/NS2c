@@ -301,7 +301,7 @@ kDamageEffects =
         {
             
             {player_cinematic = "cinematics/materials/%s/bash.cinematic", doer = "Rifle", alt_mode = true, done = true},
-            {player_cinematic = "cinematics/materials/%s/ricochetHeavy.cinematic", doer = "Shotgun", done = true},
+            {player_cinematic = "cinematics/materials/%s/ricochet.cinematic", doer = "Shotgun", done = true},
             {player_cinematic = "cinematics/materials/%s/ricochetMinigun.cinematic", doer = "Minigun", done = true},
             {player_cinematic = "cinematics/materials/%s/ricochetRailgun.cinematic", doer = "Railgun", done = true},
             {player_cinematic = "cinematics/materials/%s/ricochet.cinematic", doer = "ClipWeapon", done = true},

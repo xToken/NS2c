@@ -95,8 +95,11 @@ function VoteManager:GetVotePassed()
 end
 
 function VoteManager:GetNumVotesNeeded()
-    // Round to nearest number of players (3.4 = 3, 3.5 = 4).
-    return math.max(self.minvotes, math.floor((self.numPlayers * self.teamPercentNeeded) + 0.5))
+	-- Round to nearest number of players (3.4 = 3, 3.5 = 4).
+	-- Don't ever require more votes than there are players
+	-- Always require at least 2 votes when there are two or more players
+	-- Always require 1 vote no matter what (or things break)
+    return math.min( math.max(kMinVotesNeeded, math.floor((self.numPlayers * self.teamPercentNeeded) + 0.5)), math.max( 1, self.numPlayers ) )
 end
 
 function VoteManager:GetNumVotesCast()

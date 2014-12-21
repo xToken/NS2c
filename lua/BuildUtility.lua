@@ -241,6 +241,13 @@ local function CheckValidExit(techId, position, angle)
     
 end
 
+local function CheckValidIPPlacement(position, extents)
+
+    local trace = Shared.TraceBox(extents, position - Vector(0, 0.3, 0), position - Vector(0, 3, 0), CollisionRep.Default, PhysicsMask.AllButPCs, EntityFilterAll())
+    return trace.fraction == 1 and trace.surface ~= "no_ip"
+    
+end
+
 /**
  * Returns true or false if build attachments are fulfilled, as well as possible attach entity 
  * to be hooked up to. If snap radius passed, then snap build origin to it when nearby. Otherwise
@@ -351,6 +358,15 @@ function GetIsBuildLegal(techId, position, angle, snapRadius, player, ignoreEnti
     
     if legalBuild and (not ignoreChecks or ignoreChecks["ValidExit"] ~= true) then
         legalBuild, errorString = CheckValidExit(techId, legalPosition, angle)
+    end
+    
+    if legalBuild and techId == kTechId.InfantryPortal then
+    
+        legalBuild = CheckValidIPPlacement(legalPosition, extents)
+        if not legalBuild then
+            errorString = "COMMANDERERROR_INVALID_PLACEMENT"
+        end
+        
     end
     
     return legalBuild, legalPosition, attachEntity, errorString

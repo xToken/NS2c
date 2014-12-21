@@ -37,9 +37,9 @@ local function UpdateStructureFall(self, deltaMove)
 		self.lastmove = Shared.GetTime()
 	end
 
-    local origin = self:GetOrigin()
-    origin.y = origin.y + deltaMove
-    self:SetOrigin(origin)
+	local newCoords = self:GetCoords()
+    newCoords.origin.y = newCoords.origin.y + deltaMove
+    self:SetCoords(newCoords)
     
     for _, attachedId in ipairs(self.attachedIds) do
     

@@ -322,3 +322,45 @@ end
 
 
 Event.Hook("MapPostLoad", OnMapPostLoad)
+
+local function HandleDbgValue(index, value)
+    index = tonumber(index)
+    if index then
+        if value then
+            if value == "''" then
+                value = "" -- need a way to input empty string
+            end
+            local number = tonumber(value)
+            if number then
+                Shared.Debug_SetNumber(index, number)
+            else
+                Shared.Debug_SetString(index, value)
+            end
+        end
+        Log("dbg_value[%s] = %s/'%s'", index, Shared.Debug_GetNumber(index), Shared.Debug_GetString(index))
+    else
+        Log("dbg_value <index> (<number or string value> - string value can be '' for empty string)") 
+        for index=0,Shared.Debug_GetNumValues()-1 do
+            Log("dbg_value[%s] = %s/'%s'", index, Shared.Debug_GetNumber(index), Shared.Debug_GetString(index))                      
+        end
+    end
+end
+
+
+if Client then
+    local function OnConsoleDbgValue(index, value)
+        HandleDbgValue(index, value)
+        return true
+    end
+    Event.Hook("Console_dbg_value", OnConsoleDbgValue)
+elseif Server then
+    local function OnConsoleDbgValue(client, index, value)
+        if client == nil then
+            HandleDbgValue(index,value)
+        end
+    end
+  
+    Event.Hook("Console_dbg_value", OnConsoleDbgValue)
+end
+
+Shared.Debug_InitializeValues()

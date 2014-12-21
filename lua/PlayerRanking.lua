@@ -1,3 +1,4 @@
+--[[
 // ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =====
 //
 // lua\PlayerRanking.lua
@@ -5,6 +6,7 @@
 //    Created by:   Andreas Urwalek (andi@unknownworlds.com)
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+]]
 
 local kPlayerRankingUrl = "http://sabot.herokuapp.com/api/post/matchEnd"
 local kPlayerRankingRequestUrl = "http://sabot.herokuapp.com/api/get/playerData/"
@@ -51,7 +53,6 @@ function PlayerRankingUI_GetLevelFraction()
     return levelFraction
 
 end
-
 
 class 'PlayerRanking'
 
@@ -109,12 +110,12 @@ function PlayerRanking:OnUpdate()
         
             local client = Server.GetOwner(player)
             
-            // only consider players who are connected to the server and ignore any uncontrolled players / ragdolls
+            -- only consider players who are connected to the server and ignore any uncontrolled players / ragdolls
             if client and not client:GetIsVirtual() then
             
                 local steamId = client:GetUserId()
                 
-                if not self.capturedPlayerData[tostring(steamId)] then
+                if not self.capturedPlayerData[steamId] then
         
                     local playerData = 
                     {
@@ -133,11 +134,11 @@ function PlayerRanking:OnUpdate()
                         exitTime = math.max( 0, ( player:GetExitTime() or Shared.GetTime() ) - self.gameStartTime),
                     }
                     
-                    self.capturedPlayerData[tostring(steamId)] = playerData
+                    self.capturedPlayerData[steamId] = playerData
                     
                 else
                 
-                    local playerData = self.capturedPlayerData[tostring(steamId)]
+                    local playerData = self.capturedPlayerData[steamId]
                     playerData.steamId = steamId
                     playerData.nickname = player:GetName() or ""
                     playerData.playTime = player:GetPlayTime()
@@ -172,11 +173,11 @@ function PlayerRanking:EndGame(winningTeam)
 
     if self.gameStarted and self:GetTrackServer() then
     
-        local allSkill, marineSkill, alienSkill = self:GetAveragePlayerSkill()
+        local _, marineSkill, alienSkill = self:GetAveragePlayerSkill()
         local isGatherGame = Server.GetIsGatherReady()
     
         local gameTime = math.max(0, Shared.GetTime() - self.gameStartTime)
-        // dont send data of games lasting shorter than a minute. Those are most likely over because of players leaving the server / team.
+        -- dont send data of games lasting shorter than a minute. Those are most likely over because of players leaving the server / team.
         if gameTime > kMinMatchTime then
 
             local gameInfo = {
@@ -196,7 +197,7 @@ function PlayerRanking:EndGame(winningTeam)
             DebugPrint("PlayerRanking: game info ------------------")
             DebugPrint("%s", ToString(gameInfo))
 
-            for steamIdString, playerData in pairs(self.capturedPlayerData) do   
+            for _, playerData in pairs(self.capturedPlayerData) do
                 self:InsertPlayerData(gameInfo.players, playerData, winningTeam, gameTime, marineSkill, alienSkill, isGatherGame)
             end
 			
@@ -216,7 +217,7 @@ local function GetPlayerIsValidForRanking(recordedData, gameTime)
     local playTime = recordedData.playTime or 0
     local playedFraction = playTime / gameTime
     
-    //Print("player valid for ranking %s", ToString(playedFraction > 0.9 or playTime > kMinPlayTime))
+    --Print("player valid for ranking %s", ToString(playedFraction > 0.9 or playTime > kMinPlayTime))
 
     return (playedFraction > 0.9 or playTime > kMinPlayTime)
 
@@ -226,7 +227,7 @@ function PlayerRanking:InsertPlayerData(playerTable, recordedData, winningTeam, 
 
     PROFILE("PlayerRanking:InsertPlayerData")
 
-    // only consider players who are connected to the server and ignore any uncontrolled players / ragdolls
+    -- only consider players who are connected to the server and ignore any uncontrolled players / ragdolls
     if GetPlayerIsValidForRanking(recordedData, gameTime) then
 
         local playerData = 
@@ -264,71 +265,69 @@ function PlayerRanking:GetAveragePlayerSkill()
 
     PROFILE("PlayerRanking:GetAveragePlayerSkill")
 
-    // update this only max once per frame
+    -- update this only max once per frame
     if not self.timeLastSkillUpdate or self.timeLastSkillUpdate < Shared.GetTime() then
     
-        self.averagePlayerSKills = { 
+        self.averagePlayerSkills = { 
             [kMarineTeamType] = { numPlayers = 0, skillSum = 0 }, 
             [kAlienTeamType] = { numPlayers = 0, skillSum = 0 },
             [3] = { numPlayers = 0, skillSum = 0 },
         }
-    
-        local numPlayers = 0
-        local skillSum = 0
 
         for _, player in ipairs(GetEntitiesWithMixin("Scoring")) do
 
             local client = Server.GetOwner(player)
             local skill = player:GetPlayerSkill()
-            // DebugPrint("%s skill: %s", ToString(player:GetName()), ToString(skill))
+            -- DebugPrint("%s skill: %s", ToString(player:GetName()), ToString(skill))
             
             if client and skill then
             
                 local teamType = HasMixin(player, "Team") and player:GetTeamType() or -1
                 if teamType == kMarineTeamType or teamType == kAlienTeamType then
                 
-                    self.averagePlayerSKills[teamType].numPlayers = self.averagePlayerSKills[teamType].numPlayers + 1
-                    self.averagePlayerSKills[teamType].skillSum = self.averagePlayerSKills[teamType].skillSum + player:GetPlayerSkill()
+                    self.averagePlayerSkills[teamType].numPlayers = self.averagePlayerSkills[teamType].numPlayers + 1
+                    self.averagePlayerSkills[teamType].skillSum = self.averagePlayerSkills[teamType].skillSum + player:GetPlayerSkill()
                     
                 end
                 
-                self.averagePlayerSKills[3].numPlayers = self.averagePlayerSKills[3].numPlayers + 1
-                self.averagePlayerSKills[3].skillSum = self.averagePlayerSKills[3].skillSum + player:GetPlayerSkill()
+                self.averagePlayerSkills[3].numPlayers = self.averagePlayerSkills[3].numPlayers + 1
+                self.averagePlayerSkills[3].skillSum = self.averagePlayerSkills[3].skillSum + player:GetPlayerSkill()
                 
             end
             
         end
         
-        self.averagePlayerSKills[kMarineTeamType].averageSkill = self.averagePlayerSKills[kMarineTeamType].numPlayers == 0 and 0 or self.averagePlayerSKills[kMarineTeamType].skillSum / self.averagePlayerSKills[kMarineTeamType].numPlayers
-        self.averagePlayerSKills[kAlienTeamType].averageSkill = self.averagePlayerSKills[kAlienTeamType].numPlayers == 0 and 0 or self.averagePlayerSKills[kAlienTeamType].skillSum / self.averagePlayerSKills[kAlienTeamType].numPlayers
-        self.averagePlayerSKills[3].averageSkill = self.averagePlayerSKills[3].numPlayers == 0 and 0 or self.averagePlayerSKills[3].skillSum / self.averagePlayerSKills[3].numPlayers
+        self.averagePlayerSkills[kMarineTeamType].averageSkill = self.averagePlayerSkills[kMarineTeamType].numPlayers == 0 and 0 or self.averagePlayerSkills[kMarineTeamType].skillSum / self.averagePlayerSkills[kMarineTeamType].numPlayers
+        self.averagePlayerSkills[kAlienTeamType].averageSkill = self.averagePlayerSkills[kAlienTeamType].numPlayers == 0 and 0 or self.averagePlayerSkills[kAlienTeamType].skillSum / self.averagePlayerSkills[kAlienTeamType].numPlayers
+        self.averagePlayerSkills[3].averageSkill = self.averagePlayerSkills[3].numPlayers == 0 and 0 or self.averagePlayerSkills[3].skillSum / self.averagePlayerSkills[3].numPlayers
     
         self.timeLastSkillUpdate = Shared.GetTime()
         
     end
 
-    return self.averagePlayerSKills[3].averageSkill, self.averagePlayerSKills[kMarineTeamType].averageSkill, self.averagePlayerSKills[kAlienTeamType].averageSkill
+    return self.averagePlayerSkills[3].averageSkill, self.averagePlayerSkills[kMarineTeamType].averageSkill, self.averagePlayerSkills[kAlienTeamType].averageSkill
 
 end
 
 if Server then
 
     local gPlayerData = {}
-    local gSendRequestNow = false
-    local gGameStarted = false
-    
-    local function PlayerDataResponse(steamId)
+
+    function GetHiveDataBySteamId(steamid)
+        return gPlayerData[steamid]
+    end
+
+    local function PlayerDataResponse(steamId,clientId)
         return function (playerData)
         
             PROFILE("PlayerRanking:PlayerDataResponse")
             
-            local obj, pos, err = json.decode(playerData, 1, nil)
+            local obj = json.decode(playerData, 1, nil)
             
             if obj then
-            
-                gPlayerData[tostring(steamId)] = obj
-            
-                --its possible that the server does not send all data we want, need to check for nil here to not cause any script errors later:            
+
+                -- its possible that the server does not send all data we want,
+                -- need to check for nil here to not cause any script errors later:
                 obj.kills = obj.kills or 0
                 obj.assists = obj.assists or 0
                 obj.deaths = obj.deaths or 0
@@ -337,34 +336,56 @@ if Server then
                 obj.playTime = obj.playTime or 0
                 obj.level = obj.level or 0
 
+                gPlayerData[steamId] = obj
+
+                local client = Server.GetClientById(clientId)
+                local player = client and client:GetControllingPlayer()
+
+                if player then
+
+                    if obj.badges then
+                        Badges_SetBadges(clientId, obj.badges)
+                    end
+
+                    player:SetTotalKills(obj.kills)
+                    player:SetTotalAssists(obj.assists)
+                    player:SetTotalDeaths(obj.deaths)
+                    player:SetPlayerSkill(obj.skill)
+                    player:SetTotalScore(obj.score)
+                    player:SetTotalPlayTime(obj.playTime)
+                    player:SetPlayerLevel(obj.level)
+                end
+
             end
             
             DebugPrint("player data of %s: %s", ToString(steamId), ToString(obj))
         
         end
     end
-    
-    local function GetGameEnded()
-    
-        local gameRules = GetGamerules()
-        local gameStarted = (gameRules ~= nil) and gameRules:GetGameStarted()
-        if gGameStarted and not gameStarted then
-            gGameEndTime = Shared.GetTime()
+
+    local function OnConnect(client)
+        PROFILE("PlayerRanking:OnConnect")
+
+        if client and not client:GetIsVirtual() then
+
+            local steamId = client:GetUserId()
+            local playerData = gPlayerData[steamId]
+
+            if not playerData then
+                
+                DebugPrint("send player data request for %s", ToString(steamId))
+                
+                local requestUrl = string.format("%s%s", kPlayerRankingRequestUrl, steamId)
+                Shared.SendHTTPRequest(requestUrl, "GET", { }, PlayerDataResponse(steamId, client:GetId()))
+                
+            elseif playerData.badges then
+                Badges_SetBadges(client:GetId(), playerData.badges)
+            end
+
         end
 
-        gGameStarted = gameStarted
-        
-        if gGameEndTime and gGameEndTime + 5 < Shared.GetTime() then
-        
-            gGameEndTime = nil
-            return true
-            
-        end    
-        
-        return false
-    
     end
-    
+
     local gConfigChecked
     local function UpdatePlayerStats()
     
@@ -378,73 +399,23 @@ if Server then
         if GetServerContainsBots() or Shared.GetCheatsEnabled() then
             gRankingDisabled = true
         end
-        
+
         if gRankingDisabled then
             return
-        end 
-        
+        end
+
         local gameRules = GetGamerules()
-        
+
         if gameRules then
             local team1PlayerNum = gameRules:GetTeam1():GetNumPlayers()
             local team2PlayerNum = gameRules:GetTeam2():GetNumPlayers()
-            
+
             avgNumPlayersSum = avgNumPlayersSum + team1PlayerNum + team2PlayerNum
             numPlayerCountSamples = numPlayerCountSamples + 1
-        end
-        
-        for _, player in ipairs(GetEntitiesWithMixin("Scoring")) do  
-        
-            local client = Server.GetOwner(player)
-            if client and not client:GetIsVirtual() then
-            
-                local steamId = client:GetUserId()
-                local playerData = gPlayerData[tostring(steamId)]
-            
-                if gSendRequestNow or not playerData then
-
-                    if not playerData then
-                    
-                        playerData = {}
-                        
-                        playerData.kills = 0
-                        playerData.assists = 0
-                        playerData.deaths = 0
-                        playerData.skill = 0
-                        playerData.score = 0
-                        playerData.playTime = 0
-                        playerData.level = 0
-                        
-                        gPlayerData[tostring(steamId)] = playerData
-                    
-                    end
-            
-                    DebugPrint("send player data request for %s", ToString(steamId))
-                    local requestUrl = string.format("%s%s", kPlayerRankingRequestUrl, steamId)
-                    Shared.SendHTTPRequest(requestUrl, "GET", { }, PlayerDataResponse(steamId))
-                
-                end
-
-                player:SetTotalKills(playerData.kills)
-                player:SetTotalAssists(playerData.assists)
-                player:SetTotalDeaths(playerData.deaths)
-                player:SetPlayerSkill(playerData.skill)
-                player:SetTotalScore(playerData.score)
-                player:SetTotalPlayTime(playerData.playTime)
-                player:SetPlayerLevel(playerData.level)
-                player:SetReinforcedTier(playerData.reinforcedTier)
-            
-            end
-        
-        end
-        
-        gSendRequestNow = false
-        
-        if GetGameEnded() then
-            gSendRequestNow = true
         end
 
     end
 
+    Event.Hook("ClientConnect", OnConnect)
     Event.Hook("UpdateServer", UpdatePlayerStats)
 end

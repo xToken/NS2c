@@ -11,7 +11,6 @@
 //Changed ammo back to 1 clip, added in per weapon ammo packs
 
 Script.Load("lua/DropPack.lua")
-Script.Load("lua/PickupableMixin.lua")
 
 class 'AmmoPack' (DropPack)
 
@@ -25,11 +24,7 @@ function AmmoPack:OnInitialized()
     DropPack.OnInitialized(self)
     
     self:SetModel(AmmoPack.kModelName)
-    
-    if Client then
-        InitMixin(self, PickupableMixin, { kRecipientType = "Marine" })
-    end
-
+	
 end
 
 function AmmoPack:OnTouch(recipient)
@@ -72,7 +67,7 @@ function WeaponAmmoPack:OnTouch(recipient)
 end
 
 function WeaponAmmoPack:GetIsValidRecipient(recipient)
-
+	
     local weapon = recipient:GetActiveWeapon()
     local correctWeaponType = weapon and weapon:isa(self:GetWeaponClassName())    
     return self.ammoPackSize ~= nil and correctWeaponType and AmmoPack.GetIsValidRecipient(self, recipient) and (not HasMixin(self, "Devourable") or not self:GetIsDevoured())

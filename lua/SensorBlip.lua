@@ -22,7 +22,6 @@ function SensorBlip:OnCreate()
     
     self.entId    = Entity.invalidId
     
-    self:SetPropagate(Entity.Propagate_Mask)
     self:UpdateRelevancy(0)
     
 end

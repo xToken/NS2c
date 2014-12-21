@@ -88,8 +88,9 @@ function Grenade:Detonate(targetHit)
     
     if Server then
     
+        // Do damage to nearby targets.
         local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kGrenadeLauncherGrenadeDamageRadius)
-    
+        
         // Remove grenade and add firing player.
         table.removevalue(hitEntities, self)
         

@@ -10,7 +10,6 @@
 //Adjusted CatPack Balance vars
 
 Script.Load("lua/DropPack.lua")
-Script.Load("lua/PickupableMixin.lua")
 
 class 'CatPack' (DropPack)
 CatPack.kMapName = "catpack"
@@ -23,14 +22,12 @@ function CatPack:OnInitialized()
     DropPack.OnInitialized(self)
     
     self:SetModel(CatPack.kModelName)
-    
-    InitMixin(self, PickupableMixin, { kRecipientType = "Marine" })
-
+    	
 end
 
 function CatPack:OnTouch(recipient)
 
-    StartSoundEffectAtOrigin(CatPack.kPickupSound, recipient:GetOrigin())
+    StartSoundEffectAtOrigin(CatPack.kPickupSound, self:GetOrigin())
     recipient:ApplyCatPack()
     
 end
@@ -42,4 +39,4 @@ function CatPack:GetIsValidRecipient(recipient)
     return (recipient.GetHasCatpackBoost and not recipient:GetHasCatpackBoost() and recipient:GetIsAlive()) and (not HasMixin(self, "Devourable") or not self:GetIsDevoured())
 end
 
-Shared.LinkClassToMap("CatPack", CatPack.kMapName, { })
+Shared.LinkClassToMap("CatPack", CatPack.kMapName)

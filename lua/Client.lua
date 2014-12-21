@@ -55,6 +55,8 @@ Script.Load("lua/NetworkMessages_Client.lua")
 Script.Load("lua/HiveVision.lua")
 Script.Load("lua/SabotCoreClient.lua")
 
+Script.Load("lua/JitConfig.lua")
+
 // Precache the common surface shaders.
 PrecacheAsset("shaders/Model.surface_shader")
 PrecacheAsset("shaders/Emissive.surface_shader")
@@ -948,6 +950,21 @@ local function UpdateDebugTrace()
     
     end
 
+end
+
+// Return effective fov for the player, including options adjustment and scaling for screen resolution
+function Client.GetEffectiveFov(player)
+    
+    local adjustValue   = Clamp( Client.GetOptionFloat("graphics/display/fov-adjustment",0), 0, 1 )
+    local adjustRadians = math.rad(
+        (1-adjustValue)*kMinFOVAdjustmentDegrees + adjustValue*kMaxFOVAdjustmentDegrees)
+    
+    // Don't adjust the FOV for the commander.
+    if player:isa("Commander") then
+        adjustRadians = 0
+    end
+        
+    return player:GetRenderFov()+adjustRadians
 end
 
 /**

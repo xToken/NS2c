@@ -260,7 +260,6 @@ function TeamInfo:SetWatchTeam(team)
     self.team = team
     self:SetTeamNumber(team:GetTeamNumber())
     UpdateInfo(self)
-    self:SetPropagate(Entity.Propagate_Mask)
     self:UpdateRelevancy()
     
 end

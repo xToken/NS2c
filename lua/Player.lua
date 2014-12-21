@@ -30,7 +30,6 @@ Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/MobileTargetMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
-Script.Load("lua/BadgeMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/AFKMixin.lua")
 
@@ -52,6 +51,9 @@ elseif Client then
     Script.Load("lua/Chat.lua")
 end
 
+// min/max distance for physics culling
+Player.kPhysicsCullMin = 3
+Player.kPhysicsCullMax = 50
 Player.kNotEnoughResourcesSound     = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/more")
 //Player.kGravity = -17.7
 Player.kGravity = -17.7
@@ -219,7 +221,6 @@ AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(UpgradableMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
-AddMixinNetworkVars(BadgeMixin, networkVars)
 
 local function GetTabDirectionVector(buttonReleased)
 
@@ -250,12 +251,12 @@ function Player:OnCreate()
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
     InitMixin(self, EntityChangeMixin)
-    InitMixin(self, BadgeMixin)
-    
+    InitMixin(self, SmoothedRelevancyMixin)
+
     if Client then
         InitMixin(self, HelpMixin)
     end
-    
+
     self:SetLagCompensated(true)
     
     self:SetUpdates(true)
@@ -315,6 +316,10 @@ function Player:OnCreate()
     
     self.isUsing = false
     self.slowAmount = 0
+    
+    self.lastButtonReleased = TAP_NONE
+    self.timeLastButtonReleased = 0
+    self.previousMove = Vector(0, 0, 0)
     
 end
 
@@ -1101,7 +1106,7 @@ end
 
 function Player:GetDesiredAngles(deltaTime)
 
-    desiredAngles = Angles()
+    local desiredAngles = Angles()
     desiredAngles.pitch = 0
     desiredAngles.roll = self.viewRoll
     desiredAngles.yaw = self.viewYaw
@@ -1282,6 +1287,14 @@ local function UpdateAnimationInputs(self, input)
 
 end
 
+function Player:ConfigurePhysicsCuller()
+    local viewCoords = self:GetViewCoords()
+    local viewPoint = self:GetOrigin()
+    local fovDegrees = Math.Degrees(GetScreenAdjustedFov(Client.GetEffectiveFov(self), 4/3))
+        
+    Client.ConfigurePhysicsCuller(viewPoint, self:GetViewAngles(), fovDegrees, Player.kPhysicsCullMin, Player.kPhysicsCullMax)
+end
+
 function Player:OnProcessIntermediate(input)
    
     if self:GetIsAlive() and not self.countingDown then
@@ -1300,6 +1313,10 @@ function Player:OnProcessIntermediate(input)
     end
     
     self:UpdateClientEffects(input.time, true)
+    
+    if Client then
+        self:ConfigurePhysicsCuller()
+    end
     
 end
 
@@ -1330,8 +1347,6 @@ end
 // compensated fields are rolled back in time, so it needs to restore them once the processing
 // is done. So it backs up, synchs to the old state, runs the OnProcessMove(), then restores them. 
 function Player:OnProcessMove(input)
-
-    PROFILE("Player:OnProcessMove")
 
     local commands = input.commands
     if self:GetIsAlive() then
@@ -1386,13 +1401,17 @@ function Player:OnProcessMove(input)
         //self:OutputDebug()
         
         UpdateBodyYaw(self, input.time, input)
-        
+
     end
     
     self:EndUse(input.time)
     
     if Server then
         HitSound_DispatchHits()
+    end
+    
+    if Client then
+        self:ConfigurePhysicsCuller()
     end
 end
 
@@ -1969,9 +1988,8 @@ end
  */
 function Player:GetViewModelEntity()
 
-    local result = nil
-    
-    // viewModelId is a private field
+    local result
+    -- viewModelId is a private field
     if not Client or self:GetIsLocalPlayer() then  
     
         result = Shared.GetEntity(self.viewModelId)
@@ -1995,11 +2013,8 @@ function Player:SetViewModel(viewModelName, weapon)
     if not viewModel then
         return
     end
-    
-    local animationGraphFileName = nil
-    if weapon then
-        animationGraphFileName = weapon:GetAnimationGraphName()
-    end
+
+    local animationGraphFileName = weapon and weapon:GetAnimationGraphName()
     viewModel:SetModel(viewModelName, animationGraphFileName)
     viewModel:SetWeapon(weapon)
     

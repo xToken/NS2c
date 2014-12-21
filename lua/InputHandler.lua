@@ -456,9 +456,6 @@ local function GenerateMove()
         if _keyPressed[ _keyBinding.Q ] then
             move.hotkey = Move.Q
         end 
-        if _keyPressed[ _keyBinding.W ] then
-            move.hotkey = Move.W
-        end 
         if _keyPressed[ _keyBinding.E ] then
             move.hotkey = Move.E
         end 
@@ -483,15 +480,37 @@ local function GenerateMove()
         if _keyPressed[ _keyBinding.P ] then
             move.hotkey = Move.P
         end  
-        if _keyPressed[ _keyBinding.A ] then
-            move.hotkey = Move.A
-        end   
-        if _keyPressed[ _keyBinding.S ] then
-            move.hotkey = Move.S
-        end     
-        if _keyPressed[ _keyBinding.D ] then
-            move.hotkey = Move.D
-        end     
+        
+        if PlayerUI_IsACommander() and _keyState[ _keyBinding.MovementModifier ] then
+
+            if _keyState[ _keyBinding.W ] then
+                move.commands = bit.bor(move.commands, Move.ScrollForward)
+            end 
+            if _keyState[ _keyBinding.A ] then
+                move.commands = bit.bor(move.commands, Move.ScrollLeft)
+            end   
+            if _keyState[ _keyBinding.S ] then
+                move.commands = bit.bor(move.commands, Move.ScrollBackward)
+            end     
+            if _keyState[ _keyBinding.D ] then
+                move.commands = bit.bor(move.commands, Move.ScrollRight)
+            end      
+        
+        else
+            if _keyPressed[ _keyBinding.W ] then
+                move.hotkey = Move.W
+            end 
+            if _keyPressed[ _keyBinding.A ] then
+                move.hotkey = Move.A
+            end   
+            if _keyPressed[ _keyBinding.S ] then
+                move.hotkey = Move.S
+            end     
+            if _keyPressed[ _keyBinding.D ] then
+                move.hotkey = Move.D
+            end
+        end
+        
         if _keyPressed[ _keyBinding.F ] then
             move.hotkey = Move.F
         end       
@@ -553,6 +572,7 @@ local function GenerateMove()
     return move
     
 end
+require("jit").off(GenerateMove)
 
 local function BufferMove(move)
 

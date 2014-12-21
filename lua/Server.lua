@@ -47,6 +47,8 @@ Script.Load("lua/dkjson.lua")
 Script.Load("lua/NetworkDebug.lua")
 Script.Load("lua/SabotCoreServer.lua")
 
+Script.Load("lua/JitConfig.lua")
+
 Server.readyRoomSpawnList = table.array(32)
 
 // map name, group name and values keys for all map entities loaded to

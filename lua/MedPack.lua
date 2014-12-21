@@ -9,7 +9,6 @@
 
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/DropPack.lua")
-Script.Load("lua/PickupableMixin.lua")
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 
@@ -27,10 +26,6 @@ function MedPack:OnInitialized()
     DropPack.OnInitialized(self)
     
     self:SetModel(MedPack.kModelName)
-
-    if Client then
-        InitMixin(self, PickupableMixin, { kRecipientType = "Marine" })
-    end
     
 end
 
@@ -49,4 +44,4 @@ function MedPack:GetIsValidRecipient(recipient)
 end
 
 
-Shared.LinkClassToMap("MedPack", MedPack.kMapName, networkVars)
+Shared.LinkClassToMap("MedPack", MedPack.kMapName, networkVars, false)

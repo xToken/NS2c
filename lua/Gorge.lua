@@ -468,6 +468,15 @@ if Client then
     
     end
 
+	function Gorge:GetIgnoreGhostHighlight()
+    
+        local weapon = self:GetActiveWeapon()
+        if weapon and weapon:isa("DropStructureAbility") and weapon.GetIgnoreGhostHighlight then
+            return weapon:GetIgnoreGhostHighlight()
+        end
+        
+    end
+
 end
 
 function Gorge:GetCanSeeDamagedIcon(ofEntity)

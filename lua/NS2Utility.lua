@@ -2989,126 +2989,25 @@ function GetAndSetVariantOptions()
         variants.shoulderPadIndex = 1
     end
     
-    // if not set explicitly, always use the highest available tier
-    if variants.marineVariant == -1 then
-    
-        for variant = 1, GetEnumCount(kMarineVariant) do
-        
-            if GetHasVariant(kMarineVariantData, variant) then
-            
-                variants.marineVariant = variant
-                // do not break - use the highest one they have
-                
+    local function SetHighestTier( variantType, enum, enumData )
+        if variants[variantType] == -1 then
+            for variant = GetEnumCount( enum ),1,-1 do 
+                if GetHasVariant( enumData, variant ) then
+                    variants[variantType] = variant
+                    break
+                end
             end
-            
         end
-        
     end
     
-    if variants.skulkVariant == -1 then
-    
-        for variant = 1, GetEnumCount(kSkulkVariant), 1 do
-        
-            if GetHasVariant(kSkulkVariantData, variant) then
-            
-                variants.skulkVariant = variant
-                // do not break - use the highest one they have
-                
-            end
-            
-        end
-        
-    end
-    
-    if variants.gorgeVariant == -1 then
-    
-        for variant = 1, GetEnumCount(kGorgeVariant), 1 do
-        
-            if GetHasVariant(kGorgeVariantData, variant) then
-            
-                variants.gorgeVariant = variant
-                // do not break - use the highest one they have
-                
-            end
-            
-        end
-        
-    end
-    
-    if variants.lerkVariant == -1 then
-    
-        for variant = 1, GetEnumCount(kLerkVariant), 1 do
-        
-            if GetHasVariant(kLerkVariantData, variant) then
-            
-                variants.lerkVariant = variant
-                // do not break - use the highest one they have
-                
-            end
-            
-        end
-        
-    end
-    
-    if variants.fadeVariant == -1 then
-    
-        for variant = 1, GetEnumCount(kFadeVariant), 1 do
-        
-            if GetHasVariant(kFadeVariantData, variant) then
-            
-                variants.fadeVariant = variant
-                // do not break - use the highest one they have
-                
-            end
-            
-        end
-        
-    end
-    
-    if variants.onosVariant == -1 then
-    
-        for variant = 1, GetEnumCount(kOnosVariant), 1 do
-        
-            if GetHasVariant(kOnosVariantData, variant) then
-            
-                variants.onosVariant = variant
-                // do not break - use the highest one they have
-                
-            end
-            
-        end
-        
-    end
-    
-    if variants.exoVariant == -1 then
-    
-        for variant = 1, GetEnumCount(kExoVariant), 1 do
-        
-            if GetHasVariant(kExoVariantData, variant) then
-            
-                variants.exoVariant = variant
-                // do not break - use the highest one they have
-                
-            end
-            
-        end
-        
-    end
-    
-    if variants.rifleVariant == -1 then
-    
-        for variant = 1, GetEnumCount(kRifleVariant), 1 do
-        
-            if GetHasVariant(kRifleVariantData, variant) then
-            
-                variants.rifleVariant = variant
-                // do not break - use the highest one they have
-                
-            end
-            
-        end
-        
-    end
+    SetHighestTier("marineVariant", kMarineVariant, kMarineVariantData)
+    SetHighestTier("skulkVariant", kSkulkVariant, kSkulkVariantData)
+    SetHighestTier("gorgeVariant", kGorgeVariant, kGorgeVariantData)
+    SetHighestTier("lerkVariant", kLerkVariant, kLerkVariantData)
+    SetHighestTier("fadeVariant", kFadeVariant, kFadeVariantData)
+    SetHighestTier("onosVariant", kOnosVariant, kOnosVariantData)
+    SetHighestTier("exoVariant", kExoVariant, kExoVariantData)
+    SetHighestTier("rifleVariant", kRifleVariant, kRifleVariantData)
     
     assert(variants.marineVariant ~= -1 and variants.marineVariant ~= -1 ~= nil)
     assert(variants.skulkVariant ~= -1 and variants.skulkVariant ~= -1 ~= nil)

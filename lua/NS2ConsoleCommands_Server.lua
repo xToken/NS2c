@@ -1310,7 +1310,7 @@ local function OnCommandGiveXP(client, xp)
 
 end
 
-local function OnCommandThrowCandy(client)
+local function OnCommandThrowObject(client)
     
     -- need to protect on the serverside too so people don't just trigger mid-game
     local player = client:GetControllingPlayer()
@@ -1463,7 +1463,7 @@ Event.Hook("Console_makeblackfemale", OnCommandBlackEditionFemale)
 Event.Hook("Console_makespecialfemale", OnCommandMakeSpecialEditionFemale)
 Event.Hook("Console_make", OnCommandMake)
 Event.Hook("Console_devour", OnCommandDevour)
-Event.Hook("Console_throwcandy", OnCommandThrowCandy)
+Event.Hook("Console_throwsnowball", OnCommandThrowObject)
 
 Event.Hook("Console_evolvelastupgrades", OnCommandEvolveLastUpgrades)
 

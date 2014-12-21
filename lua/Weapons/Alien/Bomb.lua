@@ -63,8 +63,13 @@ function Bomb:GetDamageType()
 end
 
 function Bomb:ProcessHit(targetHit, surface)
-    self:Detonate(targetHit, surface)
-    return true    
+
+    if Server and self:GetOwner() ~= targetHit then
+        self:Detonate(targetHit, surface)
+        return true    
+    end
+    return false
+    
 end
 
 function Bomb:Detonate(targetHit, surface)

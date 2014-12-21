@@ -35,7 +35,7 @@ end
 function CommanderBrain:GetDoableTechIds(com)
 
     local teamNum = self:GetExpectedTeamNumber()
-    local tree = GetTechTree(com:GetTeamNumber())
+    local tree = GetTechTree(teamNum)
 
     local doables = {}
 

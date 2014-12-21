@@ -23,12 +23,17 @@ local networkVars = { }
 
 function SporeCloud:OnCreate()
 
+    Entity.OnCreate(self)
+    
     InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
     
     if Server then
+    
         InitMixin(self, OwnerMixin)
+        
         self.nextDamageTime = 0
+ 
     end
     
     self:SetUpdates(true)

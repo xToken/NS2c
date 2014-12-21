@@ -382,7 +382,7 @@ if Server then
         
     end
     
-    function LOSMixin:OnEntityChange(oldId, newId)
+    function LOSMixin:OnEntityChange(oldId)
     
         if oldId == self.lastViewerId then
             self.lastViewerId = Entity.invalidId

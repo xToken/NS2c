@@ -951,24 +951,17 @@ local function ModDetailsCallback(modId, title, description)
 end
 
 local function GetPerformanceTextFromIndex(serverIndex)
-    if gUsePerformanceBrowser then
-        local currentScore = Client.GetServerCurrentPerformanceScore(serverIndex)
-        local performanceScore = Client.GetServerPerformanceScore(serverIndex);
-        local performanceQuality = Client.GetServerPerformanceQuality(serverIndex);
-        local str = ServerPerformanceData.GetText(currentScore, performanceScore, performanceQuality, Client.GetServerTickRate(serverIndex))
-        return string.format("%s %s", Locale.ResolveString("SERVERBROWSER_SERVER_DETAILS_PERF"), str)
-    end
-    local performance = math.round(Clamp(GetServerTickRate(serverIndex) / 30, 0, 1) * 100)
-    return string.format("%s %s%%", Locale.ResolveString("SERVERBROWSER_SERVER_DETAILS_PERF"), ToString(performance))
+    local performanceQuality = Client.GetServerPerformanceQuality(serverIndex);
+    local performanceScore = Client.GetServerPerformanceScore(serverIndex);
+    local str = ServerPerformanceData.GetPerformanceText(performanceQuality, performanceScore)
+    return string.format("%s %s(Score %d, Quality %d)", Locale.ResolveString("SERVERBROWSER_SERVER_DETAILS_PERF"), str, performanceScore, performanceQuality)
 end
   
 local function GetPerformanceText(serverData)
-    if gUsePerformanceBrowser then
-        local str = ServerPerformanceData.GetText(serverData.currentScore, serverData.performanceScore, serverData.performanceQuality, serverData.tickrate)
-        return string.format("%s %s", Locale.ResolveString("SERVERBROWSER_SERVER_DETAILS_PERF"), str)
-    end
-    local performance = math.round(Clamp(serverData.tickrate / 30, 0, 1) * 100)
-    return string.format("%s %s%%", Locale.ResolveString("SERVERBROWSER_SERVER_DETAILS_PERF"), ToString(performance))
+    local performanceQuality = serverData.performanceQuality
+    local performanceScore = serverData.performanceScore
+    local str = ServerPerformanceData.GetPerformanceText(serverData.performanceQuality, serverData.performanceScore)
+    return string.format("%s %s(Score %d, Quality %d)", Locale.ResolveString("SERVERBROWSER_SERVER_DETAILS_PERF"), str, performanceScore, performanceQuality)
 end
 
 function GUIMainMenu:CreateServerDetailsWindow()
@@ -1249,7 +1242,7 @@ function GUIMainMenu:CreateServerListWindow()
         { OnClick = function() UpdateSortOrder(5) serverList:SetComparator(SortByMode) end },
         { OnClick = function() UpdateSortOrder(6) serverList:SetComparator(SortByMap) end },
         { OnClick = function() UpdateSortOrder(7) serverList:SetComparator(SortByPlayers) end },
-        { OnClick = function() UpdateSortOrder(8) serverList:SetComparator(SortByTickrate) end },
+        { OnClick = function() UpdateSortOrder(8) serverList:SetComparator(SortByPerformance) end },
         { OnClick = function() UpdateSortOrder(9) serverList:SetComparator(SortByPing) end }
     }
     
@@ -1852,6 +1845,7 @@ local function InitOptions(optionElements)
     local drawDamage            = Client.GetOptionBoolean( "drawDamage", true )
     local rookieMode            = Client.GetOptionBoolean( kRookieOptionsKey, true )
     local physicsMultithreading = Client.GetOptionBoolean( "physicsMultithreading", false)
+    local resourceLoading       = Client.GetOptionInteger("system/resourceLoading", 1)
     local advancedmovement      = Client.GetOptionBoolean( "AdvancedMovement", false )
 
     local screenResIdx          = OptionsDialogUI_GetScreenResolutionsIndex()
@@ -1872,7 +1866,7 @@ local function InitOptions(optionElements)
     local physicsGpuAcceleration = Client.GetOptionBoolean(kPhysicsGpuAccelerationKey, false)
     local decalLifeTime         = Client.GetOptionFloat("graphics/decallifetime", 0.2)
     local textureManagement     = Client.GetOptionInteger("graphics/textureManagement", 0)
-    
+
     local minimapZoom = Client.GetOptionFloat("minimap-zoom", 0.75)
     local hitsoundVolume = Client.GetOptionFloat("hitsound-vol", 0.0)
     
@@ -1914,6 +1908,8 @@ local function InitOptions(optionElements)
     local recordingGain = Client.GetOptionFloat("recordingGain", 0.5)
     local recordingReleaseDelay = Client.GetOptionFloat("recordingReleaseDelay", 0.15)
     
+    local muteWhenMinized = Client.GetOptionBoolean(kSoundMuteWhenMinized, true)
+    
     for i = 1, #kLocales do
     
         if kLocales[i].name == locale then
@@ -1932,8 +1928,9 @@ local function InitOptions(optionElements)
     optionElements.ShowCommanderHelp:SetOptionActive( BoolToIndex(showCommanderHelp) )
     optionElements.DrawDamage:SetOptionActive( BoolToIndex(drawDamage) )
     optionElements.RookieMode:SetOptionActive( BoolToIndex(rookieMode) )
-	optionElements.PhysicsMultithreading:SetOptionActive( BoolToIndex(physicsMultithreading) )
-    optionElements.AdvancedMovement:SetOptionActive( BoolToIndex(advancedmovement) )
+    optionElements.PhysicsMultithreading:SetOptionActive( BoolToIndex(physicsMultithreading) )
+    optionElements.ResourceLoading:SetOptionActive( resourceLoading )
+	optionElements.AdvancedMovement:SetOptionActive( BoolToIndex(advancedmovement) )
 
     optionElements.RenderDevice:SetOptionActive( table.find(kRenderDevices, renderDevice) )
     optionElements.Display:SetOptionActive( display + 1 )
@@ -1969,6 +1966,7 @@ local function InitOptions(optionElements)
     optionElements.RecordingGain:SetValue(recordingGain)
     optionElements.RecordingReleaseDelay:SetValue( recordingReleaseDelay )
     
+    optionElements.MuteWhenMinized:SetOptionActive( BoolToIndex(muteWhenMinized) )
 end
 
 local function SaveSecondaryGraphicsOptions(mainMenu)
@@ -1988,6 +1986,7 @@ local function SaveSecondaryGraphicsOptions(mainMenu)
     local renderDeviceIdx       = mainMenu.optionElements.RenderDevice:GetActiveOptionIndex()
     local lightQuality          = mainMenu.optionElements.LightQuality:GetActiveOptionIndex()
     local textureManagement     = mainMenu.optionElements.TextureManagement:GetActiveOptionIndex()
+    local resourceLoading       = mainMenu.optionElements.ResourceLoading:GetActiveOptionIndex()
 
     Client.SetOptionBoolean("graphics/reflections", reflections)
     Client.SetOptionString("graphics/display/ambient-occlusion", kAmbientOcclusionModes[ambientOcclusionIdx] )
@@ -2106,7 +2105,8 @@ local function SaveOptions(mainMenu)
     local drawDamage            = mainMenu.optionElements.DrawDamage:GetActiveOptionIndex() > 1
     local rookieMode            = mainMenu.optionElements.RookieMode:GetActiveOptionIndex() > 1
     local physicsMultithreading = mainMenu.optionElements.PhysicsMultithreading:GetActiveOptionIndex() > 1
-
+    local resourceLoading       = mainMenu.optionElements.ResourceLoading:GetActiveOptionIndex()
+    
     local display               = mainMenu.optionElements.Display:GetActiveOptionIndex() - 1
     local screenResIdx          = mainMenu.optionElements.Resolution:GetActiveOptionIndex()
     local visualDetailIdx       = mainMenu.optionElements.Detail:GetActiveOptionIndex()
@@ -2121,6 +2121,7 @@ local function SaveOptions(mainMenu)
     local anisotropicFiltering  = mainMenu.optionElements.AnisotropicFiltering:GetActiveOptionIndex() > 1
     local antiAliasing          = mainMenu.optionElements.AntiAliasing:GetActiveOptionIndex() > 1
     local textureManagement     = mainMenu.optionElements.TextureManagement:GetActiveOptionIndex()
+
    
     local soundVol              = mainMenu.optionElements.SoundVolume:GetValue() * 100
     local musicVol              = mainMenu.optionElements.MusicVolume:GetValue() * 100
@@ -2134,6 +2135,8 @@ local function SaveOptions(mainMenu)
     
     local lightQuality          = mainMenu.optionElements.LightQuality:GetActiveOptionIndex()
     
+    local muteWhenMinimized = mainMenu.optionElements.MuteWhenMinized:GetActiveOptionIndex() > 1
+    
     Client.SetOptionBoolean("input/mouse/rawinput", rawInput)
     Client.SetOptionBoolean("input/mouse/acceleration", mouseAcceleration)
     Client.SetOptionBoolean("showHints", showHints)
@@ -2141,6 +2144,7 @@ local function SaveOptions(mainMenu)
     Client.SetOptionBoolean("drawDamage", drawDamage)
     Client.SetOptionBoolean(kRookieOptionsKey, rookieMode)
     Client.SetOptionBoolean("physicsMultithreading", physicsMultithreading)
+    Client.SetOptionInteger("system/resourceLoading", resourceLoading);
     
     Client.SetOptionBoolean("CameraAnimation", cameraAnimation)
     Client.SetOptionBoolean(kPhysicsGpuAccelerationKey, physicsGpuAcceleration)
@@ -2149,6 +2153,9 @@ local function SaveOptions(mainMenu)
     Client.SetOptionInteger("graphics/lightQuality", lightQuality)
     Client.SetOptionFloat("input/mouse/acceleration-amount", accelerationAmount)
     Client.SetOptionInteger("graphics/textureManagement", textureManagement)
+
+    
+    Client.SetOptionBoolean(kSoundMuteWhenMinized, muteWhenMinimized)
     
     if string.len(TrimName(nickName)) < 1 or not string.IsValidNickname(nickName) then
         nickName = Client.GetOptionString( kNicknameOptionsKey, Client.GetUserName() )
@@ -2505,6 +2512,13 @@ function GUIMainMenu:CreateOptionWindow()
                 type    = "select",
                 values  = { Locale.ResolveString("OFF"), Locale.ResolveString("ON") },
             },
+            {
+                name    = "ResourceLoading",
+                label   = Locale.ResolveString("OPTION_RESOURCE_LOADING"),
+                tooltip = Locale.ResolveString("OPTION_RESOURCE_LOADING_TOOLTIP"),
+                type    = "select",
+                values  = {  Locale.ResolveString("LOW"), Locale.ResolveString("MEDIUM"), Locale.ResolveString("HIGH")  },
+            },
         }
 
     local soundOptions =
@@ -2544,6 +2558,14 @@ function GUIMainMenu:CreateOptionWindow()
                 type    = "slider",
                 sliderCallback = OnHitSoundVolumeChanged,
                 formName = "sound",
+            },
+            {
+                name    = "MuteWhenMinized",
+                label   = Locale.ResolveString("SOUND_MUTE_MINIZED"),
+                tooltip = Locale.ResolveString("SOUND_MUTE_MINIZED_TTIP"),
+                type    = "select",
+                values  = { Locale.ResolveString("NO"), Locale.ResolveString("YES") },
+                callback = function(fe) Client.SetOptionBoolean(kSoundMuteWhenMinized, fe:GetActiveOptionIndex() > 1) end;
             },
             { 
                 name    = "VoiceVolume",
@@ -2944,7 +2966,7 @@ function GUIMainMenu:Update(deltaTime)
         end
 
         local lastModel = Client.GetOptionString("currentModel", "")
-        if self.customizeFrame and self.customizeFrame:GetIsVisible() and MainMenu_IsInGame() then
+        if self.customizeFrame and self.customizeFrame:GetIsVisible() then
             MenuPoses_Update(deltaTime)
             MenuPoses_SetViewModel(false)
             MenuPoses_SetModelAngle(self.sliderAngleBar:GetValue() or 0)
@@ -3391,7 +3413,7 @@ local LinkItems =
 --Id of Links table is used to order links
 local LinkOrder =
 {
-    { 4,13,9,6,10,11,12 },
+    { 4,13,9,6,7,10,11,12 },
     { 1,2,3,4,9,6,7,8 }
 }
 

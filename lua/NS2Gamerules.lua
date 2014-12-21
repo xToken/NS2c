@@ -699,13 +699,18 @@ if Server then
         end
         
     end
+        
+    function VotingConcedeVoteAllowed()
+        local gameRules = GetGamerules()
+        return gameRules:GetGameStarted() and Shared.GetTime() - gameRules:GetGameStartTime() > kMinTimeBeforeConcede
+    end
     
     // Commander ejection functionality
     function NS2Gamerules:CastVoteByPlayer(voteTechId, player)
     
         if voteTechId == kTechId.VoteConcedeRound then
         
-            if self.timeSinceGameStateChanged > kMinTimeBeforeConcede and self:GetGameStarted() then
+            if VotingConcedeVoteAllowed() then
             
                 local team = player:GetTeam()
                 if team.VoteToGiveUp then

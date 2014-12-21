@@ -72,7 +72,6 @@ function Web:OnCreate()
     end
     
     self:SetUpdates(false)
-    self:SetPropagate(Entity.Propagate_Mask)
     self:SetRelevancyDistance(kMaxRelevancyDistance)
     
 end

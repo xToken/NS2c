@@ -117,19 +117,6 @@ function BileBomb:FireBombProjectile(player)
         local startVelocity = velocity * kPlayerVelocityFraction + viewCoords.zAxis * kBombVelocity
 
         local bomb = player:CreatePredictedProjectile("Bomb", startPoint, startVelocity, 0, 0, 13)
-    
-        /*local viewAngles = player:GetViewAngles()
-        local velocity = player:GetVelocity()
-        local viewCoords = viewAngles:GetCoords()
-        local startPoint = player:GetEyePos() + viewCoords.zAxis * 0.35
-        
-        local startPointTrace = Shared.TraceRay(player:GetEyePos(), startPoint, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterOne(player))
-        startPoint = startPointTrace.endPoint
-        
-        local startVelocity = viewCoords.zAxis * kBombVelocity + velocity * kPlayerVelocityFraction
-        
-        local bomb = CreateEntity(Bomb.kMapName, startPoint, player:GetTeamNumber())
-        bomb:Setup(player, startVelocity, true, nil, player)*/
         
     end
     

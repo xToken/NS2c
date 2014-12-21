@@ -29,6 +29,7 @@ kJumpMode = { Repeating = 2, Queued = 1, Default = 0 }
 
 // after 5 minutes players are allowed to give up a round
 kMinTimeBeforeConcede = 5 * 60
+kMaxTimeBeforeReset = 3 * 60
 kPercentNeededForVoteConcede = 0.75
 kPercentNeededForUpgradeChamberVote = 0.55
 
@@ -169,7 +170,7 @@ kMinimapBlipType = enum( { 'Undefined', 'TechPoint', 'ResourcePoint', 'Scan', 'E
                            'Hive', 'Harvester', 'Hydra', 'Egg', 'Embryo', 'Crag', 'Whip', 'Shade', 'Shift', 'Shell', 'Veil', 'Spur', 'TunnelEntrance', 'BoneWall',
                            'Marine', 'JetpackMarine', 'HeavyArmorMarine', 'Skulk', 'Lerk', 'Onos', 'Fade', 'Gorge',
                            'Door', 'PowerPoint', 'DestroyedPowerPoint', 'UnsocketedPowerPoint', 
-                           'BlueprintPowerPoint', 'SiegeCannon', 'Drifter', 'MAC', 'Infestation', 'InfestationDying', 'MoveOrder', 'AttackOrder', 'BuildOrder', 'SensorBlip', 'SentryBattery', 'Exo' } )
+                           'BlueprintPowerPoint', 'SiegeCannon', 'Drifter', 'MAC', 'Infestation', 'InfestationDying', 'MoveOrder', 'AttackOrder', 'BuildOrder', 'SensorBlip', 'SentryBattery' } )
 
 // Friendly IDs
 // 0 = friendly
@@ -183,7 +184,7 @@ kAlertExpireTime = 20
 
 // Bit mask table for non-stackable game effects.
 // Always keep "Max" as last element.
-kGameEffect = CreateBitMask( {"InUmbra", "Fury", "Cloaked", "Parasite", "NearDeath", "OnFire", "OnInfestation", "Beacon", "Energize", "Max"} )
+kGameEffect = CreateBitMask( {"InUmbra", "Fury", "Cloaked", "Parasite", "NearDeath", "OnFire", "OnInfestation", "Beacon", "Energize" } )
 kGameEffectMax = bit.lshift( 1, GetBitMaskNumBits(kGameEffect) )
 
 // Stackable game effects (more than one can be active, server-side only)
@@ -293,6 +294,7 @@ kNicknameOptionsKey = "nickname"
 kVisualDetailOptionsKey = "visualDetail"
 kSoundInputDeviceOptionsKey = "sound/input-device"
 kSoundOutputDeviceOptionsKey = "sound/output-device"
+kSoundMuteWhenMinized = "sound/minimized-mute"
 kSoundVolumeOptionsKey = "soundVolume"
 kMusicVolumeOptionsKey = "musicVolume"
 kVoiceVolumeOptionsKey = "voiceVolume"
@@ -438,6 +440,7 @@ kAssaultMarineProductId = 250892
 kShadowProductId = 250893
 kKodiakProductId = 296360
 kReaperProductId = 310100 //temp for testing 310100
+kReinforcementReduxProductId = 333230
 
 kNoShoulerPad = 0
 
@@ -458,7 +461,7 @@ kMarineVariantData =
     [kMarineVariant.green] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
     [kMarineVariant.special] = { productId = kSpecialEditionProductId, displayName = "Black", modelFilePart = "_special", viewModelFilePart = "_special" },
     [kMarineVariant.deluxe] = { productId = kDeluxeEditionProductId, displayName = "Deluxe", modelFilePart = "_special_v1", viewModelFilePart = "_deluxe" },
-    [kMarineVariant.assault] = { productId = kAssaultMarineProductId, displayName = "Assault", modelFilePart = "_assault", viewModelFilePart = "_assault" },
+    [kMarineVariant.assault] = { productId = { kAssaultMarineProductId, kReinforcementReduxProductId }, displayName = "Assault", modelFilePart = "_assault", viewModelFilePart = "_assault" },
     [kMarineVariant.eliteassault] = { productId = kShadowProductId, displayName = "Elite Assault", modelFilePart = "_eliteassault", viewModelFilePart = "_eliteassault" },
     [kMarineVariant.kodiak] = { productId = kKodiakProductId, displayName = "Kodiak", modelFilePart = "_kodiak", viewModelFilePart = "_kodiak" },
 }
@@ -468,7 +471,7 @@ kSkulkVariant = enum({ "normal", "shadow", "kodiak", "reaper" })
 kSkulkVariantData =
 {
     [kSkulkVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
-    [kSkulkVariant.shadow] = { productId = kShadowProductId, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" },
+    [kSkulkVariant.shadow] = { productId = { kShadowProductId, kReinforcementReduxProductId }, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" },
     [kSkulkVariant.kodiak] = { productId = kKodiakProductId, displayName = "Kodiak", modelFilePart = "_kodiak", viewModelFilePart = "" },
     [kSkulkVariant.reaper] = { productId = kReaperProductId, displayName = "Reaper", modelFilePart = "_albino", viewModelFilePart = "_albino" },
 }
@@ -556,7 +559,7 @@ end
 kShoulderPad2ProductId =
 {
     kNoShoulerPad,
-    kShoulderPadProductId,
+    { kShoulderPadProductId, kReinforcementReduxProductId },
     kShadowProductId,
     kShoulderPadGlobeProductId,
     { kShoulderPadGodarProductId, kShoulderPadGlobeProductId },

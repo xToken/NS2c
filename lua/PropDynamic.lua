@@ -13,6 +13,7 @@ Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/Mixins/SignalEmitterMixin.lua")
 Script.Load("lua/PowerConsumerMixin.lua")
+Script.Load("lua/OnShadowOptionMixin.lua")
 
 class 'PropDynamic' (ScriptActor)
 
@@ -29,6 +30,9 @@ function PropDynamic:OnCreate()
     InitMixin(self, ClientModelMixin)
     InitMixin(self, SignalEmitterMixin)
     InitMixin(self, PowerConsumerMixin)
+    if Client then
+        InitMixin(self, OnShadowOptionMixin)
+    end
     
     self.emitChannel = 0
     
@@ -46,6 +50,8 @@ if Server then
         
         self.modelName = self.model
         self.propScale = self.scale
+        self.decalsOn = self.decalsEnabled
+        self.avHighlightEnabled = self.avHighlight
         
         if self.modelName ~= nil then
         
@@ -81,11 +87,20 @@ if Server then
             
         end
       
+        -- Toggle being highlighted in Alien vision
+        if self.avHighlightEnabled and self.avHighlightEnabled == false then
+            self._renderModel:SetMaterialParameter("highlight", 0.5)
+        end
+        
+        -- Toggle decals being projected onto model
+        if self.decalsOn and self.decalsOn == false then
+            self._renderModel:SetMaterialParameter("decals", 0)
+        end
+
         self:SetUpdates(true)
       
         self:SetIsVisible(true)
     
-        self:SetPropagate(Entity.Propagate_Mask)
         self:UpdateRelevancyMask()
     
     end
@@ -102,6 +117,15 @@ if Server then
         
     end
     
+end
+
+if Client then 
+    // prop dynamics are commonly associated with dramatic shadows, so
+    // they must not be physics culled when shadows are on
+    function PropDynamic:OnShadowOptionChanged(shadowOption)
+        self:SetPhysicsCullable(not shadowOption)
+    end
+
 end
 
 /**

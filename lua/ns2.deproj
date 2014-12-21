@@ -358,9 +358,6 @@
     <filename>GhostMixin.lua</filename>
   </file>
   <file>
-    <filename>Hud\Commander\GhostModel.lua</filename>
-  </file>
-  <file>
     <filename>GhostStructureMixin.lua</filename>
   </file>
   <file>
