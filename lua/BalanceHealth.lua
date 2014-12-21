@@ -78,3 +78,6 @@ kShadeHealth = 800	kShadeArmor = 0	kShadePointValue = 10
 kWhipHealth  = 1100	kWhipArmor = 0	kWhipPointValue = 10
 kHydraHealth = 1000	kHydraArmor = 0	kHydraPointValue = 10
 kWebHealth = 1     kWebArmor = 0   kWebPointValue = 0
+
+// Doors are BACK
+kDoorHealth = 2000    kDoorArmor = 1000    kDoorPointValue = 0

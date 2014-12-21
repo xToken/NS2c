@@ -457,3 +457,4 @@ Event.Hook("MapLoadEntity", OnMapLoadEntity)
 Event.Hook("CanPlayerHearPlayer", OnCanPlayerHearPlayer)
 
 Script.Load("lua/PostLoadMod.lua")
+Script.Load("lua/Mixins/EEMSupport.lua")

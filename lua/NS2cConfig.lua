@@ -36,7 +36,7 @@ function GetServerGameMode()
             cachedGameMode = kGameMode.Classic
         end
         if cachedGameMode == nil then
-            if Shared.GetMapName():find("co_") then
+            if Shared.GetMapName():find("co_") or Shared.GetMapName():find("combat") then
                 cachedGameMode = kGameMode.Combat
             else
                 cachedGameMode = kGameMode.Classic

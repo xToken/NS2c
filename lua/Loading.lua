@@ -102,14 +102,18 @@ local function UpdateServerInformation()
                 local title = Client.GetModTitle(i)
                 local state  = Client.GetModState(i)
                 local downloading, bytesDownloaded, totalBytes = Client.GetModDownloadProgress(i)
-                local percent = "100%"
-                if state ~= "Available" then
-                    percent = "0%"
-                    if totalBytes > 0 then
-                        percent = string.format("%d%%", math.floor((bytesDownloaded / totalBytes) * 100))
-                    end
+                local status = "100%"
+                if state ~= "available" then
+					if downloading then
+						status = "0%"
+						if totalBytes > 0 then
+							status = string.format("%d%%", math.floor((bytesDownloaded / totalBytes) * 100))
+						end
+					else
+						status = "Queued"
+					end
                 end
-                msg2 = msg2 .. string.format("\n      %s  %s", title, percent)
+                msg2 = msg2 .. string.format("\n      %s  %s", title, status)
             end
         end
     end

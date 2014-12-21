@@ -24,3 +24,20 @@ GroundMoveMixin = CreateMixin(GroundMoveMixin)
 GroundMoveMixin.type = "GroundMove"
 
 GroundMoveMixin.networkVars = { }
+
+class 'Exo' (Player)
+
+Exo.kMapName = "exo"
+
+function Exo:OnCreate()
+end
+
+Shared.LinkClassToMap("Exo", Exo.kMapName)
+
+if TrainMixin then
+
+	function TrainMixin:GetControllerPhysicsGroup()
+		return PhysicsGroup.WhipGroup
+	end
+
+end

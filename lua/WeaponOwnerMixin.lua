@@ -398,7 +398,10 @@ function WeaponOwnerMixin:AddWeapon(weapon, setActive)
     if hasWeapon then
     
         local success = self:Drop(hasWeapon, true, true)
-        assert(success == true)
+		if not success then
+			self:RemoveWeapon(hasWeapon)
+			DestroyEntity(hasWeapon)
+		end
         
     end
     

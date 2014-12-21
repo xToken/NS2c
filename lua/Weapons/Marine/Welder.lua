@@ -42,7 +42,6 @@ local kAmountHealedForPoints = 600
 function Welder:OnCreate()
 
     Weapon.OnCreate(self)
-
     InitMixin(self, PickupableWeaponMixin)
     
     self.loopingSoundEntId = Entity.invalidId
@@ -325,6 +324,10 @@ function Welder:OnUpdateRender()
     
     end
 
+end
+
+function Welder:GetIsWelding()
+    return self.primaryAttacking
 end
 
 if Client then

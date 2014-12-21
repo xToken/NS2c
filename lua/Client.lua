@@ -1362,7 +1362,7 @@ function()
 end)
 
 Script.Load("lua/PostLoadMod.lua")
-
+Script.Load("lua/Mixins/EEMSupport.lua")
 // Initialize the camera at load time, so that the render setup will be
 // properly precached during the loading screen.
 InitializeRenderCamera()
