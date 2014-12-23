@@ -1,3 +1,4 @@
+--[[
 // ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
 // lua\Hive_Client.lua
@@ -6,12 +7,13 @@
 //                  Max McGuire (max@unknownworlds.com)
 //
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
+]]
 
 function Hive:OnUpdate(deltaTime)
 
     CommandStructure.OnUpdate(self, deltaTime)
       
-    // Attach mist effect if we don't have one already
+    -- Attach mist effect if we don't have one already
     local coords = self:GetCoords()
     local effectName = Hive.kIdleMistEffect
     
@@ -23,7 +25,7 @@ function Hive:OnUpdate(deltaTime)
     
     self:AttachEffect(effectName, coords, Cinematic.Repeat_Endless)
     self:SetEffectVisible(effectName, isVisible)
-    // Disable other stuff :P
+    -- Disable other stuff :P
     self:SetEffectVisible(Hive.kSpecksEffect, isVisible)
     self:SetEffectVisible(Hive.kGlowEffect, isVisible)
     

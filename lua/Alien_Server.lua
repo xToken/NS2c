@@ -388,9 +388,9 @@ end
 function Alien:CopyPlayerDataFrom(player)
 
     Player.CopyPlayerDataFrom(self, player)
-    
+           
     self.oneHive = player.oneHive
     self.twoHives = player.twoHives
     self.threeHives = player.threeHives
-    
+
 end

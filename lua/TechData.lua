@@ -127,6 +127,8 @@ kTechDataIgnorePathingMesh     = "ignorepathing"
 kTechDataMaxAmount = "maxstructureamount"
 // requires tf
 kTechDataRequiresTF = "requirestf"
+// ghost model scale
+kTechDataGhostModelScale = "ghostmodelscale"
 // for drawing ghost model, client
 kTechDataGhostModelClass = "ghostmodelclass"
 // for gorge build, can consume when dropping
@@ -147,236 +149,1678 @@ function BuildTechData()
     local techData = { 
 
         // Orders
-        { [kTechDataId] = kTechId.Move,                  [kTechDataDisplayName] = "MOVE",               [kTechDataHotkey] = Move.M, [kTechDataTooltipInfo] = "MOVE_TOOLTIP", [kTechDataOrderSound] = MarineCommander.kMoveToWaypointSoundName},
-		{ [kTechDataId] = kTechId.Patrol,                [kTechDataDisplayName] = "PATROL",             [kTechDataShowOrderLine] = true, [kTechDataHotkey] = Move.M, [kTechDataTooltipInfo] = "PATROL_TOOLTIP", [kTechDataOrderSound] = MarineCommander.kMoveToWaypointSoundName},
-        { [kTechDataId] = kTechId.Attack,                [kTechDataDisplayName] = "ATTACK",             [kTechDataHotkey] = Move.A, [kTechDataTooltipInfo] = "ATTACK_TOOLTIP", [kTechDataOrderSound] = MarineCommander.kAttackOrderSoundName},
-        { [kTechDataId] = kTechId.Build,                 [kTechDataDisplayName] = "BUILD",              [kTechDataTooltipInfo] = "BUILD_TOOLTIP"},
-        { [kTechDataId] = kTechId.Construct,             [kTechDataDisplayName] = "CONSTRUCT",          [kTechDataOrderSound] = MarineCommander.kBuildStructureSound},
-		{ [kTechDataId] = kTechId.AutoConstruct,         [kTechDataDisplayName] = "CONSTRUCT",          [kTechDataOrderSound] = MarineCommander.kBuildStructureSound},
-        { [kTechDataId] = kTechId.Cancel,                [kTechDataDisplayName] = "CANCEL",             [kTechDataHotkey] = Move.ESC},
-        { [kTechDataId] = kTechId.Follow,                [kTechDataDisplayName] = "FOLLOW" },
-        { [kTechDataId] = kTechId.FollowAndWeld,         [kTechDataDisplayName] = "FOLLOWANDWELD",      [kTechDataHotkey] = Move.W, [kTechDataTooltipInfo] = "FOLLOWANDWELD_TOOLTIP", [kTechDataOrderSound] = MarineCommander.kWeldOrderSound},
-        { [kTechDataId] = kTechId.Weld,                  [kTechDataDisplayName] = "WELD",               [kTechDataHotkey] = Move.W, [kTechDataTooltipInfo] = "WELD_TOOLTIP", [kTechDataOrderSound] = MarineCommander.kWeldOrderSound},
-        { [kTechDataId] = kTechId.AutoWeld,              [kTechDataDisplayName] = "WELD",               [kTechDataHotkey] = Move.W, [kTechDataTooltipInfo] = "WELD_TOOLTIP", [kTechDataOrderSound] = MarineCommander.kWeldOrderSound},
-        { [kTechDataId] = kTechId.Stop,                  [kTechDataDisplayName] = "STOP",               [kTechDataHotkey] = Move.S, [kTechDataTooltipInfo] = "STOP_TOOLTIP"},
-        { [kTechDataId] = kTechId.SetRally,              [kTechDataDisplayName] = "SET_RALLY_POINT",    [kTechDataHotkey] = Move.L, [kTechDataTooltipInfo] = "RALLY_POINT_TOOLTIP"},
-        { [kTechDataId] = kTechId.SetTarget,             [kTechDataDisplayName] = "SET_TARGET",         [kTechDataHotkey] = Move.T, [kTechDataTooltipInfo] = "SET_TARGET_TOOLTIP"},
-        { [kTechDataId] = kTechId.Heal,                  [kTechDataDisplayName] = "HEAL",               [kTechDataOrderSound] = Gorge.kHealTarget},
+        {[kTechDataId] = kTechId.Move,
+			[kTechDataDisplayName] = "MOVE",
+			[kTechDataHotkey] = Move.M,
+			[kTechDataTooltipInfo] = "MOVE_TOOLTIP",
+			[kTechDataOrderSound] = MarineCommander.kMoveToWaypointSoundName
+		},
+		
+		{[kTechDataId] = kTechId.Patrol,
+			[kTechDataDisplayName] = "PATROL",
+			[kTechDataShowOrderLine] = true,
+			[kTechDataHotkey] = Move.M,
+			[kTechDataTooltipInfo] = "PATROL_TOOLTIP",
+			[kTechDataOrderSound] = MarineCommander.kMoveToWaypointSoundName
+		},
+		
+        {[kTechDataId] = kTechId.Attack,
+			[kTechDataDisplayName] = "ATTACK",
+			[kTechDataHotkey] = Move.A,
+			[kTechDataTooltipInfo] = "ATTACK_TOOLTIP",
+			[kTechDataOrderSound] = MarineCommander.kAttackOrderSoundName
+		},
+		
+        {[kTechDataId] = kTechId.Build,
+			[kTechDataDisplayName] = "BUILD",
+			[kTechDataTooltipInfo] = "BUILD_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.Construct,
+			[kTechDataDisplayName] = "CONSTRUCT",
+			[kTechDataOrderSound] = MarineCommander.kBuildStructureSound
+		},
+		
+		{[kTechDataId] = kTechId.AutoConstruct,
+			[kTechDataDisplayName] = "CONSTRUCT",
+			[kTechDataOrderSound] = MarineCommander.kBuildStructureSound
+		},
+		
+        {[kTechDataId] = kTechId.Cancel,
+			[kTechDataDisplayName] = "CANCEL",
+			[kTechDataHotkey] = Move.ESC
+		},
+		
+        {[kTechDataId] = kTechId.Follow,
+			[kTechDataDisplayName] = "FOLLOW"
+		},
+		
+        {[kTechDataId] = kTechId.FollowAndWeld,
+			[kTechDataDisplayName] = "FOLLOWANDWELD",
+			[kTechDataHotkey] = Move.W,
+			[kTechDataTooltipInfo] = "FOLLOWANDWELD_TOOLTIP",
+			[kTechDataOrderSound] = MarineCommander.kWeldOrderSound
+		},
+		
+        {[kTechDataId] = kTechId.Weld,
+			[kTechDataDisplayName] = "WELD",
+			[kTechDataHotkey] = Move.W,
+			[kTechDataTooltipInfo] = "WELD_TOOLTIP",
+			[kTechDataOrderSound] = MarineCommander.kWeldOrderSound
+		},
+		
+        {[kTechDataId] = kTechId.AutoWeld,
+			[kTechDataDisplayName] = "WELD",
+			[kTechDataHotkey] = Move.W,
+			[kTechDataTooltipInfo] = "WELD_TOOLTIP",
+			[kTechDataOrderSound] = MarineCommander.kWeldOrderSound
+		},
+		
+        {[kTechDataId] = kTechId.Stop,
+			[kTechDataDisplayName] = "STOP",
+			[kTechDataHotkey] = Move.S,
+			[kTechDataTooltipInfo] = "STOP_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.SetRally,
+			[kTechDataDisplayName] = "SET_RALLY_POINT",
+			[kTechDataHotkey] = Move.L,
+			[kTechDataTooltipInfo] = "RALLY_POINT_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.SetTarget,
+			[kTechDataDisplayName] = "SET_TARGET",
+			[kTechDataHotkey] = Move.T,
+			[kTechDataTooltipInfo] = "SET_TARGET_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.Heal,
+			[kTechDataDisplayName] = "HEAL",
+			[kTechDataOrderSound] = Gorge.kHealTarget
+		},
         
         // Ready room player is the default player, hence the ReadyRoomPlayer.kMapName
-        { [kTechDataId] = kTechId.ReadyRoomPlayer,       [kTechDataDisplayName] = "READY_ROOM_PLAYER",  [kTechDataMapName] = ReadyRoomPlayer.kMapName, [kTechDataModel] = Marine.kModelName, [kTechDataMaxExtents] = Vector(Player.kXZExtents, Player.kYExtents, Player.kXZExtents) },
-        { [kTechDataId] = kTechId.Spectator,             [kTechDataModel] = "" },
-        { [kTechDataId] = kTechId.AlienSpectator,        [kTechDataModel] = "" },
+        {[kTechDataId] = kTechId.ReadyRoomPlayer,
+			[kTechDataDisplayName] = "READY_ROOM_PLAYER",
+			[kTechDataMapName] = ReadyRoomPlayer.kMapName,
+			[kTechDataModel] = Marine.kModelName,
+			[kTechDataMaxExtents] = Vector(Player.kXZExtents, Player.kYExtents, Player.kXZExtents)
+		},
+		
+        {[kTechDataId] = kTechId.Spectator,
+			[kTechDataModel] = ""
+		},
+		
+        {[kTechDataId] = kTechId.AlienSpectator,
+			[kTechDataModel] = ""
+		},
         
         // Marine orders
-        { [kTechDataId] = kTechId.Defend,                [kTechDataDisplayName] = "DEFEND", [kTechDataOrderSound] = MarineCommander.kDefendTargetSound},
+        {[kTechDataId] = kTechId.Defend,
+			[kTechDataDisplayName] = "DEFEND",
+			[kTechDataOrderSound] = MarineCommander.kDefendTargetSound
+		},
 
         // Menus
-        //{ [kTechDataId] = kTechId.RootMenu,              [kTechDataDisplayName] = "SELECT", [kTechDataHotkey] = Move.B, [kTechDataTooltipInfo] = "SELECT_TOOLTIP"},
-        { [kTechDataId] = kTechId.BuildMenu,             [kTechDataDisplayName] = "BUILD", [kTechDataHotkey] = Move.W, [kTechDataTooltipInfo] = "BUILD_TOOLTIP"},
-        { [kTechDataId] = kTechId.AdvancedMenu,          [kTechDataDisplayName] = "ADVANCED", [kTechDataHotkey] = Move.E, [kTechDataTooltipInfo] = "ADVANCED_TOOLTIP"},
-        { [kTechDataId] = kTechId.AssistMenu,            [kTechDataDisplayName] = "ASSIST", [kTechDataHotkey] = Move.R, [kTechDataTooltipInfo] = "ASSIST_TOOLTIP"},
-        { [kTechDataId] = kTechId.UpgradesMenu,          [kTechDataDisplayName] = "UPGRADES", [kTechDataHotkey] = Move.U, [kTechDataTooltipInfo] = "TEAM_UPGRADES_TOOLTIP"},
-        { [kTechDataId] = kTechId.WeaponsMenu,           [kTechDataDisplayName] = "WEAPONS_MENU", [kTechDataTooltipInfo] = "WEAPONS_MENU_TOOLTIP"},
+		/*{[kTechDataId] = kTechId.RootMenu,
+			[kTechDataDisplayName] = "SELECT",
+			[kTechDataHotkey] = Move.B,
+			[kTechDataTooltipInfo] = "SELECT_TOOLTIP"
+		},*/
+		
+        {[kTechDataId] = kTechId.BuildMenu,
+			[kTechDataDisplayName] = "BUILD",
+			[kTechDataHotkey] = Move.W,
+			[kTechDataTooltipInfo] = "BUILD_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.AdvancedMenu,
+			[kTechDataDisplayName] = "ADVANCED",
+			[kTechDataHotkey] = Move.E,
+			[kTechDataTooltipInfo] = "ADVANCED_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.AssistMenu,
+			[kTechDataDisplayName] = "ASSIST",
+			[kTechDataHotkey] = Move.R,
+			[kTechDataTooltipInfo] = "ASSIST_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.UpgradesMenu,
+			[kTechDataDisplayName] = "UPGRADES",
+			[kTechDataHotkey] = Move.U,
+			[kTechDataTooltipInfo] = "TEAM_UPGRADES_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.WeaponsMenu,
+			[kTechDataDisplayName] = "WEAPONS_MENU",
+			[kTechDataTooltipInfo] = "WEAPONS_MENU_TOOLTIP"
+		},
 
-        { [kTechDataId] = kTechId.TwoCommandStations,    [kTechDataDisplayName] = "TWO_COMMAND_STATIONS", [kTechDataTooltipInfo] = "TWO_COMMAND_STATIONS"},               
-        { [kTechDataId] = kTechId.ThreeCommandStations,  [kTechDataDisplayName] = "TWO_COMMAND_STATIONS", [kTechDataTooltipInfo] = "THREE_COMMAND_STATIONS"},               
+        {[kTechDataId] = kTechId.TwoCommandStations,
+			[kTechDataDisplayName] = "TWO_COMMAND_STATIONS",
+			[kTechDataTooltipInfo] = "TWO_COMMAND_STATIONS"
+		}, 
+		
+        {[kTechDataId] = kTechId.ThreeCommandStations,
+			[kTechDataDisplayName] = "TWO_COMMAND_STATIONS",
+			[kTechDataTooltipInfo] = "THREE_COMMAND_STATIONS"
+		},               
 
-        { [kTechDataId] = kTechId.ResourcePoint,         [kTechDataHint] = "RESOURCE_POINT_HINT",      [kTechDataMapName] = ResourcePoint.kPointMapName,    [kTechDataDisplayName] = "RESOURCE_NOZZLE", [kTechDataModel] = ResourcePoint.kModelName},
-        { [kTechDataId] = kTechId.TechPoint,             [kTechDataHint] = "TECH_POINT_HINT",        [kTechDataMapName] = TechPoint.kMapName,             [kTechDataDisplayName] = "TECH_POINT", [kTechDataModel] = TechPoint.kModelName},
-        { [kTechDataId] = kTechId.Door,                  [kTechDataDisplayName] = "DOOR", [kTechDataMapName] = Door.kMapName,  [kTechDataMaxHealth] = kDoorHealth, [kTechDataMaxArmor] = kDoorArmor, [kTechDataPointValue] = kDoorPointValue },
-        { [kTechDataId] = kTechId.DoorOpen,              [kTechDataDisplayName] = "OPEN_DOOR", [kTechDataHotkey] = Move.O, [kTechDataTooltipInfo] = "OPEN_DOOR_TOOLTIP"},
-        { [kTechDataId] = kTechId.DoorClose,             [kTechDataDisplayName] = "CLOSE_DOOR", [kTechDataHotkey] = Move.C, [kTechDataTooltipInfo] = "CLOSE_DOOR_TOOLTIP"},
-        { [kTechDataId] = kTechId.DoorLock,              [kTechDataDisplayName] = "LOCK_DOOR", [kTechDataHotkey] = Move.L, [kTechDataTooltipInfo] = "LOCKED_DOOR_TOOLTIP"},
-        { [kTechDataId] = kTechId.DoorUnlock,            [kTechDataDisplayName] = "UNLOCK_DOOR", [kTechDataHotkey] = Move.U, [kTechDataTooltipInfo] = "UNLOCK_DOOR_TOOLTIP"},
+        {[kTechDataId] = kTechId.ResourcePoint,
+			[kTechDataHint] = "RESOURCE_POINT_HINT",
+			[kTechDataMapName] = ResourcePoint.kPointMapName,
+			[kTechDataDisplayName] = "RESOURCE_NOZZLE",
+			[kTechDataModel] = ResourcePoint.kModelName
+		},
+		
+        {[kTechDataId] = kTechId.TechPoint,
+			[kTechDataHint] = "TECH_POINT_HINT",
+			[kTechDataMapName] = TechPoint.kMapName,
+			[kTechDataDisplayName] = "TECH_POINT",
+			[kTechDataModel] = TechPoint.kModelName
+		},
+		
+        {[kTechDataId] = kTechId.Door,
+			[kTechDataDisplayName] = "DOOR",
+			[kTechDataMapName] = Door.kMapName,
+			[kTechDataMaxHealth] = kDoorHealth,
+			[kTechDataMaxArmor] = kDoorArmor,
+			[kTechDataPointValue] = kDoorPointValue
+		},
+		
+        {[kTechDataId] = kTechId.DoorOpen,
+			[kTechDataDisplayName] = "OPEN_DOOR",
+			[kTechDataHotkey] = Move.O,
+			[kTechDataTooltipInfo] = "OPEN_DOOR_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.DoorClose,
+			[kTechDataDisplayName] = "CLOSE_DOOR",
+			[kTechDataHotkey] = Move.C,
+			[kTechDataTooltipInfo] = "CLOSE_DOOR_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.DoorLock,
+			[kTechDataDisplayName] = "LOCK_DOOR",
+			[kTechDataHotkey] = Move.L,
+			[kTechDataTooltipInfo] = "LOCKED_DOOR_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.DoorUnlock,
+			[kTechDataDisplayName] = "UNLOCK_DOOR",
+			[kTechDataHotkey] = Move.U,
+			[kTechDataTooltipInfo] = "UNLOCK_DOOR_TOOLTIP"
+		},
         
         // Marine Commander abilities    
-        { [kTechDataId] = kTechId.AmmoPack,             [kTechDataIgnorePathingMesh] = true,  [kTechDataAllowStacking] = true, [kTechDataCollideWithWorldOnly] = true, [kTechDataMapName] = AmmoPack.kMapName,                 [kTechDataDisplayName] = "AMMO_PACK",      [kTechDataCostKey] = kAmmoPackCost,            [kTechDataModel] = AmmoPack.kModelName, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.AMMO_PACK_TOOLTIP, [kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight },
-        { [kTechDataId] = kTechId.MedPack,              [kTechDataIgnorePathingMesh] = true,  [kTechDataAllowStacking] = true, [kTechDataCollideWithWorldOnly] = true, [kTechDataMapName] = MedPack.kMapName,                  [kTechDataDisplayName] = "MED_PACK",     [kTechDataCostKey] = kMedPackCost,             [kTechDataModel] = MedPack.kModelName,  [kTechDataTooltipInfo] = "MED_PACK_TOOLTIP", [kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight, [kTechDataCombatCost] = kCombatMarineBaseUpgradeCost },
-        { [kTechDataId] = kTechId.CatPack,              [kTechDataIgnorePathingMesh] = true,  [kTechDataAllowStacking] = true, [kTechDataCollideWithWorldOnly] = true, [kTechDataMapName] = CatPack.kMapName,                  [kTechDataDisplayName] = "CAT_PACK",      [kTechDataCostKey] = kCatPackCost,             [kTechDataModel] = CatPack.kModelName,  [kTechDataTooltipInfo] = "CAT_PACK_TOOLTIP", [kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight, [kTechDataCombatCost] = kCombatMarineBaseUpgradeCost },
-        { [kTechDataId] = kTechId.Scan,                 [kTechDataIgnorePathingMesh] = true,  [kTechDataAllowStacking] = true, [kTechDataCollideWithWorldOnly] = true, [kTechDataMapName] = Scan.kMapName,     [kTechDataDisplayName] = "SCAN",      [kTechDataHotkey] = Move.S,   [kTechDataCostKey] = kObservatoryScanCost, [kTechDataTooltipInfo] = "SCAN_TOOLTIP", [kTechDataCombatCost] = kCombatMarineBaseUpgradeCost },
-        { [kTechDataId] = kTechId.DistressBeacon,    [kTechDataBuildTime] = 0.1,    [kTechDataDisplayName] = "DISTRESS_BEACON",   [kTechDataHotkey] = Move.B, [kTechDataCostKey] = kObservatoryDistressBeaconCost, [kTechDataTooltipInfo] =  kNS2cLocalizedStrings.DISTRESS_BEACON_TOOLTIP},
-        { [kTechDataId] = kTechId.Recycle,               [kTechDataDisplayName] = "RECYCLE", [kTechDataCostKey] = 0,          [kTechDataResearchTimeKey] = kRecycleTime, [kTechDataHotkey] = Move.R, [kTechDataTooltipInfo] =  "RECYCLE_TOOLTIP"},
+        {[kTechDataId] = kTechId.AmmoPack,
+			[kTechDataIgnorePathingMesh] = true,
+			[kTechDataAllowStacking] = true,
+			[kTechDataCollideWithWorldOnly] = true,
+			[kTechDataMapName] = AmmoPack.kMapName,
+			[kTechDataDisplayName] = "AMMO_PACK",
+			[kTechDataCostKey] = kAmmoPackCost,
+			[kTechDataModel] = AmmoPack.kModelName,
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.AMMO_PACK_TOOLTIP,
+			[kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight
+		},
+		
+        {[kTechDataId] = kTechId.MedPack,
+			[kTechDataIgnorePathingMesh] = true,
+			[kTechDataAllowStacking] = true,
+			[kTechDataCollideWithWorldOnly] = true,
+			[kTechDataMapName] = MedPack.kMapName,
+			[kTechDataDisplayName] = "MED_PACK",
+			[kTechDataCostKey] = kMedPackCost,
+			[kTechDataModel] = MedPack.kModelName,
+			[kTechDataTooltipInfo] = "MED_PACK_TOOLTIP",
+			[kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight,
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.CatPack,
+			[kTechDataIgnorePathingMesh] = true,
+			[kTechDataAllowStacking] = true,
+			[kTechDataCollideWithWorldOnly] = true,
+			[kTechDataMapName] = CatPack.kMapName,
+			[kTechDataDisplayName] = "CAT_PACK",
+			[kTechDataCostKey] = kCatPackCost,
+			[kTechDataModel] = CatPack.kModelName,
+			[kTechDataTooltipInfo] = "CAT_PACK_TOOLTIP",
+			[kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight,
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Scan,
+			[kTechDataIgnorePathingMesh] = true,
+			[kTechDataAllowStacking] = true,
+			[kTechDataCollideWithWorldOnly] = true,
+			[kTechDataMapName] = Scan.kMapName,
+			[kTechDataDisplayName] = "SCAN",
+			[kTechDataHotkey] = Move.S,
+			[kTechDataCostKey] = kObservatoryScanCost,
+			[kTechDataTooltipInfo] = "SCAN_TOOLTIP",
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.DistressBeacon,
+			[kTechDataBuildTime] = 0.1,
+			[kTechDataDisplayName] = "DISTRESS_BEACON",
+			[kTechDataHotkey] = Move.B,
+			[kTechDataCostKey] = kObservatoryDistressBeaconCost,
+			[kTechDataTooltipInfo] =  kNS2cLocalizedStrings.DISTRESS_BEACON_TOOLTIP
+		},
+		
+        {[kTechDataId] = kTechId.Recycle,
+			[kTechDataDisplayName] = "RECYCLE",
+			[kTechDataCostKey] = 0,
+			[kTechDataResearchTimeKey] = kRecycleTime,
+			[kTechDataHotkey] = Move.R,
+			[kTechDataTooltipInfo] =  "RECYCLE_TOOLTIP"
+		},
         
         // Command station and its buildables
-        { [kTechDataId] = kTechId.CommandStation,  [kTechDataIgnorePathingMesh] = true,  [kTechDataHint] = "COMMAND_STATION_HINT", [kTechDataGhostModelClass] = "MarineGhostModel",  [kTechDataMapName] = CommandStation.kMapName,     [kTechDataDisplayName] = "COMMAND_STATION",  [kTechDataBuildTime] = kCommandStationBuildTime, [kTechDataCostKey] = kCommandStationCost, [kTechDataModel] = CommandStation.kModelName,             [kTechDataMaxHealth] = kCommandStationHealth, [kTechDataMaxArmor] = kCommandStationArmor,      [kTechDataSpawnHeightOffset] = 0, [kTechDataEngagementDistance] = kCommandStationEngagementDistance, [kTechDataPointValue] = kCommandStationPointValue, [kTechDataHotkey] = Move.C, [kTechDataMaxExtents] = Vector(0.5, 2.0, 1.5), [kTechDataTooltipInfo] = "COMMAND_STATION_TOOLTIP"},       
-        { [kTechDataId] = kTechId.Extractor,  [kTechDataIgnorePathingMesh] = true,   [kTechDataCollideWithWorldOnly] = true, [kTechDataAllowStacking] = true,  [kTechDataHint] = "EXTRACTOR_HINT", [kTechDataGhostModelClass] = "MarineGhostModel",      [kTechDataMapName] = Extractor.kMapName,                [kTechDataDisplayName] = "EXTRACTOR",           [kTechDataCostKey] = kExtractorCost,       [kTechDataBuildTime] = kExtractorBuildTime, [kTechDataEngagementDistance] = kExtractorEngagementDistance, [kTechDataModel] = Extractor.kModelName,            [kTechDataMaxHealth] = kExtractorHealth, [kTechDataMaxArmor] = kExtractorArmor, [kStructureAttachClass] = "ResourcePoint",  [kTechDataInitialEnergy] = kExtractorInitialEnergy,      [kTechDataMaxEnergy] = kExtractorMaxEnergy,  [kTechDataPointValue] = kExtractorPointValue, [kTechDataHotkey] = Move.E, [kTechDataTooltipInfo] =  kNS2cLocalizedStrings.EXTRACTOR_TOOLTIP},
-        { [kTechDataId] = kTechId.InfantryPortal, [kTechDataHint] = "INFANTRY_PORTAL_HINT", [kTechDataGhostModelClass] = "MarineGhostModel",  [kTechDataGhostGuidesMethod] = GetInfantryPortalGhostGuides,  [kTechDataMapName] = InfantryPortal.kMapName,           [kTechDataDisplayName] = "INFANTRY_PORTAL",     [kTechDataCostKey] = kInfantryPortalCost,   [kTechDataPointValue] = kInfantryPortalPointValue,   [kTechDataBuildTime] = kInfantryPortalBuildTime, [kTechDataMaxHealth] = kInfantryPortalHealth, [kTechDataMaxArmor] = kInfantryPortalArmor, [kTechDataModel] = InfantryPortal.kModelName, [kStructureAttachId] = kTechId.CommandStation, [kStructureAttachRange] = kInfantryPortalAttachRange, [kTechDataEngagementDistance] = kInfantryPortalEngagementDistance, [kTechDataHotkey] = Move.P, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.INFANTRY_PORTAL_TOOLTIP},
-        { [kTechDataId] = kTechId.Armory,         [kTechDataHint] = "ARMORY_HINT", [kTechDataGhostModelClass] = "MarineGhostModel",     [kTechDataMapName] = Armory.kMapName,                   [kTechDataDisplayName] = "ARMORY",              [kTechDataCostKey] = kArmoryCost,              [kTechDataBuildTime] = kArmoryBuildTime, [kTechDataMaxHealth] = kArmoryHealth, [kTechDataMaxArmor] = kArmoryArmor, [kTechDataEngagementDistance] = kArmoryEngagementDistance, [kTechDataModel] = Armory.kModelName, [kTechDataPointValue] = kArmoryPointValue, [kTechDataTooltipInfo] = "ARMORY_TOOLTIP"},
-        { [kTechDataId] = kTechId.ArmsLab,        [kTechDataHint] = "ARMSLAB_HINT", [kTechDataGhostModelClass] = "MarineGhostModel",       [kTechDataMapName] = ArmsLab.kMapName,                  [kTechDataDisplayName] = "ARMS_LAB",            [kTechDataCostKey] = kArmsLabCost,              [kTechDataBuildTime] = kArmsLabBuildTime, [kTechDataMaxHealth] = kArmsLabHealth, [kTechDataMaxArmor] = kArmsLabArmor, [kTechDataEngagementDistance] = kArmsLabEngagementDistance, [kTechDataModel] = ArmsLab.kModelName, [kTechDataPointValue] = kArmsLabPointValue, [kTechDataHotkey] = Move.A, [kTechDataTooltipInfo] = "ARMS_LAB_TOOLTIP"},
-        { [kTechDataId] = kTechId.Sentry,         [kTechDataHint] = "SENTRY_HINT", [kTechDataGhostModelClass] = "MarineGhostModel",   [kTechDataRequiresTF] = true,     [kTechDataMapName] = Sentry.kMapName,                   [kTechDataDisplayName] = "SENTRY_TURRET",       [kTechDataCostKey] = kSentryCost,         [kTechDataPointValue] = kSentryPointValue, [kTechDataModel] = Sentry.kModelName,            [kTechDataBuildTime] = kSentryBuildTime, [kTechDataMaxHealth] = kSentryHealth,  [kTechDataMaxArmor] = kSentryArmor, [kTechDataDamageType] = kSentryAttackDamageType, [kTechDataSpecifyOrientation] = true, [kTechDataHotkey] = Move.S, [kTechDataEngagementDistance] = kSentryEngagementDistance, [kTechDataTooltipInfo] = "SENTRY_TOOLTIP", [kStructureAttachId] = { kTechId.TurretFactory, kTechId.AdvancedTurretFactory }, [kStructureAttachRange] = kTurretFactoryAttachRange, [kTechDataBuildMethodFailedMessage] = kNS2cLocalizedStrings.COMMANDERERROR_TOO_MANY_SENTRIES, [kStructureBuildNearClass] = "TurretFactory", [kTechDataBuildRequiresMethod] = GetCheckSentryLimit, [kTechDataGhostGuidesMethod] = GetTurretFactoriesInRange }, 
-        { [kTechDataId] = kTechId.AdvancedArmory, [kTechDataHint] = "ADVANCED_ARMORY_HINT", [kTechDataGhostModelClass] = "MarineGhostModel",     [kTechDataMapName] = AdvancedArmory.kMapName,                   [kTechDataDisplayName] = "ADVANCED_ARMORY",     [kTechDataCostKey] = kAdvancedArmoryUpgradeCost,  [kTechDataModel] = Armory.kModelName,                     [kTechDataMaxHealth] = kAdvancedArmoryHealth,   [kTechDataMaxArmor] = kAdvancedArmoryArmor,  [kTechDataEngagementDistance] = kArmoryEngagementDistance,  [kTechDataUpgradeTech] = kTechId.Armory, [kTechDataPointValue] = kAdvancedArmoryPointValue},
-        { [kTechDataId] = kTechId.Observatory, [kTechDataHint] = "OBSERVATORY_HINT", [kTechDataGhostModelClass] = "MarineGhostModel",       [kTechDataMapName] = Observatory.kMapName,    [kTechDataDisplayName] = "OBSERVATORY",  [kVisualRange] = Observatory.kDetectionRange, [kTechDataCostKey] = kObservatoryCost,       [kTechDataModel] = Observatory.kModelName,            [kTechDataBuildTime] = kObservatoryBuildTime, [kTechDataMaxHealth] = kObservatoryHealth,   [kTechDataEngagementDistance] = kObservatoryEngagementDistance, [kTechDataMaxArmor] = kObservatoryArmor,   [kTechDataInitialEnergy] = kObservatoryInitialEnergy,      [kTechDataMaxEnergy] = kObservatoryMaxEnergy, [kTechDataPointValue] = kObservatoryPointValue, [kTechDataHotkey] = Move.O, [kTechDataTooltipInfo] = "OBSERVATORY_TOOLTIP"},
-        { [kTechDataId] = kTechId.TurretFactory, [kTechDataHint] = kNS2cLocalizedStrings.TURRET_FACTORY_HINT, [kTechDataGhostModelClass] = "MarineGhostModel",     [kTechDataDisplayName] = kNS2cLocalizedStrings.TURRET_FACTORY,  [kTechDataMapName] = TurretFactory.kMapName, [kTechDataCostKey] = kTurretFactoryCost,       [kTechDataModel] = TurretFactory.kModelName,   [kTechDataBuildTime] = kTurretFactoryBuildTime, [kTechDataMaxHealth] = kTurretFactoryHealth,    [kTechDataMaxArmor] = kTurretFactoryArmor, [kTechDataPointValue] = kTurretFactoryPointValue, [kTechDataHotkey] = Move.R, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.TURRET_FACTORY_TOOLTIP, [kTechDataBuildRequiresMethod] = GetRoomHasNoTurretFactory, [kTechDataBuildMethodFailedMessage] = kNS2cLocalizedStrings.COMMANDERERROR_ONLY_ONE_FACTORY_PER_ROOM },        
-        { [kTechDataId] = kTechId.AdvancedTurretFactory, [kTechDataHint] = kNS2cLocalizedStrings.ADVANCED_TURRET_FACTORY_HINT,   [kTechDataDisplayName] = kNS2cLocalizedStrings.ADVANCED_TURRET_FACTORY,  [kTechDataMapName] = AdvancedTurretFactory.kMapName, [kTechDataModel] = TurretFactory.kModelName,  [kTechDataBuildTime] = kTurretFactoryBuildTime, [kTechDataMaxHealth] = kAdvancedTurretFactory,    [kTechDataMaxArmor] = kAdvancedTurretFactoryArmor, [kTechDataPointValue] = kAdvancedTurretFactoryPointValue, [kTechDataHotkey] = Move.R, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.ADVANCED_TURRET_FACTORY_TOOLTIP},        
-        { [kTechDataId] = kTechId.SiegeCannon,      [kTechDataHint] = kNS2cLocalizedStrings.SIEGE_CANNON_HINT,   [kTechDataGhostModelClass] = "MarineGhostModel",  [kTechDataBuildTime] = kSiegeCannonBuildTime, [kTechDataRequiresTF] = true,        [kTechDataDisplayName] = kNS2cLocalizedStrings.SIEGE_CANNON,               [kTechDataMapName] = SiegeCannon.kMapName,   [kTechDataCostKey] = kSiegeCannonCost,       [kTechDataDamageType] = kSiegeCannonDamageType,  [kTechDataResearchTimeKey] = kSiegeCannonBuildTime, [kTechDataMaxHealth] = kSiegeCannonHealth, [kTechDataEngagementDistance] = kSiegeCannonEngagementDistance, [kVisualRange] = kSiegeCannonRange, [kTechDataMaxArmor] = kSiegeCannonArmor, [kTechDataModel] = SiegeCannon.kModelName, [kTechDataMaxHealth] = kSiegeCannonHealth, [kTechDataPointValue] = kSiegeCannonPointValue, [kTechDataHotkey] = Move.T, [kStructureAttachId] = { kTechId.AdvancedTurretFactory }, [kStructureAttachRange] = kTurretFactoryAttachRange, [kTechDataBuildMethodFailedMessage] = kNS2cLocalizedStrings.COMMANDERERROR_TOO_MANY_SIEGE_CANNONS, [kTechDataBuildRequiresMethod] = GetCheckSiegeCannonLimit },
-        { [kTechDataId] = kTechId.PhaseGate, [kTechDataHint] = "PHASE_GATE_HINT", [kTechDataGhostModelClass] = "MarineGhostModel",   [kTechDataMapName] = PhaseGate.kMapName,          [kTechDataBuildRequiresMethod] = CheckSpaceForPhaseGate,        [kTechDataDisplayName] = "PHASE_GATE",  [kTechDataCostKey] = kPhaseGateCost,       [kTechDataModel] = PhaseGate.kModelName, [kTechDataBuildTime] = kPhaseGateBuildTime, [kTechDataMaxHealth] = kPhaseGateHealth,   [kTechDataEngagementDistance] = kPhaseGateEngagementDistance, [kTechDataMaxArmor] = kPhaseGateArmor,   [kTechDataPointValue] = kPhaseGatePointValue, [kTechDataHotkey] = Move.P,  [kTechDataTooltipInfo] = "PHASE_GATE_TOOLTIP"},
-        { [kTechDataId] = kTechId.PrototypeLab, [kTechDataHint] = "PROTOTYPE_LAB_HINT", [kTechDataGhostModelClass] = "MarineGhostModel",  [kTechDataMapName] = PrototypeLab.kMapName, [kTechDataCostKey] = kPrototypeLabCost,                     [kTechDataBuildTime] = kPrototypeLabBuildTime,       [kTechDataDisplayName] = "PROTOTYPE_LAB", [kTechDataModel] = PrototypeLab.kModelName, [kTechDataMaxHealth] = kPrototypeLabHealth, [kTechDataPointValue] = kPrototypeLabPointValue, [kTechDataTooltipInfo] = "PROTOTYPE_LAB_TOOLTIP"},
+        {[kTechDataId] = kTechId.CommandStation,
+			[kTechDataHint] = "COMMAND_STATION_HINT",
+			[kTechDataGhostModelClass] = "MarineGhostModel",
+			[kTechDataMapName] = CommandStation.kMapName,
+			[kTechDataDisplayName] = "COMMAND_STATION",
+			[kTechDataBuildTime] = kCommandStationBuildTime,
+			[kTechDataCostKey] = kCommandStationCost,
+			[kTechDataModel] = CommandStation.kModelName,
+			[kTechDataMaxHealth] = kCommandStationHealth,
+			[kTechDataMaxArmor] = kCommandStationArmor,
+			[kTechDataSpawnHeightOffset] = 0,
+			[kTechDataEngagementDistance] = kCommandStationEngagementDistance,
+			[kTechDataPointValue] = kCommandStationPointValue,
+			[kTechDataHotkey] = Move.C,
+			[kTechDataMaxExtents] = Vector(0.5, 2.0, 1.5),
+			[kTechDataTooltipInfo] = "COMMAND_STATION_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.Extractor,
+			[kTechDataIgnorePathingMesh] = true,
+			[kTechDataCollideWithWorldOnly] = true,
+			[kTechDataAllowStacking] = true,
+			[kTechDataHint] = "EXTRACTOR_HINT",
+			[kTechDataGhostModelClass] = "MarineGhostModel",
+			[kTechDataMapName] = Extractor.kMapName,
+			[kTechDataDisplayName] = "EXTRACTOR",
+			[kTechDataCostKey] = kExtractorCost,
+			[kTechDataBuildTime] = kExtractorBuildTime,
+			[kTechDataEngagementDistance] = kExtractorEngagementDistance,
+			[kTechDataModel] = Extractor.kModelName,
+			[kTechDataMaxHealth] = kExtractorHealth,
+			[kTechDataMaxArmor] = kExtractorArmor,
+			[kStructureAttachClass] = "ResourcePoint",
+			[kTechDataInitialEnergy] = kExtractorInitialEnergy,
+			[kTechDataMaxEnergy] = kExtractorMaxEnergy,
+			[kTechDataPointValue] = kExtractorPointValue,
+			[kTechDataHotkey] = Move.E,
+			[kTechDataTooltipInfo] =  kNS2cLocalizedStrings.EXTRACTOR_TOOLTIP
+		},
+		
+        {[kTechDataId] = kTechId.InfantryPortal,
+			[kTechDataHint] = "INFANTRY_PORTAL_HINT",
+			[kTechDataGhostModelClass] = "MarineGhostModel",
+			[kTechDataGhostGuidesMethod] = GetInfantryPortalGhostGuides,
+			[kTechDataMapName] = InfantryPortal.kMapName,
+			[kTechDataDisplayName] = "INFANTRY_PORTAL",
+			[kTechDataCostKey] = kInfantryPortalCost,
+			[kTechDataPointValue] = kInfantryPortalPointValue,
+			[kTechDataBuildTime] = kInfantryPortalBuildTime,
+			[kTechDataMaxHealth] = kInfantryPortalHealth,
+			[kTechDataMaxArmor] = kInfantryPortalArmor,
+			[kTechDataModel] = InfantryPortal.kModelName,
+			[kStructureAttachId] = kTechId.CommandStation,
+			[kStructureAttachRange] = kInfantryPortalAttachRange,
+			[kTechDataEngagementDistance] = kInfantryPortalEngagementDistance,
+			[kTechDataHotkey] = Move.P,
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.INFANTRY_PORTAL_TOOLTIP
+		},
+		
+        {[kTechDataId] = kTechId.Armory,
+			[kTechDataHint] = "ARMORY_HINT",
+			[kTechDataGhostModelClass] = "MarineGhostModel",
+			[kTechDataMapName] = Armory.kMapName,
+			[kTechDataDisplayName] = "ARMORY",
+			[kTechDataCostKey] = kArmoryCost,
+			[kTechDataBuildTime] = kArmoryBuildTime,
+			[kTechDataMaxHealth] = kArmoryHealth,
+			[kTechDataMaxArmor] = kArmoryArmor,
+			[kTechDataEngagementDistance] = kArmoryEngagementDistance,
+			[kTechDataModel] = Armory.kModelName,
+			[kTechDataPointValue] = kArmoryPointValue,
+			[kTechDataTooltipInfo] = "ARMORY_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.ArmsLab,
+			[kTechDataHint] = "ARMSLAB_HINT",
+			[kTechDataGhostModelClass] = "MarineGhostModel",
+			[kTechDataMapName] = ArmsLab.kMapName,
+			[kTechDataDisplayName] = "ARMS_LAB",
+			[kTechDataCostKey] = kArmsLabCost,
+			[kTechDataBuildTime] = kArmsLabBuildTime,
+			[kTechDataMaxHealth] = kArmsLabHealth,
+			[kTechDataMaxArmor] = kArmsLabArmor,
+			[kTechDataEngagementDistance] = kArmsLabEngagementDistance,
+			[kTechDataModel] = ArmsLab.kModelName,
+			[kTechDataPointValue] = kArmsLabPointValue,
+			[kTechDataHotkey] = Move.A,
+			[kTechDataTooltipInfo] = "ARMS_LAB_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.Sentry,
+			[kTechDataHint] = "SENTRY_HINT",
+			[kTechDataGhostModelClass] = "MarineGhostModel", 
+			[kTechDataRequiresTF] = true,
+			[kTechDataMapName] = Sentry.kMapName,
+			[kTechDataDisplayName] = "SENTRY_TURRET",
+			[kTechDataCostKey] = kSentryCost,
+			[kTechDataPointValue] = kSentryPointValue,
+			[kTechDataModel] = Sentry.kModelName,
+			[kTechDataBuildTime] = kSentryBuildTime,
+			[kTechDataMaxHealth] = kSentryHealth,
+			[kTechDataMaxArmor] = kSentryArmor,
+			[kTechDataDamageType] = kSentryAttackDamageType,
+			[kTechDataSpecifyOrientation] = true,
+			[kTechDataHotkey] = Move.S,
+			[kTechDataEngagementDistance] = kSentryEngagementDistance,
+			[kTechDataTooltipInfo] = "SENTRY_TOOLTIP",
+			[kStructureAttachId] = { kTechId.TurretFactory, kTechId.AdvancedTurretFactory },
+			[kStructureAttachRange] = kTurretFactoryAttachRange,
+			[kTechDataBuildMethodFailedMessage] = kNS2cLocalizedStrings.COMMANDERERROR_TOO_MANY_SENTRIES,
+			[kStructureBuildNearClass] = "TurretFactory",
+			[kTechDataBuildRequiresMethod] = GetCheckSentryLimit,
+			[kTechDataGhostGuidesMethod] = GetTurretFactoriesInRange
+		},
+		
+        {[kTechDataId] = kTechId.AdvancedArmory,
+			[kTechDataHint] = "ADVANCED_ARMORY_HINT",
+			[kTechDataGhostModelClass] = "MarineGhostModel",
+			[kTechDataMapName] = AdvancedArmory.kMapName,
+			[kTechDataDisplayName] = "ADVANCED_ARMORY",
+			[kTechDataCostKey] = kAdvancedArmoryUpgradeCost,
+			[kTechDataModel] = Armory.kModelName,
+			[kTechDataMaxHealth] = kAdvancedArmoryHealth,
+			[kTechDataMaxArmor] = kAdvancedArmoryArmor,
+			[kTechDataEngagementDistance] = kArmoryEngagementDistance,
+			[kTechDataUpgradeTech] = kTechId.Armory,
+			[kTechDataPointValue] = kAdvancedArmoryPointValue
+		},
+		
+        {[kTechDataId] = kTechId.Observatory,
+			[kTechDataHint] = "OBSERVATORY_HINT",
+			[kTechDataGhostModelClass] = "MarineGhostModel",
+			[kTechDataMapName] = Observatory.kMapName,
+			[kTechDataDisplayName] = "OBSERVATORY",
+			[kVisualRange] = Observatory.kDetectionRange,
+			[kTechDataCostKey] = kObservatoryCost,
+			[kTechDataModel] = Observatory.kModelName,
+			[kTechDataBuildTime] = kObservatoryBuildTime,
+			[kTechDataMaxHealth] = kObservatoryHealth,
+			[kTechDataEngagementDistance] = kObservatoryEngagementDistance,
+			[kTechDataMaxArmor] = kObservatoryArmor,
+			[kTechDataInitialEnergy] = kObservatoryInitialEnergy,
+			[kTechDataMaxEnergy] = kObservatoryMaxEnergy,
+			[kTechDataPointValue] = kObservatoryPointValue,
+			[kTechDataHotkey] = Move.O,
+			[kTechDataTooltipInfo] = "OBSERVATORY_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.TurretFactory,
+			[kTechDataHint] = kNS2cLocalizedStrings.TURRET_FACTORY_HINT,
+			[kTechDataGhostModelClass] = "MarineGhostModel",
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.TURRET_FACTORY,
+			[kTechDataMapName] = TurretFactory.kMapName,
+			[kTechDataCostKey] = kTurretFactoryCost,
+			[kTechDataModel] = TurretFactory.kModelName,
+			[kTechDataBuildTime] = kTurretFactoryBuildTime,
+			[kTechDataMaxHealth] = kTurretFactoryHealth,
+			[kTechDataMaxArmor] = kTurretFactoryArmor,
+			[kTechDataPointValue] = kTurretFactoryPointValue,
+			[kTechDataHotkey] = Move.R,
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.TURRET_FACTORY_TOOLTIP,
+			[kTechDataBuildRequiresMethod] = GetRoomHasNoTurretFactory,
+			[kTechDataBuildMethodFailedMessage] = kNS2cLocalizedStrings.COMMANDERERROR_ONLY_ONE_FACTORY_PER_ROOM
+		},
+		
+        {[kTechDataId] = kTechId.AdvancedTurretFactory,
+			[kTechDataHint] = kNS2cLocalizedStrings.ADVANCED_TURRET_FACTORY_HINT,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.ADVANCED_TURRET_FACTORY,
+			[kTechDataMapName] = AdvancedTurretFactory.kMapName,
+			[kTechDataModel] = TurretFactory.kModelName,
+			[kTechDataBuildTime] = kTurretFactoryBuildTime,
+			[kTechDataMaxHealth] = kAdvancedTurretFactory,
+			[kTechDataMaxArmor] = kAdvancedTurretFactoryArmor,
+			[kTechDataPointValue] = kAdvancedTurretFactoryPointValue,
+			[kTechDataHotkey] = Move.R,
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.ADVANCED_TURRET_FACTORY_TOOLTIP
+		},
+		
+        {[kTechDataId] = kTechId.SiegeCannon,
+			[kTechDataHint] = kNS2cLocalizedStrings.SIEGE_CANNON_HINT,
+			[kTechDataGhostModelClass] = "MarineGhostModel",
+			[kTechDataBuildTime] = kSiegeCannonBuildTime,
+			[kTechDataRequiresTF] = true,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.SIEGE_CANNON,
+			[kTechDataMapName] = SiegeCannon.kMapName,
+			[kTechDataCostKey] = kSiegeCannonCost,
+			[kTechDataDamageType] = kSiegeCannonDamageType,
+			[kTechDataResearchTimeKey] = kSiegeCannonBuildTime,
+			[kTechDataMaxHealth] = kSiegeCannonHealth,
+			[kTechDataEngagementDistance] = kSiegeCannonEngagementDistance,
+			[kVisualRange] = kSiegeCannonRange,
+			[kTechDataMaxArmor] = kSiegeCannonArmor,
+			[kTechDataModel] = SiegeCannon.kModelName,
+			[kTechDataMaxHealth] = kSiegeCannonHealth,
+			[kTechDataPointValue] = kSiegeCannonPointValue,
+			[kTechDataHotkey] = Move.T,
+			[kStructureAttachId] = { kTechId.AdvancedTurretFactory },
+			[kStructureAttachRange] = kTurretFactoryAttachRange,
+			[kTechDataBuildMethodFailedMessage] = kNS2cLocalizedStrings.COMMANDERERROR_TOO_MANY_SIEGE_CANNONS,
+			[kTechDataBuildRequiresMethod] = GetCheckSiegeCannonLimit
+		},
+		
+        {[kTechDataId] = kTechId.PhaseGate,
+			[kTechDataHint] = "PHASE_GATE_HINT",
+			[kTechDataGhostModelClass] = "MarineGhostModel",
+			[kTechDataMapName] = PhaseGate.kMapName,
+			[kTechDataBuildRequiresMethod] = CheckSpaceForPhaseGate,
+			[kTechDataDisplayName] = "PHASE_GATE",
+			[kTechDataCostKey] = kPhaseGateCost,
+			[kTechDataModel] = PhaseGate.kModelName,
+			[kTechDataBuildTime] = kPhaseGateBuildTime,
+			[kTechDataMaxHealth] = kPhaseGateHealth,
+			[kTechDataEngagementDistance] = kPhaseGateEngagementDistance,
+			[kTechDataMaxArmor] = kPhaseGateArmor,
+			[kTechDataPointValue] = kPhaseGatePointValue,
+			[kTechDataHotkey] = Move.P,
+			[kTechDataTooltipInfo] = "PHASE_GATE_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.PrototypeLab,
+			[kTechDataHint] = "PROTOTYPE_LAB_HINT",
+			[kTechDataGhostModelClass] = "MarineGhostModel",
+			[kTechDataMapName] = PrototypeLab.kMapName,
+			[kTechDataCostKey] = kPrototypeLabCost,
+			[kTechDataBuildTime] = kPrototypeLabBuildTime,
+			[kTechDataDisplayName] = "PROTOTYPE_LAB",
+			[kTechDataModel] = PrototypeLab.kModelName,
+			[kTechDataMaxHealth] = kPrototypeLabHealth,
+			[kTechDataPointValue] = kPrototypeLabPointValue,
+			[kTechDataTooltipInfo] = "PROTOTYPE_LAB_TOOLTIP"
+		},
         
         // Marine classes
-        { [kTechDataId] = kTechId.Marine,      [kTechDataDisplayName] = "MARINE", [kTechDataMapName] = Marine.kMapName, [kTechDataModel] = MarineVariantMixin.kModelNames["male"]["green"], [kTechDataMaxExtents] = Vector(Player.kXZExtents, Player.kYExtents, Player.kXZExtents), [kTechDataMaxHealth] = kMarineHealth, [kTechDataEngagementDistance] = kPlayerEngagementDistance, [kTechDataPointValue] = kMarinePointValue},
-        { [kTechDataId] = kTechId.HeavyArmorMarine,      [kTechDataDisplayName] = "HEAVY_ARMOR", [kTechDataMapName] = HeavyArmorMarine.kMapName, [kTechDataModel] = HeavyArmorMarine.kModelName, [kTechDataMaxExtents] = Vector(Player.kXZExtents, Player.kYExtents, Player.kXZExtents), [kTechDataMaxHealth] = kHeavyArmorHealth, [kTechDataEngagementDistance] = kPlayerEngagementDistance, [kTechDataPointValue] = kHeavyArmorPointValue},
-        { [kTechDataId] = kTechId.MarineCommander,     [kTechDataDisplayName] = "MARINE_COMMANDER", [kTechDataMapName] = MarineCommander.kMapName, [kTechDataModel] = ""},
-        { [kTechDataId] = kTechId.JetpackMarine,   [kTechDataHint] = "JETPACK_HINT",    [kTechDataDisplayName] = "JETPACK", [kTechDataMapName] = JetpackMarine.kMapName, [kTechDataModel] = Marine.kModelName, [kTechDataMaxExtents] = Vector(Player.kXZExtents, Player.kYExtents, Player.kXZExtents), [kTechDataMaxHealth] = kJetpackHealth, [kTechDataEngagementDistance] = kPlayerEngagementDistance, [kTechDataPointValue] = kMarinePointValue},
+        {[kTechDataId] = kTechId.Marine,
+			[kTechDataDisplayName] = "MARINE",
+			[kTechDataMapName] = Marine.kMapName,
+			[kTechDataModel] = MarineVariantMixin.kModelNames["male"]["green"],
+			[kTechDataMaxExtents] = Vector(Player.kXZExtents, Player.kYExtents, Player.kXZExtents),
+			[kTechDataMaxHealth] = kMarineHealth,
+			[kTechDataEngagementDistance] = kPlayerEngagementDistance,
+			[kTechDataPointValue] = kMarinePointValue
+		},
+		
+        {[kTechDataId] = kTechId.HeavyArmorMarine,
+			[kTechDataDisplayName] = "HEAVY_ARMOR",
+			[kTechDataMapName] = HeavyArmorMarine.kMapName,
+			[kTechDataModel] = HeavyArmorMarine.kModelName,
+			[kTechDataMaxExtents] = Vector(Player.kXZExtents, Player.kYExtents, Player.kXZExtents),
+			[kTechDataMaxHealth] = kHeavyArmorHealth,
+			[kTechDataEngagementDistance] = kPlayerEngagementDistance,
+			[kTechDataPointValue] = kHeavyArmorPointValue
+		},
+		
+        {[kTechDataId] = kTechId.MarineCommander,
+			[kTechDataDisplayName] = "MARINE_COMMANDER",
+			[kTechDataMapName] = MarineCommander.kMapName,
+			[kTechDataModel] = ""
+		},
+		
+        {[kTechDataId] = kTechId.JetpackMarine,
+			[kTechDataHint] = "JETPACK_HINT",
+			[kTechDataDisplayName] = "JETPACK",
+			[kTechDataMapName] = JetpackMarine.kMapName,
+			[kTechDataModel] = MarineVariantMixin.kModelNames["male"]["green"],
+			[kTechDataMaxExtents] = Vector(Player.kXZExtents, Player.kYExtents, Player.kXZExtents),
+			[kTechDataMaxHealth] = kJetpackHealth,
+			[kTechDataEngagementDistance] = kPlayerEngagementDistance,
+			[kTechDataPointValue] = kMarinePointValue
+		},
         
         // Weapons
-        { [kTechDataId] = kTechId.Mine,        [kTechDataMapName] = Mine.kMapName,             [kTechDataHint] = "MINE_HINT", [kTechDataDisplayName] = "MINE", [kTechDataEngagementDistance] = kMineDetonateRange, [kTechDataMaxHealth] = kMineHealth, [kTechDataMaxArmor] = kMineArmor, [kTechDataModel] = Mine.kModelName, [kTechDataPointValue] = kMinePointValue, },
-        { [kTechDataId] = kTechId.Rifle,      [kTechDataMaxHealth] = kRifleHealth, [kTechDataMaxArmor] = kRifleArmor,  [kTechDataPointValue] = kWeaponPointValue,    [kTechDataMapName] = Rifle.kMapName,                    [kTechDataDisplayName] = "RIFLE",         [kTechDataModel] = Rifle.kModelName, [kTechDataDamageType] = kRifleDamageType, [kTechDataCostKey] = kRifleDropCost, },
-        { [kTechDataId] = kTechId.Pistol,     [kTechDataMaxHealth] = kPistolHealth, [kTechDataMaxArmor] = kPistolArmor,  [kTechDataPointValue] = kWeaponPointValue,          [kTechDataMapName] = Pistol.kMapName,                   [kTechDataDisplayName] = "PISTOL",         [kTechDataModel] = Pistol.kModelName, [kTechDataDamageType] = kPistolDamageType, [kTechDataCostKey] = kPistolCost, },
-        { [kTechDataId] = kTechId.Axe,                   [kTechDataMapName] = Axe.kMapName,                      [kTechDataDisplayName] = "SWITCH_AX",         [kTechDataModel] = Axe.kModelName, [kTechDataDamageType] = kAxeDamageType, [kTechDataCostKey] = kAxeCost, },
-        { [kTechDataId] = kTechId.Shotgun,   [kTechDataAllowStacking] = true, [kTechDataMapName] = Shotgun.kMapName, [kTechDataDisplayName] = "SHOTGUN", [kTechDataTooltipInfo] =  "SHOTGUN_TOOLTIP", [kTechDataModel] = Shotgun.kModelName, [kTechDataCostKey] = kShotgunDropCost, [kTechDataDamageType] = kShotgunDamageType, [kStructureAttachId] = { kTechId.Armory, kTechId.AdvancedArmory }, [kStructureAttachRange] = kArmoryWeaponAttachRange, [kTechDataCombatCost] = kCombatMarineBaseUpgradeCost },
-        { [kTechDataId] = kTechId.HeavyMachineGun,  [kTechDataAllowStacking] = true,  [kTechDataMapName] = HeavyMachineGun.kMapName, [kTechDataDisplayName] = kNS2cLocalizedStrings.HEAVY_MACHINE_GUN, [kTechDataTooltipInfo] =  kNS2cLocalizedStrings.HEAVY_MACHINE_GUN_TOOLTIP, [kTechDataModel] = HeavyMachineGun.kModelName, [kTechDataCostKey] = kHeavyMachineGunCost, [kTechDataDamageType] = kHeavyMachineGunDamageType, [kStructureAttachId] = { kTechId.AdvancedArmory }, [kStructureAttachRange] = kArmoryWeaponAttachRange, [kTechDataCombatCost] = kCombatMarineBaseUpgradeCost },
-        { [kTechDataId] = kTechId.Welder,   [kTechDataAllowStacking] = true,  [kTechDataMapName] = Welder.kMapName, [kTechDataDisplayName] = "WELDER", [kTechDataTooltipInfo] =  "WELDER_TOOLTIP", [kTechDataModel] = Welder.kModelName, [kTechDataCostKey] = kWelderDropCost, [kStructureAttachId] = { kTechId.Armory, kTechId.AdvancedArmory }, [kStructureAttachRange] = kArmoryWeaponAttachRange, [kTechDataCombatCost] = kCombatMarineBaseUpgradeCost },
-        { [kTechDataId] = kTechId.Mines,  [kTechDataAllowStacking] = true,  [kTechDataMapName] = Mines.kMapName, [kTechDataDisplayName] = "MINE", [kTechDataTooltipInfo] =  "MINE_TOOLTIP", [kTechDataModel] = Mine.kModelName, [kTechDataCostKey] = kMinesDropCost, [kStructureAttachId] = { kTechId.Armory, kTechId.AdvancedArmory }, [kStructureAttachRange] = kArmoryWeaponAttachRange, [kTechDataCombatCost] = kCombatMarineBaseUpgradeCost },
-        { [kTechDataId] = kTechId.HandGrenades,   [kTechDataMapName] = HandGrenades.kMapName, [kTechDataDisplayName] = kNS2cLocalizedStrings.HAND_GRENADES, [kTechDataTooltipInfo] =  kNS2cLocalizedStrings.HAND_GRENADES_TOOLTIP, [kTechDataModel] = HandGrenades.kModelName, [kTechDataCombatCost] = kCombatMarineBaseUpgradeCost },
-        { [kTechDataId] = kTechId.GrenadeLauncher, [kTechDataAllowStacking] = true,   [kTechDataMapName] = GrenadeLauncher.kMapName, [kTechDataDisplayName] = "GRENADE_LAUNCHER", [kTechDataTooltipInfo] =  "GRENADE_LAUNCHER_TOOLTIP", [kTechDataModel] = GrenadeLauncher.kModelName, [kTechDataCostKey] = kGrenadeLauncherDropCost, [kStructureAttachId] = kTechId.AdvancedArmory, [kStructureAttachRange] = kArmoryWeaponAttachRange, [kTechDataCombatCost] = kCombatMarineBaseUpgradeCost },
-        { [kTechDataId] = kTechId.Jetpack,  [kTechDataAllowStacking] = true,  [kTechDataMapName] = Jetpack.kMapName, [kTechDataDisplayName] = "JETPACK", [kTechDataTooltipInfo] =  "JETPACK_TOOLTIP", [kTechDataModel] = Jetpack.kModelName, [kTechDataCostKey] = kJetpackDropCost, [kStructureAttachId] = kTechId.PrototypeLab, [kStructureAttachRange] = kArmoryWeaponAttachRange, [kTechDataCombatCost] = kCombatMarineJetpackCost },
-        { [kTechDataId] = kTechId.HeavyArmor,  [kTechDataAllowStacking] = true,  [kTechDataMapName] = HeavyArmor.kMapName, [kTechDataDisplayName] = kNS2cLocalizedStrings.HEAVY_ARMOR, [kTechDataTooltipInfo] =  kNS2cLocalizedStrings.HEAVY_ARMOR_TOOLTIP, [kTechDataModel] = HeavyArmor.kModelName, [kTechDataCostKey] = kHeavyArmorDropCost, [kStructureAttachId] = kTechId.PrototypeLab, [kStructureAttachRange] = kArmoryWeaponAttachRange, [kTechDataCombatCost] = kCombatMarineHeavyArmorCost },
+        {[kTechDataId] = kTechId.Mine,
+			[kTechDataMapName] = Mine.kMapName,
+			[kTechDataHint] = "MINE_HINT",
+			[kTechDataDisplayName] = "MINE",
+			[kTechDataEngagementDistance] = kMineDetonateRange,
+			[kTechDataMaxHealth] = kMineHealth,
+			[kTechDataMaxArmor] = kMineArmor,
+			[kTechDataModel] = Mine.kModelName,
+			[kTechDataPointValue] = kMinePointValue
+		},
+		
+        {[kTechDataId] = kTechId.Rifle,
+			[kTechDataMaxHealth] = kRifleHealth,
+			[kTechDataMaxArmor] = kRifleArmor,
+			[kTechDataPointValue] = kWeaponPointValue,
+			[kTechDataMapName] = Rifle.kMapName,
+			[kTechDataDisplayName] = "RIFLE",
+			[kTechDataModel] = Rifle.kModelName,
+			[kTechDataDamageType] = kRifleDamageType,
+			[kTechDataCostKey] = kRifleDropCost
+		},
+		
+        {[kTechDataId] = kTechId.Pistol,
+			[kTechDataMaxHealth] = kPistolHealth,
+			[kTechDataMaxArmor] = kPistolArmor,
+			[kTechDataPointValue] = kWeaponPointValue,
+			[kTechDataMapName] = Pistol.kMapName,
+			[kTechDataDisplayName] = "PISTOL",
+			[kTechDataModel] = Pistol.kModelName,
+			[kTechDataDamageType] = kPistolDamageType,
+			[kTechDataCostKey] = kPistolCost
+		},
+		
+        {[kTechDataId] = kTechId.Axe,
+			[kTechDataMapName] = Axe.kMapName,
+			[kTechDataDisplayName] = "SWITCH_AX",
+			[kTechDataModel] = Axe.kModelName,
+			[kTechDataDamageType] = kAxeDamageType,
+			[kTechDataCostKey] = kAxeCost
+		},
+		
+        {[kTechDataId] = kTechId.Shotgun,
+			[kTechDataAllowStacking] = true,
+			[kTechDataMapName] = Shotgun.kMapName,
+			[kTechDataDisplayName] = "SHOTGUN",
+			[kTechDataTooltipInfo] =  "SHOTGUN_TOOLTIP",
+			[kTechDataModel] = Shotgun.kModelName,
+			[kTechDataCostKey] = kShotgunDropCost,
+			[kTechDataDamageType] = kShotgunDamageType,
+			[kStructureAttachId] = { kTechId.Armory, kTechId.AdvancedArmory },
+			[kStructureAttachRange] = kArmoryWeaponAttachRange,
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.HeavyMachineGun,
+			[kTechDataAllowStacking] = true,
+			[kTechDataMapName] = HeavyMachineGun.kMapName,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.HEAVY_MACHINE_GUN,
+			[kTechDataTooltipInfo] =  kNS2cLocalizedStrings.HEAVY_MACHINE_GUN_TOOLTIP,
+			[kTechDataModel] = HeavyMachineGun.kModelName,
+			[kTechDataCostKey] = kHeavyMachineGunCost,
+			[kTechDataDamageType] = kHeavyMachineGunDamageType,
+			[kStructureAttachId] = { kTechId.AdvancedArmory },
+			[kStructureAttachRange] = kArmoryWeaponAttachRange,
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Welder,
+			[kTechDataAllowStacking] = true,
+			[kTechDataMapName] = Welder.kMapName,
+			[kTechDataDisplayName] = "WELDER",
+			[kTechDataTooltipInfo] =  "WELDER_TOOLTIP",
+			[kTechDataModel] = Welder.kModelName,
+			[kTechDataCostKey] = kWelderDropCost,
+			[kStructureAttachId] = { kTechId.Armory, kTechId.AdvancedArmory },
+			[kStructureAttachRange] = kArmoryWeaponAttachRange,
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Mines,
+			[kTechDataAllowStacking] = true,
+			[kTechDataMapName] = Mines.kMapName,
+			[kTechDataDisplayName] = "MINE",
+			[kTechDataTooltipInfo] =  "MINE_TOOLTIP",
+			[kTechDataModel] = Mine.kModelName,
+			[kTechDataCostKey] = kMinesDropCost,
+			[kStructureAttachId] = { kTechId.Armory, kTechId.AdvancedArmory },
+			[kStructureAttachRange] = kArmoryWeaponAttachRange,
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.HandGrenades,
+			[kTechDataMapName] = HandGrenades.kMapName,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.HAND_GRENADES,
+			[kTechDataTooltipInfo] =  kNS2cLocalizedStrings.HAND_GRENADES_TOOLTIP,
+			[kTechDataModel] = HandGrenades.kModelName,
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.GrenadeLauncher,
+			[kTechDataAllowStacking] = true,
+			[kTechDataMapName] = GrenadeLauncher.kMapName,
+			[kTechDataDisplayName] = "GRENADE_LAUNCHER",
+			[kTechDataTooltipInfo] =  "GRENADE_LAUNCHER_TOOLTIP",
+			[kTechDataModel] = GrenadeLauncher.kModelName,
+			[kTechDataCostKey] = kGrenadeLauncherDropCost,
+			[kStructureAttachId] = kTechId.AdvancedArmory,
+			[kStructureAttachRange] = kArmoryWeaponAttachRange,
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Jetpack,
+			[kTechDataAllowStacking] = true,
+			[kTechDataMapName] = Jetpack.kMapName,
+			[kTechDataDisplayName] = "JETPACK",
+			[kTechDataTooltipInfo] =  "JETPACK_TOOLTIP",
+			[kTechDataModel] = Jetpack.kModelName,
+			[kTechDataCostKey] = kJetpackDropCost,
+			[kStructureAttachId] = kTechId.PrototypeLab,
+			[kStructureAttachRange] = kArmoryWeaponAttachRange,
+			[kTechDataCombatCost] = kCombatMarineJetpackCost
+		},
+		
+        {[kTechDataId] = kTechId.HeavyArmor,
+			[kTechDataAllowStacking] = true,
+			[kTechDataMapName] = HeavyArmor.kMapName,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.HEAVY_ARMOR,
+			[kTechDataTooltipInfo] =  kNS2cLocalizedStrings.HEAVY_ARMOR_TOOLTIP,
+			[kTechDataModel] = HeavyArmor.kModelName,
+			[kTechDataCostKey] = kHeavyArmorDropCost,
+			[kStructureAttachId] = kTechId.PrototypeLab,
+			[kStructureAttachRange] = kArmoryWeaponAttachRange,
+			[kTechDataCombatCost] = kCombatMarineHeavyArmorCost
+		},
         
         // Armor and upgrades
-        { [kTechDataId] = kTechId.JetpackTech,           [kTechDataCostKey] = kJetpackTechResearchCost,             [kTechDataResearchTimeKey] = kJetpackTechResearchTime,       [kTechDataDisplayName] = "JETPACK_TECH" },
-        { [kTechDataId] = kTechId.HeavyArmorTech,        [kTechDataCostKey] = kHeavyArmorTechResearchCost,          [kTechDataResearchTimeKey] = kHeavyArmorTechResearchTime,    [kTechDataDisplayName] = kNS2cLocalizedStrings.HEAVY_ARMOR_TECH }, 
-        { [kTechDataId] = kTechId.Armor1,                [kTechDataCostKey] = kArmor1ResearchCost,                  [kTechDataResearchTimeKey] = kArmor1ResearchTime,            [kTechDataDisplayName] = "MARINE_ARMOR1",                              [kTechDataHotkey] = Move.Z, [kTechDataTooltipInfo] = "MARINE_ARMOR1_TOOLTIP", [kTechDataCombatCost] = kCombatMarineBaseUpgradeCost },
-        { [kTechDataId] = kTechId.Armor2,                [kTechDataCostKey] = kArmor2ResearchCost,                  [kTechDataResearchTimeKey] = kArmor2ResearchTime,            [kTechDataDisplayName] = "MARINE_ARMOR2",                              [kTechDataHotkey] = Move.X, [kTechDataTooltipInfo] = "MARINE_ARMOR2_TOOLTIP", [kTechDataCombatCost] = kCombatMarineBaseUpgradeCost },
-        { [kTechDataId] = kTechId.Armor3,                [kTechDataCostKey] = kArmor3ResearchCost,                  [kTechDataResearchTimeKey] = kArmor3ResearchTime,            [kTechDataDisplayName] = "MARINE_ARMOR3",                              [kTechDataHotkey] = Move.C, [kTechDataTooltipInfo] = "MARINE_ARMOR3_TOOLTIP", [kTechDataCombatCost] = kCombatMarineBaseUpgradeCost },
-        { [kTechDataId] = kTechId.Weapons1,              [kTechDataCostKey] = kWeapons1ResearchCost,                [kTechDataResearchTimeKey] = kWeapons1ResearchTime,          [kTechDataDisplayName] = "MARINE_WEAPONS1",                            [kTechDataHotkey] = Move.Z, [kTechDataTooltipInfo] = "MARINE_WEAPONS1_TOOLTIP", [kTechDataCombatCost] = kCombatMarineBaseUpgradeCost },
-        { [kTechDataId] = kTechId.Weapons2,              [kTechDataCostKey] = kWeapons2ResearchCost,                [kTechDataResearchTimeKey] = kWeapons2ResearchTime,          [kTechDataDisplayName] = "MARINE_WEAPONS2",                            [kTechDataHotkey] = Move.Z, [kTechDataTooltipInfo] = "MARINE_WEAPONS2_TOOLTIP", [kTechDataCombatCost] = kCombatMarineBaseUpgradeCost },
-        { [kTechDataId] = kTechId.Weapons3,              [kTechDataCostKey] = kWeapons3ResearchCost,                [kTechDataResearchTimeKey] = kWeapons3ResearchTime,          [kTechDataDisplayName] = "MARINE_WEAPONS3",                            [kTechDataHotkey] = Move.Z, [kTechDataTooltipInfo] = "MARINE_WEAPONS3_TOOLTIP", [kTechDataCombatCost] = kCombatMarineBaseUpgradeCost },
-        { [kTechDataId] = kTechId.AdvancedArmoryUpgrade, [kTechDataCostKey] = kAdvancedArmoryUpgradeCost,           [kTechDataResearchTimeKey] = kAdvancedArmoryResearchTime,    [kTechDataDisplayName] = "ADVANCED_ARMORY_UPGRADE",                    [kTechDataHotkey] = Move.U,  [kTechDataTooltipInfo] =  "ADVANCED_ARMORY_TOOLTIP"},
-        { [kTechDataId] = kTechId.PhaseTech,             [kTechDataCostKey] = kPhaseTechResearchCost,               [kTechDataResearchTimeKey] = kPhaseTechResearchTime,         [kTechDataDisplayName] = "PHASE_TECH",                                 [kTechDataTooltipInfo] = "PHASE_TECH_TOOLTIP" },
-        { [kTechDataId] = kTechId.UpgradeTurretFactory,  [kTechDataCostKey] = kUpgradeTurretFactoryCost,            [kTechDataResearchTimeKey] = kUpgradeTurretFactoryTime,      [kTechDataDisplayName] = kNS2cLocalizedStrings.UPGRADE_TURRET_FACTORY, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.UPGRADE_TURRET_FACTORY_TOOLTIP},        
-        { [kTechDataId] = kTechId.CatPackTech,           [kTechDataCostKey] = kCatPackTechResearchCost,             [kTechDataResearchTimeKey] = kCatPackTechResearchTime,       [kTechDataDisplayName] = "CAT_PACKS",                                  [kTechDataTooltipInfo] = "CAT_PACK_TECH_TOOLTIP" },
-        { [kTechDataId] = kTechId.MotionTracking,        [kTechDataCostKey] = kMotionTrackingResearchCost,          [kTechDataResearchTimeKey] = kMotionTrackingResearchTime,    [kTechDataDisplayName] = kNS2cLocalizedStrings.MOTION_TRACKING,        [kTechDataTooltipInfo] = kNS2cLocalizedStrings.MOTION_TRACKING_TOOLTIP, [kTechDataCombatCost] = kCombatMarineBaseUpgradeCost },
-        { [kTechDataId] = kTechId.HandGrenadesTech,      [kTechDataCostKey] = kHandGrenadesTechResearchCost,        [kTechDataResearchTimeKey] = kHandGrenadesTechResearchTime,  [kTechDataDisplayName] = kNS2cLocalizedStrings.HAND_GRENADES_TECH,     [kTechDataTooltipInfo] = kNS2cLocalizedStrings.HAND_GRENADES_TECH_TOOLTIP },
-        { [kTechDataId] = kTechId.Electrify,             [kTechDataCostKey] = kElectricalUpgradeResearchCost,       [kTechDataResearchTimeKey] = kElectricalUpgradeResearchTime, [kTechDataDisplayName] = kNS2cLocalizedStrings.ELECTRIFY,              [kTechDataTooltipInfo] = kNS2cLocalizedStrings.ELECTRIFY_TOOLTIP},
+        {[kTechDataId] = kTechId.JetpackTech,
+			[kTechDataCostKey] = kJetpackTechResearchCost,
+			[kTechDataResearchTimeKey] = kJetpackTechResearchTime,
+			[kTechDataDisplayName] = "JETPACK_TECH"
+		},
+		
+        {[kTechDataId] = kTechId.HeavyArmorTech,
+			[kTechDataCostKey] = kHeavyArmorTechResearchCost,
+			[kTechDataResearchTimeKey] = kHeavyArmorTechResearchTime,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.HEAVY_ARMOR_TECH
+		}, 
+		
+        {[kTechDataId] = kTechId.Armor1,
+			[kTechDataCostKey] = kArmor1ResearchCost,
+			[kTechDataResearchTimeKey] = kArmor1ResearchTime,
+			[kTechDataDisplayName] = "MARINE_ARMOR1",
+			[kTechDataHotkey] = Move.Z,
+			[kTechDataTooltipInfo] = "MARINE_ARMOR1_TOOLTIP",
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Armor2,
+			[kTechDataCostKey] = kArmor2ResearchCost,
+			[kTechDataResearchTimeKey] = kArmor2ResearchTime,
+			[kTechDataDisplayName] = "MARINE_ARMOR2",
+			[kTechDataHotkey] = Move.X,
+			[kTechDataTooltipInfo] = "MARINE_ARMOR2_TOOLTIP",
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Armor3,
+			[kTechDataCostKey] = kArmor3ResearchCost,
+			[kTechDataResearchTimeKey] = kArmor3ResearchTime,
+			[kTechDataDisplayName] = "MARINE_ARMOR3",
+			[kTechDataHotkey] = Move.C,
+			[kTechDataTooltipInfo] = "MARINE_ARMOR3_TOOLTIP",
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Weapons1,
+			[kTechDataCostKey] = kWeapons1ResearchCost,
+			[kTechDataResearchTimeKey] = kWeapons1ResearchTime,
+			[kTechDataDisplayName] = "MARINE_WEAPONS1",
+			[kTechDataHotkey] = Move.Z,
+			[kTechDataTooltipInfo] = "MARINE_WEAPONS1_TOOLTIP",
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Weapons2,
+			[kTechDataCostKey] = kWeapons2ResearchCost,
+			[kTechDataResearchTimeKey] = kWeapons2ResearchTime,
+			[kTechDataDisplayName] = "MARINE_WEAPONS2",
+			[kTechDataHotkey] = Move.Z,
+			[kTechDataTooltipInfo] = "MARINE_WEAPONS2_TOOLTIP",
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Weapons3,
+			[kTechDataCostKey] = kWeapons3ResearchCost,
+			[kTechDataResearchTimeKey] = kWeapons3ResearchTime,
+			[kTechDataDisplayName] = "MARINE_WEAPONS3",
+			[kTechDataHotkey] = Move.Z,
+			[kTechDataTooltipInfo] = "MARINE_WEAPONS3_TOOLTIP",
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.AdvancedArmoryUpgrade,
+			[kTechDataCostKey] = kAdvancedArmoryUpgradeCost,
+			[kTechDataResearchTimeKey] = kAdvancedArmoryResearchTime,
+			[kTechDataDisplayName] = "ADVANCED_ARMORY_UPGRADE",
+			[kTechDataHotkey] = Move.U,
+			[kTechDataTooltipInfo] =  "ADVANCED_ARMORY_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.PhaseTech,
+			[kTechDataCostKey] = kPhaseTechResearchCost,
+			[kTechDataResearchTimeKey] = kPhaseTechResearchTime,
+			[kTechDataDisplayName] = "PHASE_TECH",
+			[kTechDataTooltipInfo] = "PHASE_TECH_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.UpgradeTurretFactory,
+			[kTechDataCostKey] = kUpgradeTurretFactoryCost,
+			[kTechDataResearchTimeKey] = kUpgradeTurretFactoryTime,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.UPGRADE_TURRET_FACTORY,
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.UPGRADE_TURRET_FACTORY_TOOLTIP
+		},
+		
+        {[kTechDataId] = kTechId.CatPackTech,
+			[kTechDataCostKey] = kCatPackTechResearchCost,
+			[kTechDataResearchTimeKey] = kCatPackTechResearchTime,
+			[kTechDataDisplayName] = "CAT_PACKS",
+			[kTechDataTooltipInfo] = "CAT_PACK_TECH_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.MotionTracking,
+			[kTechDataCostKey] = kMotionTrackingResearchCost,
+			[kTechDataResearchTimeKey] = kMotionTrackingResearchTime,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.MOTION_TRACKING,
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.MOTION_TRACKING_TOOLTIP,
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.HandGrenadesTech,
+			[kTechDataCostKey] = kHandGrenadesTechResearchCost,
+			[kTechDataResearchTimeKey] = kHandGrenadesTechResearchTime,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.HAND_GRENADES_TECH,
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.HAND_GRENADES_TECH_TOOLTIP
+		},
+		
+        {[kTechDataId] = kTechId.Electrify,
+			[kTechDataCostKey] = kElectricalUpgradeResearchCost,
+			[kTechDataResearchTimeKey] = kElectricalUpgradeResearchTime,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.ELECTRIFY,
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.ELECTRIFY_TOOLTIP
+		},
             
         // ALIENS
         // tier 0 abilities
-        { [kTechDataId] = kTechId.Bite,                  [kTechDataMapName] = BiteLeap.kMapName,        [kTechDataDamageType] = kBiteDamageType,        [kTechDataDisplayName] = "BITE"},
-        { [kTechDataId] = kTechId.Spit,                  [kTechDataMapName] = SpitSpray.kMapName,       [kTechDataDamageType] = kSpitDamageType,        [kTechDataDisplayName] = "SPIT"},
-        { [kTechDataId] = kTechId.BuildAbility,          [kTechDataMapName] = DropStructureAbility.kMapName,            [kTechDataDisplayName] = "BUILD_ABILITY"},
-        { [kTechDataId] = kTechId.LerkBite,              [kTechDataDisplayName] = "LERK_BITE"},          [kTechDataDamageType] = kLerkBiteDamageType, 
-        { [kTechDataId] = kTechId.Swipe,                 [kTechDataMapName] = SwipeBlink.kMapName,      [kTechDataDamageType] = kSwipeDamageType,       [kTechDataDisplayName] = "SWIPE_BLINK"},
-        { [kTechDataId] = kTechId.Gore,                  [kTechDataMapName] = Gore.kMapName,            [kTechDataDamageType] = kGoreDamageType,        [kTechDataDisplayName] = "GORE"},
-        { [kTechDataId] = kTechId.Smash,                 [kTechDataMapName] = Smash.kMapName,            [kTechDataDamageType] = kSmashDamageType,        [kTechDataDisplayName] = "SMASH"},
+        {[kTechDataId] = kTechId.Bite, 
+			[kTechDataMapName] = BiteLeap.kMapName,
+			[kTechDataDamageType] = kBiteDamageType,
+			[kTechDataDisplayName] = "BITE"
+		},
+		
+        {[kTechDataId] = kTechId.Spit,
+			[kTechDataMapName] = SpitSpray.kMapName,
+			[kTechDataDamageType] = kSpitDamageType,
+			[kTechDataDisplayName] = "SPIT"
+		},
+		
+        {[kTechDataId] = kTechId.BuildAbility,
+			[kTechDataMapName] = DropStructureAbility.kMapName,
+			[kTechDataDisplayName] = "BUILD_ABILITY"
+		},
+		
+        {[kTechDataId] = kTechId.LerkBite,
+			[kTechDataDisplayName] = "LERK_BITE",
+			[kTechDataDamageType] = kLerkBiteDamageType
+		},
+		
+		{[kTechDataId] = kTechId.Swipe,
+			[kTechDataMapName] = SwipeBlink.kMapName,
+			[kTechDataDamageType] = kSwipeDamageType,
+			[kTechDataDisplayName] = "SWIPE_BLINK"
+		},
+		
+        {[kTechDataId] = kTechId.Gore,
+			[kTechDataMapName] = Gore.kMapName,
+			[kTechDataDamageType] = kGoreDamageType,
+			[kTechDataDisplayName] = "GORE"
+		},
+		
+        {[kTechDataId] = kTechId.Smash,
+			[kTechDataMapName] = Smash.kMapName,
+			[kTechDataDamageType] = kSmashDamageType,
+			[kTechDataDisplayName] = "SMASH"
+		},
         
         // tier 1 abilities
-        { [kTechDataId] = kTechId.Parasite,              [kTechDataMapName] = Parasite.kMapName,        [kTechDataDamageType] = kParasiteDamageType,    [kTechDataDisplayName] = "PARASITE"},
-        { [kTechDataId] = kTechId.Spray,                 [kTechDataMapName] = SpitSpray.kMapName,       [kTechDataDamageType] = kHealsprayDamageType,   [kTechDataDisplayName] = "SPRAY"},
-        { [kTechDataId] = kTechId.Spores,                [kTechDataMapName] = Spores.kMapName,          [kTechDataDamageType] = kSporeDamageType,       [kTechDataDisplayName] = "SPORES",  [kTechDataTooltipInfo] = "SPORES_TOOLTIP" },     
-        { [kTechDataId] = kTechId.Blink,                 [kTechDataDisplayName] = "BLINK",              [kTechDataTooltipInfo] = "BLINK_TOOLTIP"},  
-        { [kTechDataId] = kTechId.Charge,                [kTechDataDisplayName] = "CHARGE"},
+        {[kTechDataId] = kTechId.Parasite,
+			[kTechDataMapName] = Parasite.kMapName,
+			[kTechDataDamageType] = kParasiteDamageType,
+			[kTechDataDisplayName] = "PARASITE"
+		},
+		
+        {[kTechDataId] = kTechId.Spray,
+			[kTechDataMapName] = SpitSpray.kMapName,
+			[kTechDataDamageType] = kHealsprayDamageType,
+			[kTechDataDisplayName] = "SPRAY"
+		},
+		
+        {[kTechDataId] = kTechId.Spores,
+			[kTechDataMapName] = Spores.kMapName,
+			[kTechDataDamageType] = kSporeDamageType,
+			[kTechDataDisplayName] = "SPORES"
+		},
+		
+        {[kTechDataId] = kTechId.Blink,
+			[kTechDataDisplayName] = "BLINK"
+		},
+		
+        {[kTechDataId] = kTechId.Charge,
+			[kTechDataDisplayName] = "CHARGE"
+		},
         
         // tier 2 abilities
-        { [kTechDataId] = kTechId.Leap,                  [kTechDataDisplayName] = "LEAP",               [kTechDataTooltipInfo] = "LEAP_TOOLTIP" },     
-        { [kTechDataId] = kTechId.BileBomb,              [kTechDataMapName] = BileBomb.kMapName,        [kTechDataDamageType] = kBileBombDamageType,                  [kTechDataDisplayName] = "BILEBOMB", [kTechDataTooltipInfo] = "BILEBOMB_TOOLTIP" },
-		{ [kTechDataId] = kTechId.Umbra,                 [kTechDataMapName] = Umbra.kMapName,           [kTechDataDisplayName] = "UMBRA",                             [kTechDataTooltipInfo] = "UMBRA_TOOLTIP"},
-        { [kTechDataId] = kTechId.Metabolize,            [kTechDataMapName] = Metabolize.kMapName,      [kTechDataDisplayName] = kNS2cLocalizedStrings.METABOLIZE,    [kTechDataTooltipInfo] = kNS2cLocalizedStrings.METABOLIZE_TOOLTIP},  
-        { [kTechDataId] = kTechId.Stomp,                 [kTechDataDisplayName] = "STOMP",              [kTechDataTooltipInfo] = "STOMP_TOOLTIP" }, 
+        {
+			[kTechDataId] = kTechId.Leap,
+			[kTechDataDisplayName] = "LEAP"
+		},
+		
+        {[kTechDataId] = kTechId.BileBomb,
+			[kTechDataMapName] = BileBomb.kMapName,
+			[kTechDataDamageType] = kBileBombDamageType,
+			[kTechDataDisplayName] = "BILEBOMB"
+		},
+		
+		{[kTechDataId] = kTechId.Umbra,
+			[kTechDataMapName] = Umbra.kMapName,
+			[kTechDataDisplayName] = "UMBRA"
+		},
+		
+        {[kTechDataId] = kTechId.Metabolize,
+			[kTechDataMapName] = Metabolize.kMapName,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.METABOLIZE
+		},
+		
+        {[kTechDataId] = kTechId.Stomp,
+			[kTechDataDisplayName] = "STOMP"
+		}, 
 
         // tier 3 abilities
-        { [kTechDataId] = kTechId.Xenocide,              [kTechDataMapName] = XenocideLeap.kMapName,        [kTechDataDamageType] = kXenocideDamageType,   [kTechDataDisplayName] = "XENOCIDE", [kTechDataTooltipInfo] = "XENOCIDE_TOOLTIP"},
-        { [kTechDataId] = kTechId.Web,                   [kTechDataDisplayName] = kNS2cLocalizedStrings.WEB,[kTechDataHint] = kNS2cLocalizedStrings.WEB_HINT, [kTechDataModel] = Web.kModelName, [kTechDataSpecifyOrientation] = true, [kTechDataMaxHealth] = kWebHealth, [kTechDataMaxArmor] = kWebArmor, [kTechDataGhostModelClass] = "WebGhostModel", [kTechDataMaxAmount] = kNumWebsPerGorge,  [kTechDataDisplayName] = "WEB", [kTechDataCostKey] = kWebBuildCost, [kTechDataTooltipInfo] = "WEB_TOOLTIP" },        
-        { [kTechDataId] = kTechId.PrimalScream,          [kTechDataMapName] = Primal.kMapName,              [kTechDataDisplayName] = kNS2cLocalizedStrings.PRIMAL_SCREAM, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.PRIMAL_SCREAM_TOOLTIP},
-        { [kTechDataId] = kTechId.AcidRocket,            [kTechDataMapName] = AcidRocket.kMapName,          [kTechDataDisplayName] = kNS2cLocalizedStrings.ACID_ROCKET, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.ACID_ROCKET_TOOLTIP},
-        { [kTechDataId] = kTechId.Devour,                [kTechDataMapName] = Devour.kMapName,              [kTechDataDamageType] = kDevourDamageType,        [kTechDataDisplayName] = kNS2cLocalizedStrings.DEVOUR},
-        { [kTechDataId] = kTechId.BabblerAbility,        [kTechDataMapName] = BabblerAbility.kMapName,      [kTechDataDisplayName] = "BABBLER_ABILITY", [kTechDataTooltipInfo] = "BABBLER_ABILITY_TOOLTIP", [kTechDataCostKey] = kBabblerAbilityResearchCost, [kTechDataResearchTimeKey] = kBabblerAbilityResearchTime},
-        { [kTechDataId] = kTechId.Babbler,               [kTechDataMapName] = Babbler.kMapName,             [kTechDataDisplayName] = "BABBLER",  [kTechDataModel] = Babbler.kModelName, [kTechDataMaxHealth] = kBabblerHealth, [kTechDataMaxArmor] = kBabblerArmor, [kTechDataPointValue] = kBabblerPointValue, [kTechDataTooltipInfo] = "BABBLER_TOOLTIP" },
-        { [kTechDataId] = kTechId.BabblerEgg,            [kTechDataAllowConsumeDrop] = true,                [kTechDataMaxAmount] = kNumBabblerEggsPerGorge, [kTechDataCostKey] = kBabblerCost,   [kTechDataBuildTime] = kBabblerEggBuildTime,    [kTechDataGrows] = true,    [kTechDataMapName] = BabblerEgg.kMapName,  [kTechDataDisplayName] = "BABBLER_EGG",  [kTechDataModel] = BabblerEgg.kModelName, [kTechDataMaxHealth] = kBabblerEggHealth, [kTechDataMaxArmor] = kBabblerEggArmor, [kTechDataPointValue] = kBabblerEggPointValue, [kTechDataTooltipInfo] = "BABBLER_EGG_TOOLTIP" },
+        {[kTechDataId] = kTechId.Xenocide,
+			[kTechDataMapName] = XenocideLeap.kMapName,
+			[kTechDataDamageType] = kXenocideDamageType,
+			[kTechDataDisplayName] = "XENOCIDE"
+		},
+		
+        {[kTechDataId] = kTechId.Web,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.WEB,
+			[kTechDataHint] = kNS2cLocalizedStrings.WEB_HINT,
+			[kTechDataModel] = Web.kModelName,
+			[kTechDataSpecifyOrientation] = true,
+			[kTechDataMaxHealth] = kWebHealth,
+			[kTechDataMaxArmor] = kWebArmor,
+			[kTechDataGhostModelClass] = "WebGhostModel",
+			[kTechDataMaxAmount] = kNumWebsPerGorge,
+			[kTechDataDisplayName] = "WEB",
+			[kTechDataCostKey] = kWebBuildCost,
+			[kTechDataTooltipInfo] = "WEB_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.PrimalScream,
+			[kTechDataMapName] = Primal.kMapName,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.PRIMAL_SCREAM,
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.PRIMAL_SCREAM_TOOLTIP
+		},
+		
+        {[kTechDataId] = kTechId.AcidRocket,
+			[kTechDataMapName] = AcidRocket.kMapName,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.ACID_ROCKET,
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.ACID_ROCKET_TOOLTIP
+		},
+		
+        {[kTechDataId] = kTechId.Devour,
+			[kTechDataMapName] = Devour.kMapName,
+			[kTechDataDamageType] = kDevourDamageType,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.DEVOUR
+		},
+		
+        {[kTechDataId] = kTechId.BabblerAbility,
+			[kTechDataMapName] = BabblerAbility.kMapName,
+			[kTechDataDisplayName] = "BABBLER_ABILITY",
+			[kTechDataTooltipInfo] = "BABBLER_ABILITY_TOOLTIP",
+			[kTechDataCostKey] = kBabblerAbilityResearchCost,
+			[kTechDataResearchTimeKey] = kBabblerAbilityResearchTime
+		},
+		
+        {[kTechDataId] = kTechId.Babbler,
+			[kTechDataMapName] = Babbler.kMapName,
+			[kTechDataDisplayName] = "BABBLER",
+			[kTechDataModel] = Babbler.kModelName,
+			[kTechDataMaxHealth] = kBabblerHealth,
+			[kTechDataMaxArmor] = kBabblerArmor,
+			[kTechDataPointValue] = kBabblerPointValue,
+			[kTechDataTooltipInfo] = "BABBLER_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.BabblerEgg,
+			[kTechDataAllowConsumeDrop] = true,
+			[kTechDataMaxAmount] = kNumBabblerEggsPerGorge,
+			[kTechDataCostKey] = kBabblerCost,
+			[kTechDataBuildTime] = kBabblerEggBuildTime,
+			[kTechDataGrows] = true,
+			[kTechDataMapName] = BabblerEgg.kMapName,
+			[kTechDataDisplayName] = "BABBLER_EGG",
+			[kTechDataModel] = BabblerEgg.kModelName,
+			[kTechDataMaxHealth] = kBabblerEggHealth,
+			[kTechDataMaxArmor] = kBabblerEggArmor,
+			[kTechDataPointValue] = kBabblerEggPointValue,
+			[kTechDataTooltipInfo] = "BABBLER_EGG_TOOLTIP"
+		},
         
         // Dev Abilities
-        { [kTechDataId] = kTechId.Spikes,                [kTechDataMapName] = Spikes.kMapName,           [kTechDataDisplayName] = "SPIKES", [kTechDataTooltipInfo] = "SPIKES_TOOLTIP"},
-        { [kTechDataId] = kTechId.WebStalk,              [kTechDataDisplayName] = kNS2cLocalizedStrings.WEB, [kTechDataHint] = kNS2cLocalizedStrings.WEB_HINT, [kTechDataModel] = Bomb.kModelName, [kTechDataSpecifyOrientation] = true,  [kTechDataGhostModelClass] = "WebGhostModel", [kTechDataMaxAmount] = kNumWebsPerGorge,  [kTechDataDisplayName] = "WEB", [kTechDataCostKey] = kWebBuildCost, [kTechDataTooltipInfo] = "WEB_TOOLTIP" },        
+        {[kTechDataId] = kTechId.Spikes,
+			[kTechDataMapName] = Spikes.kMapName,
+			[kTechDataDisplayName] = "SPIKES",
+			[kTechDataTooltipInfo] = "SPIKES_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.WebStalk,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.WEB,
+			[kTechDataHint] = kNS2cLocalizedStrings.WEB_HINT,
+			[kTechDataModel] = Bomb.kModelName,
+			[kTechDataSpecifyOrientation] = true,
+			[kTechDataGhostModelClass] = "WebGhostModel",
+			[kTechDataMaxAmount] = kNumWebsPerGorge,
+			[kTechDataDisplayName] = "WEB",
+			[kTechDataCostKey] = kWebBuildCost,
+			[kTechDataTooltipInfo] = "WEB_TOOLTIP"
+		},        
         
         // Alien structures (spawn hive at 110 units off ground = 2.794 meters)
-        { [kTechDataId] = kTechId.Hive,                  [kTechDataIgnorePathingMesh] = true, [kTechDataHint] = "HIVE_HINT", [kTechDataGhostModelClass] = "AlienGhostModel",  [kTechDataMapName] = Hive.kMapName,   [kTechDataDisplayName] = "HIVE", [kTechDataCostKey] = kHiveCost,                     [kTechDataBuildTime] = kHiveBuildTime, [kTechDataModel] = Hive.kModelName,  [kTechDataHotkey] = Move.V,                [kTechDataMaxHealth] = kHiveHealth,  [kTechDataMaxArmor] = kHiveArmor,              [kStructureAttachClass] = "TechPoint",         [kTechDataSpawnHeightOffset] = kHiveYOffset,    [kTechDataPointValue] = kHivePointValue, [kTechDataTooltipInfo] = "HIVE_TOOLTIP"}, 
+        {[kTechDataId] = kTechId.Hive,
+			[kTechDataIgnorePathingMesh] = true,
+			[kTechDataHint] = "HIVE_HINT",
+			[kTechDataGhostModelClass] = "AlienGhostModel",
+			[kTechDataMapName] = Hive.kMapName,
+			[kTechDataDisplayName] = "HIVE",
+			[kTechDataCostKey] = kHiveCost,
+			[kTechDataBuildTime] = kHiveBuildTime,
+			[kTechDataModel] = Hive.kModelName,
+			[kTechDataHotkey] = Move.V,
+			[kTechDataMaxHealth] = kHiveHealth,
+			[kTechDataMaxArmor] = kHiveArmor,
+			[kStructureAttachClass] = "TechPoint",
+			[kTechDataSpawnHeightOffset] = kHiveYOffset,
+			[kTechDataPointValue] = kHivePointValue,
+			[kTechDataTooltipInfo] = "HIVE_TOOLTIP"
+		}, 
         
-        { [kTechDataId] = kTechId.UpgradeToCragHive,     [kTechDataMapName] = CragHive.kMapName,   [kTechDataDisplayName] = "UPGRADE_CRAG_HIVE", [kTechDataModel] = Hive.kModelName,  [kTechDataTooltipInfo] = "UPGRADE_CRAG_HIVE_TOOLTIP", },
-        { [kTechDataId] = kTechId.UpgradeToShiftHive,    [kTechDataMapName] = ShiftHive.kMapName,   [kTechDataDisplayName] = "UPGRADE_SHIFT_HIVE", [kTechDataModel] = Hive.kModelName,  [kTechDataTooltipInfo] = "UPGRADE_SHIFT_HIVE_TOOLTIP", },
-        { [kTechDataId] = kTechId.UpgradeToShadeHive,    [kTechDataMapName] = ShadeHive.kMapName,   [kTechDataDisplayName] = "UPGRADE_SHADE_HIVE", [kTechDataModel] = Hive.kModelName,  [kTechDataTooltipInfo] = "UPGRADE_SHADE_HIVE_TOOLTIP", },
-        { [kTechDataId] = kTechId.UpgradeToWhipHive,     [kTechDataMapName] = WhipHive.kMapName,   [kTechDataDisplayName] = "UPGRADE_WHIP_HIVE", [kTechDataModel] = Hive.kModelName,  [kTechDataTooltipInfo] = "UPGRADE_WHIP_HIVE_TOOLTIP", },
+        {[kTechDataId] = kTechId.UpgradeToCragHive,
+			[kTechDataMapName] = CragHive.kMapName,
+			[kTechDataDisplayName] = "UPGRADE_CRAG_HIVE",
+			[kTechDataModel] = Hive.kModelName,
+			[kTechDataTooltipInfo] = "UPGRADE_CRAG_HIVE_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.UpgradeToShiftHive,
+			[kTechDataMapName] = ShiftHive.kMapName,
+			[kTechDataDisplayName] = "UPGRADE_SHIFT_HIVE",
+			[kTechDataModel] = Hive.kModelName,
+			[kTechDataTooltipInfo] = "UPGRADE_SHIFT_HIVE_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.UpgradeToShadeHive,
+			[kTechDataMapName] = ShadeHive.kMapName,
+			[kTechDataDisplayName] = "UPGRADE_SHADE_HIVE",
+			[kTechDataModel] = Hive.kModelName,
+			[kTechDataTooltipInfo] = "UPGRADE_SHADE_HIVE_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.UpgradeToWhipHive,
+			[kTechDataMapName] = WhipHive.kMapName,
+			[kTechDataDisplayName] = "UPGRADE_WHIP_HIVE",
+			[kTechDataModel] = Hive.kModelName,
+			[kTechDataTooltipInfo] = "UPGRADE_WHIP_HIVE_TOOLTIP"
+		},
         
-        { [kTechDataId] = kTechId.CragHive,  [kTechDataHint] = "CRAG_HIVE_HINT",          [kTechDataMapName] = CragHive.kMapName,           [kTechDataBuildTime] = kHiveBuildTime,          [kTechDataDisplayName] = "CRAG_HIVE", [kTechDataModel] = Hive.kModelName,  [kTechDataHotkey] = Move.V,  [kTechDataMaxHealth] = kHiveHealth,  [kTechDataMaxArmor] = kHiveArmor,     [kStructureAttachClass] = "TechPoint",         [kTechDataSpawnHeightOffset] = kHiveYOffset,    [kTechDataPointValue] = kHivePointValue, [kTechDataTooltipInfo] = "CRAG_HIVE_TOOLTIP"},
-        { [kTechDataId] = kTechId.ShadeHive, [kTechDataHint] = "SHADE_HIVE_HINT",          [kTechDataMapName] = ShadeHive.kMapName,         [kTechDataBuildTime] = kHiveBuildTime,            [kTechDataDisplayName] = "SHADE_HIVE", [kTechDataModel] = Hive.kModelName,  [kTechDataHotkey] = Move.V,  [kTechDataMaxHealth] = kHiveHealth,  [kTechDataMaxArmor] = kHiveArmor,     [kStructureAttachClass] = "TechPoint",         [kTechDataSpawnHeightOffset] = kHiveYOffset,     [kTechDataPointValue] = kHivePointValue, [kTechDataTooltipInfo] = "SHADE_HIVE_TOOLTIP"},
-        { [kTechDataId] = kTechId.ShiftHive, [kTechDataHint] = "SHIFT_HIVE_HINT",          [kTechDataMapName] = ShiftHive.kMapName,         [kTechDataBuildTime] = kHiveBuildTime,            [kTechDataDisplayName] = "SHIFT_HIVE", [kTechDataModel] = Hive.kModelName,  [kTechDataHotkey] = Move.V,  [kTechDataMaxHealth] = kHiveHealth,  [kTechDataMaxArmor] = kHiveArmor,     [kStructureAttachClass] = "TechPoint",         [kTechDataSpawnHeightOffset] = kHiveYOffset,     [kTechDataPointValue] = kHivePointValue, [kTechDataTooltipInfo] = "SHIFT_HIVE_TOOLTIP"},
-        { [kTechDataId] = kTechId.WhipHive,  [kTechDataHint] = kNS2cLocalizedStrings.WHIP_HIVE_HINT,          [kTechDataMapName] = WhipHive.kMapName,           [kTechDataBuildTime] = kHiveBuildTime,          [kTechDataDisplayName] = kNS2cLocalizedStrings.WHIP_HIVE, [kTechDataModel] = Hive.kModelName,  [kTechDataHotkey] = Move.V,  [kTechDataMaxHealth] = kHiveHealth,  [kTechDataMaxArmor] = kHiveArmor,     [kStructureAttachClass] = "TechPoint",         [kTechDataSpawnHeightOffset] = kHiveYOffset,     [kTechDataPointValue] = kHivePointValue, [kTechDataTooltipInfo] = "WHIP_HIVE_TOOLTIP"},
+        {[kTechDataId] = kTechId.CragHive,
+			[kTechDataHint] = "CRAG_HIVE_HINT",
+			[kTechDataMapName] = CragHive.kMapName,
+			[kTechDataBuildTime] = kHiveBuildTime,
+			[kTechDataDisplayName] = "CRAG_HIVE",
+			[kTechDataModel] = Hive.kModelName,
+			[kTechDataHotkey] = Move.V,
+			[kTechDataMaxHealth] = kHiveHealth,
+			[kTechDataMaxArmor] = kHiveArmor,
+			[kStructureAttachClass] = "TechPoint",
+			[kTechDataSpawnHeightOffset] = kHiveYOffset,
+			[kTechDataPointValue] = kHivePointValue,
+			[kTechDataTooltipInfo] = "CRAG_HIVE_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.ShadeHive,
+			[kTechDataHint] = "SHADE_HIVE_HINT",
+			[kTechDataMapName] = ShadeHive.kMapName,
+			[kTechDataBuildTime] = kHiveBuildTime,
+			[kTechDataDisplayName] = "SHADE_HIVE",
+			[kTechDataModel] = Hive.kModelName,
+			[kTechDataHotkey] = Move.V,
+			[kTechDataMaxHealth] = kHiveHealth,
+			[kTechDataMaxArmor] = kHiveArmor,
+			[kStructureAttachClass] = "TechPoint",
+			[kTechDataSpawnHeightOffset] = kHiveYOffset,
+			[kTechDataPointValue] = kHivePointValue,
+			[kTechDataTooltipInfo] = "SHADE_HIVE_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.ShiftHive,
+			[kTechDataHint] = "SHIFT_HIVE_HINT",
+			[kTechDataMapName] = ShiftHive.kMapName,
+			[kTechDataBuildTime] = kHiveBuildTime,
+			[kTechDataDisplayName] = "SHIFT_HIVE",
+			[kTechDataModel] = Hive.kModelName,
+			[kTechDataHotkey] = Move.V,
+			[kTechDataMaxHealth] = kHiveHealth,
+			[kTechDataMaxArmor] = kHiveArmor,
+			[kStructureAttachClass] = "TechPoint",
+			[kTechDataSpawnHeightOffset] = kHiveYOffset,
+			[kTechDataPointValue] = kHivePointValue,
+			[kTechDataTooltipInfo] = "SHIFT_HIVE_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.WhipHive,
+			[kTechDataHint] = kNS2cLocalizedStrings.WHIP_HIVE_HINT,
+			[kTechDataMapName] = WhipHive.kMapName,
+			[kTechDataBuildTime] = kHiveBuildTime,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.WHIP_HIVE,
+			[kTechDataModel] = Hive.kModelName,
+			[kTechDataHotkey] = Move.V,
+			[kTechDataMaxHealth] = kHiveHealth,
+			[kTechDataMaxArmor] = kHiveArmor,
+			[kStructureAttachClass] = "TechPoint",
+			[kTechDataSpawnHeightOffset] = kHiveYOffset,
+			[kTechDataPointValue] = kHivePointValue,
+			[kTechDataTooltipInfo] = "WHIP_HIVE_TOOLTIP"
+		},
         
-        { [kTechDataId] = kTechId.TwoHives,   [kTechDataKeyStructure] = kTechId.TwoHives,   [kTechDataDisplayName] = "TWO_HIVES", [kTechDataTooltipInfo] = kNS2cLocalizedStrings.TWO_HIVES_TOOLTIP, [kTechDataCombatCost] = kCombatAlienTwoHivesCost },               
-        { [kTechDataId] = kTechId.ThreeHives,   [kTechDataKeyStructure] = kTechId.ThreeHives,    [kTechDataDisplayName] = "THREE_HIVES", [kTechDataTooltipInfo] = kNS2cLocalizedStrings.THREE_HIVES_TOOLTIP, [kTechDataCombatCost] = kCombatAlienThreeHivesCost },                
+        {[kTechDataId] = kTechId.TwoHives,
+			[kTechDataKeyStructure] = kTechId.TwoHives,
+			[kTechDataDisplayName] = "TWO_HIVES",
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.TWO_HIVES_TOOLTIP,
+			[kTechDataCombatCost] = kCombatAlienTwoHivesCost
+		},
+		
+		{[kTechDataId] = kTechId.ThreeHives,
+			[kTechDataKeyStructure] = kTechId.ThreeHives,
+			[kTechDataDisplayName] = "THREE_HIVES",
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.THREE_HIVES_TOOLTIP,
+			[kTechDataCombatCost] = kCombatAlienThreeHivesCost
+		},                
         
         // Alien buildables
-        { [kTechDataId] = kTechId.Egg,    [kTechDataHint] = "EGG_HINT",    [kTechDataMapName] = Egg.kMapName,  [kTechDataDisplayName] = "EGG",         [kTechDataTooltipInfo] = "EGG_DROP_TOOLTIP", [kTechDataMaxHealth] = kEggHealth, [kTechDataMaxArmor] = kEggArmor, [kTechDataModel] = Egg.kModelName, [kTechDataPointValue] = kEggPointValue, [kTechDataBuildTime] = 1, [kTechDataCostKey] = 0, [kTechDataMaxExtents] = Vector(1.75/2, .664/2, 1.275/2) }, 
+        {[kTechDataId] = kTechId.Egg,
+			[kTechDataHint] = "EGG_HINT",
+			[kTechDataMapName] = Egg.kMapName,
+			[kTechDataDisplayName] = "EGG",
+			[kTechDataTooltipInfo] = "EGG_DROP_TOOLTIP",
+			[kTechDataMaxHealth] = kEggHealth,
+			[kTechDataMaxArmor] = kEggArmor,
+			[kTechDataModel] = Egg.kModelName,
+			[kTechDataPointValue] = kEggPointValue,
+			[kTechDataBuildTime] = 1,
+			[kTechDataCostKey] = 0,
+			[kTechDataMaxExtents] = Vector(1.75/2, .664/2, 1.275/2)
+		},
 
-        { [kTechDataId] = kTechId.Harvester, [kTechDataIgnorePathingMesh] = true,  [kTechDataCollideWithWorldOnly] = true,   [kTechDataAllowStacking] = true,  [kTechDataHint] = "HARVESTER_HINT", [kTechDataGhostModelClass] = "AlienGhostModel",    [kTechDataMapName] = Harvester.kMapName,                    [kTechDataDisplayName] = "HARVESTER",   [kTechDataCostKey] = kHarvesterCost,            [kTechDataBuildTime] = kHarvesterBuildTime, [kTechDataHotkey] = Move.H, [kTechDataMaxHealth] = kHarvesterHealth, [kTechDataMaxArmor] = kHarvesterArmor, [kTechDataModel] = Harvester.kModelName,           [kStructureAttachClass] = "ResourcePoint", [kTechDataPointValue] = kHarvesterPointValue, [kTechDataTooltipInfo] = "HARVESTER_TOOLTIP"},
-        { [kTechDataId] = kTechId.Crag, [kTechDataHint] = "CRAG_HINT", [kTechDataGhostModelClass] = "AlienGhostModel",    [kTechDataMapName] = Crag.kMapName,                         [kTechDataDisplayName] = "CRAG",  [kTechDataCostKey] = kCragCost, [kTechDataHotkey] = Move.C,       [kTechDataBuildTime] = kCragBuildTime, [kTechDataModel] = Crag.kModelName,           [kTechDataMaxHealth] = kCragHealth, [kTechDataMaxArmor] = kCragArmor,    [kTechDataPointValue] = kCragPointValue, [kVisualRange] = Crag.kHealRadius, [kTechDataTooltipInfo] = "CRAG_TOOLTIP", [kTechDataGrows] = true,  [kTechDataCombatCost] = kCombatAlienSupportStructureCost },
-        { [kTechDataId] = kTechId.Shift, [kTechDataHint] = "SHIFT_HINT", [kTechDataGhostModelClass] = "AlienGhostModel",    [kTechDataMapName] = Shift.kMapName,                        [kTechDataDisplayName] = "SHIFT", [kTechDataCostKey] = kShiftCost,    [kTechDataHotkey] = Move.S,        [kTechDataBuildTime] = kShiftBuildTime, [kTechDataModel] = Shift.kModelName,           [kTechDataMaxHealth] = kShiftHealth,  [kTechDataMaxArmor] = kShiftArmor,   [kTechDataPointValue] = kShiftPointValue, [kVisualRange] = kEnergizeRange, [kTechDataTooltipInfo] = "SHIFT_TOOLTIP", [kTechDataGrows] = true,  [kTechDataCombatCost] = kCombatAlienSupportStructureCost },
-        { [kTechDataId] = kTechId.Shade, [kTechDataHint] = "SHADE_HINT", [kTechDataGhostModelClass] = "AlienGhostModel",    [kTechDataMapName] = Shade.kMapName,                        [kTechDataDisplayName] = "SHADE",  [kTechDataCostKey] = kShadeCost,     [kTechDataBuildTime] = kShadeBuildTime, [kTechDataHotkey] = Move.D, [kTechDataModel] = Shade.kModelName,           [kTechDataMaxHealth] = kShadeHealth, [kTechDataMaxArmor] = kShadeArmor,   [kTechDataPointValue] = kShadePointValue, [kVisualRange] = Shade.kCloakRadius, [kTechDataMaxExtents] = Vector(1.5, 1.5, .4), [kTechDataTooltipInfo] = "SHADE_TOOLTIP", [kTechDataGrows] = true,  [kTechDataCombatCost] = kCombatAlienSupportStructureCost },        
-        { [kTechDataId] = kTechId.Whip, [kTechDataHint] = "WHIP_HINT", [kTechDataGhostModelClass] = "AlienGhostModel",    [kTechDataMapName] = Whip.kMapName,                        [kTechDataDisplayName] = "WHIP",  [kTechDataCostKey] = kWhipCost,     [kTechDataBuildTime] = kWhipBuildTime, [kTechDataHotkey] = Move.D, [kTechDataModel] = Whip.kModelName,           [kTechDataMaxHealth] = kWhipHealth, [kTechDataMaxArmor] = kWhipArmor,   [kTechDataPointValue] = kWhipPointValue, [kTechDataTooltipInfo] = "WHIP_TOOLTIP", [kVisualRange] = Whip.kRange, [kTechDataGrows] = true, [kTechDataCombatCost] = kCombatAlienSupportStructureCost },        
-        { [kTechDataId] = kTechId.Hydra, [kTechDataHint] = "HYDRA_HINT", [kTechDataDamageType] = kHydraAttackDamageType, [kTechDataGhostModelClass] = "AlienGhostModel",      [kTechDataMapName] = Hydra.kMapName,                        [kTechDataDisplayName] = "HYDRA",           [kTechDataCostKey] = kHydraCost,       [kTechDataBuildTime] = kHydraBuildTime, [kTechDataMaxHealth] = kHydraHealth, [kTechDataMaxArmor] = kHydraArmor, [kTechDataModel] = Hydra.kModelName, [kVisualRange] = Hydra.kRange, [kTechDataPointValue] = kHydraPointValue, [kTechDataGrows] = true, [kTechDataCombatCost] = kCombatAlienSupportStructureCost },
+        {[kTechDataId] = kTechId.Harvester,
+			[kTechDataIgnorePathingMesh] = true,
+			[kTechDataCollideWithWorldOnly] = true,
+			[kTechDataAllowStacking] = true,
+			[kTechDataHint] = "HARVESTER_HINT",
+			[kTechDataGhostModelClass] = "AlienGhostModel",
+			[kTechDataMapName] = Harvester.kMapName,
+			[kTechDataDisplayName] = "HARVESTER",
+			[kTechDataCostKey] = kHarvesterCost,
+			[kTechDataBuildTime] = kHarvesterBuildTime,
+			[kTechDataHotkey] = Move.H,
+			[kTechDataMaxHealth] = kHarvesterHealth,
+			[kTechDataMaxArmor] = kHarvesterArmor,
+			[kTechDataModel] = Harvester.kModelName,
+			[kStructureAttachClass] = "ResourcePoint",
+			[kTechDataPointValue] = kHarvesterPointValue,
+			[kTechDataTooltipInfo] = "HARVESTER_TOOLTIP"
+		},
+		
+        {[kTechDataId] = kTechId.Crag,
+			[kTechDataHint] = "CRAG_HINT",
+			[kTechDataGhostModelClass] = "AlienGhostModel",
+			[kTechDataMapName] = Crag.kMapName,
+			[kTechDataDisplayName] = "CRAG",
+			[kTechDataCostKey] = kCragCost,
+			[kTechDataHotkey] = Move.C,
+			[kTechDataBuildTime] = kCragBuildTime,
+			[kTechDataModel] = Crag.kModelName,
+			[kTechDataMaxHealth] = kCragHealth,
+			[kTechDataMaxArmor] = kCragArmor,
+			[kTechDataPointValue] = kCragPointValue,
+			[kTechDataTooltipInfo] = "CRAG_TOOLTIP",
+			[kTechDataGrows] = true,
+			[kTechDataCombatCost] = kCombatAlienSupportStructureCost
+		},
+		
+        {[kTechDataId] = kTechId.Shift,
+			[kTechDataHint] = "SHIFT_HINT",
+			[kTechDataGhostModelClass] = "AlienGhostModel",
+			[kTechDataMapName] = Shift.kMapName,
+			[kTechDataDisplayName] = "SHIFT",
+			[kTechDataCostKey] = kShiftCost,
+			[kTechDataHotkey] = Move.S,
+			[kTechDataBuildTime] = kShiftBuildTime,
+			[kTechDataModel] = Shift.kModelName,
+			[kTechDataMaxHealth] = kShiftHealth,
+			[kTechDataMaxArmor] = kShiftArmor,
+			[kTechDataPointValue] = kShiftPointValue,
+			[kTechDataTooltipInfo] = "SHIFT_TOOLTIP",
+			[kTechDataGrows] = true,
+			[kTechDataCombatCost] = kCombatAlienSupportStructureCost 
+		},
+		
+        {[kTechDataId] = kTechId.Shade,
+			[kTechDataHint] = "SHADE_HINT",
+			[kTechDataGhostModelClass] = "AlienGhostModel",
+			[kTechDataMapName] = Shade.kMapName,
+			[kTechDataDisplayName] = "SHADE",
+			[kTechDataCostKey] = kShadeCost,
+			[kTechDataBuildTime] = kShadeBuildTime,
+			[kTechDataHotkey] = Move.D,
+			[kTechDataModel] = Shade.kModelName,
+			[kTechDataMaxHealth] = kShadeHealth,
+			[kTechDataMaxArmor] = kShadeArmor,
+			[kTechDataPointValue] = kShadePointValue,
+			[kTechDataMaxExtents] = Vector(1.5, 1.5, .4),
+			[kTechDataTooltipInfo] = "SHADE_TOOLTIP",
+			[kTechDataGrows] = true,
+			[kTechDataCombatCost] = kCombatAlienSupportStructureCost
+		},
+		
+        {[kTechDataId] = kTechId.Whip,
+			[kTechDataHint] = "WHIP_HINT",
+			[kTechDataGhostModelClass] = "AlienGhostModel",
+			[kTechDataMapName] = Whip.kMapName,
+			[kTechDataDisplayName] = "WHIP",
+			[kTechDataCostKey] = kWhipCost,
+			[kTechDataBuildTime] = kWhipBuildTime,
+			[kTechDataHotkey] = Move.D,
+			[kTechDataModel] = Whip.kModelName,
+			[kTechDataMaxHealth] = kWhipHealth,
+			[kTechDataMaxArmor] = kWhipArmor,
+			[kTechDataPointValue] = kWhipPointValue,
+			[kTechDataTooltipInfo] = "WHIP_TOOLTIP",
+			[kTechDataGrows] = true,
+			[kTechDataCombatCost] = kCombatAlienSupportStructureCost
+		},
+		
+        {[kTechDataId] = kTechId.Hydra,
+			[kTechDataHint] = "HYDRA_HINT",
+			[kTechDataDamageType] = kHydraAttackDamageType,
+			[kTechDataGhostModelClass] = "AlienGhostModel",
+			[kTechDataMapName] = Hydra.kMapName,
+			[kTechDataDisplayName] = "HYDRA",
+			[kTechDataCostKey] = kHydraCost,
+			[kTechDataBuildTime] = kHydraBuildTime,
+			[kTechDataMaxHealth] = kHydraHealth,
+			[kTechDataMaxArmor] = kHydraArmor,
+			[kTechDataModel] = Hydra.kModelName,
+			[kVisualRange] = Hydra.kRange,
+			[kTechDataPointValue] = kHydraPointValue,
+			[kTechDataGrows] = true,
+			[kTechDataGhostModelScale] = kHydraScale,
+			[kTechDataCombatCost] = kCombatAlienSupportStructureCost
+		},
 
         // Alien lifeforms
-        { [kTechDataId] = kTechId.Skulk,                 [kTechDataMapName] = Skulk.kMapName, [kTechDataGestateName] = Skulk.kMapName,                      [kTechDataGestateTime] = kSkulkGestateTime, [kTechDataDisplayName] = "SKULK",  [kTechDataTooltipInfo] = "SKULK_TOOLTIP",        [kTechDataModel] = Skulk.kModelName, [kTechDataCostKey] = kSkulkCost, [kTechDataMaxHealth] = kSkulkHealth, [kTechDataMaxArmor] = kSkulkArmor, [kTechDataEngagementDistance] = kPlayerEngagementDistance, [kTechDataMaxExtents] = Vector(Skulk.kXExtents, Skulk.kYExtents, Skulk.kZExtents), [kTechDataPointValue] = kSkulkPointValue, [kTechDataCombatCost] = 0 },
-        { [kTechDataId] = kTechId.Gorge,                 [kTechDataMapName] = Gorge.kMapName, [kTechDataGestateName] = Gorge.kMapName,                      [kTechDataGestateTime] = kGorgeGestateTime, [kTechDataDisplayName] = "GORGE", [kTechDataTooltipInfo] = kNS2cLocalizedStrings.GORGE_TOOLTIP,          [kTechDataModel] = Gorge.kModelName,[kTechDataCostKey] = kGorgeCost, [kTechDataMaxHealth] = kGorgeHealth, [kTechDataMaxArmor] = kGorgeArmor, [kTechDataEngagementDistance] = kPlayerEngagementDistance, [kTechDataMaxExtents] = Vector(Gorge.kXZExtents, Gorge.kYExtents, Gorge.kXZExtents), [kTechDataPointValue] = kGorgePointValue, [kTechDataCombatCost] = kCombatAlienGorgeCost },
-        { [kTechDataId] = kTechId.Lerk,                  [kTechDataMapName] = Lerk.kMapName, [kTechDataGestateName] = Lerk.kMapName,                       [kTechDataGestateTime] = kLerkGestateTime, [kTechDataDisplayName] = "LERK",   [kTechDataTooltipInfo] = kNS2cLocalizedStrings.LERK_TOOLTIP,         [kTechDataModel] = Lerk.kModelName,[kTechDataCostKey] = kLerkCost, [kTechDataMaxHealth] = kLerkHealth, [kTechDataMaxArmor] = kLerkArmor, [kTechDataEngagementDistance] = kPlayerEngagementDistance, [kTechDataMaxExtents] = Vector(Lerk.XZExtents, Lerk.YExtents, Lerk.XZExtents), [kTechDataPointValue] = kLerkPointValue, [kTechDataCombatCost] = kCombatAlienLerkCost },
-        { [kTechDataId] = kTechId.Fade,                  [kTechDataMapName] = Fade.kMapName, [kTechDataGestateName] = Fade.kMapName,                       [kTechDataGestateTime] = kFadeGestateTime, [kTechDataDisplayName] = "FADE",   [kTechDataTooltipInfo] = kNS2cLocalizedStrings.FADE_TOOLTIP,         [kTechDataModel] = Fade.kModelName,[kTechDataCostKey] = kFadeCost, [kTechDataMaxHealth] = kFadeHealth, [kTechDataEngagementDistance] = kPlayerEngagementDistance, [kTechDataMaxArmor] = kFadeArmor, [kTechDataMaxExtents] = Vector(Fade.XZExtents, Fade.YExtents, Fade.XZExtents), [kTechDataPointValue] = kFadePointValue, [kTechDataCombatCost] = kCombatAlienFadeCost },        
-        { [kTechDataId] = kTechId.Onos,                  [kTechDataMapName] = Onos.kMapName, [kTechDataGestateName] = Onos.kMapName,                       [kTechDataGestateTime] = kOnosGestateTime, [kTechDataDisplayName] = "ONOS",   [kTechDataTooltipInfo] = "ONOS_TOOLTIP", [kTechDataModel] = Onos.kModelName,[kTechDataCostKey] = kOnosCost, [kTechDataMaxHealth] = kOnosHealth, [kTechDataEngagementDistance] = kOnosEngagementDistance, [kTechDataMaxArmor] = kOnosArmor, [kTechDataMaxExtents] = Vector(Onos.XExtents, Onos.YExtents, Onos.ZExtents), [kTechDataPointValue] = kOnosPointValue, [kTechDataCombatCost] = kCombatAlienOnosCost },
-        { [kTechDataId] = kTechId.Embryo,                [kTechDataMapName] = Embryo.kMapName, [kTechDataGestateName] = Embryo.kMapName,                     [kTechDataDisplayName] = "EMBRYO", [kTechDataModel] = Embryo.kModelName, [kTechDataMaxExtents] = Vector(Embryo.kXExtents, Embryo.kYExtents, Embryo.kZExtents)},
+        {[kTechDataId] = kTechId.Skulk,
+			[kTechDataMapName] = Skulk.kMapName,
+			[kTechDataGestateName] = Skulk.kMapName,
+			[kTechDataGestateTime] = kSkulkGestateTime,
+			[kTechDataDisplayName] = "SKULK",
+			[kTechDataTooltipInfo] = "SKULK_TOOLTIP",
+			[kTechDataModel] = Skulk.kModelName,
+			[kTechDataCostKey] = kSkulkCost,
+			[kTechDataMaxHealth] = kSkulkHealth,
+			[kTechDataMaxArmor] = kSkulkArmor,
+			[kTechDataEngagementDistance] = kPlayerEngagementDistance,
+			[kTechDataMaxExtents] = Vector(Skulk.kXExtents, Skulk.kYExtents, Skulk.kZExtents),
+			[kTechDataPointValue] = kSkulkPointValue,
+			[kTechDataCombatCost] = 0
+		},
+		
+        {[kTechDataId] = kTechId.Gorge,
+			[kTechDataMapName] = Gorge.kMapName,
+			[kTechDataGestateName] = Gorge.kMapName,
+			[kTechDataGestateTime] = kGorgeGestateTime,
+			[kTechDataDisplayName] = "GORGE",
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.GORGE_TOOLTIP,
+			[kTechDataModel] = Gorge.kModelName,
+			[kTechDataCostKey] = kGorgeCost,
+			[kTechDataMaxHealth] = kGorgeHealth,
+			[kTechDataMaxArmor] = kGorgeArmor,
+			[kTechDataEngagementDistance] = kPlayerEngagementDistance,
+			[kTechDataMaxExtents] = Vector(Gorge.kXZExtents, Gorge.kYExtents, Gorge.kXZExtents),
+			[kTechDataPointValue] = kGorgePointValue,
+			[kTechDataCombatCost] = kCombatAlienGorgeCost
+		},
+		
+        {[kTechDataId] = kTechId.Lerk,
+			[kTechDataMapName] = Lerk.kMapName,
+			[kTechDataGestateName] = Lerk.kMapName,
+			[kTechDataGestateTime] = kLerkGestateTime,
+			[kTechDataDisplayName] = "LERK",
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.LERK_TOOLTIP,
+			[kTechDataModel] = Lerk.kModelName,
+			[kTechDataCostKey] = kLerkCost,
+			[kTechDataMaxHealth] = kLerkHealth,
+			[kTechDataMaxArmor] = kLerkArmor,
+			[kTechDataEngagementDistance] = kPlayerEngagementDistance,
+			[kTechDataMaxExtents] = Vector(Lerk.XZExtents, Lerk.YExtents, Lerk.XZExtents),
+			[kTechDataPointValue] = kLerkPointValue,
+			[kTechDataCombatCost] = kCombatAlienLerkCost
+		},
+		
+        {[kTechDataId] = kTechId.Fade,
+			[kTechDataMapName] = Fade.kMapName,
+			[kTechDataGestateName] = Fade.kMapName,
+			[kTechDataGestateTime] = kFadeGestateTime,
+			[kTechDataDisplayName] = "FADE",
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.FADE_TOOLTIP,
+			[kTechDataModel] = Fade.kModelName,
+			[kTechDataCostKey] = kFadeCost,
+			[kTechDataMaxHealth] = kFadeHealth,
+			[kTechDataEngagementDistance] = kPlayerEngagementDistance,
+			[kTechDataMaxArmor] = kFadeArmor,
+			[kTechDataMaxExtents] = Vector(Fade.XZExtents, Fade.YExtents, Fade.XZExtents),
+			[kTechDataPointValue] = kFadePointValue,
+			[kTechDataCombatCost] = kCombatAlienFadeCost
+		},
+		
+        {[kTechDataId] = kTechId.Onos,
+			[kTechDataMapName] = Onos.kMapName,
+			[kTechDataGestateName] = Onos.kMapName,
+			[kTechDataGestateTime] = kOnosGestateTime,
+			[kTechDataDisplayName] = "ONOS",
+			[kTechDataTooltipInfo] = "ONOS_TOOLTIP",
+			[kTechDataModel] = Onos.kModelName,
+			[kTechDataCostKey] = kOnosCost,
+			[kTechDataMaxHealth] = kOnosHealth,
+			[kTechDataEngagementDistance] = kOnosEngagementDistance,
+			[kTechDataMaxArmor] = kOnosArmor,
+			[kTechDataMaxExtents] = Vector(Onos.XExtents, Onos.YExtents, Onos.ZExtents),
+			[kTechDataPointValue] = kOnosPointValue,
+			[kTechDataCombatCost] = kCombatAlienOnosCost
+		},
+		
+        {[kTechDataId] = kTechId.Embryo,
+			[kTechDataMapName] = Embryo.kMapName,
+			[kTechDataGestateName] = Embryo.kMapName,
+			[kTechDataDisplayName] = "EMBRYO",
+			[kTechDataModel] = Embryo.kModelName,
+			[kTechDataMaxExtents] = Vector(Embryo.kXExtents, Embryo.kYExtents, Embryo.kZExtents)
+		},
 
         // Lifeform purchases
-        { [kTechDataId] = kTechId.Carapace,           [kTechDataCategory] = kTechId.CragHive,       [kTechDataKeyStructure] = kTechId.Crag,           [kTechDataDisplayName] = "CARAPACE",  [kTechDataCostKey] = kCarapaceCost, [kTechDataTooltipInfo] = "CARAPACE_TOOLTIP", [kTechDataCombatCost] = kCombatAlienUpgradeCost },        
-        { [kTechDataId] = kTechId.Regeneration,       [kTechDataCategory] = kTechId.CragHive,       [kTechDataKeyStructure] = kTechId.Crag,      [kTechDataDisplayName] = "REGENERATION",  [kTechDataCostKey] = kRegenerationCost, [kTechDataTooltipInfo] = "REGENERATION_TOOLTIP", [kTechDataCombatCost] = kCombatAlienUpgradeCost },                            
-        { [kTechDataId] = kTechId.Redemption,         [kTechDataCategory] = kTechId.CragHive,       [kTechDataKeyStructure] = kTechId.Crag,         [kTechDataDisplayName] = kNS2cLocalizedStrings.REDEMPTION, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.REDEMPTION_TOOLTIP, [kTechDataCostKey] = kRedemptionCost, [kTechDataCombatCost] = kCombatAlienUpgradeCost },
+        {[kTechDataId] = kTechId.Carapace,
+			[kTechDataCategory] = kTechId.CragHive,
+			[kTechDataKeyStructure] = kTechId.Crag,
+			[kTechDataDisplayName] = "CARAPACE",
+			[kTechDataCostKey] = kCarapaceCost,
+			[kTechDataTooltipInfo] = "CARAPACE_TOOLTIP",
+			[kTechDataCombatCost] = kCombatAlienUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Regeneration,
+			[kTechDataCategory] = kTechId.CragHive,
+			[kTechDataKeyStructure] = kTechId.Crag,
+			[kTechDataDisplayName] = "REGENERATION",
+			[kTechDataCostKey] = kRegenerationCost,
+			[kTechDataTooltipInfo] = "REGENERATION_TOOLTIP",
+			[kTechDataCombatCost] = kCombatAlienUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Redemption,
+			[kTechDataCategory] = kTechId.CragHive,
+			[kTechDataKeyStructure] = kTechId.Crag,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.REDEMPTION,
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.REDEMPTION_TOOLTIP,
+			[kTechDataCostKey] = kRedemptionCost,
+			[kTechDataCombatCost] = kCombatAlienUpgradeCost
+		},
  
-        { [kTechDataId] = kTechId.Celerity,           [kTechDataCategory] = kTechId.ShiftHive,      [kTechDataKeyStructure] = kTechId.Shift,      [kTechDataDisplayName] = "CELERITY", [kTechDataTooltipInfo] = "CELERITY_TOOLTIP", [kTechDataCostKey] = kCelerityCost, [kTechDataCombatCost] = kCombatAlienUpgradeCost },
-        { [kTechDataId] = kTechId.Adrenaline,         [kTechDataCategory] = kTechId.ShiftHive,      [kTechDataKeyStructure] = kTechId.Shift,       [kTechDataDisplayName] = "ADRENALINE", [kTechDataTooltipInfo] = kNS2cLocalizedStrings.ADRENALINE_TOOLTIP, [kTechDataCostKey] = kAdrenalineCost, [kTechDataCombatCost] = kCombatAlienUpgradeCost },
-        { [kTechDataId] = kTechId.Redeployment,       [kTechDataCategory] = kTechId.ShiftHive,      [kTechDataKeyStructure] = kTechId.Shift,      [kTechDataDisplayName] = kNS2cLocalizedStrings.REDEPLOYMENT, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.REDEPLOYMENT_TOOLTIP, [kTechDataCostKey] = kRedeploymentCost, [kTechDataCombatCost] = kCombatAlienUpgradeCost },
-        { [kTechDataId] = kTechId.Silence2,           [kTechDataImplemented] = false,               [kTechDataCategory] = kTechId.ShiftHive,      [kTechDataKeyStructure] = kTechId.Shift,      [kTechDataDisplayName] = "SILENCE", [kTechDataTooltipInfo] = "SILENCE_TOOLTIP", [kTechDataCostKey] = kSilenceCost, [kTechDataCombatCost] = kCombatAlienUpgradeCost },
+        {[kTechDataId] = kTechId.Celerity,
+			[kTechDataCategory] = kTechId.ShiftHive,
+			[kTechDataKeyStructure] = kTechId.Shift,
+			[kTechDataDisplayName] = "CELERITY",
+			[kTechDataTooltipInfo] = "CELERITY_TOOLTIP",
+			[kTechDataCostKey] = kCelerityCost,
+			[kTechDataCombatCost] = kCombatAlienUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Adrenaline,
+			[kTechDataCategory] = kTechId.ShiftHive,
+			[kTechDataKeyStructure] = kTechId.Shift,
+			[kTechDataDisplayName] = "ADRENALINE",
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.ADRENALINE_TOOLTIP,
+			[kTechDataCostKey] = kAdrenalineCost,
+			[kTechDataCombatCost] = kCombatAlienUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Redeployment,
+			[kTechDataCategory] = kTechId.ShiftHive,
+			[kTechDataKeyStructure] = kTechId.Shift,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.REDEPLOYMENT,
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.REDEPLOYMENT_TOOLTIP,
+			[kTechDataCostKey] = kRedeploymentCost,
+			[kTechDataCombatCost] = kCombatAlienUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Silence2,
+			[kTechDataImplemented] = false,
+			[kTechDataCategory] = kTechId.ShiftHive,
+			[kTechDataKeyStructure] = kTechId.Shift,
+			[kTechDataDisplayName] = "SILENCE",
+			[kTechDataTooltipInfo] = "SILENCE_TOOLTIP",
+			[kTechDataCostKey] = kSilenceCost,
+			[kTechDataCombatCost] = kCombatAlienUpgradeCost
+		},
         
-        { [kTechDataId] = kTechId.Silence,            [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,       [kTechDataDisplayName] = "SILENCE", [kTechDataTooltipInfo] = "SILENCE_TOOLTIP", [kTechDataCostKey] = kSilenceCost, [kTechDataCombatCost] = kCombatAlienUpgradeCost },                
-        { [kTechDataId] = kTechId.Aura,               [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,       [kTechDataDisplayName] = kNS2cLocalizedStrings.AURA, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.AURA_TOOLTIP, [kTechDataCostKey] = kAuraCost, [kTechDataCombatCost] = kCombatAlienUpgradeCost },
-        { [kTechDataId] = kTechId.Ghost,              [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,      [kTechDataDisplayName] = kNS2cLocalizedStrings.GHOST, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.GHOST_TOOLTIP, [kTechDataCostKey] = kGhostCost, [kTechDataCombatCost] = kCombatAlienUpgradeCost },
-        { [kTechDataId] = kTechId.Camouflage,         [kTechDataImplemented] = false,               [kTechDataCategory] = kTechId.ShadeHive,      [kTechDataKeyStructure] = kTechId.Shade,       [kTechDataDisplayName] = "CAMOUFLAGE", [kTechDataTooltipInfo] = "CAMOUFLAGE_TOOLTIP", [kTechDataCostKey] = kCamouflageCost, [kTechDataCombatCost] = kCombatAlienUpgradeCost },
+        {[kTechDataId] = kTechId.Silence,
+			[kTechDataCategory] = kTechId.ShadeHive,
+			[kTechDataKeyStructure] = kTechId.Shade,
+			[kTechDataDisplayName] = "SILENCE",
+			[kTechDataTooltipInfo] = "SILENCE_TOOLTIP",
+			[kTechDataCostKey] = kSilenceCost,
+			[kTechDataCombatCost] = kCombatAlienUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Aura,
+			[kTechDataCategory] = kTechId.ShadeHive,
+			[kTechDataKeyStructure] = kTechId.Shade,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.AURA,
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.AURA_TOOLTIP,
+			[kTechDataCostKey] = kAuraCost,
+			[kTechDataCombatCost] = kCombatAlienUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Ghost,
+			[kTechDataCategory] = kTechId.ShadeHive,
+			[kTechDataKeyStructure] = kTechId.Shade,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.GHOST,
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.GHOST_TOOLTIP,
+			[kTechDataCostKey] = kGhostCost,
+			[kTechDataCombatCost] = kCombatAlienUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Camouflage,
+			[kTechDataImplemented] = false,
+			[kTechDataCategory] = kTechId.ShadeHive,
+			[kTechDataKeyStructure] = kTechId.Shade,
+			[kTechDataDisplayName] = "CAMOUFLAGE",
+			[kTechDataTooltipInfo] = "CAMOUFLAGE_TOOLTIP",
+			[kTechDataCostKey] = kCamouflageCost,
+			[kTechDataCombatCost] = kCombatAlienUpgradeCost
+		},
         
-        { [kTechDataId] = kTechId.Focus,              [kTechDataCategory] = kTechId.WhipHive,      [kTechDataKeyStructure] = kTechId.Whip,    [kTechDataDisplayName] = kNS2cLocalizedStrings.FOCUS, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.FOCUS_TOOLTIP, [kTechDataCostKey] = kFocusCost, [kTechDataCombatCost] = kCombatAlienFocusCost },
-        { [kTechDataId] = kTechId.Fury,               [kTechDataCategory] = kTechId.WhipHive,      [kTechDataKeyStructure] = kTechId.Whip,    [kTechDataDisplayName] = kNS2cLocalizedStrings.FURY, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.FURY_TOOLTIP, [kTechDataCostKey] = kFuryCost, [kTechDataCombatCost] = kCombatAlienUpgradeCost },
-        { [kTechDataId] = kTechId.Bombard,            [kTechDataCategory] = kTechId.WhipHive,      [kTechDataKeyStructure] = kTechId.Whip,    [kTechDataDisplayName] = kNS2cLocalizedStrings.BOMBARD, [kTechDataTooltipInfo] = kNS2cLocalizedStrings.BOMBARD_TOOLTIP, [kTechDataCostKey] = kBombardCost, [kTechDataCombatCost] = kCombatAlienUpgradeCost },
+        {[kTechDataId] = kTechId.Focus,
+			[kTechDataCategory] = kTechId.WhipHive,
+			[kTechDataKeyStructure] = kTechId.Whip,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.FOCUS,
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.FOCUS_TOOLTIP,
+			[kTechDataCostKey] = kFocusCost,
+			[kTechDataCombatCost] = kCombatAlienFocusCost
+		},
+		
+        {[kTechDataId] = kTechId.Fury,
+			[kTechDataCategory] = kTechId.WhipHive,
+			[kTechDataKeyStructure] = kTechId.Whip,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.FURY,
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.FURY_TOOLTIP,
+			[kTechDataCostKey] = kFuryCost,
+			[kTechDataCombatCost] = kCombatAlienUpgradeCost
+		},
+		
+        {[kTechDataId] = kTechId.Bombard,
+			[kTechDataCategory] = kTechId.WhipHive,
+			[kTechDataKeyStructure] = kTechId.Whip,
+			[kTechDataDisplayName] = kNS2cLocalizedStrings.BOMBARD,
+			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.BOMBARD_TOOLTIP,
+			[kTechDataCostKey] = kBombardCost,
+			[kTechDataCombatCost] = kCombatAlienUpgradeCost
+		},
         
         // Alerts
-        { [kTechDataId] = kTechId.MarineAlertSentryUnderAttack,                 [kTechDataAlertSound] = Sentry.kUnderAttackSound,                           [kTechDataAlertType] = kAlertType.Info,   [kTechDataAlertPriority] = 0, [kTechDataAlertText] = "MARINE_ALERT_SENTRY_UNDERATTACK", [kTechDataAlertTeam] = false},
-        { [kTechDataId] = kTechId.MarineAlertSoldierUnderAttack,                [kTechDataAlertSound] = MarineCommander.kSoldierUnderAttackSound,           [kTechDataAlertType] = kAlertType.Info,   [kTechDataAlertPriority] = 0, [kTechDataAlertText] = "MARINE_ALERT_SOLDIER_UNDERATTACK", [kTechDataAlertTeam] = true},
-        { [kTechDataId] = kTechId.MarineAlertStructureUnderAttack,              [kTechDataAlertSound] = MarineCommander.kStructureUnderAttackSound,         [kTechDataAlertType] = kAlertType.Info,   [kTechDataAlertPriority] = 1, [kTechDataAlertText] = "MARINE_ALERT_STRUCTURE_UNDERATTACK", [kTechDataAlertTeam] = true},
-        { [kTechDataId] = kTechId.MarineAlertExtractorUnderAttack,              [kTechDataAlertSound] = MarineCommander.kStructureUnderAttackSound,         [kTechDataAlertType] = kAlertType.Info,   [kTechDataAlertPriority] = 1, [kTechDataAlertText] = "MARINE_ALERT_EXTRACTOR_UNDERATTACK", [kTechDataAlertTeam] = true, [kTechDataAlertIgnoreDistance] = true},          
-        { [kTechDataId] = kTechId.MarineAlertCommandStationUnderAttack,         [kTechDataAlertSound] = CommandStation.kUnderAttackSound,                   [kTechDataAlertType] = kAlertType.Info,   [kTechDataAlertPriority] = 2, [kTechDataAlertText] = "MARINE_ALERT_COMMANDSTATION_UNDERAT",  [kTechDataAlertTeam] = true, [kTechDataAlertIgnoreDistance] = true, [kTechDataAlertSendTeamMessage] = kTeamMessageTypes.CommandStationUnderAttack},
-        { [kTechDataId] = kTechId.MarineAlertInfantryPortalUnderAttack,         [kTechDataAlertSound] = InfantryPortal.kUnderAttackSound,                   [kTechDataAlertType] = kAlertType.Info,   [kTechDataAlertPriority] = 1, [kTechDataAlertText] = "MARINE_ALERT_INFANTRYPORTAL_UNDERAT",  [kTechDataAlertTeam] = true, [kTechDataAlertSendTeamMessage] = kTeamMessageTypes.IPUnderAttack},
+        {[kTechDataId] = kTechId.MarineAlertSentryUnderAttack,
+			[kTechDataAlertSound] = Sentry.kUnderAttackSound,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertPriority] = 0,
+			[kTechDataAlertText] = "MARINE_ALERT_SENTRY_UNDERATTACK",
+			[kTechDataAlertTeam] = false
+		},
+		
+        {[kTechDataId] = kTechId.MarineAlertSoldierUnderAttack,
+			[kTechDataAlertSound] = MarineCommander.kSoldierUnderAttackSound,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertPriority] = 0,
+			[kTechDataAlertText] = "MARINE_ALERT_SOLDIER_UNDERATTACK",
+			[kTechDataAlertTeam] = true
+		},
+		
+        {[kTechDataId] = kTechId.MarineAlertStructureUnderAttack,
+			[kTechDataAlertSound] = MarineCommander.kStructureUnderAttackSound,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertPriority] = 1,
+			[kTechDataAlertText] = "MARINE_ALERT_STRUCTURE_UNDERATTACK",
+			[kTechDataAlertTeam] = true
+		},
+		
+        {[kTechDataId] = kTechId.MarineAlertExtractorUnderAttack,
+			[kTechDataAlertSound] = MarineCommander.kStructureUnderAttackSound,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertPriority] = 1,
+			[kTechDataAlertText] = "MARINE_ALERT_EXTRACTOR_UNDERATTACK",
+			[kTechDataAlertTeam] = true,
+			[kTechDataAlertIgnoreDistance] = true
+		},
+		
+        {[kTechDataId] = kTechId.MarineAlertCommandStationUnderAttack,
+			[kTechDataAlertSound] = CommandStation.kUnderAttackSound,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertPriority] = 2,
+			[kTechDataAlertText] = "MARINE_ALERT_COMMANDSTATION_UNDERAT",
+			[kTechDataAlertTeam] = true,
+			[kTechDataAlertIgnoreDistance] = true,
+			[kTechDataAlertSendTeamMessage] = kTeamMessageTypes.CommandStationUnderAttack
+		},
+		
+        {[kTechDataId] = kTechId.MarineAlertInfantryPortalUnderAttack,
+			[kTechDataAlertSound] = InfantryPortal.kUnderAttackSound,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertPriority] = 1,
+			[kTechDataAlertText] = "MARINE_ALERT_INFANTRYPORTAL_UNDERAT",
+			[kTechDataAlertTeam] = true,
+			[kTechDataAlertSendTeamMessage] = kTeamMessageTypes.IPUnderAttack
+		},
 
-        { [kTechDataId] = kTechId.MarineAlertCommandStationComplete,            [kTechDataAlertSound] = MarineCommander.kCommandStationCompletedSoundName,  [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertText] = "MARINE_ALERT_COMMAND_STATION_COMPLETE", [kTechDataAlertTeam] = true, [kTechDataAlertIgnoreDistance] = true,}, 
-        { [kTechDataId] = kTechId.MarineAlertConstructionComplete,              [kTechDataAlertSound] = MarineCommander.kObjectiveCompletedSoundName,       [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertText] = "MARINE_ALERT_CONSTRUCTION_COMPLETE", [kTechDataAlertTeam] = false}, 
-        { [kTechDataId] = kTechId.MarineCommanderEjected,                       [kTechDataAlertSound] = MarineCommander.kCommanderEjectedSoundName,         [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertText] = "MARINE_ALERT_COMMANDER_EJECTED",    [kTechDataAlertTeam] = true},
-        { [kTechDataId] = kTechId.MarineAlertSentryFiring,                      [kTechDataAlertSound] = MarineCommander.kSentryFiringSoundName,             [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertText] = "MARINE_ALERT_SENTRY_FIRING"},
-        { [kTechDataId] = kTechId.MarineAlertSoldierLost,                       [kTechDataAlertSound] = MarineCommander.kSoldierLostSoundName,              [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertText] = "MARINE_ALERT_SOLDIER_LOST",    [kTechDataAlertOthersOnly] = true},
-        { [kTechDataId] = kTechId.MarineAlertAcknowledge,                       [kTechDataAlertSound] = MarineCommander.kSoldierAcknowledgesSoundName,      [kTechDataAlertType] = kAlertType.Request,  [kTechDataAlertText] = "MARINE_ALERT_ACKNOWLEDGE"},
-        { [kTechDataId] = kTechId.MarineAlertNeedAmmo,      [kTechDataAlertIgnoreInterval] = true, [kTechDataAlertSound] = MarineCommander.kSoldierNeedsAmmoSoundName,         [kTechDataAlertType] = kAlertType.Request,  [kTechDataAlertText] = "MARINE_ALERT_NEED_AMMO"},
-        { [kTechDataId] = kTechId.MarineAlertNeedMedpack,   [kTechDataAlertIgnoreInterval] = true, [kTechDataAlertSound] = MarineCommander.kSoldierNeedsHealthSoundName,       [kTechDataAlertType] = kAlertType.Request,  [kTechDataAlertText] = "MARINE_ALERT_NEED_MEDPACK"},
-        { [kTechDataId] = kTechId.MarineAlertNeedOrder,     [kTechDataAlertIgnoreInterval] = true, [kTechDataAlertSound] = MarineCommander.kSoldierNeedsOrderSoundName,        [kTechDataAlertType] = kAlertType.Request,  [kTechDataAlertText] = "MARINE_ALERT_NEED_ORDER"},
-        { [kTechDataId] = kTechId.MarineAlertUpgradeComplete,                   [kTechDataAlertSound] = MarineCommander.kUpgradeCompleteSoundName,          [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertText] = "MARINE_ALERT_UPGRADE_COMPLETE"},
-        { [kTechDataId] = kTechId.MarineAlertResearchComplete,                  [kTechDataAlertSound] = MarineCommander.kResearchCompleteSoundName,         [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertText] = "MARINE_ALERT_RESEARCH_COMPLETE"},
-        { [kTechDataId] = kTechId.MarineAlertManufactureComplete,               [kTechDataAlertSound] = MarineCommander.kManufactureCompleteSoundName,      [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertText] = "MARINE_ALERT_MANUFACTURE_COMPLETE"},
-        { [kTechDataId] = kTechId.MarineAlertNotEnoughResources,                [kTechDataAlertSound] = Player.kNotEnoughResourcesSound,                    [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertText] = "MARINE_ALERT_NOT_ENOUGH_RESOURCES"},
-        { [kTechDataId] = kTechId.MarineAlertOrderComplete,                     [kTechDataAlertSound] = MarineCommander.kObjectiveCompletedSoundName,       [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertText] = "MARINE_ALERT_ORDER_COMPLETE"},           
+        {[kTechDataId] = kTechId.MarineAlertCommandStationComplete,
+			[kTechDataAlertSound] = MarineCommander.kCommandStationCompletedSoundName,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertText] = "MARINE_ALERT_COMMAND_STATION_COMPLETE",
+			[kTechDataAlertTeam] = true
+		},
+		
+        {[kTechDataId] = kTechId.MarineAlertConstructionComplete,
+			[kTechDataAlertSound] = MarineCommander.kObjectiveCompletedSoundName,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertText] = "MARINE_ALERT_CONSTRUCTION_COMPLETE",
+			[kTechDataAlertTeam] = false
+		},
+		
+        {[kTechDataId] = kTechId.MarineCommanderEjected,
+			[kTechDataAlertSound] = MarineCommander.kCommanderEjectedSoundName,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertText] = "MARINE_ALERT_COMMANDER_EJECTED",
+			[kTechDataAlertTeam] = true
+		},
+		
+        {[kTechDataId] = kTechId.MarineAlertSentryFiring,
+			[kTechDataAlertSound] = MarineCommander.kSentryFiringSoundName,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertText] = "MARINE_ALERT_SENTRY_FIRING"
+		},
+		
+        {[kTechDataId] = kTechId.MarineAlertSoldierLost,
+			[kTechDataAlertSound] = MarineCommander.kSoldierLostSoundName,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertText] = "MARINE_ALERT_SOLDIER_LOST",
+			[kTechDataAlertOthersOnly] = true
+		},
+		
+        {[kTechDataId] = kTechId.MarineAlertAcknowledge,
+			[kTechDataAlertSound] = MarineCommander.kSoldierAcknowledgesSoundName,
+			[kTechDataAlertType] = kAlertType.Request,
+			[kTechDataAlertText] = "MARINE_ALERT_ACKNOWLEDGE"
+		},
+		
+        {[kTechDataId] = kTechId.MarineAlertNeedAmmo,
+			[kTechDataAlertIgnoreInterval] = true,
+			[kTechDataAlertSound] = MarineCommander.kSoldierNeedsAmmoSoundName,
+			[kTechDataAlertType] = kAlertType.Request,
+			[kTechDataAlertText] = "MARINE_ALERT_NEED_AMMO"
+		},
+		
+        {[kTechDataId] = kTechId.MarineAlertNeedMedpack,
+			[kTechDataAlertIgnoreInterval] = true,
+			[kTechDataAlertSound] = MarineCommander.kSoldierNeedsHealthSoundName,
+			[kTechDataAlertType] = kAlertType.Request,
+			[kTechDataAlertText] = "MARINE_ALERT_NEED_MEDPACK"
+		},
+		
+        {[kTechDataId] = kTechId.MarineAlertNeedOrder,
+			[kTechDataAlertIgnoreInterval] = true,
+			[kTechDataAlertSound] = MarineCommander.kSoldierNeedsOrderSoundName,
+			[kTechDataAlertType] = kAlertType.Request,
+			[kTechDataAlertText] = "MARINE_ALERT_NEED_ORDER"
+		},
+		
+        {[kTechDataId] = kTechId.MarineAlertUpgradeComplete,
+			[kTechDataAlertSound] = MarineCommander.kUpgradeCompleteSoundName,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertText] = "MARINE_ALERT_UPGRADE_COMPLETE"
+		},
+		
+        {[kTechDataId] = kTechId.MarineAlertResearchComplete,
+			[kTechDataAlertSound] = MarineCommander.kResearchCompleteSoundName,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertText] = "MARINE_ALERT_RESEARCH_COMPLETE"
+		},
+		
+        {[kTechDataId] = kTechId.MarineAlertManufactureComplete,
+			[kTechDataAlertSound] = MarineCommander.kManufactureCompleteSoundName,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertText] = "MARINE_ALERT_MANUFACTURE_COMPLETE"
+		},
+		
+        {[kTechDataId] = kTechId.MarineAlertNotEnoughResources,
+			[kTechDataAlertSound] = Player.kNotEnoughResourcesSound,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertText] = "MARINE_ALERT_NOT_ENOUGH_RESOURCES"
+		},
+		
+        {[kTechDataId] = kTechId.MarineAlertOrderComplete,
+			[kTechDataAlertSound] = MarineCommander.kObjectiveCompletedSoundName,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertText] = "MARINE_ALERT_ORDER_COMPLETE"
+		},
     
-        { [kTechDataId] = kTechId.AlienAlertHiveUnderAttack,                    [kTechDataAlertSound] = Hive.kUnderAttackSound,                             [kTechDataAlertType] = kAlertType.Info,   [kTechDataAlertPriority] = 2, [kTechDataAlertText] = "ALIEN_ALERT_HIVE_UNDERATTACK",             [kTechDataAlertTeam] = true, [kTechDataAlertIgnoreDistance] = true, [kTechDataAlertSendTeamMessage] = kTeamMessageTypes.HiveUnderAttack},
-        { [kTechDataId] = kTechId.AlienAlertEnemyApproaches,                    [kTechDataAlertSound] = Hive.kEnemyApproachesSound,                         [kTechDataAlertType] = kAlertType.Info,   [kTechDataAlertPriority] = 2, [kTechDataAlertText] = "ALIEN_ALERT_ENEMY_APPROACHES",             [kTechDataAlertTeam] = true, [kTechDataAlertIgnoreDistance] = true, [kTechDataAlertSendTeamMessage] = kTeamMessageTypes.HiveInDanger},
-        { [kTechDataId] = kTechId.AlienAlertStructureUnderAttack,               [kTechDataAlertSound] = Hive.kStructureUnderAttackSound,                    [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertPriority] = 0, [kTechDataAlertText] = "ALIEN_ALERT_STRUCTURE_UNDERATTACK",        [kTechDataAlertTeam] = true},
-        { [kTechDataId] = kTechId.AlienAlertHarvesterUnderAttack,               [kTechDataAlertSound] = Hive.kHarvesterUnderAttackSound,                    [kTechDataAlertType] = kAlertType.Info,   [kTechDataAlertPriority] = 1, [kTechDataAlertText] = "ALIEN_ALERT_HARVESTER_UNDERATTACK",        [kTechDataAlertTeam] = true, [kTechDataAlertIgnoreDistance] = true},
-        { [kTechDataId] = kTechId.AlienAlertLifeformUnderAttack,                [kTechDataAlertSound] = Hive.kLifeformUnderAttackSound,                     [kTechDataAlertType] = kAlertType.Info,   [kTechDataAlertPriority] = 0, [kTechDataAlertText] = "ALIEN_ALERT_LIFEFORM_UNDERATTACK",         [kTechDataAlertTeam] = true},
+        {[kTechDataId] = kTechId.AlienAlertHiveUnderAttack,
+			[kTechDataAlertSound] = Hive.kUnderAttackSound,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertPriority] = 2,
+			[kTechDataAlertText] = "ALIEN_ALERT_HIVE_UNDERATTACK",
+			[kTechDataAlertTeam] = true,
+			[kTechDataAlertIgnoreDistance] = true,
+			[kTechDataAlertSendTeamMessage] = kTeamMessageTypes.HiveUnderAttack
+		},
+		
+        {[kTechDataId] = kTechId.AlienAlertEnemyApproaches,
+			[kTechDataAlertSound] = Hive.kEnemyApproachesSound,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertPriority] = 2,
+			[kTechDataAlertText] = "ALIEN_ALERT_ENEMY_APPROACHES",
+			[kTechDataAlertTeam] = true,
+			[kTechDataAlertIgnoreDistance] = true,
+			[kTechDataAlertSendTeamMessage] = kTeamMessageTypes.HiveInDanger
+		},
+		
+        {[kTechDataId] = kTechId.AlienAlertStructureUnderAttack,
+			[kTechDataAlertSound] = Hive.kStructureUnderAttackSound,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertPriority] = 0,
+			[kTechDataAlertText] = "ALIEN_ALERT_STRUCTURE_UNDERATTACK",
+			[kTechDataAlertTeam] = true
+		},
+		
+        {[kTechDataId] = kTechId.AlienAlertHarvesterUnderAttack,
+			[kTechDataAlertSound] = Hive.kHarvesterUnderAttackSound,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertPriority] = 1,
+			[kTechDataAlertText] = "ALIEN_ALERT_HARVESTER_UNDERATTACK",
+			[kTechDataAlertTeam] = true,
+			[kTechDataAlertIgnoreDistance] = true
+		},
+		
+        {[kTechDataId] = kTechId.AlienAlertLifeformUnderAttack,
+			[kTechDataAlertSound] = Hive.kLifeformUnderAttackSound,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertPriority] = 0,
+			[kTechDataAlertText] = "ALIEN_ALERT_LIFEFORM_UNDERATTACK",
+			[kTechDataAlertTeam] = true
+		},
 
-        { [kTechDataId] = kTechId.AlienAlertHiveDying,                          [kTechDataAlertSound] = Hive.kDyingSound,                                   [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertPriority] = 3, [kTechDataAlertText] = "ALIEN_ALERT_HIVE_DYING",                 [kTechDataAlertTeam] = true, [kTechDataAlertIgnoreDistance] = true},        
-        { [kTechDataId] = kTechId.AlienAlertHiveComplete,                       [kTechDataAlertSound] = Hive.kCompleteSound,                                [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertText] = "ALIEN_ALERT_HIVE_COMPLETE",    [kTechDataAlertTeam] = true, [kTechDataAlertIgnoreDistance] = true},
-        { [kTechDataId] = kTechId.AlienAlertHiveSpecialComplete,                [kTechDataAlertSound] = Hive.kSpecialCompleteSound,                         [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertText] = "ALIEN_ALERT_HIVE_COMPLETE",    [kTechDataAlertTeam] = true, [kTechDataAlertIgnoreDistance] = true},
-        { [kTechDataId] = kTechId.AlienAlertGorgeBuiltHarvester,                                                                                            [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertText] = "ALIEN_ALERT_GORGEBUILT_HARVESTER"},
-        { [kTechDataId] = kTechId.AlienAlertNotEnoughResources,                 [kTechDataAlertSound] = Alien.kNotEnoughResourcesSound,                     [kTechDataAlertType] = kAlertType.Info,     [kTechDataAlertText] = "ALIEN_ALERT_NOTENOUGH_RESOURCES"},
+        {[kTechDataId] = kTechId.AlienAlertHiveDying,
+			[kTechDataAlertSound] = Hive.kDyingSound,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertPriority] = 3,
+			[kTechDataAlertText] = "ALIEN_ALERT_HIVE_DYING",
+			[kTechDataAlertTeam] = true,
+			[kTechDataAlertIgnoreDistance] = true
+		},
+		
+        {[kTechDataId] = kTechId.AlienAlertHiveComplete,
+			[kTechDataAlertSound] = Hive.kCompleteSound,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertText] = "ALIEN_ALERT_HIVE_COMPLETE",
+			[kTechDataAlertTeam] = true,
+			[kTechDataAlertIgnoreDistance] = true
+		},
+		
+        {[kTechDataId] = kTechId.AlienAlertHiveSpecialComplete,
+			[kTechDataAlertSound] = Hive.kSpecialCompleteSound,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertText] = "ALIEN_ALERT_HIVE_COMPLETE",
+			[kTechDataAlertTeam] = true,
+			[kTechDataAlertIgnoreDistance] = true
+		},
+		
+        {[kTechDataId] = kTechId.AlienAlertGorgeBuiltHarvester,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertText] = "ALIEN_ALERT_GORGEBUILT_HARVESTER"
+		},
+		
+        {[kTechDataId] = kTechId.AlienAlertNotEnoughResources,
+			[kTechDataAlertSound] = Alien.kNotEnoughResourcesSound,
+			[kTechDataAlertType] = kAlertType.Info,
+			[kTechDataAlertText] = "ALIEN_ALERT_NOTENOUGH_RESOURCES"
+		},
 
-        { [kTechDataId] = kTechId.DeathTrigger,                                 [kTechDataDisplayName] = "DEATH_TRIGGER",                                   [kTechDataMapName] = DeathTrigger.kMapName, [kTechDataModel] = ""},
+        {[kTechDataId] = kTechId.DeathTrigger,
+			[kTechDataDisplayName] = "DEATH_TRIGGER",
+			[kTechDataMapName] = DeathTrigger.kMapName,
+			[kTechDataModel] = ""
+		}
 
     }
 

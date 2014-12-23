@@ -1,4 +1,4 @@
-//======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+//======= Copyright (c) 2003-2014, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 //
 // lua\NS2Utility.lua
 //
@@ -361,6 +361,7 @@ function GetTeamHasCommander(teamNumber)
     end
     
 end
+
 function GetCommanderLogoutAllowed()
     return true 
 end
@@ -2315,6 +2316,7 @@ function BuildClassToGrid()
     ClassToGrid["WaypointMove"] = { 1, 8 }
     ClassToGrid["WaypointDefend"] = { 2, 8 }
     ClassToGrid["TunnelEntrance"] = { 3, 8 }
+    ClassToGrid["NpcManagerTunnel"] = { 3, 8 }
     ClassToGrid["PlayerFOV"] = { 4, 8 }
     
     ClassToGrid["MoveOrder"] = { 1, 8 }

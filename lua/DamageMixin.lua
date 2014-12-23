@@ -35,7 +35,7 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
     if target and target:isa("Ragdoll") then
         return false
     end
-    
+        
     if self:isa("Player") then
         attacker = self
     else
@@ -77,6 +77,7 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
         
         local armorUsed = 0
         local healthUsed = 0
+        local damageDone = 0
         
         if target and HasMixin(target, "Live") and damage > 0 then  
 
@@ -171,7 +172,11 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
 
                 // define metal_thin, rock, or other
                 if target.GetSurfaceOverride then
-                    surface = target:GetSurfaceOverride()
+                    surface = target:GetSurfaceOverride(damageDone) or surface
+                    
+                    if surface == "none" then
+                        return killedFromDamage
+                    end
                     
                 elseif GetAreEnemies(self, target) then
 
@@ -220,7 +225,10 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                         
                     end
                     
-                    if isPredicted then
+                    -- No need to send to the attacker if this is a child of the attacker.
+                    -- Children such as weapons are simulated on the Client as well so they will
+                    -- already see the hit effect.
+                    if isPredicted and attacker and self:GetParent() == attacker then
                         table.removevalue(toPlayers, attacker)
                     end
                     

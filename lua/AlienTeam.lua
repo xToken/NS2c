@@ -309,7 +309,6 @@ function AlienTeam:Update(timePassed)
             self:UpdatePingOfDeath()
             self:UpdateOverflowResources()
         end
-		self:UpdateRespawn()
     end
     
     PlayingTeam.Update(self, timePassed)
@@ -772,6 +771,14 @@ local function RespawnPlayer(self, hive)
 end
 
 function AlienTeam:UpdateRespawn()
+    if GetServerGameMode() == kGameMode.Combat and self:GetHasAbilityToRespawn() then
+        self:UpdateWaveRespawn()
+    elseif GetServerGameMode() == kGameMode.Classic then
+        self:UpdateHiveRespawn()
+    end
+end
+
+function AlienTeam:UpdateHiveRespawn()
 
     local time = Shared.GetTime()
     

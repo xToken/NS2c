@@ -40,7 +40,7 @@ function MedPack:OnTouch(recipient)
 end
 
 function MedPack:GetIsValidRecipient(recipient)
-    return not GetIsVortexed(recipient) and recipient:GetHealth() < recipient:GetMaxHealth() and recipient:GetIsAlive() and (not HasMixin(self, "Devourable") or not self:GetIsDevoured())
+    return not GetIsVortexed(recipient) and recipient:GetHealth() < recipient:GetMaxHealth() and recipient:GetIsAlive() and not recipient:GetIsStateFrozen()
 end
 
 

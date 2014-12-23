@@ -36,7 +36,7 @@ end
  * Any Marine is a valid recipient.
  */
 function CatPack:GetIsValidRecipient(recipient)
-    return (recipient.GetHasCatpackBoost and not recipient:GetHasCatpackBoost() and recipient:GetIsAlive()) and (not HasMixin(self, "Devourable") or not self:GetIsDevoured())
+    return (recipient.GetHasCatpackBoost and not recipient:GetHasCatpackBoost() and recipient:GetIsAlive()) and not recipient:GetIsStateFrozen()
 end
 
 Shared.LinkClassToMap("CatPack", CatPack.kMapName)

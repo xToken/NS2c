@@ -1,6 +1,7 @@
 //Core Vanilla NS2 movement code
 
 local kFallAccel = 0.34
+local kMaxAirVeer = 1.3
 local kMaxAirAccel = 0.54
 local kStopFriction = 6
 local kSimpleStopSpeed = 4
@@ -230,7 +231,7 @@ function CoreMoveMixin:SimpleAccelerate(input, velocity, deltaTime)
     
     local groundFraction = onGround and GetOnGroundFraction(self) or 0
     
-    local wishSpeed = onGround and maxSpeed or self:GetMaxAirVeer()
+    local wishSpeed = onGround and maxSpeed or kMaxAirVeer
     local currentSpeed = math.min(velocity:GetLength(), velocity:DotProduct(wishDir))
     local addSpeed = wishSpeed - currentSpeed
     

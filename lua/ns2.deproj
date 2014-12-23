@@ -466,6 +466,9 @@
     <filename>LOSMixin.lua</filename>
   </file>
   <file>
+    <filename>Mixins\LadderCoreMoveMixin.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Alien\LeapMixin.lua</filename>
   </file>
   <file>

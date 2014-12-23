@@ -99,9 +99,8 @@ function ResourceTower:GetCanSleep()
     return true
 end
 
-local kEngageOffset = Vector(0, 0.8, 0)
 function ResourceTower:GetEngagementPointOverride()
-    return self:GetOrigin() + kEngageOffset
+    return self:GetOrigin() + Vector(0, 0.8, 0)
 end
 
 Shared.LinkClassToMap("ResourceTower", ResourceTower.kMapName, networkVars, true)

@@ -11,7 +11,7 @@
 
 Script.Load("lua/CommAbilities/Marine/Scan.lua")
 
-Script.Load("lua/Mixins/ClientModelMixin.lua")
+Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
@@ -62,7 +62,7 @@ local kAnimationGraph = PrecacheAsset("models/marine/observatory/observatory.ani
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
+AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
@@ -94,7 +94,7 @@ function Observatory:OnCreate()
     end
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ClientModelMixin)
+    InitMixin(self, ModelMixin)
     InitMixin(self, LiveMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, FlinchMixin)
@@ -288,7 +288,7 @@ local function GetPlayersToBeacon(self, toOrigin)
         if not player:isa("Commander") then
 
             // Don't respawn players that are already nearby.
-            if not GetIsPlayerInRoom(self, player, locationName) and (not HasMixin(self, "Devourable") or not self:GetIsDevoured()) and (not player.GetIsRagdoll or not player:GetIsRagdoll()) then
+            if not GetIsPlayerInRoom(self, player, locationName) and not player:GetIsStateFrozen() and (not player.GetIsRagdoll or not player:GetIsRagdoll()) then
                 table.insert(players, player)
             end
         end

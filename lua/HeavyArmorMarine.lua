@@ -65,11 +65,6 @@ function HeavyArmorMarine:GetReceivesVaporousDamage()
     return false
 end
 
-function HeavyArmorMarine:GetMinFootstepTime()
-    //BANGBANGBANGBANGBANGBANG is really annoying btw.
-    return 0.4
-end
-
 function HeavyArmorMarine:GetMass()
     return kMass
 end

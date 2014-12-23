@@ -119,7 +119,7 @@ local function Arm(self)
 
     if not self.armed then
         
-        Detonate(self, Arm)
+        self:AddTimedCallback(function() Detonate(self, Arm) end, 0)
         
         self:TriggerEffects("mine_arm")
         
@@ -284,6 +284,13 @@ function Mine:GetDeathIconIndex()
 end
 
 if Client then
+
+    function Mine:OnInitialized()
+    
+        InitMixin(self, HiveVisionMixin)
+        ScriptActor.OnInitialized(self)
+    
+    end
 
     function Mine:OnGetIsVisible(visibleTable, viewerTeamNumber)
     

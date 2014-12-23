@@ -118,6 +118,9 @@ end
 function Player:InitWeapons()
 end
 
+function Player:InitWeaponsForReadyRoom()
+end
+
 // Add resources for kills and play sound, returns how much resources have been awarded
 function Player:AwardResForKill(amount)
 

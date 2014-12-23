@@ -70,7 +70,7 @@ function WeaponAmmoPack:GetIsValidRecipient(recipient)
 	
     local weapon = recipient:GetActiveWeapon()
     local correctWeaponType = weapon and weapon:isa(self:GetWeaponClassName())    
-    return self.ammoPackSize ~= nil and correctWeaponType and AmmoPack.GetIsValidRecipient(self, recipient) and (not HasMixin(self, "Devourable") or not self:GetIsDevoured())
+    return self.ammoPackSize ~= nil and correctWeaponType and AmmoPack.GetIsValidRecipient(self, recipient) and not recipient:GetIsStateFrozen()
     
 end
 

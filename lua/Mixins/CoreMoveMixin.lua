@@ -79,6 +79,7 @@ Script.Load("lua/Mixins/GoldSourceCoreMoveMixin.lua")
 Script.Load("lua/Mixins/VanillaNS2CoreMoveMixin.lua")
 Script.Load("lua/Mixins/JumpCoreMoveMixin.lua")
 Script.Load("lua/Mixins/CrouchCoreMoveMixin.lua")
+Script.Load("lua/Mixins/LadderCoreMoveMixin.lua")
 
 function CoreMoveMixin:__initmixin()
 
@@ -190,7 +191,7 @@ local function GetIsCloseToGround(self, distance)
 
     local onGround = false
     local normal = Vector()
-    local completedMove, hitEntities = nil
+    local completedMove, hitEntities
     
     if self.controller == nil then
     
@@ -469,6 +470,7 @@ function CoreMoveMixin:UpdateMove(input, runningPrediction)
     ApplyHalfGravity(self, input, velocity, deltaTime)
     
     self:ModifyVelocity(input, velocity, deltaTime)
+    self:UpdateLadderMove(input, velocity, deltaTime)
     
     // Clamp AirMove Speed
     if not self:GetIsOnGround() then

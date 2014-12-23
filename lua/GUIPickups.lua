@@ -50,7 +50,6 @@ kPickupTextureYOffsets["GrenadeLauncher"] = 6
 kPickupTextureYOffsets["Welder"] = 7
 kPickupTextureYOffsets["Builder"] = 7
 kPickupTextureYOffsets["Jetpack"] = 8
-kPickupTextureYOffsets["NadeLauncher"] = 6
 kPickupTextureYOffsets["HeavyMachineGun"] = 2
 kPickupTextureYOffsets["Mines"] = 9
 kPickupTextureYOffsets["HeavyArmor"] = 10

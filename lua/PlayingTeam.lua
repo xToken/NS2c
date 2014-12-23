@@ -767,9 +767,7 @@ function PlayingTeam:Update(timePassed)
     
     self:UpdateVotes()
             
-    if GetServerGameMode() == kGameMode.Combat and self:GetHasAbilityToRespawn() then
-        self:UpdateWaveRespawn()
-    end
+    self:UpdateRespawn()
     
     if GetGamerules():GetGameStarted() then
         
@@ -828,6 +826,12 @@ function PlayingTeam:UpdateResourceTowers()
 
 end
 
+function PlayingTeam:UpdateRespawn()
+    if GetServerGameMode() == kGameMode.Combat and self:GetHasAbilityToRespawn() then
+        self:UpdateWaveRespawn()
+    end
+end
+
 function PlayingTeam:UpdateWaveRespawn()
 
     local time = Shared.GetTime()
@@ -844,28 +848,29 @@ function PlayingTeam:UpdateWaveRespawn()
         
             //for i = 0, self:GetWaveSpawnCount() do
             local player = self:GetOldestQueuedPlayer()
-            local commandStructures = GetEntitiesForTeam("CommandStructure", self:GetTeamNumber())
-            if player and #commandStructures > 0 then
+            local initialTechPoint = Shared.GetEntity(self.initialTechPointId)
+            if player and initialTechPoint then
                 self:RemovePlayerFromRespawnQueue(player)
                 local techId = kTechId.Skulk
-                if player:GetTeam():GetIsMarineTeam() then
+                if self:GetIsMarineTeam() then
                     techId = kTechId.Marine
                 end
                 local extents = HasMixin(self, "Extents") and self:GetExtents() or LookupTechData(techId, kTechDataMaxExtents)
                 local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)
-                local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, commandStructures[1]:GetOrigin(), 2, 15, EntityFilterAll())
+                local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, initialTechPoint:GetOrigin(), 2, 15, EntityFilterAll())
                 if spawnPoint then
                     local success, newplayer = self:ReplaceRespawnPlayer(player, spawnPoint, player:GetAngles())   
-                    if not success then
-                        self:PutPlayerInRespawnQueue(player, time - self:GetWaveSpawnTime())
-                    else
+                    if newplayer then
                         newplayer:SetCameraDistance(0)
                         newplayer = newplayer:OnRestoreUpgrades()
                         self.spawnsthiswave = self.spawnsthiswave + 1
                     end
+                else
+                    Shared.Message("Failed to find spawnpoint for respawn wave!")
                 end
             end
             //end
+            //push next spawn out 100ms
             self.lastWaveSpawn = self.lastWaveSpawn + 0.1
             
         else
@@ -887,6 +892,7 @@ function PlayingTeam:UpdateWaveRespawn()
             end
             
         end
+        
         if self:GetNumPlayersInQueue() == 0 or self.spawnsthiswave >= self:GetRespawnsPerWave() then
         
             //NO MORE YAY!

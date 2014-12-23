@@ -87,7 +87,12 @@ end
 local function UpdateFallDamage(self, impactForce)
     
     PROFILE("CoreMoveMixin:UpdateFallDamage")
-
+    
+    //Some kind of water detection maybe?
+    if self.GetSubmersionState and self:GetSubmersionState() > 0 then
+        return
+    end
+    
 	if math.abs(impactForce) > kFallDamageMinimumVelocity then
 		local damage = math.max(0, math.abs(impactForce * kFallDamageScalar) - kFallDamageMinimumVelocity * kFallDamageScalar)
 		self:OnTakeFallDamage(damage)

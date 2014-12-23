@@ -32,8 +32,8 @@ end
 //kJetpackLateralScalar = 12
 //kJetpackForce = 1250
 
-local kVerticleThrust = 25
-local kLateralForce = 30
+local kVerticleThrust = 20
+local kLateralForce = 24
 local kJetpackTakeOffTime = .01
 local kJetpackAutoJumpGroundDistance = 0.05
 local kAnimLandSuffix = "_jetpack_land"

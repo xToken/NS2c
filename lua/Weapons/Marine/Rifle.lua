@@ -162,13 +162,13 @@ function Rifle:OnDestroy()
 end
 
 function Rifle:OnPrimaryAttack(player)
-
     if not self:GetIsReloading() then
-    
         ClipWeapon.OnPrimaryAttack(self, player)
-        
-    end    
+    end
+end
 
+function Rifle:GetHasSecondary(player)
+    return false
 end
 
 function Rifle:GetNumStartClips()

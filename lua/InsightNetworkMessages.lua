@@ -50,7 +50,7 @@ local kTechPointsMessage =
 
 function BuildTechPointsMessage(techPoint)
 
-    local t = {}
+    local t = { }
     local techPointLocation = techPoint:GetLocationId()
     t.entityIndex = techPoint:GetId()
     t.location = techPointLocation

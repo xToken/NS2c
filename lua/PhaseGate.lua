@@ -10,7 +10,7 @@
 //Removed some unneeded mixins.
 //These used to require using but that seemed to confused players - Not sure what is best atm
 
-Script.Load("lua/Mixins/ClientModelMixin.lua")
+Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
@@ -112,7 +112,8 @@ PhaseGate.kModelName = PrecacheAsset("models/marine/phase_gate/phase_gate.model"
 local kUpdateInterval = 0.1
 
 // Can only teleport a player every so often
-local kDepartureRate = 0.75
+local kDepartureRate = 0.5
+local kPlayerPhaseRate = 1.5
 
 local kPushRange = 1
 local kPushImpulseStrength = 20
@@ -128,7 +129,7 @@ local networkVars =
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
+AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
@@ -151,7 +152,7 @@ function PhaseGate:OnCreate()
     ScriptActor.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ClientModelMixin)
+    InitMixin(self, ModelMixin)
     InitMixin(self, LiveMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, FlinchMixin)
@@ -263,12 +264,12 @@ function PhaseGate:GetPlayIdleSound()
 end
 
 function PhaseGate:GetCanBeUsedConstructed()
-    return true
+    return kPhaseGatesRequireUse
 end   
 
 function PhaseGate:GetCanBeUsed(player, useSuccessTable)
 
-    if self:GetCanConstruct(player) or (self.linked and self:GetIsPhaseReady()) then
+    if self:GetCanConstruct(player) or (kPhaseGatesRequireUse and self.linked and self:GetIsPhaseReady()) then
         useSuccessTable.useSuccess = true
     else
         useSuccessTable.useSuccess = false
@@ -277,7 +278,7 @@ function PhaseGate:GetCanBeUsed(player, useSuccessTable)
 end
 
 function PhaseGate:OnUse(player, elapsedTime, useSuccessTable)
-    if self:GetIsDeployed() and self:GetIsPhaseReady() and GetIsUnitActive(self) and Server then
+    if kPhaseGatesRequireUse and self:GetIsDeployed() and self:GetIsPhaseReady() and GetIsUnitActive(self) and Server then
         self:Phase(player)
 	end
 end
@@ -335,7 +336,9 @@ end
 function PhaseGate:Phase(user)
 
     local destinationPhaseGate = GetDestinationGate(self)
-    if self.linked and not GetAreEnemies(self, user) and destinationPhaseGate and GetIsUnitActive(destinationPhaseGate) and destinationPhaseGate:GetIsPhaseReady() then
+    local userPhaseTime = user.timeOfLastPhase or 0
+    local time = Shared.GetTime()
+    if self.linked and not GetAreEnemies(self, user) and destinationPhaseGate and GetIsUnitActive(destinationPhaseGate) and destinationPhaseGate:GetIsPhaseReady() and userPhaseTime + kPlayerPhaseRate < time then
 
         destinationPhaseGate:OnIncomingPhase()
         // Don't bother checking if destination is clear, rely on pushing away entities
@@ -355,7 +358,8 @@ function PhaseGate:Phase(user)
         
         StartSoundEffectAtOrigin(kPhaseSound, destinationCoords.origin)
 
-        self.timeOfLastPhase = Shared.GetTime()
+        self.timeOfLastPhase = time
+        user.timeOfLastPhase = time
         
         return true
         
@@ -386,33 +390,20 @@ if Server then
             self.linked = false
             self.destLocationId = Entity.invalidId
         end
+        
+        if self:GetIsPhaseReady() and GetIsUnitActive(self) then
+            //Auto phase
+            for _, marine in ipairs(GetEntitiesForTeamWithinRange("Marine", self:GetTeamNumber(), self:GetOrigin(), 0.5)) do
+                local client = Server.GetOwner(marine)
+                if (client and client:GetIsVirtual() or not kPhaseGatesRequireUse) and self:Phase(marine) then                
+                    break
+                end
+            end
+        
+        end
 
         return true
         
-    end
-
-end
-
-local function SharedUpdate(self)
-
-    if self:GetIsPhaseReady() and GetIsUnitActive(self) then
-        //Auto phase the bots :s
-        for _, marine in ipairs(GetEntitiesForTeamWithinRange("Marine", self:GetTeamNumber(), self:GetOrigin(), 0.5)) do
-            local client = Server.GetOwner(marine)
-            if client and client:GetIsVirtual() and self:Phase(marine) then                
-                break
-            end
-        end
-    
-    end
-
-end
-
-// for non players
-if Server then
-
-    function PhaseGate:OnUpdate(deltaTime)    
-        SharedUpdate(self)
     end
 
 end
@@ -459,8 +450,8 @@ function PhaseGate:OnUpdateAnimationInput(modelMixin)
     PROFILE("PhaseGate:OnUpdateAnimationInput")
 
     modelMixin:SetAnimationInput("linked", self.linked)
-	modelMixin:SetAnimationInput("phase", self.phase)
-
+    modelMixin:SetAnimationInput("phase", self.phase)
+    
 end
 
 function PhaseGate:GetHealthbarOffset()

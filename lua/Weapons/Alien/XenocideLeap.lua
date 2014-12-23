@@ -88,6 +88,10 @@ function XenocideLeap:GetHUDSlot()
     return 3
 end
 
+function XenocideLeap:GetRange()
+    return kXenocideRange
+end
+
 function XenocideLeap:OnPrimaryAttack(player)
     
     if player:GetEnergy() >= self:GetEnergyCost() then
@@ -135,7 +139,7 @@ function XenocideLeap:OnProcessMove(input)
                 player:TriggerEffects("xenocide", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
                 
                 local hitEntities = GetEntitiesWithMixinWithinRange("Live", player:GetOrigin(), kXenocideRange)
-                RadiusDamage(hitEntities, player:GetOrigin(), kXenocideRange, kXenocideDamage, self)
+                RadiusDamage(hitEntities, player:GetOrigin(), self:GetRange(), kXenocideDamage, self)
                 
 				
 

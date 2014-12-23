@@ -19,6 +19,11 @@ function Fade:InitWeapons()
     
 end
 
+function Fade:InitWeaponsForReadyRoom()
+    
+    Alien.InitWeaponsForReadyRoom(self)
+    
+end
 function Fade:GetTierTwoTechId()
     return kTechId.Metabolize
 end

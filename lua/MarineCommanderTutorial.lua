@@ -7,8 +7,9 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/CommanderTutorialUtility.lua")
+local Resolve = Locale.ResolveString
 
-local buildArmory = "One of the most important tasks as marine commander is to support your troops. Select the build menu [1:BuildMenu] and build an Armory [2:Armory] in your base. From this structure, your marines will be able to obtain ammo and heal themselve."
+local buildArmory = Resolve("COMMANDER_TUT_BUILD_ARMORY")
 local buildArmorySteps = 
 {
     { CompletionFunc = GetHasMenuSelected(kTechId.BuildMenu), HighlightButton = kTechId.BuildMenu },
@@ -17,7 +18,7 @@ local buildArmorySteps =
 AddCommanderTutorialEntry(kArmoryCost, kMarineTeamType, buildArmory, buildArmorySteps)
 
 
-local dropMedPack = "You directly supply your Marines by dropping packs they can pick up. Select the assist menu [1:AssistMenu] and drop a medpack [2:MedPack] to heal wounded marines."
+local dropMedPack =  Resolve("COMMANDER_TUT_DROP_MEDPACK")
 local dropMedPackSteps =
 {
     { CompletionFunc = GetHasMenuSelected(kTechId.AssistMenu), HighlightButton = kTechId.AssistMenu },
@@ -27,7 +28,7 @@ AddCommanderTutorialEntry(kMedPackCost, kMarineTeamType, dropMedPack, dropMedPac
 
 
 
-local dropAmmoPack = "You directly supply your Marines by dropping packs they can pick up. Select the assist menu [1:AssistMenu] and drop an ammopack [2:AmmoPack] to provide ammunition."
+local dropAmmoPack = Resolve("COMMANDER_TUT_DROP_AMMOPACK")
 local dropAmmoPackSteps =
 {
     { CompletionFunc = GetHasMenuSelected(kTechId.AssistMenu), HighlightButton = kTechId.AssistMenu },
@@ -37,7 +38,7 @@ AddCommanderTutorialEntry(kAmmoPackCost, kMarineTeamType, dropAmmoPack, dropAmmo
 
 
 
-local buildExtractor = "You need a higher resource [CollectResources] income. Select the build menu [1:BuildMenu] and build an Extractor [2:Extractor] at the closes resource node."
+local buildExtractor = Resolve("COMMANDER_TUT_BUILD_EXTRACTOR")
 local buildExtractorSteps =
 {
     { CompletionFunc = GetHasMenuSelected(kTechId.BuildMenu), HighlightButton = kTechId.BuildMenu },
@@ -46,7 +47,7 @@ local buildExtractorSteps =
 AddCommanderTutorialEntry(kExtractorCost, kMarineTeamType, buildExtractor, buildExtractorSteps)
 
 
-local orderTroops = "Order your marines to build the structures you just dropped. To select all marines, click on the item at the top left [1:Marine]. Then right click on an unbuilt structure to give them a build order [2:Construct] "
+local orderTroops = Resolve("COMMANDER_TUT_ORDER_TROOPS")
 local orderTroopsStep = 
 {
     { CompletionFunc = GetHasUnitSelected(kTechId.Marine) },
@@ -56,7 +57,7 @@ AddCommanderTutorialEntry(0, kMarineTeamType, orderTroops, orderTroopsStep, nil,
 
 
 
-local buildArmslab = "Your team needs upgrades. Select the build menu [1:BuildMenu] and create an Arms Lab [2:ArmsLab] in your base."
+local buildArmslab = Resolve("COMMANDER_TUT_BUILD_ARMS_LAB")
 local buildArmslabSteps =
 {
     { CompletionFunc = GetHasMenuSelected(kTechId.BuildMenu), HighlightButton = kTechId.BuildMenu },
@@ -66,7 +67,7 @@ AddCommanderTutorialEntry(kArmsLabCost, kMarineTeamType, buildArmslab, buildArms
 
 
 
-local upgradeAtArmsLab = "Select the Arms Lab [1:ArmsLab] and chose either weapons [2:Weapons1] or armor [2:Armor1] upgrade. Each cathegory can be upgraded three times."
+local upgradeAtArmsLab = Resolve("COMMANDER_TUT_UPGRADE_AT_ARMS_LAB")
 local upgradeAtArmsLabStep = 
 {
     { CompletionFunc = GetHasUnitSelected(kTechId.ArmsLab), HighlightWorld = GetUnitPosition(kTechId.ArmsLab) },
@@ -75,7 +76,7 @@ local upgradeAtArmsLabStep =
 AddCommanderTutorialEntry(kWeapons1ResearchCost, kMarineTeamType, upgradeAtArmsLab, upgradeAtArmsLabStep, nil, {TutorialNotHasTech(kTechId.Armor1), TutorialNotHasTech(kTechId.Weapons1), TutorialGetHasTech(kTechId.ArmsLab)})
 
 
-local viewTechMap = "To see an overview of all technologies, click on the Tech Map icon [1:Research] next to the minimap on the bottom left of your screen."
+local viewTechMap = Resolve("COMMANDER_TUT_VIEW_TECH")
 local viewTechMapSteps =
 {
     { CompletionFunc = PlayerUI_GetIsTechMapVisible }
@@ -83,7 +84,7 @@ local viewTechMapSteps =
 AddCommanderTutorialEntry(0, kMarineTeamType, viewTechMap, viewTechMapSteps)
 
 
-local buildObs = "Advanced technologies allows marines to travel instantly between two points. To unlock this technology, select the advanced build menu [1:AdvancedMenu] and create an Observatory [2:Observatory] in your base. Observatories have a passive ability and scan the area around it."
+local buildObs = Resolve("COMMANDER_TUT_BUILD_OBS")
 local buildObsSteps =
 {
     { CompletionFunc = GetHasMenuSelected(kTechId.AdvancedMenu), HighlightButton = kTechId.AdvancedMenu },
@@ -92,7 +93,7 @@ local buildObsSteps =
 AddCommanderTutorialEntry(kObservatoryCost, kMarineTeamType, buildObs, buildObsSteps, nil, TutorialNotHasTech(kTechId.Observatory), nil)
 
 
-local researchPhaseTech = "Select your Observatory [1:Observatory] and click on Phase Tech [2:PhaseTech]"
+local researchPhaseTech = Resolve("COMMANDER_TUT_RESEARCH_PHASE_TECH")
 local researchPhaseTechSteps =
 {
     { CompletionFunc = GetHasUnitSelected(kTechId.Observatory), HighlightWorld = GetUnitPosition(kTechId.Observatory) },
@@ -101,7 +102,7 @@ local researchPhaseTechSteps =
 AddCommanderTutorialEntry(kPhaseTechResearchCost, kMarineTeamType, researchPhaseTech, researchPhaseTechSteps, nil, {TutorialNotHasTech(kTechId.PhaseTech), TutorialGetHasTech(kTechId.Observatory)})
 
 
-local buildPhaseGate = "Phase Gate Technology is now unlocked. Select the advanced build menu [1:AdvancedMenu]. All phase gates you build will be connected with each other (connection is indicated as a line on the minimap) and allow marines to instantly travel between those points. Build the first Phase Gate [2:PhaseGate] in your base."
+local buildPhaseGate = Resolve("COMMANDER_TUT_BUILD_PHASE_GATE")
 local buildPhaseGateSteps =
 {
     { CompletionFunc = GetHasMenuSelected(kTechId.AdvancedMenu), HighlightButton =  kTechId.AdvancedMenu },
@@ -110,7 +111,7 @@ local buildPhaseGateSteps =
 AddCommanderTutorialEntry(kPhaseGateCost, kMarineTeamType, buildPhaseGate, buildPhaseGateSteps, nil, {TutorialNotHasTech(kTechId.PhaseGate), TutorialGetHasTech(kTechId.PhaseTech)})
 
 
-local buildSecondGate = "Now chose and a destination point, ideally next to an unoccupiet Tech Point [TechPoint]. Select the advanced build menu [1:AdvancedMenu] and build the phase gate [2:PhaseGate]"
+local buildSecondGate = Resolve("COMMANDER_TUT_BUILD_SECOND_PHASE_GATE")
 local buildSecondGateSteps =
 {
     { CompletionFunc = GetHasMenuSelected(kTechId.AdvancedMenu), HighlightButton =  kTechId.AdvancedMenu },
@@ -119,7 +120,7 @@ local buildSecondGateSteps =
 AddCommanderTutorialEntry(kPhaseGateCost, kMarineTeamType, buildSecondGate, buildSecondGateSteps, nil, {NotHasUnitCount("PhaseGate", 2), TutorialGetHasTech(kTechId.PhaseTech)})
 
 
-local upgradeArmory = "To unlock more powerful weapons, you need to selec your Armory [1:Armory] and upgrade it [2:AdvancedArmoryUpgrade]. This will allow your marine to purchase Grenade Launchers [GrenadeLauncher] and Flame Throwers [Flamethrower]"
+local upgradeArmory = Resolve("COMMANDER_TUT_UPGRADE_ARMORY")
 local upgradeArmorySteps =
 {
     { CompletionFunc = GetHasUnitSelected(kTechId.Armory), HighlightWorld = GetUnitPosition(kTechId.Armory) },
@@ -129,7 +130,7 @@ AddCommanderTutorialEntry(kAdvancedArmoryUpgradeCost, kMarineTeamType, upgradeAr
 
 
 
-local armorUpgradeReminder = "Dont forget that your Arms Lab provides multiple levels of armor upgrades. Select the Arms Lab [1:ArmsLab] and research armor level 2 [2:Armor2]"
+local armorUpgradeReminder = Resolve("COMMANDER_TUT_UPGRADE_ARMOR_TWO")
 local armorUpgradeReminderSteps =
 {
     { CompletionFunc = GetHasUnitSelected(kTechId.ArmsLab), HighlightWorld = GetUnitPosition(kTechId.ArmsLab) },
@@ -139,7 +140,7 @@ AddCommanderTutorialEntry(kArmor2ResearchCost, kMarineTeamType, armorUpgradeRemi
 
 
 
-local weaponUpgradeReminder = "Dont forget that your Arms Lab provides multiple levels of weapon upgrades. Select the Arms Lab [1:ArmsLab] and research weapons level 2 [2:Weapons2]"
+local weaponUpgradeReminder = Resolve("COMMANDER_TUT_UPGRADE_WEAPON_TWO")
 local weaponUpgradeReminderSteps =
 {
     { CompletionFunc = GetHasUnitSelected(kTechId.ArmsLab), HighlightWorld = GetUnitPosition(kTechId.ArmsLab) },
@@ -149,7 +150,7 @@ AddCommanderTutorialEntry(kWeapons2ResearchCost, kMarineTeamType, weaponUpgradeR
 
 
 
-local experimentalTech = "Now since you have an Advanced Armory, its time to unlock more equipment for your marines. A series of experimental technology can be accessed via the advanced build menu [1:AdvancedMenu] at the [2:PrototypeLab]"
+local experimentalTech = Resolve("COMMANDER_TUT_BUILD_PROTO")
 local experimentalTechSteps =
 {
     { CompletionFunc = GetHasMenuSelected(kTechId.AdvancedMenu), HighlightButton = kTechId.AdvancedMenu },
@@ -158,7 +159,7 @@ local experimentalTechSteps =
 AddCommanderTutorialEntry(kPrototypeLabCost, kMarineTeamType, experimentalTech, experimentalTechSteps, nil, TutorialGetHasTech(kTechId.AdvancedArmory))
 
 
-local upgradeJetpack = "Select the prototype lab [1:PrototypeLab] and research Jetpacks [2:JetpackTech]"
+local upgradeJetpack = Resolve("COMMANDER_TUT_UPGRADE_JETPACK")
 local upgradeJetpackSteps =
 {
     { CompletionFunc = GetHasUnitSelected(kTechId.PrototypeLab), HighlightWorld = GetUnitPosition(kTechId.PrototypeLab) },

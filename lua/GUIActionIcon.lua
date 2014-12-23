@@ -34,7 +34,6 @@ kIconOffsets["Shotgun"] = 1
 kIconOffsets["Pistol"] = 2
 kIconOffsets["HeavyMachineGun"] = 3
 kIconOffsets["GrenadeLauncher"] = 4
-kIconOffsets["NadeLauncher"] = 4
 kIconOffsets["Welder"] = 5
 kIconOffsets["Jetpack"] = 6
 kIconOffsets["Mines"] = 8

@@ -287,7 +287,7 @@ function ClipWeapon:GetIsPrimaryAttackAllowed(player)
 
     local attackAllowed = (not self:GetPrimaryAttackRequiresPress() or not player:GetPrimaryAttackLastFrame())
     attackAllowed = attackAllowed and (not self:GetIsReloading() or self:GetPrimaryCanInterruptReload())
-    attackAllowed = attackAllowed and not (player.GetIsDevoured and player:GetIsDevoured()) 
+    attackAllowed = attackAllowed and not player:GetIsStateFrozen()
     attackAllowed = attackAllowed and not (player.GetIsWebbed and player:GetIsWebbed())
     return self:GetIsDeployed() and attackAllowed and not player:GetIsStunned()
 

@@ -334,18 +334,18 @@ end
 
 // Required by ControllerMixin.
 function Marine:GetMovePhysicsMask()
-    if self:GetIsDevoured() then
+    if self:GetIsStateFrozen() then
         return PhysicsMask.All
     end
     return Player.GetMovePhysicsMask(self)
 end
 
 function Marine:GetHasCollisionDetection()
-    return not self:GetIsDevoured()
+    return not self:GetIsStateFrozen()
 end
 
 function Marine:GetShowSensorBlip()
-    return not self:GetIsDevoured()
+    return not self:GetIsStateFrozen()
 end
 
 function Marine:GetArmorAmount(armorLevels)
@@ -373,7 +373,7 @@ function Marine:OnDestroy()
 end
 
 function Marine:GetCanControl()
-    return (not self.isMoveBlocked) and self:GetIsAlive() and not self:GetIsDevoured() and not self.countingDown
+    return (not self.isMoveBlocked) and self:GetIsAlive() and not self:GetIsStateFrozen() and not self.countingDown
 end
 
 function Marine:GetPhysicsModelAllowedOverride()
@@ -459,7 +459,7 @@ function Marine:GetMaxSpeed(possible)
         return kRunMaxSpeed * self:GetInventorySpeedScalar()
     end
     
-    if self:GetIsStunned() or self:GetIsDevoured() then
+    if self:GetIsStunned() or self:GetIsStateFrozen() then
         return 0
     end
     
@@ -639,7 +639,7 @@ function Marine:Drop(weapon, ignoreDropTimeLimit, ignoreReplacementWeapon)
 end
 
 function Marine:GetCanBeHealedOverride()
-    return not self:GetIsDevoured()
+    return not self:GetIsStateFrozen()
 end
 
 function Marine:GetWeldPercentageOverride()
@@ -661,7 +661,7 @@ function Marine:OnWeldOverride(doer, elapsedTime)
 end
 
 function Marine:GetCanChangeViewAngles()
-    return not self:GetIsStunned() and not self:GetIsDevoured()
+    return not self:GetIsStunned() and not self:GetIsStateFrozen()
 end
 
 function Marine:OnStun()

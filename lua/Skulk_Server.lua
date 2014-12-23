@@ -18,7 +18,12 @@ function Skulk:InitWeapons()
     
     self:SetActiveWeapon(BiteLeap.kMapName)    
     
+end
 
+function Skulk:InitWeaponsForReadyRoom()
+    
+    Alien.InitWeaponsForReadyRoom(self)
+    
 end
 
 function Skulk:GetTierOneTechId()
