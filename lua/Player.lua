@@ -649,7 +649,7 @@ end
 function Player:WeaponUpdate()
 
     local weapon = self:GetActiveWeapon()
-    if weapon then
+    if weapon and weapon.OnUpdateWeapon then
         weapon:OnUpdateWeapon(self)
     end
     

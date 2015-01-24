@@ -80,6 +80,7 @@ local _keyBinding =
     OverHeadZoomDecrease = InputKey.MouseWheelDown,
     OverHeadZoomReset = InputKey.G,
     PreviousLocationCom = InputKey.None,
+    MovementModifierCom = InputKey.LeftShift,
     Q = InputKey.Q,
     W = InputKey.W,
     E = InputKey.E,
@@ -481,7 +482,7 @@ local function GenerateMove()
             move.hotkey = Move.P
         end  
         
-        if PlayerUI_IsACommander() and _keyState[ _keyBinding.MovementModifier ] then
+        if PlayerUI_IsACommander() and _keyState[ _keyBinding.MovementModifierCom ] then
 
             if _keyState[ _keyBinding.W ] then
                 move.commands = bit.bor(move.commands, Move.ScrollForward)

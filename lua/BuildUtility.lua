@@ -244,7 +244,14 @@ end
 local function CheckValidIPPlacement(position, extents)
 
     local trace = Shared.TraceBox(extents, position - Vector(0, 0.3, 0), position - Vector(0, 3, 0), CollisionRep.Default, PhysicsMask.AllButPCs, EntityFilterAll())
-    return trace.fraction == 1 and trace.surface ~= "no_ip"
+    local valid = true
+    if trace.fraction == 1 then
+        local traceStart = position + Vector(0, 0.3, 0)
+        local traceSurface = Shared.TraceRay(traceStart, traceStart - Vector(0, 0.4, 0), CollisionRep.Default, PhysicsMask.AllButPCs, EntityFilterAll())
+        valid = traceSurface.surface ~= "no_ip"
+    end
+
+    return valid
     
 end
 
@@ -364,7 +371,7 @@ function GetIsBuildLegal(techId, position, angle, snapRadius, player, ignoreEnti
     
         legalBuild = CheckValidIPPlacement(legalPosition, extents)
         if not legalBuild then
-            errorString = "COMMANDERERROR_INVALID_PLACEMENT"
+            errorString = "COMMANDERERROR_INVALID_PLACEMENTS"
         end
         
     end

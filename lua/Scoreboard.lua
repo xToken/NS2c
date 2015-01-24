@@ -38,33 +38,40 @@ function Scoreboard_Sort()
 
     function sortByScore(player1, player2)
     
-        if player1.Score == player2.Score then
+        if player1.EntityTeamNumber == player2.EntityTeamNumber then
         
-            if player1.Kills == player2.Kills then
+            if player1.Score == player2.Score then
             
-                if player1.Deaths == player2.Deaths then    
+                if player1.Kills == player2.Kills then
                 
-                    if player1.Resources == player2.Resources then    
+                    if player1.Deaths == player2.Deaths then    
                     
-                        // Somewhat arbitrary but keeps more coherence and adds players to bottom in case of ties
-                        return player1.ClientIndex > player2.ClientIndex
+                        if player1.Resources == player2.Resources then    
+                        
+                            -- Somewhat arbitrary but keeps more coherence and adds players to bottom in case of ties
+                            return player1.ClientIndex > player2.ClientIndex
+                            
+                        else
+                            return player1.Resources > player2.Resources
+                        end
                         
                     else
-                        return player1.Resources > player2.Resources
+                        return player1.Deaths < player2.Deaths
                     end
                     
                 else
-                    return player1.Deaths < player2.Deaths
+                    return player1.Kills > player2.Kills
                 end
                 
             else
-                return player1.Kills > player2.Kills
+                return player1.Score > player2.Score    
             end
             
         else
-            return player1.Score > player2.Score    
-        end        
-        
+            -- Spectators should be at the top of the RR "team"
+            -- Spectators are team 3 and RR players are team 0
+            return player1.EntityTeamNumber > player2.EntityTeamNumber
+        end
     end
     
     // Sort it by entity id

@@ -14,6 +14,7 @@ local kCircleModelName = PrecacheAsset("models/misc/circle/placement_circle_mari
 
 class 'MarineGhostModel' (GhostModel)
 
+local kTextName = Fonts.kAgencyFB_Small
 local kElectricTexture = "ui/electric.dds"
 local kIconSize = GUIScale(Vector(32, 32, 0))
 local kHalfIconSize = kIconSize * 0.5
@@ -28,18 +29,9 @@ function MarineGhostModel:Initialize()
         self.circleModel:SetModel(kCircleModelName)
     end
     
-    if not self.powerIcon then
-    
-        self.powerIcon = GUI.CreateItem()
-        self.powerIcon:SetTexture(kElectricTexture)
-        self.powerIcon:SetSize(kIconSize)
-        self.powerIcon:SetIsVisible(false)
-    
-    end
-    
 end
 
-function MarineGhostModel:Destroy() 
+function MarineGhostModel:Destroy()
 
     GhostModel.Destroy(self)   
     
@@ -48,13 +40,6 @@ function MarineGhostModel:Destroy()
         Client.DestroyRenderModel(self.circleModel)
         self.circleModel = nil
     
-    end
-    
-    if self.powerIcon then
-    
-        GUI.DestroyItem(self.powerIcon)
-        self.powerIcon = nil
-        
     end
     
 end
@@ -81,10 +66,7 @@ function MarineGhostModel:Update()
 
         local coords = Coords.GetLookIn(modelCoords.origin, zAxis)
         self.circleModel:SetCoords(coords) 
-        
-    else
-    
-        self.powerIcon:SetIsVisible(false)
+
     
     end
     

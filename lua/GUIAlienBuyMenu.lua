@@ -26,11 +26,11 @@ GUIAlienBuyMenu.kAbilityIcons = "ui/buildmenu.dds"
 local kLargeFont = Fonts.kAgencyFB_Large
 local kFont = Fonts.kAgencyFB_Small
 
-GUIAlienBuyMenu.kAlienTypes = { { Name = Locale.ResolveString("FADE"), TextureName = "Fade", Width = GUIScale(188), Height = GUIScale(220), XPos = 4, Index = 1 },
-                                { Name = Locale.ResolveString("GORGE"), TextureName = "Gorge", Width = GUIScale(200), Height = GUIScale(167), XPos = 2, Index = 2 },
-                                { Name = Locale.ResolveString("LERK"), TextureName = "Lerk", Width = GUIScale(284), Height = GUIScale(253), XPos = 3, Index = 3 },
-                                { Name = Locale.ResolveString("ONOS"), TextureName = "Onos", Width = GUIScale(304), Height = GUIScale(326), XPos = 5, Index = 4 },
-                                { Name = Locale.ResolveString("SKULK"), TextureName = "Skulk", Width = GUIScale(240), Height = GUIScale(170), XPos = 1, Index = 5 } }
+GUIAlienBuyMenu.kAlienTypes = { { LocaleName = Locale.ResolveString("FADE"), Name = "Fade", Width = GUIScale(188), Height = GUIScale(220), XPos = 4, Index = 1 },
+                                { LocaleName = Locale.ResolveString("GORGE"), Name = "Gorge", Width = GUIScale(200), Height = GUIScale(167), XPos = 2, Index = 2 },
+                                { LocaleName = Locale.ResolveString("LERK"), Name = "Lerk", Width = GUIScale(284), Height = GUIScale(253), XPos = 3, Index = 3 },
+                                { LocaleName = Locale.ResolveString("ONOS"), Name = "Onos", Width = GUIScale(304), Height = GUIScale(326), XPos = 5, Index = 4 },
+                                { LocaleName = Locale.ResolveString("SKULK"), Name = "Skulk", Width = GUIScale(240), Height = GUIScale(170), XPos = 1, Index = 5 } }
 
 GUIAlienBuyMenu.kBackgroundTextureCoordinates = { 9, 1, 602, 424 }
 GUIAlienBuyMenu.kBackgroundWidth = GUIScale((GUIAlienBuyMenu.kBackgroundTextureCoordinates[3] - GUIAlienBuyMenu.kBackgroundTextureCoordinates[1]) * 0.80)
@@ -436,7 +436,7 @@ function GUIAlienBuyMenu:_InitializeCurrentAlienDisplay()
     local height = GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].Height
     self.currentAlienDisplay.Icon:SetSize(Vector(width, height, 0))
     self.currentAlienDisplay.Icon:SetPosition(Vector((-width / 2), -height / 2, 0))
-    self.currentAlienDisplay.Icon:SetTexture("ui/" .. GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].TextureName .. ".dds")
+    self.currentAlienDisplay.Icon:SetTexture("ui/" .. GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].Name .. ".dds")
     self.currentAlienDisplay.Icon:SetLayer(kGUILayerPlayerHUDForeground2)
     self.background:AddChild(self.currentAlienDisplay.Icon)
     
@@ -446,7 +446,7 @@ function GUIAlienBuyMenu:_InitializeCurrentAlienDisplay()
     self.currentAlienDisplay.TitleShadow:SetFontName(kLargeFont)
     self.currentAlienDisplay.TitleShadow:SetTextAlignmentX(GUIItem.Align_Center)
     self.currentAlienDisplay.TitleShadow:SetTextAlignmentY(GUIItem.Align_Min)
-    self.currentAlienDisplay.TitleShadow:SetText(GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].Name)
+    self.currentAlienDisplay.TitleShadow:SetText(GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].LocaleName)
     self.currentAlienDisplay.TitleShadow:SetColor(Color(0, 0, 0, 1))
     self.currentAlienDisplay.TitleShadow:SetLayer(kGUILayerPlayerHUDForeground3)
     self.background:AddChild(self.currentAlienDisplay.TitleShadow)
@@ -457,7 +457,7 @@ function GUIAlienBuyMenu:_InitializeCurrentAlienDisplay()
     self.currentAlienDisplay.Title:SetFontName(kLargeFont)
     self.currentAlienDisplay.Title:SetTextAlignmentX(GUIItem.Align_Center)
     self.currentAlienDisplay.Title:SetTextAlignmentY(GUIItem.Align_Min)
-    self.currentAlienDisplay.Title:SetText(GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].Name)
+    self.currentAlienDisplay.Title:SetText(GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].LocaleName)
     self.currentAlienDisplay.Title:SetColor(ColorIntToColor(kAlienTeamColor))
     self.currentAlienDisplay.Title:SetLayer(kGUILayerPlayerHUDForeground3)
     self.currentAlienDisplay.TitleShadow:AddChild(self.currentAlienDisplay.Title)
@@ -481,7 +481,7 @@ function GUIAlienBuyMenu:_InitializeMouseOverInfo()
     self.mouseOverTitle:SetFontName(kLargeFont)
     self.mouseOverTitle:SetTextAlignmentX(GUIItem.Align_Min)
     self.mouseOverTitle:SetTextAlignmentY(GUIItem.Align_Min)
-    self.mouseOverTitle:SetText(GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].Name)
+    self.mouseOverTitle:SetText(GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].LocaleName)
     self.mouseOverTitle:SetColor(ColorIntToColor(kAlienTeamColor))
     self.mouseOverTitle:SetIsVisible(false)
     self.background:AddChild(self.mouseOverTitle)
@@ -1185,8 +1185,8 @@ function GUIAlienBuyMenu:Update(deltaTime)
     self.currentAlienDisplay.Icon:SetSize(Vector(width, height, 0))
     self.currentAlienDisplay.Icon:SetPosition(Vector((-width / 2), -height / 2, 0))
     
-    self.currentAlienDisplay.TitleShadow:SetText(string.UTF8Upper(Locale.ResolveString(GUIAlienBuyMenu.kAlienTypes[self.selectedAlienType].Name)))
-    self.currentAlienDisplay.Title:SetText(string.UTF8Upper(Locale.ResolveString(GUIAlienBuyMenu.kAlienTypes[self.selectedAlienType].Name)))
+    self.currentAlienDisplay.TitleShadow:SetText(GUIAlienBuyMenu.kAlienTypes[self.selectedAlienType].LocaleName)
+    self.currentAlienDisplay.Title:SetText(GUIAlienBuyMenu.kAlienTypes[self.selectedAlienType].LocaleName)
     
     self:_UpdateAlienButtons()
     
@@ -1291,7 +1291,7 @@ function GUIAlienBuyMenu:_UpdateAlienButtons()
             if mouseOver then
             
                 local classStats = AlienBuy_GetClassStats(GUIAlienBuyMenu.kAlienTypes[alienButton.TypeData.Index].Index)
-                local mouseOverName = GUIAlienBuyMenu.kAlienTypes[alienButton.TypeData.Index].Name
+                local mouseOverName = GUIAlienBuyMenu.kAlienTypes[alienButton.TypeData.Index].LocaleName
                 local health = classStats[2]
                 local armor = classStats[3]
                 self:_ShowMouseOverInfo(mouseOverName, GetTooltipInfoText(IndexToAlienTechId(alienButton.TypeData.Index)), classStats[4], health, armor)

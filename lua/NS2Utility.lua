@@ -2966,11 +2966,6 @@ function GetCommanderLogoutAllowed()
 
 end
 
-function GetFileExists(path)
-    local searchResult = {}
-    Shared.GetMatchingFileNames( path, false, searchResult )
-    return #searchResult > 0
-end
 
 function GetAndSetVariantOptions()
 

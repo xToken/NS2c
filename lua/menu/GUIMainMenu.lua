@@ -210,6 +210,8 @@ function GUIMainMenu:Initialize()
 
     gMainMenu = self
     
+    self:MaybeCreateModWarningWindow()
+    
     self.Links = {}
     self:CreateMainLinks()
     
@@ -220,6 +222,7 @@ function GUIMainMenu:Initialize()
     local SelectNextWeapon = Client.GetOptionString("input/SelectNextWeapon", "MouseWheelUp")
     local SelectPrevWeapon = Client.GetOptionString("input/SelectPrevWeapon", "MouseWheelDown")
     local Drop = Client.GetOptionString("input/Drop", "G")
+    local MovementModifier = Client.GetOptionString("input/MovementModifier", "LeftShift")
 
     local VoiceChatCom = Client.GetOptionString("input/VoiceChatCom", VoiceChat)
     local ShowMapCom = Client.GetOptionString("input/ShowMapCom", ShowMap)
@@ -228,6 +231,7 @@ function GUIMainMenu:Initialize()
     local OverHeadZoomIncrease = Client.GetOptionString("input/OverHeadZoomIncrease", SelectNextWeapon)
     local OverHeadZoomDecrease = Client.GetOptionString("input/OverHeadZoomDecrease", SelectPrevWeapon)
     local OverHeadZoomReset = Client.GetOptionString("input/OverHeadZoomReset", Drop)
+    local MovementOverride = Client.GetOptionString("input/MovementOverrideCom", MovementModifier)
     
     Client.SetOptionString("input/VoiceChatCom", VoiceChatCom)
     Client.SetOptionString("input/ShowMapCom", ShowMapCom)
@@ -236,6 +240,7 @@ function GUIMainMenu:Initialize()
     Client.SetOptionString("input/OverHeadZoomIncrease", OverHeadZoomIncrease)
     Client.SetOptionString("input/OverHeadZoomDecrease", OverHeadZoomDecrease)
     Client.SetOptionString("input/OverHeadZoomReset", OverHeadZoomReset)
+    Client.SetOptionString("input/MovementOverrideCom", MovementOverride)
 
     local gPlayerData = {}
     local kPlayerRankingRequestUrl = "http://sabot.herokuapp.com/api/get/playerData/"
@@ -818,20 +823,27 @@ local function CreateFilterForm(self)
     description:SetText(Locale.ResolveString("SERVERBROWSER_MAPNAME"))
     description:SetCSSClass("filter_description")
     
-    self.filterTickrate = self.filterForm:CreateFormElement(Form.kElementType.SlideBar, Locale.ResolveString("SERVERBROWSER_TICKRATE"))
-    self.filterTickrate:SetCSSClass("filter_tickrate")
-    self.filterTickrate:AddSetValueCallback( function(self)
+    self.filterPerformance = self.filterForm:CreateFormElement(Form.kElementType.DropDown, Locale.ResolveString("SERVERBROWSER_PERF"), "")
+    self.filterPerformance:SetOptions(ServerPerformanceData.GetPerformanceLevelNames())
+    self.filterPerformance:SetCSSClass("filter_performance")
+    self.filterPerformance:AddSetValueCallback( function(self)
     
-        local value = self:GetValue()
-        self.scriptHandle.serverList:SetFilter(3, FilterMinRate(value))
-        Client.SetOptionString("filter_tickrate", ToString(value))
+        local translatedPerfName = self:GetValue()
+        local perfIndex = ServerPerformanceData.GetPerfIndexForTranslatedName(translatedPerfName)
+        if perfIndex < 1 or perfIndex > ServerPerformanceData.kNumPerfLevels then
+            perfIndex = 1
+        end
+        translatedPerfName = ServerPerformanceData.GetPerformanceLevelNames()[perfIndex]
+        local score = ServerPerformanceData.GetScoreForPerformanceIndex(perfIndex)
+        self.scriptHandle.serverList:SetFilter(3, FilterMinScore(score))
+        Client.SetOptionString("filter_performance", translatedPerfName )
         
-        self.scriptHandle.tickrateDescription:SetText(string.format("%s %s%%", Locale.ResolveString("SERVERBROWSER_MAXPERF"), ToString(math.round(value * 100)))) 
+        self.scriptHandle.performanceDescription:SetText(string.format("%s", Locale.ResolveString("SERVERBROWSER_PERF"))) 
         
     end )
 
-    self.tickrateDescription = CreateMenuElement(self.filterTickrate, "Font")
-    self.tickrateDescription:SetCSSClass("filter_description")
+    self.performanceDescription = CreateMenuElement(self.filterPerformance, "Font")
+    self.performanceDescription:SetCSSClass("filter_description")
     
     self.filterMaxPing = self.filterForm:CreateFormElement(Form.kElementType.SlideBar, "MAX PING")
     self.filterMaxPing:SetCSSClass("filter_maxping")
@@ -895,7 +907,7 @@ local function CreateFilterForm(self)
     description:SetCSSClass("filter_description")
 
     self.filterMapName:SetValue(Client.GetOptionString("filter_mapname", ""))
-    self.filterTickrate:SetValue(tonumber(Client.GetOptionString("filter_tickrate", "0")) or 0)
+    self.filterPerformance:SetValue(Client.GetOptionString("filter_performance", Locale.ResolveString("SERVER_PERF_BAD")))
     self.filterHasPlayers:SetValue(Client.GetOptionString("filter_hasplayers", "false"))
     self.filterFull:SetValue(Client.GetOptionString("filter_full", "false"))
     self.filterMaxPing:SetValue(tonumber(Client.GetOptionString("filter_maxping", "1")) or 1)
@@ -2485,7 +2497,7 @@ function GUIMainMenu:CreateOptionWindow()
             {
                 name    = "AdvancedMovement",
                 label   = "ADVANCED MOVEMENT",
-				tooltip = "Enables/Disables forward movement override which attemps to make airstrafing easier for new players.",
+				tooltip = "Enables/Disables original NS1 style movement.",
                 type    = "select",
                 values  = { "OFF", "ON" },
                 callback = StoreAdvancedMovementOption
@@ -3012,8 +3024,8 @@ function GUIMainMenu:HideMenu()
     if not MainMenu_IsInGame() and self.newsScript.isVisible == true then
         self.newsScript:SetPlayAnimation("hide")    
     end
-    if self.firstRunWindow then
-        self.firstRunWindow:SetIsVisible(false)
+    if self.modWarningWindow then
+        self.modWarningWindow:SetIsVisible(false)
     end
     if self.tutorialNagWindow then
         self.tutorialNagWindow:SetIsVisible(false)
@@ -3199,6 +3211,48 @@ local function OnOptionsChanged()
         InitOptions(gMainMenu.optionElements)
     end
     
+end
+
+function GUIMainMenu:MaybeCreateModWarningWindow()
+
+    local modsWasDisabled = Client.GetAndResetClientSideModsDisabled()
+    if not modsWasDisabled then
+        return
+    end
+    
+    if self.modWarningWindow ~= nil then
+        self:DestroyWindow( self.modWarningWindow )
+        self.modWarningWindow = nil
+    end
+	
+    self.modWarningWindow = self:CreateWindow()  
+    self.modWarningWindow:SetWindowName("HINT")
+    self.modWarningWindow:SetInitialVisible(true)
+    self.modWarningWindow:SetIsVisible(true)
+    self.modWarningWindow:DisableResizeTile()
+    self.modWarningWindow:DisableSlideBar()
+    self.modWarningWindow:DisableContentBox()
+    self.modWarningWindow:SetCSSClass("first_run_window")
+    self.modWarningWindow:DisableCloseButton()
+    self.modWarningWindow:SetLayer(kGUILayerMainMenuDialogs)
+	
+    local hint = CreateMenuElement(self.modWarningWindow, "Font")
+    local okButton = CreateMenuElement(self.modWarningWindow, "MenuButton")
+	
+    hint:SetTextClipped( true, 450, 300 )
+    hint:SetCSSClass("first_run_msg")
+    okButton:SetCSSClass("first_run_ok")
+
+    hint:SetText(Locale.ResolveString("MODS_WARNING_WINDOW"))
+    
+    okButton:SetText(Locale.ResolveString("OPTIMIZE_CONFIRM"))
+    okButton:AddEventCallbacks({ OnClick = function()
+            self:DestroyWindow( self.modWarningWindow )
+            self.modWarningWindow = nil
+        end})
+
+	MainMenu_OnTooltip()
+
 end
 
 function GUIMainMenu:ActivatePlayWindow(playNow)

@@ -101,19 +101,21 @@ local function UpdateServerInformation()
                 numMountedMods = numMountedMods + 1
                 local title = Client.GetModTitle(i)
                 local state  = Client.GetModState(i)
-                local downloading, bytesDownloaded, totalBytes = Client.GetModDownloadProgress(i)
-                local status = "100%"
-                if state ~= "available" then
-					if downloading then
-						status = "0%"
-						if totalBytes > 0 then
-							status = string.format("%d%%", math.floor((bytesDownloaded / totalBytes) * 100))
-						end
-					else
-						status = "Queued"
-					end
+                local downloading, bytesDownloaded, totalBytes, retries, status = Client.GetModDownloadProgress(i)
+                local percent = ""
+                local retryText = retries == 0 and "" or string.format("[retry %2d]", retries)
+                if downloading then
+                    percent = "0%"
+                    if totalBytes > 0 then
+                        percent = string.format("%d%%", math.floor((bytesDownloaded / totalBytes) * 100))
+                    end
                 end
-                msg2 = msg2 .. string.format("\n      %s  %s", title, status)
+                local statusText = Locale.ResolveString(status)
+                if status == "MOD_STATUS_AVAILABLE" then
+                    -- stop showing retries once the status is available
+                    retryText = ""
+                end
+                msg2 = msg2 .. string.format("\n      %s  %s %s %s", title, statusText, percent, retryText)
             end
         end
     end
@@ -349,7 +351,10 @@ function InitBackgroundFileNames( out )
     // did we find any?
     if #out == 0 then
         //Print("Found no map-specific ordered screenshots for %s. Using shots in 'screens' instead.", mapname)
-        Shared.GetMatchingFileNames("screens/*.jpg", false, out )
+        Shared.GetMatchingFileNames("screens/custom/*.jpg", false, out )
+        if #out == 0 then        
+            Shared.GetMatchingFileNames("screens/*.jpg", false, out )
+        end
         mapBackgrounds = false
     end
 end

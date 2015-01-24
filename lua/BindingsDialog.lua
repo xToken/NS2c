@@ -76,7 +76,8 @@ local defaults = {
     { "PreviousLocationCom", "None" },
     { "OverHeadZoomIncrease", "MouseWheelUp" },
     { "OverHeadZoomDecrease", "MouseWheelDown" },
-    { "OverHeadZoomReset", "None" }
+    { "OverHeadZoomReset", "None" },
+    { "MovementModifierCom", "LeftShift" }
 }
 
 // Order, names, description of keys in menu
@@ -150,6 +151,7 @@ local globalComControlBindings = {
     "OverHeadZoomIncrease", "input", Locale.ResolveString("COMBINDINGS_OVERHEAD_ZOOM_INCREASE"), "MouseWheelUp",
     "OverHeadZoomDecrease", "input", Locale.ResolveString("COMBINDINGS_OVERHEAD_ZOOM_DECREASE"), "MouseWheelDown",
     "OverHeadZoomReset", "input", Locale.ResolveString("COMBINDINGS_OVERHEAD_ZOOM_RESET"), "None",
+    "MovementModifierCom", "input", Locale.ResolveString("COMBINDINGS_MOVEMENT_SPECIAL"), "LeftShift",
 }
 
 local specialKeys = {
