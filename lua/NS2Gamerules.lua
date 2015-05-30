@@ -738,7 +738,7 @@ if Server then
             
         elseif voteTechId == kTechId.Crag or voteTechId == kTechId.Shift or voteTechId == kTechId.Shade or voteTechId == kTechId.Whip then
             local team = player:GetTeam()
-            if team.VoteForUpgradeStructure then
+            if team.VoteForUpgradeStructure and team.UpgradeVoteAllowed and team:UpgradeVoteAllowed() then
                 team:VoteForUpgradeStructure(player, voteTechId)
             end
         end

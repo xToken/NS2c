@@ -19,8 +19,10 @@ Grenade.kModelName = PrecacheAsset("models/marine/rifle/rifle_grenade.model")
 
 Grenade.kRadius = 0.1
 Grenade.kMinLifeTime = 0.0
-Grenade.kClearOnImpact = false
+Grenade.kClearOnSurfaceImpact = false
+Grenade.kClearOnEntityImpact = false
 Grenade.kClearOnEnemyImpact = true
+Grenade.kClearOnSelfImpact = false
 
 local kGrenadeCameraShakeDistance = 15
 local kGrenadeMinShakeIntensity = 0.02
@@ -67,7 +69,6 @@ function Grenade:ProcessHit(targetHit, surface, normal, endPoint )
 
     if targetHit and GetAreEnemies(self, targetHit) then
         self:Detonate(targetHit)
-        return true
     end
 
     if Server then
@@ -77,9 +78,7 @@ function Grenade:ProcessHit(targetHit, surface, normal, endPoint )
         end
         
     end
-    
-    return false
-    
+
 end
 
 function Grenade:Detonate(targetHit)

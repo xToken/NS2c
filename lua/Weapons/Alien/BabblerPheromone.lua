@@ -23,8 +23,10 @@ local kBabblerSearchRange = 20
 local kBabblerPheromoneDuration = 5
 local kPheromoneEffectInterval = 0.15
 
-BabblerPheromone.kClearOnImpact = false
+BabblerPheromone.kClearOnSurfaceImpact = false
+BabblerPheromone.kClearOnEntityImpact = true
 BabblerPheromone.kClearOnEnemyImpact = true
+BabblerPheromone.kClearOnSelfImpact = false
 
 local networkVars = { }
 
@@ -124,7 +126,6 @@ function BabblerPheromone:ProcessHit(entity)
         end
         
     end
-    return true
     
 end
 

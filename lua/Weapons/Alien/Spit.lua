@@ -15,8 +15,10 @@ PrecacheAsset("materials/infestation/spit_decal.surface_shader")
 class 'Spit' (PredictedProjectile)
 
 Spit.kMapName = "spit"
-Spit.kClearOnImpact = true
+Spit.kClearOnSurfaceImpact = true
+Spit.kClearOnEntityImpact = true
 Spit.kClearOnEnemyImpact = true
+Spit.kClearOnSelfImpact = false
 
 local networkVars = { }
 

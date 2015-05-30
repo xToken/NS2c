@@ -127,8 +127,15 @@ local function UpdateWelcomeText(self, deltaTime)
         self.welcomeText:SetColor(color)
     end
     
+    if timeSinceStart > kWelcomeTextReset and self.welcometextCount == 2 then
+        self.welcomeText:SetText("Any comments or feedback can be left in the comments on the steam workshop page.")
+        self.welcomeText:SetColor(kFadeOutColor)
+        self.welcomeTextStartTime = Shared.GetTime()
+        self.welcometextCount = 3
+    end
+    
     if timeSinceStart > kWelcomeTextReset and self.welcometextCount == 1 then
-        self.welcomeText:SetText("For more information, visit NS2cmod.com.")
+        self.welcomeText:SetText("For more information, search for the NS2c mod on steam workshop or visit the official NS2 forums.")
         self.welcomeText:SetColor(kFadeOutColor)
         self.welcomeTextStartTime = Shared.GetTime()
         self.welcometextCount = 2

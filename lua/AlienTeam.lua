@@ -298,6 +298,10 @@ local function UpdateAlienArmor(self)
     end
 end
 
+function AlienTeam:UpgradeVoteAllowed()
+    return self:GetActiveUnassignedHiveCount() > 0
+end
+
 function AlienTeam:Update(timePassed)
 
     PROFILE("AlienTeam:Update")

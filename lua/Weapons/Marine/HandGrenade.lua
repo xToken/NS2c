@@ -14,8 +14,10 @@ HandGrenade.kModelName = PrecacheAsset("models/marine/grenades/gr_cluster_world.
 
 // prevents collision with friendly players in range to spawnpoint
 HandGrenade.kDisableCollisionRange = 10
-HandGrenade.kClearOnImpact = false
+HandGrenade.kClearOnSurfaceImpact = false
+HandGrenade.kClearOnEntityImpact = false
 HandGrenade.kClearOnEnemyImpact = true
+HandGrenade.kClearOnSelfImpact = false
 HandGrenade.kRadius = 0.1
 
 local kGrenadeCameraShakeDistance = 15
@@ -56,7 +58,6 @@ function HandGrenade:ProcessHit(targetHit, surface)
 
     if targetHit and GetAreEnemies(self, targetHit) then
         self:Detonate(targetHit)
-        return true
     end
 
     if Server then
@@ -66,8 +67,6 @@ function HandGrenade:ProcessHit(targetHit, surface)
         end
         
     end
-    
-    return false
     
 end
 

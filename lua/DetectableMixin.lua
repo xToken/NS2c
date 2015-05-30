@@ -193,7 +193,7 @@ function DetectableMixin:OnUpdateRender()
 
     PROFILE("DetectableMixin:OnUpdateRender")
     
-    if self:isa("Player") and self:GetIsLocalPlayer() then
+    if self:isa("Alien") and self:GetIsLocalPlayer() then
     
         local viewModelEnt = self:GetViewModelEntity()
         local viewModel = viewModelEnt and viewModelEnt:GetRenderModel()

@@ -333,10 +333,12 @@ if Client then
 	
 	local function SetMaterialParameters(modelArray, radiusFraction, origin, maxRadius)
 
-		modelArray:SetMaterialParameter("amount", radiusFraction)
-		modelArray:SetMaterialParameter("origin", origin)
-		modelArray:SetMaterialParameter("maxRadius", maxRadius)
-
+        if modelArray then
+            modelArray:SetMaterialParameter("amount", radiusFraction)
+            modelArray:SetMaterialParameter("origin", origin)
+            modelArray:SetMaterialParameter("maxRadius", maxRadius)
+        end
+        
 	end
 
 	function InfestationMixin:UpdateClientGeometry()

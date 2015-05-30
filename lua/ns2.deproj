@@ -649,6 +649,9 @@
     <filename>PowerConsumerMixin.lua</filename>
   </file>
   <file>
+    <filename>Weapons\PredictedProjectile.lua</filename>
+  </file>
+  <file>
     <filename>Weapons\Alien\Primal.lua</filename>
   </file>
   <file>

@@ -272,11 +272,11 @@ kWeapons1DamageScalar = 1.1
 kWeapons2DamageScalar = 1.2
 kWeapons3DamageScalar = 1.3
 
-kElectricalDamage = 20
+kElectricalDamage = 18
 kElectricalMaxTargets = 2
 kElectricalRange = 3.25
-kElectricalUpgradeResearchCost = 20
-kElectricalUpgradeResearchTime = 30
+kElectricalUpgradeResearchCost = 25
+kElectricalUpgradeResearchTime = 45
 kElectrifyDamageTime = 1
 kElectrifyCooldownTime = 10
 kElectrifyEnergyRegain = 25
@@ -318,7 +318,6 @@ kBabblerEggBuildTime = 15
 kNumBabblerEggsPerGorge = 2
 kNumBabblersPerEgg = 5
 
-// Also see kHealsprayHealStructureRate
 kHealsprayDamage = 13
 kHealPlayerPercent = 4
 kHealBuildingScalar = 5
@@ -417,9 +416,9 @@ kGoreDamage = 90
 kGoreDamageType = kDamageType.Normal
 kGoreEnergyCost = 7
 kGoreDelay = 0.45
-kGoreRange = 1.7
+kGoreRange = 1.8
 kGoreMeleeBaseWidth = 1.1
-kGoreMeleeBaseHeight = 1.2
+kGoreMeleeBaseHeight = 1.4
 kGoreKnockbackForce = 5
 
 kDevourInitialDamage = 10

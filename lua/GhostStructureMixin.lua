@@ -13,6 +13,7 @@ GhostStructureMixin = CreateMixin(GhostStructureMixin)
 GhostStructureMixin.type = "GhostStructure"
 
 GhostStructureMixin.kGhostStructureCancelRange = 3
+local kScanTime = 0.1
 
 GhostStructureMixin.expectedMixins =
 {
@@ -63,6 +64,7 @@ function GhostStructureMixin:__initmixin()
     // init the entity in ghost structure mode
     if Server then
         self.isGhostStructure = true
+		self:AddTimedCallback(CheckNearbyEnemies, kScanTime)
     end
     
 end

@@ -12,8 +12,10 @@ Rocket.kMapName            = "rocket"
 Rocket.kModelName          = PrecacheAsset("models/alien/gorge/bilebomb.model")
 
 // The max amount of time a Rocket can last for
-Rocket.kClearOnImpact = true
+Rocket.kClearOnSurfaceImpact = true
+Rocket.kClearOnEntityImpact = true
 Rocket.kClearOnEnemyImpact = true
+Rocket.kClearOnSelfImpact = false
 Rocket.kRadius = 0.15
 
 local kRocketLifetime = 6
@@ -76,10 +78,8 @@ end
 function Rocket:ProcessHit(targetHit, surface)
 
     if Server and self:GetOwner() ~= targetHit then
-        self:Detonate(targetHit, surface)
-        return true        
+        self:Detonate(targetHit, surface)    
     end
-    return false
     
 end
 

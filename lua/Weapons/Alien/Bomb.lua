@@ -25,8 +25,10 @@ Bomb.kMapName            = "bomb"
 Bomb.kModelName          = PrecacheAsset("models/alien/gorge/bilebomb.model")
 
 // The max amount of time a Bomb can last for
-Bomb.kClearOnImpact = true
+Bomb.kClearOnSurfaceImpact = true
+Bomb.kClearOnEntityImpact = true
 Bomb.kClearOnEnemyImpact = true
+Bomb.kClearOnSelfImpact = false
 Bomb.kRadius = 0.2
 
 local kBombLifetime = 6
@@ -66,9 +68,7 @@ function Bomb:ProcessHit(targetHit, surface)
 
     if Server and self:GetOwner() ~= targetHit then
         self:Detonate(targetHit, surface)
-        return true    
     end
-    return false
     
 end
 

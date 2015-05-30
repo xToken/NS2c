@@ -115,7 +115,7 @@ end
 function ElectrifyMixin:Update()
 
     if self:GetIsAlive() and self:GetIsElectrified() then
-        local enemies = GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), kElectricalRange + 4)
+        local enemies = GetEntitiesWithMixinForTeamWithinRange("Live", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), kElectricalRange + 2)
         local damageRadius = kElectricalRange
         local damagedentities = 0
         for index, entity in ipairs(enemies) do
