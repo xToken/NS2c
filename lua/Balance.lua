@@ -201,7 +201,7 @@ kGrenadeLauncherShellWeight = 0.0035
 
 kShotgunDamage = 17
 kShotgunDamageType = kDamageType.Normal
-kShotgunClipSize = 8
+kShotgunClipSize = 6
 kShotgunBulletsPerShot = 10
 kShotgunMaxRange = 18
 kShotgunMinSpread = 10
@@ -391,15 +391,15 @@ kPrimalScreamROFIncrease = .3
 
 kSwipeDamage = 80
 kSwipeDamageType = kDamageType.Normal
-kSwipeEnergyCost = 6.5
+kSwipeEnergyCost = 6
 kSwipeDelay = 0.48
-kSwipeRange = 1.3
+kSwipeRange = 1.5
 kSwipeMeleeBaseWidth = 0.9
 kSwipeMeleeBaseHeight = 1
 kSwipeKnockbackForce = 4
 
 kStartBlinkEnergyCost = 2
-kBlinkEnergyCostPerSecond = 58
+kBlinkEnergyCostPerSecond = 50
 
 kMetabolizeEnergyCost = 25
 kMetabolizeEnergyGain = 35

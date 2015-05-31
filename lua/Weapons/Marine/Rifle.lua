@@ -15,35 +15,10 @@ class 'Rifle' (ClipWeapon)
 
 Rifle.kMapName = "rifle"
 
-Rifle.kModelName = PrecacheAsset("models/marine/rifle/rifle.model")
+//Rifle.kModelName = PrecacheAsset("models/marine/rifle/rifle.model")
+Rifle.kModelName = PrecacheAsset("models/marine/rifle/lmg.model")
 
-local kDefaultVariantData = kMarineVariantData[ kDefaultMarineVariant ]
-
-//DINGUS
-function GenerateMarineRifleViewModelPaths()
-
-    local viewModels = { male = { }, female = { } }
-    
-    local function MakePath( prefix, suffix )
-        if suffix == "_kodiak" then
-            suffix = ""
-        end
-        return "models/marine/".."rifle".."/"..prefix.."rifle".."_view"..suffix..".model"
-    end
-    
-    for variant, data in pairs(kMarineVariantData) do
-        viewModels.male[variant] = PrecacheAssetSafe( MakePath("", data.viewModelFilePart), MakePath("", kDefaultVariantData.viewModelFilePart) )
-    end
-    
-    for variant, data in pairs(kMarineVariantData) do
-        viewModels.female[variant] = PrecacheAssetSafe( MakePath("", data.viewModelFilePart), MakePath("", kDefaultVariantData.viewModelFilePart) )
-    end
-    
-    return viewModels
-    
-end
-
-local kViewModels = GenerateMarineRifleViewModelPaths()
+local kViewModel = PrecacheAsset("models/marine/rifle/lmg_view.model")
 
 local kAnimationGraph = PrecacheAsset("models/marine/rifle/rifle_view.animation_graph")
 
@@ -196,7 +171,7 @@ function Rifle:GetAnimationGraphName()
 end
 
 function Rifle:GetViewModelName(sex, variant)
-    return kViewModels[sex][variant]
+    return kViewModel
 end
 
 function Rifle:GetDeathIconIndex()
