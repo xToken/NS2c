@@ -199,7 +199,6 @@ local function PushPlayers(self)
 
         if player:GetIsAlive() and HasMixin(player, "Controller") then
 
-            player:DisableGroundMove(0.1)
             player:SetVelocity(Vector(GetSign(math.random() - 0.5) * 2, 3, GetSign(math.random() - 0.5) * 2))
 
         end
