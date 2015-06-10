@@ -201,7 +201,7 @@ kGrenadeLauncherShellWeight = 0.0035
 
 kShotgunDamage = 17
 kShotgunDamageType = kDamageType.Normal
-kShotgunClipSize = 6
+kShotgunClipSize = 8
 kShotgunBulletsPerShot = 10
 kShotgunMaxRange = 18
 kShotgunMinSpread = 10
