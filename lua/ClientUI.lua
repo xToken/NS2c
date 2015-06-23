@@ -24,7 +24,7 @@ kShowOnTeam[kTeam2Index] = { GUIAlienSpectatorHUD = true }
 kShowOnTeam[kSpectatorIndex] = { GUISpectator = true }
 
 local kBothAlienAndMarine = { GUICrosshair = true, GUINotifications = true, GUIDamageIndicators = true, GUIWorldText = true,
-                              GUIPing = true, GUIWaitingForAutoTeamBalance = true, GUITechMap = true, GUITipVideo = true }
+                              GUIPing = true, GUIWaitingForAutoTeamBalance = true, GUITechMap = true, GUIHelpScreen = true }
 
 for n, e in pairs(kBothAlienAndMarine) do
 
@@ -71,10 +71,6 @@ local kMiscPreloads = {
     'GUICommanderManager',
     'GUICommanderTooltip',
     'GUIDial',
-    'GUIEvolveHelp',
-    'GUIFadeBlinkHelp',
-    'GUIFadeShadowStepHelp',
-    'GUIGorgeHealHelp',
     'GUIHotkeyIcons',
     'GUIIncrementBar',
     'GUIList',
@@ -86,7 +82,6 @@ local kMiscPreloads = {
     'GUIResourceDisplay',
     'GUIScript',
     'GUISelectionPanel',
-    'GUISkulkParasiteHelp',
     'GUIXenocideFeedback',
     'Hud/Commander/AlienGhostModel',
     'Hud/Commander/CystGhostModel',
@@ -97,7 +92,6 @@ local kMiscPreloads = {
     'GUICommanderButtonsMarines',
     'GUICommanderButtons',
     'Hud/Commander/MarineGhostModel'
-
 }
 
 function AddClientUIScriptForClass(className, scriptName)

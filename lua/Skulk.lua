@@ -122,11 +122,6 @@ function Skulk:OnInitialized()
         self.currentCameraRoll = 0
         self.goalCameraRoll = 0
         
-        self:AddHelpWidget("GUIEvolveHelp", 2)
-        self:AddHelpWidget("GUISkulkParasiteHelp", 1)
-        self:AddHelpWidget("GUISkulkLeapHelp", 2)
-        self:AddHelpWidget("GUIMapHelp", 1)
-        
     end
     
     self.leaping = false

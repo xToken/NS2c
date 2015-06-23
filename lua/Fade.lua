@@ -83,14 +83,7 @@ end
 function Fade:OnInitialized()
 
     Alien.OnInitialized(self)
-    
     self:SetModel(Fade.kModelName, kFadeAnimationGraph)
-    
-    if Client then
-    
-        self:AddHelpWidget("GUIFadeBlinkHelp", 2)
-        
-    end
     
 end
 

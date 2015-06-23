@@ -103,9 +103,6 @@ function Lerk:OnInitialized()
         self.goalCameraRoll = 0
         self.previousYaw = 0
         
-        self:AddHelpWidget("GUILerkFlapHelp", 2)
-        self:AddHelpWidget("GUILerkSporesHelp", 2)
-        
     end
     
 end

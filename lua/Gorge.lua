@@ -85,16 +85,7 @@ end
 function Gorge:OnInitialized()
 
     Alien.OnInitialized(self)
-    
     self:SetModel(Gorge.kModelName, kGorgeAnimationGraph)
-        
-    if Client then
-    
-        self:AddHelpWidget("GUIGorgeHealHelp", 2)
-        self:AddHelpWidget("GUIGorgeBellySlideHelp", 2)
-        self:AddHelpWidget("GUIGorgeBuildMenuHelp", 2)
-        
-    end
     
 end
 

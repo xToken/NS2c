@@ -159,7 +159,7 @@ function GetTechTree()
 end
 
 function ClearTechTree()
-    gTechTree:Initialize()    
+    gTechTree:Initialize()
 end
 
 function SetLocalPlayerIsOverhead(isOverhead)

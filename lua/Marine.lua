@@ -202,11 +202,6 @@ function Marine:OnInitialized()
         InitMixin(self, HiveVisionMixin)
         InitMixin(self, MarineOutlineMixin)
         
-        self:AddHelpWidget("GUIMarineHealthRequestHelp", 2)
-        self:AddHelpWidget("GUIMarineFlashlightHelp", 2)
-        self:AddHelpWidget("GUIMarineWeldHelp", 2)
-        self:AddHelpWidget("GUIMapHelp", 1)
-        
         self.notifications = { }
         
     end

@@ -91,12 +91,6 @@ end
 
 function JetpackMarine:OnInitialized()
 
-    // Using the Jetpack is very important. This is
-    // a priority before anything else for the JetpackMarine.
-    if Client then
-        self:AddHelpWidget("GUIMarineJetpackHelp", 2)
-    end
-    
     Marine.OnInitialized(self)
     
     if Server then

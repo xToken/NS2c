@@ -891,4 +891,7 @@
   <file>
     <filename>SpawnProtectionMixin.lua</filename>
   </file>
+  <file>
+    <filename>GUIHelpScreen.lua</filename>
+  </file>
 </project>
