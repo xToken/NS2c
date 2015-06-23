@@ -1,17 +1,13 @@
-//    
-// lua\PrimalScreamMixin.lua    
-//    
-//    Created by:   Dragon
+// Natural Selection 2 'Classic' Mod
+// lua\PrimalScreamMixin.lua
+// - Dragon
 
-/**
- * ParimalScreamMixin speeds up attack speed and damage on nearby players.
- */
 PrimalScreamMixin = CreateMixin(PrimalScreamMixin)
 PrimalScreamMixin.type = "PrimalScreamMixin"
 
 PrimalScreamMixin.networkVars =
 {
-    primaled = "private boolean"
+    primaled = "boolean"
 }
 
 function PrimalScreamMixin:__initmixin()
