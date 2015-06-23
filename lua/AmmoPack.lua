@@ -31,7 +31,7 @@ function AmmoPack:OnTouch(recipient)
 
     local weapon = recipient:GetActiveWeapon()
     
-    if weapon and weapon:GiveAmmo(kClipsPerAmmoPack, false) then
+    if weapon and weapon:GiveAmmo(kClipsPerAmmoPack * weapon:GetAmmoPackMultiplyer(), false) then
         StartSoundEffectAtOrigin(AmmoPack.kPickupSound, recipient:GetOrigin())
     end
     

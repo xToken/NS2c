@@ -150,6 +150,10 @@ function Rifle:GetNumStartClips()
     return 3
 end
 
+function Rifle:GetAmmoPackMultiplyer()
+    return 2
+end
+
 function Rifle:OnHolster(player)
 
     DestroyMuzzleEffect(self)
