@@ -103,7 +103,7 @@ end
 local function UpdateGUIMenu(slot)
 	local player = Client.GetLocalPlayer()
 	local activeweapon = player:GetActiveWeapon()
-	if activeweapon.buildMenu then
+	if activeweapon and activeweapon.buildMenu then
 	    activeweapon.buildMenu:AdditionalInputs(slot)
 	end
 end
