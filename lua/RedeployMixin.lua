@@ -1,4 +1,4 @@
-//
+// Natural Selection 2 'Classic' Mod
 // lua\RedeployMixin.lua
 // - Dragon
 
