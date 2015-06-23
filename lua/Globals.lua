@@ -206,6 +206,9 @@ kGameState = enum( {'NotStarted', 'PreGame', 'Countdown', 'Started', 'Team1Won',
 // Game modes for different ingame goals.
 kGameMode = enum( { 'Classic', 'Combat' } )
 
+// NS2c Server Configuration Settings
+kNS2cServerSettings = { FallDamage = true, GameMode = 0, CombatMaxLevel = 12, CombatSpawnProtection = 3, CombatRoundLength = 20, CombatDefaultWinner = 2 }
+
 // Don't allow commander to build structures this close to attach points or other structures
 kBlockAttachStructuresRadius = 3
 

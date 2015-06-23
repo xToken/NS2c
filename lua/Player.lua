@@ -28,6 +28,7 @@ Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/TeamMixin.lua")
+Script.Load("lua/SpawnProtectionMixin.lua")
 Script.Load("lua/OrdersMixin.lua")
 Script.Load("lua/MobileTargetMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
@@ -203,7 +204,9 @@ local networkVars =
     movementmode = "boolean",
     giveDamageTime = "private time",
 
-    level = "float (0 to " .. kCombatMaxLevel .. " by 0.001)",
+    level = "float (0 to " .. kCombatMaxAllowedLevel .. " by 0.001)",
+    maxlevel = "private integer (0 to " .. kCombatMaxAllowedLevel .. ")",
+    falldamage = "private boolean",
     pushImpulse = "private vector",
     pushTime = "private time",
     
@@ -226,6 +229,7 @@ AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(UpgradableMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
+AddMixinNetworkVars(SpawnProtectionMixin, networkVars)
 
 local function GetTabDirectionVector(buttonReleased)
 
@@ -254,6 +258,7 @@ function Player:OnCreate()
     InitMixin(self, UpgradableMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, TeamMixin)
+    InitMixin(self, SpawnProtectionMixin)
     InitMixin(self, PointGiverMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, SmoothedRelevancyMixin)
@@ -275,6 +280,8 @@ function Player:OnCreate()
         self.sendTechTreeBase = false
         self.waitingForAutoTeamBalance = false
         self.gamemode = GetServerGameMode()
+        self.falldamage = kNS2cServerSettings.FallDamage
+        self.maxlevel = kNS2cServerSettings.CombatMaxLevel
         
     end
     
@@ -512,6 +519,14 @@ function Player:GetPlayerLevel()
     return math.floor(self.level)
 end
 
+function Player:GetMaxPlayerLevel()
+    return self.maxlevel
+end
+
+function Player:SetMaxPlayerLevel(newLevel)
+    self.maxlevel = newLevel
+end
+
 function Player:GetPlayerExperience()
     local levelprogress = self.level - math.floor(self.level)
     local lastlevelxp = CalculateLevelXP(math.floor(self.level))
@@ -520,7 +535,7 @@ function Player:GetPlayerExperience()
 end
 
 function Player:AddExperience(xp)
-    if self.level >= kCombatMaxLevel then
+    if self.level >= self:GetMaxPlayerLevel() then
         return
     end
     local oldlevel = math.floor(self.level)
@@ -532,13 +547,13 @@ function Player:AddExperience(xp)
     local xpbalance = math.floor(xp - xptolevel)
     //Shared.Message(string.format("XP Added %s : Old Level %s : New Level %s : LastXPBreak %s : NextXPBreak %s : OldXPTowardsLevel %s : NewXPTowardsLevel %s : XPToLevel %s : XPBalance %s.", 
     //            xp, self.level, self.level + xpaddition, lastlevelxp, nextlevelxp, self.level - oldlevel, xpaddition, xptolevel, xpbalance))
-    if xp >= xptolevel and self.level < kCombatMaxLevel then
+    if xp >= xptolevel and self.level < self:GetMaxPlayerLevel() then
         //Trigger levelup!
         self:Levelup()
     else
-        self.level = math.min(self.level + xpaddition, kCombatMaxLevel)
+        self.level = math.min(self.level + xpaddition, self:GetMaxPlayerLevel())
     end
-    if xpbalance > 0 and self.level < kCombatMaxLevel then
+    if xpbalance > 0 and self.level < self:GetMaxPlayerLevel() then
         self:AddExperience(xpbalance)
     end
 end
@@ -549,7 +564,7 @@ end
 
 function Player:Levelup()
     //Trigger effects, give player resources (points)
-    self.level = math.min(math.floor(self.level) + 1, kCombatMaxLevel)
+    self.level = math.min(math.floor(self.level) + 1, self:GetMaxPlayerLevel())
     self:AddResources(kCombatResourcesPerLevel)
     self:TriggerEffects("res_received")
 end
@@ -1551,6 +1566,10 @@ function Player:GetCanStep()
     return self:GetIsOnGround()
 end
 
+function Player:GetFallDamageEnabled()
+    return self.falldamage
+end
+
 function Player:OnTakeFallDamage(damage)
     self:TakeDamage(damage, self, self, self:GetOrigin(), nil, 0, damage, kDamageType.Falling)
 end
@@ -2242,7 +2261,6 @@ function Player:OnUpdateAnimationInput(modelMixin)
     
     modelMixin:SetAnimationInput("weapon", activeWeapon)
     
-    local weapon = self:GetActiveWeapon()
     if weapon ~= nil and weapon.OnUpdateAnimationInput then
         weapon:OnUpdateAnimationInput(modelMixin)
     end

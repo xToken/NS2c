@@ -1,4 +1,6 @@
-//Dragon
+// Natural Selection 2 'Classic' Mod
+// lua\NS2Gamerules.lua
+// - Dragon
 
 Script.Load("lua/Gamerules.lua")
 Script.Load("lua/dkjson.lua")
@@ -1002,30 +1004,30 @@ if Server then
         if self:GetGameState() == kGameState.Started then
             local time = Shared.GetTime()
             if not self.sentCombatGameStartMessage then
-                local message = string.format(kNS2cLocalizedStrings.COMBAT_ROUND_TIMER, string.format("%s Minutes", kCombatRoundTimelength), ConditionalValue(kCombatDefaultWinner == 1, "Marines", "Aliens"))
+                local message = string.format(kNS2cLocalizedStrings.COMBAT_ROUND_TIMER, string.format("%s Minutes", kNS2cServerSettings.CombatRoundLength), ConditionalValue(kNS2cServerSettings.CombatDefaultWinner == 1, "Marines", "Aliens"))
                 Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Combat", -1, kTeamReadyRoom, kNeutralTeamType, message), true)
                 self.sentCombatGameStartMessage = true
             end
-            if self.gameStartTime + (kCombatRoundTimelength * 60) <= (time + 300) and not self.sentCombat5MinuteWarning then
-                local message = string.format(kNS2cLocalizedStrings.COMBAT_ROUND_TIMER, "5 Minutes", ConditionalValue(kCombatDefaultWinner == 1, "Marines", "Aliens"))
+            if self.gameStartTime + (kNS2cServerSettings.CombatRoundLength * 60) <= (time + 300) and not self.sentCombat5MinuteWarning then
+                local message = string.format(kNS2cLocalizedStrings.COMBAT_ROUND_TIMER, "5 Minutes", ConditionalValue(kNS2cServerSettings.CombatDefaultWinner == 1, "Marines", "Aliens"))
                 Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Combat", -1, kTeamReadyRoom, kNeutralTeamType, message), true)
                 self.sentCombat5MinuteWarning = true
             end
-            if self.gameStartTime + (kCombatRoundTimelength * 60) <= (time + 60) and not self.sentCombat1MinuteWarning then
-                local message = string.format(kNS2cLocalizedStrings.COMBAT_ROUND_TIMER, "1 Minute", ConditionalValue(kCombatDefaultWinner == 1, "Marines", "Aliens"))
+            if self.gameStartTime + (kNS2cServerSettings.CombatRoundLength * 60) <= (time + 60) and not self.sentCombat1MinuteWarning then
+                local message = string.format(kNS2cLocalizedStrings.COMBAT_ROUND_TIMER, "1 Minute", ConditionalValue(kNS2cServerSettings.CombatDefaultWinner == 1, "Marines", "Aliens"))
                 Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Combat", -1, kTeamReadyRoom, kNeutralTeamType, message), true)
                 self.sentCombat1MinuteWarning = true
             end
-            if self.gameStartTime + (kCombatRoundTimelength * 60) <= (time + 30) and not self.sentCombat30SecondWarning then
-                local message = string.format(kNS2cLocalizedStrings.COMBAT_ROUND_TIMER, "30 Seconds", ConditionalValue(kCombatDefaultWinner == 1, "Marines", "Aliens"))
+            if self.gameStartTime + (kNS2cServerSettings.CombatRoundLength * 60) <= (time + 30) and not self.sentCombat30SecondWarning then
+                local message = string.format(kNS2cLocalizedStrings.COMBAT_ROUND_TIMER, "30 Seconds", ConditionalValue(kNS2cServerSettings.CombatDefaultWinner == 1, "Marines", "Aliens"))
                 Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Combat", -1, kTeamReadyRoom, kNeutralTeamType, message), true)
                 self.sentCombat30SecondWarning = true
             end
-            if self.gameStartTime + (kCombatRoundTimelength * 60) <= time and not self.sentCombatGameOver then
+            if self.gameStartTime + (kNS2cServerSettings.CombatRoundLength * 60) <= time and not self.sentCombatGameOver then
                 //Game over sherlock
-                if kCombatDefaultWinner == 1 then
+                if kNS2cServerSettings.CombatDefaultWinner == 1 then
                     self:EndGame(self.team1)
-                elseif kCombatDefaultWinner == 2 then
+                else
                     self:EndGame(self.team2)
                 end
                 self.sentCombatGameOver = true
@@ -1236,6 +1238,7 @@ if Server then
         if not client then return end
         
         local success = false
+        local newPlayer
         local oldPlayerWasSpectating = client and client:GetSpectatingPlayer()
         local oldTeamNumber = player:GetTeamNumber()
         
@@ -1318,7 +1321,7 @@ if Server then
                 
                 if newPlayer.OnJoinTeam then
                     newPlayer:OnJoinTeam()
-                end    
+                end
                 
                 if newTeamNumber == kTeam1Index or newTeamNumber == kTeam2Index then
                     newPlayer:SetEntranceTime()
@@ -1327,10 +1330,7 @@ if Server then
                 end
 
 				if player:GetGameMode() == kGameMode.Combat then
-                    if oldTeam ~= nil and (oldTeam.GetIsAlienTeam and oldTeam:GetIsAlienTeam()) then
-                        //Refund lifeform costs.
-                        newPlayer:AddResources(LookupTechData(player:GetTechId(), kTechDataCombatCost, 0))
-                    end
+				    //Clears table if changing teams
                     CheckCombatPlayersUpgradeTable(newPlayer)
                 end
                 

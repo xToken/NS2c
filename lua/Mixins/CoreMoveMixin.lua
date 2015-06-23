@@ -1,6 +1,6 @@
-//    
-// lua\CoreMoveMixin.lua
-// Consolidated gldsrce style movement logic.
+// Natural Selection 2 'Classic' Mod
+// lua\Mixins\CoreMoveMixin.lua - Consolidated gldsrce style movement logic.
+// - Dragon
 
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
 
@@ -31,6 +31,7 @@ CoreMoveMixin.expectedCallbacks =
 	GetClimbFrictionForce = "Friction when climbing ladder.",
 	GetMaxBackwardSpeedScalar = "Maximum backpeddling speed scalar.",
 	GetUsesGoldSourceMovement = "If entity can optionally use goldsource movement.",
+    GetFallDamageEnabled = "If fall damage is enabled.",
 	OnTakeFallDamage = "For taking applicable fall damage."
 }
 

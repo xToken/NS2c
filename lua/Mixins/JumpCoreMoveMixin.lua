@@ -1,4 +1,6 @@
-//Jumping movement code.
+// Natural Selection 2 'Classic' Mod
+// lua\Mixins\JumpCoreMoveMixin.lua - Jumping movement code.
+// - Dragon
 
 local kSlowOnLandScalar = 0.33
 local kMaxSpeedClampPerJump = 1.5
@@ -90,6 +92,11 @@ local function UpdateFallDamage(self, impactForce)
     
     //Some kind of water detection maybe?
     if self.GetSubmersionState and self:GetSubmersionState() > 0 then
+        return
+    end
+    
+    //Check if Fall Damage is enabled    
+    if not self:GetFallDamageEnabled() then
         return
     end
     
