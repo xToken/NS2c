@@ -269,6 +269,7 @@ function GUIMarineHUD:Initialize()
     style.textColor = kBrightColor
     style.textureSet = "marine"
     style.displayTeamRes = true
+    self.style = style
     
     if PlayerUI_GetGameMode() == kGameMode.Combat then    
         self.resourceDisplay = CreatePlayerResourceDisplay(self, kGUILayerPlayerHUDForeground1, self.background, style)
@@ -574,7 +575,7 @@ function GUIMarineHUD:Update(deltaTime)
     if PlayerUI_GetGameMode() == kGameMode.Combat then
     
         if not self.resourceDisplay then
-            self.resourceDisplay = CreatePlayerResourceDisplay(self, kGUILayerPlayerHUDForeground1, self.background, style)
+            self.resourceDisplay = CreatePlayerResourceDisplay(self, kGUILayerPlayerHUDForeground1, self.background, self.style)
         end
         
         self.resourceDisplay:SetVisibleState(true)
