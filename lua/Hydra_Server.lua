@@ -15,7 +15,14 @@ Hydra.kUpdateInterval = .5
 
 function Hydra:OnKill(attacker, doer, point, direction)
 
+    local parent = self:GetOwner()
+
     ScriptActor.OnKill(self, attacker, doer, point, direction)
+    
+    if GetServerGameMode() == kGameMode.Combat and parent and parent:isa("Player") then
+        //Refund costs.
+        parent:AddResources(LookupTechData(self:GetTechId(), kTechDataCombatCost, 0))
+    end
     
     local team = self:GetTeam()
     if team then

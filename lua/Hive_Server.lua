@@ -500,13 +500,19 @@ function Hive:OnTakeDamage(damage, attacker, doer, point)
 	        
 	    end
 	    
-	    if GetAreEnemies(self, attacker) and damage > 0 and GetServerGameMode() == kGameMode.Combat then
+	    if GetAreEnemies(self, attacker) and damage > 0 and GetServerGameMode() == kGameMode.Combat and attacker and attacker.AddExperience then
 	    
 	        attacker:AddExperience(damage / self:GetMaxHealth() * kCombatObjectiveExperienceScalar)
 	        
 	    end
 	end
 
+end
+
+function Hive:OnHealSpray(player, amountHealed)
+    if GetServerGameMode() == kGameMode.Combat and player and player.AddExperience then
+        player:AddExperience(amountHealed / self:GetMaxHealth() * kCombatObjectiveExperienceScalar)
+    end
 end
 
 function Hive:OnTeleportEnd()

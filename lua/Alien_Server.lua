@@ -132,6 +132,15 @@ end
 
 function Alien:OnRestoreUpgrades()
     player = Player.OnRestoreUpgrades(self)
+    //Refund lifeform costs.
+    for i, techId in ipairs(player:GetUpgrades()) do
+        if LookupTechData(techId, kTechDataGestateName) then 
+            player:AddResources(LookupTechData(techId, kTechDataCombatCost, 0))
+            player:RemoveUpgrade(techId)
+            StoreCombatPlayersUpgradeTable(player)
+            break
+        end
+    end
     player:SetHatched()
     return player
 end
@@ -377,11 +386,6 @@ function Alien:OnKill(attacker, doer, point, direction)
     self.oneHive = false
     self.twoHives = false
     self.threeHives = false
-    
-    if self:GetGameMode() == kGameMode.Combat then
-        //Refund lifeform costs.
-        self:AddResources(LookupTechData(self:GetTechId(), kTechDataCombatCost, 0))
-    end
     
 end
 

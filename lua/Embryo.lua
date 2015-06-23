@@ -134,7 +134,7 @@ local function UpdateGestation(self)
             end
             
             local newUpgrades = newPlayer:GetUpgrades()
-            if #newUpgrades > 0 then            
+            if #newUpgrades > 0 then
                 newPlayer.lastUpgradeList = newPlayer:GetUpgrades()
             end
 
@@ -308,7 +308,7 @@ function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorSca
         if self.gestationClass then 
             // Remove gestation tech id from "upgrades"
             self.gestationTypeTechId = techId
-            table.removevalue(self.evolvingUpgrades, self.gestationTypeTechId)
+            //table.removevalue(self.evolvingUpgrades, self.gestationTypeTechId)
             break 
         end
     end
@@ -353,15 +353,19 @@ function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorSca
     
     self.evolveTime = 0
     self.maxHealth = kEmbryoHealth
-	self:SetHealth(self.maxHealth* healthScalar)
+	self:SetHealth(self.maxHealth * healthScalar)
     self.maxArmor = kEmbryoArmor
-	self:SetArmor(self.maxArmor* armorScalar)
+	self:SetArmor(self.maxArmor * armorScalar)
     // Use this amount of health when we're done evolving
     self.healthScalar = healthScalar
     self.armorScalar = armorScalar
     
-    // we reset the upgrades entirely and set them again, simplifies the code
     self:ClearUpgrades()
+    
+    // Give upgrades right away, then again after complete.  This ensures nothing is lost in 'combat' mode.
+    for index, upgradeId in ipairs(self.evolvingUpgrades) do
+        self:GiveUpgrade(upgradeId)
+    end
     
 end
 

@@ -14,7 +14,7 @@ WeldableMixin.type = "Weldable"
 WeldableMixin.optionalCallbacks =
 {
     GetCanBeWeldedOverride = "Return true booleans: if we can be welded now and if we can be welded in the future.",
-    OnWeldOverride = "When welded (welding entity, elapsed time). Returns boolean indicating if weld had effect.",
+    OnWeldOverride = "When welded (welding entity, elapsed time, player).",
     GetWeldPercentageOverride = "Returns the weld progress, 0-1 scalar."
 }
 
@@ -29,7 +29,7 @@ function WeldableMixin:OnWeld(doer, elapsedTime, player)
     if self:GetCanBeWelded(doer) then
     
         if self.OnWeldOverride then
-            self:OnWeldOverride(doer, elapsedTime)
+            self:OnWeldOverride(doer, elapsedTime, player)
         elseif doer:isa("Welder") then
             self:AddHealth(doer:GetRepairRate(self) * elapsedTime)
         end

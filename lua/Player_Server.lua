@@ -349,10 +349,31 @@ function Player:GetRespawnQueueEntryTime()
     return self.respawnQueueEntryTime
 end
 
+function Player:CheckMinExperience()
+    local myExp = self:GetPlayerExperience()
+    local teamExp = 0
+    local team = self:GetTeam()
+    if team then
+        local players = team:GetPlayers()
+        for index, player in ipairs(players) do
+            teamExp = teamExp + player:GetPlayerExperience()
+        end
+        //Add up total team XP, divide by num of players, then factor by scalar
+        teamExp = math.floor((teamExp / #players) * kCombatExperienceTeamAssistScalar)
+        if teamExp > myExp and (teamExp - myExp) > kCombatExperienceMinIncreaseAllowed then
+            self:AddExperience(teamExp - myExp)
+        end
+    end
+end
+
 function Player:OnRestoreUpgrades()
     //Request upgrades back from tree.
-    RetrieveCombatPlayersUpgradeTable(self)
-    self:UpdateArmorAmount()
+    if self:GetGameMode() == kGameMode.Combat then
+        RetrieveCombatPlayersUpgradeTable(self)
+        self:UpdateArmorAmount()
+        self:CheckMinExperience()
+        self:ActivateSpawnProtection()
+    end
     return self
 end
 
@@ -363,7 +384,6 @@ end
 // For children classes to override if they need to adjust data
 // before the copy happens.
 function Player:PreCopyPlayerData()
-
 end
 
 function Player:CopyPlayerDataFrom(player)

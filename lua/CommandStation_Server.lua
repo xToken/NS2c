@@ -68,13 +68,23 @@ function CommandStation:GetKillOrigin()
 end
 
 function CommandStation:OnTakeDamage(damage, attacker, doer, point)
-    if GetAreEnemies(self, attacker) and damage > 0 and GetServerGameMode() == kGameMode.Combat then
+    if GetAreEnemies(self, attacker) and damage > 0 and GetServerGameMode() == kGameMode.Combat and attacker and attacker.AddExperience then
         attacker:AddExperience(damage / self:GetMaxHealth() * kCombatObjectiveExperienceScalar)
     end
 end
 
 function CommandStation:OnConstructionComplete()
     self:TriggerEffects("deploy")    
+end
+
+function CommandStation:OnWeldOverride(doer, elapsedTime, player)
+    if doer:isa("Welder") then
+        local amountWelded = doer:GetRepairRate(self) * elapsedTime
+        self:AddHealth(amountWelded)
+        if GetServerGameMode() == kGameMode.Combat and player and player.AddExperience then
+            player:AddExperience(amountWelded / self:GetMaxHealth() * kCombatObjectiveExperienceScalar)
+        end
+    end
 end
 
 function CommandStation:GetCompleteAlertId()

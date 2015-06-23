@@ -3083,7 +3083,7 @@ function PrecacheAssetSafe( path, fallback )
 end
 
 function CalculateLevelXP(level)
-    return kCombatLevelsToExperience[level]
+    return kCombatLevelsToExperience[level] or 0
     /*local xp = 0
     if level > 1 then
         for i = 2, level do

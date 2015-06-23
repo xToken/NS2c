@@ -690,7 +690,7 @@ function GetHasTech(callingEntity, techId, silenceError)
 end
 
 function RetrieveCombatPlayersUpgradeTable(player)
-    if GetServerGameMode() == kGameMode.Combat and player ~= nil and player.clientIndex ~= -1 then
+    if GetServerGameMode() == kGameMode.Combat and player and player.clientIndex ~= -1 then
         if kUpgradeTables[player.clientIndex] == nil then
             kUpgradeTables[player.clientIndex] = { upgrades = { }, team = player:GetTeamNumber() }
             player:ResetLevel()
@@ -710,7 +710,7 @@ function RetrieveCombatPlayersUpgradeTable(player)
 end
 
 function StoreCombatPlayersUpgradeTable(player)
-    if GetServerGameMode() == kGameMode.Combat and player ~= nil and player.clientIndex ~= -1 then
+    if GetServerGameMode() == kGameMode.Combat and player and player.clientIndex ~= -1 then
         kUpgradeTables[player.clientIndex] = { upgrades = { }, team = player:GetTeamNumber() }
         local upgrades = player:GetUpgrades()
         if #upgrades > 0 then
@@ -722,8 +722,8 @@ function StoreCombatPlayersUpgradeTable(player)
 end
 
 function CheckCombatPlayersUpgradeTable(player)
-    if GetServerGameMode() == kGameMode.Combat and player ~= nil and player.clientIndex ~= -1 then
-        if kUpgradeTables[player.clientIndex] ~= nil and kUpgradeTables[player.clientIndex].team ~= player:GetTeamNumber() and (player:GetTeamNumber() == kMarineTeamType or player:GetTeamNumber() == kAlienTeamType) then
+    if GetServerGameMode() == kGameMode.Combat and player and player.clientIndex ~= -1 then
+        if kUpgradeTables[player.clientIndex] and kUpgradeTables[player.clientIndex].team ~= player:GetTeamNumber() and (player:GetTeamNumber() == kMarineTeamType or player:GetTeamNumber() == kAlienTeamType) then
             kUpgradeTables[player.clientIndex] = { upgrades = { }, team = player:GetTeamNumber() }
             player:ResetLevel()
             player:SetResources(0)

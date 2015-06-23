@@ -11,7 +11,7 @@
  * It can also handle upgrading the entire entity to another tech Id independent of the upgrades it owns.
  */
  
-local kMaxUpgrades = math.max(kCombatMaxLevel + 2, 8)
+local kMaxUpgrades = math.max(kCombatMaxAllowedLevel, 8)
  
 UpgradableMixin = CreateMixin(UpgradableMixin)
 UpgradableMixin.type = "Upgradable"

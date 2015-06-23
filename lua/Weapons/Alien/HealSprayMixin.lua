@@ -140,7 +140,7 @@ local function HealEntity(self, player, targetEntity)
     end
     
     if targetEntity.OnHealSpray then
-        targetEntity:OnHealSpray(player)
+        targetEntity:OnHealSpray(player, amountHealed)
     end         
     
     if Server and amountHealed > 0 then

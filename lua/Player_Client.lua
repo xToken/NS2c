@@ -3525,7 +3525,7 @@ function PlayerUI_GetCurrentXP()
     if player then
         return player:GetPlayerExperience()
     end
-    return 1
+    return 0
     
 end
 
@@ -3533,9 +3533,13 @@ function PlayerUI_GetNextLevelXP()
 
     local player = Client.GetLocalPlayer()
     if player then
-        return CalculateLevelXP(player:GetPlayerLevel() + 1)
+        local nLevel = player:GetPlayerLevel() + 1
+        if nLevel > player:GetMaxPlayerLevel() then
+            return 0
+        end
+        return CalculateLevelXP(nLevel)
     end
-    return 1
+    return 0
     
 end
 
@@ -3545,7 +3549,7 @@ function PlayerUI_GetCurrentLevelBaseXP()
     if player then
         return CalculateLevelXP(player:GetPlayerLevel())
     end
-    return 1
+    return 0
     
 end
 
