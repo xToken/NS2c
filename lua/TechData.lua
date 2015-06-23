@@ -1147,7 +1147,8 @@ function BuildTechData()
 			[kStructureAttachClass] = "TechPoint",
 			[kTechDataSpawnHeightOffset] = kHiveYOffset,
 			[kTechDataPointValue] = kHivePointValue,
-			[kTechDataTooltipInfo] = "HIVE_TOOLTIP"
+			[kTechDataTooltipInfo] = "HIVE_TOOLTIP",
+			[kTechDataCombatCost] = 100
 		}, 
         
         {[kTechDataId] = kTechId.UpgradeToCragHive,
@@ -1283,7 +1284,8 @@ function BuildTechData()
 			[kTechDataModel] = Harvester.kModelName,
 			[kStructureAttachClass] = "ResourcePoint",
 			[kTechDataPointValue] = kHarvesterPointValue,
-			[kTechDataTooltipInfo] = "HARVESTER_TOOLTIP"
+			[kTechDataTooltipInfo] = "HARVESTER_TOOLTIP",
+			[kTechDataCombatCost] = 100
 		},
 		
         {[kTechDataId] = kTechId.Crag,
