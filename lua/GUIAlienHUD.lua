@@ -859,13 +859,17 @@ function GUIAlienHUD:Update(deltaTime)
     
         self.experienceText:SetIsVisible(true)
         self.levelText:SetIsVisible(true)
+        self.clientxp = self.clientxp or 0
         
         local level = PlayerUI_GetCurrentLevel()
         local xp = PlayerUI_GetCurrentXP()
         local nxp = PlayerUI_GetNextLevelXP()
         
-        self.experienceText:SetText(ToString(math.floor(xp)) .. " XP / " .. ToString(math.floor(nxp)) .. " XP")
-        self.levelText:SetText("Level " .. ToString(math.floor(level)))
+        if xp ~= self.clientxp then
+            self.experienceText:SetText(ToString(math.floor(xp)) .. " XP / " .. ToString(math.floor(nxp)) .. " XP")
+            self.levelText:SetText("Level " .. ToString(math.floor(level)))
+			self.clientxp = xp
+        end
         
     end
     
