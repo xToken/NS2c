@@ -1,10 +1,6 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\DevourMixin.lua    
-//    
-//    Created by:   Dragon
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+// Natural Selection 2 'Classic' Mod
+// lua\DevourMixin.lua
+// - Dragon
 
 DevouredMixin = CreateMixin( DevouredMixin )
 DevouredMixin.type = "Devourable"
@@ -16,7 +12,7 @@ DevouredMixin.expectedMixins =
 
 DevouredMixin.networkVars =
 {
-    devoured = "private boolean"
+    devoured = "boolean"
 }
 
 function DevouredMixin:__initmixin()   
