@@ -6,6 +6,12 @@
 	"ADVANCED_ARMORY_HINT":"Heavymachineguns, grenadelaunchers",
 	"ADRENALINE_TOOLTIP":"Doubles energy regeneration rate.",
 	"ALIEN_CONSTRUCT":"Construct",
+	"ALIEN_GAMEPLAY_TIPS_1":"Skulks",
+	"ALIEN_GAMEPLAY_TIPS_2":"Fades",
+	"ALIEN_GAMEPLAY_TIPS_3":"ONOS",
+	"ALIEN_GAMEPLAY_TITLE_1":"Early Game Phase",
+	"ALIEN_GAMEPLAY_TITLE_2":"Mid Game Phase",
+	"ALIEN_GAMEPLAY_TITLE_3":"Late Game Phase",
 	"TELEPORT_HIVE":"Press use to teleport to the furthest or any under attack hive",
 	"ALERT_DANGER":"Press use to alert your team and allow them to teleport here",
 	"AMMO_PACK_TOOLTIP":"1 clip of ammo for any weapon",
@@ -50,7 +56,7 @@
 	"HAND_GRENADES_TOOLTIP":"Throw to deal damage to nearby aliens",
 	"HIVE_IN_DANGER":"%s Hive in danger",
 	"INFANTRY_PORTAL_TOOLTIP":"Respawns marines (must be built near a Command Station)",
-	"LERK_TOOLTIP":"Versatile flying support. Strong ranged support class with spores, and can pick of lone marines with bite. Advanced Lerks can protect team mates with Umbra and buff all nearby aliens with Primal Scream.",
+	"LERK_TOOLTIP":"Versatile flying support. Strong ranged support class with spores, and can pick off lone marines with bite. Advanced Lerks can protect team mates with Umbra and buff all nearby aliens with Primal Scream.",
 	"LOADING_TIP_FF":"Friendly fire is disabled by default,  However, you can hurt yourself with your own grenades and mines.",
 	"LOADING_TIP_MUTE":"To mute a player, hold BIND_Scoreboard and left click on the speaker icon.",
 	"LOADING_TIP_INFESTATION":"Aliens are much more mobile then marines and can use their speed to their advantage, but gain most of their strength from holding resources and expanding with additional hives.",
@@ -70,6 +76,12 @@
 	"METABOLIZE_TOOLTIP":"Fade ability to regain health and energy",
 	"MOTION_TRACKING_TOOLTIP":"Allows Marines to detect nearby aliens",
 	"MOTION_TRACKING":"Motion Tracking",
+	"MARINE_GAMEPLAY_TIPS_1":"Rifles",
+	"MARINE_GAMEPLAY_TIPS_2":"Shotguns",
+	"MARINE_GAMEPLAY_TIPS_3":"Heavy Machine Guns",
+	"MARINE_GAMEPLAY_TITLE_1":"Early Game Phase",
+	"MARINE_GAMEPLAY_TITLE_2":"Mid Game Phase",
+	"MARINE_GAMEPLAY_TITLE_3":"Late Game Phase",
 	"MARINE_PICKUP_HEAVYARMOR":"Pickup Heavy Armor Suit",
 	"MARINE_PICKUP_JETPACK":"Pickup Jetpack",
 	"MARINE_USE_PHASE":"Press your use key to phase to a different location",
@@ -92,6 +104,12 @@
 	"SIEGE_CANNON_HINT":"Commander artillery",
 	"STATUS_HEAVY_ARMOR":"HeavyArmor",
 	"STATUS_HEAVY_MACHINE_GUN":"HMG",
+	"BINDINGS_SHOW_HELP_SCREEN":"Show Help and Tips Menu",
+	"BINDINGS_WEAPON_#6":"Weapon #6"
+	"BINDINGS_WEAPON_#7":"Weapon #7"
+	"BINDINGS_WEAPON_#8":"Weapon #8"
+	"BINDINGS_WEAPON_#9":"Weapon #9"
+	"BINDINGS_WEAPON_#0":"Weapon #0"
 	"TWO_HIVES_TOOLTIP":"Grants you access to your classes 2nd hive ability.",
 	"THREE_HIVES_TOOLTIP":"Grants you access to your classes 3rd hive ability, Requires Two Hives upgrade.",
 	"UNASSIGNED_HIVES":"Press %s to open the vote menu and vote for a upgrade type.",
