@@ -649,7 +649,7 @@ end
 function Marine:UpdateSprintingState()
 end
 
-function Marine:OnWeldOverride(doer, elapsedTime)
+function Marine:OnWeldOverride(doer, elapsedTime, player)
 
     if self:GetArmor() < self:GetMaxArmor() then
     
@@ -772,6 +772,14 @@ end
 
 function Marine:GetHasCatpackBoost()
     return self.catpackboost
+end
+
+function Marine:GetCanBeParasitedOverride()
+    return not self:GetHasSpawnProtection() and not self:GetIsDevoured()
+end
+
+function Marine:GetIsDevourAllowed()
+    return not self:GetHasSpawnProtection() and not self:GetIsDevoured()
 end
 
 Shared.LinkClassToMap("Marine", Marine.kMapName, networkVars, true)
