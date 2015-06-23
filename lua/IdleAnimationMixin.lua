@@ -1,6 +1,6 @@
-//    
+// Natural Selection 2 'Classic' Mod
 // lua\IdleAnimationMixin.lua    
-//
+// - Dragon
 
 IdleAnimationMixin = CreateMixin(IdleAnimationMixin)
 IdleAnimationMixin.type = "IdleAnimation"
@@ -22,8 +22,7 @@ end
 function IdleAnimationMixin:GetPlayIdleAnimations()
     local player = self:GetParent()
     if player then
-        local activeWeapon = player:GetActiveWeapon()
-        return player:GetIsIdle() and self == activeWeapon
+        return player:GetIsIdle()
     end
     return false
 end
