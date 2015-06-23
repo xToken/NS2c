@@ -25,6 +25,15 @@ local kFontScale = GUIScale(Vector(1, 1, 0))
 
 local kHoverAnimDistance = GUIScale(8)
 
+local kWelcomeTextMessages =    {
+            "This Server is running the Natural Selection 2 Classic Mod.",
+            "This mod changes much of the game to be more like NS1.",
+            "For more information, search for the NS2c mod on steam workshop or visit the official NS2 forums.",
+            "Any comments or feedback can be left on the steam workshop page.",
+            "This mod offers an optional movement system that resembles NS1/Half-Life 1.",
+            "To switch, look for the Advanced Movement toggle in the NS2 General Options menu."
+                                }
+
 local kRotationDuration = 5
 
 local kTeamColors = 
@@ -83,18 +92,18 @@ function GUIReadyRoomOrders:Initialize()
     self.activeVisions = { }
     self.rotation = Vector(0, 0, 0)
     self.hover = Vector(0, 0, 0)
+    self.welcomeTextMessage = 1
     
     self.welcomeText = GetGUIManager():CreateTextItem()
     self.welcomeText:SetFontName(kWelcomeFontName)
     self.welcomeText:SetTextAlignmentX(GUIItem.Align_Center)
     self.welcomeText:SetTextAlignmentY(GUIItem.Align_Center)
     self.welcomeText:SetAnchor(GUIItem.Middle, GUIItem.Center)
-    self.welcomeText:SetText("This Server is running the Natural Selection 2 Classic Mod.")
+    self.welcomeText:SetText(kWelcomeTextMessages[self.welcomeTextMessage])
     local localPlayer = Client.GetLocalPlayer()
     localPlayer:TriggerEffects("tooltip")
     self.welcomeText:SetColor(kFadeOutColor)
     self.welcomeTextStartTime = Shared.GetTime()
-    self.welcometextCount = 0
     
 end
 
@@ -127,25 +136,11 @@ local function UpdateWelcomeText(self, deltaTime)
         self.welcomeText:SetColor(color)
     end
     
-    if timeSinceStart > kWelcomeTextReset and self.welcometextCount == 2 then
-        self.welcomeText:SetText("Any comments or feedback can be left in the comments on the steam workshop page.")
+    if timeSinceStart > kWelcomeTextReset and self.welcomeTextMessage < #kWelcomeTextMessages then
+        self.welcomeTextMessage = self.welcomeTextMessage + 1
+        self.welcomeText:SetText(kWelcomeTextMessages[self.welcomeTextMessage])
         self.welcomeText:SetColor(kFadeOutColor)
         self.welcomeTextStartTime = Shared.GetTime()
-        self.welcometextCount = 3
-    end
-    
-    if timeSinceStart > kWelcomeTextReset and self.welcometextCount == 1 then
-        self.welcomeText:SetText("For more information, search for the NS2c mod on steam workshop or visit the official NS2 forums.")
-        self.welcomeText:SetColor(kFadeOutColor)
-        self.welcomeTextStartTime = Shared.GetTime()
-        self.welcometextCount = 2
-    end
-    
-    if timeSinceStart > kWelcomeTextReset and self.welcometextCount == 0 then
-        self.welcomeText:SetText("This mod changes much of the game to be more like NS1.")
-        self.welcomeText:SetColor(kFadeOutColor)
-        self.welcomeTextStartTime = Shared.GetTime()
-        self.welcometextCount = 1
     end
     
 end
