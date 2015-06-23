@@ -23,6 +23,10 @@ local function RedemAlienToHive(self)
     return false
 end
 
+function RedemptionMixin:IsRedemptionAllowed()
+    return self.redemptionallowed
+end
+
 function RedemptionMixin:OnTakeDamage(damage, attacker, doer, point, direction, damageType, preventAlert)
     if Server then
         local hasupg, level = GetHasRedemptionUpgrade(self)
