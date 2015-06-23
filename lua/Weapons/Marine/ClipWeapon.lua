@@ -153,6 +153,10 @@ function ClipWeapon:GetRange()
     return 100
 end
 
+function ClipWeapon:GetAmmoPackMultiplyer()
+    return 1
+end
+
 function ClipWeapon:GetAmmo()
     return self.ammo
 end

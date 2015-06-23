@@ -1,6 +1,6 @@
-//
+// Natural Selection 2 'Classic' Mod
 // lua\SporeCloud.lua
-//
+// - Dragon
 
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/OwnerMixin.lua")

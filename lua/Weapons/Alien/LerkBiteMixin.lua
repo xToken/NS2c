@@ -1,6 +1,6 @@
-// NS2 - Classic
+// Natural Selection 2 'Classic' Mod
 // lua\Weapons\Alien\LerkBiteMixin.lua
-//
+// - Dragon
 
 LerkBiteMixin = CreateMixin( LerkBiteMixin )
 LerkBiteMixin.type = "LerkBite"

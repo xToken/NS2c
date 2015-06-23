@@ -1,12 +1,6 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Marine\GrenadeThrower.lua
-//
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-//    Base class for hand grenades. Override GetViewModelName and GetGrenadeMapName in implementation.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+// Natural Selection 2 'Classic' Mod
+// lua\Weapons\Marine\HandGrenade.lua
+// - Dragon
 
 Script.Load("lua/Weapons/Marine/HandGrenade.lua")
 

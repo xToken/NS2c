@@ -1,5 +1,6 @@
-//
+// Natural Selection 2 'Classic' Mod
 // lua\Weapons\Alien\Smash.lua
+// - Dragon
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/StompMixin.lua")

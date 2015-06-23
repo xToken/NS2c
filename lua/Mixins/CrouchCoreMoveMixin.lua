@@ -1,4 +1,6 @@
-//Crouching movement code.
+// Natural Selection 2 'Classic' Mod
+// lua\Mixins\CrouchCoreMoveMixin.lua - Crouching movement code.
+// - Dragon
 
 function CoreMoveMixin:UpdateCrouchState(input, deltaTime)
 

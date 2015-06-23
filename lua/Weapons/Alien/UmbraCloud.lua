@@ -1,5 +1,6 @@
-//
+// Natural Selection 2 'Classic' Mod
 // lua\UmbraCloud.lua
+// - Dragon
 
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/OwnerMixin.lua")

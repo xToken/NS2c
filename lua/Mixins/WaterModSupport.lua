@@ -1,6 +1,6 @@
-//    
-// lua\WaterModSupport.lua    
-// To support watermod
+// Natural Selection 2 'Classic' Mod
+// lua\WaterModSupport.lua - To support watermod
+// - Dragon
 
 CorrodeMixin = CreateMixin( CorrodeMixin )
 CorrodeMixin.type = "Corrode"

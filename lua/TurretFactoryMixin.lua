@@ -1,5 +1,6 @@
-//    
-// lua\TurretFactoryMixin.lua    
+// Natural Selection 2 'Classic' Mod
+// lua\TurretFactoryMixin.lua
+// - Dragon
 
 Script.Load("lua/FunctionContracts.lua")
 

@@ -1,4 +1,6 @@
-//Goldsource Movement Code
+// Natural Selection 2 'Classic' Mod
+// lua\Mixins\GoldSourceCoreMoveMixin.lua - Goldsource Movement Code
+// - Originally coded by Maesse - Updated by Dragon
 
 local kStopSpeedScalar = 2.5
 

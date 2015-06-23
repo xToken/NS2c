@@ -1,6 +1,6 @@
-//
+// Natural Selection 2 'Classic' Mod
 // lua\Weapons\Alien\AcidRocket.lua
-// Created by:   Dragon
+// - Dragon
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/Rocket.lua")

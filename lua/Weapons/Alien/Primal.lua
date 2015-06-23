@@ -1,6 +1,6 @@
-// NS2 - Classic
-// lua\Weapons\Alien\Umbra.lua
-//
+// Natural Selection 2 'Classic' Mod
+// lua\Weapons\Alien\Primal.lua
+// - Dragon
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/LerkBiteMixin.lua")

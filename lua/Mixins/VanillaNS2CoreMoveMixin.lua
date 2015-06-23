@@ -1,4 +1,7 @@
-//Core Vanilla NS2 movement code
+// Natural Selection 2 'Classic' Mod
+// lua\Mixins\VanilaNS2CoreMoveMixin.lua - Core Vanilla NS2 movement code
+// Originally Created by 'Andreas Urwalek' for Natural Selection 2 - Unknown Worlds Entertainment, Inc
+// - Dragon
 
 local kFallAccel = 0.34
 local kMaxAirVeer = 1.3

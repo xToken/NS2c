@@ -1,6 +1,6 @@
-//
+// Natural Selection 2 'Classic' Mod
 // lua\ElectrifyMixin.lua    
-//
+// - Dragon
 
 ElectrifyMixin = CreateMixin( ElectrifyMixin )
 ElectrifyMixin.type = "Electrify"

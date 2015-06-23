@@ -1,6 +1,6 @@
-
-//NS2c
-//Changed to remove some abilities, also to cleanup needless code.
+// Natural Selection 2 'Classic' Mod
+// lua\Shift.lua
+// - Dragon
 
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")

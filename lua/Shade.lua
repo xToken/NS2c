@@ -1,5 +1,6 @@
-//NS2c
-//Changes to have passive SOF, removal of active abilities.
+// Natural Selection 2 'Classic' Mod
+// lua\Shade.lua
+// - Dragon
 
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")

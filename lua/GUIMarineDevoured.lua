@@ -1,3 +1,6 @@
+// Natural Selection 2 'Classic' Mod
+// lua\GUIMarineDevoured.lua
+// - Dragon
 
 Script.Load("lua/GUIScript.lua")
 local kConsumptionTexture = "ui/digesting.dds"

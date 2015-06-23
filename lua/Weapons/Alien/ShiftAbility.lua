@@ -1,5 +1,6 @@
-//
+// Natural Selection 2 'Classic' Mod
 // lua\Weapons\Alien\ShiftAbility.lua
+// - Dragon
 
 Script.Load("lua/Weapons/Alien/StructureAbility.lua")
 

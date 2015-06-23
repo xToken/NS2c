@@ -1,6 +1,6 @@
-// NS2 - Classic
+// Natural Selection 2 'Classic' Mod
 // lua\TurretFactory.lua
-//
+// - Dragon
 
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")

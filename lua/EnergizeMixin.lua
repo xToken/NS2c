@@ -1,6 +1,6 @@
-//    
+// Natural Selection 2 'Classic' Mod
 // lua\EnergizeMixin.lua
-//
+// - Dragon
 
 EnergizeMixin = CreateMixin(EnergizeMixin)
 EnergizeMixin.type = "Energize"

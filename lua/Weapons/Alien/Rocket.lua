@@ -1,5 +1,6 @@
-//
+// Natural Selection 2 'Classic' Mod
 // lua\Weapons\Alien\Rocket.lua
+// - Dragon
 
 Script.Load("lua/Weapons/Projectile.lua")
 Script.Load("lua/TeamMixin.lua")
@@ -8,8 +9,8 @@ Script.Load("lua/Weapons/PredictedProjectile.lua")
 
 class 'Rocket' (PredictedProjectile)
 
-Rocket.kMapName            = "rocket"
-Rocket.kModelName          = PrecacheAsset("models/alien/gorge/bilebomb.model")
+Rocket.kMapName = "rocket"
+Rocket.kModelName = PrecacheAsset("models/alien/gorge/bilebomb.model")
 
 // The max amount of time a Rocket can last for
 Rocket.kClearOnSurfaceImpact = true

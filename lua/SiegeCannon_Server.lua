@@ -1,6 +1,6 @@
-//NS2c
-//Renamed to SiegeCannon
-//Adjusted arcs to be constructed and require nearby TF
+// Natural Selection 2 'Classic' Mod
+// lua\SiegeCannon_Server.lua
+// - Dragon
 
 local kSiegeCannonDamageOffset = Vector(0, 0.3, 0)
 local kMoveParam = "move_speed"

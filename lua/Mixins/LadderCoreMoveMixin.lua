@@ -1,4 +1,6 @@
+// Natural Selection 2 'Classic' Mod
 //Ladder movement code.
+// - Dragon
 
 local kLadderAcceleration = 25
 local kLadderFriction = 9

@@ -1,6 +1,6 @@
-//
+// Natural Selection 2 'Classic' Mod
 // lua\GUIMarineSpectatorHUD.lua
-//
+// - Dragon
 
 class 'GUIMarineSpectatorHUD' (GUIScript)
 

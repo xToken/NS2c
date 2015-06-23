@@ -1,6 +1,6 @@
-//NS2c
-//Renamed to SiegeCannon
-//Adjusted sieges to be constructed and require nearby TF
+// Natural Selection 2 'Classic' Mod
+// lua\SiegeCannon.lua
+// - Dragon
 
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/Mixins/ClientModelMixin.lua")
@@ -53,7 +53,7 @@ end
 
 local networkVars =
 {
-    // ARCs can only fire when deployed and can only move when not deployed
+    // Can only fire when deployed and can only move when not deployed
     mode = "enum SiegeCannon.kMode",
     
     barrelYawDegrees = "compensated interpolated float",

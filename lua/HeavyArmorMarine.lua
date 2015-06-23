@@ -1,5 +1,6 @@
-//
+// Natural Selection 2 'Classic' Mod
 // lua\HeavyArmorMarine.lua
+// - Dragon
 
 Script.Load("lua/Marine.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")

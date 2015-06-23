@@ -1,7 +1,6 @@
-//    
-// lua\RedeployMixin.lua    
-//    
-//    Created by:   Dragon
+//
+// lua\RedeployMixin.lua
+// - Dragon
 
 RedeployMixin = CreateMixin(RedeployMixin)
 RedeployMixin.type = "Redeploy"

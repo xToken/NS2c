@@ -1,6 +1,6 @@
-//    
+// Natural Selection 2 'Classic' Mod
 // lua\StructureFallMixin.lua    
-//
+// - Dragon
 
 StructureFallMixin = CreateMixin(StructureFallMixin)
 StructureFallMixin.type = "StructureFall"

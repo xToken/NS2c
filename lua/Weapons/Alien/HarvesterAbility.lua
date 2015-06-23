@@ -1,5 +1,6 @@
-// - NS2 Classic Addition - Dragon
+// Natural Selection 2 'Classic' Mod
 // lua\Weapons\Alien\HarvesterAbility.lua
+// - Dragon
 
 Script.Load("lua/Weapons/Alien/StructureAbility.lua")
 

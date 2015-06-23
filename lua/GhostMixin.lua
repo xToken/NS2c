@@ -1,7 +1,6 @@
-//    
-// lua\GhostMixin.lua    
-//    
-//    Created by:   Dragon
+// Natural Selection 2 'Classic' Mod
+// lua\GhostMixin.lua
+// - Dragon
 
 GhostMixin = CreateMixin(GhostMixin)
 GhostMixin.type = "Ghost"

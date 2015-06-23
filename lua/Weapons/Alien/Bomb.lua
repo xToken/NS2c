@@ -1,16 +1,6 @@
-//=============================================================================
-//
+// Natural Selection 2 'Classic' Mod
 // lua\Weapons\Alien\Bomb.lua
-//
-// Created by Charlie Cleveland (charlie@unknownworlds.com)
-// Copyright (c) 2011, Unknown Worlds Entertainment, Inc.
-//
-// Bile bomb projectile
-//
-//=============================================================================
-
-//NS2c
-//Bilebomb is now a predicted projectile.
+// - Dragon
 
 Script.Load("lua/Weapons/Projectile.lua")
 Script.Load("lua/TeamMixin.lua")
@@ -21,8 +11,8 @@ PrecacheAsset("cinematics/vfx_materials/decals/bilebomb_decal.surface_shader")
 
 class 'Bomb' (PredictedProjectile)
 
-Bomb.kMapName            = "bomb"
-Bomb.kModelName          = PrecacheAsset("models/alien/gorge/bilebomb.model")
+Bomb.kMapName = "bomb"
+Bomb.kModelName = PrecacheAsset("models/alien/gorge/bilebomb.model")
 
 // The max amount of time a Bomb can last for
 Bomb.kClearOnSurfaceImpact = true

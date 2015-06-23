@@ -1,11 +1,7 @@
-//    
-// lua\EmpowerMixin.lua    
-//    
-//    Created by:   Dragon
+// Natural Selection 2 'Classic' Mod
+// lua\EmpowerMixin.lua
+// - Dragon
 
-/**
- * EmpowerMixin speeds up attack speed on nearby players.
- */
 EmpowerMixin = CreateMixin(EmpowerMixin)
 EmpowerMixin.type = "Empower"
 

@@ -1,8 +1,6 @@
-//    
-// lua\ModdedMixinUtility.lua    
-//    
-//    Created by:   Dragon 
-//
+// Natural Selection 2 'Classic' Mod 
+// lua\ModdedMixinUtility.lua
+// - Dragon
 
 local origAddMixinNetworkVars = AddMixinNetworkVars
 

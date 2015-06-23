@@ -1,4 +1,6 @@
-//Created from GUIAuraDisplay
+// Natural Selection 2 'Classic' Mod
+// lua\GUIMotionTrackingDisplay.lua
+// - Dragon
 
 class 'GUIMotionTrackingDisplay' (GUIScript)
 

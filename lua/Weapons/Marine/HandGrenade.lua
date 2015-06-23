@@ -1,5 +1,6 @@
-//
+// Natural Selection 2 'Classic' Mod
 // lua\Weapons\Marine\HandGrenade.lua
+// - Dragon
 
 Script.Load("lua/Weapons/Projectile.lua")
 Script.Load("lua/Mixins/ClientModelMixin.lua")

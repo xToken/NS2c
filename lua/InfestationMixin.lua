@@ -1,15 +1,6 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//    
-// lua\InfestationMixin.lua    
-//    
-//    Created by:   Brian Cronin (brianc@unknownworlds.com)    
-//    
-//    Anything that spawns Infestation should use this.
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
-
-//NS2c
-//A Mostly client side infestation implementation
+// Natural Selection 2 'Classic' Mod
+// lua\InfestationMixin.lua - A Mostly client side infestation implementation
+// - Dragon
 
 Shared.PrecacheSurfaceShader("materials/infestation/infestation_shell.surface_shader")
 Shared.PrecacheSurfaceShader("materials/infestation/Infestation.surface_shader")
