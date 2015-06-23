@@ -1,7 +1,6 @@
-//    
-// lua\RedemptionMixin.lua    
-//    
-//    Created by:   Dragon
+//
+// lua\RedemptionMixin.lua
+// - Dragon
 
 RedemptionMixin = CreateMixin(RedemptionMixin)
 RedemptionMixin.type = "Redemption"
@@ -15,7 +14,7 @@ local function ClearRedemptionCooldown(self)
 end
 
 local function RedemAlienToHive(self)
-    if self:GetHealthScalar() <= kRedemptionEHPThreshold then
+    if self:GetIsAlive() and self:GetHealthScalar() <= kRedemptionEHPThreshold then
         self:OnRedemed()
         self:TeleportToHive()
         self.redemptionallowed = false
