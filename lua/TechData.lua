@@ -362,7 +362,7 @@ function BuildTechData()
 			[kTechDataDisplayName] = "AMMO_PACK",
 			[kTechDataCostKey] = kAmmoPackCost,
 			[kTechDataModel] = AmmoPack.kModelName,
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.AMMO_PACK_TOOLTIP,
+			[kTechDataTooltipInfo] = "AMMO_PACK_TOOLTIP",
 			[kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight
 		},
 		
@@ -409,7 +409,7 @@ function BuildTechData()
 			[kTechDataDisplayName] = "DISTRESS_BEACON",
 			[kTechDataHotkey] = Move.B,
 			[kTechDataCostKey] = kObservatoryDistressBeaconCost,
-			[kTechDataTooltipInfo] =  kNS2cLocalizedStrings.DISTRESS_BEACON_TOOLTIP
+			[kTechDataTooltipInfo] =  "DISTRESS_BEACON_TOOLTIP"
 		},
 		
         {[kTechDataId] = kTechId.Recycle,
@@ -458,7 +458,7 @@ function BuildTechData()
 			[kTechDataMaxEnergy] = kExtractorMaxEnergy,
 			[kTechDataPointValue] = kExtractorPointValue,
 			[kTechDataHotkey] = Move.E,
-			[kTechDataTooltipInfo] =  kNS2cLocalizedStrings.EXTRACTOR_TOOLTIP
+			[kTechDataTooltipInfo] =  "EXTRACTOR_TOOLTIP"
 		},
 		
         {[kTechDataId] = kTechId.InfantryPortal,
@@ -477,7 +477,7 @@ function BuildTechData()
 			[kStructureAttachRange] = kInfantryPortalAttachRange,
 			[kTechDataEngagementDistance] = kInfantryPortalEngagementDistance,
 			[kTechDataHotkey] = Move.P,
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.INFANTRY_PORTAL_TOOLTIP
+			[kTechDataTooltipInfo] = "INFANTRY_PORTAL_TOOLTIP"
 		},
 		
         {[kTechDataId] = kTechId.Armory,
@@ -530,7 +530,7 @@ function BuildTechData()
 			[kTechDataTooltipInfo] = "SENTRY_TOOLTIP",
 			[kStructureAttachId] = { kTechId.TurretFactory, kTechId.AdvancedTurretFactory },
 			[kStructureAttachRange] = kTurretFactoryAttachRange,
-			[kTechDataBuildMethodFailedMessage] = kNS2cLocalizedStrings.COMMANDERERROR_TOO_MANY_SENTRIES,
+			[kTechDataBuildMethodFailedMessage] = "COMMANDERERROR_TOO_MANY_SENTRIES",
 			[kStructureBuildNearClass] = "TurretFactory",
 			[kTechDataBuildRequiresMethod] = GetCheckSentryLimit,
 			[kTechDataGhostGuidesMethod] = GetTurretFactoriesInRange
@@ -570,9 +570,9 @@ function BuildTechData()
 		},
 		
         {[kTechDataId] = kTechId.TurretFactory,
-			[kTechDataHint] = kNS2cLocalizedStrings.TURRET_FACTORY_HINT,
+			[kTechDataHint] = "TURRET_FACTORY_HINT",
 			[kTechDataGhostModelClass] = "MarineGhostModel",
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.TURRET_FACTORY,
+			[kTechDataDisplayName] = "TURRET_FACTORY",
 			[kTechDataMapName] = TurretFactory.kMapName,
 			[kTechDataCostKey] = kTurretFactoryCost,
 			[kTechDataModel] = TurretFactory.kModelName,
@@ -581,14 +581,14 @@ function BuildTechData()
 			[kTechDataMaxArmor] = kTurretFactoryArmor,
 			[kTechDataPointValue] = kTurretFactoryPointValue,
 			[kTechDataHotkey] = Move.R,
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.TURRET_FACTORY_TOOLTIP,
+			[kTechDataTooltipInfo] = "TURRET_FACTORY_TOOLTIP",
 			[kTechDataBuildRequiresMethod] = GetRoomHasNoTurretFactory,
-			[kTechDataBuildMethodFailedMessage] = kNS2cLocalizedStrings.COMMANDERERROR_ONLY_ONE_FACTORY_PER_ROOM
+			[kTechDataBuildMethodFailedMessage] = "COMMANDERERROR_ONLY_ONE_FACTORY_PER_ROOM"
 		},
 		
         {[kTechDataId] = kTechId.AdvancedTurretFactory,
-			[kTechDataHint] = kNS2cLocalizedStrings.ADVANCED_TURRET_FACTORY_HINT,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.ADVANCED_TURRET_FACTORY,
+			[kTechDataHint] = "ADVANCED_TURRET_FACTORY_HINT",
+			[kTechDataDisplayName] = "ADVANCED_TURRET_FACTORY",
 			[kTechDataMapName] = AdvancedTurretFactory.kMapName,
 			[kTechDataModel] = TurretFactory.kModelName,
 			[kTechDataBuildTime] = kTurretFactoryBuildTime,
@@ -596,15 +596,15 @@ function BuildTechData()
 			[kTechDataMaxArmor] = kAdvancedTurretFactoryArmor,
 			[kTechDataPointValue] = kAdvancedTurretFactoryPointValue,
 			[kTechDataHotkey] = Move.R,
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.ADVANCED_TURRET_FACTORY_TOOLTIP
+			[kTechDataTooltipInfo] = "ADVANCED_TURRET_FACTORY_TOOLTIP"
 		},
 		
         {[kTechDataId] = kTechId.SiegeCannon,
-			[kTechDataHint] = kNS2cLocalizedStrings.SIEGE_CANNON_HINT,
+			[kTechDataHint] = "SIEGE_CANNON_HINT",
 			[kTechDataGhostModelClass] = "MarineGhostModel",
 			[kTechDataBuildTime] = kSiegeCannonBuildTime,
 			[kTechDataRequiresTF] = true,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.SIEGE_CANNON,
+			[kTechDataDisplayName] = "SIEGE_CANNON",
 			[kTechDataMapName] = SiegeCannon.kMapName,
 			[kTechDataCostKey] = kSiegeCannonCost,
 			[kTechDataDamageType] = kSiegeCannonDamageType,
@@ -619,7 +619,7 @@ function BuildTechData()
 			[kTechDataHotkey] = Move.T,
 			[kStructureAttachId] = { kTechId.AdvancedTurretFactory },
 			[kStructureAttachRange] = kTurretFactoryAttachRange,
-			[kTechDataBuildMethodFailedMessage] = kNS2cLocalizedStrings.COMMANDERERROR_TOO_MANY_SIEGE_CANNONS,
+			[kTechDataBuildMethodFailedMessage] = "COMMANDERERROR_TOO_MANY_SIEGE_CANNONS",
 			[kTechDataBuildRequiresMethod] = GetCheckSiegeCannonLimit
 		},
 		
@@ -749,8 +749,8 @@ function BuildTechData()
         {[kTechDataId] = kTechId.HeavyMachineGun,
 			[kTechDataAllowStacking] = true,
 			[kTechDataMapName] = HeavyMachineGun.kMapName,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.HEAVY_MACHINE_GUN,
-			[kTechDataTooltipInfo] =  kNS2cLocalizedStrings.HEAVY_MACHINE_GUN_TOOLTIP,
+			[kTechDataDisplayName] = "HEAVY_MACHINE_GUN",
+			[kTechDataTooltipInfo] =  "HEAVY_MACHINE_GUN_TOOLTIP",
 			[kTechDataModel] = HeavyMachineGun.kModelName,
 			[kTechDataCostKey] = kHeavyMachineGunCost,
 			[kTechDataDamageType] = kHeavyMachineGunDamageType,
@@ -785,8 +785,8 @@ function BuildTechData()
 		
         {[kTechDataId] = kTechId.HandGrenades,
 			[kTechDataMapName] = HandGrenades.kMapName,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.HAND_GRENADES,
-			[kTechDataTooltipInfo] =  kNS2cLocalizedStrings.HAND_GRENADES_TOOLTIP,
+			[kTechDataDisplayName] = "HAND_GRENADES",
+			[kTechDataTooltipInfo] =  "HAND_GRENADES_TOOLTIP",
 			[kTechDataModel] = HandGrenades.kModelName,
 			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
 		},
@@ -818,8 +818,8 @@ function BuildTechData()
         {[kTechDataId] = kTechId.HeavyArmor,
 			[kTechDataAllowStacking] = true,
 			[kTechDataMapName] = HeavyArmor.kMapName,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.HEAVY_ARMOR,
-			[kTechDataTooltipInfo] =  kNS2cLocalizedStrings.HEAVY_ARMOR_TOOLTIP,
+			[kTechDataDisplayName] = "HEAVY_ARMOR",
+			[kTechDataTooltipInfo] =  "HEAVY_ARMOR_TOOLTIP",
 			[kTechDataModel] = HeavyArmor.kModelName,
 			[kTechDataCostKey] = kHeavyArmorDropCost,
 			[kStructureAttachId] = kTechId.PrototypeLab,
@@ -837,7 +837,7 @@ function BuildTechData()
         {[kTechDataId] = kTechId.HeavyArmorTech,
 			[kTechDataCostKey] = kHeavyArmorTechResearchCost,
 			[kTechDataResearchTimeKey] = kHeavyArmorTechResearchTime,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.HEAVY_ARMOR_TECH
+			[kTechDataDisplayName] = "HEAVY_ARMOR_TECH"
 		}, 
 		
         {[kTechDataId] = kTechId.Armor1,
@@ -912,8 +912,8 @@ function BuildTechData()
         {[kTechDataId] = kTechId.UpgradeTurretFactory,
 			[kTechDataCostKey] = kUpgradeTurretFactoryCost,
 			[kTechDataResearchTimeKey] = kUpgradeTurretFactoryTime,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.UPGRADE_TURRET_FACTORY,
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.UPGRADE_TURRET_FACTORY_TOOLTIP
+			[kTechDataDisplayName] = "UPGRADE_TURRET_FACTORY",
+			[kTechDataTooltipInfo] = "UPGRADE_TURRET_FACTORY_TOOLTIP"
 		},
 		
         {[kTechDataId] = kTechId.CatPackTech,
@@ -926,23 +926,23 @@ function BuildTechData()
         {[kTechDataId] = kTechId.MotionTracking,
 			[kTechDataCostKey] = kMotionTrackingResearchCost,
 			[kTechDataResearchTimeKey] = kMotionTrackingResearchTime,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.MOTION_TRACKING,
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.MOTION_TRACKING_TOOLTIP,
+			[kTechDataDisplayName] = "MOTION_TRACKING",
+			[kTechDataTooltipInfo] = "MOTION_TRACKING_TOOLTIP",
 			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
 		},
 		
         {[kTechDataId] = kTechId.HandGrenadesTech,
 			[kTechDataCostKey] = kHandGrenadesTechResearchCost,
 			[kTechDataResearchTimeKey] = kHandGrenadesTechResearchTime,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.HAND_GRENADES_TECH,
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.HAND_GRENADES_TECH_TOOLTIP
+			[kTechDataDisplayName] = "HAND_GRENADES_TECH",
+			[kTechDataTooltipInfo] = "HAND_GRENADES_TECH_TOOLTIP"
 		},
 		
         {[kTechDataId] = kTechId.Electrify,
 			[kTechDataCostKey] = kElectricalUpgradeResearchCost,
 			[kTechDataResearchTimeKey] = kElectricalUpgradeResearchTime,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.ELECTRIFY,
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.ELECTRIFY_TOOLTIP
+			[kTechDataDisplayName] = "ELECTRIFY",
+			[kTechDataTooltipInfo] = "ELECTRIFY_TOOLTIP"
 		},
             
         // ALIENS
@@ -1033,7 +1033,7 @@ function BuildTechData()
 		
         {[kTechDataId] = kTechId.Metabolize,
 			[kTechDataMapName] = Metabolize.kMapName,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.METABOLIZE
+			[kTechDataDisplayName] = "METABOLIZE"
 		},
 		
         {[kTechDataId] = kTechId.Stomp,
@@ -1048,8 +1048,8 @@ function BuildTechData()
 		},
 		
         {[kTechDataId] = kTechId.Web,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.WEB,
-			[kTechDataHint] = kNS2cLocalizedStrings.WEB_HINT,
+			[kTechDataDisplayName] = "WEB",
+			[kTechDataHint] = "WEB_HINT",
 			[kTechDataModel] = Web.kModelName,
 			[kTechDataSpecifyOrientation] = true,
 			[kTechDataMaxHealth] = kWebHealth,
@@ -1063,20 +1063,20 @@ function BuildTechData()
 		
         {[kTechDataId] = kTechId.PrimalScream,
 			[kTechDataMapName] = Primal.kMapName,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.PRIMAL_SCREAM,
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.PRIMAL_SCREAM_TOOLTIP
+			[kTechDataDisplayName] = "PRIMAL_SCREAM",
+			[kTechDataTooltipInfo] = "PRIMAL_SCREAM_TOOLTIP"
 		},
 		
         {[kTechDataId] = kTechId.AcidRocket,
 			[kTechDataMapName] = AcidRocket.kMapName,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.ACID_ROCKET,
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.ACID_ROCKET_TOOLTIP
+			[kTechDataDisplayName] = "ACID_ROCKET",
+			[kTechDataTooltipInfo] = "ACID_ROCKET_TOOLTIP"
 		},
 		
         {[kTechDataId] = kTechId.Devour,
 			[kTechDataMapName] = Devour.kMapName,
 			[kTechDataDamageType] = kDevourDamageType,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.DEVOUR
+			[kTechDataDisplayName] = "DEVOUR"
 		},
 		
         {[kTechDataId] = kTechId.BabblerAbility,
@@ -1120,8 +1120,8 @@ function BuildTechData()
 		},
 		
         {[kTechDataId] = kTechId.WebStalk,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.WEB,
-			[kTechDataHint] = kNS2cLocalizedStrings.WEB_HINT,
+			[kTechDataDisplayName] = "WEB",
+			[kTechDataHint] = "WEB_HINT",
 			[kTechDataModel] = Bomb.kModelName,
 			[kTechDataSpecifyOrientation] = true,
 			[kTechDataGhostModelClass] = "WebGhostModel",
@@ -1225,10 +1225,10 @@ function BuildTechData()
 		},
 		
         {[kTechDataId] = kTechId.WhipHive,
-			[kTechDataHint] = kNS2cLocalizedStrings.WHIP_HIVE_HINT,
+			[kTechDataHint] = "WHIP_HIVE_HINT",
 			[kTechDataMapName] = WhipHive.kMapName,
 			[kTechDataBuildTime] = kHiveBuildTime,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.WHIP_HIVE,
+			[kTechDataDisplayName] = "WHIP_HIVE",
 			[kTechDataModel] = Hive.kModelName,
 			[kTechDataHotkey] = Move.V,
 			[kTechDataMaxHealth] = kHiveHealth,
@@ -1242,14 +1242,14 @@ function BuildTechData()
         {[kTechDataId] = kTechId.TwoHives,
 			[kTechDataKeyStructure] = kTechId.TwoHives,
 			[kTechDataDisplayName] = "TWO_HIVES",
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.TWO_HIVES_TOOLTIP,
+			[kTechDataTooltipInfo] = "TWO_HIVES_TOOLTIP",
 			[kTechDataCombatCost] = kCombatAlienTwoHivesCost
 		},
 		
 		{[kTechDataId] = kTechId.ThreeHives,
 			[kTechDataKeyStructure] = kTechId.ThreeHives,
 			[kTechDataDisplayName] = "THREE_HIVES",
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.THREE_HIVES_TOOLTIP,
+			[kTechDataTooltipInfo] = "THREE_HIVES_TOOLTIP",
 			[kTechDataCombatCost] = kCombatAlienThreeHivesCost
 		},                
         
@@ -1397,7 +1397,7 @@ function BuildTechData()
 			[kTechDataGestateName] = Gorge.kMapName,
 			[kTechDataGestateTime] = kGorgeGestateTime,
 			[kTechDataDisplayName] = "GORGE",
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.GORGE_TOOLTIP,
+			[kTechDataTooltipInfo] = "GORGE_TOOLTIP",
 			[kTechDataModel] = Gorge.kModelName,
 			[kTechDataCostKey] = kGorgeCost,
 			[kTechDataMaxHealth] = kGorgeHealth,
@@ -1413,7 +1413,7 @@ function BuildTechData()
 			[kTechDataGestateName] = Lerk.kMapName,
 			[kTechDataGestateTime] = kLerkGestateTime,
 			[kTechDataDisplayName] = "LERK",
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.LERK_TOOLTIP,
+			[kTechDataTooltipInfo] = "LERK_TOOLTIP",
 			[kTechDataModel] = Lerk.kModelName,
 			[kTechDataCostKey] = kLerkCost,
 			[kTechDataMaxHealth] = kLerkHealth,
@@ -1429,7 +1429,7 @@ function BuildTechData()
 			[kTechDataGestateName] = Fade.kMapName,
 			[kTechDataGestateTime] = kFadeGestateTime,
 			[kTechDataDisplayName] = "FADE",
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.FADE_TOOLTIP,
+			[kTechDataTooltipInfo] = "FADE_TOOLTIP",
 			[kTechDataModel] = Fade.kModelName,
 			[kTechDataCostKey] = kFadeCost,
 			[kTechDataMaxHealth] = kFadeHealth,
@@ -1486,8 +1486,8 @@ function BuildTechData()
         {[kTechDataId] = kTechId.Redemption,
 			[kTechDataCategory] = kTechId.CragHive,
 			[kTechDataKeyStructure] = kTechId.Crag,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.REDEMPTION,
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.REDEMPTION_TOOLTIP,
+			[kTechDataDisplayName] = "REDEMPTION",
+			[kTechDataTooltipInfo] = "REDEMPTION_TOOLTIP",
 			[kTechDataCostKey] = kRedemptionCost,
 			[kTechDataCombatCost] = kCombatAlienUpgradeCost
 		},
@@ -1505,7 +1505,7 @@ function BuildTechData()
 			[kTechDataCategory] = kTechId.ShiftHive,
 			[kTechDataKeyStructure] = kTechId.Shift,
 			[kTechDataDisplayName] = "ADRENALINE",
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.ADRENALINE_TOOLTIP,
+			[kTechDataTooltipInfo] = "ADRENALINE_TOOLTIP",
 			[kTechDataCostKey] = kAdrenalineCost,
 			[kTechDataCombatCost] = kCombatAlienUpgradeCost
 		},
@@ -1513,8 +1513,8 @@ function BuildTechData()
         {[kTechDataId] = kTechId.Redeployment,
 			[kTechDataCategory] = kTechId.ShiftHive,
 			[kTechDataKeyStructure] = kTechId.Shift,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.REDEPLOYMENT,
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.REDEPLOYMENT_TOOLTIP,
+			[kTechDataDisplayName] = "REDEPLOYMENT",
+			[kTechDataTooltipInfo] = "REDEPLOYMENT_TOOLTIP",
 			[kTechDataCostKey] = kRedeploymentCost,
 			[kTechDataCombatCost] = kCombatAlienUpgradeCost
 		},
@@ -1541,8 +1541,8 @@ function BuildTechData()
         {[kTechDataId] = kTechId.Aura,
 			[kTechDataCategory] = kTechId.ShadeHive,
 			[kTechDataKeyStructure] = kTechId.Shade,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.AURA,
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.AURA_TOOLTIP,
+			[kTechDataDisplayName] = "AURA",
+			[kTechDataTooltipInfo] = "AURA_TOOLTIP",
 			[kTechDataCostKey] = kAuraCost,
 			[kTechDataCombatCost] = kCombatAlienUpgradeCost
 		},
@@ -1550,8 +1550,8 @@ function BuildTechData()
         {[kTechDataId] = kTechId.Ghost,
 			[kTechDataCategory] = kTechId.ShadeHive,
 			[kTechDataKeyStructure] = kTechId.Shade,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.GHOST,
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.GHOST_TOOLTIP,
+			[kTechDataDisplayName] = "GHOST",
+			[kTechDataTooltipInfo] = "GHOST_TOOLTIP",
 			[kTechDataCostKey] = kGhostCost,
 			[kTechDataCombatCost] = kCombatAlienUpgradeCost
 		},
@@ -1569,8 +1569,8 @@ function BuildTechData()
         {[kTechDataId] = kTechId.Focus,
 			[kTechDataCategory] = kTechId.WhipHive,
 			[kTechDataKeyStructure] = kTechId.Whip,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.FOCUS,
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.FOCUS_TOOLTIP,
+			[kTechDataDisplayName] = "FOCUS",
+			[kTechDataTooltipInfo] = "FOCUS_TOOLTIP",
 			[kTechDataCostKey] = kFocusCost,
 			[kTechDataCombatCost] = kCombatAlienFocusCost
 		},
@@ -1578,8 +1578,8 @@ function BuildTechData()
         {[kTechDataId] = kTechId.Fury,
 			[kTechDataCategory] = kTechId.WhipHive,
 			[kTechDataKeyStructure] = kTechId.Whip,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.FURY,
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.FURY_TOOLTIP,
+			[kTechDataDisplayName] = "FURY",
+			[kTechDataTooltipInfo] = "FURY_TOOLTIP",
 			[kTechDataCostKey] = kFuryCost,
 			[kTechDataCombatCost] = kCombatAlienUpgradeCost
 		},
@@ -1587,8 +1587,8 @@ function BuildTechData()
         {[kTechDataId] = kTechId.Bombard,
 			[kTechDataCategory] = kTechId.WhipHive,
 			[kTechDataKeyStructure] = kTechId.Whip,
-			[kTechDataDisplayName] = kNS2cLocalizedStrings.BOMBARD,
-			[kTechDataTooltipInfo] = kNS2cLocalizedStrings.BOMBARD_TOOLTIP,
+			[kTechDataDisplayName] = "BOMBARD",
+			[kTechDataTooltipInfo] = "BOMBARD_TOOLTIP",
 			[kTechDataCostKey] = kBombardCost,
 			[kTechDataCombatCost] = kCombatAlienUpgradeCost
 		},

@@ -24,6 +24,8 @@ local kTimeToReadyRoom = 8
 local kPauseToSocializeBeforeMapcycle = 30
 local kGameStartMessageInterval = 30
 local kRequireMarineComm = true
+//This should be moved to a teammessage/localized string at some point
+local kCombatTimerMessage = "There are %s remaining until %s have won!"
 
 // How often to send the "No commander" message to players in seconds.
 local kSendNoCommanderMessageRate = 60
@@ -1004,22 +1006,22 @@ if Server then
         if self:GetGameState() == kGameState.Started then
             local time = Shared.GetTime()
             if not self.sentCombatGameStartMessage then
-                local message = string.format(kNS2cLocalizedStrings.COMBAT_ROUND_TIMER, string.format("%s Minutes", kNS2cServerSettings.CombatRoundLength), ConditionalValue(kNS2cServerSettings.CombatDefaultWinner == 1, "Marines", "Aliens"))
+                local message = string.format(kCombatTimerMessage, string.format("%s Minutes", kNS2cServerSettings.CombatRoundLength), ConditionalValue(kNS2cServerSettings.CombatDefaultWinner == 1, "Marines", "Aliens"))
                 Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Combat", -1, kTeamReadyRoom, kNeutralTeamType, message), true)
                 self.sentCombatGameStartMessage = true
             end
             if self.gameStartTime + (kNS2cServerSettings.CombatRoundLength * 60) <= (time + 300) and not self.sentCombat5MinuteWarning then
-                local message = string.format(kNS2cLocalizedStrings.COMBAT_ROUND_TIMER, "5 Minutes", ConditionalValue(kNS2cServerSettings.CombatDefaultWinner == 1, "Marines", "Aliens"))
+                local message = string.format(kCombatTimerMessage, "5 Minutes", ConditionalValue(kNS2cServerSettings.CombatDefaultWinner == 1, "Marines", "Aliens"))
                 Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Combat", -1, kTeamReadyRoom, kNeutralTeamType, message), true)
                 self.sentCombat5MinuteWarning = true
             end
             if self.gameStartTime + (kNS2cServerSettings.CombatRoundLength * 60) <= (time + 60) and not self.sentCombat1MinuteWarning then
-                local message = string.format(kNS2cLocalizedStrings.COMBAT_ROUND_TIMER, "1 Minute", ConditionalValue(kNS2cServerSettings.CombatDefaultWinner == 1, "Marines", "Aliens"))
+                local message = string.format(kCombatTimerMessage, "1 Minute", ConditionalValue(kNS2cServerSettings.CombatDefaultWinner == 1, "Marines", "Aliens"))
                 Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Combat", -1, kTeamReadyRoom, kNeutralTeamType, message), true)
                 self.sentCombat1MinuteWarning = true
             end
             if self.gameStartTime + (kNS2cServerSettings.CombatRoundLength * 60) <= (time + 30) and not self.sentCombat30SecondWarning then
-                local message = string.format(kNS2cLocalizedStrings.COMBAT_ROUND_TIMER, "30 Seconds", ConditionalValue(kNS2cServerSettings.CombatDefaultWinner == 1, "Marines", "Aliens"))
+                local message = string.format(kCombatTimerMessage, "30 Seconds", ConditionalValue(kNS2cServerSettings.CombatDefaultWinner == 1, "Marines", "Aliens"))
                 Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Combat", -1, kTeamReadyRoom, kNeutralTeamType, message), true)
                 self.sentCombat30SecondWarning = true
             end

@@ -16,6 +16,7 @@ Script.Load("lua/PreLoadMod.lua")
 
 Script.Load("lua/ClientResources.lua")
 Script.Load("lua/Shared.lua")
+Script.Load("lua/NS2cGameStrings.lua")
 Script.Load("lua/GUIAssets.lua")
 Script.Load("lua/Effect.lua")
 Script.Load("lua/AmbientSound.lua")

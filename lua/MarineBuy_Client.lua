@@ -19,24 +19,24 @@ function MarineBuy_GetWeaponDescription(techId)
         gWeaponDescription[kTechId.Axe] = "WEAPON_DESC_AXE"
         gWeaponDescription[kTechId.Pistol] = "WEAPON_DESC_PISTOL"
         gWeaponDescription[kTechId.Rifle] = "WEAPON_DESC_RIFLE"
-        gWeaponDescription[kTechId.Shotgun] = kNS2cLocalizedStrings.WEAPON_DESC_SHOTGUN
-		gWeaponDescription[kTechId.HeavyMachineGun] = kNS2cLocalizedStrings.WEAPON_DESC_HEAVYMACHINEGUN
-        gWeaponDescription[kTechId.GrenadeLauncher] = kNS2cLocalizedStrings.WEAPON_DESC_GRENADELAUNCHER
+        gWeaponDescription[kTechId.Shotgun] = "WEAPON_DESC_SHOTGUN"
+		gWeaponDescription[kTechId.HeavyMachineGun] = "WEAPON_DESC_HEAVYMACHINEGUN"
+        gWeaponDescription[kTechId.GrenadeLauncher] = "WEAPON_DESC_GRENADELAUNCHER"
         gWeaponDescription[kTechId.Welder] = "WEAPON_DESC_WELDER"
         gWeaponDescription[kTechId.Mines] = "WEAPON_DESC_MINE"
-        gWeaponDescription[kTechId.HandGrenades] = kNS2cLocalizedStrings.WEAPON_DESC_HANDGRENADES
-        gWeaponDescription[kTechId.Jetpack] = kNS2cLocalizedStrings.WEAPON_DESC_JETPACK
-        gWeaponDescription[kTechId.HeavyArmor] = kNS2cLocalizedStrings.WEAPON_DESC_HEAVY_ARMOR
-        gWeaponDescription[kTechId.Weapons1] = kNS2cLocalizedStrings.WEAPON_DESC_WEAPONS1
-        gWeaponDescription[kTechId.Weapons2] = kNS2cLocalizedStrings.WEAPON_DESC_WEAPONS2
-        gWeaponDescription[kTechId.Weapons3] = kNS2cLocalizedStrings.WEAPON_DESC_WEAPONS3
-        gWeaponDescription[kTechId.Armor1] = kNS2cLocalizedStrings.WEAPON_DESC_ARMOR1
-        gWeaponDescription[kTechId.Armor2] = kNS2cLocalizedStrings.WEAPON_DESC_ARMOR2
-        gWeaponDescription[kTechId.Armor3] = kNS2cLocalizedStrings.WEAPON_DESC_ARMOR3
-        gWeaponDescription[kTechId.MedPack] = kNS2cLocalizedStrings.WEAPON_DESC_RESUPPLY
-        gWeaponDescription[kTechId.Scan] = kNS2cLocalizedStrings.WEAPON_DESC_SCAN
-        gWeaponDescription[kTechId.CatPack] = kNS2cLocalizedStrings.WEAPON_DESC_CATPACK
-        gWeaponDescription[kTechId.MotionTracking] = kNS2cLocalizedStrings.WEAPON_DESC_MOTIONTRACKING
+        gWeaponDescription[kTechId.HandGrenades] = "WEAPON_DESC_HANDGRENADES"
+        gWeaponDescription[kTechId.Jetpack] = "WEAPON_DESC_JETPACK"
+        gWeaponDescription[kTechId.HeavyArmor] = "WEAPON_DESC_HEAVY_ARMOR"
+        gWeaponDescription[kTechId.Weapons1] = "WEAPON_DESC_WEAPONS1"
+        gWeaponDescription[kTechId.Weapons2] = "WEAPON_DESC_WEAPONS2"
+        gWeaponDescription[kTechId.Weapons3] = "WEAPON_DESC_WEAPONS3"
+        gWeaponDescription[kTechId.Armor1] = "WEAPON_DESC_ARMOR1"
+        gWeaponDescription[kTechId.Armor2] = "WEAPON_DESC_ARMOR2"
+        gWeaponDescription[kTechId.Armor3] = "WEAPON_DESC_ARMOR3"
+        gWeaponDescription[kTechId.MedPack] = "WEAPON_DESC_RESUPPLY"
+        gWeaponDescription[kTechId.Scan] = "WEAPON_DESC_SCAN"
+        gWeaponDescription[kTechId.CatPack] = "WEAPON_DESC_CATPACK"
+        gWeaponDescription[kTechId.MotionTracking] = "WEAPON_DESC_MOTIONTRACKING"
         
     end
     

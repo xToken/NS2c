@@ -54,13 +54,13 @@ if Client then
             
          		local hintText = nil
                 if ent:isa("Hive") and ent:GetIsBuilt() then
-                    hintText = kNS2cLocalizedStrings.TELEPORT_HIVE
+                    hintText = "TELEPORT_HIVE"
                 elseif ent:isa("Hive") and not ent:GetIsBuilt() then
-                    hintText = kNS2cLocalizedStrings.ALERT_DANGER
+                    hintText = "ALERT_DANGER"
 				elseif ent:isa("Shift") and ent:GetIsBuilt() then
-				    hintText = kNS2cLocalizedStrings.REDEPLOYMENT_UPGRADE
+				    hintText = "REDEPLOYMENT_UPGRADE"
 				else
-					hintText = kNS2cLocalizedStrings.ALIEN_CONSTRUCT
+					hintText = "ALIEN_CONSTRUCT"
                 end
                 
                 self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Use"), nil, hintText)

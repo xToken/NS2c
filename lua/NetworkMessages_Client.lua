@@ -137,7 +137,7 @@ end
 
 function OnVoteChamberCast(message)
 
-    local text = string.format(kNS2cLocalizedStrings.VOTE_CHAMBER_BROADCAST, message.voterName, EnumToString(kTechId, message.voteId), message.votesMoreNeeded)
+    local text = string.format(Locale.ResolveString("VOTE_CHAMBER_BROADCAST"), message.voterName, EnumToString(kTechId, message.voteId), message.votesMoreNeeded)
     ChatUI_AddSystemMessage(text)
     
 end
@@ -153,7 +153,7 @@ function OnTeamConceded(message)
 end
 
 function OnChamberSelected(message)
-    local text = string.format(kNS2cLocalizedStrings.VOTE_CHAMBER_SELECTED, EnumToString(kTechId, message.voteId))
+    local text = string.format(Locale.ResolveString("VOTE_CHAMBER_SELECTED"), EnumToString(kTechId, message.voteId))
     ChatUI_AddSystemMessage(text)
 end
 

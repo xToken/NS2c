@@ -39,9 +39,9 @@ kTeamMessages[kTeamMessageTypes.ResearchComplete] = { text = { [kAlienTeamType] 
 
 kTeamMessages[kTeamMessageTypes.ResearchLost] = { text = { [kAlienTeamType] = function(data) return researchStringGen(data, "EVOLUTION_LOST") end } }
 
-kTeamMessages[kTeamMessageTypes.AbilityUnlocked] = { text = { [kAlienTeamType] = function(data) return researchStringGen(data, kNS2cLocalizedStrings.ABILITY_AVAILABLE) end } }
+kTeamMessages[kTeamMessageTypes.AbilityUnlocked] = { text = { [kAlienTeamType] = function(data) return researchStringGen(data, "ABILITY_AVAILABLE") end } }
 
-kTeamMessages[kTeamMessageTypes.AbilityLost] = { text = { [kAlienTeamType] = function(data) return researchStringGen(data, kNS2cLocalizedStrings.ABILITY_LOST) end } }
+kTeamMessages[kTeamMessageTypes.AbilityLost] = { text = { [kAlienTeamType] = function(data) return researchStringGen(data, "ABILITY_LOST") end } }
 
 kTeamMessages[kTeamMessageTypes.HiveConstructed] = { text = { [kAlienTeamType] = function(data) return locationStringGen(data, "HIVE_CONSTRUCTED") end } }
 
@@ -55,19 +55,19 @@ kTeamMessages[kTeamMessageTypes.IPUnderAttack] = { text = { [kMarineTeamType] = 
 
 kTeamMessages[kTeamMessageTypes.HiveUnderAttack] = { text = { [kAlienTeamType] = function(data) return locationStringGen(data, "HIVE_UNDER_ATTACK") end } }
 
-kTeamMessages[kTeamMessageTypes.HiveInDanger] = { text = { [kAlienTeamType] = function(data) return locationStringGen(data, kNS2cLocalizedStrings.HIVE_IN_DANGER) end } }
+kTeamMessages[kTeamMessageTypes.HiveInDanger] = { text = { [kAlienTeamType] = function(data) return locationStringGen(data, "HIVE_IN_DANGER") end } }
 
 kTeamMessages[kTeamMessageTypes.Beacon] = { text = { [kMarineTeamType] = function(data) return locationStringGen(data, "BEACON_TO") end } }
 
-kTeamMessages[kTeamMessageTypes.NoCommander] = { text = { [kMarineTeamType] = "NO_COMM", [kAlienTeamType] = kNS2cLocalizedStrings.NO_GORGE } }
+kTeamMessages[kTeamMessageTypes.NoCommander] = { text = { [kMarineTeamType] = "NO_COMM", [kAlienTeamType] = "NO_GORGE" } }
 
 kTeamMessages[kTeamMessageTypes.TeamsUnbalanced] = { text = { [kMarineTeamType] = "TEAMS_UNBALANCED", [kAlienTeamType] = "TEAMS_UNBALANCED" } }
 
 kTeamMessages[kTeamMessageTypes.TeamsBalanced] = { text = { [kMarineTeamType] = "TEAMS_BALANCED", [kAlienTeamType] = "TEAMS_BALANCED" } }
 
-kTeamMessages[kTeamMessageTypes.GameStartCommanders] = { text = { [kMarineTeamType] = kNS2cLocalizedStrings.GAME_START_COMMANDERS, [kAlienTeamType] = kNS2cLocalizedStrings.GAME_START_COMMANDERS } }
+kTeamMessages[kTeamMessageTypes.GameStartCommanders] = { text = { [kMarineTeamType] = "GAME_START_COMMANDERS", [kAlienTeamType] = "GAME_START_COMMANDERS" } }
 
-kTeamMessages[kTeamMessageTypes.UnassignedHive] = { text = { [kAlienTeamType] = kNS2cLocalizedStrings.UNASSIGNED_HIVES } }
+kTeamMessages[kTeamMessageTypes.UnassignedHive] = { text = { [kAlienTeamType] = "UNASSIGNED_HIVES" } }
 
 // Silly name but it fits the convention.
 local kTeamMessageMessage =

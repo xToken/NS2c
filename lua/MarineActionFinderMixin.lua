@@ -127,13 +127,13 @@ if Client then
                             if ent:isa("CommandStation") and ent:GetIsBuilt() then
                                 hintText = "START_COMMANDING"
                             elseif ent:isa("PhaseGate") and ent:GetIsBuilt() then
-                                hintText = kNS2cLocalizedStrings.MARINE_USE_PHASE
+                                hintText = "MARINE_USE_PHASE"
                             elseif ent:isa("Jetpack") then
-                                hintText = kNS2cLocalizedStrings.MARINE_PICKUP_JETPACK
+                                hintText = "MARINE_PICKUP_JETPACK"
                             elseif ent:isa("HeavyArmor") then
-                                hintText = kNS2cLocalizedStrings.MARINE_PICKUP_HEAVYARMOR
+                                hintText = "MARINE_PICKUP_HEAVYARMOR"
                             else
-                                hintText = kNS2cLocalizedStrings.MARINE_CONSTRUCT
+                                hintText = "MARINE_CONSTRUCT"
                             end
 
                             self.actionIconGUI:ShowIcon(BindingsUI_GetInputValue("Use"), nil, hintText)
