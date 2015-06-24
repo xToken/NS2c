@@ -99,6 +99,15 @@ local function GetMapEntityLoadPriority(mapName)
 
 end
 
+local function IsClassicBlockedMapName(mapName)
+    return mapName == "power_point"
+        or mapName == "commander_camera"
+        or mapName == "cyst"
+        or mapName == "reflection_probe"
+        or mapName == InfantryPortal.kMapName
+        or mapName == "decal"
+end
+
 // filter the entities which are explore mode only
 // MUST BE GLOBAL - overridden by mods
 function GetLoadEntity(mapName, groupName, values)
@@ -121,7 +130,6 @@ function GetCreateEntityOnStart(mapName, groupName, values)
        and mapName ~= Reverb.kMapName
        and mapName ~= Hive.kMapName
        and mapName ~= CommandStation.kMapName
-       //and mapName ~= Cyst.kMapName
        and mapName ~= InfantryPortal.kMapName
        and mapName ~= "spawn_selection_override"
     
@@ -148,9 +156,6 @@ function GetLoadSpecial(mapName, groupName, values)
     elseif mapName == InfantryPortal.kMapName then
         //table.insert(Server.infantryPortalSpawnPoints, values.origin)
         success = false
-    //elseif mapName == Cyst.kMapName then
-        //table.insert(Server.cystSpawnPoints, values.origin)
-        //success = true
     elseif mapName == "pathing_settings" then
     
         ParsePathingSettings(values)
@@ -199,9 +204,9 @@ local function LoadServerMapEntity(mapName, groupName, values)
         return
     end
     
-    if mapName == InfantryPortal.kMapName then
+    if IsClassicBlockedMapName(mapName) then
         return
-	end
+    end
     
     // Skip the classes that are not true entities and are handled separately
     // on the client.
