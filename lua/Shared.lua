@@ -167,6 +167,9 @@ Script.Load("lua/Mixins/ModdedMixinUtility.lua")
 Script.Load("lua/Mixins/WaterModSupport.lua")
 Script.Load("lua/Mixins/ExoCrashFix.lua")
 
+//Load Overloads for Classic - Use these for simple changes to avoid complete file replacement
+Script.Load("lua/Overloads/SensorBlip.lua")
+
 gHeightMap = gHeightMap // survive hotloading; will be nil the first time
 
 local function LoadHeightmap()

@@ -557,7 +557,7 @@ function Marine:GetPlayerStatusDesc()
         elseif (weapon:isa("Shotgun")) then
             return kPlayerStatus.Shotgun
         elseif (weapon:isa("HeavyMachineGun")) then
-            return kPlayerStatus.HeavyMachineGun
+            return kPlayerStatus.Flamethrower
         end
     end
     

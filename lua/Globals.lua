@@ -125,6 +125,7 @@ kMaxHotkeyGroups = 9
 // Surface list. Add more materials here to precache ricochets, bashes, footsteps, etc
 // Used with PrecacheMultipleAssets
 kSurfaceList = { "door", "electronic", "metal", "organic", "rock", "thin_metal", "membrane", "armor", "flesh", "flame", "infestation", "glass" }
+kSurfaces = enum(kSurfaceList)
 
 // a longer surface list, for hiteffects only (used by hiteffects network message, don't remove any values)
 kHitEffectSurface = enum( { "metal", "door", "electronic", "organic", "rock", "thin_metal", "membrane", "armor", "flesh", "glass", "ethereal", "umbra" } )
@@ -135,7 +136,7 @@ kMaxHitEffectsPerSecond = 25
 
 kMainMenuFlash = "ui/main_menu.swf"
 
-kPlayerStatus = enum( { "Hidden", "Dead", "Evolving", "Embryo", "Commander", "Exo", "GrenadeLauncher", "Rifle", "Shotgun", "HeavyMachineGun", "Void", "Spectator", "Skulk", "Gorge", "Fade", "Lerk", "Onos", "SkulkEgg", "GorgeEgg", "FadeEgg", "LerkEgg", "OnosEgg" } )
+kPlayerStatus = enum( { "Hidden", "Dead", "Evolving", "Embryo", "Commander", "Exo", "GrenadeLauncher", "Rifle", "Shotgun", "Flamethrower", "Void", "Spectator", "Skulk", "Gorge", "Fade", "Lerk", "Onos", "SkulkEgg", "GorgeEgg", "FadeEgg", "LerkEgg", "OnosEgg" } )
 kPlayerCommunicationStatus = enum( {'None', 'Voice', 'Typing', 'Menu'} )
 kSpectatorMode = enum( { 'FreeLook', 'Overhead', 'Following', 'FirstPerson' } )
 
@@ -602,3 +603,12 @@ end
 
 kHUDMode = enum({ "Full", "Minimal" })
 
+// standard update intervals for use with TimedCallback
+// The engine spreads out callbacks running at the same update interval to spread out any load. This works best if the number of
+// different intervals used is not too high (a hashmap(updateInterval->list of callbacks) is used). 
+// The values are just advisory to keep people from choosing 0.45 and 0.55 instead of 0.5
+kUpdateIntervalMinimal = 0.5
+kUpdateIntervalLow = 0.1
+kUpdateIntervalMedium = 0.05
+kUpdateIntervalAnimation = 0.02
+kUpdateIntervalFull = 0

@@ -712,13 +712,10 @@
     <filename>ScenarioHandler.lua</filename>
   </file>
   <file>
-    <filename>Scoreboard.lua</filename>
-  </file>
-  <file>
     <filename>ScriptActor.lua</filename>
   </file>
   <file>
-    <filename>SensorBlip.lua</filename>
+    <filename>Overloads\SensorBlip.lua</filename>
   </file>
   <file>
     <filename>Sentry.lua</filename>
