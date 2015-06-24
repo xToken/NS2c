@@ -90,6 +90,8 @@ class 'GUIPickups' (GUIScript)
 
 function GUIPickups:Initialize()
 
+    self.updateInterval = 0
+    
     self.allPickupGraphics = { }
 
 end

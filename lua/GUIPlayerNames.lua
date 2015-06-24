@@ -20,6 +20,8 @@ GUIPlayerNames.kFontSize = 16
 
 function GUIPlayerNames:Initialize()
 
+    self.updateInterval = 0
+
     self.playerNameItemList = {}
     self.playerIdList = {}
     

@@ -103,6 +103,8 @@ function GUIDeathMessages:Update(deltaTime)
         
     end
     
+    self.updateInterval = #self.messages > 0 and 0 or 0.2
+    
     local removeMessages = { }
     // Update existing messages.
     for i, message in ipairs(self.messages) do

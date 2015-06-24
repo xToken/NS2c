@@ -30,6 +30,8 @@ GUISensorBlips.kRotationDuration = 5
 
 function GUISensorBlips:Initialize()
 
+    self.updateInterval = 0
+    
     self.activeBlipList = { }
     
 end

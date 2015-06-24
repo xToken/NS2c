@@ -89,6 +89,8 @@ end
 
 function GUIReadyRoomOrders:Initialize()
 
+    self.updateInterval = 0
+
     self.activeVisions = { }
     self.rotation = Vector(0, 0, 0)
     self.hover = Vector(0, 0, 0)

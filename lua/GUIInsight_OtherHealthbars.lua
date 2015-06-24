@@ -46,6 +46,8 @@ local kOtherTypes = {
 
 function GUIInsight_OtherHealthbars:Initialize()
 
+    self.updateInterval = 0
+    
     isVisible = true
 
     otherList = table.array(24)
