@@ -15,12 +15,12 @@ origSensorBlipOnCreate = Class_ReplaceMethod("SensorBlip", "OnCreate",
 
 local origSensorBlipUpdateRelevancy
 origSensorBlipUpdateRelevancy = Class_ReplaceMethod("SensorBlip", "UpdateRelevancy", 
-	function(teamNum)
+	function(self, teamNum)
 		self:SetRelevancyDistance(Math.infinity)
 		local includeMask
-		if teamnum == 1 then
+		if teamNum == 1 then
 			includeMask = kRelevantToTeam1
-		elseif teamnum == 2 then
+		elseif teamNum == 2 then
 			includeMask = kRelevantToTeam2
 		else
 			includeMask = 0
