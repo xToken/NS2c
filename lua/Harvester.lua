@@ -12,6 +12,7 @@
 Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/ResourceTower.lua")
+Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/HiveVisionMixin.lua")
@@ -38,12 +39,14 @@ AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(HiveVisionMixin, networkVars)
 AddMixinNetworkVars(UmbraMixin, networkVars)
+AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(InfestationMixin, networkVars)
 
 function Harvester:OnCreate()
 
     ResourceTower.OnCreate(self)
     
+    InitMixin(self, SelectableMixin)
     InitMixin(self, CloakableMixin)
     InitMixin(self, DetectableMixin)
     InitMixin(self, DissolveMixin)
@@ -106,6 +109,14 @@ end
 
 function Harvester:OverrideGetInfestationDensity()
     return kHarvesterInfestationBlobDensity
+end
+
+function Harvester:GetTechButtons(techId)
+
+    local techButtons = { kTechId.None, kTechId.None, kTechId.None, kTechId.None,
+                          kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+    return techButtons
+    
 end
 
 if Client then

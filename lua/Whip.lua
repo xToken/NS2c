@@ -14,6 +14,7 @@ Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
+Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
 Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/LOSMixin.lua")
@@ -53,6 +54,7 @@ AddMixinNetworkVars(FlinchMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
+AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
@@ -75,6 +77,7 @@ function Whip:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
+    InitMixin(self, SelectableMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, CloakableMixin)
     InitMixin(self, LOSMixin)
@@ -143,6 +146,14 @@ end
 
 function Whip:GetIsRooted()
     return self.rooted
+end
+
+function Whip:GetTechButtons(techId)
+
+    local techButtons = { kTechId.None, kTechId.None, kTechId.None, kTechId.None,
+                          kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+    return techButtons
+    
 end
 
 function Whip:EmpowerInRange()

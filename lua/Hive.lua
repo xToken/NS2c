@@ -13,6 +13,7 @@
 Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/CommandStructure.lua")
+Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
@@ -28,6 +29,7 @@ AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(HiveVisionMixin, networkVars)
 AddMixinNetworkVars(UmbraMixin, networkVars)
+AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(InfestationMixin, networkVars)
 
 kResearchToHiveType =
@@ -86,6 +88,7 @@ function Hive:OnCreate()
 
     CommandStructure.OnCreate(self)
     
+    InitMixin(self, SelectableMixin)
     InitMixin(self, CloakableMixin)
     InitMixin(self, DissolveMixin)
     InitMixin(self, UmbraMixin)
@@ -158,6 +161,14 @@ function Hive:SetIncludeRelevancyMask(includeMask)
     includeMask = bit.bor(includeMask, kRelevantToTeam2Commander)    
     CommandStructure.SetIncludeRelevancyMask(self, includeMask)    
 
+end
+
+function Hive:GetTechButtons(techId)
+
+    local techButtons = { kTechId.None, kTechId.None, kTechId.None, kTechId.None,
+                          kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+    return techButtons
+    
 end
 
 function Hive:OnCollision(entity)

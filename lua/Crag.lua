@@ -18,6 +18,7 @@ Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
+Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
 Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/LOSMixin.lua")
@@ -70,7 +71,7 @@ AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(LOSMixin, networkVars)
 AddMixinNetworkVars(DetectableMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)
-
+AddMixinNetworkVars(SelectableMixin, networkVars)
 AddMixinNetworkVars(ObstacleMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
 AddMixinNetworkVars(CombatMixin, networkVars)
@@ -89,6 +90,7 @@ function Crag:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
+    InitMixin(self, SelectableMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, CloakableMixin)
     InitMixin(self, LOSMixin)
@@ -207,6 +209,14 @@ function Crag:OnOverrideOrder(order)
     if order:GetType() == kTechId.Default then
         order:SetType(kTechId.SetRally)
     end
+    
+end
+
+function Crag:GetTechButtons(techId)
+
+    local techButtons = { kTechId.None, kTechId.None, kTechId.None, kTechId.None,
+                          kTechId.None, kTechId.None, kTechId.None, kTechId.None }
+    return techButtons
     
 end
 
