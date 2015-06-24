@@ -1,29 +1,88 @@
 // Natural Selection 2 'Classic' Mod
+// Source located at - https://github.com/xToken/NS2c
 // lua\GUIHelpScreen.lua
 // - Dragon
 
 Script.Load("lua/GUIScript.lua")
 
+// Mendasp, I'm not sure if I hate you or love you...
+local kScreenScaleAspect = 1280
+
+local function ScreenSmallAspect()
+
+    local screenWidth = Client.GetScreenWidth()
+    local screenHeight = Client.GetScreenHeight()
+    return ConditionalValue(screenWidth > screenHeight, screenHeight, screenWidth)
+
+end
+
+local function GUICorrectedScale(size)
+    if ScreenSmallAspect() > kScreenScaleAspect then
+        return (ScreenSmallAspect() / kScreenScaleAspect)*size*1.15
+    else
+        return math.scaledown(size, ScreenSmallAspect(), kScreenScaleAspect) * (2 - (ScreenSmallAspect() / kScreenScaleAspect))
+    end
+end
+
 local kClassTechIdToIndex = {	kTechId.Skulk, kTechId.Gorge, kTechId.Lerk, kTechId.Fade, kTechId.Onos, 
-								kTechId.Marine, kTechId.JetpackMarine, kTechId.HeavyArmorMarine, kTechId.MarineCommander}
+								kTechId.Marine, kTechId.JetpackMarine, kTechId.HeavyArmorMarine, kTechId.MarineCommander,
+								kTechId.ReadyRoomPlayer }
 								
-local kClassDetails = 	{	{ DisplayName = Locale.ResolveString("SKULK"), TextureName = "ui/Skulk.dds", Description = Locale.ResolveString("SKULK_HELP"), Width = GUIScale(240), Height = GUIScale(170) },
-							{ DisplayName = Locale.ResolveString("GORGE"), TextureName = "ui/Gorge.dds", Description = Locale.ResolveString("GORGE_HELP"), Width = GUIScale(200), Height = GUIScale(167) },
-							{ DisplayName = Locale.ResolveString("LERK"), TextureName = "ui/Lerk.dds", Description = Locale.ResolveString("LERK_HELP"), Width = GUIScale(284), Height = GUIScale(253) },
-							{ DisplayName = Locale.ResolveString("FADE"), TextureName = "ui/Fade.dds", Description = Locale.ResolveString("FADE_HELP"), Width = GUIScale(188), Height = GUIScale(220) },
-							{ DisplayName = Locale.ResolveString("ONOS"), TextureName = "ui/Onos.dds", Description = Locale.ResolveString("ONOS_HELP"), Width = GUIScale(304), Height = GUIScale(326) },
-							{ DisplayName = Locale.ResolveString("MARINE"), TextureName = "ui/Onos.dds", Description = Locale.ResolveString("MARINE_HELP"), Width = GUIScale(304), Height = GUIScale(326) },
-							{ DisplayName = Locale.ResolveString("JETPACK_MARINE"), TextureName = "ui/Onos.dds", Description = Locale.ResolveString("JETPACK_MARINE_HELP"), Width = GUIScale(304), Height = GUIScale(326) },
-							{ DisplayName = Locale.ResolveString("HEAVY_ARMOR_MARINE"), TextureName = "ui/Onos.dds", Description = Locale.ResolveString("HEAVY_ARMOR_MARINE_HELP"), Width = GUIScale(304), Height = GUIScale(326) },
-							{ DisplayName = Locale.ResolveString("MARINE_COMMANDER"), TextureName = "ui/Onos.dds", Description = Locale.ResolveString("MARINE_COMMANDER_HELP"), Width = GUIScale(304), Height = GUIScale(326) }							
+local kClassDetails = 	{	{   DisplayName = Locale.ResolveString("SKULK"), TextureName = "ui/Skulk.dds", 
+                                Description1 = Locale.ResolveString("SKULK_HELP_1"), Description2 = Locale.ResolveString("SKULK_HELP_2"),
+                                Width = GUIScale(240), Height = GUIScale(170) },
+                                
+							{   DisplayName = Locale.ResolveString("GORGE"), TextureName = "ui/Gorge.dds", 
+                                Description1 = Locale.ResolveString("GORGE_HELP_1"), Description2 = Locale.ResolveString("GORGE_HELP_2"), 
+                                Width = GUIScale(200), Height = GUIScale(167) },
+                                
+							{   DisplayName = Locale.ResolveString("LERK"), TextureName = "ui/Lerk.dds", 
+                                Description1 = Locale.ResolveString("LERK_HELP_1"), Description2 = Locale.ResolveString("LERK_HELP_2"), 
+                                Width = GUIScale(284), Height = GUIScale(253) },
+                                
+							{   DisplayName = Locale.ResolveString("FADE"), TextureName = "ui/Fade.dds", 
+                                Description1 = Locale.ResolveString("FADE_HELP_1"), Description2 = Locale.ResolveString("FADE_HELP_2"),
+                                Width = GUIScale(188), Height = GUIScale(220) },
+                                
+							{   DisplayName = Locale.ResolveString("ONOS"), TextureName = "ui/Onos.dds", 
+                                Description1 = Locale.ResolveString("ONOS_HELP_1"), Description2 = Locale.ResolveString("ONOS_HELP_2"),
+                                Width = GUIScale(304), Height = GUIScale(326) },
+                                
+							{   DisplayName = Locale.ResolveString("MARINE"), TextureName = "ui/Onos.dds", 
+                                Description1 = Locale.ResolveString("MARINE_HELP_1"), Description2 = Locale.ResolveString("MARINE_HELP_2"), 
+                                Width = GUIScale(304), Height = GUIScale(326) },
+                                
+							{   DisplayName = Locale.ResolveString("JETPACK_MARINE"), TextureName = "ui/Onos.dds", 
+                                Description1 = Locale.ResolveString("JETPACK_MARINE_HELP_1"), Description2 = Locale.ResolveString("JETPACK_MARINE_HELP_2"), 
+                                Width = GUIScale(304), Height = GUIScale(326) },
+                                
+							{   DisplayName = Locale.ResolveString("HEAVY_ARMOR_MARINE"), TextureName = "ui/Onos.dds", 
+                                Description1 = Locale.ResolveString("HEAVY_ARMOR_MARINE_HELP_1"), Description2 = Locale.ResolveString("HEAVY_ARMOR_MARINE_HELP_2"), 
+                                Width = GUIScale(304), Height = GUIScale(326) },
+                                
+							{   DisplayName = Locale.ResolveString("MARINE_COMMANDER"), TextureName = "ui/Onos.dds", 
+                                Description1 = Locale.ResolveString("MARINE_COMMANDER_HELP_1"), Description2 = Locale.ResolveString("MARINE_COMMANDER_HELP_2"), 
+                                Width = GUIScale(304), Height = GUIScale(326) },
+                                
+							{   DisplayName = Locale.ResolveString("READY_ROOM_PLAYER"), TextureName = "ui/Onos.dds", 
+                                Description1 = Locale.ResolveString("READY_ROOM_PLAYER_HELP_1"), Description2 = Locale.ResolveString("READY_ROOM_PLAYER_HELP_2"), 
+                                Width = GUIScale(304), Height = GUIScale(326) }
 						}
 
-local kClassPicturePosition = GUIScale( Vector(0, 0, 0))
-local kClassDescriptionPosition = GUIScale( Vector(400, 50, 0))
-local kClassTitlePosition = GUIScale( Vector(470, 10, 0))
+//local kClassPicturePosition = GUICorrectedScale( Vector(0, 0, 0))  Gotta fight Scaling Creep
+local kClassPicturePosition = GUICorrectedScale( Vector(30, 30, 0))
+local kClassDescription1Position = GUICorrectedScale( Vector(400, 50, 0))
+local kClassDescription2Position = GUICorrectedScale( Vector(400, 225, 0))
+local kClassDescriptionWidth = 600
+local kClassTitlePosition = GUICorrectedScale( Vector(470, 10, 0))
 
-local kTitleFont = Fonts.kAgencyFB_Medium
-local kDescriptionFont = Fonts.kAgencyFB_Small
+local kLargeFont = Fonts.kAgencyFB_Medium
+local kMediumFont = Fonts.kAgencyFB_Small
+local kSmallFont = Fonts.kAgencyFB_Tiny
+//Fonts.kAgencyFB_Medium
+//Fonts.kAgencyFB_Small
+//Fonts.kAgencyFB_Smaller_Bordered
+//Fonts.kAgencyFB_Tiny
 
 local kWeaponTechIdToIndex = { 	kTechId.Bite, kTechId.Spit, kTechId.BuildAbility, kTechId.LerkBite, kTechId.Swipe, kTechId.Gore, kTechId.Smash,
 								kTechId.Parasite, kTechId.Spray, kTechId.Spores, kTechId.Blink, kTechId.Charge,
@@ -72,11 +131,13 @@ local kWeaponDetails = {	{ DisplayName = Locale.ResolveString("BITE"), TextureNa
 							{ DisplayName = Locale.ResolveString("HEAVY_ARMOR"), TextureName = "", Description = Locale.ResolveString("HEAVY_ARMOR_HELP") }
 						}
 						
-local kWeaponIconSize = GUIScale( Vector(150, 150, 0))
-local kWeaponTitleSize = GUIScale(40)
-local kWeaponIconPositionTable = GUIScale( Vector(0, 420, 0))
-local kWeaponDescriptionTable = GUIScale( Vector(170, 420, 0))
-local kMaxWeaponListings = 5
+local kWeaponIconSize = GUICorrectedScale( Vector(100, 100, 0))
+local kWeaponSpacing = GUICorrectedScale( Vector(120, 120, 0))
+local kWeaponTitleSize = GUICorrectedScale(30)
+local kWeaponIconPositionTable = GUICorrectedScale( Vector(0, 420, 0))
+local kWeaponDescriptionTable = GUICorrectedScale( Vector(120, 420, 0))
+local kWeaponDescriptionWidth = 550
+local kMaxWeaponListings = 4
 
 //Eventually use specific textures for each weapon/ability.. maybe?  or atleast something a bit higher res.
 local kCrapWeaponTexture = kInventoryIconsTexture
@@ -95,6 +156,12 @@ local kUpgradeSlots = 	{
 													{ TechId = kTechId.Weapons1, SubUpgrades = { kTechId.Weapons1, kTechId.Weapons2, kTechId.Weapons3 } },
 													{ TechId = kTechId.MotionTracking },
 													{ TechId = kTechId.HandGrenadesTech }
+												},
+							[kNeutralTeamType] ={
+													{ TechId = kTechId.Move },
+													{ TechId = kTechId.Construct },
+													{ TechId = kTechId.Attack },
+													{ TechId = kTechId.Defend }
 												}
 						}
 
@@ -106,7 +173,8 @@ local kUpgradeTechIdToIndex = { kTechId.Carapace, kTechId.Regeneration, kTechId.
 								kTechId.Weapons1, kTechId.Weapons2, kTechId.Weapons3,
 								kTechId.MotionTracking,
 								kTechId.HandGrenadesTech,
-								kTechId.ArmsLab
+								kTechId.ArmsLab,
+								kTechId.Move, kTechId.Construct, kTechId.Attack, kTechId.Defend
 								}
 
 local kUpgradeDetails = {	{ DisplayName = Locale.ResolveString("CARAPACE"), TextureName = "", UnlockedDescription = "Carrypace", LockedDescription = Locale.ResolveString("CARAPACE_LOCKED") },
@@ -135,46 +203,67 @@ local kUpgradeDetails = {	{ DisplayName = Locale.ResolveString("CARAPACE"), Text
 							{ DisplayName = Locale.ResolveString("WEAPONS3"), TextureName = "", UnlockedDescription = "+30%", LockedDescription = Locale.ResolveString("WEAPONS3_LOCKED") },
 							{ DisplayName = Locale.ResolveString("MOTION_TRACKING"), TextureName = "", UnlockedDescription = "Piiiiiiiiiing", LockedDescription = Locale.ResolveString("MOTION_TRACKING_LOCKED") },
 							{ DisplayName = Locale.ResolveString("HAND_GRENADES"), TextureName = "", UnlockedDescription = "when in doubt nades out", LockedDescription = Locale.ResolveString("HAND_GRENADES_LOCKED") },
-							{ DisplayName = Locale.ResolveString("ARMS_LAB"), TextureName = "", UnlockedDescription = "get yo upgrades here", LockedDescription = Locale.ResolveString("ARMS_LAB_LOCKED") }
+							{ DisplayName = Locale.ResolveString("ARMS_LAB"), TextureName = "", UnlockedDescription = "get yo upgrades here", LockedDescription = Locale.ResolveString("ARMS_LAB_LOCKED") },
+							{ DisplayName = Locale.ResolveString("MOVE"), TextureName = "", UnlockedDescription = "mooooove", LockedDescription = Locale.ResolveString("MOVE_LOCKED") },
+							{ DisplayName = Locale.ResolveString("CONSTRUCT"), TextureName = "", UnlockedDescription = "buillllld it larger", LockedDescription = Locale.ResolveString("CONSTRUCT_LOCKED") },
+							{ DisplayName = Locale.ResolveString("ATTACK"), TextureName = "", UnlockedDescription = "get em boys", LockedDescription = Locale.ResolveString("ATTACK_LOCKED") },
+							{ DisplayName = Locale.ResolveString("DEFEND"), TextureName = "", UnlockedDescription = "protect the basement", LockedDescription = Locale.ResolveString("DEFEND_LOCKED") },
 						}
 
-local kUpgradeIconSize = GUIScale( Vector(100, 100, 0))
-local kUpgradeSpacing = GUIScale( Vector(120, 120, 0))
-local kUpgradeIconTablePosition = GUIScale( Vector(700, 420, 0))
-local kUpgradeTitleSize = GUIScale(40)
-local kUpgradeDescriptionTablePosition = GUIScale( Vector(820, 420, 0))
+local kUpgradeIconSize = GUICorrectedScale( Vector(100, 100, 0))
+local kUpgradeSpacing = GUICorrectedScale( Vector(120, 120, 0))
+local kUpgradeIconTablePosition = GUICorrectedScale( Vector(700, 420, 0))
+local kUpgradeTitleSize = GUICorrectedScale(30)
+local kUpgradeDescriptionTablePosition = GUICorrectedScale( Vector(820, 420, 0))
+local kUpgradeDescriptionWidth = 500
 local kMaxUpgrades = 4
 local kUpgradesTexture = "ui/buildmenu.dds"
 
-local kGameplayTipsPosition = GUIScale( Vector(820, 40, 0))
-local kGameplayTitlePosition = GUIScale( Vector(820, 0, 0))
+local kGameplayTips1Position = GUICorrectedScale( Vector(1070, 40, 0))
+local kGameplayTips2Position = GUICorrectedScale( Vector(1070, 215, 0))
+local kGameplayTitlePosition = GUICorrectedScale( Vector(1070, 0, 0))
+local kGameplayTipsWidth = 500
 
 local kGameplayTips = 	{
 							[kAlienTeamType] = 	{
-													{ Tip = Locale.ResolveString("ALIEN_GAMEPLAY_TIPS_1"), Title = Locale.ResolveString("ALIEN_GAMEPLAY_TITLE_1"), Time = 0 },
-													{ Tip = Locale.ResolveString("ALIEN_GAMEPLAY_TIPS_2"), Title = Locale.ResolveString("ALIEN_GAMEPLAY_TITLE_2"), Time = 5 },
-													{ Tip = Locale.ResolveString("ALIEN_GAMEPLAY_TIPS_3"), Title = Locale.ResolveString("ALIEN_GAMEPLAY_TITLE_3"), Time = 15 }
+													{ Tip1 = Locale.ResolveString("ALIEN_GAMEPLAY_TIPS_1"), Tip2 = Locale.ResolveString("ALIEN_GAMEPLAY_TIPS_2"), Title = Locale.ResolveString("ALIEN_GAMEPLAY_TITLE_1"), Time = 0 },
+													{ Tip1 = Locale.ResolveString("ALIEN_GAMEPLAY_TIPS_3"), Tip2 = Locale.ResolveString("ALIEN_GAMEPLAY_TIPS_4"), Title = Locale.ResolveString("ALIEN_GAMEPLAY_TITLE_2"), Time = 5 },
+													{ Tip1 = Locale.ResolveString("ALIEN_GAMEPLAY_TIPS_5"), Tip2 = Locale.ResolveString("ALIEN_GAMEPLAY_TIPS_6"), Title = Locale.ResolveString("ALIEN_GAMEPLAY_TITLE_3"), Time = 15 }
 												},
 							[kMarineTeamType] = {
-													{ Tip = Locale.ResolveString("MARINE_GAMEPLAY_TIPS_1"), Title = Locale.ResolveString("MARINE_GAMEPLAY_TITLE_1"), Time = 0 },
-													{ Tip = Locale.ResolveString("MARINE_GAMEPLAY_TIPS_2"), Title = Locale.ResolveString("MARINE_GAMEPLAY_TITLE_2"), Time = 5 },
-													{ Tip = Locale.ResolveString("MARINE_GAMEPLAY_TIPS_3"), Title = Locale.ResolveString("MARINE_GAMEPLAY_TITLE_3"), Time = 15 }
+													{ Tip1 = Locale.ResolveString("MARINE_GAMEPLAY_TIPS_1"), Tip2 = Locale.ResolveString("MARINE_GAMEPLAY_TIPS_2"), Title = Locale.ResolveString("MARINE_GAMEPLAY_TITLE_1"), Time = 0 },
+													{ Tip1 = Locale.ResolveString("MARINE_GAMEPLAY_TIPS_3"), Tip2 = Locale.ResolveString("MARINE_GAMEPLAY_TIPS_4"), Title = Locale.ResolveString("MARINE_GAMEPLAY_TITLE_2"), Time = 5 },
+													{ Tip1 = Locale.ResolveString("MARINE_GAMEPLAY_TIPS_5"), Tip2 = Locale.ResolveString("MARINE_GAMEPLAY_TIPS_6"), Title = Locale.ResolveString("MARINE_GAMEPLAY_TITLE_3"), Time = 15 }
+												},
+							[kNeutralTeamType] = {
+													{ Tip1 = Locale.ResolveString("READY_ROOM_TIPS_1"), Tip2 = Locale.ResolveString("READY_ROOM_TIPS_2"), Title = Locale.ResolveString("READY_ROOM_TITLE_1"), Time = 0 }
 												}
 						}
 
-local kBackgroundSize = GUIScale( Vector(1344, 756, 0))
+local kBackgroundSize = GUICorrectedScale( Vector(1632, 918, 0))
 local kWeaponUpgradeUpdateSpeed = 1
 
 class 'GUIHelpScreen' (GUIScript)
 
-local function LookupWeaponList()
+local function LookupWeaponList(teamType)
+    if teamType == kNeutralTeamType then
+        //Do we want to show anything here for those special ones?
+        
+    end
     return PlayerUI_GetInventoryTechIds()
 end
 
-local function LookupUpgradesList(self)
+local function LookupUpgradesList(teamType)
 	local techTable = { }
     local techTree = GetTechTree()
-	local upgradeSlots = kUpgradeSlots[self.teamType]
+	local upgradeSlots = kUpgradeSlots[teamType]
+	if teamType == kNeutralTeamType then
+	    //This is just a hack to always populate the table.. these dont REALLY matter.  Just forcing through system using rando techIds.
+	    for i = 1, #upgradeSlots do
+            table.insert(techTable, {techId = upgradeSlots[i].TechId, techStatus = kUpgradeTechStatus.Unlocked})
+        end
+        return techTable
+    end
 	if techTree and upgradeSlots then
 		for i = 1, #upgradeSlots do
 			local techStatus = kUpgradeTechStatus.Locked
@@ -204,9 +293,13 @@ local function LookupUpgradesList(self)
 	return techTable	
 end
 
-local function LookupClassIndex()
+local function LookupClassIndex(teamType)
     local player = Client.GetLocalPlayer()
     local techId = player:GetTechId()
+    //Cheaty override for RR players
+    if teamType == kNeutralTeamType then
+        techId = kTechId.ReadyRoomPlayer
+    end
 	if table.contains(kClassTechIdToIndex, techId) then
 		for index, cTechId in ipairs(kClassTechIdToIndex) do
 			if techId == cTechId then
@@ -248,35 +341,61 @@ local function InitializeClassObjects(self)
 
 	self.classDisplayIcon = GUIManager:CreateGraphicItem()
     self.classDisplayIcon:SetAnchor(GUIItem.Left, GUIItem.Top)
-    self.classDisplayIcon:SetSize(Vector(kClassDetails[self.classType].Width, kClassDetails[self.classType].Height, 0))
+    self.classDisplayIcon:SetSize(Vector(kClassDetails[self.classIndex].Width, kClassDetails[self.classIndex].Height, 0))
     self.classDisplayIcon:SetPosition(kClassPicturePosition)
-    self.classDisplayIcon:SetTexture(kClassDetails[self.classType].TextureName)
+    self.classDisplayIcon:SetTexture(kClassDetails[self.classIndex].TextureName)
     self.classDisplayIcon:SetLayer(kGUILayerPlayerHUDForeground2)
     self.classDisplayIcon:SetScale(Vector(1.3, 1.3, 0))
     self.background:AddChild(self.classDisplayIcon)
 	
-	self.classDisplayText = GUIManager:CreateTextItem()
-    self.classDisplayText:SetAnchor(GUIItem.Left, GUIItem.Top)
-    self.classDisplayText:SetPosition(kClassDescriptionPosition)
-    self.classDisplayText:SetFontName(kDescriptionFont)
-    self.classDisplayText:SetTextAlignmentX(GUIItem.Align_Min)
-    self.classDisplayText:SetTextAlignmentY(GUIItem.Align_Min)
-    self.classDisplayText:SetText(kClassDetails[self.classType].Description)
-    self.classDisplayText:SetColor(ColorIntToColor(self.teamColor))
-    self.classDisplayText:SetLayer(kGUILayerPlayerHUDForeground2)
-    self.background:AddChild(self.classDisplayText)
+	self.classDisplayText1 = GUIManager:CreateTextItem()
+    self.classDisplayText1:SetAnchor(GUIItem.Left, GUIItem.Top)
+    self.classDisplayText1:SetPosition(kClassDescription1Position)
+    self.classDisplayText1:SetFontName(kMediumFont)
+    self.classDisplayText1:SetTextAlignmentX(GUIItem.Align_Min)
+    self.classDisplayText1:SetTextAlignmentY(GUIItem.Align_Min)
+    self.classDisplayText1:SetText("")
+    self.classDisplayText1:SetColor(ColorIntToColor(self.teamColor))
+    self.classDisplayText1:SetLayer(kGUILayerPlayerHUDForeground2)
+    self.background:AddChild(self.classDisplayText1)
+    
+    self.classDisplayText2 = GUIManager:CreateTextItem()
+    self.classDisplayText2:SetAnchor(GUIItem.Left, GUIItem.Top)
+    self.classDisplayText2:SetPosition(kClassDescription2Position)
+    self.classDisplayText2:SetFontName(kMediumFont)
+    self.classDisplayText2:SetTextAlignmentX(GUIItem.Align_Min)
+    self.classDisplayText2:SetTextAlignmentY(GUIItem.Align_Min)
+    self.classDisplayText2:SetText("")
+    self.classDisplayText2:SetColor(ColorIntToColor(self.teamColor))
+    self.classDisplayText2:SetLayer(kGUILayerPlayerHUDForeground2)
+    self.background:AddChild(self.classDisplayText2)
 	
 	self.classDisplayName = GUIManager:CreateTextItem()
     self.classDisplayName:SetAnchor(GUIItem.Left, GUIItem.Top)
     self.classDisplayName:SetPosition(kClassTitlePosition)
-    self.classDisplayName:SetFontName(kTitleFont)
+    self.classDisplayName:SetFontName(kLargeFont)
     self.classDisplayName:SetTextAlignmentX(GUIItem.Align_Min)
     self.classDisplayName:SetTextAlignmentY(GUIItem.Align_Min)
-    self.classDisplayName:SetText(kClassDetails[self.classType].DisplayName)
+    self.classDisplayName:SetText("")
     self.classDisplayName:SetColor(ColorIntToColor(self.teamColor))
     self.classDisplayName:SetLayer(kGUILayerPlayerHUDForeground2)
     self.background:AddChild(self.classDisplayName)
 	
+end
+
+local function UpdateClassObjects(self)
+
+    if self.classIndex > 0 and self.classIndex ~= self.lastclassIndex then
+        self.classDisplayText1:SetText(kClassDetails[self.classIndex].Description1)
+        self.classDisplayText1:SetTextClipped(true, kClassDescriptionWidth, 1024)
+        self.classDisplayText2:SetText(kClassDetails[self.classIndex].Description2)
+        self.classDisplayText2:SetTextClipped(true, kClassDescriptionWidth, 1024)
+        self.classDisplayName:SetText(kClassDetails[self.classIndex].DisplayName)
+        self.classDisplayIcon:SetSize(Vector(kClassDetails[self.classIndex].Width, kClassDetails[self.classIndex].Height, 0))
+        self.classDisplayIcon:SetTexture(kClassDetails[self.classIndex].TextureName)
+        self.lastclassIndex = self.classIndex
+    end
+    
 end
 
 local function InitializeWeaponObjects(self)
@@ -289,15 +408,15 @@ local function InitializeWeaponObjects(self)
 		self.weaponObjects[i].icon = GUIManager:CreateGraphicItem()
 		self.weaponObjects[i].icon:SetAnchor(GUIItem.Left, GUIItem.Top)
 		self.weaponObjects[i].icon:SetSize(kWeaponIconSize)
-		self.weaponObjects[i].icon:SetPosition(Vector(kWeaponIconPositionTable.x, kWeaponIconPositionTable.y + (kWeaponIconSize.y * (i - 1)), 0))
+		self.weaponObjects[i].icon:SetPosition(Vector(kWeaponIconPositionTable.x, kWeaponIconPositionTable.y + (kWeaponSpacing.y * (i - 1)), 0))
 		self.weaponObjects[i].icon:SetTexture(kCrapWeaponTexture)
 		self.weaponObjects[i].icon:SetLayer(kGUILayerPlayerHUDForeground2)
 		self.background:AddChild(self.weaponObjects[i].icon)
 		
 		self.weaponObjects[i].description = GUIManager:CreateTextItem()
 		self.weaponObjects[i].description:SetAnchor(GUIItem.Left, GUIItem.Top)
-		self.weaponObjects[i].description:SetPosition(Vector(kWeaponDescriptionTable.x, kWeaponDescriptionTable.y + kWeaponTitleSize + (kWeaponIconSize.y * (i - 1)), 0))
-		self.weaponObjects[i].description:SetFontName(kDescriptionFont)
+		self.weaponObjects[i].description:SetPosition(Vector(kWeaponDescriptionTable.x, kWeaponDescriptionTable.y + kWeaponTitleSize + (kWeaponSpacing.y * (i - 1)), 0))
+		self.weaponObjects[i].description:SetFontName(kSmallFont)
 		self.weaponObjects[i].description:SetTextAlignmentX(GUIItem.Align_Min)
 		self.weaponObjects[i].description:SetTextAlignmentY(GUIItem.Align_Min)
 		self.weaponObjects[i].description:SetText("")
@@ -307,8 +426,8 @@ local function InitializeWeaponObjects(self)
 		
 		self.weaponObjects[i].title = GUIManager:CreateTextItem()
 		self.weaponObjects[i].title:SetAnchor(GUIItem.Left, GUIItem.Top)
-		self.weaponObjects[i].title:SetPosition(Vector(kWeaponDescriptionTable.x, kWeaponDescriptionTable.y + (kWeaponIconSize.y * (i - 1)), 0))
-		self.weaponObjects[i].title:SetFontName(kTitleFont)
+		self.weaponObjects[i].title:SetPosition(Vector(kWeaponDescriptionTable.x, kWeaponDescriptionTable.y + (kWeaponSpacing.y * (i - 1)), 0))
+		self.weaponObjects[i].title:SetFontName(kMediumFont)
 		self.weaponObjects[i].title:SetTextAlignmentX(GUIItem.Align_Min)
 		self.weaponObjects[i].title:SetTextAlignmentY(GUIItem.Align_Min)
 		self.weaponObjects[i].title:SetText("")
@@ -336,6 +455,7 @@ local function UpdateWeaponObjects(self)
 					end
 					self.weaponObjects[i].icon:SetTexturePixelCoordinates(GetTexCoordsForTechId(invSlot.TechId))
 					self.weaponObjects[i].description:SetText(kWeaponDetails[index].Description)
+					self.weaponObjects[i].description:SetTextClipped(true, kWeaponDescriptionWidth, 1024)
 					self.weaponObjects[i].title:SetText(kWeaponDetails[index].DisplayName)
 					self.weaponObjects[i].icon:SetIsVisible(true)
 					self.weaponObjects[i].description:SetIsVisible(true)
@@ -374,7 +494,7 @@ local function InitializeUpgradeObjects(self)
 		self.upgradeObjects[i].description = GUIManager:CreateTextItem()
 		self.upgradeObjects[i].description:SetAnchor(GUIItem.Left, GUIItem.Top)
 		self.upgradeObjects[i].description:SetPosition(Vector(kUpgradeDescriptionTablePosition.x, kUpgradeDescriptionTablePosition.y + kUpgradeTitleSize + (kUpgradeSpacing.y * (i - 1)), 0))
-		self.upgradeObjects[i].description:SetFontName(kDescriptionFont)
+		self.upgradeObjects[i].description:SetFontName(kSmallFont)
 		self.upgradeObjects[i].description:SetTextAlignmentX(GUIItem.Align_Min)
 		self.upgradeObjects[i].description:SetTextAlignmentY(GUIItem.Align_Min)
 		self.upgradeObjects[i].description:SetText("")
@@ -385,7 +505,7 @@ local function InitializeUpgradeObjects(self)
 		self.upgradeObjects[i].title = GUIManager:CreateTextItem()
 		self.upgradeObjects[i].title:SetAnchor(GUIItem.Left, GUIItem.Top)
 		self.upgradeObjects[i].title:SetPosition(Vector(kUpgradeDescriptionTablePosition.x, kUpgradeDescriptionTablePosition.y + (kUpgradeSpacing.y * (i - 1)), 0))
-		self.upgradeObjects[i].title:SetFontName(kTitleFont)
+		self.upgradeObjects[i].title:SetFontName(kMediumFont)
 		self.upgradeObjects[i].title:SetTextAlignmentX(GUIItem.Align_Min)
 		self.upgradeObjects[i].title:SetTextAlignmentY(GUIItem.Align_Min)
 		self.upgradeObjects[i].title:SetText("")
@@ -407,26 +527,33 @@ local function UpdateUpgradeObjects(self)
 			if self.upgradeList[i] then
 				local upgSlot = self.upgradeList[i]
 				local techId = upgSlot.techId
-				local index = LookupUpgradeIndex(techId)
-				local status = upgSlot.techStatus
-				if self.upgradeObjects[i].index ~= index or self.upgradeObjects[i].status ~= status then
-					if kUpgradeDetails[index].TextureName ~= "" then
-						//Use better texture
-						self.upgradeObjects[i].icon:SetTexture(kUpgradeDetails[index].TextureName)
-					end
-					self.upgradeObjects[i].icon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId)))
-					if status == kUpgradeTechStatus.Unlocked then
-						self.upgradeObjects[i].description:SetText(kUpgradeDetails[index].UnlockedDescription)
-					else
-						self.upgradeObjects[i].description:SetText(kUpgradeDetails[index].LockedDescription)
-					end					
-					self.upgradeObjects[i].title:SetText(kUpgradeDetails[index].DisplayName)
-					self.upgradeObjects[i].icon:SetIsVisible(true)
-					self.upgradeObjects[i].description:SetIsVisible(true)
-					self.upgradeObjects[i].title:SetIsVisible(true)
-					self.upgradeObjects[i].index = index
-					self.upgradeObjects[i].status = status
+                local index = LookupUpgradeIndex(techId)
+                local status = upgSlot.techStatus
+                if self.upgradeObjects[i].index ~= index or self.upgradeObjects[i].status ~= status then
+                    if kUpgradeDetails[index].TextureName ~= "" then
+                        //Use better texture
+                        self.upgradeObjects[i].icon:SetTexture(kUpgradeDetails[index].TextureName)
+                    end
+                    self.upgradeObjects[i].icon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId)))
+                    if status == kUpgradeTechStatus.Unlocked then
+                        self.upgradeObjects[i].description:SetText(kUpgradeDetails[index].UnlockedDescription)
+                    else
+                        self.upgradeObjects[i].description:SetText(kUpgradeDetails[index].LockedDescription)
+                    end
+                    self.upgradeObjects[i].description:SetTextClipped(true, kUpgradeDescriptionWidth, 1024)
+                    self.upgradeObjects[i].title:SetText(kUpgradeDetails[index].DisplayName)
+                    self.upgradeObjects[i].icon:SetIsVisible(true)
+                    self.upgradeObjects[i].description:SetIsVisible(true)
+                    self.upgradeObjects[i].title:SetIsVisible(true)
+                    self.upgradeObjects[i].index = index
+                    self.upgradeObjects[i].status = status
 				end
+		    else
+		        self.upgradeObjects[i].description:SetText("")
+                self.upgradeObjects[i].title:SetText("")
+		        self.upgradeObjects[i].icon:SetIsVisible(false)
+                self.upgradeObjects[i].description:SetIsVisible(false)
+                self.upgradeObjects[i].title:SetIsVisible(false)
 			end
 		end
 		self.lastupgradelist = self.upgradeList
@@ -436,21 +563,32 @@ end
 
 local function InitializeGameplaySuggestions(self)
 
-	self.gameplayDisplayText = GUIManager:CreateTextItem()
-    self.gameplayDisplayText:SetAnchor(GUIItem.Left, GUIItem.Top)
-    self.gameplayDisplayText:SetPosition(kGameplayTipsPosition)
-    self.gameplayDisplayText:SetFontName(kDescriptionFont)
-    self.gameplayDisplayText:SetTextAlignmentX(GUIItem.Align_Min)
-    self.gameplayDisplayText:SetTextAlignmentY(GUIItem.Align_Min)
-    self.gameplayDisplayText:SetText("")
-    self.gameplayDisplayText:SetColor(ColorIntToColor(self.teamColor))
-    self.gameplayDisplayText:SetLayer(kGUILayerPlayerHUDForeground2)
-    self.background:AddChild(self.gameplayDisplayText)
+	self.gameplayDisplayText1 = GUIManager:CreateTextItem()
+    self.gameplayDisplayText1:SetAnchor(GUIItem.Left, GUIItem.Top)
+    self.gameplayDisplayText1:SetPosition(kGameplayTips1Position)
+    self.gameplayDisplayText1:SetFontName(kMediumFont)
+    self.gameplayDisplayText1:SetTextAlignmentX(GUIItem.Align_Min)
+    self.gameplayDisplayText1:SetTextAlignmentY(GUIItem.Align_Min)
+    self.gameplayDisplayText1:SetText("")
+    self.gameplayDisplayText1:SetColor(ColorIntToColor(self.teamColor))
+    self.gameplayDisplayText1:SetLayer(kGUILayerPlayerHUDForeground2)
+    self.background:AddChild(self.gameplayDisplayText1)
+    
+    self.gameplayDisplayText2 = GUIManager:CreateTextItem()
+    self.gameplayDisplayText2:SetAnchor(GUIItem.Left, GUIItem.Top)
+    self.gameplayDisplayText2:SetPosition(kGameplayTips2Position)
+    self.gameplayDisplayText2:SetFontName(kMediumFont)
+    self.gameplayDisplayText2:SetTextAlignmentX(GUIItem.Align_Min)
+    self.gameplayDisplayText2:SetTextAlignmentY(GUIItem.Align_Min)
+    self.gameplayDisplayText2:SetText("")
+    self.gameplayDisplayText2:SetColor(ColorIntToColor(self.teamColor))
+    self.gameplayDisplayText2:SetLayer(kGUILayerPlayerHUDForeground2)
+    self.background:AddChild(self.gameplayDisplayText2)
 
 	self.gameplayDisplayName = GUIManager:CreateTextItem()
     self.gameplayDisplayName:SetAnchor(GUIItem.Left, GUIItem.Top)
     self.gameplayDisplayName:SetPosition(kGameplayTitlePosition)
-    self.gameplayDisplayName:SetFontName(kTitleFont)
+    self.gameplayDisplayName:SetFontName(kLargeFont)
     self.gameplayDisplayName:SetTextAlignmentX(GUIItem.Align_Min)
     self.gameplayDisplayName:SetTextAlignmentY(GUIItem.Align_Min)
     self.gameplayDisplayName:SetText("")
@@ -468,7 +606,10 @@ local function UpdateGameplaySuggestions(self)
 			for i = 1, #teamGameplay do
 				if self.gametime >= teamGameplay[i].Time then
 					self.gameplayDisplayName:SetText(teamGameplay[i].Title)
-					self.gameplayDisplayText:SetText(teamGameplay[i].Tip)
+					self.gameplayDisplayText1:SetText(teamGameplay[i].Tip1)
+					self.gameplayDisplayText1:SetTextClipped(true, kGameplayTipsWidth, 1024)
+					self.gameplayDisplayText2:SetText(teamGameplay[i].Tip2)
+					self.gameplayDisplayText2:SetTextClipped(true, kGameplayTipsWidth, 1024)
 				end
 			end
 		end
@@ -491,9 +632,9 @@ function GUIHelpScreen:Initialize()
     self.background:SetLayer(kGUILayerScoreboard)
     
     self.teamType = PlayerUI_GetTeamType()
-	self.classType = LookupClassIndex()
-	self.weaponList = LookupWeaponList()
-	self.upgradeList = LookupUpgradesList(self)
+	self.classIndex = LookupClassIndex(self.teamType)
+	self.weaponList = LookupWeaponList(self.teamType)
+	self.upgradeList = LookupUpgradesList(self.teamType)
 	self.gametime = LookupGameTimeinMinutes()
 	
 	if self.teamType == kAlienTeamType then
@@ -504,13 +645,14 @@ function GUIHelpScreen:Initialize()
 		self.teamColor = kNeutralTeamColor
 	end
 	
-	if self.classType > 0 then
-		//Init stuff - player is a valid 'class'
-		InitializeClassObjects(self)
-		InitializeGameplaySuggestions(self)
-		InitializeWeaponObjects(self)
-		InitializeUpgradeObjects(self)
-		//Update Stuff?
+	InitializeClassObjects(self)
+    InitializeGameplaySuggestions(self)
+    InitializeWeaponObjects(self)
+    InitializeUpgradeObjects(self)
+	
+	if self.classIndex > 0 then
+		//Update Stuff - player is a valid 'class'
+		UpdateClassObjects(self)
 		UpdateWeaponObjects(self)
 		UpdateUpgradeObjects(self)
 		UpdateGameplaySuggestions(self)
@@ -550,9 +692,14 @@ function GUIHelpScreen:Update(deltaTime)
 	
 	if self.helpScreenButton and not self.lastButtonState then
 		// Update everything now.
-		self.weaponList = LookupWeaponList()
-		self.upgradeList = LookupUpgradesList(self)
+		self.classIndex = LookupClassIndex(self.teamType)
+		self.weaponList = LookupWeaponList(self.teamType)
+		self.upgradeList = LookupUpgradesList(self.teamType)
 		self.gametime = LookupGameTimeinMinutes()
+		self.lastclassIndex = nil
+		self.lastweaponlist = nil
+		self.lastupgradelist = nil
+		self.lastgametimeupdate = nil
 		self.lastFullupdate = 0
 	end
     
@@ -561,9 +708,11 @@ function GUIHelpScreen:Update(deltaTime)
 		//Update weapon/upgrade tables on a slower cycle.  Might not need this..
 		self.lastFullupdate = self.lastFullupdate + deltaTime
 		if self.lastFullupdate > kWeaponUpgradeUpdateSpeed then
-			self.weaponList = LookupWeaponList()
-			self.upgradeList = LookupUpgradesList(self)
+		    self.classIndex = LookupClassIndex(self.teamType)
+			self.weaponList = LookupWeaponList(self.teamType)
+			self.upgradeList = LookupUpgradesList(self.teamType)
 			self.gametime = LookupGameTimeinMinutes()
+			UpdateClassObjects(self)
 			UpdateWeaponObjects(self)
 			UpdateUpgradeObjects(self)
 			UpdateGameplaySuggestions(self)

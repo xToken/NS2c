@@ -16,7 +16,7 @@ local kShowOnTeam = { }
 kShowOnTeam["all"] = { GUIGameEnd = true, GUIFeedback = true, GUIScoreboard = true, GUIDeathMessages = true, 
                        GUIChat = true, GUIVoiceChat = true, GUIMinimapFrame = true, GUIMapAnnotations = true,
                        GUICommunicationStatusIcons = true, GUIUnitStatus = true, GUIDeathScreen = true,
-                       GUIStartVoteMenu = true, GUIVoteMenu = true, GUISensorBlips = true }
+                       GUIStartVoteMenu = true, GUIVoteMenu = true, GUISensorBlips = true, GUIHelpScreen = true }
 
 kShowOnTeam[kTeamReadyRoom] = { GUIReadyRoomOrders = true }
 kShowOnTeam[kTeam1Index] = { GUIMarineSpectatorHUD = true }
@@ -24,7 +24,7 @@ kShowOnTeam[kTeam2Index] = { GUIAlienSpectatorHUD = true }
 kShowOnTeam[kSpectatorIndex] = { GUISpectator = true }
 
 local kBothAlienAndMarine = { GUICrosshair = true, GUINotifications = true, GUIDamageIndicators = true, GUIWorldText = true,
-                              GUIPing = true, GUIWaitingForAutoTeamBalance = true, GUITechMap = true, GUIHelpScreen = true }
+                              GUIPing = true, GUIWaitingForAutoTeamBalance = true, GUITechMap = true }
 
 for n, e in pairs(kBothAlienAndMarine) do
 

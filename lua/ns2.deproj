@@ -256,6 +256,9 @@
     <filename>GUIActionIcon.lua</filename>
   </file>
   <file>
+    <filename>menu\GUIAdjustments.lua</filename>
+  </file>
+  <file>
     <filename>GUIAlienBuyMenu.lua</filename>
   </file>
   <file>
@@ -266,6 +269,9 @@
   </file>
   <file>
     <filename>GUIAuraDisplay.lua</filename>
+  </file>
+  <file>
+    <filename>menu\GUIClassicMenu.lua</filename>
   </file>
   <file>
     <filename>GUICommanderButtons.lua</filename>
@@ -289,6 +295,9 @@
     <filename>GUIGorgeBuildMenuHelp.lua</filename>
   </file>
   <file>
+    <filename>GUIHelpScreen.lua</filename>
+  </file>
+  <file>
     <filename>GUIInsight_OtherHealthbars.lua</filename>
   </file>
   <file>
@@ -296,9 +305,6 @@
   </file>
   <file>
     <filename>GUIInsight_TopBar.lua</filename>
-  </file>
-  <file>
-    <filename>menu\GUIMainMenu.lua</filename>
   </file>
   <file>
     <filename>GUIMarineBuyMenu.lua</filename>
@@ -350,6 +356,9 @@
   </file>
   <file>
     <filename>GUISpeedDebug.lua</filename>
+  </file>
+  <file>
+    <filename>GameInfo.lua</filename>
   </file>
   <file>
     <filename>GeneralEffects.lua</filename>
@@ -694,6 +703,9 @@
     <filename>Weapons\Alien\Rocket.lua</filename>
   </file>
   <file>
+    <filename>SabotCoreClient.lua</filename>
+  </file>
+  <file>
     <filename>CommAbilities\Marine\Scan.lua</filename>
   </file>
   <file>
@@ -752,6 +764,9 @@
   </file>
   <file>
     <filename>Weapons\Alien\Smash.lua</filename>
+  </file>
+  <file>
+    <filename>SpawnProtectionMixin.lua</filename>
   </file>
   <file>
     <filename>Spectator.lua</filename>
@@ -887,11 +902,5 @@
   </file>
   <file>
     <filename>Weapons\Alien\XenocideLeap.lua</filename>
-  </file>
-  <file>
-    <filename>SpawnProtectionMixin.lua</filename>
-  </file>
-  <file>
-    <filename>GUIHelpScreen.lua</filename>
   </file>
 </project>
