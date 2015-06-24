@@ -1,5 +1,6 @@
-//
+// Natural Selection 2 'Classic' Mod
 // lua\Weapons\HeavyMachineGun.lua
+// - Dragon
 
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
 Script.Load("lua/EntityChangeMixin.lua")
@@ -14,7 +15,8 @@ local kViewModelName = PrecacheAsset("models/marine/heavymachinegun/heavymachine
 local kAnimationGraph = PrecacheAsset("models/marine/heavymachinegun/heavymachinegun_view.animation_graph")
 
 local kSpread = ClipWeapon.kCone4Degrees
-local kLoopingSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/hmg_fire")
+local kLongShotSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/hmg_fire1")
+local kShortShotSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/hmg_fire2")
 local kHeavyMachineGunEndSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin_down")
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/heavymachinegun/muzzle_flash.cinematic")
 local kMuzzleAttachPoint = "fxnode_riflemuzzle"
@@ -85,15 +87,17 @@ function HeavyMachineGun:OnPrimaryAttack(player)
     
 end
 
+/*
 function HeavyMachineGun:OnPrimaryAttackEnd(player)
 
     if self.primaryAttacking then
-        Shared.StopSound(self, kLoopingSound)
+        Shared.StopSound(self, kLongShotSound)
         Weapon.OnPrimaryAttackEnd(self, player)
         self.primaryAttacking = false 
     end
     
 end
+*/
 
 function HeavyMachineGun:GetNumStartClips()
     return 2
@@ -231,8 +235,7 @@ if Client then
 
     function HeavyMachineGun:OnClientPrimaryAttackStart()
         // Start the looping sound for the rest of the shooting. Pew pew pew...
-        Shared.StopSound(self, kLoopingSound)
-        Shared.PlaySound(self, kLoopingSound)
+        Shared.PlaySound(self, kLongShotSound)
     end
     
     function HeavyMachineGun:GetTriggerPrimaryEffects()
@@ -240,16 +243,11 @@ if Client then
     end
     
     function HeavyMachineGun:OnClientPrimaryAttacking()
-        Shared.StopSound(self, kLoopingSound)
-        Shared.PlaySound(self, kLoopingSound)
+        Shared.PlaySound(self, kShortShotSound)
     end
     
     function HeavyMachineGun:OnClientPrimaryAttackEnd()
-    
-        // Just assume the looping sound is playing.
-        Shared.StopSound(self, kLoopingSound)
         Shared.PlaySound(self, kHeavyMachineGunEndSound)
-
     end
 
     function HeavyMachineGun:GetPrimaryEffectRate()
