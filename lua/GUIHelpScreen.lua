@@ -177,37 +177,37 @@ local kUpgradeTechIdToIndex = { kTechId.Carapace, kTechId.Regeneration, kTechId.
 								kTechId.Move, kTechId.Construct, kTechId.Attack, kTechId.Defend
 								}
 
-local kUpgradeDetails = {	{ DisplayName = Locale.ResolveString("CARAPACE"), TextureName = "", UnlockedDescription = "Carrypace", LockedDescription = Locale.ResolveString("CARAPACE_LOCKED") },
-							{ DisplayName = Locale.ResolveString("REGENERATION"), TextureName = "", UnlockedDescription = "Fade regen", LockedDescription = Locale.ResolveString("REGENERATION_LOCKED") },
-							{ DisplayName = Locale.ResolveString("REDEMPTION"), TextureName = "", UnlockedDescription = "Onoooos", LockedDescription = Locale.ResolveString("REDEMPTION_LOCKED") },
-							{ DisplayName = Locale.ResolveString("CRAG"), TextureName = "", UnlockedDescription = "Got any shells?", LockedDescription = Locale.ResolveString("CRAG_LOCKED") },
-							{ DisplayName = Locale.ResolveString("CELERITY"), TextureName = "", UnlockedDescription = "celery", LockedDescription = Locale.ResolveString("CELERITY_LOCKED") },
-							{ DisplayName = Locale.ResolveString("ADRENALINE"), TextureName = "", UnlockedDescription = "hold mouse2", LockedDescription = Locale.ResolveString("ADRENALINE_LOCKED") },
-							{ DisplayName = Locale.ResolveString("REDEPLOYMENT"), TextureName = "", UnlockedDescription = "cheaty teleport", LockedDescription = Locale.ResolveString("REDEPLOYMENT_LOCKED") },
-							{ DisplayName = Locale.ResolveString("SILENCE"), TextureName = "", UnlockedDescription = "shhhhh", LockedDescription = Locale.ResolveString("SILENCE_LOCKED") },
-							{ DisplayName = Locale.ResolveString("SHIFT"), TextureName = "", UnlockedDescription = "shifty", LockedDescription = Locale.ResolveString("SHIFT_LOCKED") },
-							{ DisplayName = Locale.ResolveString("SILENCE"), TextureName = "", UnlockedDescription = "stealth shhhh", LockedDescription = Locale.ResolveString("SILENCE_LOCKED") },
-							{ DisplayName = Locale.ResolveString("AURA"), TextureName = "", UnlockedDescription = "i see dead people", LockedDescription = Locale.ResolveString("AURA_LOCKED") },
-							{ DisplayName = Locale.ResolveString("GHOST"), TextureName = "", UnlockedDescription = "etheral", LockedDescription = Locale.ResolveString("GHOST_LOCKED") },
-							{ DisplayName = Locale.ResolveString("CAMOUFLAGE"), TextureName = "", UnlockedDescription = "cloaking is clearly a bad name", LockedDescription = Locale.ResolveString("CAMOUFLAGE_LOCKED") },
-							{ DisplayName = Locale.ResolveString("SHADE"), TextureName = "", UnlockedDescription = "shadey", LockedDescription = Locale.ResolveString("SHADE_LOCKED") },
-							{ DisplayName = Locale.ResolveString("FOCUS"), TextureName = "", UnlockedDescription = "swipe swipe swipe", LockedDescription = Locale.ResolveString("FOCUS_LOCKED") },
-							{ DisplayName = Locale.ResolveString("FURY"), TextureName = "", UnlockedDescription = "swwwwwwwwwwwwwwwiiippppeee", LockedDescription = Locale.ResolveString("FURY_LOCKED") },
-							{ DisplayName = Locale.ResolveString("BOMBARD"), TextureName = "", UnlockedDescription = "okay bilebomb", LockedDescription = Locale.ResolveString("BOMBARD_LOCKED") },
-							{ DisplayName = Locale.ResolveString("WHIP"), TextureName = "", UnlockedDescription = "whip it good", LockedDescription = Locale.ResolveString("WHIP_LOCKED") },
-							{ DisplayName = Locale.ResolveString("ARMOR1"), TextureName = "", UnlockedDescription = "+20", LockedDescription = Locale.ResolveString("ARMOR1_LOCKED") },
-							{ DisplayName = Locale.ResolveString("ARMOR2"), TextureName = "", UnlockedDescription = "+40", LockedDescription = Locale.ResolveString("ARMOR2_LOCKED") },
-							{ DisplayName = Locale.ResolveString("ARMOR3"), TextureName = "", UnlockedDescription = "+60", LockedDescription = Locale.ResolveString("ARMOR3_LOCKED") },
-							{ DisplayName = Locale.ResolveString("WEAPONS1"), TextureName = "", UnlockedDescription = "+10%", LockedDescription = Locale.ResolveString("WEAPONS1_LOCKED") },
-							{ DisplayName = Locale.ResolveString("WEAPONS2"), TextureName = "", UnlockedDescription = "+20%", LockedDescription = Locale.ResolveString("WEAPONS2_LOCKED") },
-							{ DisplayName = Locale.ResolveString("WEAPONS3"), TextureName = "", UnlockedDescription = "+30%", LockedDescription = Locale.ResolveString("WEAPONS3_LOCKED") },
-							{ DisplayName = Locale.ResolveString("MOTION_TRACKING"), TextureName = "", UnlockedDescription = "Piiiiiiiiiing", LockedDescription = Locale.ResolveString("MOTION_TRACKING_LOCKED") },
-							{ DisplayName = Locale.ResolveString("HAND_GRENADES"), TextureName = "", UnlockedDescription = "when in doubt nades out", LockedDescription = Locale.ResolveString("HAND_GRENADES_LOCKED") },
-							{ DisplayName = Locale.ResolveString("ARMS_LAB"), TextureName = "", UnlockedDescription = "get yo upgrades here", LockedDescription = Locale.ResolveString("ARMS_LAB_LOCKED") },
-							{ DisplayName = Locale.ResolveString("MOVE"), TextureName = "", UnlockedDescription = "mooooove", LockedDescription = Locale.ResolveString("MOVE_LOCKED") },
-							{ DisplayName = Locale.ResolveString("CONSTRUCT"), TextureName = "", UnlockedDescription = "buillllld it larger", LockedDescription = Locale.ResolveString("CONSTRUCT_LOCKED") },
-							{ DisplayName = Locale.ResolveString("ATTACK"), TextureName = "", UnlockedDescription = "get em boys", LockedDescription = Locale.ResolveString("ATTACK_LOCKED") },
-							{ DisplayName = Locale.ResolveString("DEFEND"), TextureName = "", UnlockedDescription = "protect the basement", LockedDescription = Locale.ResolveString("DEFEND_LOCKED") },
+local kUpgradeDetails = {	{ DisplayName = Locale.ResolveString("CARAPACE"), TextureName = "", UnlockedDescription = Locale.ResolveString("CARAPACE_UNLOCKED"), LockedDescription = Locale.ResolveString("CARAPACE_LOCKED") },
+							{ DisplayName = Locale.ResolveString("REGENERATION"), TextureName = "", UnlockedDescription = Locale.ResolveString("REGENERATION_UNLOCKED"), LockedDescription = Locale.ResolveString("REGENERATION_LOCKED") },
+							{ DisplayName = Locale.ResolveString("REDEMPTION"), TextureName = "", UnlockedDescription = Locale.ResolveString("REDEMPTION_UNLOCKED"), LockedDescription = Locale.ResolveString("REDEMPTION_LOCKED") },
+							{ DisplayName = Locale.ResolveString("CRAG"), TextureName = "", UnlockedDescription = Locale.ResolveString("CRAG_UNLOCKED"), LockedDescription = Locale.ResolveString("CRAG_LOCKED") },
+							{ DisplayName = Locale.ResolveString("CELERITY"), TextureName = "", UnlockedDescription = Locale.ResolveString("CELERITY_UNLOCKED"), LockedDescription = Locale.ResolveString("CELERITY_LOCKED") },
+							{ DisplayName = Locale.ResolveString("ADRENALINE"), TextureName = "", UnlockedDescription = Locale.ResolveString("ADRENALINE_UNLOCKED"), LockedDescription = Locale.ResolveString("ADRENALINE_LOCKED") },
+							{ DisplayName = Locale.ResolveString("REDEPLOYMENT"), TextureName = "", UnlockedDescription = Locale.ResolveString("REDEPLOYMENT_UNLOCKED"), LockedDescription = Locale.ResolveString("REDEPLOYMENT_LOCKED") },
+							{ DisplayName = Locale.ResolveString("SILENCE"), TextureName = "", UnlockedDescription = Locale.ResolveString("SILENCE_UNLOCKED"), LockedDescription = Locale.ResolveString("SILENCE_LOCKED") },
+							{ DisplayName = Locale.ResolveString("SHIFT"), TextureName = "", UnlockedDescription = Locale.ResolveString("SHIFT_UNLOCKED"), LockedDescription = Locale.ResolveString("SHIFT_LOCKED") },
+							{ DisplayName = Locale.ResolveString("SILENCE"), TextureName = "", UnlockedDescription = Locale.ResolveString("SILENCE_UNLOCKED"), LockedDescription = Locale.ResolveString("SILENCE_LOCKED") },
+							{ DisplayName = Locale.ResolveString("AURA"), TextureName = "", UnlockedDescription = Locale.ResolveString("AURA_UNLOCKED"), LockedDescription = Locale.ResolveString("AURA_LOCKED") },
+							{ DisplayName = Locale.ResolveString("GHOST"), TextureName = "", UnlockedDescription = Locale.ResolveString("GHOST_UNLOCKED"), LockedDescription = Locale.ResolveString("GHOST_LOCKED") },
+							{ DisplayName = Locale.ResolveString("CAMOUFLAGE"), TextureName = "", UnlockedDescription = Locale.ResolveString("CAMOUFLAGE_UNLOCKED"), LockedDescription = Locale.ResolveString("CAMOUFLAGE_LOCKED") },
+							{ DisplayName = Locale.ResolveString("SHADE"), TextureName = "", UnlockedDescription = Locale.ResolveString("SHADE_UNLOCKED"), LockedDescription = Locale.ResolveString("SHADE_LOCKED") },
+							{ DisplayName = Locale.ResolveString("FOCUS"), TextureName = "", UnlockedDescription = Locale.ResolveString("FOCUS_UNLOCKED"), LockedDescription = Locale.ResolveString("FOCUS_LOCKED") },
+							{ DisplayName = Locale.ResolveString("FURY"), TextureName = "", UnlockedDescription = Locale.ResolveString("FURY_UNLOCKED"), LockedDescription = Locale.ResolveString("FURY_LOCKED") },
+							{ DisplayName = Locale.ResolveString("BOMBARD"), TextureName = "", UnlockedDescription = Locale.ResolveString("BOMBARD_UNLOCKED"), LockedDescription = Locale.ResolveString("BOMBARD_LOCKED") },
+							{ DisplayName = Locale.ResolveString("WHIP"), TextureName = "", UnlockedDescription = Locale.ResolveString("WHIP_UNLOCKED"), LockedDescription = Locale.ResolveString("WHIP_LOCKED") },
+							{ DisplayName = Locale.ResolveString("ARMOR1"), TextureName = "", UnlockedDescription = Locale.ResolveString("ARMOR1_UNLOCKED"), LockedDescription = Locale.ResolveString("ARMOR1_LOCKED") },
+							{ DisplayName = Locale.ResolveString("ARMOR2"), TextureName = "", UnlockedDescription = Locale.ResolveString("ARMOR2_UNLOCKED"), LockedDescription = Locale.ResolveString("ARMOR2_LOCKED") },
+							{ DisplayName = Locale.ResolveString("ARMOR3"), TextureName = "", UnlockedDescription = Locale.ResolveString("ARMOR3_UNLOCKED"), LockedDescription = Locale.ResolveString("ARMOR3_LOCKED") },
+							{ DisplayName = Locale.ResolveString("WEAPONS1"), TextureName = "", UnlockedDescription = Locale.ResolveString("WEAPONS1_UNLOCKED"), LockedDescription = Locale.ResolveString("WEAPONS1_LOCKED") },
+							{ DisplayName = Locale.ResolveString("WEAPONS2"), TextureName = "", UnlockedDescription = Locale.ResolveString("WEAPONS2_UNLOCKED"), LockedDescription = Locale.ResolveString("WEAPONS2_LOCKED") },
+							{ DisplayName = Locale.ResolveString("WEAPONS3"), TextureName = "", UnlockedDescription = Locale.ResolveString("WEAPONS3_UNLOCKED"), LockedDescription = Locale.ResolveString("WEAPONS3_LOCKED") },
+							{ DisplayName = Locale.ResolveString("MOTION_TRACKING"), TextureName = "", UnlockedDescription = Locale.ResolveString("MOTION_TRACKING_UNLOCKED"), LockedDescription = Locale.ResolveString("MOTION_TRACKING_LOCKED") },
+							{ DisplayName = Locale.ResolveString("HAND_GRENADES"), TextureName = "", UnlockedDescription = Locale.ResolveString("HAND_GRENADES_UNLOCKED"), LockedDescription = Locale.ResolveString("HAND_GRENADES_LOCKED") },
+							{ DisplayName = Locale.ResolveString("ARMS_LAB"), TextureName = "", UnlockedDescription = Locale.ResolveString("ARMS_LAB_UNLOCKED"), LockedDescription = Locale.ResolveString("ARMS_LAB_LOCKED") },
+							{ DisplayName = Locale.ResolveString("MOVE"), TextureName = "", UnlockedDescription = Locale.ResolveString("MOVE_UNLOCKED"), LockedDescription = Locale.ResolveString("MOVE_LOCKED") },
+							{ DisplayName = Locale.ResolveString("CONSTRUCT"), TextureName = "", UnlockedDescription = Locale.ResolveString("CONSTRUCT_UNLOCKED"), LockedDescription = Locale.ResolveString("CONSTRUCT_LOCKED") },
+							{ DisplayName = Locale.ResolveString("ATTACK"), TextureName = "", UnlockedDescription = Locale.ResolveString("ATTACK_UNLOCKED"), LockedDescription = Locale.ResolveString("ATTACK_LOCKED") },
+							{ DisplayName = Locale.ResolveString("DEFEND"), TextureName = "", UnlockedDescription = Locale.ResolveString("DEFEND_UNLOCKED"), LockedDescription = Locale.ResolveString("DEFEND_LOCKED") },
 						}
 
 local kUpgradeIconSize = GUICorrectedScale( Vector(100, 100, 0))
@@ -657,6 +657,8 @@ function GUIHelpScreen:Initialize()
 		UpdateUpgradeObjects(self)
 		UpdateGameplaySuggestions(self)
 	end
+	
+	self.background:SetIsVisible(false)
 
 end
 
