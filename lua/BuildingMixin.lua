@@ -113,7 +113,7 @@ function BuildingMixin:AttemptToBuild(techId, origin, normal, orientation, pickV
         if commander then
         
             if Server then
-                local message = BuildCommanderErrorMessage(errorString, position)
+                local message = BuildCommanderErrorMessage(errorString, techId, position)
                 Server.SendNetworkMessage(commander, "CommanderError", message, true)  
             end
         

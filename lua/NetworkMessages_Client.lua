@@ -113,6 +113,10 @@ end
 function OnCommandCommanderError(message)
 
     local messageStr = Locale.ResolveString(message.data)
+	local method = LookupTechData(message.techId, kTechDataBuildMethodFailedLookup, nil)
+    if method then
+        messageStr = string.format(messageStr, method())
+    end
     Client.AddWorldMessage(kWorldTextMessageType.CommanderError, messageStr, message.position)
     
 end

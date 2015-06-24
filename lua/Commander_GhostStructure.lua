@@ -160,7 +160,12 @@ function CommanderGhostStructureLeftMouseButtonDown(x, y)
         end
         
     elseif errorMessage and string.len(errorMessage) > 0 and ghostStructureCoords ~= nil then
-        Client.AddWorldMessage(kWorldTextMessageType.CommanderError, Locale.ResolveString(errorMessage), ghostStructureCoords.origin)
+        local message = Locale.ResolveString(errorMessage)
+        local method = LookupTechData(ghostTechId, kTechDataBuildMethodFailedLookup, nil)
+        if method then
+            message = string.format(message, method())
+        end
+        Client.AddWorldMessage(kWorldTextMessageType.CommanderError, message, ghostStructureCoords.origin)
     end
     
 end

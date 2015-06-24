@@ -405,14 +405,16 @@ Shared.RegisterNetworkMessage("WorldText", kWorldTextMessage)
 local kCommanderErrorMessage =
 {
     data = "string (48)",
+    techId = "enum kTechId",
     position = "vector"
 }
 
-function BuildCommanderErrorMessage(data, position)
+function BuildCommanderErrorMessage(data, techId, position)
 
     local t = { }
 
     t.data = data
+    t.techId = techId
     t.position = position
     
     return t
