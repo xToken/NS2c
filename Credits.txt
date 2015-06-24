@@ -1,2 +1,10 @@
 Base 'goldsource' style movement - Maesse
 NS1 LMG remake model, font and sounds - Evil_Ice
+Imported NS1 HMG Model - Eh?
+Imported NS1 CommandCenter Model - Eh?
+Imported NS1 GrenadeLauncher AmmoPack Model - Eh?
+Imported NS1 HeavyMachineGun AmmoPack Model - Eh?
+Imported NS1 Pistol AmmoPack Model - Eh?
+Imported NS1 Shotgun AmmoPack Model - Eh?
+Imported NS1 Heavy Armor Player Model - Eh?
+Imported NS1 Offense Chamber Model - Eh?
