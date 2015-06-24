@@ -1,6 +1,7 @@
 // Natural Selection 2 'Classic' Mod
+// Source located at - https://github.com/xToken/NS2c
 // lua\Mixins\VanilaNS2CoreMoveMixin.lua - Core Vanilla NS2 movement code
-// Originally Created by 'Andreas Urwalek' for Natural Selection 2 - Unknown Worlds Entertainment, Inc
+// Originally Created by 'Andreas Urwalek' for Natural Selection 2 - Unknown Worlds Entertainment, Inc. (http://www.unknownworlds.com)
 // - Dragon
 
 local kFallAccel = 0.34

@@ -1,4 +1,5 @@
 // Natural Selection 2 'Classic' Mod
+// Source located at - https://github.com/xToken/NS2c
 // lua\InfestationMixin.lua - A Mostly client side infestation implementation
 // - Dragon
 
