@@ -3,8 +3,8 @@ Script.Load("lua/GUIUtility.lua")
 Script.Load("lua/Table.lua")
 Script.Load("lua/BindingsDialog.lua")
 Script.Load("lua/NS2Utility.lua")
-Script.Load("lua/SabotCoreClient.lua")
 Script.Load("lua/PrecacheList.lua")
+Script.Load("lua/GUIAssets.lua")
 
 local kModeText =
 {

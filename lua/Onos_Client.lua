@@ -16,3 +16,6 @@ end
 function Onos:GetHeadAttachpointName()
     return "Onos_Head"
 end
+
+function Onos:RecalculateShakeLightList()    
+end
