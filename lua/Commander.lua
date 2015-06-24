@@ -73,9 +73,6 @@ else
     Script.Load("lua/Commander_Client.lua")
 end
 
-PrecacheAsset("cinematics/vfx_materials/placement_valid.surface_shader")
-PrecacheAsset("cinematics/vfx_materials/placement_invalid.surface_shader")
-
 Commander.kSelectMode = enum( {'None', 'SelectedGroup', 'JumpedToGroup'} )
 
 // adjust relevancy to see things in the corners of the overhead view
