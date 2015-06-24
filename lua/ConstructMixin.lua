@@ -53,10 +53,12 @@ ConstructMixin.optionalCallbacks =
 
 function ConstructMixin:__initmixin()
 
-    // used for client side material effect
+    // used for client side building effect
     self.underConstruction = false
+    
     self.timeLastConstruct = 0
     self.timeOfNextBuildWeldEffects = 0
+    self.lastAutoBuildTick = Shared.GetTime()
     self.buildTime = 0
     self.buildFraction = 0
 
@@ -69,6 +71,10 @@ function ConstructMixin:__initmixin()
         self:SetHealth( self:GetMaxHealth() * kStartHealthScalar )
         self:SetArmor( self:GetMaxArmor() * kStartHealthScalar )
     end
+
+    if not Predict then
+        self:AddTimedCallback(ConstructMixin.OnConstructUpdate, kUpdateIntervalFull)
+    end
     
     self.startsBuilt  = false
     
@@ -76,13 +82,17 @@ end
 
 local function CreateBuildEffect(self)
 
-    local model = self:GetRenderModel()
-    if not self.buildMaterial and model then
-    
-        local material = Client.CreateRenderMaterial()
-        material:SetMaterial(kBuildMaterial)
-        model:AddMaterial(material)
-        self.buildMaterial = material
+    if not self.buildMaterial then
+        
+        local model = self:GetRenderModel()
+        if model then
+        
+            local material = Client.CreateRenderMaterial()
+            material:SetMaterial(kBuildMaterial)
+            model:AddMaterial(material)
+            self.buildMaterial = material
+        
+        end
         
     end    
     
@@ -90,39 +100,44 @@ end
 
 local function RemoveBuildEffect(self)
 
-    local model = self:GetRenderModel()
-    if self.buildMaterial and model then
-    
+    if self.buildMaterial then
+      
+        local model = self:GetRenderModel()  
         local material = self.buildMaterial
         model:RemoveMaterial(material)
         Client.DestroyRenderMaterial(material)
         self.buildMaterial = nil
-        
+                    
     end            
 
 end
 
-local function SharedUpdate(self, deltaTime)
-
-    if Server then
-        
-        local effectTimeout = Shared.GetTime() - self.timeLastConstruct > 1
-        self.underConstruction = not self:GetIsBuilt() and not effectTimeout
-        
-        // Only Alien structures auto build.
-        // Update build fraction every tick to be smooth.
+if Server then
+  
+	function ConstructMixin:OnConstructUpdate(deltaTime)
+	        
+	    local t = Shared.GetTime()
+	    local effectTimeout = t - self.timeLastConstruct > 0.65
+	    self.underConstruction = not self:GetIsBuilt() and not effectTimeout
+	    
+	    // Only Alien structures auto build.
+	    // Update build fraction every tick to be smooth.
         if not self:GetIsBuilt() and GetIsAlienUnit(self) and self:GetIsAlive() then
+            //Something seems really wrong with this...
+            if not deltaTime then
+                deltaTime = t - self.lastAutoBuildTick
+            end
             
-            local buildTime = deltaTime
+            local buildTime = deltaTime * kAutoBuildScalar
             if self.GetAutoBuildScalar then
-                buildTime = buildTime * self:GetAutoBuildScalar()
-            else
-                buildTime = buildTime * kAutoBuildScalar
+                buildTime = deltaTime * self:GetAutoBuildScalar()
             end
             
             if not self.GetCanAutoBuild or self:GetCanAutoBuild() then
                 self:Construct(buildTime)
             end
+            
+            self.lastAutoBuildTick = t
         
         end
         
@@ -130,20 +145,38 @@ local function SharedUpdate(self, deltaTime)
         if GetGamerules():GetAutobuild() then
             self:SetConstructionComplete()
         end
-        
-    elseif Client then
-    
-        if GetIsMarineUnit(self) then
-            if self.underConstruction then
-                CreateBuildEffect(self)
-            else
-                RemoveBuildEffect(self)
-            end
-        end
-    
+		
+		if self.underConstruction or not self.constructionComplete then
+	        return kUpdateIntervalFull
+	    end
+	    
+	    // stop running once we are fully constructed
+	    return false
     end
-    
-end
+
+end // Server
+
+if Client then
+
+	function ConstructMixin:OnConstructUpdate(deltaTime)
+	
+	    if GetIsMarineUnit(self) then
+	        if self.underConstruction then
+	            CreateBuildEffect(self)
+	        else
+	            RemoveBuildEffect(self)
+	        end
+	        if self.underConstruction or not self.constructionComplete then
+	            return kUpdateIntervalLow
+	        end
+	    end
+	    
+	    return false
+	    
+	end
+
+end  // Client
+
 
 if Server then
 
@@ -185,14 +218,6 @@ function ConstructMixin:ResetConstructionStatus()
     self.buildFraction = 0
     self.constructionComplete = false
     
-end
-
-function ConstructMixin:OnUpdate(deltaTime)
-    SharedUpdate(self, deltaTime)
-end
-
-function ConstructMixin:OnProcessMove(input)
-    SharedUpdate(self, input.time)
 end
 
 function ConstructMixin:OnUpdateAnimationInput(modelMixin)
