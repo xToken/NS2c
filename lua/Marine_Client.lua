@@ -20,10 +20,11 @@ local kHighlightMaterial = PrecacheAsset("cinematics/vfx_materials/marine_highli
 function MarineUI_GetHasObservatory()
 
     local player = Client.GetLocalPlayer()
+    local gameInfo = GetGameInfoEntity()
     
-    if player and player:GetGameMode() == kGameMode.Classic then    
+    if player and gameInfo and gameInfo:GetGameMode() == kGameMode.Classic then    
         return GetHasTech(player, kTechId.Observatory)
-    elseif player and player:GetGameMode() == kGameMode.Combat then    
+    elseif player and gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then    
         return true
     end
     
@@ -34,10 +35,11 @@ end
 function MarineUI_GetHasArmsLab()
 
     local player = Client.GetLocalPlayer()
+    local gameInfo = GetGameInfoEntity()
     
-    if player and player:GetGameMode() == kGameMode.Classic then
+    if player and gameInfo and gameInfo:GetGameMode() == kGameMode.Classic then
         return GetHasTech(player, kTechId.ArmsLab)
-    elseif player and player:GetGameMode() == kGameMode.Combat then    
+    elseif player and gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then    
         return true
     end
     
@@ -157,7 +159,8 @@ end
 function Marine:Buy()
     
     // Don't allow display in the ready room
-    if self:GetTeamNumber() ~= 0 and Client.GetLocalPlayer() == self and self:GetGameMode() == kGameMode.Combat then
+    local gameInfo = GetGameInfoEntity()
+    if self:GetTeamNumber() ~= 0 and Client.GetLocalPlayer() == self and gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
     
         if not self.buyMenu then
         

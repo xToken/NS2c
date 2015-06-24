@@ -53,8 +53,9 @@ local function VoteConcedeRound(player)
 end
 
 local function VoteChamber(player, techId)
-
-    if player and player:GetGameMode() == kGameMode.Classic then
+    
+    local gameInfo = GetGameInfoEntity()
+    if player and gameInfo and gameInfo:GetGameMode() == kGameMode.Classic then
         local teamInfo = GetTeamInfoEntity(player:GetTeamNumber())
         if ((teamInfo and teamInfo.GetActiveUnassignedHiveCount) and teamInfo:GetActiveUnassignedHiveCount() or 0) > 0 and GetGamerules():GetGameStarted() then
             GetGamerules():CastVoteByPlayer(techId, player)

@@ -1,4 +1,5 @@
 // Natural Selection 2 'Classic' Mod
+// Source located at - https://github.com/xToken/NS2c
 // lua\TurretFactory.lua
 // - Dragon
 
@@ -156,34 +157,45 @@ function TurretFactory:OnResearchComplete(researchId)
         
 end
 
-function GetRoomHasNoTurretFactory(techId, origin, normal, commander)
+function CheckTurretFactoryLimit(techId, origin, normal, commander)
 
     local location = GetLocationForPoint(origin)
     local locationName = location and location:GetName() or nil
-    local validRoom = false
+    local gameInfo = GetGameInfoEntity()
+    local factories = 0
     
-    if locationName then
-    
-        validRoom = true
+    if locationName and gameInfo then
     
         for index, tf in ientitylist(Shared.GetEntitiesWithClassname("TurretFactory")) do
             
             if tf:GetLocationName() == locationName then
-                validRoom = false
-                break
+                factories = factories + 1
             end
             
         end
+        
+        return factories < gameInfo:GetClassicMaxFactoriesPerRoom()
     
     end
     
-    return validRoom
+    return false
 
+end
+
+function GetTurretFactoryLimit()
+
+    local gameInfo = GetGameInfoEntity()
+    if gameInfo then
+        return gameInfo:GetClassicMaxFactoriesPerRoom()
+    end
+    return 1
+    
 end
 
 if Server then
     
     function TurretFactory:OnConstructionComplete()
+    
         local entities = GetEntitiesWithMixinWithinRange("TurretFactoryMixin", self:GetOrigin(), kTurretFactoryAttachRange)
         for index, entity in ipairs(entities) do
             if entity:GetTeamNumber() == self:GetTeamNumber() then
@@ -192,6 +204,7 @@ if Server then
                 end
             end
         end
+        
     end
     
     function TurretFactory:OnDestroy()

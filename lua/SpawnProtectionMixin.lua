@@ -1,4 +1,5 @@
 // Natural Selection 2 'Classic' Mod
+// Source located at - https://github.com/xToken/NS2c
 // lua\SpawnProtection.lua
 // - Dragon
 
@@ -67,8 +68,10 @@ function SpawnProtectionMixin:OnTakeDamage(damage, attacker, doer, point)
 end
 
 function SpawnProtectionMixin:ActivateSpawnProtection()
+    local gameInfo = GetGameInfoEntity()
+    local sp = gameInfo and gameInfo:GetCombatSpawnProtectionLength() or 3
 	self.spawnProtection = true
-	self:AddTimedCallback(SpawnProtectionMixin.ClearSpawnProtection, kNS2cServerSettings.CombatSpawnProtection)
+	self:AddTimedCallback(SpawnProtectionMixin.ClearSpawnProtection, sp)
 end
 
 function SpawnProtectionMixin:GetHasSpawnProtection()

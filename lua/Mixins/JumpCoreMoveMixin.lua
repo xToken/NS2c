@@ -1,4 +1,5 @@
 // Natural Selection 2 'Classic' Mod
+// Source located at - https://github.com/xToken/NS2c
 // lua\Mixins\JumpCoreMoveMixin.lua - Jumping movement code.
 // - Dragon
 
@@ -95,10 +96,10 @@ local function UpdateFallDamage(self, impactForce)
         return
     end
     
-    //Check if Fall Damage is enabled    
-    if not self:GetFallDamageEnabled() then
+    local gameInfo = GetGameInfoEntity()
+    if gameInfo and not gameInfo:GetFallDamageEnabled() then
         return
-    end
+    end    
     
 	if math.abs(impactForce) > kFallDamageMinimumVelocity then
 		local damage = math.max(0, math.abs(impactForce * kFallDamageScalar) - kFallDamageMinimumVelocity * kFallDamageScalar)

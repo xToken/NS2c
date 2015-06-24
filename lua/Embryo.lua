@@ -326,6 +326,7 @@ function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorSca
     local newUpgradesAmount = 0
     local replacementUpgrades = { }
     local currentUpgrades = self:GetUpgrades()
+    local gameInfo = GetGameInfoEntity()
     
     for _, upgradeId in ipairs(self.evolvingUpgrades) do
     
@@ -347,7 +348,7 @@ function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorSca
         self.gestationTime = 5
     end
     
-    if self:GetGameMode() == kGameMode.Combat then
+    if gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
         self.gestationTime = self.gestationTime * kCombatModeGestationTimeScalar
     end
     

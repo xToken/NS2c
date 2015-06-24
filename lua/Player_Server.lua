@@ -368,7 +368,8 @@ end
 
 function Player:OnRestoreUpgrades()
     //Request upgrades back from tree.
-    if self:GetGameMode() == kGameMode.Combat then
+    local gameInfo = GetGameInfoEntity()
+    if gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
         RetrieveCombatPlayersUpgradeTable(self)
         self:UpdateArmorAmount()
         self:CheckMinExperience()

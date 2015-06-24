@@ -141,6 +141,9 @@ kTechDataCategory = "techcategory"
 kTechDataKeyStructure = "keystructure"
 // custom message displayed for the commander when build method failed
 kTechDataBuildMethodFailedMessage = "commanderbuildmethodfailed"
+// configuration specific modifiers for custom build failure messages
+kTechDataBuildMethodFailedLookup = "commanderbuildmethodfailedlookup"
+
 kTechDataAbilityType = "abilitytype"
 kTechDataShowOrderLine = "showorderline"
 
@@ -533,6 +536,7 @@ function BuildTechData()
 			[kTechDataBuildMethodFailedMessage] = "COMMANDERERROR_TOO_MANY_SENTRIES",
 			[kStructureBuildNearClass] = "TurretFactory",
 			[kTechDataBuildRequiresMethod] = GetCheckSentryLimit,
+			[kTechDataBuildMethodFailedLookup] = GetSentryLimit,
 			[kTechDataGhostGuidesMethod] = GetTurretFactoriesInRange
 		},
 		
@@ -582,8 +586,9 @@ function BuildTechData()
 			[kTechDataPointValue] = kTurretFactoryPointValue,
 			[kTechDataHotkey] = Move.R,
 			[kTechDataTooltipInfo] = "TURRET_FACTORY_TOOLTIP",
-			[kTechDataBuildRequiresMethod] = GetRoomHasNoTurretFactory,
-			[kTechDataBuildMethodFailedMessage] = "COMMANDERERROR_ONLY_ONE_FACTORY_PER_ROOM"
+			[kTechDataBuildMethodFailedMessage] = "COMMANDERERROR_TOO_MANY_TURRET_FACTORIES",
+			[kTechDataBuildMethodFailedLookup] = GetTurretFactoryLimit,
+			[kTechDataBuildRequiresMethod] = CheckTurretFactoryLimit
 		},
 		
         {[kTechDataId] = kTechId.AdvancedTurretFactory,
@@ -620,6 +625,7 @@ function BuildTechData()
 			[kStructureAttachId] = { kTechId.AdvancedTurretFactory },
 			[kStructureAttachRange] = kTurretFactoryAttachRange,
 			[kTechDataBuildMethodFailedMessage] = "COMMANDERERROR_TOO_MANY_SIEGE_CANNONS",
+			[kTechDataBuildMethodFailedLookup] = GetSiegeCannonLimit,
 			[kTechDataBuildRequiresMethod] = GetCheckSiegeCannonLimit
 		},
 		
@@ -1938,17 +1944,9 @@ function LookupTechData(techId, fieldName, default)
         
     end
     
-    local GameMode
-    if Server then
-        GameMode = GetServerGameMode()
-    elseif Client then
-        local player = Client.GetLocalPlayer()
-        if player then
-            GameMode = player:GetGameMode()
-        end
-    end
+    local gameInfo = GetGameInfoEntity()
     
-    if fieldName == kTechDataCostKey and GameMode == kGameMode.Combat then
+    if fieldName == kTechDataCostKey and gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
         //In Combat, use combat costs
         fieldName = kTechDataCombatCost
     end    

@@ -2679,8 +2679,11 @@ end
 function PlayerUI_GetHasMotionTracking()
 
     local player = Client.GetLocalPlayer()
+    local gameInfo = GetGameInfoEntity()
+    
     if player.gameStarted then
-        if player:GetGameMode() == kGameMode.Classic then
+    
+        if gameInfo and gameInfo:GetGameMode() == kGameMode.Classic then
             local techTree = GetTechTree()
             if techTree then
                 local mtracking = techTree:GetTechNode(kTechId.MotionTracking)
@@ -2690,9 +2693,11 @@ function PlayerUI_GetHasMotionTracking()
                 return false
             end
         end
-        if player:GetGameMode() == kGameMode.Combat then
+        
+        if gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
             return player:GetHasUpgrade(kTechId.MotionTracking)
         end
+        
     end
     
 end
@@ -2701,11 +2706,13 @@ end
 function PlayerUI_GetArmorLevel(researched)
     local armorLevel = 0
     local player = Client.GetLocalPlayer()
+    local gameInfo = GetGameInfoEntity()
+    
     if player.gameStarted then
         
         armorLevel = player:GetArmorLevel()
         
-        if player:GetGameMode() == kGameMode.Classic then
+        if gameInfo and gameInfo:GetGameMode() == kGameMode.Classic then
         
             local techTree = GetTechTree()
         
@@ -2749,11 +2756,13 @@ end
 function PlayerUI_GetWeaponLevel(researched)
     local weaponLevel = 0
     local player = Client.GetLocalPlayer()
+    local gameInfo = GetGameInfoEntity()
+    
     if player.gameStarted then
     
         weaponLevel = player:GetWeaponLevel()
         
-        if player:GetGameMode() == kGameMode.Classic then
+        if gameInfo and gameInfo:GetGameMode() == kGameMode.Classic then
     
             local techTree = GetTechTree()
         
@@ -3501,9 +3510,9 @@ end
 
 function PlayerUI_GetGameMode()
 
-    local player = Client.GetLocalPlayer()
-    if player then
-        return player:GetGameMode()
+    local gameInfo = GetGameInfoEntity()
+    if gameInfo then
+        return gameInfo:GetGameMode()
     end
     return kGameMode.Classic
     
@@ -3532,9 +3541,10 @@ end
 function PlayerUI_GetNextLevelXP()
 
     local player = Client.GetLocalPlayer()
-    if player then
+    local gameInfo = GetGameInfoEntity()
+    if player and gameInfo then
         local nLevel = player:GetPlayerLevel() + 1
-        if nLevel > player:GetMaxPlayerLevel() then
+        if nLevel > gameInfo:GetCombatMaxLevel() then
             return 0
         end
         return CalculateLevelXP(nLevel)

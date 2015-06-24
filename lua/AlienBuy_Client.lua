@@ -111,9 +111,10 @@ function AlienBuy_GetUpgradesForChamber(category)
     local upgrades = {}
     local techTree = GetTechTree()
     local player = Client.GetLocalPlayer()
+    local gameInfo = GetGameInfoEntity()
     
     if techTree then
-        if player:GetGameMode() == kGameMode.Classic then
+        if gameInfo and gameInfo:GetGameMode() == kGameMode.Classic then
             for _, upgradeId in ipairs(techTree:GetAddOnsForTechId(kTechId.AllAliens)) do
             
                 if GetChamberTypeForUpgrade(upgradeId) == category then        

@@ -323,11 +323,17 @@ function GetIsRecycledUnit(unit)
     return unit ~= nil and HasMixin(unit, "Recycle") and unit:GetIsRecycled()
 end
 
+//Cache this..
+local kGameInfoEnt
 function GetGameInfoEntity()
 
+    if kGameInfoEnt then
+        return kGameInfoEnt
+    end
     local entityList = Shared.GetEntitiesWithClassname("GameInfo")
-    if entityList:GetSize() > 0 then    
-        return entityList:GetEntityAtIndex(0)
+    if entityList:GetSize() > 0 then
+        kGameInfoEnt = entityList:GetEntityAtIndex(0)
+        return kGameInfoEnt
     end
 
 end
@@ -2695,7 +2701,8 @@ function GetWhips(teamNumber)
 end
 
 function GetChambers(techId, player)
-    if player:GetGameMode() == kGameMode.Combat then
+    local gameInfo = GetGameInfoEntity()
+    if gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
         return 3
     end
     if techId == kTechId.Crag then

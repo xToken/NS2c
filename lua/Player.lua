@@ -166,8 +166,6 @@ local networkVars =
     
     clientIndex = "entityid",
     
-    gamemode = "enum kGameMode",
-    
     viewModelId = "private entityid",
     
     resources = "private float (0 to " .. kMaxResources .. " by 0.1)",
@@ -205,8 +203,7 @@ local networkVars =
     giveDamageTime = "private time",
 
     level = "float (0 to " .. kCombatMaxAllowedLevel .. " by 0.001)",
-    maxlevel = "private integer (0 to " .. kCombatMaxAllowedLevel .. ")",
-    falldamage = "private boolean",
+    
     pushImpulse = "private vector",
     pushTime = "private time",
     
@@ -279,9 +276,6 @@ function Player:OnCreate()
         self.giveDamageTime = 0
         self.sendTechTreeBase = false
         self.waitingForAutoTeamBalance = false
-        self.gamemode = GetServerGameMode()
-        self.falldamage = kNS2cServerSettings.FallDamage
-        self.maxlevel = kNS2cServerSettings.CombatMaxLevel
         
     end
     
@@ -497,14 +491,6 @@ function Player:GetReceivesVaporousDamage()
     return true
 end
 
-function Player:GetGameMode()
-    return self.gamemode
-end
-
-function Player:SetGameMode(newmode)
-    self.gamemode = newmode
-end
-
 -- Special unique client-identifier 
 function Player:GetClientIndex()
     return self.clientIndex
@@ -523,10 +509,6 @@ function Player:GetMaxPlayerLevel()
     return self.maxlevel
 end
 
-function Player:SetMaxPlayerLevel(newLevel)
-    self.maxlevel = newLevel
-end
-
 function Player:GetPlayerExperience()
     local levelprogress = self.level - math.floor(self.level)
     local lastlevelxp = CalculateLevelXP(math.floor(self.level))
@@ -535,7 +517,9 @@ function Player:GetPlayerExperience()
 end
 
 function Player:AddExperience(xp)
-    if self.level >= self:GetMaxPlayerLevel() then
+    local gameInfo = GetGameInfoEntity()
+    local maxLevel = gameInfo and gameInfo:GetCombatMaxLevel() or 0
+    if self.level >= maxLevel then
         return
     end
     local oldlevel = math.floor(self.level)
@@ -547,13 +531,13 @@ function Player:AddExperience(xp)
     local xpbalance = math.floor(xp - xptolevel)
     //Shared.Message(string.format("XP Added %s : Old Level %s : New Level %s : LastXPBreak %s : NextXPBreak %s : OldXPTowardsLevel %s : NewXPTowardsLevel %s : XPToLevel %s : XPBalance %s.", 
     //            xp, self.level, self.level + xpaddition, lastlevelxp, nextlevelxp, self.level - oldlevel, xpaddition, xptolevel, xpbalance))
-    if xp >= xptolevel and self.level < self:GetMaxPlayerLevel() then
+    if xp >= xptolevel and self.level < maxLevel then
         //Trigger levelup!
         self:Levelup()
     else
-        self.level = math.min(self.level + xpaddition, self:GetMaxPlayerLevel())
+        self.level = math.min(self.level + xpaddition, maxLevel)
     end
-    if xpbalance > 0 and self.level < self:GetMaxPlayerLevel() then
+    if xpbalance > 0 and self.level < maxLevel then
         self:AddExperience(xpbalance)
     end
 end
@@ -564,7 +548,9 @@ end
 
 function Player:Levelup()
     //Trigger effects, give player resources (points)
-    self.level = math.min(math.floor(self.level) + 1, self:GetMaxPlayerLevel())
+    local gameInfo = GetGameInfoEntity()
+    local maxLevel = gameInfo and gameInfo:GetCombatMaxLevel() or 0
+    self.level = math.min(math.floor(self.level) + 1, maxLevel)
     self:AddResources(kCombatResourcesPerLevel)
     self:TriggerEffects("res_received")
 end
@@ -1564,10 +1550,6 @@ end
 
 function Player:GetCanStep()
     return self:GetIsOnGround()
-end
-
-function Player:GetFallDamageEnabled()
-    return self.falldamage
 end
 
 function Player:OnTakeFallDamage(damage)

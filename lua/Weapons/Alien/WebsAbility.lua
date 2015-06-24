@@ -74,8 +74,10 @@ function WebsAbility:GetDropMapName()
 end
 
 function WebsAbility:IsAllowed(player)
+    local gameInfo = GetGameInfoEntity()
+    local maxStructures = gameInfo and gameInfo:GetClassicMaxAlienStructures() or 8
     local structures = GetEntitiesForTeamWithinRange(self:GetDropClassName(), player:GetTeamNumber(), player:GetEyePos(), kMaxAlienStructureRange)
-    return GetHasTech(player, self:GetRequiredTechId()) and #structures < kMaxAlienStructuresofType
+    return GetHasTech(player, self:GetRequiredTechId()) and #structures < maxStructures
 end
 
 local kWebOffset = 0.1

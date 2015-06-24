@@ -19,11 +19,13 @@ kOnosFov = 90
 
 kHiveYOffset = 2.494
 kHiveUnderAttackTime = 15
+
 kMaxAlienStructureRange = 25
-kMaxAlienStructuresofType = 8
+kMaxAlienStructuresofType = 16
+
 kMaxBuildingHives = 1
 kAutoBuildScalar = 0.33
-kMaxGorgeOwnedStructures = 24
+kMaxGorgeOwnedStructures = 64   // Might need to watch these
 kChamberLostNotification = 0    // Amount of Upgrade Chambers remaining for alerts to be sent
 kPingOfDeathDelay = 2
 kPingOfDeathDamagePercent = 12

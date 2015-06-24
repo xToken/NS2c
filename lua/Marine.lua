@@ -233,8 +233,9 @@ function Marine:GetArmorLevel()
 
     local armorLevel = 0
     local techTree = GetTechTree(self:GetTeamNumber())
+    local gameInfo = GetGameInfoEntity()
 
-    if techTree and self:GetGameMode() == kGameMode.Classic then
+    if techTree and gameInfo and gameInfo:GetGameMode() == kGameMode.Classic then
     
         local armor3Node = techTree:GetTechNode(kTechId.Armor3)
         local armor2Node = techTree:GetTechNode(kTechId.Armor2)
@@ -248,7 +249,7 @@ function Marine:GetArmorLevel()
             armorLevel = 1
         end
         
-    elseif self:GetGameMode() == kGameMode.Combat then
+    elseif gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
     
         if self:GetHasUpgrade(kTechId.Armor3) then
             armorLevel = 3
@@ -268,8 +269,9 @@ function Marine:GetWeaponLevel()
 
     local weaponLevel = 0
     local techTree = GetTechTree(self:GetTeamNumber())
+    local gameInfo = GetGameInfoEntity()
 
-    if techTree and self:GetGameMode() == kGameMode.Classic then
+    if techTree and gameInfo and gameInfo:GetGameMode() == kGameMode.Classic then
         
             local weapon3Node = techTree:GetTechNode(kTechId.Weapons3)
             local weapon2Node = techTree:GetTechNode(kTechId.Weapons2)
@@ -283,7 +285,7 @@ function Marine:GetWeaponLevel()
                 weaponLevel = 1
             end
             
-    elseif self:GetGameMode() == kGameMode.Combat then
+    elseif gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
     
         if self:GetHasUpgrade(kTechId.Weapons3) then
             weaponLevel = 3
@@ -568,7 +570,9 @@ function Marine:GetCanDropWeapon(weapon, ignoreDropTimeLimit)
         weapon = self:GetActiveWeapon()
     end
     
-    if weapon ~= nil and weapon.GetIsDroppable and weapon:GetIsDroppable() and self:GetGameMode() == kGameMode.Classic then
+    local gameInfo = GetGameInfoEntity()
+    
+    if weapon ~= nil and weapon.GetIsDroppable and weapon:GetIsDroppable() and gameInfo and gameInfo:GetGameMode() == kGameMode.Classic then
     
         // Don't drop weapons too fast.
         if ignoreDropTimeLimit or (Shared.GetTime() > (self.timeOfLastDrop + kDropWeaponTimeLimit)) then
@@ -751,7 +755,8 @@ function Marine:OnProcessMove(input)
             self.unitStatusPercentage = 0
         end
         
-        if self:GetGameMode() == kGameMode.Combat then
+        local gameInfo = GetGameInfoEntity()
+        if gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
             self:UpdateCombatTimers()
         end
         

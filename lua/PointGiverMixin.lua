@@ -180,7 +180,8 @@ if Server then
                 
                 if self:isa("Player") and currentAttacker ~= attacker then
                     currentAttacker:AddAssistKill()
-                    if currentAttacker:GetGameMode() == kGameMode.Combat then
+                    local gameInfo = GetGameInfoEntity()
+                    if gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
                         // add assist XP
                         currentAttacker:AddExperience(kCombatExperienceBaseAward * damageFraction * kCombatFriendlyAssistScalar)
                     end
@@ -195,12 +196,13 @@ if Server then
             if attacker:isa("Player") then
                 attacker:AddKill()
                 if Server then
-                    if self:GetGameMode() == kGameMode.Classic then
+                    local gameInfo = GetGameInfoEntity()
+                    if gameInfo and gameInfo:GetGameMode() == kGameMode.Classic then
                         local awardTeam = attacker:GetTeam()
                         if awardTeam.AwardResources and awardTeam ~= self:GetTeam() then
                             awardTeam:AwardResources(self:GetResourceValue(attacker), attacker)
                         end
-                    elseif self:GetGameMode() == kGameMode.Combat then
+                    elseif gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
                         //Combat, trigger XP gain
                         //Using assists for shared XP, not local range.
                         /*local players = GetEntitiesForTeamWithinRange("Player", attacker:GetTeamNumber(), attacker:GetOrigin(), kCombatFriendlyAwardRange)

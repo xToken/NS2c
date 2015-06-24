@@ -1,4 +1,5 @@
 // Natural Selection 2 'Classic' Mod
+// Source located at - https://github.com/xToken/NS2c
 // lua\SiegeCannon.lua
 // - Dragon
 
@@ -431,11 +432,10 @@ function GetCheckSiegeCannonLimit(techId, origin, normal, commander)
 
     local location = GetLocationForPoint(origin)
     local locationName = location and location:GetName() or nil
+    local gameInfo = GetGameInfoEntity()
     local cannons = 0
     
-    if locationName then
-    
-        validRoom = true
+    if locationName and gameInfo then
         
         for index, sc in ientitylist(Shared.GetEntitiesWithClassname("SiegeCannon")) do
             
@@ -444,10 +444,22 @@ function GetCheckSiegeCannonLimit(techId, origin, normal, commander)
             end
             
         end
+        
+        return cannons < gameInfo:GetClassicMaxSiegesPerRoom()
     
     end
     
-    return cannons < kSiegeCannonsPerFactory
+    return false
+    
+end
+
+function GetSiegeCannonLimit()
+
+    local gameInfo = GetGameInfoEntity()
+    if gameInfo then
+        return gameInfo:GetClassicMaxSiegesPerRoom()
+    end
+    return 1
     
 end
 

@@ -68,12 +68,13 @@ function UpgradableMixin:GetUpgradeList()
     
         local upgrade = self["upgrade" .. i]
         local techTree = GetTechTree(self:GetTeamNumber())
+        local gameInfo = GetGameInfoEntity()
         
-        if self:GetGameMode() == kGameMode.Combat then
+        if gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
             if upgrade ~= kTechId.None and GetUpgradeAvailable(upgrade, self) then
                 table.insert(list, upgrade)
             end
-        elseif self:GetGameMode() == kGameMode.Classic then
+        elseif gameInfo and gameInfo:GetGameMode() == kGameMode.Classic then
             if upgrade ~= kTechId.None and ( techTree and techTree:GetIsTechAvailable(upgrade) ) then
                 table.insert(list, upgrade)
             end
@@ -162,7 +163,8 @@ function UpgradableMixin:Reset()
 end
 
 function UpgradableMixin:OnKill()
-    if self:GetGameMode() == kGameMode.Classic then
+    local gameInfo = GetGameInfoEntity()
+    if gameInfo and gameInfo:GetGameMode() == kGameMode.Classic then
         self:ClearUpgrades()
     end
 end
@@ -213,7 +215,8 @@ function BuyMenus_GetUpgradePurchased(techId)
 end
 
 function GetTechAvailable(techId, player)
-    if player:GetGameMode() == kGameMode.Combat then
+    local gameInfo = GetGameInfoEntity()
+    if gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
         return GetUpgradeAvailable(techId, player)
     end
     local techNode = GetTechTree(player:GetTeamNumber()):GetTechNode(techId)

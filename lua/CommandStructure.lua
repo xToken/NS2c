@@ -137,14 +137,8 @@ function CommandStructure:OnUpdateAnimationInput(modelMixin)
 end
 
 function CommandStructure:GetCanBeUsedConstructed()
-    local gamemode
-    if Server then
-        gamemode = GetServerGameMode()
-    elseif Client then
-        local player = Client.GetLocalPlayer()
-        gamemode = player:GetGameMode()
-    end
-    return not self:GetIsOccupied() and gamemode == kGameMode.Classic
+    local gameInfo = GetGameInfoEntity()
+    return not self:GetIsOccupied() and gameInfo and gameInfo:GetGameMode() == kGameMode.Classic
 end
 
 // allow players to enter the hives before game start to signal that they want to command

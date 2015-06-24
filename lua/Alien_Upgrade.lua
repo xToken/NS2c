@@ -94,8 +94,9 @@ end
 function GetIsAlienUpgradeAllowed(player, techId, upgradeList)
 
     local allowed = false
+    local gameInfo = GetGameInfoEntity()
 
-    if player and player:GetGameMode() == kGameMode.Classic then
+    if gameInfo and gameInfo:GetGameMode() == kGameMode.Classic then
     
         allowed = true
     
@@ -112,7 +113,7 @@ function GetIsAlienUpgradeAllowed(player, techId, upgradeList)
     
     end
     
-    if player and player:GetGameMode() == kGameMode.Combat then
+    if gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
         //No hive type restrictions in Combat
         allowed = true
         

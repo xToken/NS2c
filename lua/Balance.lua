@@ -260,13 +260,16 @@ kSentryAttackBaseROF = 0.33
 kSentryAttackRandROF = 0.0
 kSentryAttackBulletsPerSalvo = 1
 kConfusedSentryBaseROF = 1.0
-kSentriesPerFactory = 3
+kMaxSentriesPerRoom = 12 // Ugh
+
+// keeping this here for ref
+kMaxTurretFactoriesPerRoom = 3
 
 kSiegeCannonDamage = 400
 kSiegeCannonDamageType = kDamageType.StructuresOnly
 kSiegeCannonRange = 25 //1100 NS1 - Bigger than NS1, dropping to 25
 kSiegeCannonSplashRadius = 3
-kSiegeCannonsPerFactory = 5
+kMaxSiegesPerRoom = 10
 
 kWeapons1DamageScalar = 1.1
 kWeapons2DamageScalar = 1.2
@@ -466,10 +469,7 @@ kAlienMaxSpawnInterval = 8
 kAlienEggSpawnTime = 6
 kAlienEggsPerHive = 10
 
-
-
-//Combat Stuff
-                           //1   2    3    4    5    6    7    8     9     10    11    12    13    14    15    16    17    18    19    20
+//Combat Stuff             //1   2    3    4    5    6    7    8     9     10    11    12    13    14    15    16    17    18    19    20
                            //0  +100 +125 +150 +150 +150 +175 +200  +250  +300  +350  +400  +450  +500  +500  +600  +600  +700  +700  +800
 kCombatLevelsToExperience = {0, 100, 225, 375, 525, 675, 850, 1050, 1300, 1600, 1950, 2350, 2800, 3200, 3700, 4300, 4900, 5600, 6300, 7100 } //0 for last level, to show nothing further.
 kCombatBaseExperience = 100

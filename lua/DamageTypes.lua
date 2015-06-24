@@ -57,11 +57,12 @@ end
 function GetUpgradedDamage(attacker, target, doer, damage, damageType, hitPoint)
 
     local damageScalar = 1
+    local gameInfo = GetGameInfoEntity()
 
     if attacker ~= nil then
     
         // Damage upgrades only affect weapons, not ARCs, Sentries, MACs, Mines, etc.
-        if doer:isa("Weapon") or doer:isa("Grenade")  and attacker:isa("Player") and attacker:GetGameMode() == kGameMode.Classic then
+        if doer:isa("Weapon") or doer:isa("Grenade")  and attacker:isa("Player") and gameInfo and gameInfo:GetGameMode() == kGameMode.Classic then
             if(GetHasTech(attacker, kTechId.Weapons3, true)) then
                 damageScalar = kWeapons3DamageScalar
             elseif(GetHasTech(attacker, kTechId.Weapons2, true)) then
@@ -71,7 +72,7 @@ function GetUpgradedDamage(attacker, target, doer, damage, damageType, hitPoint)
             end
         end
         
-        if doer:isa("Weapon") or doer:isa("Grenade")  and attacker:isa("Player") and attacker:GetGameMode() == kGameMode.Combat then
+        if doer:isa("Weapon") or doer:isa("Grenade")  and attacker:isa("Player") and gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
             if attacker:GetHasUpgrade(kTechId.Weapons3) then
                 damageScalar = kWeapons3DamageScalar
             elseif attacker:GetHasUpgrade(kTechId.Weapons2) then

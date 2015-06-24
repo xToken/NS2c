@@ -1,4 +1,5 @@
 // Natural Selection 2 'Classic' Mod
+// Source located at - https://github.com/xToken/NS2c
 // lua\NS2Gamerules.lua
 // - Dragon
 
@@ -23,58 +24,12 @@ local kPregameLength = 10
 local kTimeToReadyRoom = 8
 local kPauseToSocializeBeforeMapcycle = 30
 local kGameStartMessageInterval = 30
-local kRequireMarineComm = true
-//This should be moved to a teammessage/localized string at some point
-local kCombatTimerMessage = "There are %s remaining until %s have won!"
+local kCombatTeamNotificationTimes = { 999, 300, 60, 30 } // In Seconds Before Game Ends - first value is updated to match server setting
 
 // How often to send the "No commander" message to players in seconds.
 local kSendNoCommanderMessageRate = 60
-
-// Find team start with team 0 or for specified team. Remove it from the list so other teams don't start there. Return nil if there are none.
-function NS2Gamerules:ChooseTechPoint(techPoints, teamNumber)
-
-    local validTechPoints = { }
-    local totalTechPointWeight = 0
-    
-    // Build list of valid starts (marked as "neutral" or for this team in map)
-    for _, currentTechPoint in pairs(techPoints) do
-    
-        // Always include tech points with team 0 and never include team 3 into random selection process
-        local teamNum = currentTechPoint:GetTeamNumberAllowed()
-        if (teamNum == 0 or teamNum == teamNumber) and teamNum ~= 3 then
-        
-            table.insert(validTechPoints, currentTechPoint)
-            totalTechPointWeight = totalTechPointWeight + currentTechPoint:GetChooseWeight()
-            
-        end
-        
-    end
-    
-    local chosenTechPointWeight = self.techPointRandomizer:random(0, totalTechPointWeight)
-    local chosenTechPoint = nil
-    local currentWeight = 0
-    for _, currentTechPoint in pairs(validTechPoints) do
-    
-        currentWeight = currentWeight + currentTechPoint:GetChooseWeight()
-        if chosenTechPointWeight - currentWeight <= 0 then
-        
-            chosenTechPoint = currentTechPoint
-            break
-            
-        end
-        
-    end
-    
-    // Remove it from the list so it isn't chosen by other team
-    if chosenTechPoint ~= nil then
-        table.removevalue(techPoints, chosenTechPoint)
-    else
-        assert(false, "ChooseTechPoint couldn't find a tech point for team " .. teamNumber)
-    end
-    
-    return chosenTechPoint
-    
-end
+// Allow players to spawn in for free (not using IP or eggs) for this many seconds after the game starts
+local kFreeSpawnTime = 60
 
 ////////////
 // Server //
@@ -90,9 +45,52 @@ if Server then
     NS2Gamerules.kMarineStartSound = PrecacheAsset("sound/ns2c.fev/ns2c/ui/marine_gamestart")
     NS2Gamerules.kAlienStartSound = PrecacheAsset("sound/ns2c.fev/ns2c/ui/alien_gamestart")
     NS2Gamerules.kCountdownSound = PrecacheAsset("sound/NS2.fev/common/countdown")
+    
+    // Find team start with team 0 or for specified team. Remove it from the list so other teams don't start there. Return nil if there are none.
+    function NS2Gamerules:ChooseTechPoint(techPoints, teamNumber)
 
-    // Allow players to spawn in for free (not using IP or eggs) for this many seconds after the game starts
-    local kFreeSpawnTime = 60
+        local validTechPoints = { }
+        local totalTechPointWeight = 0
+        
+        // Build list of valid starts (marked as "neutral" or for this team in map)
+        for _, currentTechPoint in pairs(techPoints) do
+        
+            // Always include tech points with team 0 and never include team 3 into random selection process
+            local teamNum = currentTechPoint:GetTeamNumberAllowed()
+            if (teamNum == 0 or teamNum == teamNumber) and teamNum ~= 3 then
+            
+                table.insert(validTechPoints, currentTechPoint)
+                totalTechPointWeight = totalTechPointWeight + currentTechPoint:GetChooseWeight()
+                
+            end
+            
+        end
+        
+        local chosenTechPointWeight = self.techPointRandomizer:random(0, totalTechPointWeight)
+        local chosenTechPoint = nil
+        local currentWeight = 0
+        for _, currentTechPoint in pairs(validTechPoints) do
+        
+            currentWeight = currentWeight + currentTechPoint:GetChooseWeight()
+            if chosenTechPointWeight - currentWeight <= 0 then
+            
+                chosenTechPoint = currentTechPoint
+                break
+                
+            end
+            
+        end
+        
+        // Remove it from the list so it isn't chosen by other team
+        if chosenTechPoint ~= nil then
+            table.removevalue(techPoints, chosenTechPoint)
+        else
+            assert(false, "ChooseTechPoint couldn't find a tech point for team " .. teamNumber)
+        end
+        
+        return chosenTechPoint
+        
+    end
 
     function NS2Gamerules:BuildTeam(teamType)
 
@@ -200,6 +198,9 @@ if Server then
         self.autobuild = false
         self.teamsReady = false
         self.tournamentMode = false
+        self.combatGameTimer = 0
+        self.combatDefaultWinner = 0
+        self.combatLastTeamNotification = 0
         
         self:SetIsVisible(false)
         self:SetPropagate(Entity.Propagate_Never)
@@ -567,11 +568,18 @@ if Server then
         ClearCombatPlayersUpgradeTables()
         self.forceGameStart = false
         self.preventGameEnd = nil
-        self.sentCombatGameStartMessage = false
-        self.sentCombat5MinuteWarning = false
-        self.sentCombat1MinuteWarning = false
-        self.sentCombat30SecondWarning = false
-        self.sentCombatGameOver = false
+        self.combatGameTimer = 0
+        self.combatDefaultWinner = 0
+        self.combatLastTeamNotification = 0
+        
+        local gameInfo = GetGameInfoEntity()
+        if gameInfo then
+            self.combatGameTimer = gameInfo:GetCombatRoundLength() * 60
+            self.combatDefaultWinner = gameInfo:GetCombatDefaultWinner()
+            self.combatLastTeamNotification = self.combatGameTimer + 1
+            kCombatTeamNotificationTimes[1] = self.combatGameTimer
+        end
+        
         // Reset banned players for new game
         self.bannedPlayers = {}
         
@@ -1002,38 +1010,33 @@ if Server then
 
     end
     
-    local function CheckCombatTimer(self)
+    local function CheckCombatTimer(self, timePassed)
+        
         if self:GetGameState() == kGameState.Started then
-            local time = Shared.GetTime()
-            if not self.sentCombatGameStartMessage then
-                local message = string.format(kCombatTimerMessage, string.format("%s Minutes", kNS2cServerSettings.CombatRoundLength), ConditionalValue(kNS2cServerSettings.CombatDefaultWinner == 1, "Marines", "Aliens"))
-                Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Combat", -1, kTeamReadyRoom, kNeutralTeamType, message), true)
-                self.sentCombatGameStartMessage = true
+
+            self.combatGameTimer = self.combatGameTimer - timePassed
+            
+            for i = 1, #kCombatTeamNotificationTimes do
+                
+                if kCombatTeamNotificationTimes[i] < self.combatLastTeamNotification and self.combatGameTimer < kCombatTeamNotificationTimes[i] then
+                    SendTeamMessage(self.team1, ConditionalValue(self.combatDefaultWinner == 1, kTeamMessageTypes.CombatDefaultWinner, kTeamMessageTypes.CombatDefaultLoser), kCombatTeamNotificationTimes[i])
+                    SendTeamMessage(self.team2, ConditionalValue(self.combatDefaultWinner == 1, kTeamMessageTypes.CombatDefaultLoser, kTeamMessageTypes.CombatDefaultWinner), kCombatTeamNotificationTimes[i])
+                    self.combatLastTeamNotification = kCombatTeamNotificationTimes[i]
+                    break
+                end
+
             end
-            if self.gameStartTime + (kNS2cServerSettings.CombatRoundLength * 60) <= (time + 300) and not self.sentCombat5MinuteWarning then
-                local message = string.format(kCombatTimerMessage, "5 Minutes", ConditionalValue(kNS2cServerSettings.CombatDefaultWinner == 1, "Marines", "Aliens"))
-                Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Combat", -1, kTeamReadyRoom, kNeutralTeamType, message), true)
-                self.sentCombat5MinuteWarning = true
-            end
-            if self.gameStartTime + (kNS2cServerSettings.CombatRoundLength * 60) <= (time + 60) and not self.sentCombat1MinuteWarning then
-                local message = string.format(kCombatTimerMessage, "1 Minute", ConditionalValue(kNS2cServerSettings.CombatDefaultWinner == 1, "Marines", "Aliens"))
-                Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Combat", -1, kTeamReadyRoom, kNeutralTeamType, message), true)
-                self.sentCombat1MinuteWarning = true
-            end
-            if self.gameStartTime + (kNS2cServerSettings.CombatRoundLength * 60) <= (time + 30) and not self.sentCombat30SecondWarning then
-                local message = string.format(kCombatTimerMessage, "30 Seconds", ConditionalValue(kNS2cServerSettings.CombatDefaultWinner == 1, "Marines", "Aliens"))
-                Server.SendNetworkMessage("Chat", BuildChatMessage(false, "Combat", -1, kTeamReadyRoom, kNeutralTeamType, message), true)
-                self.sentCombat30SecondWarning = true
-            end
-            if self.gameStartTime + (kNS2cServerSettings.CombatRoundLength * 60) <= time and not self.sentCombatGameOver then
+            
+            if self.combatGameTimer <= 0 and self.combatLastTeamNotification > 0 then
                 //Game over sherlock
-                if kNS2cServerSettings.CombatDefaultWinner == 1 then
+                if self.combatDefaultWinner == 1 then
                     self:EndGame(self.team1)
                 else
                     self:EndGame(self.team2)
                 end
-                self.sentCombatGameOver = true
+                self.combatLastTeamNotification = 0
             end
+            
         end
     end
     
@@ -1083,7 +1086,7 @@ if Server then
                 end
                 
                 if GetServerGameMode() == kGameMode.Combat then
-                    CheckCombatTimer(self)
+                    CheckCombatTimer(self, timePassed)
                 end
 
 				self:UpdatePlayerSkill()
@@ -1243,6 +1246,7 @@ if Server then
         local newPlayer
         local oldPlayerWasSpectating = client and client:GetSpectatingPlayer()
         local oldTeamNumber = player:GetTeamNumber()
+        local gameInfo = GetGameInfoEntity()
         
         // Join new team
         if oldTeamNumber ~= newTeamNumber or force then        
@@ -1331,7 +1335,7 @@ if Server then
                     newPlayer:SetExitTime()
                 end
 
-				if player:GetGameMode() == kGameMode.Combat then
+				if gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
 				    //Clears table if changing teams
                     CheckCombatPlayersUpgradeTable(newPlayer)
                 end
@@ -1390,9 +1394,13 @@ if Server then
             local team1Players = self.team1:GetNumPlayers()
 			local team1Commander = self.team1:GetCommander()
             local team2Players = self.team2:GetNumPlayers()
-            local combatmode = GetServerGameMode() == kGameMode.Combat
+            local gameInfo = GetGameInfoEntity()
+            local commRequired = false
+            if gameInfo and gameInfo:GetGameMode() == kGameMode.Classic then
+                commRequired = gameInfo:GetClassicCommanderRequired()
+            end
             
-            if (team1Players > 0 and team2Players > 0 and (team1Commander or not kRequireMarineComm or combatmode)) or (Shared.GetCheatsEnabled() and (team1Players > 0 or team2Players > 0)) and (not self.tournamentMode or self.teamsReady) then
+            if (team1Players > 0 and team2Players > 0 and (team1Commander or not commRequired)) or (Shared.GetCheatsEnabled() and (team1Players > 0 or team2Players > 0)) and (not self.tournamentMode or self.teamsReady) then
             
                 if self:GetGameState() == kGameState.NotStarted then
                     self:SetGameState(kGameState.PreGame)

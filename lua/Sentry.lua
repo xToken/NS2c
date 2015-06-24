@@ -621,11 +621,10 @@ function GetCheckSentryLimit(techId, origin, normal, commander)
 
     local location = GetLocationForPoint(origin)
     local locationName = location and location:GetName() or nil
+    local gameInfo = GetGameInfoEntity()
     local sentries = 0
     
-    if locationName then
-    
-        validRoom = true
+    if locationName and gameInfo then
         
         for index, sentry in ientitylist(Shared.GetEntitiesWithClassname("Sentry")) do
             
@@ -634,10 +633,22 @@ function GetCheckSentryLimit(techId, origin, normal, commander)
             end
             
         end
+        
+        return sentries < gameInfo:GetClassicMaxSentriesPerRoom()
     
     end
     
-    return sentries < kSentriesPerFactory
+    return false    
+    
+end
+
+function GetSentryLimit()
+
+    local gameInfo = GetGameInfoEntity()
+    if gameInfo then
+        return gameInfo:GetClassicMaxSentriesPerRoom()
+    end
+    return 1
     
 end
 

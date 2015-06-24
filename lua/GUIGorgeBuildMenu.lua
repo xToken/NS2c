@@ -76,9 +76,11 @@ function GorgeBuild_GetCanAffordAbility(techId)
 end
 
 function GorgeBuild_GetIsBuildLegal(techId)
-    local player = Client.GetLocalPlayer()  
+    local player = Client.GetLocalPlayer()
+    local gameInfo = GetGameInfoEntity()
+    local maxStructures = gameInfo and gameInfo:GetClassicMaxAlienStructures() or 8
     local structures = GetEntitiesForTeamWithinRange(LookupTechData(techId, kTechDataMapName, ""), player:GetTeamNumber(), player:GetEyePos(), kMaxAlienStructureRange)
-    return #structures < kMaxAlienStructuresofType
+    return #structures < maxStructures
 end
 
 function GorgeBuild_GetStructureCost(techId)

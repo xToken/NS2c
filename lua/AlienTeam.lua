@@ -104,7 +104,9 @@ local function RemoveGorgeStructureFromClient(self, techId, clientId)
         end
         
         if structure then
-        
+            
+            Shared.Message(string.format("Removed structure of type %s for clientId %s as limit of %s structures per type per player was exceeded.", EnumToString(kTechId, techId), clientId, kMaxGorgeOwnedStructures))
+            
             table.remove(structureTypeTable[techId], removeIndex)
             structure.consumed = true
             if structure:GetCanDie() then
