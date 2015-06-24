@@ -20,7 +20,7 @@ local kModeText =
     ["loading_assets"]          = { text = Locale.ResolveString("LOADING_ASSETS") },
     ["downloading_mods"]        = { text = Locale.ResolveString("DOWNLOADING_MODS") },
     ["checking_consistency"]    = { text = Locale.ResolveString("CHECKING_CONSISTENCY") },
-    ["compiling_shaders"]       = { text = Locale.ResolveString("LOADING_SHADERS"), display = "count" }
+    ["compiling_shaders"]       = { text = Locale.ResolveString("LOADING_SHADERS") }
 }
 
 local kTipStrings =
@@ -57,7 +57,6 @@ local transition = nil
 local currentBgId
 local currentBackground = nil
 local lastFadeEndTime = 0.0
-local currentMapName = ''
 local mainLoading = false
 local bgSize
 local bgPos
@@ -66,6 +65,7 @@ local kBgFadeTime = 2.0
 local kBgStayTime = 3.0
 
 local mapBackgrounds = false
+local searchedMapBackgrounds = false
 local randomizer = nil
 
 local usedBGs = {}
@@ -119,7 +119,7 @@ local function UpdateServerInformation()
             end
         end
     end
-
+    
     local text = ""
     
     if msg1 ~= "" then
@@ -168,19 +168,28 @@ function OnUpdateRender()
         local suffix
         
         if kModeText[mode] then
-            text = kModeText[mode].text
-            if kModeText[mode].display == "count" and total ~= 0 then
+            text = string.format("%s", kModeText[mode].text, count, total)
+            if total ~= 0 then
                 text = text .. string.format(" (%d%%)", math.ceil((count / total) * 100))
             end
         else            
             text = Locale.ResolveString("LOADING_2")
         end
         
-        if mode == "loading" then
-            local mapName = Shared.GetMapName()
+        local mapName = Shared.GetMapName()
+        if mode == "loading_map" then
             if mapName ~= "" then
-                text = text .. " " .. Shared.GetMapName()
+                text = text .. " " .. string.UTF8Upper(mapName)
             end    
+        end
+        
+        if mode == "initializing_game" and mapName ~= "" and searchedMapBackgrounds == false then
+            InitializeBackgrounds()
+            if mapBackgrounds == true then
+                currentBgId = 0
+                lastFadeEndTime = Shared.GetTime() - 2*kBgStayTime
+            end
+            searchedMapBackgrounds = true
         end
         
         statusText:SetText(text)
@@ -204,26 +213,6 @@ function OnUpdateRender()
         
     end
         
-    // Check if map specific backgrounds became available
-    if not mainLoading then
-        local newMapName = GetMapName()
-        if newMapName ~= '' and currentMapName ~= newMapName then    
-            currentMapName = newMapName
-            InitializeBackgrounds()
-            currentBgId = 0
-            lastFadeEndTime = time - 2*kBgStayTime
-        end
-    end
-    
-  /* Should not be needed anymore
-    if not mainLoading and precached ~= true then
-        if Client.GetOptionBoolean("precacheExtra", false) == true then
-            PrecacheFileList()
-            precached = true
-        end
-    end
-  */
-  
     // Update background image slideshow
     if backgrounds ~= nil then
     
@@ -405,7 +394,6 @@ function OnLoadComplete(main)
     // Create all bgs
     if not mainLoading then
         
-        currentMapName = GetMapName()
         InitializeBackgrounds()
 
         // Init background slideshow state
@@ -444,7 +432,7 @@ function OnLoadComplete(main)
     
     local statusOffset = GUIScale(50)
 
-    local shadowOffset = 2
+    local shadowOffset = GUIScale(2)
 
     statusTextShadow = GUI.CreateItem()
     statusTextShadow:SetOptionFlag(GUIItem.ManageRender)
@@ -453,6 +441,7 @@ function OnLoadComplete(main)
     statusTextShadow:SetTextAlignmentY(GUIItem.Align_Center)
     statusTextShadow:SetFontName(Fonts.kAgencyFB_Large)
     statusTextShadow:SetColor(Color(0,0,0,1))
+    statusTextShadow:SetScale(GetScaledVector())
     statusTextShadow:SetLayer(3)
         
     statusText = GUI.CreateItem()
@@ -461,6 +450,7 @@ function OnLoadComplete(main)
     statusText:SetTextAlignmentX(GUIItem.Align_Max)
     statusText:SetTextAlignmentY(GUIItem.Align_Center)
     statusText:SetFontName(Fonts.kAgencyFB_Large)
+    statusText:SetScale(GetScaledVector())
     statusText:SetLayer(3)
 
     dotsTextShadow = GUI.CreateItem()
@@ -470,6 +460,7 @@ function OnLoadComplete(main)
     dotsTextShadow:SetTextAlignmentY(GUIItem.Align_Center)
     dotsTextShadow:SetFontName(Fonts.kAgencyFB_Large)
     dotsTextShadow:SetColor(Color(0,0,0,1))
+    dotsTextShadow:SetScale(GetScaledVector())
     dotsTextShadow:SetLayer(3)
     
     dotsText = GUI.CreateItem()
@@ -478,8 +469,9 @@ function OnLoadComplete(main)
     dotsText:SetTextAlignmentX(GUIItem.Align_Min)
     dotsText:SetTextAlignmentY(GUIItem.Align_Center)
     dotsText:SetFontName(Fonts.kAgencyFB_Large)
+    dotsText:SetScale(GetScaledVector())
     dotsText:SetLayer(3)
-    
+
     if not mainLoading then
 
         // Draw background behind it (create first so it's behind)
@@ -494,6 +486,7 @@ function OnLoadComplete(main)
         tipText:SetTextAlignmentX(GUIItem.Align_Center)
         tipText:SetTextAlignmentY(GUIItem.Align_Center)
         tipText:SetFontName(Fonts.kAgencyFB_Small)
+        tipText:SetScale(GetScaledVector())
         tipText:SetLayer(3)
         
         // Only show tip if show hints is on
@@ -515,6 +508,7 @@ function OnLoadComplete(main)
         tipNextHint:SetTextAlignmentX(GUIItem.Align_Center)
         tipNextHint:SetTextAlignmentY(GUIItem.Align_Center)
         tipNextHint:SetFontName(Fonts.kAgencyFB_Small)
+        tipNextHint:SetScale(GetScaledVector())
         tipNextHint:SetColor(Color(1, 1, 0, 1))
         tipNextHint:SetIsVisible( Client.GetOptionBoolean("showHints", true) )
         tipNextHint:SetLayer(3)
@@ -529,13 +523,15 @@ function OnLoadComplete(main)
     modsText:SetOptionFlag(GUIItem.ManageRender)
     modsText:SetPosition(Vector(Client.GetScreenWidth() * 0.15, Client.GetScreenHeight() * 0.18, 0))
     modsText:SetFontName(Fonts.kAgencyFB_Small)
+    modsText:SetScale(GetScaledVector())
     modsText:SetLayer(3)
     modsText:SetIsVisible(false)
     
     modsTextShadow = GUI.CreateItem()
     modsTextShadow:SetOptionFlag(GUIItem.ManageRender)
-    modsTextShadow:SetPosition(Vector(Client.GetScreenWidth() * 0.15 + 1, Client.GetScreenHeight() * 0.18 + 1, 0))
+    modsTextShadow:SetPosition(Vector(Client.GetScreenWidth() * 0.15 + GUIScale(1.5), Client.GetScreenHeight() * 0.18 + GUIScale(1.5), 0))
     modsTextShadow:SetFontName(Fonts.kAgencyFB_Small)
+    modsTextShadow:SetScale(GetScaledVector())
     modsTextShadow:SetLayer(2)
     modsTextShadow:SetIsVisible(false)
     modsTextShadow:SetColor(Color(0, 0, 0, 1))
