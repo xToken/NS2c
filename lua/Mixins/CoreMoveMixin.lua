@@ -54,6 +54,7 @@ CoreMoveMixin.optionalCallbacks =
 CoreMoveMixin.networkVars =
 {
     onGround = "compensated boolean",
+    onGroundSurface = "enum kSurfaces",
     isOnEntity = "private compensated boolean",
     timeGroundTouched = "private time",
     jumpHandled = "private compensated boolean",
@@ -85,6 +86,7 @@ Script.Load("lua/Mixins/LadderCoreMoveMixin.lua")
 function CoreMoveMixin:__initmixin()
 
     self.onGround = false
+    self.onGroundSurface = kSurfaces.metal
     self.isOnEntity = false
     self.timeGroundTouched = 0
     self.onLadder = false
@@ -146,6 +148,15 @@ function CoreMoveMixin:GetIsOnGround()
     return self.onGround
 end
 
+function CoreMoveMixin:GetOnGroundSurface()
+    //Temp cheaty fix
+    local fixedOrigin = Vector(self:GetOrigin())
+    fixedOrigin.y = fixedOrigin.y + self:GetExtents().y / 2
+    local trace = Shared.TraceRay(fixedOrigin, fixedOrigin + Vector(0, -(2.5*self:GetExtents().y + .1), 0), CollisionRep.Move, PhysicsMask.AllButPCs, EntityFilterOne(self))
+    local material = trace.surface
+    return StringToEnum(kSurfaces, material) or kSurfaces.metal
+end
+
 function CoreMoveMixin:GetLastJumpTime()
     return self.timeOfLastJump
 end
@@ -192,7 +203,7 @@ local function GetIsCloseToGround(self, distance)
 
     local onGround = false
     local normal = Vector()
-    local completedMove, hitEntities
+    local completedMove, hitEntities, surfaceMaterial
     
     if self.controller == nil then
     
@@ -204,7 +215,7 @@ local function GetIsCloseToGround(self, distance)
         // we're on the ground.
         local offset = Vector(0, -distance, 0)
         // need to do multiple slides here to not get traped in V shaped spaces
-        completedMove, hitEntities, normal = self:PerformMovement(offset, kMaxMoveTraces, nil, false)
+        completedMove, hitEntities, normal, surfaceMaterial = self:PerformMovement(offset, kMaxMoveTraces, nil, false)
         
         if normal and normal.y >= 0.5 then
             onGround = true
@@ -212,7 +223,7 @@ local function GetIsCloseToGround(self, distance)
     
     end
     
-    return onGround, normal, hitEntities
+    return onGround, normal, hitEntities, surfaceMaterial
     
 end
 
@@ -224,7 +235,11 @@ local function UpdateOnGroundState(self, velocity)
 
     PROFILE("CoreMoveMixin:UpdateOnGroundState")
     
-    local onGround, normal, hitEntities = GetIsCloseToGround(self, self.GetDistanceToGround and self:GetDistanceToGround() or kOnGroundDistance)
+    local onGround, normal, hitEntities, surfaceMaterial = GetIsCloseToGround(self, self.GetDistanceToGround and self:GetDistanceToGround() or kOnGroundDistance)
+    
+    if surfaceMaterial then
+        self.onGroundSurface = StringToEnum(kSurfaces, surfaceMaterial) or kSurfaces.metal
+    end
     
     if self.OverrideUpdateOnGround then
         onGround = self:OverrideUpdateOnGround(onGround)
@@ -308,7 +323,11 @@ local function FlushCollisionCallbacks(self, velocity)
 
     if not self.onGround and self.storedNormal then
 
-        local onGround, normal, hitEntities = GetIsCloseToGround(self, self.GetDistanceToGround and self:GetDistanceToGround() or kOnGroundDistance)
+        local onGround, normal, hitEntities, surfaceMaterial = GetIsCloseToGround(self, self.GetDistanceToGround and self:GetDistanceToGround() or kOnGroundDistance)
+        
+        if surfaceMaterial then
+            self.onGroundSurface = StringToEnum(kSurfaces, surfaceMaterial) or kSurfaces.metal
+        end
         
         if self.OverrideUpdateOnGround then
             onGround = self:OverrideUpdateOnGround(onGround)

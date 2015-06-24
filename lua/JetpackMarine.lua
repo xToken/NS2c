@@ -367,13 +367,15 @@ function JetpackMarine:GetIsJetpacking()
     return self.jetpacking and (self:GetFuel()> 0) and not self:GetIsStunned() and not self:GetIsWebbed()
 end
 
-function JetpackMarine:ProcessMoveOnModel(input)
+/**
+ * Since Jetpack is a child of JetpackMarine, we need to manually
+ * call ProcessMoveOnModel() on it so animations play properly.
+ */
+function JetpackMarine:ProcessMoveOnModel(deltaTime)
 
-    if not self:GetIsDestroyed() then
-        local jetpack = self:GetJetpack()
-        if jetpack then
-            jetpack:ProcessMoveOnModel(input)
-        end
+    local jetpack = self:GetJetpack()
+    if jetpack then
+        jetpack:ProcessMoveOnModel(deltaTime)
     end
     
 end

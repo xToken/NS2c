@@ -106,7 +106,7 @@ function WeaponOwnerMixin:ProcessMoveOnWeapons(input)
                 activeWeapon:ProcessMoveOnWeapon(self, input)
             end
             
-            activeWeapon:ProcessMoveOnModel(input)
+            activeWeapon:ProcessMoveOnModel(input.time)
             
         end
         

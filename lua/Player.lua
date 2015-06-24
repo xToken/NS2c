@@ -176,7 +176,7 @@ local networkVars =
     
     timeOfLastUse = "private time",
     
-    --bodyYaw must be compenstated as it feeds into the animation as a pose parameter
+    --bodyYaw must be compensated as it feeds into the animation as a pose parameter
     bodyYaw = "compensated interpolated float (-3.14159265 to 3.14159265 by 0.003)",
     standingBodyYaw = "interpolated float (0 to 6.2831853 by 0.003)",
     
@@ -262,6 +262,7 @@ function Player:OnCreate()
 
     if Client then
         InitMixin(self, HelpMixin)
+        //self:AddFieldWatcher("locationId", Player.OnLocationIdChange)
     end
 
     self:SetLagCompensated(true)
@@ -1297,11 +1298,11 @@ local function UpdateAnimationInputs(self, input)
     
     local viewModel = self:GetViewModelEntity()
     if viewModel then
-        viewModel:ProcessMoveOnModel()
+        viewModel:ProcessMoveOnModel(input.time)
     end
     
     if self.ProcessMoveOnModel then
-        self:ProcessMoveOnModel()
+        self:ProcessMoveOnModel(input.time)
     end
 
 end
@@ -1310,8 +1311,10 @@ function Player:ConfigurePhysicsCuller()
     local viewCoords = self:GetViewCoords()
     local viewPoint = self:GetOrigin()
     local fovDegrees = Math.Degrees(GetScreenAdjustedFov(Client.GetEffectiveFov(self), 4/3))
+    // turn off physics culling (maxDist== 0) for overhead view; FOV is not necessarily correct and maxdist can be quite long
+    local maxDistOrOff = PlayerUI_IsOverhead() and 0 or Player.kPhysicsCullMax
         
-    Client.ConfigurePhysicsCuller(viewPoint, self:GetViewAngles(), fovDegrees, Player.kPhysicsCullMin, Player.kPhysicsCullMax)
+    Client.ConfigurePhysicsCuller(viewPoint, self:GetViewAngles(), fovDegrees, Player.kPhysicsCullMin, maxDistOrOff)
 end
 
 function Player:OnProcessIntermediate(input)
@@ -1450,7 +1453,7 @@ function Player:OnProcessSpectate(deltaTime)
     
     local viewModel = self:GetViewModelEntity()
     if viewModel then
-        viewModel:ProcessMoveOnModel()
+        viewModel:ProcessMoveOnModel(deltaTime)
     end
     
     self:OnUpdatePlayer(deltaTime)
@@ -1795,21 +1798,16 @@ end
 
 function Player:GetMaterialBelowPlayer()
 
-    local fixedOrigin = Vector(self:GetOrigin())
+    local surfaceIndex = self:GetOnGroundSurface()
+    local material = surfaceIndex and EnumToString(kSurfaces, surfaceIndex) or "metal"
     
-    -- Start the trace a bit above the very bottom of the origin because
-    -- of cases where a large velocity has pushed the origin below the
-    -- surface the player is on
-    fixedOrigin.y = fixedOrigin.y + self:GetExtents().y / 2
-    local trace = Shared.TraceRay(fixedOrigin, fixedOrigin + Vector(0, -(2.5*self:GetExtents().y + .1), 0), CollisionRep.Move, PhysicsMask.AllButPCs, EntityFilterOne(self))
-    
-    local material = trace.surface
-    -- Default to metal if no surface material is found.
-    if not material or string.len(material) == 0 then
-        material = "metal"
+    -- Have squishy footsteps on infestation 
+    if self:GetGameEffectMask(kGameEffect.OnInfestation) then
+        material = "organic"
     end
     
     return material
+    
 end
 
 function Player:GetFootstepSpeedScalar()
