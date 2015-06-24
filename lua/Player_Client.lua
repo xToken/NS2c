@@ -26,9 +26,6 @@ local kMarinePingSound = PrecacheAsset("sound/NS2.fev/marine/commander/ping")
 local kAlienPingSound = PrecacheAsset("sound/NS2.fev/alien/commander/ping")
 
 local kDefaultFirstPersonEffectName = PrecacheAsset("cinematics/marine/hit_1p.cinematic")
-local kFirstPersonHealthCircle = PrecacheAsset("models/misc/marine-build/marine-build.model")
-local kFirstPersonMarineHealthCircle = PrecacheAsset("models/misc/marine-build/marine-build.model")
-local kFirstPersonAlienHealthCircle = PrecacheAsset("models/misc/marine-build/marine-build.model")
 local kFirstPersonDeathEffect = PrecacheAsset("cinematics/death_1p.cinematic")
 local kDeadSound = PrecacheAsset("sound/NS2.fev/common/dead")
 
@@ -62,18 +59,6 @@ screenEffects.blur = Client.CreateScreenEffect("shaders/Blur.screenfx")
 screenEffects.blur:SetActive(false)
 
 Player.screenEffects = screenEffects
-
-local function GetHealthCircleName(self)
-
-    if self:GetTeamNumber() == kMarineTeamType then
-        return kFirstPersonMarineHealthCircle
-    elseif self:GetTeamNumber() == kAlienTeamType then
-        return kFirstPersonAlienHealthCircle
-    end
-    
-    return kFirstPersonHealthCircle
-
-end
 
 function Player:GetShowUnitStatusForOverride(forEntity)
     return not GetAreEnemies(self, forEntity) or (forEntity:GetOrigin() - self:GetOrigin()):GetLength() < 8
@@ -352,7 +337,7 @@ function PlayerUI_GetBuyMenuDisplaying()
     
 end
 
-local function LocalIsFriendlyCommander(player, unit)
+local function UnitIsSelectedByLocalCommander(player, unit)
     return player:isa("Commander") and ( unit:isa("Player") or (HasMixin(unit, "Selectable") and unit:GetIsSelected(player:GetTeamNumber())) )
 end
 
@@ -360,6 +345,206 @@ local kUnitStatusDisplayRange = 13
 local kUnitStatusCommanderDisplayRange = 50
 local kDefaultHealthOffset = 1.2
 
+function PlayerUI_GetPositionalInfo(player, unit)
+    
+    local distance = nil
+    local healthBarOrigin = nil
+    local worldOrigin = nil
+    local healthOffsetDirection = player:isa("Commander") and Vector.xAxis or Vector.yAxis
+    local eyePos = player:GetEyePos()
+    
+    local getEngagementPoint = unit.GetEngagementPoint
+    local origin = getEngagementPoint and getEngagementPoint(unit) or unit:GetOrigin()
+
+    local normToEntityVec = GetNormalizedVector(origin - eyePos)
+    local normViewVec = player:GetViewAngles():GetCoords().zAxis
+
+    local dotProduct = normToEntityVec:DotProduct(normViewVec)
+
+    if dotProduct > 0 then
+
+        distance = (origin - eyePos):GetLength()
+            
+        local healthBarOffset = kDefaultHealthOffset
+        
+        local getHealthbarOffset = unit.GetHealthbarOffset
+        if getHealthbarOffset then
+            healthBarOffset = getHealthbarOffset(unit)
+        end
+        
+        healthBarOrigin = origin + healthOffsetDirection * healthBarOffset
+        local worldOrigin = Vector(origin)
+        origin = Client.WorldToScreen(origin)
+        healthBarOrigin = Client.WorldToScreen(healthBarOrigin)
+        if unit == crossHairTarget then
+        
+            healthBarOrigin.y = math.max(GUIScale(180), healthBarOrigin.y)
+            healthBarOrigin.x = Clamp(healthBarOrigin.x, GUIScale(320), Client.GetScreenWidth() - GUIScale(320))
+            
+        end
+        
+    end
+    
+    return dotProduct, origin, worldOrigin, distance, healthBarOrigin
+
+end
+      
+-- Return true if the unit will show status info to the player
+function PlayerUI_ShowsUnitStatusInfo(player, unit)
+    return UnitIsSelectedByLocalCommander(player,unit) or unit == player:GetCrossHairTarget()
+end
+
+function PlayerUI_GetStatusInfoForUnit(player, unit)
+        
+    local crossHairTarget = PlayerUI_ShowsUnitStatusInfo(player, unit)
+    
+    -- checks here if the model was rendered previous frame as well
+    local status = unit:GetUnitStatus(player)
+    if unit:GetShowUnitStatusFor(player) then       
+
+        -- Get direction to blip. If off-screen, don't render. Bad values are generated if
+        -- Client.WorldToScreen is called on a point behind the camera.
+        local dotProduct, origin, worldOrigin, distance, healthBarOrigin = PlayerUI_GetPositionalInfo(player, unit) 
+        
+        if dotProduct > 0 then
+
+            local statusFraction = unit:GetUnitStatusFraction(player)
+            local description = unit:GetUnitName(player)
+            local action = unit:GetActionName(player)
+            local hint = unit:GetUnitHint(player)
+           
+            local health = 0
+            local armor = 0
+
+            local visibleToPlayer = true                        
+            if HasMixin(unit, "Cloakable") and GetAreEnemies(player, unit) then
+            
+                if unit:GetIsCloaked() or (unit:isa("Player") and unit:GetCloakFraction() > 0.2) then                    
+                    visibleToPlayer = false
+                end
+                
+            end
+            
+            -- Don't show tech points or nozzles if they are attached
+            if (unit:GetMapName() == TechPoint.kMapName or unit:GetMapName() == ResourcePoint.kPointMapName) and unit.GetAttached and (unit:GetAttached() ~= nil) then
+                visibleToPlayer = false
+            end
+            
+            if HasMixin(unit, "Live") and (not unit.GetShowHealthFor or unit:GetShowHealthFor(player)) then
+            
+                health = unit:GetHealthFraction()                
+                if unit:GetArmor() == 0 then
+                    armor = 0
+                else 
+                    armor = unit:GetArmorScalar()
+                end
+
+            end
+            
+            local badgeTextures = ""
+            
+            if HasMixin(unit, "Player") then
+                if unit.GetShowBadgeOverride and not unit:GetShowBadgeOverride() then
+                    badgeTextures = {}
+                else
+                    badgeTextures = Badges_GetBadgeTextures(unit:GetClientIndex(), "unitstatus") or {}
+                end
+            end
+            
+            local hasWelder = false 
+            if distance < 10 then    
+                hasWelder = unit:GetHasWelder(player)
+            end
+            
+            local abilityFraction = 0
+            if player:isa("Commander") then
+                abilityFraction = unit:GetAbilityFraction()
+            end
+            
+            local unitState = {
+                UnitId = unit:GetId(),
+                Position = origin,
+                WorldOrigin = worldOrigin,
+                HealthBarPosition = healthBarOrigin,
+                Status = status,
+                Name = description,
+                Action = action,
+                Hint = hint,
+                StatusFraction = statusFraction,
+                HealthFraction = health,
+                ArmorFraction = armor,
+                IsCrossHairTarget = crossHairTarget,
+                TeamType = kNeutralTeamType,
+                ForceName = unit:isa("Player") and not GetAreEnemies(player, unit),
+                BadgeTextures = badgeTextures,
+                HasWelder = hasWelder,
+                IsPlayer = unit:isa("Player"),
+                IsSteamFriend = unit:isa("Player") and unit:GetIsSteamFriend() or false,
+                AbilityFraction = abilityFraction,
+                IsParasited = HasMixin(unit, "ParasiteAble") and unit:GetIsParasited()
+            
+            }
+
+            
+            if unit.GetTeamNumber then
+                unitState.IsFriend = (unit:GetTeamNumber() == player:GetTeamNumber())
+            end
+            
+            if unit.GetTeamType then
+                unitState.TeamType = unit:GetTeamType()
+            end
+
+            if unit:isa("Player") and unit:isa("Marine") and HasMixin(unit, "WeaponOwner") and not GetAreEnemies(player, unit) then
+                local primaryWeapon = unit:GetWeaponInHUDSlot(1)
+                if primaryWeapon and primaryWeapon:isa("ClipWeapon") then
+                    unitState.PrimaryWeapon = primaryWeapon:GetTechId()
+                end
+            end
+            
+            if unit:isa("InfantryPortal") and unit.timeSpinStarted then
+                if unit.queuedPlayerId ~= Entity.invalidId then
+                    local playerName = ""
+                    for _, playerInfo in ientitylist(Shared.GetEntitiesWithClassname("PlayerInfoEntity")) do
+                        if playerInfo.playerId == unit.queuedPlayerId then
+                            playerName = playerInfo.playerName
+                            break
+                        end
+                    end
+
+                    unitState.SpawnerName = playerName
+                    unitState.SpawnFraction = Clamp((Shared.GetTime() - unit.timeSpinStarted) / kMarineRespawnTime, 0, 1)
+                end
+            elseif unit:isa("Embryo") then
+                unitState.EvolvePercentage = unit.evolvePercentage / 100
+                unitState.EvolveClass = unit:GetEggTypeDisplayName()
+            elseif unit:isa("Egg") and unit.researchProgress > 0 and unit.researchProgress < 1 then
+                unitState.EvolvePercentage = unit.researchProgress
+            elseif unit.GetDestinationLocationName then
+                unitState.Destination = unit:GetDestinationLocationName()
+            elseif unit:isa("Weapon") then
+                -- Make super sure that we're hiding this
+                unitState.IsCrossHairTarget = false
+                unitState.Name = ""
+                unitState.HealthFraction = 0
+                unitState.ArmorFraction = 0
+                unitState.Hint = ""
+                -- Only show the AbilityFraction for Marine Commanders
+                if player:isa("MarineCommander") and unit.weaponWorldState == true and unit.GetExpireTimeFraction and not unit:isa("Rifle") and not unit:isa("Pistol") then
+                    unitState.IsCrossHairTarget = true
+                    unitState.AbilityFraction = unit:GetExpireTimeFraction()
+                    unitState.IsWorldWeapon = true
+                end
+            end
+            
+            return unitState
+        end
+    end
+    return nil
+end
+            
+            
+
+-- collects unit status info for a single unit
 function PlayerUI_GetUnitStatusInfo()
 
     local unitStates = { }
@@ -380,182 +565,12 @@ function PlayerUI_GetUnitStatusInfo()
         local healthOffsetDirection = player:isa("Commander") and Vector.xAxis or Vector.yAxis
     
         for index, unit in ipairs(GetEntitiesWithMixinWithinRange("UnitStatus", eyePos, range)) do
-        
-            -- checks here if the model was rendered previous frame as well
-            local status = unit:GetUnitStatus(player)
-            if unit:GetShowUnitStatusFor(player) then       
-
-                -- Get direction to blip. If off-screen, don't render. Bad values are generated if
-                -- Client.WorldToScreen is called on a point behind the camera.
-                local origin
-                local getEngagementPoint = unit.GetEngagementPoint
-                if getEngagementPoint then
-                    origin = getEngagementPoint(unit)
-                else
-                    origin = unit:GetOrigin()
-                end
-                
-                local normToEntityVec = GetNormalizedVector(origin - eyePos)
-                local normViewVec = player:GetViewAngles():GetCoords().zAxis
-               
-                local dotProduct = normToEntityVec:DotProduct(normViewVec)
-
-                if dotProduct > 0 then
-
-                    local statusFraction = unit:GetUnitStatusFraction(player)
-                    local description = unit:GetUnitName(player)
-                    local action = unit:GetActionName(player)
-                    local hint = unit:GetUnitHint(player)
-                    local distance = (origin - eyePos):GetLength()
-                    
-                    local healthBarOffset = kDefaultHealthOffset
-                    
-                    local getHealthbarOffset = unit.GetHealthbarOffset
-                    if getHealthbarOffset then
-                        healthBarOffset = getHealthbarOffset(unit)
-                    end
-                    
-                    local healthBarOrigin = origin + healthOffsetDirection * healthBarOffset
-                    
-                    local worldOrigin = Vector(origin)
-                    origin = Client.WorldToScreen(origin)
-                    healthBarOrigin = Client.WorldToScreen(healthBarOrigin)
-                    
-                    if unit == crossHairTarget then
-                    
-                        healthBarOrigin.y = math.max(GUIScale(180), healthBarOrigin.y)
-                        healthBarOrigin.x = Clamp(healthBarOrigin.x, GUIScale(320), Client.GetScreenWidth() - GUIScale(320))
-                        
-                    end
-
-                    local health = 0
-                    local armor = 0
-
-                    local visibleToPlayer = true                        
-                    if HasMixin(unit, "Cloakable") and GetAreEnemies(player, unit) then
-                    
-                        if unit:GetIsCloaked() or (unit:isa("Player") and unit:GetCloakFraction() > 0.2) then                    
-                            visibleToPlayer = false
-                        end
-                        
-                    end
-                    
-                    -- Don't show tech points or nozzles if they are attached
-                    if (unit:GetMapName() == TechPoint.kMapName or unit:GetMapName() == ResourcePoint.kPointMapName) and unit.GetAttached and (unit:GetAttached() ~= nil) then
-                        visibleToPlayer = false
-                    end
-                    
-                    if HasMixin(unit, "Live") and (not unit.GetShowHealthFor or unit:GetShowHealthFor(player)) then
-                    
-                        health = unit:GetHealthFraction()                
-                        if unit:GetArmor() == 0 then
-                            armor = 0
-                        else 
-                            armor = unit:GetArmorScalar()
-                        end
-
-                    end
-                    
-                    local badgeTextures = ""
-                    
-                    if HasMixin(unit, "Player") then
-                        if unit.GetShowBadgeOverride and not unit:GetShowBadgeOverride() then
-                            badgeTextures = {}
-                        else
-                            badgeTextures = Badges_GetBadgeTextures(unit:GetClientIndex(), "unitstatus") or {}
-                        end
-                    end
-                    
-                    local hasWelder = false 
-                    if distance < 10 then    
-                        hasWelder = unit:GetHasWelder(player)
-                    end
-                    
-                    local abilityFraction = 0
-                    if player:isa("Commander") then
-                        abilityFraction = unit:GetAbilityFraction()
-                    end
-                    
-                    local unitState = {
-                        
-                        Position = origin,
-                        WorldOrigin = worldOrigin,
-                        HealthBarPosition = healthBarOrigin,
-                        Status = status,
-                        Name = description,
-                        Action = action,
-                        Hint = hint,
-                        StatusFraction = statusFraction,
-                        HealthFraction = health,
-                        ArmorFraction = armor,
-                        IsCrossHairTarget = (unit == crossHairTarget and visibleToPlayer) or LocalIsFriendlyCommander(player, unit),
-                        TeamType = kNeutralTeamType,
-                        ForceName = unit:isa("Player") and not GetAreEnemies(player, unit),
-                        BadgeTextures = badgeTextures,
-                        HasWelder = hasWelder,
-                        IsPlayer = unit:isa("Player"),
-                        IsSteamFriend = unit:isa("Player") and unit:GetIsSteamFriend() or false,
-                        AbilityFraction = abilityFraction,
-                        IsParasited = HasMixin(unit, "ParasiteAble") and unit:GetIsParasited()
-                    
-                    }
-                    
-                    if unit.GetTeamNumber then
-                        unitState.IsFriend = (unit:GetTeamNumber() == player:GetTeamNumber())
-                    end
-                    
-                    if unit.GetTeamType then
-                        unitState.TeamType = unit:GetTeamType()
-                    end
-
-                    if unit:isa("Player") and unit:isa("Marine") and HasMixin(unit, "WeaponOwner") and not GetAreEnemies(player, unit) then
-                        local primaryWeapon = unit:GetWeaponInHUDSlot(1)
-                        if primaryWeapon and primaryWeapon:isa("ClipWeapon") then
-                            unitState.PrimaryWeapon = primaryWeapon:GetTechId()
-                        end
-                    end
-                    
-                    if unit:isa("InfantryPortal") and unit.timeSpinStarted then
-                        if unit.queuedPlayerId ~= Entity.invalidId then
-                            local playerName = ""
-                            for _, playerInfo in ientitylist(Shared.GetEntitiesWithClassname("PlayerInfoEntity")) do
-                                if playerInfo.playerId == unit.queuedPlayerId then
-                                    playerName = playerInfo.playerName
-                                    break
-                                end
-                            end
-
-                            unitState.SpawnerName = playerName
-                            unitState.SpawnFraction = Clamp((Shared.GetTime() - unit.timeSpinStarted) / kMarineRespawnTime, 0, 1)
-                        end
-                    elseif unit:isa("Embryo") then
-                        unitState.EvolvePercentage = unit.evolvePercentage / 100
-                        unitState.EvolveClass = unit:GetEggTypeDisplayName()
-                    elseif unit:isa("Egg") and unit.researchProgress > 0 and unit.researchProgress < 1 then
-                        unitState.EvolvePercentage = unit.researchProgress
-                    elseif unit.GetDestinationLocationName then
-                        unitState.Destination = unit:GetDestinationLocationName()
-                    elseif unit:isa("Weapon") then
-                        -- Make super sure that we're hiding this
-                        unitState.IsCrossHairTarget = false
-                        unitState.Name = ""
-                        unitState.HealthFraction = 0
-                        unitState.ArmorFraction = 0
-                        unitState.Hint = ""
-                        -- Only show the AbilityFraction for Marine Commanders
-                        if player:isa("MarineCommander") and unit.weaponWorldState == true and unit.GetExpireTimeFraction and not unit:isa("Rifle") and not unit:isa("Pistol") then
-                            unitState.IsCrossHairTarget = true
-                            unitState.AbilityFraction = unit:GetExpireTimeFraction()
-                            unitState.IsWorldWeapon = true
-                        end
-                    end
-                    
-                    
-                    table.insert(unitStates, unitState)
-                
-                end
-                
-            end
+  
+            local unitState = PlayerUI_GetStatusInfoForUnit(player, unit)
+            
+            if unitState then
+                table.insert(unitStates, unitState)
+            end               
          
          end
         
@@ -564,6 +579,7 @@ function PlayerUI_GetUnitStatusInfo()
     return unitStates
 
 end
+
 
 function PlayerUI_GetObjectives()
     return { }
@@ -1873,39 +1889,45 @@ function Player:UpdateCommanderPingSound()
 
 end
 
+-- extract common stuff from the teamInfo ping
+function PlayerUI_GetPingInfo(player, teamInfo, onMiniMap)
+
+    local position = Vector(0,0,0)
+    
+    local pingPos = teamInfo:GetPingPosition()
+    
+    local location = GetLocationForPoint(pingPos)
+    local locationName = location and location:GetName() or ""
+
+    if not onMiniMap then            
+        position = GetClampedScreenPosition(pingPos, 40)                
+    else
+        position = pingPos
+    end
+    local pingTime = teamInfo:GetPingTime()
+    
+    local timeSincePing = Shared.GetTime() - pingTime
+    local distance = (player:GetEyePos() - pingPos):GetLength()
+    
+    return timeSincePing, position, distance, locationName, pingTime
+
+end
+
 function PlayerUI_GetCommanderPingInfo(onMiniMap)
 
-    local timeSincePing = kCommanderPingDuration
-    local position = Vector(0,0,0)
-    local distance = 0
     local player = Client.GetLocalPlayer()
-    local locationName
-    
+
     if player then
     
         for _, teamInfo in ipairs(GetEntitiesForTeam("TeamInfo", player:GetTeamNumber())) do
-        
-            local pingPos = teamInfo:GetPingPosition()
-            
-            local location = GetLocationForPoint(pingPos)
-            locationName = location and location:GetName() or ""
-        
-            if not onMiniMap then            
-                position = GetClampedScreenPosition(pingPos, 40)                
-            else
-                position = pingPos
-            end
-            
-            timeSincePing = Shared.GetTime() - teamInfo:GetPingTime()
-            distance = (player:GetEyePos() - pingPos):GetLength()
-            
-            break 
-
+          
+            return PlayerUI_GetPingInfo(player, teamInfo)
+          
         end
     
     end
     
-    return timeSincePing, position, distance, locationName
+    return kCommanderPingDuration, Vector(0,0,0), 0, nil, 0
 
 end
 
