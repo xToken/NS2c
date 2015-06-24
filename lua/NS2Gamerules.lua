@@ -828,7 +828,7 @@ if Server then
         
         // Check if auto-team balance should be enabled or disabled.
         local autoTeamBalance = Server.GetConfigSetting("auto_team_balance")
-        if autoTeamBalance then
+        if autoTeamBalance.enabled then
         
             local enabledOnUnbalanceAmount = autoTeamBalance.enabled_on_unbalance_amount or 2
             // Prevent the unbalance amount from being 0 or less.

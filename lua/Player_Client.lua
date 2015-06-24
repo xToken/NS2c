@@ -3760,6 +3760,12 @@ function Player:SetHotgroup(number, entityList)
     
 end
 
+/*
+function Player:OnLocationIdChange()
+    self:OnLocationChange(Shared.GetString(self.locationId))     
+    return true
+end*/
+
 function Player:OnPreUpdate()
 
     PROFILE("Player:OnPreUpdate")
@@ -3807,10 +3813,7 @@ function Player:UpdateRookieMode()
             if isRookie ~= optionsRookieMode then
 
                 Client.SendNetworkMessage("SetRookieMode", BuildRookieMessage(optionsRookieMode), true)
-                
-                -- Set scoreboard for instant change
-                Scoreboard_SetRookieMode(self:GetName(), optionsRookieMode)
-                
+
             end
             
             self.timeLastRookieModeUpdate = time    

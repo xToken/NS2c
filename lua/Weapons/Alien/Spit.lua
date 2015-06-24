@@ -42,13 +42,6 @@ function Spit:OnCreate()
 
 end
 
-function Spit:TimeUp()
-
-    DestroyEntity(self)
-    return false
-    
-end
-
 function Spit:GetDeathIconIndex()
     return kDeathMessageIcon.Spit
 end
@@ -69,6 +62,17 @@ function Spit:ProcessHit(targetHit, surface, normal, hitPoint)
 
     if Server then
         DestroyEntity(self) 
+    end
+
+end
+
+if Server then
+
+	function Spit:TimeUp()
+
+        DestroyEntity(self)
+        return false
+        
     end
 
 end

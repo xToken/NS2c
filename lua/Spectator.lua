@@ -274,7 +274,14 @@ function Spectator:OnGetIsVisible(visibleTable)
 end
 
 function Spectator:OnProcessMove(input)
-
+    
+    if Client then 
+        if self.clientSpecMode ~= self.specMode then
+            self:SetSpectatorMode(self.specMode)
+            self.clientSpecMode = self.specMode
+        end
+    end
+    
     self:UpdateMove(input)
     
     if Server then
@@ -526,20 +533,7 @@ if Client then
     function Spectator:GetDisplayUnitStates()
         return self.specMode == kSpectatorMode.FreeLook
     end
-    
-    function Spectator:OnPreUpdate()
-    
-        Player.OnPreUpdate(self)
-        
-        if self.specMode ~= self.clientSpecMode then
-        
-            self:SetSpectatorMode(self.specMode)
-            self.clientSpecMode = self.specMode
-            
-        end
-        
-    end
-    
+
     function Spectator:OverrideInput(input)
     
         if self.specMode == kSpectatorMode.Overhead then
@@ -557,8 +551,8 @@ if Client then
                 // each. Without them we get a "settling" after
                 // clicking the minimap due to differences after
                 // sending to the server
-                input.yaw = self.minimapNormX
-                input.pitch = self.minimapNormY
+                input.yaw = self.minimapNormX or 0
+                input.pitch = self.minimapNormY or 0
                 
             end
             
@@ -579,7 +573,7 @@ if Client then
         if self.specMode == kSpectatorMode.Following then
             return Shared.GetEntity(self.selectedId)
         elseif self.specMode == kSpectatorMode.Overhead then
-            return self.entityUnderCursor
+            return self.entityIdUnderCursor and Shared.GetEntity(self.entityIdUnderCursor)
         end
         
         return Player.GetCrossHairTarget(self)

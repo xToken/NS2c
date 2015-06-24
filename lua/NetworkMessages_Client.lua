@@ -48,7 +48,7 @@ end
 function OnCommandAbilityResult(msg)
 
     // The server will send us this message to tell us an ability succeded.
-    player = Client.GetLocalPlayer()
+    local player = Client.GetLocalPlayer()
     if player:GetIsCommander() then
         player:OnAbilityResultMessage(msg.techId, msg.success, msg.castTime)
     end

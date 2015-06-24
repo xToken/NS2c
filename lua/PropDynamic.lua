@@ -10,7 +10,7 @@
 //Removed concept of 'power'
 
 Script.Load("lua/ScriptActor.lua")
-Script.Load("lua/Mixins/ClientModelMixin.lua")
+Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/Mixins/SignalEmitterMixin.lua")
 Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/OnShadowOptionMixin.lua")
@@ -20,14 +20,14 @@ class 'PropDynamic' (ScriptActor)
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
+AddMixinNetworkVars(ModelMixin, networkVars)
 
 function PropDynamic:OnCreate()
 
     ScriptActor.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ClientModelMixin)
+    InitMixin(self, ModelMixin)
     InitMixin(self, SignalEmitterMixin)
     InitMixin(self, PowerConsumerMixin)
     if Client then
@@ -53,7 +53,7 @@ if Server then
         self.decalsOn = self.decalsEnabled
         self.avHighlightEnabled = self.avHighlight
         
-        if self.modelName ~= nil then
+        if self.modelName ~= nil and GetFileExists(self.modelName) then
         
             Shared.PrecacheModel(self.modelName)
             
@@ -63,6 +63,8 @@ if Server then
             self:SetModel(self.modelName, graphName)
             self:SetAnimationInput("animation", self.animation)
             
+        else 
+            Shared.Message("Missing or invalid dynamic prop!")
         end
         
         // Don't collide when commanding if not full alpha
@@ -85,16 +87,6 @@ if Server then
                 self:SetPhysicsGroup(PhysicsGroup.CommanderPropsGroup)
             end
             
-        end
-      
-        -- Toggle being highlighted in Alien vision
-        if self.avHighlightEnabled and self.avHighlightEnabled == false then
-            self._renderModel:SetMaterialParameter("highlight", 0.5)
-        end
-        
-        -- Toggle decals being projected onto model
-        if self.decalsOn and self.decalsOn == false then
-            self._renderModel:SetMaterialParameter("decals", 0)
         end
 
         self:SetUpdates(true)

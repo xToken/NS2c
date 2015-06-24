@@ -154,7 +154,7 @@ function Player:OnKill(killer, doer, point, direction)
     local killedByDeathTrigger = doer and doer:isa("DeathTrigger") or killer and killer:isa("DeathTrigger")
 
     // Determine the killer's player name.
-    local killerName = nil
+    local killerName
     if killer then
         if killer:isa("Player") then
             killerName = killer:GetName()
@@ -611,7 +611,7 @@ function Player:GiveItem(itemMapName, setActive)
     // Players must be alive in order to give them items.
     assert(self:GetIsAlive())
     
-    local newItem = nil
+    local newItem
     if setActive == nil then
         setActive = true
     end
@@ -716,6 +716,10 @@ function Player:SetRookieMode(rookieMode)
      if self.isRookie ~= rookieMode then
     
         self.isRookie = rookieMode
+
+		if self.playerInfo then 
+			self.playerInfo:UpdateScore() 
+		end
 
     end
     
