@@ -27,11 +27,8 @@ local kHoverAnimDistance = GUIScale(8)
 
 local kWelcomeTextMessages =    {
             "This Server is running the Natural Selection 2 Classic Mod.",
-            "This mod changes much of the game to be more like NS1.",
-            "For more information, search for the NS2c mod on steam workshop or visit the official NS2 forums.",
-            "Any comments or feedback can be left on the steam workshop page.",
-            "This mod offers an optional movement system that resembles NS1/Half-Life 1.",
-            "To switch, look for the Advanced Movement toggle in the NS2 General Options menu."
+            "This mod includes some new keybinds, the most important of which is the help screens which default to 'I'.",
+			"This screen includes information about each team, and the changes made from Vanilla when in the Ready Room."
                                 }
 
 local kRotationDuration = 5
