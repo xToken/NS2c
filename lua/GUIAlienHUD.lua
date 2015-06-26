@@ -221,6 +221,7 @@ function GUIAlienHUD:Initialize()
             self.upgrades[kAlienUpgradeChambers[i]][j] = GetGUIManager():CreateGraphicItem()
             self.upgrades[kAlienUpgradeChambers[i]][j]:SetTexture(kUpgradesTexture)
             self.upgrades[kAlienUpgradeChambers[i]][j]:SetAnchor(GUIItem.Right, GUIItem.Bottom)
+			self.upgrades[kAlienUpgradeChambers[i]][j]:SetIsVisible(false)
             self.resourceBackground:AddChild(self.upgrades[kAlienUpgradeChambers[i]][j])
         end
     end
