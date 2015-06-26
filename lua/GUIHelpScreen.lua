@@ -28,52 +28,42 @@ local kClassTechIdToIndex = {	kTechId.Skulk, kTechId.Gorge, kTechId.Lerk, kTechI
 								kTechId.Marine, kTechId.JetpackMarine, kTechId.HeavyArmorMarine, kTechId.MarineCommander,
 								kTechId.ReadyRoomPlayer }
 								
-local kClassDetails = 	{	{   DisplayName = Locale.ResolveString("SKULK"), TextureName = "ui/Skulk.dds", 
-                                Description1 = Locale.ResolveString("SKULK_HELP_1"), Description2 = Locale.ResolveString("SKULK_HELP_2"),
-                                Width = GUIScale(240), Height = GUIScale(170) },
+local kClassDetails = 	{	{   DisplayName = "SKULK", TextureName = "ui/Skulk.dds", 
+                                Description = "SKULK_HELP", Width = GUIScale(240), Height = GUIScale(170) },
                                 
-							{   DisplayName = Locale.ResolveString("GORGE"), TextureName = "ui/Gorge.dds", 
-                                Description1 = Locale.ResolveString("GORGE_HELP_1"), Description2 = Locale.ResolveString("GORGE_HELP_2"), 
-                                Width = GUIScale(200), Height = GUIScale(167) },
+							{   DisplayName = "GORGE", TextureName = "ui/Gorge.dds", 
+                                Description = "GORGE_HELP", Width = GUIScale(200), Height = GUIScale(167) },
                                 
-							{   DisplayName = Locale.ResolveString("LERK"), TextureName = "ui/Lerk.dds", 
-                                Description1 = Locale.ResolveString("LERK_HELP_1"), Description2 = Locale.ResolveString("LERK_HELP_2"), 
-                                Width = GUIScale(284), Height = GUIScale(253) },
+							{   DisplayName = "LERK", TextureName = "ui/Lerk.dds", 
+                                Description = "LERK_HELP", Width = GUIScale(284), Height = GUIScale(253) },
                                 
-							{   DisplayName = Locale.ResolveString("FADE"), TextureName = "ui/Fade.dds", 
-                                Description1 = Locale.ResolveString("FADE_HELP_1"), Description2 = Locale.ResolveString("FADE_HELP_2"),
-                                Width = GUIScale(188), Height = GUIScale(220) },
+							{   DisplayName = "FADE", TextureName = "ui/Fade.dds", 
+                                Description = "FADE_HELP", Width = GUIScale(188), Height = GUIScale(220) },
                                 
-							{   DisplayName = Locale.ResolveString("ONOS"), TextureName = "ui/Onos.dds", 
-                                Description1 = Locale.ResolveString("ONOS_HELP_1"), Description2 = Locale.ResolveString("ONOS_HELP_2"),
-                                Width = GUIScale(304), Height = GUIScale(326) },
+							{   DisplayName = "ONOS", TextureName = "ui/Onos.dds", 
+                                Description = "ONOS_HELP", Width = GUIScale(304), Height = GUIScale(326) },
                                 
-							{   DisplayName = Locale.ResolveString("MARINE"), TextureName = "ui/Onos.dds", 
-                                Description1 = Locale.ResolveString("MARINE_HELP_1"), Description2 = Locale.ResolveString("MARINE_HELP_2"), 
-                                Width = GUIScale(304), Height = GUIScale(326) },
+							{   DisplayName = "MARINE", TextureName = "ui/Onos.dds", 
+                                Description = "MARINE_HELP", Width = GUIScale(304), Height = GUIScale(326) },
                                 
-							{   DisplayName = Locale.ResolveString("JETPACK_MARINE"), TextureName = "ui/Onos.dds", 
-                                Description1 = Locale.ResolveString("JETPACK_MARINE_HELP_1"), Description2 = Locale.ResolveString("JETPACK_MARINE_HELP_2"), 
-                                Width = GUIScale(304), Height = GUIScale(326) },
+							{   DisplayName = "JETPACK_MARINE", TextureName = "ui/Onos.dds", 
+                                Description = "JETPACK_MARINE_HELP", Width = GUIScale(304), Height = GUIScale(326) },
                                 
-							{   DisplayName = Locale.ResolveString("HEAVY_ARMOR_MARINE"), TextureName = "ui/Onos.dds", 
-                                Description1 = Locale.ResolveString("HEAVY_ARMOR_MARINE_HELP_1"), Description2 = Locale.ResolveString("HEAVY_ARMOR_MARINE_HELP_2"), 
-                                Width = GUIScale(304), Height = GUIScale(326) },
+							{   DisplayName = "HEAVY_ARMOR_MARINE", TextureName = "ui/Onos.dds", 
+                                Description = "HEAVY_ARMOR_MARINE_HELP", Width = GUIScale(304), Height = GUIScale(326) },
                                 
-							{   DisplayName = Locale.ResolveString("MARINE_COMMANDER"), TextureName = "ui/Onos.dds", 
-                                Description1 = Locale.ResolveString("MARINE_COMMANDER_HELP_1"), Description2 = Locale.ResolveString("MARINE_COMMANDER_HELP_2"), 
-                                Width = GUIScale(304), Height = GUIScale(326) },
+							{   DisplayName = "MARINE_COMMANDER", TextureName = "ui/Onos.dds", 
+                                Description = "MARINE_COMMANDER_HELP", Width = GUIScale(304), Height = GUIScale(326) },
                                 
-							{   DisplayName = Locale.ResolveString("READY_ROOM_PLAYER"), TextureName = "ui/Onos.dds", 
-                                Description1 = Locale.ResolveString("READY_ROOM_PLAYER_HELP_1"), Description2 = Locale.ResolveString("READY_ROOM_PLAYER_HELP_2"), 
-                                Width = GUIScale(304), Height = GUIScale(326) }
+							{   DisplayName = "READY_ROOM_PLAYER", TextureName = "ui/Onos.dds", 
+                                Description = "READY_ROOM_PLAYER_HELP", Width = GUIScale(304), Height = GUIScale(326) }
 						}
 
 //local kClassPicturePosition = GUICorrectedScale( Vector(0, 0, 0))  Gotta fight Scaling Creep
 local kClassPicturePosition = GUICorrectedScale( Vector(30, 30, 0))
 local kClassDescription1Position = GUICorrectedScale( Vector(400, 50, 0))
 local kClassDescription2Position = GUICorrectedScale( Vector(400, 225, 0))
-local kClassDescriptionWidth = 600
+local kClassDescriptionWidth = 575
 local kClassTitlePosition = GUICorrectedScale( Vector(470, 10, 0))
 
 local kLargeFont = Fonts.kAgencyFB_Medium
@@ -94,41 +84,41 @@ local kWeaponTechIdToIndex = { 	kTechId.Bite, kTechId.Spit, kTechId.BuildAbility
 								kTechId.Jetpack, kTechId.HeavyArmor
 								}
 
-local kWeaponDetails = {	{ DisplayName = Locale.ResolveString("BITE"), TextureName = "", Description = Locale.ResolveString("BITE_HELP") },
-							{ DisplayName = Locale.ResolveString("SPIT"), TextureName = "", Description = Locale.ResolveString("SPIT_HELP") },
-							{ DisplayName = Locale.ResolveString("BUILD_ABILITY"), TextureName = "", Description = Locale.ResolveString("BUILD_ABILITY_HELP") },
-							{ DisplayName = Locale.ResolveString("LERK_BITE"), TextureName = "", Description = Locale.ResolveString("LERK_BITE_HELP") },
-							{ DisplayName = Locale.ResolveString("SWIPE_BLINK"), TextureName = "", Description = Locale.ResolveString("SWIPE_BLINK_HELP") },
-							{ DisplayName = Locale.ResolveString("GORE"), TextureName = "", Description = Locale.ResolveString("GORE_HELP") },
-							{ DisplayName = Locale.ResolveString("SMASH"), TextureName = "", Description = Locale.ResolveString("SMASH_HELP") },
-							{ DisplayName = Locale.ResolveString("PARASITE"), TextureName = "", Description = Locale.ResolveString("PARASITE_HELP") },
-							{ DisplayName = Locale.ResolveString("SPRAY"), TextureName = "", Description = Locale.ResolveString("SPRAY_HELP") },
-							{ DisplayName = Locale.ResolveString("SPORES"), TextureName = "", Description = Locale.ResolveString("SPORES_HELP") },
-							{ DisplayName = Locale.ResolveString("BLINK"), TextureName = "", Description = Locale.ResolveString("BLINK_HELP") },
-							{ DisplayName = Locale.ResolveString("CHARGE"), TextureName = "", Description = Locale.ResolveString("CHARGE_HELP") },
-							{ DisplayName = Locale.ResolveString("LEAP"), TextureName = "", Description = Locale.ResolveString("LEAP_HELP") },
-							{ DisplayName = Locale.ResolveString("BILEBOMB"), TextureName = "", Description = Locale.ResolveString("BILEBOMB_HELP") },
-							{ DisplayName = Locale.ResolveString("UMBRA"), TextureName = "", Description = Locale.ResolveString("UMBRA_HELP") },
-							{ DisplayName = Locale.ResolveString("METABOLIZE"), TextureName = "", Description = Locale.ResolveString("METABOLIZE_HELP") },
-							{ DisplayName = Locale.ResolveString("STOMP"), TextureName = "", Description = Locale.ResolveString("STOMP_HELP") },
-							{ DisplayName = Locale.ResolveString("XENOCIDE"), TextureName = "", Description = Locale.ResolveString("XENOCIDE_HELP") },
-							{ DisplayName = Locale.ResolveString("WEB"), TextureName = "", Description = Locale.ResolveString("WEB_HELP") },
-							{ DisplayName = Locale.ResolveString("PRIMAL_SCREAM"), TextureName = "", Description = Locale.ResolveString("PRIMAL_SCREAM_HELP") },
-							{ DisplayName = Locale.ResolveString("ACID_ROCKET"), TextureName = "", Description = Locale.ResolveString("ACID_ROCKET_HELP") },
-							{ DisplayName = Locale.ResolveString("DEVOUR"), TextureName = "", Description = Locale.ResolveString("DEVOUR_HELP") },
-							{ DisplayName = Locale.ResolveString("BABBLER_ABILITY"), TextureName = "", Description = Locale.ResolveString("BABBLER_ABILITY_HELP") },
-							{ DisplayName = Locale.ResolveString("SPIKES"), TextureName = "", Description = Locale.ResolveString("SPIKES_HELP") },
-							{ DisplayName = Locale.ResolveString("RIFLE"), TextureName = "", Description = Locale.ResolveString("RIFLE_HELP") },
-							{ DisplayName = Locale.ResolveString("SHOTGUN"), TextureName = "", Description = Locale.ResolveString("SHOTGUN_HELP") },
-							{ DisplayName = Locale.ResolveString("HEAVY_MACHINE_GUN"), TextureName = "", Description = Locale.ResolveString("HEAVY_MACHINE_GUN_HELP") },
-							{ DisplayName = Locale.ResolveString("GRENADE_LAUNCHER"), TextureName = "", Description = Locale.ResolveString("GRENADE_LAUNCHER_HELP") },
-							{ DisplayName = Locale.ResolveString("WELDER"), TextureName = "", Description = Locale.ResolveString("WELDER_HELP") },
-							{ DisplayName = Locale.ResolveString("MINE"), TextureName = "", Description = Locale.ResolveString("MINE_HELP") },
-							{ DisplayName = Locale.ResolveString("HAND_GRENADES"), TextureName = "", Description = Locale.ResolveString("HAND_GRENADES_HELP") },
-							{ DisplayName = Locale.ResolveString("PISTOL"), TextureName = "", Description = Locale.ResolveString("PISTOL_HELP") },
-							{ DisplayName = Locale.ResolveString("SWITCH_AX"), TextureName = "", Description = Locale.ResolveString("SWITCH_AX_HELP") },
-							{ DisplayName = Locale.ResolveString("JETPACK"), TextureName = "", Description = Locale.ResolveString("JETPACK_HELP") },
-							{ DisplayName = Locale.ResolveString("HEAVY_ARMOR"), TextureName = "", Description = Locale.ResolveString("HEAVY_ARMOR_HELP") }
+local kWeaponDetails = {	{ DisplayName = "BITE", TextureName = "", Description = "BITE_HELP" },
+							{ DisplayName = "SPIT", TextureName = "", Description = "SPIT_HELP" },
+							{ DisplayName = "BUILD_ABILITY", TextureName = "", Description = "BUILD_ABILITY_HELP" },
+							{ DisplayName = "LERK_BITE", TextureName = "", Description = "LERK_BITE_HELP" },
+							{ DisplayName = "SWIPE_BLINK", TextureName = "", Description = "SWIPE_BLINK_HELP" },
+							{ DisplayName = "GORE", TextureName = "", Description = "GORE_HELP" },
+							{ DisplayName = "SMASH", TextureName = "", Description = "SMASH_HELP" },
+							{ DisplayName = "PARASITE", TextureName = "", Description = "PARASITE_HELP" },
+							{ DisplayName = "SPRAY", TextureName = "", Description = "SPRAY_HELP" },
+							{ DisplayName = "SPORES", TextureName = "", Description = "SPORES_HELP" },
+							{ DisplayName = "BLINK", TextureName = "", Description = "BLINK_HELP" },
+							{ DisplayName = "CHARGE", TextureName = "", Description = "CHARGE_HELP" },
+							{ DisplayName = "LEAP", TextureName = "", Description = "LEAP_HELP" },
+							{ DisplayName = "BILEBOMB", TextureName = "", Description = "BILEBOMB_HELP" },
+							{ DisplayName = "UMBRA", TextureName = "", Description = "UMBRA_HELP" },
+							{ DisplayName = "METABOLIZE", TextureName = "", Description = "METABOLIZE_HELP" },
+							{ DisplayName = "STOMP", TextureName = "", Description = "STOMP_HELP" },
+							{ DisplayName = "XENOCIDE", TextureName = "", Description = "XENOCIDE_HELP" },
+							{ DisplayName = "WEB", TextureName = "", Description = "WEB_HELP" },
+							{ DisplayName = "PRIMAL_SCREAM", TextureName = "", Description = "PRIMAL_SCREAM_HELP" },
+							{ DisplayName = "ACID_ROCKET", TextureName = "", Description = "ACID_ROCKET_HELP" },
+							{ DisplayName = "DEVOUR", TextureName = "", Description = "DEVOUR_HELP" },
+							{ DisplayName = "BABBLER_ABILITY", TextureName = "", Description = "BABBLER_ABILITY_HELP" },
+							{ DisplayName = "SPIKES", TextureName = "", Description = "SPIKES_HELP" },
+							{ DisplayName = "RIFLE", TextureName = "", Description = "RIFLE_HELP" },
+							{ DisplayName = "SHOTGUN", TextureName = "", Description = "SHOTGUN_HELP" },
+							{ DisplayName = "HEAVY_MACHINE_GUN", TextureName = "", Description = "HEAVY_MACHINE_GUN_HELP" },
+							{ DisplayName = "GRENADE_LAUNCHER", TextureName = "", Description = "GRENADE_LAUNCHER_HELP" },
+							{ DisplayName = "WELDER", TextureName = "", Description = "WELDER_HELP" },
+							{ DisplayName = "MINE", TextureName = "", Description = "MINE_HELP" },
+							{ DisplayName = "HAND_GRENADES", TextureName = "", Description = "HAND_GRENADES_HELP" },
+							{ DisplayName = "PISTOL", TextureName = "", Description = "PISTOL_HELP" },
+							{ DisplayName = "SWITCH_AX", TextureName = "", Description = "SWITCH_AX_HELP" },
+							{ DisplayName = "JETPACK", TextureName = "", Description = "JETPACK_HELP" },
+							{ DisplayName = "HEAVY_ARMOR", TextureName = "", Description = "HEAVY_ARMOR_HELP" }
 						}
 						
 local kWeaponIconSize = GUICorrectedScale( Vector(100, 100, 0))
@@ -173,41 +163,39 @@ local kUpgradeTechIdToIndex = { kTechId.Carapace, kTechId.Regeneration, kTechId.
 								kTechId.Weapons1, kTechId.Weapons2, kTechId.Weapons3,
 								kTechId.MotionTracking,
 								kTechId.HandGrenadesTech,
-								kTechId.ArmsLab,
 								kTechId.Move, kTechId.Construct, kTechId.Attack, kTechId.Defend
 								}
 
-local kUpgradeDetails = {	{ DisplayName = Locale.ResolveString("CARAPACE"), TextureName = "", UnlockedDescription = Locale.ResolveString("CARAPACE_UNLOCKED"), LockedDescription = Locale.ResolveString("CARAPACE_LOCKED") },
-							{ DisplayName = Locale.ResolveString("REGENERATION"), TextureName = "", UnlockedDescription = Locale.ResolveString("REGENERATION_UNLOCKED"), LockedDescription = Locale.ResolveString("REGENERATION_LOCKED") },
-							{ DisplayName = Locale.ResolveString("REDEMPTION"), TextureName = "", UnlockedDescription = Locale.ResolveString("REDEMPTION_UNLOCKED"), LockedDescription = Locale.ResolveString("REDEMPTION_LOCKED") },
-							{ DisplayName = Locale.ResolveString("CRAG"), TextureName = "", UnlockedDescription = Locale.ResolveString("CRAG_UNLOCKED"), LockedDescription = Locale.ResolveString("CRAG_LOCKED") },
-							{ DisplayName = Locale.ResolveString("CELERITY"), TextureName = "", UnlockedDescription = Locale.ResolveString("CELERITY_UNLOCKED"), LockedDescription = Locale.ResolveString("CELERITY_LOCKED") },
-							{ DisplayName = Locale.ResolveString("ADRENALINE"), TextureName = "", UnlockedDescription = Locale.ResolveString("ADRENALINE_UNLOCKED"), LockedDescription = Locale.ResolveString("ADRENALINE_LOCKED") },
-							{ DisplayName = Locale.ResolveString("REDEPLOYMENT"), TextureName = "", UnlockedDescription = Locale.ResolveString("REDEPLOYMENT_UNLOCKED"), LockedDescription = Locale.ResolveString("REDEPLOYMENT_LOCKED") },
-							{ DisplayName = Locale.ResolveString("SILENCE"), TextureName = "", UnlockedDescription = Locale.ResolveString("SILENCE_UNLOCKED"), LockedDescription = Locale.ResolveString("SILENCE_LOCKED") },
-							{ DisplayName = Locale.ResolveString("SHIFT"), TextureName = "", UnlockedDescription = Locale.ResolveString("SHIFT_UNLOCKED"), LockedDescription = Locale.ResolveString("SHIFT_LOCKED") },
-							{ DisplayName = Locale.ResolveString("SILENCE"), TextureName = "", UnlockedDescription = Locale.ResolveString("SILENCE_UNLOCKED"), LockedDescription = Locale.ResolveString("SILENCE_LOCKED") },
-							{ DisplayName = Locale.ResolveString("AURA"), TextureName = "", UnlockedDescription = Locale.ResolveString("AURA_UNLOCKED"), LockedDescription = Locale.ResolveString("AURA_LOCKED") },
-							{ DisplayName = Locale.ResolveString("GHOST"), TextureName = "", UnlockedDescription = Locale.ResolveString("GHOST_UNLOCKED"), LockedDescription = Locale.ResolveString("GHOST_LOCKED") },
-							{ DisplayName = Locale.ResolveString("CAMOUFLAGE"), TextureName = "", UnlockedDescription = Locale.ResolveString("CAMOUFLAGE_UNLOCKED"), LockedDescription = Locale.ResolveString("CAMOUFLAGE_LOCKED") },
-							{ DisplayName = Locale.ResolveString("SHADE"), TextureName = "", UnlockedDescription = Locale.ResolveString("SHADE_UNLOCKED"), LockedDescription = Locale.ResolveString("SHADE_LOCKED") },
-							{ DisplayName = Locale.ResolveString("FOCUS"), TextureName = "", UnlockedDescription = Locale.ResolveString("FOCUS_UNLOCKED"), LockedDescription = Locale.ResolveString("FOCUS_LOCKED") },
-							{ DisplayName = Locale.ResolveString("FURY"), TextureName = "", UnlockedDescription = Locale.ResolveString("FURY_UNLOCKED"), LockedDescription = Locale.ResolveString("FURY_LOCKED") },
-							{ DisplayName = Locale.ResolveString("BOMBARD"), TextureName = "", UnlockedDescription = Locale.ResolveString("BOMBARD_UNLOCKED"), LockedDescription = Locale.ResolveString("BOMBARD_LOCKED") },
-							{ DisplayName = Locale.ResolveString("WHIP"), TextureName = "", UnlockedDescription = Locale.ResolveString("WHIP_UNLOCKED"), LockedDescription = Locale.ResolveString("WHIP_LOCKED") },
-							{ DisplayName = Locale.ResolveString("ARMOR1"), TextureName = "", UnlockedDescription = Locale.ResolveString("ARMOR1_UNLOCKED"), LockedDescription = Locale.ResolveString("ARMOR1_LOCKED") },
-							{ DisplayName = Locale.ResolveString("ARMOR2"), TextureName = "", UnlockedDescription = Locale.ResolveString("ARMOR2_UNLOCKED"), LockedDescription = Locale.ResolveString("ARMOR2_LOCKED") },
-							{ DisplayName = Locale.ResolveString("ARMOR3"), TextureName = "", UnlockedDescription = Locale.ResolveString("ARMOR3_UNLOCKED"), LockedDescription = Locale.ResolveString("ARMOR3_LOCKED") },
-							{ DisplayName = Locale.ResolveString("WEAPONS1"), TextureName = "", UnlockedDescription = Locale.ResolveString("WEAPONS1_UNLOCKED"), LockedDescription = Locale.ResolveString("WEAPONS1_LOCKED") },
-							{ DisplayName = Locale.ResolveString("WEAPONS2"), TextureName = "", UnlockedDescription = Locale.ResolveString("WEAPONS2_UNLOCKED"), LockedDescription = Locale.ResolveString("WEAPONS2_LOCKED") },
-							{ DisplayName = Locale.ResolveString("WEAPONS3"), TextureName = "", UnlockedDescription = Locale.ResolveString("WEAPONS3_UNLOCKED"), LockedDescription = Locale.ResolveString("WEAPONS3_LOCKED") },
-							{ DisplayName = Locale.ResolveString("MOTION_TRACKING"), TextureName = "", UnlockedDescription = Locale.ResolveString("MOTION_TRACKING_UNLOCKED"), LockedDescription = Locale.ResolveString("MOTION_TRACKING_LOCKED") },
-							{ DisplayName = Locale.ResolveString("HAND_GRENADES"), TextureName = "", UnlockedDescription = Locale.ResolveString("HAND_GRENADES_UNLOCKED"), LockedDescription = Locale.ResolveString("HAND_GRENADES_LOCKED") },
-							{ DisplayName = Locale.ResolveString("ARMS_LAB"), TextureName = "", UnlockedDescription = Locale.ResolveString("ARMS_LAB_UNLOCKED"), LockedDescription = Locale.ResolveString("ARMS_LAB_LOCKED") },
-							{ DisplayName = Locale.ResolveString("MOVE"), TextureName = "", UnlockedDescription = Locale.ResolveString("MOVE_UNLOCKED"), LockedDescription = Locale.ResolveString("MOVE_LOCKED") },
-							{ DisplayName = Locale.ResolveString("CONSTRUCT"), TextureName = "", UnlockedDescription = Locale.ResolveString("CONSTRUCT_UNLOCKED"), LockedDescription = Locale.ResolveString("CONSTRUCT_LOCKED") },
-							{ DisplayName = Locale.ResolveString("ATTACK"), TextureName = "", UnlockedDescription = Locale.ResolveString("ATTACK_UNLOCKED"), LockedDescription = Locale.ResolveString("ATTACK_LOCKED") },
-							{ DisplayName = Locale.ResolveString("DEFEND"), TextureName = "", UnlockedDescription = Locale.ResolveString("DEFEND_UNLOCKED"), LockedDescription = Locale.ResolveString("DEFEND_LOCKED") },
+local kUpgradeDetails = {	{ DisplayName = "CARAPACE", TextureName = "", UnlockedDescription = "CARAPACE_UNLOCKED", LockedDescription = "CARAPACE_LOCKED" },
+							{ DisplayName = "REGENERATION", TextureName = "", UnlockedDescription = "REGENERATION_UNLOCKED", LockedDescription = "REGENERATION_LOCKED" },
+							{ DisplayName = "REDEMPTION", TextureName = "", UnlockedDescription = "REDEMPTION_UNLOCKED", LockedDescription = "REDEMPTION_LOCKED" },
+							{ DisplayName = "CRAG", TextureName = "", UnlockedDescription = "CRAG_UNLOCKED", LockedDescription = "CRAG_LOCKED" },
+							{ DisplayName = "CELERITY", TextureName = "", UnlockedDescription = "CELERITY_UNLOCKED", LockedDescription = "CELERITY_LOCKED" },
+							{ DisplayName = "ADRENALINE", TextureName = "", UnlockedDescription = "ADRENALINE_UNLOCKED", LockedDescription = "ADRENALINE_LOCKED" },
+							{ DisplayName = "REDEPLOYMENT", TextureName = "", UnlockedDescription = "REDEPLOYMENT_UNLOCKED", LockedDescription = "REDEPLOYMENT_LOCKED" },
+							{ DisplayName = "SILENCE", TextureName = "", UnlockedDescription = "SILENCE_UNLOCKED", LockedDescription = "SILENCE_LOCKED" },
+							{ DisplayName = "SHIFT", TextureName = "", UnlockedDescription = "SHIFT_UNLOCKED", LockedDescription = "SHIFT_LOCKED" },
+							{ DisplayName = "SILENCE", TextureName = "", UnlockedDescription = "SILENCE_UNLOCKED", LockedDescription = "SILENCE_LOCKED" },
+							{ DisplayName = "AURA", TextureName = "", UnlockedDescription = "AURA_UNLOCKED", LockedDescription = "AURA_LOCKED" },
+							{ DisplayName = "GHOST", TextureName = "", UnlockedDescription = "GHOST_UNLOCKED", LockedDescription = "GHOST_LOCKED" },
+							{ DisplayName = "CAMOUFLAGE", TextureName = "", UnlockedDescription = "CAMOUFLAGE_UNLOCKED", LockedDescription = "CAMOUFLAGE_LOCKED" },
+							{ DisplayName = "SHADE", TextureName = "", UnlockedDescription = "SHADE_UNLOCKED", LockedDescription = "SHADE_LOCKED" },
+							{ DisplayName = "FOCUS", TextureName = "", UnlockedDescription = "FOCUS_UNLOCKED", LockedDescription = "FOCUS_LOCKED" },
+							{ DisplayName = "FURY", TextureName = "", UnlockedDescription = "FURY_UNLOCKED", LockedDescription = "FURY_LOCKED" },
+							{ DisplayName = "BOMBARD", TextureName = "", UnlockedDescription = "BOMBARD_UNLOCKED", LockedDescription = "BOMBARD_LOCKED" },
+							{ DisplayName = "WHIP", TextureName = "", UnlockedDescription = "WHIP_UNLOCKED", LockedDescription = "WHIP_LOCKED" },
+							{ DisplayName = "ARMOR1", TextureName = "", UnlockedDescription = "ARMOR1_UNLOCKED", LockedDescription = "ARMOR1_LOCKED" },
+							{ DisplayName = "ARMOR2", TextureName = "", UnlockedDescription = "ARMOR2_UNLOCKED", LockedDescription = "ARMOR2_LOCKED" },
+							{ DisplayName = "ARMOR3", TextureName = "", UnlockedDescription = "ARMOR3_UNLOCKED", LockedDescription = "ARMOR3_LOCKED" },
+							{ DisplayName = "WEAPONS1", TextureName = "", UnlockedDescription = "WEAPONS1_UNLOCKED", LockedDescription = "WEAPONS1_LOCKED" },
+							{ DisplayName = "WEAPONS2", TextureName = "", UnlockedDescription = "WEAPONS2_UNLOCKED", LockedDescription = "WEAPONS2_LOCKED" },
+							{ DisplayName = "WEAPONS3", TextureName = "", UnlockedDescription = "WEAPONS3_UNLOCKED", LockedDescription = "WEAPONS3_LOCKED" },
+							{ DisplayName = "MOTION_TRACKING", TextureName = "", UnlockedDescription = "MOTION_TRACKING_UNLOCKED", LockedDescription = "MOTION_TRACKING_LOCKED" },
+							{ DisplayName = "HAND_GRENADES", TextureName = "", UnlockedDescription = "HAND_GRENADES_UNLOCKED", LockedDescription = "HAND_GRENADES_LOCKED" },
+							{ DisplayName = "MOVE", TextureName = "", UnlockedDescription = "MOVE_UNLOCKED", LockedDescription = "MOVE_LOCKED" },
+							{ DisplayName = "CONSTRUCT", TextureName = "", UnlockedDescription = "CONSTRUCT_UNLOCKED", LockedDescription = "CONSTRUCT_LOCKED" },
+							{ DisplayName = "ATTACK", TextureName = "", UnlockedDescription = "ATTACK_UNLOCKED", LockedDescription = "ATTACK_LOCKED" },
+							{ DisplayName = "DEFEND", TextureName = "", UnlockedDescription = "DEFEND_UNLOCKED", LockedDescription = "DEFEND_LOCKED" },
 						}
 
 local kUpgradeIconSize = GUICorrectedScale( Vector(100, 100, 0))
@@ -215,28 +203,28 @@ local kUpgradeSpacing = GUICorrectedScale( Vector(120, 120, 0))
 local kUpgradeIconTablePosition = GUICorrectedScale( Vector(700, 420, 0))
 local kUpgradeTitleSize = GUICorrectedScale(30)
 local kUpgradeDescriptionTablePosition = GUICorrectedScale( Vector(820, 420, 0))
-local kUpgradeDescriptionWidth = 500
+local kUpgradeDescriptionWidth = 600
 local kMaxUpgrades = 4
 local kUpgradesTexture = "ui/buildmenu.dds"
 
-local kGameplayTips1Position = GUICorrectedScale( Vector(1070, 40, 0))
-local kGameplayTips2Position = GUICorrectedScale( Vector(1070, 215, 0))
-local kGameplayTitlePosition = GUICorrectedScale( Vector(1070, 0, 0))
-local kGameplayTipsWidth = 500
+local kGameplayTips1Position = GUICorrectedScale( Vector(1045, 40, 0))
+local kGameplayTips2Position = GUICorrectedScale( Vector(1045, 215, 0))
+local kGameplayTitlePosition = GUICorrectedScale( Vector(1045, 0, 0))
+local kGameplayTipsWidth = 525
 
 local kGameplayTips = 	{
 							[kAlienTeamType] = 	{
-													{ Tip1 = Locale.ResolveString("ALIEN_GAMEPLAY_TIPS_1"), Tip2 = Locale.ResolveString("ALIEN_GAMEPLAY_TIPS_2"), Title = Locale.ResolveString("ALIEN_GAMEPLAY_TITLE_1"), Time = 0 },
-													{ Tip1 = Locale.ResolveString("ALIEN_GAMEPLAY_TIPS_3"), Tip2 = Locale.ResolveString("ALIEN_GAMEPLAY_TIPS_4"), Title = Locale.ResolveString("ALIEN_GAMEPLAY_TITLE_2"), Time = 5 },
-													{ Tip1 = Locale.ResolveString("ALIEN_GAMEPLAY_TIPS_5"), Tip2 = Locale.ResolveString("ALIEN_GAMEPLAY_TIPS_6"), Title = Locale.ResolveString("ALIEN_GAMEPLAY_TITLE_3"), Time = 15 }
+													{ Tip = "ALIEN_GAMEPLAY_TIPS_EARLY", Title = "ALIEN_GAMEPLAY_TITLE_EARLY", Time = 0 },
+													{ Tip = "ALIEN_GAMEPLAY_TIPS_MID", Title = "ALIEN_GAMEPLAY_TITLE_MID", Time = 5 },
+													{ Tip = "ALIEN_GAMEPLAY_TIPS_LATE", Title = "ALIEN_GAMEPLAY_TITLE_LATE", Time = 15 }
 												},
 							[kMarineTeamType] = {
-													{ Tip1 = Locale.ResolveString("MARINE_GAMEPLAY_TIPS_1"), Tip2 = Locale.ResolveString("MARINE_GAMEPLAY_TIPS_2"), Title = Locale.ResolveString("MARINE_GAMEPLAY_TITLE_1"), Time = 0 },
-													{ Tip1 = Locale.ResolveString("MARINE_GAMEPLAY_TIPS_3"), Tip2 = Locale.ResolveString("MARINE_GAMEPLAY_TIPS_4"), Title = Locale.ResolveString("MARINE_GAMEPLAY_TITLE_2"), Time = 5 },
-													{ Tip1 = Locale.ResolveString("MARINE_GAMEPLAY_TIPS_5"), Tip2 = Locale.ResolveString("MARINE_GAMEPLAY_TIPS_6"), Title = Locale.ResolveString("MARINE_GAMEPLAY_TITLE_3"), Time = 15 }
+													{ Tip = "MARINE_GAMEPLAY_TIPS_EARLY", Title = "MARINE_GAMEPLAY_TITLE_EARLY", Time = 0 },
+													{ Tip = "MARINE_GAMEPLAY_TIPS_MID", Title = "MARINE_GAMEPLAY_TITLE_MID", Time = 5 },
+													{ Tip = "MARINE_GAMEPLAY_TIPS_LATE", Title = "MARINE_GAMEPLAY_TITLE_LATE", Time = 15 }
 												},
 							[kNeutralTeamType] = {
-													{ Tip1 = Locale.ResolveString("READY_ROOM_TIPS_1"), Tip2 = Locale.ResolveString("READY_ROOM_TIPS_2"), Title = Locale.ResolveString("READY_ROOM_TITLE_1"), Time = 0 }
+													{ Tip = "READY_ROOM_TIPS_EARLY", Title = "READY_ROOM_TITLE_EARLY", Time = 0 }
 												}
 						}
 
@@ -386,11 +374,11 @@ end
 local function UpdateClassObjects(self)
 
     if self.classIndex > 0 and self.classIndex ~= self.lastclassIndex then
-        self.classDisplayText1:SetText(kClassDetails[self.classIndex].Description1)
+        self.classDisplayText1:SetText(Locale.ResolveString(kClassDetails[self.classIndex].Description .. "_1"))
         self.classDisplayText1:SetTextClipped(true, kClassDescriptionWidth, 1024)
-        self.classDisplayText2:SetText(kClassDetails[self.classIndex].Description2)
+        self.classDisplayText2:SetText(Locale.ResolveString(kClassDetails[self.classIndex].Description .. "_2"))
         self.classDisplayText2:SetTextClipped(true, kClassDescriptionWidth, 1024)
-        self.classDisplayName:SetText(kClassDetails[self.classIndex].DisplayName)
+        self.classDisplayName:SetText(Locale.ResolveString(kClassDetails[self.classIndex].DisplayName))
         self.classDisplayIcon:SetSize(Vector(kClassDetails[self.classIndex].Width, kClassDetails[self.classIndex].Height, 0))
         self.classDisplayIcon:SetTexture(kClassDetails[self.classIndex].TextureName)
         self.lastclassIndex = self.classIndex
@@ -454,9 +442,9 @@ local function UpdateWeaponObjects(self)
 						self.upgradeObjects[i].icon:SetTexture(kWeaponDetails[index].TextureName)
 					end
 					self.weaponObjects[i].icon:SetTexturePixelCoordinates(GetTexCoordsForTechId(invSlot.TechId))
-					self.weaponObjects[i].description:SetText(kWeaponDetails[index].Description)
+					self.weaponObjects[i].description:SetText(Locale.ResolveString(kWeaponDetails[index].Description))
 					self.weaponObjects[i].description:SetTextClipped(true, kWeaponDescriptionWidth, 1024)
-					self.weaponObjects[i].title:SetText(kWeaponDetails[index].DisplayName)
+					self.weaponObjects[i].title:SetText(Locale.ResolveString(kWeaponDetails[index].DisplayName))
 					self.weaponObjects[i].icon:SetIsVisible(true)
 					self.weaponObjects[i].description:SetIsVisible(true)
 					self.weaponObjects[i].title:SetIsVisible(true)
@@ -530,18 +518,26 @@ local function UpdateUpgradeObjects(self)
                 local index = LookupUpgradeIndex(techId)
                 local status = upgSlot.techStatus
                 if self.upgradeObjects[i].index ~= index or self.upgradeObjects[i].status ~= status then
+					local LocalizedString, GameString
+					GameString = kUpgradeDetails[index].LockedDescription
                     if kUpgradeDetails[index].TextureName ~= "" then
                         //Use better texture
                         self.upgradeObjects[i].icon:SetTexture(kUpgradeDetails[index].TextureName)
+					else
+						self.upgradeObjects[i].icon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId)))
                     end
-                    self.upgradeObjects[i].icon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId)))
                     if status == kUpgradeTechStatus.Unlocked then
-                        self.upgradeObjects[i].description:SetText(kUpgradeDetails[index].UnlockedDescription)
-                    else
-                        self.upgradeObjects[i].description:SetText(kUpgradeDetails[index].LockedDescription)
+                        GameString = kUpgradeDetails[index].UnlockedDescription
                     end
+					//Check for class specific version
+					LocalizedString = Locale.ResolveString(GameString .. "_" .. kClassDetails[self.classIndex].DisplayName)
+					if LocalizedString == GameString .. "_" .. kClassDetails[self.classIndex].DisplayName then
+						//No class specific one, use other
+						LocalizedString = Locale.ResolveString(GameString)
+					end
+					self.upgradeObjects[i].description:SetText(LocalizedString)
                     self.upgradeObjects[i].description:SetTextClipped(true, kUpgradeDescriptionWidth, 1024)
-                    self.upgradeObjects[i].title:SetText(kUpgradeDetails[index].DisplayName)
+                    self.upgradeObjects[i].title:SetText(Locale.ResolveString(kUpgradeDetails[index].DisplayName))
                     self.upgradeObjects[i].icon:SetIsVisible(true)
                     self.upgradeObjects[i].description:SetIsVisible(true)
                     self.upgradeObjects[i].title:SetIsVisible(true)
@@ -605,10 +601,10 @@ local function UpdateGameplaySuggestions(self)
 		if teamGameplay then
 			for i = 1, #teamGameplay do
 				if self.gametime >= teamGameplay[i].Time then
-					self.gameplayDisplayName:SetText(teamGameplay[i].Title)
-					self.gameplayDisplayText1:SetText(teamGameplay[i].Tip1)
+					self.gameplayDisplayName:SetText(Locale.ResolveString(teamGameplay[i].Title))
+					self.gameplayDisplayText1:SetText(Locale.ResolveString(teamGameplay[i].Tip .. "_1"))
 					self.gameplayDisplayText1:SetTextClipped(true, kGameplayTipsWidth, 1024)
-					self.gameplayDisplayText2:SetText(teamGameplay[i].Tip2)
+					self.gameplayDisplayText2:SetText(Locale.ResolveString(teamGameplay[i].Tip .. "_2"))
 					self.gameplayDisplayText2:SetTextClipped(true, kGameplayTipsWidth, 1024)
 				end
 			end
