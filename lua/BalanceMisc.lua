@@ -91,6 +91,7 @@ kEnergizeUpdateRate = 1
 //Whip Empower
 kEmpowerRange = 6
 kEmpowerUpdateRate = 1
+kEmpoweredROFIncrease = 0.25
 
 // Jetpack
 // NS1: 6.5 seconds of fuel

@@ -456,7 +456,6 @@ kStartChargeEnergyCost = 8
 kHydraDamage = 20 // From NS1
 kHydraAttackDamageType = kDamageType.Normal
 
-kEmpoweredROFIncrease = 0.25
 kMeleeViewPunchPitch = -0.3
 kMeleeViewPunchYaw = 0.14
 
