@@ -59,7 +59,7 @@ if Client then
                     hintText = "ALERT_DANGER"
 				elseif ent:isa("Shift") and ent:GetIsBuilt() then
 				    hintText = "REDEPLOYMENT_UPGRADE"
-				else
+				elseif HasMixin(ent, "Construct") and not ent:GetIsBuilt() then
 					hintText = "ALIEN_CONSTRUCT"
                 end
                 

@@ -103,6 +103,9 @@
     <filename>BuildUtility.lua</filename>
   </file>
   <file>
+    <filename>Weapons\Marine\Builder.lua</filename>
+  </file>
+  <file>
     <filename>BuildingMixin.lua</filename>
   </file>
   <file>

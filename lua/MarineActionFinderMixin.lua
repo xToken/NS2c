@@ -132,7 +132,7 @@ if Client then
                                 hintText = "MARINE_PICKUP_JETPACK"
                             elseif ent:isa("HeavyArmor") then
                                 hintText = "MARINE_PICKUP_HEAVYARMOR"
-                            else
+                            elseif HasMixin(ent, "Construct") and not ent:GetIsBuilt() then
                                 hintText = "MARINE_CONSTRUCT"
                             end
 
