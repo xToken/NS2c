@@ -18,13 +18,13 @@ end
 
 local function GUICorrectedScale(size)
     if ScreenSmallAspect() > kScreenScaleAspect then
-        return (ScreenSmallAspect() / kScreenScaleAspect)*size*1.15
+        return (ScreenSmallAspect() / kScreenScaleAspect) * size * 1.15
     else
         return math.scaledown(size, ScreenSmallAspect(), kScreenScaleAspect) * (2 - (ScreenSmallAspect() / kScreenScaleAspect))
     end
 end
 
-local kClassTechIdToIndex = {	kTechId.Skulk, kTechId.Gorge, kTechId.Lerk, kTechId.Fade, kTechId.Onos, 
+local kClassTechIdToIndex = {	kTechId.Skulk, kTechId.Gorge, kTechId.Lerk, kTechId.Fade, kTechId.Onos, kTechId.Embryo, 
 								kTechId.Marine, kTechId.JetpackMarine, kTechId.HeavyArmorMarine, kTechId.MarineCommander,
 								kTechId.ReadyRoomPlayer }
 								
@@ -43,6 +43,9 @@ local kClassDetails = 	{	{   DisplayName = "SKULK", TextureName = "ui/Skulk.dds"
 							{   DisplayName = "ONOS", TextureName = "ui/Onos.dds", 
                                 Description = "ONOS_HELP", Width = GUIScale(304), Height = GUIScale(326) },
                                 
+                            {   DisplayName = "EMBRYO", TextureName = "ui/Onos.dds", 
+                                Description = "EMBRYO_HELP", Width = GUIScale(304), Height = GUIScale(326) },
+                                
 							{   DisplayName = "MARINE", TextureName = "ui/Onos.dds", 
                                 Description = "MARINE_HELP", Width = GUIScale(304), Height = GUIScale(326) },
                                 
@@ -60,15 +63,26 @@ local kClassDetails = 	{	{   DisplayName = "SKULK", TextureName = "ui/Skulk.dds"
 						}
 
 //local kClassPicturePosition = GUICorrectedScale( Vector(0, 0, 0))  Gotta fight Scaling Creep
-local kClassPicturePosition = GUICorrectedScale( Vector(30, 30, 0))
-local kClassDescription1Position = GUICorrectedScale( Vector(400, 50, 0))
-local kClassDescription2Position = GUICorrectedScale( Vector(400, 225, 0))
-local kClassDescriptionWidth = 575
-local kClassTitlePosition = GUICorrectedScale( Vector(470, 10, 0))
+local kClassPicturePositionUnscaled = Vector(30, 30, 0)
+local kClassPicturePosition = GUICorrectedScale(kClassPicturePositionUnscaled)
+local kClassDescription1PositionUnscaled = Vector(400, 50, 0)
+local kClassDescription1Position = GUICorrectedScale(kClassDescription1PositionUnscaled)
+local kClassDescription2PositionUnscaled = Vector(400, 225, 0)
+local kClassDescription2Position = GUICorrectedScale(kClassDescription2PositionUnscaled)
+local kClassDescriptionWidthUnscaled = 575
+local kClassDescriptionWidth = kClassDescriptionWidthUnscaled //GUICorrectedScale(kClassDescriptionWidthUnscaled)
+local kClassTitlePositionUnscaled = Vector(470, 10, 0)
+local kClassTitlePosition = GUICorrectedScale(kClassTitlePositionUnscaled)
 
 local kLargeFont = Fonts.kAgencyFB_Medium
+local kLargeFontUnscaled = Vector(1, 1, 1) * 1
+local kLargeFontScale = GUICorrectedScale(kLargeFontUnscaled)
 local kMediumFont = Fonts.kAgencyFB_Small
+local kMediumFontUnscaled = Vector(1, 1, 1) * 1
+local kMediumFontScale = GUICorrectedScale(kMediumFontUnscaled)
 local kSmallFont = Fonts.kAgencyFB_Tiny
+local kSmallFontUnscaled = Vector(1, 1, 1) * 1
+local kSmallFontScale = GUICorrectedScale(kSmallFontUnscaled)
 //Fonts.kAgencyFB_Medium
 //Fonts.kAgencyFB_Small
 //Fonts.kAgencyFB_Smaller_Bordered
@@ -120,13 +134,19 @@ local kWeaponDetails = {	{ DisplayName = "BITE", TextureName = "", Description =
 							{ DisplayName = "JETPACK", TextureName = "", Description = "JETPACK_HELP" },
 							{ DisplayName = "HEAVY_ARMOR", TextureName = "", Description = "HEAVY_ARMOR_HELP" }
 						}
-						
-local kWeaponIconSize = GUICorrectedScale( Vector(100, 100, 0))
-local kWeaponSpacing = GUICorrectedScale( Vector(120, 120, 0))
-local kWeaponTitleSize = GUICorrectedScale(30)
-local kWeaponIconPositionTable = GUICorrectedScale( Vector(0, 420, 0))
-local kWeaponDescriptionTable = GUICorrectedScale( Vector(120, 420, 0))
-local kWeaponDescriptionWidth = 550
+					
+local kWeaponIconSizeUnscaled = Vector(100, 100, 0)
+local kWeaponIconSize = GUICorrectedScale(kWeaponIconSizeUnscaled)
+local kWeaponSpacingUnscaled = Vector(120, 120, 0)
+local kWeaponSpacing = GUICorrectedScale(kWeaponSpacingUnscaled)
+local kWeaponTitleSizeUnscaled = 30
+local kWeaponTitleSize = GUICorrectedScale(kWeaponTitleSizeUnscaled)
+local kWeaponIconPositionTableUnscaled = Vector(0, 420, 0)
+local kWeaponIconPositionTable = GUICorrectedScale(kWeaponIconPositionTableUnscaled)
+local kWeaponDescriptionTableUnscaled = Vector(120, 420, 0)
+local kWeaponDescriptionTable = GUICorrectedScale(kWeaponDescriptionTableUnscaled)
+local kWeaponDescriptionWidthUnscaled = 550
+local kWeaponDescriptionWidth = kWeaponDescriptionWidthUnscaled //GUICorrectedScale(kWeaponDescriptionWidthUnscaled)
 local kMaxWeaponListings = 4
 
 //Eventually use specific textures for each weapon/ability.. maybe?  or atleast something a bit higher res.
@@ -198,19 +218,29 @@ local kUpgradeDetails = {	{ DisplayName = "CARAPACE", TextureName = "", Unlocked
 							{ DisplayName = "DEFEND", TextureName = "", UnlockedDescription = "DEFEND_UNLOCKED", LockedDescription = "DEFEND_LOCKED" },
 						}
 
-local kUpgradeIconSize = GUICorrectedScale( Vector(100, 100, 0))
-local kUpgradeSpacing = GUICorrectedScale( Vector(120, 120, 0))
-local kUpgradeIconTablePosition = GUICorrectedScale( Vector(700, 420, 0))
-local kUpgradeTitleSize = GUICorrectedScale(30)
-local kUpgradeDescriptionTablePosition = GUICorrectedScale( Vector(820, 420, 0))
-local kUpgradeDescriptionWidth = 600
+local kUpgradeIconSizeUnscaled = Vector(100, 100, 0)
+local kUpgradeIconSize = GUICorrectedScale(kUpgradeIconSizeUnscaled)
+local kUpgradeSpacingUnscaled = Vector(120, 120, 0)
+local kUpgradeSpacing = GUICorrectedScale(kUpgradeSpacingUnscaled)
+local kUpgradeIconTablePositionUnscaled = Vector(700, 420, 0)
+local kUpgradeIconTablePosition = GUICorrectedScale(kUpgradeIconTablePositionUnscaled)
+local kUpgradeTitleSizeUnscaled = 30
+local kUpgradeTitleSize = GUICorrectedScale(kUpgradeTitleSizeUnscaled)
+local kUpgradeDescriptionTablePositionUnscaled = Vector(820, 420, 0)
+local kUpgradeDescriptionTablePosition = GUICorrectedScale(kUpgradeDescriptionTablePositionUnscaled)
+local kUpgradeDescriptionWidthUnscaled = 600
+local kUpgradeDescriptionWidth = kUpgradeDescriptionWidthUnscaled //GUICorrectedScale(kUpgradeDescriptionWidthUnscaled)
 local kMaxUpgrades = 4
 local kUpgradesTexture = "ui/buildmenu.dds"
 
-local kGameplayTips1Position = GUICorrectedScale( Vector(1045, 40, 0))
-local kGameplayTips2Position = GUICorrectedScale( Vector(1045, 215, 0))
-local kGameplayTitlePosition = GUICorrectedScale( Vector(1045, 0, 0))
-local kGameplayTipsWidth = 525
+local kGameplayTips1PositionUnscaled = Vector(1045, 50, 0)
+local kGameplayTips1Position = GUICorrectedScale(kGameplayTips1PositionUnscaled)
+local kGameplayTips2PositionUnscaled = Vector(1045, 225, 0)
+local kGameplayTips2Position = GUICorrectedScale(kGameplayTips2PositionUnscaled)
+local kGameplayTitlePositionUnscaled = Vector(1045, 10, 0)
+local kGameplayTitlePosition = GUICorrectedScale(kGameplayTitlePositionUnscaled)
+local kGameplayTipsWidthUnscaled = 525
+local kGameplayTipsWidth = kGameplayTipsWidthUnscaled //GUICorrectedScale(kGameplayTipsWidthUnscaled)
 
 local kGameplayTips = 	{
 							[kAlienTeamType] = 	{
@@ -228,8 +258,10 @@ local kGameplayTips = 	{
 												}
 						}
 
-local kBackgroundSize = GUICorrectedScale( Vector(1632, 918, 0))
-local kWeaponUpgradeUpdateSpeed = 1
+local kBackgroundSizeUnscaled = Vector(1600, 900, 0)
+local kBackgroundSize = GUICorrectedScale(kBackgroundSizeUnscaled)
+
+local kUpdateSpeed = 1
 
 class 'GUIHelpScreen' (GUIScript)
 
@@ -244,6 +276,7 @@ end
 local function LookupUpgradesList(teamType)
 	local techTable = { }
     local techTree = GetTechTree()
+    local player = Client.GetLocalPlayer()
 	local upgradeSlots = kUpgradeSlots[teamType]
 	if teamType == kNeutralTeamType then
 	    //This is just a hack to always populate the table.. these dont REALLY matter.  Just forcing through system using rando techIds.
@@ -252,7 +285,7 @@ local function LookupUpgradesList(teamType)
         end
         return techTable
     end
-	if techTree and upgradeSlots then
+	if techTree and upgradeSlots and player then
 		for i = 1, #upgradeSlots do
 			local techStatus = kUpgradeTechStatus.Locked
 			local techId = upgradeSlots[i].TechId
@@ -260,15 +293,16 @@ local function LookupUpgradesList(teamType)
 			if techNode then
 				//Determine Status - This sucks since nodes are not consistently setup.
 				//Since this just runs on a subset, dont need to account for every case atm.
+				//If we have the tech, or have the upgrade.
 				if techNode:GetHasTech() then
 					techStatus = kUpgradeTechStatus.Unlocked
 					//If we have the tech, check to see if we have a subupgrade of it
-					if upgradeSlots.SubUpgrades then
-						for j = 1, #SubUpgrades do
-							local subNode = techTree:GetTechNode(SubUpgrades[j])
-							if subNode:GetHasTech() then
+					if upgradeSlots[i].SubUpgrades then
+						for j = 1, #upgradeSlots[i].SubUpgrades do
+							local subNode = techTree:GetTechNode(upgradeSlots[i].SubUpgrades[j])
+							if (subNode and subNode:GetHasTech()) or player:GetHasUpgrade(upgradeSlots[i].SubUpgrades[j]) then
 								//We have a subnode, update data to be inserted into table.
-								techId = SubUpgrades[j]
+								techId = upgradeSlots[i].SubUpgrades[j]
 								techStatus = kUpgradeTechStatus.Unlocked
 							end
 						end
@@ -340,6 +374,7 @@ local function InitializeClassObjects(self)
     self.classDisplayText1:SetAnchor(GUIItem.Left, GUIItem.Top)
     self.classDisplayText1:SetPosition(kClassDescription1Position)
     self.classDisplayText1:SetFontName(kMediumFont)
+    self.classDisplayText1:SetScale(kMediumFontScale)
     self.classDisplayText1:SetTextAlignmentX(GUIItem.Align_Min)
     self.classDisplayText1:SetTextAlignmentY(GUIItem.Align_Min)
     self.classDisplayText1:SetText("")
@@ -351,6 +386,7 @@ local function InitializeClassObjects(self)
     self.classDisplayText2:SetAnchor(GUIItem.Left, GUIItem.Top)
     self.classDisplayText2:SetPosition(kClassDescription2Position)
     self.classDisplayText2:SetFontName(kMediumFont)
+    self.classDisplayText2:SetScale(kMediumFontScale)
     self.classDisplayText2:SetTextAlignmentX(GUIItem.Align_Min)
     self.classDisplayText2:SetTextAlignmentY(GUIItem.Align_Min)
     self.classDisplayText2:SetText("")
@@ -362,6 +398,7 @@ local function InitializeClassObjects(self)
     self.classDisplayName:SetAnchor(GUIItem.Left, GUIItem.Top)
     self.classDisplayName:SetPosition(kClassTitlePosition)
     self.classDisplayName:SetFontName(kLargeFont)
+    self.classDisplayName:SetScale(kLargeFontScale)
     self.classDisplayName:SetTextAlignmentX(GUIItem.Align_Min)
     self.classDisplayName:SetTextAlignmentY(GUIItem.Align_Min)
     self.classDisplayName:SetText("")
@@ -382,6 +419,7 @@ local function UpdateClassObjects(self)
         self.classDisplayIcon:SetSize(Vector(kClassDetails[self.classIndex].Width, kClassDetails[self.classIndex].Height, 0))
         self.classDisplayIcon:SetTexture(kClassDetails[self.classIndex].TextureName)
         self.lastclassIndex = self.classIndex
+        self.lastupgradelist = nil // To Make sure upgrades are updated correctly after egging.
     end
     
 end
@@ -405,6 +443,7 @@ local function InitializeWeaponObjects(self)
 		self.weaponObjects[i].description:SetAnchor(GUIItem.Left, GUIItem.Top)
 		self.weaponObjects[i].description:SetPosition(Vector(kWeaponDescriptionTable.x, kWeaponDescriptionTable.y + kWeaponTitleSize + (kWeaponSpacing.y * (i - 1)), 0))
 		self.weaponObjects[i].description:SetFontName(kSmallFont)
+		self.weaponObjects[i].description:SetScale(kSmallFontScale)
 		self.weaponObjects[i].description:SetTextAlignmentX(GUIItem.Align_Min)
 		self.weaponObjects[i].description:SetTextAlignmentY(GUIItem.Align_Min)
 		self.weaponObjects[i].description:SetText("")
@@ -416,6 +455,7 @@ local function InitializeWeaponObjects(self)
 		self.weaponObjects[i].title:SetAnchor(GUIItem.Left, GUIItem.Top)
 		self.weaponObjects[i].title:SetPosition(Vector(kWeaponDescriptionTable.x, kWeaponDescriptionTable.y + (kWeaponSpacing.y * (i - 1)), 0))
 		self.weaponObjects[i].title:SetFontName(kMediumFont)
+		self.weaponObjects[i].title:SetScale(kMediumFontScale)
 		self.weaponObjects[i].title:SetTextAlignmentX(GUIItem.Align_Min)
 		self.weaponObjects[i].title:SetTextAlignmentY(GUIItem.Align_Min)
 		self.weaponObjects[i].title:SetText("")
@@ -483,6 +523,7 @@ local function InitializeUpgradeObjects(self)
 		self.upgradeObjects[i].description:SetAnchor(GUIItem.Left, GUIItem.Top)
 		self.upgradeObjects[i].description:SetPosition(Vector(kUpgradeDescriptionTablePosition.x, kUpgradeDescriptionTablePosition.y + kUpgradeTitleSize + (kUpgradeSpacing.y * (i - 1)), 0))
 		self.upgradeObjects[i].description:SetFontName(kSmallFont)
+		self.upgradeObjects[i].description:SetScale(kSmallFontScale)
 		self.upgradeObjects[i].description:SetTextAlignmentX(GUIItem.Align_Min)
 		self.upgradeObjects[i].description:SetTextAlignmentY(GUIItem.Align_Min)
 		self.upgradeObjects[i].description:SetText("")
@@ -494,6 +535,7 @@ local function InitializeUpgradeObjects(self)
 		self.upgradeObjects[i].title:SetAnchor(GUIItem.Left, GUIItem.Top)
 		self.upgradeObjects[i].title:SetPosition(Vector(kUpgradeDescriptionTablePosition.x, kUpgradeDescriptionTablePosition.y + (kUpgradeSpacing.y * (i - 1)), 0))
 		self.upgradeObjects[i].title:SetFontName(kMediumFont)
+		self.upgradeObjects[i].title:SetScale(kMediumFontScale)
 		self.upgradeObjects[i].title:SetTextAlignmentX(GUIItem.Align_Min)
 		self.upgradeObjects[i].title:SetTextAlignmentY(GUIItem.Align_Min)
 		self.upgradeObjects[i].title:SetText("")
@@ -516,34 +558,34 @@ local function UpdateUpgradeObjects(self)
 				local upgSlot = self.upgradeList[i]
 				local techId = upgSlot.techId
                 local index = LookupUpgradeIndex(techId)
-                local status = upgSlot.techStatus
-                if self.upgradeObjects[i].index ~= index or self.upgradeObjects[i].status ~= status then
-					local LocalizedString, GameString
-					GameString = kUpgradeDetails[index].LockedDescription
-                    if kUpgradeDetails[index].TextureName ~= "" then
-                        //Use better texture
-                        self.upgradeObjects[i].icon:SetTexture(kUpgradeDetails[index].TextureName)
-					else
-						self.upgradeObjects[i].icon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId)))
-                    end
-                    if status == kUpgradeTechStatus.Unlocked then
-                        GameString = kUpgradeDetails[index].UnlockedDescription
-                    end
-					//Check for class specific version
-					LocalizedString = Locale.ResolveString(GameString .. "_" .. kClassDetails[self.classIndex].DisplayName)
-					if LocalizedString == GameString .. "_" .. kClassDetails[self.classIndex].DisplayName then
-						//No class specific one, use other
-						LocalizedString = Locale.ResolveString(GameString)
-					end
-					self.upgradeObjects[i].description:SetText(LocalizedString)
-                    self.upgradeObjects[i].description:SetTextClipped(true, kUpgradeDescriptionWidth, 1024)
-                    self.upgradeObjects[i].title:SetText(Locale.ResolveString(kUpgradeDetails[index].DisplayName))
-                    self.upgradeObjects[i].icon:SetIsVisible(true)
-                    self.upgradeObjects[i].description:SetIsVisible(true)
-                    self.upgradeObjects[i].title:SetIsVisible(true)
-                    self.upgradeObjects[i].index = index
-                    self.upgradeObjects[i].status = status
-				end
+                local status = upgSlot.techStatus     
+                local LocalizedString, GameString
+                GameString = kUpgradeDetails[index].LockedDescription
+                if kUpgradeDetails[index].TextureName ~= "" then
+                    //Use better texture
+                    self.upgradeObjects[i].icon:SetTexture(kUpgradeDetails[index].TextureName)
+                else
+                    self.upgradeObjects[i].icon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(techId)))
+                end
+                if status == kUpgradeTechStatus.Unlocked then
+                    GameString = kUpgradeDetails[index].UnlockedDescription
+                end
+                //Check for class specific version
+                if self.classIndex > 0 then
+                    LocalizedString = Locale.ResolveString(GameString .. "_" .. kClassDetails[self.classIndex].DisplayName)
+                end
+                if self.classIndex == 0 or LocalizedString == GameString .. "_" .. kClassDetails[self.classIndex].DisplayName then
+                    //No class specific one, use other
+                    LocalizedString = Locale.ResolveString(GameString)
+                end
+                self.upgradeObjects[i].description:SetText(LocalizedString)
+                self.upgradeObjects[i].description:SetTextClipped(true, kUpgradeDescriptionWidth, 1024)
+                self.upgradeObjects[i].title:SetText(Locale.ResolveString(kUpgradeDetails[index].DisplayName))
+                self.upgradeObjects[i].icon:SetIsVisible(true)
+                self.upgradeObjects[i].description:SetIsVisible(true)
+                self.upgradeObjects[i].title:SetIsVisible(true)
+                self.upgradeObjects[i].index = index
+                self.upgradeObjects[i].status = status
 		    else
 		        self.upgradeObjects[i].description:SetText("")
                 self.upgradeObjects[i].title:SetText("")
@@ -563,6 +605,7 @@ local function InitializeGameplaySuggestions(self)
     self.gameplayDisplayText1:SetAnchor(GUIItem.Left, GUIItem.Top)
     self.gameplayDisplayText1:SetPosition(kGameplayTips1Position)
     self.gameplayDisplayText1:SetFontName(kMediumFont)
+    self.gameplayDisplayText1:SetScale(kMediumFontScale)
     self.gameplayDisplayText1:SetTextAlignmentX(GUIItem.Align_Min)
     self.gameplayDisplayText1:SetTextAlignmentY(GUIItem.Align_Min)
     self.gameplayDisplayText1:SetText("")
@@ -574,6 +617,7 @@ local function InitializeGameplaySuggestions(self)
     self.gameplayDisplayText2:SetAnchor(GUIItem.Left, GUIItem.Top)
     self.gameplayDisplayText2:SetPosition(kGameplayTips2Position)
     self.gameplayDisplayText2:SetFontName(kMediumFont)
+    self.gameplayDisplayText2:SetScale(kMediumFontScale)
     self.gameplayDisplayText2:SetTextAlignmentX(GUIItem.Align_Min)
     self.gameplayDisplayText2:SetTextAlignmentY(GUIItem.Align_Min)
     self.gameplayDisplayText2:SetText("")
@@ -585,6 +629,7 @@ local function InitializeGameplaySuggestions(self)
     self.gameplayDisplayName:SetAnchor(GUIItem.Left, GUIItem.Top)
     self.gameplayDisplayName:SetPosition(kGameplayTitlePosition)
     self.gameplayDisplayName:SetFontName(kLargeFont)
+    self.gameplayDisplayName:SetScale(kLargeFontScale)
     self.gameplayDisplayName:SetTextAlignmentX(GUIItem.Align_Min)
     self.gameplayDisplayName:SetTextAlignmentY(GUIItem.Align_Min)
     self.gameplayDisplayName:SetText("")
@@ -679,6 +724,39 @@ function GUIHelpScreen:GetIsVisible()
     return self.background ~= nil and self.background:GetIsVisible()
 end
 
+function GUIHelpScreen:OnResolutionChanged(oldX, oldY, newX, newY)
+
+    kClassPicturePosition = GUICorrectedScale(kClassPicturePositionUnscaled)
+    kClassDescription1Position = GUICorrectedScale(kClassDescription1PositionUnscaled)
+    kClassDescription2Position = GUICorrectedScale(kClassDescription2PositionUnscaled)
+    kClassTitlePosition = GUICorrectedScale(kClassTitlePositionUnscaled)
+    kWeaponIconSize = GUICorrectedScale(kWeaponIconSizeUnscaled)
+    kWeaponSpacing = GUICorrectedScale(kWeaponSpacingUnscaled)
+    kWeaponTitleSize = GUICorrectedScale(kWeaponTitleSizeUnscaled)
+    kWeaponIconPositionTable = GUICorrectedScale(kWeaponIconPositionTableUnscaled)
+    kWeaponDescriptionTable = GUICorrectedScale(kWeaponDescriptionTableUnscaled)
+    kUpgradeIconSize = GUICorrectedScale(kUpgradeIconSizeUnscaled)
+    kUpgradeSpacing = GUICorrectedScale(kUpgradeSpacingUnscaled)
+    kUpgradeIconTablePosition = GUICorrectedScale(kUpgradeIconTablePositionUnscaled)
+    kUpgradeTitleSize = GUICorrectedScale(kUpgradeTitleSizeUnscaled)
+    kUpgradeDescriptionTablePosition = GUICorrectedScale(kUpgradeDescriptionTablePositionUnscaled)
+    kGameplayTips1Position = GUICorrectedScale(kGameplayTips1PositionUnscaled)
+    kGameplayTips2Position = GUICorrectedScale(kGameplayTips2PositionUnscaled)
+    kGameplayTitlePosition = GUICorrectedScale(kGameplayTitlePositionUnscaled)
+    kBackgroundSize = GUICorrectedScale(kBackgroundSizeUnscaled)
+    //kClassDescriptionWidth = GUICorrectedScale(kClassDescriptionWidthUnscaled)
+    //kWeaponDescriptionWidth = GUICorrectedScale(kWeaponDescriptionWidthUnscaled)
+    //kUpgradeDescriptionWidth = GUICorrectedScale(kUpgradeDescriptionWidthUnscaled)
+    //kGameplayTipsWidth = GUICorrectedScale(kGameplayTipsWidthUnscaled)
+    kLargeFontScale = GUICorrectedScale(kLargeFontUnscaled)
+    kMediumFontScale = GUICorrectedScale(kMediumFontUnscaled)
+    kSmallFontScale = GUICorrectedScale(kSmallFontUnscaled)
+    
+    self:Uninitialize()
+    self:Initialize()
+    
+end
+
 function GUIHelpScreen:Update(deltaTime)
 
     local teamType = PlayerUI_GetTeamType()
@@ -690,22 +768,18 @@ function GUIHelpScreen:Update(deltaTime)
 	
 	if self.helpScreenButton and not self.lastButtonState then
 		// Update everything now.
-		self.classIndex = LookupClassIndex(self.teamType)
-		self.weaponList = LookupWeaponList(self.teamType)
-		self.upgradeList = LookupUpgradesList(self.teamType)
-		self.gametime = LookupGameTimeinMinutes()
 		self.lastclassIndex = nil
 		self.lastweaponlist = nil
 		self.lastupgradelist = nil
 		self.lastgametimeupdate = nil
-		self.lastFullupdate = 0
+		self.lastFullupdate = kUpdateSpeed
 	end
     
     if self.helpScreenButton then
 		
 		//Update weapon/upgrade tables on a slower cycle.  Might not need this..
 		self.lastFullupdate = self.lastFullupdate + deltaTime
-		if self.lastFullupdate > kWeaponUpgradeUpdateSpeed then
+		if self.lastFullupdate > kUpdateSpeed then
 		    self.classIndex = LookupClassIndex(self.teamType)
 			self.weaponList = LookupWeaponList(self.teamType)
 			self.upgradeList = LookupUpgradesList(self.teamType)
@@ -714,8 +788,8 @@ function GUIHelpScreen:Update(deltaTime)
 			UpdateWeaponObjects(self)
 			UpdateUpgradeObjects(self)
 			UpdateGameplaySuggestions(self)
-			self.lastFullupdate = self.lastFullupdate - kWeaponUpgradeUpdateSpeed
-		end		
+			self.lastFullupdate = self.lastFullupdate - kUpdateSpeed
+		end
 		
     end
 	
