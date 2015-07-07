@@ -10,8 +10,7 @@ Script.Load("lua/Utility.lua")
 Script.Load("lua/Sabot.lua")
 
 //Load Classic Main Menu Changes - this file is unlikely to change much
-Script.Load("lua/menu/GUIAdjustments.lua")
-Script.Load("lua/menu/GUIClassicMenu.lua")
+Script.Load("lua/Overloads/GUIClassicMenu.lua")
  
 local gLastUpdate = 0
 
