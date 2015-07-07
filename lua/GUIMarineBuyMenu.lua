@@ -103,6 +103,7 @@ end
 GUIMarineBuyMenu.kMenuIconSize = GUIScale( Vector(71, 71, 0) )
 GUIMarineBuyMenu.kSelectorSize = GUIScale( Vector(75, 75, 0) )
 GUIMarineBuyMenu.kIconTopOffset = 10
+GUIMarineBuyMenu.kIconTopXOffset = GUIMarineBuyMenu.kMenuIconSize.x
 GUIMarineBuyMenu.kItemIconYOffset = {}
 
 GUIMarineBuyMenu.kEquippedIconTopOffset = 58
@@ -317,8 +318,10 @@ function GUIMarineBuyMenu:_InitializeItemButtons()
     self.itemButtons = { }
     
     local itemTechIdList = MarineUI_GetPersonalUpgrades()
-    local itemcolumns = { a = {kTechId.MedPack, kTechId.CatPack, kTechId.Scan, kTechId.MotionTracking, kTechId.Welder, kTechId.Mines, kTechId.HandGrenades, kTechId.Shotgun, kTechId.HeavyMachineGun, kTechId.GrenadeLauncher },
-                          b = {kTechId.Weapons1, kTechId.Weapons2, kTechId.Weapons3, kTechId.Armor1, kTechId.Armor2, kTechId.Armor3, kTechId.Jetpack, kTechId.HeavyArmor } }
+    local itemcolumns = {   {kTechId.Weapons1, kTechId.Weapons2, kTechId.Weapons3, kTechId.Armor1, kTechId.Armor2, kTechId.Armor3 },
+                            {kTechId.Shotgun, kTechId.HeavyMachineGun, kTechId.GrenadeLauncher, kTechId.Welder, kTechId.Mines, kTechId.HandGrenades },
+                            {kTechId.MedPack, kTechId.CatPack, kTechId.Scan, kTechId.MotionTracking, kTechId.Jetpack, kTechId.HeavyArmor }
+                        }
                         
     local selectorPosX = -GUIMarineBuyMenu.kSelectorSize.x + GUIMarineBuyMenu.kPadding
     local fontScaleVector = Vector(0.8, 0.8, 0)
@@ -326,12 +329,12 @@ function GUIMarineBuyMenu:_InitializeItemButtons()
     for k, itemTechId in ipairs(itemTechIdList) do
     
         local xPos, yPos
-        if table.contains(itemcolumns.a, itemTechId) then
-            xPos = -GUIMarineBuyMenu.kMenuIconSize.x
-            yPos = GUIMarineBuyMenu.kIconTopOffset + (GUIMarineBuyMenu.kMenuIconSize.y) * GetIndexOf(itemcolumns.a, itemTechId) - GUIMarineBuyMenu.kMenuIconSize.y
-        elseif table.contains(itemcolumns.b, itemTechId) then
-            xPos = 0
-            yPos = GUIMarineBuyMenu.kIconTopOffset + (GUIMarineBuyMenu.kMenuIconSize.y) * GetIndexOf(itemcolumns.b, itemTechId) - GUIMarineBuyMenu.kMenuIconSize.y
+        
+        for i = 1, #itemcolumns do
+            if table.contains(itemcolumns[i], itemTechId) then
+                xPos = (-GUIMarineBuyMenu.kIconTopXOffset) + GUIMarineBuyMenu.kIconTopXOffset * (i - 1)
+                yPos = GUIMarineBuyMenu.kIconTopOffset + (GUIMarineBuyMenu.kMenuIconSize.y) * GetIndexOf(itemcolumns[i], itemTechId) - GUIMarineBuyMenu.kMenuIconSize.y
+            end        
         end
         
         local graphicItem = GUIManager:CreateGraphicItem()
