@@ -54,7 +54,7 @@ function Spit:ProcessHit(targetHit, surface, normal, hitPoint)
     
     if Server and self:GetOwner() ~= targetHit then
         self:DoDamage(kSpitDamage, targetHit, self:GetOrigin() + normal * kHitEffectOffset, self:GetCoords().zAxis, surface, false, false)
-        if targetHit and targetHit:isa("Hive") and targetHit.OnSpitHit then
+        if targetHit and targetHit.OnSpitHit then
             targetHit:OnSpitHit()
         end
 		GetEffectManager():TriggerEffects("spit_hit", { effecthostcoords = self:GetCoords() })
