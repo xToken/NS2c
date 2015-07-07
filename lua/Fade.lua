@@ -51,6 +51,12 @@ local kWalkSpeed = 2
 local kCrouchedSpeed = 1.8
 local kBlinkImpulseForce = 85
 local kFadeBlinkAutoJumpGroundDistance = 0.25
+local kEtherealForce = 13.5
+local kBlinkAddForce = 1
+local kEtherealVerticalForce = 2
+local kBlinkSpeed = 14
+local kBlinkAcceleration = 40
+local kBlinkAddAcceleration = 1
 local kMetabolizeAnimationDelay = 0.65
 local kBlinkMinEffectCooldown = 1
 
@@ -58,7 +64,8 @@ local networkVars =
 {
     ethereal = "compensated boolean",
     timeMetabolize = "private compensated time",
-    timeBlinked = "private compensated time"
+    timeBlinked = "private compensated time",
+    firstBlink = "private boolean"
 }
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
@@ -75,6 +82,7 @@ function Fade:OnCreate()
     InitMixin(self, PredictedProjectileShooterMixin)
 	InitMixin(self, FadeVariantMixin)
     self.ethereal = false
+    self.firstBlink = false
     self.timeMetabolize = 0
     self.timeBlinked = 0
     
@@ -167,6 +175,13 @@ function Fade:GetAirControl()
     return 40
 end
 
+function Fade:ModifyGravityForce(gravityTable)
+    if (self:GetIsBlinking() and not self:HasAdvancedMovement()) then
+        gravityTable.gravity = 0
+    end
+    Alien.ModifyGravityForce(self, gravityTable)
+end
+
 function Fade:GetSimpleFriction(onGround)
     if onGround then
         return 9
@@ -189,13 +204,40 @@ function Fade:GetIsBlinking()
 end
 
 function Fade:OnBlink()
+
+    if not self:HasAdvancedMovement() and not self:GetIsBlinking() then
+        //Impulse Blink from NS2
+        local oldSpeed = self:GetVelocity():GetLength()
+        local hasupg, level = GetHasCelerityUpgrade(self)
+        local newSpeed = math.max(oldSpeed, kEtherealForce + (hasupg and level or 0) * 0.5)
+
+        // need to handle celerity different for the fade. blink is a big part of the basic movement, celerity wont be significant enough if not considered here
+        local celerityMultiplier = 1 + (hasupg and level or 0) * 0.3
+        local oldVelocity = self:GetVelocity()
+        oldVelocity.y = 0
+        local newVelocity = self:GetViewCoords().zAxis * (kEtherealForce + (hasupg and level or 0) * 0.5) + oldVelocity
+        if newVelocity:GetLength() > newSpeed then
+            newVelocity:Scale(newSpeed / newVelocity:GetLength())
+        end
+        
+        if self:GetIsOnGround() then
+            newVelocity.y = math.max(newVelocity.y, kEtherealVerticalForce)
+        end
+        
+        newVelocity:Add(self:GetViewCoords().zAxis * kBlinkAddForce * celerityMultiplier)
+        self:SetVelocity(newVelocity)
+
+    end
+    
     self:SetIsOnGround(false)
     self:SetIsJumping(true)
     self.ethereal = true
+    
     if self.timeBlinked + kBlinkMinEffectCooldown < Shared.GetTime() then
         self:TriggerEffects("blink_out")
         self.timeBlinked = Shared.GetTime()
     end
+    
 end
 
 function Fade:ModifyVelocity(input, velocity, deltaTime)
@@ -204,12 +246,33 @@ function Fade:ModifyVelocity(input, velocity, deltaTime)
 
     if self:GetIsBlinking() then
     
-        // Blink impulse
-        local zAxis = self:GetViewCoords().zAxis
-        velocity:Add( zAxis * kBlinkImpulseForce * deltaTime )
+        if self:HasAdvancedMovement() then
         
-        if self:GetIsOnGround() or self:GetIsCloseToGround(kFadeBlinkAutoJumpGroundDistance) then
-            self:GetJumpVelocity(input, velocity)
+            //NS1 Style Blink.
+            // Blink impulse
+            local zAxis = self:GetViewCoords().zAxis
+            velocity:Add( zAxis * kBlinkImpulseForce * deltaTime )
+            
+            if self:GetIsOnGround() or self:GetIsCloseToGround(kFadeBlinkAutoJumpGroundDistance) then
+                self:GetJumpVelocity(input, velocity)
+            end
+            
+        else
+        
+            //Vanilla Style Blink
+            local wishDir = self:GetViewCoords().zAxis        
+            velocity:Add(wishDir * kBlinkAcceleration * deltaTime)
+            
+            if velocity:GetLength() > kBlinkSpeed then
+
+                velocity:Normalize()
+                velocity:Scale(kBlinkSpeed)
+                
+            end 
+            
+            // additional acceleration when holding down blink to exceed max speed
+            velocity:Add(wishDir * kBlinkAddAcceleration * deltaTime)
+            
         end
         
         self:DeductAbilityEnergy(kBlinkEnergyCostPerSecond * deltaTime)
