@@ -36,6 +36,10 @@ local kVerticleThrust = 20
 local kLateralForce = 24
 local kJetpackTakeOffTime = .01
 local kJetpackAutoJumpGroundDistance = 0.05
+local kJetpackGravity = -14.5
+local kFlySpeed = 11
+local kFlyAcceleration = 28
+local kJetpackingAccel = 0.8
 local kAnimLandSuffix = "_jetpack_land"
 
 local networkVars =
@@ -293,31 +297,97 @@ function JetpackMarine:HandleButtons(input)
 	Marine.HandleButtons(self, input)
 end
 
+function JetpackMarine:FallingAfterJetpacking()
+    return (self.timeJetpackingChanged + 1.5 > Shared.GetTime()) and not self:GetIsOnGround()
+end
+
 function JetpackMarine:GetInventorySpeedScalar()
     return 1 - self:GetWeaponsWeight() - kJetpackWeight
 end
 
-function JetpackMarine:ModifyVelocity(input, velocity, time)
+function JetpackMarine:ModifyGravityForce(gravityTable)
+    if (self:GetIsJetpacking() or self:FallingAfterJetpacking()) and not self:HasAdvancedMovement() then
+        gravityTable.gravity = kJetpackGravity
+    end
+    Marine.ModifyGravityForce(self, gravityTable)
+end
+
+function JetpackMarine:ModifyVelocity(input, velocity, deltaTime)
     
     PROFILE("JetpackMarine:ModifyVelocity")
-
-    // Add thrust from the jetpack
-    if self:GetIsJetpacking() then
     
-        local wishvel = GetNormalizedVector(self:GetWishVelocity(input)) //Scale back to 0
-        local WeightScalar = 0.6 + (0.4) * ((self:GetMaxSpeed() - 2.8)/(4.9 - 2.8))
-        velocity.y = velocity.y + (kVerticleThrust * time * WeightScalar)
+    if self:HasAdvancedMovement() then
+        //NS1 style logic
+        // Add thrust from the jetpack
+        if self:GetIsJetpacking() then
         
-        if self:GetIsOnGround() or self:GetIsCloseToGround(kJetpackAutoJumpGroundDistance) then
-            self:GetJumpVelocity(input, velocity)
+            local wishvel = GetNormalizedVector(self:GetWishVelocity(input)) //Scale back to 0
+            local WeightScalar = 0.6 + (0.4) * ((self:GetMaxSpeed() - 2.8)/(4.9 - 2.8))
+            velocity.y = velocity.y + (kVerticleThrust * deltaTime * WeightScalar)
+            
+            if self:GetIsOnGround() or self:GetIsCloseToGround(kJetpackAutoJumpGroundDistance) then
+                self:GetJumpVelocity(input, velocity)
+            end
+            
+            velocity.x = velocity.x + (wishvel.x * kLateralForce * deltaTime)
+            velocity.z = velocity.z + (wishvel.z * kLateralForce * deltaTime)
+            // Since the upwards velocity may be very small, manually set onGround to false
+            // to avoid having code from sticking the player to the ground
+            self:SetIsOnGround(false)
+            
         end
         
-        velocity.x = velocity.x + (wishvel.x * kLateralForce * time)
-        velocity.z = velocity.z + (wishvel.z * kLateralForce * time)
-        // Since the upwards velocity may be very small, manually set onGround to false
-        // to avoid having code from sticking the player to the ground
-        self:SetIsOnGround(false)
+    else
+    
+        if self:GetIsJetpacking() then
         
+            local verticalAccel = 22
+            
+            if self:GetIsWebbed() then
+                verticalAccel = 5
+            elseif input.move:GetLength() == 0 then
+                verticalAccel = 26
+            end
+        
+            self.onGround = false
+            local thrust = math.max(0, -velocity.y) / 6
+            velocity.y = math.min(5, velocity.y + verticalAccel * deltaTime * (1 + thrust * 2.5))
+     
+        end
+        
+        if not self.onGround then
+        
+            // do XZ acceleration
+            local maxSpeed = kFlySpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier() * self:GetInventorySpeedScalar()
+            if not self:GetIsJetpacking() then
+                maxSpeed = velocity:GetLengthXZ()
+            end
+            
+            local wishDir = self:GetViewCoords():TransformVector(input.move)
+            local acceleration = 0
+            wishDir.y = 0
+            wishDir:Normalize()
+            
+            acceleration = kFlyAcceleration
+            
+            velocity:Add(wishDir * acceleration * self:GetInventorySpeedScalar() * deltaTime)
+
+            if velocity:GetLengthXZ() > maxSpeed then
+            
+                local yVel = velocity.y
+                velocity.y = 0
+                velocity:Normalize()
+                velocity:Scale(maxSpeed)
+                velocity.y = yVel
+                
+            end 
+            
+            if self:GetIsJetpacking() then
+                velocity:Add(wishDir * kJetpackingAccel * deltaTime)
+            end
+        
+        end
+    
     end
 
 end
@@ -390,10 +460,6 @@ function JetpackMarine:OnTag(tagName)
         StartSoundEffectOnEntity(kJetpackStart, self)
     end
 
-end
-
-function JetpackMarine:FallingAfterJetpacking()
-    return (self.timeJetpackingChanged + 1.5 > Shared.GetTime()) and not self:GetIsOnGround()
 end
 
 function JetpackMarine:OnUpdateAnimationInput(modelMixin)
