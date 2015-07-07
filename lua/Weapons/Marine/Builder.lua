@@ -115,7 +115,7 @@ end
 function Builder:OnDrawClient()
 
     Weapon.OnDrawClient(self)
-
+    
     self.playEffect = true
     
 end
@@ -123,7 +123,7 @@ end
 function Builder:OnHolsterClient()
 
     Weapon.OnHolsterClient(self)
-
+    
     self.playEffect = false
     
 end
