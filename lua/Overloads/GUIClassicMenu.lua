@@ -1,31 +1,10 @@
 // Natural Selection 2 'Classic' Mod
 // Source located at - https://github.com/xToken/NS2c
-// lua\menu\GUIClassicMenu.lua
+// lua\Overloads\GUIClassicMenu.lua
 // - Dragon
 
-local function GetUpValue(origfunc, name)
-
-	local index = 1
-	local foundValue = nil
-	while true do
-	
-		local n, v = debug.getupvalue(origfunc, index)
-		if not n then
-			break
-		end
-		
-		-- Find the highest index matching the name.
-		if n == name then
-			foundValue = v
-		end
-		
-		index = index + 1
-		
-	end
-	
-	return foundValue
-	
-end
+Script.Load("lua/Class.lua")
+Script.Load("lua/Overloads/GUIHooks.lua")
 
 local function SetupClassicMenuOptions(optionElements)
 	
@@ -69,8 +48,8 @@ local function UpdateGUIMainMenu()
 					callback = StoreAdvancedMovementOption
 				}
 
-	local InitOptions = GetUpValue(GUIMainMenu.CreateOptionWindow, "InitOptions")
-	local SaveOptions = GetUpValue(GUIMainMenu.CreateOptionWindow, "SaveOptions")
+	local InitOptions = GHook:GetUpValue(GUIMainMenu.CreateOptionWindow, "InitOptions")
+	local SaveOptions = GHook:GetUpValue(GUIMainMenu.CreateOptionWindow, "SaveOptions")
 
 	local function ClassicInitOptions(optionElements)
 		InitOptions(optionElements)
@@ -99,7 +78,7 @@ local function UpdateGUIMainMenu()
 
 end
 
-AddPreInitOverride("menu/GUIMainMenu", UpdateGUIMainMenu)
+GHook:AddPreInitOverride("menu/GUIMainMenu", UpdateGUIMainMenu)
 
 local function ClassicOnOptionsChanged()
 

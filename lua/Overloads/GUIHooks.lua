@@ -1,23 +1,61 @@
-// Natural Selection 2 'Classic' Mod
-// Source located at - https://github.com/xToken/NS2c
-// lua\menu\GUIAdjustments.lua
+// Natural Selection 2 GUI Hooking Library
+// GUIHooks.lua
 // - Dragon
 
+// This basic library is designed to make hooking GUI files easier.  Simply reference this file, then add functions
+// you want called when specific GUIScripts are loaded.
+// GHook:AddPreInitOverride("GUIMinimapFrame", testfunc) - Will call testfunc when GUIMinimapFrame is loaded, but before its :Initialize() function is run
+// GHook:AddPostInitOverride("GUIMinimapFrame", testfunc) Would call testfunc after the :Initialize() function is run.
+
 Script.Load("lua/Class.lua")
+
+local version = 1.0
+
+GHook = GHook or { }
+
+if GHook.version and GHook.version >= version then
+	//Already loaded or newer version
+	return
+end
+
+GHook.version = version
 
 local kPreHookedScripts = { }
 local kPostHookedScripts = { }
 local kGUIPreOverrides = { }
 local kGUIPostOverrides = { }
 
-function AddPreInitOverride(scriptname, func)
+function GHook:GetUpValue(origfunc, name)
+
+	local index = 1
+	local foundValue = nil
+	while true do
+	
+		local n, v = debug.getupvalue(origfunc, index)
+		if not n then
+			break
+		end
+		
+		if n == name then
+			foundValue = v
+		end
+		
+		index = index + 1
+		
+	end
+	
+	return foundValue
+	
+end
+
+function GHook:AddPreInitOverride(scriptname, func)
 	if kGUIPreOverrides[scriptname] == nil then
 		kGUIPreOverrides[scriptname] = { }
 	end
 	table.insert(kGUIPreOverrides[scriptname], func)
 end
 
-function AddPostInitOverride(scriptname, func)
+function GHook:AddPostInitOverride(scriptname, func)
 	if kGUIPostOverrides[scriptname] == nil then
 		kGUIPostOverrides[scriptname] = { }
 	end

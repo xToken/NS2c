@@ -259,9 +259,6 @@
     <filename>GUIActionIcon.lua</filename>
   </file>
   <file>
-    <filename>menu\GUIAdjustments.lua</filename>
-  </file>
-  <file>
     <filename>GUIAlienBuyMenu.lua</filename>
   </file>
   <file>
@@ -272,9 +269,6 @@
   </file>
   <file>
     <filename>GUIAuraDisplay.lua</filename>
-  </file>
-  <file>
-    <filename>menu\GUIClassicMenu.lua</filename>
   </file>
   <file>
     <filename>GUICommanderButtons.lua</filename>
@@ -902,5 +896,14 @@
   </file>
   <file>
     <filename>Weapons\Alien\XenocideLeap.lua</filename>
+  </file>
+  <file>
+    <filename>Overloads\GUIClassicMenu.lua</filename>
+  </file>
+  <file>
+    <filename>Overloads\GUIHooks.lua</filename>
+  </file>
+  <file>
+    <filename>Overloads\Ladder.lua</filename>
   </file>
 </project>
