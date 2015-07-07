@@ -83,7 +83,7 @@ function RedeployMixin:Redeploy(level)
     end
 end
 
-function EmpowerMixin:GetCanRedeploy()
+function RedeployMixin:GetCanRedeploy()
 	local hasupg, level = GetHasRedeploymentUpgrade(self)
     return self.nextredeploy < Shared.GetTime() and hasupg and level > 0
 end
