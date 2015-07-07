@@ -205,7 +205,7 @@ local function AddDeathMessage(killerIsPlayer, killerIndex, killerTeamNumber, ic
             local techId = StringToEnum(kTechId, techIdString)
             local resOverride = false
 
-            if techIdString == "Egg" or techIdString == "Hydra" then
+            if techIdString == "Egg" then
 
                 resOverride = 0
 
