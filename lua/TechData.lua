@@ -19,6 +19,7 @@
 kTechDataId                             = "id"
 // Localizable string describing tech node
 kTechDataDisplayName                    = "displayname"
+kTechDataCombatDisplayName              = "combatdisplayname"
 // For alien traits and marine upgrades, these distinct character codes will be stored in sponitor's database
 kTechDataSponitorCode                   = "sponitorchar"
 // Include and set to false if not meant to display on commander UI "enables: "
@@ -379,7 +380,8 @@ function BuildTechData()
 			[kTechDataModel] = MedPack.kModelName,
 			[kTechDataTooltipInfo] = "MED_PACK_TOOLTIP",
 			[kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight,
-			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost,
+			[kTechDataCombatDisplayName] = "Resupply"
 		},
 		
         {[kTechDataId] = kTechId.CatPack,
@@ -392,7 +394,8 @@ function BuildTechData()
 			[kTechDataModel] = CatPack.kModelName,
 			[kTechDataTooltipInfo] = "CAT_PACK_TOOLTIP",
 			[kTechDataSpawnHeightOffset] = kCommanderDropSpawnHeight,
-			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost,
+			[kTechDataCombatDisplayName] = "Catpack"
 		},
 		
         {[kTechDataId] = kTechId.Scan,
@@ -404,7 +407,8 @@ function BuildTechData()
 			[kTechDataHotkey] = Move.S,
 			[kTechDataCostKey] = kObservatoryScanCost,
 			[kTechDataTooltipInfo] = "SCAN_TOOLTIP",
-			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost,
+			[kTechDataCombatDisplayName] = "Scan"
 		},
 		
         {[kTechDataId] = kTechId.DistressBeacon,
@@ -749,7 +753,8 @@ function BuildTechData()
 			[kTechDataDamageType] = kShotgunDamageType,
 			[kStructureAttachId] = { kTechId.Armory, kTechId.AdvancedArmory },
 			[kStructureAttachRange] = kArmoryWeaponAttachRange,
-			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost,
+			[kTechDataCombatDisplayName] = "SG"
 		},
 		
         {[kTechDataId] = kTechId.HeavyMachineGun,
@@ -762,7 +767,8 @@ function BuildTechData()
 			[kTechDataDamageType] = kHeavyMachineGunDamageType,
 			[kStructureAttachId] = { kTechId.AdvancedArmory },
 			[kStructureAttachRange] = kArmoryWeaponAttachRange,
-			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost,
+			[kTechDataCombatDisplayName] = "HMG"
 		},
 		
         {[kTechDataId] = kTechId.Welder,
@@ -774,7 +780,8 @@ function BuildTechData()
 			[kTechDataCostKey] = kWelderDropCost,
 			[kStructureAttachId] = { kTechId.Armory, kTechId.AdvancedArmory },
 			[kStructureAttachRange] = kArmoryWeaponAttachRange,
-			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost,
+			[kTechDataCombatDisplayName] = "Welder"
 		},
 		
         {[kTechDataId] = kTechId.Mines,
@@ -786,7 +793,8 @@ function BuildTechData()
 			[kTechDataCostKey] = kMinesDropCost,
 			[kStructureAttachId] = { kTechId.Armory, kTechId.AdvancedArmory },
 			[kStructureAttachRange] = kArmoryWeaponAttachRange,
-			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost,
+			[kTechDataCombatDisplayName] = "Mines"
 		},
 		
         {[kTechDataId] = kTechId.HandGrenades,
@@ -794,7 +802,8 @@ function BuildTechData()
 			[kTechDataDisplayName] = "HAND_GRENADES",
 			[kTechDataTooltipInfo] =  "HAND_GRENADES_TOOLTIP",
 			[kTechDataModel] = HandGrenades.kModelName,
-			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost,
+			[kTechDataCombatDisplayName] = "HG"
 		},
 		
         {[kTechDataId] = kTechId.GrenadeLauncher,
@@ -806,7 +815,8 @@ function BuildTechData()
 			[kTechDataCostKey] = kGrenadeLauncherDropCost,
 			[kStructureAttachId] = kTechId.AdvancedArmory,
 			[kStructureAttachRange] = kArmoryWeaponAttachRange,
-			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost,
+			[kTechDataCombatDisplayName] = "GL"
 		},
 		
         {[kTechDataId] = kTechId.Jetpack,
@@ -818,7 +828,8 @@ function BuildTechData()
 			[kTechDataCostKey] = kJetpackDropCost,
 			[kStructureAttachId] = kTechId.PrototypeLab,
 			[kStructureAttachRange] = kArmoryWeaponAttachRange,
-			[kTechDataCombatCost] = kCombatMarineJetpackCost
+			[kTechDataCombatCost] = kCombatMarineJetpackCost,
+			[kTechDataCombatDisplayName] = "JP"
 		},
 		
         {[kTechDataId] = kTechId.HeavyArmor,
@@ -830,7 +841,8 @@ function BuildTechData()
 			[kTechDataCostKey] = kHeavyArmorDropCost,
 			[kStructureAttachId] = kTechId.PrototypeLab,
 			[kStructureAttachRange] = kArmoryWeaponAttachRange,
-			[kTechDataCombatCost] = kCombatMarineHeavyArmorCost
+			[kTechDataCombatCost] = kCombatMarineHeavyArmorCost,
+			[kTechDataCombatDisplayName] = "HA"
 		},
         
         // Armor and upgrades
@@ -852,7 +864,8 @@ function BuildTechData()
 			[kTechDataDisplayName] = "MARINE_ARMOR1",
 			[kTechDataHotkey] = Move.Z,
 			[kTechDataTooltipInfo] = "MARINE_ARMOR1_TOOLTIP",
-			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost,
+			[kTechDataCombatDisplayName] = "A1"
 		},
 		
         {[kTechDataId] = kTechId.Armor2,
@@ -861,7 +874,8 @@ function BuildTechData()
 			[kTechDataDisplayName] = "MARINE_ARMOR2",
 			[kTechDataHotkey] = Move.X,
 			[kTechDataTooltipInfo] = "MARINE_ARMOR2_TOOLTIP",
-			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost,
+			[kTechDataCombatDisplayName] = "A2"
 		},
 		
         {[kTechDataId] = kTechId.Armor3,
@@ -870,7 +884,8 @@ function BuildTechData()
 			[kTechDataDisplayName] = "MARINE_ARMOR3",
 			[kTechDataHotkey] = Move.C,
 			[kTechDataTooltipInfo] = "MARINE_ARMOR3_TOOLTIP",
-			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost,
+			[kTechDataCombatDisplayName] = "A3"
 		},
 		
         {[kTechDataId] = kTechId.Weapons1,
@@ -879,7 +894,8 @@ function BuildTechData()
 			[kTechDataDisplayName] = "MARINE_WEAPONS1",
 			[kTechDataHotkey] = Move.Z,
 			[kTechDataTooltipInfo] = "MARINE_WEAPONS1_TOOLTIP",
-			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost,
+			[kTechDataCombatDisplayName] = "W1"
 		},
 		
         {[kTechDataId] = kTechId.Weapons2,
@@ -888,7 +904,8 @@ function BuildTechData()
 			[kTechDataDisplayName] = "MARINE_WEAPONS2",
 			[kTechDataHotkey] = Move.Z,
 			[kTechDataTooltipInfo] = "MARINE_WEAPONS2_TOOLTIP",
-			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost,
+			[kTechDataCombatDisplayName] = "W2"
 		},
 		
         {[kTechDataId] = kTechId.Weapons3,
@@ -897,7 +914,8 @@ function BuildTechData()
 			[kTechDataDisplayName] = "MARINE_WEAPONS3",
 			[kTechDataHotkey] = Move.Z,
 			[kTechDataTooltipInfo] = "MARINE_WEAPONS3_TOOLTIP",
-			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost,
+			[kTechDataCombatDisplayName] = "W3"
 		},
 		
         {[kTechDataId] = kTechId.AdvancedArmoryUpgrade,
@@ -934,7 +952,8 @@ function BuildTechData()
 			[kTechDataResearchTimeKey] = kMotionTrackingResearchTime,
 			[kTechDataDisplayName] = "MOTION_TRACKING",
 			[kTechDataTooltipInfo] = "MOTION_TRACKING_TOOLTIP",
-			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost
+			[kTechDataCombatCost] = kCombatMarineBaseUpgradeCost,
+			[kTechDataCombatDisplayName] = "MT"
 		},
 		
         {[kTechDataId] = kTechId.HandGrenadesTech,

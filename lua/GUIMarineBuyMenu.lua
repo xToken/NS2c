@@ -29,24 +29,16 @@ GUIMarineBuyMenu.kArrowTexture = "ui/menu/arrow_horiz.dds"
 GUIMarineBuyMenu.kSmallIcons = "ui/buildmenu.dds"
 
 GUIMarineBuyMenu.kFont = Fonts.kAgencyFB_Small
-GUIMarineBuyMenu.kFont2 = Fonts.kAgencyFB_Small
 
-GUIMarineBuyMenu.kDescriptionFontName = Fonts.kAgencyFB_Small
-GUIMarineBuyMenu.kDescriptionFontSize = GUIScale(20)
-
-GUIMarineBuyMenu.kScanLineHeight = GUIScale(256)
+local kScanLineHeight = 256
+GUIMarineBuyMenu.kScanLineHeight = GUIScale(kScanLineHeight)
 GUIMarineBuyMenu.kScanLineAnimDuration = 5
 
-GUIMarineBuyMenu.kArrowWidth = GUIScale(32)
-GUIMarineBuyMenu.kArrowHeight = GUIScale(32)
+local kArrowWidth = 32
+local kArrowHeight = 32
+GUIMarineBuyMenu.kArrowWidth = GUIScale(kArrowWidth)
+GUIMarineBuyMenu.kArrowHeight = GUIScale(kArrowHeight)
 GUIMarineBuyMenu.kArrowTexCoords = { 1, 1, 0, 0 }
-
-// Big Item Icons
-GUIMarineBuyMenu.kBigIconSize = GUIScale( Vector(320, 256, 0) )
-GUIMarineBuyMenu.kBigIconOffset = GUIScale(20)
-
-local kEquippedMouseoverColor = Color(1, 1, 1, 1)
-local kEquippedColor = Color(0.5, 0.5, 0.5, 0.5)
 
 local gBigIconIndex = nil
 local bigIconWidth = 400
@@ -100,52 +92,79 @@ local function GetBigIconPixelCoords(techId, researched)
 end
 
 // Small Item Icons
-GUIMarineBuyMenu.kMenuIconSize = GUIScale( Vector(71, 71, 0) )
-GUIMarineBuyMenu.kSelectorSize = GUIScale( Vector(75, 75, 0) )
-GUIMarineBuyMenu.kIconTopOffset = 10
-GUIMarineBuyMenu.kIconTopXOffset = GUIMarineBuyMenu.kMenuIconSize.x
-GUIMarineBuyMenu.kItemIconYOffset = {}
-
-GUIMarineBuyMenu.kEquippedIconTopOffset = 58
+local kMenuIconSize = Vector(70, 70, 0)
+local kSelectorSize = Vector(74, 94, 0)
+local kIconTopOffset = 10
+local kTitleTopOffset = 20
+local kHighlightOffset = -6
+GUIMarineBuyMenu.kMenuIconSize = GUIScale(kMenuIconSize)
+GUIMarineBuyMenu.kSelectorSize = GUIScale(kSelectorSize)
+GUIMarineBuyMenu.kIconTopOffset = GUIScale(kIconTopOffset)
+GUIMarineBuyMenu.kTitleTopOffset = GUIScale(kTitleTopOffset)
+GUIMarineBuyMenu.kHighlightOffset = GUIScale(kHighlightOffset)
+GUIMarineBuyMenu.kIconTopXOffset = GUIMarineBuyMenu.kSelectorSize.x
                             
 GUIMarineBuyMenu.kTextColor = Color(kMarineFontColor)
 
-GUIMarineBuyMenu.kMenuWidth = GUIScale(190)
-GUIMarineBuyMenu.kPadding = GUIScale(8)
+//These are in order, only Can't Afford if Upgrade is unlocked
+GUIMarineBuyMenu.kPurchasedColor = Color(0, 216/255, 1, 1)
+GUIMarineBuyMenu.kLockedColor = Color(0.5, 0.5, 0.5, 1)
+GUIMarineBuyMenu.kCantAffordColor = Color(1, 0, 0, 1)
+GUIMarineBuyMenu.kAvailableColor = Color(1, 1, 1, 1)
 
-GUIMarineBuyMenu.kEquippedWidth = GUIScale(128)
+local kMenuWidth = 190
+local kPadding = 8
+GUIMarineBuyMenu.kMenuWidth = GUIScale(kMenuWidth)
+GUIMarineBuyMenu.kPadding = GUIScale(kPadding)
 
-GUIMarineBuyMenu.kBackgroundWidth = GUIScale(600)
-GUIMarineBuyMenu.kBackgroundHeight = GUIScale(720)
+local kBackgroundWidth = 600
+local kBackgroundHeight = 720
+local kBackgroundXOffset = 0
+GUIMarineBuyMenu.kBackgroundWidth = GUIScale(kBackgroundWidth)
+GUIMarineBuyMenu.kBackgroundHeight = GUIScale(kBackgroundHeight)
 // We want the background graphic to look centered around the circle even though there is the part coming off to the right.
-GUIMarineBuyMenu.kBackgroundXOffset = GUIScale(0)
+GUIMarineBuyMenu.kBackgroundXOffset = GUIScale(kBackgroundXOffset)
 
-GUIMarineBuyMenu.kPlayersTextSize = GUIScale(24)
-GUIMarineBuyMenu.kResearchTextSize = GUIScale(24)
+local kResourceDisplayHeight = 64
+GUIMarineBuyMenu.kResourceDisplayHeight = GUIScale(kResourceDisplayHeight)
 
-GUIMarineBuyMenu.kResourceDisplayHeight = GUIScale(64)
-
-GUIMarineBuyMenu.kResourceIconWidth = GUIScale(32)
-GUIMarineBuyMenu.kResourceIconHeight = GUIScale(32)
-
-GUIMarineBuyMenu.kMouseOverInfoTextSize = GUIScale(20)
-GUIMarineBuyMenu.kMouseOverInfoOffset = Vector(GUIScale(-30), GUIScale(-20), 0)
-GUIMarineBuyMenu.kMouseOverInfoResIconOffset = Vector(GUIScale(-40), GUIScale(-60), 0)
-
-GUIMarineBuyMenu.kDisabledColor = Color(0.5, 0.5, 0.5, 0.5)
-GUIMarineBuyMenu.kCannotBuyColor = Color(1, 0, 0, 0.5)
-GUIMarineBuyMenu.kEnabledColor = Color(1, 1, 1, 1)
+local kResourceIconWidth = 32
+local kResourceIconHeight = 32
+GUIMarineBuyMenu.kResourceIconWidth = GUIScale(kResourceIconWidth)
+GUIMarineBuyMenu.kResourceIconHeight = GUIScale(kResourceIconHeight)
 
 GUIMarineBuyMenu.kCloseButtonColor = Color(1, 1, 0, 1)
 
-GUIMarineBuyMenu.kButtonWidth = GUIScale(160)
-GUIMarineBuyMenu.kButtonHeight = GUIScale(64)
+local kButtonWidth = 160
+local kButtonHeight = 64
+GUIMarineBuyMenu.kButtonWidth = GUIScale(kButtonWidth)
+GUIMarineBuyMenu.kButtonHeight = GUIScale(kButtonHeight)
 
-GUIMarineBuyMenu.kItemNameOffsetX = GUIScale(28)
-GUIMarineBuyMenu.kItemNameOffsetY = GUIScale(256)
+// Big Item Icons
+local kBigIconSize = Vector(320, 256, 0)
+local kBigIconOffset = -276
+GUIMarineBuyMenu.kBigIconSize = GUIScale(kBigIconSize)
+GUIMarineBuyMenu.kBigIconOffset = GUIScale(kBigIconOffset)
 
-GUIMarineBuyMenu.kItemDescriptionOffsetY = GUIScale(300)
-GUIMarineBuyMenu.kItemDescriptionSize = GUIScale( Vector(450, 180, 0) )
+local kItemNameOffsetX = 10
+local kItemNameOffsetY = -300
+GUIMarineBuyMenu.kItemNameOffsetX = GUIScale(kItemNameOffsetX)
+GUIMarineBuyMenu.kItemNameOffsetY = GUIScale(kItemNameOffsetY)
+
+local kItemDescriptionOffsetX = -150
+local kItemDescriptionOffsetY = -200
+local kItemDescriptionSize = Vector(450, 180, 0)
+GUIMarineBuyMenu.kItemDescriptionOffsetX = GUIScale(kItemDescriptionOffsetX)
+GUIMarineBuyMenu.kItemDescriptionOffsetY = GUIScale(kItemDescriptionOffsetY)
+GUIMarineBuyMenu.kItemDescriptionSize = GUIScale(kItemDescriptionSize)
+
+GUIMarineBuyMenu.kCombatMarineUpgradeTable = 	{   {kTechId.Weapons1, kTechId.Weapons2, kTechId.Weapons3 },
+													{kTechId.Armor1, kTechId.Armor2, kTechId.Armor3 },
+													{kTechId.Shotgun, kTechId.HeavyMachineGun, kTechId.GrenadeLauncher },
+													{kTechId.Welder, kTechId.Mines, kTechId.HandGrenades },
+													{kTechId.MedPack, kTechId.CatPack, kTechId.Scan, kTechId.MotionTracking},
+													{kTechId.Jetpack, kTechId.HeavyArmor }
+												}
 
 function GUIMarineBuyMenu:OnClose()
 
@@ -162,13 +181,11 @@ function GUIMarineBuyMenu:Initialize()
     GUIAnimatedScript.Initialize(self)
 
     self.mouseOverStates = { }
-    self.equipped = { }
     
     self:_InitializeBackground()
     self:_InitializeContent()
     self:_InitializeResourceDisplay()
-    self:_InitializeCloseButton()
-    //self:_InitializeEquipped()    
+    self:_InitializeCloseButton() 
     self:_InitializeItemButtons()
     
     MarineBuy_OnOpen()
@@ -189,30 +206,45 @@ local function GetIsMouseOver(self, overItem)
     
 end
 
-local function UpdateEquipped(self, deltaTime)
+function GUIMarineBuyMenu:OnResolutionChanged(oldX, oldY, newX, newY)
 
-    self.hoverItem = nil
-    for i = 1, #self.equipped do
-    
-        local equipped = self.equipped[i]
-        if GetIsMouseOver(self, equipped.Graphic) then
-        
-            self.hoverItem = equipped.TechId
-            equipped.Graphic:SetColor(kEquippedMouseoverColor)
-            
-        else
-            equipped.Graphic:SetColor(kEquippedColor)
-        end
-        
-    end
-    
+	GUIMarineBuyMenu.kScanLineHeight = GUIScale(kScanLineHeight)
+	GUIMarineBuyMenu.kArrowWidth = GUIScale(kArrowWidth)
+	GUIMarineBuyMenu.kArrowHeight = GUIScale(kArrowHeight)
+
+	GUIMarineBuyMenu.kMenuIconSize = GUIScale(kMenuIconSize)
+	GUIMarineBuyMenu.kSelectorSize = GUIScale(kSelectorSize)
+	GUIMarineBuyMenu.kIconTopOffset = GUIScale(kIconTopOffset)
+	GUIMarineBuyMenu.kTitleTopOffset = GUIScale(kTitleTopOffset)
+	GUIMarineBuyMenu.kHighlightOffset = GUIScale(kHighlightOffset)
+	GUIMarineBuyMenu.kIconTopXOffset = GUIMarineBuyMenu.kSelectorSize.x
+	GUIMarineBuyMenu.kMenuWidth = GUIScale(kMenuWidth)
+	GUIMarineBuyMenu.kPadding = GUIScale(kPadding)
+	GUIMarineBuyMenu.kBackgroundWidth = GUIScale(kBackgroundWidth)
+	GUIMarineBuyMenu.kBackgroundHeight = GUIScale(kBackgroundHeight)
+	GUIMarineBuyMenu.kBackgroundXOffset = GUIScale(kBackgroundXOffset)
+	GUIMarineBuyMenu.kResourceDisplayHeight = GUIScale(kResourceDisplayHeight)
+	GUIMarineBuyMenu.kResourceIconWidth = GUIScale(kResourceIconWidth)
+	GUIMarineBuyMenu.kResourceIconHeight = GUIScale(kResourceIconHeight)
+	GUIMarineBuyMenu.kButtonWidth = GUIScale(kButtonWidth)
+	GUIMarineBuyMenu.kButtonHeight = GUIScale(kButtonHeight)
+	GUIMarineBuyMenu.kBigIconSize = GUIScale(kBigIconSize)
+	GUIMarineBuyMenu.kBigIconOffset = GUIScale(kBigIconOffset)
+	GUIMarineBuyMenu.kItemNameOffsetX = GUIScale(kItemNameOffsetX)
+	GUIMarineBuyMenu.kItemNameOffsetY = GUIScale(kItemNameOffsetY)
+	GUIMarineBuyMenu.kItemDescriptionOffsetX = GUIScale(kItemDescriptionOffsetX)
+	GUIMarineBuyMenu.kItemDescriptionOffsetY = GUIScale(kItemDescriptionOffsetY)
+	GUIMarineBuyMenu.kItemDescriptionSize = GUIScale(kItemDescriptionSize)
+
+	self:Uninitialize()
+	self:Initialize()
+	
 end
 
 function GUIMarineBuyMenu:Update(deltaTime)
 
     GUIAnimatedScript.Update(self, deltaTime)
 
-    UpdateEquipped(self, deltaTime)
     self:_UpdateItemButtons(deltaTime)
     self:_UpdateContent(deltaTime)
     self:_UpdateResourceDisplay(deltaTime)
@@ -318,10 +350,6 @@ function GUIMarineBuyMenu:_InitializeItemButtons()
     self.itemButtons = { }
     
     local itemTechIdList = MarineUI_GetPersonalUpgrades()
-    local itemcolumns = {   {kTechId.Weapons1, kTechId.Weapons2, kTechId.Weapons3, kTechId.Armor1, kTechId.Armor2, kTechId.Armor3 },
-                            {kTechId.Shotgun, kTechId.HeavyMachineGun, kTechId.GrenadeLauncher, kTechId.Welder, kTechId.Mines, kTechId.HandGrenades },
-                            {kTechId.MedPack, kTechId.CatPack, kTechId.Scan, kTechId.MotionTracking, kTechId.Jetpack, kTechId.HeavyArmor }
-                        }
                         
     local selectorPosX = -GUIMarineBuyMenu.kSelectorSize.x + GUIMarineBuyMenu.kPadding
     local fontScaleVector = Vector(0.8, 0.8, 0)
@@ -330,10 +358,10 @@ function GUIMarineBuyMenu:_InitializeItemButtons()
     
         local xPos, yPos
         
-        for i = 1, #itemcolumns do
-            if table.contains(itemcolumns[i], itemTechId) then
+        for i = 1, #GUIMarineBuyMenu.kCombatMarineUpgradeTable do
+            if table.contains(GUIMarineBuyMenu.kCombatMarineUpgradeTable[i], itemTechId) then
                 xPos = (-GUIMarineBuyMenu.kIconTopXOffset) + GUIMarineBuyMenu.kIconTopXOffset * (i - 1)
-                yPos = GUIMarineBuyMenu.kIconTopOffset + (GUIMarineBuyMenu.kMenuIconSize.y) * GetIndexOf(itemcolumns[i], itemTechId) - GUIMarineBuyMenu.kMenuIconSize.y
+                yPos = GUIMarineBuyMenu.kIconTopOffset + (GUIMarineBuyMenu.kSelectorSize.y) * GetIndexOf(GUIMarineBuyMenu.kCombatMarineUpgradeTable[i], itemTechId) - GUIMarineBuyMenu.kMenuIconSize.y
             end        
         end
         
@@ -343,15 +371,25 @@ function GUIMarineBuyMenu:_InitializeItemButtons()
         graphicItem:SetPosition(Vector(xPos, yPos, 0))
         graphicItem:SetTexture(GUIMarineBuyMenu.kSmallIcons)
         graphicItem:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(itemTechId, false)))
+		
+		local itemTitle = GUIManager:CreateTextItem()
+        itemTitle:SetFontName(GUIMarineBuyMenu.kFont)
+        itemTitle:SetFontIsBold(true)
+        itemTitle:SetAnchor(GUIItem.Right, GUIItem.Center)
+        itemTitle:SetPosition(Vector(selectorPosX, (-GUIMarineBuyMenu.kSelectorSize.y / 2) + GUIMarineBuyMenu.kTitleTopOffset, 0))
+        itemTitle:SetTextAlignmentX(GUIItem.Align_Min)
+        itemTitle:SetTextAlignmentY(GUIItem.Align_Center)
+        itemTitle:SetScale(fontScaleVector)
+        itemTitle:SetColor(GUIMarineBuyMenu.kTextColor)
+        itemTitle:SetText(ToString(LookupTechData(itemTechId, kTechDataCombatDisplayName, "")))
+		graphicItem:AddChild(itemTitle)
         
         local graphicItemActive = GUIManager:CreateGraphicItem()
         graphicItemActive:SetSize(GUIMarineBuyMenu.kSelectorSize)
-        
-        graphicItemActive:SetPosition(Vector(selectorPosX, -GUIMarineBuyMenu.kSelectorSize.y / 2, 0))
+        graphicItemActive:SetPosition(Vector(selectorPosX + GUIMarineBuyMenu.kHighlightOffset, -GUIMarineBuyMenu.kSelectorSize.y / 2, 0))
         graphicItemActive:SetAnchor(GUIItem.Right, GUIItem.Center)
         graphicItemActive:SetTexture(GUIMarineBuyMenu.kMenuSelectionTexture)
         graphicItemActive:SetIsVisible(false)
-        
         graphicItem:AddChild(graphicItemActive)
         
         local costIcon = GUIManager:CreateGraphicItem()
@@ -410,16 +448,13 @@ function GUIMarineBuyMenu:_UpdateItemButtons(deltaTime)
             item.Highlight:SetIsVisible(false)
         end
         
-        local useColor = Color(1, 1, 1, 1)
-        
-        // set grey if not unlocked
-        if PlayerUI_GetHasItem(item.TechId) then
-            useColor = Color(0, 216/255, 1, 1)
-        elseif not BuyMenus_GetUpgradeAvailable(item.TechId) then
-            useColor = Color(0.5, 0.5, 0.5, 0.4)
-        // set red if can't afford
+        local useColor = GUIMarineBuyMenu.kAvailableColor
+		if PlayerUI_GetHasItem(item.TechId) then
+            useColor = GUIMarineBuyMenu.kPurchasedColor
+		elseif not BuyMenus_GetUpgradeAvailable(item.TechId) then
+            useColor = GUIMarineBuyMenu.kLockedColor
         elseif PlayerUI_GetPlayerResources() < BuyMenus_GetUpgradeCost(item.TechId) then
-           useColor = Color(1, 0, 0, 1)
+           useColor = GUIMarineBuyMenu.kCantAffordColor
         end
         
         item.Button:SetColor(useColor)
@@ -446,18 +481,17 @@ function GUIMarineBuyMenu:_InitializeContent()
     self.itemName = GUIManager:CreateTextItem()
     self.itemName:SetFontName(GUIMarineBuyMenu.kFont)
     self.itemName:SetFontIsBold(true)
-    self.itemName:SetAnchor(GUIItem.Left, GUIItem.Top)
-    self.itemName:SetPosition(Vector(GUIMarineBuyMenu.kItemNameOffsetX , GUIMarineBuyMenu.kItemNameOffsetY , 0))
+    self.itemName:SetAnchor(GUIItem.Left, GUIItem.Bottom)
+    self.itemName:SetPosition(Vector(-GUIMarineBuyMenu.kBigIconSize.x / 2 + GUIMarineBuyMenu.kItemNameOffsetX , GUIMarineBuyMenu.kItemNameOffsetY , 0))
     self.itemName:SetTextAlignmentX(GUIItem.Align_Min)
     self.itemName:SetTextAlignmentY(GUIItem.Align_Min)
     self.itemName:SetColor(GUIMarineBuyMenu.kTextColor)
     self.itemName:SetText("no selection")
-    
     self.content:AddChild(self.itemName)
     
     self.portrait = GetGUIManager():CreateGraphicItem()
-    self.portrait:SetAnchor(GUIItem.Middle, GUIItem.Top)
-    self.portrait:SetPosition(Vector(-GUIMarineBuyMenu.kBigIconSize.x/2, GUIMarineBuyMenu.kBigIconOffset, 0))
+    self.portrait:SetAnchor(GUIItem.Left, GUIItem.Bottom)
+    self.portrait:SetPosition(Vector(-GUIMarineBuyMenu.kBigIconSize.x / 2, GUIMarineBuyMenu.kBigIconOffset, 0))
     self.portrait:SetSize(GUIMarineBuyMenu.kBigIconSize)
     self.portrait:SetTexture(GUIMarineBuyMenu.kBigIconTexture)
     self.portrait:SetTexturePixelCoordinates(GetBigIconPixelCoords(kTechId.Axe))
@@ -465,14 +499,13 @@ function GUIMarineBuyMenu:_InitializeContent()
     self.content:AddChild(self.portrait)
     
     self.itemDescription = GetGUIManager():CreateTextItem()
-    self.itemDescription:SetFontName(GUIMarineBuyMenu.kDescriptionFontName)
-    self.itemDescription:SetAnchor(GUIItem.Middle, GUIItem.Top)
-    self.itemDescription:SetPosition(Vector(-GUIMarineBuyMenu.kItemDescriptionSize.x / 2, GUIMarineBuyMenu.kItemDescriptionOffsetY, 0))
+    self.itemDescription:SetFontName(GUIMarineBuyMenu.kFont)
+    self.itemDescription:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
+    self.itemDescription:SetPosition(Vector(GUIMarineBuyMenu.kItemDescriptionOffsetX, GUIMarineBuyMenu.kItemDescriptionOffsetY, 0))
     self.itemDescription:SetTextAlignmentX(GUIItem.Align_Min)
     self.itemDescription:SetTextAlignmentY(GUIItem.Align_Min)
     self.itemDescription:SetColor(GUIMarineBuyMenu.kTextColor)
-    self.itemDescription:SetTextClipped(true, GUIMarineBuyMenu.kItemDescriptionSize.x - 2* GUIMarineBuyMenu.kPadding, GUIMarineBuyMenu.kItemDescriptionSize.y - GUIMarineBuyMenu.kPadding)
-    
+    self.itemDescription:SetTextClipped(true, GUIMarineBuyMenu.kItemDescriptionSize.x - 2 * GUIMarineBuyMenu.kPadding, GUIMarineBuyMenu.kItemDescriptionSize.y - GUIMarineBuyMenu.kPadding)
     self.content:AddChild(self.itemDescription)
     
 end
@@ -487,18 +520,17 @@ function GUIMarineBuyMenu:_UpdateContent(deltaTime)
     if techId then
     
         local unlocked = self:_GetIsUnlocked(techId)
-        local alreadyhas = PlayerUI_GetHasItem(techId)        
+        local alreadyHas = PlayerUI_GetHasItem(techId)        
         local itemCost = BuyMenus_GetUpgradeCost(techId)
         local canAfford = PlayerUI_GetPlayerResources() >= itemCost
 
-        local color = Color(1, 1, 1, 1)
-        if not canAfford and unlocked then
-            color = Color(1, 0, 0, 1)
-        elseif not unlocked then
-            // Make it clear that we can't buy this
-            color = Color(0.5, 0.5, 0.5, 1)
-        elseif alreadyhas then
-            color = Color(0, 216/255, 1, 1)
+        local color = GUIMarineBuyMenu.kAvailableColor
+		if alreadyHas then
+            color = GUIMarineBuyMenu.kPurchasedColor
+		elseif not unlocked then
+            color = GUIMarineBuyMenu.kLockedColor
+		elseif not canAfford then
+			color = GUIMarineBuyMenu.kCantAffordColor
         end
     
         self.itemName:SetColor(color)
@@ -550,10 +582,7 @@ function GUIMarineBuyMenu:_InitializeResourceDisplay()
     self.resourceDisplay:SetPosition(Vector(-GUIMarineBuyMenu.kResourceIconWidth , 0, 0))
     self.resourceDisplay:SetTextAlignmentX(GUIItem.Align_Min)
     self.resourceDisplay:SetTextAlignmentY(GUIItem.Align_Center)
-    
-    self.resourceDisplay:SetColor(GUIMarineBuyMenu.kTextColor)
-    //self.resourceDisplay:SetColor(GUIMarineBuyMenu.kTextColor)
-    
+    self.resourceDisplay:SetColor(GUIMarineBuyMenu.kTextColor)    
     self.resourceDisplay:SetText("")
     self.resourceDisplayBackground:AddChild(self.resourceDisplay)
     
@@ -652,10 +681,9 @@ local function HandleItemClicked(self, mouseX, mouseY)
             
                 MarineBuy_PurchaseItem(item.TechId)
                 if PlayerUI_GetPlayerResources() - itemCost == 0 then
-                    MarineBuy_OnClose()
+                    return true, true
                 end
-                
-                return true, true
+                return true, false
                 
             end
             
