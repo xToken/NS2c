@@ -39,6 +39,18 @@ function AlienTeam:GetIsAlienTeam()
     return true
 end
 
+function AlienTeam:ResetTeam()
+
+    local commandStructure = PlayingTeam.ResetTeam(self)
+
+    self.overflowres = 0
+    self.clientOwnedStructures = { }
+    self.upgradeChambers = { }
+    
+    return commandStructure
+
+end
+
 function AlienTeam:Initialize(teamName, teamNumber)
 
     PlayingTeam.Initialize(self, teamName, teamNumber)
@@ -50,24 +62,25 @@ function AlienTeam:Initialize(teamName, teamNumber)
     // counts even if a player leaves and rejoins a server.
     self.clientOwnedStructures = { }
     self.lastAutoHealIndex = 1
-
+    self.upgradeChambers = { }
     self.timeLastSpawnCheck = 0
     self.overflowres = 0
     self.lastOverflowCheck = 0
-    self.timeLastAlienSpectatorCheck = 0
+    self.lastTimeUnassignedHivesSent = 0
+    self.lastPingOfDeathCheck = 0
+    
 end
 
 function AlienTeam:OnInitialized()
 
     PlayingTeam.OnInitialized(self) 
-   
-    self.lastTimeUnassignedHivessent = 0
-    self.timeLastAlienSpectatorCheck = 0
+
+    self.lastTimeUnassignedHivesSent = 0
     self.lastPingOfDeathCheck = 0
     self.lastAutoHealIndex = 1
-    self.timeLastWave = nil
     self.overflowres = 0
     self.clientOwnedStructures = { }
+    self.upgradeChambers = { }
     self.lastOverflowCheck = 0
 
 end
@@ -269,7 +282,7 @@ end
 
 function AlienTeam:DeductOverflowResources(extraRes)
     if extraRes > 0 then
-        self.overflowres = self.overflowres - extraRes
+        self.overflowres = math.max(self.overflowres - extraRes, 0)
     end
 end
 
@@ -283,9 +296,9 @@ end
 
 local function CheckUnassignedHives(self)
 
-    if Shared.GetTime() - self.lastTimeUnassignedHivessent >= kSendUnAssignedHiveMessageRate then
+    if Shared.GetTime() - self.lastTimeUnassignedHivesSent >= kSendUnAssignedHiveMessageRate then
     
-        self.lastTimeUnassignedHivessent = Shared.GetTime()
+        self.lastTimeUnassignedHivesSent = Shared.GetTime()
         if self:GetActiveUnassignedHiveCount() > 0 then
             SendTeamMessage(self, kTeamMessageTypes.UnassignedHive) 
         end
@@ -322,6 +335,7 @@ function AlienTeam:Update(timePassed)
 end
 
 function AlienTeam:UpdateOverflowResources()
+
     if self.lastOverflowCheck + 1 < Shared.GetTime() and self:GetPresRecipientCount() > 0 then
         if self:GetOverflowResources() > 0 then
             local overflowres = math.min(self:GetOverflowResources(), self:GetPresRecipientCount() * 100)
@@ -329,6 +343,7 @@ function AlienTeam:UpdateOverflowResources()
             self:SplitPres(overflowres)
         end
     end
+    
 end
 
 function AlienTeam:UpdatePingOfDeath()
@@ -506,6 +521,11 @@ function AlienTeam:InitTechTree(techTree)
     	
     end
     
+    //Add this incase other mods want to modify tech tree
+	if self.ModifyTechTree then
+		self:ModifyTechTree(techTree)
+	end
+    
     techTree:SetComplete()
     
 end
@@ -561,9 +581,43 @@ end
 /**
  * Inform all alien players about the hive construction (add new abilities).
  */
+ 
+function AlienTeam:OnEggCreated(egg)
+
+    local teamInfo = GetTeamInfoEntity(self:GetTeamNumber())  
+    if teamInfo then
+        teamInfo:SetEggCount(teamInfo:GetEggCount() + 1)
+    end
+
+end
+
+function AlienTeam:OnEggDestroyed(egg)
+
+    local teamInfo = GetTeamInfoEntity(self:GetTeamNumber())  
+    if teamInfo then
+        teamInfo:SetEggCount(teamInfo:GetEggCount() - 1)
+    end
+
+end
+  
+function AlienTeam:OnHivePlaced(newHive)
+
+    local teamInfo = GetTeamInfoEntity(self:GetTeamNumber())  
+    if teamInfo then
+        teamInfo:SetActiveUnassignedHiveCount(self:GetActiveUnassignedHiveCount())
+    end
+
+end
   
 function AlienTeam:OnHiveConstructed(newHive)
-    SendTeamMessage(self, kTeamMessageTypes.HiveConstructed, newHive:GetLocationId()) 
+
+    SendTeamMessage(self, kTeamMessageTypes.HiveConstructed, newHive:GetLocationId())
+    
+    local teamInfo = GetTeamInfoEntity(self:GetTeamNumber())  
+    if teamInfo then
+        teamInfo:SetActiveHiveCount(self:GetActiveHiveCount())
+    end
+    
 end
 
 function AlienTeam:OnHiveDelayedConstructed(newHive)
@@ -587,6 +641,11 @@ function AlienTeam:SetHiveTechIdChosen(hive, techId)
         end
     end
     
+    local teamInfo = GetTeamInfoEntity(self:GetTeamNumber())  
+    if teamInfo then
+        teamInfo:SetActiveUnassignedHiveCount(self:GetActiveUnassignedHiveCount())
+    end
+    
 end
 
 /**
@@ -602,39 +661,37 @@ function AlienTeam:OnHiveDestroyed(destroyedHive)
         end
     end
     
+    local teamInfo = GetTeamInfoEntity(self:GetTeamNumber())
+    if teamInfo then
+        teamInfo:SetActiveHiveCount(activeHiveCount)
+        if destroyedHive and destroyedHive:GetTechId() == kTechId.Hive then
+            teamInfo:SetActiveUnassignedHiveCount(activeHiveCount)
+        end
+    end
+    
 end
-
-local checkForLostResearch = { [kTechId.Crag] = { "Crag", kTechId.Crag },
-                               [kTechId.Shift] = { "Shift", kTechId.Shift },
-                               [kTechId.Shade] = { "Shade", kTechId.Shade },
-                               [kTechId.Whip] = { "Whip", kTechId.Whip } }
 
 function AlienTeam:OnUpgradeChamberConstructed(upgradeChamber)
 
-    local checkTech = checkForLostResearch[upgradeChamber:GetTechId()]
-    if checkTech then
+    local techId = upgradeChamber:GetTechId()
     
-        local count = 0
-        for _, ent in ientitylist(Shared.GetEntitiesWithClassname(checkTech[1])) do
-            if ent ~= upgradeChamber and ent:GetTechId() == upgradeChamber:GetTechId() and ent:GetIsBuilt() then
-                count = count + 1
-            end
-            
-        end
-
-        if count == 0 then
-            SendTeamMessage(self, kTeamMessageTypes.ResearchComplete, checkTech[2])
-            self:PlayPrivateTeamSound(AlienTeam.kNewTraitSound)
-        end
-        
-        local teamInfo = GetTeamInfoEntity(self:GetTeamNumber())  
-        if teamInfo then
-            teamInfo:UpdateNumUpgradeStructures(checkTech[2], (count + 1))
-        end
-        
+    if not self.upgradeChambers[techId] then
+        self.upgradeChambers[techId] = 0
     end
     
-    if upgradeChamber:GetTechId() == kTechId.Crag then
+    if self.upgradeChambers[techId] == 0 then
+        SendTeamMessage(self, kTeamMessageTypes.ResearchComplete, techId)
+        self:PlayPrivateTeamSound(AlienTeam.kNewTraitSound)
+    end
+    
+    self.upgradeChambers[techId] = self.upgradeChambers[techId] + 1
+    
+    local teamInfo = GetTeamInfoEntity(self:GetTeamNumber())  
+    if teamInfo then
+        teamInfo:UpdateNumUpgradeStructures(techId, self.upgradeChambers[techId])
+    end
+
+    if techId == kTechId.Crag then
         UpdateAlienArmor(self)
     end
 
@@ -643,29 +700,20 @@ end
 
 function AlienTeam:OnUpgradeChamberDestroyed(upgradeChamber)
     
-    local checkTech = checkForLostResearch[upgradeChamber:GetTechId()]
-    if checkTech then
-
-        local count = 0
-        for _, ent in ientitylist(Shared.GetEntitiesWithClassname(checkTech[1])) do
-            if ent ~= upgradeChamber and ent:GetTechId() == upgradeChamber:GetTechId() then
-                count = count + 1
-            end
-            
-        end
-        
-        if count <= kChamberLostNotification then
-            SendTeamMessage(self, kTeamMessageTypes.ResearchLost, checkTech[2])
-        end
-        
-        local teamInfo = GetTeamInfoEntity(self:GetTeamNumber())  
-        if teamInfo then
-            teamInfo:UpdateNumUpgradeStructures(checkTech[2], (count))
-        end
-        
+    local techId = upgradeChamber:GetTechId()
+    //Erm, shouldnt happen
+    self.upgradeChambers[techId] = self.upgradeChambers[techId] - 1 or 0
+    
+    if self.upgradeChambers[techId] <= kChamberLostNotification then
+        SendTeamMessage(self, kTeamMessageTypes.ResearchLost, techId)
     end
     
-    if upgradeChamber:GetTechId() == kTechId.Crag then
+    local teamInfo = GetTeamInfoEntity(self:GetTeamNumber())  
+    if teamInfo then
+        teamInfo:UpdateNumUpgradeStructures(techId, self.upgradeChambers[techId])
+    end
+
+    if techId == kTechId.Crag then
         UpdateAlienArmor(self)
     end
     
@@ -777,20 +825,19 @@ local function RespawnPlayer(self, hive)
 end
 
 function AlienTeam:UpdateRespawn()
+
     if GetServerGameMode() == kGameMode.Combat and self:GetHasAbilityToRespawn() then
         self:UpdateWaveRespawn()
     elseif GetServerGameMode() == kGameMode.Classic then
         self:UpdateHiveRespawn()
     end
+
 end
 
 function AlienTeam:UpdateHiveRespawn()
 
     local time = Shared.GetTime()
-    
-    if self.timeLastSpawnCheck == nil then
-        self.timeLastSpawnCheck = Shared.GetTime()
-    end
+
     //Dont check spawn every frame cause thats pretty silly
     if time > (self.timeLastSpawnCheck + AlienTeam.kSpawnScanInterval) then
         local hives = GetEntitiesForTeam("Hive", self:GetTeamNumber())

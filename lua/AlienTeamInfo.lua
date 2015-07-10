@@ -19,6 +19,8 @@ class 'AlienTeamInfo' (TeamInfo)
 
 AlienTeamInfo.kMapName = "AlienTeamInfo"
 
+local techIdTable = { [kTechId.Crag] = "crags", [kTechId.Shift] = "shifts", [kTechId.Shade] = "shades", [kTechId.Whip] = "whips" }
+
 local networkVars =
 {
     numHives = "integer (0 to 10)",
@@ -60,17 +62,22 @@ if Server then
         
     end
     
-    function AlienTeamInfo:OnUpdate(deltaTime)
-    
-        TeamInfo.OnUpdate(self, deltaTime)
-        
-        local team = self:GetTeam()
-        if team then
-            self.numHives = team:GetActiveHiveCount()
-            self.eggCount = team:GetActiveEggCount()
-            self.numUnassignedHives = team:GetActiveUnassignedHiveCount()
+    function AlienTeamInfo:UpdateNumUpgradeStructures(techId, count)
+        if self[techIdTable[techId]] then
+            self[techIdTable[techId]] = Clamp(count, 0, 3)
         end
-        
+    end
+    
+    function AlienTeamInfo:SetActiveHiveCount(numHives)
+        self.numHives = Clamp(numHives, 0, 10)
+    end
+
+    function AlienTeamInfo:SetActiveUnassignedHiveCount(numHives)
+        self.numUnassignedHives = Clamp(numHives, 0, 10)
+    end
+
+    function AlienTeamInfo:SetEggCount(count)
+        self.eggCount = Clamp(count, 0, 127)
     end
 
 end
@@ -87,18 +94,8 @@ function AlienTeamInfo:GetEggCount()
     return self.eggCount
 end
 
-function AlienTeamInfo:UpdateNumUpgradeStructures(techId, count)
-    if techId == kTechId.Crag then
-        self.crags = Clamp(count, 0, 3)
-    elseif techId == kTechId.Shift then
-        self.shifts = Clamp(count, 0, 3)
-    elseif techId == kTechId.Shade then
-        self.shades = Clamp(count, 0, 3)
-    elseif techId == kTechId.Whip then
-        self.whips = Clamp(count, 0, 3)
-        elseif techId == kTechId.Whip then
-        self.whips = Clamp(count, 0, 3)
-    end
+function AlienTeamInfo:GetNumUpgradeStructures(techId)
+    return self[techIdTable[techId]] or 0
 end
 
 Shared.LinkClassToMap("AlienTeamInfo", AlienTeamInfo.kMapName, networkVars)
