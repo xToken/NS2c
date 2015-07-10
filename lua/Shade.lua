@@ -28,6 +28,7 @@ Script.Load("lua/DetectorMixin.lua")
 Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/InfestationMixin.lua")
 Script.Load("lua/IdleMixin.lua")
+Script.Load("lua/SleeperMixin.lua")
 
 class 'Shade' (ScriptActor)
 
@@ -46,7 +47,6 @@ Shade.kHiveSightRange = 25
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
@@ -88,7 +88,7 @@ function Shade:OnCreate()
     InitMixin(self, UmbraMixin)
     
     if Server then
-  
+        InitMixin(self, SleeperMixin)
     elseif Client then
         InitMixin(self, CommanderGlowMixin)            
     end
@@ -143,6 +143,10 @@ function Shade:GetDamagedAlertId()
 end
 
 function Shade:GetReceivesStructuralDamage()
+    return true
+end
+
+function Shade:GetCanSleep()
     return true
 end
 
