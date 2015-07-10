@@ -37,6 +37,7 @@ Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/MinimapConnectionMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
+Script.Load("lua/SleeperMixin.lua")
 
 local kAnimationGraph = PrecacheAsset("models/marine/phase_gate/phase_gate.animation_graph")
 local kPhaseSound = PrecacheAsset("sound/NS2.fev/marine/structures/phase_gate_teleport")
@@ -173,7 +174,9 @@ function PhaseGate:OnCreate()
     InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
-    if Client then
+    if Server then
+        InitMixin(self, SleeperMixin)
+    elseif Client then
         InitMixin(self, CommanderGlowMixin)
     end
     
@@ -182,8 +185,10 @@ function PhaseGate:OnCreate()
     self.phase = false
     self.deployed = false
     self.timeOfLastPhase = 0
+    self.timeLinkedChanged = 0
     self.destLocationId = Entity.invalidId
     
+    self:SetUpdates(true)
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup)
@@ -221,7 +226,11 @@ end
 
 function PhaseGate:GetIsWallWalkingAllowed()
     return false
-end 
+end
+
+function PhaseGate:GetCanSleep()
+    return self.timeLinkedChanged + 2 < Shared.GetTime()
+end
 
 function PhaseGate:GetTechButtons(techId)
 
@@ -384,10 +393,12 @@ if Server then
         
             self.destinationEndpoint = destinationPhaseGate:GetOrigin()
             self.linked = true
+            self.timeLinkedChanged = Shared.GetTime()
             self.destLocationId = ComputeDestinationLocationId(self, destinationPhaseGate)
             
         else
             self.linked = false
+            self.timeLinkedChanged = Shared.GetTime()
             self.destLocationId = Entity.invalidId
         end
         
