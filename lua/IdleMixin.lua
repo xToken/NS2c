@@ -71,17 +71,6 @@ function IdleMixin:__initmixin()
     if Server then
     
         self.playIdleSound = true
-        /*
-        local assetPath = kIdleSoundNames[self:GetClassName()]
-        if assetPath and Shared.GetSoundIndex(assetPath) ~= 0 then
-        
-            local assetLength = GetSoundEffectLength(assetPath)
-            if assetLength >= 0 then
-                Print("Warning: Idle sound %s isn't looping.", assetPath)
-            end
-            
-        end
-        */
         
     end
     
@@ -108,6 +97,10 @@ function IdleMixin:__initmixin()
 
         end
         
+    end
+    
+    if not Predict then
+        self:AddTimedCallback(IdleMixin.OnIdleUpdate, kUpdateIntervalLow)
     end
     
 end
@@ -144,7 +137,9 @@ local function GetIdleSoundVolume(self)
     
 end
 
-local function SharedUpdate(self, deltaTime)
+function IdleMixin:OnIdleUpdate()
+
+    PROFILE("IdleMixin:OnIdleUpdate")
 
     if Server then
     
@@ -187,16 +182,6 @@ local function SharedUpdate(self, deltaTime)
 
     end
     
-end
+    return self:GetIsAlive()
 
-function IdleMixin:OnProcessMove(input)
-    SharedUpdate(self, input.time)
-end
-
-function IdleMixin:OnUpdate(deltaTime)
-    SharedUpdate(self, deltaTime)
-end 
-
-function IdleMixin:OnProcessSpectate(deltaTime)
-    SharedUpdate(self, deltaTime)
 end
