@@ -2640,82 +2640,15 @@ function AddMoveCommand( commands, moveMask )
     return bit.bor(commands, moveMask)
 end
 
-function GetCrags(teamNumber)
-
-    if teamNumber then
-
-        local teamInfo = GetTeamInfoEntity(teamNumber)  
-        if teamInfo then
-            return teamInfo.crags or 0
-        end
-        
-    end
-    
-    return 0
-
-end
-
-function GetShifts(teamNumber)
-
-    if teamNumber then
-
-        local teamInfo = GetTeamInfoEntity(teamNumber)  
-        if teamInfo then
-            return teamInfo.shifts or 0
-        end
-        
-    end
-    
-    return 0
-
-end
-
-function GetShades(teamNumber)
-
-    if teamNumber then
-
-        local teamInfo = GetTeamInfoEntity(teamNumber)  
-        if teamInfo then
-            return teamInfo.shades or 0
-        end  
-        
-    end
-    
-    return 0
-
-end
-
-function GetWhips(teamNumber)
-
-    if teamNumber then
-
-        local teamInfo = GetTeamInfoEntity(teamNumber)  
-        if teamInfo then
-            return teamInfo.whips or 0
-        end  
-        
-    end
-    
-    return 0
-
-end
-
 function GetChambers(techId, player)
     local gameInfo = GetGameInfoEntity()
     if gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
         return 3
-    end
-    if techId == kTechId.Crag then
-        return GetCrags(player:GetTeamNumber())
-    end
-    if techId == kTechId.Shift then
-        return GetShifts(player:GetTeamNumber())
-    end
-    if techId == kTechId.Shade then
-        return GetShades(player:GetTeamNumber())
-    end
-    if techId == kTechId.Whip then
-        return GetWhips(player:GetTeamNumber())
+    else
+        local teamInfo = GetTeamInfoEntity(player:GetTeamNumber())
+        if teamInfo then
+            return teamInfo:GetNumUpgradeStructures(techId)
+        end
     end
     return 0
 end
