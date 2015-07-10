@@ -186,7 +186,7 @@ function Onos:OnKill(attacker, doer, point, direction)
     Alien.OnKill(self, attacker, doer, point, direction)
 end
 
-function Onos:OnRedemed()
+function Onos:OnRedeemed()
     ClearDevourState(self)
 end
 
