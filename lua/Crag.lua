@@ -39,6 +39,7 @@ Script.Load("lua/CombatMixin.lua")
 Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/InfestationMixin.lua")
 Script.Load("lua/IdleMixin.lua")
+Script.Load("lua/SleeperMixin.lua")
 
 class 'Crag' (ScriptActor)
 
@@ -62,7 +63,6 @@ local networkVars =
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
@@ -103,7 +103,9 @@ function Crag:OnCreate()
     
     self.healingActive = false
     
-    if Client then    
+    if Server then
+        InitMixin(self, SleeperMixin)
+    elseif Client then    
         InitMixin(self, CommanderGlowMixin)    
     end
     
@@ -144,6 +146,10 @@ end
 
 function Crag:GetDamagedAlertId()
     return kTechId.AlienAlertStructureUnderAttack
+end
+
+function Crag:GetCanSleep()
+    return not self.healingActive
 end
 
 function Crag:HealInRange()
@@ -236,7 +242,7 @@ if Server then
     
         local team = self:GetTeam()
         if team and team.OnUpgradeChamberConstructed then
-			self:AddTimedCallback(Crag.HealInRange, Crag.kHealInterval + 0.05)
+			self:AddTimedCallback(Crag.HealInRange, kUpdateIntervalMinimal)
             team:OnUpgradeChamberConstructed(self)
         end
         
