@@ -89,24 +89,18 @@ function ResearchMixin:UpdateResearch(deltaTime)
 
 end
 
-local function SharedUpdate(self, deltaTime)
+//TODO update this when timed callbacks are fixed.
+function ResearchMixin:OnUpdateResearch(deltaTime)
 
-    if Server then
-   
-        if self.researchingId ~= kTechId.None or ( HasMixin(self, "Recycle") and self.researchingId == kTechId.Recycle ) then
-            self:UpdateResearch(deltaTime)
+    if self.researchingId ~= kTechId.None then
+        if not deltaTime then
+            deltaTime = Shared.GetTime() - self.timeLastUpdate
         end
-
+        self:UpdateResearch(deltaTime)
+        self.timeLastUpdate = Shared.GetTime()
     end
+    return self.researchingId ~= kTechId.None
     
-end
-
-function ResearchMixin:OnUpdate(deltaTime)
-    SharedUpdate(self, deltaTime)
-end
-
-function ResearchMixin:OnProcessMove(input)
-    SharedUpdate(self, input.time)
 end
 
 function ResearchMixin:GetResearchingId()
@@ -224,6 +218,9 @@ function ResearchMixin:SetResearching(techNode, player)
     self.timeResearchStarted = Shared.GetTime()
     self.timeResearchComplete = techNode.time
     self.researchProgress = 0
+    self.timeLastUpdate = Shared.GetTime()
+    
+    self:AddTimedCallback(ResearchMixin.OnUpdateResearch, kUpdateIntervalLow)
     
     if self.OnResearch then
         self:OnResearch(self.researchingId)
