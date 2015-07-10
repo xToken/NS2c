@@ -70,6 +70,11 @@ function ResourceTower:OnCreate()
     InitMixin(self, ObstacleMixin)
     InitMixin(self, CombatMixin)
     
+    if Server then
+        InitMixin(self, SleeperMixin)
+    end
+    
+    self:SetUpdates(true)
     self:SetLagCompensated(true)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup)
@@ -81,10 +86,7 @@ function ResourceTower:OnInitialized()
     ScriptActor.OnInitialized(self)
     
     if Server then
-    
-        InitMixin(self, SleeperMixin)
         InitMixin(self, StaticTargetMixin)
-        
     end
     
     InitMixin(self, IdleMixin)
