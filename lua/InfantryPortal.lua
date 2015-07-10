@@ -35,6 +35,7 @@ Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
+Script.Load("lua/SleeperMixin.lua")
 
 class 'InfantryPortal' (ScriptActor)
 
@@ -170,12 +171,11 @@ function InfantryPortal:OnCreate()
     InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
-    if Client then
-        InitMixin(self, CommanderGlowMixin)
-    end
-    
     if Server then
         self.timeLastPush = 0
+        InitMixin(self, SleeperMixin)
+    elseif Client then
+        InitMixin(self, CommanderGlowMixin)
     end
     
     self.queuedPlayerId = Entity.invalidId
@@ -344,6 +344,10 @@ end
 
 function InfantryPortal:GetSpawnTime()
     return kMarineRespawnTime
+end
+
+function InfantryPortal:GetCanSleep()
+    return self.queuedPlayerId == Entity.invalidId
 end
 
 function InfantryPortal:OnReplace(newStructure)
