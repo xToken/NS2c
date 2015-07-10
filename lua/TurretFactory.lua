@@ -28,6 +28,7 @@ Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/GhostStructureMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
+Script.Load("lua/SleeperMixin.lua")
 
 class 'TurretFactory' (ScriptActor)
 
@@ -88,7 +89,9 @@ function TurretFactory:OnCreate()
     InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
-    if Client then
+    if Server then
+        InitMixin(self, SleeperMixin)
+    elseif Client then
         InitMixin(self, CommanderGlowMixin)
     end
 
@@ -129,6 +132,10 @@ function TurretFactory:OnInitialized()
 end
 
 function TurretFactory:GetReceivesStructuralDamage()
+    return true
+end
+
+function TurretFactory:GetCanSleep()
     return true
 end
 
