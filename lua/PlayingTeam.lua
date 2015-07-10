@@ -172,7 +172,6 @@ function PlayingTeam:ResetTeam()
     
     local tower, commandStructure = self:SpawnInitialStructures(initialTechPoint)
     
-    self.overflowres = 0
     self.conceded = false
     
     local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
