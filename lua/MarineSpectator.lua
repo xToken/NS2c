@@ -55,7 +55,7 @@ function MarineSpectator:OnInitialized()
     self:SetTeamNumber(1)
     
     if Server then
-        self:AddTimedCallback(UpdateWaveTime, 0.1)
+        self:AddTimedCallback(UpdateWaveTime, kUpdateIntervalLow)
     end
     
 end

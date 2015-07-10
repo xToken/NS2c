@@ -86,9 +86,9 @@ function AlienSpectator:OnInitialized()
     if Server then
     
         self.evolveTechIds = { kTechId.Skulk }
-		self:AddTimedCallback(UpdateQueuePosition, 0.1)
-        self:AddTimedCallback(UpdateWaveTime, 0.1)
-        self:AddTimedCallback(UpdateWaitingtoSpawn, 0.1)
+		self:AddTimedCallback(UpdateQueuePosition, kUpdateIntervalLow)
+        self:AddTimedCallback(UpdateWaveTime, kUpdateIntervalLow)
+        self:AddTimedCallback(UpdateWaitingtoSpawn, kUpdateIntervalLow)
 		UpdateQueuePosition(self)
         
     end
