@@ -34,6 +34,7 @@ Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/InfestationMixin.lua")
 Script.Load("lua/IdleMixin.lua")
+Script.Load("lua/SleeperMixin.lua")
 
 class 'Whip' (ScriptActor)
 
@@ -47,7 +48,6 @@ Whip.kWhipBallParam = "ball"
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
@@ -88,7 +88,9 @@ function Whip:OnCreate()
     InitMixin(self, DissolveMixin)
     InitMixin(self, UmbraMixin)
     
-    if Client then
+    if Server then
+        InitMixin(self, SleeperMixin)
+    elseif Client then
         InitMixin(self, CommanderGlowMixin)    
     end
     
@@ -133,6 +135,10 @@ function Whip:GetDeathIconIndex()
 end
 
 function Whip:GetReceivesStructuralDamage()
+    return true
+end
+
+function Whip:GetCanSleep()
     return true
 end
 
