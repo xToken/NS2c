@@ -123,7 +123,7 @@ local function UpdateDesiredCloakFraction(self, deltaTime)
                 self.cloakingDesired = true
                 
                 if self:isa("Player") then
-                    self.cloakRate = GetShades(self:GetTeamNumber())
+                    self.cloakRate = GetChambers(kTechId.Shade, player)
                 else
                     self.cloakRate = 3
                 end
