@@ -51,6 +51,9 @@ Script.Load("lua/JitConfig.lua")
 
 Server.readyRoomSpawnList = table.array(32)
 
+Server.armorySpawnPoints = table.array(10)
+Server.infantryPortalSpawnPoints = table.array(10)
+
 // map name, group name and values keys for all map entities loaded to
 // be created on game reset
 Server.mapLoadLiveEntityValues = table.array(100)
@@ -154,8 +157,15 @@ function GetLoadSpecial(mapName, groupName, values)
         success = true
         
     elseif mapName == InfantryPortal.kMapName then
-        //table.insert(Server.infantryPortalSpawnPoints, values.origin)
-        success = false
+    
+        table.insert(Server.infantryPortalSpawnPoints, values.origin)
+        success = true
+        
+    elseif mapName == Armory.kMapName then
+    
+        table.insert(Server.armorySpawnPoints, values.origin)
+        success = true
+        
     elseif mapName == "pathing_settings" then
     
         ParsePathingSettings(values)
