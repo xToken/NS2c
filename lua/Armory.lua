@@ -9,7 +9,8 @@
 //NS2c
 //Removed unneeded mixins and adjusted weapon techids
 
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/BaseModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
@@ -32,6 +33,7 @@ Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
+Script.Load("lua/SleeperMixin.lua")
 
 class 'Armory' (ScriptActor)
 
@@ -65,7 +67,6 @@ PrecacheAsset("models/marine/armory/health_indicator.surface_shader")
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
@@ -87,7 +88,7 @@ function Armory:OnCreate()
     ScriptActor.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, LiveMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, TeamMixin)
@@ -107,7 +108,9 @@ function Armory:OnCreate()
     InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
-    if Client then
+    if Server then
+        InitMixin(self, SleeperMixin)
+    elseif Client then
         InitMixin(self, CommanderGlowMixin)
     end
 
@@ -167,6 +170,10 @@ end
 
 function Armory:GetCanBeUsedConstructed(byPlayer)
     return false
+end
+
+function Armory:GetCanSleep()
+    return true
 end
 
 function Armory:GetTechButtons(techId)
@@ -230,10 +237,9 @@ ArmoryAddon.kMapName = "ArmoryAddon"
 local addonNetworkVars =
 {
     // required for smoother raise animation
-    creationTime = "float"
+    creationTime = "time"
 }
 
-AddMixinNetworkVars(ClientModelMixin, addonNetworkVars)
 AddMixinNetworkVars(TeamMixin, addonNetworkVars)
 
 function ArmoryAddon:OnCreate()
