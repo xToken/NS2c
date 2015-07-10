@@ -10,7 +10,7 @@
 //NS2c
 //Removed concept of logging in a related netvars/functions.
 
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
@@ -34,6 +34,7 @@ Script.Load("lua/CommanderGlowMixin.lua")
 Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
+Script.Load("lua/SleeperMixin.lua")
 
 local kAnimationGraph = PrecacheAsset("models/marine/prototype_lab/prototype_lab.animation_graph")
 
@@ -46,7 +47,6 @@ PrototypeLab.kModelName = PrecacheAsset("models/marine/prototype_lab/prototype_l
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
@@ -67,7 +67,7 @@ function PrototypeLab:OnCreate()
     ScriptActor.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, LiveMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, FlinchMixin)
@@ -87,7 +87,9 @@ function PrototypeLab:OnCreate()
     InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
-    if Client then
+    if Server then
+        InitMixin(self, SleeperMixin)
+    elseif Client then
         InitMixin(self, CommanderGlowMixin)
     end
     
@@ -135,5 +137,8 @@ function PrototypeLab:GetReceivesStructuralDamage()
     return true
 end
 
+function PrototypeLab:GetCanSleep()
+    return true
+end
 
 Shared.LinkClassToMap("PrototypeLab", PrototypeLab.kMapName, networkVars)
