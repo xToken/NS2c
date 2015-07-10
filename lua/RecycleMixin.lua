@@ -94,6 +94,8 @@ function RecycleMixin:OnResearchComplete(researchId)
 
         self:OnRecycled()
         
+        self:AddTimedCallback(function(self) DestroyEntity(self) end, kRecycleEffectDuration + 1)
+        
     end
 
 end
@@ -164,31 +166,4 @@ function RecycleMixin:OnUpdateAnimationInput(modelMixin)
     PROFILE("RecycleMixin:OnUpdateAnimationInput")
     modelMixin:SetAnimationInput("recycling", self:GetRecycleActive())
     
-end
-
-local function SharedUpdate(self, deltaTime)
-
-    if Server then
-    
-        if self.timeRecycled then
-        
-            if self.timeRecycled + kRecycleEffectDuration + 1 < Shared.GetTime() then
-                DestroyEntity(self)
-            end
-        
-        elseif self.researchingId == kTechId.Recycle then
-            self:UpdateResearch(deltaTime)
-        end
-        
-
-    end
-    
-end
-
-function RecycleMixin:OnUpdate(deltaTime)
-    SharedUpdate(self, deltaTime)
-end
-
-function RecycleMixin:OnProcessMove(input)
-    SharedUpdate(self, input.time)
 end
