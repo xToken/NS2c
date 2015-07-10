@@ -9,7 +9,8 @@
 //NS2c
 //Removed unneeded mixins, removed halo effect
 
-Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/Mixins/BaseModelMixin.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
@@ -33,6 +34,7 @@ Script.Load("lua/PowerConsumerMixin.lua")
 Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
+Script.Load("lua/SleeperMixin.lua")
 
 class 'ArmsLab' (ScriptActor)
 ArmsLab.kMapName = "armslab"
@@ -47,7 +49,6 @@ local kArmsLabScale = 1.2
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
@@ -69,7 +70,7 @@ function ArmsLab:OnCreate()
     ScriptActor.OnCreate(self)
     
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ModelMixin)
+    InitMixin(self, ClientModelMixin)
     InitMixin(self, LiveMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, FlinchMixin)
@@ -90,11 +91,13 @@ function ArmsLab:OnCreate()
 	InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
-    if Client then
+    if Server then
+        InitMixin(self, SleeperMixin)
+    elseif Client then
         InitMixin(self, CommanderGlowMixin)
-        self.deployed = false
     end
     
+    self.deployed = false
     self:SetUpdates(true)
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
@@ -126,6 +129,10 @@ function ArmsLab:OnInitialized()
 end
 
 function ArmsLab:GetReceivesStructuralDamage()
+    return true
+end
+
+function ArmsLab:GetCanSleep()
     return true
 end
 
