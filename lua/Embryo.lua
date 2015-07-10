@@ -370,9 +370,6 @@ function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorSca
     
 end
 
-function Embryo:UpdateHealthAmount()
-end
-
 function Embryo:GetEvolutionTime()
     return self.evolveTime
 end

@@ -51,7 +51,6 @@ local networkVars =
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
@@ -214,7 +213,8 @@ if Server then
     function Egg:OnKill(attacker, doer, point, direction)
 
         self:RequeuePlayer()
-        self:TriggerEffects("egg_death") 
+        self:TriggerEffects("egg_death")   
+        
         DestroyEntity(self)
         
     end
@@ -407,6 +407,9 @@ if Server then
     function Egg:OnDestroy()
     
         local team = self:GetTeam()
+        if team and team.OnEggDestroyed then
+            team:OnEggDestroyed(self)
+        end   
         
         // Just in case there is a player waiting to spawn in this egg.
         self:RequeuePlayer()

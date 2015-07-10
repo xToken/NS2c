@@ -90,8 +90,3 @@ kAlienLines =
     GetLinePositionForTechMap(kAlienTechMap, kTechId.ThreeHives, kTechId.Charge),
 
 }
-
-
-
-
-

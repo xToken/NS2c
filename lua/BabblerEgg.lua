@@ -31,7 +31,6 @@ local kAnimationGraph = PrecacheAsset("models/alien/babbler/babbler_egg.animatio
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(ConstructMixin, networkVars)

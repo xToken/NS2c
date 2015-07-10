@@ -64,10 +64,6 @@ local function DevouredMixinUpdate(self, deltaTime)
     end
 end
 
-function DevouredMixin:OnUpdate(deltaTime)
-    DevouredMixinUpdate(self, deltaTime)
-end
-
 function DevouredMixin:OnProcessMove(input)
     DevouredMixinUpdate(self, input.time)
 end

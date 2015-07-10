@@ -19,7 +19,6 @@ HeavyArmor.kPickupSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/heavy
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 
 function HeavyArmor:OnCreate ()
