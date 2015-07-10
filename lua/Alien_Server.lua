@@ -10,33 +10,42 @@
 //NS2c
 //Changed ability unlock detection, upgrade chamber detection and added redemption and hive teleport
 
-local function GetRelocationHive(usedhive, origin, teamnumber)
-    local hives = GetEntitiesForTeam("Hive", teamnumber)
-    local selectedhivedist = 0
-	local selectedhive
+local function GetRelocationHive(usedHive, origin, teamNumber)
+
+    local hives = GetEntitiesForTeam("Hive", teamNumber)
+    
+    if usedHive then
+        table.removevalue(hives, usedHive)
+    end
+    
+    local t = Shared.GetTime()
+    local selectedHiveDist = 0
+    local selectedHiveAlertTime = 0
+	local selectedHive
 	
     for i, hive in ipairs(hives) do
         local toTarget = hive:GetOrigin() - origin
-        local distancetohive = toTarget:GetLength()
-		if hive.lastHiveFlinchEffectTime ~= nil and hive.lastHiveFlinchEffectTime + kHiveUnderAttackTime > Shared.GetTime() then
-            return hive
+        local distanceToHive = toTarget:GetLength()
+		if (hive:GetLastAttackedOrWarnedTime() + kHiveUnderAttackTime > t and hive:GetLastAttackedOrWarnedTime() > selectedHiveAlertTime) or 
+            (selectedHiveDist < distanceToHive and selectedHiveAlertTime + kHiveUnderAttackTime < t and hive:GetIsBuilt()) then
+            selectedHive = hive
+            selectedHiveDist = distanceToHive
+            selectedHiveAlertTime = hive:GetLastAttackedOrWarnedTime()
         end
-		if selectedhivedist < distancetohive and hive ~= usedhive then
-			selectedhive = hive
-			selectedhivedist = distancetohive
-		end
 	end
 	
-	return selectedhive
+	return selectedHive
+
 end
 
-function Alien:TeleportToHive(usedhive)
-	local selectedhive = GetRelocationHive(usedhive, self:GetOrigin(), self:GetTeamNumber())
+function Alien:TeleportToHive(usedHive)
+
+	local selectedHive = GetRelocationHive(usedHive, self:GetOrigin(), self:GetTeamNumber())
     local success = false
-    if selectedhive and selectedhive ~= usedhive then
+    if selectedHive then
         //Success, now teleport the player, try 10 times?
         for i = 1, 10 do
-            local position = table.random(selectedhive.eggSpawnPoints)
+            local position = table.random(selectedHive.eggSpawnPoints)
             local validForPlayer = GetIsPlacementForTechId(position, self:GetTechId())
             local notNearResourcePoint = #GetEntitiesWithinRange("ResourcePoint", position, 2) == 0
 
@@ -47,15 +56,18 @@ function Alien:TeleportToHive(usedhive)
                 success = true
                 break
             end
+            
         end
+        
         if not success then
             self:TriggerInvalidSound()
         end
+        
     end
 
 end
 
-function Alien:OnRedemed()
+function Alien:OnRedeemed()
 end
 
 function Alien:EvolveAllowed()
@@ -99,31 +111,25 @@ function Alien:UpdateAutoHeal()
 end
 
 function Alien:OnHiveConstructed(newHive, activeHiveCount)
-    local AbilityData
-    if activeHiveCount == 2 then
-        AbilityData = self:GetTierTwoTechId()
-    elseif activeHiveCount == 3 then
-        AbilityData = self:GetTierThreeTechId()
-    end
-    if AbilityData ~= nil and AbilityData ~= kTechId.None then
+
+    local AbilityData = self:GetTierTechId(activeHiveCount)
+    if AbilityData ~= kTechId.None then
         SendPlayersMessage({self}, kTeamMessageTypes.AbilityUnlocked, AbilityData)
     end
     self:UpdateActiveAbilities(activeHiveCount)
     self:UpdateHiveScaledHealthValues()
+    
 end
 
 function Alien:OnHiveDestroyed(destroyedHive, activeHiveCount)
-    local AbilityData
-    if activeHiveCount == 1 then
-        AbilityData = self:GetTierTwoTechId()
-    elseif activeHiveCount == 2 then
-        AbilityData = self:GetTierThreeTechId()
-    end
-    if AbilityData ~= nil and AbilityData ~= kTechId.None then
+
+    local AbilityData = self:GetTierTechId(activeHiveCount + 1)
+    if AbilityData ~= kTechId.None then
         SendPlayersMessage({self}, kTeamMessageTypes.AbilityLost, AbilityData)
     end
     self:UpdateActiveAbilities(activeHiveCount)
     self:UpdateHiveScaledHealthValues()
+    
 end
 
 function Alien:GetDamagedAlertId()
@@ -131,6 +137,7 @@ function Alien:GetDamagedAlertId()
 end
 
 function Alien:OnRestoreUpgrades()
+
     player = Player.OnRestoreUpgrades(self)
     //Refund lifeform costs.
     for i, techId in ipairs(player:GetUpgrades()) do
@@ -143,6 +150,7 @@ function Alien:OnRestoreUpgrades()
     end
     player:SetHatched()
     return player
+    
 end
 
 // Morph into new class or buy upgrade.
@@ -277,10 +285,14 @@ function Alien:ProcessBuyAction(techIds)
 end
 
 function Alien:UpdateHiveScaledHealthValues()
+
     local team = self:GetTeam()
-    local numHives = team:GetActiveHiveCount()
-    local maxHealth = self:GetBaseHealth() + (self:GetBaseArmor() * self:GetHiveHealthScalar(numHives))
-    self:AdjustMaxHealth(maxHealth)
+    if team then
+        local numHives = team:GetActiveHiveCount()
+        local maxHealth = self:GetBaseHealth() + (self:GetBaseArmor() * self:GetHiveHealthScalar(numHives))
+        self:AdjustMaxHealth(maxHealth)
+    end
+    
 end
 
 function Alien:GetTierOneTechId()
@@ -292,6 +304,17 @@ function Alien:GetTierTwoTechId()
 end
 
 function Alien:GetTierThreeTechId()
+    return kTechId.None
+end
+
+function Alien:GetTierTechId(numHives)
+    if numHives == 1 then
+        return self:GetTierOneTechId()
+    elseif numHives == 2 then
+        return self:GetTierTwoTechId()
+    elseif numHives == 3 then
+        return self:GetTierThreeTechId()
+    end
     return kTechId.None
 end
 

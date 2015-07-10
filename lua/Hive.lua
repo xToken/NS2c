@@ -23,7 +23,10 @@ Script.Load("lua/InfestationMixin.lua")
 
 class 'Hive' (CommandStructure)
 
-local networkVars = { }
+local networkVars = 
+{ 
+    timeLastAlerted = "time"
+}
 
 AddMixinNetworkVars(CloakableMixin, networkVars)
 AddMixinNetworkVars(DissolveMixin, networkVars)
@@ -100,8 +103,10 @@ function Hive:OnCreate()
         self:SetTechId(kTechId.Hive)
 
         self.timeOfLastEgg = Shared.GetTime()
+        self.timeLastAlerted = 0
         self.queuedplayer = nil
         self.timeWaveEnds = 0
+        self.lastHiveFlinchEffectTime = 0
         
     end
     
@@ -125,6 +130,16 @@ function Hive:OnInitialized()
         end
         
         InitMixin(self, StaticTargetMixin)
+        
+        local function UpdateAlienTeam(self)
+            local team = self:GetTeam()
+            if team and team.OnHivePlaced then
+                team:OnHivePlaced(self)
+            end
+            return false
+        end
+        
+        self:AddTimedCallback(UpdateAlienTeam, kUpdateIntervalLow)
         
     elseif Client then
     
@@ -181,6 +196,11 @@ function Hive:OnCollision(entity)
 end
 
 function Hive:SetInfestationFullyGrown()
+end
+
+//Since we want this to respond to spits or uses during building, cant just use combatmixin for this.
+function Hive:GetLastAttackedOrWarnedTime()
+    return self.timeLastAlerted
 end
 
 function GetIsHiveTypeResearch(techId)

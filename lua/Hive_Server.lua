@@ -271,6 +271,11 @@ local function SpawnEgg(self)
             
             self.timeOfLastEgg = Shared.GetTime()
             
+            local team = self:GetTeam()
+            if team and team.OnEggCreated then
+                team:OnEggCreated(egg)
+            end
+            
             return egg
             
         end
@@ -361,12 +366,14 @@ function Hive:OnKill(attacker, doer, point, direction)
 end
 
 function Hive:OnDelayedKill()
+
     local team = self:GetTeam()
     if team then
         team:OnHiveDestroyed(self)
     end
     DestroyEntitySafe(self)
     return false
+    
 end
 
 function Hive:GenerateEggSpawns(hiveLocationName)
@@ -459,7 +466,7 @@ function Hive:OnUse(player, elapsedTime, useSuccessTable)
         if team then
             team:TriggerAlert(kTechId.AlienAlertEnemyApproaches, self)
         end
-        self.lastHiveFlinchEffectTime = Shared.GetTime()
+        self.timeLastAlerted = Shared.GetTime()
     end
     
     useSuccessTable.useSuccess = false
@@ -467,20 +474,22 @@ function Hive:OnUse(player, elapsedTime, useSuccessTable)
 end
 
 function Hive:OnSpitHit()
+
     if not self:GetIsBuilt() then
         local team = self:GetTeam()
         if team then
             team:TriggerAlert(kTechId.AlienAlertEnemyApproaches, self)
         end
-        self.lastHiveFlinchEffectTime = Shared.GetTime()
+        self.timeLastAlerted = Shared.GetTime()
     end
+    
 end
 
 function Hive:OnTakeDamage(damage, attacker, doer, point)
 
 	if damage > 0 then
 	    local time = Shared.GetTime()
-	    if self:GetIsAlive() and self.lastHiveFlinchEffectTime == nil or (time > (self.lastHiveFlinchEffectTime + 1)) then
+	    if self:GetIsAlive() and (time > (self.lastHiveFlinchEffectTime + 1)) then
 	
 	        // Play freaky sound for team mates
 	        local team = self:GetTeam()
@@ -500,6 +509,8 @@ function Hive:OnTakeDamage(damage, attacker, doer, point)
 	        
 	    end
 	    
+	    self.timeLastAlerted = Shared.GetTime()
+	    
 	    if GetAreEnemies(self, attacker) and damage > 0 and GetServerGameMode() == kGameMode.Combat and attacker and attacker.AddExperience then
 	    
 	        attacker:AddExperience(damage / self:GetMaxHealth() * kCombatObjectiveExperienceScalar)
@@ -510,9 +521,11 @@ function Hive:OnTakeDamage(damage, attacker, doer, point)
 end
 
 function Hive:OnHealSpray(player, amountHealed)
+
     if GetServerGameMode() == kGameMode.Combat and player and player.AddExperience then
         player:AddExperience(amountHealed / self:GetMaxHealth() * kCombatObjectiveExperienceScalar)
     end
+    
 end
 
 function Hive:OnTeleportEnd()
@@ -536,12 +549,14 @@ function Hive:OnTeleportEnd()
 end
 
 function Hive:GetCompleteAlertId()
+
     local hives = GetEntitiesForTeam("Hive", self:GetTeamNumber())
     if table.count(hives) == 3 then
         return kTechId.AlienAlertHiveSpecialComplete
     else
         return kTechId.AlienAlertHiveComplete
     end
+    
 end
 
 function Hive:SetAttached(structure)
@@ -585,12 +600,14 @@ function Hive:OnConstructionComplete()
 end
 
 function Hive:OnDelayedConstructionComplete()
+
     local team = self:GetTeam()
     
     if team and self:GetIsAlive() and team.OnHiveDelayedConstructed then    
         team:OnHiveDelayedConstructed(self)        
     end
     return false
+    
 end
 
 function Hive:GetIsPlayerValidForCommander(player)

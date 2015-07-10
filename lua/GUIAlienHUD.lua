@@ -1113,6 +1113,7 @@ local function HiveDamagePulsate(script, item)
 end
 
 local function CheckHiveStatusChanged(hive, icon)
+
 	if icon.healthpercent ~= hive:GetHealth() / hive:GetMaxHealth() or 
         icon.buildprogress ~= ConditionalValue(hive:GetIsBuilt(), 1, hive:GetBuiltFraction()) or 
         icon.location ~= hive:GetLocationName() or icon.lastupdate + 10 < Shared.GetTime() or icon.techId ~= hive:GetTechId() then
@@ -1120,9 +1121,13 @@ local function CheckHiveStatusChanged(hive, icon)
 	else
 		return false
 	end
+
 end
 
 function GUIAlienHUD:UpdateHiveInformation(deltaTime)
+
+    PROFILE("GUIAlienHUD:UpdateHiveInformation")
+
     local hives = AlienUI_GetHiveList()
     for i = 1, kMaxHives do
 		local hive = hives[i]
@@ -1145,7 +1150,7 @@ function GUIAlienHUD:UpdateHiveInformation(deltaTime)
 				self.hives[i].builtBar:SetSize(Vector(kHiveBuiltSize.x, kHiveBuiltSize.y * buildprogress, 0))
 				self.hives[i].builtBar:SetIsVisible(buildprogress < 1)
 
-				if hive.lastHiveFlinchEffectTime ~= nil and hive.lastHiveFlinchEffectTime > Shared.GetTime() - 5 then
+				if hive:GetLastAttackedOrWarnedTime() > (Shared.GetTime() - 5) then
 					self.hives[i].hivedamageAnimPlaying = Shared.GetTime() + 1
 					self.hives[i].healthBar:SetColor(Color(1, 0, 0, 1), kHiveDamageAnimRate, "ANIM_HEALTH_PULSATE", AnimateQuadratic, HiveDamagePulsate )
 			    else
