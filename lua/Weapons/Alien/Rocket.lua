@@ -25,7 +25,6 @@ local kRocketLifetime = 6
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 
 -- Blow up after a time.
@@ -59,7 +58,7 @@ function Rocket:OnCreate()
     InitMixin(self, DamageMixin)
     
     if Server then
-        self:AddTimedCallback(UpdateLifetime, 0.1)
+        self:AddTimedCallback(UpdateLifetime, kUpdateIntervalLow)
         self.endOfLife = nil
     end
 

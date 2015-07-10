@@ -28,7 +28,6 @@ local kGrenadeMaxShakeIntensity = 0.12
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 
 function HandGrenade:OnCreate()

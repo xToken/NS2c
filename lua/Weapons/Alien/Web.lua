@@ -32,7 +32,6 @@ local networkVars =
 
 AddMixinNetworkVars(TechMixin, networkVars)
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 
@@ -235,7 +234,6 @@ if Client then
 
 end    
 
-// TODO: somehow the pose params dont work here when using clientmodelmixin. should figure out why this is broken and switch to clientmodelmixin
 function Web:OnUpdatePoseParameters()
     self:SetPoseParam("scale", self.length)    
 end

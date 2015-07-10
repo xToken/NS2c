@@ -31,7 +31,6 @@ BabblerPheromone.kClearOnSelfImpact = false
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 
 local function ClearAttachedBabblers(self)
@@ -59,7 +58,7 @@ function BabblerPheromone:OnCreate()
     if Server then
         
         self:AddTimedCallback(BabblerPheromone.TimeUp, kBabblerPheromoneDuration)
-        self:AddTimedCallback(ClearAttachedBabblers, 0.01)
+        self:AddTimedCallback(ClearAttachedBabblers, kUpdateIntervalMedium)
         
     end
 
