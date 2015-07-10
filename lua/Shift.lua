@@ -26,6 +26,7 @@ Script.Load("lua/UmbraMixin.lua")
 Script.Load("lua/DissolveMixin.lua")
 Script.Load("lua/InfestationMixin.lua")
 Script.Load("lua/IdleMixin.lua")
+Script.Load("lua/SleeperMixin.lua")
 
 class 'Shift' (ScriptActor)
 
@@ -48,7 +49,6 @@ Shift.kEnergizeLargeTargetEffect = PrecacheAsset("cinematics/alien/shift/energiz
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
@@ -88,7 +88,9 @@ function Shift:OnCreate()
     InitMixin(self, UmbraMixin)
 	InitMixin(self, DissolveMixin)
     
-    if Client then
+    if Server then
+        InitMixin(self, SleeperMixin)
+    elseif Client then
         InitMixin(self, CommanderGlowMixin)
     end
     
@@ -126,6 +128,10 @@ function Shift:OnInitialized()
 end
 
 function Shift:GetCanBeUsedConstructed()
+    return true
+end
+
+function Shift:GetCanSleep()
     return true
 end
 
