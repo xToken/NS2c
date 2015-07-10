@@ -88,6 +88,7 @@ function InfestationMixin:__initmixin()
     self.timeCycleStarted = 0
 	
     if Client then
+    
         self.infestationlocations = { }
         self.validpositions = 0
         self.lastradiusupdate = 0
@@ -105,6 +106,9 @@ function InfestationMixin:__initmixin()
         self:ResetBlobPlacement()
         self.clientisalive = true
         self.hasClientGeometry = false
+        
+        self:AddTimedCallback(InfestationMixin.OnUpdateInfestation, kUpdateIntervalAnimation)
+
     end
     
 end
@@ -646,9 +650,9 @@ if Client then
 		end    
 	end
 
-	function InfestationMixin:OnUpdate(deltaTime)
+	function InfestationMixin:OnUpdateInfestation()
         
-		PROFILE("InfestationMixin:OnUpdate")
+		PROFILE("InfestationMixin:OnUpdateInfestation")
 		
 		local qualityChanged = self.quality ~= gInfestationQuality
 		if qualityChanged then
@@ -710,6 +714,7 @@ if Client then
         end
         
         self.lastUpdateTime = Shared.GetTime()
+        return self:GetIsAlive()
          
     end
 
