@@ -21,15 +21,13 @@ MarineTeam.gSandboxMode = false
 
 // How often to send the "No IPs" message to the Marine team in seconds.
 local kSendNoIPsMessageRate = 45
-
 local kCannotSpawnSound = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/need_ip")
 
 function MarineTeam:ResetTeam()
 
     local commandStructure = PlayingTeam.ResetTeam(self)
-    
+    self.usedArmorySpawns = { }
     self.updateMarineArmor = false
-
     if self.brain ~= nil then
         self.brain:Reset()
     end
@@ -50,7 +48,7 @@ function MarineTeam:Initialize(teamName, teamNumber)
     PlayingTeam.Initialize(self, teamName, teamNumber)
     
     self.respawnEntity = Marine.kMapName
-    
+    self.usedArmorySpawns = { }
     self.updateMarineArmor = false
     
     self.lastTimeNoIPsMessageSent = Shared.GetTime()
@@ -58,6 +56,7 @@ function MarineTeam:Initialize(teamName, teamNumber)
 end
 
 function MarineTeam:OnInitialized()
+
     PlayingTeam.OnInitialized(self)
     
     if GetServerGameMode() == kGameMode.Classic then
@@ -330,6 +329,11 @@ function MarineTeam:InitTechTree(techTree)
     
     techTree:AddMenu(kTechId.WeaponsMenu)
     
+        //Add this incase other mods want to modify tech tree
+	if self.ModifyTechTree then
+		self:ModifyTechTree(techTree)
+	end
+    
     techTree:SetComplete()
 
 end
@@ -349,13 +353,24 @@ end
 local function SpawnArmory(self, techPoint)
 
     local techPointOrigin = techPoint:GetOrigin() + Vector(0, 2, 0)
-    
     local spawnPoint = nil
-
-    for i = 1, 50 do
     
-        local origin = CalculateRandomSpawn(nil, techPointOrigin, kTechId.Armory, true, kArmoryMinSpawnDistance * 1, kArmoryMaxSpawnDistance, 3)
+    for p = 1, #Server.armorySpawnPoints do
+
+		if not self.usedArmorySpawns[p] then 
+			local predefinedSpawnPoint = Server.armorySpawnPoints[p]
+			if (predefinedSpawnPoint - techPointOrigin):GetLength() <= kArmoryMaxSpawnDistance then
+				spawnPoint = predefinedSpawnPoint
+				self.usedArmorySpawns[p] = true
+				break
+			end
+		end
         
+    end
+
+    if not spawnPoint then
+    
+        local origin = GetRandomBuildPosition( kTechId.Armory, techPointOrigin, kArmoryMaxSpawnDistance )
         if origin then
             spawnPoint = origin - Vector(0, 0.1, 0)
         end
