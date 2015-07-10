@@ -170,9 +170,9 @@ function Alien:OnInitialized()
             self.hatched = false
         end
         
-        self:AddTimedCallback(UpdateAlienSpecificVariables, 0.1)
+        self:AddTimedCallback(UpdateAlienSpecificVariables, kUpdateIntervalLow)
         self:AddTimedCallback(UpdateHatched, 3)
-        self:AddTimedCallback(Alien.UpdateAutoHeal, 0.05)
+        self:AddTimedCallback(Alien.UpdateAutoHeal, kUpdateIntervalMedium)
   
     elseif Client then
     
@@ -199,7 +199,6 @@ end
 function Alien:GetCanRepairOverride(target)
     return false
 end
-
 
 // player for local player
 function Alien:TriggerHatchEffects()
@@ -370,15 +369,7 @@ function Alien:GetArmorFullyUpgradedAmount()
 end
 
 function Alien:GetHiveHealthScalar(numHives)
-    if numHives <= 1 then
-        return kAlienHealthPerArmorHive1
-    elseif numHives == 2 then
-        return kAlienHealthPerArmorHive2
-    elseif numHives == 3 then
-        return kAlienHealthPerArmorHive3
-    elseif numHives >= 4 then
-        return kAlienHealthPerArmorHive4
-    end
+    return kAlienHealthPerArmor[numHives] or 0
 end
 
 function Alien:GetCanBeHealedOverride()
@@ -387,10 +378,6 @@ end
 
 function Alien:GetDeathMapName()
     return AlienSpectator.kMapName
-end
-
-function Alien:UpdateHealthAmount()
-    return
 end
 
 // Returns the name of the player's lifeform
@@ -422,12 +409,6 @@ function Alien:GetPlayerStatusDesc()
     
     return status
 
-end
-
-function Alien:OnCatalyst()
-end
-
-function Alien:OnCatalystEnd()
 end
 
 function Alien:GetCeleritySpeedModifier()
