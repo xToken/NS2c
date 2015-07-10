@@ -10,7 +10,6 @@
 //Tweaked detector on Obs, added motion tracking and beaconing of dead players.
 
 Script.Load("lua/CommAbilities/Marine/Scan.lua")
-
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
@@ -39,6 +38,7 @@ Script.Load("lua/MapBlipMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
 Script.Load("lua/IdleMixin.lua")
 Script.Load("lua/ParasiteMixin.lua")
+Script.Load("lua/SleeperMixin.lua")
 
 class 'Observatory' (ScriptActor)
 
@@ -117,10 +117,13 @@ function Observatory:OnCreate()
     InitMixin(self, PowerConsumerMixin)
     InitMixin(self, ParasiteMixin)
     
-    if Client then
+    if Server then
+        InitMixin(self, SleeperMixin)
+    elseif Client then
         InitMixin(self, CommanderGlowMixin)
-    end
+    end    
     
+    self:SetUpdates(true)
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
@@ -194,6 +197,10 @@ end
 
 function Observatory:GetDamagedAlertId()
     return kTechId.MarineAlertStructureUnderAttack
+end
+
+function Observatory:GetCanSleep()
+    return not self:GetIsBeaconing()
 end
 
 function Observatory:GetDistressOrigin()
