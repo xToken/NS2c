@@ -82,6 +82,8 @@ function LOSMixin:__initmixin()
         self.oldSighted = true
         self.lastViewerId = Entity.invalidId
         
+        self:AddTimedCallback(LOSMixin.OnUpdateLOS, kUpdateIntervalLow)
+        
     end
     
 end
@@ -227,9 +229,9 @@ if Server then
         
     end
     
-    local function SharedUpdate(self, deltaTime)
+    function LOSMixin:OnUpdateLOS()
     
-        PROFILE("LOS:SharedUpdate")
+        PROFILE("LOS:OnUpdateLOS")
         
         // Prevent entities from being sighted before the game starts.
         if not GetGamerules():GetGameStarted() then
@@ -276,15 +278,8 @@ if Server then
             self.timeUpdateLOS = nil
             
         end
+        return true
         
-    end
-    
-    function LOSMixin:OnUpdate(deltaTime)
-        SharedUpdate(self, deltaTime)
-    end
-    
-    function LOSMixin:OnProcessMove(input)
-        SharedUpdate(self, input.time)
     end
     
     // this causes an issue: when the distance is too big (going to ready room, moving through phase gate) MarkNearbyDirty(self) will miss previous revealed entities. 
