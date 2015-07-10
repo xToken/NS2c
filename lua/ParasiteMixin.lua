@@ -102,40 +102,21 @@ function ParasiteMixin:RemoveParasite()
     self.parasited = false
 end
 
-local function SharedUpdate(self)
+if Client then
 
-    if Server then
-    
-        if not self:GetIsParasited() then
-            return
-        end
+    function ParasiteMixin:OnProcessMove(input)
+     
+        if Client and not Shared.GetIsRunningPrediction() then
         
-        // See if parsited time is over
-        if kParasiteDuration ~= -1 and self.timeParasited + kParasiteDuration < Shared.GetTime() then
-            self.parasited = false
-        end
-       
-    elseif Client and not Shared.GetIsRunningPrediction() then
-    
-        if self:GetIsParasited() and self:GetIsAlive() and self:isa("Player") then
-            self:_CreateParasiteEffect()
-        else
-            self:_RemoveParasiteEffect() 
+            if self:GetIsParasited() and self:GetIsAlive() and self:isa("Player") then
+                self:_CreateParasiteEffect()
+            else
+                self:_RemoveParasiteEffect() 
+            end
+            
         end
         
     end
-    
-end
-
-function ParasiteMixin:OnUpdate(deltaTime)   
-    SharedUpdate(self)
-end
-
-function ParasiteMixin:OnProcessMove(input)   
-    SharedUpdate(self)
-end
-
-if Client then
 
     /** Adds the material effect to the entity and all child entities (hat have a Model mixin) */
     local function AddEffect(entity, material, viewMaterial, entities)
