@@ -39,7 +39,6 @@ local kMineMaxShakeIntensity = 0.13
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 
@@ -54,10 +53,6 @@ function Mine:OnCreate()
     InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
 
-	if Client then
-        InitMixin(self, MarineOutlineMixin)
-    end
-
     if Server then
     
         // init after OwnerMixin since 'OnEntityChange' is expected callback
@@ -66,6 +61,8 @@ function Mine:OnCreate()
         
         self:SetUpdates(true)
         
+    elseif Client then
+        InitMixin(self, MarineOutlineMixin)
     end
     
 end

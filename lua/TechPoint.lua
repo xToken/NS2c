@@ -40,7 +40,6 @@ local networkVars =
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(ClientModelMixin, networkVars)
 
 function TechPoint:OnCreate()
 

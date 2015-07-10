@@ -107,11 +107,3 @@ function PickupableWeaponMixin:OnUpdate(deltaTime)
     end
     
 end
-
-function PickupableWeaponMixin:OnProcessMove(input)
-
-    if Client then
-        EquipmentOutline_UpdateModel(self)
-    end
-    
-end
