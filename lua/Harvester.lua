@@ -77,7 +77,7 @@ function Harvester:OnInitialized()
         InitMixin(self, UnitStatusMixin)
         InitMixin(self, HiveVisionMixin)
         
-        self.glowIntensity = ConditionalValue(self:GetIsBuilt(), 1, 0)
+        self.glowIntensity = 1
         
     end
 
@@ -120,16 +120,6 @@ function Harvester:GetTechButtons(techId)
 end
 
 if Client then
-
-    function Harvester:OnUpdate(deltaTime)
-    
-        ResourceTower.OnUpdate(self, deltaTime)
-        
-        if self:GetIsBuilt() then
-            self.glowIntensity = math.min(3, self.glowIntensity + deltaTime)
-        end
-        
-    end    
 
     function Harvester:OnUpdateRender()
     
