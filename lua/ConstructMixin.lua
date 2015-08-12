@@ -58,7 +58,6 @@ function ConstructMixin:__initmixin()
     
     self.timeLastConstruct = 0
     self.timeOfNextBuildWeldEffects = 0
-    self.lastAutoBuildTick = Shared.GetTime()
     self.buildTime = 0
     self.buildFraction = 0
 
@@ -116,17 +115,12 @@ if Server then
   
 	function ConstructMixin:OnConstructUpdate(deltaTime)
 	        
-	    local t = Shared.GetTime()
-	    local effectTimeout = t - self.timeLastConstruct > 0.65
+	    local effectTimeout = Shared.GetTime() - self.timeLastConstruct > 0.65
 	    self.underConstruction = not self:GetIsBuilt() and not effectTimeout
 	    
 	    // Only Alien structures auto build.
 	    // Update build fraction every tick to be smooth.
         if not self:GetIsBuilt() and GetIsAlienUnit(self) and self:GetIsAlive() then
-            //Something seems really wrong with this...
-            if not deltaTime then
-                deltaTime = t - self.lastAutoBuildTick
-            end
             
             local buildTime = deltaTime * kAutoBuildScalar
             if self.GetAutoBuildScalar then
@@ -136,8 +130,6 @@ if Server then
             if not self.GetCanAutoBuild or self:GetCanAutoBuild() then
                 self:Construct(buildTime)
             end
-            
-            self.lastAutoBuildTick = t
         
         end
         
