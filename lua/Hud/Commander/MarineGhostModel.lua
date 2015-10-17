@@ -16,9 +16,6 @@ class 'MarineGhostModel' (GhostModel)
 
 local kTextName = Fonts.kAgencyFB_Small
 local kElectricTexture = "ui/electric.dds"
-local kIconSize = GUIScale(Vector(32, 32, 0))
-local kHalfIconSize = kIconSize * 0.5
-local kIconOffset = GUIScale(100)
 
 function MarineGhostModel:Initialize()
 

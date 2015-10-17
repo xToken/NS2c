@@ -78,7 +78,7 @@ end
 local distanceDisplayedOnScreen = false
 local function OnCommandDistance()
 
-    if Shared.GetCheatsEnabled() then
+    if Shared.GetCheatsEnabled() or Shared.GetTestsEnabled() then
         distanceDisplayedOnScreen = not distanceDisplayedOnScreen
     end
     
@@ -252,7 +252,7 @@ Event.Hook("Console_debugnotifications", OnCommandDebugNotifications)
 Event.Hook("Console_dumptechtree", OnCommandDumpTechTree)
 
 local function OnUpdateClient()
-
+    Client.SetDebugText("ConsoleCommands.OnUpdateClient entry")
     if displayFPS then
         Client.ScreenMessage(string.format("FPS: %.0f", Client.GetFrameRate()))
     end
@@ -292,6 +292,7 @@ local function OnUpdateClient()
         end
         
     end
-    
+        
+    Client.SetDebugText("ConsoleCommands.OnUpdateClient exit")
 end
-Event.Hook("UpdateClient", OnUpdateClient)
+Event.Hook("UpdateClient", OnUpdateClient,"ConsoleCommands")

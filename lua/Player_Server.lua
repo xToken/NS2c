@@ -17,7 +17,7 @@ function Player:OnClientConnect(client)
 end
 
 function Player:GetSteamId()
-    return self.client:GetUserId()
+    return self.client and self.client:GetUserId() or -1
 end
 
 function Player:GetClient()

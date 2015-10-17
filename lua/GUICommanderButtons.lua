@@ -17,11 +17,6 @@ Script.Load("lua/GUIDial.lua")
 
 class 'GUICommanderButtons' (GUIScript)
 
-GUICommanderButtons.kButtonWidth = (CommanderUI_MenuButtonWidth() + 18) * kCommanderGUIsGlobalScale
-GUICommanderButtons.kButtonHeight = (CommanderUI_MenuButtonHeight() + 18) * kCommanderGUIsGlobalScale
-GUICommanderButtons.kButtonXOffset = 40 * kCommanderGUIsGlobalScale
-GUICommanderButtons.kButtonYOffset = 58 * kCommanderGUIsGlobalScale
-
 GUICommanderButtons.kButtonStatusDisabled = { Id = 0, Color = Color(0, 0, 0, 0), Visible = false }
 GUICommanderButtons.kButtonStatusEnabled = { Id = 1, Color = Color(1, 1, 1, 1), Visible = true }
 GUICommanderButtons.kButtonStatusRed = { Id = 2, Color = Color(1, 0, 0, 1), Visible = true }
@@ -46,69 +41,11 @@ local kHighlightTexture =
     [kAlienTeamType] = "ui/alien_buildmenu_highlight.dds"
 }
 
-local kHealthCircleSettings =
-{
-    [kMarineTeamType] = {
-        BackgroundWidth = GUICommanderButtons.kButtonWidth,
-        BackgroundHeight = GUICommanderButtons.kButtonHeight,
-        BackgroundAnchorX = GUIItem.Left,
-        BackgroundAnchorY = GUIItem.Bottom,
-        BackgroundOffset = Vector(0, 0, 0),
-        BackgroundTextureName = "ui/marine_command_cooldown.dds",
-        BackgroundTextureX1 = 0,
-        BackgroundTextureY1 = 0,
-        BackgroundTextureX2 = 128,
-        BackgroundTextureY2 = 128,
-        ForegroundTextureName = "ui/marine_command_cooldown.dds",
-        ForegroundTextureWidth = 128,
-        ForegroundTextureHeight = 128,
-        ForegroundTextureX1 = 128,
-        ForegroundTextureY1 = 0,
-        ForegroundTextureX2 = 256,
-        ForegroundTextureY2 = 128,
-        InheritParentAlpha = false,
-    },
-
-    [kAlienTeamType] = {
-        BackgroundWidth = GUICommanderButtons.kButtonWidth,
-        BackgroundHeight = GUICommanderButtons.kButtonHeight,
-        BackgroundAnchorX = GUIItem.Left,
-        BackgroundAnchorY = GUIItem.Bottom,
-        BackgroundOffset = Vector(0, 0, 0),
-        BackgroundTextureName = "ui/alien_command_cooldown.dds",
-        BackgroundTextureX1 = 0,
-        BackgroundTextureY1 = 0,
-        BackgroundTextureX2 = 128,
-        BackgroundTextureY2 = 128,
-        ForegroundTextureName = "ui/alien_command_cooldown.dds",
-        ForegroundTextureWidth = 128,
-        ForegroundTextureHeight = 128,
-        ForegroundTextureX1 = 128,
-        ForegroundTextureY1 = 0,
-        ForegroundTextureX2 = 256,
-        ForegroundTextureY2 = 128,
-        InheritParentAlpha = false,
-    }  
-}
-
-
-
-GUICommanderButtons.kBackgroundTexturePartWidth = 60
-GUICommanderButtons.kBackgroundTexturePartHeight = 46
-GUICommanderButtons.kBackgroundWidth = 466 * kCommanderGUIsGlobalScale
-GUICommanderButtons.kBackgroundHeight = 363 * kCommanderGUIsGlobalScale
 GUICommanderButtons.kBackgroundTextureCoords = { X1 = 0, Y1 = 0, X2 = 466, Y2 = 363 }
-
 GUICommanderButtons.kMarineTabBackgroundTexture = "ui/marine_commander_tabs.dds"
 GUICommanderButtons.kAlienTabBackgroundTexture = "ui/alien_commander_tabs.dds"
 
 GUICommanderButtons.kFrameTextureCoords = { 0, 0, 466, 363 }
-
-// The background is offset from the edge of the screen.
-GUICommanderButtons.kBackgroundOffset = 4
-
-// Used just for testing.
-GUICommanderButtons.kExtraYOffset = 0
 
 GUICommanderButtons.kMarineTabTextureCoords = { }
 GUICommanderButtons.kMarineTabTextureCoords.TopNormal = { X1 = 7, Y1 = 340, X2 = 106, Y2 = 381 }
@@ -126,27 +63,100 @@ GUICommanderButtons.kTabDisabledColor = Color(0.35, 0.35, 0.35, 1)
 GUICommanderButtons.kTabFontSize = 18
 GUICommanderButtons.kTabAlpha = 0.75
 
-GUICommanderButtons.kBuildMenuTextureWidth = 80
-GUICommanderButtons.kBuildMenuTextureHeight = 80
-
-// Also used for player alerts icon
-GUICommanderButtons.kIdleWorkersSize = 48
-GUICommanderButtons.kIdleWorkersXOffset = 5
-GUICommanderButtons.kIdleWorkersFontSize = 20
-
-GUICommanderButtons.kPlayerAlertX = -2 * (GUICommanderButtons.kIdleWorkersXOffset + GUICommanderButtons.kIdleWorkersSize)
-
-GUICommanderButtons.kSelectAllPlayersX = 10
-GUICommanderButtons.kSelectAllPlayersY = 90
-GUICommanderButtons.kSelectAllPlayersSize = 48
-
 GUICommanderButtons.kCooldownColor = Color(1, 1, 1, 0.3)
 
 local kBackgroundNoiseTexture = "ui/alien_commander_bg_smoke.dds"
-local kSmokeyBackgroundSize = GUIScale(Vector(480, 640, 0))
+local kSmokeyBackgroundSize
+local kHealthCircleSettings
+
+local function UpdateItemsGUIScale(self)
+    
+    GUICommanderButtons.kButtonWidth = (CommanderUI_MenuButtonWidth() + 18) * GUIScale(kCommanderGUIsGlobalScale)
+    GUICommanderButtons.kButtonHeight = (CommanderUI_MenuButtonHeight() + 18) * GUIScale(kCommanderGUIsGlobalScale)
+    GUICommanderButtons.kButtonXOffset = 40 * GUIScale(kCommanderGUIsGlobalScale)
+    GUICommanderButtons.kButtonYOffset = 58 * GUIScale(kCommanderGUIsGlobalScale)
+
+    kHealthCircleSettings =
+    {
+        [kMarineTeamType] = {
+            BackgroundWidth = GUICommanderButtons.kButtonWidth,
+            BackgroundHeight = GUICommanderButtons.kButtonHeight,
+            BackgroundAnchorX = GUIItem.Left,
+            BackgroundAnchorY = GUIItem.Bottom,
+            BackgroundOffset = Vector(0, 0, 0),
+            BackgroundTextureName = "ui/marine_command_cooldown.dds",
+            BackgroundTextureX1 = 0,
+            BackgroundTextureY1 = 0,
+            BackgroundTextureX2 = 128,
+            BackgroundTextureY2 = 128,
+            ForegroundTextureName = "ui/marine_command_cooldown.dds",
+            ForegroundTextureWidth = 128,
+            ForegroundTextureHeight = 128,
+            ForegroundTextureX1 = 128,
+            ForegroundTextureY1 = 0,
+            ForegroundTextureX2 = 256,
+            ForegroundTextureY2 = 128,
+            InheritParentAlpha = false,
+        },
+
+        [kAlienTeamType] = {
+            BackgroundWidth = GUICommanderButtons.kButtonWidth,
+            BackgroundHeight = GUICommanderButtons.kButtonHeight,
+            BackgroundAnchorX = GUIItem.Left,
+            BackgroundAnchorY = GUIItem.Bottom,
+            BackgroundOffset = Vector(0, 0, 0),
+            BackgroundTextureName = "ui/alien_command_cooldown.dds",
+            BackgroundTextureX1 = 0,
+            BackgroundTextureY1 = 0,
+            BackgroundTextureX2 = 128,
+            BackgroundTextureY2 = 128,
+            ForegroundTextureName = "ui/alien_command_cooldown.dds",
+            ForegroundTextureWidth = 128,
+            ForegroundTextureHeight = 128,
+            ForegroundTextureX1 = 128,
+            ForegroundTextureY1 = 0,
+            ForegroundTextureX2 = 256,
+            ForegroundTextureY2 = 128,
+            InheritParentAlpha = false,
+        }  
+    }
+
+    GUICommanderButtons.kBackgroundWidth = 466 * GUIScale(kCommanderGUIsGlobalScale)
+    GUICommanderButtons.kBackgroundHeight = 363 * GUIScale(kCommanderGUIsGlobalScale)
+
+    // The background is offset from the edge of the screen.
+    GUICommanderButtons.kBackgroundOffset = GUIScale(4)
+
+    // Used just for testing.
+    GUICommanderButtons.kExtraYOffset = 0
+
+    GUICommanderButtons.kBuildMenuTextureWidth = GUIScale(80)
+    GUICommanderButtons.kBuildMenuTextureHeight = GUIScale(80)
+
+    // Also used for player alerts icon
+    GUICommanderButtons.kIdleWorkersSize = GUIScale(48)
+    GUICommanderButtons.kIdleWorkersXOffset = GUIScale(5)
+    GUICommanderButtons.kIdleWorkersFontSize = GUIScale(20)
+
+    GUICommanderButtons.kPlayerAlertX = -GUIScale(2) * (GUICommanderButtons.kIdleWorkersXOffset + GUICommanderButtons.kIdleWorkersSize)
+
+    GUICommanderButtons.kSelectAllPlayersX = GUIScale(10)
+    GUICommanderButtons.kSelectAllPlayersY = GUIScale(90)
+    GUICommanderButtons.kSelectAllPlayersSize = GUIScale(48)
+
+    kSmokeyBackgroundSize = GUIScale(Vector(480, 640, 0))
+
+end
+
+function GUICommanderButtons:OnResolutionChanged(oldX, oldY, newX, newY)
+    self:Uninitialize()
+    self:Initialize()
+end
 
 function GUICommanderButtons:Initialize()
 
+    UpdateItemsGUIScale(self)
+    
     self.teamType = PlayerUI_GetTeamType()
     self.backgroundTextureName = self:GetBackgroundTextureName()
     
@@ -217,6 +227,7 @@ function GUICommanderButtons:InitializeMarineBackground()
     self.background:SetLayer(kGUILayerCommanderHUD)
     self.background:SetAnchor(GUIItem.Right, GUIItem.Bottom)
     self.background:SetSize(Vector(GUICommanderButtons.kBackgroundWidth, GUICommanderButtons.kBackgroundHeight, 0))
+    
     local posX = -GUICommanderButtons.kBackgroundWidth - GUICommanderButtons.kBackgroundOffset
     local posY = -GUICommanderButtons.kBackgroundHeight - GUICommanderButtons.kBackgroundOffset - GUICommanderButtons.kExtraYOffset
     self.background:SetPosition(Vector(posX, posY, 0))

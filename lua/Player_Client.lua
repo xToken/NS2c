@@ -3857,7 +3857,7 @@ function Player:UpdateCommunicationStatus()
             local newCommStatus = kPlayerCommunicationStatus.None
 
             -- If voice comm being used
-            if Client.IsVoiceRecordingActive() then
+            if Client.GetVoiceChannelForRecording() ~= VoiceChannel.Invalid then
                 newCommStatus = kPlayerCommunicationStatus.Voice
             -- If we're typing
             elseif ChatUI_EnteringChatMessage() then

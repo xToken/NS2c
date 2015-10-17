@@ -17,11 +17,7 @@ class 'GUISensorBlips' (GUIScript)
 GUISensorBlips.kMarineBlipImageName = "ui/sensor.dds"
 GUISensorBlips.kAlienBlipImageName = "ui/aliensensor.dds"
 
-GUISensorBlips.kFontName = Fonts.kArial_15 
-GUISensorBlips.kFontSize = GUIScale(30)
-
-GUISensorBlips.kDefaultBlipSize = 20
-GUISensorBlips.kMaxBlipSize = 180
+GUISensorBlips.kFontName = Fonts.kArial_15
 
 GUISensorBlips.kAlphaPerSecond = 0.8
 GUISensorBlips.kImpulseIntervall = 2.5
@@ -29,6 +25,9 @@ GUISensorBlips.kImpulseIntervall = 2.5
 GUISensorBlips.kRotationDuration = 5
 
 function GUISensorBlips:Initialize()
+
+    GUISensorBlips.kDefaultBlipSize = GUIScale(20)
+    GUISensorBlips.kMaxBlipSize = GUIScale(180)
 
     self.updateInterval = 0
     
@@ -130,6 +129,11 @@ function GUISensorBlips:UpdateBlipList(activeBlips)
 
 end
 
+function GUISensorBlips:OnResolutionChanged(oldX, oldY, newX, newY)
+    self:Uninitialize()
+    self:Initialize()
+end
+
 function GUISensorBlips:CreateBlipItem()
 
     local newBlip = { ScreenX = 0, ScreenY = 0, Radius = 0, Type = 0 }
@@ -147,10 +151,11 @@ function GUISensorBlips:CreateBlipItem()
     newBlip.TextItem = GUIManager:CreateTextItem()
     newBlip.TextItem:SetAnchor(GUIItem.Middle, GUIItem.Top)
     newBlip.TextItem:SetFontName(GUISensorBlips.kFontName)
-    newBlip.TextItem:SetFontSize(GUISensorBlips.kFontSize)
+    newBlip.TextItem:SetScale(GetScaledVector())
     newBlip.TextItem:SetTextAlignmentX(GUIItem.Align_Center)
     newBlip.TextItem:SetTextAlignmentY(GUIItem.Align_Min)
     newBlip.TextItem:SetColor(ColorIntToColor(kMarineTeamColor))
+    GUIMakeFontScale(newBlip.TextItem)
     
     newBlip.GraphicsItem:AddChild(newBlip.TextItem)
 

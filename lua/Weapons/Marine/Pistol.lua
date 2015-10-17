@@ -275,7 +275,6 @@ function Pistol:FirePrimary(player)
     self.timeAttackStarted = Shared.GetTime()
     self:TriggerEffects("pistol_attack")
     
-    TEST_EVENT("Pistol primary attack")
     
 end
 

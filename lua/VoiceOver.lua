@@ -30,7 +30,7 @@ local kAlienTauntSounds =
     [kTechId.Lerk] = "sound/NS2.fev/alien/lerk/taunt",
     [kTechId.Fade] = "sound/NS2.fev/alien/fade/taunt",
     [kTechId.Onos] = "sound/NS2.fev/alien/onos/taunt",
-    [kTechId.Embryo] = "sound/NS2.fev/alien/common/swarm",
+    [kTechId.Embryo] = "sound/NS2.fev/alien/common/swarm"
 }
 for _, tauntSound in pairs(kAlienTauntSounds) do
     PrecacheAsset(tauntSound)
@@ -202,10 +202,22 @@ local kMarineMenu =
     [RIGHT_MENU] = { kVoiceId.MarineTaunt, kVoiceId.MarineCovering, kVoiceId.MarineFollowMe, kVoiceId.MarineHostiles, kVoiceId.MarineLetsMove, }
 }
 
+local kExoMenu = 
+ {
+    [LEFT_MENU] = { kVoiceId.RequestWeld, kVoiceId.MarineRequestOrder, kVoiceId.Ping },
+    [RIGHT_MENU] = { kVoiceId.MarineTaunt, kVoiceId.MarineCovering, kVoiceId.MarineFollowMe, kVoiceId.MarineHostiles, kVoiceId.MarineLetsMove }
+}
+    
 local kAlienMenu =
 {
     [LEFT_MENU] = { kVoiceId.AlienRequestHealing, kVoiceId.Ping, kVoiceId.AlienTaunt, kVoiceId.AlienChuckle },
     [RIGHT_MENU] = { kVoiceId.AlienVoteCrag, kVoiceId.AlienVoteShift, kVoiceId.AlienVoteShade, kVoiceId.AlienVoteWhip }    
+}
+
+local kEmbryoMenu = 
+{
+    [LEFT_MENU] = { kVoiceId.AlienRequestHealing },
+    [RIGHT_MENU] = { kVoiceId.AlienTaunt, kVoiceId.EmbryoChuckle }
 }
 
 local kRequestMenus = 
@@ -216,24 +228,15 @@ local kRequestMenus =
     
     ["Marine"] = kMarineMenu,
     ["JetpackMarine"] = kMarineMenu,
-    ["Exo"] =
-    {
-        [LEFT_MENU] = { kVoiceId.RequestWeld, kVoiceId.MarineRequestOrder, kVoiceId.Ping },
-        [RIGHT_MENU] = { kVoiceId.MarineTaunt, kVoiceId.MarineCovering, kVoiceId.MarineFollowMe, kVoiceId.MarineHostiles, kVoiceId.MarineLetsMove }
-    },
+    ["Exo"] = kExoMenu,
     
     ["Skulk"] = kAlienMenu,
     ["Gorge"] = kAlienMenu,
     ["Lerk"] = kAlienMenu,
     ["Fade"] = kAlienMenu,
     ["Onos"] = kAlienMenu,
-    ["Embryo"] =
-    {
-        [LEFT_MENU] = { kVoiceId.AlienTaunt, kVoiceId.EmbryoChuckle },
-        [RIGHT_MENU] = { kVoiceId.AlienVoteCrag, kVoiceId.AlienVoteShift, kVoiceId.AlienVoteShade, kVoiceId.AlienVoteWhip }    
-    }
-    
-}    
+    ["Embryo"] = kEmbryoMenu
+}
 
 function GetRequestMenu(side, className)
 

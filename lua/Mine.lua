@@ -108,8 +108,6 @@ local function Detonate(self, armFunc)
     
     DestroyEntity(self)
     
-    TEST_EVENT("Mine detonated")
-    
 end
 
 local function Arm(self)
@@ -219,8 +217,6 @@ if Server then
         else
             DestroyEntity(self)
         end
-        
-        TEST_EVENT("Mine killed by player")
         
     end
     

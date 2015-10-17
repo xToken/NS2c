@@ -21,7 +21,7 @@ local kOtherHealthDrainRate = 0.1 --Percent per ???
 
 local kOtherHealthBarTexture = "ui/healthbarsmall.dds"
 local kOtherHealthBarTextureSize = Vector(64, 6, 0)
-local kOtherHealthBarSize = GUIScale(Vector(64, 6, 0))
+local kOtherHealthBarSize
 local kHealthDrainColor = Color(1, 0, 0, 1)
 local kOtherTypes = {
     "CommandStructure",
@@ -49,7 +49,9 @@ function GUIInsight_OtherHealthbars:Initialize()
     self.updateInterval = 0
     
     isVisible = true
-
+	
+	kOtherHealthBarSize = GUIScale(Vector(64, 6, 0))
+	
     otherList = table.array(24)
     reuseItems = table.array(32)
 
@@ -86,7 +88,9 @@ function GUIInsight_OtherHealthbars:SetisVisible(bool)
 end
 
 function GUIInsight_OtherHealthbars:Update(deltaTime)
-
+      
+    PROFILE("GUIInsight_OtherHealthbars:Update")
+    
     local others
     for i=1, #kOtherTypes do
     

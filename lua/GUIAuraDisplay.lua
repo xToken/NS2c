@@ -12,7 +12,7 @@ PrecacheAsset("shaders/GUIAura.surface_shader")
 
 class 'GUIAuraDisplay' (GUIScript)
 
-local kIconSize = Vector(100, 100, 0)
+local kIconSize = Vector(80, 80, 0)
 local kHeartOffset = Vector(0, 1.25, 0)
 local kExoHeartOffset = Vector(0, 2.25, 0)
 local kTexture = "ui/aura.dds"
@@ -52,7 +52,9 @@ function GUIAuraDisplay:Uninitialize()
 end
 
 function GUIAuraDisplay:Update(deltaTime)
-
+            
+    PROFILE("GUIAuraDisplay:Update")
+    
     local players = {}
     
     local player = Client.GetLocalPlayer()
@@ -118,9 +120,9 @@ function GUIAuraDisplay:Update(deltaTime)
         local screenPos = Client.WorldToScreen(worldPos)
         local distanceFraction = 1 - Clamp((worldPos - eyePos):GetLength() / 20, 0, 0.8)
 
-        local size = Vector(kIconSize.x, kIconSize.y, 0) * distanceFraction
+        local size = GUIScale(Vector(kIconSize.x, kIconSize.y, 0)) * distanceFraction
         icon:SetPosition(screenPos - size * 0.5)
-        icon:SetSize(size)  
+        icon:SetSize(size)
         icon:SetColor(color)
     
     end

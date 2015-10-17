@@ -122,7 +122,14 @@ function OnCommandCommanderError(message)
 end
 
 function OnCommandJoinError(message)
-    ChatUI_AddSystemMessage( Locale.ResolveString("JOIN_ERROR_TOO_MANY") )
+    if message.reason == 0 then
+        ChatUI_AddSystemMessage( Locale.ResolveString("JOIN_ERROR_TOO_MANY") )
+    elseif message.reason == 1 then
+        ChatUI_AddSystemMessage( Locale.ResolveString("JOIN_ERROR_ROOKIE") )
+
+        MainMenu_Open()
+        GetGUIMainMenu():CreateTutorialNagWindow()
+    end
 end
 
 function OnVoteConcedeCast(message)

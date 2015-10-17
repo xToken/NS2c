@@ -10,8 +10,6 @@
 
 local kPlayerRankingUrl = "http://sabot.herokuapp.com/api/post/matchEnd"
 local kPlayerRankingRequestUrl = "http://sabot.herokuapp.com/api/get/playerData/"
---only track a player who was playing a round for more than 5 minutes
-local kMinPlayTime = 5 * 60
 --don't track games which are shorter than a minute
 local kMinMatchTime = 60
 
@@ -148,9 +146,17 @@ function PlayerRanking:OnUpdate()
                     playerData.deaths = player:GetDeaths()
                     playerData.assists = player:GetAssistKills()
                     playerData.score = player:GetScore()
-                    playerData.teamNumber = player:GetTeamNumber() > 0 and player:GetTeamNumber() < 3 and player:GetTeamNumber() or playerData.teamNumber
+                    local tn = playerData.teamNumber
+                    playerData.teamNumber = player:GetTeamNumber() > 0 and player:GetTeamNumber() < 3 and player:GetTeamNumber() or playerData.teamNumber                    
+                    if playerData.teamNumber ~= tn then
+                        -- avoid the exploit of exiting the game/entering the game/join team to reset the entrance time.
+                        -- Only set the entrance time if we switch teams (which is hard to do if you are on the loosing side)
+                        playerData.entranceTime = math.max( 0, ( player:GetEntranceTime() or Shared.GetTime() ) - self.gameStartTime)
+                        Log("'%s': update entranceTime", playerData.nickName)
+                    end
                     playerData.commanderTime = player:GetCommanderTime()
-                    playerData.entranceTime = math.max( 0, ( player:GetEntranceTime() or Shared.GetTime() ) - self.gameStartTime)
+
+
                     playerData.exitTime = math.max( 0, ( player:GetExitTime() or Shared.GetTime() ) - self.gameStartTime)
 
                 end
@@ -182,7 +188,7 @@ function PlayerRanking:EndGame(winningTeam)
 
             local gameInfo = {
 
-                serverIp = IPAddressToString(Server.GetIpAddress()),
+                serverIp = Server.GetIpAddress(),
                 port = Server.GetPort(),
                 mapName = Shared.GetMapName(),
                 gameTime = gameTime,
@@ -212,52 +218,35 @@ function PlayerRanking:EndGame(winningTeam)
 
 end
 
-local function GetPlayerIsValidForRanking(recordedData, gameTime)
-
-    local playTime = recordedData.playTime or 0
-    local playedFraction = playTime / gameTime
-    
-    --Print("player valid for ranking %s", ToString(playedFraction > 0.9 or playTime > kMinPlayTime))
-
-    return (playedFraction > 0.9 or playTime > kMinPlayTime)
-
-end
-
 function PlayerRanking:InsertPlayerData(playerTable, recordedData, winningTeam, gameTime, marineSkill, alienSkill, isGatherGame)
 
     PROFILE("PlayerRanking:InsertPlayerData")
-
-    -- only consider players who are connected to the server and ignore any uncontrolled players / ragdolls
-    if GetPlayerIsValidForRanking(recordedData, gameTime) then
-
-        local playerData = 
-        {
-            steamId = recordedData.steamId,
-            nickname = recordedData.nickname or "",
-            playTime = recordedData.playTime,
-            marineTime = recordedData.marineTime,
-            alienTime = recordedData.alienTime,
-            teamNumber = recordedData.teamNumber,
-            kills = recordedData.kills,
-            deaths = recordedData.deaths,
-            assists = recordedData.assists,
-            score = recordedData.score,
-            isWinner = winningTeam:GetTeamNumber() == recordedData.teamNumber,
-            isCommander = (recordedData.commanderTime / gameTime) > 0.75,
-            marineTeamSkill = marineSkill,
-            alienTeamSkill = alienSkill,
-            gatherGame = isGatherGame,
-            commanderTime = recordedData.commanderTime,
-            entranceTime = recordedData.entranceTime,
-            exitTime = recordedData.exitTime,
-        }
+    local playerData =
+    {
+        steamId = recordedData.steamId,
+        nickname = recordedData.nickname or "",
+        playTime = recordedData.playTime,
+        marineTime = recordedData.marineTime,
+        alienTime = recordedData.alienTime,
+        teamNumber = recordedData.teamNumber,
+        kills = recordedData.kills,
+        deaths = recordedData.deaths,
+        assists = recordedData.assists,
+        score = recordedData.score,
+        isWinner = winningTeam:GetTeamNumber() == recordedData.teamNumber,
+        isCommander = (recordedData.commanderTime / gameTime) > 0.75,
+        marineTeamSkill = marineSkill,
+        alienTeamSkill = alienSkill,
+        gatherGame = isGatherGame,
+        commanderTime = recordedData.commanderTime,
+        entranceTime = recordedData.entranceTime,
+        exitTime = recordedData.exitTime,
+    }
         
-        DebugPrint("PlayerRanking: dumping player data ------------------")
-        DebugPrint("%s", ToString(playerData))
-        
-        table.insert(playerTable, playerData)
-    
-    end
+    DebugPrint("PlayerRanking: dumping player data ------------------")
+    DebugPrint("%s", ToString(playerData))
+
+    table.insert(playerTable, playerData)
 
 end
 
@@ -317,6 +306,23 @@ if Server then
         return gPlayerData[steamid]
     end
 
+    local function SetPlayerParams(client, obj)
+        local player = client and client:GetControllingPlayer()
+
+        if player then
+            Badges_SetBadges(client:GetId(), obj.badges)
+
+            player:SetTotalKills(obj.kills)
+            player:SetTotalAssists(obj.assists)
+            player:SetTotalDeaths(obj.deaths)
+            player:SetPlayerSkill(obj.skill)
+            player:SetTotalScore(obj.score)
+            player:SetTotalPlayTime(obj.playTime)
+            player:SetPlayerLevel(obj.level)
+        end
+
+    end
+
     local function PlayerDataResponse(steamId,clientId)
         return function (playerData)
         
@@ -339,21 +345,8 @@ if Server then
                 gPlayerData[steamId] = obj
 
                 local client = Server.GetClientById(clientId)
-                local player = client and client:GetControllingPlayer()
-
-                if player then
-
-                    if obj.badges then
-                        Badges_SetBadges(clientId, obj.badges)
-                    end
-
-                    player:SetTotalKills(obj.kills)
-                    player:SetTotalAssists(obj.assists)
-                    player:SetTotalDeaths(obj.deaths)
-                    player:SetPlayerSkill(obj.skill)
-                    player:SetTotalScore(obj.score)
-                    player:SetTotalPlayTime(obj.playTime)
-                    player:SetPlayerLevel(obj.level)
+                if client then
+                    SetPlayerParams(client, obj)
                 end
 
             end
@@ -371,15 +364,15 @@ if Server then
             local steamId = client:GetUserId()
             local playerData = gPlayerData[steamId]
 
-            if not playerData then
+            if not playerData or playerData.steamId ~= steamId then --no playerdata or invalid ones
                 
                 DebugPrint("send player data request for %s", ToString(steamId))
                 
                 local requestUrl = string.format("%s%s", kPlayerRankingRequestUrl, steamId)
                 Shared.SendHTTPRequest(requestUrl, "GET", { }, PlayerDataResponse(steamId, client:GetId()))
                 
-            elseif playerData.badges then
-                Badges_SetBadges(client:GetId(), playerData.badges)
+            else --set badges and values
+                SetPlayerParams(client, playerData)
             end
 
         end

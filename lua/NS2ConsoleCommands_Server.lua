@@ -20,13 +20,13 @@ local function JoinTeam(player, teamIndex)
 
     if player ~= nil and player:GetTeamNumber() == kTeamReadyRoom then
     
-        // Auto team balance checks.
-        local allowed = GetGamerules():GetCanJoinTeamNumber(teamIndex)
+        -- Auto team balance checks.
+        local allowed, reason = GetGamerules():GetCanJoinTeamNumber(player, teamIndex)
                 
         if allowed or Shared.GetCheatsEnabled() then
             return GetGamerules():JoinTeam(player, teamIndex)
         else
-            Server.SendNetworkMessage(player, "JoinError", BuildJoinErrorMessage(), false)
+            Server.SendNetworkMessage(player, "JoinError", BuildJoinErrorMessage(reason), true)
             return false
         end
         

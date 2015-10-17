@@ -11,17 +11,16 @@
 
 local kIconWidth = 128
 local kIconHeight = 64
+local kScaledIconWidth = GUIScale(128)
+local kScaledIconHeight = GUIScale(64)
 
-local kPickupBackgroundHeight = 32
-local kPickupBackgroundSmallWidth = 32
-local kPickupBackgroundBigWidth = 64
-local kBackgroundWidthBuffer = 26
+local kPickupBackgroundHeight = GUIScale(32)
+local kPickupBackgroundSmallWidth = GUIScale(32)
+local kPickupBackgroundBigWidth = GUIScale(64)
+local kBackgroundWidthBuffer = GUIScale(26)
 local kPickupBackgroundSmallCoords = { 7, 0, 38, 31 }
 local kPickupBackgroundBigCoords = { 53, 0, 116, 31 }
-local kBackgroundYOffset = -10
-
-local kPickupKeyFontSize = 22
-local kPickupTextFontSize = 20
+local kBackgroundYOffset = -GUIScale(10)
 
 local kIconsTextureName = PrecacheAsset("ui/pickup_icons.dds")
 local kKeyTextureName = PrecacheAsset("ui/key_mouse_marine.dds")
@@ -43,16 +42,61 @@ local kItemText = { }
 kItemText["Jetpack"] = string.format("Buy Jetpack for %s Resources.", LookupTechData(kTechId.Jetpack, kTechDataCostKey))
 
 // Hold-button progress
-local kBarPadding = 4
-local kBarBgSize = Vector(kIconWidth/2, 32, 0)
+local kBarPadding = GUIScale(4)
+local kBarBgSize = Vector(kScaledIconWidth/2, GUIScale(32), 0)
 local kBarSize = Vector(kBarBgSize.x - (2 * kBarPadding), kBarBgSize.y - (2 * kBarPadding), 0)
 
+local kProgressBarBgPosition = Vector(-kBarBgSize.x/2,-kBarBgSize.y/2-GUIScale(16),0)
+
 class 'GUIActionIcon' (GUIScript)
+
+local function UpdateItemsGUIScale(self)
+
+    local scaledVector = GetScaledVector()
+    -- Set everything that's using GUIScale again with the new resolution
+    kScaledIconWidth = GUIScale(128)
+    kScaledIconHeight = GUIScale(64)
+
+    kPickupBackgroundHeight = GUIScale(32)
+    kPickupBackgroundSmallWidth = GUIScale(32)
+    kPickupBackgroundBigWidth = GUIScale(64)
+    kBackgroundWidthBuffer = GUIScale(26)
+    kBackgroundYOffset = -GUIScale(10)
+    
+    kBarPadding = GUIScale(4)
+    kBarBgSize = Vector(kScaledIconWidth/2, GUIScale(32), 0)
+    kBarSize = Vector(kBarBgSize.x - (2 * kBarPadding), kBarBgSize.y - (2 * kBarPadding), 0)
+
+    kProgressBarBgPosition = Vector(-kBarBgSize.x/2,-kBarBgSize.y/2-GUIScale(16),0)
+    
+    -- Update sizes and positions
+    self.pickupIcon:SetSize(Vector(kScaledIconWidth, kScaledIconHeight, 0))
+    self.pickupKey:SetScale(scaledVector)
+    self.pickupKey:SetFontName(Fonts.kAgencyFB_Small)
+    self.pickupText:SetScale(scaledVector)
+    self.pickupText:SetFontName(Fonts.kAgencyFB_Small)
+    self.hintText:SetScale(scaledVector)
+    self.hintText:SetFontName(Fonts.kAgencyFB_Small)
+    self.hintText:SetPosition(Vector(0, -GUIScale(50), 0))
+    self.progressBarBg:SetPosition(kProgressBarBgPosition)
+    self.progressBarBg:SetSize(kBarBgSize)
+    self.progressBar:SetSize(kBarSize)
+    self.progressBar:SetPosition(Vector(kBarPadding, kBarPadding, 0))
+    self.holdText:SetScale(scaledVector)
+    self.holdText:SetFontName(Fonts.kAgencyFB_Small)
+    GUIMakeFontScale(self.pickupKey)
+    GUIMakeFontScale(self.pickupText)
+    GUIMakeFontScale(self.hintText)
+    GUIMakeFontScale(self.holdText)
+end
+
+function GUIActionIcon:OnResolutionChanged(oldX, oldY, newX, newY)
+    UpdateItemsGUIScale(self)
+end
 
 function GUIActionIcon:Initialize()
 
     self.pickupIcon = GUIManager:CreateGraphicItem()
-    self.pickupIcon:SetSize(Vector(kIconWidth, kIconHeight, 0))
     self.pickupIcon:SetAnchor(GUIItem.Middle, GUIItem.Center)
     self.pickupIcon:SetTexture(kIconsTextureName)
     self.pickupIcon:SetIsVisible(false)
@@ -63,7 +107,6 @@ function GUIActionIcon:Initialize()
     self.pickupIcon:AddChild(self.pickupKeyBackground)
 
     self.pickupKey = GUIManager:CreateTextItem()
-    self.pickupKey:SetFontSize(kPickupKeyFontSize)
     self.pickupKey:SetAnchor(GUIItem.Middle, GUIItem.Center)
     self.pickupKey:SetTextAlignmentX(GUIItem.Align_Center)
     self.pickupKey:SetTextAlignmentY(GUIItem.Align_Center)
@@ -76,7 +119,6 @@ function GUIActionIcon:Initialize()
     self.pickupText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
     self.pickupText:SetTextAlignmentX(GUIItem.Align_Center)
     self.pickupText:SetTextAlignmentY(GUIItem.Align_Center)
-    self.pickupText:SetPosition(Vector(0, 100, 0))
     self.pickupText:SetText("")
     self.pickupText:SetFontName(Fonts.kAgencyFB_Small)
     self.pickupKeyBackground:AddChild(self.pickupText)
@@ -85,7 +127,6 @@ function GUIActionIcon:Initialize()
     self.hintText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
     self.hintText:SetTextAlignmentX(GUIItem.Align_Center)
     self.hintText:SetTextAlignmentY(GUIItem.Align_Center)
-    self.hintText:SetPosition(Vector(0, -50, 0))
     self.hintText:SetText("")
     self.hintText:SetFontName(Fonts.kAgencyFB_Small)
     self.pickupKeyBackground:AddChild(self.hintText)
@@ -93,22 +134,17 @@ function GUIActionIcon:Initialize()
     // For some things, we need the player to hold the key down for a bit. This displays hold-progress
     self.progressBarBg = GUIManager:CreateGraphicItem()
     self.progressBarBg:SetAnchor(GUIItem.Middle, GUIItem.Center)
-    self.progressBarBg:SetPosition(Vector(-kBarBgSize.x/2,-kBarBgSize.y/2-16,0))
-    self.progressBarBg:SetSize(kBarBgSize)
     self.progressBarBg:SetTexture(kProgressBarTextureName)
     self.pickupIcon:AddChild(self.progressBarBg)
     
     self.progressBar = GUIManager:CreateGraphicItem()
-    self.progressBar:SetSize(kBarSize)
     self.progressBar:SetAnchor(GUIItem.Left, GUIItem.Top)
-    self.progressBar:SetPosition(Vector(kBarPadding, kBarPadding, 0))
     self.progressBar:SetTexture(kCommanderBarTextureName)
     self.progressBar:SetInheritsParentAlpha(true)
     self.progressBarBg:AddChild(self.progressBar)
     
     // so it can say "Hold [E]"
     self.holdText = GUIManager:CreateTextItem()
-    self.holdText:SetFontSize(kPickupKeyFontSize)
     self.holdText:SetAnchor(GUIItem.Middle, GUIItem.Center)
     self.holdText:SetPosition(Vector(0, 0, 0))
     self.holdText:SetTextAlignmentX(GUIItem.Align_Center)
@@ -118,6 +154,7 @@ function GUIActionIcon:Initialize()
     self.holdText:SetFontName(Fonts.kAgencyFB_Small)
     self.progressBarBg:AddChild(self.holdText)
 
+    UpdateItemsGUIScale(self)
 
 end
 
@@ -179,7 +216,7 @@ function GUIActionIcon:ShowIcon(buttonText, weaponType, hintText, holdFraction)
         self.pickupText:SetIsVisible(true)
     end
     
-    self.pickupIcon:SetPosition(Vector(-kIconWidth / 2, (-kIconHeight / 2) + Client.GetScreenHeight() / 4, 0))    
+    self.pickupIcon:SetPosition(Vector(-kScaledIconWidth / 2, (-kScaledIconHeight / 2) + Client.GetScreenHeight() / 4, 0))    
     self.pickupKey:SetText(buttonText)
     local buttonTextWidth = self.pickupKey:GetTextWidth(buttonText)
     

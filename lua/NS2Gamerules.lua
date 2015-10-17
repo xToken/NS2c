@@ -25,6 +25,7 @@ local kTimeToReadyRoom = 8
 local kPauseToSocializeBeforeMapcycle = 30
 local kGameStartMessageInterval = 30
 local kCombatTeamNotificationTimes = { 999, 300, 60, 30 } // In Seconds Before Game Ends - first value is updated to match server setting
+local kMaxWorldSoundDistance = 30
 
 // How often to send the "No commander" message to players in seconds.
 local kSendNoCommanderMessageRate = 60
@@ -859,8 +860,6 @@ if Server then
                         SendTeamMessage(self.team2, kTeamMessageTypes.TeamsUnbalanced)
                         Print("Auto-team balance enabled")
                         
-                        TEST_EVENT("Auto-team balance enabled")
-                        
                     end
                     
                 end
@@ -884,9 +883,7 @@ if Server then
             SendTeamMessage(self.team1, kTeamMessageTypes.TeamsBalanced)
             SendTeamMessage(self.team2, kTeamMessageTypes.TeamsBalanced)
             Print("Auto-team balance disabled")
-            
-            TEST_EVENT("Auto-team balance disabled")
-            
+
         end
         
     end
@@ -939,7 +936,20 @@ if Server then
 
     end
 
-    
+    function NS2Gamerules:SetRookieMode(state)
+        self.rookieMode = state
+
+        if state then
+            Server.AddTag("rookie_only")
+        else
+            RemoveTag("rookie_only")
+        end
+    end
+
+    function NS2Gamerules:GetRookieMode()
+        return self.rookieMode
+    end
+
     function NS2Gamerules:UpdatePlayerSkill()
         
         local kTime = Shared.GetTime()
@@ -1108,11 +1118,7 @@ if Server then
      */
     function NS2Gamerules:EndGame(winningTeam)
     
-        if self:GetGameState() == kGameState.Started then        
-        
-            if self.autoTeamBalanceEnabled then
-                TEST_EVENT("Auto-team balance, game ended")
-            end
+        if self:GetGameState() == kGameState.Started then
             
             local winningTeamType = winningTeam and winningTeam.GetTeamType and winningTeam:GetTeamType() or kNeutralTeamType
             
@@ -1204,8 +1210,11 @@ if Server then
         
     end
 
+    --list of users that played the tutorial
+    local playedTutorial = {}
+
     -- No enforced balanced teams on join as the auto team balance system balances teams.
-    function NS2Gamerules:GetCanJoinTeamNumber(teamNumber)
+    function NS2Gamerules:GetCanJoinTeamNumber(player, teamNumber)
 
         local forceEvenTeams = Server.GetConfigSetting("force_even_teams_on_join")
         -- This option was added after shipping, so support older config files that don't include it.
@@ -1216,17 +1225,25 @@ if Server then
             local team2Players = self.team2:GetNumPlayers()
             
             if (team1Players > team2Players) and (teamNumber == self.team1:GetTeamNumber()) then
-                return false
+                return false, 0
             elseif (team2Players > team1Players) and (teamNumber == self.team2:GetTeamNumber()) then
-                return false
+                return false, 0
             end
             
+        elseif not self:GetRookieMode() and not playedTutorial[player:GetSteamId()] and
+                player:GetPlayerSkill() ~= -1 and player:GetPlayerSkill() < 1 then
+            return false, 1
         end
         
         return true
         
     end
-    
+
+    local function OnReceivedTutorialPlayed(client)
+        playedTutorial[client:GetUserId()] = true
+    end
+    Server.HookNetworkMessage("PlayedTutorial", OnReceivedTutorialPlayed)
+
     function NS2Gamerules:GetCanSpawnImmediately()
         return not self:GetGameStarted() or Shared.GetCheatsEnabled() or (Shared.GetTime() < (self.gameStartTime + kFreeSpawnTime))
     end
@@ -1686,8 +1703,8 @@ if Server then
 
     end
 
-    // Function for allowing teams to hear each other's voice chat
-    function NS2Gamerules:GetCanPlayerHearPlayer(listenerPlayer, speakerPlayer)
+    -- Function for allowing teams to hear each other's voice chat
+    function NS2Gamerules:GetCanPlayerHearPlayer(listenerPlayer, speakerPlayer, channelType)
 
         local canHear = false
         
@@ -1695,27 +1712,31 @@ if Server then
             return true
         end
         
-        // Check if the listerner has the speaker muted.
+        -- Check if the listerner has the speaker muted.
         if listenerPlayer:GetClientMuted(speakerPlayer:GetClientIndex()) then
             return false
         end
         
-        // If both players have the same team number, they can hear each other
+        -- If both players have the same team number, they can hear each other
         if(listenerPlayer:GetTeamNumber() == speakerPlayer:GetTeamNumber()) then
-            canHear = true
+            if channelType == nil or channelType == VoiceChannel.Global then
+                canHear = true
+            else 
+                canHear = listenerPlayer:GetDistance(speakerPlayer) < kMaxWorldSoundDistance
+            end
         end
             
-        // Or if cheats or dev mode is on, they can hear each other
-        if(Shared.GetCheatsEnabled() or Shared.GetDevMode()) then
+        -- Or if cheats AND dev mode is on, they can hear each other
+        if(Shared.GetCheatsEnabled() and Shared.GetDevMode()) then
             canHear = true
         end
         
-        // NOTE: SCRIPT ERROR CAUSED IN THIS FUNCTION WHEN FP SPEC WAS ADDED.
-        // This functionality never really worked anyway.
-        // If we're spectating a player, we can hear their team (but not in tournamentmode, once that's in)
-        //if self:GetIsPlayerFollowingTeamNumber(listenerPlayer, speakerPlayer:GetTeamNumber()) then
-        //    canHear = true
-        //end
+        -- NOTE: SCRIPT ERROR CAUSED IN THIS FUNCTION WHEN FP SPEC WAS ADDED.
+        -- This functionality never really worked anyway.
+        -- If we're spectating a player, we can hear their team (but not in tournamentmode, once that's in)
+        --if self:GetIsPlayerFollowingTeamNumber(listenerPlayer, speakerPlayer:GetTeamNumber()) then
+        --    canHear = true
+        --end
         
         return canHear
         

@@ -331,20 +331,12 @@ end
 // Pass negative to uncloak
 function CloakableMixin:OnScan()
 
-    if self.fullyCloaked then
-        TEST_EVENT("Uncloaked from Scan")
-    end
-    
     self:TriggerUncloak()
     
 end
 
 function CloakableMixin:PrimaryAttack()
 
-    if self.fullyCloaked then
-        TEST_EVENT("Uncloaked from Primary Attack")
-    end
-    
     self:TriggerUncloak()
     
 end
@@ -357,10 +349,6 @@ function CloakableMixin:SecondaryAttack()
 
     local weapon = self:GetActiveWeapon()
     if weapon and weapon:GetHasSecondary(self) then
-    
-        if self.fullyCloaked then
-            TEST_EVENT("Uncloaked from Secondary Attack")
-        end
         
         self:TriggerUncloak()
         
@@ -372,10 +360,6 @@ function CloakableMixin:OnTakeDamage(damage, attacker, doer, point)
 
     if damage > 0 then
 
-        if self.fullyCloaked then
-            TEST_EVENT("Uncloaked from taking damage")
-        end
-        
         self:TriggerUncloak()
     
     end
@@ -387,24 +371,16 @@ function CloakableMixin:OnCapsuleTraceHit(entity)
     PROFILE("CloakableMixin:OnCapsuleTraceHit")
 
     if GetAreEnemies(self, entity) then
-    
-        if self.fullyCloaked then
-            TEST_EVENT("Uncloaked from being touched")
-        end
-        
+
         self:TriggerUncloak()
         self.lastTouchedEntityId = entity:GetId()
         
     end
-    
+
 end
 
 function CloakableMixin:OnJump()
 
-    if self.fullyCloaked then
-        TEST_EVENT("Uncloaked from jumping")
-    end
-    
     self:TriggerUncloak()
     
 end

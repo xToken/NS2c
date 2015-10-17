@@ -25,15 +25,15 @@ local kHealthbarTexture = "ui/player_healthbar.dds"
 
 -- Also change in OnResolutionChanged!
 local scale = 0.55
-local kHealthBarSize = GUIScale(Vector(14, 30, 0))
-local kFrameYOffset = GUIScale(180)
-local kFrameYSpacing = GUIScale(20)
-local kNameFontScale = GUIScale( Vector(1, 1, 1) ) * 0.8
-local kInfoFontScale = GUIScale( Vector(1, 1, 1) ) * 0.7
-local kPlayersPanelSize = GUIScale(Vector(95, 32, 0))
-local kTopFrameSize = GUIScale(Vector(scale*256, scale*64, 0))
-local kBottomFrameSize = GUIScale(Vector(scale*256, scale*128, 0))
-local kIconSize = GUIScale(Vector(32, 32, 0))
+local kHealthBarSize
+local kFrameYOffset
+local kFrameYSpacing
+local kNameFontScale
+local kInfoFontScale
+local kPlayersPanelSize
+local kTopFrameSize
+local kBottomFrameSize
+local kIconSize
 
 -- Color constants.
 local kInfoColor = Color(1, 1, 1, 1)
@@ -84,6 +84,16 @@ local kIconCoords = {
 
 function GUIInsight_PlayerFrames:Initialize()
 
+	kHealthBarSize = GUIScale(Vector(14, 30, 0))
+	kFrameYOffset = GUIScale(180)
+	kFrameYSpacing = GUIScale(20)
+	kNameFontScale = GUIScale( Vector(1, 1, 1) ) * 0.8
+	kInfoFontScale = GUIScale( Vector(1, 1, 1) ) * 0.7
+	kPlayersPanelSize = GUIScale(Vector(95, 32, 0))
+	kTopFrameSize = GUIScale(Vector(scale*256, scale*64, 0))
+	kBottomFrameSize = GUIScale(Vector(scale*256, scale*128, 0))
+	kIconSize = GUIScale(Vector(32, 32, 0))
+    
     isVisible = true
 
     -- Teams table format: Team GUIItems, color, player GUIItem list, get scores function.
@@ -120,15 +130,15 @@ end
 function GUIInsight_PlayerFrames:OnResolutionChanged(oldX, oldY, newX, newY)
 
     self:Uninitialize()
-    kHealthBarSize = GUIScale(Vector(14, 30, 0))
-    kFrameYOffset = GUIScale(180)
-    kFrameYSpacing = GUIScale(20)
-    kTeamNameFontSize = GUIScale(18)
-    kTeamInfoFontSize = GUIScale(16)
-    kPlayersPanelSize = GUIScale(Vector(95, 32, 0))
-    kTopFrameSize = GUIScale(Vector(scale*256, scale*64, 0))
-    kBottomFrameSize = GUIScale(Vector(scale*256, scale*128, 0))
-    kIconSize = GUIScale(Vector(32, 32, 0))
+	kHealthBarSize = GUIScale(Vector(14, 30, 0))
+	kFrameYOffset = GUIScale(180)
+	kFrameYSpacing = GUIScale(20)
+	kNameFontScale = GUIScale( Vector(1, 1, 1) ) * 0.8
+	kInfoFontScale = GUIScale( Vector(1, 1, 1) ) * 0.7
+	kPlayersPanelSize = GUIScale(Vector(95, 32, 0))
+	kTopFrameSize = GUIScale(Vector(scale*256, scale*64, 0))
+	kBottomFrameSize = GUIScale(Vector(scale*256, scale*128, 0))
+	kIconSize = GUIScale(Vector(32, 32, 0))
     self:Initialize()
 
 end
@@ -198,7 +208,9 @@ function GUIInsight_PlayerFrames:SetIsVisible(bool)
 end
 
 function GUIInsight_PlayerFrames:Update(deltaTime)
-
+  
+    PROFILE("GUIInsight_PlayerFrames:Update")
+    
     if isVisible then
     
         --Update Teams and Tech Points
@@ -417,7 +429,7 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
                     local position = player["Background"]:GetScreenPosition(Client.GetScreenWidth(), Client.GetScreenHeight())
                     local text = string.format("%s %s Has Died", oldStatus, playerName)
                     local icon = {Texture = texture, TextureCoordinates = textureCoordinates, Color = Color(1,1,1,0.25), Size = Vector(0,0,0)}
-                    local info = {Text = text, Scale = Vector(0.2,0.2,0.2), Color = Color(0.5,0.5,0.5,0.5), ShadowColor = Color(0,0,0,0.5)}
+                    local info = {Text = text, Scale = Vector(1,1,1), Color = Color(0.5,0.5,0.5,0.5), ShadowColor = Color(0,0,0,0.5)}
                     local alert = GUIInsight_AlertQueue:CreateAlert(position, icon, info, teamNumber)
                     GUIInsight_AlertQueue:AddAlert(alert, Color(1,1,1,1), Color(1,1,1,1))
                     
@@ -523,6 +535,7 @@ function GUIInsight_PlayerFrames:CreateMarineBackground()
     nameItem:SetTextAlignmentX(GUIItem.Align_Min)
     nameItem:SetTextAlignmentY(GUIItem.Align_Max)
     nameItem:SetColor(kInfoColor)
+    GUIMakeFontScale(nameItem)
     background:AddChild(nameItem)
 
     -- KDR text item.
@@ -534,17 +547,19 @@ function GUIInsight_PlayerFrames:CreateMarineBackground()
     KDRitem:SetTextAlignmentY(GUIItem.Align_Min)
     KDRitem:SetPosition(Vector(kPlayersPanelSize.x, 0, 0))
     KDRitem:SetColor(kInfoColor)
+    GUIMakeFontScale(KDRitem)
     background:AddChild(KDRitem)
     
     -- Res text item.
     local detailItem = GUIManager:CreateTextItem()
     detailItem:SetFontName(kInfoFontName)
     detailItem:SetScale(kInfoFontScale)
-    detailItem:SetAnchor(GUIItem.Left, GUIItem.Middle)
+    detailItem:SetAnchor(GUIItem.Left, GUIItem.Center)
     detailItem:SetTextAlignmentX(GUIItem.Align_Max)
     detailItem:SetTextAlignmentY(GUIItem.Align_Min)
     detailItem:SetPosition(Vector(kPlayersPanelSize.x, 0, 0))
     detailItem:SetColor(kInfoColor)
+    GUIMakeFontScale(detailItem)
     background:AddChild(detailItem)
     
     -- Health bar item.
@@ -608,6 +623,7 @@ function GUIInsight_PlayerFrames:CreateAlienBackground()
     nameItem:SetTextAlignmentX(GUIItem.Align_Max)
     nameItem:SetTextAlignmentY(GUIItem.Align_Max)
     nameItem:SetColor(kInfoColor)
+    GUIMakeFontScale(nameItem)
     background:AddChild(nameItem)
 
     -- KDR text item.
@@ -619,17 +635,19 @@ function GUIInsight_PlayerFrames:CreateAlienBackground()
     KDRitem:SetTextAlignmentX(GUIItem.Align_Min)
     KDRitem:SetTextAlignmentY(GUIItem.Align_Min)
     KDRitem:SetColor(kInfoColor)
+    GUIMakeFontScale(KDRitem)
     background:AddChild(KDRitem)
     
     -- Res text item.
     local detailItem = GUIManager:CreateTextItem()
     detailItem:SetFontName(kInfoFontName)
     detailItem:SetScale(kInfoFontScale)
-    detailItem:SetAnchor(GUIItem.Left, GUIItem.Middle)
+    detailItem:SetAnchor(GUIItem.Left, GUIItem.Center)
     detailItem:SetPosition(Vector(GUIScale(2), 0, 0))
     detailItem:SetTextAlignmentX(GUIItem.Align_Min)
     detailItem:SetTextAlignmentY(GUIItem.Align_Min)
     detailItem:SetColor(kInfoColor)
+    GUIMakeFontScale(detailItem)
     background:AddChild(detailItem)
     
     -- Health bar item.

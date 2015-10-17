@@ -72,6 +72,10 @@ function Embryo:OnCreate()
 
 end
 
+function Embryo:SetValidSpawnPoint(position)
+    self.validSpawnPoint = position
+end
+
 local function UpdateGestation(self)
 
     // Cannot spawn unless alive.
@@ -96,15 +100,27 @@ local function UpdateGestation(self)
             
             local capsuleHeight, capsuleRadius = self:GetTraceCapsule()
             local newAlienExtents = LookupTechData(newPlayer:GetTechId(), kTechDataMaxExtents)
-            
-            if not GetHasRoomForCapsule(newAlienExtents, self:GetOrigin() + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls, nil, EntityFilterTwo(self, newPlayer)) then
-            
-                local spawnPoint = GetRandomSpawnForCapsule(newAlienExtents.y, capsuleRadius, self:GetModelOrigin(), 0.5, 5, EntityFilterOne(self))
 
-                if spawnPoint then
-                    newPlayer:SetOrigin(spawnPoint)
+            -- Add a bit to the extents when looking for a clear space to spawn.
+            local spawnBufferExtents = Vector(0.1, 0.1, 0.1)
+            
+            --validate the spawn point before using it
+            if self.validSpawnPoint and GetHasRoomForCapsule(newAlienExtents + spawnBufferExtents, self.validSpawnPoint + Vector(0, newAlienExtents.y + Embryo.kEvolveSpawnOffset, 0), CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls, nil, EntityFilterTwo(self, newPlayer)) then
+                newPlayer:SetOrigin(self.validSpawnPoint)
+            else
+                for index = 1, 100 do
+
+                    local spawnPoint = GetRandomSpawnForCapsule(newAlienExtents.y, capsuleRadius, self:GetModelOrigin(), 0.5, 5, EntityFilterOne(self))
+
+                    if spawnPoint then
+
+                        newPlayer:SetOrigin(spawnPoint)
+                        break
+
+                    end
+
                 end
-                
+
             end
 
             newPlayer:DropToFloor()

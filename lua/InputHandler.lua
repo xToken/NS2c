@@ -34,6 +34,7 @@ local _keyBinding =
     Eject = InputKey.I,
     ShowMap = InputKey.C,
     VoiceChat = InputKey.LeftAlt,
+    LocalVoiceChat = InputKey.None,
     TextChat = InputKey.Y,
     TeamChat = InputKey.Return,
     Weapon1 = InputKey.Num1,
@@ -73,6 +74,7 @@ local _keyBinding =
     Grid10 = InputKey.C,
     Grid11 = InputKey.V,
     VoiceChatCom = InputKey.LeftAlt,
+    LocalVoiceChatCom = InputKey.None,
     TextChatCom = InputKey.Y,
     TeamChatCom = InputKey.Return,
     ShowMapCom = InputKey.C,
@@ -119,10 +121,10 @@ local _cameraPitch = 0
 local _keyState = { }
 local _keyPressed = { }
 
-local _bufferedCommands = 0
+local _aggregatedCommands = 0
 local _lastProcessedCommands = 0
-local _bufferedMove = Vector(0, 0, 0)
-local _bufferedHotKey = 0
+local _aggregatedMove = Vector(0, 0, 0)
+local _aggregatedHotKey = 0
 
 // Provide support for these functions that were removed from the API in Build 237
 function Client.SetYaw(yaw)
@@ -186,6 +188,12 @@ function Input_SyncInputOptions()
         end
         
         local key = InputKey[keyName]
+        if key == nil and string.len(keyName) > 1 and string.sub(keyName,1,1) == "#" then
+            key = tonumber(string.sub(keyName,2))
+		    if key ~= nil then
+                key = key + InputKey.FirstScanCode
+            end
+        end
         if key ~= nil then
             _keyBinding[action] = key
         end
@@ -575,21 +583,28 @@ local function GenerateMove()
 end
 require("jit").off(GenerateMove)
 
-local function BufferMove(move)
+local function ChangeIfNonZero(old,new)
+    return new ~= 0 and new or old
+end
 
-    _bufferedMove.x = math.max(math.min(_bufferedMove.x + move.move.x, 1), -1)
-    _bufferedMove.y = math.max(math.min(_bufferedMove.y + move.move.y, 1), -1)
-    _bufferedMove.z = math.max(math.min(_bufferedMove.z + move.move.z, 1), -1)
+-- The move rate limiter means that we will get multiple input from the mouse (once per frame) 
+-- and fewer inputs from the keyboard. As the mouse input can trigger commands as well, we aggregate
+-- the moves and present them as a the input when we do a full move.
+local function AggregateMove(move)
 
+    _aggregatedMove.x = ChangeIfNonZero(_aggregatedMove.x, move.move.x)
+    _aggregatedMove.y = ChangeIfNonZero(_aggregatedMove.y, move.move.y)
+    _aggregatedMove.z = ChangeIfNonZero(_aggregatedMove.z, move.move.z)
+    
     // Detect changes in the commands
-    local changedCommands = bit.bxor( _lastProcessedCommands, _bufferedCommands )
-    _bufferedCommands = bit.bor(
-            bit.band( _bufferedCommands, changedCommands ), 
+    local changedCommands = bit.bxor( _lastProcessedCommands, _aggregatedCommands )
+    _aggregatedCommands = bit.bor(
+            bit.band( _aggregatedCommands, changedCommands ), 
             bit.band( move.commands, bit.bnot(changedCommands) )
         )
         
     if move.hotkey ~= 0 then
-        _bufferedHotKey = move.hotkey
+        _aggregatedHotKey = move.hotkey
     end
     
 end
@@ -597,20 +612,20 @@ end
 local function OnProcessGameInput()
 
     local move = GenerateMove()
-    BufferMove(move)
+    AggregateMove(move)
     
     // Apply the buffered input.
     
-    move.move     = _bufferedMove
-    move.commands = _bufferedCommands
+    move.move     = _aggregatedMove
+    move.commands = _aggregatedCommands
 
-    if _bufferedHotKey ~= 0 then
-        move.hotkey = _bufferedHotKey
-        _bufferedHotKey = 0
+    if _aggregatedHotKey ~= 0 then
+        move.hotkey = _aggregatedHotKey
+        _aggregatedHotKey = 0
     end    
     
-    _lastProcessedCommands = _bufferedCommands
-    _bufferedMove          = Vector(0, 0, 0)
+    _lastProcessedCommands = _aggregatedCommands
+    _aggregatedMove          = Vector(0, 0, 0)
     
     if Client then
         Client.OnProcessGameInput(move)
@@ -622,7 +637,7 @@ end
 
 local function OnProcessMouseInput()
     local move = GenerateMove()
-    BufferMove(move)
+    AggregateMove(move)
     return move
 end
 

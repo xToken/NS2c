@@ -299,12 +299,15 @@ Shared.RegisterNetworkMessage( "AbilityResult", kAbilityResultMessage )
 // Tell players WHY they can't join a team
 local kJoinErrorMessage =
 {
-    // Don't really need anything here
+    reason = "integer (0 to 2)"
 }
-function BuildJoinErrorMessage()
-    return {}
+function BuildJoinErrorMessage( reason )
+    return { reason = reason }
 end
 Shared.RegisterNetworkMessage( "JoinError", kJoinErrorMessage )
+
+--Used to tell the server that a client has played the tutorial
+Shared.RegisterNetworkMessage( "PlayedTutorial", {} )
 
 /*
 */

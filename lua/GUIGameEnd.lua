@@ -44,17 +44,18 @@ function GUIGameEnd:Initialize()
     
     self.endIcon = self:CreateAnimatedGraphicItem()
     self.endIcon:SetAnchor(GUIItem.Middle, GUIItem.Center)
-    self.endIcon:SetPosition(kEndIconPosition * GUIScale(1))
-    self.endIcon:SetSize(Vector(GUIScale(kEndIconWidth), GUIScale(kEndIconHeight), 0))
     self.endIcon:SetBlendTechnique(GUIItem.Add)
+    self.endIcon:SetLayer(kGUILayerPlayerHUD)
     self.endIcon:SetInheritsParentAlpha(true)
+    self.endIcon:SetIsScaling(false)
     self.endIcon:SetIsVisible(false)
     
     self.messageText = self:CreateAnimatedTextItem()
     self.messageText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
     self.messageText:SetTextAlignmentX(GUIItem.Align_Center)
     self.messageText:SetTextAlignmentY(GUIItem.Align_Center)
-    self.messageText:SetPosition(kMessageOffset * GUIScale(1))
+    self.messageText:SetLayer(kGUILayerPlayerHUD)
+    self.messageText:SetIsScaling(false)
     self.messageText:SetInheritsParentAlpha(true)
     self.endIcon:AddChild(self.messageText)
     
@@ -65,7 +66,6 @@ function GUIGameEnd:SetGameEnded(playerWon, playerDraw, playerTeamType )
     self.endIcon:DestroyAnimations()
 
     self.endIcon:SetIsVisible(true)
-    self.endIcon:SetPosition(kEndIconPosition * GUIScale(1))
     self.endIcon:SetColor(Color(1, 1, 1, 0))
     local invisibleFunc = function() self.endIcon:SetIsVisible(false) end
     local fadeOutFunc = function() self.endIcon:FadeOut(0.2, nil, AnimateLinear, invisibleFunc) end
@@ -83,10 +83,14 @@ function GUIGameEnd:SetGameEnded(playerWon, playerDraw, playerTeamType )
         endState = playerIsMarine and kEndStates.MarinePlayerLose or kEndStates.AlienPlayerLose
     end
 
-
     self.endIcon:SetTexture(kEndIconTextures[endState])
+    self.endIcon:SetPosition(kEndIconPosition * GUIScale(1))
+    self.endIcon:SetSize(Vector(GUIScale(kEndIconWidth), GUIScale(kEndIconHeight), 0))
 
     self.messageText:SetFontName(kMessageFontName[playerIsMarine and "marine" or "alien"])
+    self.messageText:SetScale(GetScaledVector())
+    GUIMakeFontScale(self.messageText)
+    self.messageText:SetPosition(kMessageOffset * GUIScale(1))
 
     if playerWon then
         self.messageText:SetColor(kMessageWinColor[playerIsMarine and "marine" or "alien"])
@@ -112,6 +116,7 @@ function GUIGameEnd:SetGameEnded(playerWon, playerDraw, playerTeamType )
             messageString = string.format("%s Wins!", winningTeamName)
         end
     end
+    
     self.messageText:SetText(messageString)
 
 end

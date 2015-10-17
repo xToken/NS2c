@@ -1,4 +1,6 @@
-Script.Load("lua/Utility.lua")
+decoda_name = "Loading"
+
+Script.Load("lua/ModLoader.lua")
 Script.Load("lua/GUIUtility.lua")
 Script.Load("lua/Table.lua")
 Script.Load("lua/BindingsDialog.lua")
@@ -13,13 +15,13 @@ local kModeText =
     ["authenticating"]          = { text = Locale.ResolveString("AUTHENTICATING") },
     ["connection"]              = { text = Locale.ResolveString("CONNECTING") },
     ["loading"]                 = { text = Locale.ResolveString("LOADING_2") },
-    ["waiting"]                 = { text = Locale.ResolveString("WAITING_FOR_SERVER") },
+    ["waiting"]                 = { text = Locale.ResolveString("CONNECTING") },
     ["precaching"]              = { text = Locale.ResolveString("PRECACHING") },
     ["initializing_game"]       = { text = Locale.ResolveString("INITIALIZING_GAME") },
     ["loading_map"]             = { text = Locale.ResolveString("LOADING_MAP") },
     ["loading_assets"]          = { text = Locale.ResolveString("LOADING_ASSETS") },
     ["downloading_mods"]        = { text = Locale.ResolveString("DOWNLOADING_MODS") },
-    ["checking_consistency"]    = { text = Locale.ResolveString("CHECKING_CONSISTENCY") },
+    ["checking_consistency"]    = { text = Locale.ResolveString("CONNECTING") },
     ["compiling_shaders"]       = { text = Locale.ResolveString("LOADING_SHADERS") }
 }
 
@@ -169,7 +171,7 @@ function OnUpdateRender()
         
         if kModeText[mode] then
             text = string.format("%s", kModeText[mode].text, count, total)
-            if total ~= 0 then
+            if total ~= 0 and mode ~= "checking_consistency" then
                 text = text .. string.format(" (%d%%)", math.ceil((count / total) * 100))
             end
         else            
@@ -420,7 +422,7 @@ function OnLoadComplete(main)
         loadscreen:SetTexture( "screens/IntroScreen.jpg" )
     end
     
-    local spinnerSize   = GUIScale(256)
+    local spinnerSize   = GUIScale(192)
     local spinnerOffset = GUIScale(50)
 
     spinner = GUI.CreateItem()
@@ -430,7 +432,7 @@ function OnLoadComplete(main)
     spinner:SetBlendTechnique( GUIItem.Add )
     spinner:SetLayer(3)
     
-    local statusOffset = GUIScale(50)
+    local statusOffset = GUIScale(5)
 
     local shadowOffset = GUIScale(2)
 
@@ -442,6 +444,7 @@ function OnLoadComplete(main)
     statusTextShadow:SetFontName(Fonts.kAgencyFB_Large)
     statusTextShadow:SetColor(Color(0,0,0,1))
     statusTextShadow:SetScale(GetScaledVector())
+    GUIMakeFontScale(statusTextShadow)
     statusTextShadow:SetLayer(3)
         
     statusText = GUI.CreateItem()
@@ -451,6 +454,7 @@ function OnLoadComplete(main)
     statusText:SetTextAlignmentY(GUIItem.Align_Center)
     statusText:SetFontName(Fonts.kAgencyFB_Large)
     statusText:SetScale(GetScaledVector())
+    GUIMakeFontScale(statusText)
     statusText:SetLayer(3)
 
     dotsTextShadow = GUI.CreateItem()
@@ -461,6 +465,7 @@ function OnLoadComplete(main)
     dotsTextShadow:SetFontName(Fonts.kAgencyFB_Large)
     dotsTextShadow:SetColor(Color(0,0,0,1))
     dotsTextShadow:SetScale(GetScaledVector())
+    GUIMakeFontScale(dotsTextShadow)
     dotsTextShadow:SetLayer(3)
     
     dotsText = GUI.CreateItem()
@@ -470,6 +475,7 @@ function OnLoadComplete(main)
     dotsText:SetTextAlignmentY(GUIItem.Align_Center)
     dotsText:SetFontName(Fonts.kAgencyFB_Large)
     dotsText:SetScale(GetScaledVector())
+    GUIMakeFontScale(dotsText)
     dotsText:SetLayer(3)
 
     if not mainLoading then
@@ -482,11 +488,12 @@ function OnLoadComplete(main)
         
         tipText = GUI.CreateItem()
         tipText:SetOptionFlag(GUIItem.ManageRender)
-        tipText:SetPosition(Vector(Client.GetScreenWidth() / 2, Client.GetScreenHeight() - 41, 0))
+        tipText:SetPosition(Vector(Client.GetScreenWidth() / 2, Client.GetScreenHeight() - GUIScale(41), 0))
         tipText:SetTextAlignmentX(GUIItem.Align_Center)
         tipText:SetTextAlignmentY(GUIItem.Align_Center)
         tipText:SetFontName(Fonts.kAgencyFB_Small)
         tipText:SetScale(GetScaledVector())
+        GUIMakeFontScale(tipText)
         tipText:SetLayer(3)
         
         // Only show tip if show hints is on
@@ -504,11 +511,12 @@ function OnLoadComplete(main)
 
         tipNextHint = GUI.CreateItem()
         tipNextHint:SetOptionFlag(GUIItem.ManageRender)
-        tipNextHint:SetPosition(Vector(Client.GetScreenWidth() / 2, Client.GetScreenHeight() - 15, 0))
+        tipNextHint:SetPosition(Vector(Client.GetScreenWidth() / 2, Client.GetScreenHeight() - GUIScale(15), 0))
         tipNextHint:SetTextAlignmentX(GUIItem.Align_Center)
         tipNextHint:SetTextAlignmentY(GUIItem.Align_Center)
         tipNextHint:SetFontName(Fonts.kAgencyFB_Small)
         tipNextHint:SetScale(GetScaledVector())
+        GUIMakeFontScale(tipNextHint)
         tipNextHint:SetColor(Color(1, 1, 0, 1))
         tipNextHint:SetIsVisible( Client.GetOptionBoolean("showHints", true) )
         tipNextHint:SetLayer(3)
@@ -524,6 +532,7 @@ function OnLoadComplete(main)
     modsText:SetPosition(Vector(Client.GetScreenWidth() * 0.15, Client.GetScreenHeight() * 0.18, 0))
     modsText:SetFontName(Fonts.kAgencyFB_Small)
     modsText:SetScale(GetScaledVector())
+    GUIMakeFontScale(modsText)
     modsText:SetLayer(3)
     modsText:SetIsVisible(false)
     
@@ -532,6 +541,7 @@ function OnLoadComplete(main)
     modsTextShadow:SetPosition(Vector(Client.GetScreenWidth() * 0.15 + GUIScale(1.5), Client.GetScreenHeight() * 0.18 + GUIScale(1.5), 0))
     modsTextShadow:SetFontName(Fonts.kAgencyFB_Small)
     modsTextShadow:SetScale(GetScaledVector())
+    GUIMakeFontScale(modsTextShadow)
     modsTextShadow:SetLayer(2)
     modsTextShadow:SetIsVisible(false)
     modsTextShadow:SetColor(Color(0, 0, 0, 1))

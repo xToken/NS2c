@@ -11,9 +11,7 @@
 
 class 'GUIReadyRoomOrders' (GUIScript)
 
-local kOrderSize = GUIScale( Vector(60, 60, 0) )
-local kCircleSize = GUIScale( Vector(70, 70, 0) )
-local kTextOffset = GUIScale( Vector(0, 40, 0) )
+local kOrderSize, kCircleSize, kTextOffset
 
 local kOrderPixelCoords = { 0, 0, 128, 128 }
 local kCirclePixelCoords = { 0, 128, 512, 640 }
@@ -23,7 +21,7 @@ local kTexture = "ui/readyroomorders.dds"
 local kFontName = Fonts.kAgencyFB_Small
 local kFontScale = GUIScale(Vector(1, 1, 0)) 
 
-local kHoverAnimDistance = GUIScale(8)
+local kHoverAnimDistance
 
 local kWelcomeTextMessages =    {
             "This Server is running the Natural Selection 2 Classic Mod.",
@@ -71,7 +69,8 @@ local function CreateVisionElement(self)
     
     order.textItem = GetGUIManager():CreateTextItem()
     order.textItem:SetFontName(kFontName)
-    order.textItem:SetScale(kFontScale)
+    order.textItem:SetScale(GetScaledVector())
+    GUIMakeFontScale(order.textItem)
     order.textItem:SetTextAlignmentX(GUIItem.Align_Center)
     order.textItem:SetTextAlignmentY(GUIItem.Align_Center)
     order.textItem:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
@@ -84,8 +83,19 @@ local function CreateVisionElement(self)
 
 end
 
+function GUIReadyRoomOrders:OnResolutionChanged(oldX, oldY, newX, newY)
+    self:Uninitialize()
+    self:Initialize()
+end
+
 function GUIReadyRoomOrders:Initialize()
 
+    kOrderSize = GUIScale( Vector(60, 60, 0) )
+    kCircleSize = GUIScale( Vector(70, 70, 0) )
+    kTextOffset = GUIScale( Vector(0, 40, 0) )
+    
+    kHoverAnimDistance = GUIScale(8)
+    
     self.updateInterval = 0
 
     self.activeVisions = { }
@@ -95,6 +105,8 @@ function GUIReadyRoomOrders:Initialize()
     
     self.welcomeText = GetGUIManager():CreateTextItem()
     self.welcomeText:SetFontName(kWelcomeFontName)
+    self.welcomeText:SetScale(GetScaledVector())
+    GUIMakeFontScale(self.welcomeText)
     self.welcomeText:SetTextAlignmentX(GUIItem.Align_Center)
     self.welcomeText:SetTextAlignmentY(GUIItem.Align_Center)
     self.welcomeText:SetAnchor(GUIItem.Middle, GUIItem.Center)
@@ -103,7 +115,8 @@ function GUIReadyRoomOrders:Initialize()
     localPlayer:TriggerEffects("tooltip")
     self.welcomeText:SetColor(kFadeOutColor)
     self.welcomeTextStartTime = Shared.GetTime()
-    
+        
+    Client.WindowNeedsAttention() -- time to pick a team!
 end
 
 function GUIReadyRoomOrders:Uninitialize()

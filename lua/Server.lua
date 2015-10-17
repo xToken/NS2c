@@ -426,45 +426,9 @@ end
  * Called by the engine to test if a player (represented by the entity they are
  * controlling) can hear another player for the purposes of voice chat.
  */
-local function OnCanPlayerHearPlayer(listener, speaker)
-    return GetGamerules():GetCanPlayerHearPlayer(listener, speaker)
+local function OnCanPlayerHearPlayer(listener, speaker, channelType)
+    return GetGamerules():GetCanPlayerHearPlayer(listener, speaker, channelType)
 end
-
-/**
- * The reserved slot system allows players marked as reserved players to join while
- * all non-reserved slots are taken and the server is not full.
- */
-local function OnCheckConnectionAllowed(userId)
-
-    local reservedSlots = Server.GetReservedSlotsConfig()
-    
-    if not reservedSlots or not reservedSlots.amount or not reservedSlots.ids then
-        return true
-    end
-    
-    local newPlayerIsReserved = false
-    for name, id in pairs(reservedSlots.ids) do
-    
-        if id == userId then
-        
-            newPlayerIsReserved = true
-            break
-            
-        end
-        
-    end
-    
-    local numPlayers = Server.GetNumPlayers()
-    local maxPlayers = Server.GetMaxPlayers()
-    
-    if (numPlayers < (maxPlayers - reservedSlots.amount)) or (newPlayerIsReserved and (numPlayers < maxPlayers)) then
-        return true
-    end
-    
-    return false
-    
-end
-Event.Hook("CheckConnectionAllowed", OnCheckConnectionAllowed)
 
 Event.Hook("MapPreLoad", OnMapPreLoad)
 Event.Hook("MapPostLoad", OnMapPostLoad)
@@ -472,4 +436,3 @@ Event.Hook("MapLoadEntity", OnMapLoadEntity)
 Event.Hook("CanPlayerHearPlayer", OnCanPlayerHearPlayer)
 
 Script.Load("lua/PostLoadMod.lua")
-Script.Load("lua/Mixins/EEMSupport.lua")

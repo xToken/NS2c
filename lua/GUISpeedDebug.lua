@@ -15,6 +15,7 @@
 
 local gMomentumBarWidth = 200
 local gFractionBarHeight = 80
+local kFontName = Fonts.kArial_17
 
 class 'GUISpeedDebug' (GUIScript)
 
@@ -46,31 +47,45 @@ function GUISpeedDebug:Initialize()
     self.xzSpeed:SetPosition(Vector(gMomentumBarWidth + 40, 0, 0))
     
     self.debugText = GetGUIManager():CreateTextItem()
-    self.debugText:SetFontSize(18)
+    self.debugText:SetScale(GetScaledVector())
+    self.debugText:SetFontName(kFontName)
+    GUIMakeFontScale(self.debugText)
     self.debugText:SetPosition(Vector(80, -gFractionBarHeight, 0))
     
     self.OnSurface = GetGUIManager():CreateTextItem()
-    self.OnSurface:SetFontSize(18)
+    self.OnSurface:SetScale(GetScaledVector())
+    self.OnSurface:SetFontName(kFontName)
+    GUIMakeFontScale(self.OnSurface)
     self.OnSurface:SetPosition(Vector(40, -95, 0))
     
     self.OnGround = GetGUIManager():CreateTextItem()
-    self.OnGround:SetFontSize(18)
+    self.OnGround:SetScale(GetScaledVector())
+    self.OnGround:SetFontName(kFontName)
+    GUIMakeFontScale(self.OnGround)
     self.OnGround:SetPosition(Vector(40, -80, 0))
     
     self.Friction = GetGUIManager():CreateTextItem()
-    self.Friction:SetFontSize(18)
+    self.Friction:SetScale(GetScaledVector())
+    self.Friction:SetFontName(kFontName)
+    GUIMakeFontScale(self.Friction)
     self.Friction:SetPosition(Vector(40, -65, 0))
     
     self.MaxSpeed = GetGUIManager():CreateTextItem()
-    self.MaxSpeed:SetFontSize(18)
+    self.MaxSpeed:SetScale(GetScaledVector())
+    self.MaxSpeed:SetFontName(kFontName)
+    GUIMakeFontScale(self.MaxSpeed)
     self.MaxSpeed:SetPosition(Vector(40, -50, 0))
     
     self.Jumping = GetGUIManager():CreateTextItem()
-    self.Jumping:SetFontSize(18)
+    self.Jumping:SetScale(GetScaledVector())
+    self.Jumping:SetFontName(kFontName)
+    GUIMakeFontScale(self.Jumping)
     self.Jumping:SetPosition(Vector(40, -35, 0))
     
     self.Accel = GetGUIManager():CreateTextItem()
-    self.Accel:SetFontSize(18)
+    self.Accel:SetScale(GetScaledVector())
+    self.Accel:SetFontName(kFontName)
+    GUIMakeFontScale(self.Accel)
     self.Accel:SetPosition(Vector(40, -20, 0))
     
     self.momentumBackGround:AddChild(self.momentumFraction)

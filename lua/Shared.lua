@@ -16,12 +16,10 @@ math.randomseed(Shared.GetSystemTime())
 // math.random() is more random the more you call it. Don't ask.
 for i = 1, 100 do math.random() end
 
-// NOTE: EventTester.lua needs to be loaded first.
-Script.Load("lua/EventTester.lua")
-
 Script.Load("lua/HotloadTools.lua")
 
 Script.Load("lua/JITConsoleCommands.lua")
+
 // Utility and constants
 Script.Load("lua/Globals.lua")
 Script.Load("lua/DamageTypes.lua")
@@ -29,6 +27,7 @@ Script.Load("lua/Debug.lua")
 Script.Load("lua/CollisionRep.lua")
 Script.Load("lua/Utility.lua")
 Script.Load("lua/PlayerInput.lua")
+
 Script.Load("lua/MixinUtility.lua")
 Script.Load("lua/AnimatedModel.lua")
 Script.Load("lua/Vector.lua")

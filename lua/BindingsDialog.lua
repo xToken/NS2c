@@ -26,6 +26,7 @@ local defaults = {
     { "Use", "E" },
     { "Drop", "G" },
     { "VoiceChat", "LeftAlt" },
+    { "LocalVoiceChat", "None" },
     { "TextChat", "Return" },
     { "TeamChat", "Y" },
     { "ShowMap", "C" },
@@ -48,6 +49,11 @@ local defaults = {
     { "RequestHealth", "Q" },
     { "RequestAmmo", "Z" },
     { "RequestOrder", "H" },
+    { "RequestWeld", "None" },
+    { "VoiceOverCovering", "None" },
+    { "VoiceOverFollowMe", "None" },
+    { "VoiceOverHostiles", "None" },
+    { "VoiceOverAcknowledged", "None" },
     { "ShowTechMap", "J" },
     { "ShowHelpScreen", "I" },
     { "Taunt", "T" },
@@ -72,6 +78,7 @@ local defaults = {
     { "Grid11", "V" },
     { "ShowMapCom", "C" },
     { "VoiceChatCom", "LeftAlt" },
+    { "LocalVoiceChatCom", "None" },
     { "TextChatCom", "Return" },
     { "TeamChatCom", "Y" },
     { "PreviousLocationCom", "None" },
@@ -104,6 +111,7 @@ local globalControlBindings = {
     "ShowHelpScreen", "input", Locale.ResolveString("BINDINGS_SHOW_HELP_SCREEN"), "I",
     "Scoreboard", "input", Locale.ResolveString("BINDINGS_SCOREBOARD"), "Tab",
     "VoiceChat", "input", Locale.ResolveString("BINDINGS_USE_MICROPHONE"), "LeftAlt",
+    "LocalVoiceChat", "input", Locale.ResolveString("BINDINGS_USE_MICROPHONE_LOCAL"), "None",
     "TextChat", "input", Locale.ResolveString("BINDINGS_PUBLIC_CHAT"), "Y",
     "TeamChat", "input", Locale.ResolveString("BINDINGS_TEAM_CHAT"), "Return",
     "ToggleMinimapNames", "input", Locale.ResolveString("BINDINGS_TOGGLE_MINIMAP_NAMES"), "None",
@@ -122,6 +130,11 @@ local globalControlBindings = {
     "RequestHealth", "input", Locale.ResolveString("BINDINGS_REQUEST_HEALING_/_MEDPACK"), "Q",
     "RequestAmmo", "input", Locale.ResolveString("BINDINGS_REQUEST_AMMO_/_ENZYME"), "Z",
     "RequestOrder", "input", Locale.ResolveString("BINDINGS_REQUEST_ORDER"), "H",
+    "RequestWeld", "input", Locale.ResolveString("BINDINGS_REQUEST_WELD"), "None",
+    "VoiceOverCovering", "input", Locale.ResolveString("BINDINGS_VOICE_COVERING"), "None",
+    "VoiceOverFollowMe", "input", Locale.ResolveString("BINDINGS_VOICE_FOLLOW"), "None",
+    "VoiceOverHostiles", "input", Locale.ResolveString("BINDINGS_VOICE_HOSTILES"), "None",
+    "VoiceOverAcknowledged", "input", Locale.ResolveString("BINDINGS_VOICE_ACKOWLEDGED"), "None",
     "Taunt", "input", Locale.ResolveString("BINDINGS_TAUNT"), "T",
     "PingLocation", "input", Locale.ResolveString("BINDINGS_PING_LOCATION"), "MouseButton2",
     "VoteYes", "input", Locale.ResolveString("BINDINGS_VOTE_YES"), "F1",
@@ -165,7 +178,7 @@ function GetDefaultInputValue(controlId)
             break
         end
     end    
-        
+
     return rc
     
 end
@@ -294,5 +307,14 @@ function GetIsBinding(key, optionKey)
     if tonumber(boundKey) then
         boundKey = "Num" .. boundKey
     end
-    return InputKey[boundKey] == key
+    
+    local binding = InputKey[boundKey];
+    if binding == nil and string.len(boundKey) > 1 and string.sub(boundKey,1,1) == "#" then
+        boundKey = tonumber(string.sub(boundKey,2))
+        if boundKey ~= nil then
+            binding = boundKey + InputKey.FirstScanCode
+        end
+    end
+    
+    return binding == key
 end

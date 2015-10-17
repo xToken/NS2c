@@ -19,41 +19,62 @@ class 'GUIResourceDisplay' (GUIScript)
 GUIResourceDisplay.kBackgroundTextureAlien = "ui/alien_commander_textures.dds"
 GUIResourceDisplay.kBackgroundTextureMarine = "ui/marine_commander_textures.dds"
 GUIResourceDisplay.kBackgroundTextureCoords = { X1 = 755, Y1 = 342, X2 = 990, Y2 = 405 }
-GUIResourceDisplay.kBackgroundWidth = GUIScale(128)
-GUIResourceDisplay.kBackgroundHeight = GUIScale(63)
-GUIResourceDisplay.kBackgroundYOffset = 10
 
 GUIResourceDisplay.kPersonalResourceIcon = { Width = 0, Height = 0, X = 0, Y = 0, Coords = { X1 = 144, Y1 = 363, X2 = 192, Y2 = 411} }
-GUIResourceDisplay.kPersonalResourceIcon.Width = GUIScale(48)
-GUIResourceDisplay.kPersonalResourceIcon.Height = GUIScale(48)
 
 GUIResourceDisplay.kTeamResourceIcon = { Width = 0, Height = 0, X = 0, Y = 0, Coords = { X1 = 192, Y1 = 363, X2 = 240, Y2 = 411} }
-GUIResourceDisplay.kTeamResourceIcon.Width = GUIScale(48)
-GUIResourceDisplay.kTeamResourceIcon.Height = GUIScale(48)
 
 GUIResourceDisplay.kResourceTowerIcon = { Width = 0, Height = 0, X = 0, Y = 0, Coords = { X1 = 240, Y1 = 363, X2 = 280, Y2 = 411} }
-GUIResourceDisplay.kResourceTowerIcon.Width = GUIScale(48)
-GUIResourceDisplay.kResourceTowerIcon.Height = GUIScale(48)
 
-GUIResourceDisplay.kFontSize = 16
-GUIResourceDisplay.kIconTextXOffset = 5
-GUIResourceDisplay.kIconXOffset = 30
+GUIResourceDisplay.kWorkerIcon = { Width = 0, Height = 0, X = 0, Y = 0, Coords = { X1 = 280, Y1 = 363, X2 = 320, Y2 = 411} }
 
 GUIResourceDisplay.kEggsIcon = { Width = 0, Height = 0, X = 0, Y = 0, Coords = { X1 = 80 * 6, Y1 = 80 * 3, X2 = 80 * 7, Y2 = 80 * 4 } }
-GUIResourceDisplay.kEggsIcon.Width = GUIScale(57)
-GUIResourceDisplay.kEggsIcon.Height = GUIScale(57)
 
 local kFontName = Fonts.kAgencyFB_Small
-local kFontScale = GUIScale(Vector(1,1,1))
+local kFontScale
 
 local kColorWhite = Color(1, 1, 1, 1)
 local kColorRed = Color(1, 0, 0, 1)
 
 local kBackgroundNoiseTexture =  "ui/alien_commander_bg_smoke.dds"
-local kSmokeyBackgroundSize = GUIScale(Vector(375, 100, 0))
+local kSmokeyBackgroundSize
+
+local function UpdateItemsGUIScale(self)
+    GUIResourceDisplay.kBackgroundWidth = GUIScale(128)
+    GUIResourceDisplay.kBackgroundHeight = GUIScale(63)
+    GUIResourceDisplay.kBackgroundYOffset = GUIScale(10)
+
+    GUIResourceDisplay.kPersonalResourceIcon.Width = GUIScale(48)
+    GUIResourceDisplay.kPersonalResourceIcon.Height = GUIScale(48)
+
+    GUIResourceDisplay.kTeamResourceIcon.Width = GUIScale(48)
+    GUIResourceDisplay.kTeamResourceIcon.Height = GUIScale(48)
+
+    GUIResourceDisplay.kResourceTowerIcon.Width = GUIScale(48)
+    GUIResourceDisplay.kResourceTowerIcon.Height = GUIScale(48)
+
+    GUIResourceDisplay.kWorkerIcon.Width = GUIScale(48)
+    GUIResourceDisplay.kWorkerIcon.Height = GUIScale(48)
+
+    GUIResourceDisplay.kIconTextXOffset = GUIScale(5)
+    GUIResourceDisplay.kIconXOffset = GUIScale(30)
+
+    GUIResourceDisplay.kEggsIcon.Width = GUIScale(57)
+    GUIResourceDisplay.kEggsIcon.Height = GUIScale(57)
+    
+    kSmokeyBackgroundSize = GUIScale(Vector(375, 100, 0))
+    kFontScale = GetScaledVector()
+end
+
+function GUIResourceDisplay:OnResolutionChanged(oldX, oldY, newX, newY)
+    self:Uninitialize()
+    self:Initialize()
+end
 
 function GUIResourceDisplay:Initialize(settingsTable)
 
+    UpdateItemsGUIScale(self)
+    
     self.textureName = ConditionalValue(PlayerUI_GetTeamType() == kAlienTeamType, GUIResourceDisplay.kBackgroundTextureAlien, GUIResourceDisplay.kBackgroundTextureMarine)
     
     // Background, only used for positioning
@@ -86,6 +107,7 @@ function GUIResourceDisplay:Initialize(settingsTable)
     self.teamText:SetColor(Color(1, 1, 1, 1))
     self.teamText:SetFontName(kFontName)
     self.teamText:SetScale(kFontScale)
+    GUIMakeFontScale(self.teamText)
     self.teamIcon:AddChild(self.teamText)
     
     // Tower display.
@@ -107,6 +129,7 @@ function GUIResourceDisplay:Initialize(settingsTable)
     self.towerText:SetColor(Color(1, 1, 1, 1))
     self.towerText:SetFontName(kFontName)
     self.towerText:SetScale(kFontScale)
+    GUIMakeFontScale(self.towerText)
     self.towerIcon:AddChild(self.towerText)
     
 	self.eggsIcon = GUIManager:CreateGraphicItem()
@@ -127,6 +150,7 @@ function GUIResourceDisplay:Initialize(settingsTable)
     self.eggsText:SetColor(Color(1, 1, 1, 1))
     self.eggsText:SetFontName(kFontName)
     self.eggsText:SetScale(kFontScale)
+    GUIMakeFontScale(self.eggsText)
     self.eggsIcon:AddChild(self.eggsText)
 
 end

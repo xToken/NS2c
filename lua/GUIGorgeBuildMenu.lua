@@ -172,7 +172,7 @@ GUIGorgeBuildMenu.kResourceTexture = "ui/alien_commander_textures.dds"
 GUIGorgeBuildMenu.kIconTextXOffset = 5
 
 local kBackgroundNoiseTexture = "ui/alien_commander_bg_smoke.dds"
-local kSmokeyBackgroundSize = GUIScale(Vector(220, 400, 0))
+local kSmokeyBackgroundSize
 
 local kDefaultStructureCountPos = Vector(-48, -24, 0)
 local kCenteredStructureCountPos = Vector(0, -24, 0)
@@ -211,7 +211,9 @@ end
 function GUIGorgeBuildMenu:Initialize()
 
     GUIAnimatedScript.Initialize(self)
-
+    
+    kSmokeyBackgroundSize = GUIScale(Vector(220, 400, 0))
+    
     self.scale = Client.GetScreenHeight() / GUIGorgeBuildMenu.kBaseYResolution
     self.background = self:CreateAnimatedGraphicItem()
     self.background:SetAnchor(GUIItem.Middle, GUIItem.Center)
@@ -307,7 +309,9 @@ local function UpdateButton(button, index)
 end
 
 function GUIGorgeBuildMenu:Update(deltaTime)
-
+                  
+    PROFILE("GUIGorgeBuildMenu:Update")
+    
     GUIAnimatedScript.Update(self, deltaTime)
     
     for index, button in ipairs(self.buttons) do
@@ -336,8 +340,8 @@ end
 
 function GUIGorgeBuildMenu:OnResolutionChanged(oldX, oldY, newX, newY)
 
-    self.scale = newY / GUIGorgeBuildMenu.kBaseYResolution
-    self:Reset()
+    self:Uninitialize()
+    self:Initialize()
 
 end
 
@@ -391,21 +395,24 @@ function GUIGorgeBuildMenu:CreateButton(techId, scale, frame, keybind, position)
     button.description:SetAnchor(GUIItem.Middle, GUIItem.Top)
     button.description:SetTextAlignmentX(GUIItem.Align_Center)
     button.description:SetTextAlignmentY(GUIItem.Align_Center)
-    button.description:SetFontSize(22)
+    button.description:SetScale(GetScaledVector())
     button.description:SetFontName(kFontName)
+    GUIMakeFontScale(button.description)
     button.description:SetPosition(Vector(0, 0, 0))
     button.description:SetFontIsBold(true)
     
     button.keyIcon:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
     button.keyIcon:SetFontName(kFontName)
+    GUIMakeFontScale(button.keyIcon)
     local pos = Vector(-button.keyIcon:GetSize().x/2, 0.5*button.keyIcon:GetSize().y, 0)
     button.keyIcon:SetPosition(pos)
     
     button.structuresLeft:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
     button.structuresLeft:SetTextAlignmentX(GUIItem.Align_Center)
     button.structuresLeft:SetTextAlignmentY(GUIItem.Align_Center)
-    button.structuresLeft:SetFontSize(28)
+    button.structuresLeft:SetScale(GetScaledVector())
     button.structuresLeft:SetFontName(kFontName)
+    GUIMakeFontScale(button.structuresLeft)
     button.structuresLeft:SetPosition(kDefaultStructureCountPos)
     button.structuresLeft:SetFontIsBold(true)
     button.structuresLeft:SetColor(GUIGorgeBuildMenu.kAvailableColor)
@@ -425,8 +432,9 @@ function GUIGorgeBuildMenu:CreateButton(techId, scale, frame, keybind, position)
     button.costText:SetPosition(Vector(GUIGorgeBuildMenu.kIconTextXOffset, 0, 0))
     button.costText:SetColor(Color(1, 1, 1, 1))
     button.costText:SetFontIsBold(true)    
-    button.costText:SetFontSize(28)
+    button.costText:SetScale(GetScaledVector())
     button.costText:SetFontName(kFontName)
+    GUIMakeFontScale(button.costText)
     button.costText:SetColor(GUIGorgeBuildMenu.kAvailableColor)
     button.costIcon:AddChild(button.costText)
     

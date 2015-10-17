@@ -184,9 +184,9 @@ function GUIPickups:Update(deltaTime)
                 freePickupGraphic.expireBar:SetColor(Color(0, 0.6117, 1, distance))
                 
                 local pickupSize = kMinPickupSize + ((kMaxPickupSize - kMinPickupSize) * distance)
-                freePickupGraphic:SetSize(Vector(pickupSize, pickupSize, 0))
-                freePickupGraphic.expireBarBg:SetSize(Vector(pickupSize, 6, 0))
-                freePickupGraphic.expireBar:SetSize(Vector((pickupSize-1)*timeLeft, 6, 0))
+                freePickupGraphic:SetSize(GUIScale(Vector(pickupSize, pickupSize, 0)))
+                freePickupGraphic.expireBarBg:SetSize(GUIScale(Vector(pickupSize, 6, 0)))
+                freePickupGraphic.expireBar:SetSize(GUIScale(Vector((pickupSize-1)*timeLeft, 6, 0)))
                 freePickupGraphic.expireBar:SetTexturePixelCoordinates(0,0,64*timeLeft,6)
                 
                 local bounceAmount = math.sin(Shared.GetTime() * kBounceSpeed) * kBounceAmount
@@ -195,8 +195,8 @@ function GUIPickups:Update(deltaTime)
                 // Adjust for the size so it is in the middle.
                 pickupInScreenspace = pickupInScreenspace + Vector(-pickupSize / 2, -pickupSize / 2, 0)
                 freePickupGraphic:SetPosition(Vector(pickupInScreenspace.x, pickupInScreenspace.y-5*distance, 0))
-                freePickupGraphic.expireBar:SetPosition(Vector(pickupInScreenspace.x+1, pickupInScreenspace.y+pickupSize, 0))
-                freePickupGraphic.expireBarBg:SetPosition(Vector(pickupInScreenspace.x, pickupInScreenspace.y+pickupSize, 0))
+                freePickupGraphic.expireBar:SetPosition(Vector(pickupInScreenspace.x+1, pickupInScreenspace.y+GUIScale(pickupSize), 0))
+                freePickupGraphic.expireBarBg:SetPosition(Vector(pickupInScreenspace.x, pickupInScreenspace.y+GUIScale(pickupSize), 0))
                 
                 freePickupGraphic:SetTexturePixelCoordinates(GetPickupTextureCoordinates(pickup))
                 

@@ -26,28 +26,9 @@ GUIAlienBuyMenu.kAbilityIcons = "ui/buildmenu.dds"
 local kLargeFont = Fonts.kAgencyFB_Large
 local kFont = Fonts.kAgencyFB_Small
 
-GUIAlienBuyMenu.kAlienTypes = { { LocaleName = Locale.ResolveString("FADE"), Name = "Fade", Width = GUIScale(188), Height = GUIScale(220), XPos = 4, Index = 1 },
-                                { LocaleName = Locale.ResolveString("GORGE"), Name = "Gorge", Width = GUIScale(200), Height = GUIScale(167), XPos = 2, Index = 2 },
-                                { LocaleName = Locale.ResolveString("LERK"), Name = "Lerk", Width = GUIScale(284), Height = GUIScale(253), XPos = 3, Index = 3 },
-                                { LocaleName = Locale.ResolveString("ONOS"), Name = "Onos", Width = GUIScale(304), Height = GUIScale(326), XPos = 5, Index = 4 },
-                                { LocaleName = Locale.ResolveString("SKULK"), Name = "Skulk", Width = GUIScale(240), Height = GUIScale(170), XPos = 1, Index = 5 } }
-
 GUIAlienBuyMenu.kBackgroundTextureCoordinates = { 9, 1, 602, 424 }
-GUIAlienBuyMenu.kBackgroundWidth = GUIScale((GUIAlienBuyMenu.kBackgroundTextureCoordinates[3] - GUIAlienBuyMenu.kBackgroundTextureCoordinates[1]) * 0.80)
-GUIAlienBuyMenu.kBackgroundHeight = GUIScale((GUIAlienBuyMenu.kBackgroundTextureCoordinates[4] - GUIAlienBuyMenu.kBackgroundTextureCoordinates[2]) * 0.80)
-// We want the background graphic to look centered around the circle even though there is the part coming off to the right.
-GUIAlienBuyMenu.kBackgroundXOffset = GUIScale(75)
-
-GUIAlienBuyMenu.kAlienButtonSize = GUIScale(150)
-GUIAlienBuyMenu.kPlayersTextSize = GUIScale(24)
-GUIAlienBuyMenu.kAlienSelectedButtonSize = GUIAlienBuyMenu.kAlienButtonSize * 2
 GUIAlienBuyMenu.kAlienSelectedBackground = PrecacheAsset("ui/AlienBackground.dds")
-GUIAlienBuyMenu.kResearchTextSize = GUIScale(24)
 
-GUIAlienBuyMenu.kEvolveButtonWidth = GUIScale(250)
-GUIAlienBuyMenu.kEvolveButtonHeight = GUIScale(80)
-GUIAlienBuyMenu.kEvolveButtonYOffset = GUIScale(20)
-GUIAlienBuyMenu.kEvolveButtonTextSize = GUIScale(22)
 GUIAlienBuyMenu.kEvolveButtonNeedResourcesTextureCoordinates = { 87, 429, 396, 511 }
 GUIAlienBuyMenu.kEvolveButtonTextureCoordinates = { 396, 428, 706, 511 }
 GUIAlienBuyMenu.kEvolveButtonVeinsTextureCoordinates = { 600, 350, 915, 419 }
@@ -57,34 +38,11 @@ GUIAlienBuyMenu.kResourceIconTexture = PrecacheAsset("ui/pres_icon_big.dds")
 
 GUIAlienBuyMenu.kHighLightTexPixelCoords = { 560, 960, 640, 1040 }
 
-GUIAlienBuyMenu.kSlotDistance = GUIScale(120)
-GUIAlienBuyMenu.kSlotSize = GUIScale(54)
-
-GUIAlienBuyMenu.kCurrentAlienSize = GUIScale(200)
-GUIAlienBuyMenu.kCurrentAlienTitleTextSize = GUIScale(32)
-GUIAlienBuyMenu.kCurrentAlienTitleOffset = Vector(0, GUIScale(25), 0)
-
 GUIAlienBuyMenu.kResourceDisplayBackgroundTextureCoordinates = { 711, 295, 824, 346 }
-GUIAlienBuyMenu.kResourceDisplayWidth = GUIScale((GUIAlienBuyMenu.kResourceDisplayBackgroundTextureCoordinates[3] - GUIAlienBuyMenu.kResourceDisplayBackgroundTextureCoordinates[1]) * 1.2)
-GUIAlienBuyMenu.kResourceDisplayHeight = GUIScale((GUIAlienBuyMenu.kResourceDisplayBackgroundTextureCoordinates[4] - GUIAlienBuyMenu.kResourceDisplayBackgroundTextureCoordinates[2]) * 1.2)
-GUIAlienBuyMenu.kResourceFontSize = GUIScale(24)
-GUIAlienBuyMenu.kResourceTextYOffset = GUIScale(200)
-
-GUIAlienBuyMenu.kResourceIconWidth = GUIScale(33)
-GUIAlienBuyMenu.kResourceIconHeight = GUIScale(33)
 
 GUIAlienBuyMenu.kHealthIconTextureCoordinates = { 854, 318, 887, 351 }
-GUIAlienBuyMenu.kHealthIconWidth = GUIScale(GUIAlienBuyMenu.kHealthIconTextureCoordinates[3] - GUIAlienBuyMenu.kHealthIconTextureCoordinates[1])
-GUIAlienBuyMenu.kHealthIconHeight = GUIScale(GUIAlienBuyMenu.kHealthIconTextureCoordinates[4] - GUIAlienBuyMenu.kHealthIconTextureCoordinates[2])
 
 GUIAlienBuyMenu.kArmorIconTextureCoordinates = { 887, 318, 920, 351 }
-GUIAlienBuyMenu.kArmorIconWidth = GUIScale(GUIAlienBuyMenu.kArmorIconTextureCoordinates[3] - GUIAlienBuyMenu.kArmorIconTextureCoordinates[1])
-GUIAlienBuyMenu.kArmorIconHeight = GUIScale(GUIAlienBuyMenu.kArmorIconTextureCoordinates[4] - GUIAlienBuyMenu.kArmorIconTextureCoordinates[2])
-
-GUIAlienBuyMenu.kMouseOverTitleOffset = Vector(GUIScale(-25), GUIScale(-100), 0)
-
-GUIAlienBuyMenu.kMouseOverInfoTextSize = GUIScale(20)
-GUIAlienBuyMenu.kMouseOverInfoOffset = Vector(GUIScale(-25), GUIScale(-10), 0)
 
 GUIAlienBuyMenu.kDisabledColor = Color(0.5, 0.5, 0.5, 0.5)
 GUIAlienBuyMenu.kCannotBuyColor = Color(1, 0, 0, 0.5)
@@ -93,15 +51,10 @@ GUIAlienBuyMenu.kEnabledColor = Color(1, 1, 1, 1)
 local kTooltipTextWidth = GUIScale(300)
 
 GUIAlienBuyMenu.kMaxNumberOfUpgradeButtons = 8
-GUIAlienBuyMenu.kUpgradeButtonSize = GUIScale(54)
-GUIAlienBuyMenu.kUpgradeButtonDistance = GUIScale(198)
-// The distance in pixels to move the button inside the embryo when selected.
-GUIAlienBuyMenu.kUpgradeButtonDistanceInside = GUIScale(74)
 GUIAlienBuyMenu.kUpgradeButtonTextureSize = 80
 GUIAlienBuyMenu.kUpgradeButtonBackgroundTextureCoordinates = { 15, 434, 85, 505 }
 GUIAlienBuyMenu.kUpgradeButtonMoveTime = 0.5
 
-GUIAlienBuyMenu.kCloseButtonSize = GUIScale(48)
 GUIAlienBuyMenu.kCloseButtonTextureCoordinates = { 612, 300, 660, 342 }
 GUIAlienBuyMenu.kCloseButtonRollOverTextureCoordinates = { 664, 300, 712, 342 }
 
@@ -115,15 +68,87 @@ GUIAlienBuyMenu.kCornerPulseTime = 4
 GUIAlienBuyMenu.kCornerTextureCoordinates = { TopLeft = { 605, 1, 765, 145 },  BottomLeft = { 605, 145, 765, 290 }, TopRight = { 765, 1, 910, 145 }, BottomRight = { 765, 145, 910, 290 } }
 GUIAlienBuyMenu.kCornerWidths = { }
 GUIAlienBuyMenu.kCornerHeights = { }
-for location, texCoords in pairs(GUIAlienBuyMenu.kCornerTextureCoordinates) do
-    GUIAlienBuyMenu.kCornerWidths[location] = GUIScale(texCoords[3] - texCoords[1])
-    GUIAlienBuyMenu.kCornerHeights[location] = GUIScale(texCoords[4] - texCoords[2])
-end
 
 local kUpgradeButtonMinSizeScalar = 0.75
 local kUpgradeButtonMaxSizeScalar = 1
 
+local function UpdateItemsGUIScale(self)
+
+    local scaledVector = GetScaledVector()
+    
+    GUIAlienBuyMenu.kAlienTypes = { { LocaleName = Locale.ResolveString("FADE"), Name = "Fade", Width = GUIScale(188), Height = GUIScale(220), XPos = 4, Index = 1 },
+                                { LocaleName = Locale.ResolveString("GORGE"), Name = "Gorge", Width = GUIScale(200), Height = GUIScale(167), XPos = 2, Index = 2 },
+                                { LocaleName = Locale.ResolveString("LERK"), Name = "Lerk", Width = GUIScale(284), Height = GUIScale(253), XPos = 3, Index = 3 },
+                                { LocaleName = Locale.ResolveString("ONOS"), Name = "Onos", Width = GUIScale(304), Height = GUIScale(326), XPos = 5, Index = 4 },
+                                { LocaleName = Locale.ResolveString("SKULK"), Name = "Skulk", Width = GUIScale(240), Height = GUIScale(170), XPos = 1, Index = 5 } }
+    GUIAlienBuyMenu.kBackgroundWidth = GUIScale((GUIAlienBuyMenu.kBackgroundTextureCoordinates[3] - GUIAlienBuyMenu.kBackgroundTextureCoordinates[1]) * 0.80)
+    GUIAlienBuyMenu.kBackgroundHeight = GUIScale((GUIAlienBuyMenu.kBackgroundTextureCoordinates[4] - GUIAlienBuyMenu.kBackgroundTextureCoordinates[2]) * 0.80)
+    
+    // We want the background graphic to look centered around the circle even though there is the part coming off to the right.
+    GUIAlienBuyMenu.kBackgroundXOffset = GUIScale(75)
+    
+    GUIAlienBuyMenu.kAlienButtonSize = GUIScale(150)
+    GUIAlienBuyMenu.kPlayersTextSize = GUIScale(24)
+    GUIAlienBuyMenu.kAlienSelectedButtonSize = GUIAlienBuyMenu.kAlienButtonSize * 2
+    GUIAlienBuyMenu.kResearchTextSize = GUIScale(24)
+    
+    GUIAlienBuyMenu.kResourceIconWidth = GUIScale(33)
+    GUIAlienBuyMenu.kResourceIconHeight = GUIScale(33)
+    
+    GUIAlienBuyMenu.kEvolveButtonWidth = GUIScale(250)
+    GUIAlienBuyMenu.kEvolveButtonHeight = GUIScale(80)
+    GUIAlienBuyMenu.kEvolveButtonYOffset = GUIScale(20)
+    GUIAlienBuyMenu.kEvolveButtonTextSize = GUIScale(22)
+    
+    kVeinsMargin = GUIScale(4)
+    
+    GUIAlienBuyMenu.kSlotDistance = GUIScale(120)
+    GUIAlienBuyMenu.kSlotSize = GUIScale(54)
+    
+    GUIAlienBuyMenu.kCurrentAlienSize = GUIScale(200)
+    GUIAlienBuyMenu.kCurrentAlienTitleTextSize = GUIScale(32)
+    GUIAlienBuyMenu.kCurrentAlienTitleOffset = Vector(0, GUIScale(25), 0)
+    
+    GUIAlienBuyMenu.kResourceDisplayWidth = GUIScale((GUIAlienBuyMenu.kResourceDisplayBackgroundTextureCoordinates[3] - GUIAlienBuyMenu.kResourceDisplayBackgroundTextureCoordinates[1]) * 1.2)
+    GUIAlienBuyMenu.kResourceDisplayHeight = GUIScale((GUIAlienBuyMenu.kResourceDisplayBackgroundTextureCoordinates[4] - GUIAlienBuyMenu.kResourceDisplayBackgroundTextureCoordinates[2]) * 1.2)
+    GUIAlienBuyMenu.kResourceFontSize = GUIScale(24)
+    GUIAlienBuyMenu.kResourceTextYOffset = GUIScale(200)
+    
+    GUIAlienBuyMenu.kHealthIconWidth = GUIScale(GUIAlienBuyMenu.kHealthIconTextureCoordinates[3] - GUIAlienBuyMenu.kHealthIconTextureCoordinates[1])
+    GUIAlienBuyMenu.kHealthIconHeight = GUIScale(GUIAlienBuyMenu.kHealthIconTextureCoordinates[4] - GUIAlienBuyMenu.kHealthIconTextureCoordinates[2])
+    
+    GUIAlienBuyMenu.kArmorIconWidth = GUIScale(GUIAlienBuyMenu.kArmorIconTextureCoordinates[3] - GUIAlienBuyMenu.kArmorIconTextureCoordinates[1])
+    GUIAlienBuyMenu.kArmorIconHeight = GUIScale(GUIAlienBuyMenu.kArmorIconTextureCoordinates[4] - GUIAlienBuyMenu.kArmorIconTextureCoordinates[2])
+    
+    GUIAlienBuyMenu.kMouseOverTitleOffset = Vector(GUIScale(-25), GUIScale(-100), 0)
+    GUIAlienBuyMenu.kMouseOverInfoResIconOffset = GUIScale(Vector(-34, 120, 0))
+    GUIAlienBuyMenu.kMouseOverInfoTextSize = GUIScale(20)
+    GUIAlienBuyMenu.kMouseOverInfoOffset = Vector(GUIScale(-25), GUIScale(-10), 0)
+    
+    kTooltipTextWidth = GUIScale(300)
+    
+    GUIAlienBuyMenu.kUpgradeButtonSize = GUIScale(54)
+    GUIAlienBuyMenu.kUpgradeButtonDistance = GUIScale(198)
+    // The distance in pixels to move the button inside the embryo when selected.
+    GUIAlienBuyMenu.kUpgradeButtonDistanceInside = GUIScale(74)
+    
+    GUIAlienBuyMenu.kCloseButtonSize = GUIScale(48)
+    
+    for location, texCoords in pairs(GUIAlienBuyMenu.kCornerTextureCoordinates) do
+        GUIAlienBuyMenu.kCornerWidths[location] = GUIScale(texCoords[3] - texCoords[1])
+        GUIAlienBuyMenu.kCornerHeights[location] = GUIScale(texCoords[4] - texCoords[2])
+    end
+    
+end
+
+function GUIAlienBuyMenu:OnResolutionChanged(oldX, oldY, newX, newY)
+    self:Uninitialize()
+    self:Initialize()
+end
+
 function GUIAlienBuyMenu:Initialize()
+
+    UpdateItemsGUIScale(self)
 
     self.numSelectedUpgrades = 0
 
@@ -150,7 +175,6 @@ function GUIAlienBuyMenu:Initialize()
     self:_InitializeCorners()
     
     AlienBuy_OnOpen()
-   
     
 end
 
@@ -375,6 +399,8 @@ function GUIAlienBuyMenu:_InitializeAlienButtons()
         local playersText = GUIManager:CreateTextItem()
         playersText:SetAnchor(GUIItem.Right, GUIItem.Bottom)
         playersText:SetFontName(kFont)
+        playersText:SetScale(GetScaledVector())
+        GUIMakeFontScale(playersText)
         playersText:SetTextAlignmentX(GUIItem.Align_Max)
         playersText:SetTextAlignmentY(GUIItem.Align_Min)
         playersText:SetText("x" .. ToString(ScoreboardUI_GetNumberOfAliensByType(alienType.Name)))
@@ -386,6 +412,8 @@ function GUIAlienBuyMenu:_InitializeAlienButtons()
         local researchText = GUIManager:CreateTextItem()
         researchText:SetAnchor(GUIItem.Middle, GUIItem.Center)
         researchText:SetFontName(kFont)
+        researchText:SetScale(GetScaledVector())
+        GUIMakeFontScale(researchText)
         researchText:SetTextAlignmentX(GUIItem.Align_Center)
         researchText:SetTextAlignmentY(GUIItem.Align_Center)
         researchText:SetColor(ColorIntToColor(kAlienTeamColor))
@@ -444,6 +472,8 @@ function GUIAlienBuyMenu:_InitializeCurrentAlienDisplay()
     self.currentAlienDisplay.TitleShadow:SetAnchor(GUIItem.Middle, GUIItem.Top)
     self.currentAlienDisplay.TitleShadow:SetPosition(GUIAlienBuyMenu.kCurrentAlienTitleOffset)
     self.currentAlienDisplay.TitleShadow:SetFontName(kLargeFont)
+    self.currentAlienDisplay.TitleShadow:SetScale(GetScaledVector())
+    GUIMakeFontScale(self.currentAlienDisplay.TitleShadow)
     self.currentAlienDisplay.TitleShadow:SetTextAlignmentX(GUIItem.Align_Center)
     self.currentAlienDisplay.TitleShadow:SetTextAlignmentY(GUIItem.Align_Min)
     self.currentAlienDisplay.TitleShadow:SetText(GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].LocaleName)
@@ -455,6 +485,8 @@ function GUIAlienBuyMenu:_InitializeCurrentAlienDisplay()
     self.currentAlienDisplay.Title:SetAnchor(GUIItem.Left, GUIItem.Top)
     self.currentAlienDisplay.Title:SetPosition(Vector(-2, -2, 0))
     self.currentAlienDisplay.Title:SetFontName(kLargeFont)
+    self.currentAlienDisplay.Title:SetScale(GetScaledVector())
+    GUIMakeFontScale(self.currentAlienDisplay.Title)
     self.currentAlienDisplay.Title:SetTextAlignmentX(GUIItem.Align_Center)
     self.currentAlienDisplay.Title:SetTextAlignmentY(GUIItem.Align_Min)
     self.currentAlienDisplay.Title:SetText(GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].LocaleName)
@@ -479,6 +511,8 @@ function GUIAlienBuyMenu:_InitializeMouseOverInfo()
     self.mouseOverTitle:SetAnchor(GUIItem.Right, GUIItem.Center)
     self.mouseOverTitle:SetPosition(GUIAlienBuyMenu.kMouseOverTitleOffset)
     self.mouseOverTitle:SetFontName(kLargeFont)
+    self.mouseOverTitle:SetScale(GetScaledVector())
+    GUIMakeFontScale(self.mouseOverTitle)
     self.mouseOverTitle:SetTextAlignmentX(GUIItem.Align_Min)
     self.mouseOverTitle:SetTextAlignmentY(GUIItem.Align_Min)
     self.mouseOverTitle:SetText(GUIAlienBuyMenu.kAlienTypes[AlienBuy_GetCurrentAlien()].LocaleName)
@@ -490,6 +524,8 @@ function GUIAlienBuyMenu:_InitializeMouseOverInfo()
     self.mouseOverInfo:SetAnchor(GUIItem.Right, GUIItem.Center)
     self.mouseOverInfo:SetPosition(GUIAlienBuyMenu.kMouseOverInfoOffset)
     self.mouseOverInfo:SetFontName(kFont)
+    self.mouseOverInfo:SetScale(GetScaledVector())
+    GUIMakeFontScale(self.mouseOverInfo)
     
     self.mouseOverInfo:SetTextAlignmentX(GUIItem.Align_Min)
     self.mouseOverInfo:SetTextAlignmentY(GUIItem.Align_Min)
@@ -502,16 +538,19 @@ function GUIAlienBuyMenu:_InitializeMouseOverInfo()
     self.mouseOverInfoResIcon:SetSize(Vector(GUIAlienBuyMenu.kResourceIconWidth, GUIAlienBuyMenu.kResourceIconHeight, 0))
     // Anchor to parent's left so we can hard-code "float" distance
     self.mouseOverInfoResIcon:SetAnchor(GUIItem.Right, GUIItem.Top)
-    self.mouseOverInfoResIcon:SetPosition(Vector(GUIScale(-34), GUIScale(120), 0))
+    self.mouseOverInfoResIcon:SetPosition(GUIAlienBuyMenu.kMouseOverInfoResIconOffset)
     self.mouseOverInfoResIcon:SetTexture(GUIAlienBuyMenu.kResourceIconTexture)
     self.mouseOverInfoResIcon:SetColor(kIconColors[kAlienTeamType])
     self.mouseOverInfoResIcon:SetIsVisible(false)
+    self.mouseOverInfoResIcon:SetInheritsParentScaling(false)
     self.background:AddChild(self.mouseOverInfoResIcon)
     
     local kStatsPadding = Vector(GUIScale(5), 0, 0)    
     self.mouseOverInfoResAmount = GUIManager:CreateTextItem()
     self.mouseOverInfoResAmount:SetAnchor(GUIItem.Right, GUIItem.Top)
     self.mouseOverInfoResAmount:SetFontName(kFont)
+    self.mouseOverInfoResAmount:SetScale(GetScaledVector())
+    GUIMakeFontScale(self.mouseOverInfoResAmount)
     self.mouseOverInfoResAmount:SetTextAlignmentX(GUIItem.Align_Min)
     self.mouseOverInfoResAmount:SetTextAlignmentY(GUIItem.Align_Min)
     self.mouseOverInfoResAmount:SetPosition(kStatsPadding)
@@ -522,6 +561,7 @@ function GUIAlienBuyMenu:_InitializeMouseOverInfo()
     self.mouseOverInfoHealthIcon = GUIManager:CreateGraphicItem()
     self.mouseOverInfoHealthIcon:SetSize(Vector(GUIAlienBuyMenu.kResourceIconWidth, GUIAlienBuyMenu.kResourceIconHeight, 0))
     self.mouseOverInfoHealthIcon:SetAnchor(GUIItem.Right, GUIItem.Top)
+    self.mouseOverInfoHealthIcon:SetInheritsParentScaling(false)
     
     self.mouseOverInfoHealthIcon:SetPosition(kStatsPadding)
     self.mouseOverInfoHealthIcon:SetTexture(GUIAlienBuyMenu.kBuyMenuTexture)
@@ -532,6 +572,8 @@ function GUIAlienBuyMenu:_InitializeMouseOverInfo()
     self.mouseOverInfoHealthAmount = GUIManager:CreateTextItem()
     self.mouseOverInfoHealthAmount:SetAnchor(GUIItem.Right, GUIItem.Top)
     self.mouseOverInfoHealthAmount:SetFontName(kFont)
+    self.mouseOverInfoHealthAmount:SetScale(GetScaledVector())
+    GUIMakeFontScale(self.mouseOverInfoHealthAmount)
     self.mouseOverInfoHealthAmount:SetTextAlignmentX(GUIItem.Align_Min)
     self.mouseOverInfoHealthAmount:SetTextAlignmentY(GUIItem.Align_Min)
     self.mouseOverInfoHealthAmount:SetPosition(kStatsPadding)
@@ -545,11 +587,14 @@ function GUIAlienBuyMenu:_InitializeMouseOverInfo()
     self.mouseOverInfoArmorIcon:SetTexture(GUIAlienBuyMenu.kBuyMenuTexture)
     self.mouseOverInfoArmorIcon:SetTexturePixelCoordinates(unpack(GUIAlienBuyMenu.kArmorIconTextureCoordinates))
     self.mouseOverInfoArmorIcon:SetIsVisible(false)
+    self.mouseOverInfoArmorIcon:SetInheritsParentScaling(false)
     self.mouseOverInfoHealthAmount:AddChild(self.mouseOverInfoArmorIcon)
 
     self.mouseOverInfoArmorAmount = GUIManager:CreateTextItem()
     self.mouseOverInfoArmorAmount:SetAnchor(GUIItem.Right, GUIItem.Top)
     self.mouseOverInfoArmorAmount:SetFontName(kFont)
+    self.mouseOverInfoArmorAmount:SetScale(GetScaledVector())
+    GUIMakeFontScale(self.mouseOverInfoArmorAmount)
     self.mouseOverInfoArmorAmount:SetTextAlignmentX(GUIItem.Align_Min)
     self.mouseOverInfoArmorAmount:SetTextAlignmentY(GUIItem.Align_Min)
     self.mouseOverInfoArmorAmount:SetPosition(kStatsPadding)
@@ -693,6 +738,8 @@ function GUIAlienBuyMenu:_InitializeEvolveButton()
     self.evolveButtonText = GUIManager:CreateTextItem()
     self.evolveButtonText:SetAnchor(GUIItem.Middle, GUIItem.Center)
     self.evolveButtonText:SetFontName(kFont)
+    self.evolveButtonText:SetScale(GetScaledVector())
+    GUIMakeFontScale(self.evolveButtonText)
     self.evolveButtonText:SetTextAlignmentX(GUIItem.Align_Center)
     self.evolveButtonText:SetTextAlignmentY(GUIItem.Align_Center)
     self.evolveButtonText:SetText(Locale.ResolveString("ABM_EVOLVE_FOR"))
@@ -703,19 +750,23 @@ function GUIAlienBuyMenu:_InitializeEvolveButton()
     self.evolveResourceIcon = GUIManager:CreateGraphicItem()
     self.evolveResourceIcon:SetSize(Vector(GUIAlienBuyMenu.kResourceIconWidth, GUIAlienBuyMenu.kResourceIconHeight, 0))
     self.evolveResourceIcon:SetAnchor(GUIItem.Middle, GUIItem.Top)
-    self.evolveResourceIcon:SetPosition(Vector(4, -GUIAlienBuyMenu.kResourceIconHeight / 2, 0))
+    self.evolveResourceIcon:SetPosition(Vector(0, -GUIAlienBuyMenu.kResourceIconHeight / 2, 0))
     self.evolveResourceIcon:SetTexture(GUIAlienBuyMenu.kResourceIconTexture)
     self.evolveResourceIcon:SetColor(Color(0, 0, 0, 1))
     self.evolveResourceIcon:SetIsVisible(false)
+    self.evolveResourceIcon:SetInheritsParentScaling(false)
     self.evolveButtonText:AddChild(self.evolveResourceIcon)
     
     self.evolveButtonResAmount = GUIManager:CreateTextItem()
     self.evolveButtonResAmount:SetAnchor(GUIItem.Right, GUIItem.Center)
     self.evolveButtonResAmount:SetPosition(Vector(0, 0, 0))
     self.evolveButtonResAmount:SetFontName(kFont)
+    self.evolveButtonResAmount:SetScale(GetScaledVector())
+    GUIMakeFontScale(self.evolveButtonResAmount)
     self.evolveButtonResAmount:SetTextAlignmentX(GUIItem.Align_Min)
     self.evolveButtonResAmount:SetTextAlignmentY(GUIItem.Align_Center)
     self.evolveButtonResAmount:SetColor(Color(0, 0, 0, 1))
+    self.evolveButtonResAmount:SetInheritsParentScaling(false)
     self.evolveResourceIcon:AddChild(self.evolveButtonResAmount)
 
 end
@@ -1145,8 +1196,7 @@ local function UpdateEvolveButton(self)
     
         local evolveCostText = ToString(evolveCost)
         self.evolveButtonResAmount:SetText(evolveCostText)
-        totalEvolveButtonTextWidth = totalEvolveButtonTextWidth + self.evolveResourceIcon:GetSize().x +
-                                     self.evolveButtonResAmount:GetTextWidth(evolveCostText)
+        totalEvolveButtonTextWidth = totalEvolveButtonTextWidth + self.evolveResourceIcon:GetScaledSize().x + GUIScale(self.evolveButtonResAmount:GetTextWidth(evolveCostText))
         
     end
     

@@ -1205,6 +1205,8 @@ local function SendAddBotCommands()
             Expert = 0.4
         }
         Shared.ConsoleCommand(string.format("marinejitter %f", skill2jitter[marineSkill]))
+
+        Shared.ConsoleCommand("rookiemode")
     end
 
 end
@@ -1265,7 +1267,11 @@ local function OnLoadComplete()
         Shared.Message("Map doesn't support low lights option, defaulting to regular lights.")
         Shared.ConsoleCommand("output " .. "Map doesn't support low lights option, defaulting to regular lights.")
     end
-    
+
+    --tell the server if we played the tutorial or not
+    if Client.GetOptionBoolean("playedTutorial", false) then
+        Client.SendNetworkMessage( "PlayedTutorial", {}, true)
+    end
 end
 
 local function TimeoutDecals(materialName, origin, distance)
@@ -1349,9 +1355,43 @@ Event.Hook("UpdateRender", OnUpdateRender)
 Event.Hook("MapLoadEntity", OnMapLoadEntity)
 Event.Hook("MapPreLoad", OnMapPreLoad)
 Event.Hook("MapPostLoad", OnMapPostLoad)
-Event.Hook("UpdateClient", OnUpdateClient)
+Event.Hook("UpdateClient", OnUpdateClient, "Client")
 Event.Hook("NotifyGUIItemDestroyed", OnNotifyGUIItemDestroyed)
 Event.Hook("LoadComplete", OnLoadComplete)
+
+-- Debug command to test resolution scaling
+-- Not super elegant, but provides easy test cases
+local function swapres()
+    if Shared.GetTestsEnabled() or Shared.GetCheatsEnabled() then
+        local xres = Client.GetScreenWidth()
+        local yres = Client.GetScreenHeight()
+        
+        if xres == 640 then
+            xres = 3840
+        elseif xres == 3840 then
+            xres = 1920
+        else
+            xres = 640
+        end
+        
+        if yres == 480 then
+            yres = 2160
+        elseif yres == 2160 then
+            yres = 1080
+        else
+            yres = 480
+        end
+        
+        Client.SetOptionInteger( kGraphicsXResolutionOptionsKey, xres)
+        Client.SetOptionInteger( kGraphicsYResolutionOptionsKey, yres)
+        Client.SetOptionString( kWindowModeOptionsKey, "fullscreen-windowed")
+        Client.ReloadGraphicsOptions()
+        Print(xres .. " " .. yres)
+    else
+        Shared.Message("This command requires cheats or tests enabled.")
+    end
+end
+Event.Hook("Console_swapres", swapres)
 
 Event.Hook("DebugState",
 function()

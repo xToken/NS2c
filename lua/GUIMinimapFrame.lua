@@ -31,8 +31,8 @@ GUIMinimapFrame.kModeMini = 0
 GUIMinimapFrame.kModeBig = 1
 GUIMinimapFrame.kModeZoom = 2
 
-local kMapBackgroundXOffset = 28
-local kMapBackgroundYOffset = 28
+local kMapBackgroundXOffset
+local kMapBackgroundYOffset
 
 local kBigSizeScale = 3
 local kZoomedBlipSizeScale = 1 // 0.8
@@ -40,18 +40,50 @@ local kMiniBlipSizeScale = 0.5
 
 local kMarineZoomedIconColor = Color(191 / 255, 226 / 255, 1, 1)
 
-local kFrameTextureSize = GUIScale(Vector(473, 354, 0))
+local kFrameTextureSize
 local kMarineFrameTexture = PrecacheAsset("ui/marine_commander_textures.dds")
 local kFramePixelCoords = { 466, 250 , 466 + 473, 250 + 354 }
 
 local kBackgroundNoiseTexture = PrecacheAsset("ui/alien_commander_bg_smoke.dds")
-local kSmokeyBackgroundSize = GUIScale(Vector(480, 640, 0))
+local kSmokeyBackgroundSize
 
 local kMarineIconsFileName = PrecacheAsset("ui/marine_minimap_blip.dds")
+
+local function UpdateItemsGUIScale(self)
+    self.chooseSpawnText:SetFontName(Fonts.kAgencyFB_Large)
+    self.chooseSpawnText:SetScale(GetScaledVector())
+    GUIMakeFontScale(self.chooseSpawnText)
+    self.chooseSpawnText:SetPosition(Vector(0, GUIScale(-128), 0))
+    
+    self.spawnQueueText:SetFontName(Fonts.kAgencyFB_Small)
+    self.spawnQueueText:SetScale(GetScaledVector())
+    GUIMakeFontScale(self.spawnQueueText)
+    self.spawnQueueText:SetPosition(GUIScale(Vector(15, -4, 0)))
+    
+    kFrameTextureSize = GUIScale(Vector(473, 354, 0))
+    kMapBackgroundXOffset = GUIScale(28)
+    kMapBackgroundYOffset = GUIScale(28)
+    
+    self.minimapFrame:SetSize(kFrameTextureSize)
+    self.minimapFrame:SetPosition(Vector(-kMapBackgroundXOffset, -kFrameTextureSize.y + kMapBackgroundYOffset, 0))
+    
+    kSmokeyBackgroundSize = GUIScale(Vector(480, 640, 0))
+    self.smokeyBackground:SetSize(kSmokeyBackgroundSize)
+    self.smokeyBackground:SetPosition(-kSmokeyBackgroundSize * .5)
+    
+    -- Cycling through modes resizes and respotions everything
+    -- Not really elegant, but gets the job done
+    local comMode = self.comMode
+    self:SetBackgroundMode(0, true)
+    self:SetBackgroundMode(1, true)
+    self:SetBackgroundMode(comMode, true)
+end
 
 function GUIMinimapFrame:Initialize()
 
     GUIMinimap.Initialize(self)
+    
+    self.updateInterval = kUpdateIntervalFull
     
     self.zoom = 1
     self.desiredZoom = 1
@@ -60,29 +92,24 @@ function GUIMinimapFrame:Initialize()
     self:InitFrame()
     
     self.chooseSpawnText = GetGUIManager():CreateTextItem()
-    self.chooseSpawnText:SetText(Locale.ResolveString("CHOOSE_SPAWN"))
+    self.chooseSpawnText:SetText(SubstituteBindStrings(Locale.ResolveString("CHOOSE_SPAWN")))
     self.chooseSpawnText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
     self.chooseSpawnText:SetTextAlignmentX(GUIItem.Align_Center)
     self.chooseSpawnText:SetTextAlignmentY(GUIItem.Align_Max)
-    self.chooseSpawnText:SetFontName(Fonts.kAgencyFB_Large)
-    self.chooseSpawnText:SetPosition(Vector(0, GUIScale(-128), 0))
-    
     self.chooseSpawnText:SetIsVisible(false)
     
-    
     self.spawnQueueText = GUIManager:CreateTextItem()
-    self.spawnQueueText:SetFontName(Fonts.kAgencyFB_Small)
     self.spawnQueueText:SetFontIsBold(true)
     self.spawnQueueText:SetAnchor(GUIItem.Left, GUIItem.Top)
     self.spawnQueueText:SetTextAlignmentX(GUIItem.Align_Min)
     self.spawnQueueText:SetTextAlignmentY(GUIItem.Align_Center)
-    self.spawnQueueText:SetPosition( Vector( 15, -4, 0) )
     self.spawnQueueText:SetColor( Color(1,1,1,1) )
     self.spawnQueueText:SetIsVisible(true)
     self.minimapFrame:AddChild( self.spawnQueueText )
     
     self.showingMouse = false
 
+    UpdateItemsGUIScale(self)
 end
 
 function GUIMinimapFrame:Uninitialize()
@@ -112,8 +139,6 @@ function GUIMinimapFrame:InitFrame()
 
     self.minimapFrame = GUIManager:CreateGraphicItem()
     self.minimapFrame:SetAnchor(GUIItem.Left, GUIItem.Bottom)
-    self.minimapFrame:SetSize(kFrameTextureSize)
-    self.minimapFrame:SetPosition(Vector(-kMapBackgroundXOffset, -kFrameTextureSize.y + kMapBackgroundYOffset, 0))
     self.minimapFrame:SetTexture(kMarineFrameTexture)
     self.minimapFrame:SetTexturePixelCoordinates(unpack(kFramePixelCoords))
     self.minimapFrame:SetIsVisible(false)
@@ -126,8 +151,6 @@ function GUIMinimapFrame:InitSmokeyBackground()
 
     self.smokeyBackground = GUIManager:CreateGraphicItem()
     self.smokeyBackground:SetAnchor(GUIItem.Middle, GUIItem.Center)
-    self.smokeyBackground:SetSize(kSmokeyBackgroundSize)
-    self.smokeyBackground:SetPosition(-kSmokeyBackgroundSize * .5)
     self.smokeyBackground:SetTexture("ui/alien_minimap_smkmask.dds")
     self.smokeyBackground:SetShader("shaders/GUISmoke.surface_shader")
     self.smokeyBackground:SetAdditionalTexture("noise", kBackgroundNoiseTexture)
@@ -214,7 +237,7 @@ function GUIMinimapFrame:Update(deltaTime)
             if teamInfo and PlayerUI_GetTeamNumber() == kTeam1Index then
                 self.spawnQueueText:SetColor( kMarineFontColor )
                 //TODO Check number respawning and adjust color if above X threshold
-                self.spawnQueueText:SetText( "MARINES RESPAWNING: " .. tostring( teamInfo:GetSpawnQueueTotal() ) )
+                self.spawnQueueText:SetText( string.format( Locale.ResolveString("MARINES_RESPAWNING"), teamInfo:GetSpawnQueueTotal() ) )
             end
             
             // Commander always sees the minimap.
@@ -321,6 +344,10 @@ function GUIMinimapFrame:SetBackgroundMode(setMode, forceReset)
         else
             self:InitializeLocationNames()
             self:SetScale(kBigSizeScale)
+            -- Very low resolutions sometimes can't fit the big map, reduce scale a bit
+            if self:GetMinimapSize().y > Client.GetScreenHeight() then
+                self:SetScale(kBigSizeScale * 0.75)
+            end
             self:SetBlipScale(1)
             
             self.background:SetAnchor(GUIItem.Left, GUIItem.Top)
@@ -351,4 +378,5 @@ function GUIMinimapFrame:OnResolutionChanged(oldX, oldY, newX, newY)
         self.background:SetSize(Vector(newX, newY, 0) )
     end
     
+    UpdateItemsGUIScale(self)
 end

@@ -15,85 +15,10 @@ Script.Load("lua/GUIIncrementBar.lua")
 
 class 'GUISelectionPanel' (GUIScript)
 
-GUISelectionPanel.kFontName = Fonts.kAgencyFB_Large
-GUISelectionPanel.kFontScale = Vector(1, 1, 0) * kCommanderGUIsGlobalScale * 0.8
-GUISelectionPanel.kStatusFontScale = GUISelectionPanel.kFontScale * 0.8
-
-
-GUISelectionPanel.kStatusFontName = Fonts.kAgencyFB_Small
-GUISelectionPanel.StatuskFontScale = Vector(1, 1, 0) * kCommanderGUIsGlobalScale
-
-GUISelectionPanel.kFontColor = Color(0.8, 0.8, 1)
-GUISelectionPanel.kStatusFontColor = Color(0.9, 1, 0.7)
-
-GUISelectionPanel.kSelectionTextureMarines = "ui/marine_commander_textures.dds"
-GUISelectionPanel.kSelectionTextureAliens = "ui/alien_commander_textures.dds"
-
-GUISelectionPanel.kSelectionTextureCoordinates = { X1 = 466, Y1 = 0, X2 = 466 + 312, Y2 = 250 }
-GUISelectionPanel.kHealthIconCoordinates = { X1 = 0, Y1 = 363, X2 = 48, Y2 = 363 + 48 }
-GUISelectionPanel.kArmorIconCoordinates = { X1 = 48, Y1 = 363, X2 = 48 * 2, Y2 = 363 + 48 }
-GUISelectionPanel.kEnergyIconCoordinates = { X1 = 48 * 2, Y1 = 363, X2 = 48 * 3, Y2 = 363 + 48 }
-
-// The panel will scale with the screen resolution. It is based on
-// this screen width.
-GUISelectionPanel.kPanelWidth = 312 * kCommanderGUIsGlobalScale
-GUISelectionPanel.kPanelHeight = 250 * kCommanderGUIsGlobalScale
-
-GUISelectionPanel.kSelectedIconXOffset = 40 * kCommanderGUIsGlobalScale
-GUISelectionPanel.kSelectedIconYOffset = 80 * kCommanderGUIsGlobalScale
-GUISelectionPanel.kSelectedIconSize = 70 * kCommanderGUIsGlobalScale
-
-GUISelectionPanel.kMultiSelectedIconSize = GUISelectionPanel.kSelectedIconSize * 0.75
-GUISelectionPanel.kSelectedIconTextureWidth = 80
-GUISelectionPanel.kSelectedIconTextureHeight = 80
-
-GUISelectionPanel.kStatusIconPos = Vector(40, 160, 0) * kCommanderGUIsGlobalScale
-GUISelectionPanel.kStatusBarXOffset = 3 * kCommanderGUIsGlobalScale
-
-GUISelectionPanel.kStatusIconSize = 36 * kCommanderGUIsGlobalScale
-GUISelectionPanel.kStatusIconYOffset = 8 * kCommanderGUIsGlobalScale
-
-
-GUISelectionPanel.kStatusBarWidth = 192 * kCommanderGUIsGlobalScale
-GUISelectionPanel.kStatusBarHeight = 22 * kCommanderGUIsGlobalScale
-
-GUISelectionPanel.kSelectedNameYOffset = 40
-
-GUISelectionPanel.kSelectedLocationTextFontSize = 16 * kCommanderGUIsGlobalScale
-GUISelectionPanel.kSelectionLocationNameYOffset = -30
-
-GUISelectionPanel.kSelectionStatusTextYOffset = -36
-GUISelectionPanel.kSelectionStatusBarYOffset = -20
-
-GUISelectionPanel.kStatusBarColor = Color(1, 133 / 255, 0, 1)
-
-GUISelectionPanel.kResourceIconSize = 48 * kCommanderGUIsGlobalScale
-
-GUISelectionPanel.kResourceTextXOffset = 4
-GUISelectionPanel.kResourceTextYOffset = 0
-
-GUISelectionPanel.kHealthIconPos = Vector(114, 74, 0) * kCommanderGUIsGlobalScale
-GUISelectionPanel.kArmorIconPos = Vector(0, 18, 0) * kCommanderGUIsGlobalScale + GUISelectionPanel.kHealthIconPos
-GUISelectionPanel.kEnergyIconPos = Vector(0, 18, 0) * kCommanderGUIsGlobalScale + GUISelectionPanel.kArmorIconPos
-
-GUISelectionPanel.kSelectedHealthTextFontSize = 15 * kCommanderGUIsGlobalScale
-
-GUISelectionPanel.kSelectedCustomTextFontSize = 16 * kCommanderGUIsGlobalScale
-GUISelectionPanel.kSelectedCustomTextXOffset = -183 * kCommanderGUIsGlobalScale
-GUISelectionPanel.kSelectedCustomTextYOffset = 125 * kCommanderGUIsGlobalScale
-
-GUISelectionPanel.kInfoBarWidth = 100 * kCommanderGUIsGlobalScale
-GUISelectionPanel.kInfoBarHeight = math.floor(6 * kCommanderGUIsGlobalScale)
-GUISelectionPanel.kInfoBarOffset = Vector( 10 * kCommanderGUIsGlobalScale, -3 * kCommanderGUIsGlobalScale, 0)
-
-GUISelectionPanel.kBarBGPixelCoords = { 0, 645, 229, 645 + 41 }
-GUISelectionPanel.kBarBGSize = Vector(250, 49, 0) * kCommanderGUIsGlobalScale
-GUISelectionPanel.kBarBGXPos = -4 * kCommanderGUIsGlobalScale
-
 local kInfoBarTexture = "ui/commanderbar.dds"
 
 local kBackgroundNoiseTexture = "ui/alien_commander_bg_smoke.dds"
-local kSmokeyBackgroundSize = GUIScale(Vector(300, 380, 0))
+local kSmokeyBackgroundSize
 
 
 GUISelectionPanel.kHealthBarColors = { [kMarineTeamType] = Color(0.725, 1, 1, 1),
@@ -104,16 +29,101 @@ GUISelectionPanel.kArmorBarColors = { [kMarineTeamType] = Color(0.078, 0.9, 1, 1
                     [kAlienTeamType] = Color(1, 143 / 255, 34 / 255, 1),
                     [kNeutralTeamType] = Color(0.5, 0.5, 0.5, 1) }
 
+function GUISelectionPanel:OnResolutionChanged(oldX, oldY, newX, newY)
+    self:Uninitialize()
+    self:Initialize()
+end
+
 function GUISelectionPanel:Initialize()
+
+    kSmokeyBackgroundSize = GUIScale(Vector(300, 380, 0))
+    
+    GUISelectionPanel.kFontName = Fonts.kAgencyFB_Large
+    GUISelectionPanel.kFontScale = Vector(1, 1, 0) * GUIScale(kCommanderGUIsGlobalScale) * 0.8
+    GUISelectionPanel.kStatusFontScale = GUISelectionPanel.kFontScale * 0.8
+
+    GUISelectionPanel.kButtonsWidth = 470 * GUIScale(kCommanderGUIsGlobalScale)
+    
+    GUISelectionPanel.kStatusFontName = Fonts.kAgencyFB_Small
+    GUISelectionPanel.StatuskFontScale = Vector(1, 1, 0) * GUIScale(kCommanderGUIsGlobalScale)
+
+    GUISelectionPanel.kFontColor = Color(0.8, 0.8, 1)
+    GUISelectionPanel.kStatusFontColor = Color(0.9, 1, 0.7)
+
+    GUISelectionPanel.kSelectionTextureMarines = "ui/marine_commander_textures.dds"
+    GUISelectionPanel.kSelectionTextureAliens = "ui/alien_commander_textures.dds"
+
+    GUISelectionPanel.kSelectionTextureCoordinates = { X1 = 466, Y1 = 0, X2 = 466 + 312, Y2 = 250 }
+    GUISelectionPanel.kHealthIconCoordinates = { X1 = 0, Y1 = 363, X2 = 48, Y2 = 363 + 48 }
+    GUISelectionPanel.kArmorIconCoordinates = { X1 = 48, Y1 = 363, X2 = 48 * 2, Y2 = 363 + 48 }
+    GUISelectionPanel.kEnergyIconCoordinates = { X1 = 48 * 2, Y1 = 363, X2 = 48 * 3, Y2 = 363 + 48 }
+
+    // The panel will scale with the screen resolution. It is based on
+    // this screen width.
+    GUISelectionPanel.kPanelWidth = 312 * GUIScale(kCommanderGUIsGlobalScale)
+    GUISelectionPanel.kPanelHeight = 250 * GUIScale(kCommanderGUIsGlobalScale)
+
+    GUISelectionPanel.kSelectedIconXOffset = 40 * GUIScale(kCommanderGUIsGlobalScale)
+    GUISelectionPanel.kSelectedIconYOffset = 80 * GUIScale(kCommanderGUIsGlobalScale)
+    GUISelectionPanel.kSelectedIconSize = 70 * GUIScale(kCommanderGUIsGlobalScale)
+
+    GUISelectionPanel.kMultiSelectedIconSize = GUISelectionPanel.kSelectedIconSize * 0.75
+    GUISelectionPanel.kSelectedIconTextureWidth = GUIScale(80)
+    GUISelectionPanel.kSelectedIconTextureHeight = GUIScale(80)
+
+    GUISelectionPanel.kStatusIconPos = Vector(40, 160, 0) * GUIScale(kCommanderGUIsGlobalScale)
+    GUISelectionPanel.kStatusBarXOffset = 3 * GUIScale(kCommanderGUIsGlobalScale)
+
+    GUISelectionPanel.kStatusIconSize = 36 * GUIScale(kCommanderGUIsGlobalScale)
+    GUISelectionPanel.kStatusIconYOffset = 8 * GUIScale(kCommanderGUIsGlobalScale)
+
+
+    GUISelectionPanel.kStatusBarWidth = 192 * GUIScale(kCommanderGUIsGlobalScale)
+    GUISelectionPanel.kStatusBarHeight = 22 * GUIScale(kCommanderGUIsGlobalScale)
+
+    GUISelectionPanel.kSelectedNameYOffset = GUIScale(40)
+
+    GUISelectionPanel.kSelectedLocationTextFontSize = 16 * GUIScale(kCommanderGUIsGlobalScale)
+    GUISelectionPanel.kSelectionLocationNameYOffset = -GUIScale(30)
+
+    GUISelectionPanel.kSelectionStatusTextYOffset = -GUIScale(36)
+    GUISelectionPanel.kSelectionStatusBarYOffset = -GUIScale(20)
+
+    GUISelectionPanel.kStatusBarColor = Color(1, 133 / 255, 0, 1)
+
+    GUISelectionPanel.kResourceIconSize = 48 * GUIScale(kCommanderGUIsGlobalScale)
+
+    GUISelectionPanel.kResourceTextXOffset = GUIScale(4)
+    GUISelectionPanel.kResourceTextYOffset = 0
+
+    GUISelectionPanel.kHealthIconPos = Vector(114, 74, 0) * GUIScale(kCommanderGUIsGlobalScale)
+    GUISelectionPanel.kArmorIconPos = Vector(0, 32, 0) * GUIScale(kCommanderGUIsGlobalScale) + GUISelectionPanel.kHealthIconPos
+    GUISelectionPanel.kEnergyIconPos = Vector(0, 32, 0) * GUIScale(kCommanderGUIsGlobalScale) + GUISelectionPanel.kArmorIconPos
+    GUISelectionPanel.kMaturityTextPos = Vector(16, 40, 0) * GUIScale(kCommanderGUIsGlobalScale) + GUISelectionPanel.kArmorIconPos
+    GUISelectionPanel.kMaturityPercentagePos = Vector(106, 40, 0) * GUIScale(kCommanderGUIsGlobalScale) + GUISelectionPanel.kArmorIconPos
+
+    GUISelectionPanel.kSelectedHealthTextFontSize = 15 * GUIScale(kCommanderGUIsGlobalScale)
+
+    GUISelectionPanel.kSelectedCustomTextFontSize = 16 * GUIScale(kCommanderGUIsGlobalScale)
+    GUISelectionPanel.kSelectedCustomTextXOffset = -183 * GUIScale(kCommanderGUIsGlobalScale)
+    GUISelectionPanel.kSelectedCustomTextYOffset = 125 * GUIScale(kCommanderGUIsGlobalScale)
+
+    GUISelectionPanel.kInfoBarWidth = 100 * GUIScale(kCommanderGUIsGlobalScale)
+    GUISelectionPanel.kInfoBarHeight = math.floor(6 * GUIScale(kCommanderGUIsGlobalScale))
+    GUISelectionPanel.kInfoBarOffset = Vector( 10 * GUIScale(kCommanderGUIsGlobalScale), -3 * GUIScale(kCommanderGUIsGlobalScale), 0)
+
+    GUISelectionPanel.kBarBGPixelCoords = { 0, 645, 229, 645 + 41 }
+    GUISelectionPanel.kBarBGSize = Vector(250, 49, 0) * GUIScale(kCommanderGUIsGlobalScale)
+    GUISelectionPanel.kBarBGXPos = -4 * GUIScale(kCommanderGUIsGlobalScale)
 
     self.teamType = PlayerUI_GetTeamType()
 
     self.textureName = GUISelectionPanel.kSelectionTextureMarines
     self.background = GUIManager:CreateGraphicItem()
-    self.background:SetAnchor(GUIItem.Left, GUIItem.Bottom)
+    self.background:SetAnchor(GUIItem.Right, GUIItem.Bottom)
     self.background:SetTexture(self.textureName)
     self.background:SetSize(Vector(GUISelectionPanel.kPanelWidth, GUISelectionPanel.kPanelHeight, 0))
-    self.background:SetPosition(Vector(-GUISelectionPanel.kPanelWidth + 36 * kCommanderGUIsGlobalScale, -GUISelectionPanel.kPanelHeight, 0))
+    self.background:SetPosition(Vector(-GUISelectionPanel.kButtonsWidth - GUISelectionPanel.kPanelWidth + 36 * GUIScale(kCommanderGUIsGlobalScale), -GUISelectionPanel.kPanelHeight, 0))
     GUISetTextureCoordinatesTable(self.background, GUISelectionPanel.kSelectionTextureCoordinates)
     
     if PlayerUI_GetTeamType() == kAlienTeamType then    
@@ -154,6 +164,7 @@ function GUISelectionPanel:InitializeSingleSelectionItems()
     self.selectedName = GUIManager:CreateTextItem()
     self.selectedName:SetFontName(GUISelectionPanel.kFontName)
     self.selectedName:SetScale(GUISelectionPanel.kFontScale)
+    GUIMakeFontScale(self.selectedName)
     self.selectedName:SetAnchor(GUIItem.Middle, GUIItem.Top)
     self.selectedName:SetPosition(Vector(0, GUISelectionPanel.kSelectedNameYOffset, 0))
     self.selectedName:SetTextAlignmentX(GUIItem.Align_Center)
@@ -184,6 +195,7 @@ function GUISelectionPanel:InitializeSingleSelectionItems()
     self.healthText = GUIManager:CreateTextItem()
     self.healthText:SetScale(GUISelectionPanel.kStatusFontScale)
     self.healthText:SetFontName(GUISelectionPanel.kFontName)
+    GUIMakeFontScale(self.healthText)
     self.healthText:SetAnchor(GUIItem.Right, GUIItem.Center)
     self.healthText:SetPosition(Vector(GUISelectionPanel.kResourceTextXOffset, GUISelectionPanel.kResourceTextYOffset, 0))
     self.healthText:SetTextAlignmentX(GUIItem.Align_Min)
@@ -203,6 +215,7 @@ function GUISelectionPanel:InitializeSingleSelectionItems()
     self.armorText = GUIManager:CreateTextItem()
     self.armorText:SetScale(GUISelectionPanel.kStatusFontScale)
     self.armorText:SetFontName(GUISelectionPanel.kFontName)
+    GUIMakeFontScale(self.armorText)
     self.armorText:SetAnchor(GUIItem.Right, GUIItem.Center)
     self.armorText:SetPosition(Vector(GUISelectionPanel.kResourceTextXOffset, GUISelectionPanel.kResourceTextYOffset, 0))
     self.armorText:SetTextAlignmentX(GUIItem.Align_Min)
@@ -222,6 +235,7 @@ function GUISelectionPanel:InitializeSingleSelectionItems()
     self.energyText = GUIManager:CreateTextItem()
     self.energyText:SetScale(GUISelectionPanel.kStatusFontScale)
     self.energyText:SetFontName(GUISelectionPanel.kFontName)
+    GUIMakeFontScale(self.energyText)
     self.energyText:SetAnchor(GUIItem.Right, GUIItem.Center)
     self.energyText:SetPosition(Vector(GUISelectionPanel.kResourceTextXOffset, 0, 0))
     self.energyText:SetTextAlignmentX(GUIItem.Align_Min)
@@ -256,6 +270,7 @@ function GUISelectionPanel:InitializeSingleSelectionItems()
     self.statusText = GUIManager:CreateTextItem()
     self.statusText:SetScale(GUISelectionPanel.StatuskFontScale)
     self.statusText:SetFontName(GUISelectionPanel.kStatusFontName)
+    GUIMakeFontScale(self.statusText)
     self.statusText:SetAnchor(GUIItem.Left, GUIItem.Center)
     self.statusText:SetTextAlignmentX(GUIItem.Align_Min)
     self.statusText:SetTextAlignmentY(GUIItem.Align_Center)
@@ -265,8 +280,9 @@ function GUISelectionPanel:InitializeSingleSelectionItems()
     self.statusBar:AddChild(self.statusText)
     
     self.customText = GUIManager:CreateTextItem()
-    self.customText:SetFontSize(GUISelectionPanel.kSelectedCustomTextFontSize)
+    self.customText:SetScale(GetScaledVector())
     self.customText:SetFontName(GUISelectionPanel.kFontName)
+    GUIMakeFontScale(self.customText)
     self.customText:SetAnchor(GUIItem.Right, GUIItem.Center)
     self.customText:SetPosition(Vector(GUISelectionPanel.kSelectedCustomTextXOffset, GUISelectionPanel.kSelectedCustomTextYOffset, 0))
     self.customText:SetTextAlignmentX(GUIItem.Align_Max)

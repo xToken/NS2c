@@ -33,9 +33,7 @@ function MedPack:OnTouch(recipient)
     recipient:AddHealth(kHealthPerMedpack, false, true)
 
     StartSoundEffectAtOrigin(MedPack.kHealthSound, self:GetOrigin())
-    
-    TEST_EVENT("Commander MedPack picked up")
-    
+
 end
 
 function MedPack:GetIsValidRecipient(recipient)

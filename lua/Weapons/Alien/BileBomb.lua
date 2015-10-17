@@ -77,9 +77,7 @@ function BileBomb:OnTag(tagName)
                 cinematic:SetCinematic(kBbombViewEffect)
                 
             end
-            
-            TEST_EVENT("BileBomb shot")
-            
+ 
         end
     
     end

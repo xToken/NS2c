@@ -149,12 +149,94 @@ function OnCommandEffectDebug(client, className)
     else
         Print("effect_debug <class name> (dev mode must be enabled)")
     end
-    
+
+end
+
+local unstickDelay = 5
+local unstickInterval = 30
+local lastUnstuck = {}
+
+--We don't use ServerAdminPrint here as that would spam the server log
+local function NotifyPlayer(player, message)
+    Server.SendNetworkMessage(player, "ServerAdminPrint", { message = message }, true)
+end
+
+local function Unstick(client, origin)
+    local player = client and client:GetControllingPlayer() or nil
+
+    if not (player and origin and client) then return end
+
+    if player:GetOrigin() ~= origin then
+        NotifyPlayer(player, "You moved since running unstuck, unstuck aborted!")
+        return
+    end
+
+    local techId = player:GetTechId()
+    local bounds = GetExtents(techId)
+
+    if not bounds then return end
+
+    local spawn
+
+    --Just move RR players to a RR spawn if they got stucked
+    if player:GetTeamNumber() == kTeamReadyRoom then
+        local spawnpoint = GetRandomClearSpawnPoint(player, Server.readyRoomSpawnList)
+        spawn = spawnpoint and spawnpoint:GetOrigin()
+    else
+        local height, radius = GetTraceCapsuleFromExtents( bounds )
+        local resourceNear
+        local i = 1
+
+        repeat
+            spawn = GetRandomSpawnForCapsule( height, radius, origin, 2, 10, EntityFilterAll() )
+
+            if spawn then
+                resourceNear = #GetEntitiesWithinRange( "ResourcePoint", spawn, 2 ) > 0
+            end
+
+            i = i + 1
+        until not resourceNear or i > 100
+
+    end
+
+    if spawn then
+        NotifyPlayer(player, "Successfully unstuck!")
+        Log(string.format("Successfully unstuck %s [%s]", player:GetName(), player:GetSteamId()))
+        player:SetOrigin(spawn)
+        return
+    end
+
+    NotifyPlayer(player, "Unstuck failed, please retry or use the kill command!")
+    lastUnstuck[client] = nil
+end
+
+local function OnCommandUnstuck(client)
+    local gamerules = GetGamerules()
+    if not gamerules then return end
+
+    local player = client:GetControllingPlayer()
+    if not player then return end
+
+    if not player:GetIsAlive() then
+        NotifyPlayer(player, "You can only use unstuck if you are alive!")
+        return
+    end
+
+    if lastUnstuck[client] and lastUnstuck[client] > Shared.GetTime() then
+        NotifyPlayer(player, string.format("You can only use unstuck every %s seconds", unstickInterval))
+        return
+    end
+
+    lastUnstuck[client] = Shared.GetTime() + unstickInterval
+    NotifyPlayer(player, string.format("Unsticking you now please do not move the next %s seconds", unstickDelay))
+
+    local origin = player:GetOrigin()
+    gamerules:AddTimedCallback(function() Unstick(client, origin) end, unstickDelay )
 end
 
 local function OnCommandWarp(client, x, y, z)
 
-    if client ~= nil and Shared.GetCheatsEnabled() then
+    if client ~= nil and z ~= nil and (Shared.GetCheatsEnabled() or Shared.GetTestsEnabled()) then
     
         local player = client:GetControllingPlayer()
         player:SetOrigin(Vector(tonumber(x), tonumber(y), tonumber(z)))
@@ -299,7 +381,17 @@ local function OnCommandBang(client, ...)
 
 end
 
+local function OnRookieMode(client)
+    if client and not client:GetIsLocalClient() or not GetGamerules() then return end
+
+    local state = GetGamerules():GetRookieMode()
+    GetGamerules():SetRookieMode(not state)
+
+    Shared.Message(string.format("Rookie Mode has been turned %s", state and "off" or "on"))
+end
+
 // Generic console commands
+Event.Hook("Console_rookiemode", OnCommandSay)
 Event.Hook("Console_say", OnCommandSay)
 Event.Hook("Console_kill", OnCommandKill)
 Event.Hook("Console_killall", OnCommandKillAll)
@@ -308,6 +400,8 @@ Event.Hook("Console_clearorders", OnCommandClearOrders)
 Event.Hook("Console_darwinmode", OnCommandDarwinMode)
 Event.Hook("Console_reset", OnCommandRoundReset)
 Event.Hook("Console_effect_debug", OnCommandEffectDebug)
+Event.Hook("Console_unstuck", OnCommandUnstuck)
+Event.Hook("Console_stuck", OnCommandUnstuck)
 Event.Hook("Console_warp", OnCommandWarp)
 Event.Hook("Console_gotolocation", OnCommandWarp)
 Event.Hook("Console_sfindref", OnCommandFindRef)

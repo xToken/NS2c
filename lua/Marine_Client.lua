@@ -168,8 +168,6 @@ function Marine:Buy()
             MouseTracker_SetIsVisible(true, "ui/Cursor_MenuDefault.dds", true)
             self:TriggerEffects("marine_buy_menu_open")
             
-            TEST_EVENT("Marine buy menu displayed")
-            
                 
         else
             self:CloseMenu()

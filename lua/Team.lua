@@ -57,6 +57,8 @@ function Team:AddPlayer(player)
 
     if player and player:isa("Player") then
     
+        // Update scores when switching teams.
+        //player:SetRequestsScores(true)
         local id = player:GetId()
         return table.insertunique(self.playerIds, id)
         
@@ -80,9 +82,7 @@ local function UpdateRespawnQueueTeamBalance(self)
         table.insertunique(self.respawnQueue, spawnPlayer:GetId())
         
         spawnPlayer:SetWaitingForTeamBalance(false)
-        
-        TEST_EVENT("Auto-team balance, out of queue")
-        
+
     end
     
 end
@@ -237,7 +237,7 @@ function Team:PlayPrivateTeamSound(soundName, origin, commandersOnly, excludePla
     
     local function PlayPrivateSound(player)
     
-        if ( not commandersOnly or player:isa("Commander") ) and (not triggeringPlayer or not triggeringPlayer:isa("Player") or GetGamerules():GetCanPlayerHearPlayer(player, triggeringPlayer)) then
+        if ( not commandersOnly or player:isa("Commander") ) and (not triggeringPlayer or not triggeringPlayer:isa("Player") or GetGamerules():GetCanPlayerHearPlayer(player, triggeringPlayer, VoiceChannel.Global)) then
             if excludePlayer ~= player then
                 // Play alerts for commander at commander origin, so they always hear them
                 if not origin or player:isa("Commander") then
@@ -298,8 +298,6 @@ function Team:PutPlayerInRespawnQueue(player, time)
         player:SetWaitingForTeamBalance(true)
         
         UpdateRespawnQueueTeamBalance(self)
-        
-        TEST_EVENT("Auto-team balance, in queue")
         
     else
   

@@ -286,9 +286,7 @@ function Shotgun:FirePrimary(player)
         end
         
     end
-    
-    TEST_EVENT("Shotgun primary attack")
-    
+
 end
 
 function Shotgun:OnProcessMove(input)

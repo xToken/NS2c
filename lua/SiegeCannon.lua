@@ -348,9 +348,7 @@ local function PerformAttack(self)
             end 
            
         end
-        
-        TEST_EVENT("Siege Cannon attacked entity")
-        
+ 
     end
     
     // reset target position and acquire new target

@@ -638,7 +638,6 @@ local function SetupHud(self)
     
     local buttonsScriptName = ConditionalValue(self:GetTeamType() == kAlienTeamType, "GUICommanderButtonsAliens", "GUICommanderButtonsMarines")
     self.buttonsScript = GetGUIManager():CreateGUIScript(buttonsScriptName)
-    self.buttonsScript:GetBackground():AddChild(selectionPanelScript:GetBackground())
     minimapScript:SetButtonsScript(self.buttonsScript)
     
     local hotkeyIconScript = GetGUIManager():CreateGUIScriptSingle("GUIHotkeyIcons")
@@ -672,8 +671,6 @@ local function SetupHud(self)
     
     self.commanderTooltip:Register(self.buttonsScript)
     //self.commanderTooltip:Register(worldbuttons)
-    
-    self.buttonsScript.background:AddChild(self.commanderTooltip:GetBackground())
     
     // Calling SetBackgroundMode() will sometimes access self.managerScript through
     // CommanderUI_GetUIClickable() so call after self.managerScript is created above.
@@ -1186,4 +1183,21 @@ end
  */
 function Commander:GetCameraViewCoordsCountdown(cameraCoords)
     return cameraCoords
+end
+
+
+-- Find the position the commander is speaking from when using local chat
+-- Returns entity, offset pair. If entity is nil, then no source was found.
+
+function Commander:FindVoiceEarLocation()
+
+    local selectedEntities = self:GetSelection()
+    if #selectedEntities == 1 then
+        local entity = selectedEntities[1]
+        if GetAreFriends(self, entity) then
+            -- talk from above and behind right shoulder, roughly
+            return entity, Vector(-1,3,-2)
+        end
+    end
+    return nil, nil
 end

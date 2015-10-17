@@ -11,7 +11,7 @@
 //NS2c
 //Tweaked player kill feed to be in a diff location on aliens
 
-class 'GUIDeathMessages' (GUIAnimatedScript)
+class 'GUIDeathMessages' (GUIScript)
 
 local kKillHighlight = PrecacheAsset("ui/killfeed_highlight.dds")
 local kKillLeftBorderCoords = { 0, 0, 15, 64 }
@@ -28,10 +28,14 @@ local kFadeOutTime = 1
 
 function GUIDeathMessages:Initialize()
     
-    GUIAnimatedScript.Initialize(self)
-    
     self.scale = 1
 
+    kBackgroundHeight = GUIScale(32) * self.scale
+    
+    self.anchor = GUIManager:CreateGraphicItem()
+    self.anchor:SetColor(Color(0, 0, 0, 0))
+    self.anchor:SetAnchor(GUIItem.Right, GUIItem.Top)
+    
     self.messages = { }
     self.reuseMessages = { }
     
@@ -39,51 +43,44 @@ end
 
 function GUIDeathMessages:Reset()
     
-    GUIAnimatedScript.Reset(self)
-    
     for i, message in ipairs(self.messages) do
-        message["Background"]:Destroy()
+        GUI.DestroyItem(message["Background"])
     end
     self.messages = { }
     
     for i, message in ipairs(self.reuseMessages) do
-        message["Background"]:Destroy()
+        GUI.DestroyItem(message["Background"])
     end
     self.reuseMessages = { }
     
 end
 
 function GUIDeathMessages:OnResolutionChanged(oldX, oldY, newX, newY)
-
     self:Reset()
-
-    kBackgroundHeight = GUIScale(32)
+    
+    kBackgroundHeight = GUIScale(32) * self.scale
     kScreenOffset = GUIScale(40)
     kScreenOffsetX = GUIScale(38)
-
 end
 
 function GUIDeathMessages:Uninitialize()
     
-    GUIAnimatedScript.Uninitialize(self)
-
     for i, message in ipairs(self.messages) do
-        message["Background"]:Destroy()
+        GUI.DestroyItem(message["Background"])
     end
     self.messages = nil
     
     for i, message in ipairs(self.reuseMessages) do
-        message["Background"]:Destroy()
+        GUI.DestroyItem(message["Background"])
     end
     self.reuseMessages = nil
     
+    GUI.DestroyItem(self.anchor)
 end
 
 function GUIDeathMessages:Update(deltaTime)
     
     PROFILE("GUIDeathMessages:Update")
-    
-    GUIAnimatedScript.Update(self, deltaTime)
     
     local addDeathMessages = DeathMsgUI_GetMessages()
     local numberElementsPerMessage = 6 // FIXME - pretty error prone
@@ -173,7 +170,7 @@ function GUIDeathMessages:AddMessage(killerColor, killerName, targetColor, targe
     end
     
     if insertMessage["Killer"] == nil then
-        insertMessage["Killer"] = self:CreateAnimatedTextItem()
+        insertMessage["Killer"] = GUIManager:CreateTextItem()
     end
     
     insertMessage["Killer"]:SetFontName(kFontName)
@@ -181,15 +178,15 @@ function GUIDeathMessages:AddMessage(killerColor, killerName, targetColor, targe
     insertMessage["Killer"]:SetTextAlignmentX(GUIItem.Align_Max)
     insertMessage["Killer"]:SetTextAlignmentY(GUIItem.Align_Center)
     insertMessage["Killer"]:SetColor(ColorIntToColor(killerColor))
-    insertMessage["Killer"]:SetText(killerName)
-    insertMessage["Killer"]:SetUniformScale(self.scale)
+    insertMessage["Killer"]:SetText(killerName .. " ")
     insertMessage["Killer"]:SetScale(GetScaledVector()*self.scale)
+    GUIMakeFontScale(insertMessage["Killer"])
     
     if insertMessage["Weapon"] == nil then
-        insertMessage["Weapon"] = self:CreateAnimatedGraphicItem()
+        insertMessage["Weapon"] = GUIManager:CreateGraphicItem()
     end
     
-    local scaledIconHeight = kBackgroundHeight
+    local scaledIconHeight = kBackgroundHeight - GUIScale(4)
     // Preserve aspect ratio
     local scaledIconWidth = GUIScale(iconWidth)/(GUIScale(iconHeight)/scaledIconHeight)
     
@@ -198,11 +195,9 @@ function GUIDeathMessages:AddMessage(killerColor, killerName, targetColor, targe
     insertMessage["Weapon"]:SetTexture(kInventoryIconsTexture)
     insertMessage["Weapon"]:SetTexturePixelCoordinates(xOffset, yOffset, xOffset + iconWidth, yOffset + iconHeight)
     insertMessage["Weapon"]:SetColor(Color(1, 1, 1, 1))
-    insertMessage["Weapon"]:SetUniformScale(self.scale)
-    insertMessage["Weapon"]:SetScale(GetScaledVector())
     
     if insertMessage["Target"] == nil then
-        insertMessage["Target"] = self:CreateAnimatedTextItem()
+        insertMessage["Target"] = GUIManager:CreateTextItem()
     end
     
     insertMessage["Target"]:SetFontName(kFontName)
@@ -210,33 +205,30 @@ function GUIDeathMessages:AddMessage(killerColor, killerName, targetColor, targe
     insertMessage["Target"]:SetTextAlignmentX(GUIItem.Align_Min)
     insertMessage["Target"]:SetTextAlignmentY(GUIItem.Align_Center)
     insertMessage["Target"]:SetColor(ColorIntToColor(targetColor))
-    insertMessage["Target"]:SetText(targetName)
-    insertMessage["Target"]:SetUniformScale(self.scale)
+    insertMessage["Target"]:SetText(" " .. targetName)
     insertMessage["Target"]:SetScale(GetScaledVector()*self.scale)
+    GUIMakeFontScale(insertMessage["Target"])
     
-    local killerTextWidth = GUIScale(insertMessage["Killer"]:GetTextWidth(killerName))*self.scale
-    local targetTextWidth = GUIScale(insertMessage["Target"]:GetTextWidth(targetName))*self.scale
+    local killerTextWidth = insertMessage["Killer"]:GetTextWidth(killerName .. " ") * insertMessage["Killer"]:GetScale().x
+    local targetTextWidth = insertMessage["Target"]:GetTextWidth(targetName .. " ") * insertMessage["Target"]:GetScale().x
     local textWidth = killerTextWidth + targetTextWidth
     
     insertMessage["Weapon"]:SetPosition(Vector(killerTextWidth, -scaledIconHeight / 2, 0))
     
     if insertMessage["Background"] == nil then
     
-        insertMessage["Background"] = self:CreateAnimatedGraphicItem()
+        insertMessage["Background"] = GUIManager:CreateGraphicItem()
         insertMessage["Background"]:SetLayer(kGUILayerPlayerHUD)
-        insertMessage["Background"].left = self:CreateAnimatedGraphicItem()
+        insertMessage["Background"].left = GUIManager:CreateGraphicItem()
         insertMessage["Background"].left:SetAnchor(GUIItem.Left, GUIItem.Top)
-        insertMessage["Background"].right = self:CreateAnimatedGraphicItem()
-        // A sane person might ask why I align the right element to the left
-        // Well, there was an issue with scaling and it looked wrong in some resolutions
-        // Positioning it to the left and moving it the appropriate amount does the trick!
-        // Please, forgive me -Mendasp
-        insertMessage["Background"].right:SetAnchor(GUIItem.Left, GUIItem.Top)
+        insertMessage["Background"].right = GUIManager:CreateGraphicItem()
+        insertMessage["Background"].right:SetAnchor(GUIItem.Right, GUIItem.Top)
         insertMessage["Background"]:AddChild(insertMessage["Background"].right)
         insertMessage["Background"]:AddChild(insertMessage["Background"].left)
         insertMessage["Weapon"]:AddChild(insertMessage["Killer"])
         insertMessage["Background"]:AddChild(insertMessage["Weapon"])
         insertMessage["Weapon"]:AddChild(insertMessage["Target"])
+        self.anchor:AddChild(insertMessage["Background"])
         
     end
     
@@ -263,7 +255,6 @@ function GUIDeathMessages:AddMessage(killerColor, killerName, targetColor, targe
     insertMessage["Background"].right:SetTexture(kKillHighlight)
     insertMessage["Background"].right:SetTexturePixelCoordinates(unpack(kKillRightBorderCoords))
     insertMessage["Background"].right:SetSize(Vector(GUIScale(8), kBackgroundHeight, 0))
-    insertMessage["Background"].right:SetPosition(Vector(textWidth + scaledIconWidth, 0, 0))
     insertMessage["Background"].right:SetInheritsParentAlpha(true)
     insertMessage.sustainTime = ConditionalValue( targetIsPlayer==1, kPlayerSustainTime, kSustainTime )
     

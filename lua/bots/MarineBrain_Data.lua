@@ -2,6 +2,7 @@
 Script.Load("lua/bots/BotDebug.lua")
 Script.Load("lua/bots/CommonActions.lua")
 Script.Load("lua/bots/BrainSenses.lua")
+Script.Load("lua/bots/BotAim.lua")
 
 local gMarineAimJitterAmount = 0.8
 
@@ -147,15 +148,12 @@ local function PerformAttackEntity( eyePos, target, lastSeenPos, bot, brain, mov
             bot:GetMotion():SetDesiredMoveDirection(nil)
             doFire = true
         end
+        
+        doFire = doFire and bot.aim:UpdateAim(target, aimPos)
+        
     end
 
     if doFire then
-        // jitter view target a little bit, if they are moving at all
-        local jitter = Vector(0,0,0)
-        if HasMixin(target, "BaseMove") then
-            jitter = Vector( math.random(), math.random(), math.random() ) * gMarineAimJitterAmount
-        end
-        bot:GetMotion():SetDesiredViewTarget( aimPos+jitter )
         move.commands = AddMoveCommand( move.commands, Move.PrimaryAttack )
     else
         bot:GetMotion():SetDesiredViewTarget( nil )

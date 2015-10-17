@@ -18,6 +18,7 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Fonts = {}
+FontFamilies = {}
 Textures = {}
 Materials = {}
 Sounds = {}
@@ -34,11 +35,16 @@ Fonts.kAgencyFB_Large = PrecacheAsset("fonts/AgencyFB_large.fnt")
 Fonts.kAgencyFB_Medium = PrecacheAsset("fonts/AgencyFB_medium.fnt")
 Fonts.kAgencyFB_Small = PrecacheAsset("fonts/AgencyFB_small.fnt")
 Fonts.kAgencyFB_Smaller_Bordered = PrecacheAsset("fonts/AgencyFB_smaller_bordered.fnt")
-Fonts.kAgencyFB_Tiny= PrecacheAsset("fonts/AgencyFB_tiny.fnt")
+Fonts.kAgencyFB_Tiny = PrecacheAsset("fonts/AgencyFB_tiny.fnt")
 Fonts.kInsight = PrecacheAsset("fonts/insight.fnt")
+Fonts.kArial_13 = PrecacheAsset("fonts/Arial_13.fnt")
 Fonts.kArial_15 = PrecacheAsset("fonts/Arial_15.fnt")
 Fonts.kArial_17 = PrecacheAsset("fonts/Arial_17.fnt")
+Fonts.kArial_Tiny = PrecacheAsset("fonts/Arial_Tiny.fnt")
+Fonts.kArial_Small = PrecacheAsset("fonts/Arial_Small.fnt")
+Fonts.kArial_Medium = PrecacheAsset("fonts/Arial_Medium.fnt")
 Fonts.kKartika_Small = PrecacheAsset("fonts/Kartika_small.fnt")
+Fonts.kKartika_Medium = PrecacheAsset("fonts/Kartika_medium.fnt")
 Fonts.kStamp_Large = PrecacheAsset("fonts/Stamp_large.fnt")
 Fonts.kStamp_Medium = PrecacheAsset("fonts/Stamp_medium.fnt")
 Fonts.kStamp_Huge = PrecacheAsset("fonts/Stamp_huge.fnt")
@@ -47,6 +53,40 @@ Fonts.kMicrogrammaDMedExt_Medium = PrecacheAsset("fonts/MicrogrammaDMedExt_mediu
 Fonts.kMicrogrammaDMedExt_Medium2 = PrecacheAsset("fonts/MicrogrammaDMedExt_medium2.fnt")
 Fonts.kMicrogrammaDMedExt_Small = PrecacheAsset("fonts/MicrogrammaDMedExt_small.fnt")
 Fonts.kLMGFont = PrecacheAsset("fonts/LMGFont.fnt")
+// For properly adjusting font scales, group them with their sizes
+// Not needed for the ones that are only one font
+FontFamilies = {}
+
+FontFamilies["kAgencyFB"] = {}
+FontFamilies["kAgencyFB"][Fonts.kAgencyFB_Huge] = 96
+FontFamilies["kAgencyFB"][Fonts.kAgencyFB_Large] = 41
+FontFamilies["kAgencyFB"][Fonts.kAgencyFB_Medium] = 33
+FontFamilies["kAgencyFB"][Fonts.kAgencyFB_Small] = 27
+FontFamilies["kAgencyFB"][Fonts.kAgencyFB_Tiny] = 20
+
+FontFamilies["kArial"] = {}
+FontFamilies["kArial"][Fonts.kArial_Medium] = 33
+FontFamilies["kArial"][Fonts.kArial_Small] = 27
+FontFamilies["kArial"][Fonts.kArial_Tiny] = 20
+FontFamilies["kArial"][Fonts.kArial_17] = 17
+FontFamilies["kArial"][Fonts.kArial_15] = 15
+FontFamilies["kArial"][Fonts.kArial_13] = 13
+
+FontFamilies["kKartika"] = {}
+FontFamilies["kKartika"][Fonts.kKartika_Medium] = 33
+FontFamilies["kKartika"][Fonts.kKartika_Small] = 27
+
+FontFamilies["kStamp"] = {}
+FontFamilies["kStamp"][Fonts.kStamp_Huge] = 96
+FontFamilies["kStamp"][Fonts.kStamp_Large] = 41
+FontFamilies["kStamp"][Fonts.kStamp_Medium] = 33
+
+// This one is only used for weapon displays and only has numbers...
+FontFamilies["kMicrogrammaDMedExt"] = {}
+FontFamilies["kMicrogrammaDMedExt"][Fonts.kMicrogrammaDMedExt_Large] = 93
+FontFamilies["kMicrogrammaDMedExt"][Fonts.kMicrogrammaDMedExt_Medium] = 80
+FontFamilies["kMicrogrammaDMedExt"][Fonts.kMicrogrammaDMedExt_Medium2] = 80
+FontFamilies["kMicrogrammaDMedExt"][Fonts.kMicrogrammaDMedExt_Small] = 35
 
 ---------------
 Textures.kExosuit_View_Panel_Armor = PrecacheAsset("models/marine/exosuit/exosuit_view_panel_armor.dds")

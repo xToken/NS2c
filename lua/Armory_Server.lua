@@ -103,14 +103,11 @@ function Armory:ResupplyPlayer(player)
 
         self:TriggerEffects("armory_health", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
         
-        TEST_EVENT("Armory resupplied health")
-        
         resuppliedPlayer = true
         /*
         if HasMixin(player, "ParasiteAble") and player:GetIsParasited() then
         
             player:RemoveParasite()
-            TEST_EVENT("Armory removed Parasite")
             
         end
         */

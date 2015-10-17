@@ -314,7 +314,7 @@ kAntiAliasingOptionsKey = "graphics/display/anti-aliasing"
 kAtmosphericsOptionsKey = "graphics/display/atmospherics"
 kShadowsOptionsKey = "graphics/display/shadows"
 kShadowFadingOptionsKey = "graphics/display/shadow-fading"
-kBloomOptionsKey = "graphics/display/bloom"
+kBloomOptionsKey = "graphics/display/bloom_new"
 kAnisotropicFilteringOptionsKey = "graphics/display/anisotropic-filtering"
 
 kMouseSensitivityScalar         = 50
