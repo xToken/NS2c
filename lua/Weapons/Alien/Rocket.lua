@@ -27,27 +27,6 @@ local networkVars = { }
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 
--- Blow up after a time.
-local function UpdateLifetime(self)
-
-    // in order to get the correct lifetime, 
-	// we start counting our lifetime from the first UpdateLifetime rather than when
-    // we were created
-    if not self.endOfLife then
-        self.endOfLife = Shared.GetTime() + kRocketLifetime
-    end
-
-    if self.endOfLife <= Shared.GetTime() then
-    
-        self:Detonate(nil)
-        return false
-        
-    end
-    
-    return true
-    
-end
-
 function Rocket:OnCreate()
 
     PredictedProjectile.OnCreate(self)
@@ -58,8 +37,7 @@ function Rocket:OnCreate()
     InitMixin(self, DamageMixin)
     
     if Server then
-        self:AddTimedCallback(UpdateLifetime, kUpdateIntervalLow)
-        self.endOfLife = nil
+        self:AddTimedCallback(Rocket.TimedDetonateCallback, kRocketLifetime)
     end
 
 end
@@ -74,6 +52,10 @@ end
 
 function Rocket:GetDamageType()
     return kAcidRocketDamageType
+end
+
+function Rocket:TimedDetonateCallback()
+    self:Detonate()
 end
 
 function Rocket:ProcessHit(targetHit, surface)

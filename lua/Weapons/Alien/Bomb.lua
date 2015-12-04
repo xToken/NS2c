@@ -38,7 +38,9 @@ function Bomb:OnCreate()
     InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
     
-    self:AddTimedCallback(Bomb.Detonate, kBombLifetime)
+    if Server then
+        self:AddTimedCallback(Bomb.TimedDetonateCallback, kBombLifetime)
+    end
 
 end
 
@@ -52,6 +54,10 @@ end
 
 function Bomb:GetDamageType()
     return kBileBombDamageType
+end
+
+function Bomb:TimedDetonateCallback()
+    self:Detonate()
 end
 
 function Bomb:ProcessHit(targetHit, surface)

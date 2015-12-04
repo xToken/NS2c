@@ -39,7 +39,9 @@ function HandGrenade:OnCreate()
     InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
     
-    self:AddTimedCallback(HandGrenade.Detonate, kHandGrenadesLifetime)
+    if Server then
+        self:AddTimedCallback(HandGrenade.TimedDetonateCallback, kHandGrenadesLifetime)
+    end
     
 end
 
@@ -69,6 +71,10 @@ function HandGrenade:ProcessHit(targetHit, surface)
         
     end
     
+end
+
+function HandGrenade:TimedDetonateCallback()
+    self:Detonate()
 end
 
 function HandGrenade:Detonate(targetHit)       

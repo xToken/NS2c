@@ -43,7 +43,7 @@ function Grenade:OnCreate()
     InitMixin(self, DamageMixin)
 
     if Server then    
-        self:AddTimedCallback(Grenade.Detonate, kGrenadeLifetime)        
+        self:AddTimedCallback(Grenade.TimedDetonateCallback, kGrenadeLifetime)        
     end
     
 end
@@ -62,6 +62,10 @@ end
 
 function Grenade:GetIsAffectedByWeaponUpgrades()
     return true
+end
+
+function Grenade:TimedDetonateCallback()
+    self:Detonate()
 end
 
 function Grenade:ProcessHit(targetHit, surface, normal, endPoint )
