@@ -300,7 +300,7 @@ end
 local function OnCommandEnts(client, className)
 
     // Allow it to be run on dedicated server
-    if client == nil or Shared.GetCheatsEnabled() then
+    if client == nil or Shared.GetCheatsEnabled() or Shared.GetTestEnabled() then
     
         local entityCount = Shared.GetEntitiesWithClassname("Entity"):GetSize()
         
@@ -333,7 +333,7 @@ end
 
 local function OnCommandServerEntities(client, entityType)
 
-    if client == nil or Shared.GetCheatsEnabled() then
+    if client == nil or Shared.GetCheatsEnabled() or Shared.GetTestEnabled() then
         DumpEntityCounts(entityType)
     end
     
@@ -341,7 +341,7 @@ end
 
 local function OnCommandEntityInfo(client, entityId)
 
-    if client == nil or Shared.GetCheatsEnabled() then
+    if client == nil or Shared.GetCheatsEnabled() or Shared.GetTestEnabled() then
     
         local ent = Shared.GetEntity(tonumber(entityId))
         if not ent then
@@ -1310,8 +1310,8 @@ local function OnCommandGiveXP(client, xp)
 
 end
 
-local function OnCommandThrowObject(client)
-    
+local function OnCommandThrowObject(client, season)
+
     -- need to protect on the serverside too so people don't just trigger mid-game
     local player = client:GetControllingPlayer()
     if player:GetIsCommander() then
@@ -1322,7 +1322,7 @@ local function OnCommandThrowObject(client)
         return
     end
     
-    FireBombProjectile(player)
+    FireSeasonalProjectile(player)
     
 end
 
@@ -1463,7 +1463,9 @@ Event.Hook("Console_makeblackfemale", OnCommandBlackEditionFemale)
 Event.Hook("Console_makespecialfemale", OnCommandMakeSpecialEditionFemale)
 Event.Hook("Console_make", OnCommandMake)
 Event.Hook("Console_devour", OnCommandDevour)
-Event.Hook("Console_throwsnowball", OnCommandThrowObject)
+
+//Halloween2015
+Event.Hook("Console_throwobject", OnCommandThrowObject)
 
 Event.Hook("Console_evolvelastupgrades", OnCommandEvolveLastUpgrades)
 
@@ -1471,9 +1473,9 @@ Event.Hook("Console_debugcommander", OnCommandDebugCommander)
 Event.Hook("Console_trace", OnCommandTrace)
 
 Event.Hook("Console_dlc", function(client)
-        if Shared.GetCheatsEnabled() then
-            GetHasDLC = function(pid, client)
-                return true
-                end
-        end
-        end)
+    if Shared.GetCheatsEnabled() then
+        GetHasDLC = function(pid, client)
+            return true
+            end
+    end
+end)

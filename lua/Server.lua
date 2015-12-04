@@ -291,28 +291,7 @@ function OnMapLoadEntity(mapName, groupName, values)
 
 end
 
-function OnMapPreLoad()
-
-    Shared.PreLoadSetGroupNeverVisible(kCollisionGeometryGroupName)
-    Shared.PreLoadSetGroupNeverVisible(kMovementCollisionGroupName)
-    Shared.PreLoadSetGroupNeverVisible(kInvisibleCollisionGroupName)
-    Shared.PreLoadSetGroupPhysicsId(kNonCollisionGeometryGroupName, 0)
-    
-    Shared.PreLoadSetGroupNeverVisible(kCommanderBuildGroupName)   
-    Shared.PreLoadSetGroupPhysicsId(kCommanderBuildGroupName, PhysicsGroup.CommanderBuildGroup)     
-    
-    // Any geometry in kCommanderInvisibleGroupName or kCommanderNoBuildGroupName shouldn't interfere with selection or other commander actions
-    Shared.PreLoadSetGroupPhysicsId(kCommanderInvisibleGroupName, PhysicsGroup.CommanderPropsGroup)
-    Shared.PreLoadSetGroupPhysicsId(kCommanderInvisibleVentsGroupName, PhysicsGroup.CommanderPropsGroup)
-    Shared.PreLoadSetGroupPhysicsId(kCommanderNoBuildGroupName, PhysicsGroup.CommanderPropsGroup)
-    
-    // Don't have bullets collide with collision geometry
-    Shared.PreLoadSetGroupPhysicsId(kCollisionGeometryGroupName, PhysicsGroup.CollisionGeometryGroup)
-    Shared.PreLoadSetGroupPhysicsId(kMovementCollisionGroupName, PhysicsGroup.CollisionGeometryGroup)
-    
-    // Pathing mesh
-    Shared.PreLoadSetGroupNeverVisible(kPathingLayerName)
-    Shared.PreLoadSetGroupPhysicsId(kPathingLayerName, PhysicsGroup.PathingGroup)    
+local function OnMapPreLoad()
     
     // Clear spawn points
     Server.readyRoomSpawnList = {}

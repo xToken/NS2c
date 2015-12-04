@@ -222,22 +222,6 @@ local function OnCommandCommPing(client, message)
 
 end
 
-local function OnCommandSetRookieMode(client, networkMessage)
-
-    if client ~= nil then
-    
-        local player = client:GetControllingPlayer()
-        if player then 
-        
-            local rookieMode = ParseRookieMessage(networkMessage)
-            player:SetRookieMode(rookieMode)
-            
-        end
-        
-    end
-
-end
-
 local function OnCommandSetCommStatus(client, networkMessage)
 
     if client ~= nil then
@@ -434,7 +418,6 @@ Server.HookNetworkMessage("GorgeBuildStructure", OnCommandGorgeBuildStructure)
 Server.HookNetworkMessage("MutePlayer", OnCommandMutePlayer)
 Server.HookNetworkMessage("ChatClient", OnChatReceived)
 Server.HookNetworkMessage("CommanderPing", OnCommandCommPing)
-Server.HookNetworkMessage("SetRookieMode", OnCommandSetRookieMode)
 Server.HookNetworkMessage("SetCommunicationStatus", OnCommandSetCommStatus)
 Server.HookNetworkMessage("Buy", OnMessageBuy)
 Server.HookNetworkMessage("VoiceMessage", OnVoiceMessage)

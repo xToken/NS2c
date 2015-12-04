@@ -11,8 +11,8 @@
 
 Script.Load("lua/Gamerules.lua")
 
-// Called when player first connects to server
-// TODO: Move this into NS specific player class
+-- Called when player first connects to server
+-- TODO: Move this into NS specific player class
 function Player:OnClientConnect(client)
 end
 
@@ -45,7 +45,7 @@ end
 function Player:ClearEffects()
 end
 
-// ESC was hit on client or menu closed
+-- ESC was hit on client or menu closed
 function Player:CloseMenu()
 end
 
@@ -55,15 +55,15 @@ end
 
 function Player:SetName(name)
 
-    // If player is just changing the case on their own name, allow it.
-    // Otherwise, make sure it's a unique name on the server.
+    -- If player is just changing the case on their own name, allow it.
+    -- Otherwise, make sure it's a unique name on the server.
     
-    // Strip out surrounding "s
+    -- Strip out surrounding "s
     local newName = string.gsub(name, "\"(.*)\"", "%1")
-    // Strip out escape characters.
+    -- Strip out escape characters.
     newName = string.gsub(newName, "[\a\b\f\n\r\t\v]", "")
     
-    // Make sure it's not too long
+    -- Make sure it's not too long
     newName = string.UTF8Sub(newName, 0, kMaxNameLength)
     
     local currentName = self:GetName()
@@ -79,11 +79,11 @@ function Player:SetName(name)
     
 end
 
-/**
+--[[
  * Used to add the passed in client index to this player's mute list.
  * This player will either hear or not hear the passed in client's
  * voice chat based on the second parameter.
- */
+]]
 function Player:SetClientMuted(muteClientIndex, setMuted)
 
     if not self.mutedClients then self.mutedClients = { } end
@@ -91,9 +91,9 @@ function Player:SetClientMuted(muteClientIndex, setMuted)
     
 end
 
-/**
+--[[
  * Returns true if the passed in client is muted by this Player.
- */
+]]
 function Player:GetClientMuted(checkClientIndex)
 
     if not self.mutedClients then self.mutedClients = { } end
@@ -101,7 +101,7 @@ function Player:GetClientMuted(checkClientIndex)
     
 end
 
-// Not authoritative, only visual and information. TeamResources is stored in the team.
+-- Not authoritative, only visual and information. TeamResources is stored in the team.
 function Player:SetTeamResources(teamResources)
     self.teamResources = math.max(math.min(teamResources, kMaxTeamResources), 0)
 end
@@ -121,7 +121,7 @@ end
 function Player:InitWeaponsForReadyRoom()
 end
 
-// Add resources for kills and play sound, returns how much resources have been awarded
+-- Add resources for kills and play sound, returns how much resources have been awarded
 function Player:AwardResForKill(amount)
 
     local resReward = self:AddResources(amount)
@@ -143,17 +143,17 @@ local function DestroyViewModel(self)
     
 end
 
-/**
+--[[
  * Called when the player is killed. Point and direction specify the world
  * space location and direction of the damage that killed the player. These
  * may be nil if the damage wasn't directional.
- */
+]]
 function Player:OnKill(killer, doer, point, direction)
 
-    local isSuicide = not doer and not killer // xenocide is not a suicide
+    local isSuicide = not doer and not killer -- xenocide is not a suicide
     local killedByDeathTrigger = doer and doer:isa("DeathTrigger") or killer and killer:isa("DeathTrigger")
 
-    // Determine the killer's player name.
+    -- Determine the killer's player name.
     local killerName
     if killer then
         if killer:isa("Player") then
@@ -166,7 +166,7 @@ function Player:OnKill(killer, doer, point, direction)
         end
     end
 
-    // Save death to server log
+    -- Save death to server log
     if isSuicide or killedByDeathTrigger then
         PrintToLog("%s committed suicide", self:GetName())
     elseif killerName ~= nil then
@@ -175,7 +175,7 @@ function Player:OnKill(killer, doer, point, direction)
         PrintToLog("%s died", self:GetName())
     end
 
-    // Go to third person so we can see ragdoll and avoid HUD effects (but keep short so it's personal)
+    -- Go to third person so we can see ragdoll and avoid HUD effects (but keep short so it's personal)
     if not self:GetAnimateDeathCamera() then
         self:SetIsThirdPerson(4)
     end
@@ -184,17 +184,17 @@ function Player:OnKill(killer, doer, point, direction)
     angles.roll = 0
     self:SetAngles(angles)
     
-    // This is a hack, CameraHolderMixin should be doing this.
+    -- This is a hack, CameraHolderMixin should be doing this.
     self.baseYaw = 0
     
     self:AddDeaths()
     
-    // Fade out screen.
+    -- Fade out screen.
     self.timeOfDeath = Shared.GetTime()
     
     DestroyViewModel(self)
     
-    // Save position of last death only if we didn't die to a DeathTrigger
+    -- Save position of last death only if we didn't die to a DeathTrigger
     if not killedByDeathTrigger then
         self.lastDeathPos = self:GetOrigin()
     end
@@ -237,7 +237,7 @@ function Player:UpdateClientRelevancyMask()
             mask = kRelevantToTeam2Unit
         end
         
-    // Spectators should see all map blips.
+    -- Spectators should see all map blips.
     elseif self:GetTeamNumber() == kSpectatorIndex then
     
         if self:GetIsOverhead() then
@@ -246,13 +246,13 @@ function Player:UpdateClientRelevancyMask()
             mask = bit.bor(kRelevantToTeam1Unit, kRelevantToTeam2Unit, kRelevantToReadyRoom)
         end
         
-    // ReadyRoomPlayers should not see any blips.
+    -- ReadyRoomPlayers should not see any blips.
     elseif self:GetTeamNumber() == kTeamReadyRoom then
         mask = kRelevantToReadyRoom
     end
     
     local client = Server.GetOwner(self)
-    // client may be nil if the server is shutting down.
+    -- client may be nil if the server is shutting down.
     if client then
         client:SetRelevancyMask(mask)
     end
@@ -267,7 +267,7 @@ end
 
 function Player:UpdateIncludeRelevancyMask()
 
-    // Players are always relevant to their commanders.
+    -- Players are always relevant to their commanders.
     local includeMask = 0
     
     if self:GetTeamNumber() == 1 then
@@ -310,11 +310,11 @@ local function UpdateChangeToSpectator(self)
         local time = Shared.GetTime()
         if self.timeOfDeath ~= nil and (time - self.timeOfDeath > kFadeToBlackTime) then
         
-            // Destroy the existing player and create a spectator in their place (but only if it has an owner, ie not a body left behind by Phantom use)
+            -- Destroy the existing player and create a spectator in their place (but only if it has an owner, ie not a body left behind by Phantom use)
             local owner = Server.GetOwner(self)
             if owner then
             
-                // Queue up the spectator for respawn.
+                -- Queue up the spectator for respawn.
                 local spectator = self:Replace(self:GetDeathMapName())
                 spectator:GetTeam():PutPlayerInRespawnQueue(spectator, Shared.GetTime())
                 
@@ -340,7 +340,7 @@ function Player:OnUpdatePlayer(deltaTime)
     
 end
 
-// Remember game time player enters queue so they can be spawned in FIFO order
+-- Remember game time player enters queue so they can be spawned in FIFO order
 function Player:SetRespawnQueueEntryTime(time)
     self.respawnQueueEntryTime = time
 end
@@ -382,9 +382,10 @@ function Player:OnGiveUpgrade(upgradeId)
     StoreCombatPlayersUpgradeTable(self)
 end
 
-// For children classes to override if they need to adjust data
-// before the copy happens.
+-- For children classes to override if they need to adjust data
+-- before the copy happens.
 function Player:PreCopyPlayerData()
+
 end
 
 function Player:CopyPlayerDataFrom(player)
@@ -394,31 +395,31 @@ function Player:CopyPlayerDataFrom(player)
     self.lastClass = player.lastClass
     self.lastExoLayout = player.lastExoLayout
 
-    // This is stuff from the former LiveScriptActor.
+    -- This is stuff from the former LiveScriptActor.
     self.gameEffectsFlags = player.gameEffectsFlags
     self.timeOfLastDamage = player.timeOfLastDamage
     
-    // ScriptActor and Actor fields
+    -- ScriptActor and Actor fields
     self:SetAngles(player:GetAngles())
     self:SetOrigin(Vector(player:GetOrigin()))
     self:SetViewAngles(player:GetViewAngles())
     
-    // Copy camera settings
+    -- Copy camera settings
     if player:GetIsThirdPerson() then
         self.cameraDistance = player.cameraDistance
     end
     
-    // for OnProcessMove
+    -- for OnProcessMove
     self.fullPrecisionOrigin = player.fullPrecisionOrigin
     
-    // This is a hack, CameraHolderMixin should be doing this.
+    -- This is a hack, CameraHolderMixin should be doing this.
     self.baseYaw = player.baseYaw
     
     self.name = player.name
     self.clientIndex = player.clientIndex
     self.client = player.client
     
-    // Copy network data over because it won't be necessarily be resent
+    -- Copy network data over because it won't be necessarily be resent
     self.resources = player.resources
     self.teamResources = player.teamResources
     self.gameStarted = player.gameStarted
@@ -434,7 +435,7 @@ function Player:CopyPlayerDataFrom(player)
 
     self.timeLastBuyMenu = player.timeLastBuyMenu
     
-    // Include here so it propagates through Spectator
+    -- Include here so it propagates through Spectator
     self.originOnDeath = player.originOnDeath
     
     self.jumpHandled = player.jumpHandled
@@ -446,12 +447,12 @@ function Player:CopyPlayerDataFrom(player)
     self.isRookie = player.isRookie
     self.communicationStatus = player.communicationStatus
     
-    // Don't lose purchased upgrades when becoming commander
+    -- Don't lose purchased upgrades when becoming commander
     if self:GetTeamNumber() == kAlienTeamType or self:GetTeamNumber() == kMarineTeamType then
         self:CopyUpgradesFromOldPlayer(player)
     end
     
-    // Remember this player's muted clients.
+    -- Remember this player's muted clients.
     self.mutedClients = player.mutedClients
     self.hotGroupNumber = player.hotGroupNumber
     
@@ -461,11 +462,11 @@ function Player:CopyPlayerDataFrom(player)
     
 end
 
-/**
+--[[
  * Check if there were any spectators watching them. Make these
  * spectators follow the new player unless the new player is also
  * a spectator (in which case, make the spectating players follow a new target).
- */
+]]
 function Player:RemoveSpectators(newPlayer)
 
     local spectators = Shared.GetEntitiesWithClassname("Spectator")
@@ -497,13 +498,13 @@ function Player:RemoveSpectators(newPlayer)
     
 end
 
-/**
+--[[
  * Replaces the existing player with a new player of the specified map name.
  * Removes old player off its team and adds new player to newTeamNumber parameter
  * if specified. Note this destroys self, so it should be called carefully. Returns 
  * the new player. If preserveWeapons is true, then InitWeapons() isn't called
  * and old ones are kept (including view model).
- */
+]]
 function Player:Replace(mapName, newTeamNumber, preserveWeapons, atOrigin, extraValues)
 
     local team = self:GetTeam()
@@ -515,36 +516,36 @@ function Player:Replace(mapName, newTeamNumber, preserveWeapons, atOrigin, extra
     local client = Server.GetOwner(self)
     local teamChanged = newTeamNumber ~= nil and newTeamNumber ~= self:GetTeamNumber()
     
-    // Add new player to new team if specified
-    // Both nil and -1 are possible invalid team numbers.
+    -- Add new player to new team if specified
+    -- Both nil and -1 are possible invalid team numbers.
     if newTeamNumber ~= nil and newTeamNumber ~= -1 then
         teamNumber = newTeamNumber
     end
     
     local player = CreateEntity(mapName, atOrigin or Vector(self:GetOrigin()), teamNumber, extraValues)
     
-    // Save last player map name so we can show player of appropriate form in the ready room if the game ends while spectating
+    -- Save last player map name so we can show player of appropriate form in the ready room if the game ends while spectating
     player.previousMapName = self:GetMapName()
     
-    // The class may need to adjust values before copying to the new player (such as gravity).
+    -- The class may need to adjust values before copying to the new player (such as gravity).
     self:PreCopyPlayerData()
     
-    // If the atOrigin is specified, set self to that origin before
-    // the copy happens or else it will be overridden inside player.
+    -- If the atOrigin is specified, set self to that origin before
+    -- the copy happens or else it will be overridden inside player.
     if atOrigin then
         self:SetOrigin(atOrigin)
     end
-    // Copy over the relevant fields to the new player, before we delete it
+    -- Copy over the relevant fields to the new player, before we delete it
     player:CopyPlayerDataFrom(self)
     
-    // Make model look where the player is looking
+    -- Make model look where the player is looking
     player.standingBodyYaw = Math.Wrap( self:GetAngles().yaw, 0, 2*math.pi )
     
     if not player:GetTeam():GetSupportsOrders() and HasMixin(player, "Orders") then
         player:ClearOrders()
     end
     
-    // Remove newly spawned weapons and reparent originals
+    -- Remove newly spawned weapons and reparent originals
     if preserveWeapons then
     
         player:DestroyWeapons()
@@ -559,34 +560,34 @@ function Player:Replace(mapName, newTeamNumber, preserveWeapons, atOrigin, extra
         
     end
     
-    // Notify others of the change     
+    -- Notify others of the change     
     self:SendEntityChanged(player:GetId())
 
-    // This player is no longer controlled by a client.
+    -- This player is no longer controlled by a client.
     self.client = nil
     
-    // Remove any spectators currently spectating this player.
+    -- Remove any spectators currently spectating this player.
     self:RemoveSpectators(player)
     
     player:SetPlayerInfo(self.playerInfo)
     self.playerInfo = nil
     
-    // Only destroy the old player if it is not a ragdoll.
-    // Ragdolls will eventually destroy themselve.
+    -- Only destroy the old player if it is not a ragdoll.
+    -- Ragdolls will eventually destroy themselve.
     if not HasMixin(self, "Ragdoll") or not self:GetIsRagdoll() then
         DestroyEntity(self)
     end
     
     player:SetControllerClient(client)
     
-    // There are some cases where the spectating player isn't set to nil.
-    // Handle any edge cases here (like being dead when the game is reset).
-    // In some cases, client will be nil (when the map is changing for example).
+    -- There are some cases where the spectating player isn't set to nil.
+    -- Handle any edge cases here (like being dead when the game is reset).
+    -- In some cases, client will be nil (when the map is changing for example).
     if client and not player:isa("Spectator") then
         client:SetSpectatingPlayer(nil)
     end
     
-    // Log player spawning
+    -- Log player spawning
     if teamNumber ~= 0 then
         PostGameViz(string.format("%s spawned", SafeClassName(self)), self)
     end
@@ -599,16 +600,16 @@ function Player:GetIsAllowedToBuy()
     return self:GetIsAlive()
 end
 
-/**
+--[[
  * A table of tech Ids is passed in.
- */
+]]
 function Player:ProcessBuyAction(techIds)
 end
 
-// Creates an item by mapname and spawns it at our feet.
+-- Creates an item by mapname and spawns it at our feet.
 function Player:GiveItem(itemMapName, setActive)
 
-    // Players must be alive in order to give them items.
+    -- Players must be alive in order to give them items.
     assert(self:GetIsAlive())
     
     local newItem
@@ -653,7 +654,7 @@ function Player:GetPing()
     
 end
 
-// To be overridden by children
+-- To be overridden by children
 function Player:AttemptToBuy(techIds)
     return self, false
 end
@@ -679,7 +680,7 @@ function Player:GetIsInterestedInAlert(techId)
     return LookupTechData(techId, kTechDataAlertTeam, false)
 end
 
-// Send alert to player unless we recently sent the exact same alert. Returns true if it was sent.
+-- Send alert to player unless we recently sent the exact same alert. Returns true if it was sent.
 function Player:TriggerAlert(techId, entity)
 
     assert(entity ~= nil)
@@ -726,11 +727,11 @@ function Player:SetRookieMode(rookieMode)
 end
 
 function Player:OnClientUpdated(client)
-    // override me
-    //DebugPrint("Player:OnClientUpdated")
+    -- override me
+    -- DebugPrint("Player:OnClientUpdated")
 end
 
-// only use intensity value here to reduce traffic
+--only use intensity value here to reduce traffic
 function Player:SetCameraShake(intensity)
 
     local message = BuildCameraShakeMessage(intensity)

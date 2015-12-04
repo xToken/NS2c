@@ -400,7 +400,7 @@ function PlayerUI_GetStatusInfoForUnit(player, unit)
     
     -- checks here if the model was rendered previous frame as well
     local status = unit:GetUnitStatus(player)
-    if unit:GetShowUnitStatusFor(player) then       
+    if unit:GetShowUnitStatusFor(player) then
 
         -- Get direction to blip. If off-screen, don't render. Bad values are generated if
         -- Client.WorldToScreen is called on a point behind the camera.
@@ -419,7 +419,7 @@ function PlayerUI_GetStatusInfoForUnit(player, unit)
             local visibleToPlayer = true                        
             if HasMixin(unit, "Cloakable") and GetAreEnemies(player, unit) then
             
-                if unit:GetIsCloaked() or (unit:isa("Player") and unit:GetCloakFraction() > 0.2) then                    
+                if unit:GetIsCloaked() or (unit:isa("Player") and unit:GetCloakFraction() > 0.2) then
                     visibleToPlayer = false
                 end
                 
@@ -432,7 +432,7 @@ function PlayerUI_GetStatusInfoForUnit(player, unit)
             
             if HasMixin(unit, "Live") and (not unit.GetShowHealthFor or unit:GetShowHealthFor(player)) then
             
-                health = unit:GetHealthFraction()                
+                health = unit:GetHealthFraction()
                 if unit:GetArmor() == 0 then
                     armor = 0
                 else 
@@ -473,7 +473,7 @@ function PlayerUI_GetStatusInfoForUnit(player, unit)
                 StatusFraction = statusFraction,
                 HealthFraction = health,
                 ArmorFraction = armor,
-                IsCrossHairTarget = crossHairTarget,
+                IsCrossHairTarget = crossHairTarget and visibleToPlayer,
                 TeamType = kNeutralTeamType,
                 ForceName = unit:isa("Player") and not GetAreEnemies(player, unit),
                 BadgeTextures = badgeTextures,
@@ -482,7 +482,6 @@ function PlayerUI_GetStatusInfoForUnit(player, unit)
                 IsSteamFriend = unit:isa("Player") and unit:GetIsSteamFriend() or false,
                 AbilityFraction = abilityFraction,
                 IsParasited = HasMixin(unit, "ParasiteAble") and unit:GetIsParasited()
-            
             }
 
             
@@ -547,6 +546,8 @@ end
 -- collects unit status info for a single unit
 function PlayerUI_GetUnitStatusInfo()
 
+    PROFILE("PlayerUI_GetUnitStatusInfo")
+    
     local unitStates = { }
     
     local player = Client.GetLocalPlayer()
@@ -1714,6 +1715,43 @@ function Player:GetIsMinimapVisible()
     return self.minimapVisible or false
 end
 
+local function Player_CanThrowObject( self )
+
+    if not IsSeasonForThrowing() then
+        return false
+    end
+    
+    -- Don't throw object if already using something or if in commander view
+    if self:GetIsUsing() or self:GetIsCommander() then
+        return false
+    end	
+        
+    -- Only allow in RR and pre-game (not post-game.)
+    if self:GetTeamNumber() ~= kTeamReadyRoom then
+        local entityList = Shared.GetEntitiesWithClassname("GameInfo")
+        if entityList:GetSize() == 0 then
+            return false
+        end
+
+        local gameInfo = entityList:GetEntityAtIndex(0)
+        local state = gameInfo:GetState()
+        
+        if state ~= kGameState.NotStarted then
+            return false
+        end
+    end
+    
+    -- Don't let object throwing get in the way of actually using stuff		
+    local ent = self:PerformUseTrace()
+    local entIsUsable = ent and ( self:GetGameStarted() or ent.GetUseAllowedBeforeGameStart and ent:GetUseAllowedBeforeGameStart() ) 
+    if entIsUsable and GetPlayerCanUseEntity(self, ent) then
+        return false
+    end
+    
+    return true
+end
+
+
 --[[
  * Use only client side (for bringing up menus for example). Key events, and their consequences, are not sent to the server.
 ]]
@@ -1762,6 +1800,8 @@ function Player:SendKeyEvent(key, down)
             elseif GetIsBinding(key, "ToggleMinimapNames") then
                 local newValue = not Client.GetOptionBoolean("minimapNames", true)
                 Client.SetOptionBoolean("minimapNames", newValue)
+            elseif GetIsBinding(key, "Use") and Player_CanThrowObject( self ) then
+                Shared.ConsoleCommand("throwobject " .. GetSeason())
             end
             
         end
@@ -3782,67 +3822,23 @@ function Player:SetHotgroup(number, entityList)
     
 end
 
-/*
 function Player:OnLocationIdChange()
+    PROFILE("Player:OnLocationIdChange")
     self:OnLocationChange(Shared.GetString(self.locationId))     
     return true
-end*/
-
-function Player:OnPreUpdate()
-
-    PROFILE("Player:OnPreUpdate")
-
-    if self.locationId ~= self.lastLocationId then
-    
-        self:OnLocationChange(Shared.GetString(self.locationId))
-        
-        self.lastLocationId = self.locationId
-        
-    end
-    
 end
 
 function Player:OnUpdatePlayer(deltaTime)
 
+    PROFILE("Player:OnUpdatePlayer:UpdateClientEffects")
+
     self:UpdateClientEffects(deltaTime, self:GetIsLocalPlayer())
-    
-    self:UpdateRookieMode()
-    
+
     self:UpdateCommunicationStatus()
     
     if self.isHallucination then
         self:DestroyController()
     end    
-    
-end
-
--- The client is authoritative over our rookie state. It could be changed because
--- we've been playing long enough, or because the user changed it in their options.
-function Player:UpdateRookieMode()
-
-    -- Only update for local player
-    if self:GetIsLocalPlayer() then
-
-        local time = Client.GetTime()
-        
-        -- Doesn't need to be updated too often, and don't want to resend message multiple times while waiting for update
-        if self.timeLastRookieModeUpdate == nil or (time > self.timeLastRookieModeUpdate + kRookieNetworkCheckInterval) then
-        
-            local name = self:GetName()
-            local isRookie = ScoreboardUI_IsPlayerRookie(self:GetName())
-            local optionsRookieMode = Client.GetOptionBoolean(kRookieOptionsKey, true)
-            
-            if isRookie ~= optionsRookieMode then
-
-                Client.SendNetworkMessage("SetRookieMode", BuildRookieMessage(optionsRookieMode), true)
-
-            end
-            
-            self.timeLastRookieModeUpdate = time    
-            
-        end
-        
-    end
     
 end
 

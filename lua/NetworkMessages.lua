@@ -296,7 +296,7 @@ end
 
 Shared.RegisterNetworkMessage( "AbilityResult", kAbilityResultMessage )
 
-// Tell players WHY they can't join a team
+-- Tell players WHY they can't join a team
 local kJoinErrorMessage =
 {
     reason = "integer (0 to 2)"
@@ -920,20 +920,6 @@ local kVoteEjectCastMessage =
     votesMoreNeeded = "integer (0 to 64)"
 }
 
-function BuildRookieMessage(isRookie)
-
-    local t = {}
-
-    t.isRookie = isRookie
-    
-    return t
-    
-end
-
-function ParseRookieMessage(t)
-    return t.isRookie
-end
-
 local kMovementMode = 
 {
     movement = "boolean"
@@ -992,13 +978,6 @@ Shared.RegisterNetworkMessage( "TechNodeBase", kTechNodeBaseMessage )
 Shared.RegisterNetworkMessage( "ClearTechTree", {} )
 
 Shared.RegisterNetworkMessage( "MovementMode", kMovementMode )
-
-local kRookieMessage =
-{
-    isRookie = "boolean"
-}
-Shared.RegisterNetworkMessage( "SetRookieMode", kRookieMessage )
-
 
 local kCommunicationStatusMessage = 
 {

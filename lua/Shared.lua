@@ -20,6 +20,8 @@ Script.Load("lua/HotloadTools.lua")
 
 Script.Load("lua/JITConsoleCommands.lua")
 
+Script.Load("lua/Locale.lua")
+
 // Utility and constants
 Script.Load("lua/Globals.lua")
 Script.Load("lua/DamageTypes.lua")
@@ -27,6 +29,7 @@ Script.Load("lua/Debug.lua")
 Script.Load("lua/CollisionRep.lua")
 Script.Load("lua/Utility.lua")
 Script.Load("lua/PlayerInput.lua")
+Script.Load("lua/Seasons.lua")
 
 Script.Load("lua/MixinUtility.lua")
 Script.Load("lua/AnimatedModel.lua")
@@ -149,6 +152,9 @@ Script.Load("lua/Weapons/Marine/Mines.lua")
 Script.Load("lua/Weapons/Marine/Builder.lua")
 Script.Load("lua/Weapons/Marine/Welder.lua")
 Script.Load("lua/Weapons/Marine/HandGrenades.lua")
+
+Script.Load("lua/Weapons/CandyThrower.lua")
+Script.Load("lua/Weapons/SnowballThrower.lua")
 
 Script.Load("lua/NS2Utility.lua")
 Script.Load("lua/WeaponUtility.lua")
@@ -365,4 +371,33 @@ elseif Server then
     Event.Hook("Console_dbg_value", OnConsoleDbgValue)
 end
 
+local function OnMapPreLoad()
+   
+    UpdateMapForSeasons()
+    
+    Shared.PreLoadSetGroupNeverVisible(kCollisionGeometryGroupName)   
+    Shared.PreLoadSetGroupNeverVisible(kMovementCollisionGroupName)   
+    Shared.PreLoadSetGroupNeverVisible(kInvisibleCollisionGroupName)
+    Shared.PreLoadSetGroupPhysicsId(kNonCollisionGeometryGroupName, 0)
+
+    Shared.PreLoadSetGroupNeverVisible(kCommanderBuildGroupName)   
+    Shared.PreLoadSetGroupPhysicsId(kCommanderBuildGroupName, PhysicsGroup.CommanderBuildGroup)      
+    
+    // Any geometry in kCommanderInvisibleGroupName or kCommanderNoBuildGroupName shouldn't interfere with selection or other commander actions
+    Shared.PreLoadSetGroupPhysicsId(kCommanderInvisibleGroupName, PhysicsGroup.CommanderPropsGroup)
+    Shared.PreLoadSetGroupPhysicsId(kCommanderInvisibleVentsGroupName, PhysicsGroup.CommanderPropsGroup)
+    Shared.PreLoadSetGroupPhysicsId(kCommanderNoBuildGroupName, PhysicsGroup.CommanderPropsGroup)
+    
+    // Don't have bullets collide with collision geometry
+    Shared.PreLoadSetGroupPhysicsId(kCollisionGeometryGroupName, PhysicsGroup.CollisionGeometryGroup)
+    Shared.PreLoadSetGroupPhysicsId(kMovementCollisionGroupName, PhysicsGroup.CollisionGeometryGroup)
+    
+    // Pathing mesh
+    Shared.PreLoadSetGroupNeverVisible(kPathingLayerName)
+    Shared.PreLoadSetGroupPhysicsId(kPathingLayerName, PhysicsGroup.PathingGroup)
+    
+end
+
 Shared.Debug_InitializeValues()
+
+Event.Hook("MapPreLoad", OnMapPreLoad)

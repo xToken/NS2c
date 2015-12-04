@@ -131,10 +131,6 @@ function Client.GetLocalClientTeamNumber()
     return Client.localClientTeamNumber
 end
 
-// For logging total time played for rookie mode, even with map switch
-local timePlayed = nil
-local kTimePlayedOptionsKey = "timePlayedSeconds"
-
 local function InitializeRenderCamera()
     gRenderCamera = Client.CreateRenderCamera()
     gRenderCamera:SetRenderSetup("renderer/Deferred.render_setup")
@@ -159,7 +155,7 @@ function GetTechTree()
 end
 
 function ClearTechTree()
-    gTechTree:Initialize()
+    gTechTree:Initialize()    
 end
 
 function SetLocalPlayerIsOverhead(isOverhead)
@@ -276,6 +272,7 @@ end
  */
 function OnMapLoadEntity(className, groupName, values)
 
+    local season = GetSeason()
     // set custom round start music if defined
     if className == "ns2_gamerules" then
     
@@ -329,56 +326,62 @@ function OnMapLoadEntity(className, groupName, values)
     // Otherwise the server will create the cinematic.
     elseif className == "skybox" or (className == "cinematic" and (values.startsOnMessage == "" or values.startsOnMessage == nil)) then
     
-        local coords = values.angles:GetCoords(values.origin)
+        if IsGroupActiveInSeason(groupName, season) then
         
-        local zone = RenderScene.Zone_Default
-        
-        if className == "skybox" then
-            zone = RenderScene.Zone_SkyBox
-        end
-        
-        local cinematic = Client.CreateCinematic(zone)
-        
-        cinematic:SetCinematic(values.cinematicName)
-        cinematic:SetCoords(coords)
-        
-        local repeatStyle = Cinematic.Repeat_None
-        
-        -- 0 is Repeat_None but Repeat_None is not supported here because it would
-        -- cause the cinematic to kill itself but the cinematic would not be
-        -- removed from the Client.cinematics list which would cause errors.
-        if values.repeatStyle == 0 then
-            repeatStyle = Cinematic.Repeat_Loop
-        elseif values.repeatStyle == 1 then
-            repeatStyle = Cinematic.Repeat_Loop
-        elseif values.repeatStyle == 2 then
-            repeatStyle = Cinematic.Repeat_Endless
-        end
-        
-        if className == "skybox" then
-        
-            table.insert(Client.skyBoxList, cinematic)
+            local coords = values.angles:GetCoords(values.origin)
             
-            // Becuase we're going to hold onto the skybox, make sure it
-            // uses the endless repeat style so that it doesn't delete itself
-            repeatStyle = Cinematic.Repeat_Endless
+            local zone = RenderScene.Zone_Default
+            
+            if className == "skybox" then
+                zone = RenderScene.Zone_SkyBox
+            end
+            
+            local cinematic = Client.CreateCinematic(zone)
+            
+            cinematic:SetCinematic(values.cinematicName)
+            cinematic:SetCoords(coords)
+            
+            local repeatStyle = Cinematic.Repeat_None
+            
+            -- 0 is Repeat_None but Repeat_None is not supported here because it would
+            -- cause the cinematic to kill itself but the cinematic would not be
+            -- removed from the Client.cinematics list which would cause errors.
+            if values.repeatStyle == 0 then
+                repeatStyle = Cinematic.Repeat_Loop
+            elseif values.repeatStyle == 1 then
+                repeatStyle = Cinematic.Repeat_Loop
+            elseif values.repeatStyle == 2 then
+                repeatStyle = Cinematic.Repeat_Endless
+            end
+            
+            if className == "skybox" then
+            
+                table.insert(Client.skyBoxList, cinematic)
+                
+                // Becuase we're going to hold onto the skybox, make sure it
+                // uses the endless repeat style so that it doesn't delete itself
+                repeatStyle = Cinematic.Repeat_Endless
+                
+            end
+            
+            cinematic:SetRepeatStyle(repeatStyle)
+            
+            cinematic.commanderInvisible = values.commanderInvisible
+            cinematic.className = className
+            cinematic.coords = coords
+            
+            table.insert(Client.cinematics, cinematic)
             
         end
-        
-        cinematic:SetRepeatStyle(repeatStyle)
-        
-        cinematic.commanderInvisible = values.commanderInvisible
-        cinematic.className = className
-        cinematic.coords = coords
-        
-        table.insert(Client.cinematics, cinematic)
-        
+    
     elseif className == "ambient_sound" then
     
-        local entity = AmbientSound()
-        LoadEntityFromValues(entity, values)
-        Client.PrecacheLocalSound(entity.eventName)
-        table.insert(Client.ambientSoundList, entity)
+        if IsGroupActiveInSeason(groupName, season) then
+            local entity = AmbientSound()
+            LoadEntityFromValues(entity, values)
+            Client.PrecacheLocalSound(entity.eventName)
+            table.insert(Client.ambientSoundList, entity)
+        end
         
     elseif className == Reverb.kMapName then
     
@@ -611,6 +614,8 @@ local optionsSent = false
 
 local function OnUpdateClient(deltaTime)
 
+	Client.SetDebugText("Client.OnUpdateClient entry")
+
     PROFILE("Client:OnUpdateClient")
     
     UpdateTrailCinematics(deltaTime)
@@ -625,8 +630,6 @@ local function OnUpdateClient(deltaTime)
         UpdateDSPEffects()
         
         UpdateTracers(deltaTime)
-        
-        UpdateTimePlayed(deltaTime)
         
         UpdateDangerEffects(player)
         
@@ -661,6 +664,8 @@ local function OnUpdateClient(deltaTime)
         
     end
     
+    Client.SetDebugText("Client.OnUpdateClient exit")
+
 end
 
 function OnNotifyGUIItemDestroyed(destroyedItem)
@@ -714,57 +719,6 @@ function UpdateTracers(deltaTime)
 
 end
 
-// Update local time played in options file, so we can track "rookie" status
-function UpdateTimePlayed(deltaTime)
-
-    PROFILE("Client:UpdateTimePlayed")
-
-    local player = Client.GetLocalPlayer()
-    assert(player)
-
-    local teamNumber = player:GetTeamNumber()
-    if player:GetGameStarted() and (teamNumber == kMarineTeamType or teamNumber == kAlienTeamType) then
-    
-        // Increment time
-        if timePlayed == nil then
-            timePlayed = 0
-        end
-        timePlayed = timePlayed + deltaTime
-        
-        if timePlayed > kRookieSaveInterval then
-        
-            SaveTimePlayed(kRookieSaveInterval)
-            timePlayed = 0
-            
-            // If we are a rookie and we just increased over the time threshold, set ourselves no longer as a rookie
-            if Client.GetOptionInteger(kTimePlayedOptionsKey, 0) > kRookieTimeThreshold and Client.GetOptionBoolean(kRookieOptionsKey, true ) then
-            
-                local minutesPlayed = math.round(Client.GetOptionInteger(kTimePlayedOptionsKey, 0)/60)
-                local displayMessage = string.format(Locale.ResolveString("ROOKIE_DONE"), minutesPlayed)
-                Print(displayMessage)
-                Client.SetOptionBoolean( kRookieOptionsKey, false )
-                    
-            end
-            
-        end
-        
-    end
-    
-end
-
-function SaveTimePlayed(additionalTimePlayed)
-
-    if additionalTimePlayed ~= nil then
-    
-        assert(additionalTimePlayed > 0)
-        
-        local newTimePlayed = Client.GetOptionInteger(kTimePlayedOptionsKey, 0) + additionalTimePlayed
-        Client.SetOptionInteger(kTimePlayedOptionsKey, newTimePlayed)
-        
-    end
-    
-end
-
 /**
  * Shows or hides the skybox(es) based on the specified state.
  */
@@ -776,10 +730,8 @@ function SetSkyboxDrawState(skyBoxVisible)
 
 end
 
-function OnMapPreLoad()
 
-    // Add our current time we played
-    SaveTimePlayed(timePlayed)
+local function OnMapPreLoad()
     
     // Clear our list of render objects, lights, props
     Client.propList = { }
@@ -792,27 +744,7 @@ function OnMapPreLoad()
     Client.DestroyReverbs()
     Client.ResetSoundSystem()
     
-    Shared.PreLoadSetGroupNeverVisible(kCollisionGeometryGroupName)   
-    Shared.PreLoadSetGroupNeverVisible(kMovementCollisionGroupName)   
-    Shared.PreLoadSetGroupNeverVisible(kInvisibleCollisionGroupName)
-    Shared.PreLoadSetGroupPhysicsId(kNonCollisionGeometryGroupName, 0)
 
-    Shared.PreLoadSetGroupNeverVisible(kCommanderBuildGroupName)   
-    Shared.PreLoadSetGroupPhysicsId(kCommanderBuildGroupName, PhysicsGroup.CommanderBuildGroup)      
-    
-    // Any geometry in kCommanderInvisibleGroupName or kCommanderNoBuildGroupName shouldn't interfere with selection or other commander actions
-    Shared.PreLoadSetGroupPhysicsId(kCommanderInvisibleGroupName, PhysicsGroup.CommanderPropsGroup)
-    Shared.PreLoadSetGroupPhysicsId(kCommanderInvisibleVentsGroupName, PhysicsGroup.CommanderPropsGroup)
-    Shared.PreLoadSetGroupPhysicsId(kCommanderNoBuildGroupName, PhysicsGroup.CommanderPropsGroup)
-    
-    // Don't have bullets collide with collision geometry
-    Shared.PreLoadSetGroupPhysicsId(kCollisionGeometryGroupName, PhysicsGroup.CollisionGeometryGroup)
-    Shared.PreLoadSetGroupPhysicsId(kMovementCollisionGroupName, PhysicsGroup.CollisionGeometryGroup)
-    
-    // Pathing mesh
-    Shared.PreLoadSetGroupNeverVisible(kPathingLayerName)
-    Shared.PreLoadSetGroupPhysicsId(kPathingLayerName, PhysicsGroup.PathingGroup)
-    
 end
 
 local function CheckRules()
@@ -993,8 +925,8 @@ local function OnUpdateRender()
         local adjustRadians = math.rad(
             (1-adjustValue)*kMinFOVAdjustmentDegrees + adjustValue*kMaxFOVAdjustmentDegrees)
         
-        // Don't adjust the FOV for the commander.
-        if player:isa("Commander") then
+        // Don't adjust the FOV for the commander or spectator
+        if player:isa("Commander") or player:isa("Spectator") then
             adjustRadians = 0
         end
             
@@ -1034,10 +966,12 @@ local function OnUpdateRender()
         EquipmentOutline_SetEnabled( GetIsMarineUnit(player) or outlinePlayers )
         EquipmentOutline_SyncCamera( gRenderCamera, player:isa("Commander") or outlinePlayers )
         
-        if player:GetShowAtmosphericLight() then
-            EnableAtmosphericDensity()
-        else
-            DisableAtmosphericDensity()
+        if OptionsDialogUI_GetAtmospherics() then
+            if player:GetShowAtmosphericLight() then
+                EnableAtmosphericDensity()
+            else
+                DisableAtmosphericDensity()
+            end
         end
 
     else
@@ -1269,7 +1203,7 @@ local function OnLoadComplete()
     end
 
     --tell the server if we played the tutorial or not
-    if Client.GetOptionBoolean("playedTutorial", false) then
+    if Client.GetOptionBoolean("playedTutorial", false) or Client.GetOptionBoolean("system/playedTutorial", false) then
         Client.SendNetworkMessage( "PlayedTutorial", {}, true)
     end
 end

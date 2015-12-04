@@ -259,6 +259,11 @@ kCommanderInvisibleVentsGroupName = "CommanderInvisibleVents"
 kCommanderNoBuildGroupName = "CommanderNoBuild"
 kCommanderBuildGroupName = "CommanderBuild"
 
+kSeasonalFallName = "SeasonalFall"
+kSeasonalFallExcludeName = "SeasonalFallExclude"
+kSeasonalWinterName = "SeasonalWinter"
+kSeasonalWinterExcludeName = "SeasonalWinterExclude"
+
 // invisible and blocks all movement
 kMovementCollisionGroupName = "MovementCollisionGeometry"
 // same as 'MovementCollisionGeometry'
@@ -375,7 +380,8 @@ kStructureLOSDistance = 2.5
 
 kGestateCameraDistance = 1.75
 
-// Rookie mode
+-- Rookie mode
+kRookieLevel = 3
 kRookieSaveInterval = 30 // seconds
 kRookieTimeThreshold = 4 * 60 * 60 // 4 hours
 kRookieNetworkCheckInterval = 2
@@ -535,7 +541,7 @@ function FindVariant( data, displayName )
             return var
         end
     end
-    return 0
+    return nil
 
 end
 

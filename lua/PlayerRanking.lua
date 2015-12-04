@@ -152,7 +152,6 @@ function PlayerRanking:OnUpdate()
                         -- avoid the exploit of exiting the game/entering the game/join team to reset the entrance time.
                         -- Only set the entrance time if we switch teams (which is hard to do if you are on the loosing side)
                         playerData.entranceTime = math.max( 0, ( player:GetEntranceTime() or Shared.GetTime() ) - self.gameStartTime)
-                        Log("'%s': update entranceTime", playerData.nickName)
                     end
                     playerData.commanderTime = player:GetCommanderTime()
 
@@ -218,35 +217,43 @@ function PlayerRanking:EndGame(winningTeam)
 
 end
 
+function PlayerRanking:GetPlayerIsValidForRanking(recordedData)
+    local team = recordedData and recordedData.teamNumber
+
+    return team == kTeam1Index or team == kTeam2Index
+end
+
 function PlayerRanking:InsertPlayerData(playerTable, recordedData, winningTeam, gameTime, marineSkill, alienSkill, isGatherGame)
 
-    PROFILE("PlayerRanking:InsertPlayerData")
-    local playerData =
-    {
-        steamId = recordedData.steamId,
-        nickname = recordedData.nickname or "",
-        playTime = recordedData.playTime,
-        marineTime = recordedData.marineTime,
-        alienTime = recordedData.alienTime,
-        teamNumber = recordedData.teamNumber,
-        kills = recordedData.kills,
-        deaths = recordedData.deaths,
-        assists = recordedData.assists,
-        score = recordedData.score,
-        isWinner = winningTeam:GetTeamNumber() == recordedData.teamNumber,
-        isCommander = (recordedData.commanderTime / gameTime) > 0.75,
-        marineTeamSkill = marineSkill,
-        alienTeamSkill = alienSkill,
-        gatherGame = isGatherGame,
-        commanderTime = recordedData.commanderTime,
-        entranceTime = recordedData.entranceTime,
-        exitTime = recordedData.exitTime,
-    }
-        
-    DebugPrint("PlayerRanking: dumping player data ------------------")
-    DebugPrint("%s", ToString(playerData))
-
-    table.insert(playerTable, playerData)
+    if self:GetPlayerIsValidForRanking(recordedData) then
+	    PROFILE("PlayerRanking:InsertPlayerData")
+	    local playerData =
+	    {
+	        steamId = recordedData.steamId,
+	        nickname = recordedData.nickname or "",
+	        playTime = recordedData.playTime,
+	        marineTime = recordedData.marineTime,
+	        alienTime = recordedData.alienTime,
+	        teamNumber = recordedData.teamNumber,
+	        kills = recordedData.kills,
+	        deaths = recordedData.deaths,
+	        assists = recordedData.assists,
+	        score = recordedData.score,
+	        isWinner = winningTeam:GetTeamNumber() == recordedData.teamNumber,
+	        isCommander = (recordedData.commanderTime / gameTime) > 0.75,
+	        marineTeamSkill = marineSkill,
+	        alienTeamSkill = alienSkill,
+	        gatherGame = isGatherGame,
+	        commanderTime = recordedData.commanderTime,
+	        entranceTime = recordedData.entranceTime,
+	        exitTime = recordedData.exitTime,
+	    }
+	
+	    DebugPrint("PlayerRanking: dumping player data ------------------")
+	    DebugPrint("%s", ToString(playerData))
+	
+	    table.insert(playerTable, playerData)
+    end
 
 end
 
@@ -319,6 +326,10 @@ if Server then
             player:SetTotalScore(obj.score)
             player:SetTotalPlayTime(obj.playTime)
             player:SetPlayerLevel(obj.level)
+
+            if player:GetPlayerLevel() ~= -1 and player:GetPlayerLevel() < kRookieLevel then
+                player:SetRookieMode(true)
+            end
         end
 
     end
