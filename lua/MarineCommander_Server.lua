@@ -26,7 +26,7 @@ end
 
 function MarineCommander:TriggerScan(position, trace, entity)
 
-    if trace.fraction ~= 1 and entity and entity:GetEnergy() > GetCostForTech(kTechId.Scan) then
+    if trace.fraction ~= 1 and entity and entity:GetEnergy() >= GetCostForTech(kTechId.Scan) then
 
         CreateEntity(Scan.kMapName, position, self:GetTeamNumber())
         StartSoundEffectAtOrigin(Observatory.kScanSound, position)
