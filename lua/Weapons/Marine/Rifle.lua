@@ -248,9 +248,7 @@ end
 if Client then
 
     function Rifle:OnClientPrimaryAttackStart()
-        Shared.StopSound(self, kSingleShotSound)
         Shared.PlaySound(self, kSingleShotSound)        
-		//Shared.PlaySound(self, kLoopingSound)
         
         local player = self:GetParent()
         
@@ -294,7 +292,7 @@ if Client then
     end
     
     function Rifle:OnClientPrimaryAttacking()
-        Shared.StopSound(self, kSingleShotSound)
+        //Shared.StopSound(self, kSingleShotSound)
         Shared.PlaySound(self, kSingleShotSound)
     end
 
@@ -311,9 +309,6 @@ if Client then
     function Rifle:OnClientPrimaryAttackEnd()
     
         // Just assume the looping sound is playing.
-        Shared.StopSound(self, kSingleShotSound)
-		//Shared.StopSound(self, kLoopingSound)
-        Shared.PlaySound(self, kEndSound)
         
         local player = self:GetParent()
         if player and player:GetIsAlive() then

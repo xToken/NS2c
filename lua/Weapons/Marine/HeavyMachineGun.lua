@@ -15,8 +15,7 @@ local kViewModelName = PrecacheAsset("models/marine/heavymachinegun/heavymachine
 local kAnimationGraph = PrecacheAsset("models/marine/heavymachinegun/heavymachinegun_view.animation_graph")
 
 local kSpread = ClipWeapon.kCone4Degrees
-local kLongShotSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/hmg_fire1")
-local kShortShotSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/hmg_fire2")
+local kSingleShotSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/hmg_fire")
 local kHeavyMachineGunEndSound = PrecacheAsset("sound/NS2.fev/marine/heavy/spin_down")
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/heavymachinegun/muzzle_flash.cinematic")
 local kMuzzleAttachPoint = "fxnode_riflemuzzle"
@@ -86,18 +85,6 @@ function HeavyMachineGun:OnPrimaryAttack(player)
     end
     
 end
-
-/*
-function HeavyMachineGun:OnPrimaryAttackEnd(player)
-
-    if self.primaryAttacking then
-        Shared.StopSound(self, kLongShotSound)
-        Weapon.OnPrimaryAttackEnd(self, player)
-        self.primaryAttacking = false 
-    end
-    
-end
-*/
 
 function HeavyMachineGun:GetNumStartClips()
     return 2
@@ -235,7 +222,7 @@ if Client then
 
     function HeavyMachineGun:OnClientPrimaryAttackStart()
         // Start the looping sound for the rest of the shooting. Pew pew pew...
-        Shared.PlaySound(self, kLongShotSound)
+        Shared.PlaySound(self, kSingleShotSound)
     end
     
     function HeavyMachineGun:GetTriggerPrimaryEffects()
@@ -243,7 +230,7 @@ if Client then
     end
     
     function HeavyMachineGun:OnClientPrimaryAttacking()
-        Shared.PlaySound(self, kShortShotSound)
+        Shared.PlaySound(self, kSingleShotSound)
     end
     
     function HeavyMachineGun:OnClientPrimaryAttackEnd()
