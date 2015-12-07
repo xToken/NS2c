@@ -272,7 +272,7 @@ end
  */
 function OnMapLoadEntity(className, groupName, values)
 
-    local season = GetSeason()
+    //local season = GetSeason()
     // set custom round start music if defined
     if className == "ns2_gamerules" then
     
@@ -326,7 +326,7 @@ function OnMapLoadEntity(className, groupName, values)
     // Otherwise the server will create the cinematic.
     elseif className == "skybox" or (className == "cinematic" and (values.startsOnMessage == "" or values.startsOnMessage == nil)) then
     
-        if IsGroupActiveInSeason(groupName, season) then
+        //if IsGroupActiveInSeason(groupName, season) then
         
             local coords = values.angles:GetCoords(values.origin)
             
@@ -372,16 +372,16 @@ function OnMapLoadEntity(className, groupName, values)
             
             table.insert(Client.cinematics, cinematic)
             
-        end
+        //end
     
     elseif className == "ambient_sound" then
     
-        if IsGroupActiveInSeason(groupName, season) then
+        //if IsGroupActiveInSeason(groupName, season) then
             local entity = AmbientSound()
             LoadEntityFromValues(entity, values)
             Client.PrecacheLocalSound(entity.eventName)
             table.insert(Client.ambientSoundList, entity)
-        end
+        //end
         
     elseif className == Reverb.kMapName then
     

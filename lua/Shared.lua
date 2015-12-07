@@ -20,7 +20,7 @@ Script.Load("lua/HotloadTools.lua")
 
 Script.Load("lua/JITConsoleCommands.lua")
 
-Script.Load("lua/Locale.lua")
+//Script.Load("lua/Locale.lua")
 
 // Utility and constants
 Script.Load("lua/Globals.lua")
@@ -29,7 +29,7 @@ Script.Load("lua/Debug.lua")
 Script.Load("lua/CollisionRep.lua")
 Script.Load("lua/Utility.lua")
 Script.Load("lua/PlayerInput.lua")
-Script.Load("lua/Seasons.lua")
+//Script.Load("lua/Seasons.lua")
 
 Script.Load("lua/MixinUtility.lua")
 Script.Load("lua/AnimatedModel.lua")
@@ -373,7 +373,7 @@ end
 
 local function OnMapPreLoad()
    
-    UpdateMapForSeasons()
+    //UpdateMapForSeasons()
     
     Shared.PreLoadSetGroupNeverVisible(kCollisionGeometryGroupName)   
     Shared.PreLoadSetGroupNeverVisible(kMovementCollisionGroupName)   
