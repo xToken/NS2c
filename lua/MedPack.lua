@@ -9,13 +9,20 @@
 
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/DropPack.lua")
+Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 
 class 'MedPack' (DropPack)
 
 MedPack.kMapName = "medpack"
 
+MedPack.kModelNameWinter = PrecacheAsset("seasonal/holiday2012/models/gift_medkit_01.model")
 MedPack.kModelName = PrecacheAsset("models/marine/medpack/medpack.model")
+
+local function GetModelName()
+    return GetSeason() == Seasons.kWinter and MedPack.kModelNameWinter or MedPack.kModelName
+end
+
 MedPack.kHealthSound = PrecacheAsset("sound/NS2.fev/marine/common/health")
 
 local networkVars = { }
@@ -24,7 +31,7 @@ function MedPack:OnInitialized()
 
     DropPack.OnInitialized(self)
     
-    self:SetModel(MedPack.kModelName)
+    self:SetModel(GetModelName())
     
 end
 

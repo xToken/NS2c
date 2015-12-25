@@ -125,7 +125,7 @@ function Lerk:GetRollSmoothRate()
     return 3
 end    
 
-local kMaxGlideRoll = math.rad(60)
+local kMaxGlideRoll = math.rad(30)
 
 function Lerk:GetDesiredAngles()
 
@@ -135,16 +135,47 @@ function Lerk:GetDesiredAngles()
 
     local desiredAngles = Alien.GetDesiredAngles(self)
 
-    if not self:GetIsOnGround() and self.gliding then
-        desiredAngles.pitch = self.viewPitch
-    end 
-   
-    if not self:GetIsOnGround() then    
-        desiredAngles.roll = Clamp( RadianDiff( self:GetAngles().yaw, self.viewYaw ), -kMaxGlideRoll, kMaxGlideRoll)    
+    if not self:GetIsOnGround() and not self:GetIsWallGripping() then   
+        if self.gliding then
+            desiredAngles.pitch = self.viewPitch
+        end 
+        local diff = RadianDiff( self:GetAngles().yaw, self.viewYaw )
+        if math.abs(diff) < 0.001 then
+            diff = 0
+        end
+        desiredAngles.roll = Clamp( diff, -kMaxGlideRoll, kMaxGlideRoll)   
+        -- Log("%s: yaw %s, viewYaw %s, diff %s, roll %s", self, self:GetAngles().yaw, self.viewYaw , diff, desiredAngles.roll)
     end
     
     return desiredAngles
 
+end
+
+local kLerkGlideYaw = 90
+
+function Lerk:OverrideGetMoveYaw()
+
+    // stop the animation from banking the model; the animation was originally intended
+    // to handle left/right banking using move_speed and move_yaw, but this was too cumbersome.
+    // By setting the moveYaw to 90 (straight ahead), the animation-state banking is zeroed out
+    // and the banking can be handled by changing the roll angle instead
+
+    if not self:GetIsOnGround() then
+        return kLerkGlideYaw
+    end
+    return nil
+
+end
+
+function Lerk:OverrideGetMoveSpeed(speed)
+
+    if self:GetIsOnGround() then
+        return kMaxWalkSpeed
+    end
+    // move_speed determines how often we flap. We fiddle some to 
+    // flap more at minimum flying speed
+    return Clamp((speed - kMaxWalkSpeed) / kMaxSpeed, 0, 1) 
+           
 end
 
 function Lerk:GetAngleSmoothingMode()

@@ -827,8 +827,9 @@ if Server then
     
         local wasDisabled = false
         
-        // Check if auto-team balance should be enabled or disabled.
-        local autoTeamBalance = Server.GetConfigSetting("auto_team_balance")
+        -- Check if auto-team balance should be enabled or disabled. 
+        -- Disable automatically if cheats are on so you can play against more bots
+        local autoTeamBalance = not Shared.GetCheatsEnabled() and Server.GetConfigSetting("auto_team_balance")
         if autoTeamBalance and autoTeamBalance.enabled then
         
             local enabledOnUnbalanceAmount = autoTeamBalance.enabled_on_unbalance_amount or 2

@@ -153,6 +153,13 @@ function Marine:OnCreate()
         InitMixin(self, TeamMessageMixin, { kGUIScriptName = "GUIMarineTeamMessage" })
 
     end
+	self.weaponDropTime = 0
+
+    self.timeOfLastDrop = 0
+    self.timeOfLastPickUpWeapon = 0
+    self.catpackboost = false
+    self.timeCatpackboost = 0
+    self.flashlightLastFrame = false
 
 end
 
@@ -183,10 +190,7 @@ function Marine:OnInitialized()
     self:SetModel(self:GetVariantModel(), MarineVariantMixin.kMarineAnimationGraph)
     
     Player.OnInitialized(self)
-    
-    // Calculate max and starting armor differently
-    self.armor = 0
-    
+
     if Server then
     
         self.armor = self:GetArmorAmount()
@@ -205,9 +209,7 @@ function Marine:OnInitialized()
         self.notifications = { }
         
     end
-    
-    self.weaponDropTime = 0
-    
+
     local viewAngles = self:GetViewAngles()
     self.lastYaw = viewAngles.yaw
     self.lastPitch = viewAngles.pitch
@@ -215,14 +217,7 @@ function Marine:OnInitialized()
     // -1 = leftmost, +1 = right-most
     self.horizontalSwing = 0
     // -1 = up, +1 = down
-    
-    self.timeOfLastDrop = 0
-    self.timeOfLastPickUpWeapon = 0
-    self.catpackboost = false
-    self.timeCatpackboost = 0
-    
-    self.flashlightLastFrame = false
-    
+        
 end
 
 function Marine:GetJumpMode()

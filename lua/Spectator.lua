@@ -19,12 +19,16 @@ Script.Load("lua/FreeLookSpectatorMode.lua")
 Script.Load("lua/OverheadSpectatorMode.lua")
 Script.Load("lua/FollowingSpectatorMode.lua")
 Script.Load("lua/FirstPersonSpectatorMode.lua")
+Script.Load("lua/KillCamSpectatorMode.lua")
 Script.Load("lua/MinimapMoveMixin.lua")
 Script.Load("lua/ScoringMixin.lua")
 
 class 'Spectator' (Player)
 
 Spectator.kMapName = "spectator"
+
+-- disable killcam for now
+Spectator.kKillCamEnabled = false
 
 local kSpectatorMapMode = enum( { 'Invisible', 'Small', 'Big' } )
 
@@ -33,7 +37,8 @@ local kSpectatorModeClass =
     [kSpectatorMode.FreeLook] = FreeLookSpectatorMode,
     [kSpectatorMode.Following] = FollowingSpectatorMode,
     [kSpectatorMode.FirstPerson] = FirstPersonSpectatorMode,
-    [kSpectatorMode.Overhead] = OverheadSpectatorMode
+    [kSpectatorMode.Overhead] = OverheadSpectatorMode,
+    [kSpectatorMode.KillCam] = KillCamSpectatorMode
 }
 
 local kDefaultFreeLookSpeed = Player.kWalkMaxSpeed * 3
@@ -44,7 +49,10 @@ local kDeltatimeBetweenAction = 0.3
 local networkVars =
 {
     specMode = "private enum kSpectatorMode",
-    selectedId = "private entityid"
+    selectedId = "private entityid",
+    // killCam uses selectId for the victim
+    killCamBaseTime = "private time",
+    killCamKillerId = "private entityid"
 }
 
 AddMixinNetworkVars(CameraHolderMixin, networkVars)
@@ -76,7 +84,7 @@ local function NextSpectatorMode(self, mode)
     
     local nextMode = (mode % numModes) + 1
     // Following is only used directly through SetSpectatorMode(), never in this function.
-    if not self:IsValidMode(nextMode) or nextMode == kSpectatorMode.Following then
+    if not self:IsValidMode(nextMode) or nextMode == kSpectatorMode.Following or nextMode == kSpectatorMode.KillCam then
         return NextSpectatorMode(self, nextMode)
     else
         return nextMode
@@ -84,7 +92,7 @@ local function NextSpectatorMode(self, mode)
     
 end
 
-// First Person mode switching handled at:
+// **** NOTE **** First Person keyboard control (mode switching) handled at:
 // GUIFirstPersonSpectate:SendKeyEvent(key, down)
 local function UpdateSpectatorMode(self, input)
 
@@ -153,7 +161,7 @@ function Spectator:OnCreate()
     self:SetFreeLookMoveEnabled(false)
     self:SetFollowMoveEnabled(false)
     self:SetOverheadMoveEnabled(false)
-    
+    self.killCamBaseTime = 0
     self.specMode = NextSpectatorMode(self)
     
     if Client then
@@ -161,7 +169,7 @@ function Spectator:OnCreate()
         self.mapButtonPressed = false
         self.mapMode = kSpectatorMapMode.Small
         self.showInsight = true
-        
+
     end
     
 end
@@ -170,10 +178,9 @@ function Spectator:OnInitialized()
 
     Player.OnInitialized(self)
     
-    self.selectedId = Entity.invalidId
-    
     if Server then
-    
+        self.selectedId = Entity.invalidId    
+        
         self.timeFromLastAction = 0
         self:SetIsVisible(false)
         self:SetIsAlive(false)
@@ -279,7 +286,12 @@ function Spectator:OnProcessMove(input)
         if self.clientSpecMode ~= self.specMode then
             self:SetSpectatorMode(self.specMode)
             self.clientSpecMode = self.specMode
+            Log("%s: Switching to mode %s", self, self.specMode)
         end
+    end
+    
+    if self.modeInstance and self.modeInstance.OnProcessMove then
+        self.modeInstance:OnProcessMove(self, input)
     end
     
     self:UpdateMove(input)
@@ -315,9 +327,9 @@ function Spectator:OnProcessMove(input)
                 end
                 
             end
-            
-        end
         
+        end
+            
         // This flag must be cleared inside OnProcessMove. See explaination in Commander:OverrideInput().
         self.setScrollPosition = false
         
@@ -409,6 +421,8 @@ function Spectator:GetViewOffset()
 
     if self:GetIsOverhead() then
         return Vector(0, 0, 0)
+    elseif self.specMode == kSpectatorMode.KillCam then
+        return Vector(1, 1, 1)
     else
         return Player.GetViewOffset(self)
     end
@@ -464,6 +478,31 @@ function Spectator:GetIsValidTarget(entity)
     
     return isValid
     
+end
+
+function Spectator:SetupKillCam(victim, killer)
+    if Spectator.kKillCamEnabled and victim and killer then
+        self.killCamBaseTime = Shared.GetTime()
+        self.selectedId = victim:GetId()
+        self.killCamKillerId = killer:GetId()
+        self:SetSpectatorMode(kSpectatorMode.KillCam)
+        self.killCamVictimOrigin = GetTargetOrigin(victim)
+        local cameraDistance = 2
+        self:SetDesiredCamera(0.0, {}, self:GetEyePos(), nil, cameraDistance)
+        Log("%s: killcam victim %s, killer %s", self, victim, killer)
+    end
+end
+
+function Spectator:GetKillCamVictim()
+    return Shared.GetEntity(self.selectedId)
+end
+
+function Spectator:GetKillCamKiller()
+    return Shared.GetEntity(self.killCamKillerId)
+end
+
+function Spectator:GetKillCamBaseTime()
+    return self.killCamBaseTime
 end
 
 /**

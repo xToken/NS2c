@@ -240,6 +240,8 @@ local addonNetworkVars =
     creationTime = "time"
 }
 
+AddMixinNetworkVars(BaseModelMixin, addonNetworkVars)
+AddMixinNetworkVars(ClientModelMixin, addonNetworkVars)
 AddMixinNetworkVars(TeamMixin, addonNetworkVars)
 
 function ArmoryAddon:OnCreate()

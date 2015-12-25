@@ -226,7 +226,7 @@ end
 function PlayerRanking:InsertPlayerData(playerTable, recordedData, winningTeam, gameTime, marineSkill, alienSkill, isGatherGame)
 
     if self:GetPlayerIsValidForRanking(recordedData) then
-	    PROFILE("PlayerRanking:InsertPlayerData")
+		PROFILE("PlayerRanking:InsertPlayerData")
 	    local playerData =
 	    {
 	        steamId = recordedData.steamId,

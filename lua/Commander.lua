@@ -98,6 +98,14 @@ function Commander:OnCreate()
     
     InitMixin(self, CameraHolderMixin, { kFov = Commander.kFov })
 
+	self.timeScoreboardPressed = 0
+    self.focusGroupIndex = 1
+    self.numIdleWorkers = 0
+    self.numPlayerAlerts = 0
+    self.positionBeforeJump = Vector(0, 0, 0)
+    self.selectMode = Commander.kSelectMode.None
+    self.commandStationId = Entity.invalidId
+      
 end
 
 function Commander:OnInitialized()
@@ -133,11 +141,6 @@ function Commander:OnInitialized()
        
     end
 
-    self.focusGroupIndex = 1
-    self.numPlayerAlerts = 0
-    self.selectMode = Commander.kSelectMode.None
-    self.commandStationId = Entity.invalidId
-    
     self:SetWeaponsProcessMove(false)
     
 end

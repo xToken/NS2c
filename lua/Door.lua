@@ -108,6 +108,17 @@ local function UpdateAutoOpen(self, timePassed)
 
 end
 
+local function InitModel(self)
+
+    local modelName = kModelNameDefault
+    if self.clean then
+        modelName = kModelNameClean
+    end
+    
+    self:SetModel(modelName, kDoorAnimationGraph)
+    
+end
+
 function Door:OnCreate()
 
     ScriptActor.OnCreate(self)
@@ -124,27 +135,20 @@ function Door:OnCreate()
     end
     
     self.state = Door.kState.Open
-end
 
-local function InitModel(self)
-
-    local modelName = kModelNameDefault
-    if self.clean then
-        modelName = kModelNameClean
-    end
-    
-    self:SetModel(modelName, kDoorAnimationGraph)
     
 end
+
+
 
 function Door:OnInitialized()
 
     ScriptActor.OnInitialized(self)
     
-    InitModel(self)
-    
     if Server then
-    
+        
+        InitModel(self)
+        
         self:SetPhysicsType(PhysicsType.Kinematic)
         
         self:SetPhysicsGroup(PhysicsGroup.CommanderUnitGroup)
@@ -155,8 +159,7 @@ function Door:OnInitialized()
         end
         
     end
-    
-    self:SetState(Door.kState.Close)
+
     
 end
 

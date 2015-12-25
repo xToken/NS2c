@@ -156,13 +156,15 @@ function Player:OnKill(killer, doer, point, direction)
     -- Determine the killer's player name.
     local killerName
     if killer then
-        if killer:isa("Player") then
+        // search for a player being/owning the killer
+        local realKiller = killer
+        while realKiller and not realKiller:isa("Player") and realKiller.GetOwner do
+            realKiller = realKiller:GetOwner()
+        end
+        if realKiller and realKiller:isa("Player") then
+            self.killedBy = killer:GetId()
             killerName = killer:GetName()
-        else
-            local realKiller = killer.GetOwner and killer:GetOwner() or nil
-            if realKiller and realKiller:isa("Player") then
-                killerName = realKiller:GetName()
-            end
+            Log("%s: killed by %s", self, self.killedBy)
         end
     end
 
@@ -309,15 +311,21 @@ local function UpdateChangeToSpectator(self)
     
         local time = Shared.GetTime()
         if self.timeOfDeath ~= nil and (time - self.timeOfDeath > kFadeToBlackTime) then
-        
+           
             -- Destroy the existing player and create a spectator in their place (but only if it has an owner, ie not a body left behind by Phantom use)
             local owner = Server.GetOwner(self)
             if owner then
             
                 -- Queue up the spectator for respawn.
+                local killer = self.killedBy and Shared.GetEntity(self.killedBy) or nil
+                    
                 local spectator = self:Replace(self:GetDeathMapName())
                 spectator:GetTeam():PutPlayerInRespawnQueue(spectator, Shared.GetTime())
                 
+				if killer then
+                    spectator:SetupKillCam(self, killer)
+                end
+            
             end
             
         end
@@ -714,8 +722,7 @@ end
 
 function Player:SetRookieMode(rookieMode)
 
-     if self.isRookie ~= rookieMode then
-    
+    if self.isRookie ~= rookieMode then
         self.isRookie = rookieMode
 
 		if self.playerInfo then 

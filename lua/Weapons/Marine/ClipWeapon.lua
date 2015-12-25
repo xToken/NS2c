@@ -16,6 +16,7 @@
 Script.Load("lua/Weapons/Weapon.lua")
 Script.Load("lua/PickupableWeaponMixin.lua")
 Script.Load("lua/Weapons/BulletsMixin.lua")
+Script.Load("lua/Hitreg.lua")
 
 PrecacheAsset("cinematics/materials/umbra/ricochet.cinematic")
 
@@ -53,6 +54,22 @@ ClipWeapon.kCone20Degrees = Math.Radians(20)
 
 AddMixinNetworkVars(PickupableWeaponMixin, networkVars)
 
+local function FillClip(self)
+
+    // Stick the bullets in the clip back into our pool so that we don't lose
+    // bullets. Not realistic, but more enjoyable
+    self.ammo = self.ammo + self.clip
+    
+    // Transfer bullets from our ammo pool to the weapon's clip
+    self.clip = math.min(self.ammo, self:GetClipSize())
+    self.ammo = math.min(self.ammo - self.clip, self:GetMaxAmmo())
+
+    local player = self:GetParent()
+    if player then
+        player:UpdateWeaponWeights()
+    end
+end
+
 function ClipWeapon:OnCreate()
 
     Weapon.OnCreate(self)
@@ -63,6 +80,12 @@ function ClipWeapon:OnCreate()
 	self.shooting = false
     InitMixin(self, BulletsMixin)
     InitMixin(self, PickupableWeaponMixin)
+
+	self.ammo = self:GetNumStartClips() * self:GetClipSize()
+    self.clip = 0
+    self.reloading = false
+    
+    FillClip(self)
     
 end
 
@@ -89,22 +112,6 @@ function ClipWeapon:OnDestroy()
     
 end
 
-local function FillClip(self)
-
-    // Stick the bullets in the clip back into our pool so that we don't lose
-    // bullets. Not realistic, but more enjoyable
-    self.ammo = self.ammo + self.clip
-    
-    // Transfer bullets from our ammo pool to the weapon's clip
-    self.clip = math.min(self.ammo, self:GetClipSize())
-    self.ammo = self.ammo - self.clip
-
-    local player = self:GetParent()
-    if player then
-        player:UpdateWeaponWeights()
-    end
-end
-
 function ClipWeapon:OnInitialized()
 
     // Set model to be rendered in 3rd-person
@@ -112,12 +119,6 @@ function ClipWeapon:OnInitialized()
     if worldModel ~= nil then
         self:SetModel(worldModel)
     end
-    
-    self.ammo = self:GetNumStartClips() * self:GetClipSize()
-    self.clip = 0
-    self.reloading = false
-    
-    FillClip(self)
     
     Weapon.OnInitialized(self)
     
@@ -421,13 +422,7 @@ local function FireBullets(self, player)
         
         local damage = 0
 
-        /*
-        // Check prediction
-        local values = GetPredictionValues(startPoint, endPoint, trace)
-        if not CheckPredictionData( string.format("attack%d", bullet), true, values ) then
-            Server.PlayPrivateSound(player, "sound/NS2.fev/marine/voiceovers/game_start", player, 1.0, Vector(0, 0, 0))
-        end
-        */
+        HandleHitregAnalysis(player, startPoint, endPoint, trace)  
             
         // don't damage 'air'..
         if trace.fraction < 1 then

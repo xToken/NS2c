@@ -37,14 +37,8 @@ function ReadyRoomPlayer:OnCreate()
     Player.OnCreate(self)
 	InitMixin(self, CameraHolderMixin, { kFov = kDefaultFov })
     
-end
 
-function ReadyRoomPlayer:OnInitialized()
-
-    Player.OnInitialized(self)
-    
     self:SetModel(MarineVariantMixin.kDefaultModelName, MarineVariantMixin.kMarineAnimationGraph)
-    
 end
 
 function ReadyRoomPlayer:GetPlayerStatusDesc()

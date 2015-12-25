@@ -100,6 +100,13 @@ function Skulk:OnCreate()
 
     InitMixin(self, DissolveMixin)
 
+	self.wallWalking = false
+    self.wallWalkingNormalGoal = Vector.yAxis
+    self.leaping = false
+    self.timeLastWallJump = 0
+     
+    self.sneakOffset = 0
+    
 end
 
 function Skulk:OnInitialized()
@@ -114,19 +121,13 @@ function Skulk:OnInitialized()
     
     self:SetModel(self:GetVariantModel(), kSkulkAnimationGraph)
     
-    self.wallWalking = false
-    self.wallWalkingNormalGoal = Vector.yAxis
-    
     if Client then
     
         self.currentCameraRoll = 0
         self.goalCameraRoll = 0
         
     end
-    
-    self.leaping = false
-    self.timeOfLeap = 0
-    
+
 end
 
 function Skulk:GetBaseArmor()
@@ -329,7 +330,8 @@ end
 function Skulk:GetHeadAngles()
 
     if self:GetIsWallWalking() then
-        return self.currentWallWalkingAngles
+        // When wallwalking, the angle of the body and the angle of the head is very different
+        return self:GetViewAngles()
     else
         return self:GetViewAngles()
     end
