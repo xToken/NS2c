@@ -1107,7 +1107,7 @@ function SpawnPlayerAtPoint(player, origin, angles)
     
     if angles then
         -- For some reason only the "pitch" adjusts the in game angle, so take the yaw (the rotation of the entity) and convert it to "roll". Also SetViewAngles does not work here.
-        player:SetBaseViewAngles(Angles(0, angles.yaw, 0))
+        player:SetViewAngles(Angles(0, angles.yaw, 0))
     end        
     
 end
