@@ -46,10 +46,7 @@ function OnCommanderLogOut(commander)
     if client then
     
         local addTime = math.max(0, 30 - GetGamerules():GetGameTimeChanged())
-        
-        client.timeUntilResourceBlock = Shared.GetTime() + addTime + kCommanderResourceBlockTime
-        client.blockPersonalResources = true
-    
+
     end
 */
 end
