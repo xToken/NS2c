@@ -41,7 +41,7 @@ local networkVars =
     isRookie = "boolean",
     status = "enum kPlayerStatus",
     isSpectator = "boolean",
-    playerSkill = string.format("integer (0 to %d)", kMaxPlayerSkill),
+    playerSkill = "integer",
     currentTech = "integer"
 }
 
@@ -94,7 +94,7 @@ function PlayerInfoEntity:UpdateScore()
                 self.kills = scorePlayer:GetKills()
                 self.assists = scorePlayer:GetAssistKills()
                 self.deaths = scorePlayer:GetDeaths()
-                self.playerSkill = Clamp(scorePlayer:GetPlayerSkill(), 0, kMaxPlayerSkill)
+                self.playerSkill = scorePlayer:GetPlayerSkill()
                 local scoreClient = scorePlayer:GetClient()
                 Server.UpdatePlayerInfo( scoreClient, self.playerName, self.score )
                 

@@ -496,7 +496,7 @@ function Player:AddPushImpulse(vector)
     self.pushTime = Shared.GetTime()
 end
 
-function Player:GetPlayerLevel()
+function Player:GetPlayerCombatLevel()
     return math.floor(self.level)
 end
 

@@ -226,33 +226,33 @@ end
 function PlayerRanking:InsertPlayerData(playerTable, recordedData, winningTeam, gameTime, marineSkill, alienSkill, isGatherGame)
 
     if self:GetPlayerIsValidForRanking(recordedData) then
-		PROFILE("PlayerRanking:InsertPlayerData")
-	    local playerData =
-	    {
-	        steamId = recordedData.steamId,
-	        nickname = recordedData.nickname or "",
-	        playTime = recordedData.playTime,
-	        marineTime = recordedData.marineTime,
-	        alienTime = recordedData.alienTime,
-	        teamNumber = recordedData.teamNumber,
-	        kills = recordedData.kills,
-	        deaths = recordedData.deaths,
-	        assists = recordedData.assists,
-	        score = recordedData.score,
-	        isWinner = winningTeam:GetTeamNumber() == recordedData.teamNumber,
-	        isCommander = (recordedData.commanderTime / gameTime) > 0.75,
-	        marineTeamSkill = marineSkill,
-	        alienTeamSkill = alienSkill,
-	        gatherGame = isGatherGame,
-	        commanderTime = recordedData.commanderTime,
-	        entranceTime = recordedData.entranceTime,
-	        exitTime = recordedData.exitTime,
-	    }
-	
-	    DebugPrint("PlayerRanking: dumping player data ------------------")
-	    DebugPrint("%s", ToString(playerData))
-	
-	    table.insert(playerTable, playerData)
+    PROFILE("PlayerRanking:InsertPlayerData")
+    local playerData =
+    {
+        steamId = recordedData.steamId,
+        nickname = recordedData.nickname or "",
+        playTime = recordedData.playTime,
+        marineTime = recordedData.marineTime,
+        alienTime = recordedData.alienTime,
+        teamNumber = recordedData.teamNumber,
+        kills = recordedData.kills,
+        deaths = recordedData.deaths,
+        assists = recordedData.assists,
+        score = recordedData.score,
+        isWinner = winningTeam:GetTeamNumber() == recordedData.teamNumber,
+        isCommander = (recordedData.commanderTime / gameTime) > 0.75,
+        marineTeamSkill = marineSkill,
+        alienTeamSkill = alienSkill,
+        gatherGame = isGatherGame,
+        commanderTime = recordedData.commanderTime,
+        entranceTime = recordedData.entranceTime,
+        exitTime = recordedData.exitTime,
+    }
+
+    DebugPrint("PlayerRanking: dumping player data ------------------")
+    DebugPrint("%s", ToString(playerData))
+
+    table.insert(playerTable, playerData)
     end
 
 end

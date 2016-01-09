@@ -1301,8 +1301,8 @@ local function OnCommandGiveXP(client, xp)
     local player = client:GetControllingPlayer()
     if player and GetServerGameMode() == kGameMode.Combat and Shared.GetCheatsEnabled() then
         if tonumber(xp) == nil then
-            local lastlevelxp = CalculateLevelXP(player:GetPlayerLevel())
-            local nextlevelxp = CalculateLevelXP(player:GetPlayerLevel() + 1)
+            local lastlevelxp = CalculateLevelXP(player:GetPlayerCombatLevel())
+            local nextlevelxp = CalculateLevelXP(player:GetPlayerCombatLevel() + 1)
             xp = nextlevelxp - lastlevelxp
         end
         player:AddExperience(tonumber(xp))

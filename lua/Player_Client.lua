@@ -3584,7 +3584,7 @@ function PlayerUI_GetCurrentLevel()
 
     local player = Client.GetLocalPlayer()
     if player then
-        return player:GetPlayerLevel()
+        return player:GetPlayerCombatLevel()
     end
     return 1
     
@@ -3605,7 +3605,7 @@ function PlayerUI_GetNextLevelXP()
     local player = Client.GetLocalPlayer()
     local gameInfo = GetGameInfoEntity()
     if player and gameInfo then
-        local nLevel = player:GetPlayerLevel() + 1
+        local nLevel = player:GetPlayerCombatLevel() + 1
         if nLevel > gameInfo:GetCombatMaxLevel() then
             return 0
         end
@@ -3619,7 +3619,7 @@ function PlayerUI_GetCurrentLevelBaseXP()
 
     local player = Client.GetLocalPlayer()
     if player then
-        return CalculateLevelXP(player:GetPlayerLevel())
+        return CalculateLevelXP(player:GetPlayerCombatLevel())
     end
     return 0
     
