@@ -9,7 +9,7 @@
 
 Script.Load("lua/Class.lua")
 
-local version = 1.0
+local version = 1.1
 
 GHook = GHook or { }
 

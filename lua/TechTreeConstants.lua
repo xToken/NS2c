@@ -125,6 +125,9 @@ kTechId = createTechIdEnum({
     'GameStarted',
     
     'DeathTrigger',
+	//CRAP
+	'Hallucinate', 'ARC', 'MAC', 'GasGrenade', 'WhipBomb',
+	'BioMassOne', 'BioMassTwo', 'BioMassThree', 'BioMassFour', 'BioMassFive', 'BioMassSix', 'BioMassSeven', 'BioMassEight', 'BioMassNine', 'AdvancedWeaponry', 'DrifterEgg', 'ARCRoboticsFactory',
 
     // Maximum index
     'Max'
