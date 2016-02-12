@@ -372,7 +372,7 @@ local function SpawnArmory(self, techPoint)
     
         local origin = GetRandomBuildPosition( kTechId.Armory, techPointOrigin, kArmoryMaxSpawnDistance )
         if origin then
-            spawnPoint = origin - Vector(0, 0.1, 0)
+            spawnPoint = origin - Vector(0, 0.6, 0)
         end
         
     end
