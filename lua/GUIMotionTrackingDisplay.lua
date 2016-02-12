@@ -26,7 +26,7 @@ function GUIMotionTrackingDisplay:Initialize()
 
     self.background = GetGUIManager():CreateGraphicItem()
     self.background:SetColor(Color(0,0,0,0))
-    
+    self.updateInterval = 0
     self.icons = {}
 
 end
