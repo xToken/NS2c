@@ -497,14 +497,14 @@ function PlayingTeam:GetHasTeamLost()
         local abilityToRespawn = self:GetHasAbilityToRespawn()
         local numAliveCommandStructures = self:GetNumAliveCommandStructures()
         
-        if GetServerGameMode() == kGameMode.Classic then        
+        if GetServerGameMode() == kGameMode.Classic then
             if not abilityToRespawn and not activePlayers or self:GetNumPlayers() == 0 or self:GetHasConceded() then
                 return true
             end
         end
         
         if GetServerGameMode() == kGameMode.Combat then
-            return numAliveCommandStructures == 0
+            return numAliveCommandStructures == 0 or self:GetNumPlayers() == 0 or self:GetHasConceded()
         end
         
     end
