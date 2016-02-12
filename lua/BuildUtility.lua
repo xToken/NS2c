@@ -150,6 +150,11 @@ local function CheckBuildEntityRequirements(techId, position, player, ignoreEnti
     
         local numFriendlyEntitiesInRadius = 0
         local entities = GetEntitiesForTeamWithinXZRange("ScriptActor", player:GetTeamNumber(), position, kMaxEntityRadius)
+        local maxEntitiesAllowed = kMaxEntitiesInRadius
+        local gameInfo = GetGameInfoEntity()
+        if gameInfo then
+            maxEntitiesAllowed = gameInfo:GetMaxEntities()
+        end
         
         for index, entity in ipairs(entities) do
         
@@ -158,7 +163,7 @@ local function CheckBuildEntityRequirements(techId, position, player, ignoreEnti
             
                 numFriendlyEntitiesInRadius = numFriendlyEntitiesInRadius + 1
                 
-                if numFriendlyEntitiesInRadius >= (kMaxEntitiesInRadius - 1) then
+                if numFriendlyEntitiesInRadius >= (maxEntitiesAllowed - 1) then
                 
                     errorString = "COMMANDERERROR_TOO_MANY_ENTITIES"
                     legalBuild = false

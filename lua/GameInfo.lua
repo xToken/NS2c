@@ -21,6 +21,7 @@ local networkVars =
     numPlayersTotal = "integer",
     gameMode = "enum kGameMode",
     fallDamage = "boolean",
+    maxEntities = "integer",
     classicCommanderRequired = "boolean",
     classicMaxSentriesPerRoom = "integer (1 to " .. kMaxSentriesPerRoom .. ")",
     classicMaxSiegesPerRoom = "integer (1 to " .. kMaxSiegesPerRoom .. ")",
@@ -47,6 +48,7 @@ function GameInfo:OnCreate()
         self.numPlayersTotal = 0
         self.gameMode = kGameMode.Classic
         self.fallDamage = false
+        self.maxEntites = kMaxEntitiesInRadius
         self.classicCommanderRequired = false
         self.classicMaxSentriesPerRoom = 1
         self.classicMaxSiegesPerRoom = 1
@@ -96,6 +98,10 @@ end
     
 function GameInfo:GetFallDamageEnabled()
     return self.fallDamage
+end
+
+function GameInfo:GetMaxEntities()
+    return self.maxEntities
 end
 
 function GameInfo:GetClassicCommanderRequired()
@@ -154,6 +160,11 @@ if Server then
     
     function GameInfo:SetFallDamage(fDamage)
         self.fallDamage = fDamage
+    end
+    
+    function GameInfo:SetMaxEntities(maxEnts)
+        maxEnts = Clamp(maxEnts, 10 ,75)
+        self.maxEntities = maxEnts
     end
         
     function GameInfo:SetGameMode(gMode)

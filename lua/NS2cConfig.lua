@@ -10,6 +10,7 @@ local configFileName = "ClassicConfig.json"
 local defaultConfig = {
                         classic_gamemode = 0,
                         classic_falldamage = true,
+                        classic_maxentities = kMaxEntitiesInRadius,
                         classic_commrequired = true,
                         classic_maxsentries = 3,
                         classic_maxsiegecannons = 5,
@@ -68,6 +69,8 @@ function UpdateClassicServerSettings()
     if gameInfo then
         //Fall Damage
         gameInfo:SetFallDamage(GetServerConfigSetting("classic_falldamage"))
+        //Max Entities
+        gameInfo:SetMaxEntities(GetServerConfigSetting("classic_maxentities"))
         //Comm Requirement
         gameInfo:SetClassicCommanderRequired(GetServerConfigSetting("classic_commrequired"))
         //Max Sentries per Room
@@ -145,6 +148,25 @@ local function UpdateFallDamageSetting(client, setting)
 end
 
 CreateServerAdminCommand("Console_sv_falldamage", UpdateFallDamageSetting, "Toggles Fall Damage - (true = enabled).")
+
+local function UpdateMaxEntities(client, setting)
+
+    local gameInfo = GetGameInfoEntity()
+    if gameInfo then
+        local maxEnts = gameInfo:GetMaxEntities()
+        setting = tonumber(setting)
+        if setting and setting >= 10 and setting <= 75 then
+            maxEnts = math.floor(setting)
+        end
+        if UpdateServerConfigSetting("classic_maxentities", maxEnts) then
+            gameInfo:SetMaxEntities(maxEnts)
+        end
+        ServerAdminPrint(client, string.format("NS2c Max Entities per area set to %s", maxEnts))
+    end
+    
+end
+
+CreateServerAdminCommand("Console_sv_maxentities", UpdateMaxEntities, "Update maximum amount of entities in a 15m radius (Between 10 and 75.")
 
 //'Classic' Specific Commands
 local function UpdateCommanderRequired(client, setting)
@@ -336,6 +358,7 @@ local function ShowClassicSpecificConsoleCommands(client)
         end
         ServerAdminPrint(client, string.format("sv_gamemode - Controls NS2c Game mode based on MapName(0), Classic(1) or Combat(2) - %s", modeString))
         ServerAdminPrint(client, string.format("sv_falldamage - Controls Falling Damage - %s", gameInfo:GetFallDamageEnabled() and "Enabled" or "Disabled"))
+        ServerAdminPrint(client, string.format("sv_maxentities - Controls Maximum Entities in an area - %s", gameInfo:GetMaxEntities()))
         ServerAdminPrint(client, string.format("sv_classiccommrequired - Controls Commander Requirement for round start - %s", gameInfo:GetClassicCommanderRequired() and "Required" or "Not Required"))
         ServerAdminPrint(client, string.format("sv_classicmaxsentries - Controls maximum number of Sentries per room - %s", gameInfo:GetClassicMaxSentriesPerRoom()))
         ServerAdminPrint(client, string.format("sv_classicmaxsieges - Controls maximum number of Sieges per room - %s", gameInfo:GetClassicMaxSiegesPerRoom()))
