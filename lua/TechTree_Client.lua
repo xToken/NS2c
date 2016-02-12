@@ -9,11 +9,24 @@
 
 function GetHasTech(player, techId, silentError)
 
-    local techTree = GetTechTree()
-    if(techTree ~= nil) then
-        return techTree:GetHasTech(techId, silentError)
+    local gameInfo = GetGameInfoEntity()
+    if gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then    
+        local player
+        if Client then
+            player = Client.GetLocalPlayer()
+        elseif Predict then
+            player = Predict.GetLocalPlayer()
+        end
+        if player then
+            return player:GetHasUpgrade(techId)
+        end
     else
-        Print("GetHasTech (Client) returned nil tech tree.")
+        local techTree = GetTechTree()
+        if(techTree ~= nil) then
+            return techTree:GetHasTech(techId, silentError)
+        else
+            Print("GetHasTech (Client) returned nil tech tree.")
+        end
     end
     
     return false
