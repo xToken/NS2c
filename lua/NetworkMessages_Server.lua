@@ -403,10 +403,6 @@ local function OnSetPlayerVariant(client, message)
     
 end
 
-local function OnConnectMessage(client, message)
-    OnSetPlayerVariant(client, message)
-end
-
 Server.HookNetworkMessage("SetPlayerVariant", OnSetPlayerVariant)
 Server.HookNetworkMessage("SelectUnit", OnCommandSelectUnit)
 Server.HookNetworkMessage("SelectHotkeyGroup", OnCommandParseSelectHotkeyGroup)
@@ -421,5 +417,4 @@ Server.HookNetworkMessage("CommanderPing", OnCommandCommPing)
 Server.HookNetworkMessage("SetCommunicationStatus", OnCommandSetCommStatus)
 Server.HookNetworkMessage("Buy", OnMessageBuy)
 Server.HookNetworkMessage("VoiceMessage", OnVoiceMessage)
-Server.HookNetworkMessage("ConnectMessage", OnConnectMessage)
 Server.HookNetworkMessage("MovementMode", OnMovementChanged)

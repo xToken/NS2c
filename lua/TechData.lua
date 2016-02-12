@@ -748,7 +748,7 @@ function BuildTechData()
 			[kTechDataMapName] = Shotgun.kMapName,
 			[kTechDataDisplayName] = "SHOTGUN",
 			[kTechDataTooltipInfo] =  "SHOTGUN_TOOLTIP",
-			[kTechDataModel] = Shotgun.kModelName,
+			[kTechDataModel] = ShotgunVariantMixin.kModelNames.shotgun[ShotgunVariantMixin.kDefaultModelName],
 			[kTechDataCostKey] = kShotgunDropCost,
 			[kTechDataDamageType] = kShotgunDamageType,
 			[kStructureAttachId] = { kTechId.Armory, kTechId.AdvancedArmory },

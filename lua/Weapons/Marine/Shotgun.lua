@@ -10,6 +10,7 @@
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
 Script.Load("lua/IdleAnimationMixin.lua")
 Script.Load("lua/Hitreg.lua")
+Script.Load("lua/ShotgunVariantMixin.lua")
 
 class 'Shotgun' (ClipWeapon)
 
@@ -20,6 +21,7 @@ local networkVars =
     emptyPoseParam = "private float (0 to 1 by 0.01)"
 }
 
+AddMixinNetworkVars(ShotgunVariantMixin, networkVars)
 // higher numbers reduces the spread
 local kIdleAnimations = {"idle", "idle_check", "idle_clean"}
 local kSpreadDistance = 11.3
@@ -60,6 +62,7 @@ local kMuzzleAttachPoint = "fxnode_shotgunmuzzle"
 function Shotgun:OnCreate()
 
     ClipWeapon.OnCreate(self)
+	InitMixin(self, ShotgunVariantMixin)
     self.emptyPoseParam = 0
     
     if Client then
@@ -69,7 +72,7 @@ function Shotgun:OnCreate()
 end
 
 function Shotgun:GetAnimationGraphName()
-    return kAnimationGraph
+    return ShotgunVariantMixin.kShotgunAnimationGraph
 end
 
 function Shotgun:GetViewModelName(sex, variant)
@@ -317,7 +320,33 @@ if Client then
     end
     
     function Shotgun:GetUIDisplaySettings()
-        return { xSize = 256, ySize = 128, script = "lua/GUIShotgunDisplay.lua" }
+        return { xSize = 256, ySize = 128, script = "lua/GUIShotgunDisplay.lua", variant = self:GetShotgunVariant() }
+    end
+    
+    function Shotgun:OnUpdateRender()        
+
+        ClipWeapon.OnUpdateRender( self )
+
+        local parent = self:GetParent()
+        if parent and parent:GetIsLocalPlayer() then
+            local viewModel = parent:GetViewModelEntity()
+            if viewModel and viewModel:GetRenderModel() then
+                
+                local clip = self:GetClip()
+                local time = Shared.GetTime()
+                
+                if self.lightCount ~= clip and 
+                    not self.lightChangeTime or self.lightChangeTime + 0.15 < time 
+                then
+                    self.lightCount = clip
+                    self.lightChangeTime = time
+                end
+                
+                viewModel:InstanceMaterials()
+                viewModel:GetRenderModel():SetMaterialParameter("ammo", self.lightCount or 6 )
+                
+            end
+        end
     end
 
 end

@@ -93,24 +93,7 @@ function ParseSelectUnitMessage(message)
     return message.teamNumber, Shared.GetEntity(message.unitId), message.selected, message.keepSelection
 end
 
-function BuildConnectMessage(isMale, marineVariant, skulkVariant, gorgeVariant, lerkVariant, fadeVariant, onosVariant, shoulderPadIndex, exoVariant, rifleVariant)
-
-    local t = { }
-    t.isMale = isMale
-    t.marineVariant = marineVariant
-    t.skulkVariant = skulkVariant
-    t.gorgeVariant = gorgeVariant
-    t.lerkVariant = lerkVariant
-    t.fadeVariant = fadeVariant
-    t.onosVariant = onosVariant
-    t.shoulderPadIndex = shoulderPadIndex
-    t.exoVariant = exoVariant
-    t.rifleVariant = rifleVariant
-    return t
-    
-end
-
-local kConnectMessage =
+local kSetPlayerVariantMessage =
 {
     isMale = "boolean",
     marineVariant = "enum kMarineVariant",
@@ -119,13 +102,11 @@ local kConnectMessage =
     lerkVariant = "enum kLerkVariant",
     fadeVariant = "enum kFadeVariant",
     onosVariant = "enum kOnosVariant",
-    shoulderPadIndex = string.format("integer (0 to %d)",  #kShoulderPad2ProductId),
+    shoulderPadIndex = string.format("integer (0 to %d)",  #kShoulderPad2ItemId),
     exoVariant = "enum kExoVariant",
-    rifleVariant = "enum kRifleVariant"
+    rifleVariant = "enum kRifleVariant",
+    shotgunVariant = "enum kShotgunVariant"
 }
-Shared.RegisterNetworkMessage("ConnectMessage", kConnectMessage)
-
-local kSetPlayerVariantMessage = kConnectMessage
 Shared.RegisterNetworkMessage("SetPlayerVariant", kSetPlayerVariantMessage)
 
 function BuildVoiceMessage(voiceId)
@@ -308,6 +289,8 @@ Shared.RegisterNetworkMessage( "JoinError", kJoinErrorMessage )
 
 --Used to tell the server that a client has played the tutorial
 Shared.RegisterNetworkMessage( "PlayedTutorial", {} )
+
+Shared.RegisterNetworkMessage( "CommanderLoginError", {} )
 
 /*
 */

@@ -72,7 +72,11 @@ function BuildingMixin:AttemptToBuild(techId, origin, normal, orientation, pickV
         end
         
         if newEnt ~= nil then
-        
+            if newEnt.UpdateWeaponSkins then
+                -- Apply weapon variant
+                newEnt:UpdateWeaponSkins( commander:GetClient() )
+            end
+            
             // Use attach entity orientation 
             if attachEntity then
                 orientation = attachEntity:GetAngles().yaw

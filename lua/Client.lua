@@ -58,6 +58,8 @@ Script.Load("lua/SabotCoreClient.lua")
 
 Script.Load("lua/JitConfig.lua")
 
+Script.Load("lua/Analytics.lua")
+
 // Precache the common surface shaders.
 PrecacheAsset("shaders/Model.surface_shader")
 PrecacheAsset("shaders/Emissive.surface_shader")
@@ -644,22 +646,8 @@ local function OnUpdateClient(deltaTime)
     end
     
     if not optionsSent then
-    
-        local options = GetAndSetVariantOptions()
-        local isMale = options.sexType == "Male"
-        Client.SendNetworkMessage("ConnectMessage",
-                BuildConnectMessage(
-                    isMale, 
-                    options.marineVariant, 
-                    options.skulkVariant, 
-                    options.gorgeVariant, 
-                    options.lerkVariant, 
-                    options.fadeVariant, 
-                    options.onosVariant, 
-                    options.shoulderPadIndex, 
-                    options.exoVariant, 
-                    options.rifleVariant),
-                true)
+
+        Client.UpdateInventory()
         optionsSent = true
         
     end
@@ -1140,7 +1128,7 @@ local function SendAddBotCommands()
         }
         Shared.ConsoleCommand(string.format("marinejitter %f", skill2jitter[marineSkill]))
 
-        Shared.ConsoleCommand("rookiemode")
+        Shared.ConsoleCommand("bottraining")
     end
 
 end

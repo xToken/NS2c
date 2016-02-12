@@ -64,7 +64,7 @@ end
 
 function GetDirectedExtentsForDiameter(direction, diameter)
     
-    // normalize and scale the vector, then extract the extents from it
+   -- normalize and scale the vector, then extract the extents from it
     local v = GetNormalizedVector(direction)
     v:Scale(diameter)
     
@@ -73,7 +73,7 @@ function GetDirectedExtentsForDiameter(direction, diameter)
     local z = math.sqrt(v.y * v.y + v.x * v.x)
  
     local result = Vector(x,y,z)
-    // Log("extents for %s/%s -> %s", direction, v, result)
+   -- Log("extents for %s/%s -> %s", direction, v, result)
     return result
     
 end
@@ -106,7 +106,7 @@ function GetMaxSupplyForTeam(teamNumber)
 
     return kMaxSupply
 
-    /*
+    --[[
     local maxSupply = 0
 
     if Server then
@@ -126,8 +126,7 @@ function GetMaxSupplyForTeam(teamNumber)
     end   
 
     return maxSupply 
-    */
-
+    ]]
 end
 
 if Client then
@@ -188,8 +187,8 @@ end
 
 local function HandleImpactDecal(position, doer, surface, target, showtracer, altMode, damage, direction, decalParams)
 
-    // when we hit a target project some blood on the geometry behind
-    //DebugLine(position, position + direction * kBloodDistance, 3, 1, 0, 0, 1)
+   -- when we hit a target project some blood on the geometry behind
+   --DebugLine(position, position + direction * kBloodDistance, 3, 1, 0, 0, 1)
     if direction then
     
         local trace =  Shared.TraceRay(position, position + direction * kBloodDistance, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterOne(target))
@@ -204,7 +203,7 @@ local function HandleImpactDecal(position, doer, surface, target, showtracer, al
             decalParams[kEffectHostCoords].zAxis:Normalize()
             decalParams[kEffectHostCoords].xAxis:Normalize()
             
-            //DrawCoords(decalParams[kEffectHostCoords])
+           --DrawCoords(decalParams[kEffectHostCoords])
             
             if not target then
                 decalParams[kEffectSurface] = trace.surface        
@@ -247,12 +246,12 @@ function HandleHitEffect(position, doer, surface, target, showtracer, altMode, f
         
     end
     
-    // Don't play the hit cinematic, those are made for third person.
+   -- Don't play the hit cinematic, those are made for third person.
     if target ~= Client.GetLocalPlayer() then
         GetEffectManager():TriggerEffects("damage", tableParams)
     end
     
-    // Always play sound effect.
+   -- Always play sound effect.
     GetEffectManager():TriggerEffects("damage_sound", tableParams)
     
     if showtracer == true and doer then
@@ -308,7 +307,7 @@ function UpdateMenuTechId(teamNumber, selected)
 
 end
 
-// passing true for resetClientMask will cause the client to discard the predict selection and wait for a server update
+-- passing true for resetClientMask will cause the client to discard the predict selection and wait for a server update
 function DeselectAllUnits(teamNumber, resetClientMask, sendMessage)
 
     if sendMessage == nil then
@@ -324,7 +323,7 @@ function DeselectAllUnits(teamNumber, resetClientMask, sendMessage)
         
     end
 
-    // inform server to reset the selection
+   -- inform server to reset the selection
     if Client and sendMessage then
         local selectUnitMessage = BuildSelectUnitMessage(teamNumber, nil, false, false)
         Client.SendNetworkMessage("SelectUnit", selectUnitMessage, true)
@@ -403,9 +402,9 @@ function GetPlayerCanUseEntity(player, target)
         target:GetCanBeUsed(player, useSuccessTable)
     end
     
-    //Print("GetPlayerCanUseEntity(%s, %s) returns %s", ToString(player), ToString(target), ToString(useSuccessTable.useSuccess))
+   --Print("GetPlayerCanUseEntity(%s, %s) returns %s", ToString(player), ToString(target), ToString(useSuccessTable.useSuccess))
 
-    // really need to move this functionality into two mixin (when for user, one for useable)
+   -- really need to move this functionality into two mixin (when for user, one for useable)
     return useSuccessTable.useSuccess or (target.GetCanAlwaysBeUsed and target:GetCanAlwaysBeUsed())
 
 end
@@ -545,7 +544,7 @@ function CheckForFlatSurface(origin, boxExtents)
 
     local valid = true
     
-    // Perform trace at center, then at each of the extent corners
+   -- Perform trace at center, then at each of the extent corners
     if boxExtents then
     
         local tracePoints = {   origin + Vector(-boxExtents, 0.5, -boxExtents),
@@ -571,26 +570,26 @@ function CheckForFlatSurface(origin, boxExtents)
 
 end
 
-/**
+--[[
  * Returns the spawn point on success, nil on failure.
- */
+]]
 function ValidateSpawnPoint(spawnPoint, capsuleHeight, capsuleRadius, filter, origin)
 
     local center = Vector(0, capsuleHeight * 0.5 + capsuleRadius, 0)
     local spawnPointCenter = spawnPoint + center
     
-    // Make sure capsule isn't interpenetrating something.
+   -- Make sure capsule isn't interpenetrating something.
     local spawnPointBlocked = Shared.CollideCapsule(spawnPointCenter, capsuleRadius, capsuleHeight, CollisionRep.Default, PhysicsMask.AllButPCs, nil)
     if not spawnPointBlocked then
 
-        // Trace capsule to ground, making sure we're not on something like a player or structure
+       -- Trace capsule to ground, making sure we're not on something like a player or structure
         local trace = Shared.TraceCapsule(spawnPointCenter, spawnPoint - Vector(0, 10, 0), capsuleRadius, capsuleHeight, CollisionRep.Move, PhysicsMask.AllButPCs)            
         if trace.fraction < 1 and (trace.entity == nil or not trace.entity:isa("ScriptActor")) then
         
             VectorCopy(trace.endPoint, spawnPoint)
             
             local endPoint = trace.endPoint + Vector(0, capsuleHeight / 2, 0)
-            // Trace in both directions to make sure no walls are being ignored.
+           -- Trace in both directions to make sure no walls are being ignored.
             trace = Shared.TraceRay(endPoint, origin, CollisionRep.Move, PhysicsMask.AllButPCs, filter)
             local traceOriginToEnd = Shared.TraceRay(origin, endPoint, CollisionRep.Move, PhysicsMask.AllButPCs, filter)
             
@@ -606,9 +605,9 @@ function ValidateSpawnPoint(spawnPoint, capsuleHeight, capsuleRadius, filter, or
     
 end
 
-// Find place for player to spawn, within range of origin. Makes sure that a line can be traced between the two points
-// without hitting anything, to make sure you don't spawn on the other side of a wall. Returns nil if it can't find a 
-// spawn point after a few tries.
+-- Find place for player to spawn, within range of origin. Makes sure that a line can be traced between the two points
+-- without hitting anything, to make sure you don't spawn on the other side of a wall. Returns nil if it can't find a 
+-- spawn point after a few tries.
 function GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, origin, minRange, maxRange, filter, validationFunc)
 
     ASSERT(capsuleHeight > 0)
@@ -635,8 +634,8 @@ function GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, origin, minRange
         if spawnPoint then
         
         
-            // The spawn point returned by GetRandomPointsWithinRadius() may be too close to the ground.
-            // Move it up a bit so there is some "wiggle" room. ValidateSpawnPoint() traces down anyway.
+           -- The spawn point returned by GetRandomPointsWithinRadius() may be too close to the ground.
+           -- Move it up a bit so there is some "wiggle" room. ValidateSpawnPoint() traces down anyway.
             spawnPoint = spawnPoint + Vector(0, 0.5, 0)
             local validSpawnPoint = ValidateSpawnPoint(spawnPoint, capsuleHeight, capsuleRadius, filter, origin)
             if validSpawnPoint then
@@ -675,7 +674,7 @@ function CreateFilter(entity1, entity2)
     
 end
 
-// Make sure point isn't blocking attachment entities
+-- Make sure point isn't blocking attachment entities
 function GetPointBlocksAttachEntities(origin)
 
     local nozzles = GetEntitiesWithinRange("ResourcePoint", origin, 1.5)
@@ -709,9 +708,9 @@ function GetGroundAtPointWithCapsule(position, extents, physicsGroupMask, filter
         trace = Shared.TraceCapsule(startPosition, endPosition, kCapsuleSize, 0, CollisionRep.Move, physicsGroupMask, filter)    
     end
     
-    // If we didn't hit anything, then use our existing position. This
-    // prevents objects from constantly moving downward if they get outside
-    // of the bounds of the map.
+   -- If we didn't hit anything, then use our existing position. This
+   -- prevents objects from constantly moving downward if they get outside
+   -- of the bounds of the map.
     if trace.fraction ~= 1 then
         return trace.endPoint - Vector(0, 2 * kCapsuleSize, 0)
     else
@@ -720,9 +719,9 @@ function GetGroundAtPointWithCapsule(position, extents, physicsGroupMask, filter
 
 end
 
-/**
+--[[
  * Return the passed in position casted down to the ground.
- */
+--]]
 function GetGroundAt(entity, position, physicsGroupMask, filter)
     if filter then
         return GetGroundAtPointWithCapsule(position, entity:GetExtents(), physicsGroupMask, filter)
@@ -732,14 +731,14 @@ function GetGroundAt(entity, position, physicsGroupMask, filter)
     
 end
 
-/**
+--[[
  * Return the ground below position, using a TraceBox with the given extents, mask and filter.
  * Returns position if nothing hit.
  *
  * filter defaults to nil
  * extents defaults to a 0.1x0.1x0.1 box (ie, extents 0.05x...)
  * physicGroupsMask defaults to PhysicsMask.Movement
- */
+--]]
 function GetGroundAtPosition(position, filter, physicsGroupMask, extents)
 
     physicsGroupMask = physicsGroupMask or PhysicsMask.Movement
@@ -751,9 +750,9 @@ function GetGroundAtPosition(position, filter, physicsGroupMask, extents)
     
     local trace = Shared.TraceBox(extents, startPosition, endPosition, CollisionRep.Move, physicsGroupMask, filter)
     
-    // If we didn't hit anything, then use our existing position. This
-    // prevents objects from constantly moving downward if they get outside
-    // of the bounds of the map.
+   -- If we didn't hit anything, then use our existing position. This
+   -- prevents objects from constantly moving downward if they get outside
+   -- of the bounds of the map.
     if trace.fraction ~= 1 then
         return trace.endPoint - Vector(0, extents.y, 0)
     else
@@ -766,7 +765,7 @@ function GetHoverAt(entity, position, filter)
 
     local ground = GetGroundAt(entity, position, PhysicsMask.Movement, filter)
     local resultY = position.y
-    // if we have a hover height, use it to find our minimum height above ground, otherwise use zero
+   -- if we have a hover height, use it to find our minimum height above ground, otherwise use zero
     
     local minHeightAboveGround = 0
     if entity.GetHoverHeight then      
@@ -775,7 +774,7 @@ function GetHoverAt(entity, position, filter)
 
     local heightAboveGround = resultY  - ground.y
     
-    // always snap "up", snap "down" only if not flying
+   -- always snap "up", snap "down" only if not flying
     if heightAboveGround <= minHeightAboveGround or not entity:GetIsFlying() then
         resultY = resultY + minHeightAboveGround - heightAboveGround              
     end   
@@ -819,7 +818,7 @@ function GetBlockedByUmbra(entity)
     return entity ~= nil and HasMixin(entity, "Umbra") and entity:GetHasUmbra()
 end
 
-// TODO: use what is defined in the material file
+-- TODO: use what is defined in the material file
 function GetSurfaceFromEntity(entity)
 
     if GetIsAlienUnit(entity) then
@@ -848,19 +847,19 @@ function GetSurfaceAndNormalUnderEntity(entity, axis)
 
 end
 
-// Trace line to each target to make sure it's not blocked by a wall. 
-// Returns true/false, along with distance traced 
+-- Trace line to each target to make sure it's not blocked by a wall. 
+-- Returns true/false, along with distance traced 
 function GetWallBetween(startPoint, endPoint, targetEntity)
 
-    // Filter out all entities except the targetEntity on this trace.
+   -- Filter out all entities except the targetEntity on this trace.
     local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Move, PhysicsMask.Bullets, EntityFilterOnly(targetEntity))        
     local dist = (startPoint - endPoint):GetLength()
     local hitWorld = false
     
-    // Hit nothing?
+   -- Hit nothing?
     if trace.fraction == 1 then
         hitWorld = false
-    // Hit the world?
+   -- Hit the world?
     elseif not trace.entity then
     
         dist = (startPoint - trace.endPoint):GetLength()
@@ -868,7 +867,7 @@ function GetWallBetween(startPoint, endPoint, targetEntity)
         
     elseif trace.entity == targetEntity then
     
-        // Hit target entity, return traced distance to it.
+       -- Hit target entity, return traced distance to it.
         dist = (startPoint - trace.endPoint):GetLength()
         hitWorld = false
         
@@ -878,7 +877,7 @@ function GetWallBetween(startPoint, endPoint, targetEntity)
     
 end
 
-// Get damage type description text for tooltips
+-- Get damage type description text for tooltips
 function DamageTypeDesc(damageType)
     if table.count(kDamageTypeDesc) >= damageType then
         if kDamageTypeDesc[damageType] ~= "" then
@@ -899,7 +898,7 @@ function GetHealthColor(scalar)
     
     if scalar <= kNearDeadThreshold then
     
-        // Faded red to bright red
+       -- Faded red to bright red
         local r = minComponent + (scalar / kNearDeadThreshold) * spreadComponent
         return {r, 0, 0}
         
@@ -1009,13 +1008,13 @@ function GetNearestFreeAttachEntity(techId, origin, range)
     
 end
 
-// Trace until we hit the "inside" of the level or hit nothing. Returns nil if we hit nothing,
-// returns the world point of the surface we hit otherwise. Only hit surfaces that are facing 
-// towards us.
-// Input pickVec is either a normalized direction away from the commander that represents where
-// the mouse was clicked, or if worldCoordsSpecified is true, it's the XZ position of the order
-// given to the minimap. In that case, trace from above it straight down to find the target.
-// The last parameter is false if target is for selection, true if it's for building
+-- Trace until we hit the "inside" of the level or hit nothing. Returns nil if we hit nothing,
+-- returns the world point of the surface we hit otherwise. Only hit surfaces that are facing 
+-- towards us.
+-- Input pickVec is either a normalized direction away from the commander that represents where
+-- the mouse was clicked, or if worldCoordsSpecified is true, it's the XZ position of the order
+-- given to the minimap. In that case, trace from above it straight down to find the target.
+-- The last parameter is false if target is for selection, true if it's for building
 function GetCommanderPickTarget(player, pickVec, worldCoordsSpecified, forBuild, ignoreEntities)
 
     local done = false
@@ -1031,7 +1030,7 @@ function GetCommanderPickTarget(player, pickVec, worldCoordsSpecified, forBuild,
     
     while not done do
 
-        // Use either select or build mask depending what it's for       
+       -- Use either select or build mask depending what it's for       
         local endPoint = startPoint + pickVec * 1000
         
         if ignoreEntities == true then
@@ -1042,7 +1041,7 @@ function GetCommanderPickTarget(player, pickVec, worldCoordsSpecified, forBuild,
         
         local hitDistance = (startPoint - trace.endPoint):GetLength()
         
-        // Try again if we're inside the surface
+       -- Try again if we're inside the surface
         if(trace.fraction == 0 or hitDistance < .1) then
         
             startPoint = startPoint + pickVec
@@ -1051,10 +1050,10 @@ function GetCommanderPickTarget(player, pickVec, worldCoordsSpecified, forBuild,
         
             done = true
 
-        // Only hit a target that's facing us (skip surfaces facing away from us)            
+       -- Only hit a target that's facing us (skip surfaces facing away from us)            
         elseif trace.normal.y < 0 then
         
-            // Trace again from what we hit
+           -- Trace again from what we hit
             startPoint = trace.endPoint + pickVec * 0.01
             
         else
@@ -1112,9 +1111,9 @@ function SpawnPlayerAtPoint(player, origin, angles)
     
 end
 
-/**
+--[[
  * Returns the passed in point traced down to the ground. Ignores all entities.
- */
+--]]
 function DropToFloor(point)
 
     local trace = Shared.TraceRay(point, Vector(point.x, point.y - 1000, point.z), CollisionRep.Move, PhysicsMask.All)
@@ -1128,13 +1127,13 @@ end
 
 function GetNearestTechPoint(origin, availableOnly)
 
-    // Look for nearest empty tech point to use instead
+   -- Look for nearest empty tech point to use instead
     local nearestTechPoint = nil
     local nearestTechPointDistance = 0
     
     for index, techPoint in ientitylist(Shared.GetEntitiesWithClassname("TechPoint")) do
     
-        // Only use unoccupied tech points that are neutral or marked for use with our team
+       -- Only use unoccupied tech points that are neutral or marked for use with our team
         local techPointTeamNumber = techPoint:GetTeamNumberAllowed()        
         if not availableOnly or techPoint:GetAttached() == nil then
         
@@ -1163,7 +1162,7 @@ function GetNearest(origin, className, teamNumber, filterFunc)
     
     for index, ent in ientitylist(Shared.GetEntitiesWithClassname(className)) do
     
-        // Filter is optional, pass through if there is no filter function defined.
+       -- Filter is optional, pass through if there is no filter function defined.
         if not filterFunc or filterFunc(ent) then
         
             if teamNumber == nil or (teamNumber == ent:GetTeamNumber()) then
@@ -1190,7 +1189,7 @@ function GetCanAttackEntity(seeingEntity, targetEntity)
     return GetCanSeeEntity(seeingEntity, targetEntity, true)
 end
 
-// Computes line of sight to entity, set considerObstacles to true to check if any other entity is blocking LOS
+-- Computes line of sight to entity, set considerObstacles to true to check if any other entity is blocking LOS
 local toEntity = Vector()
 function GetCanSeeEntity(seeingEntity, targetEntity, considerObstacles)
 
@@ -1198,25 +1197,25 @@ function GetCanSeeEntity(seeingEntity, targetEntity, considerObstacles)
     
     local seen = false
     
-    // See if line is in our view cone
+   -- See if line is in our view cone
     if targetEntity:GetIsVisible() then
     
         local targetOrigin = HasMixin(targetEntity, "Target") and targetEntity:GetEngagementPoint() or targetEntity:GetOrigin()
         local eyePos = GetEntityEyePos(seeingEntity)
         
-        // Not all seeing entity types have a FOV.
-        // So default to within FOV.
+       -- Not all seeing entity types have a FOV.
+       -- So default to within FOV.
         local withinFOV = true
         
-        // Anything that has the GetFov method supports FOV checking.
+       -- Anything that has the GetFov method supports FOV checking.
         if seeingEntity.GetFov ~= nil then
         
-            // Reuse vector
+           -- Reuse vector
             toEntity.x = targetOrigin.x - eyePos.x
             toEntity.y = targetOrigin.y - eyePos.y
             toEntity.z = targetOrigin.z - eyePos.z
             
-            // Normalize vector        
+           -- Normalize vector        
             local toEntityLength = math.sqrt(toEntity.x * toEntity.x + toEntity.y * toEntity.y + toEntity.z * toEntity.z)
             if toEntityLength > kEpsilon then
             
@@ -1231,7 +1230,7 @@ function GetCanSeeEntity(seeingEntity, targetEntity, considerObstacles)
             local dotProduct = Math.DotProduct(toEntity, normViewVec)
             local fov = seeingEntity:GetFov()
             
-            // players have separate fov for marking enemies as sighted
+           -- players have separate fov for marking enemies as sighted
             if seeingEntity.GetMinimapFov then
                 fov = seeingEntity:GetMinimapFov(targetEntity)
             end
@@ -1244,13 +1243,13 @@ function GetCanSeeEntity(seeingEntity, targetEntity, considerObstacles)
         
         if withinFOV then
         
-            local filter = EntityFilterAllButIsa("Door") // EntityFilterAll()
+            local filter = EntityFilterAllButIsa("Door")-- EntityFilterAll()
             if considerObstacles then
-                // Weapons don't block FOV
+               -- Weapons don't block FOV
                 filter = EntityFilterTwoAndIsa(seeingEntity, targetEntity, "Weapon")
             end
         
-            // See if there's something blocking our view of the entity.
+           -- See if there's something blocking our view of the entity.
             local trace = Shared.TraceRay(eyePos, targetOrigin, CollisionRep.LOS, PhysicsMask.All, filter)
             
             if trace.fraction == 1 then
@@ -1352,14 +1351,14 @@ function GetLightsForLocation(locationName)
        
     end
 
-    //Log("Total lights %s, lights in %s = %s", #Client.lightList, locationName, #lightList)
+   --Log("Total lights %s, lights in %s = %s", #Client.lightList, locationName, #lightList)
     lightLocationCache[locationName] = lightList
   
     return lightList
    
 end
 
-// for performance, cache the probes for each locationName
+-- for performance, cache the probes for each locationName
 local probeLocationCache = {}
 
 function GetReflectionProbesForLocation(locationName)
@@ -1380,7 +1379,7 @@ function GetReflectionProbesForLocation(locationName)
    
         for index, location in ipairs(locations) do
            
-        // TEMP FIX FOR SCRIPT ERRORS
+       -- TEMP FIX FOR SCRIPT ERRORS
             if Client.reflectionProbeList then
             for index, probe in ipairs(Client.reflectionProbeList) do
 
@@ -1403,7 +1402,7 @@ function GetReflectionProbesForLocation(locationName)
        
     end
 
-    // Log("Total lights %s, lights in %s = %s", #Client.lightList, locationName, #lightList)
+   -- Log("Total lights %s, lights in %s = %s", #Client.lightList, locationName, #lightList)
     probeLocationCache[locationName] = probeList
   
     return probeList
@@ -1452,9 +1451,9 @@ local function UpdateRedLightsforPowerPointWorker(self)
 
     for renderLight,_ in pairs(self.activeLights) do
 
-        //Max redness already.
+       --Max redness already.
         local angleRad = 1 * math.pi / 2
-        // and scalar goes 0->1
+       -- and scalar goes 0->1
         local scalar = math.sin(angleRad)
         
         local showCommanderLight = false
@@ -1487,7 +1486,7 @@ end
 local gLowLights
 function Lights_UpdateLightMode()
 
-    //Dont attempt to load lowlights for main menu 'map'
+   --Dont attempt to load lowlights for main menu 'map'
     if Client.fullyLoaded then
 
         local LoadData
@@ -1601,7 +1600,7 @@ function SetPlayerPoseParameters(player, viewModel, headAngles)
     
 end
 
-// Pass in position on ground
+-- Pass in position on ground
 function GetHasRoomForCapsule(extents, position, collisionRep, physicsMask, ignoreEntity, filter)
 
     if extents ~= nil then
@@ -1648,7 +1647,7 @@ function GetEngagementDistance(entIdOrTechId, trueTechId)
         
     end    
         
-    //Print("GetEngagementDistance(%s, %s) => %s => %s, %s", ToString(entIdOrTechId), ToString(trueTechId), ToString(desc), ToString(distance), ToString(success))
+   --Print("GetEngagementDistance(%s, %s) => %s => %s, %s", ToString(entIdOrTechId), ToString(trueTechId), ToString(desc), ToString(distance), ToString(success))
     
     return distance, success
     
@@ -1658,7 +1657,7 @@ function MinimapToWorld(commander, x, y)
 
     local heightmap = GetHeightmap()
     
-    // Translate minimap coords to world position
+   -- Translate minimap coords to world position
     return Vector(heightmap:GetWorldX(y), 0, heightmap:GetWorldZ(x))
     
 end
@@ -1700,8 +1699,8 @@ function GetMinimapNormCoordsFromPlayable(map, playableX, playableY)
     
 end
 
-// If we hit something, create an effect (sparks, blood, etc)
-/*function TriggerHitEffects(doer, target, origin, surface, melee, extraEffectParams)
+-- If we hit something, create an effect (sparks, blood, etc)
+--[[function TriggerHitEffects(doer, target, origin, surface, melee, extraEffectParams)
 
     local tableParams = {}
     
@@ -1729,7 +1728,7 @@ end
     
     tableParams[kEffectFilterInAltMode] = (melee == true)
 
-    // Add in extraEffectParams if specified    
+   -- Add in extraEffectParams if specified    
     if extraEffectParams then
         for key, element in pairs(extraEffectParams) do
             tableParams[key] = element
@@ -1738,7 +1737,7 @@ end
     
     GetEffectManager():TriggerEffects("damage", tableParams, doer)
     
-end*/
+end]]--
 
 // Get nearest valid target for commander ability activation, of specified team number nearest specified position.
 // Returns nil if none exists in range.
@@ -1790,7 +1789,7 @@ function GetSelectionText(entity, teamNumber)
                     
     else
     
-        // Don't show built % for enemies, show health instead
+       -- Don't show built % for enemies, show health instead
         local enemyTeam = HasMixin(entity, "Team") and GetEnemyTeamNumber(entity:GetTeamNumber()) == teamNumber
         local techId = entity:GetTechId()
         
@@ -1817,10 +1816,10 @@ function GetCostForTech(techId)
     return LookupTechData(techId, kTechDataCostKey, 0)
 end
 
-/**
+--[[
  * Adds additional points to the path to ensure that no two points are more than
  * maxDistance apart.
- */
+--]]
 function SubdividePathPoints(points, maxDistance)
     PROFILE("NS2Utility:SubdividePathPoints") 
     local numPoints   = #points    
@@ -1831,7 +1830,7 @@ function SubdividePathPoints(points, maxDistance)
         local point1 = points[i]
         local point2 = points[i + 1]
 
-        // If the distance between two points is large, add intermediate points
+       -- If the distance between two points is large, add intermediate points
         
         local delta    = point2 - point1
         local distance = delta:GetLength()
@@ -1867,7 +1866,7 @@ function GetFriendlyFire()
     return false
 end
 
-// All damage is routed through here.
+-- All damage is routed through here.
 function CanEntityDoDamageTo(attacker, target, cheats, devMode, friendlyFire, damageType)
 
     if GetGameInfoEntity():GetState() == kGameState.NotStarted then
@@ -1890,17 +1889,17 @@ function CanEntityDoDamageTo(attacker, target, cheats, devMode, friendlyFire, da
         return true
     end
     
-    // You can always do damage to yourself.
+   -- You can always do damage to yourself.
     if attacker == target then
         return true
     end
     
-    // Command stations can kill even friendlies trapped inside.
+   -- Command stations can kill even friendlies trapped inside.
     if attacker ~= nil and attacker:isa("CommandStation") then
         return true
     end
     
-    // Your own grenades can hurt you.
+   -- Your own grenades can hurt you.
     if attacker:isa("Grenade") then
     
         local owner = attacker:GetOwner()
@@ -1910,24 +1909,24 @@ function CanEntityDoDamageTo(attacker, target, cheats, devMode, friendlyFire, da
         
     end
     
-    // Same teams not allowed to hurt each other unless friendly fire enabled.
+   -- Same teams not allowed to hurt each other unless friendly fire enabled.
     local teamsOK = true
     if attacker ~= nil then
         teamsOK = GetAreEnemies(attacker, target) or friendlyFire
     end
     
-    // Allow damage of own stuff when testing.
+   -- Allow damage of own stuff when testing.
     return teamsOK
     
 end
 
 function TraceMeleeBox(weapon, eyePoint, axis, extents, range, mask, filter)
 
-    // We make sure that the given range is actually the start/end of the melee volume by moving forward the
-    // starting point with the extents (and some extra to make sure we don't hit anything behind us),
-    // as well as moving the endPoint back with the extents as well (making sure we dont trace backwards)
+   -- We make sure that the given range is actually the start/end of the melee volume by moving forward the
+   -- starting point with the extents (and some extra to make sure we don't hit anything behind us),
+   -- as well as moving the endPoint back with the extents as well (making sure we dont trace backwards)
     
-    // Make sure we don't hit anything behind us.
+   -- Make sure we don't hit anything behind us.
     local startPoint = eyePoint + axis * weapon:GetMeleeOffset()
     local endPoint = eyePoint + axis * math.max(0, range) 
     local trace = Shared.TraceBox(extents, startPoint, endPoint, CollisionRep.Damage, mask, filter)
@@ -1949,13 +1948,13 @@ local function IsPossibleMeleeTarget(player, target, teamNumber)
     
 end
 
-/**
+--[[
  * Priority function for melee target.
  *
  * Returns newTarget it it is a better target, otherwise target.
  *
  * Default priority: closest enemy player, otherwise closest enemy melee target
- */
+--]]
 local function IsBetterMeleeTarget(weapon, player, newTarget, target)
 
     local teamNumber = GetEnemyTeamNumber(player:GetTeamNumber())
@@ -1972,7 +1971,7 @@ local function IsBetterMeleeTarget(weapon, player, newTarget, target)
     
 end
 
-// melee targets must be in front of the player
+-- melee targets must be in front of the player
 local function IsNotBehind(fromPoint, hitPoint, forwardDirection)
 
     local startPoint = fromPoint + forwardDirection * 0.1
@@ -1984,9 +1983,9 @@ local function IsNotBehind(fromPoint, hitPoint, forwardDirection)
 
 end
 
-// The order in which we do the traces - middle first, the corners last.
+-- The order in which we do the traces - middle first, the corners last.
 local kTraceOrder = { 4, 1, 3, 5, 7, 0, 2, 6, 8 }
-/**
+--[[
  * Checks if a melee capsule would hit anything. Does not actually carry
  * out any attack or inflict any damage.
  *
@@ -1999,8 +1998,8 @@ local kTraceOrder = { 4, 1, 3, 5, 7, 0, 2, 6, 8 }
  * and prioritizes them.
  *
  * Basically, inside the range to the attackEndPoint, the attacker chooses the "best" target freely.
- */
- /**
+--]]
+ --[[
   * Bullets are small and will hit exactly where you looked. 
   * Melee, however, is different. We select targets from a volume, and we expect the melee'er to be able
   * to basically select the "best" target from that volume. 
@@ -2009,7 +2008,7 @@ local kTraceOrder = { 4, 1, 3, 5, 7, 0, 2, 6, 8 }
   * We specify the size of the width and base height and its range.
   * Then we split the space into 9 parts and trace/select all of them, choose the "best" target. If no good target is found,
   * we use the middle trace for effects.
-  */
+ --]]
 function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceRealAttack, scale, priorityFunc, filter, mask)
 
     scale = scale or 1
@@ -2038,13 +2037,13 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
     width = scale * width
     height = scale * height
     
-    /*
+    --[[
     if Client then
         Client.DebugCapsule(eyePoint, eyePoint + axis * range, width, 0, 3)
     end
-    */
+   --]]
     
-    // extents defines a world-axis aligned box, so x and z must be the same. 
+   -- extents defines a world-axis aligned box, so x and z must be the same. 
     local extents = Vector(width / 6, height / 6, width / 6)
     if not filter then
         filter = EntityFilterOne(player)
@@ -2101,7 +2100,7 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
         
     end
     
-    // if we have not found a target, we use the middleTrace to possibly bite a wall (or when cheats are on, teammates)
+   -- if we have not found a target, we use the middleTrace to possibly bite a wall (or when cheats are on, teammates)
     target = target or middleTrace.entity
     endPoint = endPoint or middleTrace.endPoint
     surface = surface or middleTrace.surface
@@ -2113,7 +2112,7 @@ function CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, traceR
 end
 
 local kNumMeleeZones = 3
-local kRangeMult = 0 // 0.15
+local kRangeMult = 0-- 0.15
 function PerformGradualMeleeAttack(weapon, player, damage, range, optionalCoords, altMode, filter)
 
     local didHit, target, endPoint, direction, surface
@@ -2147,9 +2146,9 @@ function PerformGradualMeleeAttack(weapon, player, damage, range, optionalCoords
 
 end
 
-/**
+--[[
  * Does an attack with a melee capsule.
- */
+--]]
 function AttackMeleeCapsule(weapon, player, damage, range, optionalCoords, altMode, filter)
 
     local targets = {}
@@ -2159,15 +2158,15 @@ function AttackMeleeCapsule(weapon, player, damage, range, optionalCoords, altMo
         filter = EntityFilterTwo(player, weapon)
     end
 
-    // loop upto 20 times just to go through any soft targets. 
-    // Stops as soon as nothing is hit or a non-soft target is hit
+   -- loop upto 20 times just to go through any soft targets. 
+   -- Stops as soon as nothing is hit or a non-soft target is hit
     for i = 1, 20 do
     
         local traceFilter = function(test)
             return EntityFilterList(targets)(test) or filter(test)
         end
     
-        // Enable tracing on this capsule check, last argument.
+       -- Enable tracing on this capsule check, last argument.
         didHit, target, endPoint, direction, surface, startPoint, trace = CheckMeleeCapsule(weapon, player, damage, range, optionalCoords, true, 1, nil, traceFilter)
         local alreadyHitTarget = target ~= nil and table.contains(targets, target)
 
@@ -2338,12 +2337,12 @@ function BuildClassToGrid()
     
 end
 
-/**
+--[[
  * Returns Column and Row to find the minimap icon for the passed in class.
- */
+--]]
 function GetSpriteGridByClass(class, classToGrid)
 
-    // This really shouldn't happen but lets return something just in case.
+   -- This really shouldn't happen but lets return something just in case.
     if not classToGrid[class] then
         Print("No sprite defined for minimap icon %s", class)
         Print(debug.traceback())
@@ -2354,11 +2353,11 @@ function GetSpriteGridByClass(class, classToGrid)
     
 end
 
-/*
+--[[
  * Non-linear egg spawning. Eggs spawn slower the more of them you have, but speed up with more players. 
  * Pass in the number of players currently on your team, and the number of egg that this will be (ie, with
  * no eggs, pass in 1 to find out how long it will take for the first egg to spawn in).
- */
+--]]
 function CalcEggSpawnTime(numPlayers, eggNumber, numDeadPlayers)
     return kAlienEggSpawnTime
 
@@ -2427,8 +2426,8 @@ if Client then
         input.pitch = Math.Clamp(input.pitch, -kMaxPitch, kMaxPitch)
     end
     
-    // &ol& = order location
-    // &ot& = order target entity name
+   -- &ol& = order location
+   -- &ot& = order target entity name
     function TranslateHintText(text)
     
         local translatedText = text
@@ -2467,7 +2466,7 @@ function SetSpeedDebugText(text, text2)
     
 end
 
-// returns pairs of impact point, entity
+-- returns pairs of impact point, entity
 function TraceBullet(player, weapon, startPoint, direction, throughHallucinations, throughUnits)
 
     local hitInfo = {}
@@ -2518,9 +2517,9 @@ function CommaValue(amount)
     
 end
 
-/**
+--[[
  * Trim off unnecessary path and extension.
- */
+--]]
 function GetTrimmedMapName(mapName)
 
     if mapName == nil then
@@ -2535,8 +2534,8 @@ function GetTrimmedMapName(mapName)
     
 end
 
-// Look for "BIND_" in the string and substitute with key to press
-// ie, "Press the BIND_Buy key to evolve to a new lifeform or to gain new upgrades." => "Press the B key to evolve to a new lifeform or to gain new upgrades."
+-- Look for "BIND_" in the string and substitute with key to press
+-- ie, "Press the BIND_Buy key to evolve to a new lifeform or to gain new upgrades." => "Press the B key to evolve to a new lifeform or to gain new upgrades."
 function SubstituteBindStrings(tipString)
 
     local substitutions = { }
@@ -2545,7 +2544,7 @@ function SubstituteBindStrings(tipString)
         local bind = GetPrettyInputName(word)
         if type(bind) == "string" then
             tipString = string.gsub(tipString, "BIND_" .. word, bind)
-        // If the input name is not found, replace the BIND_InputName with just InputName as a fallback.
+       -- If the input name is not found, replace the BIND_InputName with just InputName as a fallback.
         else
             tipString = string.gsub(tipString, "BIND_" .. word, word)
         end
@@ -2556,8 +2555,8 @@ function SubstituteBindStrings(tipString)
     
 end
 
-// Look up texture coordinates in kInventoryIconsTexture
-// Used for death messages, inventory icons, and abilities drawn in the alien "energy ball"
+-- Look up texture coordinates in kInventoryIconsTexture
+-- Used for death messages, inventory icons, and abilities drawn in the alien "energy ball"
 gTechIdPosition = nil
 function GetTexCoordsForTechId(techId)
 
@@ -2570,7 +2569,7 @@ function GetTexCoordsForTechId(techId)
     
         gTechIdPosition = {}
         
-        // marine weapons
+       -- marine weapons
         gTechIdPosition[kTechId.Rifle] = kDeathMessageIcon.Rifle
         gTechIdPosition[kTechId.Pistol] = kDeathMessageIcon.Pistol
         gTechIdPosition[kTechId.Axe] = kDeathMessageIcon.Axe
@@ -2626,7 +2625,7 @@ function GetTexCoordsForTechId(techId)
 
 end
 
-// Ex: input.commands = RemoveMoveCommand( input.commands, Move.PrimaryAttack )
+-- Ex: input.commands = RemoveMoveCommand( input.commands, Move.PrimaryAttack )
 function RemoveMoveCommand( commands, moveMask )
     local negMask = bit.bxor(0xFFFFFFFF, moveMask)
     return bit.band(commands, negMask)
@@ -2725,7 +2724,7 @@ function GetInstalledMapList()
     
 end
 
-// TODO: move to Utility.lua
+-- TODO: move to Utility.lua
 
 function EntityFilterList(list)
     return function(test) return table.contains(list, test) end
@@ -2872,7 +2871,7 @@ function GetCommanderLogoutAllowed()
 
     return true
     
-    /*
+    --[[
 
     local gameState = kGameState.PreGame
     local gameStateDuration = 0
@@ -2902,7 +2901,7 @@ function GetCommanderLogoutAllowed()
 
     return ( gameState ~= kGameState.Countdown and gameState ~= kGameState.Started ) or gameStateDuration >= kCommanderMinTime
     
-    */
+   --]]
 
 end
 
@@ -2911,50 +2910,39 @@ function GetAndSetVariantOptions()
 
     local variants = {}
     
-    variants.marineVariant = Client.GetOptionInteger("marineVariant", -1)
-    variants.skulkVariant = Client.GetOptionInteger("skulkVariant", -1)
-    variants.gorgeVariant = Client.GetOptionInteger("gorgeVariant", -1)
-    variants.lerkVariant = Client.GetOptionInteger("lerkVariant", -1)
-    variants.fadeVariant = Client.GetOptionInteger("fadeVariant", -1)
-    variants.onosVariant = Client.GetOptionInteger("onosVariant", -1)
     variants.sexType = Client.GetOptionString("sexType", "Male")
     variants.shoulderPadIndex = Client.GetOptionInteger("shoulderPad", 1)
-    variants.exoVariant = Client.GetOptionInteger("exoVariant", -1)
-    variants.rifleVariant = Client.GetOptionInteger("rifleVariant", -1)
+    variants.marineVariant = Client.GetOptionInteger("marineVariant", 1)
+    variants.skulkVariant = Client.GetOptionInteger("skulkVariant", 1)
+    variants.gorgeVariant = Client.GetOptionInteger("gorgeVariant", 1)
+    variants.lerkVariant = Client.GetOptionInteger("lerkVariant", 1)
+    variants.fadeVariant = Client.GetOptionInteger("fadeVariant", 1)
+    variants.onosVariant = Client.GetOptionInteger("onosVariant", 1)
+    variants.exoVariant = Client.GetOptionInteger("exoVariant", 1)
+    variants.rifleVariant = Client.GetOptionInteger("rifleVariant", 1)
+    variants.shotgunVariant = Client.GetOptionInteger("shotgunVariant", 1)
     
     if not GetHasShoulderPad(variants.shoulderPadIndex) then
         variants.shoulderPadIndex = 1
     end
     
-    local function SetHighestTier( variantType, enum, enumData )
-        if variants[variantType] == -1 then
-            for variant = GetEnumCount( enum ),1,-1 do 
-                if GetHasVariant( enumData, variant ) then
-                    variants[variantType] = variant
-                    break
-                end
-            end
+    local function ValidateVariant( variantType, enum, enumData )
+        if variants[variantType] == -1 or not GetHasVariant( enumData, variants[variantType] ) then
+            variants[variantType] = 1;
         end
+        assert( variants[variantType] );
     end
     
-    SetHighestTier("marineVariant", kMarineVariant, kMarineVariantData)
-    SetHighestTier("skulkVariant", kSkulkVariant, kSkulkVariantData)
-    SetHighestTier("gorgeVariant", kGorgeVariant, kGorgeVariantData)
-    SetHighestTier("lerkVariant", kLerkVariant, kLerkVariantData)
-    SetHighestTier("fadeVariant", kFadeVariant, kFadeVariantData)
-    SetHighestTier("onosVariant", kOnosVariant, kOnosVariantData)
-    SetHighestTier("exoVariant", kExoVariant, kExoVariantData)
-    SetHighestTier("rifleVariant", kRifleVariant, kRifleVariantData)
-    
-    assert(variants.marineVariant ~= -1 and variants.marineVariant ~= -1 ~= nil)
-    assert(variants.skulkVariant ~= -1 and variants.skulkVariant ~= -1 ~= nil)
-    assert(variants.gorgeVariant ~= -1 and variants.gorgeVariant ~= -1 ~= nil)
-    assert(variants.lerkVariant ~= -1 and variants.lerkVariant ~= -1 ~= nil)
-    assert(variants.fadeVariant ~= -1 and variants.fadeVariant ~= -1 ~= nil)
-    assert(variants.onosVariant ~= -1 and variants.onosVariant ~= -1 ~= nil)
-    assert(variants.exoVariant ~= -1 and variants.exoVariant ~= -1 ~= nil)
-    assert(variants.rifleVariant ~= -1 and variants.rifleVariant ~= -1 ~= nil)
-    
+    ValidateVariant("marineVariant", kMarineVariant, kMarineVariantData)
+    ValidateVariant("skulkVariant", kSkulkVariant, kSkulkVariantData)
+    ValidateVariant("gorgeVariant", kGorgeVariant, kGorgeVariantData)
+    ValidateVariant("lerkVariant", kLerkVariant, kLerkVariantData)
+    ValidateVariant("fadeVariant", kFadeVariant, kFadeVariantData)
+    ValidateVariant("onosVariant", kOnosVariant, kOnosVariantData)
+    ValidateVariant("exoVariant", kExoVariant, kExoVariantData)
+    ValidateVariant("rifleVariant", kRifleVariant, kRifleVariantData)
+    ValidateVariant("shotgunVariant", kShotgunVariant, kShotgunVariantData)
+        
     Client.SetOptionInteger("marineVariant", variants.marineVariant)
     Client.SetOptionInteger("shoulderPad", variants.shoulderPadIndex)
     Client.SetOptionInteger("skulkVariant", variants.skulkVariant)
@@ -2964,17 +2952,16 @@ function GetAndSetVariantOptions()
     Client.SetOptionInteger("onosVariant", variants.onosVariant)
     Client.SetOptionInteger("exoVariant", variants.exoVariant)
     Client.SetOptionInteger("rifleVariant", variants.rifleVariant)
+    Client.SetOptionInteger("shotgunVariant", variants.shotgunVariant)
     Client.SetOptionString("sexType", variants.sexType)
-    
     
     return variants
     
 end
 
 function SendPlayerVariantUpdate()
-
     local options = GetAndSetVariantOptions()
-    if MainMenu_IsInGame() then
+    if MainMenu_IsInGame and MainMenu_IsInGame() then
         Client.SendNetworkMessage("SetPlayerVariant",
             {
                 marineVariant = options.marineVariant,
@@ -2987,35 +2974,46 @@ function SendPlayerVariantUpdate()
                 shoulderPadIndex = options.shoulderPadIndex,
                 exoVariant = options.exoVariant,
                 rifleVariant = options.rifleVariant,
+                shotgunVariant = options.shotgunVariant,
             },
             true)
     end
-    
 end
 
-//----------------------------------------
-//  This will return nil if the asset DNE
-//----------------------------------------
+local function OnInventoryUpdated()
+    SendPlayerVariantUpdate()
+
+    --Load up the customize menu
+    local MainMenu = Client and GetGUIMainMenu()
+    if MainMenu then
+        MainMenu:OnInventoryUpdated()
+    end
+end
+Event.Hook("InventoryUpdated", OnInventoryUpdated)
+
+------------------------------------------
+--  This will return nil if the asset DNE
+------------------------------------------
 function PrecacheAssetIfExists( path )
 
     if GetFileExists(path) then
         return PrecacheAsset(path)
     else
-        //DebugPrint("attempted to precache asset that does not exist: "..path)
+       --DebugPrint("attempted to precache asset that does not exist: "..path)
         return nil
     end
 
 end
 
-//----------------------------------------
-//  If the first path DNE, it will use the fallback
-//----------------------------------------
+------------------------------------------
+--  If the first path DNE, it will use the fallback
+------------------------------------------
 function PrecacheAssetSafe( path, fallback )
 
     if GetFileExists(path) then
         return PrecacheAsset(path)
     else
-        //DebugPrint("Could not find "..path.."\n    Loading "..fallback.." instead" )
+       --DebugPrint("Could not find "..path.."\n    Loading "..fallback.." instead" )
         assert( GetFileExists(fallback) )
         return PrecacheAsset(fallback)
     end

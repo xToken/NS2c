@@ -243,8 +243,15 @@ function Marine:AttemptToBuy(validBuyIds)
             end
             if techId == kTechId.HandGrenades and self:GetHasUpgrade(kTechId.Welder) then
                 //Nope
-            elseif player:GiveItem(LookupTechData(techId, kTechDataMapName)) then
-                StartSoundEffectAtOrigin(Marine.kGunPickupSound, player:GetOrigin())                    
+            else
+				local newItem = self:GiveItem(LookupTechData(techId, kTechDataMapName))
+                if newItem then
+                    if newItem.UpdateWeaponSkins then
+                        -- Apply weapon variant
+                        newItem:UpdateWeaponSkins( self:GetClient() )
+                    end
+                	StartSoundEffectAtOrigin(Marine.kGunPickupSound, player:GetOrigin())                    
+				end
             end
         else
             //Normal upgrade

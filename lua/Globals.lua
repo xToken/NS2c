@@ -387,8 +387,9 @@ kRookieTimeThreshold = 4 * 60 * 60 // 4 hours
 kRookieNetworkCheckInterval = 2
 kRookieOptionsKey = "rookieMode"
 
-kMinFOVAdjustmentDegrees = -5
-kMaxFOVAdjustmentDegrees = 5
+kMinFOVAdjustmentDegrees = 0
+kMaxFOVAdjustmentDegrees = 20
+
 kDamageEffectType = enum({ 'Blood', 'AlienBlood', 'Sparks' })
 
 kIconColors = 
@@ -440,99 +441,139 @@ function GetHasDLC(productId, client)
     
 end
 
+function GetOwnsItem( item )
+    if Client then
+        return Client.GetOwnsItem( item )
+    else
+        return true
+    end
+end
+
 kSpecialEditionProductId = 4930
-kDeluxeEditionProductId = 4932
-kShoulderPadProductId = 250891
-kAssaultMarineProductId = 250892
 kShadowProductId = 250893
-kKodiakProductId = 296360
-kReaperProductId = 310100 //temp for testing 310100
-kReinforcementReduxProductId = 333230
 
-kNoShoulerPad = 0
-
-kShoulderPadGlobeProductId = 280763
-kShoulderPadGodarProductId = 274150
-kShoulderPadSaunaProductId = 280761
-kShoulderPadSnailsProductId = 280762
-kShoulderPadTitusProductId = 280760
+kUnpackTundraBundleItemId=10
+kTundraBundleItemId=100
+kTundraArmorItemId=101
+kTundraExosuitItemId=102
+kTundraRifleItemId=103
+kTundraShotgunItemId=104
+kTundraShoulderPatchItemId=105
+kKodiakArmorItemId=201
+kKodiakExosuitItemId=202
+kKodiakRifleItemId=203
+kKodiakShoulderPatchItemId=204
+kKodiakSkulkItemId=205
+kReaperShoulderPatchItemId=301
+kReaperSkulkItemId=302
+kReaperGorgeItemId=303
+kReaperLerkItemId=304
+kReaperFadeItemId=305
+kReaperOnosItemId=306
+kEliteAssaultArmorItemId=401
+kShadowShoulderPatchItemId=402
+kShadowSkulkItemId=403
+kShadowGorgeItemId=404
+kShadowLerkItemId=405
+kShadowFadeItemId=406
+kShadowOnosItemId=407
+kDeluxeArmorItemId=501
+kAssaultArmorItemId=502
+kReinforcedShoulderPatchItemId=503
+kNS2WC14GlobeShoulderPatchItemId=901
+kGodarShoulderPatchItemId=902
+kSaunamenShoulderPatchItemId=903
+kSnailsShoulderPatchItemId=904
+kTitusGamingShoulderPatchItemId=905
+kBlackArmorItemId=9001
 
 // DLC player variants
 // "code" is the key
 
 // TODO we can really just get rid of the enum. use array-of-structures pattern, and use #kMarineVariants to network vars
 
-kMarineVariant = enum({ "green", "special", "deluxe", "assault", "eliteassault", "kodiak" })
+kMarineVariant = enum({ "green", "special", "deluxe", "assault", "eliteassault", "kodiak", "tundra" })
 kMarineVariantData =
 {
-    [kMarineVariant.green] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
+    [kMarineVariant.green] = { displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
     [kMarineVariant.special] = { productId = kSpecialEditionProductId, displayName = "Black", modelFilePart = "_special", viewModelFilePart = "_special" },
-    [kMarineVariant.deluxe] = { productId = kDeluxeEditionProductId, displayName = "Deluxe", modelFilePart = "_special_v1", viewModelFilePart = "_deluxe" },
-    [kMarineVariant.assault] = { productId = { kAssaultMarineProductId, kReinforcementReduxProductId }, displayName = "Assault", modelFilePart = "_assault", viewModelFilePart = "_assault" },
-    [kMarineVariant.eliteassault] = { productId = kShadowProductId, displayName = "Elite Assault", modelFilePart = "_eliteassault", viewModelFilePart = "_eliteassault" },
-    [kMarineVariant.kodiak] = { productId = kKodiakProductId, displayName = "Kodiak", modelFilePart = "_kodiak", viewModelFilePart = "_kodiak" },
+    [kMarineVariant.deluxe] = { itemId = kDeluxeArmorItemId, displayName = "Deluxe", modelFilePart = "_special_v1", viewModelFilePart = "_deluxe" },
+    [kMarineVariant.assault] = { itemId = kAssaultArmorItemId, displayName = "Assault", modelFilePart = "_assault", viewModelFilePart = "_assault" },
+    [kMarineVariant.eliteassault] = { itemId = kEliteAssaultArmorItemId, displayName = "Elite Assault", modelFilePart = "_eliteassault", viewModelFilePart = "_eliteassault" },
+    [kMarineVariant.kodiak] = { itemId = kKodiakArmorItemId, displayName = "Kodiak", modelFilePart = "_kodiak", viewModelFilePart = "_kodiak" },
+    [kMarineVariant.tundra] = { itemId = kTundraArmorItemId, displayName = "Tundra", modelFilePart = "_tundra", viewModelFilePart = "_tundra" },
 }
 kDefaultMarineVariant = kMarineVariant.green
 
 kSkulkVariant = enum({ "normal", "shadow", "kodiak", "reaper" })
 kSkulkVariantData =
 {
-    [kSkulkVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
-    [kSkulkVariant.shadow] = { productId = { kShadowProductId, kReinforcementReduxProductId }, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" },
-    [kSkulkVariant.kodiak] = { productId = kKodiakProductId, displayName = "Kodiak", modelFilePart = "_kodiak", viewModelFilePart = "" },
-    [kSkulkVariant.reaper] = { productId = kReaperProductId, displayName = "Reaper", modelFilePart = "_albino", viewModelFilePart = "_albino" },
+    [kSkulkVariant.normal] = { displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
+    [kSkulkVariant.shadow] = { itemId = kShadowSkulkItemId, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" },
+    [kSkulkVariant.kodiak] = { itemId = kKodiakSkulkItemId, displayName = "Kodiak", modelFilePart = "_kodiak", viewModelFilePart = "" },
+    [kSkulkVariant.reaper] = { itemId = kReaperSkulkItemId, displayName = "Reaper", modelFilePart = "_albino", viewModelFilePart = "_albino" },
 }
 kDefaultSkulkVariant = kSkulkVariant.normal
 
 kGorgeVariant = enum({ "normal", "shadow", "reaper" })
 kGorgeVariantData =
 {
-    [kGorgeVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
-    [kGorgeVariant.shadow] = { productId = kShadowProductId, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" },
-    [kGorgeVariant.reaper] = { productId = kReaperProductId, displayName = "Reaper", modelFilePart = "_albino", viewModelFilePart = "_albino" },
+    [kGorgeVariant.normal] = { displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
+    [kGorgeVariant.shadow] = { itemId = kShadowGorgeItemId, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" },
+    [kGorgeVariant.reaper] = { itemId = kReaperSkulkItemId, displayName = "Reaper", modelFilePart = "_albino", viewModelFilePart = "_albino" },
 }
 kDefaultGorgeVariant = kGorgeVariant.normal
 
 kLerkVariant = enum({ "normal", "shadow", "reaper" })
 kLerkVariantData =
 {
-    [kLerkVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
-    [kLerkVariant.shadow] = { productId = kShadowProductId, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" },
-    [kLerkVariant.reaper] = { productId = kReaperProductId, displayName = "Reaper", modelFilePart = "_albino", viewModelFilePart = "_albino" },
+    [kLerkVariant.normal] = { displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
+    [kLerkVariant.shadow] = { itemId = kShadowLerkItemId, displayName = "Shadow", modelFilePart = "_shadow", viewModelFilePart = "" },
+    [kLerkVariant.reaper] = { itemId = kReaperLerkItemId, displayName = "Reaper", modelFilePart = "_albino", viewModelFilePart = "_albino" },
 }
 kDefaultLerkVariant = kLerkVariant.normal
 
 kFadeVariant = enum({ "normal", "reaper" })
 kFadeVariantData =
 {
-    [kFadeVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
-    [kFadeVariant.reaper] = { productId = kReaperProductId, displayName = "Reaper", modelFilePart = "_albino", viewModelFilePart = "_albino" },
+    [kFadeVariant.normal] = { displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
+    [kFadeVariant.reaper] = { itemId = kReaperFadeItemId, displayName = "Reaper", modelFilePart = "_albino", viewModelFilePart = "_albino" },
 }
 kDefaultFadeVariant = kFadeVariant.normal
 
 kOnosVariant = enum({ "normal", "reaper" })
 kOnosVariantData =
 {
-    [kOnosVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
-    [kOnosVariant.reaper] = { productId = kReaperProductId, displayName = "Reaper", modelFilePart = "_albino", viewModelFilePart = "_albino" },
+    [kOnosVariant.normal] = { displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
+    [kOnosVariant.reaper] = { itemId = kReaperOnosItemId, displayName = "Reaper", modelFilePart = "_albino", viewModelFilePart = "_albino" },
 }
 kDefaultOnosVariant = kOnosVariant.normal
 
-kExoVariant = enum({ "normal", "kodiak" })
+kExoVariant = enum({ "normal", "kodiak", "tundra" })
 kExoVariantData =
 {
-    [kExoVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
-    [kExoVariant.kodiak] = { productId = kKodiakProductId, displayName = "Kodiak", modelFilePart = "", viewModelFilePart = "" }
+    [kExoVariant.normal] = { displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
+    [kExoVariant.kodiak] = { itemId = kKodiakExosuitItemId, displayName = "Kodiak", modelFilePart = "", viewModelFilePart = "" },
+    [kExoVariant.tundra] = { itemId = kTundraExosuitItemId, displayName = "Tundra", modelFilePart = "", viewModelFilePart = "" }
 }
 kDefaultExoVariant = kExoVariant.normal
 
-kRifleVariant = enum({ "normal", "kodiak" })
+kRifleVariant = enum({ "normal", "kodiak", "tundra" })
 kRifleVariantData =
 {
-    [kRifleVariant.normal] = { productId = nil, displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
-    [kRifleVariant.kodiak] = { productId = kKodiakProductId, displayName = "Kodiak", modelFilePart = "", viewModelFilePart = "" }
+    [kRifleVariant.normal] = { displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
+    [kRifleVariant.kodiak] = { itemId = kKodiakRifleItemId, displayName = "Kodiak", modelFilePart = "_kodiak", viewModelFilePart = "" },
+    [kRifleVariant.tundra] = { itemId = kTundraRifleItemId, displayName = "Tundra", modelFilePart = "_tundra", viewModelFilePart = "" },
 }
 kDefaultRifleVariant = kRifleVariant.normal
+
+kShotgunVariant = enum({ "normal", "tundra" })
+kShotgunVariantData = 
+{
+    [kShotgunVariant.normal] = { displayName = "Normal", modelFilePart = "", viewModelFilePart = "" },
+    [kShotgunVariant.tundra] = { itemId = kTundraShotgunItemId, displayName = "Tundra", modelFilePart = "_tundra", viewModelFilePart = "" },
+}
+kDefaultShotgunVariant = kShotgunVariant.normal
 
 function FindVariant( data, displayName )
 
@@ -541,7 +582,8 @@ function FindVariant( data, displayName )
             return var
         end
     end
-    return nil
+
+    return 1
 
 end
 
@@ -556,28 +598,18 @@ function GetVariantModel( data, var )
     if data[var] then
         return data[var].modelFilePart .. ".model"
     end
-    return ""        
+    return ""
 end
 
 function GetHasVariant(data, var, client)
-    return GetHasDLC(data[var].productId, client)
-end
-
-kShoulderPad2ProductId =
-{
-    kNoShoulerPad,
-    { kShoulderPadProductId, kReinforcementReduxProductId },
-    kShadowProductId,
-    kShoulderPadGlobeProductId,
-    { kShoulderPadGodarProductId, kShoulderPadGlobeProductId },
-    { kShoulderPadSaunaProductId, kShoulderPadGlobeProductId },
-    { kShoulderPadSnailsProductId, kShoulderPadGlobeProductId },
-    { kShoulderPadTitusProductId, kShoulderPadGlobeProductId },
-    kKodiakProductId,
-    kReaperProductId,
-}
-function GetHasShoulderPad(index, client)
-    return GetHasDLC( kShoulderPad2ProductId[index], client )
+    if not data[var] then
+        return false
+    end
+    if data[var].itemId then
+        return GetOwnsItem( data[var].itemId, client )
+    else
+        return GetHasDLC(data[var].productId, client)
+    end
 end
 
 kShoulderPadNames =
@@ -592,8 +624,37 @@ kShoulderPadNames =
     "Titus",
     "Kodiak",
     "Reaper",
-    
+    "Tundra",
 }
+
+kShoulderPad2ItemId =
+{
+    0, -- no item required if you're not using a shoulder pad
+    kReinforcedShoulderPatchItemId,
+    kShadowShoulderPatchItemId,
+    kNS2WC14GlobeShoulderPatchItemId,
+    kGodarShoulderPatchItemId,
+    kSaunamenShoulderPatchItemId,
+    kSnailsShoulderPatchItemId,
+    kTitusGamingShoulderPatchItemId,
+    kKodiakShoulderPatchItemId,
+    kReaperShoulderPatchItemId,
+    kTundraShoulderPatchItemId,
+}
+
+function GetHasShoulderPad(index, client)
+    local itemId = kShoulderPad2ItemId[index]
+    
+    if not itemId then
+        return false
+    end
+    
+    if itemId == 0 then
+        return true
+    end
+    
+    return GetOwnsItem( itemId, client )
+end
 
 function GetShoulderPadIndexByName(padName)
 
