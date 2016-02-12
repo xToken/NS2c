@@ -1593,6 +1593,11 @@ if Server then
             preGameTime = 0
         end
         
+        local gameInfo = GetGameInfoEntity()
+        if gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
+            preGameTime = 0
+        end
+        
         return preGameTime
         
     end
