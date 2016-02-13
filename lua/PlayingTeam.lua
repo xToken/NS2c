@@ -831,6 +831,7 @@ function PlayingTeam:UpdateRespawn()
     end
 end
 
+local kMaxSpawnAttemps = 20
 function PlayingTeam:UpdateWaveRespawn()
 
     local time = Shared.GetTime()
@@ -839,6 +840,7 @@ function PlayingTeam:UpdateWaveRespawn()
         self.timeLastWaveSpawnCheck = time
         self.lastWaveSpawn = time
         self.spawnsthiswave = 0
+		self.failedSpawns = 0
     end
 
     if self.timeLastWaveSpawnCheck + 1 < time then
@@ -856,21 +858,32 @@ function PlayingTeam:UpdateWaveRespawn()
                 end
                 local extents = HasMixin(self, "Extents") and self:GetExtents() or LookupTechData(techId, kTechDataMaxExtents)
                 local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)
-                local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, initialTechPoint:GetOrigin(), 2, 15, EntityFilterAll())
-                if spawnPoint then
-                    local success, newplayer = self:ReplaceRespawnPlayer(player, spawnPoint, player:GetAngles())   
-                    if newplayer then
-                        newplayer:SetCameraDistance(0)
-                        newplayer = newplayer:OnRestoreUpgrades()
-                        self.spawnsthiswave = self.spawnsthiswave + 1
+                local success = false
+                //Add some basic retry support here.
+                for i = 1, kMaxSpawnAttemps do
+                    local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, initialTechPoint:GetOrigin(), 1, 20, EntityFilterAll())
+                    if spawnPoint then
+                        local success, newplayer = self:ReplaceRespawnPlayer(player, spawnPoint, player:GetAngles())   
+                        if newplayer then
+                            newplayer:SetCameraDistance(0)
+                            newplayer = newplayer:OnRestoreUpgrades()
+                            self.spawnsthiswave = self.spawnsthiswave + 1
+							self.failedSpawns = 0
+                            success = true
+                            break
+                        end
                     end
-                else
-                    Shared.Message("Failed to find spawnpoint for respawn wave!")
+                end
+                
+                if not success then
+					self.failedSpawns = self.failedSpawns or 0 + 1
+					if self.failedSpawns > 3 then
+						Shared.Message("Failed to find spawnpoint after 3 retries!")
+					end
                 end
             end
             //end
-            //push next spawn out 100ms
-            self.lastWaveSpawn = self.lastWaveSpawn + 0.1
+            //next spawn next tick
             
         else
         
@@ -898,7 +911,8 @@ function PlayingTeam:UpdateWaveRespawn()
             self.spawnsthiswave = 0
             self.lastWaveSpawn = time
             self.timeLastWaveSpawnCheck = time
-            
+            self.failedSpawns = 0
+			
         end
     end
     
