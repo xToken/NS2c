@@ -15,6 +15,7 @@
 math.randomseed(Shared.GetSystemTime())
 // math.random() is more random the more you call it. Don't ask.
 for i = 1, 100 do math.random() end
+Script.Load("lua/Mixins/ExtensionsBlocker.lua")
 
 Script.Load("lua/HotloadTools.lua")
 
