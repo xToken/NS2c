@@ -9,6 +9,7 @@
 // Set the name of the VM for debugging
 decoda_name = "Server"
 
+Script.Load("lua/Mixins/ExtensionsBlocker.lua")
 Script.Load("lua/PreLoadMod.lua")
 
 Script.Load("lua/Shared.lua")
