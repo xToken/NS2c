@@ -1,5 +1,9 @@
 # Changelog
 
+3-5-16
+
+Fixed compatibility with 289
+
 2-12-16
 
 Fixed floating armory.
