@@ -41,7 +41,7 @@ end
 function DevouredMixin:OnDevouredEnd()
     if self:GetIsAlive() then
         self.devoured = false
-        self:SetPropagate(Entity.Propagate_Mask)
+        self:SetPropagate(Entity.Propagate_Always)
         //One day I will get this to work for the cleanest handling :L
         //self:CreateController(self:GetPlayerControllersGroup())
     end
