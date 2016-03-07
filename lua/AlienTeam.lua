@@ -702,7 +702,7 @@ function AlienTeam:OnUpgradeChamberDestroyed(upgradeChamber)
     
     local techId = upgradeChamber:GetTechId()
     //Erm, shouldnt happen
-    self.upgradeChambers[techId] = self.upgradeChambers[techId] - 1 or 0
+    self.upgradeChambers[techId] = math.max(self.upgradeChambers[techId] or 0 - 1, 0)
     
     if self.upgradeChambers[techId] <= kChamberLostNotification then
         SendTeamMessage(self, kTeamMessageTypes.ResearchLost, techId)
