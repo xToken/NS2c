@@ -6,17 +6,17 @@
 Script.Load("lua/Class.lua")
 Script.Load("lua/Overloads/GUIHooks.lua")
 
-local function SetupClassicMenuOptions(optionElements)
-	
-	local function BoolToIndex(value)
-        if value then
-            return 2
-        end
-        return 1
+local function BoolToIndex(value)
+    if value then
+        return 2
     end
+    return 1
+end
 
-	local advancedmovement = Client.GetOptionBoolean("AdvancedMovement", false)
-	if optionElements.AdvancedMovement then
+local function SetupClassicMenuOptions(optionElements)
+
+    if optionElements and optionElements.AdvancedMovement then
+	    local advancedmovement = Client.GetOptionBoolean("AdvancedMovement", false)
 	    optionElements.AdvancedMovement:SetOptionActive(BoolToIndex(advancedmovement))
 	end
 	
@@ -24,15 +24,19 @@ end
 
 local function SaveClassicMenuOptions(mainMenu)
 
-	local advancedmovement = mainMenu.optionElements.AdvancedMovement:GetActiveOptionIndex() > 1
-	Client.SetOptionBoolean("AdvancedMovement", advancedmovement)
+    if mainMenu and mainMenu.optionElements and mainMenu.optionElements.AdvancedMovement then
+	    local advancedmovement = mainMenu.optionElements.AdvancedMovement:GetActiveOptionIndex() > 1
+	    Client.SetOptionBoolean("AdvancedMovement", advancedmovement)
+	end
 	
 end
 
 local function StoreAdvancedMovementOption(formElement)
-    Client.SetOptionBoolean("AdvancedMovement", formElement:GetActiveOptionIndex() > 1)
-    if UpdateMovementMode then
-        UpdateMovementMode()
+    if formElement then
+        Client.SetOptionBoolean("AdvancedMovement", formElement:GetActiveOptionIndex() > 1)
+        if UpdateMovementMode then
+            UpdateMovementMode()
+        end
     end
 end
 
