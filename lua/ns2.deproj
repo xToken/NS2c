@@ -325,6 +325,9 @@
     <filename>GUIMarineStatus.lua</filename>
   </file>
   <file>
+    <filename>GUIMinimapButtons.lua</filename>
+  </file>
+  <file>
     <filename>GUIMinimapFrame.lua</filename>
   </file>
   <file>
