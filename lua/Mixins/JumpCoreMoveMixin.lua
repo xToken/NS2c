@@ -38,7 +38,7 @@ function CoreMoveMixin:HandleJump(input, velocity)
     
         if self:GetCanJump(self) then
             
-            if self:GetUsesGoldSourceMovement() and self:HasAdvancedMovement() then
+            if self:GetUsesGoldSourceMovement() then
                 self:PreventMegaBunnyJumping(true, velocity)
             end
             

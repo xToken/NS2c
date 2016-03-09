@@ -202,7 +202,7 @@ function Shockwave:Detonate()
                 self:DoDamage(kStompDamage, enemy, enemy:GetOrigin(), GetNormalizedVector(enemy:GetOrigin() - groundTrace.endPoint), "none")
                 table.insert(self.damagedEntIds, enemyId)
                 
-                if not HasMixin(enemy, "CoreMove") or enemy:GetIsOnGround() then
+                if not HasMixin(enemy, "GroundMove") or enemy:GetIsOnGround() then
                     self:TriggerEffects("shockwave_hit", { effecthostcoords = enemy:GetCoords() })
                 end
 

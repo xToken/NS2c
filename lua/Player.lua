@@ -19,7 +19,11 @@ Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/PhysicsGroups.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
-Script.Load("lua/Mixins/CoreMoveMixin.lua")
+//Script.Load("lua/Mixins/CoreMoveMixin.lua")
+Script.Load("lua/Mixins/GroundMoveMixin.lua")
+Script.Load("lua/Mixins/CrouchMoveMixin.lua")
+Script.Load("lua/Mixins/JumpMoveMixin.lua")
+Script.Load("lua/Mixins/LadderMoveMixin.lua")
 Script.Load("lua/WeaponOwnerMixin.lua")
 Script.Load("lua/DoorMixin.lua")
 Script.Load("lua/Mixins/ControllerMixin.lua")
@@ -59,7 +63,7 @@ Player.kPhysicsCullMin = 3
 Player.kPhysicsCullMax = 50
 Player.kNotEnoughResourcesSound     = PrecacheAsset("sound/NS2.fev/marine/voiceovers/commander/more")
 //Player.kGravity = -17.7
-Player.kGravity = -17.7
+Player.kGravity = -21.5
 Player.kXZExtents = 0.35
 Player.kYExtents = 0.9
 Player.kWalkMaxSpeed = 4
@@ -123,8 +127,9 @@ local kBackwardsMovementScalar = 1
 //local kJumpForce = 6.6
 // use 8.42 for gravity -23
 local kJumpForce = 6.6
+local kJumpHeight =  1.25
 local kMaxPlayerSlow = 0.8
-
+local kCrouchSpeedScalar = 0 //Classic max speed checks for crouching
 //Other Vars
 local kMass = 90.7 // ~200 pounds (incl. armor, weapons)
 local kStepTotalTime    = 0.1  // Total amount of time to interpolate up a step
@@ -195,9 +200,9 @@ local networkVars =
     -- Reduce max player velocity in some cases (marine jumping)
     slowAmount = "float (0 to 1 by 0.01)",
     movementModiferState = "boolean",
-    movementmode = "boolean",
     giveDamageTime = "private time",
-
+    lastImpactForce = "private float",
+    
     level = "float (0 to " .. kCombatMaxAllowedLevel .. " by 0.001)",
     
     pushImpulse = "private vector",
@@ -215,7 +220,11 @@ local networkVars =
 AddMixinNetworkVars(BaseModelMixin, networkVars)
 AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(BaseMoveMixin, networkVars)
-AddMixinNetworkVars(CoreMoveMixin, networkVars)
+//AddMixinNetworkVars(CoreMoveMixin, networkVars)
+AddMixinNetworkVars(GroundMoveMixin, networkVars)
+AddMixinNetworkVars(JumpMoveMixin, networkVars)
+AddMixinNetworkVars(CrouchMoveMixin, networkVars)
+AddMixinNetworkVars(LadderMoveMixin, networkVars)
 AddMixinNetworkVars(ControllerMixin, networkVars)
 AddMixinNetworkVars(WeaponOwnerMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
@@ -238,10 +247,13 @@ function Player:OnCreate()
 
     ScriptActor.OnCreate(self)
     
-    InitMixin(self, BaseModelMixin)
 	InitMixin(self, BaseMoveMixin, { kGravity = Player.kGravity })
-    InitMixin(self, CoreMoveMixin)
+    //InitMixin(self, CoreMoveMixin)
 	InitMixin(self, GroundMoveMixin)
+    InitMixin(self, JumpMoveMixin)
+    InitMixin(self, CrouchMoveMixin)
+    InitMixin(self, LadderMoveMixin)
+    InitMixin(self, BaseModelMixin)
     InitMixin(self, ModelMixin)
     InitMixin(self, ControllerMixin)
     InitMixin(self, WeaponOwnerMixin, { kStowedWeaponWeightScalar = kStowedWeaponWeightScalar })
@@ -286,7 +298,6 @@ function Player:OnCreate()
     
     self.clientIndex = -1
 	//NS2c Additions
-    self.movementmode = false
     self.movementModiferState = false
     
     self.timeLastMenu = 0
@@ -323,6 +334,7 @@ function Player:OnCreate()
     
     self.pushImpulse = Vector(0, 0, 0)
     self.pushTime = 0
+    self.lastImpactForce = 0
     
 end
 
@@ -1025,15 +1037,7 @@ function Player:GetVerticleMove()
     return false
 end
 
-function Player:UpdateMovementMode(movementmode)
-    self.movementmode = movementmode
-end
-
 function Player:ModifyVelocity(input, velocity, deltaTime)
-end
-
-function Player:HasAdvancedMovement()
-    return self.movementmode
 end
 
 function Player:GetCanClimb()
@@ -1202,6 +1206,32 @@ function Player:OnJumpLand(impactForce)
     if self:GetPlayLandSound(impactForce) then
         self:TriggerLandEffects()
     end
+end
+
+function Player:GetTriggerLandEffect()
+    local xzSpeed = self:GetVelocity():GetLengthXZ()
+    return not HasMixin(self, "CrouchMove") or not self:GetCrouching() or (xzSpeed / self:GetMaxSpeed()) > 0.9
+end
+
+function Player:OnGroundChanged(onGround, impactForce, normal, velocity)
+
+    if onGround and self:GetTriggerLandEffect() and impactForce > 5 then
+        local landSurface = GetSurfaceAndNormalUnderEntity(self)
+        self:TriggerEffects("land", { surface = landSurface })
+    end
+    self.lastImpactForce = impactForce
+    if normal and normal.y > 0.5 and self:GetSlowOnLand() then    
+    
+        local slowdownScalar = Clamp(math.max(0, impactForce - 4) / 18, 0, 1)
+        if self.ModifyJumpLandSlowDown then
+            slowdownScalar = self:ModifyJumpLandSlowDown(slowdownScalar)
+        end
+        
+        self:AddSlowScalar(slowdownScalar)
+        velocity:Scale(1 - slowdownScalar)  
+        
+    end
+
 end
 
 local kDoublePI = math.pi * 2
@@ -1459,6 +1489,18 @@ function Player:OnProcessSpectate(deltaTime)
 
 end
 
+function Player:PostUpdateMove(input, runningPrediction)
+    self:SetLastInput(input)
+end
+
+function Player:GetLastInput()
+    return self.latestinput
+end
+
+function Player:SetLastInput(input)
+    self.latestinput = input
+end
+
 function Player:OnUpdate(deltaTime)
 
     ScriptActor.OnUpdate(self, deltaTime)
@@ -1572,16 +1614,20 @@ function Player:GetCanJump()
     return self:GetIsOnGround() and CheckSpaceAboveForJump(self)
 end
 
+function Player:GetJumpHeight()
+    return kJumpHeight
+end
+
 function Player:GetCanCrouch()
     return true
 end
 
 function Player:GetJumpMode()
-    if not self:HasAdvancedMovement() then
+    //if not self:HasAdvancedMovement() then
         return kJumpMode.Queued
-    else
-        return kJumpMode.Repeating
-    end
+    //else
+        //return kJumpMode.Repeating
+    //end
 end
 
 function Player:GetJumpForce()
@@ -1594,8 +1640,12 @@ function Player:GetJumpVelocity(input, velocity)
     //will be deducted correctly.
 end
 
-function Player:GetGroundFriction()
+/*function Player:GetGroundFriction()
     return kGroundFriction
+end*/
+
+function Player:GetGroundFriction()
+    return 9
 end
 
 function Player:GetClimbFrictionForce()
@@ -1606,20 +1656,8 @@ function Player:GetAirControl()
     return 11 * self:GetSlowSpeedModifier()
 end
 
-function Player:GetSimpleAcceleration(onGround)
-    return ConditionalValue(onGround, 13 * self:GetSlowSpeedModifier(), 6 * self:GetSlowSpeedModifier())
-end
-
 function Player:GetGroundTransistionTime()
     return kAirGroundTransistionTime
-end
-
-function Player:GetSimpleFriction(onGround)
-    if onGround then
-        return 9
-    else
-        return 0
-    end
 end
 
 function Player:GetAirFriction()
@@ -1644,12 +1682,24 @@ function Player:ModifyGravityForce(gravityTable)
     end
 end
 
-function Player:GetAcceleration(OnGround)
+/*function Player:GetAcceleration(OnGround)
     return ConditionalValue(OnGround, kGoldSrcAcceleration, kGoldSrcAirAcceleration)
+end*/
+
+function Player:GetAcceleration()
+    return 13
+end
+
+function Player:GetAirAcceleration()
+    return 6
 end
 
 function Player:GetUsesGoldSourceMovement()
     return true
+end
+
+function Player:GetCrouchSpeedScalar()
+    return kCrouchSpeedScalar
 end
 
 function Player:GetMaxSpeed(possible)
@@ -1663,7 +1713,7 @@ function Player:GetMaxSpeed(possible)
         maxSpeed = kWalkMaxSpeed
     end
     
-    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnGround() and not self:GetLandedRecently() then
+    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnGround() then
         maxSpeed = kCrouchMaxSpeed
     end
       
@@ -1910,9 +1960,9 @@ function Player:HandleButtons(input)
     self:HandleAttacks(input)
     
     // Remember when jump released
-    if bit.band(input.commands, Move.Jump) == 0 then
-        self:SetIsJumpHandled(false)
-    end
+    //if bit.band(input.commands, Move.Jump) == 0 then
+        //self:SetIsJumpHandled(false)
+    //end
     
     if bit.band(input.commands, Move.Reload) ~= 0 then
         self:Reload()

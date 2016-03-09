@@ -44,7 +44,7 @@ Onos.ZExtents = .4
 local kMass = 453 // Half a ton
 local kViewOffsetHeight = 2.5
 local kMomentumEffectTriggerDiff = 3
-local kMaxSpeed = 4.5
+local kMaxSpeed = 5.75
 local kMaxChargeSpeed = 7
 local kBonusChargeSpeed = 4
 local kChargeAddSpeedTime = 2
@@ -148,30 +148,20 @@ function Onos:GetAngleSmoothRate()
     return 3
 end
 
-/*Vanilla Values
-function Onos:GetSimpleAcceleration(onGround)
-    return ConditionalValue(onGround, 3.3, Player.GetSimpleAcceleration(self, onGround))
+function Onos:GetAcceleration()
+    return 7.5
+end
+
+function Onos:GetAirFriction()
+    return 0.28
 end
 
 function Onos:GetAirControl()
-    return 0.2
+    return 4
 end
 
-function Onos:GetSimpleFriction(onGround)
-    if onGround then
-        local hasupg, level = GetHasCelerityUpgrade(self)
-        return 3 - (hasupg and level or 0) * 0.1
-    else
-        return 0.28
-    end
-end*/
-
-function Onos:GetSimpleFriction(onGround)
-    if onGround then
-        return Player.GetSimpleFriction(self, onGround)
-    else
-        return 0.28
-    end
+function Onos:GetGroundFriction()
+    return 6
 end
 
 local function ClearDevourState(self)
@@ -281,7 +271,7 @@ function Onos:GetMaxSpeed(possible)
         maxSpeed = kMaxChargeSpeed + (kBonusChargeSpeed * self:ChargeAmount())
     end
     
-    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnGround() and not self:GetLandedRecently() then
+    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnGround() then
         maxSpeed = kMaxWalkSpeed
     end
 

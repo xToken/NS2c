@@ -3,8 +3,7 @@
 // lua\ModdedMixinUtility.lua
 // - Dragon
 
-local origAddMixinNetworkVars = AddMixinNetworkVars
-
+/*local origAddMixinNetworkVars = AddMixinNetworkVars
 function AddMixinNetworkVars(theMixin, networkVars)
 
 	if theMixin == nil or networkVars == nil then
@@ -15,7 +14,6 @@ function AddMixinNetworkVars(theMixin, networkVars)
 end
 
 local origInitMixin = InitMixin
-
 function InitMixin(classInstance, theMixin, optionalMixinData)
 
 	if theMixin == nil then
@@ -23,4 +21,4 @@ function InitMixin(classInstance, theMixin, optionalMixinData)
 	end
 	origInitMixin(classInstance, theMixin, optionalMixinData)
 	
-end
+end*/

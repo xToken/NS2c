@@ -244,8 +244,8 @@ function JetpackMarine:GetWeaponName()
     
 end
 
-function JetpackMarine:GetSlowOnLand(impactForce)
-    return Marine.GetSlowOnLand(self, impactForce) and not self:GetIsJetpacking()
+function JetpackMarine:GetSlowOnLand()
+    return Marine.GetSlowOnLand(self) and not self:GetIsJetpacking()
 end
 
 function JetpackMarine:GetMaxBackwardSpeedScalar()
@@ -306,7 +306,7 @@ function JetpackMarine:GetInventorySpeedScalar()
 end
 
 function JetpackMarine:ModifyGravityForce(gravityTable)
-    if (self:GetIsJetpacking() or self:FallingAfterJetpacking()) and not self:HasAdvancedMovement() then
+    if self:GetIsJetpacking() or self:FallingAfterJetpacking() then
         gravityTable.gravity = kJetpackGravity
     end
     Marine.ModifyGravityForce(self, gravityTable)
@@ -316,7 +316,7 @@ function JetpackMarine:ModifyVelocity(input, velocity, deltaTime)
     
     PROFILE("JetpackMarine:ModifyVelocity")
     
-    if self:HasAdvancedMovement() then
+    /*if self:HasAdvancedMovement() then
         //NS1 style logic
         // Add thrust from the jetpack
         if self:GetIsJetpacking() then
@@ -333,67 +333,67 @@ function JetpackMarine:ModifyVelocity(input, velocity, deltaTime)
             velocity.z = velocity.z + (wishvel.z * kLateralForce * deltaTime)
             // Since the upwards velocity may be very small, manually set onGround to false
             // to avoid having code from sticking the player to the ground
-            self:SetIsOnGround(false)
-            
-        end
-        
-    else
-    
-        if self:GetIsJetpacking() then
-        
-            local verticalAccel = 22
-            
-            if self:GetIsWebbed() then
-                verticalAccel = 5
-            elseif input.move:GetLength() == 0 then
-                verticalAccel = 26
-            end
-        
             self.onGround = false
-            local thrust = math.max(0, -velocity.y) / 6
-            velocity.y = math.min(5, velocity.y + verticalAccel * deltaTime * (1 + thrust * 2.5))
-     
+            
         end
         
-        if not self.onGround then
+    else*/
+    
+    if self:GetIsJetpacking() then
+    
+        local verticalAccel = 22
         
-            // do XZ acceleration
-            local maxSpeed = kFlySpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier() * self:GetInventorySpeedScalar()
-            if not self:GetIsJetpacking() then
-                maxSpeed = velocity:GetLengthXZ()
-            end
-            
-            local wishDir = self:GetViewCoords():TransformVector(input.move)
-            local acceleration = 0
-            wishDir.y = 0
-            wishDir:Normalize()
-            
-            acceleration = kFlyAcceleration
-            
-            velocity:Add(wishDir * acceleration * self:GetInventorySpeedScalar() * deltaTime)
+        if self:GetIsWebbed() then
+            verticalAccel = 5
+        elseif input.move:GetLength() == 0 then
+            verticalAccel = 26
+        end
+    
+        self.onGround = false
+        local thrust = math.max(0, -velocity.y) / 6
+        velocity.y = math.min(5, velocity.y + verticalAccel * deltaTime * (1 + thrust * 2.5))
+ 
+    end
+    
+    if not self.onGround then
+    
+        // do XZ acceleration
+        local maxSpeed = kFlySpeed * self:GetCatalystMoveSpeedModifier() * self:GetSlowSpeedModifier() * self:GetInventorySpeedScalar()
+        if not self:GetIsJetpacking() then
+            maxSpeed = velocity:GetLengthXZ()
+        end
+        
+        local wishDir = self:GetViewCoords():TransformVector(input.move)
+        local acceleration = 0
+        wishDir.y = 0
+        wishDir:Normalize()
+        
+        acceleration = kFlyAcceleration
+        
+        velocity:Add(wishDir * acceleration * self:GetInventorySpeedScalar() * deltaTime)
 
-            if velocity:GetLengthXZ() > maxSpeed then
-            
-                local yVel = velocity.y
-                velocity.y = 0
-                velocity:Normalize()
-                velocity:Scale(maxSpeed)
-                velocity.y = yVel
-                
-            end 
-            
-            if self:GetIsJetpacking() then
-                velocity:Add(wishDir * kJetpackingAccel * deltaTime)
-            end
+        if velocity:GetLengthXZ() > maxSpeed then
         
+            local yVel = velocity.y
+            velocity.y = 0
+            velocity:Normalize()
+            velocity:Scale(maxSpeed)
+            velocity.y = yVel
+            
+        end 
+        
+        if self:GetIsJetpacking() then
+            velocity:Add(wishDir * kJetpackingAccel * deltaTime)
         end
     
     end
+    
+    //end
 
 end
 
-function JetpackMarine:GetAcceleration(OnGround)
-    local acceleration = Marine.GetAcceleration(self, OnGround)
+function JetpackMarine:GetAcceleration()
+    local acceleration = Marine.GetAcceleration(self)
 
     if self:GetIsJetpacking() then
         acceleration = acceleration * 4

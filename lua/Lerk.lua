@@ -276,6 +276,16 @@ function Lerk:OnWorldCollision(normal)
     self.wallGripAllowed = normal.y < 0.5 and not self:GetCrouching()
 end
 
+function Lerk:OnGroundChanged(onGround, impactForce, normal, velocity)
+
+    Alien.OnGroundChanged(self, onGround, impactForce, normal, velocity)
+
+    if onGround then
+        self.glideAllowed = false
+    end
+
+end
+
 local function UpdateFlap(self, input, velocity)
 
     local flapPressed = bit.band(input.commands, Move.Jump) ~= 0
@@ -329,7 +339,7 @@ local function UpdateFlap(self, input, velocity)
  
             self:DeductAbilityEnergy(kLerkFlapEnergyCost)
             self.lastTimeFlapped = Shared.GetTime()
-            self:SetIsOnGround(false)
+            self.onGround = false
             self:TriggerEffects("flap")
 
         end
@@ -412,8 +422,12 @@ function Lerk:ModifyVelocity(input, velocity, deltaTime)
 
 end
 
-function Lerk:GetSimpleAcceleration(onGround)
-    return ConditionalValue(onGround, Player.GetSimpleAcceleration(self, onGround), 0)
+function Lerk:GetAirFriction()
+    return 0.1
+end
+
+function Lerk:GetAirAcceleration()
+    return 0
 end
 
 function Lerk:GetCanStep()

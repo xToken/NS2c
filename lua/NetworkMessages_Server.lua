@@ -10,7 +10,6 @@
 // ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 //NS2c
-//Added movementmode option
 
 function OnCommandCommMarqueeSelect(client, message)
     
@@ -304,19 +303,6 @@ local function OnVoiceMessage(client, message)
 
 end
 
-local function OnMovementChanged(client, message)
-
-    if client then
-        
-        local player = client:GetControllingPlayer()
-        if player then
-            player:UpdateMovementMode(message.movement)
-        end
-    
-    end
-
-end
-
 local function OnSetNameMessage(client, message)
 
     local name = message.name
@@ -417,4 +403,3 @@ Server.HookNetworkMessage("CommanderPing", OnCommandCommPing)
 Server.HookNetworkMessage("SetCommunicationStatus", OnCommandSetCommStatus)
 Server.HookNetworkMessage("Buy", OnMessageBuy)
 Server.HookNetworkMessage("VoiceMessage", OnVoiceMessage)
-Server.HookNetworkMessage("MovementMode", OnMovementChanged)

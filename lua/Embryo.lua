@@ -418,6 +418,7 @@ end
 
 function Embryo:PostUpdateMove(input, runningPrediction)
     self:SetAngles(self.originalAngles)
+    Player.PostUpdateMove(self, input, runningPrediction)
 end
 
 function Embryo:OnAdjustModelCoords(coords)

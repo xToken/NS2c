@@ -36,6 +36,7 @@ Gorge.kXZExtents = 0.5
 Gorge.kYExtents = 0.475
 
 local kMass = 80
+local kJumpHeight = 1.2
 local kStartSlideForce = 1.5
 local kSlidingGroundFriction = 0.2
 local kSlidingAcceleration = 0
@@ -139,6 +140,10 @@ function Gorge:GetExtentsCrouchShrinkAmount()
     return 0
 end
 
+function Gorge:GetJumpHeight()
+    return kJumpHeight
+end
+
 function Gorge:GetViewModelName()
     return self:GetVariantViewModel(self:GetVariant())
 end
@@ -147,13 +152,13 @@ function Gorge:GetIsBellySliding()
     return self.sliding
 end
 
-function Gorge:GetGroundFriction()
+/*function Gorge:GetGroundFriction()
     return ConditionalValue(self:GetIsBellySliding(), kSlidingGroundFriction, Player.GetGroundFriction(self))
-end
+end*/
 
-function Gorge:GetAcceleration(OnGround)
-    return ConditionalValue(self:GetIsBellySliding() and OnGround, kSlidingAcceleration, Player.GetAcceleration(self, OnGround))
-end
+/*function Gorge:GetAcceleration()
+    return ConditionalValue(self:GetIsBellySliding() and self:GetIsOnGround(), kSlidingAcceleration, Player.GetAcceleration(self))
+end*/
 
 local function GetIsSlidingDesired(self, input)
 
@@ -320,7 +325,7 @@ function Gorge:GetMaxSpeed(possible)
     
     local maxSpeed = kMaxSpeed
     
-    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnGround() and not self:GetLandedRecently() then
+    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnGround() then
         maxSpeed = kMaxWalkSpeed
     end
     
@@ -357,23 +362,24 @@ function Gorge:GetPitchRollRate()
 end
 
 //Vanilla NS2
-function Gorge:GetSimpleAcceleration(onGround)
-    return ConditionalValue(onGround, self:GetIsBellySliding() and 0 or 8, 9)
+function Gorge:GetAcceleration()
+    return self:GetIsBellySliding() and 0 or 8
 end
 
 function Gorge:GetAirControl()
-    return 5
+    return 25
 end
 
-function Gorge:GetSimpleFriction(onGround)
-    if onGround then
-        if self:GetIsBellySliding() then
-            return 0.16
-        end
-        return 7
-    else
-        return 0.8
+function Gorge:GetGroundFriction()
+    if self:GetIsBellySliding() then
+        return 0.16
     end
+    return 7
+end
+
+function Gorge:GetAirFriction()
+    local speedFraction = self:GetVelocity():GetLengthXZ() / (self:GetMaxSpeed() * 1.5)
+    return math.max(0.125 * speedFraction, 0.05)
 end
 //End Vanilla NS2
 

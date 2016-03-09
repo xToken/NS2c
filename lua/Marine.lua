@@ -316,8 +316,8 @@ function Marine:GetCanSeeDamagedIcon(ofEntity)
     return HasMixin(ofEntity, "Weldable")
 end
 
-function Marine:GetSlowOnLand(impactForce)
-    return math.abs(impactForce) > self:GetMaxSpeed()
+function Marine:GetSlowOnLand()
+    return math.abs(self.lastImpactForce) > self:GetMaxSpeed()
 end
 
 function Marine:GetControllerPhysicsGroup()
@@ -466,7 +466,7 @@ function Marine:GetMaxSpeed(possible)
         maxSpeed = kWalkMaxSpeed
     end
     
-    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnGround() and not self:GetLandedRecently() then
+    if self:GetCrouching() and self:GetCrouchAmount() == 1 and self:GetIsOnGround() then
         maxSpeed = kCrouchMaxSpeed
     end
 
@@ -478,8 +478,8 @@ function Marine:GetMaxSpeed(possible)
     return adjustedMaxSpeed
 end
 
-function Marine:GetAcceleration(OnGround)
-    return Player.GetAcceleration(self, OnGround) * self:GetSlowSpeedModifier()
+function Marine:GetAcceleration()
+    return Player.GetAcceleration(self) * self:GetSlowSpeedModifier()
 end
 
 function Marine:GetFootstepSpeedScalar()
@@ -504,12 +504,14 @@ function Marine:GetWeaponDropTime()
     return self.weaponDropTime
 end
 
-local marineTechButtons = { kTechId.Attack, kTechId.Move, kTechId.Defend, kTechId.Construct }
+local marineTechButtons = { kTechId.AmmoPack, kTechId.MedPack, kTechId.CatPack, kTechId.None,
+                            kTechId.Attack, kTechId.Move, kTechId.Defend, kTechId.Construct }
+							
 function Marine:GetTechButtons(techId)
 
     local techButtons = nil
     
-    if techId == kTechId.RootMenu then
+    if techId == kTechId.WeaponsMenu then
         techButtons = marineTechButtons
     end
     

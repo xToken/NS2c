@@ -1547,7 +1547,7 @@ function SetPlayerPoseParameters(player, viewModel, headAngles)
     
     local pitch = -Math.Wrap(Math.Degrees(headAngles.pitch), -180, 180)
     
-    local landIntensity = player:GetLastImpactForce() or 0
+    local landIntensity = player.landIntensity or 0
     
     local bodyYaw = 0
     if player.bodyYaw then
@@ -1573,7 +1573,7 @@ function SetPlayerPoseParameters(player, viewModel, headAngles)
 
     local moveSpeed = velocity:GetLength() / player:GetMaxSpeed(true)
     
-    local crouchAmount = player:GetCrouchAmount()
+    local crouchAmount = HasMixin(player, "CrouchMove") and player:GetCrouchAmount() or 0
     if player.ModifyCrouchAnimation then
         crouchAmount = player:ModifyCrouchAnimation(crouchAmount)
     end

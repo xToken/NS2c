@@ -21,11 +21,6 @@ end
 function CorrodeMixin:OnTakeDamage(damage, attacker, doer, point, direction)
 end
 
-GroundMoveMixin = CreateMixin(GroundMoveMixin)
-GroundMoveMixin.type = "GroundMove"
-
-GroundMoveMixin.networkVars = { }
-
 class 'Exo' (Player)
 
 Exo.kMapName = "exo"

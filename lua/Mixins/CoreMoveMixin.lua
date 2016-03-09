@@ -478,7 +478,7 @@ function CoreMoveMixin:UpdateMove(input, runningPrediction)
     // Apply first half of the gravity
     ApplyHalfGravity(self, input, velocity, deltaTime)
        
-    if self:GetUsesGoldSourceMovement() and self:HasAdvancedMovement() then
+    if self:GetUsesGoldSourceMovement() then
         self:ApplyFriction(input, velocity, deltaTime)
         self:Accelerate(input, velocity, self.onGround, deltaTime)
     else

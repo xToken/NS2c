@@ -479,6 +479,7 @@ end
 
 function Commander:PostUpdateMove(input, runningPrediction)
     self:SetVelocity(Vector(0, 0, 0))
+    Player.PostUpdateMove(self, input, runningPrediction)
 end
 
 function Commander:GetHostCommandStructure()

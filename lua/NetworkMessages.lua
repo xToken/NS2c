@@ -903,11 +903,6 @@ local kVoteEjectCastMessage =
     votesMoreNeeded = "integer (0 to 64)"
 }
 
-local kMovementMode = 
-{
-    movement = "boolean"
-}
-
 local kGameEndMessage =
 {
     win = "integer (0 to 2)"
@@ -959,8 +954,6 @@ Shared.RegisterNetworkMessage("DebugCapsule", kDebugCapsuleMessage)
 
 Shared.RegisterNetworkMessage( "TechNodeBase", kTechNodeBaseMessage )
 Shared.RegisterNetworkMessage( "ClearTechTree", {} )
-
-Shared.RegisterNetworkMessage( "MovementMode", kMovementMode )
 
 local kCommunicationStatusMessage = 
 {

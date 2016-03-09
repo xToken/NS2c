@@ -41,7 +41,7 @@ Skulk.kYExtents = .45
 Skulk.kZExtents = .45
 
 local kLeapTime = 0.33
-local kLeapForce = 11
+local kLeapForce = 7
 local kMaxSpeed = 6.75
 local kGoodJumpSpeed = 10
 local kBestJumpSpeed = 12
@@ -49,7 +49,7 @@ local kMaxWalkSpeed = 3.1
 local kWallJumpForce = 7
 local kWallJumpYBoost = 2
 local kWallJumpDelay = 0.35
-local kMaxLeapSpeed = 20
+local kMaxLeapSpeed = 17
 
 local kMass = 45 // ~100 pounds
 local kWallWalkCheckInterval = .1
@@ -79,6 +79,7 @@ local networkVars =
 {
     wallWalking = "compensated boolean",
     timeLastWallWalkCheck = "private compensated time",
+    timeLastWallJump = "private compensated time",
     leaping = "compensated boolean",
     timeOfLeap = "private time",
     // wallwalking is enabled only after we bump into something that changes our velocity
@@ -104,8 +105,6 @@ function Skulk:OnCreate()
     self.wallWalkingNormalGoal = Vector.yAxis
     self.leaping = false
     self.timeLastWallJump = 0
-     
-    self.sneakOffset = 0
     
 end
 
@@ -158,18 +157,17 @@ function Skulk:GetCrouchTime()
     return 0
 end
 
-function Skulk:GetGroundFriction()
+/*function Skulk:GetGroundFriction()
     return ConditionalValue(self:GetIsWallWalking(), Player.GetGroundFriction(self) + 3, Player.GetGroundFriction(self))
-end
+end*/
 
 function Skulk:GetExtentsCrouchShrinkAmount()
     return 0
 end
 
-// required to trigger wall walking animation
-function Skulk:GetIsJumping()
+/*function Skulk:GetIsJumping()
     return CoreMoveMixin.GetIsJumping(self) and not self.wallWalking
-end
+end*/
 
 function Skulk:ModifyVelocity(input, velocity, deltaTime)
 
@@ -190,7 +188,7 @@ function Skulk:ModifyVelocity(input, velocity, deltaTime)
         end
 
         self.wallWalkingEnabled = false
-        self:SetIsOnGround(false)
+        self.onGround = false
         self.leaping = true
         
     end
@@ -207,11 +205,19 @@ function Skulk:GetCanCrouch()
 end
 
 function Skulk:GetRecentlyWallJumped()
-    return self:GetLastJumpTime() + kWallJumpDelay > Shared.GetTime()
+    return self.timeLastWallJump + kWallJumpDelay > Shared.GetTime()
 end
 
-function Skulk:GetCanWallJump()
+/*function Skulk:GetCanWallJump()
     return not self:GetRecentlyWallJumped() and not self:GetCrouching() and (self:GetIsWallWalking() or (not self:GetIsOnGround() and self:GetAverageWallWalkingNormal(kJumpWallRange, kJumpWallFeelerSize) ~= nil))
+end*/
+
+function Skulk:GetCanWallJump()
+    local wallWalkNormal = self:GetAverageWallWalkingNormal(kJumpWallRange, kJumpWallFeelerSize)
+    if wallWalkNormal then
+        return wallWalkNormal.y < 0.5
+    end
+    return false
 end
 
 function Skulk:GetViewModelName()
@@ -302,26 +308,25 @@ function Skulk:GetCollisionSlowdownFraction()
     return 0.15
 end
 
-function Skulk:GetSimpleAcceleration(onGround)
-    return ConditionalValue(onGround, 13, 9)
-end
-
-function Skulk:GetAirControl()
-    return 27
-end
-
 function Skulk:GetGroundTransistionTime()
     return 0.1
 end
 
-function Skulk:GetSimpleFriction(onGround)
-    if onGround then
-        return 11
-    else
-        local hasupg, level = GetHasCelerityUpgrade(self)
-        return 0.055 - (hasupg and level or 0) * 0.009
-    end
+function Skulk:GetAirControl()
+    return 30
+end
+
+function Skulk:GetAirFriction()
+    return 0.06
 end 
+
+function Skulk:GetGroundFriction()
+    return 11
+end
+
+function Skulk:GetAirAcceleration()
+    return 9
+end
 
 function Skulk:GetDesiredAngles(deltaTime)
     return self.currentWallWalkingAngles
@@ -339,11 +344,11 @@ function Skulk:GetHeadAngles()
 end
 
 function Skulk:OnWorldCollision(normal, impactForce, newVelocity)
-    local canwallWalk = self:GetIsWallWalkingPossible() and normal.y < 0.5
-    if not self.wallWalking and canwallWalk then
-        self:SetIsJumpHandled(true)
-    end
-    self.wallWalking = canwallWalk
+
+    PROFILE("Skulk:OnWorldCollision")
+
+    self.wallWalking = self:GetIsWallWalkingPossible() and normal.y < 0.5
+    
 end
 
 function Skulk:PreUpdateMove(input, runningPrediction)
@@ -437,30 +442,30 @@ end
 function Skulk:GetJumpVelocity(input, velocity)
 
     if self:GetCanWallJump() then
-        if not self:HasAdvancedMovement() then
-            local direction = input.move.z == -1 and -1 or 1
-            // we add the bonus in the direction the move is going
-            local viewCoords = self:GetViewAngles():GetCoords()
-            local bonusVec = viewCoords.zAxis * direction
-            bonusVec.y = 0
-            bonusVec:Normalize()
-            
-            local hasupg, level = GetHasCelerityUpgrade(self)
-            local celerityMod = (hasupg and level or 0) * 0.4
-            local currentSpeed = velocity:GetLengthXZ()
-            local fraction = 1 - Clamp( currentSpeed / (11 + celerityMod), 0, 1)               
-            velocity.y = 3 + math.min(1, 1 + viewCoords.zAxis.y) * 2
-            
-            local force = math.max(kMinWallJumpForce, (kWallJumpForce + celerityMod) * fraction)  
-            bonusVec:Scale(force)      
+        //if not self:HasAdvancedMovement() then
+        local direction = input.move.z == -1 and -1 or 1
+        // we add the bonus in the direction the move is going
+        local viewCoords = self:GetViewAngles():GetCoords()
+        local bonusVec = viewCoords.zAxis * direction
+        bonusVec.y = 0
+        bonusVec:Normalize()
+        
+        local hasupg, level = GetHasCelerityUpgrade(self)
+        local celerityMod = (hasupg and level or 0) * 0.4
+        local currentSpeed = velocity:GetLengthXZ()
+        local fraction = 1 - Clamp( currentSpeed / (11 + celerityMod), 0, 1)               
+        velocity.y = 3 + math.min(1, 1 + viewCoords.zAxis.y) * 2
+        
+        local force = math.max(kMinWallJumpForce, (kWallJumpForce + celerityMod) * fraction)  
+        bonusVec:Scale(force)      
 
-            if not self:GetRecentlyWallJumped() then
-            
-                bonusVec.y = viewCoords.zAxis.y * kVerticalWallJumpForce
-                velocity:Add(bonusVec)
+        if not self:GetRecentlyWallJumped() then
+        
+            bonusVec.y = viewCoords.zAxis.y * kVerticalWallJumpForce
+            velocity:Add(bonusVec)
 
-            end
-        else
+        end
+        /*else
             if velocity:GetLengthXZ() < kMaxSpeed then
                 // From testing in NS1:
                 // Only viewangle seem to be used for determining force direction
@@ -475,10 +480,51 @@ function Skulk:GetJumpVelocity(input, velocity)
                     VectorCopy(direction, velocity)
                 end
             end
-        end
+        end*/
     else
         Player.GetJumpVelocity(self, input, velocity)
     end
+end
+
+function Skulk:ModifyJump(input, velocity, jumpVelocity)
+
+    if self:GetCanWallJump() then
+    
+        local direction = input.move.z == -1 and -1 or 1
+    
+        // we add the bonus in the direction the move is going
+        local viewCoords = self:GetViewAngles():GetCoords()
+        self.bonusVec = viewCoords.zAxis * direction
+        self.bonusVec.y = 0
+        self.bonusVec:Normalize()
+        
+        jumpVelocity.y = 3 + math.min(1, 1 + viewCoords.zAxis.y) * 2
+
+        local hasupg, level = GetHasCelerityUpgrade(self)
+        local celerityMod = (hasupg and level or 0) * 0.4
+        local currentSpeed = velocity:GetLengthXZ()
+        local fraction = 1 - Clamp( currentSpeed / (11 + celerityMod), 0, 1)        
+        
+        local force = math.max(kMinWallJumpForce, (kWallJumpForce + celerityMod) * fraction)
+          
+        self.bonusVec:Scale(force)      
+
+        if not self:GetRecentlyWallJumped() then
+        
+            self.bonusVec.y = viewCoords.zAxis.y * kVerticalWallJumpForce
+            jumpVelocity:Add(self.bonusVec)
+
+        end
+        
+        self.timeLastWallJump = Shared.GetTime()
+        
+    end
+    
+end
+
+function Skulk:GetTriggerLandEffect()
+    local xzSpeed = self:GetVelocity():GetLengthXZ()
+    return Alien.GetTriggerLandEffect(self) and (not self.movementModiferState or xzSpeed > 7)
 end
 
 function Skulk:OnGroundChanged(onGround)

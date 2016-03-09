@@ -115,7 +115,7 @@ function GUISpeedDebug:Uninitialize()
 end
 
 function GUISpeedDebug:SetDebugText(text, text2)
-    self.Landed:SetText(string.format( "Landed This Frame : %s : With force : %s", text, text2))
+    //self.Landed:SetText(string.format( "Landed This Frame : %s : With force : %s", text, text2))
 end
 
 function GUISpeedDebug:Update(deltaTime)
@@ -136,13 +136,13 @@ function GUISpeedDebug:Update(deltaTime)
 
         self.momentumFraction:SetSize(Vector(gMomentumBarWidth * bonusSpeedFraction, 30, 0))
         self.xzSpeed:SetText( string.format( "Current Speed: %s  Vertical Speed: %s %s", ToString(RoundVelocity(speed)), ToString(RoundVelocity(velocity.y)), input ) )
-        self.OnSurface:SetText( string.format( "Crouching : %s : MovementMode : %s", ToString(player:GetCrouching()), ConditionalValue(player:HasAdvancedMovement(), "Classic", "Vanilla") ) )
+        self.OnSurface:SetText( string.format( "Crouching : %s : MovementMode : %s", ToString(player:GetCrouching()), ConditionalValue(false, "Classic", "Vanilla") ) )
         self.OnGround:SetText( string.format( "OnGround : %s : WallWalking : %s", ToString(player:GetIsOnGround()), player.GetIsWallWalking and ToString(player:GetIsWallWalking()) or "false" ) )
         //self.Friction:SetText( string.format( "Friction : %s", ToString(player:GetGroundFriction()) ) )
         self.Friction:SetText( string.format( "CanJump : %s : CanWallJump : %s", ToString(player:GetCanJump()), ToString(player.GetCanWallJump and player:GetCanWallJump() or false) ) )
         self.MaxSpeed:SetText( string.format( "MaxSpeed : %s : Weapon weight : %s", ToString(player:GetMaxSpeed()), ToString(player:GetWeaponsWeight() or 0) ) )
-        self.Jumping:SetText( string.format( "Jumping : %s : Last landing force : %s", ToString(player:GetIsJumping()), ToString(player:GetLastImpactForce()) ) )
-        self.Accel:SetText( string.format( "Accel : %s", ToString(player:GetAcceleration(player:GetIsOnGround())) ) )
+        self.Jumping:SetText( string.format( "Jumping : %s : Last landing force : %s", ToString(player:GetIsJumping()), ToString(player.lastImpactForce or 0) ) )
+        self.Accel:SetText( string.format( "Accel : %s", ToString(player:GetIsOnGround() and player:GetAcceleration() or player:GetAirAcceleration()) ) )
         
         if currentFraction then
             self.currentFraction:SetSize(Vector(15, -gFractionBarHeight * currentFraction, 0))
