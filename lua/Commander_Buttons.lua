@@ -496,12 +496,7 @@ local function ComputeMenuTechAvailability(self)
                         local isTechAllowed = false
                         local canAfford = false
                         
-                        local _, isSelectTabSelected = self:IsTabSelected(kTechId.WeaponsMenu)
-                        if isSelectTabSelected then
-                            isTechAllowed, canAfford = entity:GetTechAllowed(techId, techNode, self)
-                        else
-                            isTechAllowed, canAfford = self:GetTechAllowed(techId, techNode, self)
-                        end
+                        isTechAllowed, canAfford = self:GetTechAllowed(techId, techNode, self)
                         
                         menuTechButtonAllowed = isTechAllowed
                         menuTechButtonAffordable = canAfford
