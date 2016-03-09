@@ -869,8 +869,8 @@ function GUIAlienHUD:Update(deltaTime)
     end
     
     self.inventoryDisplay:Update(deltaTime, { PlayerUI_GetActiveWeaponTechId(), PlayerUI_GetInventoryTechIds() })
-
--- The resource display was modifying the update interval for the script, so this block will run last
+    self:UpdateHiveInformation(deltaTime)
+    -- The resource display was modifying the update interval for the script, so this block will run last
     -- This way we can also update the display rate in case it's set to low after an animation finishes
     UpdateHealthBall(self, deltaTime)
     UpdateEnergyBall(self, deltaTime)
