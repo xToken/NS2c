@@ -401,7 +401,7 @@ kSwipeMeleeBaseWidth = 0.9
 kSwipeMeleeBaseHeight = 1
 kSwipeKnockbackForce = 4
 
-kStartBlinkEnergyCost = 2
+kStartBlinkEnergyCost = 4
 kBlinkEnergyCostPerSecond = 50
 
 kMetabolizeEnergyCost = 25
