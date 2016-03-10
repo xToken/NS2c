@@ -380,10 +380,10 @@ function OnMapLoadEntity(className, groupName, values)
     elseif className == "ambient_sound" then
     
         if IsGroupActiveInSeason(groupName, season) then
-            local entity = AmbientSound()
-            LoadEntityFromValues(entity, values)
-            Client.PrecacheLocalSound(entity.eventName)
-            table.insert(Client.ambientSoundList, entity)
+            //local entity = AmbientSound()
+            //LoadEntityFromValues(entity, values)
+            //Client.PrecacheLocalSound(entity.eventName)
+            //table.insert(Client.ambientSoundList, entity)
         end
         
     elseif className == Reverb.kMapName then
