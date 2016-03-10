@@ -205,20 +205,15 @@ if Server then
                     elseif gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
                         //Combat, trigger XP gain
                         //Using assists for shared XP, not local range.
-                        /*local players = GetEntitiesForTeamWithinRange("Player", attacker:GetTeamNumber(), attacker:GetOrigin(), kCombatFriendlyAwardRange)
-                        local pcount = #players
-                        local pexp = kCombatExperienceBaseAward
+                        local players = GetEntitiesForTeamWithinRange("Player", attacker:GetTeamNumber(), attacker:GetOrigin(), kCombatFriendlyAwardRange)
+                        local pcount = math.max(#players, 2)
                         for _, player in ipairs(players) do
                             if player ~= attacker then
-                                local distance = (attacker:GetOrigin() - self:GetOrigin()):GetLength()
+                                local distance = (attacker:GetOrigin() - player:GetOrigin()):GetLength()
                                 local xp = math.cos((distance / kCombatFriendlyAwardRange) * (math.pi / 2))
-                                if (xp * pcount) > (kCombatExperienceBaseAward / 2) then
-                                    xp = kCombatExperienceBaseAward / (2 * pcount)
-                                end
-                                player:AddExperience(xp)
-                                pexp = pexp - xp
+                                player:AddExperience(xp * kCombatExperienceBaseAward / pcount)
                             end
-                        end*/
+                        end
                         attacker:AddExperience(kCombatExperienceBaseAward)
                     end
                 end
