@@ -19,7 +19,7 @@
 
 Script.Load("lua/Utility.lua")
 Script.Load("lua/Weapons/Alien/SwipeBlink.lua")
-Script.Load("lua/Weapons/Alien/Metabolize.lua")
+//Script.Load("lua/Weapons/Alien/Metabolize.lua")
 Script.Load("lua/Weapons/Alien/AcidRocket.lua")
 Script.Load("lua/Alien.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
@@ -155,19 +155,15 @@ function Fade:OnTakeFallDamage()
 end
 
 function Fade:MovementModifierChanged(newMovementModifierState, input)
-
-    if newMovementModifierState and self:GetActiveWeapon() then
-        local weaponMapName = self:GetActiveWeapon():GetMapName()
-        local metabweapon = self:GetWeapon(Metabolize.kMapName)
-        if metabweapon and not metabweapon:GetHasAttackDelay(self) and self:GetEnergy() >= metabweapon:GetEnergyCost() then
-            self:SetActiveWeapon(Metabolize.kMapName)
-            self:PrimaryAttack()
-            if weaponMapName ~= Metabolize.kMapName then
-                self.previousweapon = weaponMapName
-            end
+    if newMovementModifierState then
+        if self:GetHasTwoHives() and not self:GetHasMetabolizeDelay() and self:GetEnergy() >= kMetabolizeEnergyCost then
+            self.timeMetabolize = Shared.GetTime()
         end
     end
-    
+end
+
+function Fade:GetHasMetabolizeDelay()
+    return self.timeMetabolize + kMetabolizeDelay > Shared.GetTime()
 end
 
 function Fade:GetMaxSpeed(possible)
@@ -373,19 +369,30 @@ function Fade:GetHasMetabolizeAnimationDelay()
     return self.timeMetabolize + kMetabolizeAnimationDelay > Shared.GetTime()
 end
 
+function Fade:ProcessMetabolizeTag(weapon, tagName)
+
+    if tagName == "metabolize" then
+        self:DeductAbilityEnergy(kMetabolizeEnergyCost)
+        self:TriggerEffects("metabolize")
+        local totalHealed = self:AddHealth(kMetabolizeHealthGain, false, false)
+        if Client and totalHealed > 0 then
+            local GUIRegenerationFeedback = ClientUI.GetScript("GUIRegenerationFeedback")
+            GUIRegenerationFeedback:TriggerRegenEffect()
+            local cinematic = Client.CreateCinematic(RenderScene.Zone_ViewModel)
+            cinematic:SetCinematic(kRegenerationViewCinematic)
+        end
+        self:AddEnergy(kMetabolizeEnergyGain)
+    end
+
+end
+
 function Fade:OnUpdateAnimationInput(modelMixin)
 
     if not self:GetHasMetabolizeAnimationDelay() then
-    
         Alien.OnUpdateAnimationInput(self, modelMixin)
-        
     else
-    
-        local weapon = self:GetActiveWeapon()
-        if weapon ~= nil and weapon.OnUpdateAnimationInput and weapon:GetMapName() == Metabolize.kMapName then
-            weapon:OnUpdateAnimationInput(modelMixin)
-        end
-        
+        modelMixin:SetAnimationInput("ability", "vortex")
+        modelMixin:SetAnimationInput("activity", "primary")
     end
 
 end
