@@ -1057,7 +1057,7 @@ function BuildTechData()
 		},
 		
         {[kTechDataId] = kTechId.Metabolize,
-			[kTechDataMapName] = Metabolize.kMapName,
+			//[kTechDataMapName] = Metabolize.kMapName,
 			[kTechDataDisplayName] = "METABOLIZE"
 		},
 		

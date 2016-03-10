@@ -45,7 +45,7 @@ function AcidRocket:GetDeathIconIndex()
 end
 
 function AcidRocket:GetHUDSlot()
-    return 3
+    return 2
 end
 
 function AcidRocket:OnPrimaryAttack(player)
@@ -90,7 +90,17 @@ function AcidRocket:FireRocketProjectile(player)
 end
 
 function AcidRocket:OnUpdateAnimationInput(modelMixin)
-    PROFILE("AcidRocket:OnUpdateAnimationInput")    
+    PROFILE("AcidRocket:OnUpdateAnimationInput")
+end
+
+function AcidRocket:OnTag(tagName)
+
+    PROFILE("AcidRocket:OnTag")
+    
+    local player = self:GetParent()
+    if player then
+        player:ProcessMetabolizeTag(self, tagName)
+    end
 end
 
 Shared.LinkClassToMap("AcidRocket", AcidRocket.kMapName, AcidRocket.networkVars )
