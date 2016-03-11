@@ -107,7 +107,7 @@ function GUIDeathMessages:Update(deltaTime)
     for i, message in ipairs(self.messages) do
     
         local currentPosition = Vector(message["Background"]:GetPosition())
-        currentPosition.y = GUIScale(kScreenOffset + ConditionalValue(PlayerUI_IsOnMarineTeam(), 0, 400)) + (kBackgroundHeight * (i - 1))
+        currentPosition.y = GUIScale(kScreenOffset + ConditionalValue(PlayerUI_IsOnAlienTeam(), 400, 0)) + (kBackgroundHeight * (i - 1))
         local playerIsCommander = CommanderUI_IsLocalPlayerCommander()
         currentPosition.x = message["BackgroundXOffset"] - ((playerIsCommander and message["BackgroundWidth"]) or 0)
         message["Background"]:SetPosition(currentPosition)
