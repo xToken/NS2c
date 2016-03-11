@@ -170,6 +170,7 @@ Script.Load("lua/HitSounds.lua")
 Script.Load("lua/Mixins/ModdedMixinUtility.lua")
 Script.Load("lua/Mixins/WaterModSupport.lua")
 Script.Load("lua/Mixins/ExoCrashFix.lua")
+Script.Load("lua/Mixins/NS2PlusSupport.lua")
 
 //Load Overloads for Classic - Use these for simple changes to avoid complete file replacement
 Script.Load("lua/Overloads/SensorBlip.lua")
