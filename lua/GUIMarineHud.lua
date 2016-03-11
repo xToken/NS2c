@@ -98,8 +98,10 @@ GUIMarineHUD.kFrameSize = Vector(1000, 600, 0)
 
 // FONT
 
-GUIMarineHUD.kTextFontName = "fonts/AgencyFB_small.fnt"
-GUIMarineHUD.kCommanderFontName = "fonts/AgencyFB_small.fnt"
+GUIMarineHUD.kTextFontName = Fonts.kAgencyFB_Small
+GUIMarineHUD.kCommanderFontName = Fonts.kAgencyFB_Small
+GUIMarineHUD.kNanoShieldFontName = Fonts.kAgencyFB_Large
+GUIMarineHUD.kNanoShieldFontSize = 20
 
 GUIMarineHUD.kActiveCommanderColor = Color(246/255, 254/255, 37/255 )
 
@@ -135,6 +137,15 @@ function AnimFadeOut(scriptHandle, itemHandle)
     itemHandle:FadeOut(1, nil, AnimateLinear, AnimFadeIn)
 end
 
+local function UpdateItemsGUIScale(self)
+    self.background:SetSize( Vector(Client.GetScreenWidth(), Client.GetScreenHeight(), 0) )
+    self.nanoshieldBackground:SetSize( Vector(Client.GetScreenWidth(), Client.GetScreenHeight(), 0) )
+    self.nanoshieldText:SetScale(GetScaledVector())
+    self.nanoshieldText:SetPosition(GUIScale(Vector(0, -32, 0)))
+    self.nanoshieldText:SetFontName(GUIMarineHUD.kNanoShieldFontName)
+    GUIMakeFontScale(self.nanoshieldText)
+end
+
 function GUIMarineHUD:Initialize()
 
     GUIAnimatedScript.Initialize(self)
@@ -143,6 +154,9 @@ function GUIMarineHUD:Initialize()
     self.lastWeaponsLevel = 0
     self.lastPassiveUpgradeCheck = 0
     self.motiontracking = false
+	self.lastPowerState = 0
+    self.lastNanoShieldState = false
+    self.lastLocationText = ""
     
     self.scale =  Client.GetScreenHeight() / kBaseScreenHeight
     self.minimapEnabled = gHUDMapEnabled
@@ -152,15 +166,31 @@ function GUIMarineHUD:Initialize()
     // used for global offset
     
     self.background = self:CreateAnimatedGraphicItem()
+    self.background:SetPosition( Vector(0, 0, 0) )
     self.background:SetIsScaling(false)
-    self.background:SetSize( Vector(Client.GetScreenWidth(), Client.GetScreenHeight(), 0) )
-    self.background:SetPosition( Vector(0, 0, 0) ) 
     self.background:SetIsVisible(true)
     self.background:SetLayer(kGUILayerPlayerHUDBackground)
     self.background:SetColor( Color(1, 1, 1, 0) )
     
     self:InitFrame()
-
+    
+    self.nanoshieldBackground = self:CreateAnimatedGraphicItem()
+    self.nanoshieldBackground:SetPosition( Vector(0, 0, 0) )
+    self.nanoshieldBackground:SetIsScaling(false)
+    self.nanoshieldBackground:SetIsVisible(true)
+    self.nanoshieldBackground:SetColor( Color(0.3, 0.3, 1, 0.0) )
+    self.nanoshieldBackground:SetLayer(kGUILayerPlayerHUDBackground)
+    
+    self.nanoshieldText = GetGUIManager():CreateTextItem()
+    self.nanoshieldText:SetFontName(GUIMarineHUD.kNanoShieldFontName)
+    self.nanoshieldText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
+    self.nanoshieldText:SetTextAlignmentX(GUIItem.Align_Center)
+    self.nanoshieldText:SetTextAlignmentY(GUIItem.Align_Center)
+    self.nanoshieldText:SetText(Locale.ResolveString("NANO_SHIELD_ACTIVE"))
+    self.nanoshieldText:SetIsVisible(false)
+    self.nanoshieldText:SetColor( Color(0.8, 0.8, 1, 0.8) )
+    self.nanoshieldBackground:AddChild(self.nanoshieldText)
+    
     // create all hud elements
     
     self.commanderName = self:CreateAnimatedTextItem()
@@ -190,37 +220,19 @@ function GUIMarineHUD:Initialize()
     self.scanRight:SetBlendTechnique(GUIItem.Add)
     self.scanRight:AddAsChildTo(self.background)
     
-    //self.gameTimeText = self:CreateAnimatedTextItem()
-    //self.gameTimeText:SetLayer(kGUILayerPlayerHUDForeground2)
-    //self.gameTimeText:SetFontName(GUIMarineHUD.kTextFontName)
-    //self.gameTimeText:SetAnchor(GUIItem.Left, GUIItem.Bottom)
-    //self.gameTimeText:SetColor(kBrightColor)
-    //self.gameTimeText:SetTextAlignmentX(GUIItem.Align_Center)
-    //self.gameTimeText:AddAsChildTo(self.background)
-    
     if self.minimapEnabled then
         self:InitializeMinimap()
     end
     
     self.locationText = self:CreateAnimatedTextItem()
     self.locationText:SetFontName(GUIMarineHUD.kTextFontName)
-    self.locationText:SetTextAlignmentX(GUIItem.Align_Max)
+    self.locationText:SetTextAlignmentX(GUIItem.Align_Min)
     self.locationText:SetTextAlignmentY(GUIItem.Align_Min)
     self.locationText:SetAnchor(GUIItem.Left, GUIItem.Top)
     self.locationText:SetLayer(kGUILayerPlayerHUDForeground2)
     self.locationText:SetColor(kBrightColor)
     self.locationText:SetFontIsBold(true)
     self.locationText:AddAsChildTo(self.background)
-    
-    self.teamresources = self:CreateAnimatedTextItem()
-    self.teamresources:SetFontName(GUIMarineHUD.kTextFontName)
-    self.teamresources:SetTextAlignmentX(GUIItem.Align_Max)
-    self.teamresources:SetTextAlignmentY(GUIItem.Align_Min)
-    self.teamresources:SetAnchor(GUIItem.Left, GUIItem.Top)
-    self.teamresources:SetLayer(kGUILayerPlayerHUDForeground2)
-    self.teamresources:SetColor(kBrightColor)
-    self.teamresources:SetFontIsBold(true)
-    self.teamresources:AddAsChildTo(self.background)
 
     self.armorLevel = GetGUIManager():CreateGraphicItem()
     self.armorLevel:SetTexture(GUIMarineHUD.kUpgradesTexture)
@@ -269,22 +281,57 @@ function GUIMarineHUD:Initialize()
     style.textColor = kBrightColor
     style.textureSet = "marine"
     style.displayTeamRes = true
-    self.style = style
-    
-    if PlayerUI_GetGameMode() == kGameMode.Combat then    
-        self.resourceDisplay = CreatePlayerResourceDisplay(self, kGUILayerPlayerHUDForeground1, self.background, style)
-    end
-    
+    self.resourceDisplay = CreatePlayerResourceDisplay(self, kGUILayerPlayerHUDForeground1, self.background, style)
     self.fuelDisplay = CreateFuelDisplay(self, kGUILayerPlayerHUDForeground1, self.background)
     self.inventoryDisplay = CreateInventoryDisplay(self, kGUILayerPlayerHUDForeground1, self.background)
     
-	self:Reset()
+    self.commanderNameIsAnimating = nil
+    
+    UpdateItemsGUIScale(self)
+    
+    self:Reset()
+    
+    -- Fix bug where changing resolution displays health bars again for Exos
+    local player = Client.GetLocalPlayer()
+    if player and player:isa("Exo") then
+        self:SetStatusDisplayVisible(false)
+        self:SetFrameVisible(false)
+        self:SetInventoryDisplayVisible(false)
+    end
+    
+    -- Fix bug where weapon/armor upgrade icons would display with the wrong coords on res change
+    self:ShowNewWeaponLevel(PlayerUI_GetWeaponLevel())
+    self:ShowNewArmorLevel(PlayerUI_GetArmorLevel())
     
     self:Update(0)
 
 end
 
 function GUIMarineHUD:InitFrame()
+
+    self.topLeftFrame = GetGUIManager():CreateGraphicItem()
+    self.topLeftFrame:SetTexture(GUIMarineHUD.kFrameTexture)
+    self.topLeftFrame:SetAnchor(GUIItem.Left, GUIItem.Top)
+    self.topLeftFrame:SetTexturePixelCoordinates(unpack(GUIMarineHUD.kFrameTopLeftCoords))
+    self.background:AddChild(self.topLeftFrame)
+    
+    self.topRightFrame = GetGUIManager():CreateGraphicItem()
+    self.topRightFrame:SetTexture(GUIMarineHUD.kFrameTexture)
+    self.topRightFrame:SetAnchor(GUIItem.Right, GUIItem.Top)
+    self.topRightFrame:SetTexturePixelCoordinates(unpack(GUIMarineHUD.kFrameTopRightCoords))
+    self.background:AddChild(self.topRightFrame)
+    
+    self.bottomLeftFrame = GetGUIManager():CreateGraphicItem()
+    self.bottomLeftFrame:SetTexture(GUIMarineHUD.kFrameTexture)
+    self.bottomLeftFrame:SetAnchor(GUIItem.Left, GUIItem.Bottom)
+    self.bottomLeftFrame:SetTexturePixelCoordinates(unpack(GUIMarineHUD.kFrameBottomLeftCoords))
+    self.background:AddChild(self.bottomLeftFrame)
+    
+    self.bottomRightFrame = GetGUIManager():CreateGraphicItem()
+    self.bottomRightFrame:SetTexture(GUIMarineHUD.kFrameTexture)
+    self.bottomRightFrame:SetAnchor(GUIItem.Right, GUIItem.Bottom)
+    self.bottomRightFrame:SetTexturePixelCoordinates(unpack(GUIMarineHUD.kFrameBottomRightCoords))
+    self.background:AddChild(self.bottomRightFrame)
 
 end
 
@@ -299,8 +346,7 @@ function GUIMarineHUD:InitializeMinimap()
     self.minimapBackground:SetColor(Color(1,1,1,1))
     self.minimapBackground:SetLayer(kGUILayerPlayerHUDForeground1)
     self.minimapBackground:AddAsChildTo(self.background)
-
-    /*
+    
     self.minimapPower = self:CreateAnimatedGraphicItem()
     self.minimapPower:SetTexture(kMinimapBorderTexture)
     self.minimapPower:SetTexturePixelCoordinates(unpack(GUIMarineHUD.kMinimapPowerTextureCoords))
@@ -309,7 +355,6 @@ function GUIMarineHUD:InitializeMinimap()
     self.minimapPower:SetAnchor(GUIItem.Left, GUIItem.Top)
     self.minimapPower:SetBlendTechnique(GUIItem.Add)
     self.minimapBackground:AddChild(self.minimapPower)
-    */
     
     self.minimapStencil = GetGUIManager():CreateGraphicItem()
     self.minimapStencil:SetColor( Color(1,1,1,1) )
@@ -323,6 +368,12 @@ function GUIMarineHUD:InitializeMinimap()
     self.minimapScript = GetGUIManager():CreateGUIScript("GUIMinimapFrame")
     self.minimapScript:ShowMap(true)
     self.minimapScript:SetBackgroundMode(GUIMinimapFrame.kModeZoom)
+    -- skip updating icons outside this radius; saves CPU. Radius is heuristic;
+    -- measured as when items just start disappearing in the corners
+    self.minimapScript.updateRadius = 145
+    -- the updateIntervalMultiplier is by default set to zero which runs the minimap at close to full framerate
+    -- setting it to 0.5 causes things to work pretty well for the marine HUD
+    self.minimapScript.updateIntervalMultipler = 0.5
 
     self:RefreshMinimapZoom()
     
@@ -415,7 +466,13 @@ function GUIMarineHUD:SetStatusDisplayVisible(visible)
     self.statusDisplay:SetIsVisible(visible)
 end
 
-function GUIMarineHUD:SetFrameVisible(visible)    
+function GUIMarineHUD:SetFrameVisible(visible)
+
+    self.topLeftFrame:SetIsVisible(visible)
+    self.topRightFrame:SetIsVisible(visible)
+    self.bottomLeftFrame:SetIsVisible(visible)
+    self.bottomRightFrame:SetIsVisible(visible)
+    
 end
 
 function GUIMarineHUD:SetInventoryDisplayVisible(visible)
@@ -424,8 +481,6 @@ end
 
 function GUIMarineHUD:Reset()
     
-    // --- kGUILayerPlayerHUDForeground1
-
     self.scanLeft:SetUniformScale(self.scale)
     self.scanLeft:SetSize(Vector(1100, 1200, 0))
     self.scanLeft:SetColor(Color(1,1,1,0))
@@ -437,14 +492,12 @@ function GUIMarineHUD:Reset()
     self.commanderName:SetUniformScale(self.scale)
     self.commanderName:SetScale(GetScaledVector() * 1.1)
     self.commanderName:SetPosition(GUIMarineHUD.kCommanderNameOffset)
+    self.commanderName:SetFontName(GUIMarineHUD.kTextFontName)
+    GUIMakeFontScale(self.commanderName)
     
     self.statusDisplay:Reset(self.scale)
     self.eventDisplay:Reset(self.scale)
-    
-    if self.resourceDisplay then
-        self.resourceDisplay:Reset(self.scale)
-    end
-    
+    self.resourceDisplay:Reset(self.scale)
     self.inventoryDisplay:Reset(self.scale)
     
     self.armorLevel:SetPosition(GUIMarineHUD.kUpgradePos * self.scale)
@@ -474,10 +527,19 @@ function GUIMarineHUD:Reset()
     self.locationText:SetUniformScale(self.scale)
     self.locationText:SetScale(GetScaledVector())
     self.locationText:SetPosition(GUIMarineHUD.kLocationTextOffset)
+    self.locationText:SetFontName(GUIMarineHUD.kTextFontName)
+    GUIMakeFontScale(self.locationText)
+
+    self.topLeftFrame:SetSize(GUIMarineHUD.kFrameSize * self.scale)
     
-    self.teamresources:SetUniformScale(self.scale)
-    self.teamresources:SetScale(GetScaledVector())
-    self.teamresources:SetPosition(GUIMarineHUD.kTeamResourcesTextOffset)
+    self.topRightFrame:SetSize(GUIMarineHUD.kFrameSize * self.scale)
+    self.topRightFrame:SetPosition(Vector(-GUIMarineHUD.kFrameSize.x, 0, 0) * self.scale)
+    
+    self.bottomLeftFrame:SetSize(GUIMarineHUD.kFrameSize * self.scale)
+    self.bottomLeftFrame:SetPosition(Vector(0, -GUIMarineHUD.kFrameSize.y, 0) * self.scale)
+    
+    self.bottomRightFrame:SetSize(GUIMarineHUD.kFrameSize * self.scale)
+    self.bottomRightFrame:SetPosition(Vector(-GUIMarineHUD.kFrameSize.x, -GUIMarineHUD.kFrameSize.y, 0) * self.scale)
 
 end
 
@@ -496,10 +558,11 @@ function GUIMarineHUD:ResetMinimap()
     self.minimapBackground:SetUniformScale(self.scale)
     self.minimapBackground:SetSize(GUIMarineHUD.kMinimapBackgroundSize)
     self.minimapBackground:SetPosition( GUIMarineHUD.kMinimapPos )
-
-    //self.minimapPower:SetUniformScale(self.scale)
-    //self.minimapPower:SetSize(GUIMarineHUD.kMinimapPowerSize)
-    //self.minimapPower:SetPosition(GUIMarineHUD.kMinimapPowerPos)
+    
+    self.minimapPower:SetUniformScale(self.scale)
+    self.minimapPower:SetSize(GUIMarineHUD.kMinimapPowerSize)
+    self.minimapPower:SetPosition(GUIMarineHUD.kMinimapPowerPos)
+    self.minimapPower:SetIsVisible(false)
 
     self.minimapStencil:SetSize(self.scale * GUIMarineHUD.kStencilSize)
     self.minimapStencil:SetPosition(self.scale * (- GUIMarineHUD.kStencilSize/2 + GUIMarineHUD.kStencilPos))
@@ -560,127 +623,88 @@ function GUIMarineHUD:Update(deltaTime)
 
     PROFILE("GUIMarineHUD:Update")
     
-    /*
-    if PlayerUI_GetHasNewOrder() then
-        self.minimapScript:SetDesiredZoom(0.3)
-    else
-        self.minimapScript:SetDesiredZoom(1)
-    end
-    */
+    local fullMode = Client.GetOptionInteger("hudmode", kHUDMode.Full) == kHUDMode.Full
+    
+    self:SetHUDMapEnabled(fullMode)
     
     // Update health / armor bar
     self.statusDisplay:Update(deltaTime, { PlayerUI_GetPlayerHealth(), PlayerUI_GetPlayerMaxHealth(), PlayerUI_GetPlayerArmor(), PlayerUI_GetPlayerMaxArmor(), PlayerUI_GetPlayerParasiteState() } )
     
     // Update resource display
-    if PlayerUI_GetGameMode() == kGameMode.Combat then
-    
-        if not self.resourceDisplay then
-            self.resourceDisplay = CreatePlayerResourceDisplay(self, kGUILayerPlayerHUDForeground1, self.background, self.style)
-        end
-        
-        self.resourceDisplay:SetVisibleState(true)
-        self.resourceDisplay:Update(deltaTime, { PlayerUI_GetTeamResources(), PlayerUI_GetPersonalResources(), CommanderUI_GetTeamHarvesterCount() } )
-        
-    elseif PlayerUI_GetGameMode() == kGameMode.Classic then
-    
-        if self.resourceDisplay then
-            self.resourceDisplay:Destroy()
-            self.resourceDisplay = nil
-        end
-        
-    end
+	self.resourceDisplay:Update(deltaTime, { PlayerUI_GetTeamResources(), PlayerUI_GetPersonalResources(), CommanderUI_GetTeamHarvesterCount() } )
     
     // Update notifications and events
     if self.lastNotificationUpdate + GUIMarineHUD.kNotificationUpdateIntervall < Client.GetTime() then
     
-        self.eventDisplay:Update(Client.GetTime() - self.lastNotificationUpdate, { PlayerUI_GetRecentNotification(), PlayerUI_GetRecentPurchaseable() } )
+        local notification = PlayerUI_GetRecentNotification()
+        
+        if Client.GetOptionInteger("hudmode", kHUDMode.Full) == kHUDMode.Minimal then
+            notification = nil
+        end
+    
+        self.eventDisplay:Update(Client.GetTime() - self.lastNotificationUpdate, { notification, PlayerUI_GetRecentPurchaseable() } )
         self.lastNotificationUpdate = Client.GetTime()
         
     end
     
     // Update inventory
     self.inventoryDisplay:Update(deltaTime, { PlayerUI_GetActiveWeaponTechId(), PlayerUI_GetInventoryTechIds() })
+
+    if Client.GetOptionInteger("hudmode", kHUDMode.Full) == kHUDMode.Full then
     
-    // Update commander name
-    local commanderName = PlayerUI_GetCommanderName()
+        // Update commander name
+        local commanderName = PlayerUI_GetCommanderName()
     
-    if commanderName == nil then
+        self.commanderName:SetIsVisible(true)
     
-        commanderName = Locale.ResolveString("NO_COMMANDER")
+        if commanderName == nil then
         
-        if not self.commanderNameIsAnimating then
-        
-            self.commanderNameIsAnimating = true
-            self.commanderName:SetColor(Color(1, 0, 0, 1))
-            self.commanderName:FadeOut(1, nil, AnimateLinear, AnimFadeIn)
+            commanderName = Locale.ResolveString("NO_COMMANDER")
             
-        end
+            if not self.commanderNameIsAnimating then
+            
+                self.commanderNameIsAnimating = true
+                self.commanderName:SetColor(Color(1, 0, 0, 1))
+                self.commanderName:FadeOut(1, nil, AnimateLinear, AnimFadeIn)
+                
+            end
+            
+        else
         
-    else
-    
-        commanderName = Locale.ResolveString("COMMANDER") .. commanderName
-    
-        if self.commanderNameIsAnimating then
-        
-            self.commanderNameIsAnimating = false
-            self.commanderName:DestroyAnimations()
+            if self.commanderNameIsAnimating then
+            
+                self.commanderNameIsAnimating = false
+                self.commanderName:DestroyAnimations()
+                
+            end
+            
+            commanderName = Locale.ResolveString("COMMANDER") .. commanderName
             self.commanderName:SetColor(GUIMarineHUD.kActiveCommanderColor)
             
         end
         
+        commanderName = string.UTF8Upper(commanderName)
+        if self.lastCommanderName ~= commanderName then
+        
+            self.commanderName:DestroyAnimation("COMM_TEXT_WRITE")
+            self.commanderName:SetText("")
+            self.commanderName:SetText(commanderName, 0.5, "COMM_TEXT_WRITE")
+            self.lastCommanderName = commanderName
+            
     end
     
-    commanderName = string.upper(commanderName)
-    if self.lastCommanderName ~= commanderName then
-    
-        self.commanderName:DestroyAnimation("COMM_TEXT_WRITE")
-        self.commanderName:SetText("")
-        self.commanderName:SetText(commanderName, 0.5, "COMM_TEXT_WRITE")
-        self.lastCommanderName = commanderName
+    else
+        
+        self.commanderName:SetIsVisible(false)
         
     end
     
-    // Update game time
-    local gameTime = PlayerUI_GetGameStartTime()
-    
-    if gameTime ~= 0 then
-        gameTime = math.floor(Shared.GetTime()) - PlayerUI_GetGameStartTime()
-    end
-    
-   local teamres = PlayerUI_GetTeamResources()
-    
-    if self.lastTeamRes ~= teamres then
-
-        // Delete current string and start write animation
-        self.teamresources:DestroyAnimations()
-        self.teamresources:SetText("")
-        self.teamresources:SetText(string.format(Locale.ResolveString("TEAM_RES"), teamres), 0)
-
-        self.lastTeamRes = teamres
-
-    end
-
-    //local minutes = math.floor(gameTime/60)
-    //local seconds = gameTime - minutes*60
-    //local gameTimeText = string.format("game time: %d:%02d", minutes, seconds)
-    
-    //self.gameTimeText:SetText(gameTimeText)
-    
     // Update minimap
-    local locationName = PlayerUI_GetLocationName()
-    if locationName then
-        locationName = string.upper(locationName)
-    else
-        locationName = ""
-    end
+    local locationName = ConditionalValue(PlayerUI_GetLocationName(), string.upper(PlayerUI_GetLocationName()), "")
     
     if self.lastLocationText ~= locationName then
     
-        // Delete current string and start write animation
-        self.locationText:DestroyAnimations()
-        self.locationText:SetText("")
-        self.locationText:SetText(string.format(Locale.ResolveString("IN_LOCATION"), locationName), 0.8)
-        
+        self.locationText:SetText(locationName)
         self.lastLocationText = locationName
         
     end
@@ -723,6 +747,9 @@ function GUIMarineHUD:Update(deltaTime)
     end
     self.weaponLevel:SetColor(useColor)
     self.armorLevel:SetColor(useColor)
+
+	// Updates animations
+    GUIAnimatedScript.Update(self, deltaTime)
     
     local useObsColor = Color(1, 1, 1, 1)        
     if not MarineUI_GetHasObservatory() then
@@ -740,7 +767,7 @@ function GUIMarineHUD:Update(deltaTime)
         self.experienceText:SetIsVisible(true)
         self.levelText:SetIsVisible(true)
         self.clientxp = self.clientxp or 0
-        
+
         local level = PlayerUI_GetCurrentLevel()
         local xp = PlayerUI_GetCurrentXP()
         local nxp = PlayerUI_GetNextLevelXP()
@@ -753,12 +780,81 @@ function GUIMarineHUD:Update(deltaTime)
         
     end
     
-    // Updates animations
-    GUIAnimatedScript.Update(self, deltaTime)
+    // Update power indicator
+    if self.minimapScript and false then
+    
+        if not self.lastPowerCheck then
+            self.lastPowerCheck = Client.GetTime()
+        end
+        
+        if self.lastPowerCheck + 0.3 < Client.GetTime() then
+        
+            local currentPowerState = POWER_OFF
+            local isPowered, powerSource = unpack(PlayerUI_GetLocationPower())
+            
+            if powerSource and powerSource:GetIsSocketed() then
+            
+                if isPowered then
+                    currentPowerState = ConditionalValue(powerSource:GetHealth() < powerSource:GetMaxHealth(), POWER_DAMAGED, POWER_ON)
+                else
+                    currentPowerState = ConditionalValue(powerSource:GetIsDisabled(), POWER_DESTROYED, POWER_DAMAGED)  
+                end
+                
+            else
+                currentPowerState = POWER_OFF
+            end
+            
+            if currentPowerState ~= self.lastPowerState then
+            
+                self:UpdatePowerIcon(currentPowerState)
+                self.lastPowerState = currentPowerState
+                
+            end
+            
+            self.lastPowerCheck = Client.GetTime()
+            
+        end
+    
+    end
 
+    // Update nanoshield
+    if self.lastNanoShieldState ~= PlayerUI_GetHasSpawnProtection() then
+
+        self.lastNanoShieldState = PlayerUI_GetHasSpawnProtection()
+        
+        if self.lastNanoShieldState then
+        
+            self.nanoshieldBackground:SetColor(Color(0.6, 0.6, 1, 0.4), 0.3, "NANO_SHIELD_IN")
+            self.nanoshieldText:SetIsVisible(true)
+            
+        else
+        
+            self.nanoshieldBackground:DestroyAnimations()
+            self.nanoshieldBackground:FadeOut(0.4)
+            self.nanoshieldText:SetIsVisible(false)
+            
+        end
+        
+    end   
+    
 end
 
 function GUIMarineHUD:UpdatePowerIcon(powerState)
+
+    self.minimapPower:DestroyAnimations()
+
+    if powerState == POWER_OFF then
+        self.minimapPower:SetColor(Color(1,1,1,0))
+    elseif powerState == POWER_ON then
+        self.minimapPower:SetColor(Color(30/255, 150/255, 151/255, 0.8))
+    elseif powerState == POWER_DAMAGED then
+        self.minimapPower:SetColor(Color(30/255, 150/255, 151/255, 0.8))
+        self.minimapPower:Pause(1, "POWER_ANIM")
+    elseif powerState == POWER_DESTROYED then
+        self.minimapPower:SetColor(Color(0.6, 0, 0, 0.5))
+        self.minimapPower:Pause(1, "POWER_ANIM")
+    end
+
 end
 
 function GUIMarineHUD:SetIsVisible(isVisible)
@@ -804,25 +900,62 @@ end
 
 function GUIMarineHUD:OnAnimationCompleted(animatedItem, animationName, itemHandle)
 
-    //self.resourceDisplay:OnAnimationCompleted(animatedItem, animationName, itemHandle)
+    self.resourceDisplay:OnAnimationCompleted(animatedItem, animationName, itemHandle)
+    
+    if animationName == "POWER_ANIM" then
+    
+        self.minimapPower:FadeOut(1.5, nil, AnimateLinear,
+        
+            function(self, item)            
+                item:Pause(1, nil, AnimateLinear, 
+                
+                    function(self, item)
+                        item:FadeIn(1.5, "POWER_ANIM")
+                    end)
+            
+            end)
+            
+    elseif animationName == "NANO_SHIELD_IN" then
+    
+        self.nanoshieldBackground:SetColor(Color(0.3, 0.3, 1, 0.1), 0.3, "NANO_SHIELD_OUT")
+    
+    elseif animationName == "NANO_SHIELD_OUT" then
+
+        self.nanoshieldBackground:SetColor(Color(0.3, 0.3, 1, 0.2), 0.3, "NANO_SHIELD_IN")
+    
+    end
 
 end
 
 function GUIMarineHUD:OnLocalPlayerChanged(newPlayer)
-    self:SetStatusDisplayVisible(true)
-    self:SetFrameVisible(true)
-    self:SetInventoryDisplayVisible(true)
-    if newPlayer:GetTeamNumber() ~= kTeamReadyRoom and Client.GetIsControllingPlayer() then
-        self:TriggerInitAnimations()
+
+    if newPlayer:isa("Exo") then
+    
+        self:SetStatusDisplayVisible(false)
+        self:SetFrameVisible(false)
+        self:SetInventoryDisplayVisible(false)
+        
+    else
+    
+        self:SetStatusDisplayVisible(true)
+        self:SetFrameVisible(true)
+        self:SetInventoryDisplayVisible(true)
+        if newPlayer:GetTeamNumber() ~= kTeamReadyRoom and Client.GetIsControllingPlayer() then
+            self:TriggerInitAnimations()
+        end
+        
     end
+    
 end
 
 function GUIMarineHUD:OnResolutionChanged(oldX, oldY, newX, newY)
 
     self.scale = newY / kBaseScreenHeight 
-    self.background:SetSize( Vector(newX, newY, 0) )
     
     self:Reset()
+    
+    self:Uninitialize()
+    self:Initialize()
     
 end
 
@@ -833,9 +966,13 @@ local kDefaultZoom = 0.75
 // The Client options is the master copy, so modify that, and call this when it changes
 function GUIMarineHUD:RefreshMinimapZoom()
 
-    local normRoot = Clamp( Client.GetOptionFloat("minimap-zoom", kDefaultZoom), 0, 1 )
-    local root = (1-normRoot)*kMinUserZoomRoot + normRoot*kMaxUserZoomRoot
-    self.minimapScript:SetDesiredZoom( root*root )
+    if self.minimapScript then
+
+        local normRoot = Clamp( Client.GetOptionFloat("minimap-zoom", kDefaultZoom), 0, 1 )
+        local root = (1-normRoot)*kMinUserZoomRoot + normRoot*kMaxUserZoomRoot
+        self.minimapScript:SetDesiredZoom( root*root )
+
+    end
 
 end
 

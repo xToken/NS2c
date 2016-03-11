@@ -62,7 +62,7 @@ GUIMarineStatus.kArmorTextPos = Vector(-20, 96, 0)
 GUIMarineStatus.kAmmoTextPos = Vector(-140, -45, 0)
 GUIMarineStatus.kAmmoTextCombatPos = Vector(-140, -85, 0)
 
-GUIMarineStatus.kFontName = "fonts/AgencyFB_large_bold.fnt"
+GUIMarineStatus.kFontName = Fonts.kAgencyFB_Large_Bold
 
 GUIMarineStatus.kArmorBarColor = Color(32/255, 222/255, 253/255, 0.8)
 GUIMarineStatus.kHealthBarColor = Color(163/255, 210/255, 220/255, 0.8)
@@ -131,7 +131,16 @@ function GUIMarineStatus:Initialize()
     self.armorText:SetLayer(self.hudLayer + 1)
     self.armorText:SetColor(GUIMarineStatus.kArmorBarColor)
     self.statusbackground:AddChild(self.armorText)
-
+    
+    self.scanLinesForeground = self.script:CreateAnimatedGraphicItem()
+    self.scanLinesForeground:SetTexture(kScanLinesBigTexture)
+    self.scanLinesForeground:SetTexturePixelCoordinates(unpack(kScanLinesBigCoords))
+    self.scanLinesForeground:SetColor(kBrightColorTransparent)
+    self.scanLinesForeground:SetIsVisible(true)
+    self.scanLinesForeground:SetLayer(self.hudLayer + 2)
+    self.scanLinesForeground:SetAnchor(GUIItem.Right, GUIItem.Top)
+    self.statusbackground:AddChild(self.scanLinesForeground)
+    
     self.armorBar = self.script:CreateAnimatedGraphicItem()
     self.armorBar:SetTexture(GUIMarineStatus.kStatusTexture)
     self.armorBar:SetTexturePixelCoordinates(unpack(GUIMarineStatus.kArmorBarPixelCoords))
@@ -214,19 +223,23 @@ function GUIMarineStatus:Reset(scale)
     self.healthText:SetUniformScale(self.scale)
     self.healthText:SetScale(GetScaledVector())
     self.healthText:SetPosition(GUIMarineStatus.kHealthTextPos)
+    self.healthText:SetFontName(GUIMarineStatus.kFontName)
+    GUIMakeFontScale(self.healthText)
     
     self.armorText:SetUniformScale(self.scale)
     self.armorText:SetScale(GetScaledVector() * 0.8)
     self.armorText:SetPosition(GUIMarineStatus.kArmorTextPos)
+    self.armorText:SetFontName(GUIMarineStatus.kFontName)
+    GUIMakeFontScale(self.armorText)
 
     self.ammoText:SetUniformScale(self.scale)
     self.ammoText:SetScale(GetScaledVector())
     self.ammoText:SetPosition(GUIMarineStatus.kAmmoTextPos)
 
-    //self.scanLinesForeground:SetUniformScale(self.scale)
-    //self.scanLinesForeground:SetPosition(GUIMarineStatus.kScanLinesForeGroundPos)
-    //self.scanLinesForeground:SetSize(GUIMarineStatus.kScanLinesForeGroundSize)
-
+    self.scanLinesForeground:SetUniformScale(self.scale)
+    self.scanLinesForeground:SetPosition(GUIMarineStatus.kScanLinesForeGroundPos)
+    self.scanLinesForeground:SetSize(GUIMarineStatus.kScanLinesForeGroundSize) 
+    
     self.armorBar:SetUniformScale(self.scale)
     self.armorBar:SetPosition(GUIMarineStatus.kArmorBarPos)
     
@@ -298,40 +311,45 @@ function GUIMarineStatus:Update(deltaTime, parameters)
         Print("WARNING: GUIMarineStatus:Update received an incomplete parameter table.")
     end
     
-    //Update AmmoCounter
-    local clipammo = ToString(PlayerUI_GetWeaponClip())
-    local ammo = ToString(PlayerUI_GetWeaponAmmo())
-    if clipammo == nil then clipammo = "--" end
-    if ammo == "0" then ammo = "--" end
-    self.ammoText:SetText(clipammo .. " / " .. ammo)
-    self.ammoText:SetIsVisible(true)
-    if PlayerUI_GetWeaponClip() < PlayerUI_GetWeaponClipSize() * GUIMarineStatus.kLowAmmoWarning then
-        self.ammoText:SetColor(Color(1, 0, 0, 1)) 
-    else
-        self.ammoText:SetColor(GUIMarineStatus.kArmorBarColor) 
+	if CHUDGetOption and CHUDGetOption("classicammo") then
+		self.ammoText:SetIsVisible(false)
+	else
+
+	    //Update AmmoCounter
+	    local clipammo = ToString(PlayerUI_GetWeaponClip())
+	    local ammo = ToString(PlayerUI_GetWeaponAmmo())
+	    if clipammo == nil then clipammo = "--" end
+	    if ammo == "0" then ammo = "--" end
+	    self.ammoText:SetText(clipammo .. " / " .. ammo)
+	    self.ammoText:SetIsVisible(true)
+	    if PlayerUI_GetWeaponClip() < PlayerUI_GetWeaponClipSize() * GUIMarineStatus.kLowAmmoWarning then
+	        self.ammoText:SetColor(Color(1, 0, 0, 1)) 
+	    else
+	        self.ammoText:SetColor(GUIMarineStatus.kArmorBarColor) 
+	    end
+	    
+	    local gamemode = PlayerUI_GetGameMode()
+	    
+	    if gamemode ~= self.lastgamemode then
+	        self.ammoText:SetUniformScale(self.scale)
+	        self.ammoText:SetScale(GetScaledVector())
+	        if gamemode == kGameMode.Combat then
+	            self.ammoText:SetPosition(GUIMarineStatus.kAmmoTextCombatPos)
+	        elseif gamemode == kGameMode.Classic then
+	            self.ammoText:SetPosition(GUIMarineStatus.kAmmoTextPos)
+	        end
+	        self.lastgamemode = gamemode
+	    end
     end
-    
-    local gamemode = PlayerUI_GetGameMode()
-    
-    if gamemode ~= self.lastgamemode then
-        self.ammoText:SetUniformScale(self.scale)
-        self.ammoText:SetScale(GetScaledVector())
-        if gamemode == kGameMode.Combat then
-            self.ammoText:SetPosition(GUIMarineStatus.kAmmoTextCombatPos)
-        elseif gamemode == kGameMode.Classic then
-            self.ammoText:SetPosition(GUIMarineStatus.kAmmoTextPos)
-        end
-        self.lastgamemode = gamemode
-    end
-    
+
     local currentHealth, maxHealth, currentArmor, maxArmor, parasiteState = unpack(parameters)
     
     if currentHealth ~= self.lastHealth then
     
-	    local healthFraction = currentHealth / maxHealth
-	    local healthBarSize = Vector(GUIMarineStatus.kHealthBarSize.x * healthFraction, GUIMarineStatus.kHealthBarSize.y, 0)
-	    local pixelCoords = GUIMarineStatus.kHealthBarPixelCoords
-	    pixelCoords[3] = GUIMarineStatus.kHealthBarSize.x * healthFraction + pixelCoords[1]
+        local healthFraction = currentHealth / maxHealth
+        local healthBarSize = Vector(GUIMarineStatus.kHealthBarSize.x * healthFraction, GUIMarineStatus.kHealthBarSize.y, 0)
+        local pixelCoords = GUIMarineStatus.kHealthBarPixelCoords
+        pixelCoords[3] = GUIMarineStatus.kHealthBarSize.x * healthFraction + pixelCoords[1]
     
         if currentHealth < self.lastHealth then
             self.healthText:DestroyAnimation("ANIM_TEXT")
@@ -344,19 +362,19 @@ function GUIMarineStatus:Update(deltaTime, parameters)
             self.healthBar:SetSize(healthBarSize, GUIMarineStatus.kAnimSpeedUp, "ANIM_HEALTH_SIZE")
             self.healthBar:SetTexturePixelCoordinates(pixelCoords[1], pixelCoords[2], pixelCoords[3], pixelCoords[4], GUIMarineStatus.kAnimSpeedUp, "ANIM_HEALTH_TEXTURE")
         end
-	    
-	    self.lastHealth = currentHealth
-	    
-	    if self.lastHealth < kLowHealth  then
-	    
-	        if not self.lowHealthAnimPlaying then
+        
+        self.lastHealth = currentHealth
+        
+        if self.lastHealth < kLowHealth  then
+        
+            if not self.lowHealthAnimPlaying then
                 self.lowHealthAnimPlaying = true
                 self.healthBar:SetColor(Color(1, 0, 0, 1), kLowHealthAnimRate, "ANIM_HEALTH_PULSATE", AnimateQuadratic, LowHealthPulsate )
                 self.healthText:SetColor(Color(1, 0, 0, 1), kLowHealthAnimRate, "ANIM_HEALTH_PULSATE", AnimateQuadratic, LowHealthPulsate )
-	        end
-	        
-	    else
-	    
+            end
+            
+        else
+        
             self.lowHealthAnimPlaying = false
             self.healthBar:DestroyAnimation("ANIM_HEALTH_PULSATE")
             self.healthText:DestroyAnimation("ANIM_HEALTH_PULSATE")
@@ -376,8 +394,8 @@ function GUIMarineStatus:Update(deltaTime, parameters)
         
         local armorFraction = currentArmor / maxArmor
         local armorBarSize = Vector(GUIMarineStatus.kArmorBarSize.x * armorFraction, GUIMarineStatus.kArmorBarSize.y, 0)
-	    local pixelCoords = GUIMarineStatus.kArmorBarPixelCoords
-	    pixelCoords[3] = GUIMarineStatus.kArmorBarSize.x * armorFraction + pixelCoords[1]
+        local pixelCoords = GUIMarineStatus.kArmorBarPixelCoords
+        pixelCoords[3] = GUIMarineStatus.kArmorBarSize.x * armorFraction + pixelCoords[1]
     
         if self.lastArmor > currentArmor then
         
