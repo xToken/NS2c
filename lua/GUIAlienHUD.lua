@@ -141,6 +141,54 @@ local kHealthBarColor = kAlienFontColor
 local kAnimSpeedDown = 0.01
 local kAnimSpeedUp = 0.01
 
+local kShieldTextYOffset = 75
+local kShieldTextXOffset = -30
+local kShieldTextColor = Color(0, 1, 0.2, 1)
+local kShieldFontName = Fonts.kStamp_Medium
+
+local function CreateMucousText(self)
+    self.mucousText = GUIManager:CreateTextItem()
+    self.mucousText:SetFontName(kShieldFontName)
+    self.mucousText:SetAnchor(GUIItem.Middle, GUIItem.Center)
+    self.mucousText:SetPosition(Vector(GUIScale(kShieldTextXOffset), GUIScale(kShieldTextYOffset), 0))
+    self.mucousText:SetTextAlignmentX(GUIItem.Align_Center)
+    self.mucousText:SetTextAlignmentY(GUIItem.Align_Center)
+    self.mucousText:SetColor(kShieldTextColor)
+    self.mucousText:SetScale(GetScaledVector())
+    GUIMakeFontScale(self.mucousText)
+    self.mucousText:SetInheritsParentAlpha(true)
+    self.lastmucousstate = false
+    
+    if self.healthBall then
+        self.healthBall:GetBackground():AddChild(self.mucousText)
+    end
+end
+
+local function UpdateMucousAmount(self)
+    if self.mucousText then
+        local shieldHP = PlayerUI_GetMucousShieldHP()
+        local hasShield = PlayerUI_GetHasMucousShield()
+        if not hasShield and self.lastmucousstate then
+            self.mucousText:SetText(tostring(0))
+            self.mucousText:SetIsVisible(false)
+            self.lastmucousstate = false
+        end
+        if hasShield then
+            local displayshieldHP = math.floor(shieldHP)
+            if shieldHP > 0 and displayshieldHP == 0 then
+                displayshieldHP = 1
+            end
+            self.mucousText:SetText("Shield: " .. tostring(displayshieldHP))
+            if not self.lastmucousstate then
+                self.mucousText:SetIsVisible(true)
+                self.lastmucousstate = true
+            end
+        end
+    else
+        CreateMucousText(self)
+    end
+end
+
 local function GetTechIdForUpgrade(upg) 
     return LookupTechData(upg, kTechDataKeyStructure, kTechId.None)
 end
@@ -187,8 +235,8 @@ function GUIAlienHUD:Initialize()
     self.inventoryDisplay = CreateInventoryDisplay(self, kGUILayerPlayerHUDForeground3, self.resourceBackground)
     self.lastNotificationUpdate = 0
     self.lastHiveUpdate = 0
-    //self.resourceDisplay.background:SetShader("shaders/GUISmokeHUD.surface_shader")
-    //self.resourceDisplay.background:SetAdditionalTexture("noise", kBackgroundNoiseTexture)
+    self.resourceDisplay.background:SetShader("shaders/GUISmokeHUD.surface_shader")
+    self.resourceDisplay.background:SetAdditionalTexture("noise", kBackgroundNoiseTexture)
     self.resourceDisplay.background:SetFloatParameter("correctionX", 1)
     self.resourceDisplay.background:SetFloatParameter("correctionY", 0.3)
     
@@ -875,7 +923,8 @@ function GUIAlienHUD:Update(deltaTime)
     UpdateHealthBall(self, deltaTime)
     UpdateEnergyBall(self, deltaTime)
     UpdateBabblerIndication(self, deltaTime)
-    
+    UpdateMucousAmount(self)
+
     if PlayerUI_GetGameMode() == kGameMode.Classic then
     
         self.experienceText:SetIsVisible(false)
