@@ -65,6 +65,7 @@ for name, suffix in pairs(kModelTemplates) do
 end
 
 local kFlashlightSoundName = PrecacheAsset("sound/NS2.fev/common/light")
+Marine.kFlashlightSoundName = kFlashlightSoundName
 
 local kWalkMaxSpeed = 2.2
 local kCrouchMaxSpeed = 1.6
