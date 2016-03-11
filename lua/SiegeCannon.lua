@@ -173,7 +173,7 @@ function SiegeCannon:GetCanSleep()
 end
 
 function SiegeCannon:GetDeathIconIndex()
-    return kDeathMessageIcon.SiegeCannon
+    return kDeathMessageIcon.ARC
 end
 
 function SiegeCannon:OnConstructionComplete()

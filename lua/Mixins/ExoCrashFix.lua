@@ -1,17 +1,7 @@
+// Natural Selection 2 'Classic' Mod
+// Source located at - https://github.com/xToken/NS2c 
+// lua\Mixins\ExoCrashFix.lua
+// - Dragon
+
 local kModelName = PrecacheAsset("models/marine/exosuit/exosuit_cm.model")
 local kAnimationGraph = PrecacheAsset("models/marine/exosuit/exosuit_cm.animation_graph")
-
-ExoWeaponHolder = { }
-ExoWeaponHolder.kSlotNames = enum({ 'Left', 'Right' })
-
-HallucinationCloud = { }
-
-local function ExecuteShot()
-end
-
-local function DummyFunc()
-	ExecuteShot()
-end
-
-Railgun = { }
-Railgun.OnTag = DummyFunc

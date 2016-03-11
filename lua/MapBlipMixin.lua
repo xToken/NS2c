@@ -157,6 +157,8 @@ function MapBlipMixin:GetMapBlipInfo()
     elseif self:isa("TechPoint") then
         blipType = kMinimapBlipType.TechPoint
     // Everything else that is supported by kMinimapBlipType.
+    elseif self:isa("HeavyArmorMarine") then
+        blipType = kMinimapBlipType.Exo
     elseif self:GetIsVisible() then
     
         if rawget( kMinimapBlipType, self:GetClassName() ) ~= nil then

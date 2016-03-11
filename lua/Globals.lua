@@ -154,11 +154,11 @@ kDisplayWeaponTime = 1.5
 // Death message indices 
 kDeathMessageIcon = enum( { 'None', 
                             'Rifle', 'RifleButt', 'Pistol', 'Axe', 'Shotgun',
-                            'Flamethrower', 'SiegeCannon', 'Grenade', 'Sentry', 'Welder',
+                            'Flamethrower', 'ARC', 'Grenade', 'Sentry', 'Welder',
                             'Bite', 'HydraSpike', 'Spray', 'Spikes', 'Parasite',
                             'SporeCloud', 'Swipe', 'BuildAbility', 'Whip', 'BileBomb',
                             'Mine', 'Gore', 'Spit', 'Jetpack', 'Claw',
-                            'HeavyMachineGun', 'Metabolize', 'LerkBite', 'Umbra', 
+                            'Minigun', 'Metabolize', 'LerkBite', 'Umbra', 
                             'Xenocide', 'Blink', 'Leap', 'Stomp',
                             'Consumed', 'GL', 'Recycled', 'Babbler', 'Railgun', 'BabblerAbility', 'GorgeTunnel', 'Devour',
 							'HandGrenade', 'GasGrenade', 'PulseGrenade', 'Stab', 'WhipBomb', 'Metabolize', 'Crush'
@@ -169,7 +169,7 @@ kMinimapBlipType = enum( { 'Undefined', 'TechPoint', 'ResourcePoint', 'Scan', 'E
                            'Extractor', 'InfantryPortal', 'Armory', 'AdvancedArmory', 'PhaseGate', 'Observatory',
                            'TurretFactory', 'ArmsLab', 'PrototypeLab',
                            'Hive', 'Harvester', 'Hydra', 'Egg', 'Embryo', 'Crag', 'Whip', 'Shade', 'Shift', 'Shell', 'Veil', 'Spur', 'TunnelEntrance', 'BoneWall',
-                           'Marine', 'JetpackMarine', 'HeavyArmorMarine', 'Skulk', 'Lerk', 'Onos', 'Fade', 'Gorge',
+                           'Marine', 'JetpackMarine', 'Exo', 'Skulk', 'Lerk', 'Onos', 'Fade', 'Gorge',
                            'Door', 'PowerPoint', 'DestroyedPowerPoint', 'UnsocketedPowerPoint', 
                            'BlueprintPowerPoint', 'SiegeCannon', 'Drifter', 'MAC', 'Infestation', 'InfestationDying', 'MoveOrder', 'AttackOrder', 'BuildOrder', 'SensorBlip', 'SentryBattery' } )
 

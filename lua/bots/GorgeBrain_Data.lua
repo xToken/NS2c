@@ -38,7 +38,7 @@ local function GetAttackUrgency(bot, mem)
     local immediateThreats = {
         [kMinimapBlipType.Marine] = true,
         [kMinimapBlipType.JetpackMarine] = true,
-        [kMinimapBlipType.HeavyArmorMarine] = true,    
+        [kMinimapBlipType.Exo] = true,    
         [kMinimapBlipType.Sentry] = true
     }
     
@@ -60,7 +60,7 @@ local function GetAttackUrgency(bot, mem)
         // Active threats
         [kMinimapBlipType.Marine] =             numOthers >= 4 and 0.6 or 1,
         [kMinimapBlipType.JetpackMarine] =      numOthers >= 4 and 0.7 or 1.1,
-        [kMinimapBlipType.HeavyArmorMarine] =   numOthers >= 6 and 0.8 or 1.2,
+        [kMinimapBlipType.Exo] =   numOthers >= 6 and 0.8 or 1.2,
         [kMinimapBlipType.Sentry] =             numOthers >= 3 and 0.5 or 0.95,
         
         // Structures

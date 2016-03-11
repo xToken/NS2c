@@ -2574,7 +2574,7 @@ function GetTexCoordsForTechId(techId)
         gTechIdPosition[kTechId.Pistol] = kDeathMessageIcon.Pistol
         gTechIdPosition[kTechId.Axe] = kDeathMessageIcon.Axe
         gTechIdPosition[kTechId.Shotgun] = kDeathMessageIcon.Shotgun
-        gTechIdPosition[kTechId.HeavyMachineGun] = kDeathMessageIcon.HeavyMachineGun
+        gTechIdPosition[kTechId.HeavyMachineGun] = kDeathMessageIcon.Minigun
         gTechIdPosition[kTechId.HandGrenades] = kDeathMessageIcon.HandGrenade
         gTechIdPosition[kTechId.GrenadeLauncher] = kDeathMessageIcon.Grenade
         gTechIdPosition[kTechId.Welder] = kDeathMessageIcon.Welder
