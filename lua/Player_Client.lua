@@ -3617,6 +3617,17 @@ function PlayerUI_GetCurrentLevelBaseXP()
     
 end
 
+function PlayerUI_GetHasSpawnProtection()
+
+    local player = Client.GetLocalPlayer()
+    if player and player.GetHasSpawnProtection then
+        return player:GetHasSpawnProtection()
+    end
+    
+    return false
+    
+end
+
 local kEggDisplayRange = 30
 local kEggDisplayOffset = Vector(0, 0.8, 0)
 function PlayerUI_GetEggDisplayInfo()
