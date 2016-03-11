@@ -113,6 +113,30 @@ function AlienUI_GetInUmbra()
 
 end
 
+function PlayerUI_GetHasMucousShield()
+
+    local player = Client.GetLocalPlayer()
+    if player and player.GetHasMucousShield then
+        return player:GetHasMucousShield()   
+    end
+    return false
+    
+end
+
+function PlayerUI_GetMucousShieldHP()
+
+    local player = Client.GetLocalPlayer()
+    if player and player.GetMuscousShieldAmount then
+    
+        local health = math.ceil(player:GetMuscousShieldAmount())
+        return health
+        
+    end
+    
+    return 0
+    
+end
+
 function AlienUI_GetEggCount()
 
     local eggCount = 0
