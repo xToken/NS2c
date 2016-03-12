@@ -583,6 +583,9 @@
     <filename>NS2Gamerules.lua</filename>
   </file>
   <file>
+    <filename>Mixins\NS2PlusSupport.lua</filename>
+  </file>
+  <file>
     <filename>NS2Utility.lua</filename>
   </file>
   <file>

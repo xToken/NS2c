@@ -56,3 +56,27 @@ end
 function Hive:GetBioMassLevel()
     return 0
 end
+
+local function GetChambersMod(chamber, teamNumber)
+    local gameInfo = GetGameInfoEntity()
+    if gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
+        return 3
+    else
+        local teamInfo = GetTeamInfoEntity(teamNumber)
+        if teamInfo then
+            return teamInfo:GetNumUpgradeStructures(chamber)
+        end
+    end
+end
+
+function GetShellLevel(teamNumber)
+    return GetChambersMod(kTechId.Crag, teamNumber)
+end
+
+function GetSpurLevel(teamNumber)
+    return GetChambersMod(kTechId.Shift, teamNumber)
+end
+
+function GetVeilLevel(teamNumber)
+    return GetChambersMod(kTechId.Shade, teamNumber)
+end
