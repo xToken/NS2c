@@ -52,3 +52,7 @@ end
 function Alien:GetShieldPercentage()
     return 0
 end
+
+function Hive:GetBioMassLevel()
+    return 0
+end
