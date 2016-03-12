@@ -50,7 +50,7 @@ function HandGrenade:GetProjectileModel()
 end 
 
 function HandGrenade:GetDeathIconIndex()
-    return kDeathMessageIcon.HandGrenade
+    return kDeathMessageIcon.ClusterGrenade
 end
 
 function HandGrenade:GetDamageType()
