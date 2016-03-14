@@ -389,6 +389,19 @@ local function OnSetPlayerVariant(client, message)
     
 end
 
+local function OnMovementChanged(client, message)
+
+    if client then
+        
+        local player = client:GetControllingPlayer()
+        if player then
+            player:UpdateMovementMode(message.movement)
+        end
+    
+    end
+
+end
+
 Server.HookNetworkMessage("SetPlayerVariant", OnSetPlayerVariant)
 Server.HookNetworkMessage("SelectUnit", OnCommandSelectUnit)
 Server.HookNetworkMessage("SelectHotkeyGroup", OnCommandParseSelectHotkeyGroup)
@@ -403,3 +416,4 @@ Server.HookNetworkMessage("CommanderPing", OnCommandCommPing)
 Server.HookNetworkMessage("SetCommunicationStatus", OnCommandSetCommStatus)
 Server.HookNetworkMessage("Buy", OnMessageBuy)
 Server.HookNetworkMessage("VoiceMessage", OnVoiceMessage)
+Server.HookNetworkMessage("MovementMode", OnMovementChanged)

@@ -434,6 +434,7 @@ function Player:CopyPlayerDataFrom(player)
     self.countingDown = player.countingDown
     self.frozen = player.frozen
     self.level = player.level
+    self.movementmode = player.movementmode
     
     self.timeOfDeath = player.timeOfDeath
     self.timeOfLastUse = player.timeOfLastUse

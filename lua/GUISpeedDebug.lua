@@ -128,15 +128,20 @@ function GUISpeedDebug:Update(deltaTime)
         local speed = velocity:GetLengthXZ()
         local bonusSpeedFraction = speed / player:GetMaxSpeed()
         local currentFraction = player:GetSpeedDebugSpecial() 
+        local advMovement = player:HasAdvancedMovement()
+        local accel = ConditionalValue(player:GetIsOnGround(), player:GetAcceleration(), player:GetAirAcceleration())
+        if advMovement then
+            accel = player:GetNS1Acceleration(player:GetIsOnGround())
+        end
         
         local input = ""
         if player:GetLastInput() then
             input = string.format("keys: %s", ToString(player:GetLastInput().move))
         end
-
+    
         self.momentumFraction:SetSize(Vector(gMomentumBarWidth * bonusSpeedFraction, 30, 0))
         self.xzSpeed:SetText( string.format( "Current Speed: %s  Vertical Speed: %s %s", ToString(RoundVelocity(speed)), ToString(RoundVelocity(velocity.y)), input ) )
-        self.OnSurface:SetText( string.format( "Crouching : %s : MovementMode : %s", ToString(player:GetCrouching()), ConditionalValue(false, "Classic", "Vanilla") ) )
+        self.OnSurface:SetText( string.format( "Crouching : %s : MovementMode : %s", ToString(player:GetCrouching()), ConditionalValue(advMovement, "Classic", "Vanilla") ) )
         self.OnGround:SetText( string.format( "OnGround : %s : WallWalking : %s", ToString(player:GetIsOnGround()), player.GetIsWallWalking and ToString(player:GetIsWallWalking()) or "false" ) )
         //self.Friction:SetText( string.format( "Friction : %s", ToString(player:GetGroundFriction()) ) )
         self.Friction:SetText( string.format( "CanJump : %s : CanWallJump : %s", ToString(player:GetCanJump()), ToString(player.GetCanWallJump and player:GetCanWallJump() or false) ) )

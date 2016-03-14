@@ -157,17 +157,13 @@ function Skulk:GetCrouchTime()
     return 0
 end
 
-/*function Skulk:GetGroundFriction()
+function Skulk:GetNS1GroundFriction()
     return ConditionalValue(self:GetIsWallWalking(), Player.GetGroundFriction(self) + 3, Player.GetGroundFriction(self))
-end*/
+end
 
 function Skulk:GetExtentsCrouchShrinkAmount()
     return 0
 end
-
-/*function Skulk:GetIsJumping()
-    return CoreMoveMixin.GetIsJumping(self) and not self.wallWalking
-end*/
 
 function Skulk:ModifyVelocity(input, velocity, deltaTime)
 

@@ -152,13 +152,13 @@ function Gorge:GetIsBellySliding()
     return self.sliding
 end
 
-/*function Gorge:GetGroundFriction()
-    return ConditionalValue(self:GetIsBellySliding(), kSlidingGroundFriction, Player.GetGroundFriction(self))
-end*/
+function Gorge:GetNS1GroundFriction()
+    return ConditionalValue(self:GetIsBellySliding(), kSlidingGroundFriction, Player.GetNS1GroundFriction(self))
+end
 
-/*function Gorge:GetAcceleration()
-    return ConditionalValue(self:GetIsBellySliding() and self:GetIsOnGround(), kSlidingAcceleration, Player.GetAcceleration(self))
-end*/
+function Gorge:GetNS1Acceleration()
+    return ConditionalValue(self:GetIsBellySliding() and self:GetIsOnGround(), kSlidingAcceleration, Player.GetNS1Acceleration(self))
+end
 
 local function GetIsSlidingDesired(self, input)
 

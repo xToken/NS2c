@@ -19,8 +19,8 @@ Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/PhysicsGroups.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/Mixins/BaseMoveMixin.lua")
-//Script.Load("lua/Mixins/CoreMoveMixin.lua")
 Script.Load("lua/Mixins/GroundMoveMixin.lua")
+Script.Load("lua/Mixins/NS1GroundMoveMixin.lua")
 Script.Load("lua/Mixins/CrouchMoveMixin.lua")
 Script.Load("lua/Mixins/JumpMoveMixin.lua")
 Script.Load("lua/Mixins/LadderMoveMixin.lua")
@@ -204,6 +204,7 @@ local networkVars =
     lastImpactForce = "private float",
     
     level = "float (0 to " .. kCombatMaxAllowedLevel .. " by 0.001)",
+    movementmode = "boolean",
     
     pushImpulse = "private vector",
     pushTime = "private time",
@@ -299,6 +300,7 @@ function Player:OnCreate()
     self.clientIndex = -1
 	//NS2c Additions
     self.movementModiferState = false
+    self.movementmode = false
     
     self.timeLastMenu = 0
     self.darwinMode = false
@@ -1415,8 +1417,12 @@ function Player:OnProcessMove(input)
         local runningPrediction = Shared.GetIsRunningPrediction()
 
         self:PreUpdateMove(input, runningPrediction)
-    
-        self:UpdateMove(input, runningPrediction)
+        
+        if not self:HasAdvancedMovement() or not self:GetUsesGoldSourceMovement() then
+            self:UpdateMove(input, runningPrediction)
+        else
+            self:UpdateNS1Move(input, runningPrediction)
+        end
         
         self:PostUpdateMove(input, runningPrediction)
 
@@ -1623,11 +1629,11 @@ function Player:GetCanCrouch()
 end
 
 function Player:GetJumpMode()
-    //if not self:HasAdvancedMovement() then
+    if not self:HasAdvancedMovement() then
         return kJumpMode.Queued
-    //else
-        //return kJumpMode.Repeating
-    //end
+    else
+        return kJumpMode.Repeating
+    end
 end
 
 function Player:GetJumpForce()
@@ -1640,9 +1646,9 @@ function Player:GetJumpVelocity(input, velocity)
     //will be deducted correctly.
 end
 
-/*function Player:GetGroundFriction()
+function Player:GetNS1GroundFriction()
     return kGroundFriction
-end*/
+end
 
 function Player:GetGroundFriction()
     return 9
@@ -1682,9 +1688,17 @@ function Player:ModifyGravityForce(gravityTable)
     end
 end
 
-/*function Player:GetAcceleration(OnGround)
+function Player:UpdateMovementMode(movementmode)
+    self.movementmode = movementmode
+end
+
+function Player:HasAdvancedMovement()
+    return self.movementmode
+end
+
+function Player:GetNS1Acceleration(OnGround)
     return ConditionalValue(OnGround, kGoldSrcAcceleration, kGoldSrcAirAcceleration)
-end*/
+end
 
 function Player:GetAcceleration()
     return 13
@@ -1958,11 +1972,6 @@ function Player:HandleButtons(input)
     end
 
     self:HandleAttacks(input)
-    
-    // Remember when jump released
-    //if bit.band(input.commands, Move.Jump) == 0 then
-        //self:SetIsJumpHandled(false)
-    //end
     
     if bit.band(input.commands, Move.Reload) ~= 0 then
         self:Reload()

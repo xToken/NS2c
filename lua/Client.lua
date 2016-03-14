@@ -1150,6 +1150,7 @@ local function OnLoadComplete()
     // Set default player name to one set in Steam, or one we've used and saved previously
     local playerName = Client.GetOptionString(kNicknameOptionsKey, Client.GetUserName())
     Client.SendNetworkMessage("SetName", { name = playerName }, true)
+	Client.SendNetworkMessage("MovementMode", {movement = Client.GetOptionBoolean("AdvancedMovement", false)}, true)
 	
 	Lights_UpdateLightMode()
 	
@@ -1194,6 +1195,14 @@ local function OnLoadComplete()
     if Client.GetOptionBoolean("playedTutorial", false) or Client.GetOptionBoolean("system/playedTutorial", false) then
         Client.SendNetworkMessage( "PlayedTutorial", {}, true)
     end
+end
+
+function UpdateMovementMode()
+
+    if Client and Client.GetLocalPlayer() and Client.GetLocalPlayer().movementmode ~= Client.GetOptionBoolean("AdvancedMovement", false) then
+        Client.SendNetworkMessage("MovementMode", {movement = Client.GetOptionBoolean("AdvancedMovement", false)}, true)
+    end
+
 end
 
 local function TimeoutDecals(materialName, origin, distance)
