@@ -178,22 +178,13 @@
     <filename>ConstructMixin.lua</filename>
   </file>
   <file>
-    <filename>Mixins\CoreMoveMixin.lua</filename>
-  </file>
-  <file>
     <filename>Crag.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\CragAbility.lua</filename>
   </file>
   <file>
-    <filename>Mixins\CrouchCoreMoveMixin.lua</filename>
-  </file>
-  <file>
     <filename>DSPEffects.lua</filename>
-  </file>
-  <file>
-    <filename>DamageEffects.lua</filename>
   </file>
   <file>
     <filename>DamageMixin.lua</filename>
@@ -379,9 +370,6 @@
     <filename>Globals.lua</filename>
   </file>
   <file>
-    <filename>Mixins\GoldSourceCoreMoveMixin.lua</filename>
-  </file>
-  <file>
     <filename>Weapons\Alien\Gore.lua</filename>
   </file>
   <file>
@@ -398,6 +386,9 @@
   </file>
   <file>
     <filename>Weapons\Marine\GrenadeLauncher.lua</filename>
+  </file>
+  <file>
+    <filename>Mixins\GroundMoveMixin.lua</filename>
   </file>
   <file>
     <filename>Weapons\Marine\HandGrenade.lua</filename>
@@ -475,16 +466,13 @@
     <filename>JetpackMarine.lua</filename>
   </file>
   <file>
-    <filename>Mixins\JumpCoreMoveMixin.lua</filename>
+    <filename>Mixins\JumpMoveMixin.lua</filename>
   </file>
   <file>
     <filename>LOSMixin.lua</filename>
   </file>
   <file>
     <filename>Overloads\Ladder.lua</filename>
-  </file>
-  <file>
-    <filename>Mixins\LadderCoreMoveMixin.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\LeapMixin.lua</filename>
@@ -574,7 +562,7 @@
     <filename>Weapons\Marine\Mines.lua</filename>
   </file>
   <file>
-    <filename>Mixins\ModdedMixinUtility.lua</filename>
+    <filename>Mixins\NS1GroundMoveMixin.lua</filename>
   </file>
   <file>
     <filename>NS2ConsoleCommands_Server.lua</filename>
@@ -866,9 +854,6 @@
   </file>
   <file>
     <filename>UpgradableMixin.lua</filename>
-  </file>
-  <file>
-    <filename>Mixins\VanillaNS2CoreMoveMixin.lua</filename>
   </file>
   <file>
     <filename>VoiceOver.lua</filename>
