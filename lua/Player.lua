@@ -1495,18 +1495,6 @@ function Player:OnProcessSpectate(deltaTime)
 
 end
 
-function Player:PostUpdateMove(input, runningPrediction)
-    self:SetLastInput(input)
-end
-
-function Player:GetLastInput()
-    return self.latestinput
-end
-
-function Player:SetLastInput(input)
-    self.latestinput = input
-end
-
 function Player:OnUpdate(deltaTime)
 
     ScriptActor.OnUpdate(self, deltaTime)

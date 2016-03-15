@@ -210,6 +210,9 @@ end*/
 
 function Skulk:GetCanWallJump()
     local wallWalkNormal = self:GetAverageWallWalkingNormal(kJumpWallRange, kJumpWallFeelerSize)
+    if self:HasAdvancedMovement() and self:GetRecentlyWallJumped() then
+        return false
+    end
     if wallWalkNormal then
         return wallWalkNormal.y < 0.5
     end

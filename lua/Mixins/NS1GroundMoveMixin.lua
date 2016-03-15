@@ -9,6 +9,8 @@ local kMaxAirVeer = 1.2
 local kStopSpeed = 2
 local kStopSpeedScalar = 2.5
 local kMaxMoveTraces = 3
+local kStepHeight = 0.5
+local kAirGroundTransistionTime = 0.2
 local kMaxSpeedClampPerJump = 1.5
 local kBunnyJumpMaxSpeedFactor = 1.7
 local kAirSpeedMultipler = 3.0
@@ -69,7 +71,7 @@ local function UpdateOnGroundState(self, velocity)
     end
     
     if not onGround and onGround ~= self.onGround then
-        self:SetIsOnGround(onGround)
+        self.onGround = false
     end
     
 end
@@ -210,7 +212,7 @@ local function ApplyHalfGravity(self, input, velocity, deltaTime)
 end
 
 //Prevent overspeed
-local function PreventMegaBunnyJumping(self, onJump, velocity)
+function GroundMoveMixin:PreventMegaBunnyJumping(onJump, velocity)
 
     PROFILE("GroundMoveMixin:PreventMegaBunnyJumping")
 
@@ -245,7 +247,7 @@ local function DoStepMove(self, input, velocity, deltaTime)
     local deflectMove = self.GetDeflectMove and self:GetDeflectMove() or false
     
     // step up at first
-    self:PerformMovement(Vector(0, self:GetStepHeight(), 0), 1)
+    self:PerformMovement(Vector(0, kStepHeight, 0), 1)
     stepAmount = self:GetOrigin().y - oldOrigin.y
     
     // do the normal move
@@ -291,22 +293,30 @@ local function FlushCollisionCallbacks(self, velocity)
 
     if not self.onGround and self.storedNormal then
 
-        local onGround, normal, hitEntities, surfaceMaterial = GetIsCloseToGround(self, self.GetDistanceToGround and self:GetDistanceToGround() or kOnGroundDistance)
+        local onGround, normal, hitEntities, surfaceMaterial = GetIsCloseToGround(self, 0.15)
         
         if surfaceMaterial then
             self.onGroundSurface = StringToEnum(kSurfaces, surfaceMaterial) or kSurfaces.metal
         end
-        
+    
         if self.OverrideUpdateOnGround then
             onGround = self:OverrideUpdateOnGround(onGround)
         end
 
         if onGround then
-            self:UpdatePlayerLanding(self.storedImpactForce, velocity)
-            self:SetIsOnGround(onGround)
-        end
         
-        self.isOnEntity = onGround and hitEntities ~= nil and #hitEntities > 0
+            self.onGround = true
+            
+            // dont transistion for only short in air durations
+            if self.timeGroundTouched + kAirGroundTransistionTime <= Shared.GetTime() then
+                self.timeGroundTouched = Shared.GetTime()
+            end
+
+            if self.OnGroundChanged then
+                self:OnGroundChanged(self.onGround, self.storedImpactForce, normal, velocity)
+            end
+            
+        end
     
     end
     
@@ -398,7 +408,7 @@ function GroundMoveMixin:UpdateNS1Move(input, runningPrediction)
     
     // Clamp AirMove Speed
     if not self:GetIsOnGround() then
-        PreventMegaBunnyJumping(self, false, velocity)
+        self:PreventMegaBunnyJumping(false, velocity)
     end
     
     UpdatePosition(self, input, velocity, deltaTime)    

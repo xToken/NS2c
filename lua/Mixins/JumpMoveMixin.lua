@@ -89,12 +89,16 @@ function JumpMoveMixin:ModifyVelocity(input, velocity, deltaTime)
                 self:OnJump()
             end
             
+            if self:GetUsesGoldSourceMovement() and self:HasAdvancedMovement() then
+                self:PreventMegaBunnyJumping(true, velocity)
+            end
+            
             self.onGround = false
             self.timeGroundTouched = Shared.GetTime()      
             self.jumping = true
             
             if self:GetJumpMode() == kJumpMode.Repeating then
-                sself.jumpHandled = false
+                self.jumpHandled = false
             else
                 self.jumpHandled = true
             end

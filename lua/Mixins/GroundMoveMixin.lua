@@ -674,3 +674,14 @@ function GroundMoveMixin:OnWorldCollision(normal, impactForce)
     
 end
 
+function GroundMoveMixin:PostUpdateMove(input, runningPrediction)
+    self:SetLastInput(input)
+end
+
+function GroundMoveMixin:GetLastInput()
+    return self.latestinput
+end
+
+function GroundMoveMixin:SetLastInput(input)
+    self.latestinput = input
+end

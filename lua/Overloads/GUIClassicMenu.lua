@@ -42,6 +42,15 @@ local function UpdateGUIMainMenu()
 					values  = { "OFF", "ON" },
 					callback = StoreAdvancedMovementOption
 				}
+				
+	local InitOptions = GHook:GetUpValue(GUIMainMenu.CreateOptionWindow, "InitOptions")
+
+    local function ClassicInitOptions(optionElements)
+        InitOptions(optionElements)
+        SetupClassicMenuOptions(optionElements)
+    end
+    
+    ReplaceLocals(GUIMainMenu.CreateOptionWindow, { InitOptions = ClassicInitOptions })
 
 	local origGUIMainMenuCreateOptionsForm
     origGUIMainMenuCreateOptionsForm = Class_ReplaceMethod("GUIMainMenu", "CreateOptionsForm", 
