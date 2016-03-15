@@ -62,7 +62,7 @@ local networkVars =
 {
     gliding = "private compensated boolean",   
     glideAllowed = "private compensated boolean",  
-    lastTimeFlapped = "time",
+    lastTimeFlapped = "compensated time",
     // Wall grip. time == 0 no grip, > 0 when grip started.
     wallGripTime = "private compensated time",
     // the normal that the model will use. Calculated the same way as the skulk
@@ -113,6 +113,26 @@ function Lerk:OnDestroy()
     
 end 
 
+function Lerk:GetHasFallAccel()
+    return false
+end    
+
+function Lerk:GetCanStep()
+    return self:GetIsOnGround() and not self:GetIsWallGripping()
+end
+
+function Lerk:ModifyGravityForce(gravityTable)
+
+    if self.gliding or self:GetIsWallGripping() or self:GetIsOnGround() then
+        gravityTable.gravity = 0
+        
+    elseif self:GetCrouching() then
+        gravityTable.gravity = gravityTable.gravity * 4
+        
+    end
+
+end
+
 function Lerk:GetAngleSmoothRate()
     return 6
 end
@@ -123,7 +143,11 @@ end
 
 function Lerk:GetRollSmoothRate()
     return 3
-end    
+end   
+
+function Lerk:GetPitchSmoothRate()
+    return 3
+end 
 
 local kMaxGlideRoll = math.rad(30)
 
@@ -188,6 +212,11 @@ function Lerk:GetAngleSmoothingMode()
 
 end
 
+// air strafe works different for lerk
+function Lerk:GetAirControl()
+    return 0
+end
+
 function Lerk:GetBaseArmor()
     return kLerkArmor
 end
@@ -202,6 +231,10 @@ end
 
 function Lerk:GetMaxViewOffsetHeight()
     return kViewOffsetHeight
+end
+
+function Lerk:GetAirFriction()
+    return 0.1
 end
 
 function Lerk:GetCrouchShrinkAmount()
@@ -229,6 +262,16 @@ function Lerk:GetIsWallGripping()
 end
 
 function Lerk:OnTakeFallDamage()
+end
+
+function Lerk:OnGroundChanged(onGround, impactForce, normal, velocity)
+
+    Alien.OnGroundChanged(self, onGround, impactForce, normal, velocity)
+
+    if onGround then
+        self.glideAllowed = false
+    end
+
 end
 
 function Lerk:GetJumpMode()
@@ -268,22 +311,21 @@ function Lerk:GetTimeOfLastFlap()
     return self.lastTimeFlapped
 end
 
+//Lerks DONT JUMP.  FAT BIRD
+function Lerk:GetCanJump()
+    return false
+end
+
 function Lerk:OverrideUpdateOnGround(onGround)
-    return (onGround or self:GetIsWallGripping())
+    return onGround or self:GetIsWallGripping()
 end
 
 function Lerk:OnWorldCollision(normal)
+
+    PROFILE("Lerk:OnWorldCollision")
+    
     self.wallGripAllowed = normal.y < 0.5 and not self:GetCrouching()
-end
-
-function Lerk:OnGroundChanged(onGround, impactForce, normal, velocity)
-
-    Alien.OnGroundChanged(self, onGround, impactForce, normal, velocity)
-
-    if onGround then
-        self.glideAllowed = false
-    end
-
+    
 end
 
 local function UpdateFlap(self, input, velocity)
@@ -414,6 +456,14 @@ local function UpdateAirStrafe(self, input, velocity, deltaTime)
 
 end
 
+function Lerk:GetIsSmallTarget()
+    return true
+end
+
+function Lerk:GetAirAcceleration()
+    return 0
+end
+
 function Lerk:ModifyVelocity(input, velocity, deltaTime)
 
     UpdateFlap(self, input, velocity)
@@ -422,30 +472,59 @@ function Lerk:ModifyVelocity(input, velocity, deltaTime)
 
 end
 
-function Lerk:GetAirFriction()
-    return 0.1
+function Lerk:GetGroundTransistionTime()
+    return 0.2
 end
 
-function Lerk:GetAirAcceleration()
-    return 0
-end
+function Lerk:PreUpdateMove(input, runningPrediction)
 
-function Lerk:GetCanStep()
-    return self:GetIsOnGround() and not self:GetIsWallGripping()
-end
+    PROFILE("Lerk:PreUpdateMove")
 
-// Glide if jump held down.
-function Lerk:ModifyGravityForce(gravityTable)
+    local wallGripPressed = bit.band(input.commands, Move.MovementModifier) ~= 0 and bit.band(input.commands, Move.Jump) == 0
+    
+    if not self:GetIsWallGripping() and wallGripPressed and self.wallGripAllowed then
 
-    if self:GetIsOnGround() then
-        gravityTable.gravity = 0
-    elseif self:GetCrouching() then
-        // Swoop
-        gravityTable.gravity = kSwoopGravityScalar
+        // check if we can grab anything around us
+        local wallNormal = self:GetAverageWallWalkingNormal(Lerk.kWallGripRange, Lerk.kWallGripFeelerSize)
+        
+        if wallNormal then
+        
+            self.wallGripTime = Shared.GetTime()
+            self.wallGripNormalGoal = wallNormal
+            self:SetVelocity(Vector(0,0,0))
+            
+        end
+    
     else
-        // Fall very slowly by default
-        gravityTable.gravity = kRegularGravityScalar
+        
+        // we always abandon wall gripping if we flap (even if we are sliding to a halt)
+        local breakWallGrip = bit.band(input.commands, Move.Jump) ~= 0 or input.move:GetLength() > 0 or self:GetCrouching()
+        
+        if breakWallGrip then
+        
+            self.wallGripTime = 0
+            self.wallGripNormal = nil
+            self.wallGripAllowed = false
+            
+        end
+        
     end
+    
+end
+
+local kLerkEngageOffset = Vector(0, 0.6, 0)
+function Lerk:GetEngagementPointOverride()
+    return self:GetOrigin() + kLerkEngageOffset
+end
+
+function Lerk:CalcWallGripSpeedFraction()
+
+    local dt = (Shared.GetTime() - self.wallGripTime)
+    if dt > Lerk.kWallGripSlideTime then
+        return 0
+    end
+    local k = Lerk.kWallGripSlideTime
+    return (k - dt) / k
     
 end
 
