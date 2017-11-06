@@ -1,0 +1,4 @@
+shader = "shaders/Model.surface_shader"
+albedoMap = "models/marine/axe/knife_view.dds"
+normalMap = "models/marine/axe/knife_view_normal.dds"
+specularMap = "models/marine/axe/knife_view_spec.dds"

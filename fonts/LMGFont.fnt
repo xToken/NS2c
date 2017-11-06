@@ -1,0 +1,16 @@
+info face="Arial" size=120 bold=0 italic=0 charset="" unicode=1 stretchH=100 smooth=1 aa=1 padding=2,2,2,2 spacing=2,2 outline=0
+common lineHeight=120 base=97 scaleW=256 scaleH=256 pages=1 packed=0 alphaChnl=1 redChnl=0 greenChnl=0 blueChnl=0
+page id=0 file="LMGFont_0.png"
+chars count=10
+char id=48   x=59    y=0     width=56    height=83    xoffset=2     yoffset=17    xadvance=60    page=0  chnl=15
+char id=49   x=175   y=85    width=56    height=82    xoffset=0     yoffset=17    xadvance=60    page=0  chnl=15
+char id=50   x=58    y=85    width=56    height=82    xoffset=0     yoffset=17    xadvance=60    page=0  chnl=15
+char id=51   x=117   y=0     width=56    height=83    xoffset=2     yoffset=17    xadvance=60    page=0  chnl=15
+char id=52   x=0     y=170   width=56    height=81    xoffset=-2    yoffset=18    xadvance=60    page=0  chnl=15
+char id=53   x=117   y=85    width=56    height=82    xoffset=2     yoffset=18    xadvance=60    page=0  chnl=15
+char id=54   x=0     y=0     width=56    height=83    xoffset=1     yoffset=17    xadvance=60    page=0  chnl=15
+char id=55   x=62    y=169   width=56    height=81    xoffset=2     yoffset=18    xadvance=60    page=0  chnl=15
+char id=56   x=175   y=0     width=56    height=83    xoffset=2     yoffset=17    xadvance=60    page=0  chnl=15
+char id=57   x=0     y=85    width=56    height=83    xoffset=2     yoffset=17    xadvance=60    page=0  chnl=15
+kernings count=1
+kerning first=49  second=49  amount=-8  
