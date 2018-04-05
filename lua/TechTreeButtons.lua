@@ -257,7 +257,7 @@ kTechIdToMaterialOffset[kTechId.AlienAlertManufactureComplete] = 131
 
 function GetMaterialXYOffset(techId)
 
-    local index = nil
+    local index
     
     local columns = 12
     index = kTechIdToMaterialOffset[techId]

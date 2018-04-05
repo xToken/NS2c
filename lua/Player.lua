@@ -28,6 +28,8 @@ Script.Load("lua/WeaponOwnerMixin.lua")
 Script.Load("lua/DoorMixin.lua")
 Script.Load("lua/Mixins/ControllerMixin.lua")
 Script.Load("lua/LiveMixin.lua")
+Script.Load("lua/AchievementReceiverMixin.lua")
+Script.Load("lua/AchievementGiverMixin.lua")
 Script.Load("lua/UpgradableMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
@@ -39,6 +41,7 @@ Script.Load("lua/EntityChangeMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
 Script.Load("lua/AFKMixin.lua")
 Script.Load("lua/SmoothedRelevancyMixin.lua")
+Script.Load("lua/ClientLOSMixin.lua")
 
 if Client then
     Script.Load("lua/HelpMixin.lua")
@@ -70,7 +73,7 @@ Player.kWalkMaxSpeed = 4
 Player.kPushDuration = 0.5
 Player.kOnGroundDistance = 0.1
 
-// Private
+-- Private
 local kTapInterval = 0.27
 
 local TAP_NONE = 0
@@ -167,6 +170,8 @@ local kUnstickOffsets =
  ]]
 local networkVars =
 {
+    -- the player need to track its own origin at full precision in order for its
+    -- own movement and actions to be fluid and predictable
     fullPrecisionOrigin = "private vector", 
     
     clientIndex = "entityid",
@@ -175,8 +180,6 @@ local networkVars =
     
     resources = "private float (0 to " .. kMaxResources .. " by 0.1)",
     teamResources = "private float (0 to " .. kMaxTeamResources .. " by 1)",
-    gameStarted = "private boolean",
-    countingDown = "private boolean",
     frozen = "private boolean",
     
     timeOfLastUse = "private time",
@@ -229,10 +232,12 @@ AddMixinNetworkVars(LadderMoveMixin, networkVars)
 AddMixinNetworkVars(ControllerMixin, networkVars)
 AddMixinNetworkVars(WeaponOwnerMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
+AddMixinNetworkVars(AchievementReceiverMixin, networkVars)
 AddMixinNetworkVars(UpgradableMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(SpawnProtectionMixin, networkVars)
+AddMixinNetworkVars(ClientLOSMixin, networkVars)
 
 local function GetTabDirectionVector(buttonReleased)
 
@@ -261,6 +266,8 @@ function Player:OnCreate()
     InitMixin(self, DoorMixin)
     -- TODO: move LiveMixin to child classes (some day)
     InitMixin(self, LiveMixin)
+    InitMixin(self, AchievementReceiverMixin)
+    InitMixin(self, AchievementGiverMixin)
     InitMixin(self, UpgradableMixin)
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, TeamMixin)
@@ -271,7 +278,8 @@ function Player:OnCreate()
 
     if Client then
         InitMixin(self, HelpMixin)
-        //self:AddFieldWatcher("locationId", Player.OnLocationIdChange)
+        InitMixin(self, ClientLOSMixin)
+        self:AddFieldWatcher("locationId", Player.OnLocationIdChange)
     end
 
     self:SetLagCompensated(true)
@@ -337,6 +345,7 @@ function Player:OnCreate()
     self.pushImpulse = Vector(0, 0, 0)
     self.pushTime = 0
     self.lastImpactForce = 0
+    self.concedeSettingsIndex = 1
     
 end
 
@@ -364,9 +373,7 @@ function Player:OnInitialized()
             self:InitWeapons()
         elseif self:GetTeamNumber() == kNeutralTeamType then
             self:InitWeaponsForReadyRoom()
-        end
-        
-        self:SetName(kDefaultPlayerName)
+        end        
         
         self:SetNextThink(kThinkInterval)
         
@@ -396,6 +403,7 @@ function Player:OnInitialized()
         
     end
     
+    -- TODO: MOVE TO ONCREATE
     self.communicationStatus = kPlayerCommunicationStatus.None
     
 end
@@ -418,7 +426,7 @@ end
     Called when the player entity is destroyed.
 ]]
 function Player:OnDestroy()
-
+    
     ScriptActor.OnDestroy(self)
     
     if Client then
@@ -639,7 +647,9 @@ function Player:GetSlowSpeedModifier()
 end
 
 function Player:GetController()
+
     return self.controller
+    
 end
 
 function Player:WeaponUpdate()
@@ -796,16 +806,18 @@ function Player:PerformUseTrace()
     
     -- If failed, do a regular trace with entities that don't have usable points.
     local viewCoords = self:GetViewAngles():GetCoords()
-    local endPoint = startPoint + viewCoords.zAxis * useRange
+    local endPoint = startPoint + viewCoords.zAxis * kMaxRelevancyDistance
     local activeWeapon = self:GetActiveWeapon()
     
-    local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Default, PhysicsMask.AllButPCs, EntityFilterTwo(self, activeWeapon))  
+    local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.AllButPCsAndRagdollsAndBabblers, EntityFilterTwo(self, activeWeapon))  
     
     if trace.fraction < 1 and trace.entity ~= nil then
     
+        local distToEnt = trace.endPoint:GetDistanceTo(startPoint)
+        local maxDistToUse = trace.entity.GetUseMaxRange and trace.entity:GetUseMaxRange() or useRange
         -- Only return this entity if it can be used and it does not have a usable point (which should have been
         -- caught in the above cases).
-        if GetCanEntityBeUsedWithNoUsablePoint(self, trace.entity) then
+        if distToEnt <= maxDistToUse and GetCanEntityBeUsedWithNoUsablePoint(self, trace.entity) then
             return trace.entity, trace.endPoint
         end
         
@@ -815,7 +827,7 @@ function Player:PerformUseTrace()
     -- Modify the endPoint to account for the size of the box.
     local maxUseLength = (kUseBoxSize - -kUseBoxSize):GetLength()
     endPoint = startPoint + viewCoords.zAxis * (useRange - maxUseLength / 2)
-    local traceBox = Shared.TraceBox(kUseBoxSize, startPoint, endPoint, CollisionRep.Move, PhysicsMask.AllButPCs, EntityFilterTwo(self, activeWeapon))
+    local traceBox = Shared.TraceBox(kUseBoxSize, startPoint, endPoint, CollisionRep.Move, PhysicsMask.AllButPCsAndRagdollsAndBabblers, EntityFilterTwo(self, activeWeapon))
     -- Only return this entity if it can be used and it does not have a usable point (which should have been caught in the above cases).
     if traceBox.fraction < 1 and traceBox.entity ~= nil and GetCanEntityBeUsedWithNoUsablePoint(self, traceBox.entity) then
     
@@ -860,10 +872,6 @@ local function AttemptToUse(self, timePassed)
     PROFILE("Player:AttemptToUse")
     
     assert(timePassed >= 0)
-    
-    if (Shared.GetTime() - self.timeOfLastUse) < kUseInterval then
-        return false
-    end
     
     -- Cannot use anything unless playing the game (a non-spectating player).
     if not self:GetIsOnPlayingTeam() then
@@ -946,7 +954,7 @@ end
     Returns true if the player is currently on a team and the game has started.
 ]]
 function Player:GetIsPlaying()
-    return self.gameStarted and self:GetIsOnPlayingTeam()
+    return self:GetGameStarted() and self:GetIsOnPlayingTeam()
 end
 
 function Player:GetIsOnPlayingTeam()
@@ -1183,12 +1191,16 @@ function Player:AdjustAngles(deltaTime)
 
     AnglesTo2PiRange(angles)
     self:SetAngles(angles)
-    
+
 end
 
 function Player:UpdateViewAngles(input)
 
     PROFILE("Player:UpdateViewAngles")
+    
+    if ConcedeSequence.GetIsPlayerObserving(self) then
+        return
+    end
 
     -- Update to the current view angles.    
     local viewAngles = Angles(input.pitch, input.yaw, 0)
@@ -1218,10 +1230,12 @@ end
 function Player:OnGroundChanged(onGround, impactForce, normal, velocity)
 
     if onGround and self:GetTriggerLandEffect() and impactForce > 5 then
+    
         local landSurface = GetSurfaceAndNormalUnderEntity(self)
         self:TriggerEffects("land", { surface = landSurface })
+        
     end
-    self.lastImpactForce = impactForce
+    
     if normal and normal.y > 0.5 and self:GetSlowOnLand() then    
     
         local slowdownScalar = Clamp(math.max(0, impactForce - 4) / 18, 0, 1)
@@ -1243,6 +1257,10 @@ function Player:GetIsUsingBodyYaw()
     return true
 end
 
+function Player:GetBodyYawTurnThreshold()
+    return -kBodyYawTurnThreshold, kBodyYawTurnThreshold
+end
+
 local function UpdateBodyYaw(self, deltaTime, tempInput)
 
     if self:GetIsUsingBodyYaw() then
@@ -1261,10 +1279,12 @@ local function UpdateBodyYaw(self, deltaTime, tempInput)
         else
             self.runningBodyYaw = yaw
             
+            local bodyYawTurnThresholdLeft,bodyYawTurnThresholdRight = self:GetBodyYawTurnThreshold()
             local diff = RadianDiff(self.standingBodyYaw, yaw)
-            if math.abs(diff) >= kBodyYawTurnThreshold then
             
-                diff = Clamp(diff, -kBodyYawTurnThreshold, kBodyYawTurnThreshold)
+            if diff < bodyYawTurnThresholdLeft or bodyYawTurnThresholdRight < diff then
+            
+                diff = Clamp(diff, bodyYawTurnThresholdLeft, bodyYawTurnThresholdRight)
                 self.standingBodyYaw = Math.Wrap(diff + yaw, 0, kDoublePI)
                 
             end
@@ -1310,18 +1330,25 @@ local function UpdateAnimationInputs(self, input)
 end
 
 function Player:ConfigurePhysicsCuller()
-    local viewCoords = self:GetViewCoords()
-    local viewPoint = self:GetOrigin()
+    
+    if GetConcedeSequenceActive() then
+        return
+    end
+    
+    local viewCoords = self:GetCameraViewCoords()
+    local viewPoint = viewCoords.origin
+    local viewAngles = Angles()
+    viewAngles:BuildFromCoords(viewCoords)
     local fovDegrees = Math.Degrees(GetScreenAdjustedFov(Client.GetEffectiveFov(self), 4/3))
-    // turn off physics culling (maxDist== 0) for overhead view; FOV is not necessarily correct and maxdist can be quite long
     local maxDistOrOff = PlayerUI_IsOverhead() and 0 or Player.kPhysicsCullMax
-        
-    Client.ConfigurePhysicsCuller(viewPoint, self:GetViewAngles(), fovDegrees, Player.kPhysicsCullMin, maxDistOrOff)
+    
+    Client.ConfigurePhysicsCuller(viewPoint, viewAngles, fovDegrees, Player.kPhysicsCullMin, maxDistOrOff)
+    
 end
 
 function Player:OnProcessIntermediate(input)
    
-    if self:GetIsAlive() and not self.countingDown then
+    if self:GetIsAlive() and not self:GetCountdownActive() then
         -- Update to the current view angles so that the mouse feels smooth and responsive.
         self:UpdateViewAngles(input)
     end
@@ -1336,7 +1363,10 @@ function Player:OnProcessIntermediate(input)
         end
     end
     
-    self:UpdateClientEffects(input.time, true)
+   if true then
+        PROFILE("Player:OnProcessIntermediate:UpdateClientEffects")
+        self:UpdateClientEffects(input.time, true)
+    end
     
     if Client then
         self:ConfigurePhysicsCuller()
@@ -1372,7 +1402,7 @@ end
 -- is done. So it backs up, synchs to the old state, runs the OnProcessMove(), then restores them. 
 function Player:OnProcessMove(input)
     
-    // ensure that a player is always moving itself using full precision
+    -- ensure that a player is always moving itself using full precision
     self:SetOrigin(self.fullPrecisionOrigin)
     -- Log("%s: TrackVel-0-start : vel=%s", self, self.velocity)
     -- Log("%s: TrackYaw-0-input: input.yaw=%s|input.pitch=%s", self, input.yaw, input.pitch)
@@ -1384,8 +1414,8 @@ function Player:OnProcessMove(input)
     
     local commands = input.commands
     if self:GetIsAlive() then
-    
-        if self.countingDown then
+        
+        if self:GetCountdownActive() then
         
             input.move:Scale(0)
             input.commands = 0
@@ -1404,7 +1434,10 @@ function Player:OnProcessMove(input)
         
     end
     
-    self:OnUpdatePlayer(input.time)
+    if true then
+        PROFILE("Player:OnProcessMove:OnUpdatePlayer")
+        self:OnUpdatePlayer(input.time)
+    end
     
     ScriptActor.OnProcessMove(self, input)
     
@@ -1433,6 +1466,7 @@ function Player:OnProcessMove(input)
         
         -- Everything else
         self:UpdateMisc(input)
+        self:UpdateSharedMisc(input)
         
         -- Debug if desired
         --self:OutputDebug()
@@ -1451,8 +1485,8 @@ function Player:OnProcessMove(input)
         self:ConfigurePhysicsCuller()
     end
     
-    // for debugging hitreg; if hitreg scan is enabled, we generate a hitreg scan every move
-    // very spammy and wasteful of network resources
+    -- for debugging hitreg; if hitreg scan is enabled, we generate a hitreg scan every move
+    -- very spammy and wasteful of network resources
     if self.hitregDebugAlways then
         local viewAxis = self:GetViewAngles():GetCoords().zAxis
         local startPoint = self:GetEyePos()
@@ -1496,10 +1530,13 @@ function Player:OnProcessSpectate(deltaTime)
 end
 
 function Player:OnUpdate(deltaTime)
-
+    
     ScriptActor.OnUpdate(self, deltaTime)
 
-    self:OnUpdatePlayer(deltaTime)
+    if true then
+        PROFILE("Player:OnUpdate:OnUpdatePlayer")
+        self:OnUpdatePlayer(deltaTime)
+    end
 
 end
 
@@ -1735,6 +1772,7 @@ function Player:GetExtentsCrouchShrinkAmount()
     return kExtentsCrouchShrinkAmount
 end
 
+-- Recalculate self.onGround next time
 function Player:SetOrigin(origin)
 
     Entity.SetOrigin(self, origin)
@@ -1753,6 +1791,10 @@ function Player:GetMovementModifierState()
     return self.movementModiferState
 end
 
+-- Called by client/server UpdateMisc()
+function Player:UpdateSharedMisc(input)
+end
+
 -- Subclasses can override this.
 -- In particular, the Skulk must override this since its view angles do NOT correspond to its head angles.
 function Player:GetHeadAngles()
@@ -1760,6 +1802,8 @@ function Player:GetHeadAngles()
 end
 
 function Player:OnUpdatePoseParameters()
+
+    PROFILE("Player:OnUpdatePoseParameters")
     
     if not Shared.GetIsRunningPrediction() then
         
@@ -1914,7 +1958,8 @@ function Player:HandleButtons(input)
                                                                    Move.PrimaryAttack, Move.SecondaryAttack,
                                                                    Move.SelectNextWeapon, Move.SelectPrevWeapon, Move.Reload,
                                                                    Move.Taunt, Move.Weapon1, Move.Weapon2,
-                                                                   Move.Weapon3, Move.Weapon4, Move.Weapon5, Move.Crouch, Move.Drop, Move.MovementModifier)))
+                                                                   Move.Weapon3, Move.Weapon4, Move.Weapon5, 
+                                                                   Move.Crouch, Move.Drop, Move.MovementModifier)))
                                                                    
         input.move.x = 0
         input.move.y = 0
@@ -2186,7 +2231,25 @@ function Player:OnSighted(sighted)
 end
 
 function Player:GetGameStarted()
-    return self.gameStarted
+    local gameInfoEnt = GetGameInfoEntity()
+    if not gameInfoEnt then
+        return false
+    end
+
+    if gameInfoEnt:GetWarmUpActive() and not self:isa("Commander") then
+        return true
+    end
+
+    return gameInfoEnt:GetGameStarted()
+end
+
+function Player:GetCountdownActive()
+    local gameInfoEnt = GetGameInfoEntity()
+    if not gameInfoEnt then
+        return false
+    end
+
+    return self:GetIsOnPlayingTeam() and gameInfoEnt:GetCountdownActive()
 end
 
 function Player:Drop(weapon, ignoreDropTimeLimit)
@@ -2325,7 +2388,9 @@ function Player:OnInitialSpawn(techPointOrigin)
 end
 
 function Player:OnJoinTeam()
+    
     self.sendTechTreeBase = true
+    
 end
 
 -- This causes problems when doing a trace ray against CollisionRep.Move.
@@ -2416,5 +2481,6 @@ function Player:UpdateArmorAmount(armorLevel)
     end
     
 end
+
 
 Shared.LinkClassToMap("Player", Player.kMapName, networkVars, true)

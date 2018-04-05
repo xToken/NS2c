@@ -26,6 +26,7 @@ UnitStatusMixin.type = "UnitStatus"
 
 function UnitStatusMixin:__initmixin()
     self.unitStatus = kUnitStatus.None
+    self.unitStates = {}
 end
 
 function UnitStatusMixin:GetShowUnitStatusFor(forEntity)
@@ -52,7 +53,7 @@ function UnitStatusMixin:GetUnitStatus(forEntity)
 
     local unitStatus = kUnitStatus.None
 
-    // don't show status of opposing team
+    -- don't show status of opposing team
     if GetAreFriends(forEntity, self) then
 
         if not GetIsUnitActive(self) then
@@ -95,6 +96,23 @@ function UnitStatusMixin:GetUnitStatus(forEntity)
 
     return unitStatus
 
+end
+
+function UnitStatusMixin:GetUnitState(forEntity)
+    --use cached state
+    if self.unitStates[forEntity] then
+        if self.unitStates[forEntity].updateTime > Shared.GetTime() then
+            return self.unitStates[forEntity].state
+        end
+    end
+end
+
+local stateCacheTime = 0.2 -- cache data lifetime
+function UnitStatusMixin:SetUnitState(forEntity, state)
+    self.unitStates[forEntity] = {
+        state = state,
+        updateTime = Shared.GetTime() + stateCacheTime
+    }
 end
 
 function UnitStatusMixin:GetUnitStatusFraction(forEntity)
@@ -189,7 +207,7 @@ function UnitStatusMixin:GetAbilityFraction(forEntity)
 
         local primaryWeapon = self:GetWeaponInHUDSlot(1)
         if primaryWeapon and primaryWeapon:isa("ClipWeapon") then
-            // always show at least 1% so commander would see a black bar
+            -- always show at least 1% so commander would see a black bar
             return math.max(0.01, primaryWeapon:GetAmmoFraction())
         elseif self:isa("Player") and self:isa("Alien") and not self:isa("Hallucination") and not self:isa("Embryo") then
             return math.max(0.01, self:GetEnergy() / self:GetMaxEnergy())

@@ -1,16 +1,16 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\NetworkMessages_Client.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// See the Messages section of the Networking docs in Spark Engine scripting docs for details.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\NetworkMessages_Client.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- See the Messages section of the Networking docs in Spark Engine scripting docs for details.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added hiveinfo message, made adjustments to hitEffect
+-- NS2c
+-- Added hiveinfo message, made adjustments to hitEffect
 
 Script.Load("lua/InsightNetworkMessages_Client.lua")
 
@@ -28,12 +28,21 @@ function OnCommandHitEffect(hitEffectTable)
 
 end
 
-// Show damage numbers for players.
+-- Show damage numbers for players.
 function OnCommandDamage(damageTable)
 
-    local target, amount, hitpos = ParseDamageMessage(damageTable)
-    if target then
-        Client.AddWorldMessage(kWorldTextMessageType.Damage, amount, hitpos, target:GetId())
+    local targetId, amount, hitpos = ParseDamageMessage(damageTable)
+
+    Client.AddWorldMessage(kWorldTextMessageType.Damage, amount, hitpos, targetId)
+    
+end
+
+function OnCommandMarkEnemy(msg)
+
+    local target, weapon = ParseMarkEnemyMessage(msg)
+    local player = Client.GetLocalPlayer()
+    if not player:GetIsCommander() and player.MarkEnemyFromServer then
+        player:MarkEnemyFromServer( target, weapon )
     end
     
 end
@@ -47,13 +56,71 @@ end
 
 function OnCommandAbilityResult(msg)
 
-    // The server will send us this message to tell us an ability succeded.
+    -- The server will send us this message to tell us an ability succeded.
     local player = Client.GetLocalPlayer()
     if player:GetIsCommander() then
         player:OnAbilityResultMessage(msg.techId, msg.success, msg.castTime)
     end
 
 end
+
+function OnCommandScores(scoreTable)
+
+    local status = kPlayerStatus[scoreTable.status]
+    if scoreTable.status == kPlayerStatus.Hidden then
+        status = "-"
+    elseif scoreTable.status == kPlayerStatus.Dead then
+        status = Locale.ResolveString("STATUS_DEAD")
+    elseif scoreTable.status == kPlayerStatus.Evolving then
+        status = Locale.ResolveString("STATUS_EVOLVING")
+    elseif scoreTable.status == kPlayerStatus.Embryo then
+        status = Locale.ResolveString("STATUS_EMBRYO")
+    elseif scoreTable.status == kPlayerStatus.Commander then
+        status = Locale.ResolveString("STATUS_COMMANDER")
+    elseif scoreTable.status == kPlayerStatus.Exo then
+        status = Locale.ResolveString("STATUS_EXO")
+    elseif scoreTable.status == kPlayerStatus.GrenadeLauncher then
+        status = Locale.ResolveString("STATUS_GRENADE_LAUNCHER")
+    elseif scoreTable.status == kPlayerStatus.Rifle then
+        status = Locale.ResolveString("STATUS_RIFLE")
+    elseif scoreTable.status == kPlayerStatus.HeavyMachineGun then
+        status = Locale.ResolveString("STATUS_HMG")
+    elseif scoreTable.status == kPlayerStatus.Shotgun then
+        status = Locale.ResolveString("STATUS_SHOTGUN")
+    elseif scoreTable.status == kPlayerStatus.Flamethrower then
+        status = Locale.ResolveString("STATUS_FLAMETHROWER")
+    elseif scoreTable.status == kPlayerStatus.Void then
+        status = Locale.ResolveString("STATUS_VOID")
+    elseif scoreTable.status == kPlayerStatus.Spectator then
+        status = Locale.ResolveString("STATUS_SPECTATOR")
+    elseif scoreTable.status == kPlayerStatus.Skulk then
+        status = Locale.ResolveString("STATUS_SKULK")
+    elseif scoreTable.status == kPlayerStatus.Gorge then
+        status = Locale.ResolveString("STATUS_GORGE")
+    elseif scoreTable.status == kPlayerStatus.Lerk then
+        status = Locale.ResolveString("STATUS_LERK")
+    elseif scoreTable.status == kPlayerStatus.Fade then
+        status = Locale.ResolveString("STATUS_FADE")
+    elseif scoreTable.status == kPlayerStatus.Onos then
+        status = Locale.ResolveString("STATUS_ONOS")
+    elseif scoreTable.status == kPlayerStatus.SkulkEgg then
+        status = Locale.ResolveString("SKULK_EGG")
+    elseif scoreTable.status == kPlayerStatus.GorgeEgg then
+        status = Locale.ResolveString("GORGE_EGG")
+    elseif scoreTable.status == kPlayerStatus.LerkEgg then
+        status = Locale.ResolveString("LERK_EGG")
+    elseif scoreTable.status == kPlayerStatus.FadeEgg then
+        status = Locale.ResolveString("FADE_EGG")
+    elseif scoreTable.status == kPlayerStatus.OnosEgg then
+        status = Locale.ResolveString("ONOS_EGG")
+    end
+    
+    Scoreboard_SetPlayerData(scoreTable.clientId, scoreTable.entityId, scoreTable.playerName, scoreTable.teamNumber, scoreTable.score,
+                             scoreTable.kills, scoreTable.deaths, math.floor(scoreTable.resources), scoreTable.isCommander, scoreTable.isRookie,
+                             status, scoreTable.isSpectator, scoreTable.assists, scoreTable.clientIndex)
+    
+end
+
 function OnCommandClearTechTree()
     ClearTechTree()
 end
@@ -70,7 +137,10 @@ function OnCommandOnResetGame()
 
     Scoreboard_OnResetGame()
     ResetLights()
-    
+
+    if GetGameInfoEntity() then
+        GetGameInfoEntity():OnResetGame()
+    end
 end
 
 function OnCommandDebugLine(debugLineMessage)
@@ -129,7 +199,18 @@ function OnCommandJoinError(message)
 
         MainMenu_Open()
         GetGUIMainMenu():CreateTutorialNagWindow()
+    elseif message.reason == 2 then
+        ChatUI_AddSystemMessage( Locale.ResolveString("JOIN_ERROR_VETERAN") )
+
+        MainMenu_Open()
+        GetGUIMainMenu():CreateRookieOnlyNagWindow()
+    elseif message.reason == 3 then
+        ChatUI_AddSystemMessage( Locale.ResolveString("JOIN_ERROR_NO_PLAYER_SLOT_LEFT") )
     end
+end
+
+function OnCommanderLoginError(message)
+    ChatUI_AddSystemMessage( Locale.ResolveString("LOGIN_ERROR_ROOKIE") )
 end
 
 function OnVoteConcedeCast(message)
@@ -228,6 +309,12 @@ local function OnCommandCameraShake(message)
 
 end
 
+local function OnSetAchievement(message)
+    if message and message.name then
+        Client.SetAchievement(message.name)
+    end
+end
+
 local function OnCommandViewPunch(message)
 
     if message.punchangle then
@@ -242,9 +329,11 @@ Client.HookNetworkMessage("AutoConcedeWarning", OnMessageAutoConcedeWarning)
 Client.HookNetworkMessage("Ping", OnCommandPing)
 Client.HookNetworkMessage("HitEffect", OnCommandHitEffect)
 Client.HookNetworkMessage("Damage", OnCommandDamage)
+Client.HookNetworkMessage("MarkEnemy", OnCommandMarkEnemy)
 Client.HookNetworkMessage("HitSound", OnCommandHitSound)
 Client.HookNetworkMessage("AbilityResult", OnCommandAbilityResult)
 Client.HookNetworkMessage("JoinError", OnCommandJoinError)
+Client.HookNetworkMessage("CommanderLoginError", OnCommanderLoginError)
 
 Client.HookNetworkMessage("ClearTechTree", OnCommandClearTechTree)
 Client.HookNetworkMessage("TechNodeBase", OnCommandTechNodeBase)
@@ -268,3 +357,4 @@ Client.HookNetworkMessage("TeamConceded", OnTeamConceded)
 Client.HookNetworkMessage("ChamberSelected", OnChamberSelected)
 Client.HookNetworkMessage("CameraShake", OnCommandCameraShake)
 Client.HookNetworkMessage("ViewPunch", OnCommandViewPunch)
+Client.HookNetworkMessage("SetAchievement", OnSetAchievement)

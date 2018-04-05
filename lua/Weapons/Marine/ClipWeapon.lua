@@ -1,17 +1,17 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\ClipWeapon.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// Basic bullet-based weapon. Handles primary firing only, as child classes have quite different
-// secondary attacks.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\ClipWeapon.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- Basic bullet-based weapon. Handles primary firing only, as child classes have quite different
+-- secondary attacks.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added in auto pickup logic, and added some new overrides for starting ammo
+-- NS2c
+-- Added in auto pickup logic, and added some new overrides for starting ammo
 
 Script.Load("lua/Weapons/Weapon.lua")
 Script.Load("lua/PickupableWeaponMixin.lua")
@@ -37,7 +37,7 @@ local networkVars =
 	reloaded = "compensated boolean"
 }
 
-// Weapon spread - from NS1/Half-life
+-- Weapon spread - from NS1/Half-life
 ClipWeapon.kCone0Degrees  = Math.Radians(0)
 ClipWeapon.kCone1Degrees  = Math.Radians(1)
 ClipWeapon.kCone2Degrees  = Math.Radians(2)
@@ -56,11 +56,11 @@ AddMixinNetworkVars(PickupableWeaponMixin, networkVars)
 
 local function FillClip(self)
 
-    // Stick the bullets in the clip back into our pool so that we don't lose
-    // bullets. Not realistic, but more enjoyable
+    -- Stick the bullets in the clip back into our pool so that we don't lose
+    -- bullets. Not realistic, but more enjoyable
     self.ammo = self.ammo + self.clip
     
-    // Transfer bullets from our ammo pool to the weapon's clip
+    -- Transfer bullets from our ammo pool to the weapon's clip
     self.clip = math.min(self.ammo, self:GetClipSize())
     self.ammo = math.min(self.ammo - self.clip, self:GetMaxAmmo())
 
@@ -114,7 +114,7 @@ end
 
 function ClipWeapon:OnInitialized()
 
-    // Set model to be rendered in 3rd-person
+    -- Set model to be rendered in 3rd-person
     local worldModel = LookupTechData(self:GetTechId(), kTechDataModel)
     if worldModel ~= nil then
         self:SetModel(worldModel)
@@ -140,12 +140,12 @@ function ClipWeapon:GetClipSize()
     return 10
 end
 
-// Used to affect spread and change the crosshair
+-- Used to affect spread and change the crosshair
 function ClipWeapon:GetInaccuracyScalar(player)
     return 1
 end
 
-// Return one of the ClipWeapon.kCone constants above
+-- Return one of the ClipWeapon.kCone constants above
 function ClipWeapon:GetSpread()
     return ClipWeapon.kCone0Degrees
 end
@@ -198,10 +198,10 @@ function ClipWeapon:OnTouch(recipient)
     StartSoundEffectAtOrigin(Marine.kGunPickupSound, recipient:GetOrigin())
 end
 
-// Return world position of gun barrel, used for weapon effects.
+-- Return world position of gun barrel, used for weapon effects.
 function ClipWeapon:GetBarrelPoint()
 
-    // TODO: Get this from the model and artwork.
+    -- TODO: Get this from the model and artwork.
     local player = self:GetParent()
     if player then
         return player:GetOrigin() + Vector(0, 2 * player:GetExtents().y * 0.8, 0) + player:GetCoords().zAxis * 0.5
@@ -211,7 +211,7 @@ function ClipWeapon:GetBarrelPoint()
     
 end
 
-// Add energy back over time, called from Player:OnProcessMove
+-- Add energy back over time, called from Player:OnProcessMove
 function ClipWeapon:ProcessMoveOnWeapon(player, input)
 end
 
@@ -237,8 +237,8 @@ end
 
 function ClipWeapon:GiveAmmo(numClips, includeClip)
 
-    // Fill reserves, then clip. NS1 just filled reserves but I like the implications of filling the clip too.
-    // But don't do it until reserves full.
+    -- Fill reserves, then clip. NS1 just filled reserves but I like the implications of filling the clip too.
+    -- But don't do it until reserves full.
     local success = false
     local bulletsToGive = numClips * self:GetClipSize()
     
@@ -311,7 +311,7 @@ function ClipWeapon:OnPrimaryAttack(player)
         elseif self.ammo > 0 then
         
             self:OnPrimaryAttackEnd(player)
-            // Automatically reload if we're out of ammo.
+            -- Automatically reload if we're out of ammo.
             player:Reload()
             
         else
@@ -387,16 +387,16 @@ function ClipWeapon:CalculateSpreadDirection(shootCoords, player)
     return CalculateSpread(shootCoords, self:GetSpread() * self:GetInaccuracyScalar(player), NetworkRandom)
 end
 
-/**
- * Fires the specified number of bullets in a cone from the player's current view.
- */
+--
+-- Fires the specified number of bullets in a cone from the player's current view.
+--
 local function FireBullets(self, player)
 
     PROFILE("FireBullets")
 
     local viewAngles = player:GetViewAngles()
     local viewCoords = viewAngles:GetCoords()
-    // Filter ourself out of the trace so that we don't hit ourselves.
+    -- Filter ourself out of the trace so that we don't hit ourselves.
     local filter = EntityFilterTwo(player, self)
     local range = self:GetRange()
       
@@ -424,7 +424,7 @@ local function FireBullets(self, player)
 
         HandleHitregAnalysis(player, startPoint, endPoint, trace)  
             
-        // don't damage 'air'..
+        -- don't damage 'air'..
         if trace.fraction < 1 then
         
             local direction = (trace.endPoint - startPoint):GetUnit()
@@ -461,7 +461,7 @@ function ClipWeapon:FirePrimary(player)
     FireBullets(self, player)
 end
 
-// Play tracer sound/effect every %d bullets
+-- Play tracer sound/effect every %d bullets
 function ClipWeapon:GetTracerEffectFrequency()
     return 0.5
 end
@@ -493,7 +493,7 @@ function ClipWeapon:OnDraw(player, previousWeaponMapName)
 
     Weapon.OnDraw(self, player, previousWeaponMapName)
     
-    // Attach weapon to parent's hand
+    -- Attach weapon to parent's hand
     self:SetAttachPoint(Weapon.kHumanAttachPoint)
     
 end
@@ -522,24 +522,24 @@ function ClipWeapon:OnTag(tagName)
     
         local player = self:GetParent()
         
-        // We can get a shoot tag even when the clip is empty if the frame rate is low
-        // and the animation loops before we have time to change the state.
+        -- We can get a shoot tag even when the clip is empty if the frame rate is low
+        -- and the animation loops before we have time to change the state.
         if player and self.clip > 0 then
         
             self:FirePrimary(player)
             
-            // Don't decrement ammo in Darwin mode
+            -- Don't decrement ammo in Darwin mode
             if not player or not player:GetDarwinMode() then
                 self.clip = self.clip - 1
             end
             
             self:CreatePrimaryAttackEffect(player)
             
-            //Weapon.OnPrimaryAttack(self, player)
+            --Weapon.OnPrimaryAttack(self, player)
             
             self.shooting = true
             
-            //DebugFireRate(self)
+            --DebugFireRate(self)
             
         end
         
@@ -581,7 +581,7 @@ function ClipWeapon:OnUpdateAnimationInput(modelMixin)
 
 end
 
-// override if weapon should drop reserve ammo as separate entity
+-- override if weapon should drop reserve ammo as separate entity
 function ClipWeapon:GetAmmoPackMapName()
     return nil
 end    

@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Alien\BabblerAbility.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// Spit attack on primary.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Alien\BabblerAbility.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- Spit attack on primary.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Babbler.lua")
 Script.Load("lua/Weapons/Alien/Ability.lua")
@@ -23,7 +23,9 @@ local kPheromoneTraceWidth = 0.3
 local kPlayerVelocityFraction = 0.5
 local kProjectileVelocity = 14
 
-local networkVars = { }
+local networkVars =
+{
+}
 
 AddMixinNetworkVars(HealSprayMixin, networkVars)
 
@@ -96,7 +98,7 @@ function BabblerAbility:OnUpdateAnimationInput(modelMixin)
 end
 
 function BabblerAbility:GetRange()
-    return 8
+    return 16
 end
 
 local function FindTarget(self, player)
@@ -116,7 +118,7 @@ end
 
 local function CreateBabblerPheromone(self, player)
     
-    // destroy at first all other pheromones
+    -- destroy at first all other pheromones
     if Server then
         for _, pheromone in ientitylist(Shared.GetEntitiesWithClassname("BabblerPheromone")) do
             if pheromone:GetOwner() == player then
@@ -201,7 +203,7 @@ if Client then
 
     function BabblerAbility:OnProcessIntermediate()
     
-        //update babbler move type for GUI
+        --update babbler move type for GUI
         local player = self:GetParent()
         if player then
         
@@ -250,6 +252,10 @@ if Client then
     
     end
 
+end
+
+function BabblerAbility:GetDeathIconIndex()
+    return kDeathMessageIcon.Spray
 end
 
 Shared.LinkClassToMap("BabblerAbility", BabblerAbility.kMapName, networkVars)

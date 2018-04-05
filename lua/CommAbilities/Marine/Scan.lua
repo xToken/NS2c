@@ -1,12 +1,12 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//
-// lua\Scan.lua
-//
-//    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
-//
-// A Commander ability that gives LOS to marine team for a short time.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
+--
+-- lua\Scan.lua
+--
+--    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
+--
+-- A Commander ability that gives LOS to marine team for a short time.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/CommAbilities/CommanderAbility.lua")
 Script.Load("lua/MapBlipMixin.lua")
@@ -72,13 +72,13 @@ if Server then
     
         PROFILE("Scan:Perform")
         
-        local enemies = GetEntitiesWithMixinForTeamWithinRange("LOS", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), Scan.kScanDistance)
+        local enemies = GetEntitiesWithMixinForTeamWithinXZRange("LOS", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), Scan.kScanDistance)
         
         for _, enemy in ipairs(enemies) do
                 
             enemy:SetIsSighted(true)
             
-            // Allow entities to respond
+            -- Allow entities to respond
             if enemy.OnScan then
                enemy:OnScan()
             end
@@ -87,7 +87,7 @@ if Server then
                 enemy:SetDetected(true)
             end
             
-        end
+        end    
         
     end
     

@@ -1,27 +1,28 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Shared.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// Put any classes that are used on both the client and server here.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Shared.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- Put any classes that are used on both the client and server here.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added some NS2c files, removed un-needed files
+--NS2c
+--Added some NS2c files, removed un-needed files
 
 math.randomseed(Shared.GetSystemTime())
-// math.random() is more random the more you call it. Don't ask.
+-- math.random() is more random the more you call it. Don't ask.
 for i = 1, 100 do math.random() end
+
 Script.Load("lua/HotloadTools.lua")
-Script.Load("lua/EventTester.lua")
+
 Script.Load("lua/JITConsoleCommands.lua")
 
 Script.Load("lua/Locale.lua")
 
-// Utility and constants
+-- Utility and constants
 Script.Load("lua/Globals.lua")
 Script.Load("lua/DamageTypes.lua")
 Script.Load("lua/Debug.lua")
@@ -60,7 +61,11 @@ Script.Load("lua/BalanceMisc.lua")
 
 Script.Load("lua/TeamJoin.lua")
 
-// Neutral structures
+Script.Load("lua/PulseEffect.lua") -- Create a pulsing highlight effect on an entity.
+Script.Load("lua/Camera.lua") -- used for creating camera animations in tutorial.
+Script.Load("lua/AreaTrigger.lua") -- used for monitoring regions in the tutorial.
+
+-- Neutral structures
 Script.Load("lua/ResourcePoint.lua")
 Script.Load("lua/ResourceTower.lua")
 Script.Load("lua/Door.lua")
@@ -70,6 +75,7 @@ Script.Load("lua/Trigger.lua")
 Script.Load("lua/Ladder.lua")
 Script.Load("lua/MinimapExtents.lua")
 Script.Load("lua/DeathTrigger.lua")
+Script.Load("lua/EventTarget.lua")
 Script.Load("lua/TeleportTrigger.lua")
 Script.Load("lua/TeleportDestination.lua")
 Script.Load("lua/TimedEmitter.lua")
@@ -78,13 +84,14 @@ Script.Load("lua/AmbientSoundPlayer.lua")
 Script.Load("lua/PropDynamicAnimator.lua")
 Script.Load("lua/Gamerules.lua")
 Script.Load("lua/NS2Gamerules.lua")
+Script.Load("lua/ConcedeSequence.lua")
 Script.Load("lua/TechPoint.lua")
 Script.Load("lua/BaseSpawn.lua")
 Script.Load("lua/ReadyRoomSpawn.lua")
 Script.Load("lua/Pheromone.lua")
 Script.Load("lua/Weapons/ViewModel.lua")
 
-// Marine structures
+-- Marine structures
 Script.Load("lua/Mine.lua")
 Script.Load("lua/Extractor.lua")
 Script.Load("lua/Armory.lua")
@@ -104,7 +111,7 @@ Script.Load("lua/MedPack.lua")
 Script.Load("lua/CatPack.lua")
 Script.Load("lua/ServerParticleEmitter.lua")
 
-// Alien structures
+-- Alien structures
 Script.Load("lua/Harvester.lua")
 Script.Load("lua/Hive.lua")
 Script.Load("lua/Crag.lua")
@@ -117,7 +124,7 @@ Script.Load("lua/Embryo.lua")
 Script.Load("lua/Babbler.lua")
 Script.Load("lua/BabblerEgg.lua")
 
-// Base players
+-- Base players
 Script.Load("lua/PlayerInfoEntity.lua")
 Script.Load("lua/ReadyRoomPlayer.lua")
 Script.Load("lua/Spectator.lua")
@@ -127,7 +134,7 @@ Script.Load("lua/MarineSpectator.lua")
 Script.Load("lua/Ragdoll.lua")
 Script.Load("lua/MarineCommander.lua")
 
-// Character class behaviors
+-- Character class behaviors
 Script.Load("lua/Marine.lua")
 Script.Load("lua/JetpackMarine.lua")
 Script.Load("lua/Jetpack.lua")
@@ -139,7 +146,7 @@ Script.Load("lua/Lerk.lua")
 Script.Load("lua/Fade.lua")
 Script.Load("lua/Onos.lua")
 
-// Weapons
+-- Weapons
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
 Script.Load("lua/Weapons/Marine/Rifle.lua")
 Script.Load("lua/Weapons/Marine/HeavyMachineGun.lua")
@@ -166,20 +173,22 @@ Script.Load("lua/ServerPerformanceData.lua")
 
 Script.Load("lua/HitSounds.lua")
 
-//Load this last to hopefully attempt to support any latehook mods.
+Script.Load("lua/DebugUtils.lua")
+
+-- Load this last to hopefully attempt to support any latehook mods.
 Script.Load("lua/Mixins/WaterModSupport.lua")
 Script.Load("lua/Mixins/ExoCrashFix.lua")
 Script.Load("lua/Mixins/NS2PlusSupport.lua")
 
-//Load Overloads for Classic - Use these for simple changes to avoid complete file replacement
+-- Load Overloads for Classic - Use these for simple changes to avoid complete file replacement
 Script.Load("lua/Overloads/SensorBlip.lua")
 Script.Load("lua/Overloads/Ladder.lua")
 
-gHeightMap = gHeightMap // survive hotloading; will be nil the first time
+gHeightMap = gHeightMap -- survive hotloading; will be nil the first time
 
 local function LoadHeightmap()
 
-    // Load height map
+    -- Load height map
     gHeightMap = HeightMap()   
     local heightmapFilename = string.format("maps/overviews/%s.hmp", Shared.GetMapName())
     
@@ -198,9 +207,9 @@ function GetHeightmap()
     return gHeightMap
 end
 
-/**
- * Called when two physics bodies collide.
- */
+--
+-- Called when two physics bodies collide.
+--
 function OnPhysicsCollision(body1, body2)
 
     local entity1 = body1 and body1:GetEntity()
@@ -216,12 +225,12 @@ function OnPhysicsCollision(body1, body2)
 
 end
 
-// Set the callback function when there's a collision
+-- Set the callback function when there's a collision
 Event.Hook("PhysicsCollision", OnPhysicsCollision)
 
-/**
- * Called when one physics body enters into a trigger body.
- */
+--
+-- Called when one physics body enters into a trigger body.
+--
 function OnPhysicsTrigger(enterObject, triggerObject, enter)
 
     PROFILE("Shared:OnPhysicsTrigger")
@@ -257,32 +266,32 @@ function OnPhysicsTrigger(enterObject, triggerObject, enter)
 
 end
 
-// Set the callback functon when there's a trigger
+-- Set the callback functon when there's a trigger
 Event.Hook("PhysicsTrigger", OnPhysicsTrigger)
 
-// turn on to show outline of view box trace.
+-- turn on to show outline of view box trace.
 Shared.DbgTraceViewBox = false
 
-/**
- * Support view aligned box traces. The world-axis aligned box traces doesn't work as soon as you have the
- * least tilt or yaw on the box (such as placing structures on tilted surfaces (like walls). This is a
- * better-than-nothing replacement until engine support comes along.
- *
- * The view aligned box places the view along the z-axis. You specify the x,y extents, the roll around the z-axis and
- * the start and endpoints.
- *
- * 9 traces are used, one on each corner, one in the middle of each side and one in the middle.
- *
- * A possible expansion would be to add more traces for larger boxes to keep an upper limit of the size of a missed object.
- *
- * It returns a trace look-alike (ie a table containing an endPoint, fraction and normal)
- */ 
+--
+-- Support view aligned box traces. The world-axis aligned box traces doesn't work as soon as you have the
+-- least tilt or yaw on the box (such as placing structures on tilted surfaces (like walls). This is a
+-- better-than-nothing replacement until engine support comes along.
+--
+-- The view aligned box places the view along the z-axis. You specify the x,y extents, the roll around the z-axis and
+-- the start and endpoints.
+--
+-- 9 traces are used, one on each corner, one in the middle of each side and one in the middle.
+--
+-- A possible expansion would be to add more traces for larger boxes to keep an upper limit of the size of a missed object.
+--
+-- It returns a trace look-alike (ie a table containing an endPoint, fraction and normal)
+--
 function Shared.TraceViewBox(x, y, roll, startPoint, endPoint, mask, filter)
 
-    // find the shortest trace of the 9 traces that we are going to do
-    local shortestTrace = nil
+    -- find the shortest trace of the 9 traces that we are going to do
+    local shortestTrace
 
-    // first start by doing a simple ray trace though the middle
+    -- first start by doing a simple ray trace though the middle
     local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Default, mask, filter)
     if trace.fraction < 1 then
         shortestTrace = trace
@@ -296,7 +305,6 @@ function Shared.TraceViewBox(x, y, roll, startPoint, endPoint, mask, filter)
     angles:BuildFromCoords(coords)
     angles.roll = roll
     coords = angles:GetCoords()
-    local points = {}
 
     for dx =-1,1 do
         for dy = -1,1 do
@@ -322,7 +330,7 @@ function Shared.TraceViewBox(x, y, roll, startPoint, endPoint, mask, filter)
     if shortestTrace then 
         return makeResult(shortestTrace.fraction, startPoint + (endPoint - startPoint) * shortestTrace.fraction, shortestTrace.normal, shortestTrace.entity)
     end
-    // Make the normal non-nil to be consistent with the engine's trace results.
+    -- Make the normal non-nil to be consistent with the engine's trace results.
     return makeResult(1, endPoint, Vector.yAxis)
     
 end
@@ -382,16 +390,16 @@ local function OnMapPreLoad()
     Shared.PreLoadSetGroupNeverVisible(kCommanderBuildGroupName)   
     Shared.PreLoadSetGroupPhysicsId(kCommanderBuildGroupName, PhysicsGroup.CommanderBuildGroup)      
     
-    // Any geometry in kCommanderInvisibleGroupName or kCommanderNoBuildGroupName shouldn't interfere with selection or other commander actions
+    -- Any geometry in kCommanderInvisibleGroupName or kCommanderNoBuildGroupName shouldn't interfere with selection or other commander actions
     Shared.PreLoadSetGroupPhysicsId(kCommanderInvisibleGroupName, PhysicsGroup.CommanderPropsGroup)
     Shared.PreLoadSetGroupPhysicsId(kCommanderInvisibleVentsGroupName, PhysicsGroup.CommanderPropsGroup)
     Shared.PreLoadSetGroupPhysicsId(kCommanderNoBuildGroupName, PhysicsGroup.CommanderPropsGroup)
     
-    // Don't have bullets collide with collision geometry
+    -- Don't have bullets collide with collision geometry
     Shared.PreLoadSetGroupPhysicsId(kCollisionGeometryGroupName, PhysicsGroup.CollisionGeometryGroup)
     Shared.PreLoadSetGroupPhysicsId(kMovementCollisionGroupName, PhysicsGroup.CollisionGeometryGroup)
     
-    // Pathing mesh
+    -- Pathing mesh
     Shared.PreLoadSetGroupNeverVisible(kPathingLayerName)
     Shared.PreLoadSetGroupPhysicsId(kPathingLayerName, PhysicsGroup.PathingGroup)
     
@@ -400,3 +408,5 @@ end
 Shared.Debug_InitializeValues()
 
 Event.Hook("MapPreLoad", OnMapPreLoad)
+
+

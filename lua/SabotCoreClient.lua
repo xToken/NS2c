@@ -1,15 +1,15 @@
-// ======= Copyright (c) 2003-2014, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\SabotCoreClient.lua    
-//    
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)    
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================   
+-- ======= Copyright (c) 2003-2014, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\SabotCoreClient.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Utility.lua")
 Script.Load("lua/Sabot.lua")
 
-//Load Classic Main Menu Changes - this file is unlikely to change much
+-- Load Classic Main Menu Changes - this file is unlikely to change much
 Script.Load("lua/Overloads/GUIClassicMenu.lua")
  
 local gLastUpdate = 0
@@ -18,7 +18,7 @@ local kPollTimeOut = 60
 local kPollFrequency = 0.1
 
 local function UpdateGatherQueue()
-
+    Client.SetDebugText("SabotCore.OnUpdateClient entry")
     if Sabot.GetIsInGather() then
     
         if gLastUpdate + 5 < Shared.GetTime() then
@@ -42,15 +42,15 @@ local function UpdateGatherQueue()
         end
     
     end
-
+    Client.SetDebugText("SabotCore.OnUpdateClient exit")
 end
 
-Event.Hook("UpdateClient", UpdateGatherQueue)
+Event.Hook("UpdateClient", UpdateGatherQueue, "SabotCore")
 
 local kWebViewFunctions = {}
 
 kWebViewFunctions["GetPlayerName"] = function()
-    return Client.GetOptionString(kNicknameOptionsKey, Client.GetUserName()) or kDefaultPlayerName
+    return GetNickName()
 end
 
 kWebViewFunctions["GetSteamId"] = function()

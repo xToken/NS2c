@@ -1,10 +1,10 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Alien\WebsAbility.lua
-//
-//    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Alien\WebsAbility.lua
+--
+--    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Alien/StructureAbility.lua")
 
@@ -52,12 +52,12 @@ function WebsAbility:GetIsPositionValid(displayOrigin, player, normal, lastClick
     local mapOrigin = Vector(0,0,0)
     local direction = player:GetViewCoords().zAxis
     local startPoint = displayOrigin + normal * 0.1
-    local valid = false
+    local valid = lastClickedPosition == nil
 
     if lastClickedPosition and displayOrigin and startPoint ~= lastClickedPosition 
        and (lastClickedPosition - startPoint):GetLength() < kMaxWebLength and (lastClickedPosition - startPoint):GetLength() > kMinWebLength then
     
-        // check if we can create a web between the 2 point
+        -- check if we can create a web between the 2 point
         local webTrace = Shared.TraceRay(lastClickedPosition, startPoint, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterAll())
         if webTrace.fraction >= 0.99 then
             valid = true

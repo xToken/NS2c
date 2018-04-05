@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Alien\BileBomb.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Alien\BileBomb.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Bilebomb is now predicted
+--NS2c
+--Bilebomb is now predicted
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/Bomb.lua")
@@ -17,7 +17,7 @@ class 'BileBomb' (Ability)
 
 BileBomb.kMapName = "bilebomb"
 
-// part of the players velocity is use for the bomb
+-- part of the players velocity is use for the bomb
 local kPlayerVelocityFraction = 0.5
 local kBombVelocity = 10
 
@@ -77,7 +77,7 @@ function BileBomb:OnTag(tagName)
                 cinematic:SetCinematic(kBbombViewEffect)
                 
             end
- 
+            
         end
     
     end
@@ -132,6 +132,10 @@ function BileBomb:OnUpdateAnimationInput(modelMixin)
     end
     modelMixin:SetAnimationInput("activity", activityString)
     
+end
+
+function BileBomb:GetDeathIconIndex()
+    return kDeathMessageIcon.Spray
 end
 
 Shared.LinkClassToMap("BileBomb", BileBomb.kMapName, networkVars)

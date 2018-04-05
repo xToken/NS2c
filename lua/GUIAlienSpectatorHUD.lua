@@ -1,12 +1,13 @@
-// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//
-// lua\GUIAlienSpectatorHUD.lua
-//
-// Created by: Brian Cronin (brianc@unknownworlds.com)
-//
-// Displays how much time is left until the alien spawns.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =====
+--
+-- lua\GUIAlienSpectatorHUD.lua
+--
+-- Created by: Brian Cronin (brianc@unknownworlds.com)
+--
+-- Displays how much time is left until the alien spawns.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
+
 
 class 'GUIAlienSpectatorHUD' (GUIScript)
 
@@ -63,6 +64,7 @@ function GUIAlienSpectatorHUD:Initialize()
     self.eggIcon = GUIManager:CreateGraphicItem()
     self.eggIcon:SetAnchor(GUIItem.Middle, GUIItem.Top)
     self.eggIcon:SetTexture(kEggTexture)
+    self.eggIcon:SetIsVisible(false) -- to prevent 1-frame pop-in
     
     self.eggCount = GUIManager:CreateTextItem()
     self.eggCount:SetFontName(kTextFontName)
@@ -74,6 +76,22 @@ function GUIAlienSpectatorHUD:Initialize()
     self.eggIcon:AddChild(self.eggCount)
     
     UpdateItemsGUIScale(self)
+    
+    self.visible = true
+    
+end
+
+function GUIAlienSpectatorHUD:SetIsVisible(state)
+    
+    self.visible = state
+    self:Update(0)
+    
+end
+
+function GUIAlienSpectatorHUD:GetIsVisible()
+    
+    return self.visible
+    
 end
 
 function GUIAlienSpectatorHUD:Uninitialize()
@@ -95,9 +113,10 @@ function GUIAlienSpectatorHUD:Update(deltaTime)
     
     local waitingForTeamBalance = PlayerUI_GetIsWaitingForTeamBalance()
 
-    local isVisible = not waitingForTeamBalance and GetPlayerIsSpawning()
+    local isVisible = self.visible and not waitingForTeamBalance and GetPlayerIsSpawning()
     self.spawnText:SetIsVisible(isVisible)
-    
+    self.eggIcon:SetIsVisible(isVisible)
+
     if PlayerUI_GetGameMode() == kGameMode.Classic then
         self.eggIcon:SetIsVisible(isVisible)
     else

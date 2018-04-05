@@ -1,17 +1,18 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Hive.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Hive.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 //NS2c
 //Removed most unneeded mixins for production, added passive infestation
 
 Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
+
 Script.Load("lua/CommandStructure.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/UnitStatusMixin.lua")
@@ -51,7 +52,7 @@ Hive.kModelName = PrecacheAsset("models/alien/hive/hive.model")
 local kAnimationGraph = PrecacheAsset("models/alien/hive/hive.animation_graph")
 
 Hive.kWoundSound = PrecacheAsset("sound/NS2.fev/alien/structures/hive_wound")
-// Play special sound for players on team to make it sound more dramatic or horrible
+-- Play special sound for players on team to make it sound more dramatic or horrible
 Hive.kWoundAlienSound = PrecacheAsset("sound/NS2.fev/alien/structures/hive_wound_alien")
 
 Hive.kIdleMistEffect = PrecacheAsset("cinematics/alien/hive/idle_mist.cinematic")
@@ -118,13 +119,13 @@ function Hive:OnInitialized()
     
     CommandStructure.OnInitialized(self)
 
-    // Pre-compute list of egg spawn points.
+    -- Pre-compute list of egg spawn points.
     if Server then
         
         self:SetModel(Hive.kModelName, kAnimationGraph)
         SetAlwaysRelevantToTeam(self, true)
         
-        // This Mixin must be inited inside this OnInitialized() function.
+        -- This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end
@@ -143,12 +144,12 @@ function Hive:OnInitialized()
         
     elseif Client then
     
-        // Create glowy "plankton" swimming around hive, along with mist and glow
+        -- Create glowy "plankton" swimming around hive, along with mist and glow
         local coords = self:GetCoords()
         self:AttachEffect(Hive.kSpecksEffect, coords)
-        //self:AttachEffect(Hive.kGlowEffect, coords, Cinematic.Repeat_Loop)
+        --self:AttachEffect(Hive.kGlowEffect, coords, Cinematic.Repeat_Loop)
         
-        // For mist creation
+        -- For mist creation
         self:SetUpdates(true)
         
         InitMixin(self, UnitStatusMixin)

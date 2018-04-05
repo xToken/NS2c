@@ -1,15 +1,15 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GUICommanderButtons.lua
-//
-// Created by: Brian Cronin (brianc@unknownworlds.com)
-//
-// Manages the right commander panel used to display buttons for commander actions.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GUICommanderButtons.lua
+--
+-- Created by: Brian Cronin (brianc@unknownworlds.com)
+--
+-- Manages the right commander panel used to display buttons for commander actions.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed idle workers panel.
+-- NS2c
+-- Removed idle workers panel.
 
 Script.Load("lua/GUIBorderBackground.lua")
 Script.Load("lua/GUICommanderTooltip.lua")
@@ -124,16 +124,16 @@ local function UpdateItemsGUIScale(self)
     GUICommanderButtons.kBackgroundWidth = 466 * GUIScale(kCommanderGUIsGlobalScale)
     GUICommanderButtons.kBackgroundHeight = 363 * GUIScale(kCommanderGUIsGlobalScale)
 
-    // The background is offset from the edge of the screen.
+    -- The background is offset from the edge of the screen.
     GUICommanderButtons.kBackgroundOffset = GUIScale(4)
 
-    // Used just for testing.
+    -- Used just for testing.
     GUICommanderButtons.kExtraYOffset = 0
 
     GUICommanderButtons.kBuildMenuTextureWidth = GUIScale(80)
     GUICommanderButtons.kBuildMenuTextureHeight = GUIScale(80)
 
-    // Also used for player alerts icon
+    -- Also used for player alerts icon
     GUICommanderButtons.kIdleWorkersSize = GUIScale(48)
     GUICommanderButtons.kIdleWorkersXOffset = GUIScale(5)
     GUICommanderButtons.kIdleWorkersFontSize = GUIScale(20)
@@ -160,12 +160,12 @@ function GUICommanderButtons:Initialize()
     self.teamType = PlayerUI_GetTeamType()
     self.backgroundTextureName = self:GetBackgroundTextureName()
     
-    // The Marine buttons have tabs at the top for the first row of buttons.
+    -- The Marine buttons have tabs at the top for the first row of buttons.
     self.tabs = { }
-    // The rest of the non-tab buttons are stored here.
+    -- The rest of the non-tab buttons are stored here.
     self.bottomButtons = { }
     self.buttonbackground = { }
-    // All buttons are always stored here for Marine and Aliens.
+    -- All buttons are always stored here for Marine and Aliens.
     self.buttons = { }
     self.cooldowns = { }
 
@@ -200,7 +200,7 @@ function GUICommanderButtons:InitializeAlienBackground()
     local posY = -GUICommanderButtons.kBackgroundHeight - GUICommanderButtons.kBackgroundOffset - GUICommanderButtons.kExtraYOffset
     self.background:SetPosition(Vector(posX, posY, 0))
     self.background:SetColor(Color(0,0,0,0))
-    self.background:SetTexturePixelCoordinates( unpack(GUICommanderButtons.kFrameTextureCoords) )
+    self.background:SetTexturePixelCoordinates( GUIUnpackCoords(GUICommanderButtons.kFrameTextureCoords) )
 
     self.smokeyBackground = GUIManager:CreateGraphicItem()
     self.smokeyBackground:SetAnchor(GUIItem.Middle, GUIItem.Center)
@@ -232,7 +232,7 @@ function GUICommanderButtons:InitializeMarineBackground()
     local posY = -GUICommanderButtons.kBackgroundHeight - GUICommanderButtons.kBackgroundOffset - GUICommanderButtons.kExtraYOffset
     self.background:SetPosition(Vector(posX, posY, 0))
     self.background:SetTexture(self.backgroundTextureName)
-    self.background:SetTexturePixelCoordinates( unpack(GUICommanderButtons.kFrameTextureCoords) )
+    self.background:SetTexturePixelCoordinates( GUIUnpackCoords(GUICommanderButtons.kFrameTextureCoords) )
     
     self.tabBackground = GUIManager:CreateGraphicItem()
     self.tabBackground:SetAnchor(GUIItem.Left, GUIItem.Top)
@@ -288,7 +288,7 @@ end
 
 local function UpdateTabs(self)
 
-    // Assume no tabs are pressed or highlighted.
+    -- Assume no tabs are pressed or highlighted.
     for t = 1, #self.tabs do
     
         local tabTable = self.tabs[t]
@@ -329,10 +329,10 @@ end
 function GUICommanderButtons:SharedInitializeButtons(settingsTable)
 
     self.numberOfTabs = settingsTable.NumberOfTabs
-    // Tab row.
+    -- Tab row.
     for t = 1, self.numberOfTabs do
     
-        // Top tab item first.
+        -- Top tab item first.
         local topItem = GUIManager:CreateGraphicItem()
         topItem:SetAnchor(GUIItem.Left, GUIItem.Top)
         
@@ -351,7 +351,7 @@ function GUICommanderButtons:SharedInitializeButtons(settingsTable)
         topItem:SetColor(kIconColors[self.teamType])
         self.background:AddChild(topItem)
         
-        // Tab text.
+        -- Tab text.
         local textItem = GUIManager:CreateTextItem()
         textItem:SetFontSize(GUICommanderButtons.kTabFontSize)
         textItem:SetAnchor(GUIItem.Middle, GUIItem.Center)
@@ -370,7 +370,7 @@ function GUICommanderButtons:SharedInitializeButtons(settingsTable)
     
     UpdateTabs(self)
     
-    // Button rows.
+    -- Button rows.
     for i = 1, settingsTable.NumberOfButtons do
     
         local backgroundItem = GUIManager:CreateGraphicItem()
@@ -450,7 +450,7 @@ function GUICommanderButtons:InitializeSelectAllPlayersIcon()
         self.selectAllPlayers:SetTexture("ui/buildmenu.dds")
         
         local coordinates = GetTextureCoordinatesForIcon(kTechId.Marine)
-        self.selectAllPlayers:SetTexturePixelCoordinates(unpack(coordinates))
+        self.selectAllPlayers:SetTexturePixelCoordinates(GUIUnpackCoords(coordinates))
     
     end
     
@@ -473,8 +473,8 @@ function GUICommanderButtons:Uninitialize()
         self.selectAllPlayers = nil
     end
     
-    // Everything is attached to the background so destroying it will
-    // destroy everything else.
+    -- Everything is attached to the background so destroying it will
+    -- destroy everything else.
     if self.background then
         GUI.DestroyItem(self.background)
         self.background = nil
@@ -485,7 +485,7 @@ function GUICommanderButtons:Uninitialize()
     
 end
 
-// Returns the main button list, does not include tabs.
+-- Returns the main button list, does not include tabs.
 function GUICommanderButtons:GetButtonList()
 
     local buttonList = self.buttons
@@ -511,7 +511,7 @@ local function UpdateHighlight(self)
             
                 if type(highlightTech) == "table" then
                 
-                    if table.contains(highlightTech, player.menuTechButtons[i]) then
+                    if table.icontains(highlightTech, player.menuTechButtons[i]) then
                         self.buttons[i]:SetColor(Color(0.4, 1, 0.4, 1))
                     end
             
@@ -551,7 +551,7 @@ end
 
 local function HighlightButton(self, buttonItem)
 
-    local foundTabTable = nil
+    local foundTabTable
     table.foreachfunctor(self.tabs, function (tabTable) if tabTable.TopItem == buttonItem then foundTabTable = tabTable end end)
     
     if foundTabTable == nil then
@@ -576,7 +576,7 @@ end
 
 function GUICommanderButtons:UpdateInput()
 
-    local tooltipButtonIndex = nil
+    local tooltipButtonIndex
     
     if self.highlightItem then
     
@@ -599,7 +599,7 @@ function GUICommanderButtons:UpdateInput()
                         
                         break
                         
-                    // Off or red buttons can still have a tooltip.
+                    -- Off or red buttons can still have a tooltip.
                     elseif buttonStatus == GUICommanderButtons.kButtonStatusOff.Id or buttonStatus == GUICommanderButtons.kButtonStatusRed.Id or buttonStatus == GUICommanderButtons.kButtonStatusPassive.Id then
                     
                         tooltipButtonIndex = i
@@ -640,12 +640,12 @@ function ScalePlayerAlertOperator(item, scalar)
     local sizeDifferenceX = GUICommanderButtons.kIdleWorkersSize - sizeVector.x
     local sizeDifferenceY = GUICommanderButtons.kIdleWorkersSize - sizeVector.y
     
-    // Make sure it is always centered.
+    -- Make sure it is always centered.
     item:SetPosition(Vector(GUICommanderButtons.kPlayerAlertX + sizeDifferenceX / 2, sizeDifferenceY / 2, 0))
     
 end
 
-// Shake item back and forth a bit
+-- Shake item back and forth a bit
 function ShakePlayerAlertOperator(item, scalar)
 
     local amount = math.floor((1 - scalar) * 5)
@@ -739,7 +739,7 @@ function GUICommanderButtons:UpdateButtonHotkeys()
     
         local buttonStatus = CommanderUI_MenuButtonStatus(triggeredButton)
         
-        // Only allow hotkeys on enabled buttons.
+        -- Only allow hotkeys on enabled buttons.
         if buttonStatus == GUICommanderButtons.kButtonStatusEnabled.Id then
         
             local player = Client.GetLocalPlayer()
@@ -793,7 +793,7 @@ local function SendButtonTargetedAction(index, x, y)
     local player = Client.GetLocalPlayer()
     local normalizedPickRay = CreatePickRay(player, x, y)
     
-    // Don't execute targeted action if we're still on top of the UI
+    -- Don't execute targeted action if we're still on top of the UI
     if not CommanderUI_GetMouseIsOverUI() then
         
         player:SendTargetedAction(techId, normalizedPickRay)
@@ -811,7 +811,7 @@ function GUICommanderButtons:MousePressed(key, mouseX, mouseY)
     
         if key == InputKey.MouseButton1 then
         
-            // Cancel targeted button upon right mouse press.
+            -- Cancel targeted button upon right mouse press.
             if self.targetedButton ~= nil then
                 self:SetTargetedButton(nil)
             end
@@ -828,8 +828,8 @@ function GUICommanderButtons:MousePressed(key, mouseX, mouseY)
                 success = true
             elseif self.targetedButton ~= nil then
             
-                // Commander_GhostStructure handles ghost structures. This code path handles tech that doesn't
-                // have a ghost model like Scan and Nano Shield.
+                -- Commander_GhostStructure handles ghost structures. This code path handles tech that doesn't
+                -- have a ghost model like Scan and Nano Shield.
                 if not GetCommanderGhostStructureEnabled() then
                 
                     if SendButtonTargetedAction(self.targetedButton, mouseX, mouseY) then
@@ -873,9 +873,9 @@ end
 
 function GUICommanderButtons:SelectTab(index)
 
-    // If this button is a tab, change it to the selected state.
+    -- If this button is a tab, change it to the selected state.
     local buttonItem = self.buttons[index]
-    local foundTabTable = nil
+    local foundTabTable
     table.foreachfunctor(self.tabs, function (tabTable) if tabTable.TopItem == buttonItem then foundTabTable = tabTable end end)
     if foundTabTable then
         foundTabTable.TopItem:SetIsVisible(true)
@@ -883,11 +883,11 @@ function GUICommanderButtons:SelectTab(index)
         self.selectedTabIndex = index
     else
     
-        // This is a bit of a hack for now.
+        -- This is a bit of a hack for now.
         local tooltipData = CommanderUI_MenuButtonTooltip(index)
-        // NOTE: This will fail to work when "Back" has been localized.
+        -- NOTE: This will fail to work when "Back" has been localized.
         local isBackButton = tooltipData[1] == "Back"
-        // Only the back button should unselect tabs and hide tab connectors.
+        -- Only the back button should unselect tabs and hide tab connectors.
         if isBackButton then
         
             table.foreachfunctor(self.tabs, DeselectTab)
@@ -982,7 +982,7 @@ end
 
 function GUICommanderButtons:ContainsPoint(pointX, pointY)
 
-    // Check if the point is over any of the UI managed by the GUICommanderButtons.
+    -- Check if the point is over any of the UI managed by the GUICommanderButtons.
     local containsPoint = (self.playerAlerts:GetIsVisible() and GUIItemContainsPoint(self.playerAlerts, pointX, pointY))
     containsPoint = containsPoint or (selectAllPlayers ~= nil and GUIItemContainsPoint(self.selectAllPlayers, pointX, pointY))
     return containsPoint or GUIItemContainsPoint(self.background, pointX, pointY)

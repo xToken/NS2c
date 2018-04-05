@@ -1,14 +1,14 @@
-//----------------------------------------
-//  
-//----------------------------------------
+------------------------------------------
+--
+------------------------------------------
 
 Script.Load("lua/bots/PlayerBrain.lua")
 
 local gDebug = false
 
-//----------------------------------------
-//  Utility funcs
-//----------------------------------------
+------------------------------------------
+--  Utility funcs
+------------------------------------------
 function GetRandomBuildPosition(techId, aroundPos, maxDist)
 
     local extents = GetExtents(techId)
@@ -18,21 +18,22 @@ function GetRandomBuildPosition(techId, aroundPos, maxDist)
 
 end
 
-//----------------------------------------
-//  
-//----------------------------------------
+------------------------------------------
+--
+------------------------------------------
 class 'CommanderBrain' (PlayerBrain)
 
 function CommanderBrain:GetShouldDebug(bot)
-    //return true
+    --return true
     return gDebug
 end
 
-//----------------------------------------
-//  This enumerates EVERYTHING that the commander can do right now - EVERYTHING
-//  The result is a hash table with techId as keys and an array of units as values. These are the units that you can perform the tech on (it may just be com)
-//----------------------------------------
+------------------------------------------
+--  This enumerates EVERYTHING that the commander can do right now - EVERYTHING
+--  The result is a hash table with techId as keys and an array of units as values. These are the units that you can perform the tech on (it may just be com)
+------------------------------------------
 function CommanderBrain:GetDoableTechIds(com)
+    PROFILE("CommanderBrain:GetDoableTechIds")
 
     local teamNum = self:GetExpectedTeamNumber()
     local tree = GetTechTree(teamNum)
@@ -54,7 +55,7 @@ function CommanderBrain:GetDoableTechIds(com)
 
         if techNode:GetAvailable() then
 
-            // check cool down
+            -- check cool down
             if com:GetIsTechOnCooldown(techId) then
                 return
             end
@@ -82,13 +83,13 @@ function CommanderBrain:GetDoableTechIds(com)
         
     end
 
-    //----------------------------------------
-    // Go through all units, gather all the things we can do with them
-    //----------------------------------------
+    ------------------------------------------
+    -- Go through all units, gather all the things we can do with them
+    ------------------------------------------
 
     local function CollectUnitDoableTechIds( unit, menuTechId, doables, visitedMenus )
 
-        // Very important. Menus are naturally cyclic, since there is always a "back" button
+        -- Very important. Menus are naturally cyclic, since there is always a "back" button
         visitedMenus[menuTechId] = true
 
         local techIds = unit:GetTechButtons( menuTechId ) or {}
@@ -114,13 +115,15 @@ function CommanderBrain:GetDoableTechIds(com)
         CollectUnitDoableTechIds( unit, kTechId.RootMenu, doables, {} )
     end
 
-    //----------------------------------------
-    //  Now do commander buttons. They are all in a two-level table, so no need to recurse.
-    //----------------------------------------
+    ------------------------------------------
+    --  Now do commander buttons. They are all in a two-level table, so no need to recurse.
+    ------------------------------------------
 
-    // Now do commander buttons - all of them
-    for _,menu in pairs( com:GetButtonTable() ) do
+    local buttonTable = com:GetButtonTable()
+    -- Now do commander buttons - all of them
+    for _,menuId in ipairs( com:GetMenuIds() ) do
 
+        local menu = buttonTable[menuId]
         for _,techId in ipairs(menu) do
 
             if techId ~= kTechId.None then
@@ -139,35 +142,37 @@ function CommanderBrain:GetDoableTechIds(com)
 
 end
 
-//----------------------------------------
-//  Helper function for subclasses
-//----------------------------------------
-function CommanderBrain:ExecuteTechId( commander, techId, position, hostEntity )
+------------------------------------------
+--  Helper function for subclasses
+------------------------------------------
+function CommanderBrain:ExecuteTechId( commander, techId, position, hostEntity, targetId )
+    PROFILE("CommanderBrain:ExecuteTechId")
 
-    //DebugPrint("Combrain executing %s at %s on %s", EnumToString(kTechId, techId),
-            //ToString(position),
-            //hostEntity == nil and "<no target>" or hostEntity:GetClassName())
+    --DebugPrint("Combrain executing %s at %s on %s", EnumToString(kTechId, techId),
+            --ToString(position),
+            --hostEntity == nil and "<no target>" or hostEntity:GetClassName())
 
     local techNode = GetTechTree(commander:GetTeamNumber()):GetTechNode( techId )
 
     local allowed, canAfford = hostEntity:GetTechAllowed( techId, techNode, commander )
-    assert( allowed and canAfford )
+    if not ( allowed and canAfford ) then return end
 
-    // We should probably use ProcessTechTreeAction instead here...
-    commander.isBotRequestedAction = true // Hackapalooza...
+    -- We should probably use ProcessTechTreeAction instead here...
+    commander.isBotRequestedAction = true -- Hackapalooza...
     local success, keepGoing = commander:ProcessTechTreeActionForEntity(
             techNode,
             position,
-            Vector(0,1,0),  // normal
-            true,   // isCommanderPicked
-            0,  // orientation
+            Vector(0,1,0),  -- normal
+            true,   -- isCommanderPicked
+            0,  -- orientation
             hostEntity,
-            nil // trace
+            nil, -- trace
+            targetId
             )
 
     if success then
     
-        // set cooldown
+        -- set cooldown
         local cooldown = LookupTechData(techId, kTechDataCooldown, 0)
         if cooldown ~= 0 then
             commander:SetTechCooldown(techId, cooldown, Shared.GetTime())
@@ -180,9 +185,9 @@ function CommanderBrain:ExecuteTechId( commander, techId, position, hostEntity )
     return success
 end
 
-//----------------------------------------
-//  
-//----------------------------------------
+------------------------------------------
+--
+------------------------------------------
 Event.Hook("Console_bot_com",
     function()
         gDebug = not gDebug

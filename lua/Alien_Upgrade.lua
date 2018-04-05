@@ -1,15 +1,15 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Alien_Upgrade.lua
-//
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-//    Utility functions for readability.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Alien_Upgrade.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+--    Utility functions for readability.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added classic upgrades and upgrade chamber levels
+-- NS2c
+-- Added classic upgrades and upgrade chamber levels
 
 kAlienUpgradeChambers = {kTechId.Crag, kTechId.Shift, kTechId.Shade, kTechId.Whip}
 
@@ -90,7 +90,7 @@ function GetChamberTypeForUpgrade(upgradeId)
 
 end
 
-// checks if upgrade category is already used
+-- checks if upgrade category is already used
 function GetIsAlienUpgradeAllowed(player, techId, upgradeList)
 
     local allowed = false
@@ -114,7 +114,7 @@ function GetIsAlienUpgradeAllowed(player, techId, upgradeList)
     end
     
     if gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
-        //No hive type restrictions in Combat
+        -- No hive type restrictions in Combat
         allowed = true
         
     end

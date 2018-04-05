@@ -1,16 +1,16 @@
-// ======= Copyright (c) 2003-2010, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\NetworkMessages.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// See the Messages section of the Networking docs in Spark Engine scripting docs for details.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2010, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\NetworkMessages.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- See the Messages section of the Networking docs in Spark Engine scripting docs for details.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added hiveinfo, removed ability cooldown netmessages
+-- NS2c
+-- Added hiveinfo, removed ability cooldown netmessages
 
 Script.Load("lua/Globals.lua")
 Script.Load("lua/TechTreeConstants.lua")
@@ -27,7 +27,7 @@ local kCameraShakeMessage =
 Shared.RegisterNetworkMessage("CameraShake", kCameraShakeMessage)
 
 function BuildCameraShakeMessage(intensity)
-    
+
     local t = {}
     t.intensity = intensity
     return t
@@ -52,15 +52,15 @@ local kCreateDecalMessage =
     normal = string.format("integer(1 to %d)", kNumIndexedVectors),
     posx = string.format("float (%d to %d by 0.05)", -kHitEffectMaxPosition, kHitEffectMaxPosition),
     posy = string.format("float (%d to %d by 0.05)", -kHitEffectMaxPosition, kHitEffectMaxPosition),
-    posz = string.format("float (%d to %d by 0.05)", -kHitEffectMaxPosition, kHitEffectMaxPosition), 
+    posz = string.format("float (%d to %d by 0.05)", -kHitEffectMaxPosition, kHitEffectMaxPosition),
     decalIndex = string.format("integer (1 to %d)", kNumSharedDecals),
     scale = "float (0 to 5 by 0.05)"
 }
 
 Shared.RegisterNetworkMessage("CreateDecal", kCreateDecalMessage)
 
-function BuildCreateDecalMessage(normal, position, decalIndex, scale)   
- 
+function BuildCreateDecalMessage(normal, position, decalIndex, scale)
+
     local t = { }
     t.normal = normal
     t.posx = position.x
@@ -69,7 +69,7 @@ function BuildCreateDecalMessage(normal, position, decalIndex, scale)
     t.decalIndex = decalIndex
     t.scale = scale
     return t
-    
+
 end
 
 function ParseCreateDecalMessage(message)
@@ -84,7 +84,7 @@ function BuildSelectUnitMessage(teamNumber, unit, selected, keepSelection)
     t.teamNumber = teamNumber
     t.unitId = unit and unit:GetId() or Entity.invalidId
     t.selected = selected == true
-    t.keepSelection = keepSelection == true    
+    t.keepSelection = keepSelection == true
     return t
 
 end
@@ -105,6 +105,8 @@ local kSetPlayerVariantMessage =
     shoulderPadIndex = string.format("integer (0 to %d)",  #kShoulderPad2ItemId),
     exoVariant = "enum kExoVariant",
     rifleVariant = "enum kRifleVariant",
+    pistolVariant = "enum kPistolVariant",
+    axeVariant = "enum kAxeVariant",
     shotgunVariant = "enum kShotgunVariant"
 }
 Shared.RegisterNetworkMessage("SetPlayerVariant", kSetPlayerVariantMessage)
@@ -114,7 +116,7 @@ function BuildVoiceMessage(voiceId)
     local t = {}
     t.voiceId = voiceId
     return t
-    
+
 end
 
 function ParseVoiceMessage(message)
@@ -131,7 +133,7 @@ Shared.RegisterNetworkMessage( "VoiceMessage", kVoiceOverMessage )
 local kMaxDamagePerHit = 511
 local kHitEffectMessage =
 {
-    // TODO: figure out a reasonable precision for the position
+    -- TODO: figure out a reasonable precision for the position
     posx = string.format("float (%d to %d by 0.05)", -kHitEffectMaxPosition, kHitEffectMaxPosition),
     posy = string.format("float (%d to %d by 0.05)", -kHitEffectMaxPosition, kHitEffectMaxPosition),
     posz = string.format("float (%d to %d by 0.05)", -kHitEffectMaxPosition, kHitEffectMaxPosition),
@@ -160,7 +162,7 @@ function BuildHitEffectMessage(position, doer, surface, target, showtracer, altM
     t.direction = direction or 1
     t.flinch_severe = flinch_severe == true
     return t
-    
+
 end
 
 function ParseHitEffectMessage(message)
@@ -181,9 +183,7 @@ end
 
 Shared.RegisterNetworkMessage( "HitEffect", kHitEffectMessage )
 
-/*
-For damage numbers
-*/
+--For damage numbers
 local kDamageMessage =
 {
     posx = string.format("float (%d to %d by 0.05)", -kHitEffectMaxPosition, kHitEffectMaxPosition),
@@ -194,7 +194,7 @@ local kDamageMessage =
 }
 
 function BuildDamageMessage(target, amount, hitpos)
-    
+
     local t = {}
     t.posx = hitpos.x
     t.posy = hitpos.y
@@ -202,37 +202,70 @@ function BuildDamageMessage(target, amount, hitpos)
     t.amount = math.min( math.max( amount, 0 ), 4095 )
     t.targetId = (target and target:GetId()) or Entity.invalidId
     return t
-    
+
 end
 
 function ParseDamageMessage(message)
     local position = Vector(message.posx, message.posy, message.posz)
-    return Shared.GetEntity(message.targetId), message.amount, position
+    return message.targetId, message.amount, position
 end
 
 function SendDamageMessage( attacker, target, amount, point, overkill )
-    
+
     if amount > 0 then
-    
+
         local msg = BuildDamageMessage(target, amount, point)
-        
-        // damage reports must always be reliable when not spectating
+
+        -- damage reports must always be reliable when not spectating
         Server.SendNetworkMessage(attacker, "Damage", msg, true)
-        
+
         for _, spectator in ientitylist(Shared.GetEntitiesWithClassname("Spectator")) do
-        
+
             if attacker == Server.GetOwner(spectator):GetSpectatingPlayer() then
                 Server.SendNetworkMessage(spectator, "Damage", msg, false)
             end
-            
+
         end
-        
+
     end
-   
+
 end
 
 Shared.RegisterNetworkMessage( "Damage", kDamageMessage )
 
+local kMarkEnemyMessage =
+{
+    targetId = "entityid",
+    weaponId = "enum kTechId",
+}
+
+function BuildMarkEnemyMessage(target, weapon)
+
+    local t = {}
+    t.targetId = (target and target:GetId()) or Entity.invalidId
+    t.weaponId = weapon
+    return t
+
+end
+
+function ParseMarkEnemyMessage(message)
+    return Shared.GetEntity(message.targetId), message.weaponId
+end
+
+function SendMarkEnemyMessage( attacker, target, amount, weapon )
+
+    if attacker and target and target:isa("Player") and amount > 0 and IsAllowedWeaponToMarkEnemy(weapon) then
+
+        local msg = BuildMarkEnemyMessage(target, weapon)
+
+        -- mark enemy must always be reliable when not spectating
+        Server.SendNetworkMessage(attacker, "MarkEnemy", msg, true)
+
+    end
+
+end
+
+Shared.RegisterNetworkMessage( "MarkEnemy", kMarkEnemyMessage )
 
 local kHitSoundMessage =
 {
@@ -240,11 +273,11 @@ local kHitSoundMessage =
 }
 
 function BuildHitSoundMessage( hitsound )
-    
+
     local t = {}
     t.hitsound = hitsound
     return t
-    
+
 end
 
 function ParseHitSoundMessage(message)
@@ -253,16 +286,12 @@ end
 
 Shared.RegisterNetworkMessage( "HitSound", kHitSoundMessage )
 
-
-/*
-For commander abilities, such as nanoshield
-*/
-
+--For commander abilities, such as nanoshield
 local kAbilityResultMessage =
 {
     techId = "enum kTechId",
     success = "boolean",
-    castTime = "time",  // When the ability was cast and succeded. Used for cooldown enforcement.
+    castTime = "time",  -- When the ability was cast and succeded. Used for cooldown enforcement.
 }
 
 function BuildAbilityResultMessage( techId, success, castTime )
@@ -280,7 +309,7 @@ Shared.RegisterNetworkMessage( "AbilityResult", kAbilityResultMessage )
 -- Tell players WHY they can't join a team
 local kJoinErrorMessage =
 {
-    reason = "integer (0 to 2)"
+    reason = "integer (0 to 3)"
 }
 function BuildJoinErrorMessage( reason )
     return { reason = reason }
@@ -292,9 +321,6 @@ Shared.RegisterNetworkMessage( "PlayedTutorial", {} )
 
 Shared.RegisterNetworkMessage( "CommanderLoginError", {} )
 
-/*
-*/
-
 local kCommanderPingMessage =
 {
     position = "vector"
@@ -302,16 +328,16 @@ local kCommanderPingMessage =
 
 function BuildCommanderPingMessage(position)
 
-    local t = {}    
-    t.position = position    
+    local t = {}
+    t.position = position
     return t
 
 end
 
 Shared.RegisterNetworkMessage( "CommanderPing", kCommanderPingMessage )
 
-// From TechNode.kTechNodeVars
-local kTechNodeUpdateMessage = 
+-- From TechNode.kTechNodeVars
+local kTechNodeUpdateMessage =
 {
     techId                  = "enum kTechId",
     available               = "boolean",
@@ -322,11 +348,11 @@ local kTechNodeUpdateMessage =
     hasTech                 = "boolean"
 }
 
-// Tech node messages. Base message is in TechNode.lua
+-- Tech node messages. Base message is in TechNode.lua
 function BuildTechNodeUpdateMessage(techNode)
 
     local t = {}
-    
+
     t.techId                    = techNode.techId
     t.available                 = techNode.available
     t.researchProgress          = techNode.researchProgress
@@ -334,16 +360,16 @@ function BuildTechNodeUpdateMessage(techNode)
     t.researched                = techNode.researched
     t.researching               = techNode.researching
     t.hasTech                   = techNode.hasTech
-    
+
     return t
-    
+
 end
 
 Shared.RegisterNetworkMessage( "TechNodeUpdate", kTechNodeUpdateMessage )
 
 local kMaxPing = 999
 
-local kPingMessage = 
+local kPingMessage =
 {
     clientIndex = "entityid",
     ping = "integer (0 to " .. kMaxPing .. ")"
@@ -352,12 +378,12 @@ local kPingMessage =
 function BuildPingMessage(clientIndex, ping)
 
     local t = {}
-    
+
     t.clientIndex       = clientIndex
     t.ping              = math.min(ping, kMaxPing)
-    
+
     return t
-    
+
 end
 
 function ParsePingMessage(message)
@@ -377,13 +403,13 @@ local kWorldTextMessage =
 function BuildWorldTextMessage(messageType, data, position)
 
     local t = { }
-    
+
     t.messageType = messageType
     t.data = data
     t.position = position
-    
+
     return t
-    
+
 end
 
 Shared.RegisterNetworkMessage("WorldText", kWorldTextMessage)
@@ -402,15 +428,15 @@ function BuildCommanderErrorMessage(data, techId, position)
     t.data = data
     t.techId = techId
     t.position = position
-    
+
     return t
-    
+
 end
 
 Shared.RegisterNetworkMessage("CommanderError", kCommanderErrorMessage)
 
-// For idle workers
-local kSelectAndGotoMessage = 
+-- For idle workers
+local kSelectAndGotoMessage =
 {
     entityId = "entityid"
 }
@@ -418,7 +444,7 @@ local kSelectAndGotoMessage =
 function BuildSelectAndGotoMessage(entId)
     local t = {}
     t.entityId = entId
-    return t   
+    return t
 end
 
 function ParseSelectAndGotoMessage(message)
@@ -428,7 +454,7 @@ end
 Shared.RegisterNetworkMessage("SelectAndGoto", kSelectAndGotoMessage)
 Shared.RegisterNetworkMessage("ComSelect", kSelectAndGotoMessage)
 
-// For taking damage
+-- For taking damage
 local kTakeDamageIndicator =
 {
     worldX = "float",
@@ -450,8 +476,8 @@ end
 
 Shared.RegisterNetworkMessage("TakeDamageIndicator", kTakeDamageIndicator)
 
-// Player id changed 
-local kEntityChangedMessage = 
+-- Player id changed
+local kEntityChangedMessage =
 {
     oldEntityId = "entityid",
     newEntityId = "entityid",
@@ -460,15 +486,15 @@ local kEntityChangedMessage =
 function BuildEntityChangedMessage(oldId, newId)
 
     local t = {}
-    
+
     t.oldEntityId = oldId
     t.newEntityId = newId
-    
+
     return t
-    
+
 end
 
-// Selection
+-- Selection
 local kMarqueeSelectMessage =
 {
     pickStartVec = "vector",
@@ -478,12 +504,12 @@ local kMarqueeSelectMessage =
 function BuildMarqueeSelectCommand(pickStartVec, pickEndVec)
 
     local t = {}
-    
+
     t.pickStartVec = Vector(pickStartVec)
     t.pickEndVec = Vector(pickEndVec)
 
     return t
-    
+
 end
 
 function ParseCommMarqueeSelectMessage(message)
@@ -500,7 +526,7 @@ function BuildClickSelectCommand(pickVec)
     local t = {}
     t.pickVec = Vector(pickVec)
     return t
-    
+
 end
 
 function ParseCommClickSelectMessage(message)
@@ -514,9 +540,9 @@ local kCreateHotkeyGroupMessage =
 function BuildCreateHotkeyGroupMessage(setGroupNumber)
 
     local t = {}
-    
+
     t.groupNumber = setGroupNumber
-    
+
     return t
 
 end
@@ -529,9 +555,9 @@ local kSelectHotkeyGroupMessage =
 function BuildSelectHotkeyGroupMessage(setGroupNumber)
 
     local t = {}
-    
+
     t.groupNumber = setGroupNumber
-    
+
     return t
 
 end
@@ -540,8 +566,8 @@ function ParseSelectHotkeyGroupMessage(message)
     return message.groupNumber
 end
 
-// Commander actions
-local kCommAction = 
+-- Commander actions
+local kCommAction =
 {
     techId = "enum kTechId",
     shiftDown = "boolean"
@@ -550,38 +576,38 @@ local kCommAction =
 function BuildCommActionMessage(techId, shiftDown)
 
     local t = {}
-    
+
     t.techId = techId
     t.shiftDown = shiftDown == true
-    
+
     return t
-    
+
 end
 
 function ParseCommActionMessage(t)
     return t.techId, t.shiftDown
 end
 
-local kCommTargetedAction = 
+local kCommTargetedAction =
 {
     techId = "enum kTechId",
-    
-    // normalized pick coords for CommTargetedAction
-    // or world coords for kCommTargetedAction
+
+    -- normalized pick coords for CommTargetedAction
+    -- or world coords for kCommTargetedAction
     x = "float",
     y = "float",
     z = "float",
-    
+
     orientationRadians  = "angle (11 bits)",
     targetId = "entityid",
-    
+
     shiftDown = "boolean"
 }
 
 function BuildCommTargetedActionMessage(techId, x, y, z, orientationRadians, targetId, shiftDown)
 
     local t = {}
-    
+
     t.techId = techId
     t.x = x
     t.y = y
@@ -589,16 +615,16 @@ function BuildCommTargetedActionMessage(techId, x, y, z, orientationRadians, tar
     t.orientationRadians = orientationRadians
     t.targetId = targetId
     t.shiftDown = shiftDown == true
-    
+
     return t
-    
+
 end
 
 function ParseCommTargetedActionMessage(t)
     return t.techId, Vector(t.x, t.y, t.z), t.orientationRadians, t.targetId, t.shiftDown
 end
 
-local kGorgeBuildStructureMessage = 
+local kGorgeBuildStructureMessage =
 {
     origin = "vector",
     direction = "vector",
@@ -609,21 +635,21 @@ local kGorgeBuildStructureMessage =
 function BuildGorgeDropStructureMessage(origin, direction, structureIndex, lastClickedPosition)
 
     local t = {}
-    
+
     t.origin = origin
     t.direction = direction
     t.structureIndex = structureIndex
     t.lastClickedPosition = lastClickedPosition or Vector(0,0,0)
 
     return t
-    
-end    
+
+end
 
 function ParseGorgeBuildMessage(t)
     return t.origin, t.direction, t.structureIndex, t.lastClickedPosition
 end
 
-local kMutePlayerMessage = 
+local kMutePlayerMessage =
 {
     muteClientIndex = "entityid",
     setMute = "boolean"
@@ -635,9 +661,9 @@ function BuildMutePlayerMessage(muteClientIndex, setMute)
 
     t.muteClientIndex = muteClientIndex
     t.setMute = setMute
-    
+
     return t
-    
+
 end
 
 function ParseMutePlayerMessage(t)
@@ -658,7 +684,7 @@ local kDebugLineMessage =
 function BuildDebugLineMessage(startPoint, endPoint, lifetime, r, g, b, a)
 
     local t = { }
-    
+
     t.startPoint = startPoint
     t.endPoint = endPoint
     t.lifetime = lifetime
@@ -666,9 +692,9 @@ function BuildDebugLineMessage(startPoint, endPoint, lifetime, r, g, b, a)
     t.g = g
     t.b = b
     t.a = a
-    
+
     return t
-    
+
 end
 
 function ParseDebugLineMessage(t)
@@ -687,22 +713,22 @@ local kDebugCapsuleMessage =
 function BuildDebugCapsuleMessage(sweepStart, sweepEnd, capsuleRadius, capsuleHeight, lifetime)
 
     local t = { }
-    
+
     t.sweepStart = sweepStart
     t.sweepEnd = sweepEnd
     t.capsuleRadius = capsuleRadius
     t.capsuleHeight = capsuleHeight
     t.lifetime = lifetime
-    
+
     return t
-    
+
 end
 
 function ParseDebugCapsuleMessage(t)
     return t.sweepStart, t.sweepEnd, t.capsuleRadius, t.capsuleHeight, t.lifetime
 end
 
-local kMinimapAlertMessage = 
+local kMinimapAlertMessage =
 {
     techId = "enum kTechId",
     worldX = "float",
@@ -717,57 +743,57 @@ local kCommanderNotificationMessage =
     techId = "enum kTechId"
 }
 
-// From TechNode.kTechNodeVars
+-- From TechNode.kTechNodeVars
 local kTechNodeBaseMessage =
 {
 
-    // Unique id
+    -- Unique id
     techId              = string.format("integer (0 to %d)", kTechIdMax),
-    
-    // Type of tech
+
+    -- Type of tech
     techType            = "enum kTechType",
-    
-    // Tech nodes that are required to build or research (or kTechId.None)
+
+    -- Tech nodes that are required to build or research (or kTechId.None)
     prereq1             = string.format("integer (0 to %d)", kTechIdMax),
     prereq2             = string.format("integer (0 to %d)", kTechIdMax),
-    
-    // This node is an upgrade, addition, evolution or add-on to another node
-    // This includes an alien upgrade for a specific lifeform or an alternate
-    // ammo upgrade for a weapon. For research nodes, they can only be triggered
-    // on structures of this type (ie, mature versions of a structure).
+
+    -- This node is an upgrade, addition, evolution or add-on to another node
+    -- This includes an alien upgrade for a specific lifeform or an alternate
+    -- ammo upgrade for a weapon. For research nodes, they can only be triggered
+    -- on structures of this type (ie, mature versions of a structure).
     addOnTechId         = string.format("integer (0 to %d)", kTechIdMax),
 
-    // If tech node can be built/researched/used. Requires prereqs to be met and for 
-    // research, means that it hasn't already been researched and that it's not
-    // in progress. Computed when structures are built or killed or when
-    // global research starts or stops (TechTree:ComputeAvailability()).
+    -- If tech node can be built/researched/used. Requires prereqs to be met and for
+    -- research, means that it hasn't already been researched and that it's not
+    -- in progress. Computed when structures are built or killed or when
+    -- global research starts or stops (TechTree:ComputeAvailability()).
     available           = "boolean",
 
-    // Seconds to complete research or upgrade. Structure build time is kept in Structure.buildTime (Server).
-    time                = "integer (0 to 360)",   
-    
-    // 0-1 research progress. This is non-authoritative and set/duplicated from Structure:SetResearchProgress()
-    // so player buy menus can display progress.
+    -- Seconds to complete research or upgrade. Structure build time is kept in Structure.buildTime (Server).
+    time                = "integer (0 to 360)",
+
+    -- 0-1 research progress. This is non-authoritative and set/duplicated from Structure:SetResearchProgress()
+    -- so player buy menus can display progress.
     researchProgress    = "float (0 to 1 by 0.01)",
     
-    // 0-1 research progress of the prerequisites of this node.
+    -- 0-1 research progress of the prerequisites of this node.
     prereqResearchProgress = "float (0 to 1 by 0.01)",
 
-    // True after being researched.
+    -- True after being researched.
     researched          = "boolean",
-    
-    // True for research in progress (not upgrades)
+
+    -- True for research in progress (not upgrades)
     researching         = "boolean",
-    
-    // If true, tech tree activity requires ghost, otherwise it will execute at target location's position (research, most actions)
+
+    -- If true, tech tree activity requires ghost, otherwise it will execute at target location's position (research, most actions)
     requiresTarget      = "boolean",
-    
+
     hasTech             = "boolean"
-    
+
 }
 
-// Build tech node from data sent in base update
-// Was TechNode:InitializeFromNetwork
+-- Build tech node from data sent in base update
+-- Was TechNode:InitializeFromNetwork
 function ParseTechNodeBaseMessage(techNode, networkVars)
 
     techNode.techId                 = networkVars.techId
@@ -784,11 +810,11 @@ function ParseTechNodeBaseMessage(techNode, networkVars)
     techNode.researching            = networkVars.researching
     techNode.requiresTarget         = networkVars.requiresTarget
     techNode.hasTech                = networkVars.hasTech
-    
+
 end
 
-// Update values from kTechNodeUpdateMessage
-// Was TechNode:UpdateFromNetwork
+-- Update values from kTechNodeUpdateMessage
+-- Was TechNode:UpdateFromNetwork
 function ParseTechNodeUpdateMessage(techNode, networkVars)
 
     techNode.available              = networkVars.available
@@ -797,13 +823,13 @@ function ParseTechNodeUpdateMessage(techNode, networkVars)
     techNode.researched             = networkVars.researched
     techNode.researching            = networkVars.researching
     techNode.hasTech                = networkVars.hasTech
-    
+
 end
 
 function BuildTechNodeBaseMessage(techNode)
 
     local t = {}
-    
+
     t.techId                    = techNode.techId
     t.techType                  = techNode.techType
     t.prereq1                   = techNode.prereq1
@@ -817,18 +843,18 @@ function BuildTechNodeBaseMessage(techNode)
     t.researching               = techNode.researching
     t.requiresTarget            = techNode.requiresTarget
     t.hasTech                   = techNode.hasTech
-    
+
     return t
-    
+
 end
 
 function BuildCommanderNotificationMessage(locationId, techId)
 
     local t = {}
-    
+
     t.locationId        = locationId
     t.techId            = techId
-    
+
     return t
 
 end
@@ -862,17 +888,22 @@ local kChatMessage =
 function BuildChatMessage(teamOnly, playerName, playerLocationId, playerTeamNumber, playerTeamType, chatMessage)
 
     local message = { }
-    
+
     message.teamOnly = teamOnly
     message.playerName = playerName
     message.locationId = playerLocationId
     message.teamNumber = playerTeamNumber
     message.teamType = playerTeamType
     message.message = chatMessage
-    
+
     return message
-    
+
 end
+
+local kViewPunchMessage =
+{
+    punchangle = "vector"
+}
 
 local kVoteChamberCastMessage =
 {
@@ -913,28 +944,23 @@ local kGameEndMessage =
     win = "integer (0 to 2)"
 }
 
-local kViewPunchMessage =
-{
-    punchangle = "vector"
-}
-
 Shared.RegisterNetworkMessage("ViewPunch", kViewPunchMessage)
 Shared.RegisterNetworkMessage("GameEnd", kGameEndMessage)
 
 Shared.RegisterNetworkMessage("EntityChanged", kEntityChangedMessage)
 Shared.RegisterNetworkMessage("ResetGame", {} )
 
-// Selection
+-- Selection
 Shared.RegisterNetworkMessage("SelectUnit", kSelectUnitMessage)
 Shared.RegisterNetworkMessage("SelectHotkeyGroup", kSelectHotkeyGroupMessage)
 
-// Commander actions
+-- Commander actions
 Shared.RegisterNetworkMessage("CommAction", kCommAction)
 Shared.RegisterNetworkMessage("CommTargetedAction", kCommTargetedAction)
 Shared.RegisterNetworkMessage("CommTargetedActionWorld", kCommTargetedAction)
 Shared.RegisterNetworkMessage("CreateHotKeyGroup", kCreateHotkeyGroupMessage)
 
-// Notifications
+-- Notifications
 Shared.RegisterNetworkMessage("MinimapAlert", kMinimapAlertMessage)
 Shared.RegisterNetworkMessage("CommanderNotification", kCommanderNotificationMessage)
 Shared.RegisterNetworkMessage("VoteConcedeCast", kVoteConcedeCastMessage)
@@ -943,17 +969,17 @@ Shared.RegisterNetworkMessage("VoteEjectCast", kVoteEjectCastMessage)
 Shared.RegisterNetworkMessage("TeamConceded", kTeamConcededMessage)
 Shared.RegisterNetworkMessage("ChamberSelected", kChamberSelectedMessage)
 
-// Player actions
+-- Player actions
 Shared.RegisterNetworkMessage("MutePlayer", kMutePlayerMessage)
 
-// Gorge select structure message
+-- Gorge select structure message
 Shared.RegisterNetworkMessage("GorgeBuildStructure", kGorgeBuildStructureMessage)
 
-// Chat
+-- Chat
 Shared.RegisterNetworkMessage("ChatClient", kChatClientMessage)
 Shared.RegisterNetworkMessage("Chat", kChatMessage)
 
-// Debug messages
+-- Debug messages
 Shared.RegisterNetworkMessage("DebugLine", kDebugLineMessage)
 Shared.RegisterNetworkMessage("DebugCapsule", kDebugCapsuleMessage)
 
@@ -972,9 +998,9 @@ function BuildCommunicationStatus(communicationStatus)
     local t = {}
 
     t.communicationStatus = communicationStatus
-    
+
     return t
-    
+
 end
 
 function ParseCommunicationStatus(t)
@@ -990,6 +1016,7 @@ local kBuyMessage =
     techId3 = "enum kTechId",
     techId4 = "enum kTechId"
 }
+local kBuyMessageMaxEntries = table.countkeys(kBuyMessage)
 
 function BuildBuyMessage(techIds)
 
@@ -998,24 +1025,24 @@ function BuildBuyMessage(techIds)
     if #techIds > table.countkeys(kBuyMessage) then
         Shared.Message("Attempted to purchase too many upgrades at once, can only purchase 4 upgrades at once.")
         Shared.ConsoleCommand("output " .. "Attempted to purchase too many upgrades at once, can only purchase 4 upgrades at once.")
-        //Tell client they tried to buy toooo much at once.
+        -- Tell client they tried to buy toooo much at once.
         return buyMessage
     end
 
     for t = 1, #techIds do
         buyMessage["techId" .. t] = techIds[t]
     end
-    
+
     return buyMessage
-    
+
 end
 
 function ParseBuyMessage(buyMessage)
 
-    local maxNumTechs = table.countkeys(kBuyMessage)
-    
-    // We need to iterate over the buyMessage table and insert
-    // the tech Ids in the correct order into the techIds list.
+    local maxNumTechs = kBuyMessageMaxEntries
+
+    -- We need to iterate over the buyMessage table and insert
+    -- the tech Ids in the correct order into the techIds list.
     local techIds = { }
     for t = 1, maxNumTechs do
     
@@ -1026,11 +1053,11 @@ function ParseBuyMessage(buyMessage)
             end
             
         end
-        
+
     end
-    
+
     return techIds
-    
+
 end
 
 Shared.RegisterNetworkMessage("Buy", kBuyMessage)
@@ -1049,6 +1076,8 @@ local kScoreUpdate =
     wasKill = "boolean"
 }
 Shared.RegisterNetworkMessage("ScoreUpdate", kScoreUpdate)
+
+Shared.RegisterNetworkMessage("SetAchievement", { name = "string (48)" } )
 
 Shared.RegisterNetworkMessage("SpectatePlayer", { entityId = "entityid"})
 Shared.RegisterNetworkMessage("SwitchFromFirstPersonSpectate", { mode = "enum kSpectatorMode" })

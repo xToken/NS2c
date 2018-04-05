@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GUIReadyRoomOrders.lua
-//
-// Created by: Andreas Urwalek (andi@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GUIReadyRoomOrders.lua
+--
+-- Created by: Andreas Urwalek (andi@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added welcome text to show that this is a mod.
+-- NS2c
+-- Added welcome text to show that this is a mod.
 
 class 'GUIReadyRoomOrders' (GUIScript)
 
@@ -40,16 +40,16 @@ local kTeamColors =
 local kWelcomeFontName = Fonts.kAgencyFB_Medium
 local kFadeInColor = Color(1, 1, 1, 1)
 local kFadeOutColor = Color(1, 1, 1, 0)
-// How long it takes for the welcome text to fade in and out.
+-- How long it takes for the welcome text to fade in and out.
 local kWelcomeFadeInTime = 4
 local kWelcomeFadeOutTime = 1
-// This is how long to wait until the welcome text begins to fade out.
+-- This is how long to wait until the welcome text begins to fade out.
 local kWelcomeStartFadeOutTime = 6
 local kWelcomeTextReset = 8
-// This is the delay before the welcome text fades in.
+-- This is the delay before the welcome text fades in.
 local kWelcomeDelay = 1.5
 
-local function CreateVisionElement(self)
+local function CreateVisionElement(_)
 
     local order = {}
 
@@ -57,14 +57,14 @@ local function CreateVisionElement(self)
     order.guiItem:SetSize(kOrderSize)
     order.guiItem:SetBlendTechnique(GUIItem.Add)
     order.guiItem:SetTexture(kTexture)
-    order.guiItem:SetTexturePixelCoordinates( unpack(kOrderPixelCoords) )
+    order.guiItem:SetTexturePixelCoordinates( GUIUnpackCoords(kOrderPixelCoords) )
     
     order.circleItem = GetGUIManager():CreateGraphicItem()
     order.circleItem:SetSize(kCircleSize)
     order.circleItem:SetBlendTechnique(GUIItem.Add)
     order.circleItem:SetTexture(kTexture)
     order.circleItem:SetAnchor(GUIItem.Middle, GUIItem.Center)
-    order.circleItem:SetTexturePixelCoordinates( unpack(kCirclePixelCoords) )  
+    order.circleItem:SetTexturePixelCoordinates( GUIUnpackCoords(kCirclePixelCoords) )
     order.circleItem:SetPosition(-kCircleSize * .5)
     
     order.textItem = GetGUIManager():CreateTextItem()
@@ -83,10 +83,15 @@ local function CreateVisionElement(self)
 
 end
 
-function GUIReadyRoomOrders:OnResolutionChanged(oldX, oldY, newX, newY)
+function GUIReadyRoomOrders:SendKeyEvent(_, _)
+   self.clientIsReady = true
+end
+
+function GUIReadyRoomOrders:OnResolutionChanged(_, _, _, _)
     self:Uninitialize()
     self:Initialize()
 end
+
 
 function GUIReadyRoomOrders:Initialize()
 
@@ -115,13 +120,14 @@ function GUIReadyRoomOrders:Initialize()
     localPlayer:TriggerEffects("tooltip")
     self.welcomeText:SetColor(kFadeOutColor)
     self.welcomeTextStartTime = Shared.GetTime()
+    self.clientIsReady = false
         
     Client.WindowNeedsAttention() -- time to pick a team!
 end
 
 function GUIReadyRoomOrders:Uninitialize()
     
-    for i, blip in ipairs(self.activeVisions) do
+    for _, blip in ipairs(self.activeVisions) do
         GUI.DestroyItem(blip.guiItem)
     end
     self.activeVisions = { }
@@ -133,11 +139,17 @@ function GUIReadyRoomOrders:Uninitialize()
     
 end
 
-local function UpdateWelcomeText(self, deltaTime)
+local function UpdateWelcomeText(self, _)
+  
+    -- Wait until client sends a keystroke before showing the welcome message
+    if not self.clientIsReady then
+        self.welcomeTextStartTime = Shared.GetTime()
+        return
+    end
 
     local now = Shared.GetTime()
     local timeSinceStart = now - (self.welcomeTextStartTime + kWelcomeDelay)
-    local color = nil
+    local color
     if timeSinceStart <= kWelcomeFadeInTime then
         color = LerpColor(kFadeOutColor, kFadeInColor, Clamp(timeSinceStart / kWelcomeFadeInTime, 0, 1))
     elseif timeSinceStart >= kWelcomeStartFadeOutTime then
@@ -166,7 +178,7 @@ function GUIReadyRoomOrders:Update(deltaTime)
     local numActiveVisions = #self.activeVisions
     local numCurrentVisions = #unitVisions
     
-    local stencilUpdated = numActiveVisions ~= numCurrentVisions
+    -- local stencilUpdated = numActiveVisions ~= numCurrentVisions
     
     if numCurrentVisions > numActiveVisions then
     
@@ -203,7 +215,7 @@ function GUIReadyRoomOrders:Update(deltaTime)
         visionElement.guiItem:SetPosition(screenPosition - kOrderSize *.5 + self.hover)        
         visionElement.guiItem:SetSize(kOrderSize)
         
-        // Keep in mind that the nearest exit may be behind you
+        -- Keep in mind that the nearest exit may be behind you
         local player = Client.GetLocalPlayer()
         local dotProduct = player:GetViewCoords().zAxis:DotProduct(GetNormalizedVector(worldPosition - player:GetEyePos()))
         local alpha = .2 + math.max(dotProduct * .8, 0)

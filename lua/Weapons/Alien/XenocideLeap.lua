@@ -1,12 +1,12 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Alien\XenocideLeap.lua
-//
-//    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
-// 
-//    First primary attack is xenocide, every next attack is bite. Secondary is leap.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Alien\XenocideLeap.lua
+--
+--    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
+--
+--    First primary attack is xenocide, every next attack is bite. Secondary is leap.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/BiteLeap.lua")
@@ -15,16 +15,23 @@ class 'XenocideLeap' (BiteLeap)
 
 XenocideLeap.kMapName = "xenocide"
 
-// after kDetonateTime seconds the skulk goes 'boom!'
+-- after kDetonateTime seconds the skulk goes 'boom!'
 local kDetonateTime = 2.5
 local kXenocideSoundName = PrecacheAsset("sound/NS2.fev/alien/common/xenocide_start")
 
 local networkVars = { }
-        
+
+local function CheckForDestroyedEffects(self)
+    if self.XenocideSoundName and not IsValid(self.XenocideSoundName) then
+        self.XenocideSoundName = nil
+    end
+end
+    
 local function TriggerXenocide(self, player)
 
     if Server then
-    
+        CheckForDestroyedEffects( self )
+        
         if not self.XenocideSoundName then
             self.XenocideSoundName = Server.CreateEntity(SoundEffect.kMapName)
             self.XenocideSoundName:SetAsset(kXenocideSoundName)
@@ -33,7 +40,7 @@ local function TriggerXenocide(self, player)
         else     
             self.XenocideSoundName:Start()    
         end
-
+        --StartSoundEffectOnEntity(kXenocideSoundName, player)
         self.xenocideTimeLeft = kDetonateTime
         
     elseif Client and Client.GetLocalPlayer() == player then
@@ -103,7 +110,7 @@ function XenocideLeap:OnPrimaryAttack(player)
             
         else
         
-            if self.xenocideTimeLeft and self.xenocideTimeLeft < kDetonateTime * 0.4 then        
+            if self.xenocideTimeLeft and self.xenocideTimeLeft < kDetonateTime * 0.4 then
                 BiteLeap.OnPrimaryAttack(self, player)
             end
             
@@ -132,6 +139,8 @@ function XenocideLeap:OnProcessMove(input)
             StopXenocide(self)
         elseif Server then
         
+            CheckForDestroyedEffects( self )        
+        
             self.xenocideTimeLeft = math.max(self.xenocideTimeLeft - input.time, 0)
             
             if self.xenocideTimeLeft == 0 and player:GetIsAlive() then
@@ -151,10 +160,10 @@ function XenocideLeap:OnProcessMove(input)
                     self.XenocideSoundName = nil
                 end
             end
-                if Server and not player:GetIsAlive() and self.XenocideSoundName and self.XenocideSoundName:GetIsPlaying() == true then
-                    self.XenocideSoundName:Stop()
-                    self.XenocideSoundName = nil                    
-                end    
+            if Server and not player:GetIsAlive() and self.XenocideSoundName and self.XenocideSoundName:GetIsPlaying() == true then
+                self.XenocideSoundName:Stop()
+                self.XenocideSoundName = nil                    
+            end    
 
         elseif Client and not player:GetIsAlive() and self.xenocideGui then
             CleanUI(self)

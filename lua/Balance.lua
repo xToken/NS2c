@@ -216,6 +216,7 @@ kHeavyMachineGunDamage = 10
 kHeavyMachineGunDamageType = kDamageType.Puncture
 kHeavyMachineGunClipSize = 125
 kHeavyMachineGunWeight = 0.08
+kHeavyMachineGunRange = 100
 kHeavyMachineGunROF = 0.05
 kHeavyMachineGunReloadTime = 6.3
 kHeavyMachineGunClipWeight = 0.01

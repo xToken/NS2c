@@ -1,15 +1,18 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//
-// lua\Server.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
+--
+-- lua\Server.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-// Set the name of the VM for debugging
+-- Set the name of the VM for debugging
 decoda_name = "Server"
 
 Script.Load("lua/Mixins/ExtensionsBlocker.lua")
+
+Script.Load("lua/ServerConfig.lua")
+
 Script.Load("lua/PreLoadMod.lua")
 
 Script.Load("lua/Shared.lua")
@@ -23,21 +26,15 @@ Script.Load("lua/AlienTeam.lua")
 Script.Load("lua/bots/Bot.lua")
 Script.Load("lua/VoteManager.lua")
 Script.Load("lua/Voting.lua")
-Script.Load("lua/VotingKickPlayer.lua")
-Script.Load("lua/VotingChangeMap.lua")
-Script.Load("lua/VotingResetGame.lua")
-Script.Load("lua/VotingRandomizeRR.lua")
-Script.Load("lua/VotingForceEvenTeams.lua")
 Script.Load("lua/Badges_Server.lua")
 
-Script.Load("lua/ServerConfig.lua")
 Script.Load("lua/ServerAdmin.lua")
 Script.Load("lua/TournamentMode.lua")
 Script.Load("lua/ServerAdminCommands.lua")
 Script.Load("lua/ServerWebInterface.lua")
 Script.Load("lua/MapCycle.lua")
 Script.Load("lua/ConsistencyConfig.lua")
-Script.Load("lua/Mantis.lua")
+-- Script.Load("lua/Mantis.lua")
 
 Script.Load("lua/ConsoleCommands_Server.lua")
 Script.Load("lua/NetworkMessages_Server.lua")
@@ -55,21 +52,24 @@ Server.readyRoomSpawnList = table.array(32)
 Server.armorySpawnPoints = table.array(10)
 Server.infantryPortalSpawnPoints = table.array(10)
 
-// map name, group name and values keys for all map entities loaded to
-// be created on game reset
+-- map name, group name and values keys for all map entities loaded to
+-- be created on game reset
 Server.mapLoadLiveEntityValues = table.array(100)
 
-// Game entity indices created from mapLoadLiveEntityValues. They are all deleted
-// on and rebuilt on map reset.
+-- Game entity indices created from mapLoadLiveEntityValues. They are all deleted
+-- on and rebuilt on map reset.
 Server.mapLiveEntities = table.array(32)
 
-// Map entities are stored here in order of their priority so they are loaded
-// in the correct order (Structure assumes that Gamerules exists upon loading for example).
+-- Map entities are stored here in order of their priority so they are loaded
+-- in the correct order (Structure assumes that Gamerules exists upon loading for example).
 Server.mapPostLoadEntities = table.array(32)
 
 Server.teamSpawnOverride = {}
 
-// Recent chat messages are stored on the server.
+-- For Classic
+gRankingDisabled = true
+
+-- Recent chat messages are stored on the server.
 Server.recentChatMessages = CreateRingBuffer(20)
 local chatMessageCount = 0
 
@@ -86,9 +86,9 @@ function Server.AddChatToHistory(message, playerName, steamId, teamNumber, teamO
     
 end
 
-/**
- * Map entities with a higher priority are loaded first.
- */
+--
+-- Map entities with a higher priority are loaded first.
+--
 local kMapEntityLoadPriorities = { }
 kMapEntityLoadPriorities[NS2Gamerules.kMapName] = 1
 local function GetMapEntityLoadPriority(mapName)
@@ -112,14 +112,14 @@ local function IsClassicBlockedMapName(mapName)
         or mapName == "decal"
 end
 
-// filter the entities which are explore mode only
-// MUST BE GLOBAL - overridden by mods
-function GetLoadEntity(mapName, groupName, values)
+-- filter the entities which are explore mode only
+-- MUST BE GLOBAL - overridden by mods
+function GetLoadEntity(_, _, values)
     return values.onlyexplore ~= true
 end
 
-// MUST BE GLOBAL - overridden by mods
-function GetCreateEntityOnStart(mapName, groupName, values)
+-- MUST BE GLOBAL - overridden by mods
+function GetCreateEntityOnStart(mapName, _, _)
 
     return mapName ~= "prop_static"
        and mapName ~= "light_point"
@@ -139,7 +139,7 @@ function GetCreateEntityOnStart(mapName, groupName, values)
     
 end
 
-// MUST BE GLOBAL - overridden by mods
+-- MUST BE GLOBAL - overridden by mods
 function GetLoadSpecial(mapName, groupName, values)
 
     local success = false
@@ -219,8 +219,8 @@ local function LoadServerMapEntity(mapName, groupName, values)
         return
     end
     
-    // Skip the classes that are not true entities and are handled separately
-    // on the client.
+    -- Skip the classes that are not true entities and are handled separately
+    -- on the client.
     if GetCreateEntityOnStart(mapName, groupName, values) then
         
         local entity = Server.CreateEntity(mapName, values)
@@ -228,18 +228,18 @@ local function LoadServerMapEntity(mapName, groupName, values)
         
             entity:SetMapEntity()
             
-            // Map Entities with LiveMixin can be destroyed during the game.
+            -- Map Entities with LiveMixin can be destroyed during the game.
             if HasMixin(entity, "Live") then
             
-                // Insert into table so we can re-create them all on map post load (and game reset)
+                -- Insert into table so we can re-create them all on map post load (and game reset)
                 table.insert(Server.mapLoadLiveEntityValues, {mapName, groupName, values})
                 
-                // Delete it because we're going to recreate it on map reset
+                -- Delete it because we're going to recreate it on map reset
                 table.insert(Server.mapLiveEntities, entity:GetId())
                 
             end
             
-            // $AS FIXME: We are special caasing techPoints for pathing right now :/ 
+            -- $AS FIXME: We are special caasing techPoints for pathing right now :/
             if (mapName == "tech_point") or values.pathInclude == true then
             
                 local coords = values.angles:GetCoords(values.origin)
@@ -253,7 +253,8 @@ local function LoadServerMapEntity(mapName, groupName, values)
             local renderModelCommAlpha = GetAndCheckValue(values.commAlpha, 0, 1, "commAlpha", 1, true)
             local blocksPlacement = groupName == kCommanderInvisibleGroupName or
                                     groupName == kCommanderInvisibleVentsGroupName or
-                                    groupName == kCommanderNoBuildGroupName
+                                    groupName == kCommanderNoBuildGroupName or
+                                    ( gSeasonalCommanderInvisibleGroupName and groupName == gSeasonalCommanderInvisibleGroupName )
             
             if HasMixin(entity, "Model") and (renderModelCommAlpha < 1 or blocksPlacement) then
                 entity:SetPhysicsGroup(PhysicsGroup.CommanderPropsGroup)
@@ -261,22 +262,22 @@ local function LoadServerMapEntity(mapName, groupName, values)
             
         end
         
-        //DumpServerEntity(mapName, groupName, values)
+        --DumpServerEntity(mapName, groupName, values)
         
     end
     
     if not GetLoadSpecial(mapName, groupName, values) then
     
-        // Allow the MapEntityLoader to load it if all else fails.
+        -- Allow the MapEntityLoader to load it if all else fails.
         LoadMapEntity(mapName, groupName, values)
         
     end
     
 end
 
-/**
- * Called as the map is being loaded to create the entities.
- */
+--
+-- Called as the map is being loaded to create the entities.
+--
 function OnMapLoadEntity(mapName, groupName, values)
 
     local priority = GetMapEntityLoadPriority(mapName)
@@ -294,7 +295,7 @@ end
 
 local function OnMapPreLoad()
     
-    // Clear spawn points
+    -- Clear spawn points
     Server.readyRoomSpawnList = {}
     
     Server.mapLoadLiveEntityValues = {}
@@ -304,8 +305,8 @@ end
 
 function DestroyLiveMapEntities()
 
-    // Delete any map entities that have been created
-    for index, mapEntId in ipairs(Server.mapLiveEntities) do
+    -- Delete any map entities that have been created
+    for _, mapEntId in ipairs(Server.mapLiveEntities) do
     
         local ent = Shared.GetEntity(mapEntId)
         if ent then
@@ -320,13 +321,13 @@ end
 
 function CreateLiveMapEntities()
 
-    // Create new Live map entities
-    for index, triple in ipairs(Server.mapLoadLiveEntityValues) do
+    -- Create new Live map entities
+    for _, triple in ipairs(Server.mapLoadLiveEntityValues) do
         
-        // {mapName, groupName, keyvalues}
+        -- {mapName, groupName, keyvalues}
         local entity = Server.CreateEntity(triple[1], triple[3])
         
-        // Store so we can track it during the game and delete it on game reset if not dead yet
+        -- Store so we can track it during the game and delete it on game reset if not dead yet
         table.insert(Server.mapLiveEntities, entity:GetId())
 
     end
@@ -340,7 +341,7 @@ local function CheckForDuplicateLocations()
     
         for _, dupLocation in ipairs(locations) do
         
-            // Don't check the same exact location against itself.
+            -- Don't check the same exact location against itself.
             if checkLocation ~= dupLocation then
             
                 if checkLocation:GetOrigin() == dupLocation:GetOrigin() then
@@ -355,14 +356,14 @@ local function CheckForDuplicateLocations()
     
 end
 
-/**
- * Callback handler for when the map is finished loading.
- */
+--
+-- Callback handler for when the map is finished loading.
+--
 local function OnMapPostLoad()
 
-    // Higher priority entities are loaded first.
+    -- Higher priority entities are loaded first.
     local highestPriority = 0
-    for k, v in pairs(kMapEntityLoadPriorities) do
+    for _, v in pairs(kMapEntityLoadPriorities) do
         if v > highestPriority then highestPriority = v end
     end
     
@@ -370,7 +371,7 @@ local function OnMapPostLoad()
     
         if Server.mapPostLoadEntities[i] then
         
-            for k, entityData in ipairs(Server.mapPostLoadEntities[i]) do
+            for _, entityData in ipairs(Server.mapPostLoadEntities[i]) do
                 LoadServerMapEntity(entityData.MapName, entityData.GroupName, entityData.Values)
             end
             
@@ -402,10 +403,10 @@ function GetTechTree(teamNumber)
     
 end
 
-/**
- * Called by the engine to test if a player (represented by the entity they are
- * controlling) can hear another player for the purposes of voice chat.
- */
+--
+-- Called by the engine to test if a player (represented by the entity they are
+-- controlling) can hear another player for the purposes of voice chat.
+--
 local function OnCanPlayerHearPlayer(listener, speaker, channelType)
     return GetGamerules():GetCanPlayerHearPlayer(listener, speaker, channelType)
 end

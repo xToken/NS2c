@@ -12,6 +12,7 @@
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
+Script.Load("lua/AchievementGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
@@ -156,6 +157,7 @@ function InfantryPortal:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
+    InitMixin(self, AchievementGiverMixin)
     InitMixin(self, SelectableMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, LOSMixin)
@@ -241,7 +243,7 @@ local function InfantryPortalUpdate(self)
             self:FinishSpawn()
         end
         
-        // Stop spinning if player left server, switched teams, etc.
+        -- Stop spinning if player left server, switched teams, etc.
         if self.timeSpinUpStarted and self.queuedPlayerId == Entity.invalidId then
             StopSpinning(self)
         end
@@ -264,7 +266,7 @@ function InfantryPortal:OnInitialized()
     
         self:AddTimedCallback(InfantryPortalUpdate, kUpdateRate)
         
-        // This Mixin must be inited inside this OnInitialized() function.
+        -- This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end
@@ -283,7 +285,7 @@ function InfantryPortal:OnDestroy()
 
     ScriptActor.OnDestroy(self)
     
-    // Put the player back in queue if there was one hoping to spawn at this now destroyed IP.
+    -- Put the player back in queue if there was one hoping to spawn at this now destroyed IP.
     if Server then
         self:RequeuePlayer()
     elseif Client then
@@ -306,7 +308,7 @@ local function QueueWaitingPlayer(self)
 
     if self:GetIsAlive() and self.queuedPlayerId == Entity.invalidId then
 
-        // Remove player from team spawn queue and add here
+        -- Remove player from team spawn queue and add here
         local team = self:GetTeam()
         local playerToSpawn = team:GetOldestQueuedPlayer()
 
@@ -354,7 +356,7 @@ function InfantryPortal:OnReplace(newStructure)
     newStructure.queuedPlayerId = self.queuedPlayerId
 end
 
-// Spawn player on top of IP. Returns true if it was able to, false if way was blocked.
+-- Spawn player on top of IP. Returns true if it was able to, false if way was blocked.
 local function SpawnPlayer(self)
 
     if self.queuedPlayerId ~= Entity.invalidId then
@@ -362,7 +364,7 @@ local function SpawnPlayer(self)
         local queuedPlayer = Shared.GetEntity(self.queuedPlayerId)
         local team = queuedPlayer:GetTeam()
         
-        // Spawn player on top of IP
+        -- Spawn player on top of IP
         local spawnOrigin = self:GetAttachPointOrigin("spawn_point")
         
         local success, player = team:ReplaceRespawnPlayer(queuedPlayer, spawnOrigin, queuedPlayer:GetAngles())
@@ -401,8 +403,8 @@ function InfantryPortal:GetIsWallWalkingAllowed()
     return false
 end 
 
-// Takes the queued player from this IP and placed them back in the
-// respawn queue to be spawned elsewhere.
+-- Takes the queued player from this IP and placed them back in the
+-- respawn queue to be spawned elsewhere.
 function InfantryPortal:RequeuePlayer()
 
     if self.queuedPlayerId ~= Entity.invalidId then
@@ -417,7 +419,7 @@ function InfantryPortal:RequeuePlayer()
         
     end
     
-    // Don't spawn player.
+    -- Don't spawn player.
     self.queuedPlayerId = Entity.invalidId
     self.queuedPlayerStartTime = nil
 
@@ -429,8 +431,8 @@ if Server then
     
         if self.queuedPlayerId == entityId then
         
-            // Player left or was replaced, either way 
-            // they're not in the queue anymore
+            -- Player left or was replaced, either way
+            -- they're not in the queue anymore
             self.queuedPlayerId = Entity.invalidId
             self.queuedPlayerStartTime = nil
             
@@ -444,7 +446,7 @@ if Server then
         
         StopSpinning(self)
         
-        // Put the player back in queue if there was one hoping to spawn at this now dead IP.
+        -- Put the player back in queue if there was one hoping to spawn at this now dead IP.
         self:RequeuePlayer()
         
     end
@@ -516,7 +518,7 @@ end
 local kTraceOffset = 0.1
 function GetCommandStationIsBuilt(techId, origin, normal, commander)
 
-    // check if there is a built command station in our team
+    -- check if there is a built command station in our team
     if not commander then
         return false
     end

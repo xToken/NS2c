@@ -106,7 +106,7 @@ if Server then
 
 end
 
-// Returns egg we're currently spawning in or nil if none
+-- Returns egg we're currently spawning in or nil if none
 function AlienSpectator:GetHostEgg()
 
     if self.eggId ~= Entity.invalidId then
@@ -128,14 +128,14 @@ end
 function AlienSpectator:GetQueuePosition()
     return self.queuePosition
 end
-// Same as Skulk so his view height is right when spawning in
+-- Same as Skulk so his view height is right when spawning in
 function AlienSpectator:GetMaxViewOffsetHeight()
     return Skulk.kViewOffsetHeight
 end
 
-/**
- * Prevent the camera from penetrating into the world when waiting to spawn at an Egg.
- */
+--
+-- Prevent the camera from penetrating into the world when waiting to spawn at an Egg.
+--
 function AlienSpectator:GetPreventCameraPenetration()
 
     local followTarget = Shared.GetEntity(self:GetFollowTargetId())

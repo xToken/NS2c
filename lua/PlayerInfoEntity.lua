@@ -48,12 +48,12 @@ local networkVars =
 function PlayerInfoEntity:OnCreate()
 
     Entity.OnCreate(self)
-    
+
     self:SetUpdates(true)
     self:SetPropagate(Entity.Propagate_Always)
-    
+
     if Server then
-    
+
         self.clientId = -1
         self.playerId = Entity.invalidId
         self.status = kPlayerStatus.Void
@@ -77,7 +77,7 @@ local techUpgradesBitmask = CreateBitMask(techUpgradesTable)
 function PlayerInfoEntity:UpdateScore()
 
     if Server then
-    
+
         local scorePlayer = Shared.GetEntity(self.playerId)
 
         if scorePlayer then
@@ -87,7 +87,7 @@ function PlayerInfoEntity:UpdateScore()
             self.entityId = scorePlayer:GetId()
             self.playerName = string.UTF8Sub(scorePlayer:GetName(), 0, kMaxNameLength)
             self.teamNumber = scorePlayer:GetTeamNumber()
-            
+
             if HasMixin(scorePlayer, "Scoring") then
 
                 self.score = scorePlayer:GetScore()
@@ -97,7 +97,7 @@ function PlayerInfoEntity:UpdateScore()
                 self.playerSkill = scorePlayer:GetPlayerSkill()
                 local scoreClient = scorePlayer:GetClient()
                 Server.UpdatePlayerInfo( scoreClient, self.playerName, self.score )
-                
+
             end
 
             self.resources = scorePlayer:GetResources()
@@ -107,12 +107,12 @@ function PlayerInfoEntity:UpdateScore()
             self.isSpectator = scorePlayer:isa("Spectator")
 
             self.reinforcedTierNum = scorePlayer.reinforcedTierNum
-            
+
             --Always reset this value so we don't have to check for previous tech to remove it, etc
             self.currentTech = 0
-            
+
             if scorePlayer:isa("Alien") then
-                for _, upgrade in pairs (scorePlayer:GetUpgrades()) do
+                for _, upgrade in ipairs(scorePlayer:GetUpgrades()) do
                     if techUpgradesBitmask[upgrade] then
                         self.currentTech = bit.bor(self.currentTech, techUpgradesBitmask[upgrade])
                     end
@@ -121,7 +121,7 @@ function PlayerInfoEntity:UpdateScore()
                 if scorePlayer:GetIsParasited() then
                     self.currentTech = bit.bor(self.currentTech, techUpgradesBitmask[kTechId.Parasite])
                 end
-                
+
                 if scorePlayer:isa("JetpackMarine") then
                     self.currentTech = bit.bor(self.currentTech, techUpgradesBitmask[kTechId.Jetpack])
                 end
@@ -141,14 +141,14 @@ function PlayerInfoEntity:UpdateScore()
                     end
                 end
             end
-            
+
         else
             DestroyEntity(self)
         end
 
-    end 
-    
-    clientIndexToSteamId[self.clientId] = self.steamId  
+    end
+
+    clientIndexToSteamId[self.clientId] = self.steamId
 
     return true
 
@@ -156,11 +156,11 @@ end
 
 if Server then
 
-    function PlayerInfoEntity:SetScorePlayer(player)  
-  
+    function PlayerInfoEntity:SetScorePlayer(player)
+
         self.playerId = player:GetId()
         self:UpdateScore()
-        
+
     end
 
 end
@@ -170,16 +170,17 @@ function GetTechIdsFromBitMask(techTable)
     local techIds = { }
 
     if techTable and techTable > 0 then
-        for techId, bitmask in pairs(techUpgradesBitmask) do
+        for _, techId in ipairs(techUpgradesTable) do
+            local bitmask = techUpgradesBitmask[techId]
             if bit.band(techTable, bitmask) > 0 then
                 table.insert(techIds, techId)
             end
         end
     end
-    
+
     --Sort the table by bitmask value so it keeps the order established in the original table
     table.sort(techIds, function(a, b) return techUpgradesBitmask[a] < techUpgradesBitmask[b] end)
-    
+
     return techIds
 end
 

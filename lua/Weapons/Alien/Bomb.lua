@@ -15,7 +15,7 @@ class 'Bomb' (PredictedProjectile)
 Bomb.kMapName = "bomb"
 Bomb.kModelName = PrecacheAsset("models/alien/gorge/bilebomb.model")
 
-// The max amount of time a Bomb can last for
+-- The max amount of time a Bomb can last for
 Bomb.kClearOnSurfaceImpact = true
 Bomb.kClearOnEntityImpact = true
 Bomb.kClearOnEnemyImpact = true
@@ -74,7 +74,7 @@ function Bomb:Detonate(targetHit, surface)
     
         local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kBileBombSplashRadius)
         
-        // full damage on direct impact
+        -- full damage on direct impact
         if targetHit then
             table.removevalue(hitEntities, targetHit)
             self:DoDamage(kBileBombDamage, targetHit, targetHit:GetOrigin(), GetNormalizedVector(targetHit:GetOrigin() - self:GetOrigin()), "none")
@@ -97,5 +97,6 @@ end
 function Bomb:GetNotifiyTarget()
     return false
 end
+
 
 Shared.LinkClassToMap("Bomb", Bomb.kMapName, networkVars)

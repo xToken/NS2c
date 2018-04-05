@@ -1,14 +1,14 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Marine_Client.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Marine_Client.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed some uneeded effects and other functions that were moved to player_client
+-- NS2c
+-- Removed some uneeded effects and other functions that were moved to player_client
 
 Marine.kBuyMenuTexture = "ui/marine_buymenu.dds"
 Marine.kBuyMenuUpgradesTexture = "ui/marine_buymenu_upgrades.dds"
@@ -80,9 +80,9 @@ function Marine:UpdateClientEffects(deltaTime, isLocal)
         
         self:UpdateGhostModel()
 
-        local marineHUD = ClientUI.GetScript("Hud/Marine/GUIMarineHUD")
-        if marineHUD then
-            marineHUD:SetIsVisible(self:GetIsAlive())
+        if self.lastAliveClient ~= self:GetIsAlive() then
+            ClientUI.SetScriptVisibility("Hud/Marine/GUIMarineHUD", "Alive", self:GetIsAlive())
+            self.lastAliveClient = self:GetIsAlive()
         end
         
         if self.buyMenu then
@@ -106,7 +106,7 @@ function Marine:OnUpdateRender()
     
     local isLocal = self:GetIsLocalPlayer()
     
-    // Synchronize the state of the light representing the flash light.
+    -- Synchronize the state of the light representing the flash light.
     self.flashlight:SetIsVisible(self.flashlightOn and (isLocal or self:GetIsVisible()) )
     
     if self.flashlightOn then
@@ -116,7 +116,7 @@ function Marine:OnUpdateRender()
         
         self.flashlight:SetCoords(coords)
         
-        // Only display atmospherics for third person players.
+        -- Only display atmospherics for third person players.
         local density = 0.2
         if isLocal and not self:GetIsThirdPerson() then
             density = 0
@@ -139,12 +139,12 @@ function Marine:AddNotification(locationId, techId)
 
 end
 
-// this function returns the oldest notification and clears it from the list
+-- this function returns the oldest notification and clears it from the list
 function Marine:GetAndClearNotification()
 
-    local notification = nil
+    local notification
 
-    if table.count(self.notifications) > 0 then
+    if table.icount(self.notifications) > 0 then
     
         notification = { LocationName = self.notifications[1].LocationName, TechId = self.notifications[1].TechId }
         table.remove(self.notifications, 1)
@@ -155,17 +155,16 @@ function Marine:GetAndClearNotification()
 
 end
 
-// Bring up buy menu
+-- Bring up buy menu
 function Marine:Buy()
     
-    // Don't allow display in the ready room
+    -- Don't allow display in the ready room
     local gameInfo = GetGameInfoEntity()
     if self:GetTeamNumber() ~= 0 and Client.GetLocalPlayer() == self and gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
     
-        if not self.buyMenu then
+        if not self.buyMenu and not HelpScreen_GetHelpScreen():GetIsBeingDisplayed() then
         
             self.buyMenu = GetGUIManager():CreateGUIScript("GUIMarineBuyMenu")
-            MouseTracker_SetIsVisible(true, "ui/Cursor_MenuDefault.dds", true)
             self:TriggerEffects("marine_buy_menu_open")
             
                 
@@ -193,8 +192,8 @@ function Marine:UpdateMisc(input)
     
 end
 
-// Give dynamic camera motion to the player
-/*
+-- Give dynamic camera motion to the player
+--[[
 function Marine:PlayerCameraCoordsAdjustment(cameraCoords) 
 
     if self:GetIsFirstPerson() then
@@ -210,16 +209,13 @@ function Marine:PlayerCameraCoordsAdjustment(cameraCoords)
     
     return cameraCoords
 
-end*/
+end--]]
 
 function Marine:OnCountDown()
 
     Player.OnCountDown(self)
     
-    local script = ClientUI.GetScript("Hud/Marine/GUIMarineHUD")
-    if script then
-        script:SetIsVisible(false)
-    end
+    ClientUI.SetScriptVisibility("Hud/Marine/GUIMarineHUD", "Countdown", false)
     
 end
 
@@ -227,12 +223,11 @@ function Marine:OnCountDownEnd()
 
     Player.OnCountDownEnd(self)
     
+    ClientUI.SetScriptVisibility("Hud/Marine/GUIMarineHUD", "Countdown", true)
+    
     local script = ClientUI.GetScript("Hud/Marine/GUIMarineHUD")
     if script then
-    
-        script:SetIsVisible(true)
         script:TriggerInitAnimations()
-        
     end
     
 end

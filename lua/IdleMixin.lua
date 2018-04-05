@@ -1,19 +1,19 @@
-// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\IdleMixin.lua    
-//    
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-//    Shows idle effects / sounds.
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+-- ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\IdleMixin.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+--    Shows idle effects / sounds.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 IdleMixin = CreateMixin(IdleMixin)
 IdleMixin.type = "Idle"
 
 local kOneShotSoundInterval = 6
 
-// idle sound definitions
+-- idle sound definitions
 
 local kIdleSoundNames = {}
 kIdleSoundNames["Hive"] = "sound/NS2.fev/alien/structures/hive_idle" 
@@ -43,11 +43,11 @@ local kIdleOneShotSoundNames = {}
 kIdleOneShotSoundNames["Fade"] = "sound/ns2c.fev/ns2c/alien/fade/move"
 kIdleOneShotSoundNames["Observatory"] = "sound/NS2.fev/marine/structures/observatory_scan"
 
-for className, path in pairs(kIdleSoundNames) do
+for _, path in pairs(kIdleSoundNames) do
     PrecacheAsset(path)
 end
 
-for className, path in pairs(kIdleOneShotSoundNames) do
+for _, path in pairs(kIdleOneShotSoundNames) do
     PrecacheAsset(path)
 end
 
@@ -71,6 +71,17 @@ function IdleMixin:__initmixin()
     if Server then
     
         self.playIdleSound = true
+        --[[
+        local assetPath = kIdleSoundNames[self:GetClassName()]
+        if assetPath and Shared.GetSoundIndex(assetPath) ~= 0 then
+        
+            local assetLength = GetSoundEffectLength(assetPath)
+            if assetLength >= 0 then
+                Print("Warning: Idle sound %s isn't looping.", assetPath)
+            end
+            
+        end
+        --]]
         
     end
     

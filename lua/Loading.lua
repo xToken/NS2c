@@ -5,8 +5,8 @@ Script.Load("lua/GUIUtility.lua")
 Script.Load("lua/Table.lua")
 Script.Load("lua/BindingsDialog.lua")
 Script.Load("lua/NS2Utility.lua")
+Script.Load("lua/SabotCoreClient.lua")
 Script.Load("lua/PrecacheList.lua")
-Script.Load("lua/GUIAssets.lua")
 
 local kModeText =
 {
@@ -35,40 +35,31 @@ local kTipStrings =
     "LOADING_TIP_GOODCOMM",
 }
 
-local spinner = nil
-local statusText = nil
-local statusTextShadow = nil
-local dotsText = nil
-local dotsTextShadow = nil
-local tipText = nil
-local tipTextBg = nil
-local tipNextHint = nil
-local tipNextHintBg = nil
-local modsBg = nil
-local modsText = nil
-local modsTextShadow = nil
+local spinner
+local statusText, statusTextShadow
+local dotsText, dotsTextShadow
+local tipText, tipTextBg
+local tipNextHint, tipNextHintBg
+local modsBg, modsText, modsTextShadow
 
 local tipIndex = 0
-local timeOfLastTip = nil
-local timeOfLastSpace = nil
+local timeOfLastTip, timeOfLastSpace
 local precached = false
 
-// background slideshow
-local backgrounds = nil
-local transition = nil
-local currentBgId
-local currentBackground = nil
+-- background slideshow
+local backgrounds
+local transition
+local currentBgId, currentBackground
 local lastFadeEndTime = 0.0
 local mainLoading = false
-local bgSize
-local bgPos
+local bgSize, bgPos
 
 local kBgFadeTime = 2.0
 local kBgStayTime = 3.0
 
 local mapBackgrounds = false
 local searchedMapBackgrounds = false
-local randomizer = nil
+local randomizer
 
 local usedBGs = {}
 local loopTimes = 0
@@ -197,7 +188,7 @@ function OnUpdateRender()
         statusText:SetText(text)
         statusTextShadow:SetText(text)
         
-        // Add animated dots to the text.
+        -- Add animated dots to the text.
         local numDots = math.floor(time / dotsSpeed) % (maxDots + 1)
         dotsText:SetText(string.rep(".", numDots))
         dotsTextShadow:SetText(string.rep(".", numDots))
@@ -206,7 +197,7 @@ function OnUpdateRender()
     
     if not mainLoading then
     
-        // Set backgrounds to the same size
+        -- Set backgrounds to the same size
         tipTextBg:SetSize(Vector(tipText:GetSize().x, tipText:GetSize().y, 0))
         tipTextBg:SetPosition(Vector(tipText:GetPosition().x - tipText:GetSize().x/2, tipText:GetPosition().y - tipText:GetSize().y/2, 0))
         
@@ -215,14 +206,14 @@ function OnUpdateRender()
         
     end
         
-    // Update background image slideshow
+    -- Update background image slideshow
     if backgrounds ~= nil then
     
         if transition then
             local fraction = (time-transition.startTime) / transition.duration
             
             if fraction > 1.0 then
-                // fade done - swap buffers
+                -- fade done - swap buffers
                 if transition.from then
                     transition.from:SetLayer(1)
                     transition.from:SetIsVisible(false)
@@ -250,10 +241,10 @@ function OnUpdateRender()
             
                 if currentBgId < #backgrounds then
                     
-                    // time to fade
+                    -- time to fade
                     local nextBgId
                     
-                    // We want to pick non-repeating backgrounds only when they are not map specific backgrounds
+                    -- We want to pick non-repeating backgrounds only when they are not map specific backgrounds
                     if mapBackgrounds == true then
                         nextBgId = math.min(currentBgId+1, #backgrounds)
                     else
@@ -297,10 +288,10 @@ function SetTipText(tipIndex)
     
     chosenTipString = Locale.ResolveString(chosenTipString)
 
-    // Translate string to account for findings
+    -- Translate string to account for findings
     chosenTipString = SubstituteBindStrings(chosenTipString)
 
-    // Add "Tip:" and spaces before and after for padding
+    -- Add "Tip:" and spaces before and after for padding
     tipText:SetText(" " .. Locale.ResolveString("LOADING_TIP") .. " " .. chosenTipString .. " ")
     
     timeOfLastTip = Shared.GetTime()
@@ -312,11 +303,11 @@ function NextTip()
     SetTipText(tipIndex)    
 end
 
-// out - a table reference, which will be filled with ordered filenames
+-- out - a table reference, which will be filled with ordered filenames
 function InitBackgroundFileNames( out )
 
-    // First try to get screens for the map
-    // local mapname = Client.GetOptionString("lastServerMapName", "")
+    -- First try to get screens for the map
+    -- local mapname = Client.GetOptionString("lastServerMapName", "")
     local mapname = GetMapName()
 
     if mapname ~= '' then
@@ -328,10 +319,10 @@ function InitBackgroundFileNames( out )
 
             mapBackgrounds = true
             if #searchResult == 0 then
-                // found no more - must be done
+                -- found no more - must be done
                 break
             else
-                // found one - add it
+                -- found one - add it
                 out[ #out+1 ] = searchResult[1]
             end
 
@@ -339,9 +330,9 @@ function InitBackgroundFileNames( out )
         
     end
     
-    // did we find any?
+    -- did we find any?
     if #out == 0 then
-        //Print("Found no map-specific ordered screenshots for %s. Using shots in 'screens' instead.", mapname)
+        --Print("Found no map-specific ordered screenshots for %s. Using shots in 'screens' instead.", mapname)
         Shared.GetMatchingFileNames("screens/custom/*.jpg", false, out )
         if #out == 0 then        
             Shared.GetMatchingFileNames("screens/*.jpg", false, out )
@@ -372,12 +363,12 @@ function InitializeBackgrounds()
 end
 
 
-// NOTE: This does not refer to the loading screen being done..it's referring to the loading of the loading screen
+-- NOTE: This does not refer to the loading screen being done..it's referring to the loading of the loading screen
 function OnLoadComplete(main)
 
     mainLoading = (main ~= nil)
 
-    // Make the mouse visible so that the user can alt-tab out in Windowed mode.
+    -- Make the mouse visible so that the user can alt-tab out in Windowed mode.
     Client.SetMouseVisible(true)
     Client.SetMouseClipped(false)
 
@@ -393,12 +384,12 @@ function OnLoadComplete(main)
     bgSize = Vector( xSize, ySize, 0 )
     bgPos = Vector( (Client.GetScreenWidth() - xSize) / 2, (Client.GetScreenHeight() - ySize) / 2, 0 ) 
 
-    // Create all bgs
+    -- Create all bgs
     if not mainLoading then
         
         InitializeBackgrounds()
 
-        // Init background slideshow state
+        -- Init background slideshow state
 
         lastFadeEndTime = Shared.GetTime()
         currentBgId = 1
@@ -410,13 +401,13 @@ function OnLoadComplete(main)
     end
     
     if mainLoading then
-    //letterbox for non16:9 resolutions
+    --letterbox for non16:9 resolutions
     local backgroundAspect = 9.0/16.0
     local xSize = Client.GetScreenWidth()
     local ySize = xSize * backgroundAspect
     bgPos = Vector(0, (Client.GetScreenHeight() - ySize) / 2, 0 ) 
         bgSize = Vector( xSize, ySize, 0 )
-        loadscreen = GUI.CreateItem()
+        local loadscreen = GUI.CreateItem()
         loadscreen:SetSize( bgSize )
         loadscreen:SetPosition( bgPos )
         loadscreen:SetTexture( "screens/IntroScreen.jpg" )
@@ -480,7 +471,7 @@ function OnLoadComplete(main)
 
     if not mainLoading then
 
-        // Draw background behind it (create first so it's behind)
+        -- Draw background behind it (create first so it's behind)
         tipTextBg = GUI.CreateItem()
         tipTextBg:SetColor(Color(0, 0, 0, 0))
         tipTextBg:SetIsVisible( Client.GetOptionBoolean("showHints", true) )
@@ -496,14 +487,14 @@ function OnLoadComplete(main)
         GUIMakeFontScale(tipText)
         tipText:SetLayer(3)
         
-        // Only show tip if show hints is on
+        -- Only show tip if show hints is on
         tipText:SetIsVisible( Client.GetOptionBoolean("showHints", true) )
 
-        // Pick random tip to start
+        -- Pick random tip to start
         tipIndex = randomizer:random(1, #kTipStrings)
         SetTipText(tipIndex)
         
-        // Tell user they can hit space for the next tip (create bg first so it draws behind)
+        -- Tell user they can hit space for the next tip (create bg first so it draws behind)
         tipNextHintBg = GUI.CreateItem()
         tipNextHintBg:SetColor(Color(0, 0, 0, 0))
         tipNextHintBg:SetIsVisible( Client.GetOptionBoolean("showHints", true) )
@@ -521,12 +512,12 @@ function OnLoadComplete(main)
         tipNextHint:SetIsVisible( Client.GetOptionBoolean("showHints", true) )
         tipNextHint:SetLayer(3)
     
-        // Translate string to account for findings
+        -- Translate string to account for findings
         tipNextHint:SetText(" " .. SubstituteBindStrings(Locale.ResolveString("LOADING_TIP_NEXT")) .. " " )
 
     end
     
-    // Create a box to show the mods that the server is running
+    -- Create a box to show the mods that the server is running
     modsText = GUI.CreateItem()
     modsText:SetOptionFlag(GUIItem.ManageRender)
     modsText:SetPosition(Vector(Client.GetScreenWidth() * 0.15, Client.GetScreenHeight() * 0.18, 0))
@@ -548,7 +539,7 @@ function OnLoadComplete(main)
     
 end
 
-// Return true if the event should be stopped here.
+-- Return true if the event should be stopped here.
 local function OnSendKeyEvent(key, down)
 
     if not mainLoading then

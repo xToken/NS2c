@@ -1,13 +1,13 @@
 
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GUICommanderTooltip.lua
-//
-// Created by: Brian Cronin (brianc@unknownworlds.com)
-//
-// Manages displaying a tooltip for the commander when mousing over the UI.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GUICommanderTooltip.lua
+--
+-- Created by: Brian Cronin (brianc@unknownworlds.com)
+--
+-- Manages displaying a tooltip for the commander when mousing over the UI.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/GUIScript.lua")
 
@@ -25,14 +25,14 @@ GUICommanderTooltip.kBackgroundBottomHeight = GUICommanderTooltip.kBackgroundBot
 GUICommanderTooltip.WorkerIconCoords = {280, 363, 320, 411}
 
 GUICommanderTooltip.kResourceIconTextureCoordinates = { }
-// Team coordinates.
-table.insert(GUICommanderTooltip.kResourceIconTextureCoordinates, { X1 = 192, Y1 = 363, X2 = 240, Y2 = 411}) // team res
-// Personal coordinates.
-table.insert(GUICommanderTooltip.kResourceIconTextureCoordinates, { X1 = 144, Y1 = 363, X2 = 192, Y2 = 411}) // personal res
-// Energy coordinates.
-table.insert(GUICommanderTooltip.kResourceIconTextureCoordinates, { X1 = 192, Y1 = 363, X2 = 240, Y2 = 411}) // energy
-// Ammo coordinates.
-table.insert(GUICommanderTooltip.kResourceIconTextureCoordinates, { X1 = 192, Y1 = 363, X2 = 240, Y2 = 411}) // ammo (no texture and not used)
+-- Team coordinates.
+table.insert(GUICommanderTooltip.kResourceIconTextureCoordinates, { X1 = 192, Y1 = 363, X2 = 240, Y2 = 411}) -- team res
+-- Personal coordinates.
+table.insert(GUICommanderTooltip.kResourceIconTextureCoordinates, { X1 = 144, Y1 = 363, X2 = 192, Y2 = 411}) -- personal res
+-- Energy coordinates.
+table.insert(GUICommanderTooltip.kResourceIconTextureCoordinates, { X1 = 192, Y1 = 363, X2 = 240, Y2 = 411}) -- energy
+-- Ammo coordinates.
+table.insert(GUICommanderTooltip.kResourceIconTextureCoordinates, { X1 = 192, Y1 = 363, X2 = 240, Y2 = 411}) -- ammo (no texture and not used)
 
 GUICommanderTooltip.kResourceColors = { Color(0, 1, 0, 1), Color(0.2, 0.4, 1, 1), Color(1, 0, 1, 1) }
 
@@ -273,7 +273,7 @@ end
 
 function GUICommanderTooltip:Uninitialize()
 
-    // Everything is attached to the background so uninitializing it will destroy all items.
+    -- Everything is attached to the background so uninitializing it will destroy all items.
     if self.background then
         GUI.DestroyItem(self.background)
     end
@@ -288,7 +288,7 @@ function GUICommanderTooltip:UpdateData(text, hotkey, costNumber, requires, enab
     self.text:SetText(text)
     self.hotkey:SetText("( " .. hotkey .. " )")
     self.hotkey:SetIsVisible(string.len(hotkey) > 0)
-    // typeNumber may be 0 if the tech data hasn't been fully synced to the Client yet.
+    -- typeNumber may be 0 if the tech data hasn't been fully synced to the Client yet.
     if costNumber > 0 and typeNumber ~= 0 then
     
         self.resourceIcon:SetIsVisible(true)
@@ -342,7 +342,7 @@ function GUICommanderTooltip:UpdateData(text, hotkey, costNumber, requires, enab
     
 end
 
-// Determine the height of the tooltip based on all the text inside of it.
+-- Determine the height of the tooltip based on all the text inside of it.
 function GUICommanderTooltip:CalculateTotalTextHeight(text, requires, enables, info)
 
     local totalHeight = 0
@@ -396,7 +396,7 @@ function GUICommanderTooltip:Update(deltaTime)
         
     PROFILE("GUICommanderTooltip:Update")
     
-    local tooltipData = nil
+    local tooltipData
 
     for _, script in ipairs(self.registeredScripts) do
     

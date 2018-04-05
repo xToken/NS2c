@@ -1,17 +1,18 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Axe.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Axe.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Moved balance vars to balance.lua
+--NS2c
+--Moved balance vars to balance.lua
 
 Script.Load("lua/Weapons/Weapon.lua")
 Script.Load("lua/IdleAnimationMixin.lua")
+Script.Load("lua/AxeVariantMixin.lua")
 
 class 'Axe' (Weapon)
 
@@ -23,6 +24,7 @@ local kViewModels = GenerateMarineViewModelPaths("axe")
 local kAnimationGraph = PrecacheAsset("models/marine/axe/axe_view.animation_graph")
 
 local networkVars = { }
+AddMixinNetworkVars(AxeVariantMixin, networkVars)
 
 local kAxeIdleAnimations = {"idle", "idle_toss", "idle_toss"}
 
@@ -30,6 +32,8 @@ function Axe:OnCreate()
 
     Weapon.OnCreate(self)
     
+	InitMixin(self, AxeVariantMixin)
+
     if Client then
         InitMixin(self, IdleAnimationMixin)
     end
@@ -73,7 +77,7 @@ function Axe:GetDeathIconIndex()
 end
 
 function Axe:GetMeleeBase()
-    // Width of box, height of box
+    -- Width of box, height of box
     return kAxeMeleeBaseWidth, kAxeMeleeBaseHeight
 end
 
@@ -85,7 +89,7 @@ function Axe:OnDraw(player, previousWeaponMapName)
 
     Weapon.OnDraw(self, player, previousWeaponMapName)
     
-    // Attach weapon to parent's hand
+    -- Attach weapon to parent's hand
     self:SetAttachPoint(Weapon.kHumanAttachPoint)
     
 end

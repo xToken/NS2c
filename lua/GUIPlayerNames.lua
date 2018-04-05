@@ -1,15 +1,15 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GUIPlayerNames.lua
-//
-// Created by: Charlie Cleveland (charlie@unknownworlds.com)
-//
-// Draw names of players above their heads for commanders.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GUIPlayerNames.lua
+--
+-- Created by: Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- Draw names of players above their heads for commanders.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Remove alien comm reference
+-- NS2c
+-- Remove alien comm reference
 
 class 'GUIPlayerNames' (GUIScript)
 
@@ -65,7 +65,7 @@ function GUIPlayerNames:Update(deltaTime)
         return 
     end
     
-    // Every so often, update player id list and names of players
+    -- Every so often, update player id list and names of players
     if (self.timeOfLastNameIdUpdate == nil) or (Shared.GetTime() > self.timeOfLastNameIdUpdate + .75) then
     
         self.playerIdList = {}
@@ -87,10 +87,10 @@ function GUIPlayerNames:Update(deltaTime)
     
     local numVis = 0
     
-    // Every tick, update position of player name to be where player is
+    -- Every tick, update position of player name to be where player is
     for index, playerId in ipairs(self.playerIdList) do
     
-        // Offset below player a tad
+        -- Offset below player a tad
         local player = Shared.GetEntity(playerId)
         if player ~= nil then
             local position = Client.WorldToScreen(player:GetOrigin() - Vector(.5, 0, 0))
@@ -104,7 +104,7 @@ function GUIPlayerNames:Update(deltaTime)
         
     end
     
-    // Set the rest invisible
+    -- Set the rest invisible
     for index = table.count(self.playerIdList) + 1, GUIPlayerNames.kMaxNames do
         self.playerNameItemList[index]:SetIsVisible(false)
     end

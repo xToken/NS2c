@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Alien\Parasite.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-// 
-// Parasite attack to mark enemies on hive sight
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Alien\Parasite.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- Parasite attack to mark enemies on hive sight
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/LeapMixin.lua")
@@ -24,7 +24,7 @@ Parasite.kActivity = enum { 'None', 'Primary' }
 
 kParasiteHUDSlot = 2
 
-local kParasiteSize = 0.10 // size of parasite blob
+local kParasiteSize = 0.10 -- size of parasite blob
 
 local networkVars =
 {
@@ -70,9 +70,9 @@ function Parasite:OnProcessMove(input)
 
     Ability.OnProcessMove(self, input)
     
-    // We need to clear this out in OnProcessMove (rather than ProcessMoveOnWeapon)
-    // since this will get called after the view model has been updated from
-    // Player:OnProcessMove. 
+    -- We need to clear this out in OnProcessMove (rather than ProcessMoveOnWeapon)
+    -- since this will get called after the view model has been updated from
+    -- Player:OnProcessMove.
     self.activity = Parasite.kActivity.None
 
 end
@@ -93,12 +93,12 @@ function Parasite:PerformPrimaryAttack(player)
         
         self:TriggerEffects("parasite_attack")
         
-        // Trace ahead to see if hit enemy player or structure
+        -- Trace ahead to see if hit enemy player or structure
 
         local viewCoords = player:GetViewAngles():GetCoords()
         local startPoint = player:GetEyePos()
     
-        // double trace; first as a ray to allow us to hit through narrow openings, then as a fat box if the first one misses
+        -- double trace; first as a ray to allow us to hit through narrow openings, then as a fat box if the first one misses
         local trace = Shared.TraceRay(startPoint, startPoint + viewCoords.zAxis * kRange, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterOneAndIsa(player, "Babbler"))
         if not trace.entity then
             local extents = GetDirectedExtentsForDiameter(viewCoords.zAxis, kParasiteSize)

@@ -1,12 +1,12 @@
-// ======= Copyright (c) 2012, Unknown Worlds Entertainment, Inc. All rights reserved. ==========
-//
-// lua/GameInfo.lua
-//
-// GameInfo is used to sync information about the game state to clients.
-//
-// Created by Brian Cronin (brianc@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2012, Unknown Worlds Entertainment, Inc. All rights reserved. ==========
+--
+-- lua/GameInfo.lua
+--
+-- GameInfo is used to sync information about the game state to clients.
+--
+-- Created by Brian Cronin (brianc@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 class 'GameInfo' (Entity)
 
@@ -18,7 +18,13 @@ local networkVars =
     startTime = "time",
     averagePlayerSkill = "integer",
     isGatherReady = "boolean",
-    numPlayersTotal = "integer",
+    rookieMode = "boolean",
+    numClientsTotal = "integer",
+    numPlayers = "integer",
+    numBots = "integer",
+	isDedicated = "boolean",
+    serverIp = "string (16)",
+    serverPort = "string (16)",
     gameMode = "enum kGameMode",
     fallDamage = "boolean",
     maxEntities = "integer",
@@ -30,7 +36,7 @@ local networkVars =
     combatMaxLevel = "integer (5 to " .. kCombatMaxAllowedLevel .. ")",
     combatSpawnProtectionLength = "integer (0 to " .. kCombatMaxSpawnProtection .. ")",
     combatRoundLength = "integer (5 to " .. kCombatMaxRoundLength .. ")",
-    combatDefaultWinner = "integer (1 to 2)",
+    combatDefaultWinner = "integer (1 to 2)"
 }
 
 function GameInfo:OnCreate()
@@ -44,8 +50,13 @@ function GameInfo:OnCreate()
         
         self.state = kGameState.NotStarted
         self.startTime = 0
-        self.averagePlayerSkill = kDefaultPlayerSkill
-        self.numPlayersTotal = 0
+        self.averagePlayerSkill = 0
+        self.numClientsTotal = 0
+        self.numPlayers = 0
+        self.numBots = 0
+        self.isDedicated = Server.IsDedicated()
+        self.serverIp = Server.GetIpAddress()
+        self.serverPort = Server.GetPort()
         self.gameMode = kGameMode.Classic
         self.fallDamage = false
         self.maxEntites = kMaxEntitiesInRadius
@@ -64,12 +75,28 @@ function GameInfo:OnCreate()
     
 end
 
+function GameInfo:GetIsDedicated()
+    return self.isDedicated
+end
+
 function GameInfo:GetStartTime()
     return self.startTime
 end
 
+function GameInfo:GetGameEnded()
+    return self.state > kGameState.Started
+end
+
 function GameInfo:GetGameStarted()
     return self.state == kGameState.Started
+end
+
+function GameInfo:GetCountdownActive()
+    return self.state == kGameState.Countdown
+end
+
+function GameInfo:GetWarmUpActive()
+    return self.state == kGameState.WarmUp
 end
 
 function GameInfo:GetState()
@@ -80,8 +107,16 @@ function GameInfo:GetAveragePlayerSkill()
     return self.averagePlayerSkill
 end
 
-function GameInfo:GetNumPlayersTotal()
-    return self.numPlayersTotal
+function GameInfo:GetNumClientsTotal()
+    return self.numClientsTotal
+end
+
+function GameInfo:GetNumPlayers()
+    return self.numPlayers
+end
+
+function GameInfo:GetNumBots()
+    return self.numBots
 end
     
 function GameInfo:SetIsGatherReady(isGatherReady)
@@ -90,6 +125,10 @@ end
 
 function GameInfo:GetIsGatherReady()
     return self.isGatherReady
+end
+
+function GameInfo:GetRookieMode()
+    return self.rookieMode
 end
 
 function GameInfo:GetGameMode()
@@ -140,6 +179,15 @@ function GameInfo:GetCombatDefaultWinner()
     return self.combatDefaultWinner
 end
 
+if Client then
+    --Reset game end stats caches
+    function GameInfo:OnResetGame()
+        self.prevWinner = nil
+        self.prevWinner = nil
+        self.prevTeamsSkills = nil
+    end
+end
+
 if Server then
 
     function GameInfo:SetStartTime(startTime)
@@ -154,8 +202,20 @@ if Server then
         self.averagePlayerSkill = skill
     end
     
-    function GameInfo:SetNumPlayersTotal( numPlayersTotal )
-        self.numPlayersTotal = numPlayersTotal
+    function GameInfo:SetNumClientsTotal( numClientsTotal )
+        self.numClientsTotal = numClientsTotal
+    end
+
+    function GameInfo:SetNumPlayers( numPlayers )
+        self.numPlayers = numPlayers
+    end
+
+    function GameInfo:SetNumBots( numBots )
+        self.numBots = numBots
+    end
+
+    function GameInfo:SetRookieMode(mode)
+        self.rookieMode = mode
     end
     
     function GameInfo:SetFallDamage(fDamage)

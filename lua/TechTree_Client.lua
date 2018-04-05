@@ -1,11 +1,11 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\TechTree_Client.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\TechTree_Client.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 function GetHasTech(player, techId, silentError)
 
@@ -36,9 +36,13 @@ end
 function GetTechNode(player, techId)
 
     local techTree = GetTechTree()
+    
     if(techTree) then
+    
         return techTree:GetTechNode(techId)
+        
     end
+    
     return nil
     
 end
@@ -77,8 +81,10 @@ end
 
 function TechTree:CreateTechNodeFromNetwork(techNodeBaseTable)
     
-    local techNode = TechNode() 
+    local techNode = TechNode()
+    
     ParseTechNodeBaseMessage(techNode, techNodeBaseTable)
+    
     self:AddNode(techNode)
     
 end

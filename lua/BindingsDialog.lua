@@ -1,17 +1,17 @@
-//=============================================================================
-//
-// lua/BindingsDialog.lua
-// 
-// Populate and manage key bindings in options screen.
-//
-// Created by Henry Kropf and Charlie Cleveland
-// Copyright 2011, Unknown Worlds Entertainment
-//
-//=============================================================================
+--=============================================================================
+--
+-- lua/BindingsDialog.lua
+--
+-- Populate and manage key bindings in options screen.
+--
+-- Created by Henry Kropf and Charlie Cleveland
+-- Copyright 2011, Unknown Worlds Entertainment
+--
+--=============================================================================
 
-// Default key bindings if not saved in options
-// When changing values in the right-hand column, make sure to change BindingsUI_GetBindingsText() below.
-// Type "bind" in console to find out all the allowed bindings (and "print_bindings" to see what's bound)
+-- Default key bindings if not saved in options
+-- When changing values in the right-hand column, make sure to change BindingsUI_GetBindingsText() below.
+-- Type "bind" in console to find out all the allowed bindings (and "print_bindings" to see what's bound)
 local defaults = {
     { "MoveForward", "W" },
     { "MoveLeft", "A" },
@@ -26,7 +26,6 @@ local defaults = {
     { "Use", "E" },
     { "Drop", "G" },
     { "VoiceChat", "LeftAlt" },
-    { "LocalVoiceChat", "None" },
     { "TextChat", "Return" },
     { "TeamChat", "Y" },
     { "ShowMap", "C" },
@@ -78,17 +77,17 @@ local defaults = {
     { "Grid11", "V" },
     { "ShowMapCom", "C" },
     { "VoiceChatCom", "LeftAlt" },
-    { "LocalVoiceChatCom", "None" },
     { "TextChatCom", "Return" },
     { "TeamChatCom", "Y" },
     { "PreviousLocationCom", "None" },
     { "OverHeadZoomIncrease", "MouseWheelUp" },
     { "OverHeadZoomDecrease", "MouseWheelDown" },
     { "OverHeadZoomReset", "None" },
-    { "MovementModifierCom", "LeftShift" }
+    { "MovementModifierCom", "LeftShift" },
+    { "HelpScreen", "K" },
 }
 
-// Order, names, description of keys in menu
+-- Order, names, description of keys in menu
 local globalControlBindings = {
     "Movement", "title", Locale.ResolveString("BINDINGS_MOVEMENT"), "None",
     "MoveForward", "input", Locale.ResolveString("BINDINGS_MOVE_FORWARD"), "W",
@@ -111,7 +110,6 @@ local globalControlBindings = {
     "ShowHelpScreen", "input", Locale.ResolveString("BINDINGS_SHOW_HELP_SCREEN"), "I",
     "Scoreboard", "input", Locale.ResolveString("BINDINGS_SCOREBOARD"), "Tab",
     "VoiceChat", "input", Locale.ResolveString("BINDINGS_USE_MICROPHONE"), "LeftAlt",
-    "LocalVoiceChat", "input", Locale.ResolveString("BINDINGS_USE_MICROPHONE_LOCAL"), "None",
     "TextChat", "input", Locale.ResolveString("BINDINGS_PUBLIC_CHAT"), "Y",
     "TeamChat", "input", Locale.ResolveString("BINDINGS_TEAM_CHAT"), "Return",
     "ToggleMinimapNames", "input", Locale.ResolveString("BINDINGS_TOGGLE_MINIMAP_NAMES"), "None",
@@ -139,6 +137,7 @@ local globalControlBindings = {
     "PingLocation", "input", Locale.ResolveString("BINDINGS_PING_LOCATION"), "MouseButton2",
     "VoteYes", "input", Locale.ResolveString("BINDINGS_VOTE_YES"), "F1",
     "VoteNo", "input", Locale.ResolveString("BINDINGS_VOTE_NO"), "F2",
+    "HelpScreen", "input", Locale.ResolveString("HELP_SCREEN"), "F3",
 }
 
 local globalComControlBindings = {
@@ -170,9 +169,9 @@ local specialKeys = {
 
 function GetDefaultInputValue(controlId)
 
-    local rc = nil
+    local rc
 
-    for index, pair in ipairs(defaults) do
+    for _, pair in ipairs(defaults) do
         if(pair[1] == controlId) then
             rc = pair[2]
             break
@@ -183,9 +182,9 @@ function GetDefaultInputValue(controlId)
     
 end
 
-/**
- * Get the value of the input control
- */
+--
+--Get the value of the input control
+--
 function BindingsUI_GetInputValue(controlId)
 
     local value = Client.GetOptionString( "input/" .. controlId, "" )
@@ -206,9 +205,9 @@ function BindingsUI_GetInputValue(controlId)
     
 end
 
-/**
- * Set the value of the input control
- */
+--
+--Set the value of the input control
+--
 function BindingsUI_SetInputValue(controlId, controlValue)
 
     if(controlId ~= nil) then
@@ -217,12 +216,12 @@ function BindingsUI_SetInputValue(controlId, controlValue)
     
 end
 
-/**
- * Return data in linear array of config elements
- * controlId, "input", name, value
- * controlId, "title", name, instructions
- * controlId, "separator", unused, unused
- */
+--
+--Return data in linear array of config elements
+--controlId, "input", name, value
+--controlId, "title", name, instructions
+--controlId, "separator", unused, unused
+--
 function BindingsUI_GetBindingsData()
     return globalControlBindings   
 end
@@ -263,9 +262,9 @@ function BindingsUI_GetComBindingsTable()
     return bindingsTable
     
 end
-/**
- * Returns list of control ids and text to display for each.
- */
+--
+--Returns list of control ids and text to display for each.
+--
 function BindingsUI_GetBindingsTranslationData()
 
     local bindingsTranslationData = {}
@@ -274,7 +273,7 @@ function BindingsUI_GetBindingsTranslationData()
     
         local text = string.upper(string.char(i))
         
-        // Add special values (must match any values in 'defaults' above)
+        -- Add special values (must match any values in 'defaults' above)
         for j = 1, table.count(specialKeys) do
         
             if(specialKeys[j][1] == text) then
@@ -289,15 +288,15 @@ function BindingsUI_GetBindingsTranslationData()
         
     end
     
-    local tableData = table.tostring(bindingsTranslationData)
+    --local tableData = table.tostring(bindingsTranslationData)
     
     return bindingsTranslationData
     
 end
 
-/**
- * Called when bindings is exited and something was changed.
- */
+--
+--Called when bindings is exited and something was changed.
+--
 function BindingsUI_ExitDialog()
     Client.ReloadKeyOptions()
 end

@@ -54,7 +54,7 @@ end
  */
 function MarineBuy_Close()
 
-    // Close menu
+    -- Close menu
     local player = Client.GetLocalPlayer()
     if player then
         player:CloseMenu()
@@ -123,9 +123,9 @@ function MarineBuy_OnItemSelect(techId)
 
 end
 
-/**
- * User pressed close button
- */
+--
+-- User pressed close button
+--
 function MarineBuy_CloseNonFlash()
     local player = Client.GetLocalPlayer()
     player:CloseMenu()

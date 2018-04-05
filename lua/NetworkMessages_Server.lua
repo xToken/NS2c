@@ -1,14 +1,15 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\NetworkMessages_Server.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// See the Messages section of the Networking docs in Spark Engine scripting docs for details.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+--[[
+    ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
 
+    lua\NetworkMessages_Server.lua
+
+    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+                 Max McGuire (max@unknownworlds.com)
+
+    See the Messages section of the Networking docs in Spark Engine scripting docs for details.
+
+    ========= For more information, visit us at http://www.unknownworlds.com =====================
+ ]]
 //NS2c
 
 function OnCommandCommMarqueeSelect(client, message)
@@ -252,9 +253,13 @@ end
 
 -- function made public so bots can emit voice msgs
 function CreateVoiceMessage(player, voiceId)
+    local client = player:GetClient()
+
+    if client and player.OnTaunt and (voiceId == kVoiceId.MarineTaunt or voiceId == kVoiceId.AlienTaunt) then
+        player:OnTaunt()
+    end
 
     --  Respect special reinforced reward VO
-    local client = player:GetClient()
     if voiceId == kVoiceId.MarineTaunt and GetHasDLC( kShadowProductId, client ) then
         voiceId = kVoiceId.MarineTauntExclusive
     end
@@ -281,7 +286,7 @@ function CreateVoiceMessage(player, voiceId)
         local team = player:GetTeam()
         if team then
 
-            // send alert so a marine commander for example gets notified about players who need a medpack / ammo etc.
+            -- send alert so a marine commander for example gets notified about players who need a medpack / ammo etc.
             if soundData.AlertTechId and soundData.AlertTechId ~= kTechId.None then
                 team:TriggerAlert(soundData.AlertTechId, player)
             end
@@ -312,13 +317,12 @@ local function OnSetNameMessage(client, message)
         
         name = TrimName(name)
         
-        -- Treat "NsPlayer" as special.
-        if name ~= player:GetName() and name ~= kDefaultPlayerName and string.IsValidNickname(name) then
+        if name ~= player:GetName() and string.IsValidNickname(name) then
         
-            local prevName = player:GetName()
+            local prevName, hasBeenSet = player:GetName(), player:GetNameHasBeenSet()
             player:SetName(name)
             
-            if prevName == kDefaultPlayerName then
+            if not hasBeenSet then
                 Server.Broadcast(nil, string.format("%s connected.", player:GetName()))
             elseif prevName ~= player:GetName() then
                 Server.Broadcast(nil, string.format("%s is now known as %s.", prevName, player:GetName()))

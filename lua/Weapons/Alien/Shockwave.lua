@@ -1,11 +1,11 @@
-//=============================================================================
-//
-// lua\Weapons\Alien\Shockwave.lua
-//
-// Created by Andread Urwalek (andi@unknownworlds.com)
-// Copyright (c) 2011, Unknown Worlds Entertainment, Inc.
-//
-//=============================================================================
+--=============================================================================
+--
+-- lua\Weapons\Alien\Shockwave.lua
+--
+-- Created by Andread Urwalek (andi@unknownworlds.com)
+-- Copyright (c) 2011, Unknown Worlds Entertainment, Inc.
+--
+--=============================================================================
 
 Script.Load("lua/Weapons/Projectile.lua")
 Script.Load("lua/DamageMixin.lua")
@@ -15,7 +15,7 @@ Script.Load("lua/ScriptActor.lua")
 class 'Shockwave' (ScriptActor)
 
 Shockwave.kMapName = "Shockwave"
-// Shockwave.kModelName = PrecacheAsset("models/marine/rifle/rifle_grenade.model") // for debugging
+-- Shockwave.kModelName = PrecacheAsset("models/marine/rifle/rifle_grenade.model") // for debugging
 Shockwave.kRadius = 0.06
 local kShockwaveCrackMaterial = PrecacheAsset("cinematics/vfx_materials/decals/shockwave_crack.material")
 
@@ -49,7 +49,7 @@ local kRotationCoords =
 local function CreateEffect(self)
 
     local coords = self:GetCoords()
-    local groundTrace = Shared.TraceRay(coords.origin, coords.origin - Vector.yAxis * 7, CollisionRep.Move, PhysicsMask.Movement, EntityFilterAllButIsa("Tunnel"))
+    local groundTrace = Shared.TraceRay(coords.origin, coords.origin - Vector.yAxis * 3, CollisionRep.Move, PhysicsMask.Movement, EntityFilterAllButIsa("Tunnel"))
 
     if groundTrace.fraction ~= 1 then
     
@@ -63,7 +63,7 @@ local function CreateEffect(self)
         
         coords.yAxis = coords.zAxis:CrossProduct(coords.xAxis)
 
-        self:TriggerEffects("shockwave_trail", { effecthostcoords = coords })
+        --self:TriggerEffects("shockwave_trail", { effecthostcoords = coords })
         Client.CreateTimeLimitedDecal(kShockwaveCrackMaterial, coords * kRotationCoords[math.random(1, #kRotationCoords)], 2.7, 6)
         
     end    
@@ -124,7 +124,7 @@ function Shockwave:TimeUp()
     
 end
 
-// called in on processmove server side by stompmixin
+-- called in on processmove server side by stompmixin
 function Shockwave:UpdateShockwave(deltaTime)
 
     if not self.endPoint then
@@ -179,7 +179,11 @@ function Shockwave:Detonate()
     local groundTrace = Shared.TraceRay(origin, origin - Vector.yAxis * 3, CollisionRep.Move, PhysicsMask.Movement, EntityFilterAllButIsa("Tunnel"))
     local enemies = GetEntitiesWithMixinWithinRange("Live", groundTrace.endPoint, 2.2)
     
-    // never damage the owner
+	if Shared.GetTestsEnabled() then
+		DebugLine(origin,groundTrace.endPoint, 2, 1, 0, 1, 1)
+    end
+    
+    -- never damage the owner
     local owner = self:GetOwner()
 	local onosViewPos
     if owner then

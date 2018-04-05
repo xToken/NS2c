@@ -1,14 +1,14 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\RecycleMixin.lua    
-//    
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-//    Allows recycling of structures. Use server side only.
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\RecycleMixin.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+--    Allows recycling of structures. Use server side only.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//Adjustments to Recycle refunding.
+-- Adjustments to Recycle refunding.
 
 RecycleMixin = CreateMixin(RecycleMixin)
 RecycleMixin.type = "Recycle"
@@ -63,20 +63,19 @@ function RecycleMixin:OnResearchComplete(researchId)
         
         self:TriggerEffects("recycle_end")
         
-        // Amount to get back, accounting for upgraded structures too
+        -- Amount to get back, accounting for upgraded structures too
         local upgradeLevel = 0
         if self.GetUpgradeLevel then
             upgradeLevel = self:GetUpgradeLevel()
         end
         
-        local amount = GetRecycleAmount(self:GetTechId(), upgradeLevel)
-        // returns a scalar from 0-1 depending on health the structure has (at the present moment)
+        local amount = GetRecycleAmount(self:GetTechId(), upgradeLevel) or 0
+        -- returns a scalar from 0-1 depending on health the structure has (at the present moment)
         local scalar = kRecycleRefundScalar
         
-        // We round it up to the nearest value thus not having weird
-        // fracts of costs being returned which is not suppose to be 
-        // the case.
-        if amount == nil then amount = 1 end
+        -- We round it up to the nearest value thus not having weird
+        -- fracts of costs being returned which is not suppose to be
+        -- the case.
         local finalRecycleAmount = math.round(amount * scalar)
         
         self:GetTeam():AddTeamResources(finalRecycleAmount)

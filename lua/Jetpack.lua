@@ -81,7 +81,7 @@ end
 function Jetpack:OnTouch(recipient)    
 end
 
-// only give jetpacks to standard marines
+-- only give jetpacks to standard marines
 function Jetpack:GetIsValidRecipient(recipient)
     return not recipient:isa("JetpackMarine") and not recipient:isa("HeavyArmorMarine") and not recipient:isa("Exo")
 end

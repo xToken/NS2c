@@ -1,16 +1,16 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\ConsoleCommands_Server.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// General purpose console commands (not game rules specific).
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =======================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\ConsoleCommands_Server.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- General purpose console commands (not game rules specific).
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =======================
 
-//NS2c
-//Added timed callback to kill
+-- NS2c
+-- Added timed callback to kill
 
 function OnCommandSay(client, ...)
 
@@ -52,7 +52,7 @@ function OnCommandKill(client)
     
 end
 
-local function OnCommandKillAll(client, className)
+local function OnCommandKillAll(_, className)
 
     if Shared.GetCheatsEnabled() then
     
@@ -139,7 +139,7 @@ function OnCommandEffectDebug(client, className)
                 
         else
         
-            // Turn on debug of everything
+            -- Turn on debug of everything
             gEffectDebugClass = ""
             Server.SendCommand(player, "oneffectdebug")
             Print("effect_debug enabled.")
@@ -257,7 +257,7 @@ local function OnCommandFindRef(client, className)
     
 end
 
-local function OnCommandDebugPathing(client, param)
+local function OnCommandDebugPathing(_, param)
     if Shared.GetCheatsEnabled() then
         local enable = param == "true"
         
@@ -291,13 +291,13 @@ local function OnCommandListPlayers(client)
     
 end
 
-local function OnCommandKick(client, steamId)
+local function OnCommandKick(client, steamId, ...)
 
-    // Only allowed from the dedicated server.
+    -- Only allowed from the dedicated server.
     if client == nil then
     
-        local found = nil
-        for list, victim in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
+        local found
+        for _, victim in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
         
             if Server.GetOwner(victim):GetUserId() == tonumber(steamId) and Server.GetOwner(victim):GetIsVirtual() == false then
             
@@ -312,7 +312,9 @@ local function OnCommandKick(client, steamId)
         
             local foundClient = Server.GetOwner(found)
             Shared.Message(string.format("%s kicked from the server", found:GetName()))
-            Server.DisconnectClient(foundClient)
+        
+            local reason = StringTrim(StringConcatArgs(...) or "")        
+            Server.DisconnectClient(foundClient,reason)
             
         else
             Shared.Message("Failed to find client matching Id")
@@ -352,13 +354,13 @@ function ToWatch(value, indent)
 
 end
 
-// Executes a line of script code
+-- Executes a line of script code
 local function OnCommandBang(client, ...)
     if client == nil or Shared.GetCheatsEnabled() then
-        // The command line parser tokenizes the command, so glue the pieces
-        // back together
+        -- The command line parser tokenizes the command, so glue the pieces
+        -- back together
         local command = ""
-        for i, p in ipairs({...}) do
+        for _, p in ipairs({...}) do
             command = command .. " " .. p
         end
         local result, error = loadstring("return " .. command)
@@ -384,14 +386,23 @@ end
 local function OnRookieMode(client)
     if client and not client:GetIsLocalClient() or not GetGamerules() then return end
 
-    local state = GetGamerules():GetRookieMode()
+    local state = GetGameInfoEntity():GetRookieMode()
     GetGamerules():SetRookieMode(not state)
 
     Shared.Message(string.format("Rookie Mode has been turned %s", state and "off" or "on"))
 end
 
-// Generic console commands
-Event.Hook("Console_rookiemode", OnCommandSay)
+local function OnBotTraining(client)
+    if client and not client:GetIsLocalClient() or not GetGamerules() then return end
+
+    GetGamerules():SetBotTraining(true)
+
+    Server.DisableQuickPlay()
+end
+
+-- Generic console commands
+Event.Hook("Console_rookiemode", OnRookieMode)
+Event.Hook("Console_bottraining", OnBotTraining)
 Event.Hook("Console_say", OnCommandSay)
 Event.Hook("Console_kill", OnCommandKill)
 Event.Hook("Console_killall", OnCommandKillAll)

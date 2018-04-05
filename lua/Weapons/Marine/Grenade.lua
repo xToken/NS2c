@@ -1,10 +1,10 @@
-// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Marine\Grenade.lua
-//
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Marine\Grenade.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Projectile.lua")
 Script.Load("lua/Mixins/ClientModelMixin.lua")
@@ -86,25 +86,25 @@ end
 
 function Grenade:Detonate(targetHit)
 
-    // Do damage to nearby targets.
+    -- Do damage to nearby targets.
     
     if Server then
     
-        // Do damage to nearby targets.
+        -- Do damage to nearby targets.
         local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kGrenadeLauncherGrenadeDamageRadius)
         
-        // Remove grenade and add firing player.
+        -- Remove grenade and add firing player.
         table.removevalue(hitEntities, self)
         
-        // full damage on direct impact
+        -- full damage on direct impact
         if targetHit then
             table.removevalue(hitEntities, targetHit)
-            self:DoDamage(kGrenadeLauncherGrenadeDamage, targetHit, targetHit:GetOrigin(), GetNormalizedVector(targetHit:GetOrigin() - self:GetOrigin()), "none")
+            self:DoDamage(kGrenadeLauncherGrenadeDamage, targetHit, self:GetOrigin(), GetNormalizedVector(targetHit:GetOrigin() - self:GetOrigin()), "none")
         end
 
         RadiusDamage(hitEntities, self:GetOrigin(), kGrenadeLauncherGrenadeDamageRadius, kGrenadeLauncherGrenadeDamage, self)
         
-        // TODO: use what is defined in the material file
+        -- TODO: use what is defined in the material file
         local surface = GetSurfaceFromEntity(targetHit)
                 
         local params = { surface = surface }

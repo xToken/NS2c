@@ -1,17 +1,17 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Alien\Gore.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com) and
-//                  Urwalek Andreas (andi@unknownworlds.com)
-//
-// Basic goring attack. Can also be used to smash down locked or welded doors.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Alien\Gore.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com) and
+--                  Urwalek Andreas (andi@unknownworlds.com)
+--
+-- Basic goring attack. Can also be used to smash down locked or welded doors.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Modified to only be gore, no smash
+--NS2c
+--Modified to only be gore, no smash
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/StompMixin.lua")
@@ -38,7 +38,7 @@ function Gore:OnCreate()
     
 end
 
-// required here to deals different damage depending on if we are goring
+-- required here to deals different damage depending on if we are goring
 function Gore:GetDamageType()
     return kGoreDamageType
 end

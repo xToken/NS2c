@@ -22,7 +22,7 @@ TeamInfo.kMapName = "TeamInfo"
 
 TeamInfo.kTechTreeUpdateInterval = 1
 
-// max 100 tres/min, max 1000 minute game; should be enough 
+-- max 100 tres/min, max 1000 minute game; should be enough 
 kMaxTotalTeamResources = 100000
 kMaxTotalPersonalResources = 100000
 
@@ -37,6 +37,7 @@ local networkVars =
     numCapturedTechPoint = "integer (0 to 99)",
     lastCommPingTime = "time",
     lastCommPingPosition = "vector",
+    lastCommIsBot = "boolean",
     techActiveMask = "integer",
     techOwnedMask = "integer",
     playerCount = "integer (0 to " .. kMaxPlayers - 1 .. ")",
@@ -46,7 +47,7 @@ local networkVars =
 
 AddMixinNetworkVars(TeamMixin, networkVars)
 
-// Relevant techs must be ordered with children techs coming after their parents
+-- Relevant techs must be ordered with children techs coming after their parents
 TeamInfo.kRelevantTechIdsMarine =
 {
 
@@ -155,6 +156,8 @@ if Server then
         self.lastTechPriority = 0
         self.lastCommPingTime = 0
         self.lastCommPingPosition = Vector(0,0,0)
+        self.lastCommIsBot = false
+        self.lastCommLoginTime = 0
         self.totalTeamResources = 0
         self.techActiveMask = 0
         self.techOwnedMask = 0
@@ -255,6 +258,10 @@ function TeamInfo:GetPingPosition()
     return self.lastCommPingPosition
 end
 
+function TeamInfo:GetLastCommIsBot()
+    return self.lastCommIsBot
+end
+
 function TeamInfo:SetWatchTeam(team)
 
     self.team = team
@@ -266,6 +273,17 @@ end
 
 function TeamInfo:GetNumCapturedResPoints()
     return self.numCapturedResPoints
+end
+
+function TeamInfo:OnCommanderLogin( commanderPlayer, forced )
+
+    self.lastCommIsBot = commanderPlayer:GetClient():GetIsVirtual()
+	if forced or GetGamerules():GetGameState() > kGameState.PreGame then
+		if self.lastCommLoginTime == 0 then
+			commanderPlayer:SetResources(0)
+		end
+		self.lastCommLoginTime = Shared.GetTime()
+	end
 end
 
 function TeamInfo:GetTeamResources()
@@ -372,19 +390,19 @@ function TeamInfo:UpdateBitmasks(techId, techNode)
     local techIdString = EnumToString(kTechId, techId)
     local mask = relevantIdMask[techIdString]
     
-    // Tech researching or researched
+    -- Tech researching or researched
     if (techNode:GetResearching() and not techNode:GetResearched()) or techNode:GetHasTech() then
         self.techActiveMask = bit.bor(self.techActiveMask, mask)
     else
         self.techActiveMask = bit.band(self.techActiveMask, bit.bnot(mask))
     end
     
-    // Tech has been owned at some point
+    -- Tech has been owned at some point
     if techNode:GetHasTech() then
         self.techOwnedMask = bit.bor(self.techOwnedMask, mask)
     end
     
-    // Hide prerequisite techs when this tech has been researched
+    -- Hide prerequisite techs when this tech has been researched
     if techNode:GetResearched() or (techNode:GetIsSpecial() and techNode:GetHasTech()) then
         local preq1 = techNode:GetPrereq1()
         local preq2 = techNode:GetPrereq2()

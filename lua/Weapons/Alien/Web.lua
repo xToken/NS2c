@@ -1,12 +1,12 @@
-// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Alien\Web.lua
-//
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-// Spit attack on primary.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Alien\Web.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+-- Spit attack on primary.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/TechMixin.lua")
 Script.Load("lua/TeamMixin.lua")
@@ -43,7 +43,7 @@ function EntityFilterNonWebables()
     return function(test) return not HasMixin(test, "Webable") end
 end
 
-function Web:SpaceClearForEntity(location)
+function Web:SpaceClearForEntity(_)
     return true
 end
 
@@ -84,12 +84,6 @@ function Web:OnInitialized()
   
 end
 
-/*
-function Web:GetPhysicsModelAllowedOverride()
-    return false
-end
-*/
-
 if Server then
     
     local function CreateTrigger(self)
@@ -109,12 +103,12 @@ if Server then
         self.triggerBody:SetCollisionEnabled(true)
         
         if self:GetMixinConstants().kPhysicsGroup then
-            //Print("set trigger physics group to %s", EnumToString(PhysicsGroup, self:GetMixinConstants().kPhysicsGroup))
+            --Print("set trigger physics group to %s", EnumToString(PhysicsGroup, self:GetMixinConstants().kPhysicsGroup))
             self.triggerBody:SetGroup(self:GetMixinConstants().kPhysicsGroup)
         end
         
         if self:GetMixinConstants().kFilterMask then
-            //Print("set trigger filter mask to %s", EnumToString(PhysicsMask, self:GetMixinConstants().kFilterMask))
+            --Print("set trigger filter mask to %s", EnumToString(PhysicsMask, self:GetMixinConstants().kFilterMask))
             self.triggerBody:SetGroupFilterMask(self:GetMixinConstants().kFilterMask)
         end
         
@@ -138,7 +132,7 @@ if Server then
         
     end
 
-    // OnUpdate is only called when entities are in interest range    
+    -- OnUpdate is only called when entities are in interest range    
     function Web:OnUpdate(deltaTime)
 
         local trace = Shared.TraceRay(self:GetOrigin(), self.endPoint, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterNonWebables())
@@ -210,9 +204,9 @@ if Client then
 
     function Web:OnUpdateRender()
 
-        // we are smart and do that only once.
-        // old code generated model
-        /*
+        -- we are smart and do that only once.
+        -- old code generated model
+        --[[
         if not self.webRenderModel then
         
             self.webRenderModel = DynamicMesh_Create()
@@ -228,11 +222,11 @@ if Client then
             DynamicMesh_SetTwoSidedLine(self.webRenderModel, coords, kWebWidth, length)
         
         end
-        */
+        --]]
 
     end
 
-end    
+end   
 
 function Web:OnUpdatePoseParameters()
     self:SetPoseParam("scale", self.length)    

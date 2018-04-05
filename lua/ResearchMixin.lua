@@ -1,29 +1,29 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\ResearchMixin.lua    
-//    
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\ResearchMixin.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removal of UnitActiveStatus on research progression
-//This might not be needed.
+-- NS2c
+-- Removal of UnitActiveStatus on research progression
+-- This might not be needed.
 
 ResearchMixin = CreateMixin(ResearchMixin)
 ResearchMixin.type = "Research"
 
 ResearchMixin.networkVars =
 {
-    // Tech id of research this building is currently researching
+    -- Tech id of research this building is currently researching
     researchingId           = "enum kTechId",
-    // 0 to 1 scalar of progress
+    -- 0 to 1 scalar of progress
     researchProgress        = "float (0 to 1 by 0.01)",
 }
 
 ResearchMixin.expectedMixins =
 {
-    //TechAction = "Required to display buttons."
+    --TechAction = "Required to display buttons."
 }
 
 ResearchMixin.expectedCallbacks = 
@@ -58,7 +58,7 @@ function ResearchMixin:UpdateResearch(deltaTime)
             researchDuration = math.min(0.5, researchDuration)
         end
 
-        // avoid division with 0
+        -- avoid division with 0
         researchDuration = math.max(researchDuration, 0.01)
         
         local progress = self.researchProgress + deltaTime / researchDuration
@@ -73,10 +73,10 @@ function ResearchMixin:UpdateResearch(deltaTime)
             local techTree = GetTechTree(self:GetTeamNumber())
             techTree:SetTechNodeChanged(researchNode, string.format("researchProgress = %.2f", self.researchProgress))
             
-            // Update research progress
+            -- Update research progress
             if self.researchProgress == 1 then
 
-                // Mark this tech node as researched
+                -- Mark this tech node as researched
                 researchNode:SetResearched(true)
                 
                 techTree:QueueOnResearchComplete(self.researchingId, self)
@@ -108,7 +108,7 @@ end
 
 function ResearchMixin:GetResearchTechAllowed(techNode)
 
-    // Return false if we're researching, or if tech is being researched
+    -- Return false if we're researching, or if tech is being researched
     return not (self.researchingId ~= kTechId.None or techNode.researched or techNode.researching)
     
 end
@@ -118,13 +118,13 @@ local function AbortResearch(self, refundCost)
     if self.researchProgress > 0 then
     
         local team = self:GetTeam()
-        // Team is not always available due to order of destruction during map change.
+        -- Team is not always available due to order of destruction during map change.
         if team then
         
             local researchNode = team:GetTechTree():GetTechNode(self.researchingId)
             if researchNode ~= nil then
             
-                // Give money back if refundCost is true.
+                -- Give money back if refundCost is true.
                 if refundCost then
                     team:AddTeamResources(researchNode:GetCost())
                 end
@@ -139,6 +139,7 @@ local function AbortResearch(self, refundCost)
                 
                 self:ClearResearch()
                 
+                team:GetTechTree():SetTechNodeChanged(researchNode)
                 team:GetTechTree():SetTechChanged()
                 
             end
@@ -167,11 +168,11 @@ end
 function ResearchMixin:GetIsResearching()
 
     local researchProgress = self:GetResearchProgress()
-    // Note: We need to treat 1 as "not researching" as there
-    // is a delay in the tech tree code that means the entity will
-    // have a researchProgress of 1 for longer than we would expect.
-    // This delay allows the player to cancel research before the
-    // tech tree updates and get a free research.
+    -- Note: We need to treat 1 as "not researching" as there
+    -- is a delay in the tech tree code that means the entity will
+    -- have a researchProgress of 1 for longer than we would expect.
+    -- This delay allows the player to cancel research before the
+    -- tech tree updates and get a free research.
     return researchProgress > 0 and researchProgress < 1
     
 end
@@ -202,7 +203,7 @@ function ResearchMixin:GetIsUpgrading()
     
 end
 
-// Could be for research or upgrade
+-- Could be for research or upgrade
 function ResearchMixin:SetResearching(techNode, player)
 
     self.researchingId = techNode.techId
@@ -229,9 +230,9 @@ function ResearchMixin:OnUpdateAnimationInput(modelMixin)
     
 end
 
-function ResearchMixin:PerformAction(techNode, position)
+function ResearchMixin:PerformAction(techNode, _)
 
-    // Process Cancel of research or upgrade.
+    -- Process Cancel of research or upgrade.
     if techNode.techId == kTechId.Cancel then
     
         if self:GetIsResearching() then
@@ -283,7 +284,7 @@ end
 
 function ResearchMixin:CreateManufactureEntity(techId)
 
-    local entity = nil
+    local entity
 
     if self.OverrideCreateManufactureEntity then
         entity = self:OverrideCreateManufactureEntity(techId)
@@ -314,7 +315,7 @@ function ResearchMixin:TechResearched(structure, researchId)
         local researchNode = GetTechTree(self:GetTeamNumber()):GetTechNode(researchId)
         if researchNode and (researchNode:GetIsEnergyManufacture() or researchNode:GetIsManufacture() or researchNode:GetIsPlasmaManufacture()) then
         
-            // Handle manufacture actions
+            -- Handle manufacture actions
             self:CreateManufactureEntity(researchId)
             
         elseif self.OnResearchComplete then

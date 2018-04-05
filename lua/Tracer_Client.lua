@@ -96,7 +96,7 @@ function BuildTracer(startPoint, endPoint, velocity, effectName, residueEffectNa
     tracer.startPoint = Vector(0, 0, 0)
     VectorCopy(startPoint, tracer.startPoint)
     
-    // Calculate how long we should live so we can animate to that target
+    -- Calculate how long we should live so we can animate to that target
     tracer.lifetime = (endPoint - startPoint):GetLength() / velocity:GetLength()
     tracer.timePassed = 0
     

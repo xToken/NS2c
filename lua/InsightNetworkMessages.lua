@@ -1,10 +1,10 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\InsightNetworkMessages.lua
-//
-// Created by: Jon Hughes (jon@jhuze.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\InsightNetworkMessages.lua
+--
+-- Created by: Jon Hughes (jon@jhuze.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 //NS2c
 //Removed EGG counts and powernode status

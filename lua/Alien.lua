@@ -58,8 +58,8 @@ PrecacheAsset("cinematics/vfx_materials/vfx_neuron_03.dds")
 
 local networkVars = 
 {
-    // The alien energy used for all alien weapons and abilities (instead of ammo) are calculated
-    // from when it last changed with a constant regen added
+    -- The alien energy used for all alien weapons and abilities (instead of ammo) are calculated
+    -- from when it last changed with a constant regen added
     timeAbilityEnergyChanged = "time",
     abilityEnergyOnChange = "float (0 to " .. math.ceil(kAbilityMaxEnergy) .. " by 0.05 [] )",
     
@@ -112,12 +112,13 @@ function Alien:OnCreate()
     self.abilityEnergyOnChange = self:GetMaxEnergy()
     self.lastEnergyRate = self:GetRecuperationRate()
     
-    // Only used on the local client.
+    -- Only used on the local client.
     self.darkVisionOn = false
     self.lastDarkVisionState = false
     self.darkVisionLastFrame = false
     self.darkVisionTime = 0
     self.darkVisionEndTime = 0
+    
     self.oneHive = false
     self.twoHives = false
     self.threeHives = false
@@ -153,7 +154,7 @@ function Alien:OnInitialized()
     
     if Server then
   
-        // This Mixin must be inited inside this OnInitialized() function.
+        -- This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end
@@ -200,7 +201,8 @@ function Alien:GetCanRepairOverride(target)
     return false
 end
 
-// player for local player
+
+-- player for local player
 function Alien:TriggerHatchEffects()
     self.clientTimeTunnelUsed = Shared.GetTime()
 end
@@ -249,8 +251,8 @@ function Alien:GetPlayIdleSound()
     return self:GetIsAlive() and self:GetVelocityLength() > kIdleThreshold
 end
 
-// For special ability, return an array of totalPower, minimumPower, tex x offset, tex y offset, 
-// visibility (boolean), command name
+-- For special ability, return an array of totalPower, minimumPower, tex x offset, tex y offset, 
+-- visibility (boolean), command name
 function Alien:GetAbilityInterfaceData()
     return { }
 end
@@ -264,8 +266,8 @@ end
 function Alien:GetEnergy()
     local rate = self:GetRecuperationRate()
     if self.lastEnergyRate ~= rate then
-        // we assume we ask for energy enough times that the change in energy rate
-        // will hit on the same tick they occure (or close enough)
+        -- we assume we ask for energy enough times that the change in energy rate
+        -- will hit on the same tick they occure (or close enough)
         self.abilityEnergyOnChange = CalcEnergy(self, self.lastEnergyRate)
         self.timeAbilityEnergyChange = Shared.GetTime()
     end
@@ -344,15 +346,15 @@ function Alien:GetNotEnoughResourcesSound()
     return kNotEnoughResourcesSound
 end
 
-// Returns true when players are selecting new abilities. When true, draw small icons
-// next to your current weapon and force all abilities to draw.
+-- Returns true when players are selecting new abilities. When true, draw small icons
+-- next to your current weapon and force all abilities to draw.
 function Alien:GetInactiveVisible()
     return Shared.GetTime() < self:GetTimeOfLastWeaponSwitch() + kDisplayWeaponTime
 end
 
-/**
- * Must override.
- */
+--
+-- Must override.
+--
 function Alien:GetBaseArmor()
     assert(false)
 end
@@ -361,9 +363,9 @@ function Alien:GetBaseHealth()
     assert(false)
 end
 
-/**
- * Must override.
- */
+--
+-- Must override.
+--
 function Alien:GetArmorFullyUpgradedAmount()
     assert(false)
 end
@@ -380,7 +382,7 @@ function Alien:GetDeathMapName()
     return AlienSpectator.kMapName
 end
 
-// Returns the name of the player's lifeform
+-- Returns the name of the player's lifeform
 function Alien:GetPlayerStatusDesc()
 
     local status = kPlayerStatus.Void

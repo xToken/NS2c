@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Marine\Welder.lua
-//
-//    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
-//
-//    Weapon used for repairing structures and armor of friendly players (marines,jetpackers).
-//    Uses hud slot 3 (replaces axe)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Marine\Welder.lua
+--
+--    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
+--
+--    Weapon used for repairing structures and armor of friendly players (marines, exosuits, jetpackers).
+--    Uses hud slot 3 (replaces axe)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Weapon.lua")
 Script.Load("lua/PickupableWeaponMixin.lua")
@@ -35,8 +35,8 @@ local kWelderEffectRate = 1.0
 local kFireLoopingSound = PrecacheAsset("sound/NS2.fev/marine/welder/weld")
 
 local kHealScoreAdded = 2
-// Every kAmountHealedForPoints points of damage healed, the player gets
-// kHealScoreAdded points to their score.
+-- Every kAmountHealedForPoints points of damage healed, the player gets
+-- kHealScoreAdded points to their score.
 local kAmountHealedForPoints = 600
 
 function Welder:OnCreate()
@@ -50,7 +50,7 @@ function Welder:OnCreate()
     
         self.loopingFireSound = Server.CreateEntity(SoundEffect.kMapName)
         self.loopingFireSound:SetAsset(kFireLoopingSound)
-        // SoundEffect will automatically be destroyed when the parent is destroyed (the Welder).
+        -- SoundEffect will automatically be destroyed when the parent is destroyed (the Welder).
         self.loopingFireSound:SetParent(self)
         self.loopingSoundEntId = self.loopingFireSound:GetId()
         
@@ -93,7 +93,7 @@ function Welder:OnHolster(player)
 
     Weapon.OnHolster(self, player)
     
-    // cancel muzzle effect
+    -- cancel muzzle effect
     self:TriggerEffects("welder_holster")
     player:SetPoseParam("welder", 0)
     
@@ -116,12 +116,12 @@ function Welder:OnTouch(recipient)
     StartSoundEffectAtOrigin(Marine.kGunPickupSound, recipient:GetOrigin())
 end
 
-// for marine third person model pose, "builder" fits perfectly for this.
+-- for marine third person model pose, "builder" fits perfectly for this.
 function Welder:OverrideWeaponName()
     return "builder"
 end
 
-// don't play 'welder_attack' and 'welder_attack_end' too often, would become annoying with the sound effects and also client fps
+-- don't play 'welder_attack' and 'welder_attack_end' too often, would become annoying with the sound effects and also client fps
 function Welder:OnPrimaryAttack(player)
     
     PROFILE("Welder:OnPrimaryAttack")
@@ -138,7 +138,7 @@ function Welder:OnPrimaryAttack(player)
     end
     
     self.primaryAttacking = true
-    local hitPoint = nil
+    local hitPoint
     
     if self.timeLastWeld + kWelderFireDelay < Shared.GetTime () then
     
@@ -193,7 +193,7 @@ function Welder:GetReplacementWeaponMapName()
     return HandGrenades.kMapName
 end
 
-// repair rate increases over time
+-- repair rate increases over time
 function Welder:GetRepairRate(repairedEntity)
 
     local repairRate = kWelderRate
@@ -217,7 +217,7 @@ function Welder:PerformWeld(player)
 
     local attackDirection = player:GetViewCoords().zAxis
     local success = false
-    // prioritize friendlies
+    -- prioritize friendlies
     local didHit, target, endPoint, direction, surface = CheckMeleeCapsule(self, player, 0, self:GetRange(), nil, true, 1, PrioritizeDamagedFriends, nil, PhysicsMask.Flame)
     
     if didHit and target and HasMixin(target, "Live") then
@@ -309,7 +309,7 @@ function Welder:OnUpdateRender()
             
                 local coords = Coords.GetTranslation(trace.endPoint - viewCoords.zAxis * .1)
                 
-                local className = nil
+                local className
                 if trace.entity then
                     className = trace.entity:GetClassName()
                 end

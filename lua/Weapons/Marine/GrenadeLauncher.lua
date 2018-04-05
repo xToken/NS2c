@@ -1,10 +1,10 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\GrenadeLauncher.lua
-//
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\GrenadeLauncher.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
 Script.Load("lua/Weapons/Marine/Grenade.lua")
@@ -17,7 +17,7 @@ local kGrenadeSpeed = 25
 
 local networkVars =
 {
-    // Only used on the view model, so it can be private.
+    -- Only used on the view model, so it can be private.
     emptyPoseParam = "private float (0 to 1 by 0.01)"
 }
 
@@ -117,7 +117,7 @@ function GrenadeLauncher:OnTag(tagName)
     
     if tagName == "load_shell" then
         LoadBullet(self)
-    // We have a special case when loading the last shell in the clip.
+    -- We have a special case when loading the last shell in the clip.
     elseif tagName == "load_shell_sound" and self.clip < (self:GetClipSize() - 1) then
         self:TriggerEffects("grenadelauncher_reload_shell")
     elseif tagName == "load_shell_sound" then

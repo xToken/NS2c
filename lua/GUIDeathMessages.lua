@@ -1,15 +1,15 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GUIDeathMessages.lua
-//
-// Created by: Brian Cronin (brianc@unknownworlds.com)
-//
-// Manages messages displayed when something kills something else.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GUIDeathMessages.lua
+--
+-- Created by: Brian Cronin (brianc@unknownworlds.com)
+--
+-- Manages messages displayed when something kills something else.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Tweaked player kill feed to be in a diff location on aliens
+-- NS2c
+-- Tweaked player kill feed to be in a diff location on aliens
 
 class 'GUIDeathMessages' (GUIScript)
 
@@ -23,7 +23,6 @@ local kScreenOffset = GUIScale(40)
 local kScreenOffsetX = GUIScale(38)
 
 local kSustainTime = 4
-local kPlayerSustainTime = 4
 local kFadeOutTime = 1
 
 function GUIDeathMessages:Initialize()
@@ -38,6 +37,8 @@ function GUIDeathMessages:Initialize()
     
     self.messages = { }
     self.reuseMessages = { }
+    
+    self.visible = true
     
 end
 
@@ -78,13 +79,29 @@ function GUIDeathMessages:Uninitialize()
     GUI.DestroyItem(self.anchor)
 end
 
+function GUIDeathMessages:SetIsVisible(state)
+    
+    self.visible = state
+    
+    for i=1, #self.messages do
+        self.messages[i].Background:SetIsVisible(state)
+    end
+    
+end
+
+function GUIDeathMessages:GetIsVisible()
+    
+    return self.visible
+    
+end
+
 function GUIDeathMessages:Update(deltaTime)
     
     PROFILE("GUIDeathMessages:Update")
     
     local addDeathMessages = DeathMsgUI_GetMessages()
-    local numberElementsPerMessage = 6 // FIXME - pretty error prone
-    local numberMessages = table.count(addDeathMessages) / numberElementsPerMessage
+    local numberElementsPerMessage = 6 -- FIXME - pretty error prone
+    local numberMessages = table.icount(addDeathMessages) / numberElementsPerMessage
     local currentIndex = 1
     while numberMessages > 0 do
     
@@ -102,14 +119,15 @@ function GUIDeathMessages:Update(deltaTime)
     
     self.updateInterval = #self.messages > 0 and 0 or 0.2
     
+    self.anchor:SetPosition(Vector(0, ConditionalValue(CommanderUI_IsLocalPlayerCommander(), GUIScale(50), 0), 0))
+    
     local removeMessages = { }
-    // Update existing messages.
+    -- Update existing messages.
     for i, message in ipairs(self.messages) do
     
         local currentPosition = Vector(message["Background"]:GetPosition())
         currentPosition.y = GUIScale(kScreenOffset + ConditionalValue(PlayerUI_IsOnAlienTeam(), 400, 0)) + (kBackgroundHeight * (i - 1))
-        local playerIsCommander = CommanderUI_IsLocalPlayerCommander()
-        currentPosition.x = message["BackgroundXOffset"] - ((playerIsCommander and message["BackgroundWidth"]) or 0)
+        currentPosition.x = message["BackgroundXOffset"]
         message["Background"]:SetPosition(currentPosition)
         message["Time"] = message["Time"] + deltaTime
         if message["Time"] >= message.sustainTime then
@@ -139,7 +157,7 @@ function GUIDeathMessages:Update(deltaTime)
         
     end
     
-    // Remove faded out messages.
+    -- Remove faded out messages.
     for i, removeMessage in ipairs(removeMessages) do
     
         removeMessage["Background"]:SetIsVisible(false)
@@ -159,12 +177,12 @@ function GUIDeathMessages:AddMessage(killerColor, killerName, targetColor, targe
     
     local insertMessage = { Background = nil, Killer = nil, Weapon = nil, Target = nil, Time = 0 }
     
-    // Check if we can reuse an existing message.
-    if table.count(self.reuseMessages) > 0 then
+    -- Check if we can reuse an existing message.
+    if table.icount(self.reuseMessages) > 0 then
     
         insertMessage = self.reuseMessages[1]
         insertMessage["Time"] = 0
-        insertMessage["Background"]:SetIsVisible(true)
+        insertMessage["Background"]:SetIsVisible(self.visible)
         table.remove(self.reuseMessages, 1)
         
     end
@@ -187,7 +205,7 @@ function GUIDeathMessages:AddMessage(killerColor, killerName, targetColor, targe
     end
     
     local scaledIconHeight = kBackgroundHeight - GUIScale(4)
-    // Preserve aspect ratio
+    -- Preserve aspect ratio
     local scaledIconWidth = GUIScale(iconWidth)/(GUIScale(iconHeight)/scaledIconHeight)
     
     insertMessage["Weapon"]:SetSize(Vector(scaledIconWidth, scaledIconHeight, 0))
@@ -244,19 +262,19 @@ function GUIDeathMessages:AddMessage(killerColor, killerName, targetColor, targe
     insertMessage["Background"]:SetPosition(Vector(insertMessage["BackgroundXOffset"], 0, 0))
     insertMessage["Background"]:SetColor(backgroundColor)
     insertMessage["Background"]:SetTexture(kKillHighlight)
-    insertMessage["Background"]:SetTexturePixelCoordinates(unpack(kKillMiddleBorderCoords))
+    insertMessage["Background"]:SetTexturePixelCoordinates(GUIUnpackCoords(kKillMiddleBorderCoords))
     insertMessage["Background"].left:SetColor(backgroundColor)
     insertMessage["Background"].left:SetTexture(kKillHighlight)
-    insertMessage["Background"].left:SetTexturePixelCoordinates(unpack(kKillLeftBorderCoords))
+    insertMessage["Background"].left:SetTexturePixelCoordinates(GUIUnpackCoords(kKillLeftBorderCoords))
     insertMessage["Background"].left:SetSize(Vector(GUIScale(8), kBackgroundHeight, 0))
     insertMessage["Background"].left:SetInheritsParentAlpha(true)
     insertMessage["Background"].left:SetPosition(Vector(-GUIScale(8), 0, 0))
     insertMessage["Background"].right:SetColor(backgroundColor)
     insertMessage["Background"].right:SetTexture(kKillHighlight)
-    insertMessage["Background"].right:SetTexturePixelCoordinates(unpack(kKillRightBorderCoords))
+    insertMessage["Background"].right:SetTexturePixelCoordinates(GUIUnpackCoords(kKillRightBorderCoords))
     insertMessage["Background"].right:SetSize(Vector(GUIScale(8), kBackgroundHeight, 0))
     insertMessage["Background"].right:SetInheritsParentAlpha(true)
-    insertMessage.sustainTime = ConditionalValue( targetIsPlayer==1, kPlayerSustainTime, kSustainTime )
+    insertMessage.sustainTime = kSustainTime
     
     table.insert(self.messages, insertMessage)
     

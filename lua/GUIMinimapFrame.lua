@@ -1,18 +1,18 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//
-// lua\GUIMinimapFrame.lua
-//
-// Created by: Brian Cronin (brianc@unknownworlds.com)
-//
-// Manages displaying the minimap and the minimap background.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
+--
+-- lua\GUIMinimapFrame.lua
+--
+-- Created by: Brian Cronin (brianc@unknownworlds.com)
+--
+-- Manages displaying the minimap and the minimap background.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/GUIMinimap.lua")
 
 class 'GUIMinimapFrame' (GUIMinimap)
 
-local desiredSpawnPosition = nil
+local desiredSpawnPosition
 local isRespawning = false
 local function OnSetIsRespawning(message)
     isRespawning = message.isRespawning
@@ -35,7 +35,7 @@ local kMapBackgroundXOffset
 local kMapBackgroundYOffset
 
 local kBigSizeScale = 3
-local kZoomedBlipSizeScale = 1 // 0.8
+local kZoomedBlipSizeScale = 1 -- 0.8
 local kMiniBlipSizeScale = 0.5
 
 local kMarineZoomedIconColor = Color(191 / 255, 226 / 255, 1, 1)
@@ -73,7 +73,7 @@ local function UpdateItemsGUIScale(self)
     
     -- Cycling through modes resizes and respotions everything
     -- Not really elegant, but gets the job done
-    local comMode = self.comMode
+    local comMode = self.comMode or 0
     self:SetBackgroundMode(0, true)
     self:SetBackgroundMode(1, true)
     self:SetBackgroundMode(comMode, true)
@@ -91,6 +91,8 @@ function GUIMinimapFrame:Initialize()
     self:InitSmokeyBackground()
     self:InitFrame()
     
+    self.visible = true -- is it allowed to be visible?
+    
     self.chooseSpawnText = GetGUIManager():CreateTextItem()
     self.chooseSpawnText:SetText(SubstituteBindStrings(Locale.ResolveString("CHOOSE_SPAWN")))
     self.chooseSpawnText:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
@@ -104,7 +106,7 @@ function GUIMinimapFrame:Initialize()
     self.spawnQueueText:SetTextAlignmentX(GUIItem.Align_Min)
     self.spawnQueueText:SetTextAlignmentY(GUIItem.Align_Center)
     self.spawnQueueText:SetColor( Color(1,1,1,1) )
-    self.spawnQueueText:SetIsVisible(true)
+    self.spawnQueueText:SetIsVisible(self.visible)
     self.minimapFrame:AddChild( self.spawnQueueText )
     
     self.showingMouse = false
@@ -140,7 +142,7 @@ function GUIMinimapFrame:InitFrame()
     self.minimapFrame = GUIManager:CreateGraphicItem()
     self.minimapFrame:SetAnchor(GUIItem.Left, GUIItem.Bottom)
     self.minimapFrame:SetTexture(kMarineFrameTexture)
-    self.minimapFrame:SetTexturePixelCoordinates(unpack(kFramePixelCoords))
+    self.minimapFrame:SetTexturePixelCoordinates(GUIUnpackCoords(kFramePixelCoords))
     self.minimapFrame:SetIsVisible(false)
     self.minimapFrame:SetLayer(-1)
     self.background:AddChild(self.minimapFrame)
@@ -172,7 +174,7 @@ function GUIMinimapFrame:SendKeyEvent(key, down)
     
         if not down then
     
-            local showMap = not self.background:GetIsVisible()
+            local showMap = self.visible and not self.background:GetIsVisible()
             self:ShowMap(showMap)
             self:SetBackgroundMode(GUIMinimapFrame.kModeBig)
         
@@ -186,7 +188,7 @@ function GUIMinimapFrame:SendKeyEvent(key, down)
         local containsPoint, withinX, withinY = GUIItemContainsPoint(self.minimap, mouseX, mouseY)
         if containsPoint then
         
-            // perform action only on key up, but also consume key down even, otherwise mouse0 is not being processed correctly 
+            -- perform action only on key up, but also consume key down even, otherwise mouse0 is not being processed correctly
             if not down then
             
                 local newDesiredPosition = MinimapToWorld(nil, withinX / self:GetMinimapSize().x, withinY / self:GetMinimapSize().y)
@@ -226,8 +228,8 @@ function GUIMinimapFrame:Update(deltaTime)
 
     self.chooseSpawnText:SetIsVisible(false)
     
-    self.minimapFrame:SetIsVisible(PlayerUI_GetTeamType() == kMarineTeamType and self.comMode == GUIMinimapFrame.kModeMini)
-    self.smokeyBackground:SetIsVisible(PlayerUI_GetTeamType() == kAlienTeamType and self.comMode == GUIMinimapFrame.kModeMini)
+    self.minimapFrame:SetIsVisible(self.visible and (PlayerUI_GetTeamType() == kMarineTeamType and self.comMode == GUIMinimapFrame.kModeMini))
+    self.smokeyBackground:SetIsVisible(self.visible and (PlayerUI_GetTeamType() == kAlienTeamType and self.comMode == GUIMinimapFrame.kModeMini))
     
     if PlayerUI_IsOverhead() and self.comMode ~= GUIMinimapFrame.kModeBig then
         
@@ -236,19 +238,19 @@ function GUIMinimapFrame:Update(deltaTime)
             local teamInfo = GetTeamInfoEntity( PlayerUI_GetTeamNumber() )
             if teamInfo and PlayerUI_GetTeamNumber() == kTeam1Index then
                 self.spawnQueueText:SetColor( kMarineFontColor )
-                //TODO Check number respawning and adjust color if above X threshold
+                --TODO Check number respawning and adjust color if above X threshold
                 self.spawnQueueText:SetText( string.format( Locale.ResolveString("MARINES_RESPAWNING"), teamInfo:GetSpawnQueueTotal() ) )
             end
             
-            // Commander always sees the minimap.
+            -- Commander always sees the minimap.
             if not PlayerUI_IsCameraAnimated() then
-                self.background:SetIsVisible(true)
+                self.background:SetIsVisible(self.visible)
             else
                 self.background:SetIsVisible(false)
             end
 
         else
-            self.background:SetIsVisible(true)
+            self.background:SetIsVisible(self.visible)
         end
 
     end
@@ -301,7 +303,7 @@ function GUIMinimapFrame:SetBackgroundMode(setMode, forceReset)
         local modeIsMini = self.comMode == GUIMinimapFrame.kModeMini
         local modeIsZoom = self.comMode == GUIMinimapFrame.kModeZoom
         
-        // Special settings for zoom mode
+        -- Special settings for zoom mode
         self:SetMoveBackgroundEnabled(modeIsZoom)
         if modeIsZoom then
             
@@ -314,15 +316,15 @@ function GUIMinimapFrame:SetBackgroundMode(setMode, forceReset)
             self:SetIconFileName(nil)
         end
         
-        // 
+        --
         self:SetLocationNamesEnabled(not modeIsMini and not modeIsZoom)
 
-        // We want the background to sit "inside" the border so move it up and to the right a bit.
-        //local borderExtraWidth = ConditionalValue(self.background, GUIMinimapFrame.kBackgroundWidth - self:GetMinimapSize().x, 0)
-        //local borderExtraHeight = ConditionalValue(self.background, GUIMinimapFrame.kBackgroundHeight - self:GetMinimapSize().y, 0)
-        //local defaultPosition = Vector(borderExtraWidth / 2, borderExtraHeight / 2, 0)
-        //local modePosition = ConditionalValue(modeIsMini, defaultPosition, Vector(0, 0, 0))
-        //self.minimap:SetPosition(modePosition * self.zoom)
+        -- We want the background to sit "inside" the border so move it up and to the right a bit.
+        --local borderExtraWidth = ConditionalValue(self.background, GUIMinimapFrame.kBackgroundWidth - self:GetMinimapSize().x, 0)
+        --local borderExtraHeight = ConditionalValue(self.background, GUIMinimapFrame.kBackgroundHeight - self:GetMinimapSize().y, 0)
+        --local defaultPosition = Vector(borderExtraWidth / 2, borderExtraHeight / 2, 0)
+        --local modePosition = ConditionalValue(modeIsMini, defaultPosition, Vector(0, 0, 0))
+        --self.minimap:SetPosition(modePosition * self.zoom)
         
         if modeIsMini then
             self:SetScale(1)
@@ -337,7 +339,7 @@ function GUIMinimapFrame:SetBackgroundMode(setMode, forceReset)
             self:SetBlipScale(kZoomedBlipSizeScale)
             self.background:SetAnchor(GUIItem.Left, GUIItem.Top)
             local scale = Client.GetScreenHeight() / kBaseScreenHeight
-            self.background:SetSize(Vector(190 * (scale * 2), 180 * (scale * 2), 0)) // don't ask.. the minimap placement in GUIMarineHud.lua needs some clean up
+            self.background:SetSize(Vector(190 * (scale * 2), 180 * (scale * 2), 0)) -- don't ask.. the minimap placement in GUIMarineHud.lua needs some clean up
             self.minimap:SetAnchor(GUIItem.Middle, GUIItem.Center)
             self.minimap:SetPosition(Vector(0, 0, 0))
             
@@ -360,7 +362,7 @@ function GUIMinimapFrame:SetBackgroundMode(setMode, forceReset)
 
         end
         
-        // Make sure everything is in sync in case this function is called after GUIMinimapFrame:Update() is called.
+        -- Make sure everything is in sync in case this function is called after GUIMinimapFrame:Update() is called.
         self:Update(0)
     
     end
@@ -373,7 +375,7 @@ function GUIMinimapFrame:OnResolutionChanged(oldX, oldY, newX, newY)
 
     if self.comMode == GUIMinimapFrame.kModeZoom then
         local scale = newY / kBaseScreenHeight
-        self.background:SetSize(Vector(190 * (scale * 2), 180 * (scale * 2), 0)) // don't ask.. the minimap placement in GUIMarineHud.lua needs some clean up
+        self.background:SetSize(Vector(190 * (scale * 2), 180 * (scale * 2), 0)) -- don't ask.. the minimap placement in GUIMarineHud.lua needs some clean up
     elseif self.comMode == GUIMinimapFrame.kModeBig then
         self.background:SetSize(Vector(newX, newY, 0) )
     end

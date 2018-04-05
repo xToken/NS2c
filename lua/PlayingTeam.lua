@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\PlayingTeam.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// This class is used for teams that are actually playing the game, e.g. Marines or Aliens.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\PlayingTeam.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- This class is used for teams that are actually playing the game, e.g. Marines or Aliens.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 //NS2c
 //Added concept of overflow pres, added slight scaling to aliens and setup team specific resources
@@ -27,12 +27,15 @@ PlayingTeam.kTechTreeUpdateTime = 1
 PlayingTeam.kBaseAlertInterval = 15
 PlayingTeam.kRepeatAlertInterval = 15
 
+-- How often to update clear and update game effects
+PlayingTeam.kUpdateGameEffectsInterval = .3
+
 PlayingTeam.kResearchDisplayTime = 40
 
-/**
- * spawnEntity is the name of the map entity that will be created by default
- * when a player is spawned.
- */
+--
+-- spawnEntity is the name of the map entity that will be created by default
+-- when a player is spawned.
+--
 function PlayingTeam:Initialize(teamName, teamNumber)
 
     InitMixin(self, TeamDeathMessageMixin)
@@ -59,7 +62,7 @@ function PlayingTeam:Initialize(teamName, teamNumber)
     self.selectupgradechamber:SetDuration(60)
     self.selectupgradechamber:SetMinVotes(1)
 
-    // child classes can specify a custom team info class
+    -- child classes can specify a custom team info class
     local teamInfoMapName = TeamInfo.kMapName
     if self.GetTeamInfoMapName then
         teamInfoMapName = self:GetTeamInfoMapName()
@@ -78,6 +81,7 @@ function PlayingTeam:Initialize(teamName, teamNumber)
 
     self.eventListeners = {}
 
+    self.warmupStructures = {}
 end
 
 function PlayingTeam:AddListener( event, func )
@@ -91,7 +95,7 @@ function PlayingTeam:AddListener( event, func )
 
     table.insert( listeners, func )
 
-    //DebugPrint( 'event %s has %d listeners', event, #self.eventListeners[event] )
+    --DebugPrint( 'event %s has %d listeners', event, #self.eventListeners[event] )
 
 end
 
@@ -136,8 +140,7 @@ function PlayingTeam:OnInitialized()
 
     Team.OnInitialized(self)
     
-    self.techTree = TechTree()
-    self:InitTechTree(self.techTree)
+    self:InitTechTree()
     self.requiredTechIds = self.techTree:GetRequiredTechIds()
     self.timeOfLastTechTreeUpdate = nil
     
@@ -190,6 +193,7 @@ function PlayingTeam:GetInfoEntity()
 end
 
 function PlayingTeam:OnResetComplete()
+    self.warmupStructures = {}
 end
 
 function PlayingTeam:GetNumCapturedTechPoints()
@@ -197,7 +201,7 @@ function PlayingTeam:GetNumCapturedTechPoints()
     local commandStructures = GetEntitiesForTeam("CommandStructure", self:GetTeamNumber())
     local count = 0
     
-    for index, cs in ipairs(commandStructures) do
+    for _, cs in ipairs(commandStructures) do
     
         if cs:GetIsBuilt() and cs:GetIsAlive() and cs:GetAttached() then
             count = count + 1
@@ -221,51 +225,57 @@ end
 
 function PlayingTeam:GetHasCommander()
     local commanders = GetEntitiesForTeam("Commander", self:GetTeamNumber())
-    return table.count(commanders) > 0
+    return table.icount(commanders) > 0
 end
 
-// This is the initial tech point for the team
+-- This is the initial tech point for the team
 function PlayingTeam:GetInitialTechPoint()
     return Shared.GetEntity(self.initialTechPointId)
 end
 
-function PlayingTeam:InitTechTree(techTree)
+function PlayingTeam:InitTechTree()
+   
+    self.techTree = TechTree()
     
-    techTree:Initialize()
+    self.techTree:Initialize()
     
-    techTree:SetTeamNumber(self:GetTeamNumber())
+    self.techTree:SetTeamNumber(self:GetTeamNumber())
     
-    // Menus
-    techTree:AddMenu(kTechId.BuildMenu)
-    techTree:AddMenu(kTechId.AdvancedMenu)
-    techTree:AddMenu(kTechId.AssistMenu)
+    -- Menus
+    self.techTree:AddMenu(kTechId.RootMenu)
+    self.techTree:AddMenu(kTechId.BuildMenu)
+    self.techTree:AddMenu(kTechId.AdvancedMenu)
+    self.techTree:AddMenu(kTechId.AssistMenu)
     
-    // Orders
-    techTree:AddOrder(kTechId.Default)
-    techTree:AddOrder(kTechId.Move)
-    techTree:AddOrder(kTechId.Patrol)
-    techTree:AddOrder(kTechId.Attack)
-    techTree:AddOrder(kTechId.Build)
-    techTree:AddOrder(kTechId.Construct)
-    techTree:AddOrder(kTechId.AutoConstruct)
+    -- Orders
+    self.techTree:AddOrder(kTechId.Default)
+    self.techTree:AddOrder(kTechId.Move)
+    self.techTree:AddOrder(kTechId.Patrol)
+    self.techTree:AddOrder(kTechId.Attack)
+    self.techTree:AddOrder(kTechId.Build)
+    self.techTree:AddOrder(kTechId.Construct)
+    -- self.techTree:AddOrder(kTechId.AutoConstruct)
+    -- self.techTree:AddAction(kTechId.HoldPosition)
     
-    techTree:AddAction(kTechId.Cancel)
+    self.techTree:AddAction(kTechId.Cancel)
     
-    techTree:AddOrder(kTechId.Weld)   
+    self.techTree:AddOrder(kTechId.Weld)   
     
-    techTree:AddAction(kTechId.Stop)
+    self.techTree:AddAction(kTechId.Stop)
     
-    techTree:AddOrder(kTechId.SetRally)
-    techTree:AddOrder(kTechId.SetTarget)
+    self.techTree:AddOrder(kTechId.SetRally)
+    self.techTree:AddOrder(kTechId.SetTarget)
+    
+    -- self.techTree:AddUpgradeNode(kTechId.TransformResources)
     
 end
 
-// Returns marine or alien type
+-- Returns marine or alien type
 function PlayingTeam:GetTeamType()
     return self.teamType
 end
 
-local relevantResearchIds = nil
+local relevantResearchIds
 local function GetIsResearchRelevant(techId)
 
     if not relevantResearchIds then
@@ -300,9 +310,9 @@ end
 
 function PlayingTeam:OnResearchComplete(structure, researchId)
 
-    // Loop through all entities on our team and tell them research was completed
+    -- Loop through all entities on our team and tell them research was completed
     local teamEnts = GetEntitiesWithMixinForTeam("Research", self:GetTeamNumber())
-    for index, ent in ipairs(teamEnts) do
+    for _, ent in ipairs(teamEnts) do
         ent:TechResearched(structure, researchId)
     end
     
@@ -318,7 +328,7 @@ function PlayingTeam:OnResearchComplete(structure, researchId)
         
     end
     
-    // pass relevant techIds to team info object
+    -- pass relevant techIds to team info object
     local techPriority = GetIsResearchRelevant(researchId)
     if techPriority ~= nil then
     
@@ -327,7 +337,7 @@ function PlayingTeam:OnResearchComplete(structure, researchId)
         
     end
 
-    // inform listeners
+    -- inform listeners
 
     local listeners = self.eventListeners['OnResearchComplete']
 
@@ -369,14 +379,14 @@ function PlayingTeam:OnConstructionComplete(structure)
 
 end
 
-// Returns sound name of last alert and time last alert played (for testing)
+-- Returns sound name of last alert and time last alert played (for testing)
 function PlayingTeam:GetLastAlert()
     return self.lastPlayedTeamAlertName, self.timeOfLastPlayedTeamAlert
 end
 
-// Play audio alert for all players, but don't trigger them too often. 
-// This also allows neat tactics where players can time strikes to prevent the other team from instant notification of an alert, ala RTS.
-// Returns true if the alert was played.
+-- Play audio alert for all players, but don't trigger them too often.
+-- This also allows neat tactics where players can time strikes to prevent the other team from instant notification of an alert, ala RTS.
+-- Returns true if the alert was played.
 function PlayingTeam:TriggerAlert(techId, entity, force)
 
     local triggeredAlert = false
@@ -390,7 +400,7 @@ function PlayingTeam:TriggerAlert(techId, entity, force)
         local location = entity:GetOrigin()
         table.insert(self.alerts, { techId, entity:GetId() })
         
-        // Lookup sound name
+        -- Lookup sound name
         local soundName = LookupTechData(techId, kTechDataAlertSound, "")
         if soundName ~= "" then
         
@@ -401,7 +411,7 @@ function PlayingTeam:TriggerAlert(techId, entity, force)
                 timeElapsed = Shared.GetTime() - self.timeOfLastPlayedTeamAlert
             end
             
-            // Ignore source players for some alerts
+            -- Ignore source players for some alerts
             local ignoreSourcePlayer = ConditionalValue(LookupTechData(techId, kTechDataAlertOthersOnly, false), nil, entity)
             local ignoreInterval = LookupTechData(techId, kTechDataAlertIgnoreInterval, false)
             
@@ -410,11 +420,11 @@ function PlayingTeam:TriggerAlert(techId, entity, force)
                 self.lastAlertPriority = 0
             end
 
-            // If time elapsed > kBaseAlertInterval and not a repeat, play it OR
-            // If time elapsed > kRepeatAlertInterval then play it no matter what
+            -- If time elapsed > kBaseAlertInterval and not a repeat, play it OR
+            -- If time elapsed > kRepeatAlertInterval then play it no matter what
             if force or ignoreInterval or (timeElapsed >= PlayingTeam.kBaseAlertInterval and not isRepeat) or timeElapsed >= PlayingTeam.kRepeatAlertInterval or newAlertPriority  > self.lastAlertPriority then
             
-                // Play for commanders only or for the whole team
+                -- Play for commanders only or for the whole team
                 local commandersOnly = not LookupTechData(techId, kTechDataAlertTeam, false)
                 
                 local ignoreDistance = LookupTechData(techId, kTechDataAlertIgnoreDistance, false)
@@ -431,7 +441,7 @@ function PlayingTeam:TriggerAlert(techId, entity, force)
                 
                 triggeredAlert = true
                 
-                // Check if we should also send out a team message for this alert.
+                -- Check if we should also send out a team message for this alert.
                 local sendTeamMessageType = LookupTechData(techId, kTechDataAlertSendTeamMessage)
                 if sendTeamMessageType then
                     SendTeamMessage(self, sendTeamMessageType, entity:GetLocationId())
@@ -460,7 +470,7 @@ function PlayingTeam:SetTeamResources(amount)
 
     self.teamResources = math.min(kMaxTeamResources, amount)
     
-    function PlayerSetTeamResources(player)
+    local function PlayerSetTeamResources(player)
         player:SetTeamResources(self.teamResources)
     end
     
@@ -492,7 +502,7 @@ function PlayingTeam:GetHasTeamLost()
 
     if GetGamerules():GetGameStarted() and not Shared.GetCheatsEnabled() then
     
-        // Team can't respawn or last Command Station or Hive destroyed
+        -- Team can't respawn or last Command Station or Hive destroyed
         local activePlayers = self:GetHasActivePlayers()
         local abilityToRespawn = self:GetHasAbilityToRespawn()
         local numAliveCommandStructures = self:GetNumAliveCommandStructures()
@@ -517,12 +527,12 @@ local function SpawnResourceTower(self, techPoint)
 
     local techPointOrigin = Vector(techPoint:GetOrigin())
     
-    local closestPoint = nil
+    local closestPoint
     local closestPointDistance = 0
     
-    for index, current in ientitylist(Shared.GetEntitiesWithClassname("ResourcePoint")) do
+    for _, current in ientitylist(Shared.GetEntitiesWithClassname("ResourcePoint")) do
     
-        // The resource point and tech point must be in locations that share the same name.
+        -- The resource point and tech point must be in locations that share the same name.
         local sameLocation = techPoint:GetLocationName() == current:GetLocationName()
         if sameLocation then
         
@@ -540,7 +550,7 @@ local function SpawnResourceTower(self, techPoint)
         
     end
     
-    // Now spawn appropriate resource tower there
+    -- Now spawn appropriate resource tower there
     if closestPoint ~= nil then
     
         local techId = ConditionalValue(self:GetIsAlienTeam(), kTechId.Harvester, kTechId.Extractor)
@@ -552,17 +562,17 @@ local function SpawnResourceTower(self, techPoint)
     
 end
 
-/**
- * Spawn hive or command station at nearest empty tech point to specified team location.
- * Does nothing if can't find any.
- */
+--
+-- Spawn hive or command station at nearest empty tech point to specified team location.
+-- Does nothing if can't find any.
+--
 local function SpawnCommandStructure(techPoint, teamNumber)
 
     local commandStructure = techPoint:SpawnCommandStructure(teamNumber)
     assert(commandStructure ~= nil)
     commandStructure:SetConstructionComplete()
     
-    // Use same align as tech point.
+    -- Use same align as tech point.
     local techPointCoords = techPoint:GetCoords()
     techPointCoords.origin = commandStructure:GetOrigin()
     commandStructure:SetCoords(techPointCoords)
@@ -576,18 +586,23 @@ function PlayingTeam:SpawnInitialStructures(techPoint)
     assert(techPoint ~= nil)
     
     if GetServerGameMode() == kGameMode.Classic then
-        // Spawn tower at nearest unoccupied resource point.
+        -- Spawn tower at nearest unoccupied resource point.
         local tower = SpawnResourceTower(self, techPoint)
         if not tower then
             Print("Warning: Failed to spawn a resource tower for tech point in location: " .. techPoint:GetLocationName())
         end
     
     end
-    // Spawn hive/command station at team location.
+    
+    -- Spawn hive/command station at team location.
     local commandStructure = SpawnCommandStructure(techPoint, self:GetTeamNumber())
     
     return tower, commandStructure
-    
+
+end
+
+--Spawns extra strucrures for warmup
+function PlayingTeam:SpawnWarmUpStructures()
 end
 
 function PlayingTeam:GetHasAbilityToRespawn()
@@ -602,10 +617,10 @@ function PlayingTeam:GetIsMarineTeam()
     return false    
 end
 
-/**
- * Transform player to appropriate team respawn class and respawn them at an appropriate spot for the team.
- * Pass nil origin/angles to have spawn entity chosen.
- */
+--
+-- Transform player to appropriate team respawn class and respawn them at an appropriate spot for the team.
+-- Pass nil origin/angles to have spawn entity chosen.
+--
 function PlayingTeam:ReplaceRespawnPlayer(player, origin, angles, mapName)
 
     local spawnMapName = self.respawnEntity
@@ -616,8 +631,8 @@ function PlayingTeam:ReplaceRespawnPlayer(player, origin, angles, mapName)
     
     local newPlayer = player:Replace(spawnMapName, self:GetTeamNumber(), false, origin)
     
-    // If we fail to find a place to respawn this player, put them in the Team's
-    // respawn queue.
+    -- If we fail to find a place to respawn this player, put them in the Team's
+    -- respawn queue.
     if not self:RespawnPlayer(newPlayer, origin, angles) then
     
         newPlayer = newPlayer:Replace(newPlayer:GetDeathMapName())
@@ -636,7 +651,7 @@ end
 
 function PlayingTeam:ReplaceRespawnAllPlayers()
 
-    local playerIds = table.duplicate(self.playerIds)
+    local playerIds = table.iduplicate(self.playerIds)
 
     for i = 1, #playerIds do
 		
@@ -648,7 +663,7 @@ function PlayingTeam:ReplaceRespawnAllPlayers()
     
 end
 
-// Call with origin and angles, or pass nil to have them determined from team location and spawn points.
+-- Call with origin and angles, or pass nil to have them determined from team location and spawn points.
 function PlayingTeam:RespawnPlayer(player, origin, angles)
 
     local success = false
@@ -658,7 +673,7 @@ function PlayingTeam:RespawnPlayer(player, origin, angles)
         success = Team.RespawnPlayer(self, player, origin, angles)
     elseif initialTechPoint ~= nil then
     
-        // Compute random spawn location
+        -- Compute random spawn location
         local capsuleHeight, capsuleRadius = player:GetTraceCapsule()
         local spawnOrigin = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, initialTechPoint:GetOrigin(), 2, 15, EntityFilterAll())
         
@@ -666,7 +681,7 @@ function PlayingTeam:RespawnPlayer(player, origin, angles)
             spawnOrigin = initialTechPoint:GetOrigin() + Vector(2, 0.2, 2)
         end
         
-        // Orient player towards tech point
+        -- Orient player towards tech point
         local lookAtPoint = initialTechPoint:GetOrigin() + Vector(0, 5, 0)
         local toTechPoint = GetNormalizedVector(lookAtPoint - spawnOrigin)
         success = Team.RespawnPlayer(self, player, spawnOrigin, Angles(GetPitchFromVector(toTechPoint), GetYawFromVector(toTechPoint), 0))
@@ -679,7 +694,7 @@ function PlayingTeam:RespawnPlayer(player, origin, angles)
     
 end
 
-//Up to implementing child classes to override and calculate reutrn value
+--Up to implementing child classes to override and calculate reutrn value
 function PlayingTeam:GetTotalInRespawnQueue()
     return 0
 end
@@ -689,14 +704,14 @@ function PlayingTeam:TechAdded(entity)
 
     PROFILE("PlayingTeam:TechAdded")
 
-    // Tell tech tree to recompute availability next think
+    -- Tell tech tree to recompute availability next think
     local techId = entity:GetTechId()
 
     if not self.requiredTechIds then
         self.requiredTechIds = { }
     end
     
-    // don't do anything if this tech is not prereq of another tech
+    -- don't do anything if this tech is not prereq of another tech
     if not self.requiredTechIds[techId] then
         return
     end    
@@ -709,7 +724,7 @@ function PlayingTeam:TechAdded(entity)
         self.techIdCount[techId] = 1
     end
     
-    //Print("TechAdded %s  id: %s", EnumToString(kTechId, entity:GetTechId()), ToString(entity:GetTechId()))
+    --Print("TechAdded %s  id: %s", EnumToString(kTechId, entity:GetTechId()), ToString(entity:GetTechId()))
     if self.techTree then
         self.techTree:SetTechChanged()
     end
@@ -719,11 +734,11 @@ function PlayingTeam:TechRemoved(entity)
 
     PROFILE("PlayingTeam:TechRemoved")
 
-    // Tell tech tree to recompute availability next think
+    -- Tell tech tree to recompute availability next think
     
     local techId = entity:GetTechId()
 
-    // don't do anything if this tech is not prereq of another tech
+    -- don't do anything if this tech is not prereq of another tech
     if not self.requiredTechIds[techId] then
         return
     end
@@ -737,8 +752,8 @@ function PlayingTeam:TechRemoved(entity)
         self.techIdCount[techId] = nil
     end
     
-    //Print(ToString(debug.traceback()))
-    //Print("TechRemoved %s  id: %s", EnumToString(kTechId, entity:GetTechId()), ToString(entity:GetTechId()))
+    --Print(ToString(debug.traceback()))
+    --Print("TechRemoved %s  id: %s", EnumToString(kTechId, entity:GetTechId()), ToString(entity:GetTechId()))
     if(self.techTree ~= nil) then
         self.techTree:SetTechChanged()
     end
@@ -747,8 +762,8 @@ end
 
 function PlayingTeam:GetTeamBrain()
 
-    // we have bots, need a team brain
-    // lazily init team brain
+    -- we have bots, need a team brain
+    -- lazily init team brain
     if self.brain == nil then
         self.brain = TeamBrain()
         self.brain:Initialize(self.teamName.."-Brain", self:GetTeamNumber())
@@ -756,6 +771,16 @@ function PlayingTeam:GetTeamBrain()
 
     return self.brain
             
+end
+
+function PlayingTeam:RespawnAllDeadPlayer()
+    local deadPlayers = self:GetSortedRespawnQueue()
+    for i = 1, #deadPlayers do
+        local deadPlayer = deadPlayers[ i ]
+        self:RemovePlayerFromRespawnQueue( deadPlayer )
+        local success, newAlien = self:ReplaceRespawnPlayer( deadPlayer, nil, nil )
+        if success then newAlien:SetCameraDistance( 0 ) end
+    end
 end
 
 function PlayingTeam:Update(timePassed)
@@ -772,20 +797,6 @@ function PlayingTeam:Update(timePassed)
         
         if GetServerGameMode() == kGameMode.Classic then
             self:UpdateResourceTowers()
-        end
-
-        if #gServerBots > 0 or #GetEntitiesWithMixinForTeam("PlayerHallucination", self:GetTeamNumber()) > 0 then
-            self:GetTeamBrain():Update(timePassed)
-        elseif self.brain then        
-            self.brain = nil        
-        end
-
-
-    else
-
-        // deinit team brain
-        if self.brain ~= nil then
-            self.brain = nil
         end
 
     end
@@ -937,12 +948,12 @@ function PlayingTeam:UpdateTechTree()
 
     PROFILE("PlayingTeam:UpdateTechTree")
     
-    // Compute tech tree availability only so often because it's very slooow
+    -- Compute tech tree availability only so often because it's very slooow
     if self.techTree and (self.timeOfLastTechTreeUpdate == nil or Shared.GetTime() > self.timeOfLastTechTreeUpdate + PlayingTeam.kTechTreeUpdateTime) then
 
         self.techTree:Update(self.entityTechIds, self.techIdCount)
         
-        /*
+        --[[
         local techTreeString = ""        
         for _, techId in ipairs(self.entityTechIds) do            
             techTreeString = techTreeString .. " " .. EnumToString(kTechId, techId) .. "(" .. ToString(self.techIdCount[techId]) .. ")"            
@@ -950,12 +961,12 @@ function PlayingTeam:UpdateTechTree()
         Print("-----------team nr %s", ToString(self:GetTeamNumber()))
         Print(techTreeString)
         Print("------------------------")
-        */
+        --]]
 
-        // Send tech tree base line to players that just switched teams or joined the game        
+        -- Send tech tree base line to players that just switched teams or joined the game
         local players = self:GetPlayers()
         
-        for index, player in ipairs(players) do
+        for _, player in ipairs(players) do
         
             if player:GetSendTechTreeBase() then
             
@@ -967,7 +978,7 @@ function PlayingTeam:UpdateTechTree()
             
         end
         
-        // Send research, availability, etc. tech node updates to team players
+        -- Send research, availability, etc. tech node updates to team players
         self.techTree:SendTechTreeUpdates(players)
         
         self.timeOfLastTechTreeUpdate = Shared.GetTime()
@@ -988,7 +999,7 @@ function PlayingTeam:VoteToGiveUp(votingPlayer)
     if self.concedeVoteManager:PlayerVotes(votingPlayerSteamId, Shared.GetTime()) then
         PrintToLog("%s cast vote to give up.", votingPlayer:GetName())
         
-        // notify all players on this team
+        -- notify all players on this team
         if Server then
 
             local vote = self.concedeVoteManager    
@@ -1000,7 +1011,7 @@ function PlayingTeam:VoteToGiveUp(votingPlayer)
 
             local players = GetEntitiesForTeam("Player", self:GetTeamNumber())
 
-            for index, player in ipairs(players) do
+            for _, player in ipairs(players) do
                 Server.SendNetworkMessage(player, "VoteConcedeCast", netmsg, false)
             end
 
@@ -1080,6 +1091,7 @@ local function CompleteUpgradeChamberVote(self)
             Server.SendNetworkMessage(player, "ChamberSelected", netmsg, false)
         end
     end
+    
 end
 
 function PlayingTeam:UpdateVotes()
@@ -1087,10 +1099,11 @@ function PlayingTeam:UpdateVotes()
     PROFILE("PlayingTeam:UpdateVotes")
     
     if GetServerGameMode() == kGameMode.Classic then
-        // Update with latest team size
-        self.ejectCommVoteManager:SetNumPlayers(self:GetNumPlayers())
-        self.concedeVoteManager:SetNumPlayers(self:GetNumPlayers())
-        self.selectupgradechamber:SetNumPlayers(self:GetNumPlayers())
+        -- Update with latest team size
+    	local playercount, _, botcount = self:GetNumPlayers()
+    	local humancount = playercount - botcount
+    	self.ejectCommVoteManager:SetNumPlayers(humancount)
+    	self.concedeVoteManager:SetNumPlayers(humancount)
         
         // Eject commander if enough votes cast
         if self.ejectCommVoteManager:GetVotePassed() then

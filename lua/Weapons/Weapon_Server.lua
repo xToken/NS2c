@@ -1,10 +1,10 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Weapon_Server.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Weapon_Server.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 local kWeaponUseTimeLimit = 0.5
 
@@ -25,7 +25,7 @@ function Weapon:Dropped(prevOwner)
     
     self:SetWeaponWorldState(true)
     
-    // when dropped weapons always need a physic model
+    -- when dropped weapons always need a physic model
     if not self.physicsModel then
         self.physicsModel = Shared.CreatePhysicsModel(self.physicsModelIndex, true, self:GetCoords(), self)
     end
@@ -46,7 +46,7 @@ function Weapon:Dropped(prevOwner)
     
 end
 
-// Set to true for being a world weapon, false for when it's carried by a player
+-- Set to true for being a world weapon, false for when it's carried by a player
 function Weapon:SetWeaponWorldState(state, preventExpiration)
 
     if state ~= self.weaponWorldState then
@@ -55,7 +55,7 @@ function Weapon:SetWeaponWorldState(state, preventExpiration)
         
             self:SetPhysicsType(PhysicsType.DynamicServer)
             
-            // So it doesn't affect player movement and so collide callback is called
+            -- So it doesn't affect player movement and so collide callback is called
             self:SetPhysicsGroup(PhysicsGroup.DroppedWeaponGroup)
             self:SetPhysicsGroupFilterMask(PhysicsMask.DroppedWeaponFilter)
             
@@ -115,12 +115,12 @@ function Weapon:OnCapsuleTraceHit(entity)
     
 end
 
-// Should only be called when dropped
+-- Should only be called when dropped
 function Weapon:OnCollision(targetHit)
 
     if not targetHit then
     
-        // Play weapon drop sound
+        -- Play weapon drop sound
         if not self.hitGround then
         
             self:TriggerEffects("weapon_dropped")

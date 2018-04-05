@@ -1,11 +1,11 @@
-//=============================================================================
-//
-// lua/AlienBuy_Client.lua
-// 
-// Created by Henry Kropf and Charlie Cleveland
-// Copyright 2011, Unknown Worlds Entertainment
-//
-//=============================================================================
+--=============================================================================
+--
+-- lua/AlienBuy_Client.lua
+--
+-- Created by Henry Kropf and Charlie Cleveland
+-- Copyright 2011, Unknown Worlds Entertainment
+--
+--=============================================================================
 
 //NS2c
 //Removed concept of hypermutation, added classic techids and data
@@ -21,30 +21,30 @@ Script.Load("lua/Onos.lua")
 local indexToAlienTechIdTable = {kTechId.Fade, kTechId.Gorge, kTechId.Lerk, kTechId.Onos, kTechId.Skulk}
 
 local kAlienBuyMenuSounds = { Open = "sound/NS2.fev/alien/common/alien_menu/open_menu",
-                              Close = "sound/NS2.fev/alien/common/alien_menu/close_menu",
-                              Evolve = "sound/NS2.fev/alien/common/alien_menu/evolve",
-                              BuyUpgrade = "sound/NS2.fev/alien/common/alien_menu/buy_upgrade",
-                              SellUpgrade = "sound/NS2.fev/alien/common/alien_menu/sell_upgrade",
-                              Hover = "sound/NS2.fev/alien/common/alien_menu/hover",
-                              SelectSkulk = "sound/NS2.fev/alien/common/alien_menu/skulk_select",
-                              SelectFade = "sound/NS2.fev/alien/common/alien_menu/fade_select",
-                              SelectGorge = "sound/NS2.fev/alien/common/alien_menu/gorge_select",
-                              SelectOnos = "sound/NS2.fev/alien/common/alien_menu/onos_select",
-                              SelectLerk = "sound/NS2.fev/alien/common/alien_menu/lerk_select" }
+    Close = "sound/NS2.fev/alien/common/alien_menu/close_menu",
+    Evolve = "sound/NS2.fev/alien/common/alien_menu/evolve",
+    BuyUpgrade = "sound/NS2.fev/alien/common/alien_menu/buy_upgrade",
+    SellUpgrade = "sound/NS2.fev/alien/common/alien_menu/sell_upgrade",
+    Hover = "sound/NS2.fev/alien/common/alien_menu/hover",
+    SelectSkulk = "sound/NS2.fev/alien/common/alien_menu/skulk_select",
+    SelectFade = "sound/NS2.fev/alien/common/alien_menu/fade_select",
+    SelectGorge = "sound/NS2.fev/alien/common/alien_menu/gorge_select",
+    SelectOnos = "sound/NS2.fev/alien/common/alien_menu/onos_select",
+    SelectLerk = "sound/NS2.fev/alien/common/alien_menu/lerk_select" }
 
-for i, soundAsset in pairs(kAlienBuyMenuSounds) do
+for _, soundAsset in pairs(kAlienBuyMenuSounds) do
     Client.PrecacheLocalSound(soundAsset)
 end
 
 function IndexToAlienTechId(index)
 
-    if index >= 1 and index <= table.count(indexToAlienTechIdTable) then
+    if index >= 1 and index <= table.icount(indexToAlienTechIdTable) then
         return indexToAlienTechIdTable[index]
-    else    
+    else
         Print("IndexToAlienTechId(%d) - invalid id passed", index)
         return kTechId.None
     end
-    
+
 end
 
 function AlienTechIdToIndex(techId)
@@ -53,24 +53,24 @@ function AlienTechIdToIndex(techId)
             return index
         end
     end
-    
+
     ASSERT(false, "AlienTechIdToIndex(" .. ToString(techId) .. ") - invalid tech id passed")
     return 0
-    
+
 end
 
-/**
- * Return 1-d array of name, hp, ap, and cost for this class index
- */
+--
+-- Return 1-d array of name, hp, ap, and cost for this class index
+--
 function AlienBuy_GetClassStats(idx)
 
     if idx == nil then
         Print("AlienBuy_GetClassStats(nil) called")
     end
-    
-    // name, hp, ap, cost
+
+    -- name, hp, ap, cost
     local techId = IndexToAlienTechId(idx)
-    
+
     if techId == kTechId.Fade then
         return {"Fade", kFadeHealth, kFadeArmor, LookupTechData(techId, kTechDataCostKey, 0)}
     elseif techId == kTechId.Gorge then

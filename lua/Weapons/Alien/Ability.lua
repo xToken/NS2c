@@ -1,16 +1,17 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//
-// lua\Weapons\Alien\Ability.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
+--
+-- lua\Weapons\Alien\Ability.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added focus and silence hooks
+--NS2c
+--Added focus and silence hooks
 
 Script.Load("lua/Weapons/Weapon.lua")
+
 
 class 'Ability' (Weapon)
 
@@ -20,7 +21,7 @@ Ability.kMapName = "alienability"
 
 local kDefaultEnergyCost = 20
 
-// Return 0-100 energy cost (where 100 is full energy bar)
+--Return 0-100 energy cost (where 100 is full energy bar)
 function Ability:GetEnergyCost(player)
     return kDefaultEnergyCost
 end
@@ -87,11 +88,11 @@ function Ability:GetSecondaryAbilityUsesFocus()
     return false
 end
 
-// return array of player energy (0-1), ability energy cost (0-1), techId, visibility and hud slot
+-- return array of player energy (0-1), ability energy cost (0-1), techId, visibility and hud slot
 function Ability:GetInterfaceData(secondary, inactive)
 
     local parent = self:GetParent()
-    // It is possible there will be a time when there isn't a parent due to how Entities are destroyed and unparented.
+    -- It is possible there will be a time when there isn't a parent due to how Entities are destroyed and unparented.
     if parent then
     
         local vis = (inactive and parent:GetInactiveVisible()) or (not inactive)
@@ -100,21 +101,22 @@ function Ability:GetInterfaceData(secondary, inactive)
             hudSlot = self:GetHUDSlot()
         end
         
-        // Handle secondary here
+        -- Handle secondary here
         local techId = self:GetTechId()
         if secondary then
             techId = self:GetSecondaryTechId()
         end
         
-        // Inactive abilities return only hud slot, techId
+        -- Inactive abilities return only hud slot, techId
         if inactive then
             return {hudSlot, techId}
         elseif parent.GetEnergy then
         
             if secondary then
-                return {parent:GetEnergy() / parent:GetMaxEnergy(), self:GetSecondaryEnergyCost() / parent:GetMaxEnergy(), techId, vis, hudSlot}
+                return {parent:GetEnergy() / parent:GetMaxEnergy(), self:GetSecondaryEnergyCost() / parent:GetMaxEnergy(), techId, vis, hudSlot }
             else
-                return {parent:GetEnergy() / parent:GetMaxEnergy(), self:GetEnergyCost() / parent:GetMaxEnergy(), techId, vis, hudSlot}
+                local cooldown = self.GetCooldownFraction and self:GetCooldownFraction()
+                return {parent:GetEnergy() / parent:GetMaxEnergy(), self:GetEnergyCost() / parent:GetMaxEnergy(), techId, vis, hudSlot, cooldown }
             end
         
         end
@@ -125,12 +127,12 @@ function Ability:GetInterfaceData(secondary, inactive)
     
 end
 
-// Abilities don't have world models, they are part of the creature
+-- Abilities don't have world models, they are part of the creature
 function Ability:GetWorldModelName()
     return ""
 end
 
-// All alien abilities use the view model designated by the alien
+-- All alien abilities use the view model designated by the alien
 function Ability:GetViewModelName()
 
     local viewModel = ""
@@ -152,12 +154,12 @@ function Ability:PerformSecondaryAttack(player)
     return false
 end
 
-// Child class should override if preventing the primary attack is needed.
+-- Child class should override if preventing the primary attack is needed.
 function Ability:GetPrimaryAttackAllowed()
     return true
 end
 
-// Child class can override
+-- Child class can override
 function Ability:OnPrimaryAttack(player)
 
     if self:GetPrimaryAttackAllowed() and (not self:GetPrimaryAttackRequiresPress() or not player:GetPrimaryAttackLastFrame()) then

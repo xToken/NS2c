@@ -1,11 +1,11 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Marine\Builder.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Marine\Builder.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Weapon.lua")
 
@@ -63,14 +63,14 @@ function Builder:OnDestroy()
     
     if Server then
     
-        // The loopingFireSound was already destroyed at this point, clear the reference.
+        -- The loopingFireSound was already destroyed at this point, clear the reference.
         self.loopingFireSound = nil
     
     end
 
 end
 
-// for marine thirdperson pose
+-- for marine thirdperson pose
 function Builder:OverrideWeaponName()
     return "builder"
 end
@@ -95,7 +95,7 @@ function Builder:OnDraw(player, previousWeaponMapName)
 
     Weapon.OnDraw(self, player, previousWeaponMapName)
     self.building = true
-    // Attach weapon to parent's hand
+    -- Attach weapon to parent's hand
     self:SetAttachPoint(Weapon.kHumanAttachPoint)
     
 end
@@ -149,7 +149,9 @@ function Builder:OnUpdateAnimationInput(modelMixin)
     
     modelMixin:SetAnimationInput("activity", activity)
     modelMixin:SetAnimationInput("welder", false)
+    modelMixin:SetAnimationInput("needWelder", false)
     self:SetPoseParam("welder", 0)
+    
     
 end
 

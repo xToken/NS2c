@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Alien\DropStructureAbility.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Alien\DropStructureAbility.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added in additional build abilities
+--NS2c
+--Added in additional build abilities
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/HydraAbility.lua")
@@ -179,7 +179,7 @@ function DropStructureAbility:PerformPrimaryAttack(player)
 
     local success = false
 
-    // Ensure the current location is valid for placement.
+    -- Ensure the current location is valid for placement.
     local coords, valid = self:GetPositionForStructure(player:GetEyePos(), player:GetViewCoords().zAxis, self:GetActiveStructure(), self.lastClickedPosition)
     local secondClick = true
     
@@ -191,7 +191,7 @@ function DropStructureAbility:PerformPrimaryAttack(player)
     
         if valid then
 
-            // Ensure they have enough resources.
+            -- Ensure they have enough resources.
             local cost = GetCostForTech(self:GetActiveStructure().GetDropStructureId())
             if player:GetResources() >= cost and not self:GetHasDropCooldown() then
 
@@ -221,7 +221,7 @@ end
 
 local function DropStructure(self, player, origin, direction, structureAbility, lastClickedPosition)
 
-    // If we have enough resources
+    -- If we have enough resources
     if Server then
     
         local coords, valid, onEntity = self:GetPositionForStructure(origin, direction, structureAbility, lastClickedPosition)
@@ -233,7 +233,7 @@ local function DropStructure(self, player, origin, direction, structureAbility, 
             maxStructures = LookupTechData(techId, kTechDataMaxAmount, 0) 
         end
         
-        valid = valid and self:GetNumStructuresBuilt(techId) ~= maxStructures // -1 is unlimited
+        valid = valid and self:GetNumStructuresBuilt(techId) ~= maxStructures -- -1 is unlimited
         
         local cost = LookupTechData(structureAbility:GetDropStructureId(), kTechDataCostKey, 0)
         local enoughRes = player:GetResources() >= cost
@@ -241,7 +241,7 @@ local function DropStructure(self, player, origin, direction, structureAbility, 
         
         if valid and enoughRes and structureAbility:IsAllowed(player) and enoughEnergy and not self:GetHasDropCooldown() then
         
-            // Create structure
+            -- Create structure
             local structure = self:CreateStructure(coords, player, structureAbility)
             if structure then
             
@@ -252,7 +252,7 @@ local function DropStructure(self, player, origin, direction, structureAbility, 
                     onEntity:ConnectToStructure(structure)
                 end
                 
-                // Check for space
+                -- Check for space
                 if structure:SpaceClearForEntity(coords.origin) then
                 
                     local angles = Angles()                    
@@ -341,9 +341,9 @@ local function FilterBabblersAndTwo(ent1, ent2)
     return function (test) return test == ent1 or test == ent2 or test:isa("Babbler") end
 end
 
-// Given a gorge player's position and view angles, return a position and orientation
-// for structure. Used to preview placement via a ghost structure and then to create it.
-// Also returns bool if it's a valid position or not.
+-- Given a gorge player's position and view angles, return a position and orientation
+-- for structure. Used to preview placement via a ghost structure and then to create it.
+-- Also returns bool if it's a valid position or not.
 function DropStructureAbility:GetPositionForStructure(startPosition, direction, structureAbility, lastClickedPosition)
 
     PROFILE("DropStructureAbility:GetPositionForStructure")
@@ -354,12 +354,12 @@ function DropStructureAbility:GetPositionForStructure(startPosition, direction, 
     local player = self:GetParent()
     local adjustedcoords
 
-    // Trace short distance in front
+    -- Trace short distance in front
     local trace = Shared.TraceRay(player:GetEyePos(), origin, CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls, FilterBabblersAndTwo(player, self))
     
     local displayOrigin = trace.endPoint
     
-    // If we hit nothing, trace down to place on ground
+    -- If we hit nothing, trace down to place on ground
     if trace.fraction == 1 then
     
         origin = startPosition + direction * range
@@ -367,7 +367,7 @@ function DropStructureAbility:GetPositionForStructure(startPosition, direction, 
         
     end
     
-    // If it hits something, position on this surface (must be the world or another structure)
+    -- If it hits something, position on this surface (must be the world or another structure)
     if trace.fraction < 1 then
     
         if trace.entity == nil then
@@ -378,27 +378,27 @@ function DropStructureAbility:GetPositionForStructure(startPosition, direction, 
         
     end
     
-    // Don't allow dropped structures to go too close to techpoints and resource nozzles
+    -- Don't allow dropped structures to go too close to techpoints and resource nozzles
     if GetPointBlocksAttachEntities(displayOrigin) then
         validPosition = false
     end
     
     validPosition, adjustedcoords = structureAbility:GetIsPositionValid(displayOrigin, player, trace.normal, lastClickedPosition, trace.entity)
      
-	if trace.surface == "nocling" then          
+	if trace.surface == "nocling" then
 		validPosition = false
 	end
     
-    // Don't allow placing above or below us and don't draw either
+    -- Don't allow placing above or below us and don't draw either
     local structureFacing = Vector(direction)
     
     if math.abs(Math.DotProduct(trace.normal, structureFacing)) > 0.9 then
         structureFacing = trace.normal:GetPerpendicular()
     end
     
-    // Coords.GetLookIn will prioritize the direction when constructing the coords,
-    // so make sure the facing direction is perpendicular to the normal so we get
-    // the correct y-axis.
+    -- Coords.GetLookIn will prioritize the direction when constructing the coords,
+    -- so make sure the facing direction is perpendicular to the normal so we get
+    -- the correct y-axis.
     local perp = Math.CrossProduct( trace.normal, structureFacing )
     structureFacing = Math.CrossProduct( perp, trace.normal )
     
@@ -448,14 +448,14 @@ end
 
 function DropStructureAbility:ProcessMoveOnWeapon(input)
 
-    // Show ghost if we're able to create structure, and if menu is not visible
+    -- Show ghost if we're able to create structure, and if menu is not visible
     local player = self:GetParent()
     if player then
     
         if Server then
 
             local team = player:GetTeam()
-            //local hiveCount = team:GetActiveHiveCount()
+            --local hiveCount = team:GetActiveHiveCount()
             local numAllowedWebs = LookupTechData(kTechId.Web, kTechDataMaxAmount, -1) 
             local numAllowedBabblers = LookupTechData(kTechId.BabblerEgg, kTechDataMaxAmount, -1) 
             
@@ -496,7 +496,7 @@ function DropStructureAbility:GetIgnoreGhostHighlight()
     
     return false
     
-end
+end  
 
 function DropStructureAbility:GetGhostModelTechId()
 
@@ -538,7 +538,7 @@ if Client then
         local viewDirection = player:GetViewCoords().zAxis
 
         if player and self.activeStructure then
-
+            
             self.ghostCoords, self.placementValid = self:GetPositionForStructure(player:GetEyePos(), viewDirection, self:GetActiveStructure(), self.lastClickedPosition)
             
             if player:GetResources() < LookupTechData(self:GetActiveStructure():GetDropStructureId(), kTechDataCostKey) then
@@ -583,9 +583,9 @@ if Client then
     
         Ability.OnDrawClient(self)
         
-        // We need this here in case we switch to it via Prev/NextWeapon keys
+        -- We need this here in case we switch to it via Prev/NextWeapon keys
         
-        // Do not show menu for other players or local spectators.
+        -- Do not show menu for other players or local spectators.
         local player = self:GetParent()
         if player:GetIsLocalPlayer() and self:GetActiveStructure() == nil and Client.GetIsControllingPlayer() then
             self.menuActive = true
@@ -601,7 +601,7 @@ if Client then
         end
  
         if self.buildMenu then
-            self.buildMenu:SetIsVisible(player and localPlayer == player and player:isa("Gorge") and self.menuActive)
+            self.buildMenu:SetIsVisible(player and localPlayer == player and player:isa("Gorge") and self.menuActive and not HelpScreen_GetHelpScreen():GetIsBeingDisplayed())
         end
     
     end
@@ -610,6 +610,7 @@ if Client then
     
         self.menuActive = false
         Ability.OnHolsterClient(self)
+        self.activeStructure = nil
         
     end
     
@@ -620,7 +621,7 @@ if Client then
     
         if self.buildMenu then
 
-            // Build menu is up, let it handle input
+            -- Build menu is up, let it handle input
             if self.buildMenu:GetIsVisible() then
             
                 local selected = false
@@ -629,7 +630,7 @@ if Client then
                 
             else
 
-                // If player wants to switch to this, open build menu immediately
+                -- If player wants to switch to this, open build menu immediately
                 local weaponSwitchCommands = { Move.Weapon1, Move.Weapon2, Move.Weapon3, Move.Weapon4, Move.Weapon5 }
                 local thisCommand = weaponSwitchCommands[ self:GetHUDSlot() ]
 
