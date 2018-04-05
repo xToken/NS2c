@@ -1,15 +1,15 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GUIMarineBuyMenu.lua
-//
-// Created by: Andreas Urwalek (andi@unknownworlds.com)
-//
-// Manages the marine buy/purchase menu.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GUIMarineBuyMenu.lua
+--
+-- Created by: Andreas Urwalek (andi@unknownworlds.com)
+--
+-- Manages the marine buy/purchase menu.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added classic techids
+-- NS2c
+-- Added classic techids
 
 Script.Load("lua/GUIAnimatedScript.lua")
 
@@ -40,7 +40,10 @@ GUIMarineBuyMenu.kArrowWidth = GUIScale(kArrowWidth)
 GUIMarineBuyMenu.kArrowHeight = GUIScale(kArrowHeight)
 GUIMarineBuyMenu.kArrowTexCoords = { 1, 1, 0, 0 }
 
-local gBigIconIndex = nil
+local kEquippedMouseoverColor = Color(1, 1, 1, 1)
+local kEquippedColor = Color(0.5, 0.5, 0.5, 0.5)
+
+local gBigIconIndex
 local bigIconWidth = 400
 local bigIconHeight = 300
 local function GetBigIconPixelCoords(techId, researched)
@@ -91,7 +94,7 @@ local function GetBigIconPixelCoords(techId, researched)
 
 end
 
-// Small Item Icons
+-- Small Item Icons
 local kMenuIconSize = Vector(70, 70, 0)
 local kSelectorSize = Vector(74, 94, 0)
 local kIconTopOffset = 10
@@ -106,7 +109,7 @@ GUIMarineBuyMenu.kIconTopXOffset = GUIMarineBuyMenu.kSelectorSize.x
                             
 GUIMarineBuyMenu.kTextColor = Color(kMarineFontColor)
 
-//These are in order, only Can't Afford if Upgrade is unlocked
+-- These are in order, only Can't Afford if Upgrade is unlocked
 GUIMarineBuyMenu.kPurchasedColor = Color(0, 216/255, 1, 1)
 GUIMarineBuyMenu.kLockedColor = Color(0.5, 0.5, 0.5, 1)
 GUIMarineBuyMenu.kCantAffordColor = Color(1, 0, 0, 1)
@@ -122,7 +125,7 @@ local kBackgroundHeight = 720
 local kBackgroundXOffset = 0
 GUIMarineBuyMenu.kBackgroundWidth = GUIScale(kBackgroundWidth)
 GUIMarineBuyMenu.kBackgroundHeight = GUIScale(kBackgroundHeight)
-// We want the background graphic to look centered around the circle even though there is the part coming off to the right.
+-- We want the background graphic to look centered around the circle even though there is the part coming off to the right.
 GUIMarineBuyMenu.kBackgroundXOffset = GUIScale(kBackgroundXOffset)
 
 local kResourceDisplayHeight = 64
@@ -140,7 +143,7 @@ local kButtonHeight = 64
 GUIMarineBuyMenu.kButtonWidth = GUIScale(kButtonWidth)
 GUIMarineBuyMenu.kButtonHeight = GUIScale(kButtonHeight)
 
-// Big Item Icons
+-- Big Item Icons
 local kBigIconSize = Vector(320, 256, 0)
 local kBigIconOffset = -276
 GUIMarineBuyMenu.kBigIconSize = GUIScale(kBigIconSize)
@@ -168,9 +171,9 @@ GUIMarineBuyMenu.kCombatMarineUpgradeTable = 	{   {kTechId.Weapons1, kTechId.Wea
 
 function GUIMarineBuyMenu:OnClose()
 
-    // Check if GUIMarineBuyMenu is what is causing itself to close.
+    -- Check if GUIMarineBuyMenu is what is causing itself to close.
     if not self.closingMenu then
-        // Play the close sound since we didn't trigger the close.
+        -- Play the close sound since we didn't trigger the close.
         MarineBuy_OnClose()
     end
 
@@ -190,11 +193,13 @@ function GUIMarineBuyMenu:Initialize()
     
     MarineBuy_OnOpen()
     
+    MouseTracker_SetIsVisible(true, "ui/Cursor_MenuDefault.dds", true)
+    
 end
 
-/**
- * Checks if the mouse is over the passed in GUIItem and plays a sound if it has just moved over.
- */
+--
+-- Checks if the mouse is over the passed in GUIItem and plays a sound if it has just moved over.
+--
 local function GetIsMouseOver(self, overItem)
 
     local mouseOver = GUIItemContainsPoint(overItem, Client.GetCursorPosScreen())
@@ -239,10 +244,14 @@ function GUIMarineBuyMenu:OnResolutionChanged(oldX, oldY, newX, newY)
 	self:Uninitialize()
 	self:Initialize()
 	
+	MarineBuy_OnClose()
+
 end
 
 function GUIMarineBuyMenu:Update(deltaTime)
-
+  
+    PROFILE("GUIMarineBuyMenu:Update")
+    
     GUIAnimatedScript.Update(self, deltaTime)
 
     self:_UpdateItemButtons(deltaTime)
@@ -253,15 +262,17 @@ function GUIMarineBuyMenu:Update(deltaTime)
 end
 
 function GUIMarineBuyMenu:Uninitialize()
-
+    
     GUIAnimatedScript.Uninitialize(self)
-
+    
     self:_UninitializeItemButtons()
     self:_UninitializeBackground()
     self:_UninitializeContent()
     self:_UninitializeResourceDisplay()
     self:_UninitializeCloseButton()
-
+    
+    MouseTracker_SetIsVisible(false)
+    
 end
 
 local function MoveDownAnim(script, item)
@@ -273,7 +284,7 @@ end
 
 function GUIMarineBuyMenu:_InitializeBackground()
 
-    // This invisible background is used for centering only.
+    -- This invisible background is used for centering only.
     self.background = GUIManager:CreateGraphicItem()
     self.background:SetSize(Vector(Client.GetScreenWidth(), Client.GetScreenHeight(), 0))
     self.background:SetAnchor(GUIItem.Left, GUIItem.Top)
@@ -339,6 +350,8 @@ function GUIMarineBuyMenu:_InitializeItemButtons()
     
     self.menuHeaderTitle = GetGUIManager():CreateTextItem()
     self.menuHeaderTitle:SetFontName(GUIMarineBuyMenu.kFont)
+    self.menuHeaderTitle:SetScale(GetScaledVector())
+    GUIMakeFontScale(self.menuHeaderTitle)
     self.menuHeaderTitle:SetFontIsBold(true)
     self.menuHeaderTitle:SetAnchor(GUIItem.Middle, GUIItem.Center)
     self.menuHeaderTitle:SetTextAlignmentX(GUIItem.Align_Center)
@@ -352,7 +365,7 @@ function GUIMarineBuyMenu:_InitializeItemButtons()
     local itemTechIdList = MarineUI_GetPersonalUpgrades()
                         
     local selectorPosX = -GUIMarineBuyMenu.kSelectorSize.x + GUIMarineBuyMenu.kPadding
-    local fontScaleVector = Vector(0.8, 0.8, 0)
+    local fontScaleVector = GUIScale(Vector(0.8, 0.8, 0))
     
     for k, itemTechId in ipairs(itemTechIdList) do
     
@@ -370,7 +383,7 @@ function GUIMarineBuyMenu:_InitializeItemButtons()
         graphicItem:SetAnchor(GUIItem.Middle, GUIItem.Top)
         graphicItem:SetPosition(Vector(xPos, yPos, 0))
         graphicItem:SetTexture(GUIMarineBuyMenu.kSmallIcons)
-        graphicItem:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(itemTechId, false)))
+        graphicItem:SetTexturePixelCoordinates(GUIUnpackCoords(GetTextureCoordinatesForIcon(itemTechId)))
 		
 		local itemTitle = GUIManager:CreateTextItem()
         itemTitle:SetFontName(GUIMarineBuyMenu.kFont)
@@ -390,12 +403,13 @@ function GUIMarineBuyMenu:_InitializeItemButtons()
         graphicItemActive:SetAnchor(GUIItem.Right, GUIItem.Center)
         graphicItemActive:SetTexture(GUIMarineBuyMenu.kMenuSelectionTexture)
         graphicItemActive:SetIsVisible(false)
+        
         graphicItem:AddChild(graphicItemActive)
         
         local costIcon = GUIManager:CreateGraphicItem()
         costIcon:SetSize(Vector(GUIMarineBuyMenu.kResourceIconWidth * 0.8, GUIMarineBuyMenu.kResourceIconHeight * 0.8, 0))
         costIcon:SetAnchor(GUIItem.Right, GUIItem.Bottom)
-        costIcon:SetPosition(Vector(-32, -GUIMarineBuyMenu.kResourceIconHeight * 0.5, 0))
+        costIcon:SetPosition(Vector(-GUIScale(32), -GUIMarineBuyMenu.kResourceIconHeight * 0.5, 0))
         costIcon:SetTexture(GUIMarineBuyMenu.kResourceIconTexture)
         costIcon:SetColor(GUIMarineBuyMenu.kTextColor)
         
@@ -405,7 +419,7 @@ function GUIMarineBuyMenu:_InitializeItemButtons()
         selectedArrow:SetPosition(Vector(-GUIMarineBuyMenu.kArrowWidth - GUIMarineBuyMenu.kPadding, -GUIMarineBuyMenu.kArrowHeight * 0.5, 0))
         selectedArrow:SetTexture(GUIMarineBuyMenu.kArrowTexture)
         selectedArrow:SetColor(GUIMarineBuyMenu.kTextColor)
-        selectedArrow:SetTextureCoordinates(unpack(GUIMarineBuyMenu.kArrowTexCoords))
+        selectedArrow:SetTextureCoordinates(GUIUnpackCoords(GUIMarineBuyMenu.kArrowTexCoords))
         selectedArrow:SetIsVisible(false)
         
         graphicItem:AddChild(selectedArrow) 
@@ -418,6 +432,7 @@ function GUIMarineBuyMenu:_InitializeItemButtons()
         itemCost:SetTextAlignmentX(GUIItem.Align_Min)
         itemCost:SetTextAlignmentY(GUIItem.Align_Center)
         itemCost:SetScale(fontScaleVector)
+        GUIMakeFontScale(itemCost)
         itemCost:SetColor(GUIMarineBuyMenu.kTextColor)
         itemCost:SetText(ToString(LookupTechData(itemTechId, kTechDataCostKey, 0)))
         
@@ -430,7 +445,7 @@ function GUIMarineBuyMenu:_InitializeItemButtons()
     
     end
     
-    // to prevent wrong display before the first update
+    -- to prevent wrong display before the first update
     self:_UpdateItemButtons(0)
 
 end
@@ -469,10 +484,12 @@ end
 
 function GUIMarineBuyMenu:_UninitializeItemButtons()
 
-    for i, item in ipairs(self.itemButtons) do
-        GUI.DestroyItem(item.Button)
+    if self.itemButtons then
+        for i, item in ipairs(self.itemButtons) do
+            GUI.DestroyItem(item.Button)
+        end
+        self.itemButtons = nil
     end
-    self.itemButtons = nil
 
 end
 
@@ -480,13 +497,16 @@ function GUIMarineBuyMenu:_InitializeContent()
 
     self.itemName = GUIManager:CreateTextItem()
     self.itemName:SetFontName(GUIMarineBuyMenu.kFont)
+    self.itemName:SetScale(GetScaledVector())
     self.itemName:SetFontIsBold(true)
     self.itemName:SetAnchor(GUIItem.Left, GUIItem.Bottom)
     self.itemName:SetPosition(Vector(-GUIMarineBuyMenu.kBigIconSize.x / 2 + GUIMarineBuyMenu.kItemNameOffsetX , GUIMarineBuyMenu.kItemNameOffsetY , 0))
     self.itemName:SetTextAlignmentX(GUIItem.Align_Min)
     self.itemName:SetTextAlignmentY(GUIItem.Align_Min)
     self.itemName:SetColor(GUIMarineBuyMenu.kTextColor)
+    GUIMakeFontScale(self.itemName)
     self.itemName:SetText("no selection")
+    
     self.content:AddChild(self.itemName)
     
     self.portrait = GetGUIManager():CreateGraphicItem()
@@ -500,12 +520,14 @@ function GUIMarineBuyMenu:_InitializeContent()
     
     self.itemDescription = GetGUIManager():CreateTextItem()
     self.itemDescription:SetFontName(GUIMarineBuyMenu.kFont)
+	self.itemDescription:SetScale(GetScaledVector())
     self.itemDescription:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
     self.itemDescription:SetPosition(Vector(GUIMarineBuyMenu.kItemDescriptionOffsetX, GUIMarineBuyMenu.kItemDescriptionOffsetY, 0))
     self.itemDescription:SetTextAlignmentX(GUIItem.Align_Min)
     self.itemDescription:SetTextAlignmentY(GUIItem.Align_Min)
     self.itemDescription:SetColor(GUIMarineBuyMenu.kTextColor)
     self.itemDescription:SetTextClipped(true, GUIMarineBuyMenu.kItemDescriptionSize.x - 2 * GUIMarineBuyMenu.kPadding, GUIMarineBuyMenu.kItemDescriptionSize.y - GUIMarineBuyMenu.kPadding)
+	GUIMakeFontScale(self.itemDescription)
     self.content:AddChild(self.itemDescription)
     
 end
@@ -540,7 +562,7 @@ function GUIMarineBuyMenu:_UpdateContent(deltaTime)
         self.itemName:SetText(MarineBuy_GetDisplayName(techId))
         self.portrait:SetTexturePixelCoordinates(GetBigIconPixelCoords(techId, unlocked))
         self.itemDescription:SetText(MarineBuy_GetWeaponDescription(techId))
-        self.itemDescription:SetTextClipped(true, GUIMarineBuyMenu.kItemDescriptionSize.x - 2* GUIMarineBuyMenu.kPadding, GUIMarineBuyMenu.kItemDescriptionSize.y - GUIMarineBuyMenu.kPadding)
+        self.itemDescription:SetTextClipped(true, (GUIMarineBuyMenu.kItemDescriptionSize.x - 2*GUIMarineBuyMenu.kPadding)/self.itemDescription:GetScale().x, (GUIMarineBuyMenu.kItemDescriptionSize.y - GUIMarineBuyMenu.kPadding)/self.itemDescription:GetScale().y)
 
     end
     
@@ -577,17 +599,20 @@ function GUIMarineBuyMenu:_InitializeResourceDisplay()
 
     self.resourceDisplay = GUIManager:CreateTextItem()
     self.resourceDisplay:SetFontName(GUIMarineBuyMenu.kFont)
+    self.resourceDisplay:SetScale(GetScaledVector())
     self.resourceDisplay:SetFontIsBold(true)
     self.resourceDisplay:SetAnchor(GUIItem.Right, GUIItem.Center)
     self.resourceDisplay:SetPosition(Vector(-GUIMarineBuyMenu.kResourceIconWidth , 0, 0))
     self.resourceDisplay:SetTextAlignmentX(GUIItem.Align_Min)
     self.resourceDisplay:SetTextAlignmentY(GUIItem.Align_Center)
-    self.resourceDisplay:SetColor(GUIMarineBuyMenu.kTextColor)    
+    self.resourceDisplay:SetColor(GUIMarineBuyMenu.kTextColor)
+	GUIMakeFontScale(self.resourceDisplay)
     self.resourceDisplay:SetText("")
     self.resourceDisplayBackground:AddChild(self.resourceDisplay)
     
     self.currentDescription = GUIManager:CreateTextItem()
     self.currentDescription:SetFontName(GUIMarineBuyMenu.kFont)
+    self.currentDescription:SetScale(GetScaledVector())
     self.currentDescription:SetFontIsBold(true)
     self.currentDescription:SetAnchor(GUIItem.Right, GUIItem.Top)
     self.currentDescription:SetPosition(Vector(-GUIMarineBuyMenu.kResourceIconWidth * 3 , GUIMarineBuyMenu.kResourceIconHeight, 0))
@@ -595,6 +620,7 @@ function GUIMarineBuyMenu:_InitializeResourceDisplay()
     self.currentDescription:SetTextAlignmentY(GUIItem.Align_Center)
     self.currentDescription:SetColor(GUIMarineBuyMenu.kTextColor)
     self.currentDescription:SetText(Locale.ResolveString("CURRENT"))
+    GUIMakeFontScale(self.currentDescription)
     
     self.resourceDisplayBackground:AddChild(self.currentDescription) 
 
@@ -632,11 +658,13 @@ function GUIMarineBuyMenu:_InitializeCloseButton()
     self.closeButtonText = GUIManager:CreateTextItem()
     self.closeButtonText:SetAnchor(GUIItem.Middle, GUIItem.Center)
     self.closeButtonText:SetFontName(GUIMarineBuyMenu.kFont)
+    self.closeButtonText:SetScale(GetScaledVector())
     self.closeButtonText:SetTextAlignmentX(GUIItem.Align_Center)
     self.closeButtonText:SetTextAlignmentY(GUIItem.Align_Center)
     self.closeButtonText:SetText(Locale.ResolveString("EXIT"))
     self.closeButtonText:SetFontIsBold(true)
     self.closeButtonText:SetColor(GUIMarineBuyMenu.kCloseButtonColor)
+    GUIMakeFontScale(self.closeButtonText)
     self.closeButton:AddChild(self.closeButtonText)
     
 end
@@ -711,7 +739,7 @@ function GUIMarineBuyMenu:SendKeyEvent(key, down)
             
             if not inputHandled then
             
-                // Check if the close button was pressed.
+                -- Check if the close button was pressed.
                 if GetIsMouseOver(self, self.closeButton) then
                 
                     closeMenu = true
@@ -725,7 +753,7 @@ function GUIMarineBuyMenu:SendKeyEvent(key, down)
         
     end
     
-    // No matter what, this menu consumes MouseButton0/1.
+    -- No matter what, this menu consumes MouseButton0/1.
     if key == InputKey.MouseButton0 or key == InputKey.MouseButton1 then
         inputHandled = true
     end
