@@ -1,27 +1,30 @@
-// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\CloakableMixin.lua    
-//    
-// Handles both cloaking and camouflage. Effects are identical except cloaking can also hide
-// structures (camouflage is only for players).
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)    
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+-- ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\CloakableMixin.lua
+--
+-- Handles both cloaking and camouflage. Effects are identical except cloaking can also hide
+-- structures (camouflage is only for players).
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added in ghost cloaking logic
+-- NS2c
+-- Added in ghost cloaking logic
 
 CloakableMixin = CreateMixin(CloakableMixin)
 CloakableMixin.type = "Cloakable"
 
-// Uncloak faster than cloaking
+-- Uncloak faster than cloaking
 CloakableMixin.kCloakRate = 2
 CloakableMixin.kUncloakRate = 12
 CloakableMixin.kTriggerCloakDuration = .6
 CloakableMixin.kTriggerUncloakDuration = 2.5
 
 local kPlayerMaxCloak = 0.85
+local kPlayerHideModelMin = 0
+local kPlayerHideModelMax = 0.15
+
 
 local kEnemyUncloakDistanceSquared = 1.5 ^ 2
 
@@ -50,15 +53,17 @@ CloakableMixin.optionalCallbacks =
 
 CloakableMixin.networkVars =
 {
-    // set server side to true when cloaked fraction is 1
+    -- set server side to true when cloaked fraction is 1
     fullyCloaked = "boolean",
-    // so client knows in which direction to update the cloakFraction
+    -- so client knows in which direction to update the cloakFraction
     cloakingDesired = "boolean",
     cloakRate = "integer (0 to 3)"
 }
 
 function CloakableMixin:__initmixin()
-
+    
+    PROFILE("CloakableMixin:__initmixin")
+    
     if Server then
         self.cloakingDesired = false
         self.fullyCloaked = false
@@ -68,8 +73,9 @@ function CloakableMixin:__initmixin()
     self.timeCloaked = 0
     self.timeUncloaked = 0    
     
-    // when entity is created on client consider fully cloaked, so units wont show up for a short moment when going through a phasegate for example
+    -- when entity is created on client consider fully cloaked, so units wont show up for a short moment when going through a phasegate for example
     self.cloakFraction = self.fullyCloaked and 1 or 0
+    self.speedScalar = 0
     
 end
 
@@ -111,10 +117,10 @@ local function UpdateDesiredCloakFraction(self, deltaTime)
     
         self.cloakingDesired = false
     
-        // Animate towards uncloaked if triggered
-        if Shared.GetTime() > self.timeUncloaked and (not HasMixin(self, "Detectable") or not self:GetIsDetected()) then
+        -- Animate towards uncloaked if triggered
+        if Shared.GetTime() > self.timeUncloaked and (not HasMixin(self, "Detectable") or not self:GetIsDetected()) and ( not GetConcedeSequenceActive() ) then
             
-            // Uncloaking takes precedence over cloaking
+            -- Uncloaking takes precedence over cloaking
             if Shared.GetTime() < self.timeCloaked then        
                 self.cloakingDesired = true
                 self.cloakRate = 3
@@ -135,25 +141,29 @@ local function UpdateDesiredCloakFraction(self, deltaTime)
     end
     
     local newDesiredCloakFraction = self.cloakingDesired and 1 or 0
-    
-    // Update cloaked fraction according to our speed and max speed
-    if newDesiredCloakFraction == 1 and self.GetSpeedScalar then
-        newDesiredCloakFraction = 1 - self:GetSpeedScalar()
+
+    -- Update cloaked fraction according to our speed and max speed
+    if self.GetSpeedScalar then
+        -- Always cloak no matter how fast we go.
+        -- TODO: Fix that GetSpeedScalar returns incorrect values for aliens with celerity
+        local speedScalar = math.min(self:GetSpeedScalar(), 1)
+        newDesiredCloakFraction = newDesiredCloakFraction - 0.8 * speedScalar
+        self.speedScalar = speedScalar * 3
     end
     
     if newDesiredCloakFraction ~= nil then
-        //self.desiredCloakFraction = Clamp(newDesiredCloakFraction, 0, self:isa("Player") and (kGhostCloakingPerLevel * self.cloakRate) or 1)
+        -- self.desiredCloakFraction = Clamp(newDesiredCloakFraction, 0, self:isa("Player") and (kGhostCloakingPerLevel * self.cloakRate) or 1)
         self.desiredCloakFraction = Clamp(newDesiredCloakFraction, 0, self:isa("Player") and kPlayerMaxCloak or 1)
     end
     
 end
 
 local function UpdateCloakState(self, deltaTime)
-
-    // Account for trigger cloak, uncloak, camouflage speed
+    PROFILE("CloakableMixin:OnUpdate")
+    -- Account for trigger cloak, uncloak, camouflage speed
     UpdateDesiredCloakFraction(self, deltaTime)
     
-    // Animate towards desired/internal cloak fraction (so we never "snap")
+    -- Animate towards desired/internal cloak fraction (so we never "snap")
     local rate = (self.desiredCloakFraction > self.cloakFraction) and CloakableMixin.kCloakRate * (self.cloakRate / 3) or CloakableMixin.kUncloakRate
 
     local newCloak = Clamp(Slerp(self.cloakFraction, self.desiredCloakFraction, deltaTime * rate), 0, 1)
@@ -170,7 +180,7 @@ local function UpdateCloakState(self, deltaTime)
     end
 
     if Server then
-    
+        
         self.fullyCloaked = self:GetCloakFraction() >= kPlayerMaxCloak
         
         if self.lastTouchedEntityId then
@@ -187,6 +197,8 @@ local function UpdateCloakState(self, deltaTime)
     end
     
 end
+
+
 
 function CloakableMixin:OnUpdate(deltaTime)
     UpdateCloakState(self, deltaTime)
@@ -226,7 +238,7 @@ elseif Client then
 
             self:_UpdatePlayerModelRender(model)        
             
-            // Now process view model            
+            -- Now process view model
             if self == player then                
                 self:_UpdateViewModelRender()                
             end
@@ -239,14 +251,10 @@ elseif Client then
     
         local player = Client_GetLocalPlayer()
     
-        // Only draw models when mostly uncloaked
-        local albedoVisibility = 1 - Clamp(self.cloakFraction * 5, 0, 1)
-        
-        //if player and ((player.GetDarkVisionEnabled and player:GetDarkVisionEnabled()) or player:isa("AlienCommander") )then
-            //albedoVisibility = 1
-        //end
+        -- Only draw models when mostly uncloaked
+        local albedoVisibility = 1 - Clamp( ( self.cloakFraction - kPlayerHideModelMin ) / ( kPlayerHideModelMax + kPlayerHideModelMin ), 0, 1 )
     
-        // cloaked aliens off infestation are not 100% hidden             
+        -- cloaked aliens off infestation are not 100% hidden
         local opacity = albedoVisibility
         self:SetOpacity(opacity, "cloak")
         
@@ -279,13 +287,13 @@ elseif Client then
 
         if self.cloakedMaterial then
 
-            // show it animated for the alien commander. the albedo texture needs to remain visible for outline so we show cloaked in a different way here
+            -- show it animated for the alien commander. the albedo texture needs to remain visible for outline so we show cloaked in a different way here
             local distortAmount = self.cloakFraction
             if player and player:isa("AlienCommander") then            
                 distortAmount = distortAmount * 0.5 + math.sin(Shared.GetTime() * 0.05) * 0.05            
             end
             
-            // Main material parameter that affects our appearance
+            -- Main material parameter that affects our appearance
             self.cloakedMaterial:SetParameter("cloakAmount", self.cloakFraction)          
 
         end
@@ -304,31 +312,32 @@ elseif Client then
         end
         
         if self.distortMaterial then        
-            self.distortMaterial:SetParameter("distortAmount", self.cloakFraction)        
+            self.distortMaterial:SetParameter("distortAmount", self.cloakFraction)
+            self.distortMaterial:SetParameter("speedScalar", self.speedScalar)
         end
 
     end
     
     function CloakableMixin:_UpdateViewModelRender()
     
-        // always show view model distort effect
+        -- always show view model distort effect
         local viewModelEnt = self:GetViewModelEntity()
         if viewModelEnt and viewModelEnt:GetRenderModel() then
         
-            // Show view model as enemies see us, so we know how cloaked we are
+            -- Show view model as enemies see us, so we know how cloaked we are
             if not self.distortViewMaterial then
                 self.distortViewMaterial = AddMaterial(viewModelEnt:GetRenderModel(), kDistortMaterial)
             end
             
             self.distortViewMaterial:SetParameter("distortAmount", self.cloakFraction)
-            
+            self.distortViewMaterial:SetParameter("speedScalar", self.speedScalar)
         end
         
     end
     
 end
 
-// Pass negative to uncloak
+-- Pass negative to uncloak
 function CloakableMixin:OnScan()
 
     self:TriggerUncloak()

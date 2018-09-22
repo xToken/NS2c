@@ -1,10 +1,10 @@
-// ======= Copyright (c) 2003-2014, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GeneralEffects.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2014, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GeneralEffects.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 kGeneralEffectData = 
 {

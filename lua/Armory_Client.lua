@@ -1,15 +1,15 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Armory_Client.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// A Flash buy menu for marines to purchase weapons and armory from.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Armory_Client.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- A Flash buy menu for marines to purchase weapons and armory from.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed armory buy menu
+-- NS2c
+-- Removed armory buy menu
 
 local kHealthIndicatorModelName = PrecacheAsset("models/marine/armory/health_indicator.model")
 
@@ -66,7 +66,7 @@ function Armory:OnUpdateRender()
     
     self.healthIndicator:SetIsVisible(showHealthIndicator)
     
-    // rotate model if visible
+    -- rotate model if visible
     if showHealthIndicator then
     
         local time = Shared.GetTime()

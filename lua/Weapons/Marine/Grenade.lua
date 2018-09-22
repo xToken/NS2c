@@ -1,14 +1,13 @@
-// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Marine\Grenade.lua
-//
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Marine\Grenade.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Projectile.lua")
 Script.Load("lua/Mixins/ClientModelMixin.lua")
-Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/DamageMixin.lua")
 Script.Load("lua/Weapons/PredictedProjectile.lua")
 
@@ -31,7 +30,6 @@ local kGrenadeMaxShakeIntensity = 0.13
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(TeamMixin, networkVars)
 
 function Grenade:OnCreate()
 
@@ -39,7 +37,6 @@ function Grenade:OnCreate()
     
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ClientModelMixin)
-    InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
 
     if Server then    
@@ -86,17 +83,17 @@ end
 
 function Grenade:Detonate(targetHit)
 
-    // Do damage to nearby targets.
+    -- Do damage to nearby targets.
     
     if Server then
     
-        // Do damage to nearby targets.
+        -- Do damage to nearby targets.
         local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kGrenadeLauncherGrenadeDamageRadius)
         
-        // Remove grenade and add firing player.
+        -- Remove grenade and add firing player.
         table.removevalue(hitEntities, self)
         
-        // full damage on direct impact
+        -- full damage on direct impact
         if targetHit then
             table.removevalue(hitEntities, targetHit)
             self:DoDamage(kGrenadeLauncherGrenadeDamage, targetHit, targetHit:GetOrigin(), GetNormalizedVector(targetHit:GetOrigin() - self:GetOrigin()), "none")
@@ -104,7 +101,7 @@ function Grenade:Detonate(targetHit)
 
         RadiusDamage(hitEntities, self:GetOrigin(), kGrenadeLauncherGrenadeDamageRadius, kGrenadeLauncherGrenadeDamage, self)
         
-        // TODO: use what is defined in the material file
+        -- TODO: use what is defined in the material file
         local surface = GetSurfaceFromEntity(targetHit)
                 
         local params = { surface = surface }

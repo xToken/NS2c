@@ -1,18 +1,20 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Observatory.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Observatory.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Tweaked detector on Obs, added motion tracking and beaconing of dead players.
+-- NS2c
+-- Tweaked detector on Obs, added motion tracking and beaconing of dead players.
 
 Script.Load("lua/CommAbilities/Marine/Scan.lua")
+
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
+Script.Load("lua/AchievementGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
@@ -54,7 +56,8 @@ local kDistressBeaconSoundMarine = PrecacheAsset("sound/NS2.fev/marine/common/di
 
 Observatory.kDistressBeaconTime = kDistressBeaconTime
 Observatory.kDistressBeaconRange = kDistressBeaconRange
-Observatory.kDetectionRange = 22 // From NS1 
+Observatory.kDetectionRange = 22 -- From NS1
+Observatory.kRelevancyPortalRange = 40
 
 local kPassiveDetectorSoundDelay = 30
 local kAnimationGraph = PrecacheAsset("models/marine/observatory/observatory.animation_graph")
@@ -91,6 +94,7 @@ function Observatory:OnCreate()
         self.distressBeaconSound:SetAsset(kDistressBeaconSoundMarine)
         self.distressBeaconSound:SetRelevancyDistance(Math.infinity)
         
+        self.beaconRelevancyPortal = -1
     end
     
     InitMixin(self, BaseModelMixin)
@@ -100,6 +104,7 @@ function Observatory:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
+    InitMixin(self, AchievementGiverMixin)
     InitMixin(self, SelectableMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, LOSMixin)
@@ -121,13 +126,12 @@ function Observatory:OnCreate()
         InitMixin(self, SleeperMixin)
     elseif Client then
         InitMixin(self, CommanderGlowMixin)
-    end    
+    end
     
     self:SetUpdates(true)
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.MediumStructuresGroup)
-    self.distressorigin = nil
     
 end
 
@@ -141,7 +145,7 @@ function Observatory:OnInitialized()
     
     if Server then
     
-        // This Mixin must be inited inside this OnInitialized() function.
+        -- This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end
@@ -158,6 +162,13 @@ function Observatory:OnInitialized()
 
 end
 
+local function DestroyRelevancyPortal(self)
+    if self.beaconRelevancyPortal ~= -1 then
+        Server.DestroyRelevancyPortal(self.beaconRelevancyPortal)
+        self.beaconRelevancyPortal = -1
+    end
+end
+
 function Observatory:OnDestroy()
 
     ScriptActor.OnDestroy(self)
@@ -166,7 +177,7 @@ function Observatory:OnDestroy()
     
         DestroyEntity(self.distressBeaconSound)
         self.distressBeaconSound = nil
-
+        DestroyRelevancyPortal(self)
         
     end
     
@@ -205,7 +216,7 @@ end
 
 function Observatory:GetDistressOrigin()
 
-    // Respawn at nearest occupied command station
+    -- Respawn at nearest occupied command station
     local origin = self:GetOrigin()
     
     local nearest = GetNearest(origin, "CommandStation", self:GetTeamNumber(), function(ent) return ent:GetIsBuilt() and ent:GetIsOccupied() end)
@@ -233,6 +244,26 @@ local function TriggerMarineBeaconEffects(self)
 
 end
 
+local function SetupBeaconRelevancyPortal(self, destination)
+    
+    DestroyRelevancyPortal(self)
+    
+    local source = Vector(Math.infinity, Math.infinity, Math.infinity)
+    
+    local mask = 0
+    local teamNumber = self:GetTeamNumber()
+    if teamNumber == 1 then
+        mask = kRelevantToTeam1Unit
+    elseif teamNumber == 2 then
+        mask = kRelevantToTeam2Unit
+    end
+    
+    if mask ~= 0 then
+        self.beaconRelevancyPortal = Server.CreateRelevancyPortal(source, destination, mask, 0)
+    end
+    
+end
+
 function Observatory:TriggerDistressBeacon()
 
     local success = false
@@ -247,7 +278,7 @@ function Observatory:TriggerDistressBeacon()
         
             self.distressBeaconSound:SetOrigin(origin)
 
-            // Beam all faraway players back in a few seconds!
+            -- Beam all faraway players back in a few seconds!
             self.distressBeaconTime = Shared.GetTime() + Observatory.kDistressBeaconTime
             self.distressorigin = origin
             
@@ -259,6 +290,8 @@ function Observatory:TriggerDistressBeacon()
                 local locationName = location and location:GetName() or ""
                 local locationId = Shared.GetStringIndex(locationName)
                 SendTeamMessage(self:GetTeam(), kTeamMessageTypes.Beacon, locationId)
+                
+                SetupBeaconRelevancyPortal(self, origin)
                 
             end
             
@@ -278,6 +311,7 @@ function Observatory:CancelDistressBeacon()
     self.distressorigin = nil
     self.locationId = nil
     self.distressBeaconSound:Stop()
+    DestroyRelevancyPortal(self)
 
 end
 
@@ -291,16 +325,18 @@ local function GetPlayersToBeacon(self, toOrigin)
 	local locationName = self:GetLocationName()
 
     for index, player in ipairs(self:GetTeam():GetPlayers()) do
-        // Don't affect Commanders
+        -- Don't affect Commanders
         if not player:isa("Commander") then
 
-            // Don't respawn players that are already nearby.
+            -- Don't respawn players that are already nearby.
             if not GetIsPlayerInRoom(self, player, locationName) and not player:GetIsStateFrozen() and (not player.GetIsRagdoll or not player:GetIsRagdoll()) then
                 table.insert(players, player)
             end
+            
         end
+        
     end
-    
+
     return players
     
 end
@@ -323,17 +359,22 @@ local function ResurrectPlayer(self, player, distressOrigin)
     return success
 end
 
-// Spawn players at nearest Command Station to Observatory - not initial marine start like in NS1. Allows relocations and more versatile tactics.
+-- Spawn players at nearest Command Station to Observatory - not initial marine start like in NS1. Allows relocations and more versatile tactics.
 local function RespawnPlayer(self, player, distressOrigin)
 
-    // Always marine capsule (player could be dead/spectator)
+    -- Always marine capsule (player could be dead/spectator)
     local extents = LookupTechData(kTechId.Marine, kTechDataMaxExtents)
     local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)
     local range = Observatory.kDistressBeaconRange
     local spawnPoint = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, distressOrigin, 2, range, EntityFilterAll())
     
     if spawnPoint then
-    
+        
+        -- Obsolete Jan. 2, 2018, w/ relevancy portals.
+        --if HasMixin(player, "SmoothedRelevancy") then
+            --player:StartSmoothedRelevancy(spawnPoint)
+        --end
+        
         player:SetOrigin(spawnPoint)
         if player.TriggerBeaconEffects then
             player:TriggerBeaconEffects()
@@ -353,10 +394,21 @@ function Observatory:PerformDistressBeacon()
     
     local anyPlayerWasBeaconed = false
     
-    //local distressOrigin = self:GetDistressOrigin()
+    -- local distressOrigin = self:GetDistressOrigin()
     local distressOrigin = self.distressorigin
     
     for index, player in ipairs(GetPlayersToBeacon(self, distressOrigin)) do
+
+        -- Notify LOS mixin of the impending move (to prevent aliens scouted by this
+            -- player from getting stuck scouted).
+            if Server and HasMixin(player, "LOS") then
+                player:MarkNearbyDirtyImmediately()
+            end
+            
+            if Server and player.OnPreBeacon then
+                player:OnPreBeacon()
+            end
+
         local success = false
         if player:GetIsAlive() then
             success = RespawnPlayer(self, player, distressOrigin)
@@ -369,13 +421,13 @@ function Observatory:PerformDistressBeacon()
         
     end
     
-    // Also respawn players that are spawning in at infantry portals near command station (use a little extra range to account for vertical difference)
-    //for index, ip in ipairs(GetEntitiesForTeamWithinRange("InfantryPortal", self:GetTeamNumber(), distressOrigin, kInfantryPortalAttachRange + 1)) do
-        //ip:FinishSpawn()
-    //end
+    -- Also respawn players that are spawning in at infantry portals near command station (use a little extra range to account for vertical difference)
+    -- for index, ip in ipairs(GetEntitiesForTeamWithinRange("InfantryPortal", self:GetTeamNumber(), distressOrigin, kInfantryPortalAttachRange + 1)) do
+        -- ip:FinishSpawn()
+    -- end
     self.distressorigin = nil
     self.locationId = nil
-    // Play mega-spawn sound in world.
+    -- Play mega-spawn sound in world.
     if anyPlayerWasBeaconed then
         self:TriggerEffects("distress_beacon_complete")
     end
@@ -389,16 +441,23 @@ function Observatory:OnUpdate(deltaTime)
     if self:GetIsBeaconing() and (Shared.GetTime() >= self.distressBeaconTime) then
     
         self:PerformDistressBeacon()
+        DestroyRelevancyPortal(self)
         
         self.distressBeaconTime = nil
-            
+        
+    end
+    
+    if self.beaconRelevancyPortal ~= -1 and self.distressBeaconTime then
+        local rangeFrac = 1.0 - math.min(math.max(self.distressBeaconTime - Shared.GetTime(), 0) / self.kDistressBeaconTime, 1.0)
+        local range = self.kRelevancyPortalRange * rangeFrac
+        Server.SetRelevancyPortalRange(self.beaconRelevancyPortal, range)
     end
     
 end
 
 function Observatory:PerformActivation(techId, position, normal, commander)
 
-    local success = false
+    -- local success = false
     
     if GetIsUnitActive(self) then
     
@@ -457,12 +516,13 @@ end
 
 if Server then
 
-    function OnConsoleDistress()
+    local function OnConsoleDistress()
     
         if Shared.GetCheatsEnabled() or Shared.GetDevMode() then
             local beacons = Shared.GetEntitiesWithClassname("Observatory")
-            for i, beacon in ientitylist(beacons) do
+            for _, beacon in ientitylist(beacons) do
                 beacon:TriggerDistressBeacon()
+                return -- don't beacon more than one at a time.
             end
         end
         

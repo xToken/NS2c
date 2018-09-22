@@ -1,12 +1,12 @@
-// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\MarineTechMap.lua
-//
-// Created by: Andreas Urwalek (and@unknownworlds.com)
-//
-// Formatted marine tech tree.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\MarineTechMap.lua
+--
+-- Created by: Andreas Urwalek (and@unknownworlds.com)
+--
+-- Formatted marine tech tree.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/GUIUtility.lua")
 

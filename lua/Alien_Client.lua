@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Alien_Client.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Alien_Client.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added hive info and chamber counts, moved some vars to local
+-- NS2c
+-- Added hive info and chamber counts, moved some vars to local
 
 Script.Load("lua/MaterialUtility.lua")
 
@@ -35,13 +35,62 @@ end
 function AlienUI_GetHiveList()
     local hiveinfo = { }
 	
-	//Hives always relevant to aliens now, so just look them all up...
+	-- Hives always relevant to aliens now, so just look them all up...
 	for _, ent in ientitylist(Shared.GetEntitiesWithClassname("Hive")) do
         table.insert(hiveinfo, ent)
     end
     
 	return hiveinfo
 end
+
+function AlienUI_GetHiveStatusForLocation(locationId)
+
+    local slotData = 
+    {
+        eggCount = 0, eggInCombat = 0,
+        hiveHealthScalar = 0, hiveMaxHealth = 0,
+        hiveBuiltFraction = 0, hiveFlag = 0, hiveInCombat = 0,
+        locationId = 0
+    }
+    
+    for _, ent in ientitylist(Shared.GetEntitiesWithClassname("Hive")) do
+    
+        if ent:GetLocationId() == locationId then
+        
+            local techId = ent:GetTechId()
+            local buildScalar = ent:GetBuiltFraction()
+            
+            slotData.eggCount = 0
+            slotData.eggInCombat = 0
+                    
+            slotData.hiveHealthScalar = ent:GetHealthScalar()
+            slotData.hiveMaxHealth = ent:GetMaxHealth()
+            slotData.hiveBuiltFraction = buildScalar
+            slotData.hiveInCombat = ent:GetLastAttackedOrWarnedTime() + 5 > Shared.GetTime()
+            slotData.locationId = ent:GetLocationId()
+            
+            if techId == kTechId.ShiftHive then
+                slotData.hiveFlag = 3
+            elseif techId == kTechId.CragHive then
+                slotData.hiveFlag = 4
+            elseif techId == kTechId.ShadeHive then
+                slotData.hiveFlag = 5
+            elseif techId == kTechId.WhipHive then
+                slotData.hiveFlag = 6
+            elseif buildScalar == 1 then
+                slotData.hiveFlag = 2
+            else
+                slotData.hiveFlag = 1
+            end
+            
+            break
+        end
+        
+    end
+    
+    return slotData
+    
+end    
 
 function AlienUI_GetHasMovementSpecial()
 
@@ -64,7 +113,7 @@ function AlienUI_GetChamberCount(techId)
      return 0
 end
 
-// array of totalPower, minPower, xoff, yoff, visibility (boolean), hud slot
+-- array of totalPower, minPower, xoff, yoff, visibility (boolean), hud slot
 function GetActiveAbilityData(secondary)
 
     local data = { }
@@ -150,11 +199,11 @@ function AlienUI_GetEggCount()
     
 end
 
-/**
- * For current ability, return an array of
- * totalPower, minimumPower, tex x offset, tex y offset, 
- * visibility (boolean), command name
- */
+--
+-- For current ability, return an array of
+-- totalPower, minimumPower, tex x offset, tex y offset,
+-- visibility (boolean), command name
+--
 function AlienUI_GetAbilityData()
 
     local data = {}
@@ -169,11 +218,11 @@ function AlienUI_GetAbilityData()
     
 end
 
-/**
- * For secondary ability, return an array of
- * totalPower, minimumPower, tex x offset, tex y offset, 
- * visibility (boolean)
- */
+--
+-- For secondary ability, return an array of
+-- totalPower, minimumPower, tex x offset, tex y offset,
+-- visibility (boolean)
+--
 function AlienUI_GetSecondaryAbilityData()
 
     local data = {}
@@ -188,7 +237,7 @@ function AlienUI_GetSecondaryAbilityData()
     
 end
 
-// Loop through child weapons that aren't active and add all their data into one array
+-- Loop through child weapons that aren't active and add all their data into one array
 function AlienUI_GetInactiveAbilities()
 
     local data = {}
@@ -199,14 +248,14 @@ function AlienUI_GetInactiveAbilities()
     
         local inactiveAbilities = player:GetHUDOrderedWeaponList()
         
-        // Don't show selector if we only have one ability
-        if table.count(inactiveAbilities) > 1 then
+        -- Don't show selector if we only have one ability
+        if table.icount(inactiveAbilities) > 1 then
         
             for index, ability in ipairs(inactiveAbilities) do
             
                 if ability:isa("Ability") then
                     local abilityData = ability:GetInterfaceData(false, true)
-                    if table.count(abilityData) > 0 then
+                    if table.icount(abilityData) > 0 then
                         table.addtable(abilityData, data)
                     end
                 end
@@ -239,6 +288,14 @@ function AlienUI_GetPlayerMaxEnergy()
     end
     return kAbilityMaxEnergy
     
+end
+
+function PlayerUI_GetHasMucousShield()
+    return false
+end
+
+function PlayerUI_GetMucousShieldFraction()
+    return 0
 end
 
 function Alien:UpdateEmpoweredEffect(isLocal)
@@ -287,7 +344,7 @@ function Alien:UpdateEmpoweredEffect(isLocal)
         
     end
 
-    // update cinemtics
+    -- update cinemtics
     if self.empowered then
 
         if not self.lastEmpoweredEffect or self.lastEmpoweredEffect + kEmpoweredEffectInterval < Shared.GetTime() then
@@ -321,7 +378,7 @@ function Alien:UpdateClientEffects(deltaTime, isLocal)
 
     Player.UpdateClientEffects(self, deltaTime, isLocal)
     
-    // If we are dead, close the evolve menu.
+    -- If we are dead, close the evolve menu.
     if isLocal and not self:GetIsAlive() and self:GetBuyMenuIsDisplaying() then
         self:CloseMenu()
     end
@@ -407,7 +464,7 @@ function Alien:UpdateMisc(input)
     
     if not Shared.GetIsRunningPrediction() then
 
-        // Close the buy menu if it is visible when the Alien moves.
+        -- Close the buy menu if it is visible when the Alien moves.
         if input.move.x ~= 0 or input.move.z ~= 0 then
             self:CloseMenu()
         end
@@ -416,19 +473,19 @@ function Alien:UpdateMisc(input)
     
 end
 
-// Bring up evolve menu
+-- Bring up evolve menu
 function Alien:Buy()
 
-    // Don't allow display in the ready room, or as phantom
-    if self:GetIsLocalPlayer() then
+    -- Don't allow display in the ready room, or as phantom
+    -- Don't allow buy menu to be opened while help screen is displayed.
+    if self:GetIsLocalPlayer() and not HelpScreen_GetHelpScreen():GetIsBeingDisplayed() then
     
-        // The Embryo cannot use the buy menu in any case.
+        -- The Embryo cannot use the buy menu in any case.
         if self:GetTeamNumber() ~= 0 and not self:isa("Embryo") then
         
             if not self.buyMenu then
-            
+
                 self.buyMenu = GetGUIManager():CreateGUIScript("GUIAlienBuyMenu")
-                MouseTracker_SetIsVisible(true, "ui/Cursor_MenuDefault.dds", true)
                 
             else
                 self:CloseMenu()
@@ -483,7 +540,7 @@ function Alien:GetFirstPersonHitEffectName()
     return kAlienFirstPersonHitEffectName
 end
 
-// create some blood on the ground below
+-- create some blood on the ground below
 local kGroundDistanceBlood = Vector(0, 1, 0)
 local kGroundBloodStartOffset = Vector(0, 0.2, 0)
 function Alien:OnTakeDamageClient(damage, doer, position)
@@ -491,6 +548,10 @@ function Alien:OnTakeDamageClient(damage, doer, position)
     if not self.timeLastGroundBloodDecal then
         self.timeLastGroundBloodDecal = 0
     end
+    
+    --[[if self.timeLastGroundBloodDecal + 0.38 < Shared.GetTime() and doer then
+        self:TriggerEffects("damage_sound_target_local", { doer = doer:GetClassName() })
+    end--]]
     
     if self.timeLastGroundBloodDecal + 0.5 < Shared.GetTime() then
     
@@ -506,7 +567,7 @@ function Alien:OnTakeDamageClient(damage, doer, position)
             self:TriggerEffects("alien_blood_ground", {effecthostcoords = coords})
             
         end
-        
+
         self.timeLastGroundBloodDecal = Shared.GetTime()
         
     end

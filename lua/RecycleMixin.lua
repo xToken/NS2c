@@ -38,23 +38,9 @@ function RecycleMixin:__initmixin()
     self.recycled = false
 end
 
-function RecycleMixin:GetRecycleActive()
-    return self.researchingId == kTechId.Recycle
-end
-
 function RecycleMixin:OnRecycled()
-end
-
-function RecycleMixin:GetCanRecycle()
-
-    local canRecycle = true
-    
-    if self.GetCanRecycleOverride then
-        canRecycle = self:GetCanRecycleOverride()
-    end
-
-    return canRecycle and not self:GetRecycleActive()    
-
+    self.recycled = true
+    self.timeRecycled = Shared.GetTime()
 end
 
 function RecycleMixin:OnResearchComplete(researchId)
@@ -88,9 +74,6 @@ function RecycleMixin:OnResearchComplete(researchId)
         local team = self:GetTeam()
         local deathMessageTable = team:GetDeathMessage(team:GetCommander(), kDeathMessageIcon.Recycled, self)
         team:ForEachPlayer(function(player) if player:GetClient() then Server.SendNetworkMessage(player:GetClient(), "DeathMessage", deathMessageTable, true) end end)
-        
-        self.recycled = true
-        self.timeRecycled = Shared.GetTime()
 
         self:OnRecycled()
         
@@ -110,6 +93,23 @@ end
 
 function RecycleMixin:GetIsRecycling()
     return self.researchingId == kTechId.Recycle
+end
+
+function RecycleMixin:GetRecycleActive()
+    --Stupid
+    return self:GetIsRecycling()
+end
+
+function RecycleMixin:GetCanRecycle()
+
+    local canRecycle = true
+    
+    if self.GetCanRecycleOverride then
+        canRecycle = self:GetCanRecycleOverride()
+    end
+
+    return canRecycle and not self:GetIsRecycling()    
+
 end
 
 function RecycleMixin:OnResearch(researchId)
@@ -164,6 +164,6 @@ end
 function RecycleMixin:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("RecycleMixin:OnUpdateAnimationInput")
-    modelMixin:SetAnimationInput("recycling", self:GetRecycleActive())
+    modelMixin:SetAnimationInput("recycling", self:GetIsRecycling())
     
 end

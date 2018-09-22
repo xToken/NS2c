@@ -190,6 +190,8 @@ function GUIMarineBuyMenu:Initialize()
     
     MarineBuy_OnOpen()
     
+    MouseTracker_SetIsVisible(true, "ui/Cursor_MenuDefault.dds", true)
+    
 end
 
 /**
@@ -261,6 +263,8 @@ function GUIMarineBuyMenu:Uninitialize()
     self:_UninitializeContent()
     self:_UninitializeResourceDisplay()
     self:_UninitializeCloseButton()
+    
+    MouseTracker_SetIsVisible(false)
 
 end
 

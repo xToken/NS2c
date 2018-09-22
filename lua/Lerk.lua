@@ -1,16 +1,16 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Lerk.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-//    Modified by: James Gu (twiliteblue) on 5 Aug 2011
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Lerk.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+--    Modified by: James Gu (twiliteblue) on 5 Aug 2011
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added attackspeed, tweaked some vars for goldsource movement and made some vars local
+-- NS2c
+-- Added attackspeed, tweaked some vars for goldsource movement and made some vars local
 
 Script.Load("lua/Utility.lua")
 Script.Load("lua/Alien.lua")
@@ -63,9 +63,9 @@ local networkVars =
     gliding = "private compensated boolean",   
     glideAllowed = "private compensated boolean",  
     lastTimeFlapped = "compensated time",
-    // Wall grip. time == 0 no grip, > 0 when grip started.
+    -- Wall grip. time == 0 no grip, > 0 when grip started.
     wallGripTime = "private compensated time",
-    // the normal that the model will use. Calculated the same way as the skulk
+    -- the normal that the model will use. Calculated the same way as the skulk
     wallGripNormalGoal = "private compensated vector",
 	wallGripAllowed = "private compensated boolean",
     flapPressed = "private compensated boolean"
@@ -179,10 +179,10 @@ local kLerkGlideYaw = 90
 
 function Lerk:OverrideGetMoveYaw()
 
-    // stop the animation from banking the model; the animation was originally intended
-    // to handle left/right banking using move_speed and move_yaw, but this was too cumbersome.
-    // By setting the moveYaw to 90 (straight ahead), the animation-state banking is zeroed out
-    // and the banking can be handled by changing the roll angle instead
+    -- stop the animation from banking the model; the animation was originally intended
+    -- to handle left/right banking using move_speed and move_yaw, but this was too cumbersome.
+    -- By setting the moveYaw to 90 (straight ahead), the animation-state banking is zeroed out
+    -- and the banking can be handled by changing the roll angle instead
 
     if not self:GetIsOnGround() then
         return kLerkGlideYaw
@@ -196,8 +196,8 @@ function Lerk:OverrideGetMoveSpeed(speed)
     if self:GetIsOnGround() then
         return kMaxWalkSpeed
     end
-    // move_speed determines how often we flap. We fiddle some to 
-    // flap more at minimum flying speed
+    -- move_speed determines how often we flap. We fiddle some to
+    -- flap more at minimum flying speed
     return Clamp((speed - kMaxWalkSpeed) / kMaxSpeed, 0, 1) 
            
 end
@@ -212,7 +212,7 @@ function Lerk:GetAngleSmoothingMode()
 
 end
 
-// air strafe works different for lerk
+-- air strafe works different for lerk
 function Lerk:GetAirControl()
     return 0
 end
@@ -278,7 +278,7 @@ function Lerk:GetJumpMode()
     return kJumpMode.Default
 end
 
-// Gain speed gradually the longer we stay in the air
+-- Gain speed gradually the longer we stay in the air
 function Lerk:GetMaxSpeed(possible)
 
     if possible then
@@ -311,7 +311,7 @@ function Lerk:GetTimeOfLastFlap()
     return self.lastTimeFlapped
 end
 
-//Lerks DONT JUMP.  FAT BIRD
+-- Lerks DONT JUMP.  FAT BIRD
 function Lerk:GetCanJump()
     return false
 end
@@ -339,7 +339,7 @@ local function UpdateFlap(self, input, velocity)
 
         if flapPressed and self:GetEnergy() > kLerkFlapEnergyCost and not self.gliding then
         
-            // take off
+            -- take off
             if self:GetIsOnGround() or input.move:GetLength() == 0 then
                 velocity.y = velocity.y * 0.5 + 5
 
@@ -348,19 +348,19 @@ local function UpdateFlap(self, input, velocity)
                 local flapForce = kFlapImpulse
                 local move = Vector(input.move)
                 move.x = move.x * 0.75
-                // flap only at 50% speed side wards
+                -- flap only at 50% speed side wards
                 
                 local wishDir = self:GetViewCoords():TransformVector(move)
                 wishDir:Normalize()
 
-                // the speed we already have in the new direction
+                -- the speed we already have in the new direction
                 local currentSpeed = move:DotProduct(velocity)
-                // prevent exceeding max speed of kMaxSpeed by flapping
+                -- prevent exceeding max speed of kMaxSpeed by flapping
                 
                 local maxSpeed = math.max(currentSpeed, self:GetMaxSpeed())
                 
                 if input.move.z ~= 1 and velocity.y < 0 then
-                // apply vertical flap
+                -- apply vertical flap
                     velocity.y = velocity.y * 0.5 + 3.8     
                 elseif input.move.z == 1 and input.move.x == 0 then
                     flapForce = 3 + flapForce             
@@ -368,7 +368,7 @@ local function UpdateFlap(self, input, velocity)
                     velocity.y = velocity.y + 3.5
                 end
                 
-                // directional flap
+                -- directional flap
                 velocity:Scale(0.65)
                 velocity:Add(wishDir * flapForce)
                 
@@ -392,7 +392,7 @@ end
 
 local function UpdateGlide(self, input, velocity, deltaTime)
 
-    // more control when moving forward
+    -- more control when moving forward
     local holdingGlide = bit.band(input.commands, Move.Jump) ~= 0 and self.glideAllowed
     if input.move.z == 1 and holdingGlide then
     
@@ -400,7 +400,7 @@ local function UpdateGlide(self, input, velocity, deltaTime)
         useMove.x = useMove.x * 0.5
         
         local wishDir = GetNormalizedVector(self:GetViewCoords():TransformVector(useMove))
-        // slow down when moving in another XZ direction, accelerate when falling down
+        -- slow down when moving in another XZ direction, accelerate when falling down
         local currentDir = GetNormalizedVector(velocity)
         local glideAccel = -currentDir.y * deltaTime * kGlideAccel
 
@@ -409,7 +409,7 @@ local function UpdateGlide(self, input, velocity, deltaTime)
         local speed = velocity:GetLength() // velocity:DotProduct(wishDir) * 0.1 + velocity:GetLength() * 0.9
         local useSpeed = math.min(maxSpeed, speed + glideAccel)
 		
-		// when speed falls below 1, set horizontal speed to 1, and vertical speed to zero, but allow dive to regain speed
+		-- when speed falls below 1, set horizontal speed to 1, and vertical speed to zero, but allow dive to regain speed
 		if useSpeed < 4 then
 			useSpeed = 4
 			local newY = math.min(wishDir.y, 0)
@@ -417,7 +417,7 @@ local function UpdateGlide(self, input, velocity, deltaTime)
 			wishDir = GetNormalizedVector(wishDir)
 		end
 		
-        // when gliding we always have 100% control
+        -- when gliding we always have 100% control
         local redirectVelocity = wishDir * useSpeed
         VectorCopy(redirectVelocity, velocity)
         
@@ -429,12 +429,12 @@ local function UpdateGlide(self, input, velocity, deltaTime)
 
 end
 
-// jetpack and exo do the same, move to utility function
+-- jetpack and exo do the same, move to utility function
 local function UpdateAirStrafe(self, input, velocity, deltaTime)
 
     if not self:GetIsOnGround() and not self.gliding then
     
-        // do XZ acceleration
+        -- do XZ acceleration
         local wishDir = self:GetViewCoords():TransformVector(input.move) 
         wishDir.y = 0
         wishDir:Normalize()
@@ -484,7 +484,7 @@ function Lerk:PreUpdateMove(input, runningPrediction)
     
     if not self:GetIsWallGripping() and wallGripPressed and self.wallGripAllowed then
 
-        // check if we can grab anything around us
+        -- check if we can grab anything around us
         local wallNormal = self:GetAverageWallWalkingNormal(Lerk.kWallGripRange, Lerk.kWallGripFeelerSize)
         
         if wallNormal then
@@ -497,7 +497,7 @@ function Lerk:PreUpdateMove(input, runningPrediction)
     
     else
         
-        // we always abandon wall gripping if we flap (even if we are sliding to a halt)
+        -- we always abandon wall gripping if we flap (even if we are sliding to a halt)
         local breakWallGrip = bit.band(input.commands, Move.Jump) ~= 0 or input.move:GetLength() > 0 or self:GetCrouching()
         
         if breakWallGrip then

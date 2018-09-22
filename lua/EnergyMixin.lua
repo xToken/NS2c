@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\EnergyMixin.lua    
-//    
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)    
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\EnergyMixin.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Updated to work on timedcallback instead of an update every frame.
+-- NS2c
+-- Updated to work on timedcallback instead of an update every frame.
 
 EnergyMixin = CreateMixin(EnergyMixin)
 EnergyMixin.type = "Energy"
@@ -31,14 +31,16 @@ EnergyMixin.expectedCallbacks =
 
 EnergyMixin.networkVars =
 {
-    // We need to store as floating point to accumulate fractional values correctly, but
-    // the client only cares about integer precision.
+    -- We need to store as floating point to accumulate fractional values correctly, but
+    -- the client only cares about integer precision.
     energy = string.format("float (0 to %s by 1)", kMaxEnergy),
     maxEnergy = string.format("float (0 to %s by 1)", kMaxEnergy)
 }
 
 function EnergyMixin:__initmixin()
-
+    
+    PROFILE("EnergyMixin:__initmixin")
+    
     self.energy = LookupTechData(self:GetTechId(), kTechDataInitialEnergy, 0)
     self.maxEnergy = LookupTechData(self:GetTechId(), kTechDataMaxEnergy, 0)
     if Server then

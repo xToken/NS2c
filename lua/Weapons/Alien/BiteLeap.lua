@@ -1,16 +1,16 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Alien\BiteLeap.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-// 
-// Bite is main attack, leap is secondary.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Alien\BiteLeap.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- Bite is main attack, leap is secondary.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added in classic attack features (focus, attack delays) 
+--NS2c
+--Added in classic attack features (focus, attack delays)
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/LeapMixin.lua")
@@ -26,7 +26,7 @@ BiteLeap.kMapName = "bite"
 
 local kAnimationGraph = PrecacheAsset("models/alien/skulk/skulk_view.animation_graph")
 local kViewBloodMaterial = PrecacheAsset("materials/effects/mesh_effects/view_blood.material")
-local attackEffectMaterial = nil
+local attackEffectMaterial
 
 if Client then
 
@@ -55,7 +55,7 @@ function BiteLeap:GetAnimationGraphName()
     return kAnimationGraph
 end
 
-function BiteLeap:GetEnergyCost(player)
+function BiteLeap:GetEnergyCost()
     return kBiteEnergyCost
 end
 
@@ -110,7 +110,7 @@ function BiteLeap:GetKnockbackForce()
 end
 
 function BiteLeap:GetMeleeBase()
-    // Width of box, height of box
+    -- Width of box, height of box
     return kBiteMeleeBaseWidth, kBiteMeleeBaseHeight
 end
 

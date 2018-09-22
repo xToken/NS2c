@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Harvester.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Harvester.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed unneeded mixins, added infestation
+-- NS2c
+-- Removed unneeded mixins, added infestation
 
 Script.Load("lua/CloakableMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
@@ -67,7 +67,7 @@ function Harvester:OnInitialized()
     
     if Server then
     
-        // This Mixin must be inited inside this OnInitialized() function.
+        -- This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end

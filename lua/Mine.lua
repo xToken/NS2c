@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Mine.lua
-//
-//    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Mine.lua
+--
+--    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Changed mine to detonate instantly, also can be killed before 'armed'
+-- NS2c
+-- Changed mine to detonate instantly, also can be killed before 'armed'
 
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/TriggerMixin.lua")
@@ -25,12 +25,12 @@ class 'Mine' (ScriptActor)
 Mine.kMapName = "mine"
 
 Mine.kModelName = PrecacheAsset("models/marine/mine/mine.model")
-// The amount of time until the mine is detonated once armed.
+-- The amount of time until the mine is detonated once armed.
 local kTimeArmed = 0.10
-// The amount of time it takes other mines to trigger their detonate sequence when nearby mines explode.
+-- The amount of time it takes other mines to trigger their detonate sequence when nearby mines explode.
 local kTimedDestruction = 0.5
 
-// range in which other mines are trigger when detonating
+-- range in which other mines are trigger when detonating
 local kMineChainDetonateRange = 1.5
 local kMineCameraShakeDistance = 15
 local kMineMinShakeIntensity = 0.01
@@ -39,8 +39,10 @@ local kMineMaxShakeIntensity = 0.13
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
+AddMixinNetworkVars(LOSMixin, networkVars)
 
 function Mine:OnCreate()
 
@@ -52,11 +54,12 @@ function Mine:OnCreate()
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
+    InitMixin(self, EntityChangeMixin)
+    InitMixin(self, LOSMixin)
 
     if Server then
     
-        // init after OwnerMixin since 'OnEntityChange' is expected callback
-        InitMixin(self, EntityChangeMixin)
+        -- init after OwnerMixin since 'OnEntityChange' is expected callback
         InitMixin(self, SleeperMixin)
         
         self:SetUpdates(true)
@@ -85,7 +88,7 @@ local function Detonate(self, armFunc)
     local hitEntities = GetEntitiesWithMixinWithinRange("Live", self:GetOrigin(), kMineDetonateRange)
     RadiusDamage(hitEntities, self:GetOrigin(), kMineDetonateRange, kMineDamage, self, false, SineFalloff)
     
-    // Start the timed destruction sequence for any mine within range of this exploded mine.
+    -- Start the timed destruction sequence for any mine within range of this exploded mine.
     local nearbyMines = GetEntitiesWithinRange("Mine", self:GetOrigin(), kMineChainDetonateRange)
     for _, mine in ipairs(nearbyMines) do
     
@@ -102,9 +105,9 @@ local function Detonate(self, armFunc)
     
     self:TriggerEffects("mine_explode", params)
     
-    //CreateExplosionDecals(self, nil, 2)
+    --CreateExplosionDecals(self, nil, 2)
     
-    //TriggerCameraShake(self, kMineMinShakeIntensity, kMineMaxShakeIntensity, kMineCameraShakeDistance)
+    --TriggerCameraShake(self, kMineMinShakeIntensity, kMineMaxShakeIntensity, kMineCameraShakeDistance)
     
     DestroyEntity(self)
     
@@ -152,10 +155,10 @@ local function CheckEntityExplodesMine(self, entity)
     
     local minePos = self:GetEngagementPoint()
     local targetPos = entity:GetEngagementPoint()
-    // Do not trigger through walls. But do trigger through other entities.
+    -- Do not trigger through walls. But do trigger through other entities.
     if not GetWallBetween(minePos, targetPos, entity) then
     
-        // If this fails, targets can sit in trigger, no "polling" update performed.
+        -- If this fails, targets can sit in trigger, no "polling" update performed.
         Arm(self)
         return true
         
@@ -210,13 +213,11 @@ if Server then
 
     function Mine:OnKill(attacker, doer, point, direction)
     
-        ScriptActor.OnKill(self, attacker, doer, point, direction)
-
-		if self.active then
+        if self.active then
             Arm(self)
-        else
-            DestroyEntity(self)
         end
+
+        ScriptActor.OnKill(self, attacker, doer, point, direction)
         
     end
     
@@ -224,16 +225,16 @@ if Server then
         CheckEntityExplodesMine(self, entity)
     end
     
-    /**
-     * Go to sleep my sweet little mine if there are no entities nearby.
-     */
+    --
+    -- Go to sleep my sweet little mine if there are no entities nearby.
+    --
     function Mine:GetCanSleep()
         return self:GetNumberOfEntitiesInTrigger() == 0
     end
     
-    /**
-     * We need to check when there are entities within the trigger area often.
-     */
+    --
+    -- We need to check when there are entities within the trigger area often.
+    --
     function Mine:OnUpdate(dt)
     
         local now = Shared.GetTime()
@@ -255,8 +256,8 @@ end
 
 function Mine:GetTechButtons(techId)
 
-    local techButtons = nil
-    
+    local techButtons
+
     if techId == kTechId.RootMenu then
     
         techButtons = { kTechId.None, kTechId.None, kTechId.None, kTechId.None, 

@@ -1,24 +1,24 @@
 
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GUIAlienHUD.lua
-//
-// Created by: Brian Cronin (brianc@unknownworlds.com)
-//
-// Manages displaying the health and armor HUD information for the alien.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GUIAlienHUD.lua
+--
+-- Created by: Brian Cronin (brianc@unknownworlds.com)
+--
+-- Manages displaying the health and armor HUD information for the alien.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added hiveinfo and upgrade info, tweaked positions.
+-- NS2c
+-- Added hiveinfo and upgrade info, tweaked positions.
 
 Script.Load("lua/Globals.lua")
 Script.Load("lua/GUIDial.lua")
 Script.Load("lua/GUIAnimatedScript.lua")
 
 Script.Load("lua/Hud/Alien/GUIAlienHUDStyle.lua")
-Script.Load("lua/GUIPlayerResource.lua")
-Script.Load("lua/GUIEvent.lua")
+Script.Load("lua/Hud/GUIPlayerResource.lua")
+Script.Load("lua/Hud/GUIEvent.lua")
 Script.Load("lua/Hud/GUIInventory.lua")
 
 class 'GUIAlienHUD' (GUIAnimatedScript)
@@ -64,19 +64,21 @@ local kArmorTextureY2 = 128
 
 local kBabblerIndicatorPosition
 local kBabblerIconSize
+local kBabblerIconSizeStart
+local kBabblerIconSlerpSpeed
 
-local kBarMoveRate = 1.1
+local kBarMoveRate = 4.4
 
 local kHealthTextYOffset = -9
 
 local kArmorTextYOffset = 15
 
-// This is how long a ball remains visible after it changes.
+-- This is how long a ball remains visible after it changes.
 local kBallFillVisibleTimer = 5
-// This is at what point in the kBallFillVisibleTimer to begin fading out.
+-- This is at what point in the kBallFillVisibleTimer to begin fading out.
 local kBallStartFadeOutTimer = 2
 
-// Energy ball settings.
+-- Energy ball settings.
 local kEnergyBackgroundWidth = 160
 local kEnergyBackgroundHeight = 160
 local kEnergyBackgroundOffset = Vector(-kEnergyBackgroundWidth - 45, -50, 0)
@@ -146,48 +148,9 @@ local kShieldTextXOffset = -30
 local kShieldTextColor = Color(0, 1, 0.2, 1)
 local kShieldFontName = Fonts.kStamp_Medium
 
-local function CreateMucousText(self)
-    self.mucousText = GUIManager:CreateTextItem()
-    self.mucousText:SetFontName(kShieldFontName)
-    self.mucousText:SetAnchor(GUIItem.Middle, GUIItem.Center)
-    self.mucousText:SetPosition(Vector(GUIScale(kShieldTextXOffset), GUIScale(kShieldTextYOffset), 0))
-    self.mucousText:SetTextAlignmentX(GUIItem.Align_Center)
-    self.mucousText:SetTextAlignmentY(GUIItem.Align_Center)
-    self.mucousText:SetColor(kShieldTextColor)
-    self.mucousText:SetScale(GetScaledVector())
-    GUIMakeFontScale(self.mucousText)
-    self.mucousText:SetInheritsParentAlpha(true)
-    self.lastmucousstate = false
-    
-    if self.healthBall then
-        self.healthBall:GetBackground():AddChild(self.mucousText)
-    end
-end
+local kBabblerDefaultColor = Color(1, 1, 1, 1)
+local kBabblerAlternateColor = Color(1, 1, 1, 0.5)
 
-local function UpdateMucousAmount(self)
-    if self.mucousText then
-        local shieldHP = PlayerUI_GetMucousShieldHP()
-        local hasShield = PlayerUI_GetHasMucousShield()
-        if not hasShield and self.lastmucousstate then
-            self.mucousText:SetText(tostring(0))
-            self.mucousText:SetIsVisible(false)
-            self.lastmucousstate = false
-        end
-        if hasShield then
-            local displayshieldHP = math.floor(shieldHP)
-            if shieldHP > 0 and displayshieldHP == 0 then
-                displayshieldHP = 1
-            end
-            self.mucousText:SetText("Shield: " .. tostring(displayshieldHP))
-            if not self.lastmucousstate then
-                self.mucousText:SetIsVisible(true)
-                self.lastmucousstate = true
-            end
-        end
-    else
-        CreateMucousText(self)
-    end
-end
 
 local function GetTechIdForUpgrade(upg) 
     return LookupTechData(upg, kTechDataKeyStructure, kTechId.None)
@@ -197,6 +160,8 @@ local function UpdateItemsGUIScale(self)
 
     kBabblerIndicatorPosition = GUIScale(Vector(200, -120, 0))
     kBabblerIconSize = GUIScale(42)
+    kBabblerIconSizeStart = GUIScale(70)
+    kBabblerIconSlerpSpeed = 60
     kMovementSpecialIconSize = GUIScale(70)
 
 end
@@ -209,10 +174,10 @@ function GUIAlienHUD:Initialize()
     
     self.scale = Client.GetScreenHeight() / kBaseScreenHeight
     
-    // Stores all state related to fading balls.
+    -- Stores all state related to fading balls.
     self.fadeValues = { }
     
-    // Keep track of weapon changes.
+    -- Keep track of weapon changes.
     self.lastActiveHudSlot = 0
     
     self:CreateHealthBall()
@@ -274,12 +239,12 @@ function GUIAlienHUD:Initialize()
         self.hives[i].healthBar = self:CreateAnimatedGraphicItem()
         self.hives[i].healthBar:SetTexture(kStatusTexture)
         self.hives[i].healthBar:SetAnchor(GUIItem.Right, GUIItem.Top)
-        self.hives[i].healthBar:SetTexturePixelCoordinates(unpack(kHealthBarPixelCoords))
+        self.hives[i].healthBar:SetTexturePixelCoordinates(GUIUnpackCoords(kHealthBarPixelCoords))
         self.hives[i].healthBar:AddAsChildTo(self.resourceBackground)
         self.hives[i].builtBar = self:CreateAnimatedGraphicItem()
         self.hives[i].builtBar:SetTexture(kStatusTexture)
         self.hives[i].builtBar:SetAnchor(GUIItem.Right, GUIItem.Top)
-        self.hives[i].builtBar:SetTexturePixelCoordinates(unpack(kHealthBarPixelCoords))
+        self.hives[i].builtBar:SetTexturePixelCoordinates(GUIUnpackCoords(kHealthBarPixelCoords))
         self.hives[i].builtBar:AddAsChildTo(self.resourceBackground)
         self.hives[i].locationtext = self:CreateAnimatedTextItem()
         self.hives[i].locationtext:SetNumberTextAccuracy(1)
@@ -322,15 +287,25 @@ function GUIAlienHUD:Initialize()
     
     self:Reset()
     
+    self:SetIsVisible(not HelpScreen_GetHelpScreen():GetIsBeingDisplayed())
+    
 end
 
 function GUIAlienHUD:SetIsVisible(isVisible)
-
+    
+    self.visible = isVisible
+    
     self.healthBall:SetIsVisible(isVisible)
     self.healthText:SetIsVisible(isVisible)
     self.armorBall:SetIsVisible(isVisible)
     self.armorText:SetIsVisible(isVisible)
+    
+    local hasShield = PlayerUI_GetHasMucousShield()
+    self.mucousBall:SetIsVisible(hasShield and isVisible)
+    self.mucousText:SetIsVisible(hasShield and isVisible)
+    
     self.energyBall:SetIsVisible(isVisible)
+    self.resourceBackground:SetIsVisible(isVisible)
     
     if isVisible then
         
@@ -338,6 +313,12 @@ function GUIAlienHUD:SetIsVisible(isVisible)
         self:ForceUnfade(self.energyBall:GetBackground())
         
     end
+    
+end
+
+function GUIAlienHUD:GetIsVisible()
+    
+    return (self.visible == true)
     
 end
 
@@ -459,6 +440,33 @@ function GUIAlienHUD:CreateHealthBall()
     
     self.armorBall:GetLeftSide():SetColor(kArmorCircleColor)
     self.armorBall:GetRightSide():SetColor(kArmorCircleColor)
+
+    self.mucousBallPercentage = PlayerUI_GetMucousShieldFraction()
+
+    local mucousBallSettings = { }
+    mucousBallSettings.BackgroundWidth = GUIScale(192)
+    mucousBallSettings.BackgroundHeight = GUIScale(192)
+    mucousBallSettings.BackgroundAnchorX = GUIItem.Left
+    mucousBallSettings.BackgroundAnchorY = GUIItem.Bottom
+    mucousBallSettings.BackgroundOffset = Vector(15, -35, 0) * GUIScale(1)
+    mucousBallSettings.BackgroundTextureName = nil
+    mucousBallSettings.BackgroundTextureX1 = 0
+    mucousBallSettings.BackgroundTextureY1 = 0
+    mucousBallSettings.BackgroundTextureX2 = 0
+    mucousBallSettings.BackgroundTextureY2 = 0
+    mucousBallSettings.ForegroundTextureName = kTextureName
+    mucousBallSettings.ForegroundTextureWidth = 128
+    mucousBallSettings.ForegroundTextureHeight = 128
+    mucousBallSettings.ForegroundTextureX1 = 128
+    mucousBallSettings.ForegroundTextureY1 = 0
+    mucousBallSettings.ForegroundTextureX2 = 256
+    mucousBallSettings.ForegroundTextureY2 = 128
+    mucousBallSettings.InheritParentAlpha = false
+    self.mucousBall = GUIDial()
+    self.mucousBall:Initialize(mucousBallSettings)
+
+    self.mucousBall:GetLeftSide():SetColor(Color(0, 1, 0, 1))
+    self.mucousBall:GetRightSide():SetColor(Color(0, 1, 0, 1))
     
     self.healthText = GUIManager:CreateTextItem()
     self.healthText:SetFontName(kHealthFontName)
@@ -473,13 +481,13 @@ function GUIAlienHUD:CreateHealthBall()
     
     self.healthBall:GetBackground():AddChild(self.healthText)
     
-    // Create health icon to display to the right of the health text
+    -- Create health icon to display to the right of the health text
     self.healthIcon = GUIManager:CreateGraphicItem()
     self.healthIcon:SetSize(Vector(GUIScale(kHealthArmorIconSize), GUIScale(kHealthArmorIconSize), 0))
     self.healthIcon:SetAnchor(GUIItem.Middle, GUIItem.Top)
     self.healthIcon:SetPosition(Vector(GUIScale(1), -GUIScale(kHealthArmorIconSize) / 2, 0))
     self.healthIcon:SetTexture(kHealthArmorTextureName)
-    self.healthIcon:SetTexturePixelCoordinates(unpack(kHealthIconTextureCoordinates))
+    self.healthIcon:SetTexturePixelCoordinates(GUIUnpackCoords(kHealthIconTextureCoordinates))
     self.healthIcon:SetIsVisible(true)
     self.healthIcon:SetInheritsParentAlpha(true)
     self.healthIcon:SetInheritsParentScaling(false)
@@ -498,18 +506,31 @@ function GUIAlienHUD:CreateHealthBall()
     
     self.healthBall:GetBackground():AddChild(self.armorText)
     
-    // Create armor icon to display to the right of the health text
+    -- Create armor icon to display to the right of the health text
     self.armorIcon = GUIManager:CreateGraphicItem()
     self.armorIcon:SetSize(Vector(GUIScale(kHealthArmorIconSize), GUIScale(kHealthArmorIconSize), 0))
     self.armorIcon:SetAnchor(GUIItem.Middle, GUIItem.Top)
     self.armorIcon:SetPosition(Vector(GUIScale(1), -GUIScale(kHealthArmorIconSize) / 2, 0))
     self.armorIcon:SetTexture(kHealthArmorTextureName)
-    self.armorIcon:SetTexturePixelCoordinates(unpack(kArmorIconTextureCoordinates))
+    self.armorIcon:SetTexturePixelCoordinates(GUIUnpackCoords(kArmorIconTextureCoordinates))
     self.armorIcon:SetIsVisible(true)
     self.armorIcon:SetInheritsParentAlpha(true)
     self.armorIcon:SetInheritsParentScaling(false)
     self.armorText:AddChild(self.armorIcon)
-    
+
+    self.mucousText = GUIManager:CreateTextItem()
+    self.mucousText:SetFontName(kShieldFontName)
+    self.mucousText:SetAnchor(GUIItem.Middle, GUIItem.Center)
+    self.mucousText:SetPosition(Vector(GUIScale(kShieldTextXOffset), GUIScale(kShieldTextYOffset), 0))
+    self.mucousText:SetTextAlignmentX(GUIItem.Align_Center)
+    self.mucousText:SetTextAlignmentY(GUIItem.Align_Center)
+    self.mucousText:SetColor(kShieldTextColor)
+    self.mucousText:SetScale(GetScaledVector())
+    GUIMakeFontScale(self.mucousText)
+    self.mucousText:SetInheritsParentAlpha(true)
+    self.lastmucousstate = false
+
+    self.healthBall:GetBackground():AddChild(self.mucousText)
 end
 
 function GUIAlienHUD:CreateEnergyBall()
@@ -556,6 +577,16 @@ function GUIAlienHUD:CreateEnergyBall()
     self.activeAbilityIcon:SetIsVisible(false)
     self.activeAbilityIcon:SetInheritsParentAlpha(true)
     self.energyBall:GetBackground():AddChild(self.activeAbilityIcon)
+    
+    
+    self.activeAbilityCooldownIcon = GUIManager:CreateGraphicItem()
+    self.activeAbilityCooldownIcon:SetSize(Vector(GUIScale(kInventoryIconTextureWidth*0.75), GUIScale(kInventoryIconTextureHeight*0.75), 0))
+    self.activeAbilityCooldownIcon:SetAnchor(GUIItem.Left, GUIItem.Top)
+    self.activeAbilityCooldownIcon:SetTexture(kInventoryIconsTexture)    
+    self.activeAbilityCooldownIcon:SetColor(kNotEnoughEnergyColor)
+    self.activeAbilityCooldownIcon:SetIsVisible(false)
+    self.activeAbilityIcon:AddChild( self.activeAbilityCooldownIcon )
+    
     
     self.secondaryAbilityBackground = GUIManager:CreateGraphicItem()
     self.secondaryAbilityBackground:SetSize(Vector(GUIScale(kSecondaryAbilityIconSize*2), GUIScale(kSecondaryAbilityIconSize*2), 0))
@@ -641,6 +672,13 @@ function GUIAlienHUD:Uninitialize()
         self.armorBall = nil
         
     end
+
+    if self.mucousBall then
+
+        self.mucousBall:Uninitialize()
+        self.mucousBall = nil
+
+    end
     
     if self.energyBall then
     
@@ -710,20 +748,20 @@ local function UpdateHealthBall(self, deltaTime)
         self.armorBarPercentage = Slerp(self.armorBarPercentage, armorBarPercentageGoal, deltaTime * kBarMoveRate)
     end    
     
-    // don't use more than 60% for armor in case armor value is bigger than health
-    // for skulk use 10 / 70 = 14% as armor and 86% as health
+    -- don't use more than 60% for armor in case armor value is bigger than health
+    -- for skulk use 10 / 70 = 14% as armor and 86% as health
     local armorUseFraction = Clamp( PlayerUI_GetPlayerMaxArmor() / PlayerUI_GetPlayerMaxHealth(), 0, 0.6)
     local healthUseFraction = 1 - armorUseFraction
     
-    // set global rotation to snap to the health ring    
+    -- set global rotation to snap to the health ring
     self.armorBall:SetRotation( - 2 * math.pi * self.healthBarPercentage * healthUseFraction )
     
     self.healthBall:SetPercentage(self.healthBarPercentage * healthUseFraction)
     self.armorBall:SetPercentage(self.armorBarPercentage * armorUseFraction)
 
-    // It's probably better to do a math.ceil for display health instead of floor, but NS1 did it this way
-    // and I want to make sure the values are exactly the same to avoid confusion right now. When you are 
-    // barely alive though, show 1 health.
+    -- It's probably better to do a math.ceil for display health instead of floor, but NS1 did it this way
+    -- and I want to make sure the values are exactly the same to avoid confusion right now. When you are
+    -- barely alive though, show 1 health.
     local health = PlayerUI_GetPlayerHealth()
     
     local displayHealth = math.floor(health)
@@ -745,12 +783,34 @@ local function UpdateHealthBall(self, deltaTime)
     end
     
     self:UpdateFading(self.healthBall:GetBackground(), self.healthBarPercentage * self.armorBarPercentage, deltaTime)
-    self.armorBall:GetLeftSide():SetIsVisible(self.healthBall:GetBackground():GetIsVisible())
-    self.armorBall:GetRightSide():SetIsVisible(self.healthBall:GetBackground():GetIsVisible())
-    
+    self.armorBall:GetLeftSide():SetIsVisible(self.healthBall:GetBackground():GetIsVisible() and self.visible)
+    self.armorBall:GetRightSide():SetIsVisible(self.healthBall:GetBackground():GetIsVisible() and self.visible)
+
 end
 
-local gEnergizeColors = nil
+local function UpdateMucousBall(self, deltaTime)
+    local shieldFraction = PlayerUI_GetMucousShieldFraction()
+    local hasShield = PlayerUI_GetHasMucousShield()
+
+    self.mucousBallPercentage = Slerp(self.mucousBallPercentage, shieldFraction, deltaTime * kBarMoveRate)
+    self.mucousBall:SetIsVisible(hasShield)
+    self.mucousBall:SetPercentage(self.mucousBallPercentage)
+    self.mucousBall:Update(deltaTime)
+
+    local updated = shieldFraction ~= self.mucousBallPercentage
+
+    -- The resource display will have updated this first, so we only need to set it to full if needed
+    -- It will be low already if no animations were running
+    if updated and self.updateInterval ~= kUpdateIntervalFull then
+        self.updateInterval = kUpdateIntervalFull
+    end
+
+    local displayMuscuousHP = PlayerUI_GetMucousShieldHP()
+    self.mucousText:SetText(tostring(displayMuscuousHP))
+    self.mucousText:SetIsVisible(hasShield)
+end
+
+local gEnergizeColors
 local function GetEnergizeColor(energizeLevel)
 
     if not gEnergizeColors then
@@ -790,7 +850,7 @@ local function UpdateEnergyBall(self, deltaTime)
     self.adrenalineEnergy:SetPercentage(overFlowEnergyFraction * (1 - overflowFraction))
     self.adrenalineEnergy:Update(deltaTime)
     
-    //self:UpdateFading(self.energyBall:GetBackground(), energy / totalMaxEnergy, deltaTime)
+    --self:UpdateFading(self.energyBall:GetBackground(), energy / totalMaxEnergy, deltaTime)
     self:UpdateAbilities(deltaTime)
     
     local hasMovementSpecial = AlienUI_GetHasMovementSpecial()
@@ -803,7 +863,7 @@ local function UpdateEnergyBall(self, deltaTime)
             local msFraction = 1-AlienUI_GetMovementSpecialCooldown()
             local color = AlienUI_GetPlayerEnergy() >= energyCost and Color(kArmorCircleColor) or Color(1, 0, 0, 1)
 
-            local x1, y1, x2, y2 = unpack(GetTextureCoordinatesForIcon(techId))
+            local x1, y1, x2, y2 = GUIUnpackCoords(GetTextureCoordinatesForIcon(techId))
             self.movementSpecialIcon:SetTexturePixelCoordinates(x1, y2, x2, y2-(y2-y1)*msFraction)
             self.movementSpecialIcon:SetSize(Vector(kMovementSpecialIconSize, -kMovementSpecialIconSize*msFraction, 0))
             self.movementSpecialIconBg:SetTexturePixelCoordinates(x1, y1, x2, y2)
@@ -840,31 +900,36 @@ local function UpdateNotifications(self, deltaTime)
     
 end
 
-local function UpdateBabblerIndication(self, delatTime)
-
-    local numBabblers = PlayerUI_GetNumClingedBabblers()
+local function UpdateBabblerIndication(self, deltaTime)
     
+    local numBabblers = PlayerUI_GetNumBabblers()
+    local numBabblersClinged = PlayerUI_GetNumClingedBabblers()
+    local numBabblersTotal = math.max(numBabblersClinged, numBabblers)
+
     if not self.babblerIcons then
         self.babblerIcons = {}
     end
 
-    local displayedNumBabblers = #self.babblerIcons
-    if displayedNumBabblers < numBabblers then
-        
-        for i = 1, numBabblers - displayedNumBabblers do
+    local numBabblersDisplayed = #self.babblerIcons
+
+    if numBabblersDisplayed < numBabblersTotal then
+
+        for i = 1, numBabblersTotal - numBabblersDisplayed do
         
             local icon = GetGUIManager():CreateGraphicItem()
-            icon:SetSize(Vector(kBabblerIconSize, kBabblerIconSize, 0))
-            icon:SetPosition(Vector(#self.babblerIcons * kBabblerIconSize, 0, 0))
+            local size = kBabblerIconSizeStart
+
+            icon:SetSize(Vector(size, size, 0))
+            icon:SetPosition(Vector(#self.babblerIcons * size, 0, 0))
             icon:SetTexture(kBabblerTexture)
             self.babblerIndicationFrame:AddChild(icon)
-            table.insert(self.babblerIcons, icon)
-            
+            table.insert(self.babblerIcons, icon)    
+
         end
         
-    elseif numBabblers < displayedNumBabblers then
+    elseif numBabblersTotal < numBabblersDisplayed then
     
-        for i = 1, displayedNumBabblers - numBabblers do
+        for i = 1, numBabblersDisplayed - numBabblersTotal do
         
             GUI.DestroyItem(self.babblerIcons[#self.babblerIcons])
             table.remove(self.babblerIcons, #self.babblerIcons)    
@@ -872,8 +937,25 @@ local function UpdateBabblerIndication(self, delatTime)
         end
     
     end
+
+    local totalIconSize = 0
+    for j = 1, #self.babblerIcons do
+
+        local size = kBabblerIconSize
+        local babblerIcon = self.babblerIcons[j]
+
+        if babblerIcon:GetSize().x - kBabblerIconSize > 0.001 then
+            size = Slerp(babblerIcon:GetSize().x, kBabblerIconSize, deltaTime * kBabblerIconSlerpSpeed)
+            babblerIcon:SetSize(Vector(size, size, 0))
+            babblerIcon:SetPosition(Vector(j * size, 0, 0))
+        end
+
+        babblerIcon:SetColor(j <= numBabblersClinged and kBabblerDefaultColor or kBabblerAlternateColor)
+        totalIconSize = totalIconSize + size
     
-    local size = Vector(kBabblerIconSize * numBabblers, kBabblerIconSize, 0)
+    end
+    
+    local size = Vector(totalIconSize * numBabblersTotal, totalIconSize, 0)
     self.babblerIndicationFrame:SetSize(size)
     
 
@@ -883,10 +965,10 @@ function GUIAlienHUD:Update(deltaTime)
 
     PROFILE("GUIAlienHUD:Update")
     
-    // update resource display
+    -- update resource display
     self.resourceDisplay:Update(deltaTime, { PlayerUI_GetTeamResources(), PlayerUI_GetPersonalResources(), CommanderUI_GetTeamHarvesterCount() } )
     
-    // updates animations
+    -- updates animations
     GUIAnimatedScript.Update(self, deltaTime)
     
     UpdateNotifications(self, deltaTime)
@@ -917,13 +999,13 @@ function GUIAlienHUD:Update(deltaTime)
     end
     
     self.inventoryDisplay:Update(deltaTime, { PlayerUI_GetActiveWeaponTechId(), PlayerUI_GetInventoryTechIds() })
-    self:UpdateHiveInformation(deltaTime)
+    -- self:UpdateHiveInformation(deltaTime)
     -- The resource display was modifying the update interval for the script, so this block will run last
     -- This way we can also update the display rate in case it's set to low after an animation finishes
     UpdateHealthBall(self, deltaTime)
     UpdateEnergyBall(self, deltaTime)
     UpdateBabblerIndication(self, deltaTime)
-    UpdateMucousAmount(self)
+    UpdateMucousBall(self, deltaTime)
 
     if PlayerUI_GetGameMode() == kGameMode.Classic then
     
@@ -957,16 +1039,31 @@ function GUIAlienHUD:UpdateAbilities(deltaTime)
     local abilityData = AlienUI_GetAbilityData()
     local currentIndex = 1
     
-    if table.count(abilityData) > 0 then
+    if table.icount(abilityData) > 0 then
     
         local totalPower = abilityData[currentIndex]
         local minimumPower = abilityData[currentIndex + 1]
         local techId = abilityData[currentIndex + 2]
         local visibility = abilityData[currentIndex + 3]
         activeHudSlot = abilityData[currentIndex + 4]
+        local cooldown = abilityData[currentIndex + 5] or 0
+        
+        
+        local x1, y1, x2, y2 = GetTexCoordsForTechId(techId)
         
         self.activeAbilityIcon:SetIsVisible(true)
-        self.activeAbilityIcon:SetTexturePixelCoordinates(GetTexCoordsForTechId(techId))
+        self.activeAbilityIcon:SetTexturePixelCoordinates(x1,y1,x2,y2)
+        
+        if cooldown > 0 then
+            local offset = kInventoryIconTextureHeight * ( 0.925 - 0.925 * cooldown ) -- [1,0] -> [0, 0.95]
+            self.activeAbilityCooldownIcon:SetIsVisible(true)
+            self.activeAbilityCooldownIcon:SetSize(Vector(GUIScale(kInventoryIconTextureWidth*0.75), GUIScale(( kInventoryIconTextureHeight - offset )*0.75), 0))
+            self.activeAbilityCooldownIcon:SetTexturePixelCoordinates(x1,y1,x2,y2 - offset)
+        else 
+            self.activeAbilityCooldownIcon:SetIsVisible(false)
+        end
+            
+        
         local setColor = kNotEnoughEnergyColor
         
         if totalPower >= minimumPower then
@@ -987,26 +1084,26 @@ function GUIAlienHUD:UpdateAbilities(deltaTime)
         self.activeAbilityIcon:SetIsVisible(false)
     end
     
-    // The the player changed abilities, force show the energy ball and
-    // the inactive abilities bar.
+    -- The the player changed abilities, force show the energy ball and
+    -- the inactive abilities bar.
     if activeHudSlot ~= self.lastActiveHudSlot then
     
         self.energyBall:GetBackground():SetIsVisible(true)
         self:ForceUnfade(self.energyBall:GetBackground())
-        /*
+        --[[
         for i, ability in ipairs(self.inactiveAbilityIconList) do
             self:ForceUnfade(ability.Background)
         end
-        */
+        --]]
         
     end
     
     self.lastActiveHudSlot = activeHudSlot
     
-    // Secondary ability.
+    -- Secondary ability.
     abilityData = AlienUI_GetSecondaryAbilityData()
     currentIndex = 1
-    if table.count(abilityData) > 0 then
+    if table.icount(abilityData) > 0 then
     
         local totalPower = abilityData[currentIndex]
         local minimumPower = abilityData[currentIndex + 1]
@@ -1015,7 +1112,7 @@ function GUIAlienHUD:UpdateAbilities(deltaTime)
         local hudSlot = abilityData[currentIndex + 4]
 
         if techId ~= kTechId.None then        
-            self.secondaryAbilityBackground:SetIsVisible(true)
+            self.secondaryAbilityBackground:SetIsVisible(self.visible)
             self.secondaryAbilityIcon:SetTexturePixelCoordinates(GetTexCoordsForTechId(techId))
         else
             self.secondaryAbilityBackground:SetIsVisible(false)
@@ -1038,7 +1135,7 @@ function GUIAlienHUD:UpdateAbilities(deltaTime)
         self.secondaryAbilityBackground:SetIsVisible(false)
     end
     
-    // self:UpdateInactiveAbilities(deltaTime, activeHudSlot)
+    -- self:UpdateInactiveAbilities(deltaTime, activeHudSlot)
     
 end
 
@@ -1046,14 +1143,14 @@ function GUIAlienHUD:UpdateInactiveAbilities(deltaTime, activeHudSlot)
 
     local numberElementsPerAbility = 2
     local abilityData = AlienUI_GetInactiveAbilities()
-    local numberAbilities = table.count(abilityData) / numberElementsPerAbility
+    local numberAbilities = table.icount(abilityData) / numberElementsPerAbility
     local currentIndex = 1
     
     if numberAbilities > 0 then
     
-        self.inactiveAbilitiesBar:SetIsVisible(true)
+        self.inactiveAbilitiesBar:SetIsVisible(self.visible)
         
-        local totalAbilityCount = table.count(self.inactiveAbilityIconList)
+        local totalAbilityCount = table.icount(self.inactiveAbilityIconList)
         local fixedOffset = (kInactiveAbilityBarOffset * GUIScale(1)) + Vector(GUIScale(kDistanceBetweenAbilities), 0, 0)
         
         self.inactiveAbilitiesBar:SetPosition(fixedOffset)
@@ -1111,16 +1208,16 @@ function GUIAlienHUD:UpdateFading(fadeItem, itemFillPercentage, deltaTime)
     local lastFadePercentage = self.fadeValues[fadeItem].lastPercentage
     self.fadeValues[fadeItem].lastPercentage = itemFillPercentage
     
-    // Only fade when the ball is completely filled.
+    -- Only fade when the ball is completely filled.
     if itemFillPercentage == 1 then
     
-        // Check if we should start fading (itemFillPercentage just hit 100%).
+        -- Check if we should start fading (itemFillPercentage just hit 100%).
         if lastFadePercentage ~= 1 then
             self:ForceUnfade(fadeItem)
         end
         
-        // Handle fading out the health ball.
-        /*
+        -- Handle fading out the health ball.
+        --[[
         self.fadeValues[fadeItem].fadeTime = math.max(0, self.fadeValues[fadeItem].fadeTime - deltaTime)
         if self.fadeValues[fadeItem].fadeTime <= kBallStartFadeOutTimer then
             self.fadeValues[fadeItem].currentFadeAmount = self.fadeValues[fadeItem].fadeTime / kBallStartFadeOutTimer
@@ -1131,11 +1228,11 @@ function GUIAlienHUD:UpdateFading(fadeItem, itemFillPercentage, deltaTime)
         else
             fadeItem:SetColor(Color(1, 1, 1, self.fadeValues[fadeItem].currentFadeAmount))
         end
-        */
+        --]]
         
     else
     
-        fadeItem:SetIsVisible(true)
+        fadeItem:SetIsVisible(self.visible)
         fadeItem:SetColor(Color(1, 1, 1, 1))
         
     end
@@ -1168,7 +1265,7 @@ function GUIAlienHUD:ShowUpgradeIcon(techId, count, hastech, upgrade)
             self.upgrades[techId][i]:SetIsVisible(true)
         end
         self.upgrades[techId][i]:SetColor(ConditionalValue(i <= count, kAlienFontColor, Color(1, 0, 0, 1)))
-        self.upgrades[techId][i]:SetTexturePixelCoordinates(unpack(textureCoords))
+        self.upgrades[techId][i]:SetTexturePixelCoordinates(GUIUnpackCoords(textureCoords))
     end
     self.upgrades[techId][4] = count
     self.upgrades[techId][5] = hastech
@@ -1217,7 +1314,7 @@ function GUIAlienHUD:UpdateHiveInformation(deltaTime)
 				self.hives[i].locationtext:SetText(locationname)
 				self.hives[i].locationtext:SetIsVisible(true)
 				self.hives[i].locationtext:SetColor(kHealthBarColor)
-				self.hives[i].icon:SetTexturePixelCoordinates(unpack(textureCoords))
+				self.hives[i].icon:SetTexturePixelCoordinates(GUIUnpackCoords(textureCoords))
 				self.hives[i].icon:SetIsVisible(true)
 				self.hives[i].healthBar:SetSize(Vector(kHiveHealthSize.x, kHiveHealthSize.y * healthpercent, 0))
 				self.hives[i].healthBar:SetIsVisible(true)
@@ -1269,6 +1366,14 @@ function GUIAlienHUD:OnResolutionChanged(oldX, oldY, newX, newY)
     self:Uninitialize()
     self:Initialize()
     
+end
+
+function GUIAlienHUD:OnLocalPlayerChanged(newPlayer)
+
+    if Client.GetIsControllingPlayer() then
+        Client.GetLocalPlayer():SetDarkVision(true)
+    end
+
 end
 
 function GUIAlienHUD:OnAnimationCompleted(animatedItem, animationName, itemHandle)

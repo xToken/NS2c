@@ -1,18 +1,19 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//
-// lua\Commander_MouseActions.lua
-//
-//    Created by:   Brian Cronin (brianc@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
+--
+-- lua\Commander_MouseActions.lua
+--
+--    Created by:   Brian Cronin (brianc@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed delays in commander interface
+-- NS2c
+-- Removed delays in commander interface
 
 assert(Client)
 
 local function GetSelectionAllowed(commander)
     return true
+
 end
 
 local function ClickSelect(commander, x, y, controlSelect, shiftSelect)
@@ -30,7 +31,7 @@ local function ClickSelect(commander, x, y, controlSelect, shiftSelect)
     
     if controlSelect then
     
-        // select all entities on screen
+        -- select all entities on screen
         local entity = commander:GetUnitUnderCursor(pickVec) 
         if entity and HasMixin(entity, "Selectable") then
         
@@ -75,17 +76,17 @@ local function ClickSelect(commander, x, y, controlSelect, shiftSelect)
     
 end
 
-// The number of pixels that the cursor needs to move in order to enable the marquee selector.
+-- The number of pixels that the cursor needs to move in order to enable the marquee selector.
 local kEnableSelectorMoveAmount = 5
 
 local mousePressed = { }
 local mouseButtonDownAtPoint = { }
 
-// All mouse actions are stored in this table.
-// The format is a table of action names and then functions for
-// the action that represent specific mouse buttons.
-// The function is called with the local player, x mouse coordinate, and y mouse coordinate.
-// These coordinates are in screen space.
+-- All mouse actions are stored in this table.
+-- The format is a table of action names and then functions for
+-- the action that represent specific mouse buttons.
+-- The function is called with the local player, x mouse coordinate, and y mouse coordinate.
+-- These coordinates are in screen space.
 local kMouseActions = { ButtonDown = { }, ButtonUp = { }, DoubleClick = { }, Move = { } }
 
 kMouseActions.ButtonDown[InputKey.MouseButton0] = function(player, mouseX, mouseY)
@@ -94,7 +95,7 @@ kMouseActions.ButtonDown[InputKey.MouseButton0] = function(player, mouseX, mouse
         CommanderGhostStructureLeftMouseButtonDown(mouseX, mouseY)
     else
     
-        local techNode = GetTechNode(player, player.currentTechId)
+        local techNode = GetTechNode(player.currentTechId)
         
         if player.currentTechId == nil or techNode == nil or not techNode:GetRequiresTarget() then
             ClickSelect(player, mouseX, mouseY, player.ctrlDown, player.shiftDown)
@@ -109,33 +110,33 @@ kMouseActions.ButtonUp[InputKey.MouseButton0] = function(player, mouseX, mouseY)
     if GetIsCommanderMarqueeSelectorDown() then
         SetCommanderMarqueeeSelectorUp(mouseX, mouseY, player.shiftDown)
     else
-        // TODO: Move code into this file.
+        -- TODO: Move code into this file.
         CommanderUI_OnMouseRelease(0, mouseX, mouseY)
     end
     
 end
 
 kMouseActions.ButtonUp[InputKey.MouseButton1] = function(player, mouseX, mouseY)
-    // TODO: Move code into this file.
+    -- TODO: Move code into this file.
     CommanderUI_OnMouseRelease(1, mouseX, mouseY)
 end
 
 kMouseActions.ButtonUp[InputKey.MouseButton2] = function(player, mouseX, mouseY)
-    // TODO: Move code into this file.
+    -- TODO: Move code into this file.
     CommanderUI_OnMouseRelease(2, mouseX, mouseY)
 end
 
 kMouseActions.DoubleClick[InputKey.MouseButton0] = function(player, mouseX, mouseY)
 
-    // Only allowed when there is not a ghost structure.
+    -- Only allowed when there is not a ghost structure.
     if not GetCommanderGhostStructureEnabled() then
     
-        local techNode = GetTechNode(player, player.currentTechId)
+        local techNode = GetTechNode(player.currentTechId)
         if player.currentTechId == nil or techNode == nil or not techNode:GetRequiresTarget() then
         
-            // Double clicking on an entity will simulate a control click.
-            // All entities of the same type will be selected.
-            // ToDo: Move ClickSelect code out of Player and into this file.
+            -- Double clicking on an entity will simulate a control click.
+            -- All entities of the same type will be selected.
+            -- ToDo: Move ClickSelect code out of Player and into this file.
             ClickSelect(player, mouseX, mouseY, true, player.shiftDown)
             
         end
@@ -146,7 +147,7 @@ end
 
 kMouseActions.Move = function(player, mouseX, mouseY)
 
-    // Check if the selector should be enabled.
+    -- Check if the selector should be enabled.
     if mousePressed[InputKey.MouseButton0] then
     
         local downX = mouseButtonDownAtPoint[InputKey.MouseButton0].x
@@ -190,7 +191,7 @@ local function OnMouseDown(_, button, doubleClick)
         evalButtonDown(player, mousePos.x, mousePos.y)
     end
     
-    // Evaluate if there are any world actions right now for this mouse input.
+    -- Evaluate if there are any world actions right now for this mouse input.
     if doubleClick then
     
         local evalDoubleClick = kMouseActions.DoubleClick[button]
@@ -201,7 +202,7 @@ local function OnMouseDown(_, button, doubleClick)
     end
     
 
-    // If there are no world actions, forward along to the Commander UI code.
+    -- If there are no world actions, forward along to the Commander UI code.
     
 end
 
@@ -216,13 +217,13 @@ local function OnMouseUp(_, button)
     
     mousePressed[button] = false
     
-    // Evaluate if there are any world actions right now for this mouse input.
+    -- Evaluate if there are any world actions right now for this mouse input.
     local evalButtonUp = kMouseActions.ButtonUp[button]
     if evalButtonUp then
         evalButtonUp(player, mousePos.x, mousePos.y)
     end
     
-    // If there are no world actions, forward along to the Commander UI code.
+    -- If there are no world actions, forward along to the Commander UI code.
     
 end
 
@@ -235,7 +236,7 @@ local function OnMouseMove()
     
     local mousePos = MouseTracker_GetCursorPos()
     
-    // Evaluate if there are any world actions right now for this mouse input.
+    -- Evaluate if there are any world actions right now for this mouse input.
     kMouseActions.Move(player, mousePos.x, mousePos.y)
     
 end

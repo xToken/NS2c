@@ -1,18 +1,18 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Alien\HydraStructureAbility.lua
-//
-//    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
-//
-// Gorge builds hydra.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Alien\HydraStructureAbility.lua
+--
+--    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
+--
+-- Gorge builds hydra.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Alien/StructureAbility.lua")
 
 class 'HydraStructureAbility' (StructureAbility)
 
-function HydraStructureAbility:GetEnergyCost(player)
+function HydraStructureAbility:GetEnergyCost()
     return kDropStructureEnergyCost
 end
 

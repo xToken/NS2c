@@ -1,30 +1,30 @@
-// ======= Copyright (c) 2012, Unknown Worlds Entertainment, Inc. All rights reserved. ============
-//    
-// lua\DamageEffects.lua    
-//    
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-//    Effect defination for all damage sources and targets. Including target entities and world geometry surface.
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2012, Unknown Worlds Entertainment, Inc. All rights reserved. ============
+--
+-- lua\DamageEffects.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+--    Effect defination for all damage sources and targets. Including target entities and world geometry surface.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 kDamageEffects =
 {
 
-    // Play ricochet sound for player locally for feedback (triggered if target > 5 meters away)
+    -- Play ricochet sound for player locally for feedback (triggered if target > 5 meters away)
     hit_effect_local =
     {
         hitEffectLocalEffects =
         {
 
-            // marine effects:
+            -- marine effects:
             {private_sound = "sound/NS2.fev/marine/rifle/alt_hit_hard", doer = "ClipWeapon", isalien = true, surface = "ethereal", done = true},
             {private_sound = "sound/NS2.fev/marine/rifle/alt_hit_hard", doer = "ClipWeapon", isalien = true, surface = "umbra", done = true},
             {private_sound = "sound/NS2.fev/materials/organic/scrape", doer = "Shotgun", isalien = true, done = true},
             {private_sound = "sound/NS2.fev/marine/common/hit", doer = "ClipWeapon", isalien = true, done = true},
             {private_sound = "sound/NS2.fev/materials/metal/ricochet", doer = "ClipWeapon", done = true},
         
-            // alien effects:
+            -- alien effects:
             {private_sound = "sound/NS2.fev/alien/gorge/spit_hit", doer = "Spit", done = true},
             {private_sound = "sound/NS2.fev/alien/skulk/parasite_hit", doer = "Parasite", ismarine = true, classname = "Player", done = true},
 

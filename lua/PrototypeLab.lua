@@ -1,18 +1,19 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\PrototypeLab.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Andreas Urwalek (a_urwa@sbox.tugraz.at)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\PrototypeLab.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Andreas Urwalek (a_urwa@sbox.tugraz.at)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed concept of logging in a related netvars/functions.
+-- NS2c
+-- Removed concept of logging in a related netvars/functions.
 
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
+Script.Load("lua/AchievementGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
@@ -73,6 +74,7 @@ function PrototypeLab:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
+    InitMixin(self, AchievementGiverMixin)
     InitMixin(self, SelectableMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, LOSMixin)
@@ -111,7 +113,7 @@ function PrototypeLab:OnInitialized()
     if Server then    
 
         
-        // This Mixin must be inited inside this OnInitialized() function.
+        -- This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end

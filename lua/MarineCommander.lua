@@ -1,22 +1,22 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\MarineCommander.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// Handled Commander movement and actions.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\MarineCommander.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- Handled Commander movement and actions.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Adjusted techids for classic
+-- NS2c
+-- Adjusted techids for classic
 
 Script.Load("lua/Commander.lua")
 
 class 'MarineCommander' (Commander)
 
 MarineCommander.kMapName = "marine_commander"
-//MarineCommander.kDropSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/commander/drop")
+-- MarineCommander.kDropSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/commander/drop")
 
 if Client then
     Script.Load("lua/MarineCommander_Client.lua")
@@ -103,15 +103,26 @@ local gMarineMenuButtons =
 
 }
 
+local gMarineMenuIds = {}
+do
+    for menuId, _ in pairs(gMarineMenuButtons) do
+        gMarineMenuIds[#gMarineMenuIds+1] = menuId
+    end
+end
+
 function MarineCommander:GetButtonTable()
     return gMarineMenuButtons
 end
 
-// Top row always the same. Alien commander can override to replace. 
+function MarineCommander:GetMenuIds()
+    return gMarineMenuIds
+end
+
+-- Top row always the same. Alien commander can override to replace.
 function MarineCommander:GetQuickMenuTechButtons(techId)
 
-    // Top row always for quick access
-    local marineTechButtons = { kTechId.BuildMenu, kTechId.AdvancedMenu, kTechId.AssistMenu, kTechId.WeaponsMenu}
+    -- Top row always for quick access
+    local marineTechButtons = { kTechId.BuildMenu, kTechId.AdvancedMenu, kTechId.AssistMenu, kTechId.WeaponsMenu }
     local menuButtons = gMarineMenuButtons[techId]    
     
     if not menuButtons then
@@ -120,7 +131,7 @@ function MarineCommander:GetQuickMenuTechButtons(techId)
 
     table.copy(menuButtons, marineTechButtons, true)        
 
-    // Return buttons and true/false if we are in a quick-access menu
+    -- Return buttons and true/false if we are in a quick-access menu
     return marineTechButtons
     
 end

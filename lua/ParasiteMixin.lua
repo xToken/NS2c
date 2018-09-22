@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\ParasiteMixin.lua
-//
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\ParasiteMixin.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Changes to allow parasite of structures and visibility changes
+-- NS2c
+-- Changes to allow parasite of structures and visibility changes
 
 ParasiteMixin = CreateMixin( ParasiteMixin )
 ParasiteMixin.type = "ParasiteAble"
@@ -31,17 +31,16 @@ ParasiteMixin.networkVars =
 }
 
 function ParasiteMixin:__initmixin()
-
-    if Server then
     
-        self.timeParasited = 0
-        self.parasited = false
-        
-    end
+    PROFILE("ParasiteMixin:__initmixin")
+    
+    self.timeParasited = 0
+    self.parasiteDuration = 0
+    self.parasited = false
     
 end
 
-function ParasiteMixin:OnTakeDamage(damage, attacker, doer, point, damageType)
+function ParasiteMixin:OnTakeDamage(_, attacker, doer, _, _)
 
     if doer and doer:isa("Parasite") and GetAreEnemies(self, attacker) then
         self:SetParasited(attacker)
@@ -118,10 +117,10 @@ if Client then
         
     end
 
-    /** Adds the material effect to the entity and all child entities (hat have a Model mixin) */
+    -- Adds the material effect to the entity and all child entities (hat have a Model mixin) */
     local function AddEffect(entity, material, viewMaterial, entities)
     
-        local numChildren = entity:GetNumChildren()
+        -- local numChildren = entity:GetNumChildren()
         
         if HasMixin(entity, "Model") then
             local model = entity._renderModel
@@ -141,7 +140,9 @@ if Client then
         
         for i = 1, entity:GetNumChildren() do
             local child = entity:GetChildAtIndex(i - 1)
-            AddEffect(child, material, viewMaterial, entities)
+            if child ~= nil then
+                AddEffect(child, material, viewMaterial, entities)
+            end
         end
     
     end
@@ -167,8 +168,8 @@ if Client then
         end
         
     end
-
-    function ParasiteMixin:OnModelChanged(index)
+    
+    function ParasiteMixin:OnModelChanged(_)
         self:_RemoveParasiteEffect()
     end
 
@@ -180,7 +181,7 @@ if Client then
             material:SetMaterial(kParasitedMaterial)
 
             local showViewMaterial = not self.GetShowParasiteView or self:GetShowParasiteView()
-            local viewMaterial = nil
+            local viewMaterial
 
             if showViewMaterial then
 

@@ -1,14 +1,16 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Shotgun.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Shotgun.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
 Script.Load("lua/IdleAnimationMixin.lua")
+Script.Load("lua/PointGiverMixin.lua")
+Script.Load("lua/AchievementGiverMixin.lua")
 Script.Load("lua/Hitreg.lua")
 Script.Load("lua/ShotgunVariantMixin.lua")
 
@@ -22,7 +24,7 @@ local networkVars =
 }
 
 AddMixinNetworkVars(ShotgunVariantMixin, networkVars)
-// higher numbers reduces the spread
+-- higher numbers reduces the spread
 local kIdleAnimations = {"idle", "idle_check", "idle_clean"}
 local kSpreadDistance = 11.3
 local kStartOffset = 0
@@ -62,7 +64,9 @@ local kMuzzleAttachPoint = "fxnode_shotgunmuzzle"
 function Shotgun:OnCreate()
 
     ClipWeapon.OnCreate(self)
-	InitMixin(self, ShotgunVariantMixin)
+    InitMixin(self, ShotgunVariantMixin)
+    InitMixin(self, PointGiverMixin)
+    InitMixin(self, AchievementGiverMixin)
     self.emptyPoseParam = 0
     
     if Client then
@@ -105,7 +109,7 @@ end
 
 function Shotgun:GetSpread(bulletNum)
 
-    // NS1 was 20 degrees for half the shots and 20 degrees plus 7 degrees for half the shots
+    -- NS1 was 20 degrees for half the shots and 20 degrees plus 7 degrees for half the shots
     if bulletNum < (kShotgunBulletsPerShot / 2) then
         return Math.Radians(10)
     else
@@ -118,27 +122,12 @@ function Shotgun:GetRange()
     return kShotgunMaxRange
 end
 
-// Only play weapon effects every other bullet to avoid sonic overload
+-- Only play weapon effects every other bullet to avoid sonic overload
 function Shotgun:GetTracerEffectFrequency()
     return 0.5
 end
 
 function Shotgun:GetBulletDamage(target, endPoint)
-    /*
-    if Server then
-        local player = self:GetParent()
-        if player then  
-            local distanceTo = (player:GetOrigin() - endPoint):GetLength()
-            if distanceTo > kShotgunMaxRange then
-                return 0
-            elseif distanceTo <= kShotgunDropOffStartRange then
-                return kShotgunDamage
-            else
-                return kShotgunDamage * (1 - math.sin((distanceTo - kShotgunDropOffStartRange) / kShotgunMaxRange))
-            end
-        end
-    end
-    */
     return kShotgunDamage
 end
 
@@ -173,6 +162,7 @@ local function LoadBullet(self)
     end
     
 end
+
 
 function Shotgun:OnTag(tagName)
 
@@ -209,7 +199,7 @@ function Shotgun:OnTag(tagName)
     
 end
 
-// used for last effect
+-- used for last effect
 function Shotgun:GetEffectParams(tableParams)
     tableParams[kEffectFilterEmpty] = self.clip == 1
 end
@@ -221,7 +211,7 @@ function Shotgun:FirePrimary(player)
     
     local viewCoords = viewAngles:GetCoords()
     
-    // Filter ourself out of the trace so that we don't hit ourselves.
+    -- Filter ourself out of the trace so that we don't hit ourselves.
     local filter = EntityFilterTwo(player, self)
     local range = self:GetRange()
     
@@ -261,7 +251,7 @@ function Shotgun:FirePrimary(player)
         HandleHitregAnalysis(player, startPoint, endPoint, trace)        
 
             
-        // don't damage 'air'..
+        -- don't damage 'air'..
         if trace.fraction < 1 or GetIsVortexed(player) then
         
             local direction = (trace.endPoint - startPoint):GetUnit()
@@ -295,7 +285,7 @@ end
 
 function Shotgun:GetAmmoPackMapName()
     return ShotgunAmmo.kMapName
-end
+end    
 
 function Shotgun:GetIdleAnimations()
     return kIdleAnimations

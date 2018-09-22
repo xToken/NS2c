@@ -1,12 +1,12 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//
-// lua\Scan.lua
-//
-//    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
-//
-// A Commander ability that gives LOS to marine team for a short time.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
+--
+-- lua\Scan.lua
+--
+--    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
+--
+-- A Commander ability that gives LOS to marine team for a short time.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/CommAbilities/CommanderAbility.lua")
 Script.Load("lua/MapBlipMixin.lua")
@@ -50,6 +50,10 @@ function Scan:OnInitialized()
     
 end
 
+function Scan:OverrideCheckVision()
+    return true
+end
+
 function Scan:GetRepeatCinematic()
     return Scan.kScanEffect
 end
@@ -57,7 +61,7 @@ end
 function Scan:GetType()
     return Scan.kType
 end
-    
+
 function Scan:GetLifeSpan()
     return kScanDuration
 end
@@ -72,22 +76,28 @@ if Server then
     
         PROFILE("Scan:Perform")
         
-        local enemies = GetEntitiesWithMixinForTeamWithinRange("LOS", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), Scan.kScanDistance)
-        
+        local enemies = GetEntitiesWithMixinForTeamWithinXZRange("LOS", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), Scan.kScanDistance)
+        local detectable = GetEntitiesWithMixinForTeamWithinXZRange("Detectable", GetEnemyTeamNumber(self:GetTeamNumber()), self:GetOrigin(), Scan.kScanDistance)
+
+        for _, ent in ipairs(detectable) do
+            table.insertunique(enemies, ent)
+        end
+
         for _, enemy in ipairs(enemies) do
-                
-            enemy:SetIsSighted(true)
-            
-            // Allow entities to respond
-            if enemy.OnScan then
-               enemy:OnScan()
+        
+            if HasMixin(enemy, "LOS") then
+                enemy:SetIsSighted(true)
             end
             
             if HasMixin(enemy, "Detectable") then
                 enemy:SetDetected(true)
             end
             
-        end
+            -- Allow entities to respond
+            if enemy.OnScan then
+               enemy:OnScan()
+            end
+        end   
         
     end
     

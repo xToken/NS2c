@@ -52,17 +52,6 @@ PrecacheAsset("models/marine/marine_noemissive.surface_shader")
 
 
 Marine.kGunPickupSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/pickup")
-Marine.kMarineAnimationGraph = PrecacheAsset("models/marine/male/male.animation_graph")
-
--- Generate 3rd person models.
-Marine.kModelNames = { male = { }, female = { } }
-local kModelTemplates = { green = ".model", special = "_special.model", deluxe = "_special_v1.model" }
-for name, suffix in pairs(kModelTemplates) do
-    Marine.kModelNames.male[name] = PrecacheAsset("models/marine/male/male" .. suffix)
-end
-for name, suffix in pairs(kModelTemplates) do
-    Marine.kModelNames.female[name] = PrecacheAsset("models/marine/female/female" .. suffix)
-end
 
 local kFlashlightSoundName = PrecacheAsset("sound/NS2.fev/common/light")
 Marine.kFlashlightSoundName = kFlashlightSoundName
@@ -166,8 +155,8 @@ end
 
 function Marine:OnInitialized()
 
-    // work around to prevent the spin effect at the infantry portal spawned from
-    // local player should not see the holo marine model
+    -- work around to prevent the spin effect at the infantry portal spawned from
+    -- local player should not see the holo marine model
     if Client and Client.GetIsControllingPlayer() then
     
         local ips = GetEntitiesForTeamWithinRange("InfantryPortal", self:GetTeamNumber(), self:GetOrigin(), 1)
@@ -178,16 +167,16 @@ function Marine:OnInitialized()
         
     end
     
-    // These mixins must be called before SetModel because SetModel eventually
-    // calls into OnUpdatePoseParameters() which calls into these mixins.
-    // Yay for convoluted class hierarchies!!!
+    -- These mixins must be called before SetModel because SetModel eventually
+    -- calls into OnUpdatePoseParameters() which calls into these mixins.
+    -- Yay for convoluted class hierarchies!!!
     InitMixin(self, OrdersMixin, { kMoveOrderCompleteDistance = kPlayerMoveOrderCompleteDistance })
     InitMixin(self, OrderSelfMixin, { kPriorityAttackTargets = { "Harvester" } })
     InitMixin(self, StunMixin)
     InitMixin(self, WeldableMixin)
     
-    // SetModel must be called before Player.OnInitialized is called so the attach points in
-    // the Marine are valid to attach weapons to. This is far too subtle...
+    -- SetModel must be called before Player.OnInitialized is called so the attach points in
+    -- the Marine are valid to attach weapons to. This is far too subtle...
     self:SetModel(self:GetVariantModel(), MarineVariantMixin.kMarineAnimationGraph)
     
     Player.OnInitialized(self)
@@ -197,7 +186,7 @@ function Marine:OnInitialized()
         self.armor = self:GetArmorAmount()
         self.maxArmor = self.armor
         
-        // This Mixin must be inited inside this OnInitialized() function.
+        -- This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end

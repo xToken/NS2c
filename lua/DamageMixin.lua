@@ -1,26 +1,27 @@
-// ======= Copyright (c) 2012, Unknown Worlds Entertainment, Inc. All rights reserved. ============
-//    
-// lua\DamageMixin.lua    
-//    
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)  
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+-- ======= Copyright (c) 2012, Unknown Worlds Entertainment, Inc. All rights reserved. ============
+--
+-- lua\DamageMixin.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added in severe hits, used for >33% damage in a set period of time.
-//Also added flag for not having a weapons attacks 'predicted' client side.
+-- NS2c
+-- Added in severe hits, used for >33% damage in a set period of time.
+-- Also added flag for not having a weapons attacks 'predicted' client side.
 
 DamageMixin = CreateMixin(DamageMixin)
 DamageMixin.type = "Damage"
 
 function DamageMixin:__initmixin()
+    PROFILE("DamageMixin:__initmixin")
 end
 
-// damage type, doer and attacker don't need to be passed. that info is going to be fetched here. pass optional surface name
-// pass surface "none" for not hit/flinch effect
+-- damage type, doer and attacker don't need to be passed. that info is going to be fetched here. pass optional surface name
+-- pass surface "none" for not hit/flinch effect
 function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode, showtracer)
 
-    // No prediction if the Client is spectating another player.
+    -- No prediction if the Client is spectating another player.
     if Client and not Client.GetIsControllingPlayer() then
         return false
     end
@@ -29,10 +30,15 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
     local flinch_severe = false
     local doer = self
 
-    // attacker is always a player, doer is 'self'
-    local attacker = nil
-	local weapon = nil
+    -- attacker is always a player, doer is 'self'
+    local attacker, weapon
+    local currentComm
+    
     if target and target:isa("Ragdoll") then
+        return false
+    end
+    
+    if target and not (target.GetCanTakeDamage and target:GetCanTakeDamage()) then
         return false
     end
         
@@ -44,7 +50,7 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
             attacker = self:GetParent()
             parentVortexed = GetIsVortexed(attacker)
             
-            if attacker:isa("Alien") and ( self.secondaryAttacking or self.shootingSpikes) then
+            if attacker:isa("Alien") and (self.secondaryAttacking or self.shootingSpikes) then
                 weapon = attacker:GetActiveWeapon():GetSecondaryTechId()
             else
                 weapon = self:GetTechId()
@@ -56,18 +62,20 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
             
             if self.GetWeaponTechId then
                 weapon = self:GetWeaponTechId()
+            elseif self.GetTechId then
+                weapon = self:GetTechId()
             end
         end
 
     end
-    
+
     if not attacker then
         attacker = doer
     end
 
     if attacker then
     
-        // Get damage type from source
+        -- Get damage type from source
         local damageType = kDamageType.Normal
         if self.GetDamageType then
             damageType = self:GetDamageType()
@@ -83,7 +91,7 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
 
             damage, armorUsed, healthUsed = GetDamageByType(target, attacker, doer, damage, damageType, point)
 
-            // check once the damage
+            -- check once the damage
             if not direction then
                 direction = Vector(0, 0, 1)
             end
@@ -92,9 +100,9 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
             
             if damage > 0 then    
                                 
-                // Many types of damage events are server-only, such as grenades.
-                // Send the player a message so they get feedback about what damage they've done.
-                // We use messages to handle multiple-hits per frame, such as splash damage from grenades.
+                -- Many types of damage events are server-only, such as grenades.
+                -- Send the player a message so they get feedback about what damage they've done.
+                -- We use messages to handle multiple-hits per frame, such as splash damage from grenades.
                 if Server and attacker:isa("Player") then
                 
                     if GetAreEnemies( attacker, target ) then
@@ -103,20 +111,22 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                         local overkill = healthUsed + armorUsed * 2 // the full amount of potential damage, including overkill
                         
                         if HitSound_IsEnabledForWeapon( weapon ) then
-                            // Damage message will be sent at the end of OnProcessMove by the HitSound system
-                            HitSound_RecordHit( attacker, target, amount, point, overkill, weapon )                            
+                            -- Damage message will be sent at the end of OnProcessMove by the HitSound system
+                            HitSound_RecordHit( attacker, target, amount, point, overkill, weapon )
                         else
                             SendDamageMessage( attacker, target, amount, point, overkill )
                         end
+                        
+                        SendMarkEnemyMessage( attacker, target, amount, weapon )
                     
                     end
                     
-                    // This makes the cross hair turn red. Show it when hitting enemies only
+                    -- This makes the cross hair turn red. Show it when hitting enemies only
                     if (not doer.GetShowHitIndicator or doer:GetShowHitIndicator()) and GetAreEnemies(attacker, target) then
                         attacker.giveDamageTime = Shared.GetTime()
                     end
                     
-                    //Apply knockback if weapon causes it
+                    -- Apply knockback if weapon causes it
                     if doer.GetKnockbackForce and not killedFromDamage then
                         ApplyPlayerKnockback(attacker, target, doer:GetKnockbackForce())
                     end
@@ -152,9 +162,8 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
 
         end
         
-        // trigger damage effects (damage, deflect) with correct surface
+        -- trigger damage effects (damage, deflect) with correct surface
         if surface ~= "none" then
-        
             local armorMultiplier = ConditionalValue(damageType == kDamageType.Light, 4, 2)
             armorMultiplier = ConditionalValue(damageType == kDamageType.Heavy, 1, armorMultiplier)
         
@@ -170,13 +179,10 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
             
                 surface = GetIsAlienUnit(target) and "organic" or "metal"
 
-                // define metal_thin, rock, or other
+                -- define metal_thin, rock, or other
                 if target.GetSurfaceOverride then
-                    surface = target:GetSurfaceOverride(damageDone) or surface
                     
-                    if surface == "none" then
-                        return killedFromDamage
-                    end
+                    surface = target:GetSurfaceOverride(damageDone) or surface
                     
                 elseif GetAreEnemies(self, target) then
 
@@ -202,7 +208,7 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
 
             end
             
-            // send to all players in range, except to attacking player, he will predict the hit effect
+            -- send to all players in range, except to attacking player, he will predict the hit effect
             local isPredicted = doer.GetAreAttackEffectsPredicted and doer:GetAreAttackEffectsPredicted()
 
             if Server then
@@ -219,7 +225,7 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
                     local toPlayers = GetEntitiesWithinRange("Player", point, kHitEffectRelevancyDistance)                    
                     for _, spectator in ientitylist(Shared.GetEntitiesWithClassname("Spectator")) do
                     
-                        if table.contains(toPlayers, Server.GetOwner(spectator):GetSpectatingPlayer()) then
+                        if table.icontains(toPlayers, Server.GetOwner(spectator):GetSpectatingPlayer()) then
                             table.insertunique(toPlayers, spectator)
                         end
                         
@@ -242,9 +248,13 @@ function DamageMixin:DoDamage(damage, target, point, direction, surface, altMode
             
                 HandleHitEffect(point, doer, surface, target, showtracer, altMode, flinch_severe, damage, direction)
 
-                // If we are far away from our target, trigger a private sound so we can hear we hit something
+                -- If we are far away from our target, trigger a private sound so we can hear we hit something
                 if target then
-                
+                    
+                    if attacker.MarkEnemyFromClient then
+                        attacker:MarkEnemyFromClient( target, weapon )
+                    end
+                    
                     if (point - attacker:GetOrigin()):GetLength() > 5 then
                         attacker:TriggerEffects("hit_effect_local")
                     end

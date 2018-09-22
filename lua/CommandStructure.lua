@@ -1,18 +1,19 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\CommandStructure.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\CommandStructure.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed arrows of doom
+-- NS2c
+-- Removed arrows of doom
 
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
+Script.Load("lua/AchievementGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
 Script.Load("lua/LOSMixin.lua")
@@ -65,6 +66,7 @@ function CommandStructure:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
+    InitMixin(self, AchievementGiverMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, LOSMixin)
     InitMixin(self, ConstructMixin)
@@ -97,10 +99,6 @@ end
 
 function CommandStructure:GetIsOccupied()
     return self.occupied
-end
-
-function CommandStructure:UpdateCommanderLogin()
-    return
 end
 
 function CommandStructure:GetEffectParams(tableParams)
@@ -141,7 +139,7 @@ function CommandStructure:GetCanBeUsedConstructed()
     return not self:GetIsOccupied() and gameInfo and gameInfo:GetGameMode() == kGameMode.Classic
 end
 
-// allow players to enter the hives before game start to signal that they want to command
+-- allow players to enter the hives before game start to signal that they want to command
 function CommandStructure:GetUseAllowedBeforeGameStart()
     return true
 end

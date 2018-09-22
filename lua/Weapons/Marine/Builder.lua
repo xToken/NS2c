@@ -1,19 +1,19 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Marine\Builder.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Marine\Builder.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Weapon.lua")
+Script.Load("lua/BuilderVariantMixin.lua")
 
 class 'Builder' (Weapon)
 
 Builder.kMapName = "builder"
 
-local kModelName = PrecacheAsset("models/marine/welder/builder.model")
 local kViewModels = GenerateMarineViewModelPaths("welder")
 local kAnimationGraph = PrecacheAsset("models/marine/welder/welder_view.animation_graph")
 
@@ -26,6 +26,8 @@ local networkVars =
     loopingSoundEntId = "entityid"
 }
 
+AddMixinNetworkVars(BuilderVariantMixin, networkVars)
+
 local kFireLoopingSound = PrecacheAsset("sound/NS2.fev/marine/welder/scan")
 
 function Builder:OnCreate()
@@ -35,6 +37,8 @@ function Builder:OnCreate()
     self.building = false
     
     self.loopingSoundEntId = Entity.invalidId
+    
+    InitMixin(self, BuilderVariantMixin)
     
     if Server then
         
@@ -53,8 +57,6 @@ function Builder:OnInitialized()
 
     Weapon.OnInitialized(self)
     
-    self:SetModel(kModelName)
-    
 end
 
 function Builder:OnDestroy()
@@ -63,14 +65,14 @@ function Builder:OnDestroy()
     
     if Server then
     
-        // The loopingFireSound was already destroyed at this point, clear the reference.
+        -- The loopingFireSound was already destroyed at this point, clear the reference.
         self.loopingFireSound = nil
     
     end
 
 end
 
-// for marine thirdperson pose
+-- for marine thirdperson pose
 function Builder:OverrideWeaponName()
     return "builder"
 end
@@ -95,7 +97,7 @@ function Builder:OnDraw(player, previousWeaponMapName)
 
     Weapon.OnDraw(self, player, previousWeaponMapName)
     self.building = true
-    // Attach weapon to parent's hand
+    -- Attach weapon to parent's hand
     self:SetAttachPoint(Weapon.kHumanAttachPoint)
     
 end
@@ -149,7 +151,9 @@ function Builder:OnUpdateAnimationInput(modelMixin)
     
     modelMixin:SetAnimationInput("activity", activity)
     modelMixin:SetAnimationInput("welder", false)
+    modelMixin:SetAnimationInput("needWelder", false)
     self:SetPoseParam("welder", 0)
+    
     
 end
 
@@ -193,7 +197,7 @@ end
 if Client then
 
     function Builder:GetUIDisplaySettings()
-        return { xSize = 512, ySize = 512, script = "lua/GUIWelderDisplay.lua", textureNameOverride = "welder" }
+        return { xSize = 512, ySize = 512, script = "lua/GUIWelderDisplay.lua", textureNameOverride = "welder", variant = self:GetBuilderVariant() }
     end
     
 end

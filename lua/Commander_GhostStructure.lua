@@ -1,10 +1,10 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//
-// lua\Commander_GhostStructure.lua
-//
-//    Created by:   Brian Cronin (brianc@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
+--
+-- lua\Commander_GhostStructure.lua
+--
+--    Created by:   Brian Cronin (brianc@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 assert(Client)
 
@@ -13,6 +13,7 @@ local ghostStructureEnabled = false
 local errorMessage = ""
 local ghostStructureValid = false
 local ghostStructureCoords = Coords()
+local ghostNormalizedPickRay = Vector(0,0,0)
 local ghostStructureTargetId = Entity.invalidId
 local orientationAngle = 0
 local specifyingOrientation = false
@@ -71,6 +72,10 @@ function GetCommanderGhostStructureCoords()
     
         local coords = Coords.GetIdentity()
         local commander = Client.GetLocalPlayer()
+        local x, y = Client.GetCursorPosScreen()
+        local normalizedPickRay = CreatePickRay(commander, x, y)
+
+        local position, attachEntity
         
         if specifyingOrientation then
         
@@ -78,20 +83,19 @@ function GetCommanderGhostStructureCoords()
             
             ghostStructureValid, position, attachEntity, errorMessage = GetIsBuildLegal(ghostTechId, ghostStructureCoords.origin, orientationAngle, kStructureSnapRadius, commander)
             
-            // Preserve position, but update angle from mouse.
+            -- Preserve position, but update angle from mouse.
             local angles = Angles(0, orientationAngle, 0)
             return Coords.GetLookIn(ghostStructureCoords.origin, angles:GetCoords().zAxis)
             
         else
         
             orientationAngle = 0
-            
-            local x, y = Client.GetCursorPosScreen()
-            local trace = GetCommanderPickTarget(commander, CreatePickRay(commander, x, y), false, true)
+
+            local trace = GetCommanderPickTarget(commander, normalizedPickRay, false, true, nil, LookupTechData( ghostTechId, kCommanderSelectRadius ), "ray")
             
             if trace.fraction < 1 then
             
-                // We only want to do the "ValidExit" check after picking a location for a structure requiring a valid exit.
+                -- We only want to do the "ValidExit" check after picking a location for a structure requiring a valid exit.
                 local ignoreChecks = LookupTechData(ghostTechId, kTechDataSpecifyOrientation, false) and kIgnoreValidExitCheck or nil
                 
                 ghostStructureValid, position, attachEntity, errorMessage = GetIsBuildLegal(ghostTechId, trace.endPoint, 0, kStructureSnapRadius, commander, nil, ignoreChecks)
@@ -105,16 +109,18 @@ function GetCommanderGhostStructureCoords()
                 if attachEntity then
                 
                     coords = attachEntity:GetAngles():GetCoords()
-                    coords.origin = position
+                    local spawnHeight = LookupTechData(ghostTechId, kTechDataSpawnHeightOffset, 0)
+                    coords.origin = position + Vector(0, spawnHeight, 0)
                     
                 else
+                    local spawnHeight = LookupTechData(ghostTechId, kTechDataSpawnHeightOffset, 0)
                     coords.origin = position
                 end
                 
                 local coordsMethod = LookupTechData(ghostTechId, kTechDataOverrideCoordsMethod, nil)
                 
                 if coordsMethod then
-                    coords = coordsMethod(coords)
+                    coords = coordsMethod(coords, ghostTechId, ghostStructureTargetId )
                 end
                 
                 ghostStructureCoords = coords
@@ -123,6 +129,7 @@ function GetCommanderGhostStructureCoords()
                 ghostStructureCoords = nil
             end
             
+            ghostNormalizedPickRay = normalizedPickRay
         end
         
     end
@@ -136,22 +143,24 @@ function CommanderGhostStructureLeftMouseButtonDown(x, y)
     if ghostStructureValid and ghostStructureCoords ~= nil then
     
         local commander = Client.GetLocalPlayer()
-        local normalizedPickRay = CreatePickRay(commander, x, y)
+        local orientableGhost = LookupTechData(ghostTechId, kTechDataSpecifyOrientation)
         
-        // See if we have indicated an orientation for the structure yet (sentries only right now)
-        if LookupTechData(ghostTechId, kTechDataSpecifyOrientation, false) and not specifyingOrientation then
+        -- See if we have indicated an orientation for the structure yet (sentries only right now)
+        if orientableGhost and not specifyingOrientation then
             specifyingOrientation = true
         else
         
-            // If we're in a mode, clear it and handle it.
-            local techNode = GetTechNode(commander, ghostTechId)
+            -- If we're in a mode, clear it and handle it.
+            local techNode = GetTechNode(ghostTechId)
             if techNode ~= nil and techNode:GetRequiresTarget() and techNode:GetAvailable() then
             
                 local angle = specifyingOrientation and orientationAngle or (math.random() * 2 * math.pi)
+                local currentPickVec = (ghostStructureCoords.origin - commander:GetOrigin()):GetUnit()
                 
-                // Send world coords of sentry placement instead of normalized pick ray.
-                // Because the player may have moved since dropping the sentry and orienting it.
-                commander:SendTargetedActionWorld(ghostTechId, ghostStructureCoords.origin, angle, Shared.GetEntity(ghostStructureTargetId))
+                -- Using a stored normalized pick ray
+                -- because the player may have moved since dropping the sentry/gates/etc and orienting it.
+                pickVec = orientableGhost and currentPickVec or ghostNormalizedPickRay
+                commander:SendTargetedAction(ghostTechId, pickVec, angle, Shared.GetEntity(ghostStructureTargetId))
                 
             end
             
@@ -170,15 +179,15 @@ function CommanderGhostStructureLeftMouseButtonDown(x, y)
     
 end
 
-/**
- * This function needs to be called when the Commander tech changes.
- * This happens when the Commander clicks on a button for example.
- */
+--
+-- This function needs to be called when the Commander tech changes.
+-- This happens when the Commander clicks on a button for example.
+--
 function CommanderGhostStructureSetTech(techId)
 
     assert(techId ~= nil)
-    local commander = Client.GetLocalPlayer()
-    local techNode = GetTechNode(commander, techId)
+    
+    local techNode = GetTechNode(techId)
     local showGhost = false
     
     if techNode ~= nil then

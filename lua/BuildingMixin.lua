@@ -1,35 +1,36 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\BuildingMixin.lua    
-//    
-//    Created by:   Andrew Spiering (andrew@unknownworlds.com)    
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\BuildingMixin.lua
+--
+--    Created by:   Andrew Spiering (andrew@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed mac building logic
+-- NS2c
+-- Removed mac building logic
 
 BuildingMixin = { }
 BuildingMixin.type = "Building"
 
-function BuildingMixin:__initmixin()    
+function BuildingMixin:__initmixin()
+    PROFILE("BuildingMixin:__initmixin")
 end
 
-local function EvalBuildIsLegal(self, techId, origin, angle, builderEntity, pickVec)
+local function EvalBuildIsLegal(self, techId, origin, angle, builderEntity, isCommanderPicked)
 
     PROFILE("EvalBuildIsLegal")
 
     local legalBuildPosition = false
-    local position = nil
-    local attachEntity = nil
-    local errorString = nil
-    local commander = self:GetOwner()
+    local position
+    local attachEntity
+    local errorString
     
+    local commander = self:GetOwner()
     if commander == nil then
         commander = self
     end
-    
-    if pickVec == nil then
+
+    if not isCommanderPicked then
         local trace = Shared.TraceRay(Vector(origin.x, origin.y + .1, origin.z), Vector(origin.x, origin.y - .2, origin.z), CollisionRep.Select, PhysicsMask.CommanderBuild, EntityFilterOne(builderEntity))
         legalBuildPosition, position, attachEntity, errorString = GetIsBuildLegal(techId, trace.endPoint, angle, kStructureSnapRadius, commander, builderEntity)
     else
@@ -40,16 +41,13 @@ local function EvalBuildIsLegal(self, techId, origin, angle, builderEntity, pick
     
 end
 
-// Returns true or false, as well as the entity id of the new structure (or -1 if false)
-// pickVec optional (for AI units). In those cases, builderEntity will be the entity doing the building.
-function BuildingMixin:AttemptToBuild(techId, origin, normal, orientation, pickVec, buildTech, builderEntity, trace, owner)
+-- Returns true or false, as well as the entity id of the new structure (or -1 if false)
+-- If not isCommanderPicked, builderEntity will be the entity doing the building.
+function BuildingMixin:AttemptToBuild(techId, origin, normal, orientation, isCommanderPicked, _, builderEntity, _, owner)
 
-    local legalBuildPosition = false
-    local position = nil
-    local attachEntity = nil
     local coordsMethod = LookupTechData(techId, kTechDataOverrideCoordsMethod, nil)
 
-    legalBuildPosition, position, attachEntity, errorString = EvalBuildIsLegal(self, techId, origin, orientation, builderEntity, pickVec)
+    local legalBuildPosition, position, attachEntity, errorString = EvalBuildIsLegal(self, techId, origin, orientation, builderEntity, isCommanderPicked)
     
     if legalBuildPosition then
     
@@ -62,7 +60,7 @@ function BuildingMixin:AttemptToBuild(techId, origin, normal, orientation, pickV
             commander = owner
         end
         
-        local newEnt = nil
+        local newEnt
         if builderEntity and builderEntity.OverrideBuildEntity then
             newEnt = builderEntity:OverrideBuildEntity(techId, position, commander)
         end
@@ -77,7 +75,7 @@ function BuildingMixin:AttemptToBuild(techId, origin, normal, orientation, pickV
                 newEnt:UpdateWeaponSkins( commander:GetClient() )
             end
             
-            // Use attach entity orientation 
+            -- Use attach entity orientation
             if attachEntity then
                 orientation = attachEntity:GetAngles().yaw
             end
@@ -87,7 +85,7 @@ function BuildingMixin:AttemptToBuild(techId, origin, normal, orientation, pickV
                 local coords = coordsMethod(newEnt:GetCoords(), normal)
                 newEnt:SetCoords(coords)
             
-            // If orientation yaw specified, set it
+            -- If orientation yaw specified, set it
             elseif orientation then
             
                 local angles = Angles(0, orientation, 0)
@@ -96,7 +94,7 @@ function BuildingMixin:AttemptToBuild(techId, origin, normal, orientation, pickV
             
             else
             
-                // align it with the surface (normal)
+                -- align it with the surface (normal)
                 local coords = Coords.GetLookIn(newEnt:GetOrigin(), Vector.zAxis, normal)
                 newEnt:SetCoords(coords)
                 
@@ -110,7 +108,7 @@ function BuildingMixin:AttemptToBuild(techId, origin, normal, orientation, pickV
         
     elseif errorString then
 
-        //DebugPrint("AttemptToBuild failed, errorString: %s. Stack: %s", errorString, Script.CallStack())
+        --DebugPrint("AttemptToBuild failed, errorString: %s. Stack: %s", errorString, Script.CallStack())
     
         local commander = self:isa("Commander") and self or self:GetOwner()
     

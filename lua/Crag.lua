@@ -1,22 +1,23 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Crag.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// Alien structure that gives the commander defense and protection abilities.
-//
-// Passive ability - heals nearby players and structures
-// Triggered ability - emit defensive umbra (8 seconds)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Crag.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- Alien structure that gives the commander defense and protection abilities.
+--
+-- Passive ability - heals nearby players and structures
+-- Triggered ability - emit defensive umbra (8 seconds)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed unneeded mixins, changed healing to callback
+-- NS2c
+-- Removed unneeded mixins, changed healing to callback
 
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
+Script.Load("lua/AchievementGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
@@ -49,7 +50,7 @@ Crag.kModelName = PrecacheAsset("models/alien/crag/crag.model")
 
 Crag.kAnimationGraph = PrecacheAsset("models/alien/crag/crag.animation_graph")
 
-// Same as NS1
+-- Same as NS1
 Crag.kHealRadius = 10
 Crag.kHealAmount = 10
 Crag.kPercentHeal = 0.03
@@ -58,11 +59,12 @@ Crag.kHealInterval = 2.0
 
 local networkVars =
 {
-    // For client animations
+    -- For client animations
     healingActive = "boolean"
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
@@ -90,6 +92,7 @@ function Crag:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
+    InitMixin(self, AchievementGiverMixin)
     InitMixin(self, SelectableMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, CloakableMixin)
@@ -128,7 +131,7 @@ function Crag:OnInitialized()
     
         InitMixin(self, StaticTargetMixin)
         
-        // This Mixin must be inited inside this OnInitialized() function.
+        -- This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end
@@ -211,7 +214,7 @@ end
 
 function Crag:OnOverrideOrder(order)
 
-    // Convert default to set rally point.
+    -- Convert default to set rally point.
     if order:GetType() == kTechId.Default then
         order:SetType(kTechId.SetRally)
     end

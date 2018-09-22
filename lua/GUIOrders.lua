@@ -1,15 +1,15 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GUIOrders.lua
-//
-// Created by: Charlie Cleveland (charlie@unknownworlds.com)
-//
-// Manages the orders that are drawn for selected units for the Commander.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GUIOrders.lua
+--
+-- Created by: Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- Manages the orders that are drawn for selected units for the Commander.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed aliencommander logic
+-- NS2c
+-- Removed aliencommander logic
 
 Script.Load("lua/DynamicMeshUtility.lua")
 
@@ -52,21 +52,21 @@ end
 function GUIOrders:UpdateOrderList(orderList)
     
     local numElementsPerOrder = 5
-    local numOrders = table.count(orderList) / numElementsPerOrder
+    local numOrders = table.icount(orderList) / numElementsPerOrder
     
-    while numOrders > table.count(self.activeOrderList) do
+    while numOrders > table.icount(self.activeOrderList) do
         local newOrderItem = self:CreateOrderItem()       
         table.insert(self.activeOrderList, newOrderItem)
     end
 
-    while table.count(self.activeOrderList) > numOrders do
-        local orderModel = self.activeOrderList[table.count(self.activeOrderList)]
+    while table.icount(self.activeOrderList) > numOrders do
+        local orderModel = self.activeOrderList[table.icount(self.activeOrderList)]
         Client.DestroyRenderModel(orderModel.circle)
         Client.DestroyRenderDynamicMesh(orderModel.line)
-        table.remove(self.activeOrderList, table.count(self.activeOrderList))
+        table.remove(self.activeOrderList, table.icount(self.activeOrderList))
     end    
     
-    // Update current order state.
+    -- Update current order state.
     local currentIndex = 1
     local orderIndex = 1
     
@@ -98,7 +98,7 @@ function GUIOrders:UpdateOrderList(orderList)
         currentIndex = currentIndex + numElementsPerOrder
         orderIndex = orderIndex + 1
         
-        // hide the line in case the local player is not a commander
+        -- hide the line in case the local player is not a commander
         updateOrder.line:SetIsVisible(showLine and (orderSource ~= Vector(0, 0, 0)))
         
     end

@@ -1,13 +1,18 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\MarineCommander_Client.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\MarineCommander_Client.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed power indicator, tech delays
+-- NS2c
+-- Removed power indicator, tech delays
+
+-- TODO: return true only when attempting to drop a structure which requires power
+function MarineCommander:GetShowPowerIndicator()
+    return false
+end
 
 function MarineCommander:TechCausesDelay(techId)
     return false
@@ -19,7 +24,7 @@ function MarineCommander:SetSelectionCircleMaterial(entity)
         SetMaterialFrame("marineBuild", entity.buildFraction)
     else
     
-        // Allow entities without health to be selected (infest nodes).
+        -- Allow entities without health to be selected (infest nodes).
         local healthPercent = 1
         if(entity.health ~= nil and entity.maxHealth ~= nil) then
             healthPercent = entity.health / entity.maxHealth

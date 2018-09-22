@@ -1,10 +1,10 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Alien\HealSprayMixin.lua
-//
-//    Created by:   Brian Cronin (brianc@unknownworlds.com) and
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Alien\HealSprayMixin.lua
+--
+--    Created by:   Brian Cronin (brianc@unknownworlds.com) and
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 HealSprayMixin = CreateMixin( HealSprayMixin )
 HealSprayMixin.type = "HealSpray"
@@ -13,12 +13,12 @@ local kRange = 4
 local kHealCylinderWidth = 2
 
 local kHealScoreAdded = 2
-// Every kAmountHealedForPoints points of damage healed, the player gets
-// kHealScoreAdded points to their score.
+-- Every kAmountHealedForPoints points of damage healed, the player gets
+-- kHealScoreAdded points to their score.
 local kAmountHealedForPoints = 400
 
-// HealSprayMixin:GetHasSecondary should completely override any existing
-// GetHasSecondary function defined in the object.
+-- HealSprayMixin:GetHasSecondary should completely override any existing
+-- GetHasSecondary function defined in the object.
 HealSprayMixin.overrideFunctions =
 {
     "GetHasSecondary",
@@ -31,7 +31,9 @@ HealSprayMixin.networkVars =
 }
 
 function HealSprayMixin:__initmixin()
-
+    
+    PROFILE("HealSprayMixin:__initmixin")
+    
     self.secondaryAttacking = false
     self.lastSecondaryAttackTime = 0
     self.lastSprayAttacked = false
@@ -46,7 +48,7 @@ function HealSprayMixin:GetSecondaryAttackDelay()
     return kHealsprayFireDelay
 end
 
-function HealSprayMixin:GetSecondaryEnergyCost(player)
+function HealSprayMixin:GetSecondaryEnergyCost()
     return kHealsprayEnergyCost
 end
 
@@ -59,7 +61,7 @@ function HealSprayMixin:OnSecondaryAttack(player)
     local enoughTimePassed = (Shared.GetTime() - self.lastSecondaryAttackTime) > self:GetSecondaryAttackDelay()
     if player:GetSecondaryAttackLastFrame() and enoughTimePassed then
     
-        if player:GetEnergy() >= self:GetSecondaryEnergyCost(player) then
+        if player:GetEnergy() >= self:GetSecondaryEnergyCost() then
         
             self.lastSprayAttacked = true
             self:PerformSecondaryAttack(player)
@@ -87,8 +89,8 @@ end
 
 local function GetHealOrigin(self, player)
 
-    // Don't project origin the full radius out in front of Gorge or we have edge-case problems with the Gorge 
-    // not being able to hear himself
+    -- Don't project origin the full radius out in front of Gorge or we have edge-case problems with the Gorge
+    -- not being able to hear himself
     local startPos = player:GetEyePos()
     local endPos = startPos + (player:GetViewAngles():GetCoords().zAxis * kHealsprayRadius * .9)
     local trace = Shared.TraceRay(startPos, endPos, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterOne(player))
@@ -120,31 +122,27 @@ local function HealEntity(self, player, targetEntity)
     local onEnemyTeam = (GetEnemyTeamNumber(player:GetTeamNumber()) == targetEntity:GetTeamNumber())
     local isEnemyPlayer = onEnemyTeam and targetEntity:isa("Player")
     local toTarget = (player:GetEyePos() - targetEntity:GetOrigin()):GetUnit()
-
-    // Heal players by base amount plus a scaleable amount so it's effective vs. small and large targets            
+    
+    -- Heal players by base amount plus a scaleable amount so it's effective vs. small and large targets.
     local health = kHealsprayDamage + targetEntity:GetMaxHealth() * kHealPlayerPercent / 100.0
     
-    // Heal structures by multiple of damage(so it doesn't take forever to heal hives, ala NS1)
+    -- Heal structures by multiple of damage(so it doesn't take forever to heal hives, ala NS1)
     if GetReceivesStructuralDamage(targetEntity) then
         health = kHealsprayDamage * kHealBuildingScalar
-    // Don't heal self at full rate - don't want Gorges to be too powerful. Same as NS1.
+    -- Don't heal self at full rate - don't want Gorges to be too powerful. Same as NS1.
     elseif targetEntity == player then
         health = health * 0.5
     end
     
-    local amountHealed = targetEntity:AddHealth(health, true, false, true, player)
+    local amountHealed = targetEntity:AddHealth(health, true, false, false, player)
     
-    // Do not count amount self healed.
+    -- Do not count amount self healed.
     if targetEntity ~= player then
         player:AddContinuousScore("HealSpray", amountHealed, kAmountHealedForPoints, kHealScoreAdded)
     end
     
     if targetEntity.OnHealSpray then
         targetEntity:OnHealSpray(player, amountHealed)
-    end         
-    
-    if Server and amountHealed > 0 then
-        targetEntity:TriggerEffects("sprayed")
     end
     
 end
@@ -153,7 +151,7 @@ local kConeWidth = 0.6
 local function GetEntitiesWithCapsule(self, player)
 
     local fireDirection = player:GetViewCoords().zAxis
-    // move a bit back for more tolerance, healspray does not need to be 100% exact
+    -- move a bit back for more tolerance, healspray does not need to be 100% exact
     local startPoint = player:GetEyePos() + player:GetViewCoords().yAxis * 0.2
 
     local extents = Vector(kConeWidth, kConeWidth, kConeWidth)
@@ -161,7 +159,7 @@ local function GetEntitiesWithCapsule(self, player)
  
     local ents = {}
     
-    // always heal self as well
+    -- always heal self as well
     HealEntity(self, player, player)
     
     for i = 1, 4 do
@@ -182,7 +180,7 @@ local function GetEntitiesWithCapsule(self, player)
         
             else
             
-                // Make another trace to see if the shot should get deflected.
+                -- Make another trace to see if the shot should get deflected.
                 local lineTrace = Shared.TraceRay(startPoint, startPoint + remainingRange * fireDirection, CollisionRep.LOS, PhysicsMask.Melee, EntityFilterOne(player))
                 
                 if lineTrace.fraction < 0.8 then
@@ -217,14 +215,15 @@ end
 
 local function GetEntitiesInCylinder(self, player, viewCoords, range, width)
 
-    // gorge always heals itself    
+    -- gorge always heals itself
     local ents = { player }
     local startPoint = viewCoords.origin
     local fireDirection = viewCoords.zAxis
-    
-    local relativePos = nil
-    
-    for _, entity in ipairs( GetEntitiesWithMixinWithinRange("Live", startPoint, range) ) do
+
+    local relativePos
+
+    -- Pick entities a bit above the actual range to ease building and healing
+    for _, entity in ipairs( GetEntitiesWithMixinWithinRange("Live", startPoint, Clamp(range + 0.25, 0, kRange)) ) do
     
         if entity:GetIsAlive() and not entity:isa("Weapon") then
     
@@ -235,9 +234,13 @@ local function GetEntitiesInCylinder(self, player, viewCoords, range, width)
 
             local xyDistance = math.sqrt(yDistance * yDistance + xDistance * xDistance)
 
-            // could perform a LOS check here or simply keeo the code a bit more tolerant. healspray is kinda gas and it would require complex calculations to make this check be exact
+            -- could perform a LOS check here or simply keeo the code a bit more tolerant. healspray is kinda gas and it would require complex calculations to make this check be exact
             if xyDistance <= width and zDistance >= 0 then
-                table.insert(ents, entity)
+                if startPoint:GetDistanceTo(entity:GetOrigin()) < range or
+                    not GetWallBetween(startPoint, entity:GetOrigin(), entity)
+                then
+                    table.insert(ents, entity)
+                end
             end
             
         end
@@ -255,7 +258,11 @@ local function GetEntitiesInCone(self, player)
     local viewCoords = player:GetViewCoords()
     local fireDirection = viewCoords.zAxis
     
-    local startPoint = viewCoords.origin + viewCoords.yAxis * kHealCylinderWidth * 0.2
+    local startPoint = viewCoords.origin
+    local lineTrace0 = Shared.TraceRay(startPoint, startPoint + kRange * fireDirection, CollisionRep.LOS, PhysicsMask.Melee, EntityFilterAll())
+    range = (lineTrace0.endPoint - startPoint):GetLength()
+
+    startPoint = viewCoords.origin + viewCoords.yAxis * kHealCylinderWidth * 0.2
     local lineTrace1 = Shared.TraceRay(startPoint, startPoint + kRange * fireDirection, CollisionRep.LOS, PhysicsMask.Melee, EntityFilterAll())
     if (lineTrace1.endPoint - startPoint):GetLength() > range then
         range = (lineTrace1.endPoint - startPoint):GetLength()
@@ -279,6 +286,10 @@ local function GetEntitiesInCone(self, player)
         range = (lineTrace4.endPoint - startPoint):GetLength()
     end
 
+    -- To heal hydras placed on weird corners (distances can be just a bit further because of the corner not being aimed perfectly)
+    -- if #GetEntitiesInCylinder(self, player, viewCoords, range, kHealCylinderWidth) == 1 then
+    --     Log("Nothing found but the gorge itself, retrying with a slightly longer range")
+    -- end
     return GetEntitiesInCylinder(self, player, viewCoords, range, kHealCylinderWidth)
 
 end
@@ -314,7 +325,7 @@ function HealSprayMixin:OnTag(tagName)
                 PerformHealSpray(self, player)
             end
 
-			player:DeductAbilityEnergy(self:GetSecondaryEnergyCost(player))
+			player:DeductAbilityEnergy(self:GetSecondaryEnergyCost())
             
             local effectCoords = Coords.GetLookIn(GetHealOrigin(self, player), player:GetViewCoords().zAxis)
             player:TriggerEffects("heal_spray", { effecthostcoords = effectCoords })

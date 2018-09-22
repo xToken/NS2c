@@ -1,10 +1,10 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\WeldableMixin.lua    
-//    
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)    
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\WeldableMixin.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/BalanceHealth.lua")
 
@@ -46,7 +46,7 @@ function WeldableMixin:OnWeldCanceled(doer)
     return true
 end
 
-// for status display on the welder, or description text
+-- for status display on the welder, or description text
 function WeldableMixin:GetWeldPercentage()
 
     if self.GetWeldPercentageOverride then
@@ -57,19 +57,19 @@ function WeldableMixin:GetWeldPercentage()
     
 end
 
-// If entity is ready to be welded by buildbot right now, and in the future
+-- If entity is ready to be welded by buildbot right now, and in the future
 function WeldableMixin:GetCanBeWelded(doer)
 
-    // Can't weld yourself!
+    -- Can't weld yourself!
     if doer == self then
         return false
     end
     
     local canBeWelded = true
-    // GetCanBeWeldedOverride() will return two booleans.
-    // The first will be true if self can be welded and
-    // the second will return true if the first should
-    // completely override the default behavior below.
+    -- GetCanBeWeldedOverride() will return two booleans.
+    -- The first will be true if self can be welded and
+    -- the second will return true if the first should
+    -- completely override the default behavior below.
     if self.GetCanBeWeldedOverride then
     
         local overrideWelded, overrideDefault = self:GetCanBeWeldedOverride(doer)

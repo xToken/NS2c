@@ -1,15 +1,15 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GUIInsight_PlayerFrames.lua
-//
-// Created by: Jon 'Huze' Hughes (jon@jhuze.com)
-//
-// Spectator: Displays player info
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GUIInsight_PlayerFrames.lua
+--
+-- Created by: Jon 'Huze' Hughes (jon@jhuze.com)
+--
+-- Spectator: Displays player info
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added in HMG
+-- NS2c
+-- Added in HMG
 
 class 'GUIInsight_PlayerFrames' (GUIScript)
 
@@ -57,7 +57,7 @@ local keysDisableAutoFollow = { "Weapon1", "Weapon2", "Weapon3", "Jump", "MoveFo
 
 local iconSize = Vector(32,32,0)
 local kIconCoords = {
-    
+
     [Locale.ResolveString("STATUS_RIFLE")] =             {            0, 0,   iconSize.x, iconSize.y },
     [Locale.ResolveString("STATUS_SHOTGUN")] =           {   iconSize.x, 0, 2*iconSize.x, iconSize.y },
     [Locale.ResolveString("STATUS_GRENADE_LAUNCHER")] =  { 2*iconSize.x, 0, 3*iconSize.x, iconSize.y },
@@ -76,7 +76,7 @@ local kIconCoords = {
     [Locale.ResolveString("LERK_EGG")] =                 {   iconSize.x, iconSize.y, 2*iconSize.x, 2*iconSize.y },
     [Locale.ResolveString("FADE_EGG")] =                 {   iconSize.x, iconSize.y, 2*iconSize.x, 2*iconSize.y },
     [Locale.ResolveString("ONOS_EGG")] =                 {   iconSize.x, iconSize.y, 2*iconSize.x, 2*iconSize.y },
-    
+
     [Locale.ResolveString("STATUS_COMMANDER")] =         { 2*iconSize.x, iconSize.y, 3*iconSize.x, 2*iconSize.y },
     [Locale.ResolveString("STATUS_DEAD")] =              { 3*iconSize.x, iconSize.y, 4*iconSize.x, 2*iconSize.y }
 
@@ -84,16 +84,16 @@ local kIconCoords = {
 
 function GUIInsight_PlayerFrames:Initialize()
 
-	kHealthBarSize = GUIScale(Vector(14, 30, 0))
-	kFrameYOffset = GUIScale(180)
-	kFrameYSpacing = GUIScale(20)
-	kNameFontScale = GUIScale( Vector(1, 1, 1) ) * 0.8
-	kInfoFontScale = GUIScale( Vector(1, 1, 1) ) * 0.7
-	kPlayersPanelSize = GUIScale(Vector(95, 32, 0))
-	kTopFrameSize = GUIScale(Vector(scale*256, scale*64, 0))
-	kBottomFrameSize = GUIScale(Vector(scale*256, scale*128, 0))
-	kIconSize = GUIScale(Vector(32, 32, 0))
-    
+    kHealthBarSize = GUIScale(Vector(14, 30, 0))
+    kFrameYOffset = GUIScale(180)
+    kFrameYSpacing = GUIScale(20)
+    kNameFontScale = GUIScale( Vector(1, 1, 1) ) * 0.8
+    kInfoFontScale = GUIScale( Vector(1, 1, 1) ) * 0.7
+    kPlayersPanelSize = GUIScale(Vector(95, 32, 0))
+    kTopFrameSize = GUIScale(Vector(scale*256, scale*64, 0))
+    kBottomFrameSize = GUIScale(Vector(scale*256, scale*128, 0))
+    kIconSize = GUIScale(Vector(32, 32, 0))
+
     isVisible = true
 
     -- Teams table format: Team GUIItems, color, player GUIItem list, get scores function.
@@ -130,15 +130,15 @@ end
 function GUIInsight_PlayerFrames:OnResolutionChanged(oldX, oldY, newX, newY)
 
     self:Uninitialize()
-	kHealthBarSize = GUIScale(Vector(14, 30, 0))
-	kFrameYOffset = GUIScale(180)
-	kFrameYSpacing = GUIScale(20)
-	kNameFontScale = GUIScale( Vector(1, 1, 1) ) * 0.8
-	kInfoFontScale = GUIScale( Vector(1, 1, 1) ) * 0.7
-	kPlayersPanelSize = GUIScale(Vector(95, 32, 0))
-	kTopFrameSize = GUIScale(Vector(scale*256, scale*64, 0))
-	kBottomFrameSize = GUIScale(Vector(scale*256, scale*128, 0))
-	kIconSize = GUIScale(Vector(32, 32, 0))
+    kHealthBarSize = GUIScale(Vector(14, 30, 0))
+    kFrameYOffset = GUIScale(180)
+    kFrameYSpacing = GUIScale(20)
+    kNameFontScale = GUIScale( Vector(1, 1, 1) ) * 0.8
+    kInfoFontScale = GUIScale( Vector(1, 1, 1) ) * 0.7
+    kPlayersPanelSize = GUIScale(Vector(95, 32, 0))
+    kTopFrameSize = GUIScale(Vector(scale*256, scale*64, 0))
+    kBottomFrameSize = GUIScale(Vector(scale*256, scale*128, 0))
+    kIconSize = GUIScale(Vector(32, 32, 0))
     self:Initialize()
 
 end
@@ -150,46 +150,46 @@ function GUIInsight_PlayerFrames:CreateBackground(teamNumber)
     local playersBackground = GUIManager:CreateGraphicItem()
     local top = GUIManager:CreateGraphicItem()
     local bottom = GUIManager:CreateGraphicItem()
-    
+
     if teamNumber == kTeam1Index then
         playersBackground:SetAnchor(GUIItem.Left, GUIItem.Top)
         playersBackground:SetPosition(Vector(0, kFrameYOffset, 0))
         playersBackground:SetColor(kBlueColor)
-        
-        top:SetTexturePixelCoordinates(unpack(leftTopCoords))
+
+        top:SetTexturePixelCoordinates(GUIUnpackCoords(leftTopCoords))
         top:SetAnchor(GUIItem.Left, GUIItem.Top)
         top:SetPosition(-Vector(0, kTopFrameSize.y,0))
-        
-        bottom:SetTexturePixelCoordinates(unpack(leftBottomCoords))
+
+        bottom:SetTexturePixelCoordinates(GUIUnpackCoords(leftBottomCoords))
         bottom:SetAnchor(GUIItem.Left, GUIItem.Bottom)
-        
-        playersBackground:SetTexturePixelCoordinates(unpack(leftGradientCoords))
+
+        playersBackground:SetTexturePixelCoordinates(GUIUnpackCoords(leftGradientCoords))
     elseif teamNumber == kTeam2Index then
         playersBackground:SetAnchor(GUIItem.Right, GUIItem.Top)
         playersBackground:SetPosition(Vector(-kPlayersPanelSize.x, kFrameYOffset, 0))
         playersBackground:SetColor(kRedColor)
-        
-        top:SetTexturePixelCoordinates(unpack(rightTopCoords))
+
+        top:SetTexturePixelCoordinates(GUIUnpackCoords(rightTopCoords))
         top:SetAnchor(GUIItem.Right, GUIItem.Top)
         top:SetPosition(-Vector(kTopFrameSize.x, kTopFrameSize.y,0))
-        
-        bottom:SetTexturePixelCoordinates(unpack(rightBottomCoords))
+
+        bottom:SetTexturePixelCoordinates(GUIUnpackCoords(rightBottomCoords))
         bottom:SetAnchor(GUIItem.Right, GUIItem.Bottom)
         bottom:SetPosition(-Vector(kBottomFrameSize.x,0,0))
-        
-        playersBackground:SetTexturePixelCoordinates(unpack(rightGradientCoords))
+
+        playersBackground:SetTexturePixelCoordinates(GUIUnpackCoords(rightGradientCoords))
     end
 
     top:SetSize(kTopFrameSize)
     top:SetTexture(kFrameTexture)
     top:SetLayer(kGUILayerInsight+1)
     playersBackground:AddChild(top)
-    
+
     bottom:SetSize(kBottomFrameSize)
     bottom:SetTexture(kFrameTexture)
     bottom:SetLayer(kGUILayerInsight+1)
     playersBackground:AddChild(bottom)
-    
+
     playersBackground:SetTexture(kBackgroundTexture)
     playersBackground:SetColor(Color(0,0,0,1))
     playersBackground:SetLayer(kGUILayerInsight)
@@ -200,7 +200,7 @@ end
 function GUIInsight_PlayerFrames:SetIsVisible(bool)
 
     isVisible = bool
-    
+
     for index, team in ipairs(self.teams) do
         team.Background:SetIsVisible(bool)
     end
@@ -208,18 +208,18 @@ function GUIInsight_PlayerFrames:SetIsVisible(bool)
 end
 
 function GUIInsight_PlayerFrames:Update(deltaTime)
-  
+
     PROFILE("GUIInsight_PlayerFrames:Update")
-    
+
     if isVisible then
-    
+
         --Update Teams and Tech Points
         local maxplayers = 0
         for index, team in ipairs(self.teams) do
 
             self:UpdatePlayers(team)
 
-            maxplayers = math.max( maxplayers, table.maxn(team.PlayerList) )
+            maxplayers = math.max( maxplayers, table.icount(team.PlayerList) )
 
         end
 
@@ -230,11 +230,11 @@ end
 -------------
 -- PLAYERS --
 -------------
-  
+
 --Sort by entity ID (clientIndex)
 function GUIInsight_PlayerFrames:Players_Sort(team)
 
-    function sortById(player1, player2)
+    local function sortById(player1, player2)
         return player1.ClientIndex > player2.ClientIndex
     end
 
@@ -248,25 +248,25 @@ function GUIInsight_PlayerFrames:UpdatePlayers(updateTeam)
     local teamScores = updateTeam["GetScores"]()
 
     -- How many items per player.
-    local numPlayers = table.count(teamScores)
+    local numPlayers = table.icount(teamScores)
     local playersGUIItem = updateTeam.Background
 
     -- Draw if there are players
     if numPlayers > 0 then
         local playerList = updateTeam["PlayerList"]
         playersGUIItem:SetIsVisible(true)
-        
+
         -- Resize the player list if it doesn't match.
-        if table.count(playerList) ~= numPlayers then
-        
-            while table.count(playerList) > numPlayers do
+        if table.icount(playerList) ~= numPlayers then
+
+            while table.icount(playerList) > numPlayers do
                 local removeItem = playerList[1]
                 playersGUIItem:RemoveChild(removeItem.Background)
                 GUI.DestroyItem(removeItem.Background)
                 table.remove(playerList,1)
             end
-            
-            while table.count(playerList) < numPlayers do
+
+            while table.icount(playerList) < numPlayers do
                 local team = updateTeam.TeamNumber
                 local newItem
                 if team == kTeam1Index then
@@ -286,7 +286,7 @@ function GUIInsight_PlayerFrames:UpdatePlayers(updateTeam)
 
         local currentY = kFrameYSpacing
         local currentPlayerIndex = 1
-        for index, player in pairs(playerList) do
+        for index, player in ipairs(playerList) do
             local playerRecord = teamScores[currentPlayerIndex]
 
             self:UpdatePlayer(player, playerRecord, updateTeam, currentY)
@@ -304,22 +304,22 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
 
     local playerName = playerRecord.Name
     local isCommander = playerRecord.IsCommander
-    
+
     player.EntityId = playerRecord.EntityId
-    
+
     if player.EntityId == Client.GetLocalPlayer().followId then
         player.Frame:SetColor(Color(1,1,0,1))
     else
-        player.Frame:SetColor(Color(1,1,1,1))    
+        player.Frame:SetColor(Color(1,1,1,1))
     end
-       
+
     local resourcesStr = string.format("%d Res", playerRecord.Resources)
     local KDRStr = string.format("%s / %s", playerRecord.Kills, playerRecord.Deaths)
     local currentPosition = Vector(player["Background"]:GetPosition())
     local newStatus = playerRecord.Status
     local teamNumber = team["TeamNumber"]
     local teamColor = team["Color"]
-    
+
     currentPosition.y = yPosition
     player["Background"]:SetPosition(currentPosition)
     player["Detail"]:SetText(resourcesStr)
@@ -329,7 +329,7 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
     local name = player["Name"]
     name:SetText(playerName)
     name:SetColor(kWhite)
-    
+
     -- Health bar
     local healthBar = player["HealthBar"]
     local barSize = 0
@@ -337,19 +337,19 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
 
         player["Background"]:SetColor(kDeadColor)
         healthBar:SetIsVisible(false)
-        
+
     elseif isCommander then
-    
+
         player["Background"]:SetColor(kCommanderColor)
         healthBar:SetIsVisible(false)
-        
+
     else
-    
+
         if playerRecord.Health then
             local health = playerRecord.Health + playerRecord.Armor * kHealthPointsPerArmor
             local maxHealth = playerRecord.MaxHealth + playerRecord.MaxArmor * kHealthPointsPerArmor
             local healthFraction = health/maxHealth
-            
+
             barSize = math.max(healthFraction * kHealthBarSize.y, 0)
             local barColor
             if healthFraction > 0.6 then
@@ -369,21 +369,21 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
         end
 
     end
-    
+
     if playerRecord.Tech then
         local currentTech = GetTechIdsFromBitMask(playerRecord.Tech)
-        
+
         -- Parasite should be in the last position of the array if it exists
         -- If it does, make player name yellow and remove it from the table
         if currentTech[#currentTech] == kTechId.Parasite then
             name:SetColor(kCommanderColorFloat)
             table.remove(currentTech, #currentTech)
         end
-        
+
         for i = 1, 3 do
             if #currentTech >= i then
                 player["Upgrades"][i]:SetTexture("ui/buildmenu.dds")
-                player["Upgrades"][i]:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(tonumber(currentTech[i]))))
+                player["Upgrades"][i]:SetTexturePixelCoordinates(GUIUnpackCoords(GetTextureCoordinatesForIcon(tonumber(currentTech[i]))))
                 player["Upgrades"][i]:SetColor(ConditionalValue(playerRecord.EntityTeamNumber == kTeam1Index, Color(0.8, 0.95, 1, 1), Color(1, 0.792, 0.227)))
             else
                 player["Upgrades"][i]:SetTexture("ui/transparent.dds")
@@ -392,15 +392,14 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
     end
 
     if newStatus ~= player.status then
-    
+
         local oldStatus = player.status
         -- Alerts for Lerk, Fade, Onos, Exo deaths
         if newStatus == Locale.ResolveString("STATUS_DEAD") then
-        
+
             if player.Name:GetText() == playerName then
 
-                local texture = nil
-                local textureCoordinates = nil
+                local texture, textureCoordinates
                 if oldStatus == Locale.ResolveString("STATUS_LERK") then
                     texture = "ui/Lerk.dds"
                     textureCoordinates = {0, 0, 284, 253}
@@ -423,33 +422,33 @@ function GUIInsight_PlayerFrames:UpdatePlayer(player, playerRecord, team, yPosit
                     texture = "ui/marine_buy_bigIcons.dds"
                     textureCoordinates = {47, 2093, 47+316, 2093+316}
                 end
-                
+
                 if texture ~= nil then
-                
+
                     local position = player["Background"]:GetScreenPosition(Client.GetScreenWidth(), Client.GetScreenHeight())
                     local text = string.format("%s %s Has Died", oldStatus, playerName)
                     local icon = {Texture = texture, TextureCoordinates = textureCoordinates, Color = Color(1,1,1,0.25), Size = Vector(0,0,0)}
                     local info = {Text = text, Scale = Vector(1,1,1), Color = Color(0.5,0.5,0.5,0.5), ShadowColor = Color(0,0,0,0.5)}
                     local alert = GUIInsight_AlertQueue:CreateAlert(position, icon, info, teamNumber)
                     GUIInsight_AlertQueue:AddAlert(alert, Color(1,1,1,1), Color(1,1,1,1))
-                    
+
                 end
-            
+
             end
-        
+
         end
-        
+
         local coords = kIconCoords[newStatus]
         if coords then
             player["Type"]:SetIsVisible(true)
-            player["Type"]:SetTexturePixelCoordinates(unpack(coords))
+            player["Type"]:SetTexturePixelCoordinates(coords[1], coords[2], coords[3], coords[4])
         else
             player["Type"]:SetIsVisible(false)
         end
         player.status = newStatus
-        
+
     end
-    
+
 end
 
 function GUIInsight_PlayerFrames:SendKeyEvent( key, down )
@@ -457,8 +456,8 @@ function GUIInsight_PlayerFrames:SendKeyEvent( key, down )
     -- Clear the autofollow entity id when we switch modes
     local player = Client.GetLocalPlayer()
     local isKey = false
-    
-    for _, curKey in pairs(keysDisableAutoFollow) do
+
+    for _, curKey in ipairs(keysDisableAutoFollow) do
         if GetIsBinding(key, curKey) and down then
             player.followId = Entity.invalidId
             return false
@@ -469,9 +468,9 @@ function GUIInsight_PlayerFrames:SendKeyEvent( key, down )
     -- The up event gets reported no matter what, so if you have the console open and you click,
     -- it wouldn't report the down state, but it'd report the up one.
     if isVisible and key == InputKey.MouseButton0 and down then
-        
+
         local cursor = MouseTracker_GetCursorPos()
-        
+
         for index, team in ipairs(self.teams) do
 
             local inside, posX, posY = GUIItemContainsPoint( team.Background, cursor.x, cursor.y )
@@ -479,7 +478,7 @@ function GUIInsight_PlayerFrames:SendKeyEvent( key, down )
                 local player = Client.GetLocalPlayer()
                 local index = math.floor( posY / (kPlayersPanelSize.y + kFrameYSpacing) ) + 1
                 local entityId = team.PlayerList[index].EntityId
-                
+
                 -- When clicking the same player, deselect so it stops following
                 if player.followId == entityId then
                     entityId = Entity.invalidId
@@ -488,9 +487,9 @@ function GUIInsight_PlayerFrames:SendKeyEvent( key, down )
                 player.followId = entityId
                 break
             end
-            
+
             local guiGraphs = GetGUIManager():GetGUIScriptSingle("GUIInsight_Graphs")
-            
+
             -- Clicking outside of the frames while not having the graphs up should deselect too
             if not inside and (guiGraphs and not guiGraphs:GetIsVisible() or not guiGraphs) then
                 player.followId = Entity.invalidId
@@ -498,9 +497,9 @@ function GUIInsight_PlayerFrames:SendKeyEvent( key, down )
 
             Client.SendNetworkMessage("SpectatePlayer", {entityId = player.followId}, true)
         end
-        
+
     end
-    
+
     return false
 
 end
@@ -516,8 +515,8 @@ function GUIInsight_PlayerFrames:CreateMarineBackground()
     background:SetSize(kPlayersPanelSize)
     background:SetAnchor(GUIItem.Left, GUIItem.Top)
     background:SetTexture(kBackgroundTexture)
-    background:SetTexturePixelCoordinates(unpack(leftBackgroundCoords))
-    
+    background:SetTexturePixelCoordinates(GUIUnpackCoords(leftBackgroundCoords))
+
     -- Type icon item (Weapon/Class/CommandStructure)
     local typeIcon = GUIManager:CreateGraphicItem()
     typeIcon:SetSize(kIconSize)
@@ -549,7 +548,7 @@ function GUIInsight_PlayerFrames:CreateMarineBackground()
     KDRitem:SetColor(kInfoColor)
     GUIMakeFontScale(KDRitem)
     background:AddChild(KDRitem)
-    
+
     -- Res text item.
     local detailItem = GUIManager:CreateTextItem()
     detailItem:SetFontName(kInfoFontName)
@@ -561,38 +560,38 @@ function GUIInsight_PlayerFrames:CreateMarineBackground()
     detailItem:SetColor(kInfoColor)
     GUIMakeFontScale(detailItem)
     background:AddChild(detailItem)
-    
+
     -- Health bar item.
     local healthBar = GUIManager:CreateGraphicItem()
     healthBar:SetSize(kHealthBarSize)
     healthBar:SetAnchor(GUIItem.Left, GUIItem.Bottom)
     healthBar:SetColor(Color(1,1,1,1))
     healthBar:SetTexture(kHealthbarTexture)
-    healthBar:SetTexturePixelCoordinates(unpack({0,64,32,0}))
+    healthBar:SetTexturePixelCoordinates(GUIUnpackCoords({0,64,32,0}))
     background:AddChild(healthBar)
-    
+
     -- 3 Upgrade slots
     local upgrades = { }
     local pos = 0
-    
+
     for i = 1, 3 do
         upgrades[i] = GUIManager:CreateGraphicItem()
         upgrades[i]:SetSize(GUIScale(Vector(48, 48, 0)))
         upgrades[i]:SetAnchor(GUIItem.Right, GUIItem.Top)
         upgrades[i]:SetTexture("ui/transparent.dds")
-        upgrades[i]:SetTexturePixelCoordinates(unpack({0,0,256,92}))
+        upgrades[i]:SetTexturePixelCoordinates(GUIUnpackCoords({0,0,256,92}))
         upgrades[i]:SetPosition(GUIScale(Vector(pos, -8, 0)))
         pos = pos + 40
         background:AddChild(upgrades[i])
     end
-    
+
     local frame = GUIManager:CreateGraphicItem()
     frame:SetSize(kPlayersPanelSize)
     frame:SetAnchor(GUIItem.Left, GUIItem.Top)
     frame:SetTexture(kBackgroundTexture)
-    frame:SetTexturePixelCoordinates(unpack(leftFrameCoords))
+    frame:SetTexturePixelCoordinates(GUIUnpackCoords(leftFrameCoords))
     background:AddChild(frame)
-    
+
     return { Background = background, Frame = frame, Name = nameItem, Type = typeIcon, Detail = detailItem, KDR = KDRitem, HealthBar = healthBar, Upgrades = upgrades }
 
 end
@@ -604,8 +603,8 @@ function GUIInsight_PlayerFrames:CreateAlienBackground()
     background:SetSize(kPlayersPanelSize)
     background:SetAnchor(GUIItem.Left, GUIItem.Top)
     background:SetTexture(kBackgroundTexture)
-    background:SetTexturePixelCoordinates(unpack(rightBackgroundCoords))
-    
+    background:SetTexturePixelCoordinates(GUIUnpackCoords(rightBackgroundCoords))
+
     -- Type icon item (Weapon/Class/CommandStructure)
     local typeIcon = GUIManager:CreateGraphicItem()
     typeIcon:SetSize(kIconSize)
@@ -637,7 +636,7 @@ function GUIInsight_PlayerFrames:CreateAlienBackground()
     KDRitem:SetColor(kInfoColor)
     GUIMakeFontScale(KDRitem)
     background:AddChild(KDRitem)
-    
+
     -- Res text item.
     local detailItem = GUIManager:CreateTextItem()
     detailItem:SetFontName(kInfoFontName)
@@ -649,7 +648,7 @@ function GUIInsight_PlayerFrames:CreateAlienBackground()
     detailItem:SetColor(kInfoColor)
     GUIMakeFontScale(detailItem)
     background:AddChild(detailItem)
-    
+
     -- Health bar item.
     local healthBar = GUIManager:CreateGraphicItem()
     healthBar:SetSize(kHealthBarSize)
@@ -657,31 +656,31 @@ function GUIInsight_PlayerFrames:CreateAlienBackground()
     healthBar:SetPosition(Vector(-kHealthBarSize.x, 0, 0))
     healthBar:SetColor(Color(1,1,1,1))
     healthBar:SetTexture(kHealthbarTexture)
-    healthBar:SetTexturePixelCoordinates(unpack({32,64,0,0}))
+    healthBar:SetTexturePixelCoordinates(GUIUnpackCoords({32,64,0,0}))
     background:AddChild(healthBar)
-    
+
     -- 3 Upgrade slots
     local upgrades = { }
     local pos = -144
-    
+
     for i = 1, 3 do
         upgrades[i] = GUIManager:CreateGraphicItem()
         upgrades[i]:SetSize(GUIScale(Vector(48, 48, 0)))
         upgrades[i]:SetAnchor(GUIItem.Right, GUIItem.Top)
         upgrades[i]:SetTexture("ui/transparent.dds")
-        upgrades[i]:SetTexturePixelCoordinates(unpack({0,0,256,92}))
+        upgrades[i]:SetTexturePixelCoordinates(GUIUnpackCoords({0,0,256,92}))
         upgrades[i]:SetPosition(GUIScale(Vector(pos, -8, 0)))
         pos = pos - 40
         background:AddChild(upgrades[i])
     end
-    
+
     local frame = GUIManager:CreateGraphicItem()
     frame:SetSize(kPlayersPanelSize)
     frame:SetAnchor(GUIItem.Left, GUIItem.Top)
     frame:SetTexture(kBackgroundTexture)
-    frame:SetTexturePixelCoordinates(unpack(rightFrameCoords))
+    frame:SetTexturePixelCoordinates(GUIUnpackCoords(rightFrameCoords))
     background:AddChild(frame)
-    
+
     return { Background = background, Frame = frame, Name = nameItem, Type = typeIcon, Detail = detailItem, KDR = KDRitem, HealthBar = healthBar, Upgrades = upgrades }
 
 end

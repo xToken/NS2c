@@ -1,12 +1,12 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\MarineSpectator.lua
-//
-//    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
-//
-// Marine spectators
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\MarineSpectator.lua
+--
+--    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
+--
+-- Alien spectators can choose their upgrades and lifeform while dead.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/TeamSpectator.lua")
 
@@ -71,9 +71,9 @@ if Server then
 
 end
 
-/**
- * Prevent the camera from penetrating into the world when waiting to spawn at the IP.
- */
+--
+-- Prevent the camera from penetrating into the world when waiting to spawn at the IP.
+--
 function MarineSpectator:GetPreventCameraPenetration()
 
     local followTarget = Shared.GetEntity(self:GetFollowTargetId())

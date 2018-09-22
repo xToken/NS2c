@@ -1,23 +1,24 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GUIInsight_TopBar.lua
-//
-// Created by: Jon 'Huze' Hughes (jon@jhuze.com)
-//
-// Spectator: Displays team names and gametime
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GUIInsight_TopBar.lua
+--
+-- Created by: Jon 'Huze' Hughes (jon@jhuze.com)
+--
+-- Spectator: Displays team names and gametime
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 class "GUIInsight_TopBar" (GUIScript)
 
 local isVisible
 
-local kBackgroundTexture = "ui/topbar.dds"
-local kIconTextureAlien = "ui/alien_commander_textures.dds"
-local kIconTextureMarine = "ui/marine_commander_textures.dds"
+local kBackgroundTexture = PrecacheAsset("ui/topbar.dds")
+local kIconTextureAlien = PrecacheAsset("ui/alien_commander_textures.dds")
+local kIconTextureMarine = PrecacheAsset("ui/marine_commander_textures.dds")
 local kTeamResourceIconCoords = {192, 363, 240, 411}
 local kResourceTowerIconCoords = {240, 363, 280, 411}
-local kBuildMenuTexture = "ui/buildmenu.dds"
+local kBiomassIconCoords = GetTextureCoordinatesForIcon(kTechId.Biomass)
+local kBuildMenuTexture = PrecacheAsset("ui/buildmenu.dds")
 
 local kTimeFontName = Fonts.kAgencyFB_Medium
 local kMarineFontName = Fonts.kAgencyFB_Medium
@@ -51,6 +52,7 @@ local alienNameBackground
 local alienTeamName
 local alienResources
 local alienHarvesters
+local alienBiomass
 
 local function CreateIconTextItem(team, parent, position, texture, coords)
 
@@ -69,7 +71,7 @@ local function CreateIconTextItem(team, parent, position, texture, coords)
     icon:SetAnchor(GUIItem.Left, GUIItem.Top)
     icon:SetPosition(position)
     icon:SetTexture(texture)
-    icon:SetTexturePixelCoordinates(unpack(coords))
+    icon:SetTexturePixelCoordinates(GUIUnpackCoords(coords))
     background:AddChild(icon)
     
     local value = GUIManager:CreateTextItem()
@@ -116,6 +118,16 @@ local function GetTeamInfoStrings(teamInfo)
     
 end
 
+local function GetBioMassString(teamInfo)
+
+    if teamInfo.GetBioMassLevel then
+        return string.format("%d / 12", teamInfo:GetBioMassLevel())
+    end
+    
+    return ""
+
+end
+
 function GUIInsight_TopBar:Initialize()
 
     kIconSize = GUIScale(Vector(32, 32, 0))
@@ -130,7 +142,7 @@ function GUIInsight_TopBar:Initialize()
     background = GUIManager:CreateGraphicItem()
     background:SetAnchor(GUIItem.Middle, GUIItem.Top)
     background:SetTexture(kBackgroundTexture)
-    background:SetTexturePixelCoordinates(unpack(texCoord))
+    background:SetTexturePixelCoordinates(GUIUnpackCoords(texCoord))
     background:SetSize(texSize)
     background:SetPosition(texPos)
     background:SetLayer(kGUILayerInsight)
@@ -152,7 +164,7 @@ function GUIInsight_TopBar:Initialize()
     
     scoresBackground = GUIManager:CreateGraphicItem()
     scoresBackground:SetTexture(kBackgroundTexture)
-    scoresBackground:SetTexturePixelCoordinates(unpack(scoresTexCoord))
+    scoresBackground:SetTexturePixelCoordinates(GUIUnpackCoords(scoresTexCoord))
     scoresBackground:SetSize(scoresTexSize)
     scoresBackground:SetAnchor(GUIItem.Middle, GUIItem.Top)
     scoresBackground:SetPosition(Vector(-scoresTexSize.x/2, texSize.y - GUIScale(15), 0))
@@ -207,6 +219,7 @@ function GUIInsight_TopBar:Initialize()
     marineResources = CreateIconTextItem(kTeam1Index, background, Vector(GUIScale(130),yoffset,0), kIconTextureMarine, kTeamResourceIconCoords)
     marineExtractors = CreateIconTextItem(kTeam1Index, background, Vector(GUIScale(50),yoffset,0), kIconTextureMarine, kResourceTowerIconCoords)
 
+    alienResources = CreateIconTextItem(kTeam2Index, background, Vector(-GUIScale(195),yoffset,0), kIconTextureAlien, kTeamResourceIconCoords)
     alienHarvesters = CreateIconTextItem(kTeam2Index, background, Vector(-GUIScale(115),yoffset,0), kIconTextureAlien, kResourceTowerIconCoords)
     
     teamsSwapButton = CreateButtonItem(scoresBackground, kButtonOffset, Color(1,1,1,0.5))
@@ -330,6 +343,7 @@ function GUIInsight_TopBar:Update(deltaTime)
     if alienTeamInfo then
     
         resString, rtString = GetTeamInfoStrings(alienTeamInfo)
+        alienResources:SetText(resString)
         alienHarvesters:SetText(rtString)
         
     end

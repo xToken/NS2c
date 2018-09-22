@@ -49,16 +49,100 @@ function MarineBuy_GetWeaponDescription(techId)
     
 end
 
-/**
- * User pressed close button
- */
+--
+-- User pressed close button
+--
 function MarineBuy_Close()
 
-    // Close menu
+    -- Close menu
     local player = Client.GetLocalPlayer()
     if player then
         player:CloseMenu()
     end
+    
+end
+
+local gDisplayTechs
+local function GetDisplayTechId(techId)
+
+    if not gDisplayTechs then
+    
+        gDisplayTechs = {}
+        gDisplayTechs[kTechId.Axe] = true
+        gDisplayTechs[kTechId.Pistol] = true
+        gDisplayTechs[kTechId.Rifle] = true
+        gDisplayTechs[kTechId.Shotgun] = true
+        gDisplayTechs[kTechId.HeavyMachineGun] = true
+        gDisplayTechs[kTechId.GrenadeLauncher] = true
+        gDisplayTechs[kTechId.Welder] = true
+        gDisplayTechs[kTechId.HandGrenades] = true
+        gDisplayTechs[kTechId.Mines] = true
+        gDisplayTechs[kTechId.Jetpack] = true
+        gDisplayTechs[kTechId.HeavyArmor] = true
+    
+    end
+
+    return gDisplayTechs[techId]
+
+end
+
+function MarineBuy_GetEquipped()
+
+    local equipped = {}
+    
+    local player = Client.GetLocalPlayer()
+    local items = GetChildEntities(player, "ScriptActor")
+
+    for _, item in ipairs(items) do
+    
+        local techId = item:GetTechId()
+        if GetDisplayTechId(techId) then
+            table.insertunique(equipped, techId)
+        end
+        
+    end
+    
+    if player and player:isa("JetpackMarine") then
+        table.insertunique(equipped, kTechId.Jetpack)
+    elseif player:isa("HeavyArmorMarine") then
+        table.insertunique(equipped, kTechId.HeavyArmor)
+    end
+    
+    return equipped
+
+end
+
+
+local _playerInventoryCache
+function MarineBuy_GetEquipment()
+    
+    local inventory = {}
+    local player = Client.GetLocalPlayer()
+    local items = GetChildEntities( player, "ScriptActor" )
+    
+    for _, item in ipairs(items) do
+    
+        local techId = item:GetTechId()
+        
+        if techId ~= kTechId.Pistol and techId ~= kTechId.Axe and techId ~= kTechId.Rifle then
+        --can't buy above, so skip
+            
+            local itemName = GetDisplayNameForTechId(techId)    --simple validity check
+            if itemName then
+                inventory[techId] = true
+            end
+            
+        end
+
+    end
+    
+    if player:isa("JetpackMarine") then
+        inventory[kTechId.Jetpack] = true
+    elseif player:isa("HeavyArmorMarine") then
+        inventory[kTechId.HeavyArmor] = true
+    end
+    
+    return inventory
     
 end
 
@@ -123,9 +207,9 @@ function MarineBuy_OnItemSelect(techId)
 
 end
 
-/**
- * User pressed close button
- */
+--
+-- User pressed close button
+--
 function MarineBuy_CloseNonFlash()
     local player = Client.GetLocalPlayer()
     player:CloseMenu()

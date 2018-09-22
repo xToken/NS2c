@@ -1,10 +1,10 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\VoiceOver.lua
-//
-// Created by: Andreas Urwalek (andi@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\VoiceOver.lua
+--
+-- Created by: Andreas Urwalek (andi@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 LEFT_MENU = 1
 RIGHT_MENU = 2
@@ -15,7 +15,7 @@ kVoiceId = enum ({
     'None', 'VoteEject', 'VoteConcede', 'Ping',
 
     'RequestWeld', 'MarineRequestMedpack', 'MarineRequestAmmo', 'MarineRequestOrder', 
-    'MarineTaunt', 'MarineTauntExclusive', 'MarineCovering', 'MarineFollowMe', 'MarineHostiles', 'MarineLetsMove',
+    'MarineTaunt', 'MarineTauntExclusive', 'MarineCovering', 'MarineFollowMe', 'MarineHostiles', 'MarineLetsMove', 'MarineAcknowledged',
     
     'AlienRequestHealing', 'AlienVoteCrag', 'AlienVoteShift', 'AlienVoteShade', 'AlienVoteWhip',
     'AlienTaunt', 'AlienFollowMe', 'AlienChuckle', 'EmbryoChuckle',
@@ -30,7 +30,8 @@ local kAlienTauntSounds =
     [kTechId.Lerk] = "sound/NS2.fev/alien/lerk/taunt",
     [kTechId.Fade] = "sound/NS2.fev/alien/fade/taunt",
     [kTechId.Onos] = "sound/NS2.fev/alien/onos/taunt",
-    [kTechId.Embryo] = "sound/NS2.fev/alien/common/swarm"
+    [kTechId.Embryo] = "sound/NS2.fev/alien/common/swarm",
+    [kTechId.ReadyRoomEmbryo] = "sound/NS2.fev/alien/common/swarm",
 }
 for _, tauntSound in pairs(kAlienTauntSounds) do
     PrecacheAsset(tauntSound)
@@ -90,7 +91,7 @@ end
 
 local function GetLifeFormSound(player)
 
-    if player and player:isa("Alien") then    
+    if player and (player:isa("Alien") or player:isa("ReadyRoomEmbryo")) then    
         return kAlienTauntSounds[player:GetTechId()] or ""    
     end
     
@@ -106,7 +107,7 @@ local function PingInViewDirection(player)
         local endPoint = startPoint + player:GetViewCoords().zAxis * 40        
         local trace = Shared.TraceRay(startPoint, endPoint,  CollisionRep.Default, PhysicsMask.Bullets, EntityFilterOne(player))   
         
-        // seems due to changes to team mixin you can be assigned to a team which does not implement SetCommanderPing
+        -- seems due to changes to team mixin you can be assigned to a team which does not implement SetCommanderPing
         local team = player:GetTeam()
         if team and team.SetCommanderPing then
             player:GetTeam():SetCommanderPing(trace.endPoint)
@@ -137,13 +138,13 @@ end
 local kSoundData = 
 {
 
-    // always part of the menu
+    -- always part of the menu
     [kVoiceId.VoteEject] = { Function = VoteEjectCommander },
     [kVoiceId.VoteConcede] = { Function = VoteConcedeRound },
 
     [kVoiceId.Ping] = { Function = PingInViewDirection, Description = "REQUEST_PING", KeyBind = "PingLocation" },
 
-    // marine vote menu
+    -- marine vote menu
     [kVoiceId.RequestWeld] = { Sound = "sound/NS2.fev/marine/voiceovers/weld", Function = GiveWeldOrder, Description = "REQUEST_MARINE_WELD", KeyBind = "RequestWeld", AlertTechId = kTechId.None },
     [kVoiceId.MarineRequestMedpack] = { Sound = "sound/NS2.fev/marine/voiceovers/medpack", Description = "REQUEST_MARINE_MEDPACK", KeyBind = "RequestHealth", AlertTechId = kTechId.MarineAlertNeedMedpack },
     [kVoiceId.MarineRequestAmmo] = { Sound = "sound/NS2.fev/marine/voiceovers/ammo", Description = "REQUEST_MARINE_AMMO", KeyBind = "RequestAmmo", AlertTechId = kTechId.MarineAlertNeedAmmo },
@@ -151,18 +152,18 @@ local kSoundData =
     
     [kVoiceId.MarineTaunt] = { Sound = "sound/NS2.fev/marine/voiceovers/taunt", Description = "REQUEST_MARINE_TAUNT", KeyBind = "Taunt", AlertTechId = kTechId.None },
     [kVoiceId.MarineTauntExclusive] = { Sound = "sound/NS2.fev/marine/voiceovers/taunt_exclusive", Description = "REQUEST_MARINE_TAUNT", KeyBind = "Taunt", AlertTechId = kTechId.None },
-    [kVoiceId.MarineCovering] = { Sound = "sound/NS2.fev/marine/voiceovers/covering", Description = "REQUEST_MARINE_COVERING", AlertTechId = kTechId.None },
-    [kVoiceId.MarineFollowMe] = { Sound = "sound/NS2.fev/marine/voiceovers/follow_me", Description = "REQUEST_MARINE_FOLLOWME", AlertTechId = kTechId.None },
-    [kVoiceId.MarineHostiles] = { Sound = "sound/NS2.fev/marine/voiceovers/hostiles", Description = "REQUEST_MARINE_HOSTILES", AlertTechId = kTechId.None },
-    [kVoiceId.MarineLetsMove] = { Sound = "sound/NS2.fev/marine/voiceovers/lets_move", Description = "REQUEST_MARINE_LETSMOVE", AlertTechId = kTechId.None },
+    [kVoiceId.MarineCovering] = { Sound = "sound/NS2.fev/marine/voiceovers/covering", Description = "REQUEST_MARINE_COVERING", KeyBind = "VoiceOverCovering", AlertTechId = kTechId.None },
+    [kVoiceId.MarineFollowMe] = { Sound = "sound/NS2.fev/marine/voiceovers/follow_me", Description = "REQUEST_MARINE_FOLLOWME", KeyBind = "VoiceOverFollowMe", AlertTechId = kTechId.None },
+    [kVoiceId.MarineHostiles] = { Sound = "sound/NS2.fev/marine/voiceovers/hostiles", Description = "REQUEST_MARINE_HOSTILES", KeyBind = "VoiceOverHostiles", AlertTechId = kTechId.None },
+    [kVoiceId.MarineLetsMove] = { Sound = "sound/NS2.fev/marine/voiceovers/lets_move", Description = "REQUEST_MARINE_LETSMOVE", KeyBind = "VoiceOverFollowMe", AlertTechId = kTechId.None },
+    [kVoiceId.MarineAcknowledged] = { Sound = "sound/NS2.fev/marine/voiceovers/ack", Description = "REQUEST_MARINE_ACKNOWLEDGED", KeyBind = "VoiceOverAcknowledged", AlertTechId = kTechId.None },
     
-    
-    // alien vote menu
+    -- alien vote menu
     [kVoiceId.AlienRequestHealing] = { Sound = "sound/NS2.fev/alien/voiceovers/need_healing", Description = "REQUEST_ALIEN_HEAL", KeyBind = "RequestHealth", AlertTechId = kTechId.None },
     [kVoiceId.AlienTaunt] = { Sound = "", Function = GetLifeFormSound, Description = "REQUEST_ALIEN_TAUNT", KeyBind = "Taunt", AlertTechId = kTechId.None },
     [kVoiceId.AlienFollowMe] = { Sound = "sound/NS2.fev/alien/voiceovers/follow_me", Description = "REQUEST_ALIEN_FOLLOWME", AlertTechId = kTechId.None },
-    [kVoiceId.AlienChuckle] = { Sound = "sound/NS2.fev/alien/voiceovers/chuckle", Description = "REQUEST_ALIEN_CHUCKLE", AlertTechId = kTechId.None },  
-    [kVoiceId.EmbryoChuckle] = { Sound = "sound/NS2.fev/alien/structures/death_large", Description = "REQUEST_ALIEN_CHUCKLE", AlertTechId = kTechId.None },     
+    [kVoiceId.AlienChuckle] = { Sound = "sound/NS2.fev/alien/voiceovers/chuckle", Description = "REQUEST_ALIEN_CHUCKLE", KeyBind = "VoiceOverAcknowledged", AlertTechId = kTechId.None },  
+    [kVoiceId.EmbryoChuckle] = { Sound = "sound/NS2.fev/alien/structures/death_large", Description = "REQUEST_ALIEN_CHUCKLE", KeyBind = "VoiceOverAcknowledged", AlertTechId = kTechId.None },     
     [kVoiceId.AlienVoteCrag] = { Function = VoteCrag, Description = "Vote for Crag upgrade." },
     [kVoiceId.AlienVoteShift] = { Function = VoteShift, Description = "Vote for Shift upgrade." },
     [kVoiceId.AlienVoteShade] = { Function = VoteShade, Description = "Vote for Shade upgrade." },
@@ -174,6 +175,7 @@ function GetVoiceSoundData(voiceId)
     return kSoundData[voiceId]
 end
 
+-- Initialize the female variants of the voice overs and precache.
 for _, soundData in pairs(kSoundData) do
 
     if soundData.Sound ~= nil and string.len(soundData.Sound) > 0 then
@@ -199,13 +201,13 @@ end
 local kMarineMenu =
 {
     [LEFT_MENU] = { kVoiceId.RequestWeld, kVoiceId.MarineRequestMedpack, kVoiceId.MarineRequestAmmo, kVoiceId.MarineRequestOrder, kVoiceId.Ping },
-    [RIGHT_MENU] = { kVoiceId.MarineTaunt, kVoiceId.MarineCovering, kVoiceId.MarineFollowMe, kVoiceId.MarineHostiles, kVoiceId.MarineLetsMove, }
+    [RIGHT_MENU] = { kVoiceId.MarineTaunt, kVoiceId.MarineCovering, kVoiceId.MarineFollowMe, kVoiceId.MarineHostiles, kVoiceId.MarineAcknowledged}
 }
 
 local kExoMenu = 
  {
     [LEFT_MENU] = { kVoiceId.RequestWeld, kVoiceId.MarineRequestOrder, kVoiceId.Ping },
-    [RIGHT_MENU] = { kVoiceId.MarineTaunt, kVoiceId.MarineCovering, kVoiceId.MarineFollowMe, kVoiceId.MarineHostiles, kVoiceId.MarineLetsMove }
+    [RIGHT_MENU] = { kVoiceId.MarineTaunt, kVoiceId.MarineCovering, kVoiceId.MarineFollowMe, kVoiceId.MarineHostiles, kVoiceId.MarineAcknowledged }
 }
     
 local kAlienMenu =
@@ -235,7 +237,10 @@ local kRequestMenus =
     ["Lerk"] = kAlienMenu,
     ["Fade"] = kAlienMenu,
     ["Onos"] = kAlienMenu,
-    ["Embryo"] = kEmbryoMenu
+    ["Embryo"] = kEmbryoMenu,
+    ["ReadyRoomPlayer"] = kMarineMenu,
+    ["ReadyRoomExo"] = kExoMenu,
+    ["ReadyRoomEmbryo"] = kEmbryoMenu,
 }
 
 function GetRequestMenu(side, className)

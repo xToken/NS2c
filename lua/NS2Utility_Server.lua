@@ -1,18 +1,37 @@
-//======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\NS2Utility_Server.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// Server-side NS2-specific utility functions.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+--======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\NS2Utility_Server.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- Server-side NS2-specific utility functions.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removal of some unneeded functions
+-- NS2c
+-- Removal of some unneeded functions
 
 Script.Load("lua/Table.lua")
 Script.Load("lua/Utility.lua")
+
+function SetAlwaysRelevantToTeam(unit, relevant)
+    
+    local includeMask = 0
+    
+    if relevant then
+    
+        if not HasMixin(unit, "Team") then
+            includeMask = bit.bor(kRelevantToTeam1, kRelevantToTeam2)
+        elseif unit:GetTeamNumber() == 1 then
+            includeMask = kRelevantToTeam2
+        elseif unit:GetTeamNumber() == 2 then
+            includeMask = kRelevantToTeam2
+        end
+    end
+    
+    unit:SetIncludeRelevancyMask( includeMask )
+    
+end
 
 function UpdateHallucinationLifeTime(self)
     
@@ -21,7 +40,7 @@ function UpdateHallucinationLifeTime(self)
         if self.creationTime + kHallucinationLifeTime < Shared.GetTime() then
             
             self:TriggerEffects("death_hallucination")
-            // don't do any ragdolls or death messages in this case, timing out of a hallucination is nothing the enemy team has to know
+            -- don't do any ragdolls or death messages in this case, timing out of a hallucination is nothing the enemy team has to know
             DestroyEntity(self)
             
         end
@@ -38,17 +57,6 @@ function DestroyEntitiesWithinRange(className, origin, range, filterFunc)
         end
     end
 
-end
-
-function OnCommanderLogOut(commander)
-/*
-    local client = Server.GetOwner(commander)
-    if client then
-    
-        local addTime = math.max(0, 30 - GetGamerules():GetGameTimeChanged())
-
-    end
-*/
 end
 
 function SetAlwaysRelevantToCommander(unit, relevant)
@@ -82,25 +90,6 @@ function PushPlayersInRange(origin, range, impulseStrength, team)
 
 end
 
-function SetAlwaysRelevantToTeam(unit, relevant)
-    
-    local includeMask = 0
-    
-    if relevant then
-    
-        if not HasMixin(unit, "Team") then
-            includeMask = bit.bor(kRelevantToTeam1, kRelevantToTeam2)
-        elseif unit:GetTeamNumber() == 1 then
-            includeMask = kRelevantToTeam2
-        elseif unit:GetTeamNumber() == 2 then
-            includeMask = kRelevantToTeam2
-        end
-    end
-    
-    unit:SetIncludeRelevancyMask( includeMask )
-    
-end
-
 local gLastHitEffectCounterReset = 0
 local gCurrentNumHitEffects = 0
 
@@ -121,12 +110,12 @@ local kUp = Vector(0, 1, 0)
 
 function CreateEntityForTeam(techId, position, teamNumber, player)
 
-    local newEnt = nil
+    local newEnt
     
     local mapName = LookupTechData(techId, kTechDataMapName)
     if mapName ~= nil then
     
-        // Allow entities to be positioned off ground (eg, hive hovers over tech point)        
+        -- Allow entities to be positioned off ground (eg, hive hovers over tech point)
         local spawnHeight = LookupTechData(techId, kTechDataSpawnHeightOffset, 0)
         local spawnHeightPosition = Vector(position.x,
                                            position.y + spawnHeight,
@@ -134,9 +123,9 @@ function CreateEntityForTeam(techId, position, teamNumber, player)
         
         newEnt = CreateEntity( mapName, spawnHeightPosition, teamNumber )
         
-        // Hook it up to attach entity
-		//NS2c
-		//Adjusted so that inital CC attaches to techpoint, no others will
+        -- Hook it up to attach entity
+		-- NS2c
+		-- Adjusted so that inital CC attaches to techpoint, no others will
         local attachEntity = GetAttachEntity(techId, position, kStructureSnapRadius, player)    
         if attachEntity then    
             newEnt:SetAttached(attachEntity)        
@@ -151,7 +140,7 @@ function CreateEntityForTeam(techId, position, teamNumber, player)
     
 end
 
-// 6 players means 0 reduction in time, under 6 players respawn scalar is below 1
+-- 6 players means 0 reduction in time, under 6 players respawn scalar is below 1
 local kPlayerNumBase = 6
 local kPlayerNumMax = 16
 local kOverSizeExponent = 1.1
@@ -171,8 +160,8 @@ function GetPlayerSizeBasedRespawnTime(team, defaultTime)
     
     local spawnTime = math.max(kMinTimeFraction * defaultTime, defaultTime - timeReduction)
     
-    //Print("timeReduction : %s", ToString(timeReduction))
-    //Print("spawnTime: %s", ToString(spawnTime))
+    --Print("timeReduction : %s", ToString(timeReduction))
+    --Print("spawnTime: %s", ToString(spawnTime))
     
     return spawnTime
 
@@ -183,7 +172,7 @@ function CreateEntityForCommander(techId, position, commander)
     local newEnt = CreateEntityForTeam(techId, position, commander:GetTeamNumber(), commander)
     ASSERT(newEnt ~= nil, "Didn't create entity for techId: " .. EnumToString(kTechId, techId))
     
-    // It is possible the new entity was created in a spot where it was instantly destroyed.
+    -- It is possible the new entity was created in a spot where it was instantly destroyed.
     if newEnt:GetIsDestroyed() then
         newEnt = nil
     end
@@ -198,7 +187,7 @@ function CreateEntityForCommander(techId, position, commander)
     
 end
 
-// Assumes position is at the bottom center of the egg
+-- Assumes position is at the bottom center of the egg
 function GetCanEggFit(position)
 
     local extents = LookupTechData(kTechId.Egg, kTechDataMaxExtents)
@@ -207,10 +196,10 @@ function GetCanEggFit(position)
 
     local eggCenter = position + Vector(0, extents.y + .05, 0)
 
-    local filter = nil
+    local filter
     local physicsMask = PhysicsMask.AllButPCs
     
-    if not Shared.CollideBox(extents, eggCenter, CollisionRep.Default, physicsMask, filter) then
+    if not Shared.CollideBox(extents, eggCenter, CollisionRep.Default, physicsMask, filter) and GetIsPointOnInfestation(position) then
             
         return true
                     
@@ -220,8 +209,8 @@ function GetCanEggFit(position)
     
 end
 
-// Don't spawn eggs on railings or edges of steps, etc. Check each corner of the egg to make 
-// sure the heights are all about the same
+-- Don't spawn eggs on railings or edges of steps, etc. Check each corner of the egg to make
+-- sure the heights are all about the same
 function GetFullyOnGround(position, maxExtentsDimension, numSlices, variationAllowed)
 
     ASSERT(type(maxExtentsDimension) == "number")
@@ -231,7 +220,7 @@ function GetFullyOnGround(position, maxExtentsDimension, numSlices, variationAll
     ASSERT(type(variationAllowed) == "number")
     ASSERT(variationAllowed > 0)
 
-    function GetGroundHeight(position)
+    local function GetGroundHeight(position)
 
         local trace = Shared.TraceRay(position, position - kUp, CollisionRep.Move, PhysicsMask.AllButPCs, EntityFilterOne(nil))
         return position.y - trace.fraction
@@ -239,17 +228,17 @@ function GetFullyOnGround(position, maxExtentsDimension, numSlices, variationAll
     end
     
     
-    // Get height of surface underneath center of egg
+    -- Get height of surface underneath center of egg
     local centerHeight = GetGroundHeight(position)
     
-    // Make sure center isn't overhanging
+    -- Make sure center isn't overhanging
     if math.abs(centerHeight - position.y) > variationAllowed then    
     
         return false        
         
     end
 
-    // Four slices, in radius around edge of egg    
+    -- Four slices, in radius around edge of egg
     for index = 1, numSlices do
         
         local angle = (index / numSlices) * math.pi * 2        
@@ -270,7 +259,7 @@ function GetFullyOnGround(position, maxExtentsDimension, numSlices, variationAll
     
 end
 
-// Assumes position is at the bottom center of the egg
+-- Assumes position is at the bottom center of the egg
 function GetIsPlacementForTechId(position, techId)
 
     local extents = Vector(LookupTechData(techId, kTechDataMaxExtents, Vector(0.4, 0.4, 0.4)))
@@ -297,11 +286,11 @@ local function CastToGround(pointToCheck, height, radius, filterEntity)
     local filter = EntityFilterOne(filterEntity)
     
     local extents = Vector(radius, height * 0.5, radius)
-    trace = Shared.TraceBox( extents, pointToCheck, pointToCheck - kBigUpVector, CollisionRep.Move, PhysicsMask.All, filter)
+    local trace = Shared.TraceBox( extents, pointToCheck, pointToCheck - kBigUpVector, CollisionRep.Move, PhysicsMask.All, filter)
     
     if trace.fraction ~= 1 then
     
-        // Check the start point is not colliding.
+        -- Check the start point is not colliding.
         if not Shared.CollideBox(extents, trace.endPoint, CollisionRep.Move, PhysicsMask.All, filter) then
             return trace.endPoint - Vector(0, height * 0.5, 0)
         end
@@ -312,8 +301,8 @@ local function CastToGround(pointToCheck, height, radius, filterEntity)
     
 end
 
-// Find random spot near hive that we could put an egg. Allow spawn points that are on the other side of walls
-// but pathable. Returns point on ground.
+-- Find random spot near hive that we could put an egg. Allow spawn points that are on the other side of walls
+-- but pathable. Returns point on ground.
 local function FindPlaceForTechId(filterEntity, origin, techId, minRange, maxRange, checkPath, maxVerticalDistance)
 
     PROFILE("NS2Utility:FindPlaceForTechId")
@@ -321,7 +310,7 @@ local function FindPlaceForTechId(filterEntity, origin, techId, minRange, maxRan
     local extents = LookupTechData(techId, kTechDataMaxExtents, Vector(0.4, 0.4, 0.4))
     local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)
     
-    // Find random spot within range, using random orientation (0 to -45 degrees)
+    -- Find random spot within range, using random orientation (0 to -45 degrees)
     local randomRange = minRange + math.random() * (maxRange - minRange)
     
     local randomRadians = math.random() * math.pi * 2
@@ -338,8 +327,8 @@ local function FindPlaceForTechId(filterEntity, origin, techId, minRange, maxRan
             local pathPoints = PointArray()
             local hasPathToPoint = Pathing.GetPathPoints(origin, pointToUse, pathPoints)
             
-            // This path is invalid if no path was found or the last path point was not the
-            // exact point we were looking for.
+            -- This path is invalid if no path was found or the last path point was not the
+            -- exact point we were looking for.
             if not hasPathToPoint or #pathPoints == 0 or pathPoints[#pathPoints] ~= pointToUse then
                 return nil
             end
@@ -379,7 +368,7 @@ function CalculateRandomSpawn(filterEntity, origin, techId, checkPath, minDistan
     
 end
 
-// Translate from SteamId to player (returns nil if not found)
+-- Translate from SteamId to player (returns nil if not found)
 function GetPlayerFromUserId(userId)
 
     for index, currentPlayer in ientitylist(Shared.GetEntitiesWithClassname("Player")) do
@@ -395,7 +384,7 @@ end
 
 function ScaleWithPlayerCount(value, numPlayers, scaleUp)
 
-    // 6 is supposed to be ideal, in this case the value wont be modified
+    -- 6 is supposed to be ideal, in this case the value wont be modified
     local factor = 1
     
     if scaleUp then
@@ -432,10 +421,19 @@ function ApplyPlayerKnockback(attacker, victim, force)
             Velocity = Velocity + (PushVec * math.max(0, 2.2 - PushVec:GetLength() ) * force)
             victim:SetVelocity(Velocity)
             
-            //Server.SendNetworkMessage(victim, "ViewPunch", {punchangle = Vector(kMeleeViewPunchYaw, 0, kMeleeViewPunchPitch)}, true)
+            -- Server.SendNetworkMessage(victim, "ViewPunch", {punchangle = Vector(kMeleeViewPunchYaw, 0, kMeleeViewPunchPitch)}, true)
             
         end
     
     end
 
-end 
+end
+
+function Server.SetAchievement(client, name, force)
+    if not force and (not Server.IsDedicated() or Shared.GetCheatsEnabled()) then return end
+
+    if client then
+        Server.SendNetworkMessage(client, "SetAchievement", {name = name}, true)
+    end
+end
+

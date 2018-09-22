@@ -1,14 +1,14 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\AmmoPack.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\AmmoPack.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Changed ammo back to 1 clip, added in per weapon ammo packs
+-- NS2c
+-- Changed ammo back to 1 clip, added in per weapon ammo packs
 
 Script.Load("lua/DropPack.lua")
 
@@ -44,7 +44,7 @@ end
 
 function AmmoPack:GetIsValidRecipient(recipient)
 
-    // Ammo packs give ammo to clip as well (so pass true to GetNeedsAmmo())
+    -- Ammo packs give ammo to clip as well (so pass true to GetNeedsAmmo())
     local weapon = recipient:GetActiveWeapon()
     return weapon ~= nil and weapon:isa("ClipWeapon") and weapon:GetNeedsAmmo(false) and recipient:GetIsAlive()
     
@@ -77,7 +77,7 @@ end
 
 Shared.LinkClassToMap("WeaponAmmoPack", WeaponAmmoPack.kMapName)
 
-// -------------
+-- -------------
 
 class 'RifleAmmo' (WeaponAmmoPack)
 RifleAmmo.kMapName = "rifleammo"
@@ -92,11 +92,11 @@ end
 
 function RifleAmmo:GetWeaponClassName()
     return "Rifle"
-end  
+end
 
 Shared.LinkClassToMap("RifleAmmo", RifleAmmo.kMapName)
 
-// -------------
+-- -------------
 
 class 'ShotgunAmmo' (WeaponAmmoPack)
 ShotgunAmmo.kMapName = "shotgunammo"
@@ -133,6 +133,7 @@ end
 
 Shared.LinkClassToMap("GrenadeLauncherAmmo", GrenadeLauncherAmmo.kMapName)
 
+-- -------------
 
 class 'HeavyMachineGunAmmo' (WeaponAmmoPack)
 HeavyMachineGunAmmo.kMapName = "heavymachinegunammo"
@@ -140,13 +141,13 @@ HeavyMachineGunAmmo.kModelName = PrecacheAsset("models/marine/ammopacks/hmg.mode
 
 function HeavyMachineGunAmmo:OnInitialized()
 
-    WeaponAmmoPack.OnInitialized(self)    
+    WeaponAmmoPack.OnInitialized(self)
     self:SetModel(HeavyMachineGunAmmo.kModelName)
 
 end
 
 function HeavyMachineGunAmmo:GetWeaponClassName()
     return "HeavyMachineGun"
-end    
+end
 
 Shared.LinkClassToMap("HeavyMachineGunAmmo", HeavyMachineGunAmmo.kMapName)

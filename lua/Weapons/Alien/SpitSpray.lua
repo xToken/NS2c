@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Alien\SpitSpray.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// Spit attack on primary.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Alien\SpitSpray.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- Spit attack on primary.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/Spit.lua")
@@ -24,7 +24,7 @@ local kAnimationGraph = PrecacheAsset("models/alien/gorge/gorge_view.animation_g
 local kSpitViewEffect = PrecacheAsset("cinematics/alien/gorge/spit_1p.cinematic")
 local kSpitProjectileEffect = PrecacheAsset("cinematics/alien/gorge/spit_1p_projectile.cinematic")
 local kViewSpitMaterial = PrecacheAsset("materials/effects/mesh_effects/view_spit.material")
-local attackEffectMaterial = nil
+local attackEffectMaterial
 
 if Client then
 
@@ -55,7 +55,7 @@ function SpitSpray:GetAnimationGraphName()
     return kAnimationGraph
 end
 
-function SpitSpray:GetEnergyCost(player)
+function SpitSpray:GetEnergyCost()
     return kSpitEnergyCost
 end
 

@@ -1,16 +1,16 @@
 
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GUIResourceDisplay.lua
-//
-// Created by: Brian Cronin (brianc@unknownworlds.com)
-//
-// Manages displaying resources and number of resource towers.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GUIResourceDisplay.lua
+--
+-- Created by: Brian Cronin (brianc@unknownworlds.com)
+--
+-- Manages displaying resources and number of resource towers.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed idle workers item
+-- NS2c
+-- Removed idle workers item
 
 Script.Load("lua/GUIScript.lua")
 
@@ -77,7 +77,7 @@ function GUIResourceDisplay:Initialize(settingsTable)
     
     self.textureName = ConditionalValue(PlayerUI_GetTeamType() == kAlienTeamType, GUIResourceDisplay.kBackgroundTextureAlien, GUIResourceDisplay.kBackgroundTextureMarine)
     
-    // Background, only used for positioning
+    -- Background, only used for positioning
     self.background = GUIManager:CreateGraphicItem()
     self.background:SetSize(Vector(GUIResourceDisplay.kBackgroundWidth, GUIResourceDisplay.kBackgroundHeight, 0))
     self.background:SetAnchor(GUIItem.Middle, GUIItem.Top)
@@ -88,7 +88,7 @@ function GUIResourceDisplay:Initialize(settingsTable)
         self:InitSmokeyBackground()
     end
     
-    // Team display.
+    -- Team display.
     self.teamIcon = GUIManager:CreateGraphicItem()
     self.teamIcon:SetSize(Vector(GUIResourceDisplay.kTeamResourceIcon.Width, GUIResourceDisplay.kTeamResourceIcon.Height, 0))
     self.teamIcon:SetAnchor(GUIItem.Left, GUIItem.Center)
@@ -110,7 +110,7 @@ function GUIResourceDisplay:Initialize(settingsTable)
     GUIMakeFontScale(self.teamText)
     self.teamIcon:AddChild(self.teamText)
     
-    // Tower display.
+    -- Tower display.
     self.towerIcon = GUIManager:CreateGraphicItem()
     self.towerIcon:SetSize(Vector(GUIResourceDisplay.kResourceTowerIcon.Width, GUIResourceDisplay.kResourceTowerIcon.Height, 0))
     self.towerIcon:SetAnchor(GUIItem.Middle, GUIItem.Center)

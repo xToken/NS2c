@@ -1,7 +1,7 @@
-// Natural Selection 2 'Classic' Mod
-// Source located at - https://github.com/xToken/NS2c
-// lua\EnergizeMixin.lua
-// - Dragon
+-- Natural Selection 2 'Classic' Mod
+-- Source located at - https://github.com/xToken/NS2c
+-- lua\EnergizeMixin.lua
+-- - Dragon
 
 EnergizeMixin = CreateMixin(EnergizeMixin)
 EnergizeMixin.type = "Energize"
@@ -13,7 +13,7 @@ EnergizeMixin.expectedMixins =
 
 EnergizeMixin.networkVars =
 {
-    energized = "boolean"
+    energized = "private boolean"
 }
 
 function EnergizeMixin:__initmixin()

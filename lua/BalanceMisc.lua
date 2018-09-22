@@ -38,6 +38,7 @@ kEnergyRegenRate = 0.25
 kDropWeaponTimeLimit = 1
 kPickupWeaponTimeLimit = 2
 kItemStayTime = 30    // NS1
+kWeaponStayTime = 30
 kRecycleCancelWindow = 0.25
 kRecycleRefundScalar = 0.5
 
@@ -72,6 +73,7 @@ kDefaultStructureCost = 10
 kStructureCircleRange = 4
 kInfantryPortalAttachRange = 12
 kArmoryWeaponAttachRange = 10
+kArmoryDroppedWeaponAttachRange = 4
 kTurretFactoryAttachRange = 12
 
 // Obs stuff
@@ -134,3 +136,5 @@ kArmoryHealAmount = 15
 //Misc? 0_o
 kKillDelay = 3
 kAbilityMaxEnergy = 100
+-- timeout in seconds after an entity is flagged as "not in combat" if it didn't take or deal any damage
+kCombatTimeOut = 3

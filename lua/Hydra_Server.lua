@@ -1,15 +1,15 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//
-// lua\Hydra_Server.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// Creepy plant turret the Gorge can create.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
+--
+-- lua\Hydra_Server.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- Creepy plant turret the Gorge can create.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed team tracking of gorge structures
+-- NS2c
+-- Removed team tracking of gorge structures
 
 Hydra.kUpdateInterval = .5
 
@@ -20,7 +20,7 @@ function Hydra:OnKill(attacker, doer, point, direction)
     ScriptActor.OnKill(self, attacker, doer, point, direction)
     
     if GetServerGameMode() == kGameMode.Combat and parent and parent:isa("Player") then
-        //Refund costs.
+        -- Refund costs.
         parent:AddResources(LookupTechData(self:GetTechId(), kTechDataCombatCost, 0))
     end
     
@@ -37,7 +37,7 @@ end
 
 local function CreateSpikeProjectile(self)
 
-    // TODO: make hitscan at account for target velocity (more inaccurate at higher speed)
+    -- TODO: make hitscan at account for target velocity (more inaccurate at higher speed)
     
     local startPoint = self:GetBarrelPoint()
     local directionToTarget = self.target:GetEngagementPoint() - self:GetEyePos()
@@ -57,20 +57,20 @@ local function CreateSpikeProjectile(self)
     
     local endPoint = startPoint + spreadDirection * Hydra.kRange
     
-    local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterOne(self))
+    local trace = Shared.TraceRay(startPoint, endPoint, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterOneAndIsa(self, "Hydra"))
     
     if trace.fraction < 1 then
     
-        local surface = nil
-        
-        // Disable friendly fire.
+        local surface
+
+        -- Disable friendly fire.
         trace.entity = (not trace.entity or GetAreEnemies(trace.entity, self)) and trace.entity or nil
         
         if not trace.entity then
             surface = trace.surface
         end
         
-        local direction = (trace.endPoint - startPoint):GetUnit()
+        -- local direction = (trace.endPoint - startPoint):GetUnit()
         self:DoDamage(Hydra.kDamage, trace.entity, trace.endPoint, fireDirection, surface, false, true)
         
     end
@@ -84,12 +84,12 @@ function Hydra:AttackTarget()
     CreateSpikeProjectile(self)    
     self:TriggerEffects("hydra_attack")
     
-    // Random rate of fire to prevent players from popping out of cover and shooting regularly
+    -- Random rate of fire to prevent players from popping out of cover and shooting regularly
     self.timeOfNextFire = Shared.GetTime() + .5 + math.random()
     
 end
 
-function Hydra:OnOwnerChanged(oldOwner, newOwner)
+function Hydra:OnOwnerChanged(_, newOwner)
 
     self.hydraParentId = Entity.invalidId
     if newOwner ~= nil then
@@ -119,7 +119,7 @@ function Hydra:OnUpdate(deltaTime)
             if self.attacking and (not self.timeOfNextFire or Shared.GetTime() > self.timeOfNextFire) then
                 self:AttackTarget()
             elseif not self.target then
-                // Play alert animation if marines nearby and we're not targeting (ARCs?)
+                -- Play alert animation if marines nearby and we're not targeting (ARCs?)
                 if not self.timeLastAlertCheck or Shared.GetTime() > self.timeLastAlertCheck + Hydra.kAlertCheckInterval then
                 
                     self.alerting = false
@@ -148,7 +148,7 @@ function Hydra:GetIsEnemyNearby()
 
     local enemyActors = GetEntitiesForTeam("ScriptActor", GetEnemyTeamNumber(self:GetTeamNumber()))
     
-    for index, actors in ipairs(enemyActors) do                
+    for index, actors in ipairs(enemyActors) do
     
         if actors:GetIsVisible() and not actors:isa("Commander") then
         

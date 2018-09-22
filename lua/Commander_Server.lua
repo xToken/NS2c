@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Commander_Server.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Commander_Server.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed alien comm refs, cooldown refs and added back in energy
+-- NS2c
+-- Removed alien comm refs, cooldown refs and added back in energy
 
 Script.Load("lua/Globals.lua")
 
@@ -17,12 +17,12 @@ end
 
 function Commander:GetClassHasEnergy(className, energyAmount)
 
-    local foundEntity = nil
+    local foundEntity
     
     local entities = GetEntitiesForTeam(className, self:GetTeamNumber())    
     table.sort(entities, SortByEnergy)
     
-    for index, entity in ipairs(entities) do
+    for _, entity in ipairs(entities) do
     
         if entity:GetEnergy() >= energyAmount and (not entity.GetIsBuilt or entity:GetIsBuilt()) then
             foundEntity = entity
@@ -39,7 +39,7 @@ function Commander:TriggerNotification(locationId, techId)
 
     local message = BuildCommanderNotificationMessage(locationId, techId)
     
-    // send the message only to Marines (that implies that they are alive and have a hud to display the notification
+    -- send the message only to Marines (that implies that they are alive and have a hud to display the notification
     
     for index, marine in ipairs(GetEntitiesForTeam("Player", self:GetTeamNumber())) do
         Server.SendNetworkMessage(marine, "CommanderNotification", message, true) 
@@ -54,7 +54,7 @@ function Commander:OnDestroy()
     
 end
 
-function Commander:CopyPlayerDataFrom(player)
+function Commander:CopyPlayerDataFrom(player) --TODO segregate out specific Alien & Marine data into their respective classes
 
     Player.CopyPlayerDataFrom(self, player)
     self:SetIsAlive(player:GetIsAlive())
@@ -72,10 +72,10 @@ function Commander:CopyPlayerDataFrom(player)
     
     self:SetVelocity(Vector(0, 0, 0))
 
-    // For knowing how to create the player class when leaving commander mode
+    -- For knowing how to create the player class when leaving commander mode
     self.previousMapName = player:GetMapName()
     
-    // Save previous weapon name so we can switch back to it when we logout
+    -- Save previous weapon name so we can switch back to it when we logout
     self.previousWeaponMapName = ""
     local activeWeapon = player:GetActiveWeapon()
     if (activeWeapon ~= nil) then
@@ -85,23 +85,21 @@ function Commander:CopyPlayerDataFrom(player)
     self.previousHealth = player:GetHealth()
     self.previousArmor = player:GetArmor()
     
-    self.previousAngles = Angles(player:GetAngles())
-    
-    // Save off alien values
+    -- Save off alien values
     if player.GetEnergy then
         self.previousAlienEnergy = player:GetEnergy()
     end
     self.timeStartedCommanderMode = Shared.GetTime()
     
-	self.oneHive = player.oneHive
+    self.oneHive = player.oneHive
     self.twoHives = player.twoHives
     self.threeHives = player.threeHives
     
 end
 
-/**
- * Commanders cannot take damage.
- */
+--
+-- Commanders cannot take damage.
+--
 function Commander:GetCanTakeDamageOverride()
     return false
 end
@@ -112,7 +110,7 @@ end
 
 function Commander:AttemptToResearchOrUpgrade(techNode, entity)
     
-    // research is only allowed for single selection
+    -- research is only allowed for single selection
     if techNode:GetIsResearch() and not self.isBotRequestedAction then
     
         local selection = self:GetSelection()
@@ -125,7 +123,7 @@ function Commander:AttemptToResearchOrUpgrade(techNode, entity)
         
     end
     
-    // Don't allow it to be researched while researching.
+    -- Don't allow it to be researched while researching.
     if entity and HasMixin(entity, "Research") then
     
         if (techNode:GetCanResearch() or techNode:GetIsManufacture()) and entity:GetCanResearch(techNode:GetTechId()) then
@@ -152,7 +150,7 @@ function Commander:AttemptToResearchOrUpgrade(techNode, entity)
     
 end
 
-// TODO: Add parameters for energy or resources
+-- TODO: Add parameters for energy or resources
 function Commander:TriggerNotEnoughResourcesAlert()
 
     local team = self:GetTeam()
@@ -170,43 +168,43 @@ function Commander:GetSpendTeamResourcesSoundName()
     return Commander.kSpendTeamResourcesSoundName
 end
 
-// Return whether action should continue to be processed for the next selected unit. Position will be nil
-// for non-targeted actions and will be the world position target for the action for targeted actions.
-// targetId is the entityId which was hit by the client side trace
+-- Return whether action should continue to be processed for the next selected unit. Position will be nil
+-- for non-targeted actions and will be the world position target for the action for targeted actions.
+-- targetId is the entityId which was hit by the client side trace
 function Commander:ProcessTechTreeActionForEntity(techNode, position, normal, isCommanderPicked, orientation, entity, trace)
 
     local success = false
     local keepProcessing = true
     
-    // First make sure tech is allowed for entity
+    -- First make sure tech is allowed for entity
     local techId = techNode:GetTechId()
     
     local techButtons = self:GetCurrentTechButtons(self.currentMenu, entity)
     
-    // For bots, do not worry about which menu is active
+    -- For bots, do not worry about which menu is active
     if not self.isBotRequestedAction then
         if techButtons == nil or table.find(techButtons, techId) == nil then
             return success, keepProcessing
         end
     end
 
-    // TODO: check if this really works fine. the entity should check here if something is alloed / can be afforded.
-    // if no entity is selected this check is not necessary, the commander already performed the check
+    -- TODO: check if this really works fine. the entity should check here if something is alloed / can be afforded.
+    -- if no entity is selected this check is not necessary, the commander already performed the check
     if entity then
         local allowed, canAfford = entity:GetTechAllowed(techId, techNode, self)
         
         if not allowed or not canAfford then
-            // no succes, but continue (can afford revers maybe to a unit specific resource type which is maybe affordable at another selected unit)
+            -- no succes, but continue (can afford revers maybe to a unit specific resource type which is maybe affordable at another selected unit)
             return false, true
         end
     end
     
-    // Cost is in team resources, energy or individual resources, depending on tech node type        
+    -- Cost is in team resources, energy or individual resources, depending on tech node type
     local cost = GetCostForTech(techId)
     local team = self:GetTeam()
     local teamResources = team:GetTeamResources()
     
-    // Let entities override actions themselves (eg, so buildbots can execute a move-build order instead of building structure immediately)
+    -- Let entities override actions themselves (eg, so buildbots can execute a move-build order instead of building structure immediately)
     if entity then
         success, keepProcessing = entity:OverrideTechTreeAction(techNode, position, orientation, self, trace)
     end
@@ -215,7 +213,7 @@ function Commander:ProcessTechTreeActionForEntity(techNode, position, normal, is
         return success, keepProcessing
     end   
     
-    // Handle tech tree actions that cost team resources    
+    -- Handle tech tree actions that cost team resources
     if techNode:GetIsResearch() or techNode:GetIsUpgrade() or techNode:GetIsBuild() or techNode:GetIsEnergyBuild() or techNode:GetIsEnergyManufacture() or techNode:GetIsManufacture() then
     
         local costsEnergy = techNode:GetIsEnergyBuild() or techNode:GetIsEnergyManufacture()
@@ -250,7 +248,9 @@ function Commander:ProcessTechTreeActionForEntity(techNode, position, normal, is
                 else                
                     team:AddTeamResources(-cost)                    
                 end
-                
+
+                position = entity and entity:GetOrigin() or position
+
             end
             
         else
@@ -259,7 +259,7 @@ function Commander:ProcessTechTreeActionForEntity(techNode, position, normal, is
             
         end
                         
-    // Handle resources-based abilities
+    -- Handle resources-based abilities
     elseif techNode:GetIsAction() or techNode:GetIsBuy() or techNode:GetIsPlasmaManufacture() then
 
         local playerResources = self:GetResources()
@@ -286,7 +286,7 @@ function Commander:ProcessTechTreeActionForEntity(techNode, position, normal, is
 
     elseif techNode:GetIsActivation() then
     
-        // Deduct energy cost if any
+        -- Deduct energy cost if any
         if cost == 0 or cost <= teamResources then
         
             success, keepProcessing = entity:PerformActivation(techId, position, normal, self)
@@ -306,13 +306,79 @@ function Commander:ProcessTechTreeActionForEntity(techNode, position, normal, is
     if techNode:GetResourceType() == kResourceType.Team then
         Shared.PlayPrivateSound(self, self:GetSpendTeamResourcesSoundName(), nil, 1.0, self:GetOrigin())
     end
-    
+
+    if success then
+
+        local location = GetLocationForPoint(position)
+        local locationName = location and location:GetName() or ""
+        self:TriggerNotification(Shared.GetStringIndex(locationName), techId)
+    end
+
     return success, keepProcessing
-    
+
 end
 
-// Send techId of action and normalized pick vector. Issues order to selected units to the world position represented by
-// the pick vector, or to the entity that it hits.
+
+-- @return a list of at most @number Vector(x,y,z) spreading around a given @orig point
+-- If it can't find any placement, the list still contains at least the original given point
+local function Commander_PrePlaceBuildings(orig, number)
+    local extents = Vector(0.2, 0.2, 0.2)
+    local prePlaceOrig = nil
+    local capsuleHeight, capsuleRadius = GetTraceCapsuleFromExtents(extents)
+    local position = nil
+
+    number = number or 1
+    -- Place the point a bit above ground, easier to find other points
+    orig = orig + Vector(0, 1, 0)
+    prePlaceOrig = {orig}
+    for i = 1, number do
+
+        local success = false
+        local usedOrig = nil
+
+        -- 0.75 seems to be the sweet spot
+        local minRange = 0.75
+        local maxRange = 1.5
+
+        -- Persistence is the path to victory.
+        for index = 1, 5 do
+
+            teamNumber = 1
+            usedOrig = prePlaceOrig[math.random(1, #prePlaceOrig)]
+            position = GetRandomSpawnForCapsule(capsuleHeight, capsuleRadius, usedOrig, minRange, maxRange, EntityFilterAll())
+            if position then
+                success = true
+
+                for e = 1, #prePlaceOrig do -- Only spawn away from already found origin
+                    if (position:GetDistanceTo(prePlaceOrig[e]) < minRange) then
+                        -- Check if we are in the same location room
+                        if (GetLocationForPoint(orig) and GetLocationForPoint(orig) == GetLocationForPoint(position))
+                        then
+                            success = false
+                            break
+                        end
+                    end
+                end
+
+                if (success) then
+                    table.insert(prePlaceOrig, position)
+                    break
+                end
+            end
+
+            maxRange = maxRange * 1.10
+        end
+
+        -- if not success then
+        --    Print("Create %s: Couldn't find space for entity", EnumToString(kTechId, techId))
+        -- end
+    end
+
+    return prePlaceOrig
+end
+
+-- Send techId of action and normalized pick vector. Issues order to selected units to the world position represented by
+-- the pick vector, or to the entity that it hits.
 function Commander:OrderEntities(orderTechId, trace, orientation, targetId, shiftDown)
 
     local invalid = false
@@ -327,18 +393,20 @@ function Commander:OrderEntities(orderTechId, trace, orientation, targetId, shif
     
     if trace.fraction < 1 then
 
-        // Give order to selection
+        -- Give order to selection
         local orderEntities = self:GetSelection()        
         local orderTechIdGiven = orderTechId
-        
+        local origPlaces = #orderEntities > 1 and Commander_PrePlaceBuildings(trace.endPoint, math.min(15, #orderEntities)) or {trace.endPoint}
+
         for tableIndex, entity in ipairs(orderEntities) do
         
             if HasMixin(entity, "Orders") then
-            
-                local type = entity:GiveOrder(orderTechId, targetId, trace.endPoint, orientation, not shiftDown, false)                            
-            
-                if type == kTechId.None then            
-                    invalid = true    
+
+                local orig = (origPlaces and #origPlaces > 0) and origPlaces[(tableIndex % #origPlaces) + 1] or trace.endPoint
+                local type = entity:GiveOrder(orderTechId, targetId, orig, orientation, not shiftDown, false)
+
+                if type == kTechId.None then
+                    invalid = true
                 end
                 
              else
@@ -359,12 +427,12 @@ end
 
 function Commander:OnOrderEntities(orderTechId, orderEntities)
 
-    // Get sound and play it locally for commander and every target player
+    -- Get sound and play it locally for commander and every target player
     local soundName = LookupTechData(orderTechId, kTechDataOrderSound, nil)
     
     if soundName then
 
-        // Play order sounds if we're ordering players only
+        -- Play order sounds if we're ordering players only
         local playSound = false
         
         for index, entity in ipairs(orderEntities) do
@@ -380,12 +448,12 @@ function Commander:OnOrderEntities(orderTechId, orderEntities)
     
         if playSound then
         
-            /* is now handled client side
+            --[[ is now handled client side
             Server.PlayPrivateSound(self, soundName, self, 1.0, Vector(0, 0, 0))
             for index, player in ipairs(orderEntities) do
                 Server.PlayPrivateSound(player, soundName, player, 1.0, Vector(0, 0, 0))
             end
-            */
+            --]]
             
         end
         
@@ -405,19 +473,25 @@ local function HasEnemiesSelected(self)
 
 end
 
-// Takes a techId as the action type and normalized screen coords for the position. normPickVec will be nil
-// for non-targeted actions. 
+-- Takes a techId as the action type and normalized screen coords for the position. normPickVec will be nil
+-- for non-targeted actions.
 function Commander:ProcessTechTreeAction(techId, pickVec, orientation, worldCoordsSpecified, targetId, shiftDown)
 
     self.shiftDown = shiftDown
 
     local success = false
+    local techNode = GetTechTree(self:GetTeamNumber()):GetTechNode(techId)
+    local techNodeIsAvailable = techNode ~= nil and techNode.available;
+    local techNodeIsMenu = techNodeIsAvailable and techNode:GetIsMenu()
+    local techNodeIsAction = techNodeIsAvailable and not techNode:GetIsMenu()
     
+    if techNodeIsMenu then
+        self.currentMenu = techId
+    end
+
     if HasEnemiesSelected(self) then
         return false
     end
-    
-    local techNode = GetTechTree(self:GetTeamNumber()):GetTechNode(techId)
     
     if techNode == nil then
         return false
@@ -434,7 +508,7 @@ function Commander:ProcessTechTreeAction(techId, pickVec, orientation, worldCoor
     local team = self:GetTeam()
     local energystructure
     
-    // check resources first. abort here in case we have no resources left to perform this action at all    
+    -- check resources first. abort here in case we have no resources left to perform this action at all
     if techNode:GetResourceType() == kResourceType.Team then
     
         if team:GetTeamResources() < cost then
@@ -465,16 +539,15 @@ function Commander:ProcessTechTreeAction(techId, pickVec, orientation, worldCoor
         
     end
     
-    // Make sure tech is available
-    if techNode ~= nil and techNode.available then
+    if techNodeIsAction then
     
-        // Trace along pick vector to find world position of action
+        -- Trace along pick vector to find world position of action
         local targetPosition = Vector(0, 0, 0)
         local targetNormal = Vector(0, 1, 0)
-        local trace = nil
+        local trace
         if pickVec ~= nil then
         
-            trace = GetCommanderPickTarget(self, pickVec, worldCoordsSpecified, techNode:GetIsBuild(), LookupTechData(techNode.techId, kTechDataCollideWithWorldOnly, 0))
+            trace = GetCommanderPickTarget(self, pickVec, worldCoordsSpecified, techNode:GetIsBuild(), LookupTechData(techNode.techId, kTechDataCollideWithWorldOnly, false))
             if trace ~= nil and trace.fraction < 1 then
             
                 VectorCopy(trace.endPoint, targetPosition)
@@ -484,17 +557,15 @@ function Commander:ProcessTechTreeAction(techId, pickVec, orientation, worldCoor
             
         end
         
-        // If techNode is a menu, remember it so we can validate actions
-        if techNode:GetIsMenu() then
-            self.currentMenu = techId
-        elseif techNode:GetIsOrder() then
+        -- If techNode is a menu, remember it so we can validate actions
+        if techNode:GetIsOrder() then
             self:OrderEntities(techId, trace, orientation, targetId, shiftDown)
         else        
         
-            // Sort the selected group based on distance to the target position.
-            // This means the closest entity to the target position will be given
-            // the order first and in some cases this will be the only entity to be
-            // given the order.
+            -- Sort the selected group based on distance to the target position.
+            -- This means the closest entity to the target position will be given
+            -- the order first and in some cases this will be the only entity to be
+            -- given the order.
             local sortedList = { }
             for index, entity in ipairs(self:GetSelection()) do
                 table.insert(sortedList, entity)
@@ -503,15 +574,15 @@ function Commander:ProcessTechTreeAction(techId, pickVec, orientation, worldCoor
             
             if #sortedList > 0 then
             
-                // For every selected entity, process this desired action. For some actions (research), only
-                // process once, not on every entity.
+                -- For every selected entity, process this desired action. For some actions (research), only
+                -- process once, not on every entity.
                 for index, selectedEntity in ipairs(sortedList) do
                 
                     local actionSuccess = false
                     local keepProcessing = false
                     actionSuccess, keepProcessing = self:ProcessTechTreeActionForEntity(techNode, targetPosition, targetNormal, pickVec ~= nil, orientation, selectedEntity, trace, targetId)
                     
-                    // Successful if just one of our entities handled action
+                    -- Successful if just one of our entities handled action
                     if actionSuccess then
                         success = true
                     end
@@ -537,11 +608,11 @@ function Commander:ProcessTechTreeAction(techId, pickVec, orientation, worldCoor
             self:SetTechCooldown(techId, cooldown, Shared.GetTime())
         end
                 
-        // inform the team
+        -- inform the team
         self:GetTeam():OnCommanderAction(techId)
     end
     
-    // Tell client result of cast
+    -- Tell client result of cast
     local msg = BuildAbilityResultMessage(techId, success, Shared.GetTime())
     Server.SendNetworkMessage(self, "AbilityResult", msg, false)
     
@@ -584,14 +655,14 @@ function Commander:SetEntitiesHotkeyState(group, state)
     
 end
 
-// Send data to client because it changed
-/*function Commander:SendHotkeyGroup(number)
+-- Send data to client because it changed
+function Commander:SendHotkeyGroup(number)
 
     local hotgroupCommand = string.format("hotgroup %d ", number)
     
     for j = 1, table.count(self.hotkeyGroups[number]) do
     
-        // Need underscore between numbers so all ids are sent in one string
+        -- Need underscore between numbers so all ids are sent in one string
         hotgroupCommand = hotgroupCommand .. self.hotkeyGroups[number][j] .. "_"
         
     end
@@ -600,7 +671,7 @@ end
     
     return hotgroupCommand
     
-end*/
+end
 
 function Commander:GetIsInterestedInAlert(techId)
     return true
@@ -642,31 +713,31 @@ end
 function Commander:Logout()
 
     local commandStructure = Shared.GetEntity(self.commandStationId)
-    commandStructure:Logout()
+    return commandStructure:Logout()
         
 end
 
-/**
- * Force player out of command station or hive.
- */
+--
+-- Force player out of command station or hive.
+--
 function Commander:Eject()
 
-    // Get data before we create new player.
+    -- Get data before we create new player.
     local teamNumber = self:GetTeamNumber()
     local userId = Server.GetOwner(self):GetUserId()
     
     self:Logout()
     
-    // Tell all players on team about this.
+    -- Tell all players on team about this.
     local team = GetGamerules():GetTeam(teamNumber)
     if team:GetTeamType() == kMarineTeamType then
         team:TriggerAlert(kTechId.MarineCommanderEjected, self)
     end
     
-    // Add player to list of players that can no longer command on this server (until brought down).
+    -- Add player to list of players that can no longer command on this server (until brought down).
     GetGamerules():BanPlayerFromCommand(userId)
     
-    // Notify the team.
+    -- Notify the team.
     SendTeamMessage(team, kTeamMessageTypes.Eject)
     
 end

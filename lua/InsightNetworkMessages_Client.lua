@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\InsightNetworkMessages_Client.lua
-//
-// Created by: Jon Hughes (jon@jhuze.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\InsightNetworkMessages_Client.lua
+--
+-- Created by: Jon Hughes (jon@jhuze.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Modified so insight doesnt bug out.
+-- NS2c
+-- Modified so insight doesnt bug out.
 
 function OnCommandHealth(healthTable)
 

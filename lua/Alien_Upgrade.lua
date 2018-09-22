@@ -1,15 +1,16 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Alien_Upgrade.lua
-//
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-//    Utility functions for readability.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Alien_Upgrade.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+--    Utility functions for readability.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added classic upgrades and upgrade chamber levels
+
+-- NS2c
+-- Added classic upgrades and upgrade chamber levels
 
 kAlienUpgradeChambers = {kTechId.Crag, kTechId.Shift, kTechId.Shade, kTechId.Whip}
 

@@ -1,7 +1,7 @@
-// Natural Selection 2 'Classic' Mod
-// Source located at - https://github.com/xToken/NS2c
-// lua\Weapons\Alien\Metabolize.lua
-// - Dragon
+-- Natural Selection 2 'Classic' Mod
+-- Source located at - https://github.com/xToken/NS2c
+-- lua\Weapons\Alien\Metabolize.lua
+-- - Dragon
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/Blink.lua")
@@ -30,7 +30,7 @@ function Metabolize:GetAnimationGraphName()
     return kAnimationGraph
 end
 
-function Metabolize:GetEnergyCost(player)
+function Metabolize:GetEnergyCost()
     return kMetabolizeEnergyCost
 end
 

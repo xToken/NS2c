@@ -1,6 +1,0 @@
-shader = "models/marine/marine.surface_shader"
-albedoMap = "models/marine/heavymachinegun/heavymachinegun.dds"
-specularMap = "models/marine/heavymachinegun/heavymachinegun_spec.dds"
-glossMap = "models/marine/heavymachinegun/heavymachinegun_gloss.dds"
-normalMap = "models/marine/heavymachinegun/heavymachinegun_norm.dds"
-emissiveMap = "models/black_ilum.dds"

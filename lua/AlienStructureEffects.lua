@@ -1,10 +1,10 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\AlienStructureEffects.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\AlienStructureEffects.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 kAlienStructureEffects = 
 {
     web_create =
@@ -55,7 +55,7 @@ kAlienStructureEffects =
     {
         alienStructureDeathParticleEffect =
         {        
-            // Plays the first effect that evalutes to true
+            -- Plays the first effect that evalutes to true
             {cinematic = "cinematics/alien/structures/death_small.cinematic", classname = "Web", done = true},
             {cinematic = "cinematics/alien/hive/explode_residue.cinematic", classname = "Hive"},
             {cinematic = "cinematics/alien/hive/explode.cinematic", classname = "Hive", done = true},

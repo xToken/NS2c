@@ -1,10 +1,10 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Weapon.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Weapon.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
@@ -16,9 +16,9 @@ class 'Weapon' (ScriptActor)
 
 Weapon.kMapName = "weapon"
 
-// Attach point for marine weapons
+-- Attach point for marine weapons
 Weapon.kHumanAttachPoint = "RHand_Weapon"
-// Super important constant that defines how often a bite or other melee attack will hit
+-- Super important constant that defines how often a bite or other melee attack will hit
 Weapon.kMeleeBaseWidth = .5
 Weapon.kMeleeBaseHeight = .8
 
@@ -52,15 +52,16 @@ function Weapon:OnCreate()
     InitMixin(self, UnitStatusMixin)
     
     self:SetPhysicsGroup(PhysicsGroup.WeaponGroup)
-    
-    self:SetUpdates(true)
+
+    --Only droppable weapons use OnUpdate
+    self:SetUpdates(self:GetIsDroppable())
     
     self.reverseX = false
     self.isHolstered = true
     self.primaryAttacking = false
     self.secondaryAttacking = false
     
-    // This value is used a lot in this class, cache it off.
+    -- This value is used a lot in this class, cache it off.
     self.mapName = self:GetMapName()
     
     if Client then
@@ -71,7 +72,7 @@ end
 
 function Weapon:OnDestroy()
     
-    // Force end events just in case the weapon goes out of relevancy on the client for example.
+    -- Force end events just in case the weapon goes out of relevancy on the client for example.
     self:TriggerEffects(self:GetPrimaryAttackPrefix() .. "_attack_end")
     self:TriggerEffects(self:GetSecondaryAttackPrefix() .. "_alt_attack_end")
     
@@ -101,7 +102,7 @@ function Weapon:GetCanBeUsed(player, useSuccessTable)
 end
 
 function Weapon:OnParentChanged(oldParent, newParent)
-
+    
     ScriptActor.OnParentChanged(self, oldParent, newParent)
     
     if oldParent then
@@ -135,8 +136,8 @@ function Weapon:GetHasSecondary(player)
     return false
 end
 
-// Return 0-1 scalar approximation for weight. Owner of weapon will determine
-// what this means and how to use it.
+-- Return 0-1 scalar approximation for weight. Owner of weapon will determine
+-- what this means and how to use it.
 function Weapon:GetWeight()
     return 0
 end
@@ -168,7 +169,7 @@ function Weapon:GetSecondaryAttackRequiresPress()
     return false
 end
 
-// So child classes can override names of event names that are triggered (for grenade launcher to use rifle effects block)
+-- So child classes can override names of event names that are triggered (for grenade launcher to use rifle effects block)
 function Weapon:GetPrimaryAttackPrefix()
     return self.mapName
 end
@@ -219,6 +220,14 @@ function Weapon:GetResetViewModelOnDraw()
     return true
 end
 
+function Weapon:UpdateViewModel(player)
+    if HasMixin(player, "MarineVariant") then
+        player:SetViewModel(self:GetViewModelName(player:GetGenderString(), player:GetVariant()), self)
+    else
+        player:SetViewModel(self:GetViewModelName(), self)
+    end
+end
+
 function Weapon:OnDraw(player, previousWeaponMapName)
 
     self.isHolstered = false
@@ -228,31 +237,27 @@ function Weapon:OnDraw(player, previousWeaponMapName)
         player:SetViewModel(nil, nil)
     end
     
-    // hacky..
-    if HasMixin(player, "MarineVariant") then
-        player:SetViewModel(self:GetViewModelName(player:GetGenderString(), player:GetVariant()), self)
-    else
-        player:SetViewModel(self:GetViewModelName(), self)
-    end
+    -- set view model based on selected skin.
+    self:UpdateViewModel(player)
     
     self:TriggerEffects("draw")
     
 end
 
-/**
- * The melee base is the width and height of the surface that defines the melee volume.
- * This box needs to be wide enough so that if a target is mostly on screen, the bite will hit
- * Because of perspective, this means that the farther away a target gets, the more accurate 
- * we'll need to be (the closer to the center of the screen)
- */
+--
+-- The melee base is the width and height of the surface that defines the melee volume.
+-- This box needs to be wide enough so that if a target is mostly on screen, the bite will hit
+-- Because of perspective, this means that the farther away a target gets, the more accurate
+-- we'll need to be (the closer to the center of the screen)
+--
 function Weapon:GetMeleeBase()
-    // Width of box, height of box
+    -- Width of box, height of box
     return Weapon.kMeleeBaseWidth, Weapon.kMeleeBaseHeight
 end
 
-/**
- * Extra offset from viewpoint to make sure you don't hit anything to your rear. 
- */
+--
+-- Extra offset from viewpoint to make sure you don't hit anything to your rear.
+--
 function Weapon:GetMeleeOffset()
     return 0.0
 end
@@ -262,7 +267,7 @@ end
 
 local function SharedUpdate(self)
 
-    // Handle dropping on the client
+    -- Handle dropping on the client
     if Client then
         self:UpdateDropped()
     end
@@ -274,6 +279,11 @@ function Weapon:OnUpdate(deltaTime)
     ScriptActor.OnUpdate(self, deltaTime)
     SharedUpdate(self)
     
+
+    if Server and self.weaponExpirationCheckTime and Shared.GetTime() > self.weaponExpirationCheckTime then
+        self:CheckExpirationState()
+    end
+
     if Server and self.weaponWorldState and self.weaponWorldStateTime and self.expireTime < Shared.GetTime() then
         DestroyEntity(self)
     end
@@ -329,7 +339,7 @@ function Weapon:GetIsActive()
     return (parent ~= nil and (parent.GetActiveWeapon) and (parent:GetActiveWeapon() == self))
 end
 
-// Max degrees that weapon can swing left or right
+-- Max degrees that weapon can swing left or right
 function Weapon:GetSwingAmount()
     return 40
 end
@@ -341,7 +351,7 @@ end
 function Weapon:SetRelevancy(sighted)
 
     local mask = bit.bor(kRelevantToTeam1Unit, kRelevantToTeam2Unit, kRelevantToReadyRoom)
-    if true then //sighted then
+    if true then --sighted then
         mask = bit.bor(mask, kRelevantToTeam1Commander, kRelevantToTeam2Commander)
     else
     
@@ -357,15 +367,15 @@ function Weapon:SetRelevancy(sighted)
     
 end
 
-// this would cause the use button to appear on the hud, there is a separate functionality for picking up weapons
+-- this would cause the use button to appear on the hud, there is a separate functionality for picking up weapons
 function Weapon:GetCanBeUsed(player, useSuccessTable)
     useSuccessTable.useSuccess = false
 end
 
 function Weapon:OnCreateCollisionModel()
     
-    // Remove any "move" collision representation for the weapon
-    // so that it doesn't interfere with movement.
+    -- Remove any "move" collision representation for the weapon
+    -- so that it doesn't interfere with movement.
     local collisionModel = self:GetCollisionModel()
     collisionModel:RemoveCollisionRep(CollisionRep.Move)
     
@@ -373,7 +383,7 @@ end
 
 function Weapon:GetExpireTimeFraction()
     if self.expireTime then
-        return Clamp((self.expireTime - Shared.GetTime()) / kItemStayTime, 0, 1)
+        return Clamp((self.expireTime - Shared.GetTime()) / kWeaponStayTime, 0, 1)
     else
         return 0
     end

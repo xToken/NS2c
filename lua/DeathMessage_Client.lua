@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\DeathMessage_Client.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\DeathMessage_Client.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Adjusted for classic techids
+-- NS2c
+-- Adjusted for classic techids
 
 local kSubImageWidth = 128
 local kSubImageHeight = 64
@@ -20,22 +20,22 @@ local rtsLostMarine = 0
 local rtsLostAlien = 0
 local resRecovered = 0
 
-// Can't have multi-dimensional arrays so return potentially very long array [color, name, color, name, doerid, ....]
+-- Can't have multi-dimensional arrays so return potentially very long array [color, name, color, name, doerid, ....]
 function DeathMsgUI_GetMessages()
 
     local returnArray = {}
-    local arrayIndex = 1
+    -- local arrayIndex = 1
     
-    // return list of recent death messages
-    for index, deathMsg in ipairs(queuedDeathMessages) do
+    -- return list of recent death messages
+    for _, deathMsg in ipairs(queuedDeathMessages) do
     
-        for deathMessageIndex, element in ipairs(deathMsg) do
+        for _, element in ipairs(deathMsg) do
             table.insert(returnArray, element)
         end
         
     end
     
-    // Clear current death messages
+    -- Clear current death messages
     table.clear(queuedDeathMessages)
     
     return returnArray
@@ -46,7 +46,7 @@ function DeathMsgUI_MenuImage()
     return "death_messages"
 end
 
-function DeathMsgUI_GetTechOffsetX(doerId)
+function DeathMsgUI_GetTechOffsetX(_)
     return 0
 end
 
@@ -60,11 +60,11 @@ function DeathMsgUI_GetTechOffsetY(iconIndex)
     
 end
 
-function DeathMsgUI_GetTechWidth(doerId)
+function DeathMsgUI_GetTechWidth(_)
     return kSubImageWidth
 end
 
-function DeathMsgUI_GetTechHeight(doerId)
+function DeathMsgUI_GetTechHeight(_)
     return kSubImageHeight
 end
 
@@ -84,7 +84,7 @@ local function GetDeathMessageEntityName(isPlayer, clientIndex)
 end
 
 -- Stored the name of the last killer.
-local gKillerName = nil
+local gKillerName
 local gKillerWeaponIconIndex = kDeathMessageIcon.None
 
 -- The killer name will clear when this is called.

@@ -1,16 +1,16 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\AlienSpectator.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// Alien spectators can choose their upgrades and lifeform while dead.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\AlienSpectator.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- Alien spectators can choose their upgrades and lifeform while dead.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Adjusted logic so that player can be queued to an egg earlier in the spawning process
+-- NS2c
+-- Adjusted logic so that player can be queued to an egg earlier in the spawning process
 
 Script.Load("lua/TeamSpectator.lua")
 
@@ -77,7 +77,7 @@ function AlienSpectator:OnInitialized()
 
     TeamSpectator.OnInitialized(self)
 
-    self:SetTeamNumber(2)
+    self:SetTeamNumber(2) -- ??????????????????????????????
     
     self.eggId = Entity.invalidId
 	self.queuePosition = 0
@@ -106,7 +106,7 @@ if Server then
 
 end
 
-// Returns egg we're currently spawning in or nil if none
+-- Returns egg we're currently spawning in or nil if none
 function AlienSpectator:GetHostEgg()
 
     if self.eggId ~= Entity.invalidId then
@@ -128,14 +128,14 @@ end
 function AlienSpectator:GetQueuePosition()
     return self.queuePosition
 end
-// Same as Skulk so his view height is right when spawning in
+-- Same as Skulk so his view height is right when spawning in
 function AlienSpectator:GetMaxViewOffsetHeight()
     return Skulk.kViewOffsetHeight
 end
 
-/**
- * Prevent the camera from penetrating into the world when waiting to spawn at an Egg.
- */
+--
+-- Prevent the camera from penetrating into the world when waiting to spawn at an Egg.
+--
 function AlienSpectator:GetPreventCameraPenetration()
 
     local followTarget = Shared.GetEntity(self:GetFollowTargetId())

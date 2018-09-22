@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\OrdersMixin.lua    
-//    
-//    Created by:   Brian Cronin (brianc@unknownworlds.com)    
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\OrdersMixin.lua
+--
+--    Created by:   Brian Cronin (brianc@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removal of powerpoint detections
+-- NS2c
+-- Removal of powerpoint detections
 
 Script.Load("lua/TechTreeConstants.lua")
 Script.Load("lua/PhysicsGroups.lua")
@@ -17,7 +17,7 @@ OrdersMixin.type = "Orders"
 
 OrdersMixin.expectedCallbacks =
 {
-    // GetExtents() is required by GetGroundAt().
+    -- GetExtents() is required by GetGroundAt().
     GetExtents = "Returns a Vector describing the extents of this Entity."
 }
 
@@ -34,8 +34,8 @@ OrdersMixin.kOrderDelay = 0.2
 
 OrdersMixin.networkVars =
 {
-    // The currentOrderId is needed on the Client for displaying
-    // to other players such as the Commander.
+    -- The currentOrderId is needed on the Client for displaying
+    -- to other players such as the Commander.
     currentOrderId  = "entityid"
 }
 
@@ -53,11 +53,13 @@ local function UpdateOrderIndizes(self)
 end
 
 function OrdersMixin:__initmixin()
-
+    
+    PROFILE("OrdersMixin:__initmixin")
+    
     self.ignoreOrders = false
     self.currentOrderId = Entity.invalidId
     
-    // Current orders. List of order entity ids.
+    -- Current orders. List of order entity ids.
     self.orders = { }
     
 end
@@ -114,7 +116,7 @@ function OrdersMixin:GetHasOrder()
 end
 
 function OrdersMixin:GetNumOrders()
-    return table.count(self.orders)
+    return table.icount(self.orders)
 end
 
 function OrdersMixin:SetIgnoreOrders(setIgnoreOrders)
@@ -135,7 +137,7 @@ local function SetOrder(self, order, clearExisting, insertFirst, giver)
         self:ClearOrders()
     end
     
-    // Always snap the location of the order to the ground.
+    -- Always snap the location of the order to the ground.
     local location = order:GetLocation()
     if location then
     
@@ -159,9 +161,9 @@ local function SetOrder(self, order, clearExisting, insertFirst, giver)
     
 end
 
-/**
- * Children can provide a OnOverrideOrder function to issue build, construct, etc. orders on right-click.
- */
+--
+-- Children can provide a OnOverrideOrder function to issue build, construct, etc. orders on right-click.
+--
 local function OverrideOrder(self, order)
 
     if self.OnOverrideOrder then
@@ -192,11 +194,11 @@ function OrdersMixin:GiveOrder(orderType, targetId, targetOrigin, orientation, c
 
     ASSERT(type(orderType) == "number")
     
-    if GetIsVortexed(self) or self.ignoreOrders or OrderTargetInvalid(self, targetId) or ( #self.orders > OrdersMixin.kMaxOrdersPerUnit or (self.timeLastOrder and self.timeLastOrder + OrdersMixin.kOrderDelay > Shared.GetTime()) )  then
+    if self.ignoreOrders or OrderTargetInvalid(self, targetId) or ( #self.orders > OrdersMixin.kMaxOrdersPerUnit or (self.timeLastOrder and self.timeLastOrder + OrdersMixin.kOrderDelay > Shared.GetTime()) )  then
         return kTechId.None
     end
     
-    // prevent AI units from attack friendly players
+    -- prevent AI units from attack friendly players
     if orderType == kTechId.Attack then
     
         local target = Shared.GetEntity(targetId)
@@ -214,8 +216,7 @@ function OrdersMixin:GiveOrder(orderType, targetId, targetOrigin, orientation, c
         insertFirst = true
     end
     
-    local order = nil
-    order = CreateOrder(orderType, targetId, targetOrigin, orientation)
+    local order = CreateOrder(orderType, targetId, targetOrigin, orientation)
     order:SetOrigin(self:GetOrigin())
     
     OverrideOrder(self, order)
@@ -232,10 +233,10 @@ end
 
 local function DestroyOrders(self)
     
-    // Allow ents to hook destruction of current order.
+    -- Allow ents to hook destruction of current order.
     local first = true
     
-    // Delete all order entities.
+    -- Delete all order entities.
     for index, orderEntId in ipairs(self.orders) do
     
         local orderEnt = Shared.GetEntity(orderEntId)
@@ -266,7 +267,7 @@ end
 
 function OrdersMixin:ClearOrders()
 
-    if table.count(self.orders) > 0 then
+    if table.icount(self.orders) > 0 then
     
         DestroyOrders(self)
         OrderChanged(self)
@@ -312,7 +313,7 @@ end
 
 function OrdersMixin:ClearCurrentOrder()
 
-    //Print("%s:ClearCurrentOrder", self:GetClassName())
+    --Print("%s:ClearCurrentOrder", self:GetClassName())
 
     local currentOrder = self:GetCurrentOrder()
     if currentOrder then
@@ -333,7 +334,7 @@ end
 
 function OrdersMixin:CompletedCurrentOrder()
 
-    //Print("%s:CompletedCurrentOrder", self:GetClassName())
+    --Print("%s:CompletedCurrentOrder", self:GetClassName())
 
     local currentOrder = self:GetCurrentOrder()
     if currentOrder then
@@ -348,7 +349,7 @@ function OrdersMixin:CompletedCurrentOrder()
     
 end
 
-// Convert rally orders to move and we're done.
+-- Convert rally orders to move and we're done.
 function OrdersMixin:ProcessRallyOrder(originatingEntity)
 
     if self.ignoreOrders then
@@ -375,13 +376,19 @@ if Server then
     local function TriggerOrderCompletedAlert(self)
     
         if HasMixin(self, "Team") then
-                
-            local teamType = self:GetTeam():GetTeamType()
-
-            if teamType == kMarineTeamType then
-                self:GetTeam():TriggerAlert(kTechId.MarineAlertOrderComplete, self)
-            else
-                self:GetTeam():TriggerAlert(kTechId.AlienAlertOrderComplete, self)
+            
+            local team = self:GetTeam()
+            local teamType
+            if team then
+                teamType = team:GetTeamType()
+            end
+            
+            if teamType then
+                if teamType == kMarineTeamType then
+                    self:GetTeam():TriggerAlert(kTechId.MarineAlertOrderComplete, self)
+                else
+                    self:GetTeam():TriggerAlert(kTechId.AlienAlertOrderComplete, self)
+                end
             end
 
         end
@@ -436,7 +443,7 @@ if Server then
                     currentOrder:SetLocation(orderTarget:GetOrigin())
                 end
                 
-                // clear weld targets which are too far away for players
+                -- clear weld targets which are too far away for players
                 local tooFarAway = (orderType == kTechId.AutoWeld or orderType == kTechId.AutoHeal) and orderTarget and self:isa("Player") and (orderTarget:GetOrigin() - self:GetOrigin()):GetLength() > 20
                 
                 if orderTarget == nil or not orderTarget:GetIsAlive() or tooFarAway then
@@ -456,16 +463,16 @@ if Server then
                 
                 if not orderTarget or orderTarget:GetId() == Entity.invalidId then
                 
-                    // AI units needs to be able to attack locations
+                    -- AI units needs to be able to attack locations
                     if not currentOrder.allowLocationAttack or not currentOrder:GetLocation() then
                     
                          self:ClearOrders()
                         
                     end
                     
-                // If given an order to a Live entity, clear the order when that entity is dead.
-                // Do not clear the order for non-live entities as there are cases we need to
-                // attack non-live entities.
+                -- If given an order to a Live entity, clear the order when that entity is dead.
+                -- Do not clear the order for non-live entities as there are cases we need to
+                -- attack non-live entities.
                 elseif HasMixin(orderTarget, "Live") and not orderTarget:GetIsAlive() then
                 
                     TriggerOrderCompletedAlert(self)
@@ -478,8 +485,8 @@ if Server then
                 local orderTarget = Shared.GetEntity(currentOrder:GetParam())
                 local orderTargetIsLive = orderTarget ~= nil and HasMixin(orderTarget, "Live")
                 
-                // If the orderTarget hasn't taken damage yet, GetTimeOfLastDamage() will return nil.
-                // In this case, just use the time the order was issued to decide when to destroy it below.
+                -- If the orderTarget hasn't taken damage yet, GetTimeOfLastDamage() will return nil.
+                -- In this case, just use the time the order was issued to decide when to destroy it below.
                 local lastDamageTime = (orderTargetIsLive and orderTarget:GetTimeOfLastDamage()) or 0
                 if lastDamageTime < currentOrder:GetOrderTime() then
                     lastDamageTime = currentOrder:GetOrderTime()
@@ -492,7 +499,7 @@ if Server then
                     
                 elseif orderTargetIsLive and (Shared.GetTime() - lastDamageTime) > kTimeSinceDamageDefendComplete then
                 
-                    // Only complete if self is close enough to the target.
+                    -- Only complete if self is close enough to the target.
                     if (self:GetOrigin() - orderTarget:GetOrigin()):GetLengthSquared() < (kDefendCompleteDistance * kDefendCompleteDistance) then
                     
                         TriggerOrderCompletedAlert(self)
@@ -528,11 +535,11 @@ if Server then
     
 end
 
-// Note: This needs to be tested.
-// Get target of attack order, if any.
+-- Note: This needs to be tested.
+-- Get target of attack order, if any.
 function OrdersMixin:GetTarget()
 
-    local target = nil
+    local target
 
     local order = self:GetCurrentOrder()
     if order ~= nil and (order:GetType() == kTechId.Attack or order:GetType() == kTechId.SetTarget) then
@@ -543,16 +550,16 @@ function OrdersMixin:GetTarget()
     
 end
 
-// Note: This needs to be tested.
+-- Note: This needs to be tested.
 function OrdersMixin:PerformAction(techNode, position)
     self:OnPerformAction(techNode, position)
 end
 
-/**
- * Other mixins can implement this function to handle more specific actions.
- * Called when tech tree action is performed on the entity.
- * Return true if legal and action handled. Position passed if applicable.
- */
+--
+-- Other mixins can implement this function to handle more specific actions.
+-- Called when tech tree action is performed on the entity.
+-- Return true if legal and action handled. Position passed if applicable.
+--
 function OrdersMixin:OnPerformAction(techNode, position)
 
     if not self.ignoreOrders and techNode:GetTechId() == kTechId.Stop then
@@ -571,7 +578,7 @@ end
 
 if Client then
 
-    function ResetOrders(self)
+    local function ResetOrders(self)
     
         if self.lastClientOrderUpdate ~= Shared.GetTime() then
             
@@ -584,35 +591,40 @@ if Client then
 
     function OrdersMixin:AddClientOrder(order)
     
-        ResetOrders(self)        
+        ResetOrders(self)
+        
+        assert(order:GetIndex())
+        assert(order:GetIndex() > 0)
         self.ordersClient[order:GetIndex()] = order
     
     end
 
-    local gLastOrdersUpdate = nil
+    local gLastOrdersUpdate
     local function UpdateOrdersClient()
-    
-        // update all orders for all entities once per frame
-        if gLastOrdersUpdate ~= Shared.GetTime() then
         
-            for _, order in ientitylist(Shared.GetEntitiesWithClassname("Order")) do
+        -- update all orders for all entities once per frame
+        if gLastOrdersUpdate ~= Shared.GetTime() then
             
+            local orderEnts = Shared.GetEntitiesWithClassname("Order")
+            local numOrders = orderEnts:GetSize()
+            for i=1, numOrders do
+                local order = orderEnts:GetEntityAtIndex(i-1)
+                
                 if not order:GetIsDestroyed() then
-            
+                    
                     local orderOwner = order:GetOwner()
                     if orderOwner and orderOwner.AddClientOrder then
                         orderOwner:AddClientOrder(order)
                     end
-                
+                    
                 end
-            
+                
             end
-        
+            
             gLastOrdersUpdate = Shared.GetTime()
-        
+            
         end
         
-    
     end
 
     function OrdersMixin:GetOrdersClient()
@@ -620,11 +632,19 @@ if Client then
         ResetOrders(self)
         UpdateOrdersClient()
         
-        local orders = {}
-
-        for i, order in pairs(self.ordersClient) do
-            table.insert(orders, order)
+        -- Sometimes, if an order has JUST been completed, we won't see an order at index 1, but we will
+        -- see orders at index 2 and onwards.  In this case, just shift everything down by one.  This
+        -- prevents the order lines from briefly disappearing from commander view.
+        local index = 1
+        while self.ordersClient[index] == nil and self.ordersClient[index+1] ~= nil do
+            self.ordersClient[index] = self.ordersClient[index+1]
+            self.ordersClient[index+1] = nil
+            index = index + 1
         end
+        
+        local orders = {}
+        
+        table.copy(self.ordersClient, orders, true)
         
         return orders
     

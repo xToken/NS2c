@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\CommandStation.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\CommandStation.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed unneeded mixins and functions
+-- NS2c
+-- Removed unneeded mixins and functions
 
 Script.Load("lua/RecycleMixin.lua")
 Script.Load("lua/DetectableMixin.lua")
@@ -24,7 +24,7 @@ class 'CommandStation' (CommandStructure)
 
 CommandStation.kMapName = "commandstation"
 
-//CommandStation.kModelName = PrecacheAsset("models/marine/command_station/command_station.model")
+-- CommandStation.kModelName = PrecacheAsset("models/marine/command_station/command_station.model")
 CommandStation.kModelName = PrecacheAsset("models/marine/commandcenter/commandcenter.model")
 local kAnimationGraph = PrecacheAsset("models/marine/command_station/command_station.animation_graph")
 
@@ -142,8 +142,8 @@ function CommandStation:GetHealthbarOffset()
     return 2
 end
 
-// return a good spot from which a player could have entered the hive
-// used for initial entry point for the commander
+-- return a good spot from which a player could have entered the hive
+-- used for initial entry point for the commander
 function CommandStation:GetDefaultEntryOrigin()
     return self:GetOrigin() + Vector(1,0,1)
 end

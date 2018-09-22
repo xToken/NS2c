@@ -1,19 +1,19 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\VoteManager.lua    
-//    
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)    
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\VoteManager.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 class 'VoteManager'
 
 local kMinVotesNeeded = 2
 
-// Seconds that a vote lasts before expiring
+-- Seconds that a vote lasts before expiring
 local kVoteDuration = 120
 
-// Constructor
+-- Constructor
 function VoteManager:Initialize()
 
     self.playersVoted = {}
@@ -48,7 +48,7 @@ end
 function VoteManager:PlayerVotesFor(playerId, target, time)
 
     if type(playerId) == "number" and target ~= nil and type(time) == "number" then
-        // Make sure player hasn't voted already
+        -- Make sure player hasn't voted already
         if #self.playersVoted == 0 then
             self.timeVoteStarted = time
         end
@@ -103,7 +103,7 @@ function VoteManager:GetNumVotesNeeded()
 end
 
 function VoteManager:GetNumVotesCast()
-    return table.count( self.playersVoted )
+    return table.icount( self.playersVoted )
 end
 
 function VoteManager:GetTarget()
@@ -122,7 +122,7 @@ function VoteManager:GetVoteStarted()
     return self.target ~= nil
 end
 
-// Note - doesn't reset number of players.
+-- Note - doesn't reset number of players.
 function VoteManager:Reset()
 
     self.playersTargets = { }
@@ -138,7 +138,7 @@ function VoteManager:SetNumPlayers(numPlayers)
     
 end
 
-// Pass current time in, returns true if vote timed out. Typically call Reset() after it returns true.
+-- Pass current time in, returns true if vote timed out. Typically call Reset() after it returns true.
 function VoteManager:GetVoteElapsed(time)
 
     if self.timeVoteStarted and type(time) == "number" then

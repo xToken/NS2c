@@ -1,7 +1,7 @@
-// Natural Selection 2 'Classic' Mod
-// Source located at - https://github.com/xToken/NS2c
-// lua\Weapons\Alien\Spores.lua
-// - Dragon
+-- Natural Selection 2 'Classic' Mod
+-- Source located at - https://github.com/xToken/NS2c
+-- lua\Weapons\Alien\Spores.lua
+-- - Dragon
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 Script.Load("lua/Weapons/Alien/SporeCloud.lua")
@@ -57,7 +57,7 @@ function Spores:GetAnimationGraphName()
     return kAnimationGraph
 end
 
-function Spores:GetEnergyCost(player)
+function Spores:GetEnergyCost()
     return kSporeEnergyCost
 end
 

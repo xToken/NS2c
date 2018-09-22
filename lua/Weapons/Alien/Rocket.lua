@@ -4,7 +4,6 @@
 // - Dragon
 
 Script.Load("lua/Weapons/Projectile.lua")
-Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/DamageMixin.lua")
 Script.Load("lua/Weapons/PredictedProjectile.lua")
 
@@ -25,7 +24,6 @@ local kRocketLifetime = 6
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(TeamMixin, networkVars)
 
 function Rocket:OnCreate()
 
@@ -33,7 +31,6 @@ function Rocket:OnCreate()
     
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ClientModelMixin)
-    InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
     
     if Server then

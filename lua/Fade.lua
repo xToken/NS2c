@@ -1,25 +1,25 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Fade.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// Role: Surgical striker, harassment
-//
-// The Fade should be a fragile, deadly-sharp knife. Wielded properly, it's force is undeniable. But
-// used clumsily or without care will only hurt the user. Make sure Fade isn't better than the Skulk 
-// in every way (notably, vs. Structures). To harass, he must be able to stay out in the field
-// without continually healing at base, and needs to be able to use blink often.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Fade.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- Role: Surgical striker, harassment
+--
+-- The Fade should be a fragile, deadly-sharp knife. Wielded properly, it's force is undeniable. But
+-- used clumsily or without care will only hurt the user. Make sure Fade isn't better than the Skulk
+-- in every way (notably, vs. Structures). To harass, he must be able to stay out in the field
+-- without continually healing at base, and needs to be able to use blink often.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Modified for goldsource movement, also made most vars local
+-- NS2c
+-- Modified for goldsource movement, also made most vars local
 
 Script.Load("lua/Utility.lua")
 Script.Load("lua/Weapons/Alien/SwipeBlink.lua")
-//Script.Load("lua/Weapons/Alien/Metabolize.lua")
+-- Script.Load("lua/Weapons/Alien/Metabolize.lua")
 Script.Load("lua/Weapons/Alien/AcidRocket.lua")
 Script.Load("lua/Alien.lua")
 Script.Load("lua/Mixins/CameraHolderMixin.lua")

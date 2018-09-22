@@ -1,34 +1,26 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\ConsoleCommands_Server.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// NS2 Gamerules specific console commands. 
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\ConsoleCommands_Server.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- NS2 Gamerules specific console commands.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed some unneeded commands
+-- NS2c
+-- Removed some unneeded commands
 
 Script.Load("lua/ScenarioHandler_Commands.lua")
 
-local gLastPosition = nil
+local gLastPosition
 
 local function JoinTeam(player, teamIndex)
 
-    if player ~= nil and player:GetTeamNumber() == kTeamReadyRoom then
-    
-        -- Auto team balance checks.
-        local allowed, reason = GetGamerules():GetCanJoinTeamNumber(player, teamIndex)
-                
-        if allowed or Shared.GetCheatsEnabled() then
-            return GetGamerules():JoinTeam(player, teamIndex)
-        else
-            Server.SendNetworkMessage(player, "JoinError", BuildJoinErrorMessage(reason), true)
-            return false
-        end
+    if player and player:GetTeamNumber() == kTeamReadyRoom then
+
+        return GetGamerules():JoinTeam(player, teamIndex)
         
     end
     
@@ -51,8 +43,7 @@ end
 local function ReadyRoom(player)
 
     if player and not player:isa("ReadyRoomPlayer") then
-    
-        player:SetCameraDistance(0)
+
         return GetGamerules():JoinTeam(player, kTeamReadyRoom)
         
     end
@@ -102,22 +93,22 @@ local function OnCommandFilm(client)
 
     local player = client:GetControllingPlayer()
     
-    if Shared.GetCheatsEnabled() or Shared.GetDevMode() or (player:GetTeamNumber() == kTeamReadyRoom) then
+    if Shared.GetCheatsEnabled() or Shared.GetDevMode() then
 
         Shared.Message("Film mode enabled. Hold crouch for dolly, movement modifier for speed or attack to orbit then press movement keys.")
 
         local success, newPlayer = Spectate(player)
         
-        // Transform class into FilmSpectator
+        -- Transform class into FilmSpectator
         newPlayer:Replace(FilmSpectator.kMapName, newPlayer:GetTeamNumber(), false)
         
     end
     
 end
 
-/**
- * Forces the game to end for testing purposes
- */
+--
+-- Forces the game to end for testing purposes
+--
 local function OnCommandEndGame(client)
 
     local player = client:GetControllingPlayer()
@@ -158,7 +149,7 @@ local function OnCommandAutobuild(client)
         GetGamerules():SetAutobuild(not GetGamerules():GetAutobuild())
         Print("Autobuild now %s", ToString(GetGamerules():GetAutobuild()))
         
-        // Now build any existing structures that aren't built 
+        -- Now build any existing structures that aren't built
         for index, constructable in ipairs(GetEntitiesWithMixin("Construct")) do
         
             if not constructable:GetIsBuilt() then
@@ -177,7 +168,7 @@ local function OnCommandEnergy(client)
     
     if Shared.GetCheatsEnabled() then
     
-        // Give energy to all structures on our team.
+        -- Give energy to all structures on our team.
         for index, ent in ipairs(GetEntitiesWithMixinForTeam("Energy", player:GetTeamNumber())) do
             ent:SetEnergy(ent:GetMaxEnergy())
         end
@@ -197,7 +188,7 @@ local function OnCommandTakeDamage(client, amount, optionalEntId)
             damage = 20 + math.random() * 10
         end
         
-        local damageEntity = nil
+        local damageEntity
         optionalEntId = optionalEntId and tonumber(optionalEntId)
         if optionalEntId then
             damageEntity = Shared.GetEntity(optionalEntId)
@@ -206,7 +197,7 @@ local function OnCommandTakeDamage(client, amount, optionalEntId)
             damageEntity = player
             if player:isa("Commander") then
             
-                // Find command structure we're in and do damage to that instead.
+                -- Find command structure we're in and do damage to that instead.
                 local commandStructures = Shared.GetEntitiesWithClassname("CommandStructure")
                 for index, commandStructure in ientitylist(commandStructures) do
                 
@@ -299,7 +290,7 @@ end
 
 local function OnCommandEnts(client, className)
 
-    // Allow it to be run on dedicated server
+    -- Allow it to be run on dedicated server
     if client == nil or Shared.GetCheatsEnabled() or Shared.GetTestEnabled() then
     
         local entityCount = Shared.GetEntitiesWithClassname("Entity"):GetSize()
@@ -382,7 +373,7 @@ local function OnCommandHighDamage(client)
         GetGamerules():SetDamageMultiplier(10)
         Print("highdamage on (10x damage)")
         
-    // Toggle off
+    -- Toggle off
     elseif not Shared.GetCheatsEnabled() or GetGamerules():GetDamageMultiplier() > 1 then
     
         GetGamerules():SetDamageMultiplier(1)
@@ -395,13 +386,13 @@ end
 local function OnCommandGive(client, itemName)
 
     local player = client:GetControllingPlayer()
-    if itemName == "hmg" then itemName = "heavymachinegun" end // lol
+    if itemName == "hmg" then itemName = "heavymachinegun" end -- lol
     if(Shared.GetCheatsEnabled() and itemName ~= nil and itemName ~= "alien") then
-        local newItem = player:GiveItem(itemName)
-        if newItem.UpdateWeaponSkins then
+        local newItem = player:GiveItem(itemName, nil, true)
+        if newItem and newItem.UpdateWeaponSkins then
             newItem:UpdateWeaponSkins( client )
         end
-        //player:SetActiveWeapon(itemName)
+        --player:SetActiveWeapon(itemName)
     end
     
 end
@@ -411,11 +402,11 @@ local function OnCommandSpawn(client, itemName, teamnum, useLastPos)
     local player = client:GetControllingPlayer()
     if(Shared.GetCheatsEnabled() and itemName ~= nil and itemName ~= "alien") then
     
-        // trace along players zAxis and spawn the item there
+        -- trace along players zAxis and spawn the item there
         local startPoint = player:GetEyePos()
         local endPoint = startPoint + player:GetViewCoords().zAxis * 100
-        local usePos = nil
-        
+        local usePos
+
         if not teamnum then
             teamnum = player:GetTeamNumber()
         else
@@ -443,7 +434,7 @@ local function OnCommandTrace(client)
 
     local player = client:GetControllingPlayer()
     
-    // trace along players zAxis and spawn the item there
+    -- trace along players zAxis and spawn the item there
     local startPoint = player:GetEyePos()
     local endPoint = startPoint + player:GetViewCoords().zAxis * 100
     local trace = Shared.TraceRay(startPoint, endPoint,  CollisionRep.Default, PhysicsMask.Bullets, EntityFilterAll())
@@ -562,20 +553,21 @@ local function OnCommandSetFOV(client, fovValue)
     
 end
 
+-- Todo: Refactor this mess
 local function OnCommandChangeClass(className, teamNumber, extraValues)
 
     return function(client)
     
         local player = client:GetControllingPlayer()
         
-        // Don't allow to use these commands if you're in the RR
+        -- Don't allow to use these commands if you're in the RR
         if player:GetTeamNumber() == kTeam1Index or player:GetTeamNumber() == kTeam2Index then
         
-            // Switch teams if necessary
+            -- Switch teams if necessary
             if player:GetTeamNumber() ~= teamNumber then
                 if Shared.GetCheatsEnabled() and not player:GetIsCommander() then
                 
-                    // Remember position and team for calling player for debugging
+                    -- Remember position and team for calling player for debugging
                     local playerOrigin = player:GetOrigin()
                     local playerViewAngles = player:GetViewAngles()
                     
@@ -595,16 +587,16 @@ local function OnCommandChangeClass(className, teamNumber, extraValues)
                 end
             end
             
-            // Respawn shenanigans
+            -- Respawn shenanigans
             if Shared.GetCheatsEnabled() then
                 local newPlayer = player:Replace(className, player:GetTeamNumber(), nil, nil, extraValues)
                 
-                // Always disable 3rd person
+                -- Always disable 3rd person
                 newPlayer:SetDesiredCameraDistance(0)
 
-                // Turns out if you give weapons to exos the game implodes! Who would've thought!
+                -- Turns out if you give weapons to exos the game implodes! Who would've thought!
                 if teamNumber == kTeam1Index and (className == "marine" or className == "jetpackmarine") and newPlayer.lastWeaponList then
-                    // Restore weapons in reverse order so the main weapons gets selected on respawn
+                    -- Restore weapons in reverse order so the main weapons gets selected on respawn
                     for i = #newPlayer.lastWeaponList, 1, -1 do
                         if newPlayer.lastWeaponList[i] ~= "axe" then
                             newPlayer:GiveItem(newPlayer.lastWeaponList[i])
@@ -613,9 +605,9 @@ local function OnCommandChangeClass(className, teamNumber, extraValues)
                 end
                 
                 if teamNumber == kTeam2Index and newPlayer.lastUpgradeList then            
-                    // I have no idea if this will break, but I don't care!
-                    // Thug life!
-                    // Ghetto code incoming, you've been warned
+                    -- I have no idea if this will break, but I don't care!
+                    -- Thug life!
+                    -- Ghetto code incoming, you've been warned
                     newPlayer.upgrade1 = newPlayer.lastUpgradeList[1] or 1
                     newPlayer.upgrade2 = newPlayer.lastUpgradeList[2] or 1
                     newPlayer.upgrade3 = newPlayer.lastUpgradeList[3] or 1
@@ -637,8 +629,8 @@ local function OnCommandRespawn(client)
 
         local player = client:GetControllingPlayer()
         local teamNumber = kTeam2Index
-        local extraValues = nil
-        
+        local extraValues
+
         if player.lastClass == "exo" or player.lastClass == "marine" or player.lastClass == "jetpackmarine" then
             teamNumber = kTeam1Index
             
@@ -668,14 +660,14 @@ local function OnCommandRespawnClear(client)
     
 end
 
-// Switch player from one team to the other, while staying in the same place
+-- Switch player from one team to the other, while staying in the same place
 local function OnCommandSwitch(client)
 
-    local func = nil
+    local func
     local player = client:GetControllingPlayer()
     local teamNumber = player:GetTeamNumber()
     
-    // For some reason the player team is swapped here, maybe the old function has been run first?
+    -- For some reason the player team is swapped here, maybe the old function has been run first?
     if teamNumber == kTeam1Index then
         func = OnCommandChangeClass("skulk", kTeam2Index)
     elseif teamNumber == kTeam2Index then
@@ -707,7 +699,7 @@ local function OnCommandCommand(client)
     local player = client:GetControllingPlayer()
     if Shared.GetCheatsEnabled() then
     
-        // Find hive/command station on our team and use it
+        -- Find hive/command station on our team and use it
         local ents = GetEntitiesForTeam("CommandStructure", player:GetTeamNumber())
         if #ents > 0 then
         
@@ -783,7 +775,7 @@ local function OnCommandCloseMenu(client)
     player:CloseMenu()
 end
 
-// Weld all doors shut immediately
+-- Weld all doors shut immediately
 local function OnCommandWeldDoors(client)
 
     if Shared.GetCheatsEnabled() then
@@ -835,7 +827,7 @@ local function OnCommandOrderSelf(client)
     
 end
 
-// Create structure, weapon, etc. near player.
+-- Create structure, weapon, etc. near player.
 local function OnCommandCreate(client, techIdString, number, teamNum)
 
     if Shared.GetCheatsEnabled() then
@@ -850,15 +842,15 @@ local function OnCommandCreate(client, techIdString, number, teamNum)
             for i = 1, number do
             
                 local success = false
-                // Persistence is the path to victory.
-                for index = 1, 2000 do
+                -- Persistence is the path to victory.
+                for index = 1, 200 do
                 
                     local player = client:GetControllingPlayer()
                     local teamNumber = tonumber(teamNum) or player:GetTeamNumber()
                     if techId == kTechId.Scan then
                         teamNumber = GetEnemyTeamNumber(teamNumber)
                     end
-                    local position = nil
+                    local position
                     
                     if attachClass then
                     
@@ -869,7 +861,7 @@ local function OnCommandCreate(client, techIdString, number, teamNum)
                         
                     else
                     
-                        /*local modelName = LookupTechData(techId, kTechDataModel)
+                        --[[local modelName = LookupTechData(techId, kTechDataModel)
                         local modelIndex = Shared.GetModelIndex(modelName)
                         local model = Shared.GetModel(modelIndex)
                         local minExtents, maxExtents = model:GetExtents()
@@ -877,11 +869,11 @@ local function OnCommandCreate(client, techIdString, number, teamNum)
                         local extents = maxExtents
                         DebugBox(player:GetOrigin(), player:GetOrigin(), maxExtents - minExtents, 1000, 1, 0, 0, 1)
                         DebugBox(player:GetOrigin(), player:GetOrigin(), minExtents, 1000, 0, 1, 0, 1)
-                        DebugBox(player:GetOrigin(), player:GetOrigin(), maxExtents, 1000, 0, 0, 1, 1)*/
-                        //position = GetRandomSpawnForCapsule(extents.y, extents.x, player:GetOrigin() + Vector(0, 0.5, 0), 2, 10)
-                        //position = position - Vector(0, extents.y, 0)
+                        DebugBox(player:GetOrigin(), player:GetOrigin(), maxExtents, 1000, 0, 0, 1, 1)--]]
+                        --position = GetRandomSpawnForCapsule(extents.y, extents.x, player:GetOrigin() + Vector(0, 0.5, 0), 2, 10)
+                        --position = position - Vector(0, extents.y, 0)
                         
-                        position = CalculateRandomSpawn(nil, player:GetOrigin() + Vector(0, 0.5, 0), techId, true, 2, 10, 3)
+                        position = CalculateRandomSpawn(nil, player:GetOrigin() + Vector(0, 2, 0), techId, true, 2, 10, 3)
                         
                     end
                     
@@ -992,16 +984,16 @@ local function OnCommandEject(client)
     
 end
 
-/**
- * Show debug info for the closest entity that has a self.targetSelector
- */
+--
+-- Show debug info for the closest entity that has a self.targetSelector
+--
 local function OnCommandTarget(client, cmd)
 
     if client ~= nil and (Shared.GetCheatsEnabled() or Shared.GetDevMode()) then
         local player = client:GetControllingPlayer()
         local origin = player:GetOrigin()
         local structs = GetEntitiesWithinRange("ScriptActor", origin, 5)
-        local sel, selRange = nil,nil
+        local sel, selRange
         for _, struct in ipairs(structs) do
             if struct.targetSelector or HasMixin(struct, "AiAttacks") then
                 local r = (origin - struct:GetOrigin()):GetLength()
@@ -1102,7 +1094,7 @@ local function OnCommandCommanderPing(client, classname)
         local player = client:GetControllingPlayer()
         if player and player:GetTeam() then
         
-            // trace along crosshair
+            -- trace along crosshair
             local startPoint = player:GetEyePos()
             local endPoint = startPoint + player:GetViewCoords().zAxis * 100
             
@@ -1321,7 +1313,7 @@ local function OnCommandThrowObject(client, season)
         return
     end
     
-    if player:GetTeamNumber() ~= kTeamReadyRoom and GetGamerules():GetGameState() ~= kGameState.NotStarted then
+    if player:GetTeamNumber() ~= kTeamReadyRoom and GetGamerules():GetGameState() >= kGameState.PreGame then
         return
     end
     
@@ -1329,9 +1321,9 @@ local function OnCommandThrowObject(client, season)
     
 end
 
-// 
-// hack; turn dev mode on, do a trace, turn dev mode off and dump the trace you got back
-// 
+--
+-- hack; turn dev mode on, do a trace, turn dev mode off and dump the trace you got back
+--
 local function OnCommandDevTrace(client, box)
     
      Log("box %s", box)
@@ -1341,10 +1333,10 @@ local function OnCommandDevTrace(client, box)
         local player = client:GetControllingPlayer()
         if player then
         
-            // trace to a surface and draw the decal
+            -- trace to a surface and draw the decal
             local startPoint = player:GetEyePos()
             local endPoint = startPoint + player:GetViewCoords().zAxis * 100
-            local trace = nil
+            local trace
             Shared.ConsoleCommand("dev 1")
             if box then
                 trace = Shared.TraceBox(Vector(0.1,0.1,0.1), startPoint, endPoint,  CollisionRep.Default, PhysicsMask.Bullets, EntityFilterOne(player))
@@ -1368,10 +1360,10 @@ end
 
 Event.Hook("Console_devtrace", OnCommandDevTrace)
 
-// GC commands
+-- GC commands
 Event.Hook("Console_changegcsettingserver", OnCommandChangeGCSettingServer)
 
-// NS2 game mode console commands
+-- NS2 game mode console commands
 Event.Hook("Console_jointeamone", OnCommandJoinTeamOne)
 Event.Hook("Console_jointeamtwo", OnCommandJoinTeamTwo)
 Event.Hook("Console_jointeamthree", OnCommandJoinTeamRandom)
@@ -1379,7 +1371,7 @@ Event.Hook("Console_readyroom", OnCommandReadyRoom)
 Event.Hook("Console_spectate", OnCommandSpectate)
 Event.Hook("Console_film", OnCommandFilm)
 
-// Shortcuts because we type them so much
+-- Shortcuts because we type them so much
 Event.Hook("Console_j1", OnCommandJoinTeamOne)
 Event.Hook("Console_j2", OnCommandJoinTeamTwo)
 Event.Hook("Console_j3", OnCommandJoinTeamRandom)
@@ -1391,7 +1383,7 @@ Event.Hook("Console_gotoidleworker", OnCommandGotoIdleWorker)
 Event.Hook("Console_gotoplayeralert", OnCommandGotoPlayerAlert)
 Event.Hook("Console_selectallplayers", OnCommandSelectAllPlayers)
 
-// Cheats
+-- Cheats
 Event.Hook("Console_tres", OnCommandTeamResources)
 Event.Hook("Console_pres", OnCommandResources)
 Event.Hook("Console_addxp", OnCommandGiveXP)
@@ -1419,7 +1411,7 @@ Event.Hook("Console_shoot", OnCommandShoot)
 Event.Hook("Console_giveupgrade", OnCommandGiveUpgrade)
 Event.Hook("Console_setfov", OnCommandSetFOV)
 
-// For testing lifeforms
+-- For testing lifeforms
 Event.Hook("Console_skulk", OnCommandChangeClass("skulk", kTeam2Index))
 Event.Hook("Console_gorge", OnCommandChangeClass("gorge", kTeam2Index))
 Event.Hook("Console_lerk", OnCommandChangeClass("lerk", kTeam2Index))
@@ -1467,7 +1459,7 @@ Event.Hook("Console_makespecialfemale", OnCommandMakeSpecialEditionFemale)
 Event.Hook("Console_make", OnCommandMake)
 Event.Hook("Console_devour", OnCommandDevour)
 
-//Halloween2015
+--Halloween2015
 Event.Hook("Console_throwobject", OnCommandThrowObject)
 
 Event.Hook("Console_evolvelastupgrades", OnCommandEvolveLastUpgrades)

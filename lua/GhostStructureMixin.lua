@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\GhostStructureMixin.lua    
-//    
-//    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GhostStructureMixin.lua
+--
+--    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Adjusted to acount for recycling refund changes
+-- NS2c
+-- Adjusted to acount for recycling refund changes
 
 GhostStructureMixin = CreateMixin(GhostStructureMixin)
 GhostStructureMixin.type = "GhostStructure"
@@ -60,8 +60,10 @@ local function CheckNearbyEnemies(self)
 end
 
 function GhostStructureMixin:__initmixin()
-
-    // init the entity in ghost structure mode
+    
+    PROFILE("GhostStructureMixin:__initmixin")
+    
+    -- init the entity in ghost structure mode
     if Server then
         self.isGhostStructure = true
 		self:AddTimedCallback(CheckNearbyEnemies, kScanTime)
@@ -91,7 +93,7 @@ if Server then
         
     end
     
-	// If we start constructing, make us no longer a ghost
+	-- If we start constructing, make us no longer a ghost
     function GhostStructureMixin:OnConstruct(builder, buildPercentage)
         CheckGhostState(self, builder)
     end

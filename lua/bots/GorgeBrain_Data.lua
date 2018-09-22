@@ -2,30 +2,12 @@
 Script.Load("lua/bots/CommonActions.lua")
 Script.Load("lua/bots/BrainSenses.lua")
 
-local kUpgrades = {
-    kTechId.Carapace,
-    kTechId.Regeneration,
-    kTechId.Redemption,
-
-    kTechId.Silence,
-    kTechId.Ghost,
-    kTechId.Aura,
-
-    kTechId.Celerity,
-    kTechId.Adrenaline,
-	kTechId.Redeployment,
-
-	kTechId.Focus,
-	kTechId.Bombard,
-	kTechId.Fury,
-}
-
-//----------------------------------------
-//  More urgent == should really attack it ASAP
-//----------------------------------------
+------------------------------------------
+--  More urgent == should really attack it ASAP
+------------------------------------------
 local function GetAttackUrgency(bot, mem)
 
-    // See if we know whether if it is alive or not
+    -- See if we know whether if it is alive or not
     local ent = Shared.GetEntity(mem.entId)
     if not HasMixin(ent, "Live") or not ent:GetIsAlive() then
         return 0.0
@@ -43,11 +25,11 @@ local function GetAttackUrgency(bot, mem)
     }
     
     if distance < 10 and immediateThreats[mem.btype] then
-        // Attack the nearest immediate threat (urgency will be 1.1 - 2)
+        -- Attack the nearest immediate threat (urgency will be 1.1 - 2)
         return 1 + 1 / math.max(distance, 1)
     end
     
-    // No immediate threat - load balance!
+    -- No immediate threat - load balance!
     local numOthers = bot.brain.teamBrain:GetNumAssignedTo( mem,
             function(otherId)
                 if otherId ~= bot:GetPlayer():GetId() then
@@ -56,14 +38,15 @@ local function GetAttackUrgency(bot, mem)
                 return false
             end)
                     
+    -- NS2c - Updated tech IDs
     local urgencies = {
-        // Active threats
+        -- Active threats
         [kMinimapBlipType.Marine] =             numOthers >= 4 and 0.6 or 1,
         [kMinimapBlipType.JetpackMarine] =      numOthers >= 4 and 0.7 or 1.1,
-        [kMinimapBlipType.Exo] =   numOthers >= 6 and 0.8 or 1.2,
+        [kMinimapBlipType.Exo] =   				numOthers >= 6 and 0.8 or 1.2,
         [kMinimapBlipType.Sentry] =             numOthers >= 3 and 0.5 or 0.95,
         
-        // Structures
+        -- Structures
         [kMinimapBlipType.SiegeCannon] =        numOthers >= 4 and 0.4 or 0.9,
         [kMinimapBlipType.CommandStation] =     numOthers >= 8 and 0.3 or 0.85,
         [kMinimapBlipType.PhaseGate] =          numOthers >= 4 and 0.2 or 0.8,
@@ -95,23 +78,23 @@ local function PerformAttackEntity( eyePos, bestTarget, bot, brain, move )
     bot:GetMotion():SetDesiredMoveTarget( marinePos )
     
     local distance = eyePos:GetDistance(marinePos)
-    if distance < 25 and GetBotCanSeeTarget( bot:GetPlayer(), bestTarget ) then
+    if distance < 25 and bot:GetBotCanSeeTarget( bestTarget ) then
         doFire = true
     end
     
-    // this needs to be done smarter, gorge should have a "retreat" during which it uses healspray
+    -- this needs to be done smarter, gorge should have a "retreat" during which it uses healspray
     if bot:GetPlayer():GetHealthFraction() < 0.8 then
         move.commands = AddMoveCommand( move.commands, Move.SecondaryAttack )
         
     elseif doFire then
-        // jitter view target a little bit
-        // local jitter = Vector( math.random(), math.random(), math.random() ) * 0.1
+        -- jitter view target a little bit
+        -- local jitter = Vector( math.random(), math.random(), math.random() ) * 0.1
         bot:GetMotion():SetDesiredViewTarget( bestTarget:GetEngagementPoint() )
         move.commands = AddMoveCommand( move.commands, Move.PrimaryAttack )
  
 
         if GetDistanceToTouch(eyePos, bestTarget) < 10 then
-            // Stop running at the structure when close enough
+            -- Stop running at the structure when close enough
             bot:GetMotion():SetDesiredMoveTarget(nil)
             
         end
@@ -119,11 +102,11 @@ local function PerformAttackEntity( eyePos, bestTarget, bot, brain, move )
     else
         bot:GetMotion():SetDesiredViewTarget( nil )
 
-        // Occasionally jump
+        -- Occasionally jump
         if math.random() < 0.01 and bot:GetPlayer():GetIsOnGround() then
             move.commands = AddMoveCommand( move.commands, Move.Jump )
             if distance < 15 then
-                // When approaching, try to jump sideways
+                -- When approaching, try to jump sideways
                 bot.timeOfJump = Shared.GetTime()
                 bot.jumpOffset = nil
             end    
@@ -162,7 +145,7 @@ local function PerformAttack( eyePos, mem, bot, brain, move )
 
     else
     
-        // mem is too far to be relevant, so move towards it
+        -- mem is too far to be relevant, so move towards it
         bot:GetMotion():SetDesiredViewTarget(nil)
         bot:GetMotion():SetDesiredMoveTarget(mem.lastSeenPos)
 
@@ -172,86 +155,115 @@ local function PerformAttack( eyePos, mem, bot, brain, move )
 
 end
 
-//----------------------------------------
-//  Each want function should return the fuzzy weight,
-// along with a closure to perform the action
-// The order they are listed matters - actions near the beginning of the list get priority.
-//----------------------------------------
+------------------------------------------
+--  Each want function should return the fuzzy weight,
+-- along with a closure to perform the action
+-- The order they are listed matters - actions near the beginning of the list get priority.
+------------------------------------------
 kGorgeBrainActions =
 {
     
-    //----------------------------------------
-    //  
-    //----------------------------------------
+    ------------------------------------------
+    --
+    ------------------------------------------
     function(bot, brain)
         return { name = "debug idle", weight = 0.001,
                 perform = function(move)
                     bot:GetMotion():SetDesiredMoveTarget(nil)
-                    // there is nothing obvious to do.. figure something out
-                    // like go to the marines, or defend 
+                    -- there is nothing obvious to do.. figure something out
+                    -- like go to the marines, or defend
                 end }
     end,
 
-    //----------------------------------------
-    //  
-    //----------------------------------------
+    ------------------------------------------
+    --
+    ------------------------------------------
     CreateExploreAction( 0.01, function(pos, targetPos, bot, brain, move)
                 bot:GetMotion():SetDesiredMoveTarget(targetPos)
                 bot:GetMotion():SetDesiredViewTarget(nil)
                 end ),
     
-    //----------------------------------------
-    //  
-    //----------------------------------------
+    ------------------------------------------
+    --
+    ------------------------------------------
     function(bot, brain)
         local name = "evolve"
 
         local weight = 0.0
         local player = bot:GetPlayer()
+
+        -- Hallucinations don't evolve
+        if player.isHallucination then
+            return { name = name, weight = weight,
+                perform = function() end }
+        end
+
         local s = brain:GetSenses()
-        
+        local res = player:GetPersonalResources()
+
         local distanceToNearestThreat = s:Get("nearestThreat").distance
         local desiredUpgrades = {}
-        
+
         if player:GetIsAllowedToBuy() and
-           (distanceToNearestThreat == nil or distanceToNearestThreat > 15) and 
-           (player.GetIsInCombat == nil or not player:GetIsInCombat()) then
-            
-            // Safe enough to try to evolve            
-            
+                (distanceToNearestThreat == nil or distanceToNearestThreat > 15) and
+                (player.GetIsInCombat == nil or not player:GetIsInCombat()) then
+
+            -- Safe enough to try to evolve
+
             local existingUpgrades = player:GetUpgrades()
-            
-            for i = 1, #kUpgrades do
-                local techId = kUpgrades[i]
+
+            local avaibleUpgrades = player.lifeformUpgrades
+
+            if not avaibleUpgrades then
+                avaibleUpgrades = {}
+
+                local kUpgradeStructureTable = AlienTeam.GetUpgradeStructureTable()
+                for i = 1, #kUpgradeStructureTable do
+                    local upgrades = kUpgradeStructureTable[i].upgrades
+                    table.insert(avaibleUpgrades, table.random(upgrades))
+                end
+
+                if player.lifeformEvolution then
+                    table.insert(avaibleUpgrades, player.lifeformEvolution)
+                end
+
+                player.lifeformUpgrades = avaibleUpgrades
+            end
+
+            for i = 1, #avaibleUpgrades do
+                local techId = avaibleUpgrades[i]
                 local techNode = GetTechTree(player:GetTeamNumber()):GetTechNode(techId)
 
                 local isAvailable = false
+                local cost = 0
                 if techNode ~= nil then
                     isAvailable = techNode:GetAvailable(player, techId, false)
-                end                    
-                
-                if not player:GetHasUpgrade(techId) and isAvailable and GetCanAffordUpgrade(player, techId) and 
-                   GetIsAlienUpgradeAllowed(player, techId, existingUpgrades) and
-                   GetIsAlienUpgradeAllowed(player, techId, desiredUpgrades) then
+                    cost = LookupTechData(techId, kTechDataGestateName) and GetCostForTech(techId) or LookupTechData(kTechId.Gorge, kTechDataUpgradeCost, 0)
+                end
+
+                if not player:GetHasUpgrade(techId) and isAvailable and res - cost > 0 and
+                        GetIsAlienUpgradeAllowed(player, techId, existingUpgrades) and
+                        GetIsAlienUpgradeAllowed(player, techId, desiredUpgrades) then
+                    res = res - cost
                     table.insert(desiredUpgrades, techId)
                 end
             end
-            
+
             if  #desiredUpgrades > 0 then
                 weight = 100.0
-            end                                
+            end
         end
 
         return { name = name, weight = weight,
             perform = function(move)
                 player:ProcessBuyAction( desiredUpgrades )
             end }
-    
+
     end,
 
-    //----------------------------------------
-    //  
-    //----------------------------------------
+    ------------------------------------------
+    --
+    ------------------------------------------
     function(bot, brain)
         local name = "attack"
         local skulk = bot:GetPlayer()
@@ -295,9 +307,9 @@ kGorgeBrainActions =
             end }
     end,    
 
-    //----------------------------------------
-    //  
-    //----------------------------------------
+    ------------------------------------------
+    --
+    ------------------------------------------
     function(bot, brain)
         local name = "pheromone"
         
@@ -305,7 +317,7 @@ kGorgeBrainActions =
         local eyePos = skulk:GetEyePos()
 
         local pheromones = EntityListToTable(Shared.GetEntitiesWithClassname("Pheromone"))            
-        local bestPheromoneLocation = nil
+        local bestPheromoneLocation
         local bestValue = 0
         
         for p = 1, #pheromones do
@@ -334,7 +346,7 @@ kGorgeBrainActions =
                                 currentPheromone.visitedBy[bot] = true
                             else   
             
-                                // Value goes from 5 to 10
+                                -- Value goes from 5 to 10
                                 local value = 5.0 + 5.0 / math.max(distance, 1.0) - #(currentPheromone.visitedBy)
                         
                                 if value > bestValue then
@@ -366,9 +378,9 @@ kGorgeBrainActions =
             end }
     end,
 
-    //----------------------------------------
-    //  
-    //----------------------------------------
+    ------------------------------------------
+    --
+    ------------------------------------------
     function(bot, brain)
         local name = "order"
 
@@ -406,9 +418,9 @@ kGorgeBrainActions =
 
 }
 
-//----------------------------------------
-//  
-//----------------------------------------
+------------------------------------------
+--
+------------------------------------------
 function CreateGorgeBrainSenses()
 
     local s = BrainSenses()

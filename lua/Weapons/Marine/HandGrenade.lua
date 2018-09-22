@@ -5,7 +5,6 @@
 
 Script.Load("lua/Weapons/Projectile.lua")
 Script.Load("lua/Mixins/ClientModelMixin.lua")
-Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/DamageMixin.lua")
 Script.Load("lua/Weapons/PredictedProjectile.lua")
 
@@ -28,7 +27,6 @@ local kGrenadeMaxShakeIntensity = 0.12
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(TeamMixin, networkVars)
 
 function HandGrenade:OnCreate()
 
@@ -36,7 +34,6 @@ function HandGrenade:OnCreate()
     
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ClientModelMixin)
-    InitMixin(self, TeamMixin)
     InitMixin(self, DamageMixin)
     
     if Server then

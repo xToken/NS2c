@@ -1,16 +1,16 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Embryo.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-// 
-// Aliens change into this while evolving into a new lifeform. Looks like an egg.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Embryo.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- Aliens change into this while evolving into a new lifeform. Looks like an egg.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removal of some hypermutation and mist code, adjustments to HP scaling
+-- NS2c
+-- Removal of some hypermutation and mist code, adjustments to HP scaling
 
 Script.Load("lua/Mixins/CameraHolderMixin.lua")
 Script.Load("lua/Alien.lua")
@@ -25,6 +25,7 @@ Embryo.kXExtents = .25
 Embryo.kYExtents = .25
 Embryo.kZExtents = .25
 Embryo.kEvolveSpawnOffset = 0.2
+Embryo.gFastEvolveCheat = false
 
 Embryo.kSkinOffset = Vector(0, 0.02, 0)
 
@@ -78,7 +79,7 @@ end
 
 local function UpdateGestation(self)
 
-    // Cannot spawn unless alive.
+    -- Cannot spawn unless alive.
     if self:GetIsAlive() and self.gestationClass ~= nil then
     
         if not self.gestateEffectsTriggered then
@@ -94,7 +95,7 @@ local function UpdateGestation(self)
         
         if self.evolveTime >= self.gestationTime then
         
-            // Replace player with new player
+            -- Replace player with new player
             local newPlayer = self:Replace(self.gestationClass)
             newPlayer:SetCameraDistance(0)
             
@@ -127,13 +128,15 @@ local function UpdateGestation(self)
             
             self:TriggerEffects("player_end_gestate")
             
-            // Now give new player all the upgrades they purchased
+            -- Now give new player all the upgrades they purchased
             local upgradesGiven = 0
             
             for index, upgradeId in ipairs(self.evolvingUpgrades) do
+
                 if newPlayer:GiveUpgrade(upgradeId) then
                     upgradesGiven = upgradesGiven + 1
                 end
+                
             end
             
             local healthScalar = self:GetHealth() / self:GetMaxHealth()
@@ -154,7 +157,7 @@ local function UpdateGestation(self)
                 newPlayer.lastUpgradeList = newPlayer:GetUpgrades()
             end
 
-            // Notify team
+            -- Notify team
 
             local team = self:GetTeam()
 
@@ -172,8 +175,8 @@ local function UpdateGestation(self)
 
             end
             
-            // Return false so that we don't get called again if the server time step
-            // was larger than the callback interval
+            -- Return false so that we don't get called again if the server time step
+            -- was larger than the callback interval
             return false
             
         end
@@ -205,10 +208,11 @@ function Embryo:OnInitialized()
         else
             Client.SetPitch(0.8)
         end
+
         
     end
     
-    // do not animate the camera transition, just teleport instantly.
+    -- do not animate the camera transition, just teleport instantly.
     self:SetCameraDistance(kGestateCameraDistance)
     self:SetViewOffsetHeight(.5)
 
@@ -232,7 +236,7 @@ end
 
 function Embryo:GetName(forEntity)
     
-    // show us as standard egg to enemies, so they don't know that we are a gestating alien
+    -- show us as standard egg to enemies, so they don't know that we are a gestating alien
     if Client and GetAreEnemies(self, forEntity) then
         return GetDisplayNameForTechId(kTechId.Egg)
     end
@@ -258,7 +262,7 @@ function Embryo:SetOriginalAngles(angles)
     
 end
 
-// hide badge when gestating, this would otherwise tell enemy players that we are not a usual egg, but a gestating player
+-- hide badge when gestating, this would otherwise tell enemy players that we are not a usual egg, but a gestating player
 function Embryo:GetShowBadgeOverride()
     return false
 end
@@ -267,9 +271,8 @@ function Embryo:GetDesiredAngles()
     return self.originalAngles
 end
 
-local kEngageOffset = Vector(0, 0.3, 0)
 function Embryo:GetEngagementPointOverride()
-    return self:GetOrigin() + kEngageOffset
+    return self:GetOrigin() + Vector(0, 0.3, 0)
 end
 
 function Embryo:GetGestationTechId()
@@ -313,7 +316,7 @@ end
 
 function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorScalar)
 
-    // Save upgrades so they can be given when spawned
+    -- Save upgrades so they can be given when spawned
     self.evolvingUpgrades = {}
     table.copy(techIds, self.evolvingUpgrades)
 
@@ -322,15 +325,15 @@ function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorSca
     for i, techId in ipairs(techIds) do
         self.gestationClass = LookupTechData(techId, kTechDataGestateName)
         if self.gestationClass then 
-            // Remove gestation tech id from "upgrades"
+            -- Remove gestation tech id from "upgrades"
             self.gestationTypeTechId = techId
-            //table.removevalue(self.evolvingUpgrades, self.gestationTypeTechId)
+            -- table.removevalue(self.evolvingUpgrades, self.gestationTypeTechId)
             break 
         end
     end
     
-    // Upgrades don't have a gestate name, we want to gestate back into the
-    // current alien type, previousTechId.
+    -- Upgrades don't have a gestate name, we want to gestate back into the
+    -- current alien type, previousTechId.
     if not self.gestationClass then
         self.gestationTypeTechId = previousTechId
         self.gestationClass = LookupTechData(previousTechId, kTechDataGestateName)
@@ -345,8 +348,8 @@ function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorSca
     local gameInfo = GetGameInfoEntity()
     
     for _, upgradeId in ipairs(self.evolvingUpgrades) do
-    
-        if not table.contains(currentUpgrades, upgradeId) then
+
+        if not table.icontains(currentUpgrades, upgradeId) then
             newUpgradesAmount = newUpgradesAmount + 1
         end
         local currentChamberId = GetChamberTypeForUpgrade(upgradeId)
@@ -373,13 +376,13 @@ function Embryo:SetGestationData(techIds, previousTechId, healthScalar, armorSca
 	self:SetHealth(self.maxHealth * healthScalar)
     self.maxArmor = kEmbryoArmor
 	self:SetArmor(self.maxArmor * armorScalar)
-    // Use this amount of health when we're done evolving
+    -- Use this amount of health when we're done evolving
     self.healthScalar = healthScalar
     self.armorScalar = armorScalar
     
     self:ClearUpgrades()
     
-    // Give upgrades right away, then again after complete.  This ensures nothing is lost in 'combat' mode.
+    -- Give upgrades right away, then again after complete.  This ensures nothing is lost in 'combat' mode.
     for index, upgradeId in ipairs(self.evolvingUpgrades) do
         self:GiveUpgrade(upgradeId)
     end
@@ -390,17 +393,17 @@ function Embryo:GetEvolutionTime()
     return self.evolveTime
 end
 
-// Allow players to rotate view, chat, etc. but not move
+-- Allow players to rotate view, chat, etc. but not move
 function Embryo:OverrideInput(input)
 
     ClampInputPitch(input)
     
-    // Completely override movement and commands
+    -- Completely override movement and commands
     input.move.x = 0
     input.move.y = 0
     input.move.z = 0
     
-    // Only allow some actions like going to menu (not jump, use, etc.)
+    -- Only allow some actions like going to menu (not jump, use, etc.)
     input.commands = bit.band(input.commands, Move.Exit)
     
     return input
@@ -409,7 +412,7 @@ end
 
 function Embryo:ConstrainMoveVelocity(moveVelocity)
 
-    // Embryos can't move    
+    -- Embryos can't move
     moveVelocity.x = 0
     moveVelocity.y = 0
     moveVelocity.z = 0
@@ -446,6 +449,7 @@ function Embryo:OnUpdateAnimationInput(modelMixin)
 
     modelMixin:SetAnimationInput("built", true)
     modelMixin:SetAnimationInput("empty", false)
+    modelMixin:SetAnimationInput("spawned", false)
     
 end
 

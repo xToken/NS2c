@@ -1,22 +1,23 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//
-// lua\Weapons\Alien\Blink.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// Blink - Attacking many times in a row will create a cool visual "chain" of attacks, 
-// showing the more flavorful animations in sequence. Base class for swipe and vortex,
-// available at tier 2.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
+--
+-- lua\Weapons\Alien\Blink.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- Blink - Attacking many times in a row will create a cool visual "chain" of attacks,
+-- showing the more flavorful animations in sequence. Base class for swipe and vortex,
+-- available at tier 2.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Adjusted blink impact and energy usage
+--NS2c
+--Adjusted blink impact and energy usage
 
 Script.Load("lua/Weapons/Alien/Ability.lua")
 
 class 'Blink' (Ability)
+
 Blink.kMapName = "blink"
 
 local networkVars = { }
@@ -38,7 +39,7 @@ end
 
 local function TriggerBlinkOutEffects(self, player)
 
-    // Play particle effect at vanishing position.
+    -- Play particle effect at vanishing position.
     if not Shared.GetIsRunningPrediction() then
 
     end
@@ -52,13 +53,13 @@ local function TriggerBlinkInEffects(self, player)
     end
     
 end
-function Blink:GetSecondaryEnergyCost(player)
+function Blink:GetSecondaryEnergyCost()
     return kStartBlinkEnergyCost
 end
 
 function Blink:OnSecondaryAttack(player)
 
-    if not player:GetIsBlinking() and player:GetEnergy() >= self:GetSecondaryEnergyCost(player) then
+    if not player:GetIsBlinking() and player:GetEnergy() >= self:GetSecondaryEnergyCost() then
         self:SetEthereal(player, true)
     end
     

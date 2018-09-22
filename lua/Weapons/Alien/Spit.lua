@@ -1,10 +1,10 @@
-// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Alien\Spit.lua
-//
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Alien\Spit.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/PredictedProjectile.lua")
 Script.Load("lua/DamageMixin.lua")
@@ -27,14 +27,11 @@ local kSpitLifeTime = 8
 Spit.kProjectileCinematic = PrecacheAsset("cinematics/alien/gorge/dripping_slime.cinematic")
 Spit.kRadius = 0.05
 
-AddMixinNetworkVars(TeamMixin, networkVars)
-
 function Spit:OnCreate()
 
     PredictedProjectile.OnCreate(self)
     
     InitMixin(self, DamageMixin)
-    InitMixin(self, TeamMixin)
     
     if Server then
         self:AddTimedCallback(Spit.TimeUp, kSpitLifeTime)

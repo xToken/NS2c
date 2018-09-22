@@ -1,10 +1,10 @@
-// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\WebableMixin.lua
-//
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\WebableMixin.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 WebableMixin = CreateMixin( WebableMixin )
 WebableMixin.type = "Webable"
@@ -21,7 +21,9 @@ WebableMixin.networkVars =
 }
 
 function WebableMixin:__initmixin()
-
+    
+    PROFILE("WebableMixin:__initmixin")
+    
     if Server then
         self.webbed = false
         self.timeWebEnds = 0
@@ -71,5 +73,7 @@ function WebableMixin:OnUpdateAnimationInput(modelMixin)
 end
 
 function WebableMixin:OnUpdateRender()
-    // TODO: custom material?
+
+    -- TODO: custom material?
+
 end

@@ -1,14 +1,14 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Alien_Server.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Alien_Server.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Changed ability unlock detection, upgrade chamber detection and added redemption and hive teleport
+-- NS2c
+-- Changed ability unlock detection, upgrade chamber detection and added redemption and hive teleport
 
 local function GetRelocationHive(usedHive, origin, teamNumber)
 
@@ -157,7 +157,11 @@ end
 function Alien:ProcessBuyAction(techIds)
 
     ASSERT(type(techIds) == "table")
-    ASSERT(table.count(techIds) > 0)
+
+    --Nothing to buy
+    if table.icount(techIds) == 0 then
+        return true
+    end
 
     local success = false
     

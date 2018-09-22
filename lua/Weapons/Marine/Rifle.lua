@@ -1,46 +1,54 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Rifle.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Rifle.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
 Script.Load("lua/Weapons/ClientWeaponEffectsMixin.lua")
 Script.Load("lua/IdleAnimationMixin.lua")
+Script.Load("lua/RifleVariantMixin.lua")
 
 class 'Rifle' (ClipWeapon)
 
 Rifle.kMapName = "rifle"
 
-//Rifle.kModelName = PrecacheAsset("models/marine/rifle/rifle.model")
-Rifle.kModelName = PrecacheAsset("models/marine/rifle/lmg.model")
-
-local kViewModel = PrecacheAsset("models/marine/rifle/lmg_view.model")
-
+Rifle.kModelName = PrecacheAsset("models/marine/rifle/rifle.model")
+local kViewModels = GenerateMarineViewModelPaths("rifle")
 local kAnimationGraph = PrecacheAsset("models/marine/rifle/rifle_view.animation_graph")
 
 local kRange = 100
-// 4 degrees in NS1
+-- 4 degrees in NS1
 local kSpread = ClipWeapon.kCone3Degrees
 
 local kSingleShotSound = PrecacheAsset("sound/ns2c.fev/ns2c/marine/weapon/lmg_fire")
 local kEndSound = PrecacheAsset("sound/NS2.fev/marine/rifle/end")
 
-//local kSingleShotSound = PrecacheAsset("sound/NS2.fev/marine/rifle/fire_single_3")
-//local kLoopingSound = PrecacheAsset("sound/NS2.fev/marine/rifle/fire_loop_1_upgrade_3")
-//local kEndSound = PrecacheAsset("sound/NS2.fev/marine/rifle/end_upgrade_3")
+--local kSingleShotSound = PrecacheAsset("sound/NS2.fev/marine/rifle/fire_single_3")
+--local kLoopingSound = PrecacheAsset("sound/NS2.fev/marine/rifle/fire_loop_1_upgrade_3")
+--local kEndSound = PrecacheAsset("sound/NS2.fev/marine/rifle/end_upgrade_3")
 local kLoopingShellCinematic = PrecacheAsset("cinematics/marine/rifle/shell_looping.cinematic")
 local kLoopingShellCinematicFirstPerson = PrecacheAsset("cinematics/marine/rifle/shell_looping_1p.cinematic")
 local kShellEjectAttachPoint = "fxnode_riflecasing"
 
 local networkVars = { }
+AddMixinNetworkVars(RifleVariantMixin, networkVars)
 
 local kMuzzleEffect = PrecacheAsset("cinematics/marine/rifle/muzzle_flash.cinematic")
 local kIdleAnimations = {"idle", "idle_brush", "idle_lower"}
 local kMuzzleAttachPoint = "fxnode_riflemuzzle"
+
+local function CheckForDestroyedEffects(self)
+    if self.muzzleCinematic and not IsValid(self.muzzleCinematic) then
+        self.muzzleCinematic = nil
+    end
+     if self.shellsCinematic and not IsValid(self.shellsCinematic) then
+        self.shellsCinematic = nil
+    end
+end
 
 local function DestroyMuzzleEffect(self)
 
@@ -120,6 +128,7 @@ function Rifle:OnCreate()
 
     ClipWeapon.OnCreate(self)
     
+	InitMixin(self, RifleVariantMixin)
     if Client then
         InitMixin(self, ClientWeaponEffectsMixin)
         InitMixin(self, IdleAnimationMixin)
@@ -155,7 +164,8 @@ function Rifle:GetAmmoPackMultiplyer()
 end
 
 function Rifle:OnHolster(player)
-
+    
+    CheckForDestroyedEffects(self)
     DestroyMuzzleEffect(self)
     DestroyShellEffect(self)
     ClipWeapon.OnHolster(self, player)
@@ -164,6 +174,7 @@ end
 
 function Rifle:OnHolsterClient()
 
+    CheckForDestroyedEffects(self) 
     DestroyMuzzleEffect(self)
     DestroyShellEffect(self)
     ClipWeapon.OnHolsterClient(self)
@@ -171,11 +182,11 @@ function Rifle:OnHolsterClient()
 end
 
 function Rifle:GetAnimationGraphName()
-    return kAnimationGraph
+    return RifleVariantMixin.kRifleAnimationGraph
 end
 
 function Rifle:GetViewModelName(sex, variant)
-    return kViewModel
+    return kViewModels[sex][variant]
 end
 
 function Rifle:GetDeathIconIndex()
@@ -213,7 +224,7 @@ end
 function Rifle:SetGunLoopParam(viewModel, paramName, rateOfChange)
 
     local current = viewModel:GetPoseParam(paramName)
-    // 0.5 instead of 1 as full arm_loop is intense.
+    -- 0.5 instead of 1 as full arm_loop is intense.
     local new = Clamp(current + rateOfChange, 0, 0.5)
     viewModel:SetPoseParam(paramName, new)
     
@@ -221,9 +232,6 @@ end
 
 function Rifle:UpdateViewModelPoseParameters(viewModel)
 
-    viewModel:SetPoseParam("hide_gl", 1)
-    viewModel:SetPoseParam("gl_empty", 1)
-    
     local attacking = self:GetPrimaryAttacking()
     local sign = (attacking and 1) or 0
     
@@ -238,7 +246,9 @@ function Rifle:OnUpdateAnimationInput(modelMixin)
     ClipWeapon.OnUpdateAnimationInput(self, modelMixin)
     
     modelMixin:SetAnimationInput("gl", false)
-    
+    modelMixin:SetAnimationInput("reload_speed", 1)
+    modelMixin:SetAnimationInput("skip_draw", false)
+
 end
 
 function Rifle:GetAmmoPackMapName()
@@ -248,6 +258,9 @@ end
 if Client then
 
     function Rifle:OnClientPrimaryAttackStart()
+        
+        CheckForDestroyedEffects(self)
+
         Shared.PlaySound(self, kSingleShotSound)        
         
         local player = self:GetParent()
@@ -268,7 +281,7 @@ if Client then
             
         end
             
-        // CreateMuzzleCinematic() can return nil in case there is no parent or the parent is invisible (for alien commander for example)
+        -- CreateMuzzleCinematic() can return nil in case there is no parent or the parent is invisible (for alien commander for example)
         if self.muzzleCinematic then
             self.muzzleCinematic:SetIsVisible(true)
         end
@@ -292,15 +305,17 @@ if Client then
     end
     
     function Rifle:OnClientPrimaryAttacking()
-        //Shared.StopSound(self, kSingleShotSound)
+        --Shared.StopSound(self, kSingleShotSound)
         Shared.PlaySound(self, kSingleShotSound)
     end
 
-	// needed for first person muzzle effect since it is attached to the view model entity: view model entity gets cleaned up when the player changes (for example becoming a commander and logging out again) 
-    // this results in viewmodel getting destroyed / recreated -> cinematic object gets destroyed which would result in an invalid handle.
+	-- needed for first person muzzle effect since it is attached to the view model entity: view model entity gets cleaned up when the player changes (for example becoming a commander and logging out again) 
+    -- this results in viewmodel getting destroyed / recreated -> cinematic object gets destroyed which would result in an invalid handle.
     function Rifle:OnParentChanged(oldParent, newParent)
         
         ClipWeapon.OnParentChanged(self, oldParent, newParent)
+        
+        CheckForDestroyedEffects(self)
         DestroyMuzzleEffect(self)
         DestroyShellEffect(self)
         
@@ -308,17 +323,16 @@ if Client then
     
     function Rifle:OnClientPrimaryAttackEnd()
     
-        // Just assume the looping sound is playing.
+        CheckForDestroyedEffects(self)
+    
+        -- Just assume the looping sound is playing.
         
-        local player = self:GetParent()
-        if player and player:GetIsAlive() then
-            if self.muzzleCinematic then
-                self.muzzleCinematic:SetIsVisible(false)
-            end
-            
-            if self.shellsCinematic then
-                self.shellsCinematic:SetIsActive(false)
-            end
+        if self.muzzleCinematic then
+            self.muzzleCinematic:SetIsVisible(false)
+        end
+        
+        if self.shellsCinematic then
+            self.shellsCinematic:SetIsActive(false)
         end
     end
     
@@ -347,7 +361,7 @@ if Client then
     end
     
     function Rifle:GetUIDisplaySettings()
-        return { xSize = 256, ySize = 417, script = "lua/GUIRifleDisplay.lua" }
+        return { xSize = 256, ySize = 417, script = "lua/GUIRifleDisplay.lua", variant = self:GetRifleVariant() }
     end
 end
 

@@ -1,17 +1,17 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua/AlienTeamInfo.lua
-//
-// AlienTeamInfo is used to sync information about a team to clients.
-// Only alien team players (and spectators) will receive the information about number
-// of shells, spurs or veils.
-//
-// Created by Andreas Urwalek (brianc@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua/AlienTeamInfo.lua
+--
+-- AlienTeamInfo is used to sync information about a team to clients.
+-- Only alien team players (and spectators) will receive the information about number
+-- of shells, spurs or veils.
+--
+-- Created by Andreas Urwalek (brianc@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added in unassigned hives for tracking
+-- NS2c
+-- Added in unassigned hives for tracking
 
 Script.Load("lua/TeamInfo.lua")
 

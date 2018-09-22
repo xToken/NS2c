@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\AlienActionFinderMixin.lua    
-//    
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)    
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\AlienActionFinderMixin.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Adjusted for classic use requirements
+-- NS2c
+-- Adjusted for classic use requirements
 
 AlienActionFinderMixin = CreateMixin( AlienActionFinderMixin )
 AlienActionFinderMixin.type = "AlienActionFinder"
@@ -20,7 +20,9 @@ AlienActionFinderMixin.expectedCallbacks =
 }
 
 function AlienActionFinderMixin:__initmixin()
-
+    
+    PROFILE("AlienActionFinderMixin:__initmixin")
+    
     if Client and Client.GetLocalPlayer() == self then
     
         self.actionIconGUI = GetGUIManager():CreateGUIScript("GUIActionIcon")

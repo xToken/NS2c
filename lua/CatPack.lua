@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\CatPack.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
-
-//NS2c
-//Adjusted CatPack Balance vars
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\CatPack.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
+ 
+-- NS2c
+-- Adjusted CatPack Balance vars
 
 Script.Load("lua/DropPack.lua")
 
@@ -27,14 +27,14 @@ end
 
 function CatPack:OnTouch(recipient)
 
-    StartSoundEffectAtOrigin(CatPack.kPickupSound, self:GetOrigin())
     recipient:ApplyCatPack()
+    self:TriggerEffects("catpack_pickup", { effecthostcoords = self:GetCoords() })
     
 end
 
-/**
- * Any Marine is a valid recipient.
- */
+--
+--Any Marine is a valid recipient.
+--
 function CatPack:GetIsValidRecipient(recipient)
     return (recipient.GetHasCatpackBoost and not recipient:GetHasCatpackBoost() and recipient:GetIsAlive()) and not recipient:GetIsStateFrozen()
 end

@@ -19,7 +19,7 @@ class 'TechPoint' (ScriptActor)
 
 TechPoint.kMapName = "tech_point"
 
-// Note that these need to be changed in editor_setup.xml as well.
+-- Note that these need to be changed in editor_setup.xml as well.
 TechPoint.kModelName = PrecacheAsset("models/misc/tech_point/tech_point.model")
 local kGraphName = PrecacheAsset("models/misc/tech_point/tech_point.animation_graph")
 
@@ -40,6 +40,7 @@ local networkVars =
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 
 function TechPoint:OnCreate()
 
@@ -52,14 +53,14 @@ function TechPoint:OnCreate()
         InitMixin(self, CommanderGlowMixin)
     end
     
-    // Anything that can be built upon should have this group
+    -- Anything that can be built upon should have this group
     self:SetPhysicsGroup(PhysicsGroup.AttachClassGroup)
     
-    // Make the nozzle kinematic so that the player will collide with it.
+    -- Make the nozzle kinematic so that the player will collide with it.
     self:SetPhysicsType(PhysicsType.Kinematic)
     
-    // Defaults to 1 but the mapper can adjust this setting in the editor.
-    // The higher the chooseWeight, the more likely this point will be randomly chosen for a team.
+    -- Defaults to 1 but the mapper can adjust this setting in the editor.
+    -- The higher the chooseWeight, the more likely this point will be randomly chosen for a team.
     self.chooseWeight = 1
     
     self.extendAmount = 0
@@ -82,13 +83,13 @@ function TechPoint:OnInitialized()
     
     if Server then
     
-        // 0 indicates all teams allowed for random selection process.
+        -- 0 indicates all teams allowed for random selection process.
         self.allowedTeamNumber = self.teamNumber or 0
         self.smashed = false
         self.smashScouted = false
         self.occupiedTeam = 0
         
-        // This Mixin must be inited inside this OnInitialized() function.
+        -- This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end

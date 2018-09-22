@@ -1,14 +1,14 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\ConstructMixin.lua    
-//    
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\ConstructMixin.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added in alien build effects, removed healspray building.
-//Forced grow pose parm to 1
+-- NS2c
+-- Added in alien build effects, removed healspray building.
+-- Forced grow pose parm to 1
 
 PrecacheAsset("cinematics/vfx_materials/build.surface_shader")
 
@@ -21,15 +21,15 @@ local kBuildEffectsInterval = 1
 
 ConstructMixin.networkVars =
 {
-    // 0-1 scalar representing build completion time. Since we use this to blend
-    // animations, it must be interpolated for the animations to appear smooth
-    // on the client.
+    -- 0-1 scalar representing build completion time. Since we use this to blend
+    -- animations, it must be interpolated for the animations to appear smooth
+    -- on the client.
     buildFraction           = "interpolated float (0 to 1 by 0.01)",
     
-    // true if structure finished building
+    -- true if structure finished building
     constructionComplete    = "boolean",
 
-    // Show different material when under construction
+    -- Show different material when under construction
     underConstruction       = "boolean"
     
 }
@@ -47,13 +47,18 @@ ConstructMixin.optionalCallbacks =
 {
     OnConstruct = "Called whenever construction progress changes.",
     OnConstructionComplete = "Called whenever construction is completes.",
-    GetCanBeUsedConstructed = "Return true when this entity has a use function when constructed."
-    
+    GetCanBeUsedConstructed = "Return true when this entity has a use function when constructed.",
+    GetAddConstructHealth = "Return false to prevent adding health when constructing.",
+    GetStartingHealthScalar = "Return the scalar value for the percent of max Health/Armor on structure spawn",
+    AllowConstructionComplete = "Return false to prevent the building from being completed",
 }
 
-function ConstructMixin:__initmixin()
 
-    // used for client side building effect
+function ConstructMixin:__initmixin()
+    
+    PROFILE("ConstructMixin:__initmixin")
+    
+    -- used for client side building effect
     self.underConstruction = false
     
     self.timeLastConstruct = 0
@@ -61,11 +66,13 @@ function ConstructMixin:__initmixin()
     self.buildTime = 0
     self.buildFraction = 0
 
-    // Structures start with a percentage of their full health and gain more as they're built.\
+    -- Structures start with a percentage of their full health and gain more as they're built.\
     
     if self.startsBuilt then
+
         self:SetHealth( self:GetMaxHealth() )
         self:SetArmor( self:GetMaxArmor() )
+
     else
         self:SetHealth( self:GetMaxHealth() * kStartHealthScalar )
         self:SetArmor( self:GetMaxArmor() * kStartHealthScalar )
@@ -118,8 +125,8 @@ if Server then
 	    local effectTimeout = Shared.GetTime() - self.timeLastConstruct > 0.65
 	    self.underConstruction = not self:GetIsBuilt() and not effectTimeout
 	    
-	    // Only Alien structures auto build.
-	    // Update build fraction every tick to be smooth.
+	    -- Only Alien structures auto build.
+	    -- Update build fraction every tick to be smooth.
         if not self:GetIsBuilt() and GetIsAlienUnit(self) and self:GetIsAlive() then
             
             local buildTime = deltaTime * kAutoBuildScalar
@@ -133,7 +140,7 @@ if Server then
         
         end
         
-        // respect the cheat here; sometimes the cheat breaks due to things relying on it NOT being built until after a frame
+        -- respect the cheat here; sometimes the cheat breaks due to things relying on it NOT being built until after a frame
         if GetGamerules():GetAutobuild() then
             self:SetConstructionComplete()
         end
@@ -142,11 +149,11 @@ if Server then
 	        return kUpdateIntervalFull
 	    end
 	    
-	    // stop running once we are fully constructed
+	    -- stop running once we are fully constructed
 	    return false
     end
 
-end // Server
+end
 
 if Client then
 
@@ -167,7 +174,7 @@ if Client then
 	    
 	end
 
-end  // Client
+end
 
 
 if Server then
@@ -180,8 +187,8 @@ if Server then
             local techNode = techTree:GetTechNode(self:GetTechId())
             
             if techNode then
-                techNode:SetResearchProgress(0.0)
-                techTree:SetTechNodeChanged(techNode, "researchProgress = 1.0f")
+                techNode:SetResearchProgress(0)
+                techTree:SetTechNodeChanged(techNode, "researchProgress = 0")
             end 
             
         end
@@ -212,11 +219,15 @@ function ConstructMixin:ResetConstructionStatus()
     
 end
 
+function ConstructMixin:OnProcessMove(input)
+    Log("%s: Called OnProcessMove???")
+end
+
 function ConstructMixin:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("ConstructMixin:OnUpdateAnimationInput")    
     modelMixin:SetAnimationInput("built", self.constructionComplete)
-    modelMixin:SetAnimationInput("active", self.constructionComplete) // TODO: remove this and adjust animation graphs
+    modelMixin:SetAnimationInput("active", self.constructionComplete) -- TODO: remove this and adjust animation graphs
     
 end
 
@@ -228,12 +239,12 @@ function ConstructMixin:OnUpdatePoseParameters()
     
 end    
 
-/**
- * Add health to structure as it builds.
- */
+--
+-- Add health to structure as it builds.
+--
 local function AddBuildHealth(self, scalar)
 
-    // Add health according to build time.
+    -- Add health according to build time.
     if scalar > 0 then
     
         local maxHealth = self:GetMaxHealth()
@@ -243,12 +254,12 @@ local function AddBuildHealth(self, scalar)
     
 end
 
-/**
- * Add health to structure as it builds.
- */
+--
+-- Add health to structure as it builds.
+--
 local function AddBuildArmor(self, scalar)
 
-    // Add health according to build time.
+    -- Add health according to build time.
     if scalar > 0 then
     
         local maxArmor = self:GetMaxArmor()
@@ -258,11 +269,11 @@ local function AddBuildArmor(self, scalar)
     
 end
 
-/**
- * Build structure by elapsedTime amount and play construction sounds. Pass custom construction sound if desired, 
- * otherwise use Gorge build sound or Marine sparking build sounds. Returns two values - whether the construct
- * action was successful and if enough time has elapsed so a construction AV effect should be played.
- */
+--
+-- Build structure by elapsedTime amount and play construction sounds. Pass custom construction sound if desired,
+-- otherwise use Gorge build sound or Marine sparking build sounds. Returns two values - whether the construct
+-- action was successful and if enough time has elapsed so a construction AV effect should be played.
+--
 function ConstructMixin:Construct(elapsedTime, builder)
 
     local success = false
@@ -374,7 +385,7 @@ end
 
 function ConstructMixin:SetConstructionComplete(builder)
 
-    // Construction cannot resurrect the dead.
+    -- Construction cannot resurrect the dead.
     if self:GetIsAlive() then
     
         local wasComplete = self.constructionComplete
@@ -411,8 +422,8 @@ function ConstructMixin:OnUse(player, elapsedTime, useSuccessTable)
 
     if self:GetCanConstruct(player) then        
 
-        // Always build by set amount of time, for AV reasons
-        // Calling code will put weapon away we return true
+        -- Always build by set amount of time, for AV reasons
+        -- Calling code will put weapon away we return true
 
         local success, playAV = self:Construct(kUseInterval, player)
         

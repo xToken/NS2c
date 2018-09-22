@@ -1,15 +1,15 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Commander.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// Handles Commander movement and actions.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Commander.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- Handles Commander movement and actions.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed idle workers and adjusted to use goldsource movement code
+-- NS2c
+-- Removed idle workers and adjusted to use goldsource movement code
 
 Script.Load("lua/Player.lua")
 Script.Load("lua/Globals.lua")
@@ -52,15 +52,15 @@ Commander.kAlienLineMaterialName = PrecacheAsset("ui/WaypointPath_alien.material
 
 Commander.kSentryArcScale = 8
 
-// Extra hard-coded vertical distance that makes it so we set our scroll position,
-// we are looking at that point, instead of setting our position to that point)
+-- Extra hard-coded vertical distance that makes it so we set our scroll position,
+-- we are looking at that point, instead of setting our position to that point)
 Commander.kViewOffsetXHeight = 5
-// Default height above the ground when there's no height map
+-- Default height above the ground when there's no height map
 Commander.kDefaultCommanderHeight = 11
 Commander.kFov = 90
 Commander.kScoreBoardDisplayDelay = .12
 
-// Snap structures to attach points within this range
+-- Snap structures to attach points within this range
 Commander.kAttachStructuresRadius = 5
 
 Commander.kScrollVelocity = 40
@@ -75,7 +75,7 @@ end
 
 Commander.kSelectMode = enum( {'None', 'SelectedGroup', 'JumpedToGroup'} )
 
-// adjust relevancy to see things in the corners of the overhead view
+-- adjust relevancy to see things in the corners of the overhead view
 local kCommanderRelevancyOriginOffset = Vector(25,0,0)
 local kCommanderRelevancyRangeOffset = 5
 
@@ -126,15 +126,15 @@ function Commander:OnInitialized()
         self.drawResearch = false
 
         if self:GetIsLocalPlayer() then
-            self:SetCurrentTech(kTechId.BuildMenu)
+            self:SetCurrentTech(kTechId.RootMenu)
         end
         
     end
     
     if Server then
     
-        // Wait a short time before sending hotkey groups to make sure
-        // client has been replaced by commander
+        -- Wait a short time before sending hotkey groups to make sure
+        -- client has been replaced by commander
         self.timeToSendHotkeyGroups = Shared.GetTime() + 0.5
         
         self:ConfigureRelevancy(kCommanderRelevancyOriginOffset, kCommanderRelevancyRangeOffset) 
@@ -145,7 +145,7 @@ function Commander:OnInitialized()
     
 end
 
-// Needed so player origin is same as camera for selection
+-- Needed so player origin is same as camera for selection
 function Commander:GetViewOffset()
     return Vector(0, 0, 0)
 end
@@ -162,9 +162,9 @@ function Commander:ModifyGravityForce(gravityTable)
     gravityTable.gravity = 0
 end
 
-function Commander:GetTechAllowed(techId, techNode, self)
+function Commander:GetTechAllowed(techId, techNode)
 
-    local allowed, canAfford = Player.GetTechAllowed(self, techId, techNode, self)
+    local allowed, canAfford = Player.GetTechAllowed(self, techId, techNode)
     
     return allowed, canAfford
 
@@ -174,16 +174,16 @@ function Commander:HandleButtons(input)
 
     PROFILE("Commander:HandleButtons")
     
-    // Set Commander orientation to looking down but not straight down for visual interest.
+    -- Set Commander orientation to looking down but not straight down for visual interest.
     local yawDegrees = 90
     local pitchDegrees = 70
     local angles = Angles((pitchDegrees / 90) * math.pi / 2, (yawDegrees / 90) * math.pi / 2, 0)
     
-    // Update to the current view angles.
+    -- Update to the current view angles.
     self:SetViewAngles(angles)
 
-    // Check for commander cancel action. It is reset in the flash hook to make
-    // sure it's recognized.
+    -- Check for commander cancel action. It is reset in the flash hook to make
+    -- sure it's recognized.
     if bit.band(input.commands, Move.Exit) ~= 0 then
         self.commanderCancel = true
     end
@@ -205,7 +205,7 @@ function Commander:GetNumPlayerAlerts()
     return self.numPlayerAlerts
 end
 
-// Returns true if it set our position
+-- Returns true if it set our position
 function Commander:ProcessNumberKeysMove(input, newPosition)
     return false
 end
@@ -222,8 +222,8 @@ local function DeleteHotkeyGroup(self, number)
 
 end
 
-// Creates hotkey for number out of current selection. Returns true on success.
-// Replaces existing hotkey on this number if it exists.
+-- Creates hotkey for number out of current selection. Returns true on success.
+-- Replaces existing hotkey on this number if it exists.
 function Commander:CreateHotkeyGroup(number)
 
     DeleteHotkeyGroup(self, number)
@@ -255,9 +255,9 @@ function Commander:GetOrderConfirmedEffect()
     return ""
 end
 
-/**
- * Returns the x-coordinate of the commander current position in the minimap.
- */
+--
+--Returns the x-coordinate of the commander current position in the minimap.
+--
 function Commander:GetScrollPositionX()
     local scrollPositionX = 1
     local heightmap = GetHeightmap()
@@ -267,9 +267,9 @@ function Commander:GetScrollPositionX()
     return scrollPositionX
 end
 
-/**
- * Returns the y-coordinate of the commander current position in the minimap.
- */
+--
+--Returns the y-coordinate of the commander current position in the minimap.
+--
 function Commander:GetScrollPositionY()
     local scrollPositionY = 1
     local heightmap = GetHeightmap()
@@ -279,7 +279,7 @@ function Commander:GetScrollPositionY()
     return scrollPositionY
 end
 
-// For making top row the same. Marine commander overrides to set top four icons to always be identical.
+-- For making top row the same. Marine commander overrides to set top four icons to always be identical.
 function Commander:GetTopRowTechButtons()
     return {}
 end
@@ -296,7 +296,7 @@ function Commander:GetMenuTechIdFor(techId)
 
     for menuTechId, techIdTable in pairs(self:GetButtonTable()) do
     
-        if table.contains(techIdTable, techId) then
+        if table.icontains(techIdTable, techId) then
             return menuTechId
         end
     
@@ -314,8 +314,8 @@ function Commander:GetCurrentTechButtons(techId, entity)
     
     if not self:GetIsInQuickMenu(techId) and entity then
     
-        // Allow selected entities to add/override buttons in the menu (but not top row)
-        // only show buttons of friendly units
+        -- Allow selected entities to add/override buttons in the menu (but not top row)
+        -- only show buttons of friendly units
         if entity:GetTeamNumber() == self:GetTeamNumber() then
         
             local selectedTechButtons = entity:GetTechButtons(techId, self:GetTeamType())
@@ -327,27 +327,31 @@ function Commander:GetCurrentTechButtons(techId, entity)
                 
             end
             
-            if (HasMixin(entity, "Research") and entity:GetIsResearching()) or (HasMixin(entity, "GhostStructure") and entity:GetIsGhostStructure()) then
+            if techId == kTechId.RootMenu then
             
-                local foundCancel = false
-                for b = 1, #techButtons do
+                if (HasMixin(entity, "Research") and entity:GetIsResearching()) or (HasMixin(entity, "GhostStructure") and entity:GetIsGhostStructure()) then
                 
-                    if techButtons[b] == kTechId.Cancel then
+                    local foundCancel = false
+                    for b = 1, #techButtons do
                     
-                        foundCancel = true
-                        break
+                        if techButtons[b] == kTechId.Cancel then
+                        
+                            foundCancel = true
+                            break
+                            
+                        end
                         
                     end
                     
-                end
+                    if not foundCancel then
+                        techButtons[kRecycleCancelButtonIndex] = kTechId.Cancel
+                    end
                 
-                if not foundCancel then
-                    techButtons[kRecycleCancelButtonIndex] = kTechId.Cancel
+                -- add recycle button if not researching / ghost structure mode
+                elseif HasMixin(entity, "Recycle") and not entity:GetIsResearching() and entity:GetCanRecycle() and not entity:GetIsRecycled() then
+                    techButtons[kRecycleCancelButtonIndex] = kTechId.Recycle
                 end
             
-            // add recycle button if not researching / ghost structure mode
-            elseif HasMixin(entity, "Recycle") and not entity:GetIsResearching() and entity:GetCanRecycle() and not entity:GetIsRecycled() then
-                techButtons[kRecycleCancelButtonIndex] = kTechId.Recycle
             end
         
         end
@@ -385,7 +389,7 @@ function Commander:SetTechCooldown(techId, cooldownDuration, startTime)
     
     if Server then
     
-        // send message to commander to sync the cd
+        -- send message to commander to sync the cd
     
     end
 
@@ -429,7 +433,7 @@ function Commander:OnProcessMove(input)
     
     if Client then
         
-        // This flag must be cleared inside OnProcessMove. See explaination in Commander:OverrideInput().
+        -- This flag must be cleared inside OnProcessMove. See explaination in Commander:OverrideInput().
         self.setScrollPosition = false
         
     end
@@ -490,9 +494,9 @@ function Commander:GetUsesGoldSourceMovement()
     return false
 end
 
-/**
- * Commanders never sight nearby enemy players.
- */
+--
+--Commanders never sight nearby enemy players.
+--
 function Commander:OverrideCheckVision()
     return false
 end

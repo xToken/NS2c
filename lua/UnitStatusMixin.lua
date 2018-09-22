@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\UnitStatusMixin.lua    
-//    
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\UnitStatusMixin.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Modified to add Recycling as a seperate Unit Status from researching.
+-- NS2c
+-- Modified to add Recycling as a seperate Unit Status from researching.
 
 kUnitStatus = enum({
     'None',
@@ -25,7 +25,11 @@ UnitStatusMixin = CreateMixin(UnitStatusMixin)
 UnitStatusMixin.type = "UnitStatus"
 
 function UnitStatusMixin:__initmixin()
+    
+    PROFILE("UnitStatusMixin:__initmixin")
+    
     self.unitStatus = kUnitStatus.None
+    self.unitStates = {}
 end
 
 function UnitStatusMixin:GetShowUnitStatusFor(forEntity)
@@ -34,10 +38,6 @@ function UnitStatusMixin:GetShowUnitStatusFor(forEntity)
     
     if self.GetShowUnitStatusForOverride then
         showUnitStatus = self:GetShowUnitStatusForOverride(forEntity)
-    end
-    
-    if HasMixin(self, "Model") and showUnitStatus then
-        showUnitStatus = self:GetWasRenderedLastFrame()
     end
     
     if HasMixin(self, "Live") and showUnitStatus then
@@ -52,7 +52,7 @@ function UnitStatusMixin:GetUnitStatus(forEntity)
 
     local unitStatus = kUnitStatus.None
 
-    // don't show status of opposing team
+    -- don't show status of opposing team
     if GetAreFriends(forEntity, self) then
 
         if not GetIsUnitActive(self) then
@@ -60,14 +60,14 @@ function UnitStatusMixin:GetUnitStatus(forEntity)
             if HasMixin(self, "Construct") and not self:GetIsBuilt() and (forEntity:isa("Gorge") or forEntity:isa("Marine") or (forEntity.GetCanSeeConstructIcon and forEntity:GetCanSeeConstructIcon(self)) ) then
                 unitStatus = kUnitStatus.Unbuilt 
 
-            //elseif HasMixin(self, "PowerConsumer") and self:GetRequiresPower() and not self:GetIsPowered() then
-                //unitStatus = kUnitStatus.Unpowered         
+            --elseif HasMixin(self, "PowerConsumer") and self:GetRequiresPower() and not self:GetIsPowered() then
+                --unitStatus = kUnitStatus.Unpowered         
             end
         
         else
         
             if HasMixin(self, "Research") and self:GetIsResearching() then
-                if self:GetRecycleActive() then
+                if self:GetIsRecycling() then
                     unitStatus = kUnitStatus.Recycling
                 else
                     unitStatus = kUnitStatus.Researching
@@ -95,6 +95,23 @@ function UnitStatusMixin:GetUnitStatus(forEntity)
 
     return unitStatus
 
+end
+
+function UnitStatusMixin:GetUnitState(forEntity)
+    --use cached state
+    if self.unitStates[forEntity] then
+        if self.unitStates[forEntity].updateTime > Shared.GetTime() then
+            return self.unitStates[forEntity].state
+        end
+    end
+end
+
+local stateCacheTime = 0.2 -- cache data lifetime
+function UnitStatusMixin:SetUnitState(forEntity, state)
+    self.unitStates[forEntity] = {
+        state = state,
+        updateTime = Shared.GetTime() + stateCacheTime
+    }
 end
 
 function UnitStatusMixin:GetUnitStatusFraction(forEntity)
@@ -189,7 +206,7 @@ function UnitStatusMixin:GetAbilityFraction(forEntity)
 
         local primaryWeapon = self:GetWeaponInHUDSlot(1)
         if primaryWeapon and primaryWeapon:isa("ClipWeapon") then
-            // always show at least 1% so commander would see a black bar
+            -- always show at least 1% so commander would see a black bar
             return math.max(0.01, primaryWeapon:GetAmmoFraction())
         elseif self:isa("Player") and self:isa("Alien") and not self:isa("Hallucination") and not self:isa("Embryo") then
             return math.max(0.01, self:GetEnergy() / self:GetMaxEnergy())

@@ -1,15 +1,15 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GUISelectionPanel.lua
-//
-// Created by: Brian Cronin (brianc@unknownworlds.com)
-//
-// Manages the middle commander panel used to display info related to what is currently selected.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GUISelectionPanel.lua
+--
+-- Created by: Brian Cronin (brianc@unknownworlds.com)
+--
+-- Manages the middle commander panel used to display info related to what is currently selected.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed alien comm refs, added energy and removed maturity.
+-- NS2c
+-- Removed alien comm refs, added energy and removed maturity.
 
 Script.Load("lua/GUIIncrementBar.lua")
 
@@ -58,8 +58,8 @@ function GUISelectionPanel:Initialize()
     GUISelectionPanel.kArmorIconCoordinates = { X1 = 48, Y1 = 363, X2 = 48 * 2, Y2 = 363 + 48 }
     GUISelectionPanel.kEnergyIconCoordinates = { X1 = 48 * 2, Y1 = 363, X2 = 48 * 3, Y2 = 363 + 48 }
 
-    // The panel will scale with the screen resolution. It is based on
-    // this screen width.
+    -- The panel will scale with the screen resolution. It is based on
+    -- this screen width.
     GUISelectionPanel.kPanelWidth = 312 * GUIScale(kCommanderGUIsGlobalScale)
     GUISelectionPanel.kPanelHeight = 250 * GUIScale(kCommanderGUIsGlobalScale)
 
@@ -254,7 +254,7 @@ function GUISelectionPanel:InitializeSingleSelectionItems()
     self.researchBarBg = GUIManager:CreateGraphicItem()
     self.researchBarBg:SetTexture(self.textureName)
     self.researchBarBg:SetAnchor(GUIItem.Left, GUIItem.Center)
-    self.researchBarBg:SetTexturePixelCoordinates(unpack(GUISelectionPanel.kBarBGPixelCoords))
+    self.researchBarBg:SetTexturePixelCoordinates(GUIUnpackCoords(GUISelectionPanel.kBarBGPixelCoords))
     self.researchBarBg:SetPosition(Vector(GUISelectionPanel.kBarBGXPos, -GUISelectionPanel.kBarBGSize.y * .5, 0))
     self.researchBarBg:SetSize(GUISelectionPanel.kBarBGSize)
     self.statusIcon:AddChild(self.researchBarBg)
@@ -317,8 +317,8 @@ end
 
 function GUISelectionPanel:Uninitialize()
     
-    // Everything is attached to the background so destroying it will
-    // destroy everything else.
+    -- Everything is attached to the background so destroying it will
+    -- destroy everything else.
     GUI.DestroyItem(self.background)
     self.background = nil
     self.selectedIcon = nil
@@ -356,10 +356,10 @@ end
 function GUISelectionPanel:UpdateSelected()
 
     local selectedEntities = CommanderUI_GetSelectedEntities()
-    local numberSelectedEntities = table.count(selectedEntities)
+    local numberSelectedEntities = table.icount(selectedEntities)
     self.selectedIcon:SetIsVisible(false)
     
-    // Hide selection panel with nothing selected
+    -- Hide selection panel with nothing selected
     self:SetIsVisible(numberSelectedEntities > 0)
     
     if numberSelectedEntities > 0 then
@@ -379,8 +379,8 @@ end
 
 function GUISelectionPanel:UpdateSingleSelection(entity)
 
-    // Make all multiselection icons invisible.
-    function SetItemInvisible(item) item:SetIsVisible(false) end
+    -- Make all multiselection icons invisible.
+    local function SetItemInvisible(item) item:SetIsVisible(false) end
     table.foreachfunctor(self.multiSelectionIcons, SetItemInvisible)
     
     self.selectedIcon:SetIsVisible(true)
@@ -410,7 +410,7 @@ function GUISelectionPanel:UpdateSingleSelection(entity)
     local statusPercentage = selectedBargraphs[2]
     local statusTechId = selectedBargraphs[3]
     
-    if table.count(selectedBargraphs) > 2 and statusPercentage then
+    if table.icount(selectedBargraphs) > 2 and statusPercentage then
     
         local pulseColor = Color(GUISelectionPanel.kStatusFontColor)
         pulseColor.a = 0.65 + (((math.sin(Shared.GetTime() * 10) + 1) / 2) * 0.35)
@@ -424,7 +424,7 @@ function GUISelectionPanel:UpdateSingleSelection(entity)
         self.statusText:SetIsVisible(true)
 
         if statusTechId and statusTechId ~= kTechId.None then
-            self.statusIcon:SetTexturePixelCoordinates(unpack(GetTextureCoordinatesForIcon(statusTechId, PlayerUI_GetTeamType() == kMarineTeamType)))
+            self.statusIcon:SetTexturePixelCoordinates(GUIUnpackCoords(GetTextureCoordinatesForIcon(statusTechId, PlayerUI_GetTeamType() == kMarineTeamType)))
         end
         
     else
@@ -454,14 +454,14 @@ end
 
 function GUISelectionPanel:UpdateMultiSelection(selectedEntities)
 
-    function SetItemInvisible(item) item:SetIsVisible(false) end
-    // Make all previous selection icons invisible.
+    local function SetItemInvisible(item) item:SetIsVisible(false) end
+    -- Make all previous selection icons invisible.
     table.foreachfunctor(self.multiSelectionIcons, SetItemInvisible)
     
     local currentIconIndex = 1
-    for i, selectedEntity in ipairs(selectedEntities) do
-        local selectedIcon = nil
-        if table.count(self.multiSelectionIcons) >= currentIconIndex then
+    for _, selectedEntity in ipairs(selectedEntities) do
+        local selectedIcon
+        if table.icount(self.multiSelectionIcons) >= currentIconIndex then
             selectedIcon = self.multiSelectionIcons[currentIconIndex]
         else
             selectedIcon = self:CreateMultiSelectionIcon()
@@ -490,7 +490,7 @@ function GUISelectionPanel:CreateMultiSelectionIcon()
 
 end
 
-/* this blocks queued orders currently
+--[[ this blocks queued orders currently
 function GUISelectionPanel:SendKeyEvent(key, down)
 
     if key == InputKey.LeftShift then
@@ -506,7 +506,7 @@ function GUISelectionPanel:SendKeyEvent(key, down)
     return false
 
 end
-*/
+--]]
 
 function GUISelectionPanel:SetIconTextureCoordinates(selectedIcon, entity)
 
@@ -514,7 +514,7 @@ function GUISelectionPanel:SetIconTextureCoordinates(selectedIcon, entity)
     local techId = (entity and HasMixin(entity, "Tech")) and entity:GetTechId() or kTechId.None
     local texCoords = GetTextureCoordinatesForIcon(techId)
     
-    selectedIcon:SetTexturePixelCoordinates(unpack(texCoords))
+    selectedIcon:SetTexturePixelCoordinates(GUIUnpackCoords(texCoords))
     
 end
 

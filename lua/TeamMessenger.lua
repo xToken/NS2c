@@ -1,33 +1,33 @@
-// ======= Copyright (c) 2012, Unknown Worlds Entertainment, Inc. All rights reserved. ============
-//    
-// lua\TeamMessenger.lua    
-//    
-//    Created by:   Brian Cronin (brianc@unknownworlds.com)    
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2012, Unknown Worlds Entertainment, Inc. All rights reserved. ============
+--
+-- lua\TeamMessenger.lua
+--
+--    Created by:   Brian Cronin (brianc@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Adding messages for Abilities/Chambers lost/gained, and removed Power notifications
-//Changed Hive Health messages to only go to aliens, and added Hive in Danger notification.
+-- NS2c
+-- Adding messages for Abilities/Chambers lost/gained, and removed Power notifications
+-- Changed Hive Health messages to only go to aliens, and added Hive in Danger notification.
 
 kTeamMessageTypes = enum({ 'GameStarted', 'PowerLost', 'PowerRestored', 'Eject', 'CannotSpawn',
                            'SpawningWait', 'Spawning', 'ResearchComplete', 'ResearchLost', 'AbilityUnlocked', 'AbilityLost',
                            'HiveConstructed', 'HiveLowHealth', 'HiveKilled',
                            'CommandStationUnderAttack', 'IPUnderAttack', 'HiveUnderAttack', 'HiveInDanger',
                            'PowerPointUnderAttack', 'Beacon', 'NoCommander', 'TeamsUnbalanced',
-                           'TeamsBalanced', 'GameStartCommanders', 'UnassignedHive', 'CombatDefaultWinner', 'CombatDefaultLoser' })
+                           'TeamsBalanced', 'GameStartCommanders', 'WarmUpActive', 'ReturnToBase', 'UnassignedHive', 'CombatDefaultWinner', 'CombatDefaultLoser' })
 
 local kTeamMessages = { }
 
 kTeamMessages[kTeamMessageTypes.GameStarted] = { text = { [kMarineTeamType] = "MARINE_TEAM_GAME_STARTED", [kAlienTeamType] = "ALIEN_TEAM_GAME_STARTED" } }
 
-// This function will generate the string to display based on a location Id.
+-- This function will generate the string to display based on a location Id.
 local locationStringGen = function(locationId, messageString) return string.format(Locale.ResolveString(messageString), Shared.GetString(locationId)) end
 
-// This function will generate the string to display based on a research Id.
+-- Thos function will generate the string to display based on a research Id.
 local researchStringGen = function(researchId, messageString) return string.format(Locale.ResolveString(messageString), GetDisplayNameForTechId(researchId)) end
 
-// This function will generate the string to display based on a time.
+-- This function will generate the string to display based on a time.
 local timeStringGen =   function(time, messageString)
                             local minutes = math.floor( time / 60 )
                             local seconds = math.floor( time - minutes * 60 )
@@ -82,6 +82,13 @@ kTeamMessages[kTeamMessageTypes.GameStartCommanders] = { text = { [kMarineTeamTy
 
 kTeamMessages[kTeamMessageTypes.UnassignedHive] = { text = { [kAlienTeamType] = "UNASSIGNED_HIVES" } }
 
+local genericStringGen = function(param, messageString) return string.format(Locale.ResolveString(messageString), param) end
+kTeamMessages[kTeamMessageTypes.WarmUpActive] = { text = { [kMarineTeamType] = function(data) return genericStringGen(data, "WARMUP_ACTIVE") end ,
+                                                            [kAlienTeamType] = function(data) return genericStringGen(data, "WARMUP_ACTIVE") end  } }
+
+kTeamMessages[kTeamMessageTypes.ReturnToBase] = { text = { [kMarineTeamType] = "RETURN_TO_BASE", [kAlienTeamType] = "RETURN_TO_BASE" } }
+
+
 kTeamMessages[kTeamMessageTypes.CombatDefaultWinner] =  { 
                                                             text = {
                                                                         [kMarineTeamType] = function(data) return timeStringGen(data, "COMBAT_DEFAULT_WINNER") end, 
@@ -96,7 +103,7 @@ kTeamMessages[kTeamMessageTypes.CombatDefaultLoser] =   {
                                                                     } 
                                                         }
 
-// Silly name but it fits the convention.
+-- Silly name but it fits the convention.
 local kTeamMessageMessage =
 {
     type = "enum kTeamMessageTypes",
@@ -107,9 +114,9 @@ Shared.RegisterNetworkMessage("TeamMessage", kTeamMessageMessage)
 
 if Server then
 
-    /**
-     * Sends every team the passed in message for display.
-     */
+    --
+    -- Sends every team the passed in message for display.
+    --
     function SendGlobalMessage(messageType, optionalData)
     
         if GetGamerules():GetGameStarted() then
@@ -123,9 +130,9 @@ if Server then
         
     end
     
-    /**
-     * Sends every player on the passed in team the passed in message for display.
-     */
+    --
+    -- Sends every player on the passed in team the passed in message for display.
+    --
     function SendTeamMessage(team, messageType, optionalData)
     
         local function SendToPlayer(player)
@@ -136,9 +143,9 @@ if Server then
         
     end
     
-    /**
-     * Sends the passed in message to the players passed in.
-     */
+    --
+    -- Sends the passed in message to the players passed in.
+    --
     function SendPlayersMessage(playerList, messageType, optionalData)
     
         if GetGamerules():GetGameStarted() then

@@ -1,20 +1,21 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//
-// lua\Egg.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//                  Andreas Urwalek (andi@unknownworlds.com)
-//
-// Thing that aliens spawn out of.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
+--
+-- lua\Egg.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--                  Andreas Urwalek (andi@unknownworlds.com)
+--
+-- Thing that aliens spawn out of.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed concept of pre-evolved eggs
+-- NS2c
+-- Removed concept of pre-evolved eggs
 
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
+Script.Load("lua/AchievementGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
 Script.Load("lua/CloakableMixin.lua")
@@ -44,13 +45,16 @@ Egg.kZExtents = 1
 
 Egg.kSkinOffset = Vector(0, 0.12, 0)
 
+Egg.kSpawnAnimLen = 1.5
+
 local networkVars =
 {
-    // if player is inside it
-    empty = "boolean",
+    empty = "boolean",   -- if player is inside it
+    spawned = "boolean" -- Spawn cycle complete
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
@@ -72,6 +76,7 @@ function Egg:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
+    InitMixin(self, AchievementGiverMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, CloakableMixin)
     InitMixin(self, LOSMixin)
@@ -85,6 +90,7 @@ function Egg:OnCreate()
         InitMixin(self, CommanderGlowMixin)    
     end
     
+    self.spawned = true
     self.empty = true
     
     self:SetLagCompensated(false)
@@ -103,7 +109,7 @@ function Egg:OnInitialized()
     
     if Server then
     
-        // This Mixin must be inited inside this OnInitialized() function.
+        -- This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end
@@ -111,10 +117,18 @@ function Egg:OnInitialized()
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, SleeperMixin)
         
+        self:AddTimedCallback( Egg.UpdateSpawnedFlag, Egg.kSpawnAnimLen )
+        
     elseif Client then
         InitMixin(self, UnitStatusMixin)
     end
     
+end
+
+function Egg:UpdateSpawnedFlag( deltaTime )
+    self.spawned = false
+    self.built = true
+    return false
 end
 
 function Egg:GetShowCrossHairText(toPlayer)
@@ -164,16 +178,29 @@ function Egg:OnResearchComplete(techId)
     
 end
 
-// Takes the queued player from this Egg and placed them back in the
-// respawn queue to be spawned elsewhere.
+function Egg:SetHive(hive)
+    self.hiveId = hive:GetId()
+end
+
+function Egg:GetHive()
+    return Shared.GetEntity(self.hiveId)
+end
+
+function Egg:GetReceivesStructuralDamage()
+    return true
+end
+--
+-- Takes the queued player from this Egg and placed them back in the
+-- respawn queue to be spawned elsewhere.
+--
 function Egg:RequeuePlayer()
 
     if self.queuedPlayerId then
     
         local player = Shared.GetEntity(self.queuedPlayerId)
         local team = self:GetTeam()
-        // There are cases when the player or team is no longer valid such as
-        // when Egg:OnDestroy() is called during server shutdown.
+        -- There are cases when the player or team is no longer valid such as
+        -- when Egg:OnDestroy() is called during server shutdown.
         if player and team then
         
             if not player:isa("AlienSpectator") then
@@ -187,7 +214,7 @@ function Egg:RequeuePlayer()
         
     end
     
-    // Don't spawn player
+    -- Don't spawn player
     self:SetEggFree()
 
 end
@@ -196,26 +223,16 @@ function Egg:GetCanConstructOverride(player)
     return false
 end
 
-function Egg:SetHive(hive)
-    self.hiveId = hive:GetId()
-end
-
-function Egg:GetHive()
-    return Shared.GetEntity(self.hiveId)
-end
-
-function Egg:GetReceivesStructuralDamage()
-    return true
-end
-
 if Server then
 
-    function Egg:OnKill(attacker, doer, point, direction)
+    function Egg:GetDestroyOnKill()
+        return true
+    end
 
+    function Egg:OnKill(attacker, doer, point, direction)
+    
         self:RequeuePlayer()
-        self:TriggerEffects("egg_death")   
-        
-        DestroyEntity(self)
+        self:TriggerEffects("egg_death")
         
     end
     
@@ -253,7 +270,7 @@ end
 
 local function GestatePlayer(self, player, fromTechId)
 
-	player.oneHive = false
+    player.oneHive = false
     player.twoHives = false
     player.threeHives = false
 
@@ -263,7 +280,7 @@ local function GestatePlayer(self, player, fromTechId)
     end
     newPlayer:SetCameraDistance(kGestateCameraDistance)
     
-    // Eliminate velocity so that we don't slide or jump as an egg
+    -- Eliminate velocity so that we don't slide or jump as an egg
     newPlayer:SetVelocity(Vector(0, 0, 0))
     
     newPlayer:DropToFloor()
@@ -283,12 +300,12 @@ function Egg:GetUnitNameOverride(viewer)
 
 end
 
-// Grab player out of respawn queue unless player passed in (for test framework)
-function Egg:SpawnPlayer(overrideplayer)
+-- Grab player out of respawn queue unless player passed in (for test framework)
+function Egg:SpawnPlayer(player)
 
     PROFILE("Egg:SpawnPlayer")
 
-    local queuedPlayer = overrideplayer
+    local queuedPlayer = player
     
     if not queuedPlayer or self.queuedPlayerId ~= nil then
         queuedPlayer = Shared.GetEntity(self.queuedPlayerId)
@@ -296,9 +313,14 @@ function Egg:SpawnPlayer(overrideplayer)
     
     if queuedPlayer ~= nil then
     
-        // Spawn player on top of egg
+        local queuedPlayer = player
+        if not queuedPlayer then
+            queuedPlayer = Shared.GetEntity(self.queuedPlayerId)
+        end
+    
+        -- Spawn player on top of egg
         local spawnOrigin = Vector(self:GetOrigin())
-        // Move down to the ground.
+        -- Move down to the ground.
         local _, normal = GetSurfaceAndNormalUnderEntity(self)
         if normal.y < 1 then
             spawnOrigin.y = spawnOrigin.y - (self:GetExtents().y / 2) + 1
@@ -308,15 +330,15 @@ function Egg:SpawnPlayer(overrideplayer)
 
         local gestationClass = self:GetClassToGestate()
         
-        // We must clear out queuedPlayerId BEFORE calling ReplaceRespawnPlayer
-        // as this will trigger OnEntityChange() which would requeue this player.
+        -- We must clear out queuedPlayerId BEFORE calling ReplaceRespawnPlayer
+        -- as this will trigger OnEntityChange() which would requeue this player.
         self.queuedPlayerId = nil
         
         local team = queuedPlayer:GetTeam()
         local success, player = team:ReplaceRespawnPlayer(queuedPlayer, spawnOrigin, queuedPlayer:GetAngles(), gestationClass)                
         player:SetCameraDistance(0)
         player:SetHatched()
-        // It is important that the player was spawned at the spot we specified.
+        -- It is important that the player was spawned at the spot we specified.
         assert(player:GetOrigin() == spawnOrigin)
         
         if success then
@@ -377,9 +399,9 @@ function Egg:GetIsFree()
     return self.queuedPlayerId == nil
 end
 
-/**
- * Eggs never sight nearby enemy players.
- */
+--
+-- Eggs never sight nearby enemy players.
+--
 function Egg:OverrideCheckVision()
     return false
 end
@@ -388,9 +410,8 @@ function Egg:GetHealthbarOffset()
     return 0.4
 end
 
-local kEngageOffset = Vector(0, 0.3, 0)
 function Egg:GetEngagementPointOverride()
-    return self:GetOrigin() + kEngageOffset
+    return self:GetOrigin() + Vector(0, 0.3, 0)
 end
 
 function Egg:InternalGetCanBeUsed(player)
@@ -403,7 +424,7 @@ end
 
 if Server then
 
-    // delete the egg to avoid invalid ID's and reset the player to spawn queue if one is occupying it
+    -- delete the egg to avoid invalid ID's and reset the player to spawn queue if one is occupying it
     function Egg:OnDestroy()
     
         local team = self:GetTeam()
@@ -411,7 +432,7 @@ if Server then
             team:OnEggDestroyed(self)
         end   
         
-        // Just in case there is a player waiting to spawn in this egg.
+        -- Just in case there is a player waiting to spawn in this egg.
         self:RequeuePlayer()
         
         ScriptActor.OnDestroy(self)
@@ -426,7 +447,7 @@ if Server then
     
     function Egg:OnEntityChange(entityId, newEntityId)
     
-        if self.queuedPlayerId == entityId then
+        if self.queuedPlayerId and self.queuedPlayerId == entityId then
             self:RequeuePlayer()
         end
         
@@ -440,6 +461,7 @@ function Egg:OnUpdateAnimationInput(modelMixin)
     
     modelMixin:SetAnimationInput("empty", self.empty)
     modelMixin:SetAnimationInput("built", true)
+    modelMixin:SetAnimationInput("spawned", self.spawned)
     
 end
 

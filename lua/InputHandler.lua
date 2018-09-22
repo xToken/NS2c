@@ -1,18 +1,18 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//
-// lua\InputHandler.lua
-//
-//    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
+--
+-- lua\InputHandler.lua
+--
+--    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-// The ConsoleBindings.lua ConsoleBindingsKeyPressed function is used below.
-// It is possible for the OnSendKeyEvent function below to be called
-// before ConsoleBindings.lua is loaded so make sure to load it here.
+-- The ConsoleBindings.lua ConsoleBindingsKeyPressed function is used below.
+-- It is possible for the OnSendKeyEvent function below to be called
+-- before ConsoleBindings.lua is loaded so make sure to load it here.
 Script.Load("lua/ConsoleBindings.lua")
 Script.Load("lua/menu/MouseTracker.lua")
 
-local keyEventBlocker = nil
+local keyEventBlocker
 local moveInputBlocked = false
 
 local _keyBinding =
@@ -34,7 +34,6 @@ local _keyBinding =
     Eject = InputKey.I,
     ShowMap = InputKey.C,
     VoiceChat = InputKey.LeftAlt,
-    LocalVoiceChat = InputKey.None,
     TextChat = InputKey.Y,
     TeamChat = InputKey.Return,
     Weapon1 = InputKey.Num1,
@@ -74,7 +73,6 @@ local _keyBinding =
     Grid10 = InputKey.C,
     Grid11 = InputKey.V,
     VoiceChatCom = InputKey.LeftAlt,
-    LocalVoiceChatCom = InputKey.None,
     TextChatCom = InputKey.Y,
     TeamChatCom = InputKey.Return,
     ShowMapCom = InputKey.C,
@@ -126,7 +124,7 @@ local _lastProcessedCommands = 0
 local _aggregatedMove = Vector(0, 0, 0)
 local _aggregatedHotKey = 0
 
-// Provide support for these functions that were removed from the API in Build 237
+-- Provide support for these functions that were removed from the API in Build 237
 function Client.SetYaw(yaw)
     _cameraYaw = yaw
 end
@@ -143,7 +141,7 @@ function Client.GetPitch()
     return _cameraPitch
 end
 
-// Provide support for these functions that were removed from the API in Build 237
+-- Provide support for these functions that were removed from the API in Build 237
 function Client.SetMouseSensitivityScalar(sensitivityScalar)
 
     _sensitivityScalarX = sensitivityScalar
@@ -171,18 +169,18 @@ function SetMoveInputBlocked(blocked)
     moveInputBlocked = blocked
 end
 
-/**
- * This will update the internal state to match the settings that have been
- * specified in the options. This function should be called when the options
- * have been updated.
- */
+--
+-- This will update the internal state to match the settings that have been
+-- specified in the options. This function should be called when the options
+-- have been updated.
+--
 function Input_SyncInputOptions()
     
-    // Sync the key bindings.
+    -- Sync the key bindings.
     for action, _ in pairs(_keyBinding) do
         local keyName = Client.GetOptionString( "input/" .. action, "" )
 
-        // The number keys are stored as 1, 2, etc. but the enum name is Num1, Num2, etc.        
+        -- The number keys are stored as 1, 2, etc. but the enum name is Num1, Num2, etc.
         if tonumber(keyName) then
             keyName = "Num" .. keyName
         end
@@ -200,7 +198,7 @@ function Input_SyncInputOptions()
         
     end
     
-    // Sync the acceleration and sensitivity.
+    -- Sync the acceleration and sensitivity.
     _mouseAccel = Client.GetOptionFloat("input/mouse/acceleration-amount", 1.0);
     if not Client.GetOptionBoolean("input/mouse/acceleration", false) then
         _mouseAccel = 1.0
@@ -208,14 +206,14 @@ function Input_SyncInputOptions()
 
 end
 
-/**
- * Adjusts the mouse movement to take into account the sensitivity setting and
- * and any mouse acceleration.
- */
+--
+-- Adjusts the mouse movement to take into account the sensitivity setting and
+-- and any mouse acceleration.
+--
 local function ApplyMouseAdjustments(amount, sensitivity)
     
-    // This value matches what the GoldSrc/Source engine uses, so that
-    // players can use the values they are familiar with.
+    -- This value matches what the GoldSrc/Source engine uses, so that
+    -- players can use the values they are familiar with.
     local rotateScale = 0.00038397243
     
     local sign = 1.0
@@ -227,16 +225,16 @@ local function ApplyMouseAdjustments(amount, sensitivity)
     
 end
 
-/**
- * Called by the engine whenever a key is pressed or released. Return true if
- * the event should be stopped here.
- */
+--
+-- Called by the engine whenever a key is pressed or released. Return true if
+-- the event should be stopped here.
+--
 local function OnSendKeyEvent(key, down, amount, repeated)
 
     local stop = MouseTracker_SendKeyEvent(key, down, amount, keyEventBlocker ~= nil)
     
-    if keyEventBlocker then
-        return keyEventBlocker:SendKeyEvent(key, down, amount)
+    if not stop and keyEventBlocker then
+        stop = keyEventBlocker:SendKeyEvent(key, down, amount)
     end
     
     if not stop then
@@ -261,19 +259,19 @@ local function OnSendKeyEvent(key, down, amount, repeated)
             elseif key == InputKey.MouseY then
             
                 local limit = math.pi / 2 + 0.0001
-                _cameraPitch = Math.Clamp(_cameraPitch + ApplyMouseAdjustments(amount, _sensitivityScalarY), -limit, limit)
+                _cameraPitch = Clamp(_cameraPitch + ApplyMouseAdjustments(amount, _sensitivityScalarY), -limit, limit)
                 
             end
             
         end
 
-        // need to handle mousewheel actions in another way, those use only key up events        
+        -- need to handle mousewheel actions in another way, those use only key up events
         if key == InputKey.MouseWheelDown or key == InputKey.MouseWheelUp then
         
             _keyState[key] = true
             _keyPressed[key] = 1
         
-        // Filter out the OS key repeat for our general movement (but we'll use it for GUI).
+        -- Filter out the OS key repeat for our general movement (but we'll use it for GUI).
         elseif not repeated then
         
             _keyState[key] = down
@@ -302,7 +300,7 @@ local function OnSendKeyEvent(key, down, amount, repeated)
     
 end
 
-// Return true if the event should be stopped here.
+-- Return true if the event should be stopped here.
 local function OnSendCharacterEvent(character)
 
     local stop = false
@@ -322,7 +320,7 @@ end
 
 local function AdjustMoveForInversion(move)
 
-    // Invert mouse if specified in options.
+    -- Invert mouse if specified in options.
     local invertMouse = Client.GetOptionBoolean(kInvertedMouseOptionsKey, false)
     if invertMouse then
         move.pitch = -move.pitch
@@ -394,7 +392,7 @@ local function GenerateMove()
             move.commands = bit.bor(move.commands, Move.ToggleSayings)
         end
 
-        // Ignore the normal keys when we are in overhead
+        -- Ignore the normal keys when we are in overhead
         if PlayerUI_IsOverhead() then
             if _keyPressed[ _keyBinding.OverHeadZoomIncrease ] then
                 move.commands = bit.bor(move.commands, Move.SelectNextWeapon)
@@ -460,7 +458,7 @@ local function GenerateMove()
             move.commands = bit.bor(move.commands, Move.Taunt)
         end
         
-        // Handle the hot keys used for commander mode.
+        -- Handle the hot keys used for commander mode.
         
         if _keyPressed[ _keyBinding.Q ] then
             move.hotkey = Move.Q
@@ -566,7 +564,7 @@ local function GenerateMove()
             move.hotkey = Move.ESC
         end
         
-        // Allow the player to override move (needed for Commander)
+        -- Allow the player to override move (needed for Commander)
         local player = Client.GetLocalPlayer()
         if player and Client.GetIsControllingPlayer() then
             move = player:OverrideInput(move)
@@ -581,7 +579,6 @@ local function GenerateMove()
     return move
     
 end
-require("jit").off(GenerateMove)
 
 local function ChangeIfNonZero(old,new)
     return new ~= 0 and new or old
@@ -596,7 +593,7 @@ local function AggregateMove(move)
     _aggregatedMove.y = ChangeIfNonZero(_aggregatedMove.y, move.move.y)
     _aggregatedMove.z = ChangeIfNonZero(_aggregatedMove.z, move.move.z)
     
-    // Detect changes in the commands
+    -- Detect changes in the commands
     local changedCommands = bit.bxor( _lastProcessedCommands, _aggregatedCommands )
     _aggregatedCommands = bit.bor(
             bit.band( _aggregatedCommands, changedCommands ), 
@@ -614,7 +611,7 @@ local function OnProcessGameInput()
     local move = GenerateMove()
     AggregateMove(move)
     
-    // Apply the buffered input.
+    -- Apply the buffered input.
     
     move.move     = _aggregatedMove
     move.commands = _aggregatedCommands

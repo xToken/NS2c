@@ -1,21 +1,21 @@
-//=============================================================================
-//
-// lua\Weapons\Marine\Tracer_Client.lua
-//
-// Created by Charlie Cleveland (charlie@unknownworlds.com)
-// Copyright (c) 2011, Unknown Worlds Entertainment, Inc.
-//
-// A client-side tracer object that disappears when it hits anything.
-//
-//=============================================================================
+--=============================================================================
+--
+-- lua\Weapons\Marine\Tracer_Client.lua
+--
+-- Created by Charlie Cleveland (charlie@unknownworlds.com)
+-- Copyright (c) 2011, Unknown Worlds Entertainment, Inc.
+--
+-- A client-side tracer object that disappears when it hits anything.
+--
+--=============================================================================
 
 class 'Tracer'
 
 Tracer.kMapName             = "tracer"
 
 kDefaultTracerEffectName = PrecacheAsset("cinematics/marine/tracer.cinematic")
-//NS2c
-//HMG uses Minigun tracers
+-- NS2c
+-- HMG uses Minigun tracers
 kHeavyMachineGunTracerEffectName = PrecacheAsset("cinematics/marine/exo_tracer.cinematic")
 kMinigunTracerEffectName = PrecacheAsset("cinematics/marine/exo_tracer.cinematic")
 kRailgunTracerEffectName = PrecacheAsset("cinematics/marine/railgun/tracer.cinematic")
@@ -96,7 +96,7 @@ function BuildTracer(startPoint, endPoint, velocity, effectName, residueEffectNa
     tracer.startPoint = Vector(0, 0, 0)
     VectorCopy(startPoint, tracer.startPoint)
     
-    // Calculate how long we should live so we can animate to that target
+    -- Calculate how long we should live so we can animate to that target
     tracer.lifetime = (endPoint - startPoint):GetLength() / velocity:GetLength()
     tracer.timePassed = 0
     

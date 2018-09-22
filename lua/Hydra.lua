@@ -1,20 +1,21 @@
-// ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
-//
-// lua\Hydra.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// Structure droppable by Gorge that attacks enemy targets with clusters of shards. Can be built
-// on walls.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2012, Unknown Worlds Entertainment, Inc. All rights reserved. =====
+--
+-- lua\Hydra.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- Structure droppable by Gorge that attacks enemy targets with clusters of shards. Can be built
+-- on walls.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed some uneeded mixins, infestation requirements
+-- NS2c
+-- Removed some uneeded mixins, infestation requirements
 
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
+Script.Load("lua/AchievementGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
@@ -49,8 +50,8 @@ Hydra.kAnimationGraph = PrecacheAsset("models/alien/hydra/hydra.animation_graph"
 
 Hydra.kSpikeSpeed = 50
 Hydra.kSpread = Math.Radians(12)
-Hydra.kTargetVelocityFactor = 2.0 // Don't always hit very fast moving targets (jetpackers).
-Hydra.kRange = 17.78              // From NS1 (also "alert" range)
+Hydra.kTargetVelocityFactor = 2.0 -- Don't always hit very fast moving targets (jetpackers).
+Hydra.kRange = 17.78              -- From NS1 (also "alert" range)
 Hydra.kDamage = kHydraDamage
 Hydra.kAlertCheckInterval = 2
 Hydra.kFov = 360
@@ -69,6 +70,7 @@ local networkVars =
 }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(FlinchMixin, networkVars)
@@ -95,6 +97,7 @@ function Hydra:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
+    InitMixin(self, AchievementGiverMixin)
     InitMixin(self, SelectableMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, CloakableMixin)
@@ -115,6 +118,20 @@ function Hydra:OnCreate()
 	
 end
 
+function Hydra_EntityFilterTwoAndIsaTwo(entity1, entity2, classnameA, classnameB)
+    return function (test)
+        return test == entity1 or test == entity2 or test:isa(classnameA) or test:isa(classnameB)
+    end
+end
+
+function Hydra:TargetCheckFilter()
+    -- Hydras don't block each others LOS
+    return function(target, targetPoint)
+        return GetCanSeeEntity(self, target, true, Hydra_EntityFilterTwoAndIsaTwo(self, target, "Weapon", "Hydra"))
+    end
+
+end
+
 function Hydra:OnInitialized()
 
     if Server then
@@ -125,19 +142,20 @@ function Hydra:OnInitialized()
        
         self:SetUpdates(true)
         
-        // TargetSelectors require the TargetCacheMixin for cleanup.
+        -- TargetSelectors require the TargetCacheMixin for cleanup.
         InitMixin(self, TargetCacheMixin)
         
         self.targetSelector = TargetSelector():Init(
                 self,
-                Hydra.kRange, 
-                true,
-                { kAlienStaticTargets, kAlienMobileTargets })   
-        
-        
+                Hydra.kRange,
+                false, -- Checked with a GetCanAttackEntity() call filtering out hydras too
+                { kAlienStaticTargets, kAlienMobileTargets },
+                { self.TargetCheckFilter(self) })
+
+
         InitMixin(self, SleeperMixin)
         
-        // This Mixin must be inited inside this OnInitialized() function.
+        -- This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end
@@ -248,9 +266,9 @@ function Hydra:GetEyePos()
     return self:GetOrigin() + self:GetViewOffset()
 end
 
-/**
- * Put the eye up roughly 100 cm.
- */
+--
+-- Put the eye up roughly 100 cm.
+--
 function Hydra:GetViewOffset()
     return self:GetCoords().yAxis * 1
 end
@@ -276,9 +294,8 @@ function Hydra:OnAdjustModelCoords(modelCoords)
     return coords
 end
 
-local kEngageOffset = Vector(0, 0.4, 0)
 function Hydra:GetEngagementPointOverride()
-    return self:GetOrigin() + kEngageOffset
+    return self:GetOrigin() + Vector(0, 0.4, 0)
 end
 
 Shared.LinkClassToMap("Hydra", Hydra.kMapName, networkVars)

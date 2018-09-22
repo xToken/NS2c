@@ -10,6 +10,11 @@
 
 //NS2c
 //Restructured this file heavily, attempted to remove all unused vars
+
+--Time interval allowed for healing to be clamped
+kHealingClampInterval = 2
+kHealingClampMaxHPAmount = 0.2
+kHealingClampReductionScalar = 0.2
 		
 // HEALTH AND ARMOR		
 kMarineHealth = 100	     kMarineArmor = 30	    kMarinePointValue = 2

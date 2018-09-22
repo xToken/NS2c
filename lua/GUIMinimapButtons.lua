@@ -1,13 +1,13 @@
 
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GUIMinimapButtons.lua
-//
-// Created by: Andreas Urwalek (andi@unknownworlds.com)
-//
-// Buttons for minimap action (commander ping).
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GUIMinimapButtons.lua
+--
+-- Created by: Andreas Urwalek (andi@unknownworlds.com)
+--
+-- Buttons for minimap action (commander ping).
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/GUIScript.lua")
 
@@ -50,7 +50,7 @@ function GUIMinimapButtons:OnResolutionChanged(oldX, oldY, newX, newY)
 end
 
 function GUIMinimapButtons:Initialize()
-    
+
     UpdateItemsGUIScale(self)
     self.teamType = PlayerUI_GetTeamType()
     self.background = GetGUIManager():CreateGraphicItem()

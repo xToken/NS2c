@@ -1,18 +1,19 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\PhaseGate.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) 
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\PhaseGate.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed some unneeded mixins.
-//These used to require using but that seemed to confused players - Not sure what is best atm
+-- NS2c
+-- Removed some unneeded mixins.
+-- These used to require using but that seemed to confused players - Not sure what is best atm
 
 Script.Load("lua/Mixins/ModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
+Script.Load("lua/AchievementGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/FlinchMixin.lua")
@@ -40,20 +41,20 @@ Script.Load("lua/ParasiteMixin.lua")
 Script.Load("lua/SleeperMixin.lua")
 
 local kAnimationGraph = PrecacheAsset("models/marine/phase_gate/phase_gate.animation_graph")
-local kPhaseSound = PrecacheAsset("sound/NS2.fev/marine/structures/phase_gate_teleport")
+--local kPhaseSound = PrecacheAsset("sound/NS2.fev/marine/structures/phase_gate_teleport")
 
 local kPhaseGatePushForce = 500
 
-// Offset about the phase gate origin where the player will spawn
+-- Offset about the phase gate origin where the player will spawn
 local kSpawnOffset = Vector(0, 0.1, 0)
 
-// Transform angles, view angles and velocity from srcCoords to destCoords (when going through phase gate)
+-- Transform angles, view angles and velocity from srcCoords to destCoords (when going through phase gate)
 local function TransformPlayerCoordsForPhaseGate(player, srcCoords, dstCoords)
 
     local viewCoords = player:GetViewCoords()
     
-    // If we're going through the backside of the phase gate, orient us
-    // so we go out of the front side of the other gate.
+    -- If we're going through the backside of the phase gate, orient us
+    -- so we go out of the front side of the other gate.
     if Math.DotProduct(viewCoords.zAxis, srcCoords.zAxis) < 0 then
     
         srcCoords.zAxis = -srcCoords.zAxis
@@ -61,7 +62,7 @@ local function TransformPlayerCoordsForPhaseGate(player, srcCoords, dstCoords)
         
     end
     
-    // Redirect player velocity relative to gates
+    -- Redirect player velocity relative to gates
     local invSrcCoords = srcCoords:GetInverse()
     local invVel = invSrcCoords:TransformVector(player:GetVelocity())
     local newVelocity = dstCoords:TransformVector(invVel)
@@ -71,6 +72,7 @@ local function TransformPlayerCoordsForPhaseGate(player, srcCoords, dstCoords)
     local viewAngles = Angles()
     viewAngles:BuildFromCoords(viewCoords)
     
+    player:SetBaseViewAngles(Angles(0,0,0))
     player:SetViewAngles(viewAngles)
     
 end
@@ -83,7 +85,7 @@ local function GetDestinationOrigin(origin, direction, player, phaseGate, extent
         extents = Vector(0.17, 0.2, 0.17)
     end
 
-    // check at first a desired spawn, if that one is free we use that
+    -- check at first a desired spawn, if that one is free we use that
     if GetHasRoomForCapsule(extents, origin + capusuleOffset, CollisionRep.Default, PhysicsMask.AllButPCsAndRagdolls, phaseGate) then
         return origin
     end
@@ -110,9 +112,11 @@ PhaseGate.kMapName = "phasegate"
 
 PhaseGate.kModelName = PrecacheAsset("models/marine/phase_gate/phase_gate.model")
 
+PhaseGate.kRelevancyPortalRadius = 15.0
+
 local kUpdateInterval = 0.1
 
-// Can only teleport a player every so often
+-- Can only teleport a player every so often
 local kDepartureRate = 0.5
 local kPlayerPhaseRate = 1.5
 
@@ -125,6 +129,7 @@ local networkVars =
     phase = "boolean",
     deployed = "boolean",
     destLocationId = "entityid",
+    targetYaw = "float (-3.14159265 to 3.14159265 by 0.003)",
     timeOfLastPhase = "time",
     destinationEndpoint = "position"
 }
@@ -159,6 +164,7 @@ function PhaseGate:OnCreate()
     InitMixin(self, FlinchMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
+    InitMixin(self, AchievementGiverMixin)
     InitMixin(self, SelectableMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, LOSMixin)
@@ -180,7 +186,7 @@ function PhaseGate:OnCreate()
         InitMixin(self, CommanderGlowMixin)
     end
     
-    // Compute link state on server and propagate to client for looping effects
+    -- Compute link state on server and propagate to client for looping effects
     self.linked = false
     self.phase = false
     self.deployed = false
@@ -192,6 +198,8 @@ function PhaseGate:OnCreate()
     self:SetLagCompensated(false)
     self:SetPhysicsType(PhysicsType.Kinematic)
     self:SetPhysicsGroup(PhysicsGroup.BigStructuresGroup)
+    
+    self.relevancyPortalIndex = -1 -- invalid index = no relevancyPortal.
     
 end
 
@@ -206,13 +214,16 @@ function PhaseGate:OnInitialized()
     if Server then
     
         self:AddTimedCallback(PhaseGate.Update, kUpdateInterval)
-        // This Mixin must be inited inside this OnInitialized() function.
+        self.timeOfLastPhase = nil
+        -- This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end
         
         InitMixin(self, StaticTargetMixin)
         InitMixin(self, MinimapConnectionMixin)
+
+        self.performedPhaseLastUpdate = false
     
     elseif Client then
     
@@ -221,6 +232,21 @@ function PhaseGate:OnInitialized()
     end
     
     InitMixin(self, IdleMixin)
+    
+end
+
+local function DestroyRelevancyPortal(self)
+    if self.relevancyPortalIndex ~= -1 then
+        Server.DestroyRelevancyPortal(self.relevancyPortalIndex)
+        self.relevancyPortalIndex = -1
+    end
+end
+
+function PhaseGate:OnDestroy()
+    
+    ScriptActor.OnDestroy(self)
+    
+    DestroyRelevancyPortal(self)
     
 end
 
@@ -239,7 +265,7 @@ function PhaseGate:GetTechButtons(techId)
     
 end
 
-// Temporarily don't use "target" attach point
+-- Temporarily don't use "target" attach point
 local kPhaseGateEngagementPointOffset = Vector(0, 0.1, 0)
 function PhaseGate:GetEngagementPointOverride()
     return self:GetOrigin() + kPhaseGateEngagementPointOffset
@@ -255,7 +281,7 @@ end
 
 function PhaseGate:GetEffectParams(tableParams)
 
-    // Override active field here to mean "linked"
+    -- Override active field here to mean "linked"
     tableParams[kEffectFilterActive] = self.linked
     
 end
@@ -292,10 +318,10 @@ function PhaseGate:OnUse(player, elapsedTime, useSuccessTable)
 	end
 end
 
-// Returns next phase gate in round-robin order. Returns nil if there are no other built/active phase gates
+-- Returns next phase gate in round-robin order. Returns nil if there are no other built/active phase gates
 local function GetDestinationGate(self)
 
-    // Find next phase gate to teleport to
+    -- Find next phase gate to teleport to
     local phaseGates = {}    
     for index, phaseGate in ipairs( GetEntitiesForTeam("PhaseGate", self:GetTeamNumber()) ) do
         if GetIsUnitActive(phaseGate) then
@@ -303,17 +329,17 @@ local function GetDestinationGate(self)
         end
     end    
     
-    if table.count(phaseGates) < 2 then
+    if table.icount(phaseGates) < 2 then
         return nil
     end
     
-    // Find our index and add 1
+    -- Find our index and add 1
     local index = table.find(phaseGates, self)
     if (index ~= nil) then
     
-        local nextIndex = ConditionalValue(index == table.count(phaseGates), 1, index + 1)
+        local nextIndex = ConditionalValue(index == table.icount(phaseGates), 1, index + 1)
         ASSERT(nextIndex >= 1)
-        ASSERT(nextIndex <= table.count(phaseGates))
+        ASSERT(nextIndex <= table.icount(phaseGates))
         return phaseGates[nextIndex]
         
     end
@@ -350,22 +376,26 @@ function PhaseGate:Phase(user)
     if self.linked and not GetAreEnemies(self, user) and destinationPhaseGate and GetIsUnitActive(destinationPhaseGate) and destinationPhaseGate:GetIsPhaseReady() and userPhaseTime + kPlayerPhaseRate < time then
 
         destinationPhaseGate:OnIncomingPhase()
-        // Don't bother checking if destination is clear, rely on pushing away entities
-        user:TriggerEffects("phase_gate_player_enter")        
-        user:TriggerEffects("teleport")
-        
-        StartSoundEffectAtOrigin(kPhaseSound, self:GetOrigin())
 
-		local destinationCoords = Angles(0, destinationPhaseGate:GetAngles().yaw, 0):GetCoords()
+        local destinationCoords = Angles(0, self.targetYaw, 0):GetCoords()
         destinationCoords.origin = self.destinationEndpoint
         
+        user:OnPhaseGateEntry(self.destinationEndpoint) --McG: Obsolete for PGs themselves, but required for Achievements
+        
         TransformPlayerCoordsForPhaseGate(user, self:GetCoords(), destinationCoords)
+        
+        -- Fix view angle for players using inverted mouse
+        if Client and Client.GetOptionBoolean(kInvertedMouseOptionsKey, false) then
+            local angles = user:GetViewAngles()
+            angles.pitch = -angles.pitch
+            user:SetViewAngles(angles)
+        end
 
         user:SetOrigin(self.destinationEndpoint)
-        // trigger exit effect at destination
-        user:TriggerEffects("phase_gate_player_exit")
-        
-        StartSoundEffectAtOrigin(kPhaseSound, destinationCoords.origin)
+
+        --Mark PG to trigger Phase/teleport FX next update loop. This does incure a _slight_ delay in FX but it's worth it
+        --to remove the need for the plyaer-centric 2D sound, and simplify effects definitions
+        self.performedPhaseLastUpdate = true
 
         self.timeOfLastPhase = time
         user.timeOfLastPhase = time
@@ -386,24 +416,57 @@ if Server then
 
     function PhaseGate:Update()
     
+        local destinationPhaseGate = GetDestinationGate(self)
+
+        if self.performedPhaseLastUpdate then
+            self:TriggerEffects("phase_gate_player_teleport", { effecthostcoords = self:GetCoords() })
+
+            if destinationPhaseGate ~= nil then
+            --Force destination gate to trigger effect so the teleporting FX is not visible to enemy with sight on self
+                local destinationCoords = Angles(0, self.targetYaw, 0):GetCoords()
+                destinationCoords.origin = self.destinationEndpoint
+                destinationPhaseGate:TriggerEffects("phase_gate_player_teleport", { effecthostcoords = destinationCoords })
+            end
+
+            self.performedPhaseLastUpdate = false
+        end
+
         self.phase = (self.timeOfLastPhase ~= nil) and (Shared.GetTime() < (self.timeOfLastPhase + kDepartureRate))
 
-        local destinationPhaseGate = GetDestinationGate(self)
-        if destinationPhaseGate ~= nil and GetIsUnitActive(self) and self.deployed and destinationPhaseGate.deployed and self:GetIsPhaseReady() then        
+        if destinationPhaseGate ~= nil and GetIsUnitActive(self) and self.deployed and destinationPhaseGate.deployed and self:GetIsPhaseReady() then  
         
             self.destinationEndpoint = destinationPhaseGate:GetOrigin()
             self.linked = true
             self.timeLinkedChanged = Shared.GetTime()
+            self.targetYaw = destinationPhaseGate:GetAngles().yaw
             self.destLocationId = ComputeDestinationLocationId(self, destinationPhaseGate)
+            
+            if self.relevancyPortalIndex == -1 then
+                -- Create a relevancy portal to the destination to smooth out entity propagation.
+                local mask = 0
+                local teamNumber = self:GetTeamNumber()
+                if teamNumber == 1 then
+                    mask = kRelevantToTeam1Unit
+                elseif teamNumber == 2 then
+                    mask = kRelevantToTeam2Unit
+                end
+                
+                if mask ~= 0 then
+                    self.relevancyPortalIndex = Server.CreateRelevancyPortal(self:GetOrigin(), self.destinationEndpoint, mask, self.kRelevancyPortalRadius)
+                end
+            end
             
         else
             self.linked = false
             self.timeLinkedChanged = Shared.GetTime()
+            self.targetYaw = 0
             self.destLocationId = Entity.invalidId
+            
+            DestroyRelevancyPortal(self)
         end
         
         if self:GetIsPhaseReady() and GetIsUnitActive(self) then
-            //Auto phase
+            -- Auto phase
             for _, marine in ipairs(GetEntitiesForTeamWithinRange("Marine", self:GetTeamNumber(), self:GetOrigin(), 0.5)) do
                 local client = Server.GetOwner(marine)
                 if (client and client:GetIsVirtual() or not kPhaseGatesRequireUse) and self:Phase(marine) then                
@@ -450,7 +513,7 @@ function PhaseGate:OnUpdateRender()
         self.clientLinked = self.linked
         
         local effects = ConditionalValue(self.linked and self:GetIsVisible(), "phase_gate_linked", "phase_gate_unlinked")
-        self:TriggerEffects(effects)
+        self:TriggerEffects(effects) --FIXME This is really wasteful
         
     end
 

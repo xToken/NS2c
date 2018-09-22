@@ -1,10 +1,10 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\WeaponOwnerMixin.lua    
-//    
-//    Created by:   Brian Cronin (brianc@unknownworlds.com)    
-//    
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\WeaponOwnerMixin.lua
+--
+--    Created by:   Brian Cronin (brianc@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 WeaponOwnerMixin = CreateMixin(WeaponOwnerMixin)
 WeaponOwnerMixin.type = "WeaponOwner"
@@ -25,6 +25,12 @@ WeaponOwnerMixin.expectedConstants =
 }
 
 local kMaxWeaponsWeight = 0.3
+-- workaround for there being no way to detect client-side when a weapon is added/removed.
+-- polling number of children would fail if a weapon is swapped within a single update.
+-- any time a weapon is added or removed, we add 1 to this counter, wrapping around to 0.
+-- then on the client, we just poll this value, and compare to our client-only value to see
+-- if it has changed.
+local kMaxInventoryUpdatesCount = 8
 
 WeaponOwnerMixin.networkVars =
 {
@@ -32,16 +38,20 @@ WeaponOwnerMixin.networkVars =
     activeWeaponId = "entityid",
     timeOfLastWeaponSwitch = "private time",
     weaponsWeight = "float (0 to " .. kMaxWeaponsWeight .. " by 0.001)",
-    quickSwitchSlot = "private integer (0 to 10)"
+    quickSwitchSlot = "private integer (0 to 10)",
+    inventoryUpdateId = "integer (0 to "..(kMaxInventoryUpdatesCount-1)..")",
 }
 
 function WeaponOwnerMixin:__initmixin()
-
+    
+    PROFILE("WeaponOwnerMixin:__initmixin")
+    
     self.processMove = true
     self.activeWeaponId = Entity.invalidId
     self.timeOfLastWeaponSwitch = 0
     self.weaponsWeight = 0
     self.quickSwitchSlot = 1
+    self.inventoryUpdateId = 0
     
 end
 
@@ -68,11 +78,11 @@ function WeaponOwnerMixin:GetWeapons()
 
 end
 
-//NS2c
-//Changed to global as weapons will now call this also.
+-- NS2c
+-- Changed to global as weapons will now call this also.
 function WeaponOwnerMixin:UpdateWeaponWeights()
 
-    // Loop through all weapons, getting weight of each one
+    -- Loop through all weapons, getting weight of each one
     local totalWeight = 0
     
     local activeWeapon = self:GetActiveWeapon()
@@ -95,10 +105,10 @@ end
 
 function WeaponOwnerMixin:ProcessMoveOnWeapons(input)
 
-    // Don't update weapon if set to false (commander mode).
+    -- Don't update weapon if set to false (commander mode).
     if self.processMove then
         
-        // Call ProcessMove on only the active weapon.
+        -- Call ProcessMove on only the active weapon.
         local activeWeapon = self:GetActiveWeapon()
         if activeWeapon then
         
@@ -114,9 +124,9 @@ function WeaponOwnerMixin:ProcessMoveOnWeapons(input)
     
 end
 
-/**
- * Sorter used in WeaponOwnerMixin:GetHUDOrderedWeaponList().
- */
+--
+-- Sorter used in WeaponOwnerMixin:GetHUDOrderedWeaponList().
+--
 local function WeaponSorter(weapon1, weapon2)
     return weapon2:GetHUDSlot() > weapon1:GetHUDSlot()
 end
@@ -141,11 +151,11 @@ function WeaponOwnerMixin:GetHUDOrderedWeaponList()
     
 end
 
-// Returns true if we switched to weapon or if weapon is already active. Returns false if we 
-// don't have that weapon.
+-- Returns true if we switched to weapon or if weapon is already active. Returns false if we
+-- don't have that weapon.
 function WeaponOwnerMixin:SetActiveWeapon(weaponMapName, keepQuickSwitchSlot)
-
-    local foundWeapon = nil
+    
+    local foundWeapon
     for i = 0, self:GetNumChildren() - 1 do
     
         local child = self:GetChildAtIndex(i)
@@ -184,13 +194,13 @@ function WeaponOwnerMixin:SetActiveWeapon(weaponMapName, keepQuickSwitchSlot)
                 end
 
                 if hudSlot > 0 and not keepQuickSwitchSlot then
-                    //DebugPrint("setting prev hud slot to %d, %s", hudSlot, Script.CallStack())
+                    --DebugPrint("setting prev hud slot to %d, %s", hudSlot, Script.CallStack())
                     self.quickSwitchSlot = hudSlot
                 end
                 
             end
             
-            // Set active first so proper anim plays
+            -- Set active first so proper anim plays
             self.activeWeaponId = newWeapon:GetId()
             
             newWeapon:OnDraw(self, previousWeaponName)
@@ -240,7 +250,7 @@ function WeaponOwnerMixin:SetQuickSwitchTarget(weaponMapName)
 end
 
 function WeaponOwnerMixin:QuickSwitchWeapon()
-    //DebugPrint("switching to hud slot %d", self.quickSwitchSlot)
+    --DebugPrint("switching to hud slot %d", self.quickSwitchSlot)
     self:SwitchWeapon(self.quickSwitchSlot)
 end
 
@@ -254,9 +264,7 @@ end
 
 function WeaponOwnerMixin:SwitchWeapon(hudSlot)
 
-    local success = false
-    
-    local foundWeapon = nil
+    local foundWeapon
     for i = 0, self:GetNumChildren() - 1 do
     
         local child = self:GetChildAtIndex(i)
@@ -269,7 +277,8 @@ function WeaponOwnerMixin:SwitchWeapon(hudSlot)
         end
         
     end
-    
+
+    local success = false
     if foundWeapon then
         success = self:SetActiveWeapon(foundWeapon:GetMapName())
     end
@@ -294,11 +303,11 @@ function WeaponOwnerMixin:SelectNextWeaponInDirection(direction)
         
     end
     
-    local numWeapons = table.count(weaponList)
+    local numWeapons = table.icount(weaponList)
     if numWeapons > 0 then
     
         local newIndex = activeIndex + direction
-        // Handle wrap around.
+        -- Handle wrap around.
         if newIndex > numWeapons then
             newIndex = 1
         elseif newIndex < 1 then
@@ -328,13 +337,13 @@ function WeaponOwnerMixin:GetActiveWeaponId()
     return self.activeWeaponId
 end
 
-/**
- * Checks to see if self already has a weapon with the passed in map name.
- * Returns this weapon if it exists, nil otherwise.
- */
+--
+-- Checks to see if self already has a weapon with the passed in map name.
+-- Returns this weapon if it exists, nil otherwise.
+--
 function WeaponOwnerMixin:GetWeapon(weaponMapName)
 
-    local found = nil
+    local found
     for i = 0, self:GetNumChildren() - 1 do
     
         local child = self:GetChildAtIndex(i)
@@ -352,10 +361,10 @@ function WeaponOwnerMixin:GetWeapon(weaponMapName)
 
 end
 
-/**
- * Checks to see if self already has a weapon in the passed in HUD slot.
- * Returns this weapon if it exists, nil otherwise.
- */
+--
+-- Checks to see if self already has a weapon in the passed in HUD slot.
+-- Returns this weapon if it exists, nil otherwise.
+--
 function WeaponOwnerMixin:GetWeaponInHUDSlot(slot)
 
     for i = 0, self:GetNumChildren() - 1 do
@@ -389,11 +398,11 @@ function WeaponOwnerMixin:SetHUDSlotActive(slot)
 end
 
 function WeaponOwnerMixin:AddWeapon(weapon, setActive)
-
+    
     assert(weapon:GetParent() ~= self)
 
-    // Remove any existing weapon that shares the HUD slot to the
-    // incoming weapon.
+    -- Remove any existing weapon that shares the HUD slot to the
+    -- incoming weapon.
     local hasWeapon = self:GetWeaponInHUDSlot(weapon:GetHUDSlot())
     if hasWeapon then
     
@@ -410,7 +419,7 @@ function WeaponOwnerMixin:AddWeapon(weapon, setActive)
     weapon:SetParent(self)
     weapon:SetOrigin(Vector.origin)
     
-    // The weapon no longer belongs to the world once a weapon owner has it.
+    -- The weapon no longer belongs to the world once a weapon owner has it.
     if Server then
         weapon:SetWeaponWorldState(false)
     end
@@ -426,8 +435,8 @@ function WeaponOwnerMixin:AddWeapon(weapon, setActive)
         
     else
     
-        // SetActiveWeapon() will update the weight but
-        // it must be manually called if SetActiveWeapon is not called.
+        -- SetActiveWeapon() will update the weight but
+        -- it must be manually called if SetActiveWeapon is not called.
         self:UpdateWeaponWeights()
         
     end
@@ -435,6 +444,8 @@ function WeaponOwnerMixin:AddWeapon(weapon, setActive)
     if self.OnWeaponAdded then
         self:OnWeaponAdded(weapon)
     end
+    
+    self.inventoryUpdateId = (self.inventoryUpdateId + 1) % kMaxInventoryUpdatesCount
     
     return hasWeapon
     
@@ -444,7 +455,7 @@ function WeaponOwnerMixin:RemoveWeapon(weapon)
 
     assert(weapon:GetParent() == self)
     
-    // Switch weapons if we're dropping our current weapon
+    -- Switch weapons if we're dropping our current weapon
     local activeWeapon = self:GetActiveWeapon()
     local removingActive = weapon == activeWeapon
     
@@ -458,6 +469,7 @@ function WeaponOwnerMixin:RemoveWeapon(weapon)
     end
     
     self:UpdateWeaponWeights()
+    self.inventoryUpdateId = (self.inventoryUpdateId + 1) % kMaxInventoryUpdatesCount
     
 end
 
@@ -465,7 +477,7 @@ function WeaponOwnerMixin:DestroyWeapons()
 
     self.activeWeaponId = Entity.invalidId
 
-    for i, weapon in ipairs(self:GetWeapons()) do
+    for _, weapon in ipairs(self:GetWeapons()) do
         DestroyEntity(weapon)
     end
 
@@ -475,6 +487,14 @@ function WeaponOwnerMixin:UpdateClientEffects(deltaTime, isLocal)
 
     if not self.lastActiveWeaponId then
         self.lastActiveWeaponId =  self:GetActiveWeaponId()
+    end
+    
+    -- There is currently no way for the client to be notified about changes in children.
+    -- So we poll for differences in a stored, arbitrary "inventoryUpdateId", which changes
+    -- server-side whenever a weapon is added/removed.
+    if isLocal and self.inventoryUpdateId ~= self.inventoryUpdateIdClient then
+        self.inventoryUpdateIdClient = self.inventoryUpdateId
+        HelpScreen_ForceUpdate()
     end
     
     local activeWeaponId = self:GetActiveWeaponId()
@@ -490,7 +510,7 @@ function WeaponOwnerMixin:UpdateClientEffects(deltaTime, isLocal)
             local activeWeapon = self:GetActiveWeapon()
             if activeWeapon then
                 activeWeapon:OnDrawClient()
-            end    
+            end
             
         end
         

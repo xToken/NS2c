@@ -1,12 +1,12 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\AlienWeaponEffects.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\AlienWeaponEffects.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-// Debug with: {player_cinematic = "cinematics/locateorigin.cinematic"},
+-- Debug with: {player_cinematic = "cinematics/locateorigin.cinematic"},
 
 kAlienWeaponEffects =
 {
@@ -59,18 +59,18 @@ kAlienWeaponEffects =
         {
             {sound = "", silenceupgrade = true, done = true},
             
-            //{player_sound = "sound/ns2c.fev/ns2c/alien/lerk/bite", attach_point = "Bip01_Head", surface = "structure", done = true},
+            --{player_sound = "sound/ns2c.fev/ns2c/alien/lerk/bite", attach_point = "Bip01_Head", surface = "structure", done = true},
             {player_sound = "sound/ns2c.fev/ns2c/alien/lerk/bite2", attach_point = "Bip01_Head"},
-            //{player_sound = "sound/NS2.fev/alien/lerk/bite", attach_point = "Bip01_Head"},
+            --{player_sound = "sound/NS2.fev/alien/lerk/bite", attach_point = "Bip01_Head"},
         },
     },
     
-    // Leap
+    -- Leap
     leap =
     {
         biteAltAttackEffects = 
         {
-            // TODO: Take volume or hasLeap
+            -- TODO: Take volume or hasLeap
             {sound = "", silenceupgrade = true, done = true},
             
             {player_sound = "sound/NS2.fev/alien/skulk/bite_alt"},
@@ -137,7 +137,7 @@ kAlienWeaponEffects =
     {
         sprayFireEffects = 
         {
-            // Use player_cinematic because at world position, not attach_point
+            -- Use player_cinematic because at world position, not attach_point
             {player_cinematic = "cinematics/alien/gorge/healthspray.cinematic"},
             {viewmodel_cinematic = "cinematics/alien/gorge/healthspray_view.cinematic", attach_point = "gorge_view_root"},
             {sound = "", silenceupgrade = true, done = true}, 
@@ -151,8 +151,8 @@ kAlienWeaponEffects =
         {   
             {player_sound = "", silenceupgrade = true, done = true}, 
             {player_sound = "sound/ns2c.fev/ns2c/alien/fade/acidrocket_fire"},
-            //{player_sound = "sound/NS2.fev/alien/gorge/spit"},
-            //{cinematic = "cinematics/alien/gorge/spit_fire.cinematic"},
+            --{player_sound = "sound/NS2.fev/alien/gorge/spit"},
+            --{cinematic = "cinematics/alien/gorge/spit_fire.cinematic"},
         },
     },
 
@@ -170,7 +170,7 @@ kAlienWeaponEffects =
         bilebombHitEffects = 
         {
             
-            // TODO: Change to something else
+            -- TODO: Change to something else
             {cinematic = "cinematics/alien/gorge/bilebomb_impact.cinematic"},
             {parented_sound = "sound/NS2.fev/alien/gorge/bilebomb_hit", done = true},
         },
@@ -181,13 +181,13 @@ kAlienWeaponEffects =
         acidrocketHitEffects = 
         {
             
-            // TODO: Change to something else
+            -- TODO: Change to something else
             {cinematic = "cinematics/alien/gorge/bilebomb_impact.cinematic"},
             {parented_sound = "sound/ns2c.fev/ns2c/alien/fade/acidrocket_hit", done = true},
         },
     },
     
-    // When creating a structure
+    -- When creating a structure
     gorge_create =
     {
         gorgeCreateEffects =
@@ -254,7 +254,7 @@ kAlienWeaponEffects =
             {player_sound = "", silenceupgrade = true, done = true}, 
             {player_sound = "sound/ns2c.fev/ns2c/alien/lerk/spore_fire"},
         },
-    },    
+    },
 
     umbra_attack =
     {
@@ -264,7 +264,7 @@ kAlienWeaponEffects =
             {viewmodel_cinematic = "cinematics/alien/lerk/umbra_view_fire.cinematic", attach_point = "fxnode_hole_left"},
             {viewmodel_cinematic = "cinematics/alien/lerk/umbra_view_fire.cinematic", attach_point = "fxnode_hole_right"},
             {player_sound = "sound/ns2c.fev/ns2c/alien/lerk/umbra_fire"},
-            //{player_sound = "sound/NS2.fev/alien/structures/crag/umbra"},
+            --{player_sound = "sound/NS2.fev/alien/structures/crag/umbra"},
         },
     },
     
@@ -305,7 +305,7 @@ kAlienWeaponEffects =
         },
     },
     
-    // Sound Effects only
+    -- Sound Effects only
     gore_attack =
     {
         goreAttackEffects =
@@ -331,7 +331,7 @@ kAlienWeaponEffects =
             {cinematic = "cinematics/alien/onos/door_hit.cinematic"}
         },
     },
-
+    
     stomp_attack =
     {
         stompAttackEffects =
@@ -402,12 +402,12 @@ kAlienWeaponEffects =
     {
         primalReceieveEffects =
         {
-            //{cinematic = "cinematics/alien/onos/stomp_hit.cinematic"},
+            --{cinematic = "cinematics/alien/onos/stomp_hit.cinematic"},
         },    
     
     },
     
-    // Alien vision mode effects
+    -- Alien vision mode effects
     alien_vision_on = 
     {
         visionModeOnEffects = 
@@ -428,6 +428,6 @@ kAlienWeaponEffects =
 
 }
 
-// "false" means play all effects in each block
+-- "false" means play all effects in each block
 GetEffectManager():AddEffectData("AlienWeaponEffects", kAlienWeaponEffects)
 

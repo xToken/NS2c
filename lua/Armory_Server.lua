@@ -1,26 +1,26 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Armory_Server.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Armory_Server.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Adjusted armory healing logic
+-- NS2c
+-- Adjusted armory healing logic
 
-// west/east = x/-x
-// north/south = -z/z
+-- west/east = x/-x
+-- north/south = -z/z
 
 local indexToUseOrigin =
 {
-    // West
+    -- West
     Vector(Armory.kResupplyUseRange, 0, 0), 
-    // North
+    -- North
     Vector(0, 0, -Armory.kResupplyUseRange),
-    // South
+    -- South
     Vector(0, 0, Armory.kResupplyUseRange),
-    // East
+    -- East
     Vector(-Armory.kResupplyUseRange, 0, 0)
 }
 
@@ -32,7 +32,7 @@ function Armory:GetTimeToResupplyPlayer(player)
     
     if timeResupplied ~= nil then
     
-        // Make sure we haven't done this recently    
+        -- Make sure we haven't done this recently
         if Shared.GetTime() < (timeResupplied + Armory.kResupplyInterval) then
             return false
         end
@@ -51,12 +51,12 @@ function Armory:GetShouldResupplyPlayer(player)
     
     local inNeed = false
     
-    // Don't resupply when already full
+    -- Don't resupply when already full
     if (player:GetHealth() < player:GetMaxHealth()) then
         inNeed = true
     else
 
-        // Do any weapons need ammo?
+        -- Do any weapons need ammo?
         for i, child in ientitychildren(player, "ClipWeapon") do
         
             if child:GetNeedsAmmo(false) then
@@ -70,7 +70,7 @@ function Armory:GetShouldResupplyPlayer(player)
     
     if inNeed then
     
-        // Check player facing so players can't fight while getting benefits of armory
+        -- Check player facing so players can't fight while getting benefits of armory
         local viewVec = player:GetViewAngles():GetCoords().zAxis
 
         local toArmoryVec = self:GetOrigin() - player:GetOrigin()
@@ -95,26 +95,26 @@ function Armory:ResupplyPlayer(player)
     
     local resuppliedPlayer = false
     
-    // Heal player first
+    -- Heal player first
     if (player:GetHealth() < player:GetMaxHealth()) then
 
-        // third param true = ignore armor
+        -- third param true = ignore armor
         player:AddHealth(kArmoryHealAmount, false, true)
 
         self:TriggerEffects("armory_health", {effecthostcoords = Coords.GetTranslation(player:GetOrigin())})
         
         resuppliedPlayer = true
-        /*
+        --[[
         if HasMixin(player, "ParasiteAble") and player:GetIsParasited() then
         
             player:RemoveParasite()
             
         end
-        */
+        --]]
         
     end
 
-    // Give ammo to all their weapons, one clip at a time, starting from primary
+    -- Give ammo to all their weapons, one clip at a time, starting from primary
     local activeWeapon = player:GetActiveWeapon()
     
     if activeWeapon ~= nil and activeWeapon:isa("ClipWeapon") then
@@ -149,11 +149,11 @@ function Armory:ResupplyPlayer(player)
         
     if resuppliedPlayer then
     
-        // Insert/update entry in table
+        -- Insert/update entry in table
         self.resuppliedPlayers[player:GetId()] = Shared.GetTime()
         
-        // Play effect
-        //self:PlayArmoryScan(player:GetId())
+        -- Play effect
+        --self:PlayArmoryScan(player:GetId())
 
     end
 
@@ -204,7 +204,7 @@ function Armory:OnResearch(researchId)
 
     if researchId == kTechId.AdvancedArmoryUpgrade then
 
-        // Create visual add-on
+        -- Create visual add-on
         local advancedArmoryModule = AddChildModel(self)
         
     end
@@ -244,10 +244,11 @@ function Armory:OnResearchCancel(researchId)
 
 end
 
-// Called when research or upgrade complete
+-- Called when research or upgrade complete
 function Armory:OnResearchComplete(researchId)
 
     if researchId == kTechId.AdvancedArmoryUpgrade then
+    
         self:SetTechId(kTechId.AdvancedArmory)
     end
     

@@ -1,12 +1,12 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua/GUIAuraDisplay.lua
-//
-// Shows how many shells, spurs, veils you have
-//
-// Created by Andreas Urwalek (andi@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua/GUIAuraDisplay.lua
+--
+-- Shows how many shells, spurs, veils you have
+--
+-- Created by Andreas Urwalek (andi@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 PrecacheAsset("shaders/GUIAura.surface_shader")
 
@@ -37,7 +37,22 @@ function GUIAuraDisplay:Initialize()
     self.background:SetColor(Color(0,0,0,0))
     
     self.icons = {}
+    
+    self:SetIsVisible(not HelpScreen_GetHelpScreen():GetIsBeingDisplayed())
 
+end
+
+function GUIAuraDisplay:SetIsVisible(state)
+    
+    self.visible = state
+    self.background:SetIsVisible(state)
+    
+end
+
+function GUIAuraDisplay:GetIsVisible()
+    
+    return self.visible
+    
 end
 
 function GUIAuraDisplay:Uninitialize()

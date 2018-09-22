@@ -1,14 +1,15 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Pistol.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Pistol.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/Weapons/Marine/ClipWeapon.lua")
 Script.Load("lua/IdleAnimationMixin.lua")
+Script.Load("lua/PistolVariantMixin.lua")
 
 class 'Pistol' (ClipWeapon)
 
@@ -32,6 +33,8 @@ local networkVars =
     emptyPoseParam = "private float (0 to 1 by 0.01)"
 }
 
+AddMixinNetworkVars(PistolVariantMixin, networkVars)
+
 local function GetHasAttackDelay(self, player)
 
     local attackDelay = kPistolFireDelay
@@ -45,6 +48,8 @@ function Pistol:OnCreate()
     self.timeAttackStarted = 0
     self.emptyPoseParam = 0
     
+	InitMixin(self, PistolVariantMixin)
+
     if Client then
         InitMixin(self, IdleAnimationMixin)
     end
@@ -118,7 +123,7 @@ if Client then
 
     function Pistol:GetLaserAttachCoords()
     
-        // return first person coords
+        -- return first person coords
         local parent = self:GetParent()
         if parent and parent == Client.GetLocalPlayer() then
 
@@ -131,15 +136,15 @@ if Client then
                 
                 attachCoords.origin = viewCoords:TransformPoint(attachCoords.origin)
                 
-                // when we are not reloading or sprinting then return the view axis (otherwise the laser pointer goes in wrong direction)
-                /*
+                -- when we are not reloading or sprinting then return the view axis (otherwise the laser pointer goes in wrong direction)
+                --[[
                 if not self:GetIsReloading() and not parent:GetIsSprinting() then
                 
                     attachCoords.zAxis = viewCoords.zAxis
                     attachCoords.xAxis = viewCoords.xAxis
                     attachCoords.yAxis = viewCoords.yAxis
 
-                else*/
+                else--]]
                 
                     attachCoords.zAxis = viewCoords:TransformVector(attachCoords.zAxis)
                     attachCoords.xAxis = viewCoords:TransformVector(attachCoords.xAxis)
@@ -149,7 +154,7 @@ if Client then
                     attachCoords.zAxis = attachCoords.xAxis
                     attachCoords.xAxis = zAxis
                     
-                //end
+                --end
                 
                 attachCoords.origin = attachCoords.origin - attachCoords.zAxis * 0.1
                 
@@ -159,13 +164,13 @@ if Client then
             
         end
         
-        // return third person coords
+        -- return third person coords
         return self:GetAttachPointCoords(kLaserAttachPoint)
         
     end
     
     function Pistol:GetUIDisplaySettings()
-        return { xSize = 256, ySize = 256, script = "lua/GUIPistolDisplay.lua" }
+        return { xSize = 256, ySize = 256, script = "lua/GUIPistolDisplay.lua", variant = self:GetPistolVariant() }
     end
 
 end
@@ -195,7 +200,7 @@ function Pistol:GetDeathIconIndex()
     return kDeathMessageIcon.Pistol
 end
 
-// When in alt-fire mode, keep very accurate
+-- When in alt-fire mode, keep very accurate
 function Pistol:GetInaccuracyScalar(player)
     return 1
 end

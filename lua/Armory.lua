@@ -1,18 +1,19 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Armory.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Armory.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed unneeded mixins and adjusted weapon techids
+-- NS2c
+-- Removed unneeded mixins and adjusted weapon techids
 
 Script.Load("lua/Mixins/BaseModelMixin.lua")
 Script.Load("lua/Mixins/ClientModelMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/PointGiverMixin.lua")
+Script.Load("lua/AchievementGiverMixin.lua")
 Script.Load("lua/GameEffectsMixin.lua")
 Script.Load("lua/SelectableMixin.lua")
 Script.Load("lua/LOSMixin.lua")
@@ -42,7 +43,7 @@ Armory.kMapName = "armory"
 Armory.kModelName = PrecacheAsset("models/marine/armory/armory.model")
 local kAnimationGraph = PrecacheAsset("models/marine/armory/armory.animation_graph")
 
-// Looping sound while using the armory
+-- Looping sound while using the armory
 Armory.kResupplySound = PrecacheAsset("sound/NS2.fev/marine/structures/armory_resupply")
 
 Armory.kAttachPoint = "Root"
@@ -50,7 +51,7 @@ Armory.kAttachPoint = "Root"
 Armory.kAdvancedArmoryChildModel = PrecacheAsset("models/marine/advanced_armory/advanced_armory.model")
 Armory.kAdvancedArmoryAnimationGraph = PrecacheAsset("models/marine/advanced_armory/advanced_armory.animation_graph")
 
-// Players can use menu and be supplied by armor inside this range
+-- Players can use menu and be supplied by armor inside this range
 Armory.kResupplyUseRange = 2.0
 Armory.kResupplyInterval = .8
 
@@ -67,6 +68,7 @@ PrecacheAsset("models/marine/armory/health_indicator.surface_shader")
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
+AddMixinNetworkVars(ClientModelMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
 AddMixinNetworkVars(GameEffectsMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
@@ -93,6 +95,7 @@ function Armory:OnCreate()
     InitMixin(self, GameEffectsMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, PointGiverMixin)
+    InitMixin(self, AchievementGiverMixin)
     InitMixin(self, SelectableMixin)
     InitMixin(self, EntityChangeMixin)
     InitMixin(self, LOSMixin)
@@ -121,41 +124,41 @@ function Armory:OnCreate()
     
 end
 
-// Check if friendly players are nearby and facing armory and heal/resupply them
+-- Check if friendly players are nearby and facing armory and heal/resupply them
 local function LoginAndResupply(self)
     
-    // Make sure players are still close enough, alive, marines, etc.
-    // Give health and ammo to nearby players.
+    -- Make sure players are still close enough, alive, marines, etc.
+    -- Give health and ammo to nearby players.
     if GetIsUnitActive(self) then
         self:ResupplyPlayers()
     end
-    
+
     return true
-    
+
 end
 
 function Armory:OnInitialized()
 
     ScriptActor.OnInitialized(self)
-    
+
     self:SetModel(Armory.kModelName, kAnimationGraph)
-    
+
     InitMixin(self, WeldableMixin)
 
     if Server then    
     
         self.loggedInArray = { false, false, false, false }
-        
-        // Use entityId as index, store time last resupplied
+
+        -- Use entityId as index, store time last resupplied
         self.resuppliedPlayers = { }
 
         self:AddTimedCallback(LoginAndResupply, kLoginAndResupplyTime)
-        
-        // This Mixin must be inited inside this OnInitialized() function.
+
+        -- This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end
-        
+
         InitMixin(self, StaticTargetMixin)
         
     elseif Client then
@@ -183,7 +186,7 @@ function Armory:GetTechButtons(techId)
     techButtons = { kTechId.None, kTechId.None, kTechId.None, kTechId.None,
                     kTechId.HandGrenadesTech, kTechId.None, kTechId.None, kTechId.None }
 
-    // Show button to upgraded to advanced armory
+    -- Show button to upgraded to advanced armory
     if self:GetTechId() == kTechId.Armory and self:GetResearchingId() ~= kTechId.AdvancedArmoryUpgrade then
         techButtons[1] = kTechId.AdvancedArmoryUpgrade
     end
@@ -228,7 +231,7 @@ class 'AdvancedArmory' (Armory)
 
 AdvancedArmory.kMapName = "advancedarmory"
 
-Shared.LinkClassToMap("AdvancedArmory", AdvancedArmory.kMapName, { })
+Shared.LinkClassToMap("AdvancedArmory", AdvancedArmory.kMapName, {})
 
 class 'ArmoryAddon' (ScriptActor)
 
@@ -236,7 +239,7 @@ ArmoryAddon.kMapName = "ArmoryAddon"
 
 local addonNetworkVars =
 {
-    // required for smoother raise animation
+    -- required for smoother raise animation
     creationTime = "time"
 }
 
@@ -247,11 +250,11 @@ AddMixinNetworkVars(TeamMixin, addonNetworkVars)
 function ArmoryAddon:OnCreate()
 
     ScriptActor.OnCreate(self)
-    
+
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ClientModelMixin)
     InitMixin(self, TeamMixin)
-    
+
     if Server then
         self.creationTime = Shared.GetTime()
     end
@@ -265,7 +268,7 @@ end
 function ArmoryAddon:OnInitialized()
 
     ScriptActor.OnInitialized(self)
-    
+
     self:SetModel(Armory.kAdvancedArmoryChildModel, Armory.kAdvancedArmoryAnimationGraph)
     
 end
@@ -273,19 +276,19 @@ end
 function ArmoryAddon:OnUpdatePoseParameters()
 
     PROFILE("ArmoryAddon:OnUpdatePoseParameters")
-    
+
     local researchProgress = Clamp((Shared.GetTime() - self.creationTime) / kAdvancedArmoryResearchTime, 0, 1)
     self:SetPoseParam("spawn", researchProgress)
-    
+
 end
 
 function ArmoryAddon:OnUpdateAnimationInput(modelMixin)
 
     PROFILE("ArmoryAddon:OnUpdateAnimationInput")
-    
+
     local parent = self:GetParent()
     if parent then
-        modelMixin:SetAnimationInput("built", parent:GetTechId() == kTechId.AdvancedArmory)        
+        modelMixin:SetAnimationInput("built", parent:GetTechId() == kTechId.AdvancedArmory)
     end
 
 end
@@ -296,7 +299,7 @@ function ArmoryAddon:OnGetIsVisible(visibleTable, viewerTeamNumber)
     if parent then
         visibleTable.Visible = parent:GetIsVisible()
     end
-    
+
 end
 
 Shared.LinkClassToMap("ArmoryAddon", ArmoryAddon.kMapName, addonNetworkVars)

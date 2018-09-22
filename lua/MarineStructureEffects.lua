@@ -1,10 +1,10 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\MarineStructureEffects.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\MarineStructureEffects.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 kMarineStructureEffects = 
 {
@@ -28,7 +28,7 @@ kMarineStructureEffects =
     
     },
 
-    // When players or MACs build a structure
+    -- When players or MACs build a structure
     construct =
     {    
         marineConstructEffects =
@@ -39,7 +39,7 @@ kMarineStructureEffects =
         },        
     },
     
-    // Play when marine welds another marine's armor
+    -- Play when marine welds another marine's armor
     marine_welded = 
     {
         marineWelded =
@@ -53,8 +53,8 @@ kMarineStructureEffects =
     {
         marineConstructCompleteSounds =
         {
-            // TODO: hook up new sounds for builder
-            //{sound = "sound/NS2.fev/marine/structures/mac/build", isalien = false, done = true},
+            -- TODO: hook up new sounds for builder
+            --{sound = "sound/NS2.fev/marine/structures/mac/build", isalien = false, done = true},
         },
     },
     
@@ -117,7 +117,7 @@ kMarineStructureEffects =
         },
     },
 
-    // Called when SiegeCannon is created out of robotics factory
+    -- Called when SiegeCannon is created out of robotics factory
     sc_built =
     {
         arcDeployEffects =
@@ -126,7 +126,7 @@ kMarineStructureEffects =
         },
     },            
     
-    // Switching into siege mode
+    -- Switching into siege mode
     sc_deploying =
     {
         arcDeployEffects =
@@ -135,7 +135,7 @@ kMarineStructureEffects =
         },
     },    
     
-    // Switching back to movement mode
+    -- Switching back to movement mode
     sc_inactive =
     {
         arcUndeployEffects =
@@ -164,14 +164,14 @@ kMarineStructureEffects =
     {
         arcFireEffects =
         {
-            // "trail" like a tracer
-            //{sound = "sound/NS2.fev/marine/structures/arc/fire"},
+            -- "trail" like a tracer
+            --{sound = "sound/NS2.fev/marine/structures/arc/fire"},
             {sound = "sound/ns2c.fev/ns2c/marine/siegecannon/fire"},
             {parented_cinematic = "cinematics/marine/arc/fire.cinematic", attach_point = "fxnode_arcmuzzle"},
         },
     },
     
-    // Center of ARC blast
+    -- Center of ARC blast
     sc_hit_primary =
     {
         arcHitPrimaryEffects = 
@@ -181,7 +181,7 @@ kMarineStructureEffects =
         },
     },
     
-    // Played for secondary targets within blast radius
+    -- Played for secondary targets within blast radius
     sc_hit_secondary =
     {
         arcHitSecondaryEffects = 
@@ -202,13 +202,13 @@ kMarineStructureEffects =
         },
     },
     
-    // ARC TODO:
-    //ARC.kFlybySound = PrecacheAsset("sound/NS2.fev/marine/structures/arc/flyby")
-    //ARC.kScanSound = PrecacheAsset("sound/NS2.fev/marine/structures/arc/scan")
-    //ARC.kScanEffect = PrecacheAsset("cinematics/marine/arc/scan.cinematic")
-    //ARC.kFireEffect = PrecacheAsset("cinematics/marine/arc/fire.cinematic")
-    //ARC.kFireShellEffect = PrecacheAsset("cinematics/marine/arc/fire_shell.cinematic")
-    //ARC.kDamagedEffect = PrecacheAsset("cinematics/marine/arc/damaged.cinematic")
+    -- ARC TODO:
+    --ARC.kFlybySound = PrecacheAsset("sound/NS2.fev/marine/structures/arc/flyby")
+    --ARC.kScanSound = PrecacheAsset("sound/NS2.fev/marine/structures/arc/scan")
+    --ARC.kScanEffect = PrecacheAsset("cinematics/marine/arc/scan.cinematic")
+    --ARC.kFireEffect = PrecacheAsset("cinematics/marine/arc/fire.cinematic")
+    --ARC.kFireShellEffect = PrecacheAsset("cinematics/marine/arc/fire_shell.cinematic")
+    --ARC.kDamagedEffect = PrecacheAsset("cinematics/marine/arc/damaged.cinematic")
     
     extractor_collect =
     {
@@ -235,8 +235,56 @@ kMarineStructureEffects =
             {cinematic = "cinematics/marine/spawn_item.cinematic"},
         },
     },
+
+    ammopack_pickup = 
+    {
+        ammoPackPickup = 
+        {
+            {sound = "sound/NS2.fev/marine/common/pickup_ammo"}
+        },
+    },
+
+    medpack_pickup = 
+    {
+        medpackPickup = 
+        {
+            {sound = "sound/NS2.fev/marine/common/health"}
+        },
+    },
     
-    // Not hooked up
+    catpack_pickup = --TODO experiment with classname / doer in event to wrap commander_drop into this
+    {
+        catPackPickup = 
+        {
+            {sound = "sound/NS2.fev/marine/common/catalyst"}
+        },
+    },
+
+    ammopack_commander_drop = 
+    {
+        ammoPackPickup = 
+        {
+            {private_sound = "sound/NS2.fev/marine/common/pickup_ammo"}
+        },
+    },
+
+    medpack_commander_drop = 
+    {
+        medpackPickup = 
+        {
+            {private_sound = "sound/NS2.fev/marine/common/health"}
+        },
+    },
+    
+    catpack_commander_drop = 
+    {
+        catPackPickup = 
+        {
+            {private_sound = "sound/NS2.fev/marine/common/catalyst"}
+        },
+    },
+    
+    -- Not hooked up
     armory_buy = 
     {
         armoryBuy =
@@ -300,34 +348,34 @@ kMarineStructureEffects =
             {cinematic = "cinematics/marine/infantryportal/player_spawn.cinematic"},
             {sound = "sound/NS2.fev/marine/structures/infantry_portal_player_spawn"},
         },
-    },    
+    },
 
-    // Played when a player enters a phase gate (at the source)
+    -- Played when a player enters a phase gate (at the source)
     phase_gate_player_enter = 
     {
         pgSpawnEffect =
         {
-            //{player_sound = "sound/NS2.fev/marine/structures/phase_gate_teleport"},
+            --{player_sound = "sound/NS2.fev/marine/structures/phase_gate_teleport"},
             {player_cinematic = "cinematics/marine/infantryportal/player_spawn.cinematic"},            
         },
     }, 
 
-    // Played when a player goes through a phase gate (at the destination)
+    -- Played when a player goes through a phase gate (at the destination)
     phase_gate_player_exit = 
     {
         pgSpawnEffect =
         {
-            //{player_sound = "sound/NS2.fev/marine/structures/phase_gate_teleport"},
+            --{player_sound = "sound/NS2.fev/marine/structures/phase_gate_teleport"},
             {player_cinematic = "cinematics/marine/infantryportal/player_spawn.cinematic"},            
         },
     },
-    
-    // Looping cinematic played when going through phase gate will teleport you somewhere
+
+    -- Looping cinematic played when going through phase gate will teleport you somewhere
     phase_gate_linked =
     {
         pgLinkedEffects = 
         {
-            // Play spin for spinning infantry portal
+            -- Play spin for spinning infantry portal
             {looping_cinematic = "cinematics/marine/phasegate/phasegate.cinematic"},
         },
     },
@@ -336,7 +384,7 @@ kMarineStructureEffects =
     {
         pgLinkedEffects = 
         {
-            // Destroy it if not spinning
+            -- Destroy it if not spinning
             {stop_cinematic = "cinematics/marine/phasegate/phasegate.cinematic", done = true},            
         },
     },
@@ -368,7 +416,7 @@ kMarineStructureEffects =
     
     distress_beacon_complete =
     {
-        // Play one mega-spawn sound instead of spawn sounds for each player
+        -- Play one mega-spawn sound instead of spawn sounds for each player
         distressBeaconComplete =
         {
             {sound = "sound/NS2.fev/marine/common/mega_teleport"},

@@ -1,21 +1,23 @@
-// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\Alien\Web.lua
-//
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-// Spit attack on primary.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\Alien\Web.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+-- Spit attack on primary.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/TechMixin.lua")
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/TriggerMixin.lua")
 Script.Load("lua/EntityChangeMixin.lua")
+Script.Load("lua/LOSMixin.lua")
 Script.Load("lua/OwnerMixin.lua")
 Script.Load("lua/LiveMixin.lua")
 Script.Load("lua/Mixins/BaseModelMixin.lua")
-Script.Load("lua/Mixins/ClientModelMixin.lua")
+Script.Load("lua/Mixins/ModelMixin.lua")
+Script.Load("lua/EffectsMixin.lua")
 
 class 'Web' (Entity)
 
@@ -32,8 +34,10 @@ local networkVars =
 
 AddMixinNetworkVars(TechMixin, networkVars)
 AddMixinNetworkVars(BaseModelMixin, networkVars)
+AddMixinNetworkVars(ModelMixin, networkVars)
 AddMixinNetworkVars(TeamMixin, networkVars)
 AddMixinNetworkVars(LiveMixin, networkVars)
+AddMixinNetworkVars(LOSMixin, networkVars)
 
 PrecacheAsset("models/alien/gorge/web.surface_shader")
 local kWebMaterial = PrecacheAsset("models/alien/gorge/web.material")
@@ -43,7 +47,7 @@ function EntityFilterNonWebables()
     return function(test) return not HasMixin(test, "Webable") end
 end
 
-function Web:SpaceClearForEntity(location)
+function Web:SpaceClearForEntity(_)
     return true
 end
 
@@ -54,14 +58,15 @@ function Web:OnCreate()
     InitMixin(self, TechMixin)
     InitMixin(self, EffectsMixin)
     InitMixin(self, BaseModelMixin)
-    InitMixin(self, ClientModelMixin)
+    InitMixin(self, ModelMixin)
     InitMixin(self, TeamMixin)
     InitMixin(self, LiveMixin)
+    InitMixin(self, EntityChangeMixin)
+    InitMixin(self, LOSMixin)
     
     if Server then
     
         InitMixin(self, InvalidOriginMixin)
-        InitMixin(self, EntityChangeMixin)
         InitMixin(self, TriggerMixin, {kPhysicsGroup = PhysicsGroup.TriggerGroup, kFilterMask = PhysicsMask.AllButTriggers} )
         InitMixin(self, OwnerMixin)
         
@@ -84,12 +89,6 @@ function Web:OnInitialized()
   
 end
 
-/*
-function Web:GetPhysicsModelAllowedOverride()
-    return false
-end
-*/
-
 if Server then
     
     local function CreateTrigger(self)
@@ -109,12 +108,12 @@ if Server then
         self.triggerBody:SetCollisionEnabled(true)
         
         if self:GetMixinConstants().kPhysicsGroup then
-            //Print("set trigger physics group to %s", EnumToString(PhysicsGroup, self:GetMixinConstants().kPhysicsGroup))
+            --Print("set trigger physics group to %s", EnumToString(PhysicsGroup, self:GetMixinConstants().kPhysicsGroup))
             self.triggerBody:SetGroup(self:GetMixinConstants().kPhysicsGroup)
         end
         
         if self:GetMixinConstants().kFilterMask then
-            //Print("set trigger filter mask to %s", EnumToString(PhysicsMask, self:GetMixinConstants().kFilterMask))
+            --Print("set trigger filter mask to %s", EnumToString(PhysicsMask, self:GetMixinConstants().kFilterMask))
             self.triggerBody:SetGroupFilterMask(self:GetMixinConstants().kFilterMask)
         end
         
@@ -138,7 +137,7 @@ if Server then
         
     end
 
-    // OnUpdate is only called when entities are in interest range    
+    -- OnUpdate is only called when entities are in interest range    
     function Web:OnUpdate(deltaTime)
 
         local trace = Shared.TraceRay(self:GetOrigin(), self.endPoint, CollisionRep.Damage, PhysicsMask.Bullets, EntityFilterNonWebables())
@@ -210,9 +209,9 @@ if Client then
 
     function Web:OnUpdateRender()
 
-        // we are smart and do that only once.
-        // old code generated model
-        /*
+        -- we are smart and do that only once.
+        -- old code generated model
+        --[[
         if not self.webRenderModel then
         
             self.webRenderModel = DynamicMesh_Create()
@@ -228,11 +227,11 @@ if Client then
             DynamicMesh_SetTwoSidedLine(self.webRenderModel, coords, kWebWidth, length)
         
         end
-        */
+        --]]
 
     end
 
-end    
+end   
 
 function Web:OnUpdatePoseParameters()
     self:SetPoseParam("scale", self.length)    

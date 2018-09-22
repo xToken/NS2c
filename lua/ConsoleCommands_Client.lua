@@ -1,14 +1,15 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\ConsoleCommands_Client.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\ConsoleCommands_Client.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Changed debugspeed to not require cheats
+
+-- NS2c
+-- Changed debugspeed to not require cheats
 
 function OnCommandSoundGeometry(enabled)
 
@@ -84,7 +85,7 @@ local function OnCommandDistance()
     
 end
 
-local animationInputsDisplayedOnScreen = nil
+local animationInputsDisplayedOnScreen
 local function OnCommandAnimInputs(entId)
 
     if Shared.GetCheatsEnabled() then
@@ -129,26 +130,49 @@ function OnCommandSetMouseSensitivity(sensitivity)
     end
 end
 
-// Save this setting if we set it via a console command
+-- Save this setting if we set it via a console command
 function OnCommandSetName(...)
+    
+    local overrideEnabled = Client.GetOptionBoolean(kNicknameOverrideKey, false)
+    if not overrideEnabled then
+		Print( "Use 'sname <name>' to change your Steam Name")
+		return
+	end
+		
+	local name = StringConcatArgs(...)
+	name = string.UTF8SanitizeForNS2( TrimName(name) )
+	
+	if name == "" or not string.IsValidNickname(name) then
+		Print( "You have to enter a valid nickname or use the Options Menu!")
+		return
+	end
+	
+	Client.SetOptionString(kNicknameOptionsKey, name)
+	
+	local player = Client.GetLocalPlayer()
+	if player and name ~= player:GetName() then
+		Client.SendNetworkMessage("SetName", { name = name }, true)
+	end
+end
 
-    local nickname = StringConcatArgs(...)
-    nickname = TrimName(nickname)
-    
-    if string.len(nickname) < 1 or not string.IsValidNickname(nickname) then
-        Print( "You have to enter a valid nickname or use the Options Menu!")
-        return
-    end
-    
-    local player = Client.GetLocalPlayer()
+function OnCommandSetSteamName(...)
+    local overrideEnabled = Client.GetOptionBoolean(kNicknameOverrideKey, false)
+    if overrideEnabled then
+		Print( "Use 'name <name>' to change your NS2 in-game alias, or enable 'Use Steam Name' in the option menu")
+		return
+	end
 
-    if not player or nickname == player:GetName() or nickname == kDefaultPlayerName then
-        return
-    end
-    
-    Client.SetOptionString(kNicknameOptionsKey, nickname)
-    Client.SendNetworkMessage("SetName", { name = nickname }, true)
-    
+	local name = StringConcatArgs(...)
+	name = string.UTF8SanitizeForNS2( TrimName(name) )
+	
+	if name == "" or not string.IsValidNickname(name) then
+		Print( "You have to enter a valid nickname or use the Options Menu!")
+		return
+	end
+	
+	-- Allow this to change their actual steam name
+	-- the in-game representation will be set via a OnPersonaChanged event
+	Client.SetUserName( name )
 end
 
 local function OnCommandClearDebugLines()
@@ -190,7 +214,7 @@ local function OnCommandFindRef(className)
 end
 
 local function OnCommandDebugSpeed()
-
+    
     if not gSpeedDebug then
         gSpeedDebug = GetGUIManager():CreateGUIScriptSingle("GUISpeedDebug")
     else
@@ -199,7 +223,21 @@ local function OnCommandDebugSpeed()
         gSpeedDebug = nil
         
     end
+
+end
+
+local function OnCommandDebugFeedback()
     
+    if not gFeedbackDebug then
+        gFeedbackDebug = GetGUIManager():CreateGUIScriptSingle("GUIGameFeedback")
+        gFeedbackDebug:SetIsVisible(true)
+    else
+    
+        GetGUIManager():DestroyGUIScriptSingle("GUIGameFeedback")
+        gFeedbackDebug = nil
+        
+    end
+
 end
 
 local function OnCommandDebugNotifications()
@@ -209,13 +247,39 @@ local function OnCommandDebugNotifications()
     else
         gDebugNotifications = true
     end    
-    
+
 end
+
+local kSayTeamDelay = 3
+local timeLastSayTeam
+function OnCommandSayTeam(...)
+    
+    if not timeLastSayTeam or timeLastSayTeam + kSayTeamDelay < Shared.GetTime() then
+        
+        local chatMessage = StringConcatArgs(...)
+        chatMessage = string.UTF8Sub(chatMessage, 1, kMaxChatLength)
+        
+        if string.len(chatMessage) > 0 then
+            
+            local player = Client.GetLocalPlayer()
+            local playerName = player:GetName()
+            local playerLocationId = player.locationId
+            local playerTeamNumber = player:GetTeamNumber()
+            local playerTeamType = player:GetTeamType()
+            
+            Client.SendNetworkMessage("ChatClient", BuildChatMessage(true, playerName, playerLocationId, playerTeamNumber, playerTeamType, chatMessage), true)		
+        end
+        
+        timeLastSayTeam = Shared.GetTime()
+    end
+end
+
+Event.Hook("Console_tsay", OnCommandSayTeam)
 
 local function OnCommandDumpTechTree()
     local player = Client.GetLocalPlayer()
     if player ~= nil then
-        local techTree = player:GetTechTree()
+        local techTree = GetTechTree()
         if techTree ~= nil then
             for index, techNode in pairs(techTree.nodeList) do
                 techNode:DumpNode()
@@ -231,14 +295,15 @@ Event.Hook("Console_locate", OnCommandLocate)
 Event.Hook("Console_distance", OnCommandDistance)
 Event.Hook("Console_animinputs", OnCommandAnimInputs)
 Event.Hook("Console_name", OnCommandSetName)
+Event.Hook("Console_sname", OnCommandSetSteamName)
 Event.Hook("Console_cleardebuglines", OnCommandClearDebugLines)
 Event.Hook("Console_guiinfo", OnCommandGUIInfo)
 Event.Hook("Console_playmusic", OnCommandPlayMusic)
 
-// Options Console Commands
+-- Options Console Commands
 Event.Hook("Console_setsoundvolume", OnCommandSetSoundVolume)
 Event.Hook("Console_sethudmap", OnCommandHUDMapEnabled)
-// Just a shortcut.
+-- Just a shortcut.
 Event.Hook("Console_ssv", OnCommandSetSoundVolume)
 Event.Hook("Console_setmusicvolume", OnCommandSetMusicVolume)
 Event.Hook("Console_setvoicevolume", OnCommandSetVoiceVolume)
@@ -248,6 +313,7 @@ Event.Hook("Console_pathingfill", OnCommandPathingFill)
 
 Event.Hook("Console_cfindref", OnCommandFindRef)
 Event.Hook("Console_debugspeed", OnCommandDebugSpeed)
+Event.Hook("Console_debugfeedback", OnCommandDebugFeedback)
 Event.Hook("Console_debugnotifications", OnCommandDebugNotifications)
 Event.Hook("Console_dumptechtree", OnCommandDumpTechTree)
 

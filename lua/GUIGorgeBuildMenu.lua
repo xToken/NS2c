@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GUIGorgeBuildMenu.lua
-//
-// Created by: Andreas Urwalek (a_urwa@sbox.tugraz.at)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GUIGorgeBuildMenu.lua
+--
+-- Created by: Andreas Urwalek (a_urwa@sbox.tugraz.at)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Tweaks for slots 6-10
+-- NS2c
+-- Tweaks for slots 6-10
 
 Script.Load("lua/GUIAnimatedScript.lua")
 
@@ -91,7 +91,7 @@ local function GorgeBuild_GetKeybindForIndex(index)
     return "Weapon" .. ToString(index)
 end
 
-function GorgeBuild_GetNumStructureBuilt(techId)    
+function GorgeBuild_GetNumStructureBuilt(techId)
     return -1
 end
 
@@ -159,7 +159,7 @@ GUIGorgeBuildMenu.kAvailableColor = kAlienTeamColorFloat
 GUIGorgeBuildMenu.kTooExpensiveColor = Color(1, 0, 0, 1)
 GUIGorgeBuildMenu.kUnavailableColor = Color(0.4, 0.4, 0.4, 0.7)
 
-// selection circle animation:
+-- selection circle animation:
 GUIGorgeBuildMenu.kPulseInAnimationDuration = 0.6
 GUIGorgeBuildMenu.kPulseOutAnimationDuration = 0.3
 GUIGorgeBuildMenu.kLowColor = Color(1, 0.4, 0.4, 0.5)
@@ -171,13 +171,13 @@ GUIGorgeBuildMenu.kPersonalResourceIcon.Height = 32
 GUIGorgeBuildMenu.kResourceTexture = "ui/alien_commander_textures.dds"
 GUIGorgeBuildMenu.kIconTextXOffset = 5
 
-local kBackgroundNoiseTexture = "ui/alien_commander_bg_smoke.dds"
-local kSmokeyBackgroundSize
+GUIGorgeBuildMenu.kBackgroundNoiseTexture = "ui/alien_commander_bg_smoke.dds"
+GUIGorgeBuildMenu.kSmokeyBackgroundSize = Vector(220, 400, 0)
 
 local kDefaultStructureCountPos = Vector(-48, -24, 0)
 local kCenteredStructureCountPos = Vector(0, -24, 0)
 
-//selection circle animation callbacks
+--selection circle animation callbacks
 function PulseOutAnimation(script, item)
     item:SetColor(GUIGorgeBuildMenu.kHighColor, GUIGorgeBuildMenu.kPulseInAnimationDuration, "PULSE", AnimateLinear, PulseInAnimation)
 end
@@ -186,7 +186,7 @@ function PulseInAnimation(script, item)
     item:SetColor(GUIGorgeBuildMenu.kLowColor, GUIGorgeBuildMenu.kPulseOutAnimationDuration, "PULSE", AnimateLinear, PulseOutAnimation)
 end
 
-local rowTable = nil
+local rowTable
 local function GetRowForTechId(techId)
 
     if not rowTable then
@@ -212,7 +212,7 @@ function GUIGorgeBuildMenu:Initialize()
 
     GUIAnimatedScript.Initialize(self)
     
-    kSmokeyBackgroundSize = GUIScale(Vector(220, 400, 0))
+    self.kSmokeyBackgroundSize = GUIScale(Vector(220, 400, 0))
     
     self.scale = Client.GetScreenHeight() / GUIGorgeBuildMenu.kBaseYResolution
     self.background = self:CreateAnimatedGraphicItem()
@@ -328,7 +328,7 @@ function GUIGorgeBuildMenu:Reset()
 
     for index, structureAbility in ipairs(DropStructureAbility.kSupportedStructures) do
     
-        // TODO: pass keybind from options instead of index
+        -- TODO: pass keybind from options instead of index
         table.insert( self.buttons, self:CreateButton(structureAbility.GetDropStructureId(), self.scale, self.background, GorgeBuild_GetKeybindForIndex(index), index - 1) )
     
     end
@@ -363,11 +363,11 @@ function GUIGorgeBuildMenu:CreateButton(techId, scale, frame, keybind, position)
     
     local smokeyBackground = GetGUIManager():CreateGraphicItem()
     smokeyBackground:SetAnchor(GUIItem.Middle, GUIItem.Center)
-    smokeyBackground:SetSize(kSmokeyBackgroundSize)    
-    smokeyBackground:SetPosition(kSmokeyBackgroundSize * -.5)
+    smokeyBackground:SetSize(self.kSmokeyBackgroundSize)
+    smokeyBackground:SetPosition(self.kSmokeyBackgroundSize * -.5)
     smokeyBackground:SetShader("shaders/GUISmokeHUD.surface_shader")
     smokeyBackground:SetTexture("ui/alien_logout_smkmask.dds")
-    smokeyBackground:SetAdditionalTexture("noise", kBackgroundNoiseTexture)
+    smokeyBackground:SetAdditionalTexture("noise", self.kBackgroundNoiseTexture)
     smokeyBackground:SetFloatParameter("correctionX", 0.6)
     smokeyBackground:SetFloatParameter("correctionY", 1)
     
@@ -390,7 +390,7 @@ function GUIGorgeBuildMenu:CreateButton(techId, scale, frame, keybind, position)
     button.graphicItem:SetTexture(GUIGorgeBuildMenu.kButtonTexture)
     button.graphicItem:SetShader("shaders/GUIWavyNoMask.surface_shader")
      
-    //button.description:SetText(LookupTechData(techId, kTechDataDisplayName, "") .. " (".. keybind ..")")
+    --button.description:SetText(LookupTechData(techId, kTechDataDisplayName, "") .. " (".. keybind ..")")
     button.description:SetText(Locale.ResolveString(LookupTechData(techId, kTechDataDisplayName, "")))
     button.description:SetAnchor(GUIItem.Middle, GUIItem.Top)
     button.description:SetTextAlignmentX(GUIItem.Align_Center)
@@ -417,7 +417,7 @@ function GUIGorgeBuildMenu:CreateButton(techId, scale, frame, keybind, position)
     button.structuresLeft:SetFontIsBold(true)
     button.structuresLeft:SetColor(GUIGorgeBuildMenu.kAvailableColor)
     
-    // Personal display.
+    -- Personal display.
     button.costIcon:SetSize(Vector(GUIGorgeBuildMenu.kPersonalResourceIcon.Width, GUIGorgeBuildMenu.kPersonalResourceIcon.Height, 0))
     button.costIcon:SetAnchor(GUIItem.Middle, GUIItem.Bottom)
     button.costIcon:SetTexture(GUIGorgeBuildMenu.kResourceTexture)
@@ -451,7 +451,7 @@ end
 
 function GUIGorgeBuildMenu:OverrideInput(input)
 
-    // Assume the user wants to switch the top-level weapons
+    -- Assume the user wants to switch the top-level weapons
     if HasMoveCommand( input.commands, Move.SelectNextWeapon )
     or HasMoveCommand( input.commands, Move.SelectPrevWeapon ) then
 
@@ -491,17 +491,17 @@ function GUIGorgeBuildMenu:OverrideInput(input)
     elseif HasMoveCommand( input.commands, Move.SecondaryAttack )
         or HasMoveCommand( input.commands, Move.PrimaryAttack ) then
 
-        //DebugPrint("before override: %d",input.commands)
+        --DebugPrint("before override: %d",input.commands)
 
-        // close menu
+        -- close menu
         GorgeBuild_OnClose()
         GorgeBuild_Close()
 
-        // leave the secondary attack command so the drop-ability can handle it
+        -- leave the secondary attack command so the drop-ability can handle it
         input.commands = AddMoveCommand( input.commands, Move.SecondaryAttack )
         input.commands = RemoveMoveCommand( input.commands, Move.PrimaryAttack )
-        //DebugPrint("after override: %d",input.commands)
-        //DebugPrint("primary = %d secondary = %d", Move.PrimaryAttack, Move.SecondaryAttack)
+        --DebugPrint("after override: %d",input.commands)
+        --DebugPrint("primary = %d secondary = %d", Move.PrimaryAttack, Move.SecondaryAttack)
 
     end
 
@@ -534,6 +534,6 @@ end
 function GUIGorgeBuildMenu:OnAnimationCompleted(animatedItem, animationName, itemHandle)
 end
 
-// called when the last animation remaining has completed this frame
+-- called when the last animation remaining has completed this frame
 function GUIGorgeBuildMenu:OnAnimationsEnd(item)
 end

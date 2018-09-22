@@ -1,16 +1,16 @@
 
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GUISensorBlips.lua
-//
-// Created by: Andreas Urwalek (a_urwa@sbox.tugraz.at)
-//
-// Manages the blips that are displayed on the Marine HUD due to detection (observatory, scan).
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GUISensorBlips.lua
+--
+-- Created by: Andreas Urwalek (a_urwa@sbox.tugraz.at)
+--
+-- Manages the blips that are displayed on the Marine HUD due to detection (observatory, scan).
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added logic for team sensor blips
+-- NS2c
+-- Added logic for team sensor blips
 
 class 'GUISensorBlips' (GUIScript)
 
@@ -32,6 +32,24 @@ function GUISensorBlips:Initialize()
     self.updateInterval = 0
     
     self.activeBlipList = { }
+    
+    self.visible = true
+    
+end
+
+function GUISensorBlips:SetIsVisible(state)
+    
+    self.visible = state
+    for i=1, #self.activeBlipList do
+        self.activeBlipList[i].GraphicsItem:SetIsVisible(state)
+        self.activeBlipList[i].TextItem:SetIsVisible(state)
+    end
+    
+end
+
+function GUISensorBlips:GetIsVisible()
+    
+    return self.visible
     
 end
 
@@ -75,14 +93,14 @@ function GUISensorBlips:UpdateAnimations(deltaTime)
         local size = math.min(blip.Radius * 2 * GUISensorBlips.kDefaultBlipSize, GUISensorBlips.kMaxBlipSize)
         blip.GraphicsItem:SetSize(Vector(size, size, 0))
         
-        // Offset by size / 2 so the blip is centered.
+        -- Offset by size / 2 so the blip is centered.
         local newPosition = Vector(blip.ScreenX - size / 2, blip.ScreenY - size / 2, 0)
         blip.GraphicsItem:SetPosition(newPosition)
         
-        // rotate the blip
+        -- rotate the blip
         blip.GraphicsItem:SetRotation(Vector(0, 0, 2 * math.pi * (baseRotationPercentage + (i / #self.activeBlipList))))
 
-        // Draw blips as barely visible when in view, to communicate their purpose. Animate color towards final value.
+        -- Draw blips as barely visible when in view, to communicate their purpose. Animate color towards final value.
         local currentColor = blip.GraphicsItem:GetColor()
         destAlpha = ConditionalValue(blip.Obstructed, destAlpha * blip.Radius, currentColor.a - GUISensorBlips.kAlphaPerSecond * deltaTime)
 
@@ -99,19 +117,19 @@ function GUISensorBlips:UpdateBlipList(activeBlips)
     PROFILE("GUISensorBlips:UpdateBlipList")
     
     local numElementsPerBlip = 5
-    local numBlips = table.count(activeBlips) / numElementsPerBlip
+    local numBlips = table.icount(activeBlips) / numElementsPerBlip
     
-    while numBlips > table.count(self.activeBlipList) do
+    while numBlips > table.icount(self.activeBlipList) do
         local newBlipItem = self:CreateBlipItem()
         table.insert(self.activeBlipList, newBlipItem)
     end
     
-    while numBlips < table.count(self.activeBlipList) do
+    while numBlips < table.icount(self.activeBlipList) do
         GUI.DestroyItem(self.activeBlipList[#self.activeBlipList].GraphicsItem)
         table.remove(self.activeBlipList, #self.activeBlipList)
     end
     
-    // Update current blip state.
+    -- Update current blip state.
     local currentIndex = 1
     while numBlips > 0 do
         local updateBlip = self.activeBlipList[numBlips]
@@ -121,7 +139,7 @@ function GUISensorBlips:UpdateBlipList(activeBlips)
         updateBlip.Obstructed = activeBlips[currentIndex + 3]
         updateBlip.name = activeBlips[currentIndex + 4]
         
-        //updateBlip.TextItem:SetText( activeBlips[currentIndex + 4] )
+        --updateBlip.TextItem:SetText( activeBlips[currentIndex + 4] )
         
         numBlips = numBlips - 1
         currentIndex = currentIndex + numElementsPerBlip
@@ -147,6 +165,7 @@ function GUISensorBlips:CreateBlipItem()
     end
     
     newBlip.GraphicsItem:SetBlendTechnique(GUIItem.Add)
+    newBlip.GraphicsItem:SetIsVisible(self.visible)
     
     newBlip.TextItem = GUIManager:CreateTextItem()
     newBlip.TextItem:SetAnchor(GUIItem.Middle, GUIItem.Top)
@@ -155,6 +174,7 @@ function GUISensorBlips:CreateBlipItem()
     newBlip.TextItem:SetTextAlignmentX(GUIItem.Align_Center)
     newBlip.TextItem:SetTextAlignmentY(GUIItem.Align_Min)
     newBlip.TextItem:SetColor(ColorIntToColor(kMarineTeamColor))
+    newBlip.TextItem:SetIsVisible(self.visible)
     GUIMakeFontScale(newBlip.TextItem)
     
     newBlip.GraphicsItem:AddChild(newBlip.TextItem)

@@ -1,11 +1,11 @@
-// ======= Copyright (c) 2003-2014, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Door.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2014, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Door.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/ScriptActor.lua")
 Script.Load("lua/Mixins/ModelMixin.lua")
@@ -40,8 +40,8 @@ local kModelNameDestroyed = PrecacheAsset("models/misc/door/door_destroyed.model
 local kDoorAnimationGraph = PrecacheAsset("models/misc/door/door.animation_graph")
 
 local networkVars =
-{    
-    // Stores current state (kState )
+{
+    -- Stores current state (kState )
     state = "enum Door.kState"
 }
 
@@ -53,7 +53,7 @@ local kDoorLockDuration = 4
 
 local function UpdateAutoUnlock(self, timePassed)
 
-    // auto open the door after kDoorLockDuration time has passed
+    -- auto open the door after kDoorLockDuration time has passed
     local state = self:GetState()
 
     if state == Door.kState.Locked and self.timeLastLockTrigger + kDoorLockDuration < Shared.GetTime() then
@@ -69,7 +69,7 @@ end
 
 local function UpdateAutoOpen(self, timePassed)
 
-    // If any players are around, have door open if possible, otherwise close it
+    -- If any players are around, have door open if possible, otherwise close it
     local state = self:GetState()
     
     if state == Door.kState.Open or state == Door.kState.Close then
@@ -153,7 +153,7 @@ function Door:OnInitialized()
         
         self:SetPhysicsGroup(PhysicsGroup.CommanderUnitGroup)
         
-        // This Mixin must be inited inside this OnInitialized() function.
+        -- This Mixin must be inited inside this OnInitialized() function.
         if not HasMixin(self, "MapBlip") then
             InitMixin(self, MapBlipMixin)
         end

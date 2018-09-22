@@ -115,6 +115,9 @@
     <filename>CatPack.lua</filename>
   </file>
   <file>
+    <filename>Class.lua</filename>
+  </file>
+  <file>
     <filename>Client.lua</filename>
   </file>
   <file>
@@ -184,7 +187,7 @@
     <filename>Weapons\Alien\CragAbility.lua</filename>
   </file>
   <file>
-    <filename>DSPEffects.lua</filename>
+    <filename>DamageEffects.lua</filename>
   </file>
   <file>
     <filename>DamageMixin.lua</filename>
@@ -232,9 +235,6 @@
     <filename>EnergyMixin.lua</filename>
   </file>
   <file>
-    <filename>EquipmentOutline.lua</filename>
-  </file>
-  <file>
     <filename>Extractor.lua</filename>
   </file>
   <file>
@@ -274,19 +274,16 @@
     <filename>GUIDeathMessages.lua</filename>
   </file>
   <file>
-    <filename>GUIEvent.lua</filename>
-  </file>
-  <file>
     <filename>GUIGameEnd.lua</filename>
   </file>
   <file>
     <filename>GUIGorgeBuildMenu.lua</filename>
   </file>
   <file>
-    <filename>GUIGorgeBuildMenuHelp.lua</filename>
+    <filename>GUIHelpScreen.lua</filename>
   </file>
   <file>
-    <filename>GUIHelpScreen.lua</filename>
+    <filename>GUIHiveStatus.lua</filename>
   </file>
   <file>
     <filename>Overloads\GUIHooks.lua</filename>
@@ -304,25 +301,10 @@
     <filename>GUIMarineBuyMenu.lua</filename>
   </file>
   <file>
-    <filename>GUIMarineDevoured.lua</filename>
-  </file>
-  <file>
-    <filename>GUIMarineHud.lua</filename>
-  </file>
-  <file>
-    <filename>GUIMarineSpectatorHUD.lua</filename>
-  </file>
-  <file>
-    <filename>GUIMarineStatus.lua</filename>
-  </file>
-  <file>
     <filename>GUIMinimapButtons.lua</filename>
   </file>
   <file>
     <filename>GUIMinimapFrame.lua</filename>
-  </file>
-  <file>
-    <filename>GUIMotionTrackingDisplay.lua</filename>
   </file>
   <file>
     <filename>GUIOrders.lua</filename>
@@ -331,19 +313,10 @@
     <filename>GUIPickups.lua</filename>
   </file>
   <file>
-    <filename>GUIPlayerNames.lua</filename>
-  </file>
-  <file>
-    <filename>GUIPlayerResource.lua</filename>
-  </file>
-  <file>
     <filename>GUIReadyRoomOrders.lua</filename>
   </file>
   <file>
     <filename>GUIResourceDisplay.lua</filename>
-  </file>
-  <file>
-    <filename>GUIRifleDisplay.lua</filename>
   </file>
   <file>
     <filename>GUISelectionPanel.lua</filename>
@@ -353,6 +326,9 @@
   </file>
   <file>
     <filename>GUISpeedDebug.lua</filename>
+  </file>
+  <file>
+    <filename>GUIUpgradeChamberDisplay.lua</filename>
   </file>
   <file>
     <filename>GameInfo.lua</filename>
@@ -472,9 +448,6 @@
     <filename>LOSMixin.lua</filename>
   </file>
   <file>
-    <filename>Overloads\Ladder.lua</filename>
-  </file>
-  <file>
     <filename>Weapons\Alien\LeapMixin.lua</filename>
   </file>
   <file>
@@ -488,9 +461,6 @@
   </file>
   <file>
     <filename>Lerk_Server.lua</filename>
-  </file>
-  <file>
-    <filename>Loading.lua</filename>
   </file>
   <file>
     <filename>Location.lua</filename>
@@ -515,9 +485,6 @@
   </file>
   <file>
     <filename>bots\MarineCommanderBrain_Data.lua</filename>
-  </file>
-  <file>
-    <filename>MarineCommanderTutorial.lua</filename>
   </file>
   <file>
     <filename>MarineCommander_Client.lua</filename>
@@ -560,6 +527,9 @@
   </file>
   <file>
     <filename>Weapons\Marine\Mines.lua</filename>
+  </file>
+  <file>
+    <filename>ModdedMixinUtility.lua</filename>
   </file>
   <file>
     <filename>Mixins\NS1GroundMoveMixin.lua</filename>
@@ -637,9 +607,6 @@
     <filename>PlayerInfoEntity.lua</filename>
   </file>
   <file>
-    <filename>PlayerRanking.lua</filename>
-  </file>
-  <file>
     <filename>Player_Client.lua</filename>
   </file>
   <file>
@@ -656,6 +623,9 @@
   </file>
   <file>
     <filename>PowerConsumerMixin.lua</filename>
+  </file>
+  <file>
+    <filename>Predict.lua</filename>
   </file>
   <file>
     <filename>Weapons\PredictedProjectile.lua</filename>
@@ -701,9 +671,6 @@
   </file>
   <file>
     <filename>Weapons\Alien\Rocket.lua</filename>
-  </file>
-  <file>
-    <filename>SabotCoreClient.lua</filename>
   </file>
   <file>
     <filename>CommAbilities\Marine\Scan.lua</filename>
@@ -869,9 +836,6 @@
   </file>
   <file>
     <filename>WeaponOwnerMixin.lua</filename>
-  </file>
-  <file>
-    <filename>Weapons\Weapon_Server.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\Web.lua</filename>

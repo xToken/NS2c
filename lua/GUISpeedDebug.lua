@@ -1,17 +1,17 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\GUISpeedDebug.lua
-//
-//    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
-//
-//    UI display for console command "debugspeed". Shows a red bar + number indicating the current
-//    velocity and white bar indicating any special move/initial timing (like skulk jump, marine
-//    sprint, onos momentum)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\GUISpeedDebug.lua
+--
+--    Created by:   Andreas Urwalek (a_urwa@sbox.tugraz.at)
+--
+--    UI display for console command "debugspeed". Shows a red bar + number indicating the current
+--    velocity and white bar indicating any special move/initial timing (like skulk jump, marine
+--    sprint, onos momentum)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Added additional debug information
+-- NS2c
+-- Added additional debug information
 
 local gMomentumBarWidth = 200
 local gFractionBarHeight = 80

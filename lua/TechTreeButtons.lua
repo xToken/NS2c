@@ -36,7 +36,7 @@ function CommanderUI_MenuImageSize()
     
 end
 
-// Init icon offsets.
+-- Init icon offsets.
 local kTechIdToMaterialOffset = {}
 
 kTechIdToMaterialOffset[kTechId.CommandStation] = 0

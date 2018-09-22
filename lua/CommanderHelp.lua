@@ -1,26 +1,26 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\CommanderHelp.lua
-//
-// Created by: Andreas Urwalek (a_urwa@sbox.tugraz.at)
-//
-//   Interpretes the current state of the client world and returns a list of techIds / world-space positions,
-//   which can be clicked like the regular commander menu buttons.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\CommanderHelp.lua
+--
+-- Created by: Andreas Urwalek (a_urwa@sbox.tugraz.at)
+--
+--   Interpretes the current state of the client world and returns a list of techIds / world-space positions,
+--   which can be clicked like the regular commander menu buttons.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-local gGetMarineCommanderHelp = nil
-local gGetAlienCommanderHelp = nil
+local gGetMarineCommanderHelp
+local gGetAlienCommanderHelp
 
-//----------------------------------------
-//  This is used by the client, but as well as the server for commander bots.
-//  Set up the "API" all here
-//----------------------------------------
+------------------------------------------
+--  This is used by the client, but as well as the server for commander bots.
+--  Set up the "API" all here
+------------------------------------------
 
 kWorldButtonSize = nil
 
-local GetCallingCommander = nil
-local gServerCallingCommander = nil
+local GetCallingCommander
+local gServerCallingCommander
 
 if Client or Predict then
 
@@ -45,7 +45,7 @@ elseif Server then
 
 end
 
-// --------- Resource Tower help function --------------------
+-- --------- Resource Tower help function --------------------
 
 local function GetEmptyResourceNodes( conditionFunc )
 
@@ -89,7 +89,7 @@ local function GetHarvesterIndicators()
     
 end
 
-// --------- tech utility functions --------------------------------------
+-- --------- tech utility functions --------------------------------------
 
 local function GetShowResearch(techId)
 
@@ -134,7 +134,7 @@ local function GetResearchHelpFunction(className, techId, xOffset, yOffset)
     return function() return GetResearchList(className, techId, xOffset, yOffset) end
 end
 
-// --------- upgrade help functions --------------------------------------
+-- --------- upgrade help functions --------------------------------------
 
 local function GetUpgradeList(className, techId, upgradedId, xOffset)
 
@@ -168,13 +168,13 @@ local function GetUpgradeHelpFunction(className, techId, upgradedId, xOffset)
     return function() return GetUpgradeList(className, techId, upgradedId, xOffset) end
 end
 
-// --------- base structure help functions --------------------
+-- --------- base structure help functions --------------------
 
 local function GetClosestCommStructure()
 
     local localPlayer = GetCallingCommander()
-    local closestCommStructure = nil
-    
+    local closestCommStructure
+
     if localPlayer then
     
         local commStructures = GetEntitiesForTeam("CommandStructure", localPlayer:GetTeamNumber())
@@ -214,7 +214,7 @@ local function GetIsStructureInRange(techId)
 
 end
 
-local gCachedRandomPos = nil
+local gCachedRandomPos
 local gUsedCommStructureOrigin = Vector(0,0,0)
 local gTimeLastUpdate = 0
 local gLastSingletonTechId = kTechId.None
@@ -253,7 +253,7 @@ local function GetBaseStructureHelpFunction(techId)
     return function() return GetPlaceInBaseForTechIdSingleton(techId) end
 end
 
-// --------- CommandStructure help functions --------------------
+-- --------- CommandStructure help functions --------------------
 
 local function GetEmptyTechPoints( conditionFunc, TechId )
 
@@ -261,7 +261,7 @@ local function GetEmptyTechPoints( conditionFunc, TechId )
     
     local gameInfoEnt = GetGameInfoEntity()
     
-    // only show 2nd command structure after 5 minutes
+    -- only show 2nd command structure after 5 minutes
     if gameInfoEnt and gameInfoEnt:GetGameStarted() and Shared.GetTime() - gameInfoEnt:GetStartTime() > 300 then
 
         for _, techPoint in ientitylist(Shared.GetEntitiesWithClassname("TechPoint")) do
@@ -301,7 +301,7 @@ local function GetHiveHint()
     return GetEmptyTechPoints(nil)
 end
 
-// ------------- marine comm support -----------------
+-- ------------- marine comm support -----------------
 
 local function GetRequiresAmmo(marine)
 
@@ -378,7 +378,7 @@ local function GetClosestHive()
 end
 
 local gLastCystOrigin = Vector(0,0,0)
-local gCachedCystHelp = nil
+local gCachedCystHelp
 
 local function GetCystHelpFunction()
 
@@ -432,14 +432,14 @@ local function GetCystHelpFunction()
 
 end
 
-// #######################################################
+-- #######################################################
 
 local function BuildCommanderHelpFunctions()
 
     gGetMarineCommanderHelp = {}
     gGetAlienCommanderHelp = {}
     
-    // marine help functions
+    -- marine help functions
     
     table.insert(gGetMarineCommanderHelp, {kTechId.Extractor, GetExtractorIndicators} )
     table.insert(gGetMarineCommanderHelp, {kTechId.InfantryPortal, GetBaseStructureHelpFunction(kTechId.InfantryPortal)} )
@@ -466,7 +466,7 @@ local function BuildCommanderHelpFunctions()
     
     table.insert(gGetMarineCommanderHelp, {kTechId.CommandStation, GetCommandStationHint})
     
-    // alien help functions
+    -- alien help functions
   
     table.insert(gGetAlienCommanderHelp, {kTechId.Harvester, GetHarvesterIndicators} )
     table.insert(gGetAlienCommanderHelp, {kTechId.UpgradeToCragHive, GetUpgradeHelpFunction("Hive", kTechId.UpgradeToCragHive, kTechId.CragHive, -kWorldButtonSize)} )
@@ -477,13 +477,13 @@ local function BuildCommanderHelpFunctions()
 
 end
 
-// function returns a list of worldbutton info:
-// { TechId, wsPosition, ssOffset, Entity }
+-- function returns a list of worldbutton info:
+-- { TechId, wsPosition, ssOffset, Entity }
 
 function CommanderHelp_GetWorldButtons()
 
     local localPlayer = GetCallingCommander()
-    local useFunctions = nil
+    local useFunctions
     local worldButtons = {}
     
     if not gGetMarineCommanderHelp or not gGetAlienCommanderHelp then
@@ -553,7 +553,7 @@ function CommanderHelp_ProcessTechIdAction(techId, entity)
     if commander and commander:isa("Commander") and commander:GetGameStarted() then
     
         local menuTechId = commander:GetMenuTechIdFor(techId) or kTechId.RootMenu
-        local buttonTable = nil
+        local buttonTable
 
         if menuTechId == kTechId.RootMenu and entity then
         

@@ -1,19 +1,20 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Player_Server.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Player_Server.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
-//NS2c
-//Removed destruction of free dropped weapons, removed near death cinematic
+-- NS2c
+-- Removed destruction of free dropped weapons, removed near death cinematic
 
 Script.Load("lua/Gamerules.lua")
 
 -- Called when player first connects to server
 -- TODO: Move this into NS specific player class
 function Player:OnClientConnect(client)
+    self:SetRequestsScores(true)   
 end
 
 function Player:GetSteamId()
@@ -24,13 +25,63 @@ function Player:GetClient()
     return self.client
 end
 
+function Player:GetIsSpectator()
+    return self.client and self.client:GetIsSpectator()
+end
+
+function Player:SetIsSpectator(isSpec)
+    if type(isSpec) ~= "boolean" then return end --sanity check of input
+
+    if self:GetIsVirtual() then return end --ignore bots
+
+    assert(self.client ~= nil)
+
+    if not self.client:SetIsSpectator(isSpec) then return end
+
+    --Move spectating player to the spectator team
+    if not isSpec then return end
+
+    local gamerules = GetGamerules()
+    if gamerules and self:GetTeamNumber() ~= kSpectatorIndex then
+        gamerules:JoinTeam(self, kSpectatorIndex, true)
+    end
+end
+
+function Player:GetIsVirtual()
+    return self.isVirtual
+end
+
+function Player:GetControllingBot()
+    if not self.isVirtual or not self.client then return end
+
+    for _, bot in ipairs(gServerBots) do
+        if bot.client == self.client then
+            return bot
+        end
+    end
+end
+
+-- Return the current alert queue of the player. Alerts are only queued for virtual players
+function Player:GetAlertQueue()
+    return self.alertQueue or {}
+end
+
+--Clears the current alert queue of the player. Alerts are only queued for virtual players
+function Player:SetAlertQueue(alertQueue)
+    self.alertQueue = alertQueue
+end
+
 function Player:SetPlayerInfo(playerInfo)
 
     if playerInfo ~= nil then
         self.playerInfo = playerInfo
         self.playerInfo:SetScorePlayer(self)
     end
-    
+
+end
+
+function Player:GetPlayerInfo()
+    return self.playerInfo
 end
 
 function Player:Reset()
@@ -50,7 +101,11 @@ function Player:CloseMenu()
 end
 
 function Player:GetName()
-    return self.name
+    return self.name ~= "" and self.name or kDefaultPlayerName
+end
+
+function Player:GetNameHasBeenSet()
+    return self.name ~= ""
 end
 
 function Player:SetName(name)
@@ -114,7 +169,15 @@ function Player:ClearSendTechTreeBase()
     self.sendTechTreeBase = false
 end
 
-// Call to give player default weapons, abilities, equipment, etc. Usually called after CreateEntity() and OnInitialized()
+function Player:GetRequestsScores()
+    return self.requestsScores
+end
+
+function Player:SetRequestsScores(state)
+    self.requestsScores = state
+end
+
+-- Call to give player default weapons, abilities, equipment, etc. Usually called after CreateEntity() and OnInitialized()
 function Player:InitWeapons()
 end
 
@@ -156,25 +219,27 @@ function Player:OnKill(killer, doer, point, direction)
     -- Determine the killer's player name.
     local killerName
     if killer then
-        // search for a player being/owning the killer
+        -- search for a player being/owning the killer
         local realKiller = killer
         while realKiller and not realKiller:isa("Player") and realKiller.GetOwner do
             realKiller = realKiller:GetOwner()
         end
         if realKiller and realKiller:isa("Player") then
             self.killedBy = killer:GetId()
-            killerName = killer:GetName()
+            killerName = realKiller:GetName()
             Log("%s: killed by %s", self, self.killedBy)
         end
     end
 
-    -- Save death to server log
-    if isSuicide or killedByDeathTrigger then
-        PrintToLog("%s committed suicide", self:GetName())
-    elseif killerName ~= nil then
-        PrintToLog("%s was killed by %s", self:GetName(), killerName)
-    else
-        PrintToLog("%s died", self:GetName())
+    -- Save death to server log unless it's part of the concede sequence
+    if not GetConcedeSequenceActive() then
+        if isSuicide or killedByDeathTrigger then
+            PrintToLog("%s committed suicide", self:GetName())
+        elseif killerName ~= nil then
+            PrintToLog("%s was killed by %s", self:GetName(), killerName)
+        else
+            PrintToLog("%s died", self:GetName())
+        end
     end
 
     -- Go to third person so we can see ragdoll and avoid HUD effects (but keep short so it's personal)
@@ -212,6 +277,8 @@ function Player:SetControllerClient(client)
         client:SetControllingPlayer(self)
         self.clientIndex = client:GetId()
         self.client = client
+        self.isVirtual = client:GetIsVirtual()
+
         self:UpdateClientRelevancyMask()
         self:OnClientUpdated(client)
         
@@ -223,7 +290,11 @@ function Player:UpdateClientRelevancyMask()
 
     local mask = 0xFFFFFFFF
     
-    if self:GetTeamNumber() == 1 then
+    if GetConcedeSequenceActive() then
+        
+        mask = bit.bor(kRelevantToTeam1Unit, kRelevantToTeam2Unit)
+        
+    elseif self:GetTeamNumber() == 1 then
     
         if self:GetIsCommander() then
             mask = kRelevantToTeam1Commander
@@ -310,41 +381,40 @@ local function UpdateChangeToSpectator(self)
     if not self:GetIsAlive() and not self:isa("Spectator") then
     
         local time = Shared.GetTime()
-        if self.timeOfDeath ~= nil and (time - self.timeOfDeath > kFadeToBlackTime) then
-           
+        if self.timeOfDeath ~= nil and (time - self.timeOfDeath > kFadeToBlackTime) and (not GetConcedeSequenceActive()) then
+
             -- Destroy the existing player and create a spectator in their place (but only if it has an owner, ie not a body left behind by Phantom use)
             local owner = Server.GetOwner(self)
             if owner then
-            
-                -- Queue up the spectator for respawn.
-                local killer = self.killedBy and Shared.GetEntity(self.killedBy) or nil
-                    
-                local spectator = self:Replace(self:GetDeathMapName())
-                spectator:GetTeam():PutPlayerInRespawnQueue(spectator, Shared.GetTime())
-                
-				if killer then
-                    spectator:SetupKillCam(self, killer)
+
+                -- Ready room players respawn instantly. Might need an API.
+                if self:GetTeamNumber() == kTeamReadyRoom then
+                    self:GetTeam():ReplaceRespawnPlayer(self, nil, nil);
+                else
+                    local spectator = self:Replace(self:GetDeathMapName())
+                    spectator:GetTeam():PutPlayerInRespawnQueue(spectator)
+
+                    -- Queue up the spectator for respawn.
+                    local killer = self.killedBy and Shared.GetEntity(self.killedBy) or nil
+                    if killer then
+                        spectator:SetupKillCam(self, killer)
+                    end
                 end
-            
+
             end
-            
+
         end
-        
+
     end
-    
+
 end
 
 function Player:OnUpdatePlayer(deltaTime)
 
     UpdateChangeToSpectator(self)
     
-    local gamerules = GetGamerules()
-    self.gameStarted = gamerules:GetGameStarted()
-    if self:GetTeamNumber() == kTeam1Index or self:GetTeamNumber() == kTeam2Index then
-        self.countingDown = gamerules:GetCountingDown()
-    else
-        self.countingDown = false
-    end
+    -- Modify relevancy for this entity if the concede sequence is active.
+    ConcedeSequence.ModifyRelevancy(self)
     
 end
 
@@ -426,12 +496,11 @@ function Player:CopyPlayerDataFrom(player)
     self.name = player.name
     self.clientIndex = player.clientIndex
     self.client = player.client
-    
+    self.isVirtual = player.isVirtual
+
     -- Copy network data over because it won't be necessarily be resent
     self.resources = player.resources
     self.teamResources = player.teamResources
-    self.gameStarted = player.gameStarted
-    self.countingDown = player.countingDown
     self.frozen = player.frozen
     self.level = player.level
     self.movementmode = player.movementmode
@@ -464,7 +533,7 @@ function Player:CopyPlayerDataFrom(player)
     self.mutedClients = player.mutedClients
     self.hotGroupNumber = player.hotGroupNumber
     
-    self.lastUpgradeList = player.lastUpgradeList
+    self.lastUpgradeList = player.lastUpgradeList or {}
     
     self.sendTechTreeBase = player.sendTechTreeBase
     
@@ -481,7 +550,7 @@ function Player:RemoveSpectators(newPlayer)
     for e = 0, spectators:GetSize() - 1 do
     
         local spectatorEntity = spectators:GetEntityAtIndex(e)
-        if spectatorEntity ~= newPlayer then
+        if spectatorEntity and spectatorEntity ~= newPlayer then
         
             local spectatorClient = Server.GetOwner(spectatorEntity)
             if spectatorClient and spectatorClient:GetSpectatingPlayer() == self then
@@ -506,6 +575,12 @@ function Player:RemoveSpectators(newPlayer)
     
 end
 
+
+function Player:GetDestructionAllowed(destructionAllowedTable)
+    destructionAllowedTable.allowed = (self.client == nil) and destructionAllowedTable.allowed
+end
+
+
 --[[
  * Replaces the existing player with a new player of the specified map name.
  * Removes old player off its team and adds new player to newTeamNumber parameter
@@ -514,7 +589,7 @@ end
  * and old ones are kept (including view model).
 ]]
 function Player:Replace(mapName, newTeamNumber, preserveWeapons, atOrigin, extraValues)
-
+    
     local team = self:GetTeam()
     if team == nil then
         return self
@@ -570,10 +645,17 @@ function Player:Replace(mapName, newTeamNumber, preserveWeapons, atOrigin, extra
     
     -- Notify others of the change     
     self:SendEntityChanged(player:GetId())
+    
+    -- Notify LOS mixin of this player's change (to prevent aliens scouted by this player to get
+    -- stuck scouted).
+    if HasMixin(self, "LOS") then
+        self:MarkNearbyDirtyImmediately()
+    end
 
     -- This player is no longer controlled by a client.
     self.client = nil
-    
+    self.isVirtual = nil
+
     -- Remove any spectators currently spectating this player.
     self:RemoveSpectators(player)
     
@@ -615,7 +697,7 @@ function Player:ProcessBuyAction(techIds)
 end
 
 -- Creates an item by mapname and spawns it at our feet.
-function Player:GiveItem(itemMapName, setActive)
+function Player:GiveItem(itemMapName, setActive, suppressError)
 
     -- Players must be alive in order to give them items.
     assert(self:GetIsAlive())
@@ -627,11 +709,16 @@ function Player:GiveItem(itemMapName, setActive)
 
     if itemMapName then
     
-        newItem = CreateEntity(itemMapName, self:GetEyePos(), self:GetTeamNumber())
+        newItem = CreateEntity(itemMapName, self:GetEyePos(), self:GetTeamNumber(), nil, suppressError)
         if newItem then
 
             if newItem:isa("Weapon") then
-                self:AddWeapon(newItem, setActive)
+                local removedWeapon = self:AddWeapon(newItem, setActive)
+                
+                if removedWeapon and HasMixin(removedWeapon, "Tech") and LookupTechData(removedWeapon:GetTechId(), kTechDataCostKey, 0) == 0 then
+                    DestroyEntity(removedWeapon)
+                end
+                
             else
 
                 if newItem.OnCollision then
@@ -640,8 +727,14 @@ function Player:GiveItem(itemMapName, setActive)
                 
             end
             
+            local client = self:GetClient()
+            if client and newItem.UpdateWeaponSkins then
+                newItem:UpdateWeaponSkins(client)
+            end
+            
         else
-            Print("Couldn't create entity named %s.", itemMapName)            
+            Log("Couldn't create entity named %s.", itemMapName)
+            return nil
         end
         
     end
@@ -664,7 +757,7 @@ end
 
 -- To be overridden by children
 function Player:AttemptToBuy(techIds)
-    return self, false
+    return false
 end
 
 function Player:UpdateMisc(input)    
@@ -692,15 +785,15 @@ end
 function Player:TriggerAlert(techId, entity)
 
     assert(entity ~= nil)
-    
+
     if self:GetIsInterestedInAlert(techId) and (not entity:isa("Player") or GetGamerules():GetCanPlayerHearPlayer(self, entity)) then
-    
+
         local entityId = entity:GetId()
         local time = Shared.GetTime()
-        
+
         local location = entity:GetOrigin()
         assert(entity:GetTechId() ~= nil)
-        
+
         local message =
         {
             techId = techId,
@@ -709,8 +802,14 @@ function Player:TriggerAlert(techId, entity)
             entityId = entity:GetId(),
             entityTechId = entity:GetTechId()
         }
-        
-        Server.SendNetworkMessage(self, "MinimapAlert", message, true)
+
+        if self:GetIsVirtual() then
+            self.alertQueue = self.alertQueue or {}
+            message.time = time
+            table.insert(self.alertQueue, message)
+        else
+            Server.SendNetworkMessage(self, "MinimapAlert", message, true)
+        end
 
         return true
     
@@ -720,22 +819,21 @@ function Player:TriggerAlert(techId, entity)
     
 end
 
-function Player:SetRookieMode(rookieMode)
+function Player:SetRookie(isRookie)
 
-    if self.isRookie ~= rookieMode then
-        self.isRookie = rookieMode
-
-		if self.playerInfo then 
-			self.playerInfo:UpdateScore() 
-		end
-
+    if self.isRookie ~= isRookie then
+        self.isRookie = isRookie
+        if self.playerInfo then self.playerInfo:UpdateScore() end
     end
-    
+
+end
+
+function Player:GetIsRookie()
+    return self.isRookie
 end
 
 function Player:OnClientUpdated(client)
     -- override me
-    -- DebugPrint("Player:OnClientUpdated")
 end
 
 --only use intensity value here to reduce traffic
@@ -747,10 +845,18 @@ function Player:SetCameraShake(intensity)
 end
 
 function Player:UpdateWeaponSkin(client)
-
-    local weapon = self:GetActiveWeapon()
-    if weapon then
-        weapon:UpdateWeaponSkins(client)
+    
+    local weps = self:GetWeapons()
+    for i=1, #weps do
+        if weps[i] and weps[i].UpdateWeaponSkins then
+            weps[i]:UpdateWeaponSkins(client)
+        end
+    end
+    
+    local activeWeapon = self:GetActiveWeapon()
+    if activeWeapon then
+        activeWeapon:UpdateViewModel(self)
     end
     
 end
+

@@ -1,17 +1,16 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\TechTree_Client.lua
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
-//                  Max McGuire (max@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\TechTree_Client.lua
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com) and
+--                  Max McGuire (max@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 function GetHasTech(player, techId, silentError)
 
     local gameInfo = GetGameInfoEntity()
-    if gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then    
-        local player
+    if gameInfo and gameInfo:GetGameMode() == kGameMode.Combat then
         if Client then
             player = Client.GetLocalPlayer()
         elseif Predict then
@@ -33,52 +32,26 @@ function GetHasTech(player, techId, silentError)
     
 end
 
-function GetTechNode(player, techId)
+function GetTechNode(techId)
 
     local techTree = GetTechTree()
+    
     if(techTree) then
+    
         return techTree:GetTechNode(techId)
+        
     end
+    
     return nil
     
 end
 
-function GetIsTechAvailable(player, techId)
-
-    local techTree = GetTechTree()
-    if techTree then
-    
-        local techNode = techTree:GetTechNode(techId)
-        if techNode then
-            return techNode:GetAvailable()
-        end 
-   
-    end
-    
-    return false
-
-end
-
-function GetIsTechResearched(player, techId)
-
-    local techTree = GetTechTree()
-    if techTree then
-    
-        local techNode = techTree:GetTechNode(techId)
-        if techNode then
-            return techNode:GetResearched()
-        end 
-   
-    end
-    
-    return false
-
-end
-
 function TechTree:CreateTechNodeFromNetwork(techNodeBaseTable)
     
-    local techNode = TechNode() 
+    local techNode = TechNode()
+    
     ParseTechNodeBaseMessage(techNode, techNodeBaseTable)
+    
     self:AddNode(techNode)
     
 end

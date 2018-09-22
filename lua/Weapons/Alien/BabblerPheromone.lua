@@ -1,12 +1,12 @@
-// ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\Weapons\BabblerPheromone.lua
-//
-//    Created by:   Andreas Urwalek (andi@unknownworlds.com)
-//
-//    Attracts babblers.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2013, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\Weapons\BabblerPheromone.lua
+--
+--    Created by:   Andreas Urwalek (andi@unknownworlds.com)
+--
+--    Attracts babblers.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 Script.Load("lua/TeamMixin.lua")
 Script.Load("lua/Weapons/Projectile.lua")
@@ -31,7 +31,6 @@ BabblerPheromone.kClearOnSelfImpact = false
 local networkVars = { }
 
 AddMixinNetworkVars(BaseModelMixin, networkVars)
-AddMixinNetworkVars(TeamMixin, networkVars)
 
 local function ClearAttachedBabblers(self)
     if self:GetIsDestroyed() then
@@ -53,7 +52,6 @@ function BabblerPheromone:OnCreate()
     
     InitMixin(self, BaseModelMixin)
     InitMixin(self, ClientModelMixin)
-    InitMixin(self, TeamMixin)
 
     if Server then
         
@@ -93,7 +91,7 @@ function BabblerPheromone:ProcessHit(entity)
             
                 if babbler:GetOwner() == self:GetOwner() then
                 
-                    // Adjust babblers move type.
+                    -- Adjust babblers move type.
                     local moveType = kBabblerMoveType.Move
                     local position = self:GetOrigin()
                     local giveOrder = true

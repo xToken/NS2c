@@ -1,12 +1,12 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======    
-//    
-// lua\TeamDeathMessageMixin.lua    
-//    
-//    Created by:   Brian Cronin (brianc@unknownworlds.com)    
-//    
-// Adds support to send a death message to clients on a team when something dies.
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================    
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\TeamDeathMessageMixin.lua
+--
+--    Created by:   Brian Cronin (brianc@unknownworlds.com)
+--
+-- Adds support to send a death message to clients on a team when something dies.
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 
 TeamDeathMessageMixin = CreateMixin( TeamDeathMessageMixin )
 TeamDeathMessageMixin.type = "TeamDeathMessage"
@@ -17,7 +17,12 @@ end
 function TeamDeathMessageMixin:OnEntityKilled(targetEntity, killer, doer, point, direction)
 
     if Server then
-
+        
+        -- Do not display new killfeed messages during concede sequence
+        if GetConcedeSequenceActive() then
+            return
+        end
+        
         if not targetEntity or targetEntity:GetSendDeathMessage() then
         
             local index = kDeathMessageIcon.None
@@ -42,12 +47,12 @@ function TeamDeathMessageMixin:OnEntityKilled(targetEntity, killer, doer, point,
     
 end
 
-// Create death message string with following format:
-//
-// deathmsg killingPlayerIndex killerTeamNumber doerIconIndex targetPlayerIndex targetTeamNumber
-//
-// Note: Client indices are used here as entity Ids aren't always valid on the client
-// due to relevance. If the killer or target is not a player, the entity techId is used.
+-- Create death message string with following format:
+--
+-- deathmsg killingPlayerIndex killerTeamNumber doerIconIndex targetPlayerIndex targetTeamNumber
+--
+-- Note: Client indices are used here as entity Ids aren't always valid on the client
+-- due to relevance. If the killer or target is not a player, the entity techId is used.
 function TeamDeathMessageMixin:GetDeathMessage(killer, doerIconIndex, targetEntity)
 
     local killerIsPlayer = false

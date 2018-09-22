@@ -1,13 +1,13 @@
-// ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
-//
-// lua\TechTree.lua
-//
-// Tracks state of a team's technology. Contains tech nodes and functions for building, unlocking 
-// and manipulating them.
-//
-//    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
-//
-// ========= For more information, visit us at http://www.unknownworlds.com =====================
+-- ======= Copyright (c) 2003-2011, Unknown Worlds Entertainment, Inc. All rights reserved. =======
+--
+-- lua\TechTree.lua
+--
+-- Tracks state of a team's technology. Contains tech nodes and functions for building, unlocking
+-- and manipulating them.
+--
+--    Created by:   Charlie Cleveland (charlie@unknownworlds.com)
+--
+-- ========= For more information, visit us at http://www.unknownworlds.com =====================
 class 'TechTree'
 
 if Server then
@@ -15,19 +15,20 @@ if Server then
 elseif Client then
     Script.Load("lua/TechTree_Client.lua")
 elseif Predict then
-    // we reuse-the client stuff
+    -- we reuse-the client stuff
     Script.Load("lua/TechTree_Client.lua")
 end
 
-// Constructor
+-- Constructor
 function TechTree:Initialize()
 
-    self.nodeList = {}
+    self.nodeList = {} --lookup table for nodes
+    self.techIdList = {} -- list of avaible techids (used for iterating over techtree
     
     self.techChanged = false
     self.complete = false
     
-    // No need to add to team
+    -- No need to add to team
     self.teamNumber = kTeamReadyRoom
     
     if Server then
@@ -44,6 +45,7 @@ function TechTree:AddNode(node)
     assert(self.nodeList[nodeEntityId] == nil)
     
     self.nodeList[nodeEntityId] = node
+    self.techIdList[#self.techIdList + 1] = nodeEntityId
     
 end
 
@@ -55,8 +57,10 @@ function TechTree:GetRequiredTechIds()
 
     local requiredTechIds = {}
 
-    for _, node in pairs(self.nodeList) do
-    
+    for _, nodeTechId in ipairs(self.techIdList) do
+
+        local node = self:GetTechNode(nodeTechId)
+
         local prereq1 = node:GetPrereq1()
         if prereq1 and prereq1 ~= kTechId.None then
             requiredTechIds[prereq1] = true
@@ -90,8 +94,8 @@ function TechTree:GetTechAvailable(techId)
     
 end
 
-// Check if active structures on our team that support this technology. These are
-// are computed during ComputeAvailability().
+-- Check if active structures on our team that support this technology. These are
+-- are computed during ComputeAvailability().
 function TechTree:GetHasTech(techId)
 
     if techId == kTechId.None then
@@ -108,7 +112,7 @@ function TechTree:GetHasTech(techId)
             
         if not hasTech and self.techInheritance then
         
-            // check inheritance techs
+            -- check inheritance techs
             for _, techInheritance in ipairs(self.techInheritance) do
 
                 if techInheritance[1] == techId then
@@ -149,7 +153,7 @@ function TechTree:GetIsTechAvailable(techId)
 
 end
 
-// Returns string describing tech node 
+-- Returns string describing tech node
 function TechTree:GetDescriptionText(techId)
 
     local techNode = self:GetTechNode(techId)
@@ -194,25 +198,26 @@ function TechTree:GetRequiresText(techId)
 
 end
 
-// Return text description of other unavailable tech nodes that directly depend on this one
+-- Return text description of other unavailable tech nodes that directly depend on this one
 function TechTree:GetEnablesText(techId)
 
     local text = ""
 
-    for index, techNode in pairs(self.nodeList) do
+    for _, nodeTechId in ipairs(self.techIdList) do
 
+        local techNode = self:GetTechNode(nodeTechId)
         if not techNode.available and ( (techNode:GetPrereq1() == techId) or (techNode:GetPrereq2() == techId) ) then
 
-            // Only display tech nodes that make sense to show
-            local showEnables = LookupTechData(techNode:GetTechId(), kTechIDShowEnables, true)
+            -- Only display tech nodes that make sense to show
+            local showEnables = LookupTechData(nodeTechId, kTechIDShowEnables, true)
             if showEnables then
             
                 if text ~= "" then
                     text = text .. ", "
                 end
                 
-                local display = string.format("<missing display for %s>", EnumToString(kTechId, techNode:GetTechId()))
-                text = string.format("%s%s", text, GetDisplayNameForTechId(techNode:GetTechId(), display))
+                local display = string.format("<missing display for %s>", EnumToString(kTechId, nodeTechId))
+                text = string.format("%s%s", text, GetDisplayNameForTechId(nodeTechId, display))
                 
             end
             
@@ -224,10 +229,10 @@ function TechTree:GetEnablesText(techId)
 
 end
 
-// Get the 0-1 research progress for a buy node. Assumes that it only has one prerequisite and that the
-// prerequisite is research. For instance, check the research process for Shotgun, which has its
-// prerequisite1 as ShotgunTech. Used for displaying research in progress at the marine and alien
-// buy menus. Returns 1 if tech is available or if there is no prerequisite.
+-- Get the 0-1 research progress for a buy node. Assumes that it only has one prerequisite and that the
+-- prerequisite is research. For instance, check the research process for Shotgun, which has its
+-- prerequisite1 as ShotgunTech. Used for displaying research in progress at the marine and alien
+-- buy menus. Returns 1 if tech is available or if there is no prerequisite.
 function TechTree:GetResearchProgressForNode(buyTechId)
 
     local researchAmount = 1
@@ -242,7 +247,7 @@ function TechTree:GetResearchProgressForNode(buyTechId)
             local prereqNode = self:GetTechNode(prereq1)
             if prereqNode ~= nil and prereqNode:GetResearching() then
             
-                researchProgress = prereqNode:GetResearchProgress()
+                researchAmount = prereqNode:GetResearchProgress()
                 
             end
             
@@ -254,17 +259,20 @@ function TechTree:GetResearchProgressForNode(buyTechId)
     
 end
 
-// Return array of tech ids that are addons for specified tech id
+-- Return array of tech ids that are addons for specified tech id
 function TechTree:GetAddOnsForTechId(techId)
 
     local addons = { }
+
+    for _, nodeTechId in ipairs(self.techIdList) do
+
+        local techNode = self:GetTechNode(nodeTechId)
+        assert(techNode)
     
-    for index, techNode in pairs(self.nodeList) do
-    
-        if techNode ~= nil and techNode:isa("TechNode") then
+        if techNode:isa("TechNode") then
         
             if techNode:GetAddOnTechId() == techId then
-                table.insert(addons, techNode:GetTechId())
+                table.insert(addons, nodeTechId)
             end
             
         end
@@ -305,14 +313,12 @@ function TechTree:ComputeUpgradedTechIdsSupportingId(techId)
 
     local techIds = {}
     
-    // Find all tech that supports techId through an upgrade
-    for index, techNode in pairs(self.nodeList) do
-    
-        local currentTechId = techNode:GetTechId()
+    -- Find all tech that supports techId through an upgrade
+    for _, nodeTechId in ipairs(self.techIdList) do
+
+        if(GetTechUpgradesFromTech(nodeTechId, techId)) then
         
-        if(GetTechUpgradesFromTech(currentTechId, techId)) then
-        
-            table.insert(techIds, currentTechId)
+            table.insert(techIds, nodeTechId)
             
         end
         
@@ -329,6 +335,18 @@ function GetIsTechResearching(player, techId)
     if techTree then
         local techNode = techTree:GetTechNode(techId)
         return techNode ~= nil and techNode:GetResearching()
+    end
+    
+    return false
+
+end
+
+function GetTechAvailable(player, techId)
+
+    local techTree = GetTechTree(player:GetTeamNumber())
+
+    if techTree then
+        return techTree:GetTechAvailable(techId)
     end
     
     return false
