@@ -171,7 +171,7 @@ function Marine:Buy()
             end
             
         else
-            self:PlayEvolveErrorSound()
+            --self:PlayEvolveErrorSound()
         end
         
     end
