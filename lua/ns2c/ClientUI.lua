@@ -36,8 +36,8 @@ kShowOnTeam["all"] =
     GUIDeathScreen = true,
     GUIStartVoteMenu = true,
     GUIVoteMenu = true,
-    GUISensorBlips = true,
-    ["ns2c/GUIHelpScreen"] = true
+    GUISensorBlips = true
+    --["ns2c/GUIHelpScreen"] = true
 }
 
 kShowOnTeam[kTeamReadyRoom] =
