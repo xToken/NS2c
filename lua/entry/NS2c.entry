@@ -1,0 +1,7 @@
+modEntry = {
+	Client = "lua/NS2c_Client.lua",
+	Predict = "lua/NS2c_Predict.lua",
+	Server = "lua/NS2c_Server.lua",
+	FileHooks = "lua/NS2c_FileHooks.lua",
+	Priority = 100
+}
