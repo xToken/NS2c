@@ -206,7 +206,6 @@ local networkVars =
     slowAmount = "float (0 to 1 by 0.01)",
     movementModiferState = "boolean",
     giveDamageTime = "private time",
-    lastImpactForce = "private float",
     
     level = "float (0 to " .. kCombatMaxAllowedLevel .. " by 0.001)",
     movementmode = "boolean",
@@ -1242,7 +1241,7 @@ function Player:OnGroundChanged(onGround, impactForce, normal, velocity)
         
     end
     
-    if normal and normal.y > 0.5 and self:GetSlowOnLand() then    
+    if normal and normal.y > 0.5 and self:GetSlowOnLand(impactForce) then    
     
         local slowdownScalar = Clamp(math.max(0, impactForce - 4) / 18, 0, 1)
         if self.ModifyJumpLandSlowDown then
@@ -1253,7 +1252,9 @@ function Player:OnGroundChanged(onGround, impactForce, normal, velocity)
         velocity:Scale(1 - slowdownScalar)  
         
     end
-
+    
+    self.lastImpactForce = impactForce
+    
 end
 
 local kDoublePI = math.pi * 2

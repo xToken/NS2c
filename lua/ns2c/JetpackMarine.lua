@@ -278,8 +278,8 @@ function JetpackMarine:GetWeaponName()
     
 end
 
-function JetpackMarine:GetSlowOnLand()
-    return Marine.GetSlowOnLand(self) and not self:GetIsJetpacking()
+function JetpackMarine:GetSlowOnLand(impactForce)
+    return Marine.GetSlowOnLand(self, impactForce) and not self:GetIsJetpacking()
 end
 
 function JetpackMarine:GetMaxBackwardSpeedScalar()

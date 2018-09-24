@@ -306,8 +306,8 @@ function Marine:GetCanSeeDamagedIcon(ofEntity)
     return HasMixin(ofEntity, "Weldable")
 end
 
-function Marine:GetSlowOnLand()
-    return math.abs(self.lastImpactForce) > self:GetMaxSpeed()
+function Marine:GetSlowOnLand(impactForce)
+    return math.abs(impactForce) > self:GetMaxSpeed()
 end
 
 function Marine:GetControllerPhysicsGroup()

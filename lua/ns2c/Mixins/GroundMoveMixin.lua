@@ -38,7 +38,8 @@ GroundMoveMixin.networkVars =
     onGroundSurface = "enum kSurfaces", 
     isOnEntity = "private compensated boolean",
     timeGroundAllowed = "private time",
-    timeGroundTouched = "private time"
+    timeGroundTouched = "private time",
+    storedImpactForce = "private compensated float"
 }
 
 GroundMoveMixin.expectedMixins =
@@ -69,6 +70,7 @@ function GroundMoveMixin:__initmixin()
     self.onGroundClient = true
     self.timeGroundAllowed = 0
     self.timeGroundTouched = 0
+	self.storedImpactForce = 0
 	
 end
 
@@ -494,7 +496,7 @@ local function FlushCollisionCallbacks(self, velocity)
     end
     
     self.storedNormal = nil
-    self.storedImpactForce = nil
+    self.storedImpactForce = 0
 
 end
 
@@ -664,7 +666,7 @@ function GroundMoveMixin:OnWorldCollision(normal, impactForce)
     
     if impactForce then
     
-        if not self.storedImpactForce then
+        if self.storedImpactForce == 0 then
             self.storedImpactForce = impactForce
         else
             self.storedImpactForce = (self.storedImpactForce + impactForce) * 0.5
