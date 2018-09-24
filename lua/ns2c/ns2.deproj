@@ -661,9 +661,6 @@
     <filename>PowerConsumerMixin.lua</filename>
   </file>
   <file>
-    <filename>Predict.lua</filename>
-  </file>
-  <file>
     <filename>Weapons\PredictedProjectile.lua</filename>
   </file>
   <file>
@@ -724,16 +721,10 @@
     <filename>Sentry.lua</filename>
   </file>
   <file>
-    <filename>Server.lua</filename>
-  </file>
-  <file>
     <filename>Shade.lua</filename>
   </file>
   <file>
     <filename>Weapons\Alien\ShadeAbility.lua</filename>
-  </file>
-  <file>
-    <filename>Shared.lua</filename>
   </file>
   <file>
     <filename>Shift.lua</filename>
