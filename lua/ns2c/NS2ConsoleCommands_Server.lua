@@ -608,9 +608,10 @@ local function OnCommandChangeClass(className, teamNumber, extraValues)
                     -- I have no idea if this will break, but I don't care!
                     -- Thug life!
                     -- Ghetto code incoming, you've been warned
-                    newPlayer.upgrade1 = newPlayer.lastUpgradeList[1] or 1
-                    newPlayer.upgrade2 = newPlayer.lastUpgradeList[2] or 1
-                    newPlayer.upgrade3 = newPlayer.lastUpgradeList[3] or 1
+                    local upgrades = newPlayer.lastUpgradeList[className] or newPlayer.lastUpgradeList["Skulk"] or {}
+                    newPlayer.upgrade1 = upgrades[1] or 1
+                    newPlayer.upgrade2 = upgrades[2] or 1
+                    newPlayer.upgrade3 = upgrades[3] or 1
                 end
                 
             end
@@ -1280,10 +1281,16 @@ end
 local function OnCommandEvolveLastUpgrades(client)
 
     local player = client:GetControllingPlayer()
-    if player and player:isa("Alien") and player:GetIsAlive() and not player:isa("Embryo") and GetServerGameMode() == kGameMode.Classic then
-    
-        local upgrades = player.lastUpgradeList
+    if player and player:isa("Alien") and player:GetIsAlive() and not player:isa("Embryo") then
+
+        local class = player:GetClassName()
+        local upgrades = player.lastUpgradeList or {}
+        upgrades = upgrades[class] or upgrades["Skulk"] or {}
         if upgrades and #upgrades > 0 then
+            if player.autopickedUpgrades then
+                player:ClearUpgrades()
+            end
+
             player:ProcessBuyAction(upgrades)
         end
     

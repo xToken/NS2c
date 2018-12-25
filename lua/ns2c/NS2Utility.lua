@@ -1352,7 +1352,9 @@ function GetLocationForPoint(point, ignoredLocation)
 end
 
 function GetLocationEntitiesNamed(name)
-
+    
+    PROFILE("GetLocationEntitiesNamed")
+    
     local locationEntities = {}
 
     if name ~= nil and name ~= "" then
@@ -1405,7 +1407,9 @@ end
 local lightLocationCache = {}
 
 function GetLightsForLocation(locationName)
-
+    
+    PROFILE("GetLightsForLocation")
+    
     if locationName == nil or locationName == "" then
         return {}
     end
@@ -1453,7 +1457,9 @@ end
 local probeLocationCache = {}
 
 function GetReflectionProbesForLocation(locationName)
-
+    
+    PROFILE("GetReflectionProbesForLocation")
+    
     if locationName == nil or locationName == "" then
         return {}
     end
@@ -1503,7 +1509,9 @@ end
 local glowPropLocationCache = {}
 
 function GetGlowingPropsForLocation(locationName)
-
+    
+    PROFILE("GetGlowingPropsForLocation")
+    
     if locationName == nil or locationName == "" then
         return {}
     end
@@ -1545,6 +1553,30 @@ function GetGlowingPropsForLocation(locationName)
 
     return propList
 
+end
+
+-- Iterate over all location name strings, caching the light, reflection probe, and emissive prop
+-- locations so it's available during the game.  (Gets the hitch and GC bump out of the way early.)
+function PrecacheLightsAndProps()
+    
+    PROFILE("PrecacheLightsAndProps")
+    
+    assert(Client)
+    
+    local idx = 2 -- location names start at 2 for some reason... the string at index 1 is "".
+    while true do
+        local str = Shared.GetString(idx)
+        if str == "" then -- indexing out of bounds yields "".
+            return
+        end
+        
+        GetLightsForLocation(str)
+        GetReflectionProbesForLocation(str)
+        GetGlowingPropsForLocation(str)
+        
+        idx = idx + 1
+    end
+    
 end
 
 function ClearLights()

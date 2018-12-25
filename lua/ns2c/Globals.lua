@@ -261,6 +261,7 @@ kZFightingConstant = 0.1
 -- Any geometry or props with this name won't be drawn or affect commanders
 kCommanderInvisibleGroupName = "CommanderInvisible"
 kCommanderInvisibleVentsGroupName = "CommanderInvisibleVents"
+kCommanderInvisibleNonCollisionGroupName = "CommanderInvisibleNonCollision"
 -- Any geometry or props with this name will not support being built on top of
 kCommanderNoBuildGroupName = "CommanderNoBuild"
 kCommanderBuildGroupName = "CommanderBuild"
@@ -520,6 +521,7 @@ kHalloween16ShoulderPatchItemId=907
 kSNLeviathanPatchItemId=908
 kSNPeeperPatchItemId=909
 kSummerGorgePatchItemId = 910
+kHauntedBabblerPatchItemId = 911
 
 --Nocturne
 kAnnivAlienPackItemId = 1100
@@ -861,6 +863,26 @@ kWelderVariantData =
 }
 kDefaultWelderVariant = kWelderVariant.normal
 
+
+kMarineStructureVariants = enum({ 'Default', 'Sandstorm' })
+kAlienStructureVariants = enum({ 'Default', 'Toxin' })
+
+kMarineStructureVariantsData =
+{
+    [ kMarineStructureVariants.Default ] = { displayName = "Normal" },
+    [ kMarineStructureVariants.Sandstorm ] = { itemId = kSandstormArmorItemId, displayName = "Sandstorm" }
+}
+
+kAlienStructureVariantsData =
+{
+    [ kAlienStructureVariants.Default ] = { displayName = "Normal" },
+    [ kAlienStructureVariants.Toxin ] = { itemId = kToxinSkulkItemId, displayName = "Toxin" }
+}
+
+kDefaultMarineStructureVariant = kMarineStructureVariants.Default
+kDefaultAlienStructureVariant = kAlienStructureVariants.Default
+
+
 function FindVariant( data, displayName )
 
     for var, data in pairs(data) do
@@ -923,7 +945,8 @@ kShoulderPadNames =
     "Pumpkin Patch",
     "Leviathan",
     "Peeper",
-    "Summer Gorge"
+    "Summer Gorge",
+    "Haunted Babbler"
 }
 
 kShoulderPad2ItemId =
@@ -943,7 +966,8 @@ kShoulderPad2ItemId =
     kHalloween16ShoulderPatchItemId,
     kSNLeviathanPatchItemId,
     kSNPeeperPatchItemId,
-    kSummerGorgePatchItemId
+    kSummerGorgePatchItemId,
+    kHauntedBabblerPatchItemId
 }
 
 function GetHasShoulderPad(index, client)

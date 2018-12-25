@@ -266,7 +266,7 @@ kSkulkBrainActions =
                 local techId = avaibleUpgrades[i]
                 local techNode = GetTechTree(player:GetTeamNumber()):GetTechNode(techId)
                 local isAvailable = techNode and techNode:GetAvailable(player, techId, false)
-                local cost = isAvailable and LookupTechData(evolvingId, kTechDataUpgradeCost, 0) or math.huge
+                local cost = isAvailable and LookupTechData(techId, kTechDataCostKey, 0) or math.huge
                 
                 if res >= cost and not table.icontains(existingUpgrades, techId) and
                         GetIsAlienUpgradeAllowed(player, techId, existingUpgrades) and

@@ -154,7 +154,9 @@ local function UpdateGestation(self)
             
             local newUpgrades = newPlayer:GetUpgrades()
             if #newUpgrades > 0 then
-                newPlayer.lastUpgradeList = newPlayer:GetUpgrades()
+                local class = newPlayer:GetClassName()
+                newPlayer.lastUpgradeList = newPlayer.lastUpgradeList or {}
+                newPlayer.lastUpgradeList[class] = newPlayer:GetUpgrades()
             end
 
             -- Notify team

@@ -278,13 +278,9 @@ kLerkBrainActions =
             for i = 1, #avaibleUpgrades do
                 local techId = avaibleUpgrades[i]
                 local techNode = GetTechTree(player:GetTeamNumber()):GetTechNode(techId)
+                local isAvailable = techNode and techNode:GetAvailable(player, techId, false)
+                local cost = isAvailable and LookupTechData(techId, kTechDataCostKey, 0) or math.huge
 
-                local isAvailable = false
-                local cost = 0
-                if techNode ~= nil then
-                    isAvailable = techNode:GetAvailable(player, techId, false)
-                    cost = LookupTechData(techId, kTechDataGestateName) and GetCostForTech(techId) or LookupTechData(kTechId.Lerk, kTechDataUpgradeCost, 0)
-                end
 
                 if not player:GetHasUpgrade(techId) and isAvailable and res - cost > 0 and
                         GetIsAlienUpgradeAllowed(player, techId, existingUpgrades) and
